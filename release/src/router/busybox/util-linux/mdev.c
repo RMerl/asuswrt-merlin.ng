@@ -823,16 +823,14 @@ static int FAST_FUNC fileAction(const char *fileName,
 	int res;
 
 	/* Is it a ".../dev" file? (len check is for paranoid reasons) */
-	if (strcmp(fileName + len, "/dev") != 0 || len >= PATH_MAX - 32)
+	if (strcmp(fileName + len, "/dev") != 0 || len >= PATH_MAX)
 		return FALSE; /* not .../dev */
 
 	strcpy(path, fileName);
-	path[len] = '\0';
 
 	/* Read ".../subsystem" symlink in the same directory where ".../dev" is */
-	strcpy(subsys, path);
-	strcpy(subsys + len, "/subsystem");
-	res = readlink(subsys, subsys, sizeof(subsys)-1);
+	strcpy(path + len, "/subsystem");
+	res = readlink(path, subsys, sizeof(subsys)-1);
 	if (res > 0) {
 		subsys[res] = '\0';
 		free(G.subsystem);
@@ -848,6 +846,14 @@ static int FAST_FUNC fileAction(const char *fileName,
 			putenv(G.subsys_env);
 		}
 	}
+
+	path[len] = '\0';
+
+	/* Use real path of /sys/block/... symlinks
+	 * to differ partitions from parent bus/char devices
+	 */
+	if (strncmp(path, "/sys/block", 10) == 0 && realpath(path, subsys) != NULL)
+		strcpy(path, subsys);
 
 	make_device(/*DEVNAME:*/ NULL, path, OP_add);
 
@@ -1074,6 +1080,24 @@ int mdev_main(int argc UNUSED_PARAM, char **argv)
 
 		putenv((char*)"ACTION=add");
 
+		if (access("/sys/dev", F_OK) != 0) {
+			/* Scan /sys/class only if /sys/dev doesn't exist
+			 * on pre-2.6.26 kernels.
+			 */
+			if (access("/sys/class/block", F_OK) != 0) {
+				/* Scan obsolete /sys/block only if /sys/class/block
+				 * doesn't exist. Otherwise we'll have dupes.
+				 * Also, do not complain if it doesn't exist.
+				 * Some people configure kernel to have no blockdevs.
+				 */
+				recursive_action("/sys/block",
+					 ACTION_RECURSE | ACTION_FOLLOWLINKS | ACTION_QUIET,
+					 fileAction, dirAction, temp, 0);
+			}
+			recursive_action("/sys/class",
+				 ACTION_RECURSE | ACTION_FOLLOWLINKS,
+				 fileAction, dirAction, temp, 0);
+		} else
 		/* Create all devices from /sys/dev hierarchy */
 		recursive_action("/sys/dev",
 				 ACTION_RECURSE | ACTION_FOLLOWLINKS,

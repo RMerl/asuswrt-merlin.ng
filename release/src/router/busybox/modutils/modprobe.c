@@ -89,10 +89,11 @@
 //usage:       "   from the command line\n"
 //usage:
 //usage:#define modprobe_trivial_usage
-//usage:	"[-alrqvsD" IF_FEATURE_MODPROBE_BLACKLIST("b") "]"
+//usage:	"[-alrqvsD" IF_FEATURE_MODPROBE_BLACKLIST("b") "] [-d dir]"
 //usage:	" MODULE [SYMBOL=VALUE]..."
 //usage:#define modprobe_full_usage "\n\n"
 //usage:       "	-a	Load multiple MODULEs"
+//usage:     "\n	-d dir	Use dir as filesystem root"
 //usage:     "\n	-l	List (MODULE is a pattern)"
 //usage:     "\n	-r	Remove MODULE (stacks) or do autoclean"
 //usage:     "\n	-q	Quiet"
@@ -109,7 +110,7 @@
  * Note2: -b is always accepted, but if !FEATURE_MODPROBE_BLACKLIST,
  * it is a no-op.
  */
-#define MODPROBE_OPTS  "alrDb"
+#define MODPROBE_OPTS  "ad:lrDb"
 /* -a and -D _are_ in fact compatible */
 #define MODPROBE_COMPLEMENTARY ("q-v:v-q:l--arD:r--alD:a--lr:D--rl")
 //#define MODPROBE_OPTS  "acd:lnrt:C:b"
@@ -117,20 +118,21 @@
 enum {
 	OPT_INSERT_ALL   = (INSMOD_OPT_UNUSED << 0), /* a */
 	//OPT_DUMP_ONLY  = (INSMOD_OPT_UNUSED << x), /* c */
-	//OPT_DIRNAME    = (INSMOD_OPT_UNUSED << x), /* d */
-	OPT_LIST_ONLY    = (INSMOD_OPT_UNUSED << 1), /* l */
+	OPT_DIRNAME      = (INSMOD_OPT_UNUSED << 1), /* d */
+	OPT_LIST_ONLY    = (INSMOD_OPT_UNUSED << 2), /* l */
 	//OPT_SHOW_ONLY  = (INSMOD_OPT_UNUSED << x), /* n */
-	OPT_REMOVE       = (INSMOD_OPT_UNUSED << 2), /* r */
+	OPT_REMOVE       = (INSMOD_OPT_UNUSED << 3), /* r */
 	//OPT_RESTRICT   = (INSMOD_OPT_UNUSED << x), /* t */
 	//OPT_VERONLY    = (INSMOD_OPT_UNUSED << x), /* V */
 	//OPT_CONFIGFILE = (INSMOD_OPT_UNUSED << x), /* C */
-	OPT_SHOW_DEPS    = (INSMOD_OPT_UNUSED << 3), /* D */
-	OPT_BLACKLIST    = (INSMOD_OPT_UNUSED << 4) * ENABLE_FEATURE_MODPROBE_BLACKLIST,
+	OPT_SHOW_DEPS    = (INSMOD_OPT_UNUSED << 4), /* D */
+	OPT_BLACKLIST    = (INSMOD_OPT_UNUSED << 5) * ENABLE_FEATURE_MODPROBE_BLACKLIST,
 };
 #if ENABLE_LONG_OPTS
 static const char modprobe_longopts[] ALIGN1 =
 	/* nobody asked for long opts (yet) */
 	// "all\0"          No_argument "a"
+	// "dirname\0"      Required_argument "d"
 	// "list\0"         No_argument "l"
 	// "remove\0"       No_argument "r"
 	// "quiet\0"        No_argument "q"
@@ -158,6 +160,7 @@ struct globals {
 	smallint need_symbols;
 	struct utsname uts;
 	module_db db;
+	char *moddir;
 } FIX_ALIASING;
 #define G (*ptr_to_globals)
 #define INIT_G() do { \
@@ -442,7 +445,7 @@ static int do_modprobe(struct module_entry *m)
 		if (option_mask32 & OPT_SHOW_DEPS) {
 			printf(options ? "insmod %s/%s/%s %s\n"
 					: "insmod %s/%s/%s\n",
-				CONFIG_DEFAULT_MODULES_DIR, G.uts.release, fn,
+				G.moddir, G.uts.release, fn,
 				options);
 			free(options);
 			continue;
@@ -530,11 +533,12 @@ int modprobe_main(int argc UNUSED_PARAM, char **argv)
 
 	IF_LONG_OPTS(applet_long_options = modprobe_longopts;)
 	opt_complementary = MODPROBE_COMPLEMENTARY;
-	opt = getopt32(argv, INSMOD_OPTS MODPROBE_OPTS INSMOD_ARGS);
+	opt = getopt32(argv, INSMOD_OPTS MODPROBE_OPTS INSMOD_ARGS, &G.moddir);
 	argv += optind;
 
 	/* Goto modules location */
-	xchdir(CONFIG_DEFAULT_MODULES_DIR);
+	G.moddir = concat_path_file(G.moddir, &CONFIG_DEFAULT_MODULES_DIR[1]);
+	xchdir(G.moddir);
 	uname(&G.uts);
 	xchdir(G.uts.release);
 

@@ -1,0 +1,84 @@
+<!-- ##### SECTION Title ##### -->
+String Chunks
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GStringChunk ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_string_chunk_new ##### -->
+<para>
+
+</para>
+
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_chunk_insert ##### -->
+<para>
+
+</para>
+
+@chunk: 
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_chunk_insert_const ##### -->
+<para>
+
+</para>
+
+@chunk: 
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_chunk_insert_len ##### -->
+<para>
+
+</para>
+
+@chunk: 
+@string: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_chunk_clear ##### -->
+<para>
+
+</para>
+
+@chunk: 
+
+
+<!-- ##### FUNCTION g_string_chunk_free ##### -->
+<para>
+
+</para>
+
+@chunk: 
+
+

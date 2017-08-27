@@ -1,0 +1,10 @@
+Package: libhelper
+Version: 1.4.0.2-1
+Depends: libc, libssp
+Source: ugw/feeds_ugw/framework/helper/libhelper
+Section: utils
+Maintainer: Lantiq Beteiligungs-GmbH & Co. KG
+Architecture: lantiq
+Installed-Size: 9654
+Description:  Lantiq UGW SDK Helper Library to define function,prototypes,structs,enums which are
+ used for list manipulation and debug purposes.

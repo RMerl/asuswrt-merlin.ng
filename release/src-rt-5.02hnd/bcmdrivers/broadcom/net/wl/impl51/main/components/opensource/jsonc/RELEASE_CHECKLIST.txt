@@ -1,0 +1,61 @@
+
+Release checklist:
+
+release=0.11
+git clone https://github.com/json-c/json-c json-c-${release}
+cd json-c-${release}
+
+Check that the compile works on Linux
+Check that the compile works on NetBSD
+Check that the compile works on Windows
+Check ChangeLog to see if anything should be added.
+
+  git branch json-c-${release}
+  git checkout json-c-${release}
+
+Generate the configure script and other files:
+  sh autogen.sh
+  git add -f Makefile.in aclocal.m4 config.guess \
+       config.sub configure depcomp install-sh \
+       ltmain.sh missing tests/Makefile.in \
+       INSTALL
+
+  # check for anything else to be added:
+  git status --ignored
+  git commit
+
+Generate the doxygen documentation:
+  doxygen
+  git add -f doc
+  git commit doc
+
+cd ..
+echo .git > excludes
+echo autom4te.cache >> excludes
+tar -czf json-c-${release}.tar.gz -X excludes json-c-${release}
+
+echo doc >> excludes
+tar -czf json-c-${release}-nodoc.tar.gz -X excludes json-c-${release}
+
+Tag the branch:
+cd json-c-${release}
+git tag -a json-c-${release}-$(date +%Y%m%d)
+git push
+git push --tags
+
+Go to https://github.com/json-c/json-c/downloads
+Upload the two tarballs.
+
+
+===================================
+
+Post-release checklist:
+
+git branch master
+Add new section to CHANGES
+Update the version in json_c_version.h
+Update the version in Doxyfile
+Update the version in configure.in
+Update the libjson_la_LDFLAGS line in Makefile.am to the new version.
+	http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+

@@ -1,0 +1,1349 @@
+////
+	vim.syntax: asciidoc
+
+	Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
+////
+
+Routing Family Netlink Library (libnl-route)
+============================================
+Thomas Graf <tgraf@suug.ch>
+3.1, Aug 11 2011:
+
+== Introduction
+
+This library provides APIs to the kernel interfaces of the routing family.
+
+== Addresses
+
+[[route_link]]
+== Links (Network Devices)
+
+The link configuration interface is part of the +NETLINK_ROUTE+ protocol
+family and implements the following netlink message types:
+
+- View and modify the configuration of physical and virtual network devices.
+- Create and delete virtual network devices (e.g. dummy devices, VLAN devices,
+  tun devices, bridging devices, ...)
+- View and modify per link network configuration settings (e.g.
+  +net.ipv6.conf.eth0.accept_ra+, +net.ipv4.conf.eth1.forwarding+, ...)
+
+.Naming Convention (network device, link, interface)
+
+In networking several terms are commonly used to refer to network devices.
+While they have distinct meanings they have been used interchangeably in
+the past. Within the Linux kernel, the term _network device_ or _netdev_ is
+commonly used In user space the term _network interface_ is very common.
+The routing netlink protocol uses the term _link_ and so does the _iproute2_
+utility and most routing daemons.
+
+=== Netlink Protocol
+
+This section describes the protocol semantics of the netlink based link
+configuration interface. The following messages are defined:
+
+[options="header", cols="1,2,2"]
+|==============================================================================
+| Message Type   | User -> Kernel                    | Kernel -> User
+| +RTM_NEWLINK+  | Create or update virtual network device
+| Reply to +RTM_GETLINK+ request or notification of link added or updated
+| +RTM_DELLINK+  | Delete virtual network device
+| Notification of link deleted or disappeared
+| +RTM_GETLINK+  | Retrieve link configuration and statistics | 
+| +RTM_SETLINK+  | Modify link configuration | 
+|==============================================================================
+
+See link:core.html#core_msg_types[Netlink Library - Message Types] for more
+information on common semantics of these message types.
+
+==== Link Message Format
+
+All netlink link messages share a common header (+struct ifinfomsg+) which
+is appended after the netlink header (+struct nlmsghdr+).
+
+image:ifinfomsg.png["Link Message Header"]
+
+The meaning of each field may differ depending on the message type. A
++struct ifinfomsg+ is defined in +<linux/rtnetlink.h>+ to represent the
+header.
+
+Address Family (8bit)::
+The address family is usually set to +AF_UNSPEC+ but may be specified in
++RTM_GETLINK+ requests to limit the returned links to a specific address
+family.
+
+Link Layer Type (16bit)::
+Currently only used in kernel->user messages to report the link layer type
+of a link. The value corresponds to the +ARPHRD_*+ defines found in
++<linux/if_arp.h>+. Translation from/to strings can be done using the
+functions nl_llproto2str()/nl_str2llproto().
+
+Link Index (32bit)::
+Carries the interface index and is used to identify existing links.
+
+Flags (32bit)::
+In kernel->user messages the value of this field represents the current
+state of the link flags. In user->kernel messages this field is used to
+change flags or set the initial flag state of new links. Note that in order
+to change a flag, the flag must also be set in the _Flags Change Mask_ field.
+
+Flags Change Mask (32bit)::
+The primary use of this field is to specify a mask of flags that should be
+changed based on the value of the _Flags_ field. A special meaning is given
+to this field when present in link notifications, see TODO.
+
+Attributes (variable)::
+All link message types may carry netlink attributes. They are defined in the
+header file <linux/if_link.h> and share the prefix +IFLA_+.
+
+==== Link Message Types
+
+.RTM_GETLINK (user->kernel)
+
+Lookup link by 1. interface index or 2. link name (+IFLA_IFNAME+) and return
+a single +RTM_NEWLINK+ message containing the link configuration and statistics
+or a netlink error message if no such link was found.
+
+*Parameters:*
+
+* *Address family*
+** If the address family is set to +PF_BRIDGE+, only bridging devices will be
+   returned.
+** If the address family is set to +PF_INET6+, only ipv6 enabled devices will
+   be returned.
+
+*Flags:*
+
+* +NLM_F_DUMP+ If set, all links will be returned in form of a multipart
+  message.
+
+*Returns:*
+
+* +EINVAL+ if neither interface nor link name are set
+* +ENODEV+ if no link was found
+* +ENOBUFS+ if allocation failed
+
+.RTM_NEWLINK (user->kernel)
+
+Creates a new or updates an existing link. Only virtual links may be created
+but all links may be updated.
+
+*Flags:*
+
+- +NLM_F_CREATE+ Create link if it does not exist
+- +NLM_F_EXCL+ Return +EEXIST+ if link already exists
+
+*Returns:*
+
+- +EINVAL+ malformed message or invalid configuration parameters
+- +EAFNOSUPPORT+ if a address family specific configuration (+IFLA_AF_SPEC+)
+  is not supported.
+- +EOPNOTSUPP+ if the link does not support modification of parameters
+- +EEXIST+ if +NLM_F_EXCL+ was set and the link exists alraedy
+- +ENODEV+ if the link does not exist and +NLM_F_CREATE+ is not set
+
+.RTM_NEWLINK (kernel->user)
+
+This message type is used in reply to a +RTM_GETLINK+ request and carries
+the configuration and statistics of a link. If multiple links need to
+be sent, the messages will be sent in form of a multipart message.
+
+The message type is also used for notifications sent by the kernel to the
+multicast group +RTNLGRP_LINK+ to inform about various link events. It is
+therefore recommended to always use a separate link socket for link
+notifications in order to separate between the two message types.
+
+TODO: document how to detect different notifications
+
+.RTM_DELLINK (user->kernel)
+
+Lookup link by 1. interface index or 2. link name (+IFLA_IFNAME+) and delete
+the virtual link.
+
+*Returns:*
+
+* +EINVAL+ if neither interface nor link name are set
+* +ENODEV+ if no link was found
+* +ENOTSUPP+ if the operation is not supported (not a virtual link)
+
+.RTM_DELLINK (kernel->user)
+
+Notification sent by the kernel to the multicast group +RTNLGRP_LINK+ when
+
+a. a network device was unregistered (change == ~0)
+b. a bridging device was deleted (address family will be +PF_BRIDGE+)
+
+=== Get / List
+
+[[link_list]]
+==== Get list of links
+
+To retrieve the list of links in the kernel, allocate a new link cache
+using +rtnl_link_alloc_cache()+ to hold the links. It will automatically
+construct and send a +RTM_GETLINK+ message requesting a dump of all links
+from the kernel and feed the returned +RTM_NEWLINK+ to the internal link
+message parser which adds the returned links to the cache.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+int rtnl_link_alloc_cache(struct nl_sock *sk, int family, struct nl_cache **result)
+-----
+
+The cache will contain link objects (+struct rtnl_link+, see <<link_object>>)
+and can be accessed using the standard cache functions. By setting the
++family+ parameter to an address familly other than +AF_UNSPEC+, the resulting
+cache will only contain links supporting the specified address family.
+
+The following direct search functions are provided to search by interface
+index and by link name:
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+struct rtnl_link *rtnl_link_get(struct nl_cache *cache, int ifindex);
+struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache, const char *name);
+-----
+
+.Example: Link Cache
+
+[source,c]
+-----
+struct nl_cache *cache;
+struct rtnl_link *link;
+
+if (rtnl_link_alloc_cache(sock, AF_UNSPEC, &cache)) < 0)
+	/* error */
+
+if (!(link = rtnl_link_get_by_name(cache, "eth1")))
+	/* link does not exist */
+
+/* do something with link */
+
+rtnl_link_put(link);
+nl_cache_put(cache);
+-----
+
+[[link_direct_lookup]]
+==== Lookup Single Link (Direct Lookup)
+
+If only a single link is of interest, the link can be looked up directly
+without the use of a link cache using the function +rtnl_link_get_kernel()+.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name, struct rtnl_link **result);
+-----
+
+It will construct and send a +RTM_GETLINK+ request using the parameters
+provided and wait for a +RTM_NEWLINK+ or netlink error message sent in
+return. If the link exists, the link is returned as link object
+(see <<link_object>>).
+
+.Example: Direct link lookup
+[source,c]
+-----
+struct rtnl_link *link;
+
+if (rtnl_link_get_kernel(sock, 0, "eth1", &link) < 0)
+	/* error */
+
+/* do something with link */
+
+rtnl_link_put(link);
+-----
+
+NOTE: While using this function can save a substantial amount of bandwidth
+      on the netlink socket, the result will not be cached, subsequent calls
+      to rtnl_link_get_kernel() will always trigger sending a +RTM_GETLINK+
+      request.
+
+[[link_translate_ifindex]]
+==== Translating interface index to link name
+
+Applications which require to translate interface index to a link name or
+vice verase may use the following functions to do so. Both functions require
+a filled link cache to work with.
+
+[source,c]
+-----
+char *rtnl_link_i2name (struct nl_cache *cache, int ifindex, char *dst, size_t len);
+int rtnl_link_name2i (struct nl_cache *cache, const char *name);
+-----
+
+=== Add / Modify
+
+Several types of virtual link can be added on the fly using the function
++rtnl_link_add()+.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+int rtnl_link_add(struct nl_sock *sk, struct rtnl_link *link, int flags);
+-----
+
+=== Delete
+
+The deletion of virtual links such as VLAN devices or dummy devices is done
+using the function +rtnl_link_delete()+. The link passed on to the function
+can be a link from a link cache or it can be construct with the minimal
+attributes needed to identify the link.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+int rtnl_link_delete(struct nl_sock *sk, const struct rtnl_link *link);
+-----
+
+The function will construct and send a +RTM_DELLINK+ request message and
+returns any errors returned by the kernel.
+
+.Example: Delete link by name
+[source,c]
+-----
+struct rtnl_link *link;
+
+if (!(link = rtnl_link_alloc()))
+	/* error */
+
+rtnl_link_set_name(link, "my_vlan");
+
+if (rtnl_link_delete(sock, link) < 0)
+	/* error */
+
+rtnl_link_put(link);
+-----
+
+[[link_object]]
+=== Link Object
+
+A link is represented by the structure +struct rtnl_link+. Instances may be
+created with the function +rtnl_link_alloc()+ or via a link cache (see
+<<link_list>>) and are freed again using the function +rtnl_link_put()+.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+struct rtnl_link *rtnl_link_alloc(void);
+void rtnl_link_put(struct rtnl_link *link);
+-----
+
+[[link_attr_name]]
+==== Name
+The name serves as unique, human readable description of the link. By
+default, links are named based on their type and then enumerated, e.g.
+eth0, eth1, ethn but they may be renamed at any time.
+
+Kernels >= 2.6.11 support identification by link name.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_name(struct rtnl_link *link, const char *name);
+char *rtnl_link_get_name(struct rtnl_link *link);
+-----
+
+*Accepted link name format:* +[^ /]*+ (maximum length: 15 characters)
+
+[[link_attr_ifindex]]
+==== Interface Index (Identifier)
+The interface index is an integer uniquely identifying a link. If present
+in any link message, it will be used to identify an existing link.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex);
+int rtnl_link_get_ifindex(struct rtnl_link *link);
+-----
+
+[[link_attr_address]]
+==== Link Layer Address
+The link layer address (e.g. MAC address).
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr);
+struct nl_addr *rtnl_link_get_addr(struct rtnl_link *link);
+-----
+
+[[link_attr_broadcast]]
+==== Broadcast Address
+The link layer broadcast address
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_broadcast(struct rtnl_link *link, struct nl_addr *addr);
+struct nl_addr *rtnl_link_get_broadcast(struct rtnl_link *link);
+-----
+
+[[link_attr_mtu]]
+==== MTU (Maximum Transmission Unit)
+The maximum transmission unit specifies the maximum packet size a network
+device can transmit or receive. This value may be lower than the capability
+of the physical network device.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu);
+unsigned int rtnl_link_get_mtu(struct rtnl_link *link);
+-----
+
+[[link_attr_flags]]
+==== Flags
+The flags of a link enable or disable various link features or inform about
+the state of the link.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_flags(struct rtnl_link *link, unsigned int flags);
+void rtnl_link_unset_flags(struct rtnl_link *link, unsigned int flags);
+unsigned int rtnl_link_get_flags(struct rtnl_link *link);
+-----
+
+[options="compact"]
+[horizontal]
+IFF_UP::           Link is up (administratively)
+IFF_RUNNING::      Link is up and carrier is OK (RFC2863 OPER_UP)
+IFF_LOWER_UP::     Link layer is operational
+IFF_DORMANT::      Driver signals dormant
+IFF_BROADCAST::    Link supports broadcasting
+IFF_MULTICAST::    Link supports multicasting
+IFF_ALLMULTI::     Link supports multicast routing
+IFF_DEBUG::        Tell driver to do debugging (currently unused)
+IFF_LOOPBACK::     Link loopback network
+IFF_POINTOPOINT::  Point-to-point link
+IFF_NOARP::        ARP is not supported
+IFF_PROMISC::      Status of promiscious mode
+IFF_MASTER::       Master of a load balancer (bonding)
+IFF_SLAVE::        Slave to a master link
+IFF_PORTSEL::      Driver supports setting media type (only used by ARM ethernet)
+IFF_AUTOMEDIA::    Link selects port automatically (only used by ARM ethernet)
+IFF_ECHO::         Echo sent packets (testing feature, CAN only)
+IFF_DYNAMIC::      Unused (BSD compatibility)
+IFF_NOTRAILERS::   Unused (BSD compatibility)
+
+To translate a link flag to a link flag name or vice versa:
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+char *rtnl_link_flags2str(int flags, char *buf, size_t size);
+int rtnl_link_str2flags(const char *flag_name);
+-----
+
+[[link_attr_txqlen]]
+==== Transmission Queue Length
+
+The transmission queue holds packets before packets are delivered to
+the driver for transmission. It is usually specified in number of
+packets but the unit may be specific to the link type.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_txqlen(struct rtnl_link *link, unsigned int txqlen);
+unsigned int rtnl_link_get_txqlen(struct rtnl_link *link);
+-----
+
+[[link_attr_operstate]]
+==== Operational Status
+The operational status has been introduced to provide extended information
+on the link status. Traditionally the link state has been described using
+the link flags +IFF_UP, IFF_RUNNING, IFF_LOWER_UP+, and +IFF_DORMANT+ which
+was no longer sufficient for some link types.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_operstate(struct rtnl_link *link, uint8_t state);
+uint8_t rtnl_link_get_operstate(struct rtnl_link *link);
+-----
+
+[options="compact"]
+[horizontal]
+IF_OPER_UNKNOWN::          Unknown state
+IF_OPER_NOTPRESENT::       Link not present
+IF_OPER_DOWN::             Link down
+IF_OPER_LOWERLAYERDOWN::   L1 down
+IF_OPER_TESTING::          Testing
+IF_OPER_DORMANT::          Dormant
+IF_OPER_UP::               Link up
+
+Translation of operational status code to string and vice versa:
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+char *rtnl_link_operstate2str(uint8_t state, char *buf, size_t size);
+int rtnl_link_str2operstate(const char *name);
+-----
+
+[[link_attr_mode]]
+==== Mode
+Currently known link modes are:
+
+[options="compact"]
+[horizontal]
+IF_LINK_MODE_DEFAULT::   Default link mode
+IF_LINK_MODE_DORMANT::   Limit upward transition to dormant
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_linkmode(struct rtnl_link *link, uint8_t mode);
+uint8_t rtnl_link_get_linkmode(struct rtnl_link *link);
+-----
+
+Translation of link mode to string and vice versa:
+
+[source,c]
+-----
+char *rtnl_link_mode2str(uint8_t mode, char *buf, size_t len);
+uint8_t rtnl_link_str2mode(const char *name);
+-----
+
+[[link_attr_alias]]
+==== IfAlias
+Alternative name for the link, primarly used for SNMP IfAlias.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+const char *rtnl_link_get_ifalias(struct rtnl_link *link);
+void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias);
+-----
+
+*Length limit:* 256
+
+[[link_attr_arptype]]
+==== Hardware Type
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+#include <linux/if_arp.h>
+
+void rtnl_link_set_arptype(struct rtnl_link *link, unsigned int arptype);
+unsigned int rtnl_link_get_arptype(struct rtnl_link *link);
+----
+
+Translation of hardware type to character string and vice versa:
+
+[source,c]
+-----
+#include <netlink/utils.h>
+
+char *nl_llproto2str(int arptype, char *buf, size_t len);
+int nl_str2llproto(const char *name);
+-----
+
+[[link_attr_qdisc]]
+==== Qdisc
+The name of the queueing discipline used by the link is of informational
+nature only. It is a read-only attribute provided by the kernel and cannot
+be modified. The set function is provided solely for the purpose of creating
+link objects to be used for comparison.
+
+For more information on how to modify the qdisc of a link, see section
+<<route_tc>>.
+
+[[link_attr_weight]]
+==== Weight
+This attribute is unused and obsoleted in all recent kernels.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+extern void rtnl_link_set_qdisc(struct rtnl_link *link, const char *name);
+extern char *rtnl_link_get_qdisc(struct rtnl_link *link);
+-----
+
+[[link_modules]]
+=== Modules
+
+[[link_bonding]]
+==== Bonding
+
+.Example: Add bonding link
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+struct rtnl_link *link;
+
+link = rtnl_link_alloc();
+rtnl_link_set_name(link, "my_bond");
+rtnl_link_set_type(link, "bond");
+
+/* requires admin privileges */
+if (rtnl_link_add(sk, link, NLM_F_CREATE) < 0)
+	/* error */
+
+rtnl_link_put(link);
+-----
+
+[[link_vlan]]
+==== VLAN
+
+[source,c]
+-----
+extern char *		rtnl_link_vlan_flags2str(int, char *, size_t);
+extern int		rtnl_link_vlan_str2flags(const char *);
+
+extern int		rtnl_link_vlan_set_id(struct rtnl_link *, int);
+extern int		rtnl_link_vlan_get_id(struct rtnl_link *);
+
+extern int		rtnl_link_vlan_set_flags(struct rtnl_link *,
+						 unsigned int);
+extern int		rtnl_link_vlan_unset_flags(struct rtnl_link *,
+						   unsigned int);
+extern unsigned int	rtnl_link_vlan_get_flags(struct rtnl_link *);
+
+extern int		rtnl_link_vlan_set_ingress_map(struct rtnl_link *,
+						       int, uint32_t);
+extern uint32_t *	rtnl_link_vlan_get_ingress_map(struct rtnl_link *);
+
+extern int		rtnl_link_vlan_set_egress_map(struct rtnl_link *,
+						      uint32_t, int);
+extern struct vlan_map *rtnl_link_vlan_get_egress_map(struct rtnl_link *,
+						      int *);
+-----
+
+.Example: Add a VLAN device
+[source,c]
+-----
+struct rtnl_link *link;
+int master_index;
+
+/* lookup interface index of eth0 */
+if (!(master_index = rtnl_link_name2i(link_cache, "eth0")))
+	/* error */
+
+/* allocate new link object to configure the vlan device */
+link = rtnl_link_alloc();
+
+/* set eth0 to be our master device */
+rtnl_link_set_link(link, master_index);
+
+if ((err = rtnl_link_set_type(link, "vlan")) < 0)
+	/* error */
+
+rtnl_link_vlan_set_id(link, 10);
+
+if ((err = rtnl_link_add(sk, link, NLM_F_CREATE)) < 0)
+	/* error */
+
+rtnl_link_put(link);
+-----
+
+== Neighbouring
+
+== Routing
+
+[[route_tc]]
+== Traffic Control
+
+The traffic control architecture allows the queueing and
+prioritization of packets before they are enqueued to the network
+driver. To a limited degree it is also possible to take control of
+network traffic as it enters the network stack.
+
+The architecture consists of three different types of modules:
+
+- *Queueing disciplines (qdisc)* provide a mechanism to enqueue packets
+  in different forms. They may be used to implement fair queueing,
+  prioritization of differentiated services, enforce bandwidth
+  limitations, or even to simulate network behaviour such as packet
+  loss and packet delay. Qdiscs can be classful in which case they
+  allow traffic classes described in the next paragraph to be attached
+  to them.
+
+- *Traffic classes (class)* are supported by several qdiscs to build
+  a tree structure for different types of traffic. Each class may be
+  assigned its own set of attributes such as bandwidth limits or
+  queueing priorities. Some qdiscs even allow borrowing of bandwidth
+  between classes.
+
+- *Classifiers (cls)* are used to decide which qdisc/class the packet
+  should be enqueued to. Different types of classifiers exists,
+  ranging from classification based on protocol header values to
+  classification based on packet priority or firewall marks.
+  Additionally most classifiers support *extended matches (ematch)*
+  which allow extending classifiers by a set of matcher modules, and
+  *actions* which allow classifiers to take actions such as mangling,
+  mirroring, or even rerouting of packets.
+
+.Default Qdisc
+
+The default qdisc used on all network devices is `pfifo_fast`.
+Network devices which do not require a transmit queue such as the
+loopback device do not have a default qdisc attached. The `pfifo_fast`
+qdisc provides three bands to prioritize interactive traffic over bulk
+traffic. Classification is based on the packet priority (diffserv).
+
+image:qdisc_default.png["Default Qdisc"]
+
+.Multiqueue Default Qdisc
+
+If the network device provides multiple transmit queues the `mq`
+qdisc is used by default. It will automatically create a separate
+class for each transmit queue available and will also replace
+the single per device tx lock with a per queue lock.
+
+image:qdisc_mq.png["Multiqueue default Qdisc"]
+
+.Example of a customized classful qdisc setup
+
+The following figure illustrates a possible combination of different
+queueing and classification modules to implement quality of service
+needs.
+
+image:tc_overview.png["Classful Qdisc diagram"]
+
+=== Traffic Control Object
+
+Each type traffic control module (qdisc, class, classifier) is
+represented by its own structure. All of them are based on the traffic
+control object represented by `struct rtnl_tc` which itself is based
+on the generic object `struct nl_object` to make it cacheable. The
+traffic control object contains all attributes, implementation details
+and statistics that are shared by all of the traffic control object
+types.
+
+image:tc_obj.png["struct rtnl_tc hierarchy"]
+
+It is not possible to allocate a `struct rtnl_tc` object, instead the
+actual tc object types must be allocated directly using
+`rtnl_qdisc_alloc()`, `rtnl_class_alloc()`, `rtnl_cls_alloc()` and
+then casted to `struct rtnl_tc` using the `TC_CAST()` macro.
+
+.Usage Example: Allocation, Casting, Freeing
+[source,c]
+-----
+#include <netlink/route/tc.h>
+#include <netlink/route/qdisc.h>
+
+struct rtnl_qdisc *qdisc;
+
+/* Allocation of a qdisc object */
+qdisc = rtnl_qdisc_alloc();
+
+/* Cast the qdisc to a tc object using TC_CAST() to use rtnl_tc_ functions. */
+rtnl_tc_set_mpu(TC_CAST(qdisc), 64);
+
+/* Free the qdisc object */
+rtnl_qdisc_put(qdisc);
+-----
+
+[[tc_attr]]
+==== Attributes
+
+Handle::
+The handle uniquely identifies a tc object and is used to refer
+to other tc objects when constructing tc trees.
++
+[source,c]
+-----
+void rtnl_tc_set_handle(struct rtnl_tc *tc, uint32_t handle);
+uint32_t rtnl_tc_get_handle(struct rtnl_tc *tc);
+-----
+
+Interface Index::
+The interface index specifies the network device the traffic object
+is attached to. The function `rtnl_tc_set_link()` should be preferred
+when setting the interface index. It stores the reference to the link
+object in the tc object and allows retrieving the `mtu` and `linktype`
+automatically.
++
+[source,c]
+-----
+void rtnl_tc_set_ifindex(struct rtnl_tc *tc, int ifindex);
+void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link);
+int rtnl_tc_get_ifindex(struct rtnl_tc *tc);
+-----
+
+Link Type::
+The link type specifies the kind of link that is used by the network
+device (e.g. ethernet, ATM, ...). It is derived automatically when
+the network device is specified with `rtnl_tc_set_link()`.
+The default fallback is `ARPHRD_ETHER` (ethernet).
++
+[source,c]
+-----
+void rtnl_tc_set_linktype(struct rtnl_tc *tc, uint32_t type);
+uint32_t rtnl_tc_get_linktype(struct rtnl_tc *tc);
+-----
+
+Kind::
+The kind character string specifies the type of qdisc, class,
+classifier. Setting the kind results in the module specific
+structure being allocated. Therefore it is imperative to call 
+`rtnl_tc_set_kind()` before using any type specific API functions
+such as `rtnl_htb_set_rate()`.
++
+[source,c]
+-----
+int rtnl_tc_set_kind(struct rtnl_tc *tc, const char *kind);
+char *rtnl_tc_get_kind(struct rtnl_tc *tc);
+-----
+
+MPU::
+The Minimum Packet Unit specifies the minimum packet size which will
+be transmitted
+ever be seen by this traffic control object. This value is used for
+rate calculations. Not all object implementations will make use of
+this value. The default value is 0.
++
+[source,c]
+-----
+void rtnl_tc_set_mpu(struct rtnl_tc *tc, uint32_t mpu);
+uint32_t rtnl_tc_get_mpu(struct rtnl_tc *tc);
+-----
+
+MTU::
+The Maximum Transmission Unit specifies the maximum packet size which
+will be transmitted. The value is derived from the link specified
+with `rtnl_tc_set_link()` if not overwritten with `rtnl_tc_set_mtu()`.
+If no link and MTU is specified, the value defaults to 1500
+(ethernet).
++
+[source,c]
+-----
+void rtnl_tc_set_mtu(struct rtnl_tc *tc, uint32_t mtu);
+uint32_t rtnl_tc_get_mtu(struct rtnl_tc *tc);
+-----
+
+Overhead::
+The overhead specifies the additional overhead per packet caused by
+the network layer. This value can be used to correct packet size
+calculations if the packet size on the wire does not match the packet
+size seen by the kernel. The default value is 0.
++
+[source,c]
+-----
+void rtnl_tc_set_overhead(struct rtnl_tc *tc, uint32_t overhead);
+uint32_t rtnl_tc_get_overhead(struct rtnl_tc *tc);
+-----
+
+Parent::
+Specifies the parent traffic control object. The parent is identifier
+by its handle. Special values are:
+- `TC_H_ROOT`: attach tc object directly to network device (root
+  qdisc, root classifier)
+- `TC_H_INGRESS`: same as `TC_H_ROOT` but on the ingress side of the
+  network stack.
++
+[source,c]
+-----
+void rtnl_tc_set_parent(struct rtnl_tc *tc, uint32_t parent);
+uint32_t rtnl_tc_get_parent(struct rtnl_tc *tc);
+-----
+
+Statistics::
+Generic statistics, see <<tc_stats>> for additional information.
++
+[source,c]
+-----
+uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id);
+-----
+
+[[tc_stats]]
+==== Accessing Statistics
+
+The traffic control object holds a set of generic statistics. Not all
+traffic control modules will make use of all of these statistics. Some
+modules may provide additional statistics via their own APIs.
+
+.Statistic identifiers `(enum rtnl_tc_stat)`
+[cols="m,,", options="header", frame="topbot"]
+|====================================================================
+| ID                 | Type    | Description
+| RTNL_TC_PACKETS    | Counter | Total # of packets transmitted
+| RTNL_TC_BYTES      | Counter | Total # of bytes transmitted
+| RTNL_TC_RATE_BPS   | Rate    | Current bytes/s rate
+| RTNL_TC_RATE_PPS   | Rate    | Current packets/s rate
+| RTNL_TC_QLEN       | Rate    | Current length of the queue
+| RTNL_TC_BACKLOG    | Rate    | # of packets currently backloged
+| RTNL_TC_DROPS      | Counter | # of packets dropped
+| RTNL_TC_REQUEUES   | Counter | # of packets requeued
+| RTNL_TC_OVERLIMITS | Counter | # of packets that exceeded the limit
+|====================================================================
+
+NOTE: `RTNL_TC_RATE_BPS` and `RTNL_TC_RATE_PPS` only return meaningful
+      values if a rate estimator has been configured.
+
+.Usage Example: Retrieving tc statistics
+[source,c]
+-------
+#include <netlink/route/tc.h>
+
+uint64_t drops, qlen;
+
+drops = rtnl_tc_get_stat(TC_CAST(qdisc), RTNL_TC_DROPS);
+qlen  = rtnl_tc_get_stat(TC_CAST(qdisc), RTNL_TC_QLEN);
+-------
+
+==== Rate Table Calculations
+
+[[tc_qdisc]]
+=== Queueing Discipline (qdisc)
+
+.Classless Qdisc
+
+The queueing discipline (qdisc) is used to implement fair queueing,
+priorization or rate control. It provides a _enqueue()_ and
+_dequeue()_ operation. Whenever a network packet leaves the networking
+stack over a network device, be it a physical or virtual device, it
+will be enqueued to a qdisc unless the device is queueless. The
+_enqueue()_ operation is followed by an immediate call to _dequeue()_
+for the same qdisc to eventually retrieve a packet which can be
+scheduled for transmission by the driver. Additionally, the networking
+stack runs a watchdog which polls the qdisc regularly to dequeue and
+send packets even if no new packets are being enqueued.
+
+This additional watchdog is required due to the fact that qdiscs may
+hold on to packets and not return any packets upon _dequeue()_ in
+order to enforce bandwidth restrictions.
+
+image:classless_qdisc_nbands.png[alt="Multiband Qdisc", float="right"]
+
+The figure illustrates a trivial example of a classless qdisc
+consisting of three bands (queues). Use of multiple bands is a common
+technique in qdiscs to implement fair queueing between flows or
+prioritize differentiated services.
+
+Classless qdiscs can be regarded as a blackbox, their inner workings
+can only be steered using the configuration parameters provided by the
+qdisc. There is no way of taking influence on the structure of its
+internal queues itself.
+
+.Classful Qdisc
+
+Classful qdiscs allow for the queueing structure and classification
+process to be created by the user. 
+
+image:classful_qdisc.png["Classful Qdisc"]
+
+The figure above shows a classful qdisc with a classifier attached to
+it which will make the decision whether to enqueue a packet to traffic
+class +1:1+ or +1:2+. Unlike with classless qdiscs, classful qdiscs
+allow the classification process and the structure of the queues to be
+defined by the user. This allows for complex traffic class rules to
+be applied.
+
+.List of Qdisc Implementations
+[options="header", frame="topbot", cols="2,1^,8"]
+|======================================================================
+| Qdisc     | Classful | Description
+| ATM       | Yes      | FIXME
+| Blackhole | No       | This qdisc will drop all packets passed to it.
+| CBQ       | Yes      |
+The CBQ (Class Based Queueing) is a classful qdisc which allows
+creating traffic classes and enforce bandwidth limitations for each
+class.
+| DRR       | Yes      |
+The DRR (Deficit Round Robin) scheduler is a classful qdisc
+impelemting fair queueing. Each class is assigned a quantum specyfing
+the maximum number of bytes that can be served per round.  Unused
+quantum at the end of the round is carried over to the next round.
+| DSMARK   | Yes       | FIXME
+| FIFO     | No        | FIXME
+| GRED     | No        | FIXME
+| HFSC     | Yes       | FIXME
+| HTB      | Yes       | FIXME
+| mq       | Yes       | FIXME
+| multiq   | Yes       | FIXME
+| netem    | No        | FIXME
+| Prio     | Yes       | FIXME
+| RED      | Yes       | FIXME
+| SFQ      | Yes       | FIXME
+| TBF      | Yes       | FIXME
+| teql     | No        | FIXME
+|======================================================================
+
+
+.QDisc API Overview
+[cols="a,a", options="header", frame="topbot"]
+|====================================================================
+| Attribute | C Interface
+|
+Allocation / Freeing::
+|
+[source,c]
+-----
+struct rtnl_qdisc *rtnl_qdisc_alloc(void);
+void rtnl_qdisc_put(struct rtnl_qdisc *qdisc);
+-----
+|
+Addition::
+|
+[source,c]
+-----
+int rtnl_qdisc_build_add_request(struct rtnl_qdisc *qdisc, int flags,
+				 struct nl_msg **result);
+int rtnl_qdisc_add(struct nl_sock *sock, struct rtnl_qdisc *qdisc,
+                   int flags);
+-----
+|
+Modification::
+|
+[source,c]
+-----
+int rtnl_qdisc_build_change_request(struct rtnl_qdisc *old,
+				    struct rtnl_qdisc *new,
+				    struct nl_msg **result);
+int rtnl_qdisc_change(struct nl_sock *sock, struct rtnl_qdisc *old,
+		      struct rtnl_qdisc *new);
+-----
+|
+Deletion::
+|
+[source,c]
+-----
+int rtnl_qdisc_build_delete_request(struct rtnl_qdisc *qdisc,
+				    struct nl_msg **result);
+int rtnl_qdisc_delete(struct nl_sock *sock, struct rtnl_qdisc *qdisc);
+-----
+|
+Cache::
+|
+[source,c]
+-----
+int rtnl_qdisc_alloc_cache(struct nl_sock *sock,
+			   struct nl_cache **cache);
+struct rtnl_qdisc *rtnl_qdisc_get(struct nl_cache *cache, int, uint32_t);
+
+struct rtnl_qdisc *rtnl_qdisc_get_by_parent(struct nl_cache *, int, uint32_t);
+-----
+|====================================================================
+
+[[qdisc_get]]
+==== Retrieving Qdisc Configuration
+
+The function rtnl_qdisc_alloc_cache() is used to retrieve the current
+qdisc configuration in the kernel. It will construct a +RTM_GETQDISC+
+netlink message, requesting the complete list of qdiscs configured in
+the kernel.
+
+[source,c]
+-------
+#include <netlink/route/qdisc.h>
+
+struct nl_cache *all_qdiscs;
+
+if (rtnl_link_alloc_cache(sock, &all_qdiscs) < 0)
+	/* error while retrieving qdisc cfg */
+-------
+
+The cache can be accessed using the following functions:
+
+- Search qdisc with matching ifindex and handle:
++
+[source,c]
+--------
+struct rtnl_qdisc *rtnl_qdisc_get(struct nl_cache *cache, int ifindex, uint32_t handle);
+--------
+- Search qdisc with matching ifindex and parent:
++
+[source,c]
+--------
+struct rtnl_qdisc *rtnl_qdisc_get_by_parent(struct nl_cache *cache, int ifindex , uint32_t parent);
+--------
+- Or any of the generic cache functions (e.g. nl_cache_search(), nl_cache_dump(), etc.)
+
+.Example: Search and print qdisc
+[source,c]
+-------
+struct rtnl_qdisc *qdisc;
+int ifindex;
+
+ifindex = rtnl_link_get_ifindex(eth0_obj);
+
+/* search for qdisc on eth0 with handle 1:0 */
+if (!(qdisc = rtnl_qdisc_get(all_qdiscs, ifindex, TC_HANDLE(1, 0))))
+	/* no such qdisc found */
+
+nl_object_dump(OBJ_CAST(qdisc), NULL);
+
+rtnl_qdisc_put(qdisc);
+-------
+
+[[qdisc_add]]
+==== Adding a Qdisc
+
+In order to add a new qdisc to the kernel, a qdisc object needs to be
+allocated. It will hold all attributes of the new qdisc.
+
+[source,c]
+-----
+#include <netlink/route/qdisc.h>
+
+struct rtnl_qdisc *qdisc;
+
+if (!(qdisc = rtnl_qdisc_alloc()))
+	/* OOM error */
+-----
+
+The next step is to specify all generic qdisc attributes using the tc
+object interface described in the section <<tc_attr>>.
+
+The following attributes must be specified:
+- IfIndex
+- Parent
+- Kind
+
+[source,c]
+-----
+/* Attach qdisc to device eth0 */
+rtnl_tc_set_link(TC_CAST(qdisc), eth0_obj);
+
+/* Make this the root qdisc */
+rtnl_tc_set_parent(TC_CAST(qdisc), TC_H_ROOT);
+
+/* Set qdisc identifier to 1:0, if left unspecified, a handle will be generated by the kernel. */
+rtnl_tc_set_handle(TC_CAST(qdisc), TC_HANDLE(1, 0));
+
+/* Make this a HTB qdisc */
+rtnl_tc_set_kind(TC_CAST(qdisc), "htb");
+-----
+
+After specyfing the qdisc kind (rtnl_tc_set_kind()) the qdisc type
+specific interface can be used to set attributes which are specific
+to the respective qdisc implementations:
+
+[source,c]
+------
+/* HTB feature: Make unclassified packets go to traffic class 1:5 */
+rtnl_htb_set_defcls(qdisc, TC_HANDLE(1, 5));
+------
+
+Finally, the qdisc is ready to be added and can be passed on to the
+function rntl_qdisc_add() which takes care of constructing a netlink
+message requesting the addition of the new qdisc, sends the message to
+the kernel and waits for the response by the kernel. The function
+returns 0 if the qdisc has been added or updated successfully or a
+negative error code if an error occured.
+
+CAUTION: The kernel operation for updating and adding a qdisc is the
+         same. Therefore when calling rtnl_qdisc_add() any existing
+         qdisc with matching handle will be updated unless the flag
+         NLM_F_EXCL is specified.
+
+The following flags may be specified:
+[horizontal]
+NLM_F_CREATE::  Create qdisc if it does not exist, otherwise
+                -NLE_OBJ_NOTFOUND is returned.
+NLM_F_REPLACE:: If another qdisc is already attached to the same
+                parent and their handles mismatch, replace the qdisc
+                instead of returning -EEXIST.
+NLM_F_EXCL::    Return -NLE_EXISTS if a qdisc with matching handles
+                exists already.
+
+WARNING: The function rtnl_qdisc_add() requires administrator
+         privileges.
+
+[source,c]
+------
+/* Submit request to kernel and wait for response */
+err = rtnl_qdisc_add(sock, qdisc, NLM_F_CREATE);
+
+/* Return the qdisc object to free memory resources */
+rtnl_qdisc_put(qdisc);
+
+if (err < 0) {
+	fprintf(stderr, "Unable to add qdisc: %s\n", nl_geterror(err));
+	return err;
+}
+------
+
+==== Deleting a qdisc
+
+[source,c]
+------
+#include <netlink/route/qdisc.h>
+
+struct rtnl_qdisc *qdisc;
+
+qdisc = rtnl_qdisc_alloc();
+
+rtnl_tc_set_link(TC_CAST(qdisc), eth0_obj);
+rtnl_tc_set_parent(TC_CAST(qdisc), TC_H_ROOT);
+
+rtnl_qdisc_delete(sock, qdisc)
+
+rtnl_qdisc_put(qdisc);
+------
+
+WARNING: The function rtnl_qdisc_delete() requires administrator
+         privileges.
+
+
+[[qdisc_htb]]
+==== HTB - Hierarchical Token Bucket
+
+.HTB Qdisc Attributes
+
+Default Class::
+The default class is the fallback class to which all traffic which
+remained unclassified is directed to. If no default class or an
+invalid default class is specified, packets are transmitted directly
+to the next layer (direct transmissions).
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_defcls(struct rtnl_qdisc *qdisc);
+int rtnl_htb_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls);
+-----
+
+Rate to Quantum (r2q)::
+TODO
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_rate2quantum(struct rtnl_qdisc *qdisc);
+int rtnl_htb_set_rate2quantum(struct rtnl_qdisc *qdisc, uint32_t rate2quantum);
+-----
+
+
+.HTB Class Attributes
+
+Priority::
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_prio(struct rtnl_class *class);
+int rtnl_htb_set_prio(struct rtnl_class *class, uint32_t prio);
+-----
+
+Rate::
+The rate (bytes/s) specifies the maximum bandwidth an invidivual class
+can use without borrowing. The rate of a class should always be greater
+or erqual than the rate of its children.
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_rate(struct rtnl_class *class);
+int rtnl_htb_set_rate(struct rtnl_class *class, uint32_t ceil);
+-----
+
+Ceil Rate::
+The ceil rate specifies the maximum bandwidth an invidivual class
+can use. This includes bandwidth that is being borrowed from other
+classes. Ceil defaults to the class rate implying that by default
+the class will not borrow. The ceil rate of a class should always
+be greater or erqual than the ceil rate of its children.
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_ceil(struct rtnl_class *class);
+int rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil);
+-----
+
+Burst::
+TODO
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_rbuffer(struct rtnl_class *class);
+int rtnl_htb_set_rbuffer(struct rtnl_class *class, uint32_t burst);
+-----
+
+Ceil Burst::
+TODO
++
+[source,c]
+-----
+uint32_t rtnl_htb_get_bbuffer(struct rtnl_class *class);
+int rtnl_htb_set_bbuffer(struct rtnl_class *class, uint32_t burst);
+-----
+
+Quantum::
+TODO
++
+[source,c]
+-----
+int rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum);
+-----
+
+extern int	rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);
+
+
+
+
+[[tc_class]]
+=== Class
+
+[options="header", cols="s,a,a,a,a"]
+|=======================================================================
+|        | UNSPEC             | TC_H_ROOT          | 0:pY  | pX:pY
+| UNSPEC 3+^|
+[horizontal]
+qdisc =:: root-qdisc
+class =:: root-qdisc:0
+|
+[horizontal]
+qdisc =:: pX:0
+class =:: pX:0
+| 0:hY 3+^|
+[horizontal]
+qdisc =:: root-qdisc
+class =:: root-qdisc:hY
+|
+[horizontal]
+qdisc =:: pX:0
+class =:: pX:hY
+| hX:hY 3+^|
+[horizontal]
+qdisc =:: hX:
+class =:: hX:hY
+|
+if pX != hX
+    return -EINVAL
+[horizontal]
+qdisc =:: hX:
+class =:: hX:hY
+|=======================================================================
+
+[[tc_cls]]
+=== Classifier (cls)
+
+TODO
+
+[[tc_classid_mngt]]
+=== ClassID Management
+
+TODO
+
+[[tc_pktloc]]
+=== Packet Location Aliasing (pktloc)
+
+TODO
+
+[[tc_api]]
+=== Traffic Control Module API
+
+TODO

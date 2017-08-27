@@ -1,0 +1,66 @@
+#include ../common.mak
+
+export SRCBASE := $(shell pwd)
+export BUILD := $(shell (gcc -dumpmachine))
+export HOSTCC := gcc
+PLATFORM := arm-buildroot-linux
+CROSS_COMPILE := arm-buildroot-linux-uclibcgnueabi-
+export CROSS_COMPILER := $(CROSS_COMPILE)
+export CONFIGURE := ./configure --host=arm-linux --build=$(BUILD)
+export TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc)) && pwd)
+#export IPKG_TOOLS := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../../../ipkg-utils-1.7 && pwd)
+#export LD_DIR := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../../../../staging && pwd)
+
+export LD := $(CROSS_COMPILE)ld
+export CC := $(CROSS_COMPILE)gcc
+export AR := $(CROSS_COMPILE)ar
+export STRIP := $(CROSS_COMPILE)strip
+export SIZE := $(CROSS_COMPILE)size
+export AS := $(CROSS_COMPILE)as
+export NM := $(CROSS_COMPILE)nm
+export CPP:="$(CROSS_COMPILE)gcc -E" 
+export GCC := $(CROSS_COMPILE)gcc
+export CXX := $(CROSS_COMPILE)g++
+export CXXCPP := $(CROSS_COMPILE)g++ -E
+
+
+
+#OBJS = usb_info.o disk_io_tools.o disk_initial.o disk_share.o
+#PROGS = libdisk.so
+PROGS += write_webdav_conf
+
+
+CFLAGS += $(EXTRACFLAGS) -fPIC -DAPP_IPKG=1
+#CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(LINUXDIR)/include -Wall
+#LDFLAGS_SO = -L$(TOP)/nvram -lnvram -L$(TOP)/shared -lshared
+#LDFLAGS += -L. -ldisk
+
+#CFLAGS += -I/WorkSpace/optware_oleg/optware/builds/busybox/include
+#CFLAGS += -I/WorkSpace/optware_oleg/optware/builds/busybox/util-linux/volume_id
+#OBJS += /WorkSpace/optware_oleg/optware/builds/busybox/util-linux/volume_id/util.o
+#OBJS += /WorkSpace/optware_oleg/optware/builds/busybox/util-linux/volume_id/linux_swap.o
+#OBJS += /WorkSpace/optware_oleg/optware/builds/busybox/util-linux/volume_id/ext.o
+#OBJS += /WorkSpace/optware_oleg/optware/builds/busybox/util-linux/volume_id/fat.o
+#OBJS += /WorkSpace/optware_oleg/optware/builds/busybox/util-linux/volume_id/ntfs.o
+
+
+
+
+all: $(PROGS)
+
+
+#libdisk.so: $(OBJS)
+#	$(LD) -shared -o $@ $^
+
+write_webdav_conf: write_webdav_conf.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -Wl,-rpath=/opt/lib -Wl,-dynamic-linker=/opt/lib/ld-uClibc.so.1
+
+#install: all
+	#$(STRIP) $(PROGS)
+
+	#install -D libdisk.so $(INSTALLDIR)/lib/libdisk.so
+
+	#install -D write_webdav_conf $(INSTALLDIR)/sbin/write_webdav_conf
+
+clean:
+	rm -f *.o $(PROGS) write_webdav_conf

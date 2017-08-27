@@ -1,0 +1,814 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>udev_device</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="libudev Reference Manual">
+<link rel="up" href="ch01.html" title="libudev">
+<link rel="prev" href="libudev-udev-list.html" title="udev_list">
+<link rel="next" href="libudev-udev-monitor.html" title="udev_monitor">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="libudev-udev-list.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">libudev Reference Manual</th>
+<td><a accesskey="n" href="libudev-udev-monitor.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#libudev-udev-device.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#libudev-udev-device.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="libudev-udev-device"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libudev-udev-device.top_of_page"></a>udev_device</span></h2>
+<p>udev_device — kernel sys devices</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="libudev-udev-device.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">struct              <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device">udev_device</a>;
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-ref" title="udev_device_ref ()">udev_device_ref</a>                    (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev-device.html#udev-device-unref" title="udev_device_unref ()">udev_device_unref</a>                   (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       <a class="link" href="libudev-udev-device.html#udev-device-get-udev" title="udev_device_get_udev ()">udev_device_get_udev</a>                (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-new-from-syspath" title="udev_device_new_from_syspath ()">udev_device_new_from_syspath</a>       (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *syspath</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-new-from-devnum" title="udev_device_new_from_devnum ()">udev_device_new_from_devnum</a>        (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> type</code></em>,
+                                                         <em class="parameter"><code><span class="type">dev_t</span> devnum</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-new-from-subsystem-sysname" title="udev_device_new_from_subsystem_sysname ()">udev_device_new_from_subsystem_sysname</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *sysname</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-new-from-environment" title="udev_device_new_from_environment ()">udev_device_new_from_environment</a>   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-get-parent" title="udev_device_get_parent ()">udev_device_get_parent</a>             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-get-parent-with-subsystem-devtype" title="udev_device_get_parent_with_subsystem_devtype ()">udev_device_get_parent_with_subsystem_devtype</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *devtype</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-devpath" title="udev_device_get_devpath ()">udev_device_get_devpath</a>             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-subsystem" title="udev_device_get_subsystem ()">udev_device_get_subsystem</a>           (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-devtype" title="udev_device_get_devtype ()">udev_device_get_devtype</a>             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-syspath" title="udev_device_get_syspath ()">udev_device_get_syspath</a>             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-sysname" title="udev_device_get_sysname ()">udev_device_get_sysname</a>             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-sysnum" title="udev_device_get_sysnum ()">udev_device_get_sysnum</a>              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-devnode" title="udev_device_get_devnode ()">udev_device_get_devnode</a>             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-device.html#udev-device-get-is-initialized" title="udev_device_get_is_initialized ()">udev_device_get_is_initialized</a>      (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-get-devlinks-list-entry" title="udev_device_get_devlinks_list_entry ()">udev_device_get_devlinks_list_entry</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-get-properties-list-entry" title="udev_device_get_properties_list_entry ()">udev_device_get_properties_list_entry</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-get-tags-list-entry" title="udev_device_get_tags_list_entry ()">udev_device_get_tags_list_entry</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-property-value" title="udev_device_get_property_value ()">udev_device_get_property_value</a>      (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-driver" title="udev_device_get_driver ()">udev_device_get_driver</a>              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+<span class="returnvalue">dev_t</span>               <a class="link" href="libudev-udev-device.html#udev-device-get-devnum" title="udev_device_get_devnum ()">udev_device_get_devnum</a>              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-action" title="udev_device_get_action ()">udev_device_get_action</a>              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev-device.html#udev-device-get-sysattr-value" title="udev_device_get_sysattr_value ()">udev_device_get_sysattr_value</a>       (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *sysattr</code></em>);
+struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * <a class="link" href="libudev-udev-device.html#udev-device-get-sysattr-list-entry" title="udev_device_get_sysattr_list_entry ()">udev_device_get_sysattr_list_entry</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+unsigned long long <span class="returnvalue">int</span>  <a class="link" href="libudev-udev-device.html#udev-device-get-seqnum" title="udev_device_get_seqnum ()">udev_device_get_seqnum</a>          (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+unsigned long long <span class="returnvalue">int</span>  <a class="link" href="libudev-udev-device.html#udev-device-get-usec-since-initialized" title="udev_device_get_usec_since_initialized ()">udev_device_get_usec_since_initialized</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-device.html#udev-device-has-tag" title="udev_device_has_tag ()">udev_device_has_tag</a>                 (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *tag</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="libudev-udev-device.description"></a><h2>Description</h2>
+<p>
+Representation of kernel sys devices. Devices are uniquely identified
+by their syspath, every device has exactly one path in the kernel sys
+filesystem. Devices usually belong to a kernel subsystem, and and have
+a unique name inside that subsystem.
+</p>
+</div>
+<div class="refsect1">
+<a name="libudev-udev-device.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="udev-device"></a><h3>struct udev_device</h3>
+<pre class="programlisting">struct udev_device;</pre>
+<p>
+Opaque object representing one kernel sys device.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-ref"></a><h3>udev_device_ref ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_ref                    (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Take a reference of a udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the passed udev device</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-unref"></a><h3>udev_device_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_device_unref                   (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Drop a reference of a udev device. If the refcount reaches zero,
+the resources of the device will be released.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-udev"></a><h3>udev_device_get_udev ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       udev_device_get_udev                (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the udev library context the device was created with.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the udev library context</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-new-from-syspath"></a><h3>udev_device_new_from_syspath ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_new_from_syspath       (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *syspath</code></em>);</pre>
+<p>
+Create new udev device, and fill in information from the sys
+device and the udev database entry. The syspath is the absolute
+path to the device, including the sys mount point.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>syspath</code></em> :</span></p></td>
+<td>sys device path including sys directory</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, if it does not exist</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-new-from-devnum"></a><h3>udev_device_new_from_devnum ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_new_from_devnum        (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> type</code></em>,
+                                                         <em class="parameter"><code><span class="type">dev_t</span> devnum</code></em>);</pre>
+<p>
+Create new udev device, and fill in information from the sys
+device and the udev database entry. The device is looked-up
+by its major/minor number and type. Character and block device
+numbers are not unique across the two types.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>type</code></em> :</span></p></td>
+<td>char or block device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>devnum</code></em> :</span></p></td>
+<td>device major/minor number</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, if it does not exist</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-new-from-subsystem-sysname"></a><h3>udev_device_new_from_subsystem_sysname ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_new_from_subsystem_sysname
+                                                        (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *sysname</code></em>);</pre>
+<p>
+Create new udev device, and fill in information from the sys device
+and the udev database entry. The device is looked up by the subsystem
+and name string of the device, like "mem" / "zero", or "block" / "sda".
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>the subsystem of the device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sysname</code></em> :</span></p></td>
+<td>the name of the device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, if it does not exist</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-new-from-environment"></a><h3>udev_device_new_from_environment ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_new_from_environment   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Create new udev device, and fill in information from the
+current process environment. This only works reliable if
+the process is called from a udev rule. It is usually used
+for tools executed from IMPORT= rules.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, if it does not exist</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-parent"></a><h3>udev_device_get_parent ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_get_parent             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Find the next parent device, and fill in information from the sys
+device and the udev database entry.
+</p>
+<p>
+The returned the device is not referenced. It is attached to the
+child device, and will be cleaned up when the child device
+is cleaned up.
+</p>
+<p>
+It is not necessarily just the upper level directory, empty or not
+recognized sys directories are ignored.
+</p>
+<p>
+It can be called as many times as needed, without caring about
+references.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>the device to start searching from</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, if it no parent exist.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-parent-with-subsystem-devtype"></a><h3>udev_device_get_parent_with_subsystem_devtype ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_device_get_parent_with_subsystem_devtype
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *devtype</code></em>);</pre>
+<p>
+Find the next parent device, with a matching subsystem and devtype
+value, and fill in information from the sys device and the udev
+database entry.
+</p>
+<p>
+If devtype is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, only subsystem is checked, and any devtype will
+match.
+</p>
+<p>
+The returned the device is not referenced. It is attached to the
+child device, and will be cleaned up when the child device
+is cleaned up.
+</p>
+<p>
+It can be called as many times as needed, without caring about
+references.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device to start searching from</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>the subsystem of the device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>devtype</code></em> :</span></p></td>
+<td>the type (DEVTYPE) of the device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if no matching parent exists.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-devpath"></a><h3>udev_device_get_devpath ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_devpath             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the kernel devpath value of the udev device. The path
+does not contain the sys mount point, and starts with a '/'.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the devpath of the udev device</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-subsystem"></a><h3>udev_device_get_subsystem ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_subsystem           (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the subsystem string of the udev device. The string does not
+contain any "/".
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the subsystem name of the udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if it can not be determined</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-devtype"></a><h3>udev_device_get_devtype ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_devtype             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the devtype string of the udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the devtype name of the udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if it can not be determined</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-syspath"></a><h3>udev_device_get_syspath ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_syspath             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the sys path of the udev device. The path is an
+absolute path and starts with the sys mount point.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the sys path of the udev device</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-sysname"></a><h3>udev_device_get_sysname ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_sysname             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the sys name of the device device</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-sysnum"></a><h3>udev_device_get_sysnum ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_sysnum              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the trailing number of of the device name</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-devnode"></a><h3>udev_device_get_devnode ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_devnode             (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the device node file name belonging to the udev device.
+The path is an absolute path, and starts with the device directory.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the device node file name of the udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if no device node exists</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-is-initialized"></a><h3>udev_device_get_is_initialized ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_device_get_is_initialized      (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Check if udev has already handled the device and has set up
+device node permissions and context, or has renamed a network
+device.
+</p>
+<p>
+This is only implemented for devices with a device node
+or network interfaces. All other devices return 1 here.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>1 if the device is set up. 0 otherwise.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-devlinks-list-entry"></a><h3>udev_device_get_devlinks_list_entry ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * udev_device_get_devlinks_list_entry
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the list of device links pointing to the device file of
+the udev device. The next list entry can be retrieved with
+<code class="function">udev_list_entry_next()</code>, which returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if no more entries exist.
+The devlink path can be retrieved from the list entry by
+<a class="link" href="libudev-udev-list.html#udev-list-entry-get-name" title="udev_list_entry_get_name ()"><code class="function">udev_list_entry_get_name()</code></a>. The path is an absolute path, and starts with
+the device directory.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first entry of the device node link list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-properties-list-entry"></a><h3>udev_device_get_properties_list_entry ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * udev_device_get_properties_list_entry
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the list of key/value device properties of the udev
+device. The next list entry can be retrieved with <code class="function">udev_list_entry_next()</code>,
+which returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if no more entries exist. The property name
+can be retrieved from the list entry by <code class="function">udev_list_get_name()</code>,
+the property value by <code class="function">udev_list_get_value()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first entry of the property list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-tags-list-entry"></a><h3>udev_device_get_tags_list_entry ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * udev_device_get_tags_list_entry
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the list of tags attached to the udev device. The next
+list entry can be retrieved with <code class="function">udev_list_entry_next()</code>,
+which returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if no more entries exist. The tag string
+can be retrieved from the list entry by <code class="function">udev_list_get_name()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first entry of the tag list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-property-value"></a><h3>udev_device_get_property_value ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_property_value      (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>property name</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of a device property, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if there is no such property.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-driver"></a><h3>udev_device_get_driver ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_driver              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the driver string, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if there is no driver attached.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-devnum"></a><h3>udev_device_get_devnum ()</h3>
+<pre class="programlisting"><span class="returnvalue">dev_t</span>               udev_device_get_devnum              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the device major/minor number.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-action"></a><h3>udev_device_get_action ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_action              (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+This is only valid if the device was received through a monitor. Devices read from
+sys do not have an action string. Usual actions are: add, remove, change, online,
+offline.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the kernel action value, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if there is no action value available.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-sysattr-value"></a><h3>udev_device_get_sysattr_value ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_device_get_sysattr_value       (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *sysattr</code></em>);</pre>
+<p>
+The retrieved value is cached in the device. Repeated calls will return the same
+value and not open the attribute again.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sysattr</code></em> :</span></p></td>
+<td>attribute name</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the content of a sys attribute file, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if there is no sys attribute value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-sysattr-list-entry"></a><h3>udev_device_get_sysattr_list_entry ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * udev_device_get_sysattr_list_entry
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Retrieve the list of available sysattrs, with value being empty;
+This just return all available sysfs attributes for a particular
+device without reading their values.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first entry of the property list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-seqnum"></a><h3>udev_device_get_seqnum ()</h3>
+<pre class="programlisting">unsigned long long <span class="returnvalue">int</span>  udev_device_get_seqnum          (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-get-usec-since-initialized"></a><h3>udev_device_get_usec_since_initialized ()</h3>
+<pre class="programlisting">unsigned long long <span class="returnvalue">int</span>  udev_device_get_usec_since_initialized
+                                                        (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>);</pre>
+<p>
+Return the number of microseconds passed since udev set up the
+device for the first time.
+</p>
+<p>
+This is only implemented for devices with need to store properties
+in the udev database. All other devices return 0 here.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_device</code></em> :</span></p></td>
+<td>udev device</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the number of microseconds since the device was first seen.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-device-has-tag"></a><h3>udev_device_has_tag ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_device_has_tag                 (<em class="parameter"><code><span class="type">struct udev_device</span> *udev_device</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *tag</code></em>);</pre>
+<p>
+</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

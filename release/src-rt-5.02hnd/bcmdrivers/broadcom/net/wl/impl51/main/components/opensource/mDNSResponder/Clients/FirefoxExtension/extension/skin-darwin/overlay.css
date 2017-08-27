@@ -1,0 +1,17 @@
+#bonjour4firefox-hello
+{
+  color: red ! important;
+}
+#bonjour4firefox-toolbar-button
+{
+  list-style-image: url("chrome://bonjour4firefox/skin/toolbar-button.png");
+  -moz-image-region: rect(0px 36px 23px 0px);
+}
+#bonjour4firefox-toolbar-button[disabled="true"]
+{
+  -moz-image-region: rect(23px 36px 46px 0px);
+}
+#bonjour4firefox-toolbar-button:hover:active
+{
+  -moz-image-region: rect(46px 36px 69px 0px);
+}

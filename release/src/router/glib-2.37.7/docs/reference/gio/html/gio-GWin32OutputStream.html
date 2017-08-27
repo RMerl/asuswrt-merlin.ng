@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GWin32OutputStream</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="gio-GWin32InputStream.html" title="GWin32InputStream">
+<link rel="next" href="gio-GConverterInputstream.html" title="GConverterInputstream">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GWin32OutputStream.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GWin32InputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GConverterInputstream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GWin32OutputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GWin32OutputStream.top_of_page"></a>GWin32OutputStream</span></h2>
+<p>GWin32OutputStream — Streaming output operations for Windows file handles</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GWin32OutputStream.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gwin32outputstream.h&gt;
+
+struct              <a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream">GWin32OutputStream</a>;
+<a class="link" href="GOutputStream.html" title="GOutputStream"><span class="returnvalue">GOutputStream</span></a> *     <a class="link" href="gio-GWin32OutputStream.html#g-win32-output-stream-new" title="g_win32_output_stream_new ()">g_win32_output_stream_new</a>           (<em class="parameter"><code><span class="type">void</span> *handle</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_handle</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="gio-GWin32OutputStream.html#g-win32-output-stream-set-close-handle" title="g_win32_output_stream_set_close_handle ()">g_win32_output_stream_set_close_handle</a>
+                                                        (<em class="parameter"><code><a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> *stream</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_handle</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="gio-GWin32OutputStream.html#g-win32-output-stream-get-close-handle" title="g_win32_output_stream_get_close_handle ()">g_win32_output_stream_get_close_handle</a>
+                                                        (<em class="parameter"><code><a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> *stream</code></em>);
+<span class="returnvalue">void</span> *              <a class="link" href="gio-GWin32OutputStream.html#g-win32-output-stream-get-handle" title="g_win32_output_stream_get_handle ()">g_win32_output_stream_get_handle</a>    (<em class="parameter"><code><a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> *stream</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32OutputStream.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> implements <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> for writing to a
+Windows file handle.
+</p>
+<p>
+Note that <code class="filename">&lt;gio/gwin32outputstream.h&gt;</code> belongs
+to the Windows-specific GIO interfaces, thus you have to use the
+<code class="filename">gio-windows-2.0.pc</code> pkg-config file when using it.
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32OutputStream.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GWin32OutputStream"></a><h3>struct GWin32OutputStream</h3>
+<pre class="programlisting">struct GWin32OutputStream {
+  GOutputStream parent_instance;
+};
+</pre>
+<p>
+Implements <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> for outputting to Windows file handles
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-output-stream-new"></a><h3>g_win32_output_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="returnvalue">GOutputStream</span></a> *     g_win32_output_stream_new           (<em class="parameter"><code><span class="type">void</span> *handle</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_handle</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> for the given <em class="parameter"><code>handle</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>close_handle</code></em>, is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, the handle will be closed when the
+output stream is destroyed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>handle</code></em> :</span></p></td>
+<td>a Win32 file handle</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>close_handle</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the handle when done</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-output-stream-set-close-handle"></a><h3>g_win32_output_stream_set_close_handle ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_win32_output_stream_set_close_handle
+                                                        (<em class="parameter"><code><a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> *stream</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_handle</code></em>);</pre>
+<p>
+Sets whether the handle of <em class="parameter"><code>stream</code></em> shall be closed when the stream
+is closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stream</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>close_handle</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the handle when done</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-output-stream-get-close-handle"></a><h3>g_win32_output_stream_get_close_handle ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_win32_output_stream_get_close_handle
+                                                        (<em class="parameter"><code><a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> *stream</code></em>);</pre>
+<p>
+Returns whether the handle of <em class="parameter"><code>stream</code></em> will be closed when the
+stream is closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stream</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the handle is closed when done</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-output-stream-get-handle"></a><h3>g_win32_output_stream_get_handle ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span> *              g_win32_output_stream_get_handle    (<em class="parameter"><code><a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a> *stream</code></em>);</pre>
+<p>
+Return the Windows handle that the stream writes to.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stream</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GWin32OutputStream.html#GWin32OutputStream" title="struct GWin32OutputStream"><span class="type">GWin32OutputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The handle descriptor of <em class="parameter"><code>stream</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32OutputStream.see-also"></a><h2>See Also</h2>
+<a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

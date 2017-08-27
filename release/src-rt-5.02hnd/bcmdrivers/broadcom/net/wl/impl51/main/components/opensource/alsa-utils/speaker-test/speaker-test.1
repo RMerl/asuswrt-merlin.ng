@@ -1,0 +1,125 @@
+.\" -*- nroff -*-
+.\" macros
+.de EX \" Begin Example
+.  IP
+.  ft CW
+.  nf
+.  ne \\$1
+..
+.de EE \" End Example
+.  ft P
+.  fi
+.  PP
+..
+.TH SPEAKER\-TEST 1 "20 September 2004" speaker-test
+.SH NAME
+speaker\-test \- command-line speaker test tone generator for ALSA 
+.SH SYNOPSIS
+.B speaker\-test [\-options]
+
+.SH DESCRIPTION
+\fBspeaker\-test\fP generates a tone that can be used to test the speakers of a computer.
+
+.SH OPTIONS
+
+.TP
+\fB\-c\fP | \fB\-\-channels\fP \fINUM\fP
+\fINUM\fP channels in stream
+
+.TP
+\fB\-D\fP | \fB\-\-device\fP \fINAME\fP
+PCM device name \fINAME\fP
+
+.TP
+\fB\-f\fP | \fB\-\-frequency\fP \fIFREQ\fP
+sine wave of \fIFREQ\fP Hz
+
+.TP
+\fB\-\-help\fP
+Print usage help
+
+.TP
+\fB\-b\fP | \fB\-\-buffer\fP \fITIME\fP
+Use buffer size of \fITIME\fP microseconds.
+When 0 is given, use the maximal buffer size.
+The default value is 0.
+
+.TP
+\fB\-p\fP | \fB\-\-period\fP \fITIME\fP
+Use period size of \fITIME\fP microseconds.
+When 0 is given, the periods given by \fB\-P\fP option is used.
+The default value is 0.
+
+.TP
+\fB\-P\fP | \fB\-\-nperiods\fP \fPERIODS\fP
+Use number of periods.  The default value is 4.
+
+.TP
+\fB\-r\fP | \fB\-\-rate\fP \fIRATE\fP
+stream of \fIRATE\fP Hz
+
+.TP
+\fB\-t\fP | \fB\-\-test\fP \fBpink\fP|\fBsine\fP|\fBwav\fP
+\fB\-t pink\fP means use pink noise (default).
+
+Pink noise is perceptually uniform noise -- that is, it sounds like every frequency at once.  If you can hear any tone it may indicate resonances in your speaker system or room.
+
+\fB\-t sine\fP means to use sine wave.
+
+\fB\-t wav\fP means to play WAV files, either pre-defined files or given via \fB\-w\fP option.
+
+You can pass the number from 1 to 3 as a backward compatibility.
+
+.TP
+\fB\-l\fP | \fB\-\-nloops\fP \fBCOUNT\fP
+
+Specifies the number of loops.  Zero means to run infinitely.
+
+When \fB\-s\fP option below with a valid channel is given, \fBspeaker\-test\fP will perform
+always a single-shot without looping.
+
+.TP
+\fB\-s\fP | \fB\-\-speaker\fP \fBCHANNEL\fP
+Do a single-shot speaker test for the given channel.  The channel number starts from 1.
+The channel number corresponds to left, right, rear-left, rear-right, center, LFE,
+side-left, side-right, and so on.
+
+For example, when 1 is passed, it tests the left channel only once rather than both channels
+with looping.
+
+.TP
+\fB\-w\fP | \fB\-\-wavfile\fP
+Use the given WAV file for the playback instead of pre-defined WAV files.
+
+.TP
+\fB\-W\fP | \fB\-\-wavdir\fP
+Specify the directory containing WAV files for playback.
+The default path is \fI/usr/share/sounds/alsa\fP.
+
+
+.SH USAGE EXAMPLES
+
+Produce stereo sound from one stereo jack:
+.EX
+  speaker-test -Dplug:front -c2
+.EE
+
+Produce 4 speaker sound from two stereo jacks:
+.EX
+  speaker-test -Dplug:surround40 -c4
+.EE
+
+Produce 5.1 speaker sound from three stereo jacks:
+.EX
+  speaker-test -Dplug:surround51 -c6
+.EE
+
+To send a nice low 75Hz tone to the Woofer and then exit without touching any other speakers:
+.EX
+  speaker-test -Dplug:surround51 -c6 -s1 -f75
+.EE
+
+.SH AUTHOR
+The speaker-test program was written by James Courtier-Dutton.
+Pink noise support was added by Nathan Hurst.
+Further extensions by Takashi Iwai.

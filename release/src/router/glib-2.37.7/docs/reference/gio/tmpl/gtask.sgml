@@ -1,0 +1,334 @@
+<!-- ##### SECTION Title ##### -->
+GTask
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTask ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_task_new ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@cancellable: 
+@callback: 
+@callback_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_set_task_data ##### -->
+<para>
+
+</para>
+
+@task: 
+@task_data: 
+@task_data_destroy: 
+
+
+<!-- ##### FUNCTION g_task_set_priority ##### -->
+<para>
+
+</para>
+
+@task: 
+@priority: 
+
+
+<!-- ##### FUNCTION g_task_set_check_cancellable ##### -->
+<para>
+
+</para>
+
+@task: 
+@check_cancellable: 
+
+
+<!-- ##### FUNCTION g_task_set_return_on_cancel ##### -->
+<para>
+
+</para>
+
+@task: 
+@return_on_cancel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_set_source_tag ##### -->
+<para>
+
+</para>
+
+@task: 
+@source_tag: 
+
+
+<!-- ##### FUNCTION g_task_report_error ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@callback: 
+@callback_data: 
+@source_tag: 
+@error: 
+
+
+<!-- ##### FUNCTION g_task_report_new_error ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@callback: 
+@callback_data: 
+@source_tag: 
+@domain: 
+@code: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_task_get_task_data ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_priority ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_cancellable ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_check_cancellable ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_return_on_cancel ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_context ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_source_object ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_get_source_tag ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_return_boolean ##### -->
+<para>
+
+</para>
+
+@task: 
+@result: 
+
+
+<!-- ##### FUNCTION g_task_return_int ##### -->
+<para>
+
+</para>
+
+@task: 
+@result: 
+
+
+<!-- ##### FUNCTION g_task_return_pointer ##### -->
+<para>
+
+</para>
+
+@task: 
+@result: 
+@result_destroy: 
+
+
+<!-- ##### FUNCTION g_task_return_error ##### -->
+<para>
+
+</para>
+
+@task: 
+@error: 
+
+
+<!-- ##### FUNCTION g_task_return_new_error ##### -->
+<para>
+
+</para>
+
+@task: 
+@domain: 
+@code: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_task_return_error_if_cancelled ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_propagate_boolean ##### -->
+<para>
+
+</para>
+
+@task: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_propagate_int ##### -->
+<para>
+
+</para>
+
+@task: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_propagate_pointer ##### -->
+<para>
+
+</para>
+
+@task: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_had_error ##### -->
+<para>
+
+</para>
+
+@task: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_task_run_in_thread ##### -->
+<para>
+
+</para>
+
+@task: 
+@task_func: 
+
+
+<!-- ##### FUNCTION g_task_run_in_thread_sync ##### -->
+<para>
+
+</para>
+
+@task: 
+@task_func: 
+
+
+<!-- ##### USER_FUNCTION GTaskThreadFunc ##### -->
+<para>
+
+</para>
+
+@task: 
+@source_object: 
+@task_data: 
+@cancellable: 
+
+
+<!-- ##### FUNCTION g_task_attach_source ##### -->
+<para>
+
+</para>
+
+@task: 
+@source: 
+@callback: 
+
+
+<!-- ##### FUNCTION g_task_is_valid ##### -->
+<para>
+
+</para>
+
+@result: 
+@source_object: 
+@Returns: 
+
+

@@ -1,0 +1,6 @@
+
+This is the directory where sysstat configuration files will
+be installed. Default location is /etc/sysconfig. The directory
+will be automatically created during installation stage if
+necessary. Press Enter to accept this default location.
+

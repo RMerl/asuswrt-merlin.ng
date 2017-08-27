@@ -1,0 +1,45 @@
+Source: sysstat
+Section: admin
+Priority: optional
+Maintainer: Robert Luberda <robert@debian.org>
+Build-Depends: debhelper (>= 8.9.8), gettext, libsensors4-dev
+Standards-Version: 3.9.2
+Vcs-Git: git://anonscm.debian.org/users/robert/sysstat.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=users/robert/sysstat.git
+
+Package: sysstat
+Architecture: linux-any
+Depends: bzip2,
+         lsb-base (>= 3.0-6),
+         ucf (>= 2.003),
+         ${misc:Depends},
+         ${shlibs:Depends}
+Recommends: cron
+Suggests: isag
+Description: system performance tools for Linux
+ The sysstat package contains the following system performance tools:
+  - sar: collects and reports system activity information;
+  - iostat: reports CPU utilization and disk I/O statistics;
+  - mpstat: reports global and per-processor statistics;
+  - pidstat: reports statistics for Linux tasks (processes);
+  - sadf: displays data collected by sar in various formats.
+ .
+ The statistics reported by sar deal with I/O transfer rates,
+ paging activity, process-related activities, interrupts,
+ network activity, memory and swap space utilization, CPU
+ utilization, kernel activities and TTY statistics, among
+ others. Both UP and SMP machines are fully supported.
+Homepage: http://pagesperso-orange.fr/sebastien.godard/
+
+Package: isag
+Architecture: all
+Depends: gnuplot-x11,
+         sysstat (>= ${source:Version}),
+         tk8.5|wish,
+         ${misc:Depends}
+Suggests: rcs
+Description: Interactive System Activity Grapher for sysstat
+ This package provides the command isag, which graphically displays the
+ system activity data stored in the binary logs produced by sar (in the
+ package sysstat).
+Homepage: http://pagesperso-orange.fr/sebastien.godard/

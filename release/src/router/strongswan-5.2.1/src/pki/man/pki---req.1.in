@@ -1,0 +1,91 @@
+.TH "PKI \-\-REQ" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-req \- Create a PKCS#10 certificate request
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-req
+.OP \-\-in file
+.OP \-\-type type
+.BI \-\-dn\~ distinguished-name
+.OP \-\-san subjectAltName
+.OP \-\-password password
+.OP \-\-digest digest
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-req
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-req"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+is used to create a PKCS#10 certificate request.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+Private key input file. If not given the key is read from \fISTDIN\fR.
+.TP
+.BI "\-t, \-\-type " type
+Type of the input key. Either \fIrsa\fR or \fIecdsa\fR, defaults to \fIrsa\fR.
+.TP
+.BI "\-d, \-\-dn " distinguished-name
+Subject distinguished name (DN). Required.
+.TP
+.BI "\-a, \-\-san " subjectAltName
+subjectAltName extension to include in request. Can be used multiple times.
+.TP
+.BI "\-p, \-\-password " password
+The challengePassword to include in the certificate request.
+.TP
+.BI "\-g, \-\-digest " digest
+Digest to use for signature creation. One of \fImd5\fR, \fIsha1\fR,
+\fIsha224\fR, \fIsha256\fR, \fIsha384\fR, or \fIsha512\fR. Defaults to
+\fIsha1\fR.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the created certificate file. Either \fIder\fR (ASN.1 DER) or
+\fIpem\fR (Base64 PEM), defaults to \fIder\fR.
+.
+.SH "EXAMPLES"
+.
+Generate a certificate request for an RSA key, with a subjectAltName extension:
+.PP
+.EX
+  pki \-\-req \-\-in key.der \-\-dn "C=CH, O=strongSwan, CN=moon" \\
+       \-\-san moon@strongswan.org > req.der
+.EE
+.PP
+Generate a certificate request for an ECDSA key and a different digest:
+.PP
+.EX
+  pki \-\-req \-\-in key.der \-\-type ecdsa \-\-digest sha256 \\
+      \-\-dn "C=CH, O=strongSwan, CN=carol"  > req.der
+.EE
+.PP
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

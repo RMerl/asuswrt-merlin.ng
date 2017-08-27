@@ -1,0 +1,75 @@
+FREERADIUS-PRODUCT-RADIUSD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY,
+	OBJECT-IDENTITY
+		FROM SNMPv2-SMI
+         SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB
+	freeRadiusProducts
+		FROM FREERADIUS-SMI;
+
+freeradius MODULE-IDENTITY
+	LAST-UPDATED "200712170000Z"
+	ORGANIZATION "FreeRADIUS Project"
+	CONTACT-INFO
+		"FreeRADIUS Network Object Model Environment project
+		
+		see http://www.freeradius.org for contact persons of a particular
+		area or subproject of FREERADIUS.
+
+		Administrative contact for MIB module:
+
+		Alan DeKok
+
+		email: aland@freeradius.org"
+	DESCRIPTION
+		"The product registrations for the FreeRADIUS SNMP subagent.
+		These registrations are guaranteed to be unique and are used
+		for SMUX registration by default (if not overridden manually)."
+	::= { freeRadiusProducts 1 }
+
+radiusd OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"radiusd is the RADIUS protocol deamon of the FreeRADIUS
+		project."
+	::= { freeradius 1 }
+
+radiusdConfig OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"Information about the server configuration"
+	::= { radiusd 2 }
+
+radiusdConfigName OBJECT-TYPE
+       SYNTAX      SnmpAdminString
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "The name of a configuration item"
+       ::= { radiusdConfig 1 }
+
+radiusdModule OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"Information about modules associated with the server"
+	::= { radiusd 3 }
+
+radiusdModuleName OBJECT-TYPE
+       SYNTAX      SnmpAdminString
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "The name the module (e.g. 'foo' for rlm_foo)"
+       ::= { radiusdModule 1 }
+
+radiusdModuleInstance OBJECT-TYPE
+       SYNTAX      SnmpAdminString
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "The instance name the module (e.g. 'sql2' for sql sql2 {...})"
+       ::= { radiusdModule 2 }
+
+END

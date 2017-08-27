@@ -1,0 +1,11 @@
+Here are the things I would like (or I should) do for the next releases:
+
+* Add more statistics to sar and mpstat (and iostat) when available in Linux
+  kernels.
+
+* Add a real web-based graphical front-end to sar. I need help for this!
+
+* Add support for hotplug memory?
+
+* Dynamically allocate structures for IRQs (just like for CPUs).
+

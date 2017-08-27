@@ -1,0 +1,54 @@
+.TH "PKI \-\-PRINT" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-print \- Print a credential (key, certificate etc.) in human readable form
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-print
+.OP \-\-in file
+.OP \-\-type type
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-print
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-print"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+prints credentials (keys, certificates etc.) in human readable form.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+Input file. If not given the input is read from \fISTDIN\fR.
+.TP
+.BI "\-t, \-\-type " type
+Type of input. One of \fIrsa-priv\fR (RSA private key), \fIecdsa-priv\fR (ECDSA
+private key), \fIpub\fR (public key), \fIx509\fR (X.509 certificate), \fIcrl\fR
+(Certificate Revocation List, CRL), \fIac\fR (Attribute Certificate),
+defaults to \fIx509\fR.
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

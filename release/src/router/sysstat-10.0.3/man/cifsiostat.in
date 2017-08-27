@@ -1,0 +1,150 @@
+.TH CIFSIOSTAT 1 "JANUARY 2011" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+cifsiostat \- Report CIFS statistics.
+.SH SYNOPSIS
+.ie 'yes'@WITH_DEBUG@' \{
+.B cifsiostat [ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [
+.I interval
+.B [
+.I count
+.B ] ]
+.\}
+.el \{
+.B cifsiostat [ -h ] [ -k | -m ] [ -t ] [ -V ] [
+.I interval
+.B [
+.I count
+.B ] ]
+.\}
+.SH DESCRIPTION
+The
+.B cifsiostat
+command displays statistics about read and write operations
+on CIFS filesystems.
+
+The
+.I interval
+parameter specifies the amount of time in seconds between
+each report. The first report contains statistics for the time since
+system startup (boot). Each subsequent report contains statistics
+collected during the interval since the previous report.
+A report consists of a CIFS header row followed by
+a line of statistics for each CIFS filesystem that is mounted.
+The
+.I count
+parameter can be specified in conjunction with the
+.I interval
+parameter. If the
+.I count
+parameter is specified, the value of
+.I count
+determines the number of reports generated at
+.I interval
+seconds apart. If the
+.I interval
+parameter is specified without the
+.I count
+parameter, the
+.B cifsiostat
+command generates reports continuously.
+
+.SH REPORT
+The CIFS report provides statistics for each mounted CIFS filesystem.
+The report shows the following fields:
+
+.B Filesystem:
+.RS
+This columns shows the mount point of the CIFS filesystem.
+
+.RE
+.B rB/s (rkB/s, rMB/s)
+.RS
+Indicate the average number of bytes (kilobytes, megabytes) read per second.
+
+.RE
+.B wB/s (wkB/s, wMB/s)
+.RS
+Indicate the average number of bytes (kilobytes, megabytes) written per second.
+
+.RE
+.B rop/s
+.RS
+Indicate the number of 'read' operations that were issued to the filesystem
+per second.
+
+.RE
+.B wop/s
+.RS
+Indicate the number of 'write' operations that were issued to the filesystem
+per second.
+
+.RE
+.B fo/s
+.RS
+Indicate the number of open files per second.
+
+.RE
+.B fc/s
+.RS
+Indicate the number of closed files per second.
+
+.RE
+.B fd/s
+.RS
+Indicate the number of deleted files per second.
+.RE
+.RE
+.SH OPTIONS
+.if 'yes'@WITH_DEBUG@' \{
+.IP --debuginfo
+Print debug output to stderr.
+.\}
+.IP -h
+Make the CIFS report easier to read by a human.
+.IP -k
+Display statistics in kilobytes per second.
+.IP -m
+Display statistics in megabytes per second.
+.IP -t
+Print the time for each report displayed. The timestamp format may depend
+on the value of the S_TIME_FORMAT environment variable (see below).
+.IP -V
+Print version number then exit.
+
+.SH ENVIRONMENT
+The
+.B cifsiostat
+command takes into account the following environment variables:
+
+.IP S_TIME_FORMAT
+If this variable exists and its value is
+.BR ISO
+then the current locale will be ignored when printing the date in the report
+header. The
+.B nfsiostat
+command will use the ISO 8601 format (YYYY-MM-DD) instead.
+The timestamp displayed with option -t will also be compliant with ISO 8601
+format.
+
+.SH BUG
+.I /proc
+filesystem must be mounted for
+.B cifsiostat
+to work.
+
+.SH FILE
+.I /proc/fs/cifs/Stats
+contains CIFS statistics.
+.SH AUTHORS
+Written by Ivana Varekova (varekova <at> redhat.com)
+
+Maintained by Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sar (1),
+.BR pidstat (1),
+.BR mpstat (1),
+.BR vmstat (8),
+.BR iostat (1),
+.BR nfsiostat (1)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

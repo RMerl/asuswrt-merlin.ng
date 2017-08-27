@@ -1,0 +1,173 @@
+
+	FreeRADIUS server and the Simultaneous-Use parameter.
+
+
+0. INTRODUCTION
+
+  Lots of people want to limit the number of times one user account can
+  login, usually to one. This is hard to do with the radius protocol;
+  the nature of the accounting stuff is such that the idea the radius server
+  has about the list of logged-in users might be different from the idea
+  the terminal server has about it.
+
+  However, most terminal servers have an alternative way to get a list
+  of logged-in users. Most support some way through telnet, some have
+  a finger-daemon builtin and a lot of them support SNMP. So if the
+  radius server thinks that someone is trying to login a second time,
+  it is possible to check on the terminal server itself if the first
+  login is indeed still active.  Only then access is denied for the
+  second login.
+
+
+1. PREREQUISITES
+
+  You need to have perl installed.
+
+  For SNMP checks, you have 2 options. You can use the `snmpget' program
+  from the cmu-snmp tools. You can probably get precompiled ones,
+  maybe even packaged for your system (Debian/Linux, Redhat/Linux, FreeBSD
+  ports collection etc). The source code is at
+  http://www.net.cmu.edu/projects/snmp/snmpapps/. The Linux-specific
+  version of this is at http://www.gaertner.de/snmp/
+
+  The other option is to install the SNMP_Session and BER modules that
+  for example the well known `mrtg' package uses. This is recommended.
+  In that case you need no external snmpget program, checkrad will
+  speak SNMP directly. See http://www.switch.ch/misc/leinen/snmp/perl/
+
+  The checkroutine for USR/3Com Total Control racks uses the Net::Telnet
+  module from CPAN, at least version 3.00. If you need that, obtain it from
+  your local CPAN mirror (or see http://www.perl.com/CPAN/). The checkrad.pl
+  perl script will autodetect if that module is installed.
+
+2. USAGE.
+
+  It works by adding the `check' parameter "Simultaneous-Use" to the entry
+  for a users or DEFAULT in /etc/raddb/users. It should be at least one;
+  it defines the maximum number of users logged in with the same account name.
+  For example:
+
+  #
+  # Simultaneous use restrictions.
+  #
+  DEFAULT Group == "staff", Simultaneous-Use := 4
+          Fall-Through = 1
+  DEFAULT Group == "business", Simultaneous-Use := 2
+          Fall-Through = 1
+  DEFAULT Simultaneous-Use := 1
+          Fall-Through = 1
+
+
+  NOTE!!! The "Simultaneous-Use" parameter is in the "check" A/V pairs,
+          and not in the Reply A/V pairs (it _is_ a check).
+
+  For SQL, after creating and populating your schema, you should
+  execute the following statement (for MySQL, others may vary):
+
+  INSERT INTO radgroupcheck (GroupName, Attribute, op, Value) values("dialup", "Simultaneous-Use", ":=", "1");
+
+  Once that is done, your users should be limited to only one login at a time.
+
+3. IMPLEMENTATION
+
+  The server keeps a list of logged-in users in the /var/log/radutmp file.
+  This is also called "the session database". When you execute "radwho",
+  all that radwho really does is list the entries in this file in a pretty
+  format. Only when someone tries to login who _already_ has an active
+  session according to the radutmp file, the server executes the perl
+  script /usr/local/sbin/checkrad (or /usr/sbin/checkrad, it checks for
+  the presence of both and in that order). This script queries the terminal
+  server to see if the user indeed already has an active session.
+
+  The script uses SNMP for Livingston Portmasters and Ciscos, finger for
+  Portslave, Computone and Ascend, and Net::Telnet for USR/3Com TC.
+
+  Since the script has been witten in perl, it's easy to adjust for
+  any type of terminal server. There are implementations in the script for
+  checks using SNMP, finger, and telnet, so it should be easy to add
+  your own check routine if your terminal server is not supported yet.
+
+  You can find the script in the file src/checkrad.pl.
+
+  You need to set the correct type in the file /etc/raddb/naslist so that
+  checkrad KNOWS how it should interrogate the terminal server. At this
+  time you can define the following types:
+
+  type        Vendor      Uses method     needs               Need naspasswd
+  ====        ======      ===========     =====               ==============
+  ascend      Lucent      SNMP            SNMP                No
+  bay         Nortel      finger          finger command      No
+  cisco       Cisco       SNMP            SNMP                Optional  [1]
+  computone   Computone   finger          finger command      No
+  cvx         Nortel      SNMP            SNMP                No
+  digitro     Digitro     rusers          rusers command      No
+  livingston  Livingston  SNMP            SNMP                No	[2]
+  max40xx     Lucent      finger          finger command      No
+  netserver   USR/3com    telnet          CPAN Net::Telnet    Yes
+  pathras     Cyclades    telnet          CPAN Net::Telnet    Yes
+  patton      Patton      SNMP            SNMP                No
+  portslave   ?           finger          finger command      No
+  pr3000      Cyclades    SNMP            snmpwalk command    No
+  pr4000      Cyclades    SNMP            snmpwalk command    No
+  tc          USR/3com    telnet          CPAN Net::Telnet    Yes
+  usrhyper    USR/3com    SNMP            SNMP                No	[3]
+  versanet    VersaNet    SNMP            SNMP                No
+
+  other       none        N/A             -                   No
+
+  [1] In naspasswd file: set username to SNMP, password is community.
+  [2] Needs at least ComOS 3.5, SNMP enabled.
+  [3] Set "Reported Port Density" to 256 (default)
+
+  "other" means "don't bother checking, I believe what radutmp says".
+  This really is not recommended, if a user has a "stuck" entry in the
+  session database she will not be able to login again - hence the
+  extra check that "checkrad" does.
+
+4. IF IT DOESN'T WORK
+
+  Note that you need to add the Simultaneous-Use parameter to the
+  check item (first line), not the reply item, using the ':=' operator.
+
+  You can edit the `checkrad' perl script and turn on debugging. Then
+  watch the debug file. The `radius.log' file also gives some hints.
+
+  You can also run the "checkrad" script manually, use the "-d"
+  switch to get debug output on standard output instead of in the log.
+
+  See also:
+
+	http://wrath.geoweb.ge/simult.html
+
+  which has a good discussion of the use of Simultaneous-Use.
+
+
+5. CAVEATS
+
+  This solution checks the radutmp file. This file is kept up-to-date from
+  the Accounting records the NAS sends. Since some NASes delay these records
+  for quite some time, it is possible to get a double login by logging in
+  twice at _exactly_ the same time (plus or minus the mentioned delay time),
+  since neither of the logins are registered yet.
+
+  The solution would be to create a small 1-minute cache of Authentication
+  records, that is also checked for double login attempts. Perhaps in the
+  next version.
+
+  When implementing this one thing was considered the most important: when
+  trying to detect double logins, we always try to err on the safe side. So
+  in rare cases, a double login is possible but we try never to limit access
+  for a legitimate login.
+
+6. PROBLEMS WITH DROPPED CONNECTIONS
+
+  Our PM3, with 2 ISDN-30 lines coming into it, had the habit of sometimes
+  dropping connections. In a few cases, the portmaster thought the session was
+  still alive so if the user tried to login again, he or she was denied access.
+  In our case, this problem was caused by a bad PRI line from the phone
+  company.
+
+  We tried to compensate this by setting the Idle-Timeout to 15 minutes. That
+  way, even if a user did get locked out the portmaster would clear the rogue
+  session within 15 minutes and the user could login again.
+

@@ -1,0 +1,17 @@
+# -*- text -*-
+# Copyright (C) 2011 The FreeRADIUS Server project and contributors
+#
+#	Dictionary for WiChorus Inc. VSA's.
+# 	http://www.wichorus.com/
+#
+# Version: 	$Id$
+#
+
+VENDOR		Wichorus			27030
+
+BEGIN-VENDOR	Wichorus
+
+ATTRIBUTE	Wichorus-Policy-Name			1	string
+ATTRIBUTE	Wichorus-User-Privilege			2	string
+
+END-VENDOR 	Wichorus

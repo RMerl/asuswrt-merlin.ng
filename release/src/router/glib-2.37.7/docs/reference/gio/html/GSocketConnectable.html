@@ -1,0 +1,548 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GSocketConnectable</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="resolver.html" title="DNS resolution">
+<link rel="prev" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver">
+<link rel="next" href="GNetworkAddress.html" title="GNetworkAddress">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GSocketConnectable.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GSocketConnectable.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GSocketConnectable.prerequisites" class="shortcut">Prerequisites</a>
+                   | 
+                  <a href="#GSocketConnectable.implementations" class="shortcut">Known Implementations</a>
+                   | 
+                  <a href="#GSocketConnectable.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="resolver.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSimpleProxyResolver.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GNetworkAddress.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSocketConnectable"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSocketConnectable.top_of_page"></a>GSocketConnectable</span></h2>
+<p>GSocketConnectable — Interface for potential socket endpoints</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GSocketConnectable.synopsis"></a><h2>Synopsis</h2>
+<a name="GSocketAddressEnumerator"></a><a name="GProxyAddressEnumerator"></a><pre class="synopsis">                    <a class="link" href="GSocketConnectable.html#GSocketConnectable-struct" title="GSocketConnectable">GSocketConnectable</a>;
+struct              <a class="link" href="GSocketConnectable.html#GSocketConnectableIface" title="struct GSocketConnectableIface">GSocketConnectableIface</a>;
+<a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="returnvalue">GSocketAddressEnumerator</span></a> * <a class="link" href="GSocketConnectable.html#g-socket-connectable-enumerate" title="g_socket_connectable_enumerate ()">g_socket_connectable_enumerate</a>
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> *connectable</code></em>);
+<a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="returnvalue">GSocketAddressEnumerator</span></a> * <a class="link" href="GSocketConnectable.html#g-socket-connectable-proxy-enumerate" title="g_socket_connectable_proxy_enumerate ()">g_socket_connectable_proxy_enumerate</a>
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> *connectable</code></em>);
+
+                    <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator-struct" title="GSocketAddressEnumerator">GSocketAddressEnumerator</a>;
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    <a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next" title="g_socket_address_enumerator_next ()">g_socket_address_enumerator_next</a>    (<em class="parameter"><code><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next-async" title="g_socket_address_enumerator_next_async ()">g_socket_address_enumerator_next_async</a>
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    <a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next-finish" title="g_socket_address_enumerator_next_finish ()">g_socket_address_enumerator_next_finish</a>
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+
+                    <a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator-struct" title="GProxyAddressEnumerator">GProxyAddressEnumerator</a>;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----GSocketConnectable
+</pre>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GSocketAddressEnumerator
+         +----<a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator">GProxyAddressEnumerator</a>
+</pre>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator">GSocketAddressEnumerator</a>
+         +----GProxyAddressEnumerator
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GSocketConnectable requires
+ <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.implementations"></a><h2>Known Implementations</h2>
+<p>
+GSocketConnectable is implemented by
+ <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress">GInetSocketAddress</a>,  <a class="link" href="GNetworkAddress.html" title="GNetworkAddress">GNetworkAddress</a>,  <a class="link" href="GNetworkService.html" title="GNetworkService">GNetworkService</a>,  <a class="link" href="GProxyAddress.html" title="GProxyAddress">GProxyAddress</a>,  <a class="link" href="GSocketAddress.html" title="GSocketAddress">GSocketAddress</a> and  <a class="link" href="GUnixSocketAddress.html" title="GUnixSocketAddress">GUnixSocketAddress</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator--connectable" title='The "connectable" property'>connectable</a>"              <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>*   : Read / Write / Construct Only
+  "<a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator--default-port" title='The "default-port" property'>default-port</a>"             <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only
+  "<a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator--proxy-resolver" title='The "proxy-resolver" property'>proxy-resolver</a>"           <a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="type">GProxyResolver</span></a>*       : Read / Write / Construct
+  "<a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator--uri" title='The "uri" property'>uri</a>"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.description"></a><h2>Description</h2>
+<p>
+Objects that describe one or more potential socket endpoints
+implement <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>. Callers can then use
+<a class="link" href="GSocketConnectable.html#g-socket-connectable-enumerate" title="g_socket_connectable_enumerate ()"><code class="function">g_socket_connectable_enumerate()</code></a> to get a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>
+to try out each socket address in turn until one succeeds, as shown
+in the sample code below.
+</p>
+<p>
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">MyConnectionType </span><span class="symbol">*</span>
+<span class="function">connect_to_host</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">hostname</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">guint16</span><span class="normal">        port</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GCancellable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">cancellable</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GError</span><span class="normal">       </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">MyConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">conn </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GSocketConnectable</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">addr</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GSocketAddressEnumerator</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">enumerator</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GSocketAddress</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">sockaddr</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GError</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">conn_error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  addr </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GNetworkAddress.html#g-network-address-new">g_network_address_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">hostname</span><span class="symbol">,</span><span class="normal"> port</span><span class="symbol">);</span>
+<span class="normal">  enumerator </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GSocketConnectable.html#g-socket-connectable-enumerate">g_socket_connectable_enumerate</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">addr</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">addr</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Try each sockaddr until we succeed. Record the first</span>
+<span class="comment">   * connection error, but not any further ones (since they'll probably</span>
+<span class="comment">   * be basically the same as the first).</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">conn </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sockaddr </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GSocketConnectable.html#g-socket-address-enumerator-next">g_socket_address_enumerator_next</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">enumerator</span><span class="symbol">,</span><span class="normal"> cancellable</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      conn </span><span class="symbol">=</span><span class="normal"> </span><span class="function">connect_to_sockaddr</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sockaddr</span><span class="symbol">,</span><span class="normal"> conn_error </span><span class="symbol">?</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">conn_error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sockaddr</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">enumerator</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">conn</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">conn_error</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="comment">/* We couldn't connect to the first address, but we succeeded</span>
+<span class="comment">           * in connecting to a later address.</span>
+<span class="comment">           */</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">conn_error</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">      </span><span class="keyword">return</span><span class="normal"> conn</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="comment">/* Either the initial lookup failed, or else the caller</span>
+<span class="comment">       * cancelled us.</span>
+<span class="comment">       */</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">conn_error</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">conn_error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">return</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">else</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function">g_error_propagate</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">,</span><span class="normal"> conn_error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">return</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+</p>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GSocketConnectable-struct"></a><h3>GSocketConnectable</h3>
+<pre class="programlisting">typedef struct _GSocketConnectable GSocketConnectable;</pre>
+<p>
+Interface for objects that contain or generate <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a>es.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSocketConnectableIface"></a><h3>struct GSocketConnectableIface</h3>
+<pre class="programlisting">struct GSocketConnectableIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  GSocketAddressEnumerator * (* enumerate)       (GSocketConnectable *connectable);
+
+  GSocketAddressEnumerator * (* proxy_enumerate) (GSocketConnectable *connectable);
+};
+</pre>
+<p>
+Provides an interface for returning a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>
+and <a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator"><span class="type">GProxyAddressEnumerator</span></a>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GSocketConnectableIface.g-iface"></a>g_iface</code></em>;</span></p></td>
+<td>The parent interface.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GSocketConnectableIface.enumerate"></a>enumerate</code></em> ()</span></p></td>
+<td>Creates a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GSocketConnectableIface.proxy-enumerate"></a>proxy_enumerate</code></em> ()</span></p></td>
+<td>Creates a <a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator"><span class="type">GProxyAddressEnumerator</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connectable-enumerate"></a><h3>g_socket_connectable_enumerate ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="returnvalue">GSocketAddressEnumerator</span></a> * g_socket_connectable_enumerate
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> *connectable</code></em>);</pre>
+<p>
+Creates a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> for <em class="parameter"><code>connectable</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connectable</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.22</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connectable-proxy-enumerate"></a><h3>g_socket_connectable_proxy_enumerate ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="returnvalue">GSocketAddressEnumerator</span></a> * g_socket_connectable_proxy_enumerate
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> *connectable</code></em>);</pre>
+<p>
+Creates a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> for <em class="parameter"><code>connectable</code></em> that will
+return <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>es for addresses that you must connect
+to via a proxy.
+</p>
+<p>
+If <em class="parameter"><code>connectable</code></em> does not implement
+<a class="link" href="GSocketConnectable.html#g-socket-connectable-proxy-enumerate" title="g_socket_connectable_proxy_enumerate ()"><code class="function">g_socket_connectable_proxy_enumerate()</code></a>, this will fall back to
+calling <a class="link" href="GSocketConnectable.html#g-socket-connectable-enumerate" title="g_socket_connectable_enumerate ()"><code class="function">g_socket_connectable_enumerate()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connectable</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSocketAddressEnumerator-struct"></a><h3>GSocketAddressEnumerator</h3>
+<pre class="programlisting">typedef struct _GSocketAddressEnumerator GSocketAddressEnumerator;</pre>
+<p>
+Enumerator type for objects that contain or generate
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a>es.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-address-enumerator-next"></a><h3>g_socket_address_enumerator_next ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    g_socket_address_enumerator_next    (<em class="parameter"><code><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Retrieves the next <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> from <em class="parameter"><code>enumerator</code></em>. Note that this
+may block for some amount of time. (Eg, a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> may need
+to do a DNS lookup before it can return an address.) Use
+<a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next-async" title="g_socket_address_enumerator_next_async ()"><code class="function">g_socket_address_enumerator_next_async()</code></a> if you need to avoid
+blocking.
+</p>
+<p>
+If <em class="parameter"><code>enumerator</code></em> is expected to yield addresses, but for some reason
+is unable to (eg, because of a DNS error), then the first call to
+<a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next" title="g_socket_address_enumerator_next ()"><code class="function">g_socket_address_enumerator_next()</code></a> will return an appropriate error
+in *<em class="parameter"><code>error</code></em>. However, if the first call to
+<a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next" title="g_socket_address_enumerator_next ()"><code class="function">g_socket_address_enumerator_next()</code></a> succeeds, then any further
+internal errors (other than <em class="parameter"><code>cancellable</code></em> being triggered) will be
+ignored.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> (owned by the caller), or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on
+error (in which case *<em class="parameter"><code>error</code></em> will be set) or if there are no
+more addresses. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-address-enumerator-next-async"></a><h3>g_socket_address_enumerator_next_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_socket_address_enumerator_next_async
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Asynchronously retrieves the next <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> from <em class="parameter"><code>enumerator</code></em>
+and then calls <em class="parameter"><code>callback</code></em>, which must call
+<a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next-finish" title="g_socket_address_enumerator_next_finish ()"><code class="function">g_socket_address_enumerator_next_finish()</code></a> to get the result.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request
+is satisfied. <span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the data to pass to callback function. <span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-address-enumerator-next-finish"></a><h3>g_socket_address_enumerator_next_finish ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    g_socket_address_enumerator_next_finish
+                                                        (<em class="parameter"><code><a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Retrieves the result of a completed call to
+<a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next-async" title="g_socket_address_enumerator_next_async ()"><code class="function">g_socket_address_enumerator_next_async()</code></a>. See
+<a class="link" href="GSocketConnectable.html#g-socket-address-enumerator-next" title="g_socket_address_enumerator_next ()"><code class="function">g_socket_address_enumerator_next()</code></a> for more information about
+error handling.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> (owned by the caller), or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on
+error (in which case *<em class="parameter"><code>error</code></em> will be set) or if there are no
+more addresses. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddressEnumerator-struct"></a><h3>GProxyAddressEnumerator</h3>
+<pre class="programlisting">typedef struct _GProxyAddressEnumerator GProxyAddressEnumerator;</pre>
+<p>
+A subclass of <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator"><span class="type">GSocketAddressEnumerator</span></a> that takes another address
+enumerator and wraps its results in <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>es as
+directed by the default <a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="type">GProxyResolver</span></a>.
+</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnectable.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GProxyAddressEnumerator--connectable"></a><h3>The <code class="literal">"connectable"</code> property</h3>
+<pre class="programlisting">  "connectable"              <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>*   : Read / Write / Construct Only</pre>
+<p>The connectable being enumerated.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddressEnumerator--default-port"></a><h3>The <code class="literal">"default-port"</code> property</h3>
+<pre class="programlisting">  "default-port"             <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only</pre>
+<p>
+The default port to use if <a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator--uri" title='The "uri" property'><span class="type">"uri"</span></a> does not
+specify one.
+</p>
+<p>Allowed values: &lt;= 65535</p>
+<p>Default value: 0</p>
+<p class="since">Since 2.38</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddressEnumerator--proxy-resolver"></a><h3>The <code class="literal">"proxy-resolver"</code> property</h3>
+<pre class="programlisting">  "proxy-resolver"           <a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="type">GProxyResolver</span></a>*       : Read / Write / Construct</pre>
+<p>
+The proxy resolver to use.
+</p>
+<p class="since">Since 2.36</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddressEnumerator--uri"></a><h3>The <code class="literal">"uri"</code> property</h3>
+<pre class="programlisting">  "uri"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>The destination URI, use none:// for generic socket.</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

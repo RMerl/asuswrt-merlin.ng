@@ -1,0 +1,77 @@
+
+<fieldset>
+	<legend><% tran("hotspot.legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("hotspot.hotspot"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="chilli_enable" <% nvram_selmatch("chilli_enable","1", "checked"); %> onclick="show_layer_ext(this, 'idchilli', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="chilli_enable" <% nvram_selmatch("chilli_enable","0", "checked"); %> onclick="show_layer_ext(this, 'idchilli', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idchilli">
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nowifibridge"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="chilli_nowifibridge" <% nvram_selmatch("chilli_nowifibridge","1", "checked"); %> onclick="show_layer_ext(this, 'idchillidhcp', true)" /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="chilli_nowifibridge" <% nvram_selmatch("chilli_nowifibridge","0", "checked"); %> onclick="show_layer_ext(this, 'idchillidhcp', false)" /><% tran("share.disable"); %>
+		</div>
+		<div id="idchillidhcp">		
+			<div class="setting">
+				<div class="label"><% tran("hotspot.dhcp"); %></div>
+				<% show_ifselect("chilli_interface"); %>
+			</div>
+			<div class="setting">
+				<div class="label"><% tran("hotspot.net"); %></div>
+				<input class="text" maxLength="20" size="20" name="chilli_net" value="<% nvram_get("chilli_net"); %>" />
+			</div>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.pserver"); %></div>
+			<input class="text" maxLength="100" size="25" name="chilli_radius" value="<% nvram_get("chilli_radius"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.bserver"); %></div>
+			<input class="text" maxLength="100" size="25" name="chilli_backup" value="<% nvram_get("chilli_backup"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.dns"); %></div>
+			<input class="text" maxLength="15" size="15" name="chilli_dns1" value="<% nvram_get("chilli_dns1"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.url"); %></div>
+			<input class="text" maxLength="100" size="25" name="chilli_url" value="<% nvram_get("chilli_url"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("share.share_key"); %></div>
+			<input class="text" maxLength="100" size="25" name="chilli_pass" value="<% nvram_get("chilli_pass"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.radnas"); %></div>
+			<input class="text" maxLength="500" size="25" name="chilli_radiusnasid" value="<% nvram_get("chilli_radiusnasid"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.uam"); %></div>
+			<input class="text" maxLength="500" size="25" name="chilli_uamsecret" value="<% nvram_get("chilli_uamsecret"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.uamdns"); %></div>
+			<input class="text" maxLength="500" size="25" name="chilli_uamanydns" value="<% nvram_get("chilli_uamanydns"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.allowuam"); %></div>
+			<input class="text" maxLength="500" size="25" name="chilli_uamallowed" value="<% nvram_get("chilli_uamallowed"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.macauth"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="chilli_macauth" <% nvram_selmatch("chilli_macauth","1", "checked"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="chilli_macauth" <% nvram_selmatch("chilli_macauth","0", "checked"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.option"); %></div>
+			<textarea id="chilli_additional" name="chilli_additional" cols="60" rows="4"></textarea>
+	        <script type="text/javascript">
+	        //<![CDATA[
+	        	var chilli_additional = fix_cr( '<% nvram_get("chilli_additional"); %>' );
+	        	document.getElementById("chilli_additional").value = chilli_additional;
+	        //]]>
+	        </script>
+	    </div>
+	   </div>
+</fieldset><br />

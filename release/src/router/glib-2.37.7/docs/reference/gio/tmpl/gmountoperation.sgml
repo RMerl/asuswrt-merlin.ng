@@ -1,0 +1,270 @@
+<!-- ##### SECTION Title ##### -->
+GMountOperation
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GAskPasswordFlags ##### -->
+<para>
+
+</para>
+
+@G_ASK_PASSWORD_NEED_PASSWORD: 
+@G_ASK_PASSWORD_NEED_USERNAME: 
+@G_ASK_PASSWORD_NEED_DOMAIN: 
+@G_ASK_PASSWORD_SAVING_SUPPORTED: 
+@G_ASK_PASSWORD_ANONYMOUS_SUPPORTED: 
+
+<!-- ##### ENUM GPasswordSave ##### -->
+<para>
+
+</para>
+
+@G_PASSWORD_SAVE_NEVER: 
+@G_PASSWORD_SAVE_FOR_SESSION: 
+@G_PASSWORD_SAVE_PERMANENTLY: 
+
+<!-- ##### STRUCT GMountOperation ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GMountOperation::aborted ##### -->
+<para>
+
+</para>
+
+@gmountoperation: the object which received the signal.
+
+<!-- ##### SIGNAL GMountOperation::ask-password ##### -->
+<para>
+
+</para>
+
+@gmountoperation: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+@arg4: 
+
+<!-- ##### SIGNAL GMountOperation::ask-question ##### -->
+<para>
+
+</para>
+
+@gmountoperation: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### SIGNAL GMountOperation::reply ##### -->
+<para>
+
+</para>
+
+@gmountoperation: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GMountOperation::show-processes ##### -->
+<para>
+
+</para>
+
+@gmountoperation: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+
+<!-- ##### SIGNAL GMountOperation::show-unmount-progress ##### -->
+<para>
+
+</para>
+
+@gmountoperation: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+
+<!-- ##### ARG GMountOperation:anonymous ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMountOperation:choice ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMountOperation:domain ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMountOperation:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMountOperation:password-save ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMountOperation:username ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GMountOperationResult ##### -->
+<para>
+
+</para>
+
+@G_MOUNT_OPERATION_HANDLED: 
+@G_MOUNT_OPERATION_ABORTED: 
+@G_MOUNT_OPERATION_UNHANDLED: 
+
+<!-- ##### FUNCTION g_mount_operation_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_get_username ##### -->
+<para>
+
+</para>
+
+@op: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_set_username ##### -->
+<para>
+
+</para>
+
+@op: 
+@username: 
+
+
+<!-- ##### FUNCTION g_mount_operation_get_password ##### -->
+<para>
+
+</para>
+
+@op: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_set_password ##### -->
+<para>
+
+</para>
+
+@op: 
+@password: 
+
+
+<!-- ##### FUNCTION g_mount_operation_get_anonymous ##### -->
+<para>
+
+</para>
+
+@op: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_set_anonymous ##### -->
+<para>
+
+</para>
+
+@op: 
+@anonymous: 
+
+
+<!-- ##### FUNCTION g_mount_operation_get_domain ##### -->
+<para>
+
+</para>
+
+@op: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_set_domain ##### -->
+<para>
+
+</para>
+
+@op: 
+@domain: 
+
+
+<!-- ##### FUNCTION g_mount_operation_get_password_save ##### -->
+<para>
+
+</para>
+
+@op: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_set_password_save ##### -->
+<para>
+
+</para>
+
+@op: 
+@save: 
+
+
+<!-- ##### FUNCTION g_mount_operation_get_choice ##### -->
+<para>
+
+</para>
+
+@op: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_operation_set_choice ##### -->
+<para>
+
+</para>
+
+@op: 
+@choice: 
+
+
+<!-- ##### FUNCTION g_mount_operation_reply ##### -->
+<para>
+
+</para>
+
+@op: 
+@result: 
+
+

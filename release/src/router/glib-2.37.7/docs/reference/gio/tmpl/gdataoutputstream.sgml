@@ -1,0 +1,158 @@
+<!-- ##### SECTION Title ##### -->
+GDataOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDataOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GDataOutputStream:byte-order ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_data_output_stream_new ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_set_byte_order ##### -->
+<para>
+
+</para>
+
+@stream: 
+@order: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_get_byte_order ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_byte ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_int16 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_uint16 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_int32 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_uint32 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_int64 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_uint64 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_output_stream_put_string ##### -->
+<para>
+
+</para>
+
+@stream: 
+@str: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

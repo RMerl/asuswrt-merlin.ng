@@ -1,0 +1,229 @@
+#
+#   Copyright (c) 2000, 2001, 2007	Dmitry Butskoy
+#					<buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#   Common rule and variable definitions.
+#   This file should be included by main and by per-target Makefiles.
+#
+
+include $(SRCBASE)/.config
+
+ifndef srcdir
+$(error srcdir variable not defined)
+endif
+
+
+MAKE = make --no-print-directory -r
+
+
+#  Use env=yes on cmdline to inherit environment values
+
+#  Mark it for cross compiler
+#ifeq ($(env),yes)
+#define set
+#$(eval ifneq ($$(origin $(1)),environment)
+#$(1) = $(2)
+#else
+#override MAKE := $(1)="$($(strip $(1)))" $(MAKE)
+#endif)
+#endef
+#else
+#set = $(eval $(1) = $(2))
+#endif
+#
+#
+#$(call set, CROSS, )
+#$(call set, CC, $$(CROSS)gcc)
+#$(call set, AS, $$(CROSS)as)
+#$(call set, LD, $$(CROSS)ld)
+#$(call set, DEPEND, $$(CROSS)gcc -MM -MG)
+#$(call set, AR, $$(CROSS)ar)
+#$(call set, RANLIB, $$(CROSS)ranlib)
+#$(call set, INSTALL, cp)
+#$(call set, INDENT, true)
+#
+#gcc = $(findstring gcc,$(CC))
+#$(call set, CFLAGS, $(if $(gcc), -O2 -Wall, -O))
+#$(call set, CPPFLAGS, )
+#$(call set, LDFLAGS, -s)
+#$(call set, LIBS, )
+
+#  install stuff
+prefix = /usr/local
+
+ifneq ($(wildcard /lib64/libc.* /usr/lib64/libc.*),)
+lib := lib64
+else
+lib := lib
+endif
+
+exec_prefix = $(prefix)
+bindir = $(exec_prefix)/bin
+sbindir = $(exec_prefix)/sbin
+libdir = $(exec_prefix)/$(lib)
+libexecdir = $(exec_prefix)/libexec/$(NAME)
+sysconfdir = $(prefix)/etc
+includedir = $(prefix)/include
+datadir = $(prefix)/share
+mandir = $(datadir)/man
+infodir = $(datadir)/info
+localstatedir = $(prefix)/var
+sharedstatedir = $(prefix)/com
+
+DESTDIR =
+
+
+#  layout stuff
+SKIPDIRS = tmp%
+INCLUDEDIRS = include%
+LIBDIRS = lib%
+MODDIRS = mod%
+SKIPINSTALL = test%
+
+
+include $(srcdir)/Make.defines
+
+
+ifndef NAME
+NAME = $(notdir $(srcdir))
+endif
+
+
+ifndef subdirs
+ifeq ($(TARGET),.MAIN)
+# for better performance...
+subdirs := $(patsubst %/,%,$(wildcard */))
+else
+subdirs := $(patsubst $(srcdir)/%/,%,$(filter %/,$(wildcard $(srcdir)/*/)))
+endif
+subdirs := $(filter-out $(SKIPDIRS), $(subdirs))
+endif
+
+install install-%: subdirs := $(filter-out $(SKIPINSTALL), $(subdirs))
+
+
+override MAKE += srcdir=$(srcdir) subdirs="$(subdirs)" shared=$(shared)
+
+
+INCLUDEDIRS := $(filter $(INCLUDEDIRS), $(subdirs))
+LIBDIRS := $(filter $(LIBDIRS), $(subdirs))
+MODDIRS := $(filter $(MODDIRS), $(subdirs))
+EXEDIRS := $(filter-out $(INCLUDEDIRS) $(LIBDIRS) $(MODDIRS), $(subdirs))
+MODUSERS := $(filter $(MODUSERS), $(subdirs))
+SBINUSERS := $(filter $(SBINUSERS), $(subdirs))
+
+LIBDIRS := $(filter-out $(LIBLAST),$(LIBDIRS)) $(filter $(LIBDIRS),$(LIBLAST))
+
+
+includes = $(foreach dir, $(INCLUDEDIRS) $(LIBDIRS), $(srcdir)/$(dir))
+
+ifneq ($(gcc),)
+CPATH = $(subst $(empty) ,:,$(includes))
+export CPATH
+else
+override CPPFLAGS += $(patsubst %,-I%,$(includes))
+endif
+
+libraries = $(foreach dir, $(filter lib%,$(LIBDIRS)), $(srcdir)/$(dir))
+
+vpath lib%.so $(libraries)
+vpath lib%.a $(libraries)
+
+_libs = $(strip $(foreach _lib,$(LIBDIRS),\
+		    $(if $(filter lib%,$(_lib)),\
+			$(patsubst lib%,-l%,$(_lib)),\
+			$(wildcard $(srcdir)/$(_lib)/$(_lib).so \
+					$(srcdir)/$(_lib)/$(_lib).a))))
+
+override LIBS := $(_libs) -lm $(LIBS)
+
+ifeq ($(CC),gcc)
+LIBRARY_PATH = $(subst $(empty) ,:,$(libraries))
+export LIBRARY_PATH
+else
+override LIBS += $(patsubst %,-L%,$(libraries))
+endif
+
+LIBDEPS = $(filter-out -L%,$(LIBS))
+
+## Carlos 2016/10/27
+ifneq ($(HND_ROUTER),y)
+## For fix mod-dccp.c:180: error: 'SOCK_DCCP' undeclared (first use in this function)
+## If not help, try to just remove the mod-dccp.c file from the source 
+## (no other changes needed) to drop DCCP support.
+
+CFLAGS += -D_GNU_SOURCE -DIPPROTO_ICCP=33 -DSOCK_DCCP=6
+
+else
+## For fix 
+## www.google.com: Bad value for ai_flags
+## Cannot handle "host" cmdline arg `www.google.com' on position 1 (argc 1)
+CFLAGS += -DAI_FLAGS
+
+endif
+
+#
+#	SUBDIRS	    STUFF
+#
+
+ifneq ($(TARGET),.MAIN)
+
+obj := o
+ifeq ($(shared),yes)
+ifneq ($(PIC),no)
+ifeq ($(filter $(TARGET),$(LIBDIRS) $(MODDIRS) .MODULE),$(TARGET))
+obj := lo
+endif
+endif
+endif
+
+sources = $(wildcard *.c)
+OBJS = $(sources:.c=.$(obj))
+
+
+.PHONY: dummy all depend install clean force
+
+dummy: all
+
+
+clean:
+	rm -f *.o *.a *.lo *.so $(TARGET) core a.out
+
+
+ifneq ($(sources),)
+depend: $(sources)
+	$(DEPEND) $(CFLAGS) $(CPPFLAGS) $^ >.depend
+else
+depend:
+	@true
+endif
+
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $*.c
+
+%.lo: %.c
+	$(CC) -fPIC $(CFLAGS) $(CPPFLAGS) -o $*.lo -c $*.c
+
+%.o: %.s
+	$(AS) -o $*.o $*.s
+
+%.o: %.S
+	$(CC) -traditional $(CPPFLAGS) -c $*.S
+
+# include if it is present only...
+ifeq (.depend, $(wildcard .depend))
+include .depend
+endif
+
+endif
+
+#
+#  ...end of SUBDIRS STUFF
+#
+

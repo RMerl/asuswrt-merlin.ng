@@ -1,0 +1,2 @@
+charon.plugins.error-notify.socket = unix://${piddir}/charon.enfy
+	Socket provided by the error-notify plugin.

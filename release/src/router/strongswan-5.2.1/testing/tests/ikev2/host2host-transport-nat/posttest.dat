@@ -1,0 +1,6 @@
+alice::ipsec stop
+venus::ipsec stop
+sun::ipsec stop
+alice::iptables-restore < /etc/iptables.flush
+moon::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush

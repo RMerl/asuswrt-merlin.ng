@@ -1,0 +1,178 @@
+\input texinfo    @c -*-texinfo-*-
+@comment $Id: stress.texi,v 1.9 2005/03/10 01:16:02 apw Exp $
+@comment %**start of header
+@setfilename stress.info
+@include version.texi
+@settitle Stress @value{VERSION}
+@syncodeindex pg cp
+@comment %**end of header
+
+@dircategory Stress
+@direntry
+* stress: (stress)Invoking stress.
+@end direntry
+
+@titlepage
+@title Stress
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Amos Waterland (@email{apw@@rossby.metr.ou.edu})
+@page
+@vskip 0pt plus 1filll
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top Stress
+
+@end ifnottex
+
+@menu
+* Overview::                    Overview of @command{stress}.
+* Invoking stress::             How to run @command{stress}.
+* Examples::                    Some example invocations.
+* Copying This Manual::
+* Index::
+@end menu
+
+@node Overview
+@chapter Overview of @command{stress}
+
+@command{stress} is not a benchmark, but is rather a tool designed to put
+given subsytems under a specified load.  Instances in which this is useful
+include those in which a system administrator wishes to perform tuning
+activities, a kernel or libc programmer wishes to evaluate denial of service
+possibilities, etc.
+
+
+@node Invoking stress
+@chapter Invoking stress
+
+@pindex stress
+@cindex invoking @command{stress}
+
+The format for running the @command{stress} program is:
+
+@example
+@command{stress} [@var{option} [@var{args}]] @dots{}
+@end example
+
+@command{stress} supports the following options:
+
+@table @samp
+@item -?
+@itemx --help
+Show help information.
+
+@itemx --version
+Show version information.
+
+@item -v
+@itemx --verbose
+Turn up verbosity.
+
+@item -q
+@itemx --quiet
+Turn down verbosity.
+
+@item -n
+@itemx --dry-run
+Show what would have been done.
+
+@item -t @var{secs}
+@itemx --timeout @var{secs}
+Time out after @var{secs} seconds.
+
+@itemx --backoff @var{usecs}
+Wait for factor of @var{usecs} microseconds before starting work.
+
+@item -c @var{forks}
+@itemx --cpu @var{forks}
+Spawn @var{forks} processes each spinning on @samp{sqrt()}.
+
+@item -i @var{forks}
+@itemx --io @var{forks}
+Spawn @var{forks} processes each spinning on @samp{sync()}.
+
+@item -m @var{forks}
+@itemx --vm @var{forks}
+Spawn @var{forks} processes each spinning on @samp{malloc()}.
+
+@itemx --vm-bytes @var{bytes}
+Allocate @var{bytes} number of bytes.  The default is 1.
+
+@itemx --vm-hang
+Instruct each vm hog process to go to sleep after allocating memory.  This
+contrasts with their normal behavior, which is to free the memory and
+reallocate @emph{ad infinitum}.  This is useful for simulating low memory
+conditions on a machine.  For example, the following command allocates 256M of
+RAM and holds it until killed.
+
+@example
+% stress --vm 2 --vm-bytes 128M --vm-hang
+@end example
+
+@item -d @var{forks}
+@itemx --hdd @var{forks}
+Spawn @var{forks} processes each spinning on @samp{write()}.
+
+@itemx --hdd-bytes @var{bytes}
+Write @var{bytes} number of bytes.  The default is 1GB.
+
+@itemx --hdd-noclean
+Do not unlink file(s) to which random ASCII data is written.
+
+@end table
+
+Note: Suffixes may be s,m,h,d,y (time) or k,m,g (size).
+
+@node Examples
+@chapter Example invocations
+
+The simple case is that you just want to bring the system load average up to
+an arbitrary value.  The following forks 13 processes, each of which spins
+in a tight loop calculating the sqrt() of a random number acquired with
+rand().
+
+  % @samp{stress -c 13}
+
+Long options are supported, as well as is making the output less verbose.
+The following forks 1024 processes, and only reports error messages if any.
+
+  % @samp{stress --quiet --cpu 1k}
+
+To see how your system performs when it is I/O bound, use the -i switch.
+The following forks 4 processes, each of which spins in a tight loop calling
+sync(), which is a system call that flushes memory buffers to disk.
+
+  % @samp{stress -i 4}
+
+Multiple hogs may be combined on the same command line.  The following does
+everything the preceding examples did in one command, but also turns up the
+verbosity level as well as showing how to cause the command to
+self-terminate after 1 minute.
+
+  % @samp{stress -c 13 -i 4 --verbose --timeout 1m}
+
+You can write a file of arbitrary length to disk.  The file is created with
+mkstemp() in the current directory, the default is to unlink it, but
+unlinking can be overridden with the --hdd-noclean flag.
+
+  % @samp{stress -d 1 --hdd-noclean --hdd-bytes 13}
+
+Large file support is enabled.
+
+  % @samp{stress -d 1 --hdd-noclean --hdd-bytes 3G}
+
+@node Copying This Manual
+@appendix Copying This Manual
+
+You may copy this manual under the terms of the GNU General Public License.
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

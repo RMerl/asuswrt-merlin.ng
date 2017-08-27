@@ -1,0 +1,4 @@
+<PUBLISH>
+@@ 156, 156 @@
+-# BUILD_EPON_BCM_OAM is not set
++BUILD_EPON_BCM_OAM=y

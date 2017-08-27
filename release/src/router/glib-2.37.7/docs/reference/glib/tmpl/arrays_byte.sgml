@@ -1,0 +1,319 @@
+<!-- ##### SECTION Title ##### -->
+Byte Arrays
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GByteArray ##### -->
+<para>
+
+</para>
+
+@data: 
+@len: 
+
+<!-- ##### FUNCTION g_byte_array_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_new_take ##### -->
+<para>
+
+</para>
+
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_sized_new ##### -->
+<para>
+
+</para>
+
+@reserved_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_ref ##### -->
+<para>
+
+</para>
+
+@array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_unref ##### -->
+<para>
+
+</para>
+
+@array: 
+
+
+<!-- ##### FUNCTION g_byte_array_append ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_prepend ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_remove_index ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_remove_index_fast ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_remove_range ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_sort ##### -->
+<para>
+
+</para>
+
+@array: 
+@compare_func: 
+
+
+<!-- ##### FUNCTION g_byte_array_sort_with_data ##### -->
+<para>
+
+</para>
+
+@array: 
+@compare_func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_byte_array_set_size ##### -->
+<para>
+
+</para>
+
+@array: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_free ##### -->
+<para>
+
+</para>
+
+@array: 
+@free_segment: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_byte_array_free_to_bytes ##### -->
+<para>
+
+</para>
+
+@array: 
+@Returns: 
+
+
+<!-- ##### STRUCT GBytes ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_bytes_new ##### -->
+<para>
+
+</para>
+
+@data: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_new_take ##### -->
+<para>
+
+</para>
+
+@data: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_new_static ##### -->
+<para>
+
+</para>
+
+@data: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_new_with_free_func ##### -->
+<para>
+
+</para>
+
+@data: 
+@size: 
+@free_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_new_from_bytes ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@offset: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_get_data ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_get_size ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_hash ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_equal ##### -->
+<para>
+
+</para>
+
+@bytes1: 
+@bytes2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_compare ##### -->
+<para>
+
+</para>
+
+@bytes1: 
+@bytes2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_ref ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_unref ##### -->
+<para>
+
+</para>
+
+@bytes: 
+
+
+<!-- ##### FUNCTION g_bytes_unref_to_data ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_unref_to_array ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@Returns: 
+
+

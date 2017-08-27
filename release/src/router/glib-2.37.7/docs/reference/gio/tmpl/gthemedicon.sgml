@@ -1,0 +1,100 @@
+<!-- ##### SECTION Title ##### -->
+GThemedIcon
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GThemedIcon ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GThemedIcon:name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GThemedIcon:names ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GThemedIcon:use-default-fallbacks ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_themed_icon_new ##### -->
+<para>
+
+</para>
+
+@iconname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_themed_icon_new_from_names ##### -->
+<para>
+
+</para>
+
+@iconnames: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_themed_icon_new_with_default_fallbacks ##### -->
+<para>
+
+</para>
+
+@iconname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_themed_icon_prepend_name ##### -->
+<para>
+
+</para>
+
+@icon: 
+@iconname: 
+
+
+<!-- ##### FUNCTION g_themed_icon_append_name ##### -->
+<para>
+
+</para>
+
+@icon: 
+@iconname: 
+
+
+<!-- ##### FUNCTION g_themed_icon_get_names ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+

@@ -1,0 +1,99 @@
+.TH RADWHO 1 "17 Feb 2013" "" "FreeRADIUS Daemon"
+.SH NAME
+radwho - show online users
+.SH SYNOPSIS
+.B radwho
+.RB [ \-c ]
+.RB [ \-d
+.IR raddb_directory ]
+.RB [ \-F
+.IR radutmp_file ]
+.RB [ \-i ]
+.RB [ \-n ]
+.RB [ \-N
+.IR nas_ip_address ]
+.RB [ \-p ]
+.RB [ \-P
+.IR nas_port ]
+.RB [ \-r ]
+.RB [ \-R ]
+.RB [ \-s ]
+.RB [ \-S ]
+.RB [ \-u
+.IR user ]
+.RB [ \-U
+.IR user ]
+.RB [ \-Z ]
+.SH DESCRIPTION
+The FreeRADIUS server can be configured to maintain an active session
+database in a file called \fIradutmp\fP. This utility shows the
+content of that session database.
+.SH OPTIONS
+.IP \-c
+Shows caller ID (if available) instead of the full name.
+.IP \-d\ \fIraddb_directory\fP
+The directory that contains the RADIUS configuration files. Defaults to
+\fI/etc/raddb\fP.
+.IP \-F\ \fIradutmp_file\fP
+The file that contains the radutmp file.  If this is specified, -d is
+not necessary.
+.IP \-i
+Shows the session ID instead of the full name.
+.IP \-n
+Normally radwho looks up the username in the systems password file,
+and shows the full username as well. The \fB-n\fP flags prevents this.
+.IP \-N\ \fInas_ip_address\fP
+Show only those entries which match the given NAS IP address.
+.IP \-p
+Adds an extra column for the port type - I for ISDN, A for Analog.
+.IP \-P\ \fInas_port\fP
+Show only those entries which match the given NAS port.
+.IP \-r
+Outputs all data in \fIraw\fP format - no headers, no formatting,
+fields are comma-separated.
+.IP \-R
+Output all data in RADIUS attribute format.  All fields are printed.
+.IP \-s
+Show full name.
+.IP \-S
+Hide shell users. Doesn't show the entries for users that do not
+have a SLIP or PPP session.
+.IP \-u\ \fIuser\fP
+Show only those entries which match the given username (case insensitive).
+.IP \-U\ \fIuser\fP
+Show only those entries which match the given username (case sensitive).
+.IP \-Z
+When combined with \fI-R\fP, prints out the contents of an
+Accounting-Request packet which can be passed to \fIradclient\fP, in
+order to "zap" that users session from \fIradutmp\fP.
+.PP
+For example,
+.RS
+.sp
+.nf
+.ne 3
+$ radwho -ZRN 10.0.0.1 | radclient -f - radius.example.net acct testing123
+.fi
+.sp
+.RE
+will result in all an Accounting-Request packet being sent to the
+RADIUS server, which tells the server that the NAS rebooted.  i.e. It
+"zaps" all of the users on that NAS.
+
+To "zap" one user, specifiy NAS, username, and NAS port:
+.RS
+.sp
+.nf
+.ne 3
+$ radwho -ZRN 10.0.0.1 -u user -P 10 | radclient -f - radius.example.net acct testing123
+.fi
+.sp
+.RE
+Other combinations are also possible.
+
+.SH SEE ALSO
+radiusd(8),
+radclient(1),
+radiusd.conf(5).
+.SH AUTHOR
+Miquel van Smoorenburg, miquels@cistron.nl.

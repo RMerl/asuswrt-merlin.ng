@@ -1,0 +1,8 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+carol::ipsec start
+carol::sleep 1
+carol::ssh PH_IP_ALICE hostname
+carol::ping -c 1 PH_IP_ALICE > /dev/null
+carol::sleep 2

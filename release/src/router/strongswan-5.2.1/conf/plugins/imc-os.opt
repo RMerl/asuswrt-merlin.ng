@@ -1,0 +1,14 @@
+libimcv.plugins.imc-os.device_cert =
+	Manually set the path to the client device certificate
+    (e.g. /etc/pts/aikCert.der)
+
+libimcv.plugins.imc-os.device_id =
+	Manually set the client device ID in hexadecimal format
+   (e.g. 1083f03988c9762703b1c1080c2e46f72b99cc31)
+
+libimcv.plugins.imc-os.device_pubkey =
+	Manually set the path to the client device public key
+    (e.g. /etc/pts/aikPub.der)
+
+libimcv.plugins.imc-os.push_info = yes
+	Send operating system info without being prompted.

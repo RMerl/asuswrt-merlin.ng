@@ -1,0 +1,28 @@
+charon.imcv {}
+	Defaults for options in this section can be configured in the _libimcv_
+	section.
+
+charon.imcv.assessment_result = yes
+	Whether IMVs send a standard IETF Assessment Result attribute.
+
+charon.imcv.database =
+	Global IMV policy database URI. If it contains a password, make	sure to
+	adjust the permissions of the config file accordingly.
+
+charon.imcv.os_info.name =
+	Manually set the name of the client OS (e.g. Ubuntu).
+
+charon.imcv.os_info.version =
+	Manually set the version of the client OS (e.g. 12.04 i686).
+
+charon.imcv.policy_script = ipsec _imv_policy
+	Script called for each TNC connection to generate IMV policies.
+
+libimcv.debug_level = 1
+	Debug level for a stand-alone _libimcv_ library.
+
+libimcv.load = random nonce gmp pubkey x509
+	Plugins to load in IMC/IMVs with stand-alone _libimcv_ library.
+
+libimcv.stderr_quiet = no
+	Disable output to stderr with a stand-alone _libimcv_ library.

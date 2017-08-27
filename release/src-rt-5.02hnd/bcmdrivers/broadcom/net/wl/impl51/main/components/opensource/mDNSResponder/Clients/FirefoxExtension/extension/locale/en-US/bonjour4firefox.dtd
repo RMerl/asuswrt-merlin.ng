@@ -1,0 +1,6 @@
+<!ENTITY bonjour4firefox.label "Bonjour">
+<!ENTITY bonjour4firefoxToolbar.label "Bonjour">
+<!ENTITY bonjour4firefoxToolbar.tooltip "Display Bonjour enabled websites">
+<!ENTITY bonjour4firefoxSidebarOpenDefault.label "Open in current window">
+<!ENTITY bonjour4firefoxSidebarOpenTab.label "Open in new tab">
+<!ENTITY bonjour4firefoxSidebarOpenWindow.label "Open in new window">

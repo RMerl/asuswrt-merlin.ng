@@ -1,0 +1,1668 @@
+Changes:
+
+2011/11/27: Version 10.0.3 - Sebastien Godard (sysstat <at> orange.fr)
+	* sadf: New output format added: JSON (JavaScript Object
+	  Notation). This format can be displayed with sadf's option -j.
+	* [Jürgen Heinemann]: Fixed a bug in sadf XML output.
+	* [Jürgen Heinemann]: Fixed several bugs in DTD and XSD
+	  documents.
+	* [Petr Uzel]: Fixed random crash with iostat when called with
+	  option -N [NOVELL Bug#729130].
+	* sadf manual page updated.
+	* NLS updated.
+	* CREDITS file updated.
+
+2011/08/28: Version 10.0.2 - Sebastien Godard (sysstat <at> orange.fr)
+	* sadf modified to make it easier to add new output formats.
+	  Its design is still not generic anyway.
+	* Option -T added to sadf: This option tells sadf to display
+	  timestamps in seconds since the epoch (when applicable).
+	* Option "-P ON" added to mpstat. This option tells mpstat
+	  to display stats only for online CPU.
+	* [Kei Ishida]: pidstat displayed stats for processes that
+	  had terminated while pidstat was running. This is now fixed.
+	* [Jeroen Roovers]: Automate translation files handling in
+	  Makefile.in.
+	* DTD and XSD documents updated.
+	* sadf and mpstat manual pages updated.
+	* pidstat manual page updated: Added description of field %MEM
+	  displayed by pidstat -r.
+	* Various cosmetic changes (sar.c, sadf.c).
+	* NLS updated.
+	* CREDITS file updated.
+
+2011/06/03: Version 10.0.1 - Sebastien Godard (sysstat <at> orange.fr)
+	* Added USB devices statistics to sar and sadc. The option
+	  "-m USB" can now be used with sar to take a snapshot of all
+	  the USB devices currently plugged into the system.
+	* sadf -p now displays the sensor device name for temperature,
+	  voltage inputs and fans statistics.
+	* sar and pidstat: Check that _("Average") string doesn't exceed
+	  the size of the timestamp buffer.
+	* [Ivana Varekova]: Added option -h to iostat. This option makes
+	  the device utilization report easier to read with long device
+	  names.
+	* [Ivana Varekova]: cifsiostat didn't count open files from the
+	  "Posix Open" column in /proc/fs/cifs/Stats file. This is now
+	  fixed.
+	* [Ivana Varekova]: Close file descriptor in read_uptime()
+	  function (rd_stats.c file).
+	* Fixed XML output displayed by sadf (hugepages statistics were
+	  included in <power-management> section).
+	* sar: Decrease column width for sensor device name (temperature,
+	  voltage inputs and fans statistics).
+	* Remove unnecessary arguments from functions in pr_stats.c.
+	* sar manual page updated.
+	* DTD and XSD documents updated and cleaned.
+	* NLS updated. Esperanto translation added.
+	* CREDITS file updated.
+
+2011/03/15: Version 10.0.0 - Sebastien Godard (sysstat <at> orange.fr)
+	* [Ivana Varekova]: Fixed a problem with long NFS and CIFS share
+	  names in cifsiostat and nfsiostat.
+	* [Ivana Varekova]: Added the possibility to extend the number
+	  of slots for NFS and CIFS mount points on the fly.
+	* [Ivana Varekova]: Check calloc() return value in cifsiostat
+	  and nfsiostat.
+	* [Jan Kaluza]: Added --debuginfo option to cifsiostat and
+	  nfsiostat.
+	* cifsiostat and nfsiostat manual pages updated.
+	* Don't link sysstat's commands with sensors library if not
+	  needed [DEBIAN Bug#612571].
+	* [Adam Heath]: iostat incorrectly mapped device-mapper IDs
+	  greater than 256. This is now fixed [DEBIAN Bug#614397].
+	* Sysstat's commands option -V now displays the version number
+	  on stdout and returns 0 for the exit code.
+	* sysstat_panic function is now defined only in DEBUG mode.
+	* NLS updated. Ukrainian translation added.
+	* CREDITS file updated.
+
+2010/12/26: Version 9.1.7 - Sebastien Godard (sysstat <at> orange.fr)
+	  INFO: stats_queue structure format has changed and is *not*
+	  compatible with the previous one [+1]
+	* sar now tells sadc to read only the necessary groups of
+	  activities.
+	* Added a new metric (number of tasks waiting for I/O) to
+	  sar -q.
+	* Added two new metrics (amount of active and inactive
+	  memory) to sar -r.
+	* [Ivana Varekova]: Fix segfaults on bogus localtime input.
+	* Fixed bogus CPU statistics output, which happened when
+	  CPU user value from /proc/stat wasn't incremented whereas
+	  CPU guest value was.
+	* nfsiostat now takes into account POSIXLY_CORRECT environment
+	  variable. nfsiostat default output is expressed in kB/s,
+	  unless this variable is set (in which case the output is
+	  expressed in blocks/s).
+	* No longer assume that device-mapper major number is 253.
+	  Get the real number from /proc/devices file.
+	* DTD and XSD documents updated.
+	* [Kenichi Okuyama]: Small change to sar manual page.
+	* sar manual page updated.
+	* NLS updated.
+	* Code cleaned.
+
+2010/11/10: Version 9.1.6 - Sebastien Godard (sysstat <at> orange.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2171]
+	* Added a new magical value for each activity in file.
+	  A format change can now hit only one activity instead of
+	  the whole file.
+	* Added CPU average clock frequency statistics to sar and sadc.
+	* Added hugepages utilization statistics to sar and sadc.
+	* Fixed some differences between XML output (as displayed by
+	  sadf -x) and DTD document.
+	* sadc -S POWER didn't include voltage inputs statistics.
+	  This is now fixed.
+	* Define groups of activities: Each activity has now a new
+	  attribute specifying the group it belongs to (POWER, IPV6, etc.)
+	* [Ivana Varekova]: Moved manual pages to $prefix/share/man
+	  instead of $prefix/man.
+	* [Ivana Varekova]: Fixed configure's --disable-man-group option.
+	* [Ivana Varekova]: Added SADC_OPTIONS to sysstat configuration file.
+	* [Ivana Varekova]: Added sysstat(5) manual page.
+	* sar manual page updated.
+	* DTD and XSD documents updated.
+	* NLS updated.
+	* Split up prf_stats.c file into rndr_stats.c and xml_stats.c
+	* Moved cron files in a separate cron subdirectory.
+	* Made sysstat git aware.
+	* CREDITS file updated.
+
+2010/09/12: Version 9.1.5 - Sebastien Godard (sysstat <at> orange.fr)
+	* Added voltage inputs statistics to sar and sadc.
+	* Added %temp field to device temperature statistics (sar -m TEMP).
+	* Added drpm field to fan speed statistics (sar -m FAN).
+	* XSD and DTD documents updated.
+	* sar manual page updated. Indicate that svctm field should
+	  no longer be trusted.
+	* Removed link to isag(1) from man pages.
+	* NLS updated. Czech translation added.
+	* Sample crontabs and sysstat init script: Don't collect disk
+	  data by default.
+	* Code cleaned.
+
+2010/07/29: Version 9.1.4 - Sebastien Godard (sysstat <at> orange.fr)
+	* [Jan Kaluza]: Added fan speed and device temperature
+	  statistics to sar and sadc.
+	* [Jan Kaluza]: Configure script updated. Now check for
+	  lm_sensors library.
+	* Configure script updated: Added --disable-sensors option.
+	* Configure script updated: Removed --enable-smp-race option.
+	* iconfig script updated.
+	* sar manual page updated.
+	* XSD and DTD documents updated.
+	* [Ivana Varekova]: sysstat init script updated.
+	* Default owner for sadc/sar crontab is now root.
+	* Various fixes in cifsiostat and nfsiostat manual pages.
+	* NLS updated.
+
+2010/06/27: Version 9.1.3 - Sebastien Godard (sysstat <at> orange.fr)
+	* [Ivana Varekova]: Move NFS code out from iostat and create
+	  the new nfsiostat command.
+	* [Ivana Varekova]: Added cifsiostat command. This command
+	  displays CIFS statistics.
+	* [Mario Konrad]: Added regular expressions support to pidstat's
+	  option -C.
+	* [Mario Konrad]: Added option -s to pidstat to display stack
+	  statistics.
+	* [Ivana Varekova]: Fixed condition used by sar to distinguish
+	  betwwen a counter reset by a newly registered device and a
+	  counter overflow.
+	* [Jan Kaluza]: Added --debuginfo option to iostat.
+	* [Jan Kaluza]: Added --enable-debuginfo option to configure script.
+	* iconfig configuration script updated.
+	* iostat manual page updated. Indicate that svctm field should
+	  no longer be trusted.
+	* pidstat manual page updated.
+	* autoconf script updated.
+	* NLS updated.
+	* README and CREDITS files updated.
+
+2010/05/23: Version 9.1.2 - Sebastien Godard (sysstat <at> orange.fr)
+	* Added r_await and w_await fields to iostat's extended statistics.
+	* Added support for tickless CPUs in sar and mpstat.
+	* NLS was not taken into account when mpstat or sar were displaying
+	  some null statistics. This is now fixed.
+	* sadc no longer syncs data with its output file contents. It
+	  put a pain on flash devices as it undermined any tuning of
+	  the vm's write behavior [DEBIAN Bug#559686].
+	* NLS updated. Basque translation added.
+	* iostat, sar and sa1 manual pages updated.
+	* CREDITS file updated.
+
+2010/02/28: Version 9.1.1 - Sebastien Godard (sysstat <at> orange.fr)
+	* Remove support for kernels older than 2.6.x.
+	* iostat now takes into account POSIXLY_CORRECT environment
+	  variable. iostat default output for disk utilization is
+	  expressed in kB/s, unless this variable is set (in which case
+	  the output is expressed in blocks/s).
+	* mpstat can now display per processor software interrupts
+	  statistics. This requires Linux kernel 2.6.31 or later.
+	* Because of a change in /proc/interrupts file format, mpstat
+	  was no longer counting the proper number of interrupts. This
+	  is now fixed.
+	* Manual pages updated.
+	* NLS updated.
+	* Code cleaned.
+
+2009/11/11: Version 9.0.6 - Sebastien Godard (sysstat <at> orange.fr)
+	* "sadf -x" now takes into account options -s and -e (which
+	  specify a starting and ending time) and also interval and
+	  count parameters [DEBIAN bug#546259].
+	* Option -C added to sadf. Use it to tell sadf to display comments
+	  present in file (also works with XML format).
+	* sar and sadf sometimes didn't handle COMMENT records properly.
+	  This is now fixed.
+	* XML output (displayed by sadf -x) modified for kernel tables
+	  statistics.
+	* XSD and DTD documents updated.
+	* [Yibin Shen]: HZ variable was not explicitly set in sadc.c. This
+	  is now fixed.
+	* [Lans Carstensen]: sargraph added (sargraph is a shell script
+	  used to make graphs based on sadf XML output).
+	* sadf manual page updated.
+	* FAQ updated.
+	* NLS updated.
+	* CREDITS file updated.
+
+2009/09/20: Version 9.0.5 - Sebastien Godard (sysstat <at> orange.fr)
+	* sysstat should now be able to pretty print device names whose
+	  minor numbers are greater than or equal to 256. (Tests have
+	  been made on a large 26TB RHEL5/PP Linux cluster.)
+	* sadc manual page updated.
+	* NLS updated.
+	* FAQ updated.
+
+2009/07/19: Version 9.0.4 - Sebastien Godard (sysstat <at> orange.fr)
+	* [Jonathan Kamens]: Fix double free/memory corruption bug
+	  with sadc.
+	* [Jeroen Roovers]: Get entirely rid of implicit rule for
+	  libsyscom.a in Makefile to fix a problem with parallel
+	  execution.
+	* sysstat.ioconf configuration file updated.
+	* NLS updated.
+	* CREDITS file updated.
+
+2009/05/24: Version 9.0.3 - Sebastien Godard (sysstat <at> orange.fr)
+	* [Michael Blakeley]: Option -z added to iostat. This option
+	  tells iostat to omit output for any devices for which there
+	  was no activity during the sample period.
+	* [Tomasz Pala]: Fix mpstat where interrupt values should be
+	  read as unsigned integers.
+	* sar -n ALL didn't select IPv6 statistics. This is now fixed.
+	* iostat, sar and mpstat manual pages updated.
+	* sadf -x now displays file creation date.
+	* XSD and DTD documents updated.
+	* NLS updated. Latvian translation added.
+	* CREDITS file updated.
+	* Code cleaned.
+
+2009/04/02: Version 9.0.2 - Sebastien Godard (sysstat <at> orange.fr)
+	* sadc can now collect partition statistics in addition to disk ones.
+	  Keywords XDISK and XALL have been added to -S option.
+	* Fixed a memory corruption in pidstat and iostat. This corruption
+	  could happen when a list of comma-separated values following
+	  option -p was entered on the command line.
+	* configure now takes into account a new variable named rcdir.
+	  This variable may be used to specify the directory where
+	  startup scripts will be installed.
+	* The value of directory for installing documentation files
+	  can now be set with configure's --docdir option.
+	* Fixed a small bug in activity.c file, where there was a
+	  missing semicolon between two fields.
+	* sar and sadc manual pages updated.
+	* NLS updated.
+	* CREDITS file updated.
+
+2009/03/07: Version 9.0.1 - Sebastien Godard (sysstat <at> orange.fr)
+	* Fix a crash with sar where a pointer was freed twice.
+	* NLS updated.
+	* sar manual page updated.
+	* CREDITS file updated.
+
+2009/03/01: Version 9.0.0 - Sebastien Godard (sysstat <at> orange.fr)
+	* Option -m added to sar. This option is intended to display
+	  power management statistics. At the present time, only
+	  CPU frequency statistics are available.
+	* sadc updated: Option "-S POWER" tells sadc to collect power
+	  management statistics.
+	* sadf command updated to take into account power management
+	  statistics.
+	* [Mike Harvey]: No longer truncate the interval of time to
+	  32 bits, as this may cause some problems when displaying
+	  average values statistics on machines with hundreds of CPU.
+	* read_uptime(): Cast values read from /proc/uptime to
+	  unsigned long long.
+	* Fixed a small bug in sar where it didn't parse arguments
+	  properly when some options were entered in a specific order.
+	* sadc and sar manual pages updated.
+	* XSD and DTD documents updated.
+	* FAQ updated.
+	* NLS updated.
+	* Code cleaned. Makefile cleaned.
+
+2009/01/11: Version 8.1.8 - Sebastien Godard (sysstat <at> orange.fr)
+	* IPv6 support added. A bunch of new metrics have been added to
+	  sar, enabling the user to display statistics for IPv6 protocol
+	  family (IPv6, ICMPv6, UDPv6 and network sockets).
+	* sadc updated: Option "-S IPV6" tells sadc to collect IPv6
+	  statistics.
+	* sadf command updated to take into account IPv6 statistics.
+	* Options -S (for sadc), -P (for mpstat, sar and sadf), -p (for
+	  iostat and pidstat) and -n and -I (for sar) now accept a list of
+	  comma-separated arguments.
+	* [Ivana Varekova]: Make iostat display statistics for devices only
+	  (and not partitions) when not using its option -d. This was
+	  no longer possible with kernels 2.6.25 and later because iostat
+	  couldn't distinguish between devices and partitions any more.
+	* iostat's options -x and -p are no longer mutually exclusive:
+	  Extended statistics are now available even for partitions with
+	  recent kernels.
+	* iostat was unable to read stats from sysfs for devices who had
+	  a slash in their names (for example, iostat -p /dev/cciss/c0d0
+	  didn't work properly before). This is now fixed.
+	* [Amir Rapson]: Fixed a bug in iostat where %CPU spent
+	  servicing hard and soft irq were counted twice. This bug
+	  was introduced in 8.1.5.
+	* DTD and XSD files updated.
+	* Manual pages updated.
+	* NLS updated. Maltese translation added.
+	* CREDITS file updated.
+
+2008/11/13: Version 8.1.7 - Sebastien Godard (sysstat <at> orange.fr)
+	* Support for SNMP statistics added to sar. Several keywords
+	  have been added to option "-n". The user can now display
+	  statistics about IP, ICMP, TCP and UDP network traffic.
+	* sadc updated: Option "-S SNMP" tells sadc to collect SNMP
+	  statistics.
+	* sadf command updated to take into account SNMP statistics.
+	* sadf -x now also displays number of CPU.
+	* DTD and XSD files updated.
+	* sar/sadc: Each item (like network interfaces) is now counted
+	  once.
+	* [Eduardo Ferro Aldama]: Option -l added to pidstat. This
+	  option enables the user to display the whole command line for
+	  each process.
+	* Option -h added to sar. This option displays a short help message.
+	* Cosmetic change in sadf -x output for network statistics.
+	* sadf -H now displays the real name of each activity saved in file.
+	* Fixed some memory leaks detected by valgrind.
+	* pidstat, sar and sadc manual pages updated.
+	* FAQ updated.
+	* NLS updated.
+	* CREDITS file updated.
+	* Code cleaned.
+
+2008/09/30: Version 8.1.6 - Sebastien Godard (sysstat <at> orange.fr)
+	* [David Alan Gilbert]: Option -h added to pidstat. This
+	  option is used to display all activities horizontally on a
+	  single line.
+	* Fixed a bug in pidstat: When pidstat was used to monitor a
+	  process and all its threads (with pidstat's option -t), it
+	  could display weird values if the thread group leader terminated.
+	* Header line displayed by sar, iostat, mpstat, pidstat and
+	  sadf -H now includes the number of CPU.
+	* Use the correct word TGID instead of PID with pidstat -t.
+	* mpstat now displays stats for all interrupts, including NMI,
+	  LOC, etc.
+	* sar and sadf now check that CPU activity is available in file.
+	* iostat's option -t now always displays the date and the time.
+	* Added option "--disable-documentation" to ./configure. Using
+	  this option prevents documentation files (including manual
+	  pages) from being installed.
+	* iconfig script updated. Now ask the user for documentation
+	  and isag script installation.
+	* Manual pages updated.
+	* NLS updated. Indonesian and Chinese (traditional) translations
+	  added.
+	* README-nls file updated.
+	* Makefile updated: There is now a dedicated target to install
+	  or uninstall NLS files
+	* FAQ updated.
+	* CREDITS file updated.
+	* Code cleaned.
+
+2008/07/14: Version 8.1.5 - Sebastien Godard (sysstat <at> orange.fr)
+	* Added virtual machine time accounting to "sar -u ALL" and
+	  mpstat (%guest).
+	* pidstat has also been updated to be able to display time
+	  spent in virtual machine for a task, and for a task and all
+	  its children.
+	* Option -S added to sar: This options tells sar to display
+	  swap space utilization. Option -r now only displays memory
+	  utilization.
+	* Added %swpcad to sar -S (percentage of cached swap memory
+	  in relation to the amount of used swap space).
+	* Added kbcommit and %commit to sar -r (amount and percentage
+	  of memory needed for current workload).
+	* sadf -x now distinguishes between options -r and -R.
+	* sadf command updated to take into account new fields
+	  (%guest, %swpcad, etc.)
+	* [Ivana Varekova]: iostat now displays the total number of
+	  operations per second in the NFS report.
+	* Fixed iostat so that %system (percentage of CPU utilization
+	  that occurred while executing at system level) also takes
+	  into account time spent to service interrupts and softirqs.
+	* Added a missing header line for activities with multiple
+	  outputs displayed by sar (eg. sar -rR ...).
+	* Makefile updated: There is now a dedicated target to install
+	  or uninstall manual pages.
+	* Manual pages updated.
+	* Code cleaned.
+	* XSD and DTD documents updated.
+	* isag script updated.
+
+2008/06/22: Version 8.1.4 - Sebastien Godard (sysstat <at> orange.fr)
+	* sar can now collect and display all CPU fields with its new
+	  option "-u ALL". sadf has also been updated to be able to
+	  display them.
+	* mpstat can now display per-CPU interrupts statistics with its
+	  option "-I CPU". This was a feature available in sar that was
+	  removed in previous sysstat version.
+	* mpstat uses now a separate option ("-I SUM") to display the
+	  total number of interrupts for each processor.
+	* Option -A added to mpstat. This switch tells mpstat to display
+	  all possible activities.
+	* NFS v4 support added to sar -n NFS(D). When both NFS v3 and
+	  NFS v4 are used, stats from NFS v3 and NFS v4 are added
+	  together [DEBIAN bug#434442].
+	* Code cleaned: mpstat, iostat and pidstat now use the common
+	  functions from rd_stats.c to read CPU stats from /proc/stat;
+	  Computing extended disk statistics (service time, etc.) is now
+	  done in one place (common function used by iostat, sar, sadf).
+	* All sysstat commands are made consistent with how parameters
+	  are interpreted: "COMMAND <interval>" now generates a report
+	  continuously, "COMMAND <interval> 0" causes an error,
+	  "COMMAND 0" displays a report since system startup
+	  [DEBIAN bug#475707].
+	* Changed XML output for processes and context switches displayed
+	  by sadf -x to be consistent with output from sar.
+	* mpstat and sar manual pages updated.
+	* isag script updated.
+	* FAQ updated.
+	* DTD and XML Schema updated.
+	* NLS updated.
+
+2008/05/25: Version 8.1.3 - Sebastien Godard (sysstat <at> orange.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2170]
+	* sar, sadc and sadf heavily modified. It is now easier to add
+	  (or remove) activities since sar and sadc have been rewritten
+	  in a non-monolithic way with a generic design architecture.
+	* Option -c removed from sar. Task creation and context switch
+	  activities are now merged and available with option -w.
+	* sar no longer displays interrupts per processor statistics.
+	  This feature will be included in mpstat in next sysstat version.
+	* Option -S added to sadc. This option replaces previous options
+	  -I or -d, and is used to select activities that should be
+	  collected and saved in file. It is even possible to
+	  select each activity collected by sadc.
+	* Format of data files created by sar/sadc heavily modified.
+	  In some cases, it is now possible to add or remove activities
+	  while keeping a compatible format that can be read by a previous
+	  or future sysstat version.
+	* sadf now only displays activities that have been explicitly
+	  selected.
+	* sar now checks that devices displayed by option -d are whole
+	  devices (and not partitions) using sysstat.ioconf configuration
+	  file. If this file is not found in its default directory, then
+	  sysstat looks for it in current directory.
+	* gettextize entire usage() messages so that translators have
+	  free scope to act.
+	* DTD and XML Schema updated.
+	* Manual pages updated.
+	* Crontab samples updated.
+	* FAQ updated.
+	* Code cleaned.
+
+2008/03/16: Version 8.1.2 - Sebastien Godard (sysstat <at> orange.fr)
+	* [Ivana Varekova]: iostat now displays read and write operations
+	  per second in the NFS report.
+	* [Tomas Mraz]: sadc now retries to write its buffers when the
+	  write() call has been interrupted by a signal.
+	* Use setbuf() call instead of fflush() to indicate that data
+	  should not be buffered to stdout.
+	* Option -h added to sadf. Used with options -d or -D, it
+	  indicates that all activities should be displayed horizontally
+	  on a single line of data.
+	* sadf -d and sadf -D now display the list of fields for easier
+	  data reading.
+	* sadf and iostat manual pages updated.
+	* NLS updated: Chinese (simplified) translation added, other
+	  translations updated.
+
+2008/02/10: Version 8.1.1 - Sebastien Godard (sysstat <at> orange.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x216f]
+	* System activity data files now have extra header data that
+	  enable to identify which version of sysstat created them.
+	* sadf -H now displays the version of sysstat used to create
+	  a system activity data file.
+	* Machine architecture is now displayed in the reports header.
+	  sadf -x also displays machine architecture.
+	* DTD and XML Schema documents updated.
+	* The number of processors was not properly calculated on
+	  machines where a directory named cpuidle was present in the
+	  /sys/devices/system/cpu directory [GENTOO bug# 207886].
+	* Use __CPU_SETSIZE definition from <sched.h> instead of a
+	  static definition for the maximum number of CPUs (NR_CPUS).
+	* Improved error messages displayed by sysstat's commands.
+	* NLS updated: Finnish translation added, Dutch translation
+	  updated.
+	* FAQ updated.
+	* Code cleaned and documented. Linux-like style applied to
+	  code source. Large functions split into smaller ones.
+
+2008/01/06: Version 8.0.4 - Sebastien Godard (sysstat <at> orange.fr)
+	* Removed a 'packed' attribute in pidstat.h that generated
+	  a warning with gcc 4.1.1.
+	* Take account of all memory zone types when calculating
+	  pgscank, pgscand and pgsteal displayed by sar -B.
+	* XML Schema added. Useful with sadf option -x.
+	* sadc and sadf manual pages updated.
+	* NLS updated: Dutch translation added.
+	* NLS updated: Brazilian Portuguese translation added.
+	* NLS updated: Vietnamese translation added.
+	* NLS updated: Kirghiz translation added.
+	* NLS updated: Added a PO template file in nls directory.
+	  Makefile modified to enable PO files update.
+	* sccsid string now also includes package name and version number.
+	* Makefile updated: Startup links are named S01xxx instead of S03xxx
+	  to be consistent with chkconfig values.
+	* Various spelling fixes.
+	* CREDITS file updated.
+
+2007/11/19: Version 8.0.3 - Sebastien Godard (sysstat <at> orange.fr)
+	* mpstat and sar didn't parse /proc/interrupts correctly when
+	  some CPUs had been disabled. This is now fixed.
+	* Fixed a bug in pidstat where a confusion between PID and TID
+	  could sometimes happen, resulting in erroneous statistics
+	  values being displayed.
+	* iconfig script updated: Help for --enable-compress-manpg
+	  parameter is now available, help for --enable-install-cron
+	  parameter updated, added parameter cron_interval.
+	* sa2 shell script can now compress sar data files using bzip2.
+	* Makefile updated: Now also remove sysstat.crond.sample.in.
+	  Documentation is installed in $prefix/share/doc/ instead of
+	  $prefix/doc/ directory.
+	* isag updated.
+	* FAQ updated.
+	* CREDITS file updated.
+	* Sysstat's URL updated.
+
+2007/10/26: Version 8.0.2 - Sebastien Godard (sysstat <at> orange.fr)
+	* Option -w added to pidstat. pidstat can now display task
+	  switching activity.
+	* Fixed a memory leak in pidstat that was triggered when
+	  reading stats for threads.
+	* Fixed a bug where device names were incorrectly displayed by
+	  sar -d or sar -dp. Fixed also this bug for sadf.
+	* When using option -o, sar now saves by default all the
+	  statistics into the file, including interrupts and disks
+	  statistics. Interrupts and disks statistics remain optional
+	  when using sadc.
+	* sysstat startup script updated.
+	* sar and pidstat manual pages updated.
+	* isag updated.
+	* NLS updated.
+	* Code cleaned.
+	* CREDITS file updated.
+
+2007/09/30: Version 8.0.1 - Sebastien Godard (sysstat <at> orange.fr)
+	* Option -t added to pistat. pidstat can now display stats for
+	  every thread (TID) of a process.
+	* pidstat's option -T CHILD now reports global statistics for
+	  selected tasks and all their children (and not only for the
+	  children).
+	* pidstat now reads VSZ and RSS values from /proc/#/stat instead
+	  of /proc/#/status.
+	* Fixed a rare parallel make issue creating archive libsyscom.a
+	  [GENTOO bug #193208].
+	* pidstat manual page updated.
+	* SCCS identification string added to all commands.
+	* NLS updated.
+	* Code cleaned.
+	* CREDITS file updated.
+
+2007/09/02: Version 8.0.0 - Sebastien Godard (sysstat <at> orange.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x216e]
+	* pidstat command improved. It is now able to report CPU and
+	  page fault statistics for the child processes of a task.
+	* Option -T added to pidstat. This option tells pidstat if
+	  statistics are to be reported for tasks (which is the default)
+	  or for their children.
+	* Fixed a security flaw in sysstat startup script (CVE-2007-3852).
+	* Removed super*, dquot* and rtsig* fields from sar -v.
+	  They were made obsolete in Linux kernels 2.6.
+	* Fields file-sz and inode-sz from sar -v renamed to file-nr
+	  and inode-nr.
+	* Added field pty-nr (number of pseudo-terminals) to sar -v.
+	* Added field tcp-tw (number of sockets in TIME_WAIT state)
+	  to sar -n SOCK.
+	* sar and sadf updated so that they can properly extract records
+	  (with their options -s and -e) from a file containing data for
+	  two consecutive days.
+	* Added option "--enable-install-isag" to "configure" to enable
+	  the user to install isag script.
+	* Fixed a typo in iconfig script: The user was unable to specify
+	  the crontab owner.
+	* Manual pages updated.
+	* Sysstat DTD file updated.
+	* isag updated.
+	* NLS updated.
+	* FAQ updated.
+	* CREDITS file updated.
+	* Author's email updated.
+
+2007/07/08: Version 7.1.6 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x216d]
+	* New VM paging metrics added to sar (option -B).
+	* Options -x and -X have been removed from sar. Use pidstat(1)
+	  command instead.
+	* NR_CPUS increased to 16384 so that sysstat can be used on
+	  very large systems.
+	* Fixed a bug in sadc.c where it was using a hardcoded 256 char
+	  buffer to store lines read from /proc/interrupts.
+	* sar updated to avoid overflow when computing some average values.
+	* sar and mpstat manual pages updated.
+	* Sysstat DTD file updated.
+	* FAQ updated.
+	* NLS updated.
+	* CREDITS file updated.
+
+2007/06/07: Version 7.1.5 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x216c]
+	* Option -d added to pidstat: This option reports I/O statistics
+	  for individual tasks.
+	* Option -C added to sadc: This option enables the user to insert
+	  a timestamped comment in the binary data file.
+	* Option -C added to sar: This option tells sar to display
+	  comments inserted in the binary data file by sadc.
+	* sadf updated to display comments.
+	* Fixed a bug that could happen while reading /proc/interrupts,
+	  where irq numbers can now be 4 digits long in recent kernels.
+	* Fixed a possible buffer overflow in ioconf.c.
+	* Makefile updated: Remove previous manual pages before installing
+	  new ones.
+	* pidstat, sar and sadc manual pages updated.
+	* Sysstat DTD file updated.
+	* Fixed DTD version in sadf.h.
+	* NLS updated.
+	* CREDITS file updated.
+
+2007/04/29: Version 7.1.4 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Addition of a new command "pidstat" aimed at displaying
+	  per-process statistics.
+	* Option -N added to iostat. This option enables the user to
+	  query any device-mapper devices for their registered device name
+	  [bugzilla #177540].
+	* Fixed a small memory leak in readp_uptime() function.
+	* Typo fixed in configure.in file
+	  (s+INIT_DIR/etc/rc.d/init.d+INIT_DIR=/etc/rc.d/init.d+).
+	* Stricter syntax checking for iostat.
+	* sar -dp now displays the device as "devM-N" (instead of "nodev")
+	  when it can't find its real name in sysstat.ioconf file.
+	* iostat -t now also takes into account the value of environment
+	  variable S_TIME_FORMAT.
+	* Manual pages now take into account variables defined by
+	  "configure".
+	* isag now takes into account variables defined by "configure".
+	* "configure" now determines automatically whether workaround for
+	  SMP race is needed. This workaround is for SMP kernels 2.2.x with
+	  x <= 15 only.
+	* pidstat manual page added. Other manual pages updated.
+	* Makefile updated.
+	* NLS updated.
+	* FAQ updated.
+	* Code cleaned again and again...
+	* Removed sargon from contrib directory since its features are
+	  now included in sysstat by default.
+
+2007/03/27: Version 7.1.3 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x216b]
+	* Hotplug CPU support: Fixed a bug that happened when sar tried
+	  to read a datafile created while a least one processor was
+	  disabled.
+	* Better support for keeping sar logfiles for more than one month
+	  (several bugs fixed in sa1 and sa2 scripts).
+	* Fixed a small bug in sa2 script, where obsolete log files would not
+	  be deleted if system activity directory was a symbolic link to
+	  some other directory.
+	* The new variable "conf_dir" now enables the user to specify sysstat
+	  configuration directory. This variable is used by "configure".
+	* Added option "--enable-compress-manpg" to "configure" to enable the
+	  user to compress manual pages during installation.
+	* Removed some 'packed' attributes in sa.h and iostat.h that
+	  generated warnings with gcc 4.1.1.
+	* isag (Interactive System Activity Grapher) improved.
+	* CREDITS file updated.
+	* Code cleaned.
+
+2007/03/04: Version 7.1.2 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x216a]
+	* Better hotplug CPU support. Now sysstat no longer assumes that
+	  CPU#0 can never be disabled. It uses /proc/uptime file to
+	  compute time interval.
+	* Various structures realignment to save memory (and disk space).
+	* Make sar -n display network traffic in kilobytes instead of bytes.
+	* Make sysstat compile cleanly with gcc 4.0.2.
+	* sysstat DTD file updated.
+	* NLS updated: Danish translation added.
+	* Manual pages updated.
+	* CREDITS file updated.
+
+2007/02/21: Version 7.1.1 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Autoconf support added.
+	* iconfig (Interactive Configuration script) added. iconfig is
+	  a front-end to ./configure.
+	* spec file updated.
+	* FAQ updated.
+	* sadf manual page updated.
+	* CREDITS file updated.
+
+2007/02/04: Version 7.0.4 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Removed linux/major.h from list of files included in ioconf.c.
+	  It was actually not used and also prevented sysstat from being
+	  compiled on GNU/kFreeBSD.
+	* Sysstat scripts (sa1, sa2, sysstat) modified to enable the user
+	  to keep sar data for more than one month.
+	* New parameter (COMPRESSAFTER) added to /etc/sysconfig/sysstat.
+	  It gives the number of days after which sar datafiles must be
+	  compressed to save disk space.
+	* Replaced the word "Device" with "Filesystem" for iostat
+	  NFS report.
+	* iostat manual page updated.
+	* Makefile updated: don't use a static list of languages to
+	  compile NLS files.
+	* "make install" now always install sysstat configuration file
+	  (default location is /etc/sysconfig).
+	* FAQ updated.
+	* Added my email address when displaying sysstat version.
+	* NLS updated.
+
+2006/12/03: Version 7.0.3 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* iostat NFS statistics added.
+	* iostat manual page updated.
+	* Columns "r/s" and "w/s" enlarged for iostat -x.
+	* Minor change so that sar -u may fit in 80 columns.
+	* NLS updated.
+	* CREDITS file updated.
+
+2006/10/22: Version 7.0.2 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Hotplug CPU support added to sar and mpstat 
+	* Use /sys to count the number of available processors.
+	  /proc/stat is used for that only if /sys is not found.
+	* sysstat DTD updated.
+	* sysstat spec file updated (gettext is now required).
+	* NLS updated: Swedish translation added.
+	* Manual pages updated.
+	* Makefile updated.
+	* CREDITS file updated.
+
+2006/09/17: Version 7.0.1 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Use now sysconf() function to get the size of a memory page
+	  instead of using header file <asm/page.h>.
+	* The time specified with sadf options -s and -e is now always
+	  considered as given in local time. sadf output is now	really
+	  consistent with that of sar.
+	* Fixed a bug in the SREALLOC() macro which was causing sar to
+	  exit unexpectedly with this message: "realloc: Success".
+	* Try to better guess when a stats title line has to be displayed
+	  by sar.
+	* Makefile updated (SMP_RACE definition was no longer taken into
+	  account when compiling sadc).
+	* sysstat spec file updated.
+	* sar and sadf manual pages updated.
+	* FAQ updated.
+	* CREDITS file updated.
+
+2006/07/09: Version 7.0.0 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* S_TIME_DEF_TIME environment variable added for sar, sadc and
+	  sadf.
+	* Use now sysconf() function to get the number of clock ticks
+	  per second (HZ value) instead of using kernel include file
+	  <sys/param.h>.
+	* Columns "Device", "rrqm/s" and "wrqm/s" enlarged for iostat -x.
+	* sysstat installation process updated to use chkconfig if
+	  available.
+	* Manual pages updated.
+	* Makefile updated.
+	* sysstat web site address updated.
+	* Code cleaned.
+	* CREDITS file updated.
+
+2006/05/24: Version 6.1.3 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2169]
+	* Option -P can now be used with sar even on SMP machines where
+	  only one processor is available.
+	* Small bug fixed for mpstat, where explicitly specifying
+	  processor 0 ("-P 0") could lead to incorrect output on UP
+	  machines.
+	* Option -D added to sadf: this option displays the contents of
+	  a data file in a database-friendly format with a timestamp
+	  expressed in seconds from the epoch.
+	* sadf manual page updated.
+	* NLS updated.
+	* CREDITS file updated.
+
+2006/04/23: Version 6.1.2 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Fix incorrect NFS client and server statistics for sar.
+	* sar can now display stats for newly created processes when
+	  option -x ALL or -X ALL is used.
+	* iostat -x was displaying redundant information. It now
+	  displays amount of data read from or written to devices in
+	  sectors, kilobytes or megabytes depending on the switch used.
+	* isag updated to keep up with current sar version.
+	* sar and mpstat manual pages updated.
+	* FAQ updated.
+
+2006/02/22: Version 6.1.1 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2168]
+	* New field added to sar: %steal.
+	* The size of a long integer in now saved in the header of the
+	  data file created by sar. This size can be displayed with
+	  sadf -H.
+	* Replaced the keyword "FULL" by the keyword "ALL" for sar -n
+	  to be consistent with remaining options.
+	* Makefile updated (use implicit rules).
+	* sar manual page updated.
+	* CREDITS and FAQ files updated.
+
+2005/11/28: Version 6.0.2 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* New field added to mpstat and iostat: %steal.
+	* sar updated to take into account cpu steal time.
+	* Off-by-one error in ioc_conv which was corrupting device names
+	  on 64-bit architecture [Debian bug #334305].
+	* Binary RPM package now installs a sample crontab in /etc/cron.d.
+	* Makefile updated (remove sysstat.cron.* during make clean -
+	  new target added: sysstat.crond.sample).
+	* sar now checks exit code from dup2() system calls.
+	* Option -V now only displays sysstat version number.
+	* NLS updated.
+	* FAQ updated.
+	* Manual pages updated.
+
+2005/06/25: Version 6.0.1 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Fixed a memory leak in ioconf parsing functions used by sar
+	  and iostat.
+	* sar now displays its statistics to STDOUT in addition to saving
+	  them into the file when option -o has been entered on the
+	  command line.
+	* sar now recalculates number of system items (network interfaces,
+	  disks, serial lines, etc.) when a file rotation happens.
+	* Make sar -b work again when used without option -d.
+	* Small changes so that sysstat can be compiled with gcc-4.0.1.
+	* sysstat updated so that it may be installed on Slackware.
+	* sar manual page updated.
+	* CREDITS file updated.
+	* Code cleaned.
+
+2005/05/14: Version 6.0.0 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2167]
+	* Additional fields added to sar -y (TTY statistics). sar, sadf
+	  and DTD updated.
+	* sar -d now only reports for used devices (devices with non zero
+	  statistics).
+	* Stricter sadf syntax checking: various output formats are now
+	  mutually exclusive.
+	* Stricter iostat syntax checking: -k and -m options are now
+	  mutually exclusive.
+	* iostat: option -m is now taken into account even when
+	  displaying extended statistics.
+	* Fixed a bug that prevented iostat from displaying stats about
+	  devices that were unknown in sysstat.ioconf file.
+	* iostat might display bogus sectors values when the corresponding
+	  kernel counters had overflown. This is now fixed.
+	* "sadf datafile -- -A" should also display individual interrupts
+	  if available in datafile.
+	* Fixed a bug that prevented sar -x from displaying stats about a
+	  process if it was after the first 256 processes in the process
+	  list.
+	* Manual pages updated.
+	* sa1 script always uses option -d in crontab.
+	* sysstat.ioconf device configuration file updated.
+	* NLS updated.
+	* FAQ and CREDITS files updated.
+	* Code cleaned.
+
+2005/02/25: Version 5.1.5 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* -x option added to sadf: it is now able to display the contents of
+	  a sar datafile in XML. The corresponding DTD (Document Type
+	  Definition) is included in the sysstat package.
+	* Small code change so that sysstat may be compiled with gcc-4.0.
+	* A few typos fixed in formulas used by sadf to display stats 
+	  on machines where HZ<>100 (typos appeared in sysstat 5.1.4).
+	* Fixed a bug in the stats displayed by sar -d.
+	* Removed a false workaround in iostat: better show that the kernel
+	  is buggy rather than display a value that seems correct but which
+	  is actually not...
+	* Fixed sar -i option which might not select records at the specified
+	  interval on machines with multiple processors.
+	* NLS updated and cleaned. Do no longer translate fields names (sar,
+	  iostat, etc.). Changed nb_NO.po and nn_NO.po files to nb.po and
+	  nn.po.
+	* Bug fixed in spec file: when installing sysstat i586 RPM package,
+	  sa1 and sa2 scripts were pointing to the wrong sadc location.
+	* Now sar and sadc display the magic number when they meet an
+	  invalid system activity file.
+	* sadf manual page updated.
+	* sysstat RPM spec file is now included in source package.
+	* Code cleaned.
+	* FAQ, Makefile and CREDITS files updated.
+
+2005/01/02: Version 5.1.4 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2166]
+	* NFS client and server statistics added to sar.
+	* sar -d now only reads stats for devices (and not partitions)
+	  from /proc/partitions. (This is what it was already doing with
+	  /proc/diskstats).
+	* Display routines from sadf merged, so that -ppc and -db
+	  always output the same values.
+	* sadf updated to handle NFS statistics.
+	* sadf can now display the header of a data file (option -H).
+	* Define MAX_BLKDEV in ioconf.h if non-existent in <linux/major.h>.
+	* sar now looks for sadc in one directory only, specified at
+	  compile time. Moreover it is now possible to have two different
+	  sysstat versions installed: sar knows where its sadc counterpart
+	  is located.
+	* sapath.in removed. SADC_PATH is defined in CONFIG file.
+	* sar and sadf manual pages updated.
+	* sysstat.ioconf file updated.
+	* Fixed a bug in i386 RPM package, where sadc location was not
+	  consistent with that of sar. Spec file updated.
+	* Makefile updated.
+	* NLS updated.
+	* Various cosmetic changes (code and manual pages). Code cleaned.
+	* FAQ and CREDITS files updated.
+
+2004/11/22: Version 5.1.3 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2165]
+	* Option -p added to sar: It enables sar (and also sadf) to
+	  display device names as they appear in /dev.
+	* sysstat.ioconf support added.
+	* New fields added to sar -d (more disk activities displayed):
+	  avgrq-sz, avgqu-sz, await, svctm, %util.
+	* sadf updated to handle new disk activities.
+	* I/O and transfer rate statistics as displayed by sar -b are
+	  available whatever the version of the kernel is (i.e. even on
+	  recent kernels).
+	* Disk stats are read by sadc from /proc/stat only if they cannot
+	  be read from /proc/{partitions,diskstats}.
+	* sadc: Some variables declarations moved around.
+	* sar manual page updated.
+	* Added workaround for EMC PowerPath driver bug to enable iostat
+	  to display proper device name.
+	* Makefile updated: Use $@ and $< everywhere; 'make {iostat,mpstat}'
+	  work again; Create object files before linking; Removed unused
+	  IOS_DFLAGS variable; Use DESTDIR variable everywhere; Create
+	  libsysioc.a; Install sysstat.ioconf.
+	* NLS updated.
+	* README and CREDITS files updated.
+
+2004/11/05: Version 5.1.2 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* sar -d now also uses /proc/partitions to get its data.
+	  From now on sar -d looks in the following files in that order:
+	  /proc/diskstats, /proc/partitions, /proc/stat.
+	* sadc writes disks data to file only if -d option is explicitly
+	  set on the command line.
+	* sadc now reads individual interrupts data from /proc/stat only
+	  if -I option was entered on the command line.
+	* 'sar -A' is now equivalent to 'sar -bBcdqrRuvwWy -I SUM -I XALL
+	  -n FULL -P ALL' (i.e. individual interrupts are also included
+	  in activities).
+	* Option -m now tells iostat to display statistics in megabytes
+	  per second instead of blocks per second.
+	* Make history (number of days to keep log files) configurable
+	  in /etc/sysconfig/sysstat file, which is used by sa2 script.
+	* Now use Vixie cron to launch sadc when possible.
+	* sadc, sa1 and sa2 may now be installed in another directory
+	  than ${PREFIX}/lib/sa. This is useful on 64-bit systems where
+	  the proper directory should be ${PREFIX}/lib64/sa.
+	* When uninstalling sysstat, always delete sysstat script,
+	  config file and links in /etc tree. Also always delete
+	  Vixie cron entry.
+	* sysstat script now returns real exit code.
+	* sar/sadc: Stricter syntax checking for -x and -X options use.
+	* sysstat "*.sh" files renamed in "*.in".
+	* Makefile updated.
+	* sadc and sar manual pages updated.
+	* NLS updated.
+	* FAQ updated.
+	* CREDITS and README files updated.
+
+2004/10/09: Version 5.1.1 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2164]
+	* sar now reads CPU data, number of context switches, number
+	  of sectors and total number of interrupts as 64-bit unsigned
+	  values. It also reads the number of running processes as
+	  unsigned long instead of unsigned int.
+	* sadf - System activity data formatter command added.
+	* Options -h and -H removed from sar. "sar -h" is replaced by
+	  "sadf -p", and "sar -H" is replaced by "sadf -d". Read sadf
+	  manual page, as its syntax is a bit different from that of sar.
+	* Common code for sar and sadf moved to sa_common.c file.
+	* pid_stats members don't need to be aligned since these stats
+	  are not written to daily data files. Packing them saves some
+	  memory on 32-bit architectures.
+	* No longer indicate that -x and -X are possible options for sadc.
+	  They are only useful when used as options for sar, not sadc.
+	* Minor buffer overrun fixed in iostat.
+	* Updated CPU header for iostat and mpstat: CPU used while executing
+	  at the system level is displayed as '%system' by iostat (like sar)
+	  and as '%sys' by mpstat.
+	* sadf manual page added. Other manual pages updated.
+	* Updated the GPL notices (the address of the FSF was wrong).
+	* Makefile updated.
+	* NLS updated.
+	* README, FAQ and CREDITS files updated.
+
+2004/08/09: Version 5.0.6 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* The value for file-sz reported by sar -v was a number of free
+	  handles, and not a number of used ones! This is now fixed (and
+	  this is really now a number of _used_ file handles).
+	* Now ask during config stage for the directory where sadc will
+	  be located. This may be useful for some systems where sadc
+	  needs to be installed in a specific location (e.g. on 64 bit
+	  s390 systems, the proper directory should be /usr/lib64/sa).
+	* sa1 script updated: Use '-' to specify current daily data file
+	  instead of guessing its name using current date.
+	* NLS updated: be consistent with GNU gettext standards.
+	* iostat manual page updated.
+	* FAQ updated.
+	* Makefile updated.
+	* CREDITS file updated.
+
+2004/06/08: Version 5.0.5 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* Timestamp is no longer limited to 11 characters. This should
+	  avoid problems with somes locales (for example Japanese locale,
+	  where 'mojibake' used to be displayed by sar and mpstat sometimes).
+	* Fixed a bug in sysstat RPM spec file (symlinks to sysstat
+	  script were wrong in /etc/rc.d directories).
+	* sar now checks parameters for options -n, -s and -e more
+	  aggressively.
+	* NLS updated: Japanese translation added.
+	* Various typos fixed in several files (manual pages, README, etc.)
+	* CREDITS file updated.
+
+2004/05/20: Version 5.0.4 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* When trying to lock file, sadc now checks for both EWOULDBLOCK
+	  and EAGAIN error codes to be portable.
+	* sar could sometimes display a line whose time stamp was greater
+	  than the limit set by -e option. This is no longer possible.
+	* The sadc command in sysstat.sh script had to be enclosed in
+	  quotes to work when called via 'su -c'.
+	* The sysstat.sh script was sending the output of sadc command
+	  to stdout instead of the standard system activity file. This
+	  is now fixed.
+	* Outfile must now be explicitly set to "-" for sadc to use the
+	  standard system activity file.
+	* FAQ updated.
+	* iostat manual page updated. Typo fixed in sadc manual page.
+	* Fixed the "Save picture" option of isag script.
+
+2004/04/07: Version 5.0.3 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* iostat now reads the number of sectors in /proc/diskstats or
+	  from sysfs as 64-bit unsigned values.
+	* iostat and mpstat now read CPU data and the number of
+	  interrupts in /proc/stat as 64-bit unsigned values.
+	* sar uses "%u" instead of "%d" to read unsigned integer
+	  values _everywhere_.
+	* sar and sadc are now a little bit more verbose when dealing
+	  with invalid activity files.
+	* Network interface name size is now read from include file
+	  <net/if.h>.
+	* FAQ polished up.
+	* Slovak translation added. NLS updated.
+	* Typo fixed in iostat manual page.
+	* Makefile and CREDITS file updated.
+	* isag upgraded to version 1.26 (isag package release 0.81.0).
+
+2004/03/10: Version 5.0.2 - Sebastien Godard (sysstat <at> wanadoo.fr)
+	* iostat will _again_ look for statistics in /proc/partitions if
+	  available. Too many production servers are still using 2.2.x or
+	  2.4.x kernels and iostat must be able to display extended stats
+	  also for them (/proc/partitions support was removed in sysstat
+	  version 4.1.3). So now, iostat gets its statistics from the
+	  following sources in that order: /proc/diskstats, sysfs,
+	  /proc/partitions and then /proc/stat.
+	* statistics are now read by iostat and mpstat as unsigned long
+	  instead of int to avoid integer overflow.
+	* iostat should now handle properly the case when the 'weighted
+	  number of milliseconds spent doing I/Os' (read in sysfs or
+	  /proc/{partitions,diskstats}) decreases with time.
+	* iostat manual page updated.
+	* Minor temporary file vulnerability fixed in isag command.
+	* README, FAQ and CREDITS files updated.
+	* Author's email changed.
+
+2004/02/02: Version 5.0.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* -L option added to sadc. Enable sadc to lock its output file
+	  to prevent multiple instances from writing to it at once.
+	* sa1 and sysstat scripts updated to take advantage of -L option.
+	* Handle the case where, under very special circumstances, STDOUT
+	  may become unavailable, and sar, iostat and mpstat are no longer
+	  able to display anything.
+	* sadc as called in sysstat script also uses -F option to force
+	  the creation of daily data file.
+	* sar, sadc and mpstat manual pages updated.
+	* Code cleaned.
+	* FAQ and CREDITS files updated.
+
+2003/11/09: Version 5.0.0 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* New fields added to mpstat: %irq (%time spent servicing
+	  interrupts) and %soft (%time spent servicing softirqs).
+	* sar and iostat updated to take into account time spent servicing
+	  interrupts and softirqs when displaying percentage of time
+	  in system mode.
+	* By default iostat now displays only statistics information for
+	  devices that are used by the system. You should now use the ALL
+	  keyword to tell iostat to display statistics for every device
+	  including those that have never been used.
+	* The file version.h is now dynamically created. sysstat's version
+	  number is now only recorded in the Makefile.
+	* sar manual page updated: beginning with kernels 2.4 and later,
+	  pgpgin and pgpgout statistics are in kilobytes and not in
+	  blocks (see linux-2.4/fs/proc/proc_misc.c and
+	  linux-2.6/mm/page_alloc.c).
+	* iostat and mpstat manual pages updated.
+	* Makefile updated: don't process NLS files if they are up-to-date.
+	* sysstat's RPM spec file updated to enable clean, non-root builds.
+	* NLS updated.
+	* FAQ and CREDITS files updated.
+
+2003/09/28: Version 4.1.7 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2163]
+	* /proc/diskstats is now the preferred source for iostat to get its
+	  statistics. If non-existent, iostat falls back on sysfs then
+	  on /proc/stat.
+	* In addition to devices, partitions can also be entered on the
+	  command line for iostat providing that option -x is not used.
+	* /dev prefix has been removed from device name displayed by iostat -x.
+	* sar -d now looks for disks statistics in /proc/diskstats with
+	  post 2.5 kernels.
+	* sar uses /proc/vmstat file with post 2.5 kernels to find paging
+	  and swapping statistics.
+	* activepg, inadtypg, inaclnpg and inatarpg stats removed from
+	  sar -B report (they were not really useful).
+	* sar -B now displays the number of page faults made by the system
+	  (pgfault/s and pgmajflt/s).
+	* Stat on shared memory removed from sar -r and sar -R (this stat
+	  was no longer maintained by the kernel since 2.4 because of
+	  performance problems).
+	* Cached swap statistic information added to sar -r.
+	* sar -d now displays separate statistics for sectors that are
+	  read from or written to devices.
+	* %file-sz (percentage of used file handles) is no longer displayed
+	  by sar -v, since the upper limit for the number of open files
+	  will self-scale with 2.6 kernels.
+	* sar now looks more aggressively for network devices in /proc/net/dev.
+	* Heading spaces in network interface names removed (sar -n).
+	* Fixed a problem reading /proc/interrupts when there are a lot
+	  of CPUs (mpstat, sadc).
+	* NR_IRQS value increased to 256, since IA64 supports 256 irqs
+	  per CPU.
+	* Some stats counters are now read as unsigned long instead of
+	  unsigned int (pgpgin, pgpgout, pswpin, pswpout, irq_sum).
+	* sar and iostat manual pages updated.
+	* FAQ, README and CREDITS files updated.
+	* NLS updated.
+
+2003/08/20: Version 4.1.6 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! [0x2162]
+	* Machine uptime calculation is now optimized on SMP machines
+	  to minimize the consequences if an overflow condition happens.
+	  Especially useful when asking for stats since system boot.
+	* -F option added to sadc. Useful to force the creation of the
+	  daily data file: an already existing file with a wrong format
+	  will be truncated by sadc if this option is used.
+	* sa1 script now calls sadc with -F option.
+	* The processor number to which the process is attached was no
+	  longer displayed by sar -x. Make it appear again.
+	* CPU usage for processes, as displayed by sar -x and sar -X, should
+	  now be correct on machines where HZ <> 100 (e.g. IA64 architecture).
+	* iostat still assumed that jiffies were 100ths of a second in some
+	  places. Now use Linux HZ definition *everywhere*.
+	* The average I/O requests queue length as displayed by iostat -x was
+	  wrongly calculated. This is now fixed.
+	* Manual pages updated.
+	* NLS updated.
+	* Cosmetic changes in various parts of the code.
+	* FAQ, README and CREDITS files updated.
+
+2003/07/21: Version 4.1.5 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! Delete existing data files
+	  in /var/log/sa directory! [0x2161]
+	* 'sar -x <pid>' and 'sar -X <pid>' work again.
+	* sar had a longstanding bug that prevented option -P from
+	  working properly if the machine had more than 32 processors.
+	  This is now fixed.
+	* Fixed a bug introduced in 4.1.2, which made some LINUX RESTART
+	  messages to not be displayed by sar.
+	* sar now uses bitmap of char instead of int to avoid endianness
+	  problems.
+	* sar can now handle a huge number of processors, serial lines and
+	  network interfaces.
+	* FAQ updated.
+
+2003/07/01: Version 4.1.4 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! Delete existing data files
+	  in /var/log/sa directory! [0x2160]
+	* Fixed the way overflow conditions were handled by sar for
+	  interfaces counters.
+	* On really big machines with 100 GB of memory or more, the values
+	  read by sadc in /proc/meminfo would get truncated and cause havoc
+	  in the calculations. This is now fixed.
+	* iostat and sar can now read many more disk entries in /proc/stat if
+	  necessary.
+	* Option "-x SUM" removed for sar. It was used to tell sar to display
+	  the total number of minor and major faults made by the system.
+	  Unfortunately, the calculation was tricky, and the results were
+	  uncertain...
+	* NLS updated. Polish translation added. Also proper charset and
+	  encoding declarations added to fix msgfmt warnings and allow
+	  gettext to recode between various charsets (e.g. German
+	  translation will be shown properly both with
+	  LANG=de_DE.ISO-8859-1, and LANG=de_DE.UTF-8)
+	* Code 'sanitization'.
+	* Manual pages updated.
+	* README and FAQ files updated.
+
+2003/05/08: Version 4.1.3 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* iostat should now be fully 2.5/2.6 kernel compliant.
+	* Disks arrays in iostat are now dynamically sized.
+	* iostat: sysfs is now used in preference to /proc/stat if available.
+	* iostat will no longer look for statistics in /proc/partitions.
+	  sysfs filesystem must now be available for iostat to get its
+	  extended stats (post 2.5 kernels).
+	* iostat: Devices for which statistics are requested can now be entered
+	  on the command line even if option -x is not used.
+	* Usage messages updated.
+	* Manual pages updated.
+	* Code cleaned (dk_drive_sum removed in iostat, long lines folded,
+	  functions split in smaller parts, etc.)
+	* NLS updated. Romanian translation added.
+	* isag upgraded to version 1.22.
+
+2003/01/24: Version 4.1.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! Delete existing data files
+	  in /var/log/sa directory! [0x215f]
+	* sar -q now also displays load average for the past 15 minutes.
+	* -P option added to sar. This option enables sar to display
+	  stats on a per processor basis. Options -U and '-I PROC' are
+	  deprecated. 'sar -U ALL' is replaced by 'sar -u -P ALL', and
+	  'sar -I PROC' by 'sar -I SUM -P ALL'.
+	* Fixed iowait value displayed by sar on SMP machines with pre 2.5
+	  kernels.
+	* When displaying CPU utilization on SMP machines, sar now
+	  recalculates the interval based on current CPU's tick count.
+	* Always check that the number of CPUs has not increased when
+	  reading /proc/stat (sadc, mpstat).
+	* sadc: Don't assume that the first line in /proc/net/sockstat
+	  concerns sockets. Check it!
+	* Serial lines are ignored by sadc for every kind of kernels
+	  (UP, SMP...) if SMP_RACE is defined.
+	  SMP_RACE is no longer defined by default in RPM packages.
+	* Code cleaned: Dead code removed in iostat.c, some lines longer
+	  than 80 chars folded, etc.
+	* sar manual page updated.
+	* FAQ updated.
+	* NLS updated.
+
+2003/01/02: Version 4.1.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! Delete existing data files
+	  in /var/log/sa directory! [0x215e]
+	* sar -u/-U, iostat and mpstat can now display time spent in
+	  I/O wait mode (with 2.5 kernels and above).
+	* Values like -1 and -2 are no longer aliases for keywords
+	  ALL and XALL (sar -U, sar -I, mpstat -P).
+	* Buglet fixed in iostat.h.
+	* LC_CTYPE needs to be set, or it will emit messages with ?????? only
+	  on some locales, especially ja_JP.eucJP
+	* sar, mpstat and iostat manual pages updated.
+	* NLS updated.
+	* CREDITS file updated.
+	* Typo removed in FAQ file.
+
+2002/11/13: Version 4.0.7 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Make data for timestamp 00:00:00 appear in one of the daily data
+	  files when sar/sadc rotates its output file.
+	* Take out check for non SMP configuration when asking for
+	  mpstat -P.
+	* sargon script updated.
+	* FAQ updated.
+
+2002/08/04: Version 4.0.6 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* mpstat now uses a bitmap of char instead of int to avoid endianness
+	  problems. As a consequence, mpstat should now work on PowerMac
+	  architectures.
+	* CPU activity as displayed by mpstat -P for a given processor was
+	  in a wrong range on SMP machines (e.g. 0-50% for a dual processor
+	  box).
+	* Missing bitmap initialization fixed in mpstat.c.
+	* Configuration script updated.
+	* FAQ updated.
+
+2002/05/12: Version 4.0.5 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Average wait times and service times as displayed by iostat -x
+	  were wrong by a factor of 10. This is now fixed.
+	* Linux RESTART messages must now be in the interval specified by
+	  -s/-e options to be displayed by sar.
+	* Fixed a small bug that affected the timestamp for RESTART messages
+	  displayed by sar -h when option -t was used.
+	* sar -H now displays its data in local time instead of UTC when
+	  option -t is used.
+	* sargon shell script added.
+	* Created a contrib directory, including sargon and isag commands.
+	* NLS updated.
+	* FAQ updated.
+	* Makefile updated.
+	* sar manual page updated.
+
+2002/04/07: Version 4.0.4 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* iostat is now able to display I/O activity in kB/s with 2.4.x
+	  kernels (option -k).
+	* Fixed a typo in 'sar -W -h' output.
+	* Try to handle the case when some parameters in /proc/net/dev
+	  may overflow ULONG_MAX.
+	* 'sar -d' now displays sectors per second instead of blocks
+	  per second.
+	* iostat and sar manual pages updated.
+	* Added a FAQ.
+	* NLS updated: Russian translation added.
+
+2002/01/27: Version 4.0.3 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* iostat now displays statistics in kB/s when option -x is used.
+	* Configuration script updated.
+	* sar and iostat manual pages updated.
+	* umask also set in sa1 shell script.
+	* Various sanity checks added.
+	* Fixed potential segmentation faults that could happen with some
+	  locales.
+	* KB (standing for kilobytes) replaced with kB in various places.
+	* NLS updated: Italian translation added.
+
+2001/09/22: Version 4.0.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* CPU usage, as displayed by iostat, mpstat and sar, should now
+	  be OK on machines where HZ <> 100 (e.g. IA64 architecture).
+	* MAX_PART constant set to 256 in iostat.h.
+	* "-H" database friendly option added to sar.
+	* Better disks and network interfaces management (both may be
+	  registered dynamically).
+	* Made options "-s" and "-e" work when option "-h" is used.
+	* isag upgraded to version 1.17.
+	* isag installation is now optional and can be chosen at config stage.
+	* Now try to install man pages in ${PREFIX}/share/man instead of
+	  ${PREFIX}/man.
+	* sa2 shell script updated.
+	* Configuration script updated.
+	* sar manual page updated.
+	* NLS updated: Norwegian translation added.
+
+2001/06/24: Version 4.0.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Files created by sa2 shell script were world writable. This is
+	  now fixed.
+	* sa2.sh shell script updated: only remove sa?? and sar?? files.
+	* Don't use PAGE_SHIFT since it no longer necessarily exists in
+	  <asm/page.h>. Compute it using page size instead.
+	* Cosmetic changes for iostat.
+	* NLS updated: Afrikaans translation added.
+
+2001/04/08: Version 4.0.0 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Better network interfaces handling. Now take into account the
+	  fact that they may be registered/unregistered dynamically.
+	* Changed formula used to display statistics in order to avoid
+	  overflow conditions.
+	* Fixed a bug in iostat, where the %util value scaled incorrectly.
+	* Better long file names management by iostat.
+	* mpstat and sar no longer periodically display the title line when
+	  stdout has been redirected to a pipe or a file.
+	* sa2.sh shell script updated: Now exec sadc.
+	* Configuration script updated.
+	* NLS updated.
+	* Makefile updated.
+	* Manual pages updated.
+	* isag command updated.
+
+2001/03/04: Version 3.3.6 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! Delete existing data files
+	  in /var/log/sa directory! [0x215d]
+	* New paging statistics added (sar -B). Kernel 2.4 only.
+	* Load averages and queue length statistics added (option -q for sar).
+	* Per device statistics added (option -d for sar). Kernel 2.4 only.
+	* Better accuracy when computing average for some statistics.
+	* Display all the contents of a daily data file when the count
+	  parameter is not given on the command line.
+	* Check sar command line options more aggressively.
+	* iostat no longer freezes if -c and -d options are used together.
+	* Fixed a bug that prevented iostat from displaying more than an
+	  average of three devices with 2.4 kernels (a buffer was too small).
+	* Check added to ensure that sar and sadc commands are consistent.
+	* sar manual page updated.
+	* NLS updated.
+	* Code cleaned (use smaller subroutines).
+	* Makefile updated.
+	* isag command updates.
+
+2001/02/11: Version 3.3.5 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* iostat command improved. Take now full advantage of Stephen
+	  Tweedie's I/O accounting patch to display extended statistics
+	  (option -x).
+	* The default value for the count parameter of the sar command is
+	  now 1 (this is how sar works with other Un*xes...). A value of
+	  0 will indicate that reports are to be generated continuously.
+	* Code cleaned: Now always use 'double' numbers instead of the
+	  INT_PART, INT_VAL, DEC_PART and DEC_VAL macros.
+	* Don't assume that jiffies are 100ths of a second. Use Linux
+	  HZ definition instead.
+	* NLS updated (small fix).
+	* sar and iostat manual pages updated.
+	* isag (Interactive System Activity Graph) command added.
+	* Makefile updated.
+
+2001/01/26: Version 3.3.4 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Disk I/O statistics for the last device were counted twice when
+	  reading /proc/stat file with 2.4 kernels (sar -b). This is now
+	  fixed.
+	* iostat command is no longer able to save its data to a file.
+	  In fact, iostat has never been supposed to work that way, and I
+	  have never really maintained this option.
+	* iostat now also works with 2.4 kernels. It can handle the format
+	  of the /proc/stat file for both 2.2 and 2.4 kernels.
+	* sar now reports statistics on allocated disk quotas entries
+	  instead of on used ones (sar -v).
+	* Manual pages updated for sar and iostat.
+
+2000/12/31: Version 3.3.3 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one! Delete existing data files
+	  in /var/log/sa directory!
+	* Disk usage displayed by iostat on SMP machines was wrong. This
+	  is now fixed.
+	* iostat command cleaned: All the statistics not implemented in
+	  the standard Linux kernel have been removed (tty, iowait...).
+	* sar can now handle I/O and transfer rate statistics with both
+	  2.2.x and 2.4.x Linux kernels (-b option).
+	* Removed %inode-sz that was displayed by sar -v, since the file
+	  inode-max in /proc/sys/fs no longer exists in Linux 2.4.
+	  The new 2.4.x kernels now seem to be able to allocate inode
+	  structures dynamically, and to free them when necessary (see
+	  linux/fs/inode.c).
+	* Removed statistics on highest in-used sockets. Relevant
+	  counters have disappeared from sockstat file in /proc/net
+	  for 2.4 kernels (sar -n SOCK).
+	* Added statistics on IP datagram fragments (sar -n SOCK).
+	  Only available for 2.4 kernels.
+
+2000/11/19: Version 3.3.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* sar now saves timestamps in its daily data files both in UST
+	  and in the user's timezone formats.
+	  WARNING: Daily data files format has changed, and is *not*
+	  compatible with the previous one!
+	* sar now displays timestamps in locale time when reading data
+	  from its daily data files. -t option has been added to sar,
+	  to enable it to display timestamps in the original locale
+	  time of the data file creator.
+	* Size of various buffers made larger.
+	* Number of interrupts per second for 'all' CPU displayed by the
+	  mpstat command was wrong. This is now fixed.
+	* Makefile updated.
+	* Usage message updated.
+
+2000/09/17: Version 3.3.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* mpstat command added.
+	* Manual page added for mpstat.
+	* Option -h added, enabling sar to display data from a daily data
+	  file in a format that can easily be handled with pattern
+	  processing commands like awk.
+	* Manual page updated for sar.
+	* iostat now writes KB (for kilobytes) instead of Kb, which could
+	  have been interpreted as kilobits...
+	* Disk accounting patch for iostat removed.
+	* NLS updated.
+
+2000/08/06: Version 3.2.4 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Fixed a bug that prevented sar from reading its daily data files
+	  when they had been created using -I option.
+	* Network statistics averages were sometimes wrong when reading
+	  data from a file. This is now fixed.
+	* README-patch file updated.
+	* Configuration script updated to deal with Debian directories.
+
+2000/06/25: Version 3.2.3 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Configuration scripts updated. Can now print a help message.
+	* Workaround for SMP race in Linux serial driver added.
+	  This workaround is enabled by default in RPM binary packages.
+	* sar manual page updated.
+	* Added iostat disk accounting patch against 2.2.16 linux kernel.
+	* Removed a few typos in the comments of the source code.
+
+2000/06/11: Version 3.2.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Now handle interrupts per processor better. Output improved.
+	* Makefile modified to comply with redhat good packaging.
+	* sysstat initialization script updated (don't su to root when
+	  we are already root).
+	* sar now looks for sadc data collector in more places.
+	* NLS is now enabled by default.
+	* Silly bug in iostat disk accounting patch fixed.
+	* Added iostat disk accounting patch against 2.2.15 linux kernel.
+
+2000/04/02: Version 3.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* sadc no longer complains when daily data files have a null length.
+	* Configuration script added (make config).
+	* Statistics on sockets in use added.
+	* Got rid of various limits (maximum number of serial lines,
+	  maximum number of network interfaces).
+	* Better management of dynamic files contents.
+	* Cosmetic change for timestamp display.
+	* Manual pages updated.
+	* Documentation added in ${PREFIX}/doc/sysstat-x.y.
+
+2000/02/20: Version 3.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Fixed a bug that made average numbers wrong for some statistics
+	  when reading them from a system activity file.
+	* Fixed a bug that prevented the user from retrieving some
+	  statistics when reading them from a system activity file.
+	* sadc no longer core-dumps on UP machines with SMP support enabled
+	  in the kernel.
+	* System activity files are now readable by everybody.
+	* Average statistics since boot time are now printed when interval
+	  parameter is set to 0. If interval and count parameters are not
+	  set on the command line, sar selects requested activities from
+	  the current system activity daily data file.
+	* sadc, sa1 and sa2 manual pages moved to chapter 8 instead of 1m.
+	* iostat disk accounting patch modified to work with md drivers.
+
+2000/01/30: Version 3.0 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* sadc - system activity data collector added.
+	* sa1, sa2 and sysstat.sh shell scripts added.
+	* Manual pages added for sadc, sa1, sa2.
+	* sar heavily modified to use stats sent by sadc.
+	* System activity data file now records system restarts.
+	* Every records in the iostat and system activity data files have
+	  their own timestamp now.
+	* sar and iostat largely modified to use structures when reading or
+	  writing data files.
+	* Per-process statistics added.
+	* System minor and major fault statistics added.
+	* TTY device statistics added.
+	* Memory and swap space utilization statistics added.
+	* Per-processor interrupt statistics added.
+	* Statistics for kernel parameters (dcache, inodes, superblocks, etc.) 
+	  added.
+	* Network device statistics added.
+	* S_TIME_FORMAT environment variable added.
+	* Meaning of -i option has changed for sar.
+	* -d option removed for sar since it is no longer needed (we have
+	  sadc now).
+	* sar now uses keywords such as ALL, SUM, etc. instead of numerical
+	  parameters.
+	* iostat disk accounting patch improved.
+	* 'page' field in /proc/stat is no longer used by iostat (was
+	  unreliable).
+	* Workaround for buggy RTC (or kernels?) added. Used when the number
+	  of jiffies spent by the system in the idle task is decreasing in
+	  /proc/stat.
+	* Manual pages updated.
+	* NLS updated: Portuguese translation added.
+	* Makefile updated.
+
+1999/11/28: Version 2.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Option -d added to sar to enable it to be started as a daemon.
+	* sar initialization script updated to use -d option.
+	* Option -V added to sar and iostat (print version number and usage).
+	* Fixed a bug that made CPU utilization displayed by iostat wrong on
+	  SMP machines.
+	* Manual pages updated and moved to chapter 1 instead of 8.
+	* sar '-m' option renamed to '-r'.
+	* Display improved for iostat.
+	* NLS updated: Spanish translation added.
+	* Patch against kernel 2.2.13 added for iostat.
+
+1999/10/24: Version 2.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* The sar and iostat commands can now work on non SMP-machines even
+	  if the kernel is compiled with SMP support enabled.
+	* Fixed a bug that made the time displayed by iostat wrong when
+	  reading stats back from a file.
+	* Added memory statistics: free/shared/buffer/cached pages (sar -m).
+	* Option -h added to sar to print its header periodically.
+	* Set unavailable fields to zero when writing iostat file.
+	* sar now displays 'proc/s' instead of 'fork/s' since exec'ed
+	  processes are also taken into account.
+	* Manual pages updated.
+	* sysstat is now available in RPM format.
+	* Code cleaned up and made safer.
+
+1999/09/19: Version 2.0 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* iostat now displays logical block I/O stats for each IDE device, or
+	  global Kb/s rate for all the block devices. Stats in Kb/s for each
+	  block device are not available for standard kernels due to Linux
+	  poor disk accounting... Anyway a patch is provided in this version
+	  of 'sysstat' in the 'patch' directory to fix that.
+	* System uptime is no longer read in /proc/uptime but computed from
+	  the cpu line in /proc/stat.
+	* When stats are read from a file (option -f of iostat and sar),
+	  values are now computed in accordance with the interval given by
+	  the user on the command line.
+	* Old '-o' option for iostat removed. Now iostat can save data
+	  into a file in a binary format and re-read them later (options
+	  '-o' and '-f') in the same way sar does.
+	* Number of available processors now taken into account when
+	  retrieving CPU usage from /proc/stat.
+	* Removed a bug that prevented 'sar -U' to work on SMP machines.
+	* Fixed a bug that made per-CPU average usage wrong on SMP machines.
+	* Use of option -U is now possible for sar when reading from a file
+	  even if the machine is not an SMP one.
+	* Fixed a bug that prevented sar from re-reading stats saved in a file
+	  when -I or -U option had been used.
+	* iostat modified to work on SMP machines.
+	* Changed the formula used to display stats in order not to get
+	  numbers greater than UINT_MAX.
+	* System name, release number and hostname are now saved in 
+	  system activity files.
+	* iostat now displays system name, release number and hostname
+	  when invoked.
+	* Daily system activity file rotation added for sar.
+	* Improved 64-bit system support.
+	* CREDITS file added.
+	* NLS updated: German translation added.
+	* Manual pages updated.
+	* Makefile updated: Do not call msgfmt if NLS is not enabled.
+
+1999/06/25: Version 1.2 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* Better NLS support (date, time and numerical values, NLS enabled
+	  for sar, etc.).
+	* System activity daily file structure changed: Is now independent of
+	  the locale and is more compact.
+	* sar updated to support SMP machines (per CPU accounting).
+	* Code cleaned, man pages updated...
+
+1999/05/28: Version 1.1 - Sebastien Godard <sebastien.godard@wanadoo.fr>
+	* NLS support added. French translation started but needs to be
+	  completed.
+	* sar updated to support more than 16 interrupts (potential APIC
+	  interrupt sources).
+	* A few typos removed (man pages, etc.).
+	* Author email address updated :-)
+	* Tested on kernel 2.2.5.
+
+1999/03/06: Version 1.0 - Sebastien Godard <sebastien.godard@gazdefrance.com>
+	* Initial Revision. Tested on kernel 2.0.36.

@@ -1,0 +1,10 @@
+sun::iptables -t mangle -v -n -L PREROUTING
+sun::ipsec stop
+alice::ipsec stop
+venus::ipsec stop
+alice::iptables-restore < /etc/iptables.flush
+venus::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush
+moon::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush
+sun::rm /etc/mark_updown

@@ -1,0 +1,2027 @@
+2008-04-04  John (J5) Palmieri <johnp@redhat.com>
+
+	* Released 1.2.1
+
+2008-04-03  John (J5) Palmieri <johnp@redhat.com>
+
+	Patch from Sumit <sumitskj_20@yahoo.com>, comments added
+
+	* dbus/dbus-transport.c(_dbus_transport_open): fix mem leak
+
+2008-04-03  John (J5) Palmieri <johnp@redhat.com>
+
+	* dbus/dbus-connection.c (dbus_connection_send): add documentation
+	  to describe when to call dbus_connection_flush and
+	  dbus_connection_unref after a call to dbus_connection_send is made
+	  Initial wording by Stanislav Brabec <sbrabec at suse.cz> 
+	  (fd.o bug#13558)
+
+2008-04-03  John (J5) Palmieri <johnp@redhat.com>
+
+	Patch from Kimmo Hämäläinen <kimmo.hamalainen at nokia.com>
+
+	* bus/expirelist.c
+	  (do_expiration_with_current_time): calculate correct min wait time
+	  and next interval
+	  (bus_expire_list_add, bus_expire_list_add_link): if the timeout is 
+	  disabled when we add an item to the expire list, enable the timeout
+	  (do_expiration_with_current_time): only set timeout if there are
+	  items to expire
+
+2008-04-01  Timo Hoenig  <thoenig@suse.de>
+
+	Patch from Frederic Crozat <fcrozat@mandriva.com>
+
+	* bus/dir-watch-inotify.c (bus_watch_directory): Only monitor
+	  IN_CLOSE_WRITE, IN_DELETE, IN_MOVE_TO and IN_MOVE_FROM events. This
+	  way, only atomic changes to configuration file are monitored.
+	* bus/dir-watch-inotify.c (_handle_inotify_watch): Fix typo in
+	  _dbus_verbose function call
+	* bus/dir-watch-inotify.c (bus_drop_all_directory_watches): Use
+	  _dbus_strerror instead of perror
+
+2008-03-04  Havoc Pennington  <hp@redhat.com>
+
+	* bus/connection.c, bus/expirelist.c: Make the BusExpireList
+	struct opaque, adding accessors for manipulating the list. In this
+	commit there should be no change in functionality or behavior. The
+	purpose of this change is to improve encapsulation prior to fixing
+	some bugs Kimmo Hämäläinen found where the timeout is not properly
+	updated, since we need to e.g. take some action whenever adding
+	and removing stuff from the expire list.
+
+2008-03-31  Colin Walters  <walters@verbum.org>
+
+	Patch from Owen Taylor <otaylor@redhat.com>
+
+	* tools/dbus-launch-x11.c: Check for X11 events before
+	selecting (FDO bug #15293)
+
+2008-03-31  Colin Walters  <walters@verbum.org>
+
+	Patch from Owen Taylor <otaylor@redhat.com>
+
+	* tools/dbus-launch-x11.c: Make sure we call XFlush()
+	on all code paths (FDO bug #15293)
+
+2008-03-27  Havoc Pennington  <hp@redhat.com>
+
+	* tools/dbus-send.c (append_dict): Do not provide a signature to
+	dbus_message_iter_open_container() when opening a dict entry.
+
+2008-03-26  Colin Walters  <walters@verbum.org>
+
+	Patch from Scott James Remnant <scott@netsplit.com>
+
+	* dbus/dbus-bus.c: Set default exit_on_disconnect after registration with
+	the bus, not before.  This ensures that programs which wish to set
+	exit_on_disconnect to FALSE will not be terminated if the bus exits
+	during registration.  (FDO Bug #15112)
+
+2008-03-04  John (J5) Palmieri  <johnp@redhat.com>
+
+	* fix broken poll on Mac OSX - build patch by Benjamin Reed
+	* configure.in: check for OSX's deadlocking poll
+	* dbus/dbus-sysdeps-unix.c (_dbus_poll): if we have a broken poll
+	  don't use poll
+
+2008-03-04  John (J5) Palmieri  <johnp@redhat.com>
+
+	* check if the linker supports a flag instead of just checking for GNU
+	  ld
+	* configure.in: move AM_PROG_LIBTOOL to the top
+	  (ld_supports_flag): new function for checking if the linker supports
+	  a given flag
+
+2008-03-04  John (J5) Palmieri  <johnp@redhat.com>
+
+	* add a changelog for Benjamin Reed's git patch RANT: Change Logs are
+	  handled by git and having an external changelog just screws up
+	  merging.  We should write down rules for doing git commit messages
+	  and leave it at that.
+	* configure.in: Platform build fixes for Mac OS X
+	  the Darwin linker does not understand the -z option; wrap it in 
+	  a check for $with_gnu_ld.
+	  environ is only available at runtime, so you need to make a
+	  reference to _NSGetEnviron instead for symbols to resolve properly.
+
+2008-03-04  John (J5) Palmieri  <johnp@redhat.com>
+
+	* configure.in: add $THREAD_LIBS to DBUS_LAUNCHER_LIBS so we link 
+	  correctly
+
+2008-03-04  John (J5) Palmieri  <johnp@redhat.com>
+
+	* tools/dbus-launch.c: wrap X'ism in #ifdef so we can compile 
+	  without X
+
+2008-02-28  John (J5) Palmieri  <johnp@redhat.com>
+
+	* dbus/dbus-sysdeps-unix.c: define _AI_ADDRCONFIG as 0 if not
+	  defined so that we can compile with an older glibc 
+
+2008-02-26  John (J5) Palmieri  <johnp@redhat.com>
+
+	* Released 1.1.20
+
+2008-02-26  John (J5) Palmieri  <johnp@redhat.com>
+
+	* CVE-2008-0595 - security policy of the type <allow send_interface=
+	  "some.interface.WithMethods"/> work as an implicit allow for
+	  messages sent without an interface bypassing the default deny rules
+	  and potentially allowing restricted methods exported on the bus to be
+	  executed by unauthorized users.  This patch fixes the issue.
+	* bus/policy.c (bus_client_policy_check_can_send,
+	  bus_client_policy_check_can_receive): skip messages without an 
+	  interface when evaluating an allow rule, and thus pass it to the
+	  default deny rules
+
+2008-02-26  John (J5) Palmieri  <johnp@redhat.com>
+
+	* correctly unref connections without guids during shutdown
+	* dbus/dbus-connection.c (close_connection_on_shutdown): new method
+	  split out from shared_connections_shutdown
+	  (shared_connections_shutdown): shutdown all shared connections
+	  without guids
+	  (_dbus_connection_ref_unlocked): handle OOM when prepending no guid
+	  connections to the shared_connections_no_guid list
+	* Patch by  Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+2008-02-21  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* fix build against the latest gcc/glibc
+	* dbus/dbus-sysdeps-unix.c: define _GNU_SOURCE
+	* bus/selinux.c: include limits.h
+	* Patch by Matthias Clasen <mclasen at redhat.com>
+
+2008-02-21  John (J5) Palmieri  <johnp@redhat.com>
+
+	* fixes dbus-launch so the bus goes away when X does
+	  (Red Hat Bug #430412)
+	* tools/dbus-launch.c (main): set xdisplay = NULL
+	* Patch by Matthias Clasen <mclasen at redhat.com>
+
+2008-01-17  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* Released 1.1.4
+
+2008-01-17  Timo Hoenig  <thoenig@suse.de>
+	* fix inotify support
+	* bus/dir-watch-inotify.c (_handle_inotify_watch): fix reading of the
+	inotify events. Also, use ssize_t not size_t for 'ret'.
+	* bus/dir-watch-inotify.c (bus_watch_directory): watch not only for
+	IN_MODIFY but also for IN_CREATE and IN_DELETE
+	* bus/dir-watch-inotify.c (bus_drop_all_directory_watches): drop the
+	inotify watches more elegantly by closing inotify:_fd, set inotify_fd to
+	-1 after dropping the watches
+
+2008-01-15 John (J5) Palmieri  <johnp@redhat.com>
+
+	* configure.in: post-release version bump
+
+2008-01-15 John (J5) Palmieri  <johnp@redhat.com>
+
+	* Released 1.1.3 (1.2.0RC1)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* fix hacking to say git instead of cvs
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Sébastien Couret <10function at gmail dot com>
+
+	* dbus/dbus-marshal-recursive.c (all_reader_classes[]): wrap in 
+	#ifndef DBUS_DISABLE_ASSERT since it is only used in asserts which
+	are noop
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Magnus Henoch <henoch plus bfdo at dtek dot chalmers dot se>
+
+	* dbus/dbus-auth.c (handle_server_data_external_mech): handle SASL
+	EXTERNAL's inital empty responce (FDO Bug #9945)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* bus/messagebus.in: add lsb headers (FDO Bug #11491)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Peter O'Gorman <pogma at thewrittenword dot com>
+
+	* dbus/dbus-spawn.c (babysit_signal_handler): check write return value
+	so we don't hang (FDO Bug #11665)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Peter O'Gorman <pogma at thewrittenword dot com>
+
+	* dbus/dbus-sysdeps.h: support for AIX poll implementation (FDO Bug 
+	#11666)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* tests/name-test/run-test.sh: make more portable (FDO Bug #11667)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-connection.c (_dbus_connection_get_next_client_serial):
+	don't check for < 0 on an unsigned variable (FDO Bug #12924)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* bus/bus.c (setup_server): check failed allocation (FDO Bug #12920)
+	
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-spawn.c (_dbus_spawn_async_with_babysitter): the API 
+	contract says sitter_p can be NULL, so let's check it (FDO Bug #12919)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-spawn.c (read_ints, read_pid): use correct ssize_t type
+	instead of size_t (FDO Bug #12862)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-errors.c (dbus_set_error): make sure to call va_end if we
+	hit an OOM error inside va_start (FDO Bug #12846)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+	
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-connection.c (dbus_connection_send_with_reply): 
+	fix possible crash if pending_return is NULL (FDO Bug #12673)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* portions of patch submitted by Tim Mooney 
+	<enchanter at users dot sourceforge dot net>
+
+	* configure.in: never auto-select libxml (FDO Bug #12479)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patches by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-sysdeps-unix (_dbus_get_autolaunch_address): handle OOM
+	(FDO Bug #12945)
+
+	* dbus/dbus-uuidgen.c (return_uuid): handle OOM (FDO Bug #12928)
+
+	* dbus/dbus-misc.c (dbus_get_local_machine_id): handle OOM, fix return
+	value to return NULL not FALSE (FDO Bug #12946)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* bus/bus.c (bus_context_check_security_policy): rewrite selinux error
+	handling to not abort due to a NULL read and to set the error only if
+	it is not already set (Based off of FDO Bug #12430)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-internals.c (_dbus_read_uuid_file_without_creating,
+	_dbus_create_uuid_file_exclusively): add OOM handling (FDO Bug #12952)
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-spawn.c (babysit, babysitter_iteration): add error
+	handling when polling (FDO Bug #12954) 
+
+2008-01-15  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* bus/config-parser.c (locate_attributes): remove dead code which
+	always evaluated to TRUE
+
+	* dbus/dbus-shell.c (_dbus_shell_quote): remove unused code
+
+2008-01-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* bus/connection.c (bus_connection_complete): plug a possible 
+	BusClientPolicy leak (FDO Bug #13242)
+
+2008-01-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Frederic Crozat <fcrozat at mandriva dot com> (FDO Bz#
+	13268)
+
+	* add inotify support
+
+	* bus/Makefile.am: add inotify module to the build
+
+	* bus/dir-watch-inotify.c: inotify module based off the dnotify and
+	kqueue modules
+
+	* configure.in: add checks and switch for inotify
+	also add a printout at the end of configure if inotify and kqueue
+	support is being built in (dnotify already had this)
+
+2008-01-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Frederic Crozat <fcrozat at mandriva dot com>
+
+	* bus/dir-watch-dnotify.c (bus_watch_directory): watch for file
+	creates also
+
+2008-01-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* patch by Kimmo Hämäläinen <kimmo dot hamalainen at nokia dot com>
+
+	* dbus/dbus-transport-socket.c(do_reading): return message 
+	loader buffer in case of OOM (FDO Bug#12666)
+
+2008-01-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* configure.in: add warning to output when libxml is selected since
+	we don't have a libxml maintainer and expat works perfectly fine
+	for what we need an xml parser for
+
+2008-01-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* Patch by Andrea Luzzardi  <scox at sig11 dot org>: creates a
+	_dbus_geteuid function to fix EXTERNAL authentication in setuid
+	applications
+
+	*  dbus/dbus-sysdeps-unix.c (_dbus_geteuid): used to get the effective
+	uid of the running program
+	(_dbus_credentials_add_from_current_process): use geteuid instead of
+	getuid
+	(_dbus_append_user_from_current_process): use geteuid instead of
+	getuid
+
+	* dbus/dbus-sysdeps-util-unix.c (_dbus_change_to_daemon_user): use
+	geteuid instead of getuid
+	(_dbus_unix_user_is_at_console): use geteuid instead of getuid
+
+	* dbus/dbus-sysdeps-win.c (_dbus_geteuid): add a windows equivilant
+	that returns DBUS_UID_UNSET
+
+2007-12-18  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-connection.c (_dbus_connection_block_pending_call):
+	fix location of curly braces
+
+2007-11-23  Sjoerd Simons  <sjoerd@luon.net>
+
+	* tools/dbus-launch.c: let both a normal dbus-launch and an
+	autolaunched bus save their parameters in X11 if possible. This makes
+	the autolaunch and non-autolaunch behaviour more similar. With the
+	exception that on a normal launch there will always be a new session
+	bus and not being able to save parameters is not fatal. This also
+	enables to launch programs directly with autolaunch (not very usefull
+	though).
+
+2007-10-31  Havoc Pennington  <hp@redhat.com>
+
+	* bus/selinux.c (log_audit_callback): rewrite to use
+	_dbus_string_copy_to_buffer_with_nul()
+
+	* dbus/dbus-string.c (_dbus_string_copy_to_buffer): change to NOT
+	nul-terminate the buffer; fail an assertion if there is not enough
+	space in the target buffer. This fixes two bugs where
+	copy_to_buffer was used to copy the binary bytes in a UUID, where
+	nul termination did not make sense. Bug reported by David Castelow.
+	(_dbus_string_copy_to_buffer_with_nul): new function that always
+	nul-terminates the buffer, and fails an assertion if there is not 
+	enough space in the buffer.
+
+2007-10-23  Havoc Pennington  <hp@redhat.com>
+
+	* bus/bus.c (bus_context_new): use the new name here
+
+	* bus/selinux.c (bus_selinux_audit_init): rename from audit_init()
+	to avoid possible libc conflict, and declare it in .h file to
+	avoid a warning
+
+2007-10-19  Havoc Pennington  <hp@redhat.com>	
+	
+	* bus/bus.c (bus_context_new): put audit_init() in HAVE_SELINUX
+	
+2007-10-19  Havoc Pennington  <hp@redhat.com>	
+
+	* bus/bus.c (bus_context_new): put the audit_init() in here
+	instead, which I believe ends up being the same as where it was
+	before, though I'm not sure I understand why it goes here.
+
+	* dbus/dbus-sysdeps-util-unix.c (_dbus_change_to_daemon_user):
+	remove audit_init() from here, this file can't depend on code in
+	bus/ directory
+
+2007-10-16  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* configure.in: *Actually* fix detection of i486 atomic ops -
+	my previous attempt at a fix would always enable them due to wrong
+	quoting. Patch from Colin Walters <walters@verbum.org>
+
+2007-10-11  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* configure.in: enable Autoconf's AC_C_INLINE to avoid compilation
+	failure with gcc -ansi
+	* dbus/dbus-macros.h, dbus/dbus-arch-deps.h.in: Use new macro
+	_DBUS_GNUC_EXTENSION (the same as G_GNUC_EXTENSION) to avoid -ansi
+	warnings about use of "long long".
+	* dbus/dbus-server-socket.c: remove unused variable when assertions
+	are disabled
+	* dbus/dbus-marshal-validate.c: avoid empty statements by removing
+	stray semicolons
+	* tools/dbus-launch.c: convert C++-style comment to C-style, add {}
+	for clarity
+	* .gitignore: ignore vi swapfiles
+	* dbus/dbus-errors.h, dbus/dbus-errors.c: Add DBUS_ERROR_INIT macro,
+	equivalent to calling dbus_error_init() on an uninitialized DBusError
+	* dbus/dbus-address.c, dbus/dbus-auth-script.c, dbus/dbus-auth-util.c,
+	dbus/dbus-connection.c, dbus/dbus-internals.c, dbus/dbus-keyring.c,
+	dbus/dbus-message-util.c, dbus/dbus-server.c, dbus/dbus-sha.c,
+	dbus/dbus-spawn-win.c, dbus/dbus-spawn.c,
+	dbus/dbus-sysdeps-util-win.c, dbus/dbus-transport-socket.c,
+	dbus/dbus-transport.c, dbus/dbus-userdb.c: use that macro instead of
+	calling dbus_error_init() where it's clearly equivalent
+	* configure.in, dbus/dbus-sysdeps.h, dbus/dbus-sysdeps-unix.c: Fix
+	detection of i486 atomic ops. Previously, the attempts to determine
+	support at compile-time on Darwin were causing the i486 atomic ops to
+	be used on *all* i386 or x86-64 GCC builds (AH_VERBATIM can't be
+	conditionalized like we were trying to).
+
+2007-10-10  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* dbus/dbus-errors.c, dbus/dbus-protocol.h: Add new error
+	org.freedesktop.DBus.Error.ObjectPathInUse
+	* dbus/dbus-object-tree.h, dbus/dbus-object-tree.c,
+	dbus/dbus-connection.c, dbus/dbus-connection.h: add new functions
+	dbus_connection_try_register_object_path and
+	dbus_connection_try_register_fallback, which raise ObjectPathInUse
+	rather than asserting, to make object path registration less painful
+	for bindings
+	* .gitignore: add various things that weren't in .cvsignore because
+	CVS implicitly ignored them; generally bring up to date
+
+2007-10-09  John (J5) Palmieri  <johnp@redhat.com>
+
+	* tools/run-with-tmp-session-bus.sh: Fix env exports for better
+	portability (#9280)
+	* tools/dbus-send.1: Document syntax for container types in dbus-send
+	man file (#9553) - patch from Jack Spaar <jspaar at
+	users.sourceforge.net>
+
+	[Both OK for MIT/X11 relicensing -smcv]
+
+2007-10-09  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* doc/dbus-specification.xml: Specifically forbid empty structs (#7969)
+	* doc/dbus-specification.xml: Patches from Kristoffer Lundén to clarify
+	description of DBUS_COOKIE_SHA1 (#10184) and allowable contents of a
+	variant (#10185, amended as per Havoc's comments)
+
+	[All of the above are OK for MIT/X11 licensing]
+
+2007-10-03  John (J5) Palmieri  <johnp@redhat.com>
+
+	* dbus/dbus-internals.h: fd.o bug #11678 Don't error out if compiler
+	does not support vararg macros. _dbus_verbose is the only function
+	that does this so make it a noop if vararg macros are not supported
+	* bus/selinux.c, dbus/dbus-sysdeps-util-unix.c: fd.o bug #12429
+	Reverse check to setpcap and only init audit if we were root
+	(patch by Dan Walsh <dwalsh@redhat.com>,
+	https://bugs.freedesktop.org/show_bug.cgi?id=12429). Reverse
+	we_were_root check to setpcap if we were root.  Also only init audit
+	if we were root.  So error dbus message will not show up when policy
+	reload happens.  dbus -session will no longer try to send audit
+	message, only system will.
+	* configure.in: fd.o bug #11872 improve linker test for --gc-sections.
+	Patch by Tim Mooney <enchanter at users.sourceforge.net>
+	* configure.in, dbus/dbus-sysdeps.c: fd.o bug #11872 fix clearenv for
+	systems that do not have it. Patch from Brian Cameron <brian.cameron
+	at sun.com>
+	* tools/dbus-launch.c: fd.o bug #12547 remove superfluous if.
+	Also convert tabs to spaces
+	* configure.in, bus/Makefile.am, dbus/Makefile.am: Correctly implement
+	-fPIC and -fPIE. For security reasons we want possition independent
+	code for libraries and possition independent executable for
+	executables. Before we were just enabling -fPIC. Now we correctly
+	enable -fPIC and -PIE for libdbus and the bus respectively. Proper
+	LD_FLAGS are set for each also.
+
+2007-09-20  Ryan Lortie  <desrt@desrt.ca>
+
+	Add argument path matching support.  Bug #11066.
+
+	* dbus/signals.c (struct DBusMatchRule, bus_match_rule_new,
+	bus_match_rule_set_arg, bus_match_rule_parse_arg_match,
+	match_rule_matches): Add support for parsing and matching on
+	arg0path='/some/path' type rules.
+
+	* dbus/signals.h (bus_match_rule_set_arg): change to take const
+	DBusString instead of const char * for the string to match against.
+
+	* dbus/dbus-bus.c: add a quick note to dbus_bus_add_match
+	documentation about the path matching.
+
+	* doc/dbus-specification.xml: add a more detailed description of the
+	changes here.
+
+2007-09-19  Ryan Lortie  <desrt@desrt.ca>
+
+	Add support for compacting DBusStrings to release wasted memory.
+
+	* dbus/dbus-string.[ch] (compact, _dbus_string_compact,
+	_dbus_string_lock): new compact function to free up allocated memory
+	that is no longer used.
+
+	* dbus/dbus-message.c (load_message): call _dbus_string_compact on the
+	message loader buffer.
+
+	* dbus/dbus-transport-socket.c (do_reading, do_writing): call
+	_dbus_string_compact on the incoming/outgoing "encoded" buffers.
+
+	* dbus/dbus-string-util.c (_dbus_string_test): add a few tests for
+	string compacting.
+
+2007-09-13  Ryan Lortie  <desrt@desrt.ca>
+
+	* HACKING: add more explicit git branch/tag instructions
+
+2007-09-13  Ryan Lortie  <desrt@desrt.ca>
+
+	migrate from cvs to git (cvs2svn -> git-svnimport).
+
+	* HACKING: update release/branch/tag instructions
+	* */.cvsignore: rename to .gitignore
+
+	also, clean up tags and branch names to conform to HACKING
+
+2007-08-17  William Jon McCann  <mccann@jhu.edu>
+
+	* update-dbus-docs.sh: upload DTD to server
+
+2007-08-17  Havoc Pennington  <hp@redhat.com>
+
+	* tools/dbus-launch-x11.c (set_address_in_x11): fix from Michael
+	Lorenz to use long not int with XChangeProperty format 32
+
+	* dbus/dbus-sysdeps-util-unix.c
+	(_dbus_write_pid_to_file_and_pipe): factor this out, and use the
+	same code in _dbus_become_daemon (where the parent writes the pid
+	file and to the pid pipe) and in bus_context_new (where the daemon
+	writes its own pid file and to its own pid pipe)
+
+	* bus/bus.c (bus_context_new): close the pid pipe after we print
+	to it. Also, don't write the pid to the pipe twice when we fork,
+	someone reported this bug a long time ago.
+
+2007-08-03  Havoc Pennington  <hp@redhat.com>
+
+	* configure.in: add major/minor/micro version number AC_SUBST
+
+	* dbus/dbus-arch-deps.h.in (DBUS_MAJOR_VERSION,
+	DBUS_MINOR_VERSION, DBUS_MICRO_VERSION, DBUS_VERSION_STRING,
+	DBUS_VERSION): collection of macros to get version of library we
+	are compiled against.
+
+	* dbus/dbus-misc.c (dbus_get_version): new function, to get
+	version of library we are linked against at runtime.
+
+2007-07-30  Havoc Pennington  <hp@redhat.com>
+
+	* bus/activation-helper.c (check_bus_name): don't use
+	_dbus_check_valid_bus_name() which is only around with
+	--enable-checks, instead use _dbus_validate_bus_name().
+	Bug #11766 from Diego <diego@pemas.net>
+
+2007-07-27  Havoc Pennington  <hp@redhat.com>
+
+	* configure.in: post-release version bump
+
+2007-07-27  Havoc Pennington  <hp@redhat.com>
+
+	* release 1.1.2
+
+2007-07-26  Havoc Pennington  <hp@redhat.com>
+
+	* bus/config-parser-trivial.c (check_return_values): disable a
+	test that hardcoded the bus user's name
+
+	* bus/dispatch.c (bus_dispatch_test_conf): remove the "if
+	(!use_launcher)" around the tests, they were only failing because
+	we didn't pass through all the expected errors from the helper.
+
+	* bus/activation-exit-codes.h
+	(BUS_SPAWN_EXIT_CODE_CHILD_SIGNALED): add a code for child segfaulting
+	(BUS_SPAWN_EXIT_CODE_GENERIC_FAILURE): make "1" be a generic
+	failure code, so if a third party launch helper were written it
+	could just always return 1 on failure.
+	
+2007-07-24  Daniel P. Berrange <dan@berrange.com>
+
+	* bus/dbus-daemon.1: Add docs on new syntax options for the bus
+	address strings
+
+	* dbus/dbus-address.c: Allow * in addresses (for binding to all
+	addresses).
+
+	* dbus/dbus-sysdeps.h:
+	* dbus/dbus-sysdeps-unix.c: Re-write to use getaddrinfo instead
+	of gethostbyname to enable protocol independant name lookup,
+	making IPv6 work
+
+	* dbus/dbus-server-socket.h:
+	* dbus/dbus-server-socket.c: Add support for 'family' in the
+	address string to specify ipv4 vs ipv6. Use a port string to
+	allow for service resolution. Allow for binding to multiple
+	sockets at once in case of dual IPv4 & IPv6 stacks.
+
+	* dbus/dbus-server-unix.c: Pass in an array of file descriptors
+	instead of a single one.
+
+	* dbus/dbus-transport-socket.h:
+	* dbus/dbus-transport-socket.c: Add support for 'family' in the
+	address string to specify ipv4 vs ipv6. Use a port string to
+	allow for service resolution.
+
+2007-07-24  Havoc Pennington  <hp@redhat.com>
+
+	* configure.in: add AM_PROG_CC_C_O to allow per-target CPPFLAGS
+
+	* bus/dispatch.c (bus_dispatch_test_conf): Fix up setting
+	TEST_LAUNCH_HELPER_CONFIG to include the full path, and enable
+	test shell_fail_service_auto_start when use_launcher==TRUE
+
+	* bus/activation-helper-bin.c (convert_error_to_exit_code): pass
+	through the INVALID_ARGS error so the test suite works
+
+	* bus/activation.c (handle_activation_exit_error): return
+	DBUS_ERROR_NO_MEMORY if we get BUS_SPAWN_EXIT_CODE_NO_MEMORY
+
+	* dbus/dbus-spawn.c (_dbus_babysitter_get_child_exit_status):
+	return only the exit code of the child, not the entire thingy from 
+	waitpid(), and make the return value indicate whether the child 
+	exited normally (with a status code)
+
+	* bus/bus.c (process_config_first_time_only): _dbus_strdup works
+	on NULL so no need to check
+	(process_config_every_time): move servicehelper init here, so we
+	reload it on HUP or config file change
+
+	* bus/Makefile.am (install-data-hook): remove comment because
+	Emacs make mode seems to be grumpy about it
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/Makefile.am:
+	* bus/test-system.c: (die), (check_memleaks), (test_pre_hook),
+	(test_post_hook), (main):
+	Add back the test-system.c file - not sure now this got ignored in the
+	diff. I blame git.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* configure.in:
+	Use ustar to generate the tarball; this fixes the make distcheck
+	problem when the data files do not fit in the archive:
+	tar: dbus-1.1.2/test/data/valid-service-files/org.freedesktop.DBus.
+	TestSuiteShellEchoServiceFail.service.in: file name is too
+	long (max 99); not dumped
+
+	We have to have the 'long' names as the service helper matches by
+	filename rather than by the name in the service file.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* configure.in:
+	* test/Makefile.am:
+	* test/data/invalid-service-files-system/org.freedesktop.DBus.TestS
+	uiteNoExec.service.in:
+	* test/data/invalid-service-files-system/org.freedesktop.DBus.TestS
+	uiteNoService.service.in:
+	* test/data/invalid-service-files-system/org.freedesktop.DBus.TestS
+	uiteNoUser.service.in:
+	* test/data/valid-config-files-system/debug-allow-all-fail.conf.in:
+	* test/data/valid-config-files-system/debug-allow-all-pass.conf.in:
+	* test/data/valid-config-files/debug-allow-all-sha1.conf.in:
+	* test/data/valid-config-files/debug-allow-all.conf.in:
+	* test/data/valid-service-files-system/org.freedesktop.DBus.TestSui
+	teEchoService.service.in:
+	* test/data/valid-service-files-system/org.freedesktop.DBus.TestSui
+	teSegfaultService.service.in:
+	* test/data/valid-service-files-system/org.freedesktop.DBus.TestSui
+	teShellEchoServiceFail.service.in:
+	* test/data/valid-service-files-system/org.freedesktop.DBus.TestSui
+	teShellEchoServiceSuccess.service.in:
+	* test/data/valid-service-files/debug-echo.service.in:
+	* test/data/valid-service-files/debug-segfault.service.in:
+	* test/data/valid-service-files/debug-shell-echo-fail.service.in:
+	* test/data/valid-service-files/debug-shell-echo-success.service.in:
+	* test/data/valid-service-files/org.freedesktop.DBus.TestSuiteEchoS
+	ervice.service.in:
+	* test/data/valid-service-files/org.freedesktop.DBus.TestSuiteSegfa
+	ultService.service.in:
+	* test/data/valid-service-files/org.freedesktop.DBus.TestSuiteShell
+	EchoServiceFail.service.in:
+	* test/data/valid-service-files/org.freedesktop.DBus.TestSuiteShell
+	EchoServiceSuccess.service.in:
+	Add the data files needed by the system activation unit checks.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/dispatch.c: (check_segfault_service_no_auto_start),
+	(check_launch_service_file_missing),
+	(check_launch_service_user_missing),
+	(check_launch_service_exec_missing),
+	(check_launch_service_service_missing), (bus_dispatch_test_conf),
+	(bus_dispatch_test_conf_fail), (bus_dispatch_test):
+	Add unit tests for system activation. Most are copied from the
+	session activation tests, but some didn't apply when using a laucher.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/activation.c: (bus_activation_activate_service):
+	If the bus uses a service-laucher, then use the setuid laucher.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* configure.in:
+	Add the needed library exports for the new laucher.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* configure.in:
+	Check for -Wl,--gc-sections so we can really reduce the size of the
+	setuid binary.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/activation.c: (handle_activation_exit_error),
+	(babysitter_watch_callback):
+	Map the child exit status integer to a proper dbus error.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/bus.c: (process_config_first_time_only),
+	(process_config_every_time), (bus_context_unref),
+	(bus_context_get_servicehelper):
+	* bus/bus.h:
+	Add the concept of a service-helper and allow it's value to be read.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/activation.c: (bus_activation_entry_unref),
+	(update_desktop_file_entry):
+	Add the concept of, and read the value of user from the desktop file.
+	The user string is not required unless we are using system activation.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/activation.c:
+	* bus/desktop-file.h:
+	Move the defines into the header file, as we use these in the lauch
+	helper as well as the desktop file parsing.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/.cvsignore:
+	Add the autogenerated binary files.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/Makefile.am:
+	* bus/test.h:
+	Add the build glue for the lauch helper, and also add the launch-helper
+	OOM checks into make check. I've probably broken the build, give me 2.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/test-launch-helper.c: (die), (check_memleaks),
+	(test_post_hook), (bus_activation_helper_oom_test), (main):
+	Add a test wrapper to allow OOM checks on the launch helper.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/activation-helper-bin.c: (convert_error_to_exit_code),
+	(main):
+	* bus/activation-helper.c: (desktop_file_for_name),
+	(clear_environment), (check_permissions), (check_service_name),
+	(get_parameters_for_service), (switch_user),
+	(exec_for_correct_user), (check_bus_name), (get_correct_parser),
+	(launch_bus_name), (check_dbus_user), (run_launch_helper):
+	* bus/activation-helper.h:
+	Add the initial launch-helper. This is split into a main section and a
+	binary loader that allows us to lauch the main section in another test
+	harness to do stuff like OOM testing. No build glue yet.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/Makefile.am:
+	* bus/config-parser.c: (bus_config_parser_unref),
+	(start_busconfig_child), (bus_config_parser_end_element),
+	(servicehelper_path), (bus_config_parser_content),
+	(bus_config_parser_finished),
+	(bus_config_parser_get_servicehelper),
+	(test_default_session_servicedirs),
+	(test_default_system_servicedirs), (bus_config_parser_test):
+	* bus/config-parser.h:
+	Make the config-parser code use the common config code.
+	Also add the session and systemdirs stuff, and make the config parser
+	aware of the servicehelper field.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/system.conf.in:
+	Add new servicehelper fields to the default system.conf file.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/config-parser-trivial.c: (service_dirs_find_dir),
+	(service_dirs_append_link_unique_or_free), (bus_config_parser_new),
+	(bus_config_parser_unref), (bus_config_parser_start_element),
+	(bus_config_parser_end_element), (bus_config_parser_content),
+	(bus_config_parser_finished), (bus_config_parser_get_user),
+	(bus_config_parser_get_type), (bus_config_parser_get_service_dirs),
+	(check_return_values), (do_load), (check_loader_oom_func),
+	(process_test_valid_subdir), (make_full_path), (check_file_valid),
+	(bus_config_parser_trivial_test):
+	* bus/config-parser-trivial.h:
+	Add a security sensitive stripped down config parser for the setuid
+	launcher. This file only reads what it needs, and doesn't try to do
+	anything remotely clever like including external files.
+	It is not intended to validate the config file; it is expected that
+	config-parser will do that before the setuid program tries to read it.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/config-parser-common.c:
+	(bus_config_parser_element_name_to_type),
+	(bus_config_parser_element_type_to_name):
+	* bus/config-parser-common.h:
+	We don't want to run the whole config parser with all it's deps in the
+	setuid program. We need to implement a stripped down config parser just
+	for the launcher, and to do so I need some common functions and
+	defines; add them here.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* dbus/dbus-sysdeps-unix.c:
+	(_dbus_get_standard_system_servicedirs):
+	* dbus/dbus-sysdeps-win.c:
+	Provide a way to get the standard system servicedirs, just like we do
+	for the session service dirs. These should be seporate, as there may
+	be a security issue starting up some session stuff as root.
+	The use-case for the same binary starting up per-system _and_
+	per-session is also not valid.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/dbus-daemon.1.in:
+	Add standard_system_servicedirs and servicehelper into the man file
+	and explain what each does.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* doc/busconfig.dtd:
+	Add servicehelper into the dtd, it will soon be a valid part of the
+	config file.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* dbus/dbus-spawn.c: (read_data),
+	(_dbus_babysitter_get_child_exit_status):
+	* dbus/dbus-spawn.h:
+	Add a function so we can get access to the exit status of the launch
+	helper.
+	By providing the return code and not the error we can leave the
+	'what does this mean?' to the bus launch code and not include it in the
+	dbus directory.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* bus/activation-exit-codes.h:
+	Add defines which specify the output codes of the launch helper.
+	We have to use exit codes as this is the only way we can return failure
+	type without going grotty things like redirecting possibly-nonsecure
+	stderr into the error.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* dbus/dbus-protocol.h:
+	Add new error names needed for the launch helper.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* dbus/dbus-sysdeps.c: (_dbus_clearenv):
+	* dbus/dbus-sysdeps.h:
+	Add a wrapper for clearenv.
+
+2007-07-24  Richard Hughes  <richard@hughsie.com>
+
+	* doc/system-activation.txt:
+	Add design document for the system activation parts. I'll shortly be
+	committing many patches that add system activation using a setuid
+	launcher into CVS, so expect things to be broken for a few hours.
+
+2007-07-19  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/modules/FindKDEWIN.cmake: fixed comment
+	* cmake/modules/FindKDEWIN32.cmake: removed obsolate cmake module
+
+2007-07-18  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-message.c (dbus_message_get_cached)
+	(dbus_message_cache_or_finalize): don't mess with message from
+	message cache outside of the cache lock. Bug #9164 from Jonathan
+	Matthew.
+
+2007-07-13  Havoc Pennington  <hp@redhat.com>
+
+	* Add indent-tabs-mode: nil to all file headers.
+
+2007-07-12  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-sysdeps-util.c (_dbus_sysdeps_test): invert the test
+	for parsing hex as double to be sure it fails to work
+
+	* dbus/dbus-sysdeps.c (_dbus_string_parse_double): don't allow hex numbers.
+
+2007-07-10  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-connection.c (struct DBusConnection): Fix from Olivier
+	Hochreutiner to avoid trying to protect individual bits in a word
+	with different locks (make dispatch_acquired and io_path_acquired
+	dbus_bool_t rather than bitfields)
+
+2007-07-09  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c,dbus-sysdeps-win.h,dbus-sysdeps-win-util.c,
+	dbus-sysdeps-spawn-win.c: synced with windbus sources 
+
+2007-07-07  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c 
+		(_dbus_getsid): remove unused jump label
+		(_dbus_read_credentials_socket): _dbus_string_init could fail, 
+	        check initialisation
+		(_dbus_get_working_dir, _dbus_init_working_dir): remove unused 
+			functions
+
+2007-07-04  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/modules/FindKDEWIN.cmake: search in <program files dir>\win32libs 
+	for windows supplementary packages too
+
+2007-06-30  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/dbus/CMakeLists.txt: handle userdb as unix file
+
+2007-06-30  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c,dbus/dbus-sysdeps-win.h: removed obsolate 
+	DBusUserInfo code
+
+2007-06-30  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (_dbus_daemon_init): reduced compiler warnings
+
+2007-06-23  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-auth-script.c (_dbus_auth_script_run): added UNIX_ONLY and 
+	WIN_ONLY commands for auth scripts
+	* test/data/auth/external-root.auth-script: limit execution to unix
+
+2007-06-21  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-tranport.c (auth_via_default_rules): made the verbose spam
+	cross-platform
+
+2007-06-21  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-watch.c (dbus_watch_get_fd): 1) its behavior should
+	not be the same as before, the ABI has never been declared stable
+	on Windows and 2) do not commit to cross-platform files without
+	posting the exact patch to the mailing list
+	
+	* dbus/dbus-sysdeps-util.c (_dbus_sysdeps_test): as I have pointed
+	out before, either 0xff needs to work on both platforms, or none
+	of the dbus code can rely on it working. That means the options
+	are 1) audit the code for anywhere that relies on 0xff working, if
+	none found ideally add a test that it *doesn't* work and make unix
+	reject it explicitly, but in any case this test would go away or
+	2) make it work on Windows also, then we don't have to figure out 
+	whether we rely on it.
+
+	And in either case, post the exact patch to the mailing list and
+	don't just commit.
+
+2007-06-21 Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/CMakeLists.txt: added VERSION_PATCH to be able to 
+	distinguish win32 binary release from dbus versioning
+
+2007-06-21 Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c: deleted local DBusCredentials structure
+	    (_dbus_getsid): new function
+	    (_dbus_read_credentials_socket): used correct function
+	    (_dbus_append_user_from_current_process, 
+	        _dbus_credentials_add_from_current_process): added real 
+	            sid reading
+	    (_dbus_credentials_parse_and_add_desired,_dbus_parse_uid): 
+	        deleted
+
+2007-06-21 Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-util.c (_dbus_sysdeps_test): don't check 
+	0xff as floating point, this isn't supported on win32 math 
+	implementation
+
+2007-06-21 Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (_dbus_homedir_from_username, 
+	_dbus_homedir_from_current_process, _dbus_append_desired_identity): 
+	removed obsolate functions
+
+2007-06-21 Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c, dbus/dbus-sysdeps-util-win.c, 
+	dbus/dbus-sysdeps-win.h: disabled uid/sid conversation stuff
+	implementation by Peter Kuemmel 
+
+2007-06-21  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-watch.c (dbus_watch_get_fd): this function is 
+	deprecated and its behavior should be as before until all 
+	client code is migrated. 
+
+2007-06-19  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-util-win.c, tools/dbus-launch-win.c: 
+	msvc7.1 fixes by Jaroslaw Staniek tested with mingw 
+
+2007-06-19  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c, dbus/dbus-sysdeps-spawn-win.c, 
+	dbus/dbus-sysdeps-win.h: disabled DBusSocket implementation
+	by Peter Kuemmel 
+
+2007-06-18  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: removed obsolate patches
+
+2007-06-18  Havoc Pennington  <hp@redhat.com>
+
+	* configure.in: bump version to 1.1.2 so CVS is higher than last
+	release (this is not the 1.1.2 release)
+
+2007-06-18  Havoc Pennington  <hp@redhat.com>
+
+	* Release 1.1.1
+
+2007-06-18  Havoc Pennington  <hp@redhat.com>
+
+	* doc/dbus-specification.xml: document org.freedesktop.DBus.GetId()
+
+	* bus/driver.c (bus_driver_handle_get_id): implement org.freedesktop.DBus.GetId()
+
+	* bus/bus.c (bus_context_new): generate a unique ID for each bus context
+
+	* dbus/dbus-connection.c (dbus_connection_get_server_id): new function
+
+	* dbus/dbus-bus.c (dbus_bus_get_id): new function
+
+	* dbus/dbus-server.c (dbus_server_get_id): new function
+
+2007-06-18  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-sysdeps-unix.c (_dbus_read_credentials_socket): clean
+	this up a little bit, to try and understand why telnet'ing to a
+	server and sending a non-nul byte didn't disconnect immediately;
+	now it seems that it does disconnect immediately as it should,
+	though I don't understand what has changed.
+
+2007-06-18  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-watch.c (dbus_watch_get_socket)
+	(dbus_watch_get_unix_fd): new API to match DBusConnection
+	(dbus_watch_get_fd): deprecate this
+
+	Throughout: just s/dbus_watch_get_fd/dbus_watch_get_socket/g for
+	now since all the transports use sockets anyway
+	
+2007-06-16  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-macros.h, dbus/dbus-message.c, 
+	dbus/dbus-message.h: renamed DBUS_GNUC_DEPRECATED 
+	to DBUS_DEPRECATED and extended to msvc compiler
+
+2007-06-15  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/CMakeLists.txt: use local include header first
+
+	* dbus/dbus-sysdeps-win.c: mingw fix of DBusCredential struct
+
+2007-06-15  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/ConfigureChecks.cmake,cmake/config.h.cmake: 
+	added check for HAVE_ERRNO_H
+
+	* cmake/dbus/CMakeLists.txt: added missing files 
+	
+	* dbus/dbus-transport-win.c/.h: new files
+
+	* dbus/dbus-sysdeps-win.c,.h: added required _unix functions 
+	to make dbus compilable on win32 
+	
+	* dbus/dbus-sysdeps-win-utils.c,.h: moved some functions to 
+	dbus-sysdeps-win.c
+	
+	* dbus-win.patch: removed applied or obsolate patches
+	
+	Note: dbus-win32 is now compilable, no guarantee that it runs 
+	without any problems 
+
+2007-06-15  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-sysdeps-unix.c (_dbus_append_session_config_file)
+	(_dbus_append_system_config_file): new functions
+
+	* bus/main.c (main): use _dbus_append_system_config_file() and 
+	_dbus_append_session_config_file()
+
+	* dbus/Makefile.am (INCLUDES): move DBUS_SYSTEM_CONFIG_FILE and
+	DBUS_SESSION_CONFIG_FILE into this makefile
+
+2007-06-15  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-sysdeps.c (_dbus_set_errno_to_zero)
+	(_dbus_get_is_errno_nonzero, _dbus_get_is_errno_eintr)
+	(_dbus_strerror_from_errno): family of functions to abstract
+	errno, though these are somewhat bogus (really we should make our
+	socket wrappers not use errno probably - the issue is that any
+	usage of errno that isn't socket-related probably is not
+	cross-platform, so should either be in a unix-only file that can
+	use errno directly, or is a bug - these general errno wrappers
+	hide issues of this nature in non-socket code, while
+	socket-specific API changes would not since sockets are allowed
+	cross-platform)
+
+2007-06-14  Havoc Pennington  <hp@redhat.com>
+
+	* bus/dispatch.c (check_get_connection_unix_process_id): mop up
+	getpid() (noticed by Peter Kümmel) and adapt the test to 
+	expect a "pid unknown" error when running on Windows.
+
+2007-06-14  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-sysdeps-unix.c (_dbus_credentials_parse_and_add_user):
+	delete this function since it was effectively the same as
+	_dbus_credentials_add_from_username()
+
+2007-06-14  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-auth.c: adapt to keyring changes
+
+	* dbus/dbus-keyring.c: change to avoid using user ID and home
+	directory directly; instead use a
+	keyring-location-from-credentials function in dbus-sysdeps
+
+	* fix to use _dbus_append_user_from_current_process() instead of 
+	_dbus_username_from_current_process() or _dbus_append_desired_identity().
+	
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* reverted global rename of function _dbus_username_from_current_process. 
+	It needs too much tests to verify that the change does not break anything. 
+	I had overseen that the signatures are different and requires non
+	trivial changes. 
+	This is one *major* disadvantage of emulating oop functionality with c. 
+	You are responsible for cleaning every object on every function return point
+	which could be a nightmare if you are not working with dbus all the days.
+
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+    
+	* dbus/dbus-auth.c (handle_client_initial_response_cookie_sha1_mech): 
+	fixed usage of _dbus_append_desired_identity()
+
+	* dbus/dbus-sysdeps.h (_dbus_username_from_current_process): removed prototype
+
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+    
+	* dbus/dbus-sysdeps.c: moved global lock system_users from dbus-userdb.c
+
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+    
+	* global rename of function _dbus_username_from_current_process
+	to _dbus_append_desired_identity. 
+	Approved by Havoc Pennington
+
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c: disabled DBusUserInfo related code
+		(_dbus_append_desired_identity,	_dbus_windows_user_is_process_owner):
+    		new win32 functions as counterpart of unix related 
+		(_dbus_send_credentials_socket,_dbus_read_credentials_socket): 
+	    	renamed from ..._unix_socket
+		(_dbus_send_credentials_unix_socket): removed obsolate function
+	
+	* dbus/dbus-sysdeps-win-util.c: disabled DBusGroupInfo related code
+		(_dbus_verify_daemon_user,_dbus_change_to_daemon_user): 
+		    new win32 functions as counterpart of unix related
+	
+2007-06-14  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* doc/dbus-specification.xml: say the protocol version is 1 instead of
+	0 (patch from Kristoffer Lundén, fd.o#10033) and remove the FIXME
+	about removing protocol version from messages (as per Havoc's comment
+	on that bug)
+
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (_dbus_pid_for_log,_dbus_flush_caches): 
+	new win32 functions as counterpart of unix related
+
+2007-06-14  Ralf Habacker  <ralf.habacker@freenet.de>
+	
+	* cmake/modules/FindKDEWIN.cmake,
+	  cmake/modules/FindKDEWIN_Packager.cmake, 
+	  cmake/modules/Win32Macros.cmake: new files from the 
+	  kdewin32 project
+	* cmake/CMakeLists.txt: cleaned support for kdewin installer and 
+	  win32 explorer wrapper
+
+2007-06-13  Havoc Pennington  <hp@redhat.com>
+	
+	* dbus/dbus-message.c (dbus_message_iter_open_container): Fix
+	broken return_if_fail (kind of scary that test suite does not
+	cover this)
+
+2007-06-13  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-server-socket.c (_dbus_server_listen_socket): support
+	all_interfaces=true|false for tcp servers
+
+	* dbus/dbus-sysdeps-unix.c (_dbus_listen_tcp_socket): support
+	inaddr_any flag
+
+	* bus/selinux.c: fix some missing includes
+
+	* dbus/dbus-server-socket.c (_dbus_server_listen_socket): allow
+	port to simply be omitted in addition to specifying 0
+
+2007-06-13  Havoc Pennington  <hp@redhat.com>
+
+	* configure.ac, bus/selinux.c, dbus/dbus-sysdeps-unix-util.c: add
+	libaudit support, no clue what this means really but now we have
+	it. Patches from Fedora package.
+
+	* bus/bus.c (bus_context_new): move selinux initialization after
+	changing to daemon user, patch from Fedora package
+
+	* dbus/dbus-transport.c (auth_via_unix_user_function): fix a typo
+
+2007-06-12  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-message.c (dbus_message_iter_open_container): improve
+	the checks/warnings for contained_signature a bit
+
+2007-06-12  Havoc Pennington  <hp@redhat.com>
+	
+	* dbus/dbus-marshal-recursive.c (write_or_verify_typecode):
+	improve the warning a bit if you write extra data into a message
+
+2007-06-12  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-auth.c (sha1_handle_second_client_response)
+	(handle_server_data_anonymous_mech): add the process ID from
+	socket credentials, if available, even if not using EXTERNAL
+
+	* dbus/dbus-transport.c (auth_via_default_rules): support
+	allow_anonymous flag
+
+	* dbus/dbus-connection.c (dbus_connection_get_is_anonymous)
+	(dbus_connection_set_allow_anonymous): new API for controlling
+	anonymous access
+
+2007-06-09  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-string.c (_dbus_string_pop_line): fix this not to
+	think an empty line is the end of the file.
+	Also, fix some whitespace.
+
+	* dbus/dbus-string-util.c: add more tests for
+	_dbus_string_pop_line() revealing that it thinks an empty line is
+	the end of the file, which broke dbus-auth-script.c so 
+	it didn't really run the scripts
+
+	* dbus/dbus-auth.c: add ANONYMOUS mechanism
+
+	* dbus/dbus-auth-script.c (_dbus_auth_script_run): fix to detect
+	an empty/no-op auth script; add commands to check that we have or
+	don't have the expected credentials	
+
+2007-06-09  Havoc Pennington  <hp@redhat.com>
+
+	* bus/policy.c (bus_policy_create_client_policy): gracefully
+	continue if the connection has no unix user - just don't apply 
+	any unix user dependent rules.
+
+	* bus/config-parser.c: remove dbus-userdb.h usage
+
+	* bus/bus.c: remove dbus-userdb.h usage
+
+	* dbus/dbus-transport.c (_dbus_transport_get_is_authenticated):
+	support Windows user function; also, fix the logic for checking
+	auth as root in the default auth code (broken in the previous
+	commit)
+
+	* dbus/dbus-connection.c
+	(dbus_connection_set_windows_user_function): new function
+	(dbus_connection_get_windows_user): new function
+
+2007-06-09  Havoc Pennington  <hp@redhat.com>
+
+	* bus/dispatch.c (check_get_connection_unix_process_id): adapt
+	since sysdeps-unix.h stuff isn't included anymore
+
+	* bus/bus.c (bus_context_new): use more abstract functions to
+	change user, so they can be no-ops on Windows
+
+	* dbus/dbus-credentials.c, dbus/dbus-credentials.h,
+	dbus/dbus-credentials-util.c: new files containing a fully opaque
+	DBusCredentials data type to replace the old not opaque one.
+
+	* configure.in (DBUS_UNIX): define DBUS_UNIX to match DBUS_WIN on
+	windows
+
+	* dbus/dbus-userdb.h: prohibit on Windows, next step is to clean
+	up the uses of it in bus/*.c and factor out the parts of 
+	cookie auth that depend on it
+	
+2007-06-07  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-message.c: improve some docs related to reading values
+	from a message iter
+
+2007-06-02  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake: added cygwin compile support
+
+2007-06-01  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* tools/dbus-launch-win.c: new file, replaces script wrapper on win32.
+
+	* cmake/dbus-launch.bat.cmake: removed obsolate file
+
+2007-05-31  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/main.c (main): uses _dbus_get_config_file_name() to detect 
+	session.conf location on win32. 
+
+	* dbus-sysdeps-win.h (_dbus_get_config_file_name,_dbus_file_exists): 
+	new prototyp, undefined interface after including windows.h because 
+	it makes trouble when a paramater is named interface.
+
+	* dbus-sysdeps-win.c (_dbus_get_install_root,
+	_dbus_get_config_file_name,_dbus_file_exists): 	new functions.
+
+2007-05-27  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/policy.c,dbus/dbus-internals.c: fixed inconsistant line endings 
+	as reported by Peter Kümmel.
+
+2007-05-25  John (J5) Palmieri  <johnp@redhat.com>
+
+	* Released 1.1.0
+
+2007-05-25  John (J5) Palmieri  <johnp@redhat.com>
+
+	* Split NEWS and ChangeLog into a .pre-1-0 file as per HACKING
+	We forgot to do this during the 1.0 release and it makes sense
+	now as we get ready to release the first 1.1.0 development tarball
+
+2007-05-25  John (J5) Palmieri  <johnp@redhat.com>
+
+	* create directory test/data/valid-config-files/session.d so that
+	make check passes
+
+2007-05-25  John (J5) Palmieri  <johnp@redhat.com>
+
+	* INSTALL: remove dependancies for bindings since they no longer
+	are a part of core
+
+2007-05-25  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-server-win.c,dbus/dbus-server-win.h: new file 
+	with empty function _dbus_server_listen_platform_specific(). 
+
+	* dbus/dbus-server.c (listen_funcs): uses 
+	_dbus_server_listen_platform_specific on any platform.
+
+2007-05-25  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (fill_win_user_info_homedir): not getting 
+	user info from a domain controller isn't an error, the computer 
+	may run in a non domain context. 
+
+2007-05-25  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (_dbus_full_duplex_pipe): fixed assertation.
+
+2007-05-24  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* bus/config-parser.c (test_service_dir_matches): fixed ordering for unix.
+
+	* bus/config-parser.c (test_default_session_servicedirs): made allocation 
+	of _progs platform independent.
+
+2007-05-23  Havoc Pennington  <hp@redhat.com>
+
+	* bus/Makefile.am (install-data-hook): create session.d
+
+	* bus/session.conf.in: add session.d for the session bus, so
+	security policy can be extended
+
+2007-05-22 Ralf.Habacker <ralf.habacker@freenet.de>
+
+	* cmake/CMakeLists.txt: fixed creating of TEST_..._BINARY to make 
+	bus-test able to find the binaries.
+
+2007-05-21 Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* acinclude.m4, configure.in: In recent autotools, ${datadir} is
+	defined in terms of ${datarootdir}, so EXPANDED_DATADIR needs to be
+	expanded recursively. Rather than fixing configure.in to do this, I
+	grabbed the AS_AC_EXPAND macro from autostars.sf.net, which seems to be
+	commonly used.
+
+2007-05-21 Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* update-dbus-docs.sh: Assorted improvements:
+	- Default user if $FDUSER is not set is the ssh default
+	  (set in ~/.ssh/config or based on the local username), not a
+	  hard-coded "johnp"
+	- Temporary checkout directory is created securely (preventing symlink
+	  attacks), if mktemp(1) is available
+	- Use make -C rather than cd && make && cd ..
+
+2007-05-21 Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* HACKING: Point to correct mailing list
+
+2007-05-21 Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* doc/dbus-specification.xml: explicitly specify that STRING cannot
+	contain embedded NULs.
+
+2007-05-20 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-internal.c: fix inline problem on win32.
+
+2007-05-20 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (fill_win_user_info_homedir): not reaching 
+	domain controller isn't an error, converted error message to verbose 
+	message.
+
+2007-05-19 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-test.c (dbus_internal_do_not_use_run_tests): disabled 
+	tests not running on wince.
+
+2007-05-19 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-internals.c (_dbus_verbose_init): win32 requires 'varname=' 
+	to unset a environment variable. 
+
+2007-05-19 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps.c (_dbus_setenv): win32 requires 'varname=' 
+	to unset a environment variable. 
+
+2007-05-19 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* bus/policy.c (bus_policy_create_client_policy): 
+	win32 temporary fix until the userdb stuff is ported completly.
+
+2007-05-19  Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-server.c (listen_funcs): 
+	_dbus_server_listen_platform_specific is empty on win32, 
+	limited to unix only.
+
+	* dbus/dbus-server.c (valid_addresses): limit unix 
+	only addresses to unix. 
+
+2007-05-18  Havoc Pennington  <hp@redhat.com>
+
+	* doc/dbus-specification.xml: add a GetAll to the Properties
+	interface.
+
+2007-05-17 Ralf.Habacker  <ralf.habacker@freenet.de>
+ 
+	* bus\config-parser.c (test_default_session_servicedirs):
+	win32 fix.
+
+2007-05-17 Ralf.Habacker  <ralf.habacker@freenet.de>
+ 
+	* configure.in: define constant DBUS_UNIX.
+
+2007-05-14  Ralf Habacker <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (_dbus_printf_string_upper_bound):
+	compile fix for MS Platform SDK 6 
+	patch from Michael Luschas <mluschas@gmail.com>
+
+2007-05-10  John (J5) Palmieri <johnp@redhat.com>
+
+	* dbus-1.pc.in: add daemondir to pc file
+	patch from Brian Cameron <brian.cameron at sun.com>
+
+2007-05-04  Simon McVittie <simon.mcvittie@collabora.co.uk>
+
+	* doc/dbus-specification.xml: mention the reserved o.fd.DBus.Local
+	interface and the corresponding /o/fd/DBus/Local object path;
+	describe them as reserved and forbid using them in a sent message,
+	mentioning that in the reference implementation this will cause the
+	connection to be dropped. Patch approved by Havoc.
+
+2007-04-28  Ralf Habacker <ralf.habacker@freenet.de>
+
+	* cmake/: don't install test applications and service files,
+	moved CMAKE_DEBUG_POSTFIX to top level CMakeLists.txt
+
+2007-04-27  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-sysdeps-unix.c (_dbus_open_socket): fix #10781 from
+	Tobias Nygren, checking pointer to fd vs. 0 rather than checking
+	the fd itself
+
+2007-04-26 Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/: added debug postfixes to debug exe's for 
+	easier debugging.
+	* dbus\dbus-sysdeps-win.c (_dbus_win_set_error_from_win_error): 
+	print error code in case no string message is available.
+
+2007-04-06 Simon McVittie <simon.mcvittie@collabora.co.uk>
+
+	* dbus/dbus-message-util.c, dbus/dbus-message.c,
+	dbus/dbus-message.h: Add API to convert a DBusMessage to/from a
+	byte array. Patch from Dafydd Harries <dafydd.harries@collabora.co.uk>,
+	approved by Havoc Pennington.
+
+2007-04-03  Timo Hoenig  <thoenig@suse.de>
+
+	* dbus/dbus-address.c (dbus_parse_address): Do not accept zero-
+	  length address.
+	* dbus/dbus-address.c (_dbus_address_test): Add test for zero-
+	  length address.
+
+2007-03-25 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/dbus/CMakeLists.txt: debug postfix also for mingw.
+
+2007-03-16 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/modules/FindExpat.cmake: fix package detection on win32.
+
+	* README.win: update install instructions. 
+
+2007-03-16 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps.h (_dbus_split_paths_and_append):
+	new prototyp
+	(_DBUS_PATH_SEPARATOR): new macro. 
+
+	* dbus/dbus-sysdeps.c (_dbus_split_paths_and_append): merged 
+	from dbus/dbus-sysdeps-unix.c and dbus/dbus-sysdeps-win.c. 
+
+2007-03-15 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* bus/config-parser.c, bus/policy.c,  
+	bus/policy.h, bus/dbus-daemon.1.in,
+	bus/session.conf.in: added eavesdrop support 
+	for replies - patch by olli.salli at collabora.co.uk
+	approved by Havoc Pennington. 
+
+2007-03-15 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus\dbus-sysdeps-win-thread.c: renamed to 
+	dbus-sysdeps-thread-win.c, it is a platform depending file 
+	similar	to dbus-sysdeps-pthread.c.
+
+2007-03-15 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* cmake\doc\CMakeLists.txt: added prelimary xml doc 
+	support, needs cmake Find script.
+
+2007-03-14 Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* cmake: add doxygen support
+
+2007-03-14  Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/config.h.cmake: WINCE fixes, defined DBUS_UNIX.
+
+2007-03-13  Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-util-win.c (dbus_become_daemon): 
+	win32 compile fix. 
+
+2007-03-13  Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: removed obsolate patches. 
+
+2007-03-13  Ralf.Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c: added zero byte sending 
+	and receiving after connection start up
+
+2007-03-11  Havoc Pennington  <hp@redhat.com>
+
+	* tools/dbus-launch.c (do_close_stderr): fix C89 problem and
+	formatting problem
+
+	* Mostly fix the DBusPipe mess.
+	- put line break after function return types
+	- put space before parens
+	- do not pass structs around by value
+	- don't use dbus_strerror after calling supposedly cross-platform
+	api
+	- don't name pipe variables "fd"
+	- abstract special fd numbers like -1 and 1
+
+2007-03-12  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.h, dbus/dbus-sysdeps-win.c, 
+	dbus/dbus-sysdeps-util-win.c: renamed functions 
+	_dbus_xxx_file() to _dbus_file_xxx() to reflect 
+	struct name DBusFile. 
+
+2007-03-12  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-util-unix.c (_dbus_become_daemon):
+	fix _dbus_pid_fd check. 
+
+2007-03-10  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* tools/dbus-print-message.c (print_message):
+	added printing of the reply serial to method returns and 
+	errors, so you can actually figure out the message/reply 
+	pairs - patch by olli.salli at collabora.co.uk.
+
+2007-03-10  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: removed committed patches. 
+
+2007-03-10  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/bus.c, bus/bus.h, bus/main.c, bus/test.c,
+	dbus/dbus-sysdeps-unix.c, dbus/dbus-sysdeps-util-unix.c,
+	dbus/dbus-sysdeps-util-win.c, dbus/dbus-sysdeps-win.c,
+	dbus/dbus-sysdeps.h: renamed _dbus_xxx_pipe to _dbus_pipe_xxx,
+	completed _dbus_pipe support. 
+
+2007-03-10  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps.h (_dbus_listen_tcp_socket):
+	changed type or port to pointer, because the port is given back.
+
+	* dbus/dbus-server-socket.c (_dbus_server_new_for_tcp_socket):
+	implemented returning tcp port. Skipping port parameter
+	and non integer port values in config <listen> statement
+	needs more effort.
+
+	* dbus/dbus-sysdeps-unix.c, dbus/dbus-sysdeps-win.c
+	(_dbus_listen_tcp_socket): return the real used tcp port.
+
+	* bus/dbus-daemon.1.in: added <listen> tcp examples
+
+2007-03-09  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/config.h.cmake: win32 msvc bug fix
+
+2007-03-09  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/config.h.cmake: fixed DBUS_WINxx defines,
+	using _WINCE does not work.
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: removed _dbus_write_pipe() patch, it is now 
+	committed.
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/bus.c, dbus/dbus-sysdeps-unix.c, dbus/dbus-sysdeps.h:
+	rename pipe related write() function calls to _dbus_write_pipe().
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: added bus/config-loader-libexpat.c patch, 
+	uses DBUS_WIN for alls win32 related #ifdefs, 
+	some minor cleanups
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: updated patch for bus/dispatch.c.
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch: dbus-connection.c (dbus_connection_get_unix_user,
+	dbus_connection_get_unix_process_id): Let return them valid user id's, 
+	otherwise bus-test fails. How to replace on win32 ?.
+	
+	* dbus/dbus-sysdeps-win.c (fill_win_user_info_homedir):
+	fix memory leak.
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win.c (_dbus_win_set_error_from_win_error):
+	use dbus friendly error name.
+	(fill_win_user_info_homedir): print user name in error case too.
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/ConfigureChecks.cmake: fixed socketpair check
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/dispatch.c: disabled segfault test on win32 for now
+
+2007-03-08  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* configure.in, cmake/ConfigureChecks.cmake: added check 
+	for setrlimit. 
+	* test/test-segfault.c: only include setrlimit stuff only 
+	when available.  
+
+2007-03-07  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* test/test-segfault.c: unix compile fix.
+	* dbus-win.patch: removed obsolate patches.
+
+2007-03-07  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/activation.c: removed obsolate include header.
+	* test/test-segfault.c: win32 compile fix, rlimit 
+	isn't available on win32.
+	* dbus-win.patch: removed some more patches, they
+	are applied or obsolate 
+
+2007-03-06  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus-win.patch: fixes unix listen problems, dbus-test 
+	now runs.
+
+2007-03-06  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake/dbus/CMakeLists.txt,cmake/bus/CMakeLists.txt,
+	cmake/CMakeLists.txt: win32 compile fix
+
+2007-03-04  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus-win.patch, README.win: added available win32 
+	patches from windbus project (http://sf.net/projects/windbus)
+
+2007-03-04  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* bus/activation.c: (bus_activation_activate_service):
+	fixed call to _dbus_spawn_async_with_babysitter().
+
+2007-03-04  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-spawn.c,dbus/dbus-spawn.h (_dbus_spawn_async_with_babysitter):
+	added environment pointer as function parameter, used on win32.
+
+	* test/spawn-test.c: fixed call to above mentioned function.
+
+2007-03-04  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* configure.in,test/test-sleep-forever.c,test/test-names.c: 
+	added configure check for unistd.h.
+
+2007-03-04  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* test/Makefile.am: fixed test data copy problem in 
+	out of source build, when sources came from svn or cvs. 
+
+2007-03-03  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/*-win.*,bus/*-win.*: added win32 platform related
+	files. These files are only added to the cmake build system.  
+	The missing dbus-win.patch file will be added later. 
+
+2007-03-03  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* cmake: new directory, contains cmake build support.
+	See http://www.cmake.org for more informations.
+	Currently only unix will be buildable because some 
+	win32 required files are still missing. 
+
+2007-03-03  Thiago Macieira  <thiago@kde.org>
+
+	* dbus/dbus-sysdeps-unix.c: capture the dbus-launch stderr
+        output and add it to the DBusError message we return.
+
+	* tools/dbus-launch.1:
+	* tools/dbus-launch.c: Add option --close-stderr to, well,
+	close stderr before starting dbus-daemon.
+
+2007-01-31  Havoc Pennington  <hp@redhat.com>
+
+	* bus/dbus-daemon.1.in: write a section in the man page on running
+	a test daemon for debugging purposes
+
+2007-01-26  Havoc Pennington  <hp@redhat.com>
+
+	* bus/session.conf.in: override all the default limits with much
+	higher limits on the session bus, there is no reason the session
+	bus should have low limits
+
+	* bus/config-parser.c (bus_config_parser_new): increase default
+	limits so they are less likely to be hit; in particular the max
+	replies per connection was way too low
+
+2006-01-25  Simon McVittie  <simon.mcvittie@collabora.co.uk>
+
+	* doc/dbus-tutorial.xml: Replace Python section of tutorial with
+	a pointer to the tutorial maintained as part of dbus-python
+
+2006-12-31  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-unix.c: unix compile fix, moved 
+	atomic_exchange_and_add() from dbus/dbus-sysdeps.c 
+	to here, it's used by _dbus_atomic_inc() and _dbus_atomic_dec().
+
+2006-12-31  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* tools/dbus-monitor.c: gettimeofday() is not available 
+	on windows so we have to provide our own. It's taken from 
+	lgpl'd kdewin32 package. - Patches from Christian Ehrlicher
+
+2006-12-31  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-unix.c: moved _dbus_atomic_inc/dec() 
+	from dbus/dbus-sysdeps.c, windows version of _dbus_atomic_inc/dec() 
+	is in dbus-sysdeps-win.c (not in this patch).
+
+	* dbus/dbus-sysdeps.h: DBusAtomic::value is long on windows to fit 
+	with InterlockedInc/Decrement. 
+	- Patches from Christian Ehrlicher
+	
+2006-12-31  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* tools/dbus-send.c, tools/dbus-monitor.c: win32 compile fix.
+
+2006-12-31  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-marshal-recursive.c (type DBusTypeReaderClass):
+	fix mispaced const statement. - Patch from Peter Kümmel
+
+2006-12-19  Ray Strode  <rstrode@redhat.com>
+
+	* bus/bus.c (process_config_every_time):
+	don't overwrite existing bus context activation object
+	until after we've checked that the new activation is
+	valid.
+
+	* bus/main.c 
+	(signal_handler), (handle_reload_watch):
+	don't call exit() on failure, instead make do and keep
+	going.
+	(close_reload_pipe): new function to turn off
+	hangup-causes-config-reload behavior if an unexpected
+	error occurs
+
+2006-12-13  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-sysdeps-win-thread.c (_dbus_condvar_wait_win32):
+	correctness fix. - Patch from Christian Ehrlicher
+
+2006-12-13  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-internals.h: msvc also knows about __FUNCTION__, 
+	we should also use it. - Patch from Christian Ehrlicher
+
+2006-12-13  Ralf Habacker  <ralf.habacker@freenet.de>
+  
+	* dbus-sysdeps-util.c: added win32 related tests
+
+2006-12-12  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-string.c (_dbus_string_pop_line),
+	bus/desktop-file.c (parse_section_start,
+	parse_comment_or_blank,parse_key_value,): uses
+	_dbus_string_find_eol() to support platform independent eol style.
+
+2006-12-12  Ralf Habacker  <ralf.habacker@freenet.de>
+
+	* dbus/dbus-string.[ch] (_dbus_string_find_eol): new function. 
+	* dbus/dbus-string-util.c (_dbus_string_test): added testcases for 
+	      _dbus_string_find_eol().
+	Approved by: Havoc Pennington.
+
+2006-12-12  Tim Dijkstra <tim@famdijkstra.org>
+
+	* configure.in: Added switch to disable user_database caching.
+
+	* dbus/dbus-userdb-util.c, dbus/dbus-userdb.c: Add ifdefs to
+	be able disable user_dabase caching.
+
+2006-12-12  Tim Dijkstra <tim@famdijkstra.org>
+
+	* bus/bus.c, bus/bus.h: Remove DBusUserDatabase from the BusContext 
+	struct. It is unnecessary we have a global one already. Also remove 
+	bus_context_get_user_database function, it is no longer needed.
+	Flush the global database on reload.
+
+	* dbus/dbus-userdb-util.c: Replace _dbus_user_database_get_groups 
+	with _dbus_groups_from_uid. It no longer needs a DBusUserDatabase.
+
+	* dbus/dbus-userdb.c, dbus/dbus-userdb.h: 
+	Add _dbus_user_database_flush_system. 
+	Make more functions DBUS_USERDB_INCLUDES_PRIVATE. 
+	Small unrelated change in _dbus_is_a_number: change 
+	_dbus_string_parse_int to _dbus_string_parse_uint. 
+
+	* bus/connection.c: Change call to _dbus_user_database_get_groups to 
+	_dbus_groups_from_uid.
+
+	* bus/policy.c, bus/policy.h: Change call to 
+	_dbus_user_database_get_groups to _dbus_groups_from_uid. Remove 
+	DBusUserDatabase from bus_policy_allow_user prototype, it no longer 
+	needs it.
+
+2006-12-12  John (J5) Palmieri  <johnp@redhat.com>
+
+	* bus/signal.c: Fix match_rule_equal errata
+	(CVE-2006-6107 - Patch from Kimmo Hämäläinen 
+	<kimmo.hamalainen@nokia.com>)
+
+2006-11-19  Thiago Macieira  <thiago@kde.org>
+
+	* dbus/dbus-sysdeps-pthread.c (_dbus_pthread_mutex_lock,
+        _dbus_pthread_condvar_wait,
+        _dbus_pthread_condvar_wait_timeout): set pmutex->holder to
+        pthread_self() after coming back from a conditional variable
+        wait as well as in one codepath where it was forgotten.
+	Approved by: Havoc Pennington.
+
+2006-11-17  Havoc Pennington  <hp@redhat.com>
+
+	* update-dbus-docs.sh: allow setting fd.org username via env
+	variable. Make it run autogen with --enable-xml-docs=yes
+	--enable-doxygen-docs=yes so configure will fail if the required
+	tools are missing.
+
+2006-11-17  Havoc Pennington  <hp@redhat.com>
+
+	* doc/dbus-faq.xml: minor FAQ tweaks
+
+2006-11-14  Havoc Pennington  <hp@redhat.com>
+	
+	* dbus/dbus-misc.c, dbus/dbus-misc.h: Move
+	dbus_get_local_machine_id() to its own file, no substantive
+	changes. There are a couple other things we might want to add that
+	are "misc" so moving out of dbus-connection.[hc] which is big
+	enough already.
+	
+2006-11-14  Havoc Pennington  <hp@redhat.com>
+
+	* dbus/dbus-internals.c (_dbus_generate_uuid): The spec said the
+	UUID had the timestamp last, but the implementation had it first;
+	move it to last since I think it's a tiny bit nicer (easier to
+	compare at a glance, faster to sort, less code), and will not
+	cause any practical compatibility problems. Also, always convert
+	the timestamp to big endian.
+
+	* doc/dbus-specification.xml: Clean up the docs on the UUID.
+
+	* tools/dbus-uuidgen.1: more prominently say it is not suitable
+	as a replacement for regular uuidgen/RFC4122.
+
+2006-11-14  John (J5) Palmieri  <johnp@redhat.com>
+
+	* dbus/dbus-threads.h: fix DBUS_THREAD_FUNCTIONS_ALL_MASK to have
+	the correct value so we don't assert when initalizing recursive threads
+
+	* test/name-test/test-thread-init.c: call dbus_threads_init_default
+	instead of _dbus_threads_init_debug since it is more of a real world
+	test
+

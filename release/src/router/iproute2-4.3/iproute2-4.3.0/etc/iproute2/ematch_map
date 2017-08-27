@@ -1,0 +1,7 @@
+# lookup table for ematch kinds
+1	cmp
+2	nbyte
+3	u32
+4	meta
+7	canid
+8	ipset

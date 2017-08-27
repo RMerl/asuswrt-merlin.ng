@@ -1,0 +1,100 @@
+# Dutch translation of sysstat debconf templates.
+# Copyright (C) 2004, 2011 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the sysstat package.
+# Bart Cornelis <cobaco@linux.be>, 2004.
+# Jeroen Schot <schot@a-eskwadraat.nl>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 10.0.2-1\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2011-09-19 10:58+0200\n"
+"Last-Translator: Jeroen Schot <schot@a-eskwadraat.nl>\n"
+"Language-Team: Debian l10n Dutch <debian-l10n-dutch@lists.debian.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "De databestanden in oude indeling verwijderen?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"De indeling van de bestanden met de dagelijkse data is veranderd in versie "
+"${s_version} van sysstat en is niet compatibel met de oude indeling."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Als u deze optie kiest, dan zullen alle bestaande databestanden in de map /"
+"var/log/sysstat verwijderd worden."
+
+#  Type: 
+#  Description
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Als u niet voor deze optie kiest, zal het commando sar(1) niet goed werken "
+"totdat u de bestanden handmatig verwijderd."
+
+#  Type: boolean
+#  Description
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "De cronjob van sysstat activeren?"
+
+#  Type: boolean
+#  Description
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Als deze optie geactiveerd is zal het sysstat-pakket systeemactiviteiten "
+"volgen en de data opslaan in logbestanden onder /var/log/sysstat/."
+
+#  Type: boolean
+#  Description
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Met deze data kan het commando sar(1) statistieken voor de hele dag "
+"weergeven."
+
+#  Type: boolean
+#  Description
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Als u deze optie niet activeert zal het commando sar(1) enkel de huidige "
+"statistieken weergeven."

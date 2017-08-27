@@ -1,0 +1,52 @@
+.TH VT1211_PWM 8 "July 2008" "lm-sensors 3"
+.SH NAME
+vt1211_pwm \- manual control of VIA vt1211 PWM outputs
+
+.SH SYNOPSIS
+.B vt1211_pwm
+.B -d | -i <pwm> | -r <pwm> | -s <pwm>,<val>
+
+.SH DESCRIPTION
+\fBvt1211_pwm\fP is a shell script that provides manual control of the two PWM
+outputs of the VIA vt1211 Super-I/O device.
+
+.SH OPTIONS
+.TP
+.B -d
+Display the current settings of the two PWM outputs.
+.TP
+.B -i <pwm>
+Initialize PWM \fB<pwm>\fP for manual control. Valid numbers for \fB<pwm>\fP
+are 1 or 2. This option also writes the original vt1211 register values to
+~/.vt1211_pwm\fB<pwm>\fP which is used for restoring the original settings.
+.TP
+.B -r <pwm>
+Restore PWM \fB<pwm>\fP to the orignal settings. Valid numbers for \fB<pwm>\fP
+are 1 or 2. This options reads the original settings from
+~/.vt1211_pwm\fB<pwm>\fP and writes them to the vt1211.
+.TP
+.B -s <pwm>,<val>
+Set PMW \fB<pwm>\fP output to \fB<val>\fP. Valid numbers for \fB<pwm>\fP are 1
+or 2 and valid numbers for \fB<val>\fP are 0 to 255. The \fB<val>\fP range of
+0-255 maps to an output duty-cycle of 0%-100%, i.e., output duty-cycle =
+\fB<val>\fP * 100 / 255.
+
+.SH REQUIREMENTS
+You need root privileges to execute the vt1211_pwm script and the vt1211 kernel
+module needs to be loaded and you obviously need to have fans connected to the
+PWM outputs of the vt1211 :-)
+
+.SH WARNING
+This script puts the PWM controller of the vt1211 into automatic mode and
+toggles the thermal thresholds between extrem values to fool the chip into
+believing that there is a temperature change and thus forcing the PWM outputs
+to change to the specified values. Since there is only a single PWM controller
+that controls both PWM outputs, setting the duty-cycle of one PWM output could
+affect the duty-cycle of the other PWM output. Use at you own risk!
+
+.SH SEE ALSO
+sensors(1)
+
+.SH AUTHOR
+.PP
+Juerg Haefliger <juergh at gmail.com>

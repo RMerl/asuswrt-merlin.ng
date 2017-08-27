@@ -1,0 +1,54 @@
+#
+# Copyright (C) 2007-2011 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=iw
+PKG_VERSION:=3.6
+PKG_RELEASE:=1
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE_URL:=http://wireless.kernel.org/download/iw/
+PKG_MD5SUM:=1c18bfbbc8773629e5e8ac733a39540c
+
+include $(INCLUDE_DIR)/package.mk
+
+define Package/iw
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=cfg80211 interface configuration utility
+  URL:=http://wireless.kernel.org/en/users/Documentation/iw
+  DEPENDS:= +libnl-tiny @(!(TARGET_avr32||TARGET_etrax)||BROKEN)
+endef
+
+define Build/Configure
+	echo "const char iw_version[] = \"$(PKG_VERSION)\";" > $(PKG_BUILD_DIR)/version.c
+	rm -f $(PKG_BUILD_DIR)/version.sh
+	touch $(PKG_BUILD_DIR)/version.sh
+	chmod +x $(PKG_BUILD_DIR)/version.sh
+endef
+
+TARGET_CPPFLAGS:= \
+	-I$(STAGING_DIR)/usr/include/libnl-tiny \
+	$(TARGET_CPPFLAGS) \
+	-DCONFIG_LIBNL20 \
+	-D_GNU_SOURCE
+
+MAKE_FLAGS += \
+	CFLAGS="$(TARGET_CPPFLAGS) $(TARGET_CFLAGS)" \
+	LDFLAGS="$(TARGET_LDFLAGS)" \
+	NL1FOUND="" NL2FOUND=Y \
+	NLLIBNAME="libnl-tiny" \
+	LIBS="-lm -lnl-tiny" \
+	V=1
+
+define Package/iw/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/iw $(1)/usr/sbin/
+endef
+
+$(eval $(call BuildPackage,iw))

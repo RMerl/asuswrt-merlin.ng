@@ -1,0 +1,31 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+# The "always" module is here for debugging purposes. Each
+# instance simply returns the same result, always, without
+# doing anything.
+always fail {
+	rcode = fail
+}
+always reject {
+	rcode = reject
+}
+always noop {
+	rcode = noop
+}
+always handled {
+	rcode = handled
+}
+always updated {
+	rcode = updated
+}
+always notfound {
+	rcode = notfound
+}
+always ok {
+	rcode = ok
+	simulcount = 0
+	mpp = no
+}

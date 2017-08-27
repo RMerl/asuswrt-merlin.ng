@@ -1,0 +1,8 @@
+
+The sa2 shell script uses a daily data file to create a daily report.
+By default it uses current daily data file (that is to say
+the daily data file created today).
+Yet it may be sometimes useful to tell it to use the daily data file
+of the day before (that is to say the one created yesterday), for
+example if sa2 is started at, say, 02:00 AM. In this case, answer y.
+

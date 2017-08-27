@@ -1,0 +1,513 @@
+lm-sensors CHANGES file
+-----------------------
+
+SVN HEAD
+  sensors.1: Add reference to sensors-detect
+  sensors-detect: Fix systemd paths
+                  Add detection of Fintek F81768
+                  Only probe I/O ports on x86
+                  Add detection of Nuvoton NCT6793D
+                  Add detection of Microchip MCP9808
+                  Mark F71868A as supported by the f71882fg driver
+                  Mark F81768D as supported by the f71882fg driver
+                  Mark F81866D as supported by the f71882fg driver
+
+3.4.0 (2015-06-25)
+  documentation: Update the note about libsensors license
+  sensors.conf.5: Enhance the hysteresis documentation
+  sensors.conf.default: Add support for NCT6779 and NCT6791
+  libsensors: Get rid of arbitrary limit on per-type sensor count
+              Add support for temperature min and critical min hysteresis
+              Fix sparse warnings
+  sensors: Add support for temperature min and critical min hysteresis
+  fancontrol: Deal with moving hwmon attributes
+              Fix shell error when FCFANS is not set
+              Reduce memory consumption (#2391)
+  healthd: Avoid using external commands
+  sensors-detect: Add detection of ADC128D818
+                  Add detection of AMD family 16h Kabini and Mullins
+                  Add detection of ITE IT8620E and IT8623E
+                  Add detection of TMP441, TMP442, LM95233, LM95234,
+                  and LM95235
+                  Add detection of NCT7802Y
+                  Print kernel version and processor information
+                  Add detection of NCT6792D 
+                  Add reference to nct6683 driver
+                  Show that NCT6102D/6104D/6106D are supported by nct6775 driver
+                  Show NCT5573D as compatible to NCT6776F with same chip ID
+                  Document support for EMC1402, EMC1404, and EMC1424
+                  Detect new revisions of EMC14xx
+                  Add detection of EMC1422
+                  Document driver support for TMP431 and TMP432
+                  Add detection of TMP400 and TMP435
+                  Add detection of IT8786E
+                  Add detection of IT8780F
+                  Add detection of IT8731F and IT8732F
+                  Add detection of Intel 5500/5520/X58
+                  Loosen detection rules for TS3000/TSE2002
+                  Add detection of TSE2004 and TS3001
+                  Document driver support for NCT7802Y
+                  Add detection of NCT7904D
+                  Add detection of IT8790E
+                  Fix graphics cards detection (#2386, #2392)
+                  Skip more addresses on graphics card I2C bus (#2392)
+
+3.3.5 "Happy Birthday Beddy" (2014-01-22)
+  libsensors: Improve documentation of two functions
+              Increase MAX_SENSORS_PER_TYPE to 33
+  init: Fix EnvironmentFile in service files
+        Drop syslog.target dependency from service files
+  sensors-conf-convert: Add a manual page
+  sensors-detect: Report built-in drivers as such
+                  Use modules.builtin instead of /sys/module
+                  Handle built-in modules properly
+                  Add detection of NCT6791D
+                  Add detection of NCT6681D, NCT6682D, and NCT6683D
+                  Add detection of F71868A
+                  Add detection of IT8603E
+                  Add two PCI IDs for new family 15h AMD processors
+                  Introduce automatic mode (--auto)
+                  Detect incorrect non-interactive runs
+                  Rework option handling
+                  Fix use of uninitialized value 'vendor_id' on ppc64
+                  Add detection of TMP451
+                  Add detection of SMSC EMC2104
+
+3.3.4 (2013-05-27)
+  sensors.conf.5: Mention "sensors -u" to get the raw feature names
+  sensors: Clarify what option -u is good for
+  fancontrol: Fix handling of absolute paths in config
+  pwmconfig: Print the initial PWM values
+             Raise the detection threshold to 3/4
+             Properly deal with multiple fan control
+  sensors-detect: Add detection of AMD family 16h power sensors
+                  Map IT8771E, IT8772E, IT8782F and IT8783F to it87
+                  Use /sys/module instead of /proc/modules where available
+                  Drop legacy sysconfig configuration file syntax
+                  Stay alive when /dev/port is missing
+                  Add detection of IT8752F
+                  Add detection of MCP98244
+                  Add detection of LM95234
+                  Add detection of TMP431/TMP432
+                  Update Nuvoton chip information and NCT6106D chip detection
+                  Drop unreliable DS1621/DS1631 detection
+
+3.3.3 "Happy Birthday Sophie" (2012-11-06)
+  documentation: Update fan-divisors, fan divisors are optional
+  libsensors: Fix warning about library path not in /etc/ld.so.conf
+  sensors: Fix libiconv linkage need detection in rare corner case
+           Add support for humidity output
+           Add long switches to manual page
+  sensors-detect: Don't choke on systems without PCI
+                  Avoid probing EDID addresses on graphics cards (#2386)
+                  Add detection of NCT6779D and NCT6102D/NCT6106D
+                  Add detection of SMSC LPC47N217 and SIO10N268
+                  Do not scan I2C adapters on graphics cards by default
+                  Fix parent class discovery when multiplexer is present
+
+3.3.2 (2012-03-14)
+  libsensors: Added support for new sysfs attributes
+              Change sysfs detection to survive upcoming kernel changes
+  sensord: Fix memory leaks revealed by valgrind
+           Minor performance improvements
+  sensors: Added support for new sysfs attributes
+           Display both instantaneous and average power if available.
+           Report thermal sensor type 1 as CPU diode
+           Align power values better
+           Fix power interval output
+  fancontrol: Support setup where one PWM output controls several fans
+              Output error messages to stderr
+  sensors-detect: Stop calling for PIIX5 SMBus testers
+                  Improve filtering of fake DMI data
+                  Print DMI system/product version if available
+                  Fix loading of the cpuid module
+                  Make LM73 detection less problematic
+                  Add detection of National Semiconductor LM96163
+                  Add detection of GMT G781
+                  Properly handle Super-I/O chips without logical device
+                  Add detection of National Semiconductor LM96080
+                  Add detection of ITE IT8771E
+                  Add detection of ITE IT8781F, IT8782F and IT8783F
+                  Add detection of ITE IT8510E/TE/G, IT8511E/TE/G,
+                         IT8513E/F/G, and IT8518E
+                  Add detection of ST Microelectronics STTS2002 and STTS3000
+                  Add detection of IDT TSE2002GB2, TS3000GB2, Microchip MCP9804,
+                         and Atmel AT30TS00
+
+3.3.1 (2011-07-21)
+  isadump: Add support for word (16-bit) and long (32-bit) reads
+  isaset: Add support for word (16-bit) and long (32-bit) writes
+  sensors.conf.default: Add a section for the EMC6W201
+  sensors-detect: Add AMD family 15h CPU detection
+                  Add detection of ADT7461A / NCT1008
+                  Add detection of ITE IT8516E/F/G
+                  Integrate with systemd
+                  Drop unreliable smart battery detection
+                  Add detection of SMSC EMC6W201
+                  Drop unreliable detection of Maxim MAX6650
+                  Add detection of SMSC EMC2300
+                  Add detection of MAX6642
+                  Add detection of ITE IT8772E
+                  Don't advertise the ipmisensors driver
+                  Add detection of SA56004
+                  Add detection of LM95245
+
+3.3.0 (2011-03-28)
+  Makefile: Check for bison and flex
+  libsensors: Add support for intrusion detection (#2370)
+              Compute MAX_SUBFEATURES at run-time (#2378)
+              Compute MAX_*_SENSOR_TYPES at build time (#2378)
+	      Add support for new sysfs attributes (#2379)
+              Add support for humidity sensors
+              Limit symbol visibility
+  sensors.conf.default: Add a section for the W83627THF
+                        Add a section for the SCH5127
+                        Add a section for the W83627UHG
+                        Add a section for the W83795G/ADG
+                        Add a section for the F81865F
+  sensors: Display 3 decimal places in raw output
+           Add support for intrusion detection (#2370)
+           Fix automatic unit selection of 0 value
+           Added support for additional sensor attributes (#2379)
+  sensors-detect: Improve LM90 and W83L771 detection
+                  Fix error seen if I2C bus numbers are not sequential
+                  Add detection of SMSC EMC1423
+                  Add detection of the Analog Devices ADT7410
+                  Add detection of the National Semiconductor LM94
+                  Add detection of the ITE IT8728F
+                  Implement universal detection for coretemp (#2381)
+                  Add detection of Maxim MAX6639
+                  Add detection of SMSC EMC1023, EMC1043, EMC1053, and EMC1063
+                  Add detection of Nuvoton NCT5571D, NCT5577D and NCT6776F
+                  Add detection of SMSC EMC1002, EMC1033, EMC1046, EMC1047,
+                        EMC1072, EMC1073, EMC1074, EMC1402, and EMC1424
+                  Fixed address ranges checked for SMSC EMC1403 and EMC1404.
+                  Fix detection of SPD EEPROM on DDR3 memory modules
+                  Add detection of AMD family 12h and 14h thermal sensors
+                  Add detection of EMC6D103S
+                  Add detection of National Semiconductor LM75A
+                  Count DMI chassis type 8 as a laptop
+                  Add detection of SMSC SCH5627
+                  Add detection of many Fintek Super-I/O devices
+
+3.2.0 (2010-10-10)
+  libsensors: Increase MAX_SENSORS_PER_TYPE to 24
+              Map individual beep features
+              Change license to LGPL
+  pwmconfig: Sample all fan speeds before returning to full speed (#2380)
+             Wait for fans to return to full speed only once per PWM
+             Drop legacy invocations of cut
+  sensors.conf.default: W83667HG config is similar to W83627EHF/DHG
+  sensord: Fix support of multiple chips (#2377)
+  sensors: Properly handle sensor input read errors
+  sensors-detect: Give udev time to settle before accessing i2c nodes
+                  Add support for Intel PCH (SMBus)
+                  Add support for SMSC EMC1403 and EMC1404
+                  Fix detection of RB-C3 AMD Family 10h CPU
+                  Add support for SMSC EMC2103
+                  Add support for Fintek F71889ED
+                  Add support for ITE IT8721F
+                  Fix Maxim MAX6690 support
+                  Fix handling of duplicate detections
+                  Add support for STMicroelectronics STTS424
+                  Add support for NXP SE97 / SE97B
+                  Add reference to NCT6771F/NCT6772F/NCT6775F
+                  Add support for several JC42.4 compliant temperature sensors
+                  Add support for ITE IT8512E/F and IT8758E
+
+3.1.2 (2010-02-02)
+  libsensors: Support upcoming sysfs path to i2c adapters
+              Add support for HID devices
+  fancontrol: Check that all referenced sysfs files exist
+              Check that all devices match the configuration file
+  pwmconfig: Exit immediately if not root
+             Save device paths and names in configuration file
+  sensors.conf.default: Encourage user to not modify this file
+                        Add a section for adt7473 and adt7475
+                        Add a section for adt7476 and adt7490
+  sensord: Don't name our variables "alarm"
+  	   Major refactoring including
+	   - Cleanup of huge functions
+	   - Remove needless casts
+	   - Fix coding style
+	   - Break long lines
+	   - Make functions more robust
+	   - Remove unused return value
+	   - Make CGI script more XHTML compatible
+  sensors: Fix iconv-related build warning in set_degstr
+  sensors-detect: Refer to tmp401 driver if TMP411 is detected
+                  Clean up the discovery of i2c adapters
+                  Report unsupported Access Bus adapters
+                  Add detection for TI's TMP421, TMP422 and TMP423 chips
+                  The SMSC LPC47M233 isn't currently supported
+                  Support upcoming sysfs path to i2c adapters
+                  Rename the modprobe configuration file to lm_sensors.conf
+                  Only report AMD Family 10h CPU with working sensors
+                  Add detection for AMD Family 11h thermal sensors
+                  Add detection for Intel Atom thermal sensors
+                  Add detection for National Semiconductor LM73
+                  Add SMBus detection for AMD Hudson-2
+                  Add detection for Nuvoton W83667HG-B and W83677HG-I
+                  Add detection for Analog Devices ADT7490
+                  Refer to f71882fg driver if F71889FG is detected
+                  Add detecton for Fintek F71869FG
+                  Detect ADT7473 at 0x2c and 0x2d
+                  More known revisions for the ADT7476
+                  Add detection for Nuvoton W83L771AWG/ASG
+                  Add detection for VIA Nano
+                  Add detection for Texas Instruments AMC6821
+                  Add detection for Analog Devices ADT7411
+  sysconfig-lm_sensors-convert: Fix exit code
+
+3.1.1 (2009-06-21)
+  isadump: Use geteuid instead of getuid so that setuid bit works
+  isaset: Use geteuid instead of getuid so that setuid bit works
+  libsensors: Don't rely on dirent->dt_type being set
+              New method to free the memory allocated for chip names
+  Makefile: Include generated source files in dependency checking
+            Make it possible to skip building of the static library
+  fancontrol: Add support for absolute path to hwmon devices
+  sensord: Remove the hidden commandline interface
+           Introduce struct sensord_arguments
+           Using sigaction for signal handlers
+           Convert to linux coding style
+           Cleanup and refactoring of the source code
+           Don't use the system log when generating a CGI script
+           Disable unit scaling for fan speeds
+           Use daemon logging facility instead of local4 by default
+           Fix a memory leak when a chip name is provided
+  sensors: Fix a memory leak when a chip name is provided
+  sensors-detect: Add nNidia nForce MCP78S SMBus detection
+                  Display Super-I/O address even if LD is disabled
+                  Differentiate between PC8374L and WPCD377I
+                  Use dmidecode to find IPMI interfaces if available
+                  Add Nuvoton W83795G/ADG detection
+                  Add National Semiconductor LM95241 detection
+                  Add Winbond/Nuvoton W83627DHG-P and W83627UHG detection
+
+3.1.0 "Happy Birthday Lina" (2009-02-28)
+  libsensors: Add support for instantaneous power sensors
+              Add support for current sensors
+              Fix error propagation during expression evaluation
+              Detect excessive recursion depth during expression eval (#2365)
+              Return a string rather than NULL for unknown errors
+              Skip non-file sysfs entries for speed
+              Fix memory leak in scanner when using flex 2.5.9 or later
+              Report configuration file read errors
+              Exit the configuration file parser sooner
+              Free bus statements from the configuration file sooner
+              Read extra configuration files from /etc/sensors.d (#2174)
+              Report the configuration file name on parse errors
+              Add support for ACPI devices
+  libsensors.3: Reformat for clarity
+                Document function sensors_snprintf_chip_name
+                Document error-related functions
+  lm_sensors.init: Support new format of /etc/sysconfig/lm_sensors (#2246)
+                   Drop support for kernels 2.4 and earlier
+  lm_sensors.init.suse: Delete (actual SuSE script is much different)
+  Makefile: Install sensors.conf.default instead of sensors.conf.eg (#2333)
+  pwmconfig: Drop support for kernels 2.4 and earlier
+  fancontrol: Don't round temperature values
+              Drop support for kernels 2.4 and earlier
+              Exit if configuration file can't be read
+              Create pid file only after successful initialization
+  maxilife scripts: Delete (driver never ported to Linux 2.6)
+  sensord: Accept negative temperatures in RRD database
+           Don't bail out on transient errors (#2330)
+  sensors: Add support for instantaneous power sensors
+           Add support for current sensors
+           Fix exit code in error case
+  sensors.conf.5: Lots of additions and reworks
+  sensors.conf.default: New, minimum version of sensors.conf.eg (#2333)
+                        Add sections for the SMSC SCH311x and SCH5027
+  sensors.conf.eg: The LM99 offset is now handled in the lm90 driver
+                   Move help section to sensors.conf.5
+                   Add a section for the Asus/Fintek F8000
+  sensors-detect: Fix detection of ADT7463 and LM96000
+                  Add VIA VX800/VX820 SMBus support 
+                  Fix detection of Intel 5000 series FB-DIMM AMB
+                  Fix detection of ADT7462
+                  Fix detection of SMSC LPC47M292
+                  Add SMSC LPC47M233 support
+                  Drop support for Linux 2.4 (#2325)
+                  Handle special case chips more efficiently
+                  Fix SMBus detection of W83627EHF and W83627DHG
+                  Get I2C adapter driver names from sysfs (#2328)
+                  Drop old SiS I2C adapter entries
+                  Drop separate LM78-J entry
+                  Merge all Mozart-2 entries
+                  Merge both GL518SM entries into one
+                  Complete GL520SM detection
+                  Improve GL525SM detection a bit
+                  Let kernel 2.6.28 and later handle chips aliases
+                  Unload kernel drivers when we are done with them (#2329)
+                  Fix handling of bus driver names with an underscore
+                  Simplify loading of bus drivers
+                  Fix bus number prediction logic (#2327)
+                  Suggest the sbs driver for smart batteries
+                  Drop alias detection for Super-I/O chips
+                  Move alias detection after all chip detections
+                  Probe chip types from safest to more risky (#2322)
+                  Add an option to skip ISA probes except IPMI
+                  Skip ISA detection by default if a Super I/O was found (#2322)
+                  Do not scan I2C adapters on multimedia cards by default
+                  Skip SMBus probing by default if a Super I/O was found (#2322)
+                  Display I2C address statictics with --stat
+                  Document the new detection order and rules
+                  Gather DMI data and print it at start-up
+                  Always probe the SMBus on Asus, Tyan and Supermicro boards
+                  Move IPMI interface detection to its own section
+                  Skip IPMI probing on laptops
+                  Add Winbond/Nuvoton W83667HG support
+                  Add Intel Core I7 support
+                  Generate new format for /etc/sysconfig/lm_sensors (#2246)
+                  Print warnings about missing modules on screen
+                  Fix detection of older DS1621
+                  Add nNidia nForce MCP67, MCP73, MCP79 SMBus support
+                  Exclude auto-loaded PCI and USB drivers from list (#2368)
+                  Special case probing i2c address 0x73 (to not crash FSC ICs)
+                  Add detection of FSC Hades and Syleus IC's
+                  Add detection of Winbond WPCD377I (no sensors)
+  sensors-detect-stat.pl: Delete (functionality merged into sensors-detect)
+  sysconfig-lm_sensors-convert: Sample config file conversion script (#2246)
+
+3.0.3 (2008-09-28)
+  libsensors: Avoid namespace pollution
+  fancontrol: Don't use named pipes when we don't need them (#2319)
+  pwmconfig: Tell the user about gnuplot if it isn't installed
+             Fix MINSTOP and MINSTART test functions (#2340)
+             Test MINSTOP before MINSTART
+             Use better step values for MINSTOP test
+             Print the revision and date at start-up
+             Detect and report obviously incorrect fan speeds
+             Determine MINSTOP automatically
+             Skip MINSTOP and MINSTART tests if fan can't stop
+             Change default for MINTEMP from 0 to 20 degrees C
+             Add support for attributes in the hwmon class device (#2260)
+             Update manual page
+  sensors.conf.eg: Drop "label temp#_crit" statements
+  sensors-detect: Add Intel SCH (bus) support
+                  Add SMSC EMC6D103 support
+                  Improve MAX6657, MAX6658, MAX6659 detection
+                  Cache the byte data reads (#2326)
+                  Add Maxim MAX6654/MAX6690 support
+                  Add National Semiconductor LM95231 support
+                  Add Analog Devices ADT7481 support
+                  Refactor alias detection functions
+                  Fix Andigilog aSC7621 support
+                  Add Texas Instruments THMC51 support
+                  Fix Analog Devices ADT7461 support
+                  Add VIA C7 support
+                  Fix Winbond W83L786NR/NG/R/G support (#2336)
+                  Add Maxim MAX6646/MAX6647/MAX6649 support
+                  Add VIA VT1212 support
+                  Add SMSC EMC2700LPC support
+                  Add ITE IT8720F support
+                  Add Texas Instruments TMP411 support
+                  Prevent misdetection of W83627DHG on I2C as LM78
+                  W83627DHG has no subclients
+                  Add Maxim MAX1618 support
+
+3.0.2 (2008-05-18)
+  documentation: Delete the FAQ, now maintained on the wiki
+  libsensors: Use __func__ instead of __FUNCTION__
+              Parse the configuration file in C locale
+              Late compute statements override early ones
+              Support virtual hwmon devices (#2309)
+              Support power and energy sensors
+              Support DOS-style configuration files again (#2284)
+  pwmconfig: Don't create the configuration file before it's needed
+             Don't preserve configuration file customizations
+             Fix permissions of the configuration file
+             Don't start if fancontrol is running (#2299)
+  fancontrol: Don't start if already running (#2299)
+              Delete fancontrol.pid at exit time (#2299)
+  sensord: Fix support of multiple chip names on the command line (#2321)
+  sensors: Print energy and power sensors with automatically scaled units
+  sensors-detect: Add SMSC SCH5027D detection
+                  Do not access I/O ports on PPC
+                  Move south bridge sensor detection to the right section
+                  Run chip_special_cases() earlier
+                  New device ID for the SMSC SCH5317
+                  Add SMSC SCH5127 detection
+                  Add National Semiconductor LM64 detection
+                  Add Asus F8000 detection
+                  Add Intel ICH10 (bus) detection
+                  Don't probe I2C addresses 0x40-0x47
+                  Fix the parsing of I2C addresses not to scan
+                  Detect and skip 1-register-only I2C devices
+                  Avoid SMBus word transactions where possible
+                  Add Dallas DS1631 detection
+
+3.0.1 (2008-01-28)
+  documentation: Update the application writing guidelines
+  libsensors: No longer depend on libsysfs (#2262)
+              Don't guess the bus type from the device ID format (#2240)
+              Add support for attributes in the hwmon class device (#2260)
+  Makefile: No warnings about ld configuration for staged installations
+            Document the variable overriding mechanism (#2296)
+  pwmconfig: Really hide errors on sysfs writes
+             Deal gracefully with read-only pwm_enable files
+             Warn about outputs found in automatic mode
+             Repeat available configuration options before prompt (#2289)
+             Fix duplicate warning message when config file is broken
+  fancontrol: Detect improperly formatted FCTEMPS value (#2293)
+  sensord: Fix rrd support (#2276)
+           Use the same colors for daily and weekly charts
+           Drop workaround needed by old versions of rrdtool
+  sensors: Fix error path on library initialization error
+  sensors.conf.eg: Fix voltage value references (g520sm, lm80, pc87366)
+  sensors-detect: Drop PCA9540 detection
+                  Improve sysconfig and modprobe.d integration
+                  Add SMSC SCH5514D-NS detection (no sensors)
+                  Lower the confidence of MAX6650/MAX6651
+                  Add Fintek F71858DG detection
+                  Add Fintek F81216D detection (no sensors)
+  unhide_ICH_SMBus: Add support for the 82801AA (ICH)
+
+3.0.0 (2007-11-24)
+  Makefile: Fix MODULE_DIR usage in etc
+            Fix build on PPC
+  pwmconfig: Better diagnostics in pwmdisable
+             Give the fans some time to spin up
+  sensors-detect: Add Texas Instruments TMP401 detection
+                  Mention the f75375s driver
+                  Add SMSC LPC47B367-NC detection (no sensors)
+                  Reduce w83781d/lm78 I2C address probing range
+                  Add Intel Celeron 4xx and Penryn (CPU on 45nm) detection 
+
+3.0.0-rc3 (2007-10-28)
+  libsensors: Add a default configuration file
+              Fix memory leaks on initialization error
+              Make the configuration file optional
+              Change the default configuration file to /etc/sensors3.conf
+  sensord: Reload config on SIGHUP rather than automatically
+           No default configuration file name
+  sensors: Fix file handle leak on library initialization error
+           Handle the case where voltage measurements aren't available
+           No default configuration file name
+           Install as sensors again
+  sensors.conf.eg: Install as sensors3.conf
+  sensors-detect: Fix SMSC LPC47B357/M967 detection
+                  Select the right driver for FSC chips
+  sensors-detect-stat.pl: Handle alternative chip lists
+
+3.0.0-rc2 (2007-10-10)
+  useful_addresses.html: Moved to the wiki
+  Makefile: Add sensors-conf-convert to make install
+  libsensors: Notify the caller when writing a value fails
+              Differentiate between different read error types
+              Report I/O errors as such
+  sensord: Log the error code on failure
+           Drop the configuration file search path mechanism (#2259)
+           Manual page update
+  sensors: Fix spurious critical temperature alarm
+           Print error messages to stderr
+           Make error messages more helpful and consistent
+           Better handling of the fault flags
+  sensors-conf-convert: Add a short help text
+  sensors-detect: Fix SMSC SCH311x detection
+                  Add AMD K10 CPU sensor detection 
+
+3.0.0-rc1 (2007-09-25)
+  Initial release

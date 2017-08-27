@@ -1,0 +1,52 @@
+# Message with an array of array where the child arrays are of
+# different types
+
+VALID_HEADER method_call
+
+HEADER_FIELD INTERFACE
+TYPE STRING
+STRING 'org.freedesktop.Foo'
+HEADER_FIELD MEMBER
+TYPE STRING
+STRING 'Bar'
+HEADER_FIELD PATH
+TYPE OBJECT_PATH
+OBJECT_PATH '/foo'
+
+ALIGN 8
+END_LENGTH Header
+
+START_LENGTH Body
+
+TYPE ARRAY
+TYPE ARRAY
+TYPE UINT32
+
+LENGTH Array
+START_LENGTH Array
+
+## array of uint32
+LENGTH SubArray1
+START_LENGTH SubArray1
+UINT32 1
+UINT32 2
+UINT32 3
+END_LENGTH SubArray1
+
+## array of uint32
+LENGTH SubArray2
+START_LENGTH SubArray2
+UINT32 4
+UINT32 5
+END_LENGTH SubArray2
+
+## array of boolean
+LENGTH SubArray3
+START_LENGTH SubArray3
+BOOLEAN false
+BOOLEAN true
+END_LENGTH SubArray3
+
+END_LENGTH Array
+
+END_LENGTH Body

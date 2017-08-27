@@ -1,0 +1,179 @@
+#!/bin/sh
+#
+# vt1211_pwm - Manually control the PWM outputs of the VIA vt1211 Super-I/O
+#
+# Copyright (C) 2008 Juerg Haefliger (juergh at gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+
+function usage
+{
+    echo "Usage: vt1211_pwm -i <pwm> | -r <pwm> | -s <pwm>,<val>"
+    echo
+    echo "DESCRIPTION"
+    echo "   This tool provides manual control of the PWM outputs of the VIA "
+    echo "   vt1211 Super-I/O."
+    echo
+    echo "OPTIONS"
+    echo "   -d               Display the current PWM settings of the vt1211."
+    echo "   -i <pwm>         Initialize the PWM output for manual control."
+    echo "   -r <pwm>         Restore the PWM output to the original settings."
+    echo "   -s <pwm>,<val>   Set the PWM output duty-cycle. "
+    echo
+    echo "WITH"
+    echo "   <pwm>   PWM output (1-2)."
+    echo "   <val>   PWM duty-cycle (0-255)."
+    echo
+    exit 2
+}
+
+function set_attr
+{
+    local tmp
+    read tmp < $1
+    echo "echo $tmp > $1"
+    echo $2 > $1
+}
+
+# check if we have the right permissions to run
+if [ `whoami` != "root" ] ; then
+    echo "You must be root to run this script."
+    exit 1
+fi
+
+# parse the command line options
+action=
+nr=1
+val=0
+while getopts di:r:s: opt ; do
+    [ -z "$action" ] || usage
+    case $opt in
+	d)  action="display"
+	    ;;
+	i)  action="init"
+	    nr=$OPTARG
+	    ;;
+	r)  action="restore"
+	    nr=$OPTARG
+	    ;;
+	s)  action="set"
+	    nr=${OPTARG%,*}
+	    val=${OPTARG#*,}
+	    ;;
+	?)  usage
+	    ;;
+    esac
+done
+
+[ -z "$action" ] && usage
+[ $nr -lt 1 -o $nr -gt 2 ] && usage
+[ $val -lt 0 -o $val -gt 255 ] && usage
+
+# check hwmon device
+dev=`ls -d /sys/devices/platform/vt1211.*`
+if [ -z "$dev" ] ; then
+    echo "Platform device vt1211 not found. Did you load the vt1211 module?"
+    exit 1
+fi
+
+# init file
+initfile="/root/.vt1211_pwm${nr}"
+
+# ACTION: display
+if [ $action = "display" ] ; then
+    for nr in 1 2 ; do
+	read mode < ${dev}/pwm${nr}_enable
+	if [ $mode -eq 0 ] ; then
+	    mode_txt="(disabled)"
+	elif [ $mode -eq 2 ] ; then
+	    mode_txt="(auto)    "
+	else
+	    mode_txt="(unknown) "
+	fi
+	read val < ${dev}/pwm${nr}
+	dc=$((val * 100 / 255))
+	echo "pwm${nr}: mode = ${mode} ${mode_txt}, val = ${val} (${dc}%)"
+    done
+fi
+
+# ACTION: init
+if [ $action = "init" ] ; then
+    # check for an init file
+    if [ -e  $initfile ] ; then
+	echo " $initfile exists. Did you already initialize this PWM?"
+	exit 1
+    fi
+
+    (
+        # set the pwm-to-temp mapping
+        # use the internal temp as a reference
+	set_attr ${dev}/pwm${nr}_auto_channels_temp 2
+
+        # enable the pwm auto controller
+	set_attr ${dev}/pwm${nr}_enable 2
+
+        # set the PWM duty-cycle
+	set_attr ${dev}/pwm${nr}_auto_point2_pwm 0
+	set_attr ${dev}/pwm${nr}_auto_point3_pwm 255
+
+        # set the temp boundaries to extrem values
+	set_attr ${dev}/pwm1_auto_point1_temp 0
+	set_attr ${dev}/pwm1_auto_point2_temp 0
+	set_attr ${dev}/pwm1_auto_point3_temp 1000000
+	set_attr ${dev}/pwm1_auto_point4_temp 1000000
+
+    ) > $initfile
+
+    exit 0
+fi
+
+# ACTION: restore
+if [ $action = "restore" ] ; then
+    # check for an init file
+    if [ ! -e  $initfile ] ; then
+	echo " $initfile not found. Nothing to restore."
+	exit 1
+    fi
+
+    sh $initfile
+    rm $initfile
+
+    exit 0
+fi
+
+# ACTION: set
+if [ $action = "set" ] ; then
+    # check for an init file
+    if [ ! -e $initfile ] ; then
+	echo "$initfile not found. Did you initialize this PWM?"
+	exit 1
+    fi
+
+    # set the PWM duty-cycle
+    echo $val > ${dev}/pwm${nr}_auto_point3_pwm
+
+    # fool the vt1211 into believing there is a temp change
+    # otherwise the new PWM duty-cycle doesn't take effect
+    echo 0 > ${dev}/pwm1_auto_point3_temp
+    echo 1000000 > ${dev}/pwm1_auto_point3_temp
+
+    # read the new PWM duty-cycle back and print it
+    read val < ${dev}/pwm${nr}
+    dc=$((val * 100 / 255))
+    echo "pwm${nr} is now at ${val} (${dc}%)."
+
+    exit 0
+fi

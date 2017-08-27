@@ -1,0 +1,621 @@
+#!/usr/bin/perl
+#
+# Generate a symbol dependencies file. The file lists all symbols (functions and rodata) contained
+# in an image, and for each symbol its set of dependencies. (First level dependencies only,
+# not the entire call chain).
+#
+# For functions, dependencies may be:
+#    - Other functions that it calls directly.
+#    - Function pointers referenced by the function.
+#    - Names of rodata accessed by the function.
+#
+# For rodata, dependencies may be:
+#    - Names of functions used as function pointers in the rodata.
+#    - Names of other rodata used as data pointers in the rodata.
+#
+#
+# For example, consider:
+#    - func1() which calls leaf functions func2() and func3().
+#    - func1() uses const data rodata1.
+#    - rodata1 has a pointer to rodata2, and function pointer func_ptr1().
+#
+# The format of the generated output file is:
+#
+# func1: func2 func3 rodata1
+# func2:
+# func3:
+# rodata1: rodata2 func_ptr1
+# rodata2:
+# func_ptr1:
+#
+#
+# Refer to: http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/OpportunisticROM
+#
+# Usage: See 'usage' subroutine below.
+
+
+use strict;
+use warnings;
+use File::Path;
+
+
+# Display usage info.
+#
+# Params: None.
+#
+# Returns: Nothing.
+sub usage {
+    print STDERR "Usage: gen-symdep <romtbl.S> <roml.dis> <romtable.xref> <romsym.dep> <roml.map>\n";
+    print STDERR "                  <romdobjs.tgz> <objdump>\n";
+    print STDERR "   <romtbl.S>:         IN  Romtable input file (lists ROM contents).\n";
+    print STDERR "   <roml.dis>:         IN  ROM disassembly.\n";
+    print STDERR "   <romtable.xref>:    IN  ROM cross references file.\n";
+    print STDERR "   <romsym.dep>:       OUT ROM symbol dependency file.\n";
+    print STDERR "   <roml.map>:         IN  ROM map file.\n";
+    print STDERR "   <romdobjs.tgz>:     IN  Tar-zipped file of ROM unoptimized object files.\n";
+    print STDERR "   <objdump>:          IN  Full path to objdump utility.\n";
+    exit 1;
+}
+
+
+# Input filenames.
+my $g_fname_romtable;
+my $g_fname_romldis;
+my $g_fname_romtblxref;
+my $g_fname_romsymdep;
+my $g_fname_romlmap;
+my $g_fname_romtgz;
+my $g_objdump;
+
+
+# Parse command line arguments.
+($g_fname_romtable = shift @ARGV)   || &usage;
+($g_fname_romldis = shift @ARGV)    || &usage;
+($g_fname_romtblxref = shift @ARGV) || &usage;
+($g_fname_romsymdep = shift @ARGV)  || &usage;
+($g_fname_romlmap = shift @ARGV)    || &usage;
+($g_fname_romtgz = shift @ARGV)     || &usage;
+($g_objdump = shift @ARGV)          || &usage;
+shift @ARGV && &usage;
+
+
+# Hash table that maps symbol addresses to symbol names.
+my %g_romlmap;
+
+# Hash table of all rodata symbols in ROM. The hash value is set to 1 if the rodata symbol
+# name (hash key) is in ROM.
+my %g_rodata_syms;
+
+# Hash table of all symbols in ROM. The hash value is set to 1 if the symbol name (hash key)
+# is in ROM.
+my %g_romtbl_syms;
+
+# All symbol "aliases". These are optimized functions that are renamed by the compiler.
+# Ideally, function renames should be avoided by disabling the appropriate compiler optimizations.
+# However, some ROMs have mistakenly been created with optimized/renamed functions, e.g.
+#    $g_romtbl_aliases{T.144} = srom_read;
+my %g_romtbl_aliases;
+
+# Hash table that maps object filenames to an array of rodata symbols.
+my %g_file_rodata;
+
+# Hash table that maps all symbol names to an array of dependencies.
+my %g_symdeps;
+
+
+
+# Parse ROM symbols from input romtable.
+#
+# Params:  fname:          IN  Input filename.
+#          romtbl_syms:    OUT Hash table of all symbols in ROM. The hash value is set to 1 if the
+#                              symbol name (hash key) is in ROM.
+#          rodata_syms:    OUT Hash table of all rodata symbols in ROM. The hash value is set to 1
+#                              if the rodata symbol name (hash key) is in ROM.
+#          file_rodata:    OUT Hash table that maps object filenames to an array of rodata symbols.
+#          romtbl_aliases: OUT Hash table that maps aliased symbol names to their real names.
+#
+# Returns: Nothing.
+sub parse_romtable_file {
+	my ($fname, $romtbl_syms, $rodata_syms, $file_rodata, $romtbl_aliases) = @_;
+
+	my $fh;
+	my $line;
+	my $filename;
+
+
+	# Open romtable.S
+	open($fh, "<$fname") or
+	    die "Could not open $fname for reading: $!\n";
+
+	# Parse symbols.
+	foreach $line (<$fh>) {
+		my $data;
+		my $idre = '([\w$]+)';
+		my $fnre = '([\w.-]+)';
+
+		# Parse ROM object files. The syntax is:
+		#
+		#   # aes.o
+		$line =~ s/^\s+//;
+		if ($line =~ /\#\s*${fnre}\.o/) {
+			($data, $filename) = split (" ", $line);
+			next;
+		}
+
+		# Parse ROM symbols. The syntax is:
+		#
+		#   .extern bcm_mp_alloc
+		if ($line =~ /^\s*\.extern\s+${idre}\b/) {
+			$romtbl_syms->{$1} = 1;
+		}
+
+		# Parse rodata ROM symbols. The syntax is:
+		#
+		# .extern aeskeywrap$aeskeywrapIV    # .rodata
+		if ($line =~ /^\s*\.extern\s+${idre}\s+\#\s*\.rodata\b/) {
+			$rodata_syms->{$1} = 1;
+			push (@{ $file_rodata->{$filename} }, $1);
+		}
+
+		# Parse "alias" ROM symbols. The syntax is:
+		#
+		# .extern srom_read  # .no_esc # .alias T.144
+		if ($line =~ /^\s*\.extern\s+${idre}.*#\s*\.alias\s+(T.[0-9]+)\b/) {
+			$romtbl_aliases->{$2} = $1;
+		}
+	}
+
+	# Clean up.
+	close $fh;
+}
+
+
+# Parse ROM map file. The file syntax is:
+#
+#    0080bcc0 T memcpy
+#    0080bd8c T memmove
+#    0080bddc T memset
+#    ...
+#
+# Params:  fname:          IN  Input filename.
+#          romlmap:        OUT Hash table that maps symbol addresses to symbol names.
+#
+# Returns: Nothing.
+sub parse_rom_map_file {
+	my ($fname, $romlmap) = @_;
+	my $fh;
+	my $line;
+
+	# Open roml.map.
+	open($fh, "<$fname") or
+	    die "Could not open $fname for reading: $!\n";
+
+	# Parse map file.
+	foreach $line (<$fh>) {
+		my $func_addr;
+		my $func_type;
+		my $func_name;
+		my $func_addr_hex;
+
+		# Map file syntax is:
+		#
+		# 0080bcc0 T memcpy
+		($func_addr, $func_type, $func_name) = split(" ", $line);
+
+		if (($func_type eq "T") && ($func_name !~ m/__bcmromfn/)) {
+			$func_addr_hex = hex($func_addr);
+			$romlmap->{$func_addr_hex} = $func_name;
+		}
+	}
+
+	# Clean up.
+	close $fh;
+}
+
+
+# Parse ROM cross references file. The file lists all functions that reference rodata.
+# The file syntax is:
+#
+#    aes$Z128:.text.aes_cmac_gen_subkeys:aes.o
+#    aes$R128:.text.aes_cmac_gen_subkeys:aes.o
+#    ...
+#
+# Params:  fname:          IN  Input filename.
+#          romtbl_syms:    IN  Hash table of all symbols in ROM. The hash value is set to 1 if the
+#                              symbol name (hash key) is in ROM.
+#          romtbl_aliases: IN  Hash table that maps aliased symbol names to their real names.
+#          symdeps:        MOD Hash table that maps functions to an array of rodata dependencies.
+#
+# Returns: Nothing.
+sub parse_rom_xref_file {
+	my ($fname, $romtbl_syms, $romtbl_aliases, $symdeps) = @_;
+	my $fh;
+	my $line;
+
+	# Open roml.map.
+	open($fh, "<$fname") or
+	    die "Could not open $fname for reading: $!\n";
+
+	# Parse cross references file.
+	foreach $line (<$fh>) {
+		my $rodata_name;
+		my $func_name;
+		my $filename;
+
+		chomp($line);
+		# Skip comments.
+		if ($line =~ /^#/) {
+			next;
+		}
+
+		# The file syntax is:
+		#
+		#    aes$Z128:.text.aes_cmac_gen_subkeys:aes.o
+		($rodata_name, $func_name, $filename) = split(":", $line);
+		$func_name =~ s/.text.//;
+
+		# Add rodata to hash table.
+		if ((check_romtable_match($func_name,   $romtbl_syms, $romtbl_aliases)) &&
+		    (check_romtable_match($rodata_name, $romtbl_syms, $romtbl_aliases))) {
+			$symdeps->{$func_name}{$rodata_name} = 1;
+		}
+	}
+
+	# Clean up.
+	close $fh;
+}
+
+
+# Parse ROM disassembly file.
+#
+# Params:  fname:          IN  Input filename.
+#          romlmap:        IN  Hash table that maps symbol addresses to symbol names.
+#          rodata_syms:    IN  Hash table of all rodata symbols in ROM. The hash value is set to 1
+#                              if the rodata symbol name (hash key) is in ROM.
+#          romtbl_syms:    IN  Hash table of all symbols in ROM. The hash value is set to 1 if the
+#                              symbol name (hash key) is in ROM.
+#          romtbl_aliases: IN  Hash table that maps aliased symbol names to their real names.
+#          symdeps:        OUT Hash table that maps all symbol names to an array of dependencies.
+#
+# Returns: Nothing.
+sub parse_rom_disas_file {
+	my ($fname, $romlmap, $rodata_syms, $romtbl_syms, $romtbl_aliases, $symdeps) = @_;
+	my $fh;
+	my $line;
+	my $sym = "nil";
+
+	# Open roml.map.
+	open($fh, "<$fname") or
+	    die "Could not open $fname for reading: $!\n";
+
+	# Parse disassembly file.
+	foreach $line (<$fh>) {
+		my $dep_sym;
+
+		# Parse symbol name, syntax is:
+		#
+		#    00809110 <aes$xor_128bit_block>:
+		if (($line =~ m/<(.*)>:$/) && ($line !~ m/__bcmromfn/)) {
+			$sym = "nil";
+			if (check_romtable_match($1, $romtbl_syms, $romtbl_aliases)) {
+				$sym = $1;
+				$symdeps->{$sym} = ();
+			}
+			next;
+		}
+
+		# Skip to next line if we haven't found the start of a valid symbol yet.
+		if ($sym eq "nil") {
+			next;
+		}
+
+
+        	# Regular direct sub routine calls
+        	# 895f3a:	f7a2 fd55 	bl	8389e8 <wlc_sendmgmt>
+        	if (($line !~ /\+/) && ($line =~ m/<(.*)>$/)) {
+        		$dep_sym = $1;
+        		if (check_romtable_match($dep_sym, $romtbl_syms, $romtbl_aliases)) {
+        			# XXX: please avoid recursion
+        			if ($sym ne $dep_sym) {
+        				$symdeps->{$sym}{$dep_sym} = 1;
+        			}
+        		}
+        	}
+
+        	# Parse function pointers.
+        	#895e44:       00891f08        .word   0x00891f08
+        	if ($line =~ /\.word/) {
+        		my $loc;
+        		my $addr;
+        		my $name;
+        		my $addr_hex;
+        		my $func_name;
+        		my $addr_mask = 0xFFFFFFFE;
+
+        		($loc, $addr, $name, $addr_hex) = split(" ", $line);
+
+        		# Mask bit 0 for thumb instructions.
+        		$addr_hex = (hex($addr_hex)) & $addr_mask;
+
+        		# If exists in the roml.map then add the dep
+        		if (defined($romlmap->{$addr_hex})) {
+        			$func_name = $romlmap->{$addr_hex};
+
+				# Only add text symbols. rodata deps are handled separately.
+				if (!$rodata_syms->{$func_name}) {
+
+					# Double-check that the function exists in the romtable.
+					# This will catch a corner case where the pointer references
+					# anonymous rodata that happens to correspond to a label in
+					# the map file. e.g. it might be a pointer to rodata that
+					# corresponds to map file label 'rodata_start' or 'extra_end'.
+					if (check_romtable_match($func_name, $romtbl_syms,
+					                         $romtbl_aliases)) {
+
+						# XXX Avoid adding symbols that register themselves as
+						# function pointers.
+						if ($sym ne $func_name) {
+							$symdeps->{$sym}{$func_name} = 1;
+						}
+					}
+				}
+        		}
+        	}
+	}
+
+
+	# Clean up.
+	close $fh;
+}
+
+
+# Checks if symbol exists in romtable.
+#
+# Params:  sym             IN  Symbol to check.
+#          romtbl_syms:    IN  Hash table of all symbols in ROM. The hash value is set to 1 if the
+#                              symbol name (hash key) is in ROM.
+#          romtbl_aliases: IN  Hash table that maps aliased symbol names to their real names.
+#
+# Returns: 1 is symbol exists in ROM, else 0.
+sub check_romtable_match {
+	my ($sym, $romtbl_syms, $romtbl_aliases) = @_;
+
+	if ($romtbl_syms->{$sym}) {
+		return 1;
+	}
+
+	if ($romtbl_aliases->{$sym}) {
+		return 1;
+	}
+
+	return 0;
+}
+
+
+# Return the real symbol name of the specified symbol param. The symbol param may already be the
+# real symbol name, or it may be an "alias" and need to be mapped to the real symbol name.
+#
+# Params:  sym:                IN  Symbol name. Might be aliased name.
+#
+# Returns: Real symbol name.
+sub get_sym_name {
+	my ($sym) = @_;
+
+	if ($g_romtbl_aliases{$sym}) {
+		return ($g_romtbl_aliases{$sym});
+	}
+
+	return ($sym);
+}
+
+
+# Get the symbol dependencies (functions pointers, and rodata pointers) for the specified
+# rodata symbol. The dependencies are determined from the disassembly of the rodata section.
+#
+# Params: dir:            IN  Directory of object files.
+#         f_name:         IN  Unoptimized object file.
+#         objdump:        IN  Full path to objdump (used to disassemble object files).
+#         romtbl_syms:    IN  Hash table of all symbols in ROM. The hash value is set to 1 if the
+#                             symbol name (hash key) is in ROM.
+#         romtbl_aliases: IN  Hash table that maps aliased symbol names to their real names.
+#         symdeps:        MOD Hash table that maps rodata symbol names to an array of dependencies.
+#
+# Returns: Nothing.
+sub extract_rodata_symdeps {
+	my ($dir, $f_name, $ro_name, $objdump, $romtbl_syms, $romtbl_aliases, $symdeps) = @_;
+	my @data;
+	my @rodata;
+	my $ro_name_esc;
+	my $line;
+	my @header_sections;
+	my ($is_rodata, $is_data);
+
+	# Escape the $ symbols in static variable sections.
+	$ro_name_esc = $ro_name;
+	$ro_name_esc =~ s/\$/\\\$/g;
+
+	# Disassemble the rodata section of the unoptimized object file, and grep for function
+	# pointers and rodata pointers. Filter out string pointers.
+	#
+	# In addition to rodata sections, also disassemble regular data sections.
+	# This is necessary since the compiler appears to have an optimization that converts
+	# data sections to rodata sections (perhaps if it determines that they are read-only).
+	#
+	# The syntax for rodata function pointers is:
+	#    Disassembly of section .rodata.dma64proc:
+	#
+	#    00000000 <dma64proc>:
+	#       0: R_ARM_ABS32  hnddma$_dma_detach
+	#       4: R_ARM_ABS32  hnddma$dma64_txinit
+	#       ...
+	#
+	# The syntax for rodata with rodata pointers is:
+	#    00000000 <wlc_clm$valid_channel_5g_40m_set>:
+        #       0:   03 00 00 00 00 00 00 00                             ........
+        #          4: R_ARM_ABS32  wlc_clm$valid_channel_combs_5g_40m
+	#
+	# String pointers are filtered out. They are marked with anonymous '.rodata' tags. The
+	# syntax is:
+	#
+	#    00000000 <wlc$fifo_names>:
+	#       0: R_ARM_ABS32  .rodata
+	#       4: R_ARM_ABS32  .rodata
+	#
+	@header_sections = `$objdump -h $dir/$f_name.nopt`;
+	if (grep /\.rodata\.$ro_name_esc/, @header_sections) {
+		$is_rodata = 1;
+	}
+
+	if (grep /\.data\.$ro_name_esc/, @header_sections) {
+		$is_data = 1;
+	}
+
+	if ($is_rodata) {
+		@rodata = `$objdump -r -d --section=.rodata.$ro_name_esc $dir/$f_name.nopt | grep R_ARM_ABS32 | grep -v '\.rodata'`;
+	}
+	elsif ($is_data) {
+		@data = `$objdump -r -d --section=.data.$ro_name_esc $dir/$f_name.nopt | grep R_ARM_ABS32 | grep -v '\.rodata'`;
+	}
+	else {
+		printf("Error: '$ro_name' not found in sections headers of $dir/$f_name.nopt!\n");
+		exit 1;
+	}
+
+	# Merge the rodata and data lists.
+	push(@rodata, @data);
+
+	# Create a hash of rodata symbol dependencies.
+	foreach $line (@rodata) {
+		my ($data, $abs_name, $name) = split(" ", $line);
+
+		# Avoid adding self-referencing rodata pointers.
+		if ($ro_name ne $name) {
+			if ((check_romtable_match($ro_name, $romtbl_syms, $romtbl_aliases)) &&
+			    (check_romtable_match($name, $romtbl_syms, $romtbl_aliases))) {
+				$g_symdeps{$ro_name}{$name} = 1;
+			}
+		}
+	}
+}
+
+
+# Get the symbol dependencies (functions pointers, and rodata pointers) for all rodata symbols.
+# The dependencies are determined from the disassembly of the rodata section.
+#
+# Params: fname_romtgz:   IN  tar-zipped file of unoptimized object files.
+#         file_rodata:    IN  Hash table that maps object filenames to an array of rodata symbols.
+#         objdump:        IN  Full path to objdump (used to disassemble object files).
+#         romtbl_syms:    IN  Hash table of all symbols in ROM. The hash value is set to 1 if the
+#                             symbol name (hash key) is in ROM.
+#         romtbl_aliases: IN  Hash table that maps aliased symbol names to their real names.
+#         symdeps:        MOD Hash table that maps rodata symbol names to an array of dependencies.
+#
+# Returns: Nothing.
+sub extract_all_rodata_symdeps {
+	my ($fname_romtgz, $file_rodata, $objdump, $romtbl_syms, $romtbl_aliases, $symdeps) = @_;
+	my $filename;
+
+	# Create temporary directory for untar-ed object files.
+	my $tempdir = "./tmpobj";
+	rmtree($tempdir);
+	eval { mkpath($tempdir) };
+	if ($@) {
+		print "Couldn't create $tempdir: $@";
+	}
+
+
+	# Untar objs to output assembly output
+	`tar zxf $fname_romtgz -C $tempdir`;
+	die "Unable to extract $fname_romtgz" if $?;
+
+
+	# Get the symbol dependencies for each rodata section.
+	foreach $filename (keys %{$file_rodata}) {
+		foreach my $roname (@{$file_rodata->{$filename}}) {
+			extract_rodata_symdeps($tempdir, $filename, $roname, $objdump,
+			                       $romtbl_syms, $romtbl_aliases, $symdeps);
+		}
+	}
+
+	# Clean up.
+	rmtree($tempdir);
+}
+
+
+# Utility function to sort ROM symbol names.
+sub sort_syms {
+	lc(get_sym_name($a)) cmp lc(get_sym_name($b));
+}
+
+
+# Generate the output symbol dependencies file.
+#
+# Params: fname:   IN  Output filename.
+#         symdeps: IN  Hash table that maps rodata symbol names to an array of dependencies.
+#
+# Returns: Nothing.
+sub generate_symdeps_file {
+	my ($fname, $symdeps) = @_;
+	my $sym;
+	my $dep;
+	my $fh;
+
+	# Open output symbol dependency file for writing.
+	open($fh, ">$fname") or
+		die "Could not open $fname for writing: $!\n";
+
+	foreach $sym (sort sort_syms keys %{$symdeps}) {
+
+		printf $fh ("%s: ", get_sym_name($sym));
+		foreach $dep (sort sort_syms keys %{$symdeps->{$sym}}) {
+			printf $fh ("%s ", get_sym_name($dep));
+		}
+
+		printf $fh ("\n");
+	}
+
+	# Clean up.
+	close $fh;
+}
+
+
+##############################################################################
+# Parse input files.
+#
+
+# Parse romtable.S.
+parse_romtable_file($g_fname_romtable,
+                    \%g_romtbl_syms,
+                    \%g_rodata_syms,
+                    \%g_file_rodata,
+                    \%g_romtbl_aliases);
+
+# Parse ROM map file.
+parse_rom_map_file($g_fname_romlmap, \%g_romlmap);
+
+# Parse ROM disassembly file.
+parse_rom_disas_file($g_fname_romldis,
+                     \%g_romlmap,
+                     \%g_rodata_syms,
+                     \%g_romtbl_syms,
+                     \%g_romtbl_aliases,
+                     \%g_symdeps);
+
+# Parse ROM cross references file.
+parse_rom_xref_file($g_fname_romtblxref, \%g_romtbl_syms, \%g_romtbl_aliases, \%g_symdeps);
+
+
+
+# Get the symbol dependencies (functions pointers, and rodata pointers) for all rodata symbols.
+extract_all_rodata_symdeps($g_fname_romtgz,
+                           \%g_file_rodata,
+                           $g_objdump,
+                           \%g_romtbl_syms,
+                           \%g_romtbl_aliases,
+                           \%g_symdeps);
+
+
+##############################################################################
+# Generate symbol dependencies file.
+#
+generate_symdeps_file($g_fname_romsymdep, \%g_symdeps);

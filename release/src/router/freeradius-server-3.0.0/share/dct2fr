@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+
+#
+#	Horrible hack to convert Funk dictionaries to FreeRADIUS ones.
+#
+#	It won't convert everything, and the files still need to be
+#	edited afterwards, but it's a start.
+#
+#	./dct2fr foo.dct > dictionary.foo
+#	vi dictionary.foo
+#		replace 'foo' with the real vendor name
+#	./format.pl dictionary.foo
+#
+
+while (<>) {
+    if (/^MACRO\s+([^ \t\(]+)\(t,s\)\s+26\s+\[vid=(\d+)\s+type1=\%t\%\s+len1=\+2\s+data=\%s\%/) {
+	$name = $1;
+	$vendor = $2;
+
+	print "VENDOR foo $2\n";
+	print "BEGIN-VENDOR foo\n";
+    }
+
+#    if (/^ATTRIBUTE\s+([^ \t]+)\s+$name\s*\((\d+),s+(\w+)\)/i) {
+
+    if (/^ATTRIBUTE\s+([^ \t]+)\s+$name\s*\((\d+)\s*,\s*(\w+)/i) {
+	print "ATTRIBUTE $1 $2 $3\n";
+    }
+}
+
+print "END-VENDOR foo\n";

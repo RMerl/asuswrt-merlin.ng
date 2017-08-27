@@ -1,0 +1,258 @@
+#!/usr/bin/perl
+##
+##  radsqlrelay.pl	This program tails a SQL logfile and forwards
+##			the queries to a database server. Used to
+##			replicate accounting records to one (central)
+##			database, even if the database has extended
+##			downtime.
+##
+##  Version:    $Id$
+##
+##  Author:     Nicolas Baradakis <nicolas.baradakis@cegetel.net>
+##
+##  Copyright (C) 2005 Cegetel
+##
+##  This program is free software; you can redistribute it and/or
+##  modify it under the terms of the GNU General Public License
+##  as published by the Free Software Foundation; either version 2
+##  of the License, or (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+##  GNU General Public License for more details.
+##
+##  You should have received a copy of the GNU General Public License
+##  along with this program; if not, write to the Free Software
+##  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+##
+
+use DBI;
+use Fcntl;
+use Getopt::Std;
+use POSIX qw(:unistd_h :errno_h);
+
+use warnings;
+use strict;
+
+my $maxcollect = 100;    # tunable, works for MySQL!
+
+my $lastinsert;
+my @values;
+
+my $need_exit = 0;
+
+sub got_signal()
+{
+    $need_exit = 1;
+}
+
+# /!\ OS-dependent structure
+# Linux struct flock
+#   short l_type;
+#   short l_whence;
+#   off_t l_start;
+#   off_t l_len;
+#   pid_t l_pid;
+# c2ph says: typedef='s2 l2 i', sizeof=16
+my $FLOCK_STRUCT = 's2l2i';
+
+sub setlock($;$$)
+{
+    my ($fh, $start, $len) = @_;
+    $start = 0 unless defined $start;
+    $len = 0 unless defined $len;
+
+                                    #type     whence    start   till  pid
+    my $packed = pack($FLOCK_STRUCT, F_WRLCK, SEEK_SET, $start, $len, 0);
+    if (fcntl($fh, F_SETLKW, $packed)) { return 1 }
+    else { return 0 }
+}
+
+sub usage()
+{
+    print STDERR <<HERE;
+usage: radsqlrelay [options] file_path
+options:
+	-?		Print this help message.
+	-1		One-shot mode: push the file to database and exit.
+	-b database	Name of the database to use.
+	-d sql_driver	Driver to use: mysql, pg, oracle.
+	-f file		Read password from file, instead of command line.
+	-h host		Connect to host.
+	-P port		Port number to use for connection.
+	-p passord	Password to use when connecting to server.
+	-u user		User for login.
+	-x		Turn on debugging.
+HERE
+}
+
+sub connect_wait($)
+{
+    my $dbinfo = shift;
+    my $dbh;
+    while (!$dbh) {
+	$dbh = DBI->connect($dbinfo->{base}, $dbinfo->{user}, $dbinfo->{pass},
+			    { RaiseError => 0, PrintError => 0,
+			      AutoCommit => 1 });
+	sleep (1) if !$dbh;
+	exit if $need_exit;
+    }
+    $dbinfo->{handle} = $dbh;
+}
+
+
+
+sub process_file($$)
+{
+    my ($dbinfo, $path) = @_;
+
+    sub do_inserts($) {
+        my $dbinfo = shift;
+        if (scalar(@values) > 0) {
+            my $query = $lastinsert . " ";
+            $query .= join(" ), ( ",@values);
+            $query .= " );";
+            do_query($dbinfo,$query);
+        }
+        @values = ();
+    }
+
+    sub do_query($$) {
+        my ($dbinfo,$query) = @_;
+        until ($dbinfo->{handle}->do($query)) {
+            print $dbinfo->{handle}->errstr."\n";
+            if ($dbinfo->{handle}->ping) {
+		sleep (1);
+            } else {
+		print "error: Lost connection to database\n";
+		$dbinfo->{handle}->disconnect;
+		connect_wait($dbinfo);
+            }
+        }
+    }
+
+    unless (-e $path.'.work') {
+	until (rename($path, $path.'.work')) {
+	    if ($! == ENOENT) {
+		sleep(1);
+		return if $need_exit;
+	    } else {
+		print STDERR "error: Couldn't move $path to $path.work: $!\n";
+		exit 1;
+	    }
+	}
+    }
+
+    open(FILE, "+< $path.work") or die "error: Couldn't open $path.work: $!\n";
+    setlock(\*FILE) or die "error: Couldn't lock $path.work: $!\n";
+
+    $lastinsert = "";
+    @values = ();
+
+    while (<FILE>) {
+        chomp (my $line = $_);
+
+        if (!($line =~ /^\s*insert\s+into\s+`?\w+`?\s+(?:\(.*?\)\s+)?
+                            values\s*\(.*\)\s*;\s*$/ix)) {
+            # This is no INSERT, so start new collection
+            do_inserts($dbinfo);
+            $lastinsert = "";
+            # must output this line
+            do_query($dbinfo, "$line");
+
+	} else {
+            # This is an INSERT, so collect it
+            my $insert = $line;
+            my $values = $line;
+            $insert =~ s/^\s*(insert\s+into\s+`?\w+`?\s+(?:\(.*?\)\s+)?
+                              values\s*\().*\)\s*;\s*$/$1/ix;
+            $values =~ s/^\s*insert\s+into\s+`?\w+`?\s+(?:\(.*?\)\s+)?
+                             values\s*\((.*)\)\s*;\s*$/$1/ix;
+
+            if (($lastinsert ne "") && ($insert ne $lastinsert)) {
+                # This is different from the last one
+                do_inserts($dbinfo);
+	    }
+            push(@values, $values);
+            $lastinsert = $insert; # start new collection
+	}
+
+        # limit to $maxcollect collected lines
+        if (scalar(@values) >= $maxcollect) {
+            do_inserts($dbinfo);
+        }
+    }
+
+    # Cleanup
+    do_inserts($dbinfo);
+
+    unlink($path.'.work');
+    close(FILE); # and unlock
+}
+
+# sub main()
+
+my %args = (
+	    b => 'radius',
+	    d => 'mysql',
+	    h => 'localhost',
+	    p => 'radius',
+	    u => 'radius',
+);
+my $ret = getopts("b:d:f:h:P:p:u:x1?", \%args);
+if (!$ret or @ARGV != 1) {
+    usage();
+    exit 1;
+}
+if ($args{'?'}) {
+    usage();
+    exit 0;
+}
+
+my $data_source;
+if (lc($args{d}) eq 'mysql') {
+    $data_source = "DBI:mysql:database=$args{b};host=$args{h}";
+} elsif (lc($args{d}) eq 'pg') {
+    $data_source = "DBI:Pg:dbname=$args{b};host=$args{h}";
+} elsif (lc($args{d}) eq 'oracle') {
+    $data_source = "DBI:Oracle:$args{b}";
+    # Oracle does not conform to the SQL standard for multirow INSERTs
+    $maxcollect = 1;
+} else {
+    print STDERR "error: SQL driver not supported yet: $args{d}\n";
+    exit 1;
+}
+$data_source .= ";port=$args{P}" if $args{'P'};
+
+my $pw;
+if($args{f}) {
+    open(FILE, "< $args{f}") or die "error: Couldn't open $args{f}: $!\n";
+    $pw = <FILE>;
+    chomp($pw);
+    close(FILE);
+} else {
+    # args{p} is always defined.
+    $pw = $args{p};
+}
+
+$SIG{INT} = \&got_signal;
+$SIG{TERM} = \&got_signal;
+
+my %dbinfo = (
+	      base => $data_source,
+	      user => $args{u},
+	      pass => $pw,
+);
+connect_wait(\%dbinfo);
+
+my $path = shift @ARGV;
+
+until ($need_exit) {
+    process_file(\%dbinfo, $path);
+    last if ($args{1} || $need_exit);
+    sleep(10);
+}
+
+$dbinfo{handle}->disconnect;
+

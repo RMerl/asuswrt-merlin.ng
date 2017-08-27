@@ -1,0 +1,408 @@
+# -*- text -*-
+######################################################################
+#
+#	This is a virtual server that handles *only* inner tunnel
+#	requests for EAP-TTLS and PEAP types.
+#
+#	$Id$
+#
+######################################################################
+
+server inner-tunnel {
+
+#
+#  This next section is here to allow testing of the "inner-tunnel"
+#  authentication methods, independently from the "default" server.
+#  It is listening on "localhost", so that it can only be used from
+#  the same machine.
+#
+#	$ radtest USER PASSWORD 127.0.0.1:18120 0 testing123
+#
+#  If it works, you have configured the inner tunnel correctly.  To check
+#  if PEAP will work, use:
+#
+#	$ radtest -t mschap USER PASSWORD 127.0.0.1:18120 0 testing123
+#
+#  If that works, PEAP should work.  If that command doesn't work, then
+#
+#	FIX THE INNER TUNNEL CONFIGURATION SO THAT IT WORKS.
+#
+#  Do NOT do any PEAP tests.  It won't help.  Instead, concentrate
+#  on fixing the inner tunnel configuration.  DO NOTHING ELSE.
+#
+listen {
+       ipaddr = 127.0.0.1
+       port = 18120
+       type = auth
+}
+
+
+#  Authorization. First preprocess (hints and huntgroups files),
+#  then realms, and finally look in the "users" file.
+#
+#  The order of the realm modules will determine the order that
+#  we try to find a matching realm.
+#
+#  Make *sure* that 'preprocess' comes before any realm if you
+#  need to setup hints for the remote radius server
+authorize {
+	#
+	#  The chap module will set 'Auth-Type := CHAP' if we are
+	#  handling a CHAP request and Auth-Type has not already been set
+	chap
+
+	#
+	#  If the users are logging in with an MS-CHAP-Challenge
+	#  attribute for authentication, the mschap module will find
+	#  the MS-CHAP-Challenge attribute, and add 'Auth-Type := MS-CHAP'
+	#  to the request, which will cause the server to then use
+	#  the mschap module for authentication.
+	mschap
+
+	#
+	#  Pull crypt'd passwords from /etc/passwd or /etc/shadow,
+	#  using the system API's to get the password.  If you want
+	#  to read /etc/passwd or /etc/shadow directly, see the
+	#  passwd module, above.
+	#
+#	unix
+
+	#
+	#  Look for IPASS style 'realm/', and if not found, look for
+	#  '@realm', and decide whether or not to proxy, based on
+	#  that.
+#	IPASS
+
+	#
+	#  If you are using multiple kinds of realms, you probably
+	#  want to set "ignore_null = yes" for all of them.
+	#  Otherwise, when the first style of realm doesn't match,
+	#  the other styles won't be checked.
+	#
+	#  Note that proxying the inner tunnel authentication means
+	#  that the user MAY use one identity in the outer session
+	#  (e.g. "anonymous", and a different one here
+	#  (e.g. "user@example.com").  The inner session will then be
+	#  proxied elsewhere for authentication.  If you are not
+	#  careful, this means that the user can cause you to forward
+	#  the authentication to another RADIUS server, and have the
+	#  accounting logs *not* sent to the other server.  This makes
+	#  it difficult to bill people for their network activity.
+	#
+	suffix
+#	ntdomain
+
+	#
+	#  The "suffix" module takes care of stripping the domain
+	#  (e.g. "@example.com") from the User-Name attribute, and the
+	#  next few lines ensure that the request is not proxied.
+	#
+	#  If you want the inner tunnel request to be proxied, delete
+	#  the next few lines.
+	#
+	update control {
+	       Proxy-To-Realm := LOCAL
+	}
+
+	#
+	#  This module takes care of EAP-MSCHAPv2 authentication.
+	#
+	#  It also sets the EAP-Type attribute in the request
+	#  attribute list to the EAP type from the packet.
+	#
+	#  The example below uses module failover to avoid querying all
+	#  of the following modules if the EAP module returns "ok".
+	#  Therefore, your LDAP and/or SQL servers will not be queried
+	#  for the many packets that go back and forth to set up TTLS
+	#  or PEAP.  The load on those servers will therefore be reduced.
+	#
+	eap {
+		ok = return
+	}
+
+	#
+	#  Read the 'users' file
+	files
+
+	#
+	#  Look in an SQL database.  The schema of the database
+	#  is meant to mirror the "users" file.
+	#
+	#  See "Authorization Queries" in sql.conf
+	-sql
+
+	#
+	#  If you are using /etc/smbpasswd, and are also doing
+	#  mschap authentication, the un-comment this line, and
+	#  configure the 'etc_smbpasswd' module, above.
+#	etc_smbpasswd
+
+	#
+	#  The ldap module reads passwords from the LDAP database.
+	-ldap
+
+	#
+	#  Enforce daily limits on time spent logged in.
+#	daily
+
+	expiration
+	logintime
+
+	#
+	#  If no other module has claimed responsibility for
+	#  authentication, then try to use PAP.  This allows the
+	#  other modules listed above to add a "known good" password
+	#  to the request, and to do nothing else.  The PAP module
+	#  will then see that password, and use it to do PAP
+	#  authentication.
+	#
+	#  This module should be listed last, so that the other modules
+	#  get a chance to set Auth-Type for themselves.
+	#
+	pap
+}
+
+
+#  Authentication.
+#
+#
+#  This section lists which modules are available for authentication.
+#  Note that it does NOT mean 'try each module in order'.  It means
+#  that a module from the 'authorize' section adds a configuration
+#  attribute 'Auth-Type := FOO'.  That authentication type is then
+#  used to pick the appropriate module from the list below.
+#
+
+#  In general, you SHOULD NOT set the Auth-Type attribute.  The server
+#  will figure it out on its own, and will do the right thing.  The
+#  most common side effect of erroneously setting the Auth-Type
+#  attribute is that one authentication method will work, but the
+#  others will not.
+#
+#  The common reasons to set the Auth-Type attribute by hand
+#  is to either forcibly reject the user, or forcibly accept him.
+#
+authenticate {
+	#
+	#  PAP authentication, when a back-end database listed
+	#  in the 'authorize' section supplies a password.  The
+	#  password can be clear-text, or encrypted.
+	Auth-Type PAP {
+		pap
+	}
+
+	#
+	#  Most people want CHAP authentication
+	#  A back-end database listed in the 'authorize' section
+	#  MUST supply a CLEAR TEXT password.  Encrypted passwords
+	#  won't work.
+	Auth-Type CHAP {
+		chap
+	}
+
+	#
+	#  MSCHAP authentication.
+	Auth-Type MS-CHAP {
+		mschap
+	}
+
+	#
+	#  Pluggable Authentication Modules.
+#	pam
+
+	# Uncomment it if you want to use ldap for authentication
+	#
+	# Note that this means "check plain-text password against
+	# the ldap database", which means that EAP won't work,
+	# as it does not supply a plain-text password.
+	#
+	#  We do NOT recommend using this.  LDAP servers are databases.
+	#  They are NOT authentication servers.  FreeRADIUS is an
+	#  authentication server, and knows what to do with authentication.
+	#  LDAP servers do not.
+	#
+#	Auth-Type LDAP {
+#		ldap
+#	}
+
+	#
+	#  Allow EAP authentication.
+	eap
+}
+
+######################################################################
+#
+#	There are no accounting requests inside of EAP-TTLS or PEAP
+#	tunnels.
+#
+######################################################################
+
+
+#  Session database, used for checking Simultaneous-Use. Either the radutmp
+#  or rlm_sql module can handle this.
+#  The rlm_sql module is *much* faster
+session {
+	radutmp
+
+	#
+	#  See "Simultaneous Use Checking Queries" in sql.conf
+#	sql
+}
+
+
+#  Post-Authentication
+#  Once we KNOW that the user has been authenticated, there are
+#  additional steps we can take.
+post-auth {
+	#  If you want privacy to remain, see the
+	#  Chargeable-User-Identity attribute from RFC 4372.
+	#  If you want to use it just uncomment the line below.
+#       cui-inner
+
+	#
+	#  If you want to have a log of authentication replies,
+	#  un-comment the following line, and enable the
+	#  'detail reply_log' module.
+#	reply_log
+
+	#
+	#  After authenticating the user, do another SQL query.
+	#
+	#  See "Authentication Logging Queries" in sql.conf
+	-sql
+
+	#
+	#  Instead of sending the query to the SQL server,
+	#  write it into a log file.
+	#
+#	sql_log
+
+	#
+	#  Un-comment the following if you have set
+	#  'edir_account_policy_check = yes' in the ldap module sub-section of
+	#  the 'modules' section.
+	#
+#	ldap
+
+	#
+	#  Access-Reject packets are sent through the REJECT sub-section of the
+	#  post-auth section.
+	#
+	#  Add the ldap module name (or instance) if you have set
+	#  'edir_account_policy_check = yes' in the ldap module configuration
+	#
+	Post-Auth-Type REJECT {
+		# log failed authentications in SQL, too.
+		-sql
+		attr_filter.access_reject
+	}
+
+	#
+	#  The example policy below updates the outer tunnel reply
+	#  (usually Access-Accept) with the User-Name from the inner
+	#  tunnel User-Name.  Since this section is processed in the
+	#  context of the inner tunnel, "request" here means "inner
+	#  tunnel request", and "outer.reply" means "outer tunnel
+	#  reply attributes".
+	#
+	#  This example is most useful when the outer session contains
+	#  a User-Name of "anonymous@....", or a MAC address.  If it
+	#  is enabled, the NAS SHOULD use the inner tunnel User-Name
+	#  in subsequent accounting packets.  This makes it easier to
+	#  track user sessions, as they will all be based on the real
+	#  name, and not on "anonymous".
+	#
+	#  The problem with doing this is that it ALSO exposes the
+	#  real user name to any intermediate proxies.  People use
+	#  "anonymous" identifiers outside of the tunnel for a very
+	#  good reason: it gives them more privacy.  Setting the reply
+	#  to contain the real user name removes ALL privacy from
+	#  their session.
+	#
+	#  If you still want to use the inner tunnel User-Name then
+	#  uncomment the section below, otherwise you may want
+	#  to use  Chargeable-User-Identity attribute from RFC 4372.
+	#  See further on.
+    	#update outer.reply {
+	#  User-Name = "%{request:User-Name}"
+	#}
+	#
+}
+
+#
+#  When the server decides to proxy a request to a home server,
+#  the proxied request is first passed through the pre-proxy
+#  stage.  This stage can re-write the request, or decide to
+#  cancel the proxy.
+#
+#  Only a few modules currently have this method.
+#
+pre-proxy {
+	#  Uncomment the following line if you want to change attributes
+	#  as defined in the preproxy_users file.
+#	files
+
+	#  Uncomment the following line if you want to filter requests
+	#  sent to remote servers based on the rules defined in the
+	#  'attrs.pre-proxy' file.
+#	attr_filter.pre-proxy
+
+	#  If you want to have a log of packets proxied to a home
+	#  server, un-comment the following line, and the
+	#  'detail pre_proxy_log' section, above.
+#	pre_proxy_log
+}
+
+#
+#  When the server receives a reply to a request it proxied
+#  to a home server, the request may be massaged here, in the
+#  post-proxy stage.
+#
+post-proxy {
+
+	#  If you want to have a log of replies from a home server,
+	#  un-comment the following line, and the 'detail post_proxy_log'
+	#  section, above.
+#	post_proxy_log
+
+	#  Uncomment the following line if you want to filter replies from
+	#  remote proxies based on the rules defined in the 'attrs' file.
+#	attr_filter.post-proxy
+
+	#
+	#  If you are proxying LEAP, you MUST configure the EAP
+	#  module, and you MUST list it here, in the post-proxy
+	#  stage.
+	#
+	#  You MUST also use the 'nostrip' option in the 'realm'
+	#  configuration.  Otherwise, the User-Name attribute
+	#  in the proxied request will not match the user name
+	#  hidden inside of the EAP packet, and the end server will
+	#  reject the EAP request.
+	#
+	eap
+
+	#
+	#  If the server tries to proxy a request and fails, then the
+	#  request is processed through the modules in this section.
+	#
+	#  The main use of this section is to permit robust proxying
+	#  of accounting packets.  The server can be configured to
+	#  proxy accounting packets as part of normal processing.
+	#  Then, if the home server goes down, accounting packets can
+	#  be logged to a local "detail" file, for processing with
+	#  radrelay.  When the home server comes back up, radrelay
+	#  will read the detail file, and send the packets to the
+	#  home server.
+	#
+	#  With this configuration, the server always responds to
+	#  Accounting-Requests from the NAS, but only writes
+	#  accounting packets to disk if the home server is down.
+	#
+#	Post-Proxy-Type Fail {
+#			detail
+#	}
+
+}
+
+} # inner-tunnel server block

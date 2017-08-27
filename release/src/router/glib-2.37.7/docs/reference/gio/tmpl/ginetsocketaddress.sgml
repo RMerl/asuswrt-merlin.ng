@@ -1,0 +1,96 @@
+<!-- ##### SECTION Title ##### -->
+GInetSocketAddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GInetSocketAddress ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GInetSocketAddress:address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetSocketAddress:flowinfo ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetSocketAddress:port ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetSocketAddress:scope-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_inet_socket_address_new ##### -->
+<para>
+
+</para>
+
+@address: 
+@port: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_socket_address_get_address ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_socket_address_get_port ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_socket_address_get_flowinfo ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_socket_address_get_scope_id ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+

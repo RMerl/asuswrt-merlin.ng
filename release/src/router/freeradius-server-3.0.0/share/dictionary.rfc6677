@@ -1,0 +1,8 @@
+# -*- text -*-
+# Copyright (C) 2013 The FreeRADIUS Server project and contributors
+#
+#	Attributes and values defined in RFC 6677
+#	http://www.ietf.org/rfc/rfc6677.txt
+#
+
+ATTRIBUTE	EAP-Lower-Layer		163	integer

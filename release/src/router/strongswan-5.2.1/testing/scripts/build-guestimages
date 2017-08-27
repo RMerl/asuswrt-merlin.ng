@@ -1,0 +1,79 @@
+#!/bin/bash
+# create specific guest images
+#
+# Copyright (C) 2004  Eric Marchionni, Patrik Rayo
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+echo "Creating guest images"
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+
+HOSTSDIR=$DIR/../hosts
+
+[ `id -u` -eq 0 ] || die "You must be root to run $0"
+[ -f $ROOTIMG ] || die "Root image $ROOTIMG not found"
+[ -f $HOSTDIR ] || die "Hosts directory $HOSTSDIR not found"
+running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
+
+check_commands partprobe qemu-img qemu-nbd
+
+load_qemu_nbd
+
+mkdir -p $IMGDIR
+mkdir -p $LOOPDIR
+
+# just to be sure
+do_on_exit qemu-nbd -d $NBDEV
+do_on_exit umount $LOOPDIR
+
+for host in $STRONGSWANHOSTS
+do
+	log_action "Creating guest image for $host"
+	execute "qemu-img create -b $ROOTIMG -f $IMGEXT $IMGDIR/$host.$IMGEXT" 0
+	execute "qemu-nbd -c $NBDEV $IMGDIR/$host.$IMGEXT" 0
+	partprobe $NBDEV
+	execute "mount $NBDPARTITION $LOOPDIR" 0
+	execute "cp -rf $HOSTSDIR/${host}/etc $LOOPDIR" 0
+	execute "cp -rf $HOSTSDIR/default/* $LOOPDIR" 0
+	execute_chroot "ldconfig" 0
+
+	if [ "$host" = "alice" ]
+	then
+		execute "mkdir $LOOPDIR/var/log/apache2/tnc" 0
+		execute "mkdir $LOOPDIR/etc/pts" 0
+		execute_chroot "chgrp www-data /etc/pts" 0
+		execute_chroot "chmod g+w /etc/pts" 0
+	fi
+    if [ "$host" = "winnetou" ]
+	then
+		execute "mkdir $LOOPDIR/var/log/apache2/ocsp" 0
+		execute "cp -rf $DIR/../images $LOOPDIR/var/www/" 0
+		execute_chroot "ln -s /etc/openssl/certs /var/www/certs" 0
+		execute_chroot "/etc/openssl/generate-crl" 0
+		execute_chroot "update-rc.d apache2 defaults" 0
+		execute_chroot "update-rc.d slapd defaults" 0
+		execute_chroot "rm -rf /var/lib/ldap/*" 0
+		execute_chroot "slapadd -l /etc/ldap/ldif.txt -f /etc/ldap/slapd.conf" 0
+		execute_chroot "chown -R openldap:openldap /var/lib/ldap" 0
+		execute_chroot "dnssec-signzone -K /etc/bind -o strongswan.org. /etc/bind/db.strongswan.org" 0
+		execute_chroot "dnssec-signzone -K /etc/bind -o org. /etc/bind/db.org" 0
+		execute_chroot "dnssec-signzone -K /etc/bind -o . /etc/bind/db.root" 0
+		execute_chroot "update-rc.d bind9 defaults" 0
+	fi
+	sync
+	execute "umount -l $LOOPDIR" 0
+	execute "qemu-nbd -d $NBDEV" 0
+	log_status 0
+done

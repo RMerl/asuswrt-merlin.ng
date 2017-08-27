@@ -1,0 +1,23 @@
+#
+#	$Id$
+#
+#	This is like the 'users' file, but it is processed only for
+#	accounting packets.
+#
+
+#  Select between different accounting methods based for example on the
+#  Realm, the Huntgroup-Name or any combinaison of the attribute/value
+#  pairs contained in an accounting packet.
+#
+#DEFAULT Realm == "foo.net", Acct-Type := sql_log.foo
+#
+#DEFAULT Huntgroup-Name == "wifi", Acct-Type := sql_log.wifi
+#
+#DEFAULT Client-IP-Address == 10.0.0.1, Acct-Type := sql_log.other
+#
+#DEFAULT Acct-Status-Type == Start, Acct-Type := sql_log.start
+
+#  Replace the User-Name with the Stripped-User-Name, if it exists.
+#
+#DEFAULT
+#	User-Name := "%{Stripped-User-Name:-%{User-Name}}"

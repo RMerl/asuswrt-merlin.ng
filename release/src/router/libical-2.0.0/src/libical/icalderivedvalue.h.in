@@ -1,0 +1,65 @@
+/*======================================================================
+ FILE: icalvalue.h
+ CREATOR: eric 20 March 1999
+
+ (C) COPYRIGHT 2000, Eric Busboom, http://www.softwarestudio.org
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of either:
+
+    The LGPL as published by the Free Software Foundation, version
+    2.1, available at: http://www.fsf.org/copyleft/lesser.html
+
+ Or:
+
+    The Mozilla Public License Version 1.0. You may obtain a copy of
+    the License at http://www.mozilla.org/MPL/
+======================================================================*/
+
+#ifndef ICALDERIVEDVALUE_H
+#define ICALDERIVEDVALUE_H
+
+#include "libical_ical_export.h"
+#include "icalattach.h"
+#include "icalrecur.h"
+#include "icaltypes.h"
+
+typedef struct icalvalue_impl icalvalue;
+
+LIBICAL_ICAL_EXPORT void icalvalue_set_x(icalvalue* value, const char* v);
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_x(const char* v);
+LIBICAL_ICAL_EXPORT const char* icalvalue_get_x(const icalvalue* value);
+
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_recur (struct icalrecurrencetype v);
+LIBICAL_ICAL_EXPORT void icalvalue_set_recur(icalvalue* value, struct icalrecurrencetype v);
+LIBICAL_ICAL_EXPORT struct icalrecurrencetype icalvalue_get_recur(const icalvalue* value);
+
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_trigger (struct icaltriggertype v);
+LIBICAL_ICAL_EXPORT void icalvalue_set_trigger(icalvalue* value, struct icaltriggertype v);
+LIBICAL_ICAL_EXPORT struct icaltriggertype icalvalue_get_trigger(const icalvalue* value);
+
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_datetime(struct icaltimetype v);
+LIBICAL_ICAL_EXPORT struct icaltimetype icalvalue_get_datetime(const icalvalue* value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_datetime(icalvalue* value, struct icaltimetype v);
+
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_datetimeperiod (struct icaldatetimeperiodtype v);
+LIBICAL_ICAL_EXPORT void icalvalue_set_datetimeperiod(icalvalue* value,
+                                                      struct icaldatetimeperiodtype v);
+LIBICAL_ICAL_EXPORT struct icaldatetimeperiodtype icalvalue_get_datetimeperiod(const icalvalue* value);
+
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_geo(struct icalgeotype v);
+LIBICAL_ICAL_EXPORT struct icalgeotype icalvalue_get_geo(const icalvalue* value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_geo(icalvalue* value, struct icalgeotype v);
+
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_attach (icalattach *attach);
+LIBICAL_ICAL_EXPORT void icalvalue_set_attach (icalvalue *value, icalattach *attach);
+LIBICAL_ICAL_EXPORT icalattach *icalvalue_get_attach (const icalvalue *value);
+
+LIBICAL_ICAL_EXPORT void icalvalue_reset_kind(icalvalue* value);
+
+<insert_code_here>
+
+
+LIBICAL_ICAL_EXPORT icalvalue* icalvalue_new_class(enum icalproperty_class v);
+LIBICAL_ICAL_EXPORT enum icalproperty_class icalvalue_get_class(const icalvalue* value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_class(icalvalue* value, enum icalproperty_class v);

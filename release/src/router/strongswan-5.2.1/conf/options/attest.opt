@@ -1,0 +1,6 @@
+attest.database =
+	File measurement information database URI. If it contains a password, make
+	sure to adjust the permissions of the config file accordingly.
+
+attest.load =
+	Plugins to load in ipsec attest tool.

@@ -1,0 +1,578 @@
+﻿<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
+<link rel="shortcut icon" href="images/favicon.png">
+<link rel="icon" href="images/favicon.png">
+<script type="text/javascript">
+var page_modified = 0;
+var restart_time = 0;
+
+var current_page = '<% get_parameter("current_page"); %>';
+var next_page = '<% get_parameter("next_page"); %>';
+var action_script = '<% get_parameter("action_script"); %>';
+var action_mode = '<% get_parameter("action_mode"); %>';
+var action_wait = '<% get_parameter("action_wait"); %>';
+var group_id = '<% get_parameter("group_id"); %>';
+var getflag = '<% get_parameter("flag"); %>';
+
+/* debug
+console.log("====== " + document.referrer + " ======");
+console.log("current_page:" + current_page);
+console.log("next_page:" + next_page);
+console.log("action_script:" + action_script);
+console.log("action_mode:" + action_mode);
+console.log("action_wait:" + action_wait);
+console.log("group_id:" + group_id);
+console.log("getflag:" + getflag);
+ */
+
+function started_validating(){
+}
+
+function done_validating(action){
+	parent.done_validating(action, group_id);
+}
+
+function started_committing(){
+}
+
+function done_committing(){
+	page_modified = 1;
+}
+
+function no_changes_and_no_committing(){
+}
+
+function invalid_variable_value(variable, bad_value, message){
+}
+
+function restart_needed_time(second){
+	restart_time = second;
+}
+
+function delay_redirect(next_url){
+	document.redirectForm.action = next_url;
+	document.redirectForm.target = "";
+	document.redirectForm.submit();
+}
+
+function top_delay_redirect(next_url){
+	document.redirectForm.action = next_url;
+	document.redirectForm.target = "_parent";
+	document.redirectForm.submit();
+}
+
+var makeRequest = {
+	_notSuccessCount: 0,
+	_notSupportXML: false,
+
+	start: function(url, callBackSuccess, callBackError){
+		var xmlHttp;
+		if(window.XMLHttpRequest)
+			xmlHttp = new XMLHttpRequest();
+		else if(window.ActiveXObject)
+			xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+		else{
+			makeRequest._notSupportXML = true;
+			alert("Your browser does not support XMLHTTP.");
+			return false;
+		}
+
+		xmlHttp.onreadystatechange = function(){
+			if(xmlHttp.readyState == 4){
+				if(xmlHttp.status == 200){
+					callBackSuccess(xmlHttp);
+				}
+				else{
+					makeRequest._notSuccessCount++;
+					callBackError();
+				}	
+	 		}
+		}
+
+		xmlHttp.open('GET', url, true);
+		xmlHttp.send(null);
+	}
+};
+
+function showWlHint(updateFlag){
+	var isSwMode = function(mode){
+		var ui_sw_mode = "rt";
+		var sw_mode = '<% nvram_get("sw_mode"); %>';
+		var wlc_psta = '<% nvram_get("wlc_psta"); %>';
+		var wlc_express = '<% nvram_get("wlc_express"); %>';
+
+		if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){ // Repeater
+			ui_sw_mode = "re";
+		}
+		else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){     // Access Point
+			ui_sw_mode = "ap";
+		}
+		else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){   // MediaBridge
+			ui_sw_mode = "mb";
+		}
+		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){       // Express Way 2G
+			ui_sw_mode = "ew2";
+		}
+		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){       // Express Way 5G
+			ui_sw_mode = "ew5";
+		}
+		else if(sw_mode == '5'){        // Hotspot
+			ui_sw_mode = 'hs';
+		}
+		else ui_sw_mode = "rt"; // Router
+
+		return (ui_sw_mode.search(mode) !== -1);
+	}
+
+	if(!isSwMode('rt') && !isSwMode('ap')) return false;
+
+	var wl_nband_title = (function(){
+		String.prototype.toArray = function(){
+			var ret = eval(this.toString());
+			if(Object.prototype.toString.apply(ret) === '[object Array]')
+				return ret;
+			return [];
+		}
+
+		var wl_nband_title = [];
+		var wl_nband_array = "<% wl_nband_info(); %>".toArray();
+		var band2g_count = 0;
+		var band5g_count = 0;
+		for (var j=0; j<wl_nband_array.length; j++) {
+			if(wl_nband_array[j] == '2'){
+				band2g_count++;
+				wl_nband_title.push("2.4 GHz-" + band2g_count);
+			}
+			else if(wl_nband_array[j] == '1'){
+				band5g_count++;
+				wl_nband_title.push("5 GHz-" + band5g_count);
+			}
+		}
+		if(wl_nband_title.indexOf("2.4 GHz-2") == -1) wl_nband_title[wl_nband_title.indexOf("2.4 GHz-1")] = "2.4 GHz";
+		if(wl_nband_title.indexOf("5 GHz-2") == -1) wl_nband_title[wl_nband_title.indexOf("5 GHz-1")] = "5 GHz";
+
+		return wl_nband_title;
+	})();
+
+	var genWlObj = (function(){
+		var wlObj = [];
+		var wlUnit = function(_band, _ssid, _key){
+			this.band = _band;
+			this.ssid = _ssid;
+			this.key = _key;
+		}
+
+		var ssid_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>')];
+		var auth_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')];
+		var key_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>')];
+		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
+
+		var ssid_param = [decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>')];
+		var auth_param = [decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')];
+		var key_param = [decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>')];
+
+		var applyParam = {
+			unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
+			ssid: decodeURIComponent('<% get_ascii_parameter("wl_ssid"); %>'),
+			auth: decodeURIComponent('<% get_ascii_parameter("wl_auth_mode_x"); %>'),
+			key: decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>'),
+			smartConnect: decodeURIComponent('<% get_ascii_parameter("smart_connect_x"); %>')
+		}
+
+		// original profile
+		for(var i=0; i<wl_nband_title.length; i++){
+			wlObj.push(new wlUnit(wl_nband_title[i], ssid_nvram[i], (auth_nvram[i] == "open") ? "" : key_nvram[i]));
+		}
+
+		if(applyParam.ssid != ""){
+			// handle wl
+			wlObj[applyParam.unit].ssid = applyParam.ssid;
+			wlObj[applyParam.unit].key = (applyParam.auth == "open") ? "" : applyParam.key;				
+		}
+		else{
+			// handle wlX
+			for(var i=0; i<wlObj.length; i++){
+				if(ssid_param[i] != ""){
+					wlObj[i].ssid = ssid_param[i];
+					wlObj[i].key = (auth_param[i] == "open") ? "" : key_param[i];
+				}
+			}			
+		}
+
+		// handle smart connect
+		if(applyParam.smartConnect == ""){
+			if(smart_connect_nvram == 1){
+				// Tri band steering
+				wlObj.length = 1;
+				wlObj[0].band = "Tri-band Smart Connect";
+			}
+			else if(smart_connect_nvram == 2){
+				// 5GHz band steering
+				wlObj.length = 2;
+				wlObj[1].band = "5 GHz Smart Connect";
+			}
+		}
+		else if(applyParam.smartConnect == 1){
+			// Tri band steering
+			wlObj.length = 1;
+			wlObj[0].band = "Tri-band Smart Connect";
+		}
+		else if(applyParam.smartConnect == 2){
+			// 5GHz band steering
+			wlObj.length = 2;
+			wlObj[1].band = "5 GHz Smart Connect";
+		}
+
+		return wlObj;
+	})();
+
+	(function(wlObj){
+		if(wlObj.length == 0 || typeof wlObj == "undefined") return false;
+
+		var wlHintCss = "";
+		wlHintCss += "<style type='text/css'>"
+		// Desktop style sheet
+		wlHintCss += "#wlHint{";
+		wlHintCss += "font-family: Arial;";
+		wlHintCss += "background:url(/images/New_ui/login_bg.png) #283437 no-repeat;";
+		wlHintCss += "background-size: 1280px 1076px;";
+		wlHintCss += "z-index:9999;";
+		wlHintCss += "position:absolute;";
+		wlHintCss += "left:0;";
+		wlHintCss += "top:0;";
+		wlHintCss += "width:100%;";
+		wlHintCss += "height:100%;";
+		wlHintCss += "background-position: center 0%;";
+		wlHintCss += "margin: 0px;";
+		wlHintCss += "}.prod_madelName{";
+		wlHintCss += "font-size: 26pt;";
+		wlHintCss += "color:#fff;";
+		wlHintCss += "margin-top: 10px;";
+		wlHintCss += "}.nologin{";
+		wlHintCss += "word-break: break-all;";
+		wlHintCss += "margin:10px 0px 0px 78px;";
+		wlHintCss += "background-color:rgba(255,255,255,0.2);";
+		wlHintCss += "padding:20px;";
+		wlHintCss += "line-height:36px;";
+		wlHintCss += "border-radius: 5px;";
+		wlHintCss += "width: 480px;";
+		wlHintCss += "border: 0;";
+		wlHintCss += "color:#fff;";
+		wlHintCss += "color:#000\9;"; /* IE6 IE7 IE8 */
+		wlHintCss += "font-size:16pt;";
+		wlHintCss += "}.div_table{";
+		wlHintCss += "display:table;";
+		wlHintCss += "}.div_tr{";
+		wlHintCss += "display:table-row;";
+		wlHintCss += "}.div_td{";
+		wlHintCss += "display:table-cell;";
+		wlHintCss += "}.title_gap{";
+		wlHintCss += "margin:20px 0px 0px 78px;";
+		wlHintCss += "width: 480px;";
+		wlHintCss += "font-size: 16pt;";
+		wlHintCss += "color:#fff;";
+		wlHintCss += "}.main_field_gap{";
+		wlHintCss += "margin:100px auto 0;";
+		wlHintCss += "}b{color:#00BBFF;";
+		wlHintCss += "}.title_name{";
+		wlHintCss += "font-size: 40pt;";
+		wlHintCss += "color:#93d2d9;";
+		wlHintCss += "}.img_gap{";
+		wlHintCss += "padding-right:30px;";
+		wlHintCss += "vertical-align:middle;";
+		wlHintCss += "}.yellow{";
+		wlHintCss += "color:#FC0;";
+		wlHintCss += "}.login_img{";
+		wlHintCss += "width:43px;";
+		wlHintCss += "height:43px;";
+		wlHintCss += "background-image: url('images/New_ui/icon_titleName.png');";
+		wlHintCss += "background-repeat: no-repeat;}";
+		// Mobile style sheet
+		wlHintCss += "@media screen and (max-width: 1000px){";
+		if(top.location.pathname.search("QIS") != -1){
+			wlHintCss += "#wlHint{background:url('/images/qis/pattern3-3_10_A15.png'),url('/images/qis/pattern3_05_4.png'),url('/images/qis/mainimage_img4.png') #1D1E1F no-repeat;";
+			wlHintCss += "background-size:auto;}b{color:#279FD9;}";
+		}
+		wlHintCss += ".prod_madelName{";
+		wlHintCss += "font-size: 13pt;";
+		wlHintCss += "}.nologin{";
+		wlHintCss += "margin-left:10px;";
+		wlHintCss += "padding:10px;";
+		wlHintCss += "line-height:18pt;";
+		wlHintCss += "width: 100%;";
+		wlHintCss += "font-size:14px;";
+		wlHintCss += "}.main_field_gap{";
+		wlHintCss += "width:82%;";
+		wlHintCss += "margin:10px 0 0 15px;";
+		wlHintCss += "}.title_name{";
+		wlHintCss += "font-size:20pt;";
+		wlHintCss += "margin-left:15px;";
+		wlHintCss += "}.login_img{";
+		wlHintCss += "background-size: 75%;";
+		wlHintCss += "}.img_gap{";
+		wlHintCss += "padding-right:0;";
+		wlHintCss += "vertical-align:middle;";
+		wlHintCss += "}.title_gap{";
+		wlHintCss += "margin:15px 0px 0px 15px;";
+		wlHintCss += "width: 100%;";
+		wlHintCss += "font-size: 12pt;";
+		wlHintCss += "}}";
+		wlHintCss += "</style>";
+
+		var wlHintJs = '<script>setInterval(function(){var a;if(window.XMLHttpRequest)a=new XMLHttpRequest;else{if(!window.ActiveXObject)return!1;a=new ActiveXObject("Microsoft.XMLHTTP")}a.onreadystatechange=function(){4==a.readyState&&200==a.status&&(top.location.href="/")},a.open("GET","/httpd_check.xml",!0),a.send(null)},';
+		wlHintJs += (action_script == "reboot")?restart_time*1000:"3e3";
+		wlHintJs += ');<\x2Fscript>';
+
+		var wlHintHtml = '';
+		wlHintHtml += '<meta content="telephone=no" name="format-detection"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">';
+		wlHintHtml += '<div id="wlHint">';
+		wlHintHtml += '<div class="div_table main_field_gap">';
+		wlHintHtml += '<div class="div_tr">';
+		wlHintHtml += '<div class="prod_madelName"><div class="title_name"><div class="div_td img_gap"><div class="login_img"></div></div><div class="div_td"><#Web_Title2#></div></div></div>';
+		wlHintHtml += '<div id="login_filed">';
+		wlHintHtml += "<div class='p1 title_gap'><#DrSurf_sweet_advise1#></div>";
+
+		if(typeof updateFlag != "undefined") wlHintHtml += "<div class='p1 title_gap yellow'>Firmware upgrade is done.</div>";
+
+		for(var i=0; i<wlObj.length; i++){
+			wlHintHtml += '<div class="p1 title_gap">'+ wlObj[i].band +'</div>';
+			wlHintHtml += '<div class="nologin">';
+			wlHintHtml += '<#QIS_finish_wireless_item1#>: <b>';
+			wlHintHtml += wlObj[i].ssid + '</b><br>';
+			wlHintHtml += '<#Network_key#>: <b>';
+			wlHintHtml += (wlObj[i].key == "") ? "Open System" : wlObj[i].key;
+			wlHintHtml += '</b></div>';
+		}
+		wlHintHtml += '</div></div></div></div>';
+		top.document.write(wlHintCss + wlHintJs + wlHintHtml);
+
+	})(genWlObj);
+}
+
+function showdr_advise(setting){
+	var getXMLAndRedirect = function(){
+		if(makeRequest._notSupportXML){
+			if(getflag !== ""){
+				parent.location.href = "/QIS_wizard.htm?flag=finish";
+			}
+
+			if(current_page.length > 0){
+				parent.location.href = current_page;
+			}
+		}
+
+		makeRequest.start('/httpd_check.xml', function(xhr){
+			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+
+			var httpds = xhr.responseXML.getElementsByTagName("httpd");
+			if (httpds !== null && httpds[0] !== null) {
+				var redirectPage = current_page;
+				if(redirectPage.length > 0) {
+					if (getflag !== "") {
+						redirectPage = next_page + "?flag=" + getflag;
+					}
+
+					setTimeout(function(){
+						parent.location.href = redirectPage;
+					}, 1000);
+				}
+			}
+		}, getXMLAndRedirect);
+	};
+
+	if(parent.parent.document.forms[0].current_page.value == "/QIS_wizard.htm"
+			&& parent.parent.document.forms[0].sw_mode.value == "3"){
+		parent.parent.document.getElementById('drword').innerHTML = "<#DrSurf_sweet_advise1#><br/><br/>";
+		setTimeout("parent.parent.document.getElementById('drword').innerHTML = '<#DrSurf_sweet_advise3#><br/><br/>'", 10000);
+		setTimeout(getXMLAndRedirect, restart_time*1000);
+	}
+	else if(setting == "finish"){
+		parent.parent.document.getElementById('drword').innerHTML = "<#DrSurf_sweet_advise1#><br/><br/>";
+		getXMLAndRedirect();
+	}
+	else{
+		parent.parent.document.getElementById('drword').innerHTML = "<#DrSurf_sweet_advise1#><br/><br/>";
+		parent.parent.document.getElementById('wireless_client_detect').style.display = "";
+		parent.parent.document.getElementById('alertImg').style.display = "none";
+		if(typeof parent.detect_LANStatus == 'function')
+			setTimeout("parent.detect_LANStatus('finish');", restart_time*1000);
+		else{
+			setTimeout(getXMLAndRedirect, restart_time*1000);
+		}
+	}
+}
+
+function qis_delay_redirect(next_url){
+	parent.parent.document.redirectForm.action = next_url;
+	parent.parent.document.redirectForm.target = "contentM";
+	parent.parent.document.redirectForm.submit();
+}
+
+function afterLiveUpdate(){
+	if(parent.parent.liveUpdateFinish == true){
+		parent.location.href = '/qis/QIS_finish.htm';
+	}
+	else{
+		setTimeout(function(){afterLiveUpdate();}, 500);
+	}	
+}
+
+function initial(){
+	var doDetect = function(){
+		setInterval(function(){var a;if(window.XMLHttpRequest)a=new XMLHttpRequest;else{if(!window.ActiveXObject)return!1;a=new ActiveXObject("Microsoft.XMLHTTP")}a.onreadystatechange=function(){4==a.readyState&&200==a.status&&(top.location.href="/")},a.open("GET","/httpd_check.xml",!0),a.send(null)},3e3);
+	}
+
+	var isWLclient = function () {  //detect login client is by wireless or wired
+		<% login_state_hook(); %>
+		var wireless = [<% wl_auth_list(); %>];	// [[MAC, associated, authorized], ...]
+		if(wireless[0] == undefined)
+			return false;
+
+		if(wireless.length > 0) {
+			for(var i = 0; i < wireless.length; i += 1) {
+				if(wireless[i][0].toUpperCase() == login_mac_str().toUpperCase()) {
+					return true;  //wireless
+				}
+			}
+		}
+
+		return false; //wired
+	};
+	
+	if(getflag == "finishQIS"){
+		if(isWLclient()){
+			if(action_script == "reboot" || action_script.search("restart_wireless") != -1 || action_script.search("restart_dsl_wireless") != -1 
+				|| action_script.search("restart_subnet") != -1){
+				showWlHint();
+				return;
+			}
+		}
+		
+		if(action_script == "reboot" || action_script.search("restart_dsl_wireless") != -1){
+			setTimeout(function(){
+				top.location.href = next_page;
+			}, restart_time*1000);
+		}
+		else if(action_script.search("restart_subnet") !== -1){
+			setTimeout(doDetect, restart_time*1000);
+		}
+
+		return;
+	}	
+	
+	if(getflag == "liveUpdate"){
+		setTimeout(function(){
+			parent.parent.detect_firmware();
+			afterLiveUpdate();
+		}, restart_time*1000);
+	}
+	else if(getflag == "upgrading"){
+		parent.progressBar = 0;
+		parent.showLoadingUpdate();
+	}
+	else if(getflag == "sitesurvey"){
+		parent.setTimeout("update_site_info();", 1000);
+	}
+	else if(getflag == "wlcconnect"){
+		parent.retValHandler.errCount = 0;
+		parent.parent.document.getElementById("LoadingBar").style.visibility = "visible";
+		parent.parent.document.getElementById("LoadingBar").style.display = "";
+		parent.parent.showLoadingBar(90);
+		setTimeout("parent.retValHandler.doQuery();", 75000);		
+	}
+	else if(getflag == "next"){
+		parent.redirect_index();
+	}
+	else if(getflag == "pppoe_failed"){
+		top.pppoe_failed_flag = true;
+		setTimeout("parent.location.href='/qis/QIS_internet_account.htm';", restart_time*1000);
+	}	
+	else if(action_script == "saveNvram"){
+		return;
+	}
+	else if(getflag == "background"){
+		return;
+	}
+	else if(page_modified == 1){
+		if(isWLclient()){
+			if(action_script.search("restart_wireless") != -1 || action_script.search("restart_all") != -1  || action_script.search("reboot") != -1){
+				showWlHint();
+				return;
+			}
+			if(current_page.indexOf("<% abs_index_page(); %>") >= 0){
+				parent.showLoading(restart_time, "waiting");
+			}
+		}
+		else if(getflag == "finish"){
+			if(parent.document.getElementById("hidden_frame")){
+				setTimeout("parent.location.href='/qis/QIS_finish.htm';", restart_time*1000);  // Get
+			}
+			else{
+				parent.parent.showLoading(restart_time, "waiting");
+				setTimeout("showdr_advise('finish');", (restart_time+1)*1000);
+			}
+		} 
+		else if(getflag == "adv_ap_mode"){
+			/*if(parent.findasus_support){
+				parent.parent.document.getElementById('drword').innerHTML = "<#OP_AP_hint#>";
+			}else{*/
+				parent.parent.document.getElementById('drword').innerHTML = "<#Main_alert_proceeding_desc3#>.<#LANConfig_ChangedLANIP#>";
+			//}
+			setTimeout("parent.parent.hideLoading();	",15000);
+			setTimeout("parent.parent.dr_advise();",15000);
+		}
+		else{
+			parent.parent.showLoading(restart_time);
+			if(navigator.userAgent.indexOf("Safari") >= 0){
+				if(document.redirectForm.flag.value != "")
+					next_page += "?flag=" + document.redirectForm.flag.value;
+				setTimeout("parent.parent.location.href='"+next_page+"';", restart_time*1000);
+			}
+			else
+				setTimeout("top_delay_redirect('"+next_page+"');", restart_time*1000);
+		}
+	}
+	else if(getflag == "background"){
+			return;
+	}
+	else if(action_script == "reboot" || action_script.search("restart_subnet") !== -1){
+		parent.showLoading(restart_time);
+		setTimeout("top_delay_redirect('"+next_page+"');", restart_time*1000);
+	}
+	else{
+		if(next_page == "/qis/QIS_finish.htm"){
+			if(navigator.userAgent.indexOf("Opera")  >= 0)
+				setTimeout("qis_delay_redirect('/qis/QIS_finish.htm');", restart_time*1000);
+			else	
+				setTimeout("top_delay_redirect('"+next_page+"');", restart_time*1000);
+		}
+		else if(next_page == "/QIS_wizard.htm"){
+			if(navigator.userAgent.indexOf("Opera")  >= 0)
+				setTimeout("qis_delay_redirect('/qis/QIS_finish.htm');", restart_time*1000);
+			else	
+				setTimeout("top_delay_redirect('"+next_page+"');", restart_time*1000);
+		}
+		else{
+			parent.parent.location.href = next_page;
+		}
+	}
+}
+</script>
+</head>
+
+<body onload="initial();">
+<form method="post" name="redirectForm" action="" target="">
+<input type="hidden" name="flag" value='<% get_parameter("flag"); %>'>
+</form>
+
+<% update_variables(); %>
+<% convert_asus_variables(); %>
+<% asus_nvram_commit(); %>
+<% notify_services(); %>
+
+</body>
+</html>

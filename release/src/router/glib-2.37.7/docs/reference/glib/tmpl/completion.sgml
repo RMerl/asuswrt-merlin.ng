@@ -1,0 +1,127 @@
+<!-- ##### SECTION Title ##### -->
+Automatic String Completion
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GCompletion ##### -->
+<para>
+
+</para>
+
+@items: 
+@func: 
+@prefix: 
+@cache: 
+@strncmp_func: 
+
+<!-- ##### FUNCTION g_completion_new ##### -->
+<para>
+
+</para>
+
+@func: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GCompletionFunc ##### -->
+<para>
+
+</para>
+
+@Param1: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_completion_add_items ##### -->
+<para>
+
+</para>
+
+@cmp: 
+@items: 
+
+
+<!-- ##### FUNCTION g_completion_remove_items ##### -->
+<para>
+
+</para>
+
+@cmp: 
+@items: 
+
+
+<!-- ##### FUNCTION g_completion_clear_items ##### -->
+<para>
+
+</para>
+
+@cmp: 
+
+
+<!-- ##### FUNCTION g_completion_complete ##### -->
+<para>
+
+</para>
+
+@cmp: 
+@prefix: 
+@new_prefix: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_completion_complete_utf8 ##### -->
+<para>
+
+</para>
+
+@cmp: 
+@prefix: 
+@new_prefix: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_completion_set_compare ##### -->
+<para>
+
+</para>
+
+@cmp: 
+@strncmp_func: 
+
+
+<!-- ##### USER_FUNCTION GCompletionStrncmpFunc ##### -->
+<para>
+
+</para>
+
+@s1: 
+@s2: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_completion_free ##### -->
+<para>
+
+</para>
+
+@cmp: 
+
+

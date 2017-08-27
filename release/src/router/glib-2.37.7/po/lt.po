@@ -1,0 +1,4403 @@
+# Lithuanian translation of Glib library.
+# Copyright © 2003-2005, 2007, 2008, 2010 Free Software Foundation, Inc.
+# This file is distributed under the same license as the glib package.
+# Tomas Kuliavas <tokul@users.sourceforge.net>, 2003-2004.
+# Žygimantas Beručka <zygis@gnome.org>, 2004-2007, 2010, 2012.
+# Mantas Kriaučiūnas <mantas@akl.lt>, 2006-2007.
+# Gintautas Miliauskas <gintas@akl.lt>, 2007, 2008.
+# Rimas Kudelis <rq@akl.lt>, 2010.
+# Algimantas Margevičius <gymka@mail.ru>, 2011.
+# Aurimas Černius <aurisc4@gmail.com>, 2010, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: lt\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=glib&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2013-08-08 09:14+0000\n"
+"PO-Revision-Date: 2013-08-11 21:01+0300\n"
+"Last-Translator: Aurimas Černius <aurisc4@gmail.com>\n"
+"Language-Team: Lietuvių <gnome-lt@lists.akl.lt>\n"
+"Language: lt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
+"%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.6\n"
+"X-Project-Style: gnome\n"
+
+#: ../gio/gbufferedinputstream.c:424 ../gio/gbufferedinputstream.c:503
+#: ../gio/ginputstream.c:174 ../gio/ginputstream.c:366
+#: ../gio/ginputstream.c:604 ../gio/ginputstream.c:822
+#: ../gio/goutputstream.c:192 ../gio/goutputstream.c:721
+#: ../gio/gpollableinputstream.c:207 ../gio/gpollableoutputstream.c:208
+#, c-format
+msgid "Too large count value passed to %s"
+msgstr "Per didelė skaičiavimo reikšmė perduota %s"
+
+#: ../gio/gbufferedinputstream.c:896 ../gio/gbufferedoutputstream.c:577
+#: ../gio/gdataoutputstream.c:564
+msgid "Seek not supported on base stream"
+msgstr "Pozicijos perkėlimas sraute nepalaikomas"
+
+#: ../gio/gbufferedinputstream.c:942
+msgid "Cannot truncate GBufferedInputStream"
+msgstr "Nepavyko sutrumpinti GBufferedInputStream"
+
+#: ../gio/gbufferedinputstream.c:987 ../gio/ginputstream.c:1012
+#: ../gio/giostream.c:280 ../gio/goutputstream.c:1323
+msgid "Stream is already closed"
+msgstr "Srautas jau užvertas"
+
+#: ../gio/gbufferedoutputstream.c:614 ../gio/gdataoutputstream.c:594
+msgid "Truncate not supported on base stream"
+msgstr "Trumpinimas sraute nepalaikomas"
+
+#: ../gio/gcancellable.c:314 ../gio/gdbusconnection.c:1897
+#: ../gio/gdbusconnection.c:1989 ../gio/gdbusprivate.c:1421
+#: ../gio/glocalfile.c:2177 ../gio/gsimpleasyncresult.c:843
+#: ../gio/gsimpleasyncresult.c:869
+#, c-format
+msgid "Operation was cancelled"
+msgstr "Operacija nutraukta"
+
+#: ../gio/gcharsetconverter.c:262
+msgid "Invalid object, not initialized"
+msgstr "Netinkamas objektas, nepavyko inicijuoti"
+
+#: ../gio/gcharsetconverter.c:283 ../gio/gcharsetconverter.c:311
+msgid "Incomplete multibyte sequence in input"
+msgstr "Klaidinga baitų seka įvestyje"
+
+#: ../gio/gcharsetconverter.c:317 ../gio/gcharsetconverter.c:326
+msgid "Not enough space in destination"
+msgstr "Nepakanka paskirties vietos"
+
+#: ../gio/gcharsetconverter.c:344 ../gio/gdatainputstream.c:849
+#: ../gio/gdatainputstream.c:1259 ../glib/gconvert.c:467
+#: ../glib/gconvert.c:859 ../glib/giochannel.c:1586 ../glib/giochannel.c:1628
+#: ../glib/giochannel.c:2472 ../glib/gutf8.c:833 ../glib/gutf8.c:1284
+msgid "Invalid byte sequence in conversion input"
+msgstr "Klaidinga baitų seka keitimo įvedime"
+
+#: ../gio/gcharsetconverter.c:349 ../glib/gconvert.c:475
+#: ../glib/gconvert.c:784 ../glib/giochannel.c:1593 ../glib/giochannel.c:2484
+#, c-format
+msgid "Error during conversion: %s"
+msgstr "Klaida keitimo metu: %s"
+
+#: ../gio/gcharsetconverter.c:446 ../gio/gsocket.c:990
+msgid "Cancellable initialization not supported"
+msgstr "Atšaukiamas inicijavimas nepalaikomas"
+
+#: ../gio/gcharsetconverter.c:457 ../glib/gconvert.c:347
+#: ../glib/giochannel.c:1414
+#, c-format
+msgid "Conversion from character set '%s' to '%s' is not supported"
+msgstr "Keitimas iš koduotės „%s“ į koduotę „%s“ nepalaikomas"
+
+#: ../gio/gcharsetconverter.c:461 ../glib/gconvert.c:351
+#, c-format
+msgid "Could not open converter from '%s' to '%s'"
+msgstr "Nepavyko atverti keitiklio iš „%s“ į „%s“"
+
+#: ../gio/gcontenttype.c:335
+#, c-format
+msgid "%s type"
+msgstr "%s tipas"
+
+#: ../gio/gcontenttype-win32.c:162
+msgid "Unknown type"
+msgstr "Nežinomas tipas"
+
+#: ../gio/gcontenttype-win32.c:163
+#, c-format
+msgid "%s filetype"
+msgstr "%s failo tipos"
+
+#: ../gio/gcredentials.c:264 ../gio/gcredentials.c:528
+msgid "GCredentials is not implemented on this OS"
+msgstr "GCredentials nerealizuota šioje operacinėje sistemoje"
+
+#: ../gio/gcredentials.c:438
+msgid "There is no GCredentials support for your platform"
+msgstr "Jūsų platformoje nėra GCredentials palaikymo"
+
+#: ../gio/gcredentials.c:480
+msgid "GCredentials does not contain a process ID on this OS"
+msgstr "GCredentials neturi proceso ID šioje OS"
+
+#: ../gio/gdatainputstream.c:306
+msgid "Unexpected early end-of-stream"
+msgstr "Netikėta ankstyva srauto pabaiga"
+
+#: ../gio/gdbusaddress.c:150 ../gio/gdbusaddress.c:238
+#: ../gio/gdbusaddress.c:319
+#, c-format
+msgid "Unsupported key '%s' in address entry '%s'"
+msgstr "Nepalaikomas raktas „%s“ adreso įvestyje „%s“"
+
+#: ../gio/gdbusaddress.c:177
+#, c-format
+msgid ""
+"Address '%s' is invalid (need exactly one of path, tmpdir or abstract keys)"
+msgstr ""
+"Adresas „%s“ nėra tinkamas (reikia įvesti vienintelį raktą path, tmpdir arba "
+"abstract)"
+
+#: ../gio/gdbusaddress.c:190
+#, c-format
+msgid "Meaningless key/value pair combination in address entry '%s'"
+msgstr "Beprasmė rakto/reikšmės poros kombinacija adreso įvestyje „%s“"
+
+#: ../gio/gdbusaddress.c:253 ../gio/gdbusaddress.c:334
+#, c-format
+msgid "Error in address '%s' - the port attribute is malformed"
+msgstr "Klaida adrese „%s“ - neteisingai suformuotas prievado atributas"
+
+#: ../gio/gdbusaddress.c:264 ../gio/gdbusaddress.c:345
+#, c-format
+msgid "Error in address '%s' - the family attribute is malformed"
+msgstr "Klaida adrese „%s“ - neteisingai suformuotas šeimos atributas"
+
+#: ../gio/gdbusaddress.c:454
+#, c-format
+msgid "Address element '%s' does not contain a colon (:)"
+msgstr "Adreso elementas „%s“ neturi dvitaškio (:)"
+
+#: ../gio/gdbusaddress.c:475
+#, c-format
+msgid ""
+"Key/Value pair %d, '%s', in address element '%s' does not contain an equal "
+"sign"
+msgstr ""
+"Rakto/reikšmės pora %d, „%s“, adreso elementas „%s“ neturi lygybės ženklo"
+
+#: ../gio/gdbusaddress.c:489
+#, c-format
+msgid ""
+"Error unescaping key or value in Key/Value pair %d, '%s', in address element "
+"'%s'"
+msgstr ""
+"Klaida šalinant kaitą rakte ar reikšmėje rakto/reikšmės poroje %d, „%s“ "
+"adreso elemente „%s“"
+
+#: ../gio/gdbusaddress.c:567
+#, c-format
+msgid ""
+"Error in address '%s' - the unix transport requires exactly one of the keys "
+"'path' or 'abstract' to be set"
+msgstr ""
+"Klaida adrese „%s“ - unix duomenų perdavimas reikalauja nustatyti vienintelį "
+"iš raktų 'path' arba 'abstract'"
+
+#: ../gio/gdbusaddress.c:603
+#, c-format
+msgid "Error in address '%s' - the host attribute is missing or malformed"
+msgstr ""
+"Klaida adrese „%s“ - pagrindinio kompiuterio atributas neįvestas arba blogai "
+"suformuotas"
+
+#: ../gio/gdbusaddress.c:617
+#, c-format
+msgid "Error in address '%s' - the port attribute is missing or malformed"
+msgstr ""
+"Klaida adrese „%s“ - prievado atributas neįvestas arba blogai suformuotas"
+
+#: ../gio/gdbusaddress.c:631
+#, c-format
+msgid "Error in address '%s' - the noncefile attribute is missing or malformed"
+msgstr ""
+"Klaida adrese „%s“ - laikino failo atributas neįvestas arba blogai "
+"suformuotas"
+
+#: ../gio/gdbusaddress.c:652
+msgid "Error auto-launching: "
+msgstr "Klaida automatiškai paleidžiant: "
+
+#: ../gio/gdbusaddress.c:660
+#, c-format
+msgid "Unknown or unsupported transport '%s' for address '%s'"
+msgstr "Nežinomas arba nepalaikomas duomenų perdavimas „%s“ adresui „%s“"
+
+#: ../gio/gdbusaddress.c:696
+#, c-format
+msgid "Error opening nonce file '%s': %s"
+msgstr "Klaida atveriant laikiną failą „%s“: %s"
+
+#: ../gio/gdbusaddress.c:714
+#, c-format
+msgid "Error reading from nonce file '%s': %s"
+msgstr "Klaida skaitant iš laikino failo „%s“: %s"
+
+#: ../gio/gdbusaddress.c:723
+#, c-format
+msgid "Error reading from nonce file '%s', expected 16 bytes, got %d"
+msgstr "Klaida skaitant iš laikino failo „%s“, tikėtasi 16 baitų, gauta %d"
+
+#: ../gio/gdbusaddress.c:741
+#, c-format
+msgid "Error writing contents of nonce file '%s' to stream:"
+msgstr "Klaida rašant į laikino failo turinį „%s“ į srautą:"
+
+#: ../gio/gdbusaddress.c:960
+msgid "The given address is empty"
+msgstr "Pateiktasis adresas yra tuščias"
+
+#: ../gio/gdbusaddress.c:1030
+#, c-format
+msgid "Cannot spawn a message bus when setuid"
+msgstr "Negalima paleisti pranešimų magistralės kai vyksta setuid"
+
+#: ../gio/gdbusaddress.c:1037
+msgid "Cannot spawn a message bus without a machine-id: "
+msgstr "Negalima paleisti pranešimų magistralės be mašinos id: "
+
+#: ../gio/gdbusaddress.c:1079
+#, c-format
+msgid "Error spawning command line '%s': "
+msgstr "Klaida paleidžiant komandų eilutę „%s“: "
+
+#: ../gio/gdbusaddress.c:1296
+#, c-format
+msgid "(Type any character to close this window)\n"
+msgstr "(Spauskite bet kurį klavišą šiam langui užverti)\n"
+
+#: ../gio/gdbusaddress.c:1421
+#, c-format
+msgid "Session dbus not running, and autolaunch failed"
+msgstr "Seanso dbus neveikia, automatinis paleidimas nepavyko"
+
+#: ../gio/gdbusaddress.c:1442
+#, c-format
+msgid "Cannot determine session bus address (not implemented for this OS)"
+msgstr ""
+"Nepavyko nustatyti sesijos magistralės adreso (nerealizuota šiai operacinei "
+"sistemai)"
+
+#: ../gio/gdbusaddress.c:1541 ../gio/gdbusconnection.c:6908
+#, c-format
+msgid ""
+"Cannot determine bus address from DBUS_STARTER_BUS_TYPE environment variable "
+"- unknown value '%s'"
+msgstr ""
+"Nepavyko nustatyti magistralės adreso iš DBUS_STARTER_BUS_TYPE aplinkos "
+"kintamojo - nežinoma reikšmė „%s“"
+
+#: ../gio/gdbusaddress.c:1550 ../gio/gdbusconnection.c:6917
+msgid ""
+"Cannot determine bus address because the DBUS_STARTER_BUS_TYPE environment "
+"variable is not set"
+msgstr ""
+"Nepavyko nustatyti magistralės adreso, kadangi DBUS_STARTER_BUS_TYPE "
+"aplinkos kintamasis nenustatytas"
+
+#: ../gio/gdbusaddress.c:1560
+#, c-format
+msgid "Unknown bus type %d"
+msgstr "Nežinomas magistralės tipas %d"
+
+#: ../gio/gdbusauth.c:295
+msgid "Unexpected lack of content trying to read a line"
+msgstr "Netikėtas turinio trūkumas bandant nuskaityti eilutę"
+
+#: ../gio/gdbusauth.c:339
+msgid "Unexpected lack of content trying to (safely) read a line"
+msgstr "Netikėtas turinio trūkumas bandant (saugiai) nuskaityti eilutę"
+
+#: ../gio/gdbusauth.c:510
+#, c-format
+msgid ""
+"Exhausted all available authentication mechanisms (tried: %s) (available: %s)"
+msgstr ""
+"Baigėsi visi turimi tapatybės patvirtinimo mechanizmai (bandyta: %s) "
+"(turimi: %s)"
+
+#: ../gio/gdbusauth.c:1172
+msgid "Cancelled via GDBusAuthObserver::authorize-authenticated-peer"
+msgstr "Atšaukta per GDBusAuthObserver::authorize-authenticated-peer"
+
+#: ../gio/gdbusauthmechanismsha1.c:262
+#, c-format
+msgid "Error when getting information for directory '%s': %s"
+msgstr "Klaida gaunant informaciją apie katalogą „%s“: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:274
+#, c-format
+msgid ""
+"Permissions on directory '%s' are malformed. Expected mode 0700, got 0%o"
+msgstr ""
+"Katalogo „%s“ leidimai yra suformuoti neteisingai. Tikėtasi mode 0700, gauta "
+"0%o"
+
+#: ../gio/gdbusauthmechanismsha1.c:295
+#, c-format
+msgid "Error creating directory '%s': %s"
+msgstr "Klaida kuriant katalogą „%s“: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:378
+#, c-format
+msgid "Error opening keyring '%s' for reading: "
+msgstr "Klaida atveriant raktinę „%s“ skaitymui: "
+
+#: ../gio/gdbusauthmechanismsha1.c:402 ../gio/gdbusauthmechanismsha1.c:715
+#, c-format
+msgid "Line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+"%d eilutė raktinės vietoje „%s“ su turiniu „%s“ yra suformuota neteisingai"
+
+#: ../gio/gdbusauthmechanismsha1.c:416 ../gio/gdbusauthmechanismsha1.c:729
+#, c-format
+msgid ""
+"First token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+"Pirmoji leksema raktinės %d eilutės vietoje „%s“ su turiniu „%s“ yra "
+"suformuota neteisingai"
+
+#: ../gio/gdbusauthmechanismsha1.c:431 ../gio/gdbusauthmechanismsha1.c:743
+#, c-format
+msgid ""
+"Second token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+"Antroji leksema raktinės %d eilutės vietoje „%s“ su turiniu „%s“ yra "
+"suformuota neteisingai"
+
+#: ../gio/gdbusauthmechanismsha1.c:455
+#, c-format
+msgid "Didn't find cookie with id %d in the keyring at '%s'"
+msgstr "Nerastas slapukas su id %d raktinės vietoje „%s“"
+
+#: ../gio/gdbusauthmechanismsha1.c:533
+#, c-format
+msgid "Error deleting stale lock file '%s': %s"
+msgstr "Klaida trinant nebegaliojantį rakinimo failą „%s“: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:565
+#, c-format
+msgid "Error creating lock file '%s': %s"
+msgstr "Klaida kuriant rakinimo failą „%s“: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:595
+#, c-format
+msgid "Error closing (unlinked) lock file '%s': %s"
+msgstr "Klaida užveriant (nesusietą) rakinimo failą „%s“: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:605
+#, c-format
+msgid "Error unlinking lock file '%s': %s"
+msgstr "Klaida atsiejant rakinimo failą „%s“: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:682
+#, c-format
+msgid "Error opening keyring '%s' for writing: "
+msgstr "Klaida atveriant raktinė „%s“ rašymui: "
+
+#: ../gio/gdbusauthmechanismsha1.c:879
+#, c-format
+msgid "(Additionally, releasing the lock for '%s' also failed: %s) "
+msgstr "(Papildomai, užrakto atlaisvinimas „%s“ taip pat nepavyko: %s)."
+
+#: ../gio/gdbusconnection.c:609 ../gio/gdbusconnection.c:2452
+msgid "The connection is closed"
+msgstr "Ryšys yra užvertas"
+
+#: ../gio/gdbusconnection.c:1942
+msgid "Timeout was reached"
+msgstr "Baigėsi laikas"
+
+#: ../gio/gdbusconnection.c:2574
+msgid ""
+"Unsupported flags encountered when constructing a client-side connection"
+msgstr "Nepalaikomi požymiai aptikti konstruojant kliento pusės ryšį"
+
+#: ../gio/gdbusconnection.c:4146 ../gio/gdbusconnection.c:4489
+#, c-format
+msgid ""
+"No such interface 'org.freedesktop.DBus.Properties' on object at path %s"
+msgstr ""
+"Nėra sąsajos „org.freedesktop.DBus.Properties“ objektui, kurio kelias %s"
+
+#: ../gio/gdbusconnection.c:4288
+#, c-format
+msgid "No such property '%s'"
+msgstr "Nėra savybės „%s“"
+
+#: ../gio/gdbusconnection.c:4300
+#, c-format
+msgid "Property '%s' is not readable"
+msgstr "Savybė „%s“ yra neskaitoma"
+
+#: ../gio/gdbusconnection.c:4311
+#, c-format
+msgid "Property '%s' is not writable"
+msgstr "Savybė „%s“ nėra rašoma"
+
+#: ../gio/gdbusconnection.c:4331
+#, c-format
+msgid "Error setting property '%s': Expected type '%s' but got '%s'"
+msgstr "Klaida nustatant savybę „%s“: tikėtasi tipo „%s“, bet gauta „%s“"
+
+#: ../gio/gdbusconnection.c:4432 ../gio/gdbusconnection.c:6351
+#, c-format
+msgid "No such interface '%s'"
+msgstr "Nėra sąsajos „%s“"
+
+#: ../gio/gdbusconnection.c:4639
+msgid "No such interface"
+msgstr "Nėra tokios sąsajos"
+
+#: ../gio/gdbusconnection.c:4857 ../gio/gdbusconnection.c:6857
+#, c-format
+msgid "No such interface '%s' on object at path %s"
+msgstr "Nėra sąsajos „%s“ objektui, kurio kelias %s"
+
+#: ../gio/gdbusconnection.c:4954
+#, c-format
+msgid "No such method '%s'"
+msgstr "Nėra metodo „%s“"
+
+#: ../gio/gdbusconnection.c:4985
+#, c-format
+msgid "Type of message, '%s', does not match expected type '%s'"
+msgstr "Pranešimo tipas „%s“ neatitinka laukiamo tipo „%s“"
+
+#: ../gio/gdbusconnection.c:5183
+#, c-format
+msgid "An object is already exported for the interface %s at %s"
+msgstr "Jau yra eksportuotas objektas sąsajai %s vietoje %s"
+
+#: ../gio/gdbusconnection.c:5381
+#, c-format
+msgid "Method '%s' returned type '%s', but expected '%s'"
+msgstr "Metodas „%s“ grąžino tipą „%s“, bet laukta „%s“"
+
+#: ../gio/gdbusconnection.c:6462
+#, c-format
+msgid "Method '%s' on interface '%s' with signature '%s' does not exist"
+msgstr "Metodas „%s“ sąsajoje „%s“ su signatūra „%s“ neegzistuoja"
+
+#: ../gio/gdbusconnection.c:6581
+#, c-format
+msgid "A subtree is already exported for %s"
+msgstr "Pomedis %s jau yra eksportuotas"
+
+#: ../gio/gdbusmessage.c:1271
+msgid "type is INVALID"
+msgstr "tipas yra NETINKAMAS"
+
+#: ../gio/gdbusmessage.c:1282
+msgid "METHOD_CALL message: PATH or MEMBER header field is missing"
+msgstr "METHOD_CALL pranešimas: trūksta antraštės lauko PATH arba MEMBER"
+
+#: ../gio/gdbusmessage.c:1293
+msgid "METHOD_RETURN message: REPLY_SERIAL header field is missing"
+msgstr "METHOD_RETURN pranešimas: trūksta REPLY_SERIAL antraštės"
+
+#: ../gio/gdbusmessage.c:1305
+msgid "ERROR message: REPLY_SERIAL or ERROR_NAME header field is missing"
+msgstr "ERROR pranešimas: antraštės lauke trūksta REPLY_SERIAL arba ERROR_NAME"
+
+#: ../gio/gdbusmessage.c:1318
+msgid "SIGNAL message: PATH, INTERFACE or MEMBER header field is missing"
+msgstr "SIGNAL pranešimas: trūksta antraštės lauko PATH, INTERFACE arba MEMBER"
+
+#: ../gio/gdbusmessage.c:1326
+msgid ""
+"SIGNAL message: The PATH header field is using the reserved value /org/"
+"freedesktop/DBus/Local"
+msgstr ""
+"SIGNAL pranešimas: antraštės laukas PATH naudoja rezervuotą reikšmę /org/"
+"freedesktop/DBus/Local"
+
+#: ../gio/gdbusmessage.c:1334
+msgid ""
+"SIGNAL message: The INTERFACE header field is using the reserved value org."
+"freedesktop.DBus.Local"
+msgstr ""
+"SIGNAL pranešimas: antraštės laukas INTERFACE naudoja rezervuotą reikšmę org."
+"freedesktop.DBus.Local"
+
+#: ../gio/gdbusmessage.c:1383
+#, c-format
+msgid "Wanted to read %lu byte but only got %lu"
+msgid_plural "Wanted to read %lu bytes but only got %lu"
+msgstr[0] "Norėta nuskaityti %lu baitą, bet gauta tik %lu"
+msgstr[1] "Norėta nuskaityti %lu baitus, bet gauta tik %lu"
+msgstr[2] "Norėta nuskaityti %lu baitų, bet gauta tik %lu"
+
+#: ../gio/gdbusmessage.c:1398
+#, c-format
+msgid "Expected NUL byte after the string '%s' but found byte %d"
+msgstr "Tikėtasi NUL baito po simbolių eilutės „%s“, bet rastas baitas %d"
+
+#: ../gio/gdbusmessage.c:1417
+#, c-format
+msgid ""
+"Expected valid UTF-8 string but found invalid bytes at byte offset %d "
+"(length of string is %d). The valid UTF-8 string up until that point was '%s'"
+msgstr ""
+"Tikėtasi teisingos UTF-8 eilutės, bet rasta neteisingų baitų poslinkiu %d "
+"(eilutės ilgis yra %d). Teisinga UTF-8 eilutė iki tos vietos buvo „%s“"
+
+#: ../gio/gdbusmessage.c:1619
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus object path"
+msgstr "Perskaityta reikšmė „%s“ nėra tinkamas D-Bus objekto kelias"
+
+#: ../gio/gdbusmessage.c:1643
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature"
+msgstr "Perskaityta reikšmė „%s“ nėra tinkama D-Bus signatūra"
+
+#: ../gio/gdbusmessage.c:1698
+#, c-format
+msgid ""
+"Encountered array of length %u byte. Maximum length is 2<<26 bytes (64 MiB)."
+msgid_plural ""
+"Encountered array of length %u bytes. Maximum length is 2<<26 bytes (64 MiB)."
+msgstr[0] ""
+"Aptiktas %u baito ilgio masyvas. Maksimalus ilgis yra 2<<26 baitų (64 MiB)."
+msgstr[1] ""
+"Aptiktas %u baitų ilgio masyvas. Maksimalus ilgis yra 2<<26 baitų (64 MiB)."
+msgstr[2] ""
+"Aptiktas %u baitų ilgio masyvas. Maksimalus ilgis yra 2<<26 baitų (64 MiB)."
+
+#: ../gio/gdbusmessage.c:1851
+#, c-format
+msgid "Parsed value '%s' for variant is not a valid D-Bus signature"
+msgstr "Perskaityta reikšmė „%s“ variantui nėra tinkama D-Bus signatūra"
+
+#: ../gio/gdbusmessage.c:1875
+#, c-format
+msgid ""
+"Error deserializing GVariant with type string '%s' from the D-Bus wire format"
+msgstr ""
+"Klaida atstatant GVariant su tipo eilute „%s“ iš D-Bus telegramos formato"
+
+#: ../gio/gdbusmessage.c:2062
+#, c-format
+msgid ""
+"Invalid endianness value. Expected 0x6c ('l') or 0x42 ('B') but found value "
+"0x%02x"
+msgstr ""
+"Netinkama baitų eiliškumo reikšmė. Tikėtasi 0x6c („l“) arba 0x42 („B“), bet "
+"rasta 0x%02x"
+
+#: ../gio/gdbusmessage.c:2075
+#, c-format
+msgid "Invalid major protocol version. Expected 1 but found %d"
+msgstr "Netinkama pagrindinė protokolo versija. Tikėtasi 1, bet rasta %d"
+
+#: ../gio/gdbusmessage.c:2131
+#, c-format
+msgid "Signature header with signature '%s' found but message body is empty"
+msgstr ""
+"Signatūros antraštė su signatūra „%s“ rasta, bet pranešimo pagrindinė dalis "
+"tuščia"
+
+#: ../gio/gdbusmessage.c:2145
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature (for body)"
+msgstr ""
+"Perskaityta reikšmė „%s“ nėra tinkama D-Bus signatūra (pagrindinei daliai)"
+
+#: ../gio/gdbusmessage.c:2175
+#, c-format
+msgid "No signature header in message but the message body is %u byte"
+msgid_plural "No signature header in message but the message body is %u bytes"
+msgstr[0] ""
+"Nėra signatūros antraštės pranešime, bet pranešimo pagrindinė dalis yra %u "
+"baito"
+msgstr[1] ""
+"Nėra signatūros antraštės pranešime, bet pranešimo pagrindinė dalis yra %u "
+"baitų"
+msgstr[2] ""
+"Nėra signatūros antraštės pranešime, bet pranešimo pagrindinė dalis yra %u "
+"baitų"
+
+#: ../gio/gdbusmessage.c:2185
+msgid "Cannot deserialize message: "
+msgstr "Nepavyko atstatyti pranešimo: "
+
+#: ../gio/gdbusmessage.c:2506
+#, c-format
+msgid ""
+"Error serializing GVariant with type string '%s' to the D-Bus wire format"
+msgstr ""
+"Klaida paverčiant GVariant su tipo eilute „%s“ į D-Bus telegramos formatą"
+
+#: ../gio/gdbusmessage.c:2643
+#, c-format
+msgid ""
+"Message has %d file descriptors but the header field indicates %d file "
+"descriptors"
+msgstr ""
+"Pranešimas turi %d failų deskriptorių, bet antraštės laukas nurodo %d failų "
+"deskriptorius"
+
+#: ../gio/gdbusmessage.c:2651
+msgid "Cannot serialize message: "
+msgstr "Nepavyko išsaugoti pranešimo: "
+
+#: ../gio/gdbusmessage.c:2695
+#, c-format
+msgid "Message body has signature '%s' but there is no signature header"
+msgstr ""
+"Pranešimo pagrindinė dalis turi signatūrą „%s“, bet nėra signatūros antraštės"
+
+#: ../gio/gdbusmessage.c:2705
+#, c-format
+msgid ""
+"Message body has type signature '%s' but signature in the header field is "
+"'%s'"
+msgstr ""
+"Pranešimo pagrindinė dalis turi tipo signatūrą „%s“, bet signatūra antraštės "
+"lauke yra „%s“"
+
+#: ../gio/gdbusmessage.c:2721
+#, c-format
+msgid "Message body is empty but signature in the header field is '(%s)'"
+msgstr ""
+"Pranešimo pagrindinė dalis yra tuščia, bet signatūra antraštės lauke yra "
+"„(%s)“"
+
+#: ../gio/gdbusmessage.c:3271
+#, c-format
+msgid "Error return with body of type '%s'"
+msgstr "Klaidos grąžinimas su pagrindinės dalies tipu „%s“"
+
+#: ../gio/gdbusmessage.c:3279
+msgid "Error return with empty body"
+msgstr "Klaidos grąžinimas su tuščia pagrindine dalimi"
+
+#: ../gio/gdbusprivate.c:2069
+#, c-format
+msgid "Unable to get Hardware profile: %s"
+msgstr "Nepavyko gauti aparatūros profilio: %s"
+
+#: ../gio/gdbusprivate.c:2114
+msgid "Unable to load /var/lib/dbus/machine-id or /etc/machine-id: "
+msgstr "Nepavyko įkelti /var/lib/dbus/machine-id or /etc/machine-id: "
+
+#: ../gio/gdbusproxy.c:1638
+#, c-format
+msgid "Error calling StartServiceByName for %s: "
+msgstr "Klaida kviečiant StartServiceByName elementui %s: "
+
+#: ../gio/gdbusproxy.c:1661
+#, c-format
+msgid "Unexpected reply %d from StartServiceByName(\"%s\") method"
+msgstr "Nelauktas atsakas %d iš StartServiceByName(\"%s\") metodo"
+
+#: ../gio/gdbusproxy.c:2761 ../gio/gdbusproxy.c:2898
+msgid ""
+"Cannot invoke method; proxy is for a well-known name without an owner and "
+"proxy was constructed with the G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START flag"
+msgstr ""
+"Nepavyko iškviesti metodo; proxy nėra gerai žinoma pavadinimas be savininko "
+"ir proxy buvo sukonstruotas su G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START požymiu"
+
+#: ../gio/gdbusserver.c:709
+msgid "Abstract name space not supported"
+msgstr "Abstrakti vardų sritis nepalaikoma"
+
+#: ../gio/gdbusserver.c:796
+msgid "Cannot specify nonce file when creating a server"
+msgstr "Negalima nurodyti laikino failo kuriant serverį"
+
+#: ../gio/gdbusserver.c:874
+#, c-format
+msgid "Error writing nonce file at '%s': %s"
+msgstr "Klaida rašant laikiną failą vietoje „%s“: %s"
+
+#: ../gio/gdbusserver.c:1043
+#, c-format
+msgid "The string '%s' is not a valid D-Bus GUID"
+msgstr "Eilutė „%s“ nėra tinkamas D-Bus GUID"
+
+#: ../gio/gdbusserver.c:1083
+#, c-format
+msgid "Cannot listen on unsupported transport '%s'"
+msgstr "Negalima laukti duomenų iš nepalaikomo perdavimo „%s“"
+
+#: ../gio/gdbus-tool.c:92
+msgid "COMMAND"
+msgstr "KOMANDA"
+
+#: ../gio/gdbus-tool.c:97
+#, c-format
+msgid ""
+"Commands:\n"
+"  help         Shows this information\n"
+"  introspect   Introspect a remote object\n"
+"  monitor      Monitor a remote object\n"
+"  call         Invoke a method on a remote object\n"
+"  emit         Emit a signal\n"
+"\n"
+"Use \"%s COMMAND --help\" to get help on each command.\n"
+msgstr ""
+"Komandos:\n"
+"  help         Parodo šią informaciją\n"
+"  introspect   Nagrinėti nutolusį objektą\n"
+"  monitor      Stebėti nutolusį objektą\n"
+"  call         Iškviesti nutolusio objekto metodą\n"
+"  emit         Siūsti signalą\n"
+"Naudokite „%s KOMANDA --help“ kiekvienos komandos pagalbos gavimui.\n"
+
+#: ../gio/gdbus-tool.c:166 ../gio/gdbus-tool.c:222 ../gio/gdbus-tool.c:294
+#: ../gio/gdbus-tool.c:318 ../gio/gdbus-tool.c:701 ../gio/gdbus-tool.c:1022
+#: ../gio/gdbus-tool.c:1456
+#, c-format
+msgid "Error: %s\n"
+msgstr "Klaida: %s\n"
+
+#: ../gio/gdbus-tool.c:177 ../gio/gdbus-tool.c:235 ../gio/gdbus-tool.c:1472
+#, c-format
+msgid "Error parsing introspection XML: %s\n"
+msgstr "Klaida skaitant introspekcijos XML: %s\n"
+
+#: ../gio/gdbus-tool.c:352
+msgid "Connect to the system bus"
+msgstr "Prisijungti prie sistemos magistralės"
+
+#: ../gio/gdbus-tool.c:353
+msgid "Connect to the session bus"
+msgstr "Prisijungti prie sesijos magistralės"
+
+#: ../gio/gdbus-tool.c:354
+msgid "Connect to given D-Bus address"
+msgstr "Prisijungti prie pateikto D-Bus adreso"
+
+#: ../gio/gdbus-tool.c:364
+msgid "Connection Endpoint Options:"
+msgstr "Ryšio pabaigos parinktys:"
+
+#: ../gio/gdbus-tool.c:365
+msgid "Options specifying the connection endpoint"
+msgstr "Parinktys, nurodančios ryšio pabaigą"
+
+#: ../gio/gdbus-tool.c:387
+#, c-format
+msgid "No connection endpoint specified"
+msgstr "Nėra nurodytos ryšio pabaigos"
+
+#: ../gio/gdbus-tool.c:397
+#, c-format
+msgid "Multiple connection endpoints specified"
+msgstr "Nurodytos kelio ryšio pabaigos"
+
+#: ../gio/gdbus-tool.c:467
+#, c-format
+msgid ""
+"Warning: According to introspection data, interface '%s' does not exist\n"
+msgstr "Perspėjimas: pagal introspekcijos duomenis, sąsaja „%s“ neegzistuoja\n"
+
+#: ../gio/gdbus-tool.c:476
+#, c-format
+msgid ""
+"Warning: According to introspection data, method '%s' does not exist on "
+"interface '%s'\n"
+msgstr ""
+"Perspėjimas: pagal introspekcijos duomenis, metodas „%s“ neegzistuoja "
+"sąsajoje „%s“\n"
+
+#: ../gio/gdbus-tool.c:538
+msgid "Optional destination for signal (unique name)"
+msgstr "Nebūtinas signalo tikslas (unikalus vardas)"
+
+#: ../gio/gdbus-tool.c:539
+msgid "Object path to emit signal on"
+msgstr "Objekto, kuriame siunčiamas signalas, kelias"
+
+#: ../gio/gdbus-tool.c:540
+msgid "Signal and interface name"
+msgstr "Signalo ir sąsajos vardai"
+
+#: ../gio/gdbus-tool.c:572
+msgid "Emit a signal."
+msgstr "Siūsti signalą."
+
+#: ../gio/gdbus-tool.c:606 ../gio/gdbus-tool.c:832 ../gio/gdbus-tool.c:1562
+#: ../gio/gdbus-tool.c:1794
+#, c-format
+msgid "Error connecting: %s\n"
+msgstr "Klaida prisijungiant: %s\n"
+
+#: ../gio/gdbus-tool.c:618
+#, c-format
+msgid "Error: object path not specified.\n"
+msgstr "Klaida: nenurodytas objekto kelias.\n"
+
+#: ../gio/gdbus-tool.c:623 ../gio/gdbus-tool.c:893 ../gio/gdbus-tool.c:1620
+#: ../gio/gdbus-tool.c:1853
+#, c-format
+msgid "Error: %s is not a valid object path\n"
+msgstr "Klaida: %s nėra tinkamas objekto kelias\n"
+
+#: ../gio/gdbus-tool.c:629
+#, c-format
+msgid "Error: signal not specified.\n"
+msgstr "Klaida: nenurodytas signalas.\n"
+
+#: ../gio/gdbus-tool.c:636
+#, c-format
+msgid "Error: signal must be the fully-qualified name.\n"
+msgstr "Klaida: signalas turi būti pilnai-kvalifikuotas pavadinimas.\n"
+
+#: ../gio/gdbus-tool.c:644
+#, c-format
+msgid "Error: %s is not a valid interface name\n"
+msgstr "Klaida: %s nėra tinkamas sąsajos vardas\n"
+
+#: ../gio/gdbus-tool.c:650
+#, c-format
+msgid "Error: %s is not a valid member name\n"
+msgstr "Klaida: %s nėra tinkamas nario vardas\n"
+
+#: ../gio/gdbus-tool.c:656
+#, c-format
+msgid "Error: %s is not a valid unique bus name.\n"
+msgstr "Klaida: %s nėra tinkamas unikalus magistralės vardas.\n"
+
+#: ../gio/gdbus-tool.c:679 ../gio/gdbus-tool.c:992
+#, c-format
+msgid "Error parsing parameter %d: %s\n"
+msgstr "Klaida skaitant parametrą %d: %s\n"
+
+#: ../gio/gdbus-tool.c:708
+#, c-format
+msgid "Error flushing connection: %s\n"
+msgstr "Klaida išsiunčiant ryšį: %s\n"
+
+#: ../gio/gdbus-tool.c:735
+msgid "Destination name to invoke method on"
+msgstr "Tikslo vardas metodo iškvietimui"
+
+#: ../gio/gdbus-tool.c:736
+msgid "Object path to invoke method on"
+msgstr "Objekto kelias metodo iškvietimui"
+
+#: ../gio/gdbus-tool.c:737
+msgid "Method and interface name"
+msgstr "Metodo ir sąsajos vardai"
+
+#: ../gio/gdbus-tool.c:738
+msgid "Timeout in seconds"
+msgstr "Laiko limitas sekundėmis"
+
+#: ../gio/gdbus-tool.c:777
+msgid "Invoke a method on a remote object."
+msgstr "Iškviesti metodą nutolusiame objekte."
+
+#: ../gio/gdbus-tool.c:852 ../gio/gdbus-tool.c:1581 ../gio/gdbus-tool.c:1813
+#, c-format
+msgid "Error: Destination is not specified\n"
+msgstr "Klaida: nenurodytas tikslas\n"
+
+#: ../gio/gdbus-tool.c:873 ../gio/gdbus-tool.c:1600
+#, c-format
+msgid "Error: Object path is not specified\n"
+msgstr "Klaida: nenurodytas objekto kelias\n"
+
+#: ../gio/gdbus-tool.c:908
+#, c-format
+msgid "Error: Method name is not specified\n"
+msgstr "Klaida: nenurodytas metodo vardas\n"
+
+#: ../gio/gdbus-tool.c:919
+#, c-format
+msgid "Error: Method name '%s' is invalid\n"
+msgstr "Klaida: metodo vardas „%s“ yra netinkamas\n"
+
+#: ../gio/gdbus-tool.c:984
+#, c-format
+msgid "Error parsing parameter %d of type '%s': %s\n"
+msgstr "Klaida skaitant parametrą %d, kurio tipas „%s“: %s\n"
+
+#: ../gio/gdbus-tool.c:1419
+msgid "Destination name to introspect"
+msgstr "Tikslo vardas introspekcijai"
+
+#: ../gio/gdbus-tool.c:1420
+msgid "Object path to introspect"
+msgstr "Objekto kelias introspekcijai"
+
+#: ../gio/gdbus-tool.c:1421
+msgid "Print XML"
+msgstr "Spausdinti XML"
+
+#: ../gio/gdbus-tool.c:1422
+msgid "Introspect children"
+msgstr "Nagrinėti vaiką"
+
+#: ../gio/gdbus-tool.c:1423
+msgid "Only print properties"
+msgstr "Spausdinti tik savybes"
+
+#: ../gio/gdbus-tool.c:1514
+msgid "Introspect a remote object."
+msgstr "Introspekcija nutolusiam objektui."
+
+#: ../gio/gdbus-tool.c:1712
+msgid "Destination name to monitor"
+msgstr "Tikslo vardas stebėjimui"
+
+#: ../gio/gdbus-tool.c:1713
+msgid "Object path to monitor"
+msgstr "Objekto kelias stebėjimui"
+
+#: ../gio/gdbus-tool.c:1746
+msgid "Monitor a remote object."
+msgstr "Stebėti nutolusį objektą."
+
+#: ../gio/gdesktopappinfo.c:660 ../gio/gdesktopappinfo.c:3793
+#: ../gio/gwin32appinfo.c:221
+msgid "Unnamed"
+msgstr "Nepavadinta"
+
+#: ../gio/gdesktopappinfo.c:1074
+msgid "Desktop file didn't specify Exec field"
+msgstr "Darbalaukio failas nenurodė Exec lauko"
+
+#: ../gio/gdesktopappinfo.c:1359
+msgid "Unable to find terminal required for application"
+msgstr "Nerastas terminalas, reikalingas programai"
+
+#: ../gio/gdesktopappinfo.c:1772
+#, c-format
+msgid "Can't create user application configuration folder %s: %s"
+msgstr "Nepavyko sukurti naudotojo nustatymų aplanko %s: %s"
+
+#: ../gio/gdesktopappinfo.c:1776
+#, c-format
+msgid "Can't create user MIME configuration folder %s: %s"
+msgstr "Nepavyko sukurti naudotojo MIME nustatymų aplanko %s: %s"
+
+#: ../gio/gdesktopappinfo.c:2016 ../gio/gdesktopappinfo.c:2040
+msgid "Application information lacks an identifier"
+msgstr "Programos informacijai trūksta identifikatoriaus"
+
+#: ../gio/gdesktopappinfo.c:2272
+#, c-format
+msgid "Can't create user desktop file %s"
+msgstr "Nepavyko sukurti naudotojo darbalaukio failo %s"
+
+#: ../gio/gdesktopappinfo.c:2396
+#, c-format
+msgid "Custom definition for %s"
+msgstr "Specialus apibrėžimas %s"
+
+#: ../gio/gdrive.c:394
+msgid "drive doesn't implement eject"
+msgstr "įrenginys nerealizuoja išstūmimo"
+
+#. Translators: This is an error
+#. * message for drive objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gdrive.c:472
+msgid "drive doesn't implement eject or eject_with_operation"
+msgstr ""
+"įrenginys nerealizuoja išstūmimo nei su papildoma operacija, nei be jos"
+
+#: ../gio/gdrive.c:548
+msgid "drive doesn't implement polling for media"
+msgstr "įrenginys nerealizuoja laikmenos tikrinimo užklausimo"
+
+#: ../gio/gdrive.c:753
+msgid "drive doesn't implement start"
+msgstr "įrenginys nerealizuoja startavimo"
+
+#: ../gio/gdrive.c:855
+msgid "drive doesn't implement stop"
+msgstr "įrenginys nerealizuoja stabdymo"
+
+#: ../gio/gdummytlsbackend.c:168 ../gio/gdummytlsbackend.c:288
+#: ../gio/gdummytlsbackend.c:378
+msgid "TLS support is not available"
+msgstr "Nėra TLS palaikymo"
+
+#: ../gio/gemblem.c:324
+#, c-format
+msgid "Can't handle version %d of GEmblem encoding"
+msgstr "Nepavyko apdoroti GEmblem koduotės versijos %d"
+
+#: ../gio/gemblem.c:334
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblem encoding"
+msgstr "Netinkamas leksemų skaičius (%d) GEmblem koduotėje"
+
+#: ../gio/gemblemedicon.c:364
+#, c-format
+msgid "Can't handle version %d of GEmblemedIcon encoding"
+msgstr "Nepavyko apdoroti GEmblemedIcon koduotės versijos %d"
+
+#: ../gio/gemblemedicon.c:374
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblemedIcon encoding"
+msgstr "Netinkamas leksemų skaičius (%d) GEmblemedIcon koduotėje"
+
+#: ../gio/gemblemedicon.c:397
+msgid "Expected a GEmblem for GEmblemedIcon"
+msgstr "Tikėtasi GEmblem skirto GEmblemedIcon"
+
+#: ../gio/gfile.c:938 ../gio/gfile.c:1177 ../gio/gfile.c:1316
+#: ../gio/gfile.c:1556 ../gio/gfile.c:1611 ../gio/gfile.c:1669
+#: ../gio/gfile.c:1753 ../gio/gfile.c:1810 ../gio/gfile.c:1874
+#: ../gio/gfile.c:1929 ../gio/gfile.c:3559 ../gio/gfile.c:3614
+#: ../gio/gfile.c:3822 ../gio/gfile.c:3864 ../gio/gfile.c:4330
+#: ../gio/gfile.c:4742 ../gio/gfile.c:4827 ../gio/gfile.c:4917
+#: ../gio/gfile.c:5014 ../gio/gfile.c:5101 ../gio/gfile.c:5202
+#: ../gio/gfile.c:7381 ../gio/gfile.c:7471 ../gio/gfile.c:7555
+#: ../gio/win32/gwinhttpfile.c:439
+msgid "Operation not supported"
+msgstr "Operacija nepalaikoma"
+
+#. Translators: This is an error message when
+#. * trying to find the enclosing (user visible)
+#. * mount of a file, but none exists.
+#.
+#. Translators: This is an error message when trying to
+#. * find the enclosing (user visible) mount of a file, but
+#. * none exists.
+#. Translators: This is an error message when trying to find
+#. * the enclosing (user visible) mount of a file, but none
+#. * exists.
+#: ../gio/gfile.c:1440 ../gio/glocalfile.c:1101 ../gio/glocalfile.c:1112
+#: ../gio/glocalfile.c:1125
+msgid "Containing mount does not exist"
+msgstr "Tėvinis prijungimo taškas neegzistuoja"
+
+#: ../gio/gfile.c:2495 ../gio/glocalfile.c:2333
+msgid "Can't copy over directory"
+msgstr "Negalima kopijuoti ant aplanko"
+
+#: ../gio/gfile.c:2555
+msgid "Can't copy directory over directory"
+msgstr "Negalima kopijuoti aplanko ant aplanko"
+
+#: ../gio/gfile.c:2563 ../gio/glocalfile.c:2342
+msgid "Target file exists"
+msgstr "Nurodytas failas jau egzistuoja"
+
+#: ../gio/gfile.c:2582
+msgid "Can't recursively copy directory"
+msgstr "Negalima rekursyviai kopijuoti aplanko"
+
+#: ../gio/gfile.c:2864
+msgid "Splice not supported"
+msgstr "Skaidymas nepalaikomas"
+
+#: ../gio/gfile.c:2868
+#, c-format
+msgid "Error splicing file: %s"
+msgstr "Klaida skaidant failą: %s"
+
+#: ../gio/gfile.c:2999
+msgid "Copy (reflink/clone) between mounts is not supported"
+msgstr "Kopijavimas (reflink/clone) tarp prijungimo taškų nepalaikomas"
+
+#: ../gio/gfile.c:3003
+msgid "Copy (reflink/clone) is not supported or invalid"
+msgstr "Kopijavimas (reflink/clone) nepalaikomas arba netinkamas"
+
+#: ../gio/gfile.c:3008
+msgid "Copy (reflink/clone) is not supported or didn't work"
+msgstr "Kopijavimas (reflink/clone) nepalaikomas arba nesuveikė"
+
+#: ../gio/gfile.c:3071
+msgid "Can't copy special file"
+msgstr "Nepavyksta nukopijuoti specialaus failo"
+
+#: ../gio/gfile.c:3812
+msgid "Invalid symlink value given"
+msgstr "Netaisyklinga simbolinės nuorodos reikšmė"
+
+#: ../gio/gfile.c:3974
+msgid "Trash not supported"
+msgstr "Šiukšlės nepalaikomos"
+
+#: ../gio/gfile.c:4087
+#, c-format
+msgid "File names cannot contain '%c'"
+msgstr "Failų varduose negali būti '%c'"
+
+#: ../gio/gfile.c:6504 ../gio/gvolume.c:365
+msgid "volume doesn't implement mount"
+msgstr "skirsnis nepalaiko prijungimo"
+
+#: ../gio/gfile.c:6613
+msgid "No application is registered as handling this file"
+msgstr "Nėra programos, priregistruotos kaip skaitančios šį failą"
+
+#: ../gio/gfileenumerator.c:213
+msgid "Enumerator is closed"
+msgstr "Enumeratorius užvartas"
+
+#: ../gio/gfileenumerator.c:220 ../gio/gfileenumerator.c:279
+#: ../gio/gfileenumerator.c:379 ../gio/gfileenumerator.c:479
+msgid "File enumerator has outstanding operation"
+msgstr "Failų enumeratoriui liko neatlikta operacija"
+
+#: ../gio/gfileenumerator.c:370 ../gio/gfileenumerator.c:470
+msgid "File enumerator is already closed"
+msgstr "Failų enumeratorius jau užvertas"
+
+#: ../gio/gfileicon.c:237
+#, c-format
+msgid "Can't handle version %d of GFileIcon encoding"
+msgstr "Nepavyko apdoroti GFileIcon koduotės versijos %d"
+
+#: ../gio/gfileicon.c:247
+msgid "Malformed input data for GFileIcon"
+msgstr "Netinkami GFileIcon įvesties duomenys"
+
+#: ../gio/gfileinputstream.c:151 ../gio/gfileinputstream.c:397
+#: ../gio/gfileiostream.c:169 ../gio/gfileoutputstream.c:166
+#: ../gio/gfileoutputstream.c:500
+msgid "Stream doesn't support query_info"
+msgstr "Srautas nepalaiko query_info"
+
+#: ../gio/gfileinputstream.c:328 ../gio/gfileiostream.c:382
+#: ../gio/gfileoutputstream.c:374
+msgid "Seek not supported on stream"
+msgstr "Pozicijos perkėlimas sraute nepalaikomas"
+
+#: ../gio/gfileinputstream.c:372
+msgid "Truncate not allowed on input stream"
+msgstr "Trumpinimas įėjimo srauto nepalaikomas"
+
+#: ../gio/gfileiostream.c:458 ../gio/gfileoutputstream.c:450
+msgid "Truncate not supported on stream"
+msgstr "Trumpinimas srauto nepalaikomas"
+
+#: ../gio/gicon.c:297
+#, c-format
+msgid "Wrong number of tokens (%d)"
+msgstr "Neteisingas leksemų skaičius (%d)"
+
+#: ../gio/gicon.c:317
+#, c-format
+msgid "No type for class name %s"
+msgstr "Nėra tipo klasės pavadinimui %s"
+
+#: ../gio/gicon.c:327
+#, c-format
+msgid "Type %s does not implement the GIcon interface"
+msgstr "Tipas %s nerealizuoja GIcon sąsajos"
+
+#: ../gio/gicon.c:338
+#, c-format
+msgid "Type %s is not classed"
+msgstr "Tipas %s neklasifikuotas"
+
+#: ../gio/gicon.c:352
+#, c-format
+msgid "Malformed version number: %s"
+msgstr "Netinkamas versijos numeris: %s"
+
+#: ../gio/gicon.c:366
+#, c-format
+msgid "Type %s does not implement from_tokens() on the GIcon interface"
+msgstr "Tipas %s nerealizuoja from_tokens() GIcon sąsajoje"
+
+#: ../gio/gicon.c:468
+msgid "Can't handle the supplied version of the icon encoding"
+msgstr "Nepavyko apdoroti pateiktosios piktogramos koduotės versijos"
+
+#: ../gio/ginetaddressmask.c:183
+msgid "No address specified"
+msgstr "Nenurodytas adresas"
+
+#: ../gio/ginetaddressmask.c:191
+#, c-format
+msgid "Length %u is too long for address"
+msgstr "%u yra per didelis ilgis adresui"
+
+#: ../gio/ginetaddressmask.c:224
+msgid "Address has bits set beyond prefix length"
+msgstr "Adresas turi nustatytus bitus už priešdėlio ilgio"
+
+#: ../gio/ginetaddressmask.c:301
+#, c-format
+msgid "Could not parse '%s' as IP address mask"
+msgstr "Nepavyko perskaityti „%s“ kaip IP adreso kaukės"
+
+#: ../gio/ginetsocketaddress.c:197 ../gio/ginetsocketaddress.c:214
+#: ../gio/gunixsocketaddress.c:211
+msgid "Not enough space for socket address"
+msgstr "Nepakanka vietos lizdo adresui"
+
+#: ../gio/ginetsocketaddress.c:229
+msgid "Unsupported socket address"
+msgstr "Nepalaikomas lizdo adresas"
+
+#: ../gio/ginputstream.c:183
+msgid "Input stream doesn't implement read"
+msgstr "Šaltinio srautas nerealizuoja skaitymo"
+
+#. Translators: This is an error you get if there is already an
+#. * operation running against this stream when you try to start
+#. * one
+#. Translators: This is an error you get if there is
+#. * already an operation running against this stream when
+#. * you try to start one
+#: ../gio/ginputstream.c:1022 ../gio/giostream.c:290
+#: ../gio/goutputstream.c:1333
+msgid "Stream has outstanding operation"
+msgstr "Srautui liko neįvykdyta operacija"
+
+#: ../gio/glib-compile-resources.c:145 ../gio/glib-compile-schemas.c:1459
+#, c-format
+msgid "Element <%s> not allowed inside <%s>"
+msgstr "Elementas <%s> neleidžiamas viduje <%s>"
+
+#: ../gio/glib-compile-resources.c:149
+#, c-format
+msgid "Element <%s> not allowed at toplevel"
+msgstr "Elementas <%s> neleidžiamas aukščiausiame lygyje"
+
+#: ../gio/glib-compile-resources.c:239
+#, c-format
+msgid "File %s appears multiple times in the resource"
+msgstr "Failas %s resurse aptinkamas kelis kartus"
+
+#: ../gio/glib-compile-resources.c:252
+#, c-format
+msgid "Failed to locate '%s' in any source directory"
+msgstr "Nepavyko rasti „%s“ jokiame šaltinio kataloge"
+
+#: ../gio/glib-compile-resources.c:263
+#, c-format
+msgid "Failed to locate '%s' in current directory"
+msgstr "Nepavyko rasti „%s“ esamame kataloge"
+
+#: ../gio/glib-compile-resources.c:291
+#, c-format
+msgid "Unknown processing option \"%s\""
+msgstr "Nežinomas apdorojimo parametras „%s“"
+
+#: ../gio/glib-compile-resources.c:310 ../gio/glib-compile-resources.c:370
+#, c-format
+msgid "Failed to create temp file: %s"
+msgstr "Nepavyko sukurti laikino failo: %s"
+
+#: ../gio/glib-compile-resources.c:340
+#, c-format
+msgid ""
+"Error processing input file with xmllint:\n"
+"%s"
+msgstr ""
+"Klaida apdorojant įvesties failą su xmllint:\n"
+"%s"
+
+#: ../gio/glib-compile-resources.c:396
+#, c-format
+msgid ""
+"Error processing input file with to-pixdata:\n"
+"%s"
+msgstr ""
+"Klaida apdorojant įvesties failą su to-pixdata:\n"
+"%s"
+
+#: ../gio/glib-compile-resources.c:410
+#, c-format
+msgid "Error reading file %s: %s"
+msgstr "Klaida skaitant failą %s: %s"
+
+#: ../gio/glib-compile-resources.c:430
+#, c-format
+msgid "Error compressing file %s"
+msgstr "Klaida spaudžiant failą: %s"
+
+#: ../gio/glib-compile-resources.c:494 ../gio/glib-compile-schemas.c:1571
+#, c-format
+msgid "text may not appear inside <%s>"
+msgstr "tekstas negali būti viduje <%s>"
+
+#: ../gio/glib-compile-resources.c:619
+msgid "name of the output file"
+msgstr "išvesties failo pavadinimas"
+
+#: ../gio/glib-compile-resources.c:619 ../gio/glib-compile-resources.c:650
+#: ../gio/gresource-tool.c:482 ../gio/gresource-tool.c:548
+msgid "FILE"
+msgstr "FAILAS"
+
+#: ../gio/glib-compile-resources.c:620
+msgid ""
+"The directories where files are to be read from (default to current "
+"directory)"
+msgstr "Katalogai, iš kurių skaityti failus (numatyta iš esamo katalogo)"
+
+#: ../gio/glib-compile-resources.c:620 ../gio/glib-compile-schemas.c:1999
+#: ../gio/glib-compile-schemas.c:2028
+msgid "DIRECTORY"
+msgstr "KATALOGAS"
+
+#: ../gio/glib-compile-resources.c:621
+msgid ""
+"Generate output in the format selected for by the target filename extension"
+msgstr "Generuoti išvestį formatu pagal pasirinkto tikslo failo plėtinį"
+
+#: ../gio/glib-compile-resources.c:622
+msgid "Generate source header"
+msgstr "Generuoti šaltinio antraštę"
+
+#: ../gio/glib-compile-resources.c:623
+msgid "Generate sourcecode used to link in the resource file into your code"
+msgstr "Generuoti kodą, naudojamą resursų failo įrišimui į jūsų kodą"
+
+#: ../gio/glib-compile-resources.c:624
+msgid "Generate dependency list"
+msgstr "Generuoti priklausomybių sąrašą"
+
+#: ../gio/glib-compile-resources.c:625
+msgid "Don't automatically create and register resource"
+msgstr "Automatiškai negeneruoti ir neregistruoti resurso"
+
+#: ../gio/glib-compile-resources.c:626
+msgid "Don't export functions; declare them G_GNUC_INTERNAL"
+msgstr "Neeksportuoti funkcijų; deklaruoti jas G_GNUC_INTERNAL"
+
+#: ../gio/glib-compile-resources.c:627
+msgid "C identifier name used for the generated source code"
+msgstr "C identifikatoriaus vardas, naudojamas generuojamame kode"
+
+#: ../gio/glib-compile-resources.c:653
+msgid ""
+"Compile a resource specification into a resource file.\n"
+"Resource specification files have the extension .gresource.xml,\n"
+"and the resource file have the extension called .gresource."
+msgstr ""
+"Kompiliuoti resurso specifikaciją į resurso failą.\n"
+"Resursų specifikacijos failai turi turėti plėtinį .gresource.xml,\n"
+"o resurso failas turi plėtinį gresource."
+
+#: ../gio/glib-compile-resources.c:669
+#, c-format
+msgid "You should give exactly one file name\n"
+msgstr "Turite nurodyti vienintelį failo pavadinimą\n"
+
+#: ../gio/glib-compile-schemas.c:778
+msgid "empty names are not permitted"
+msgstr "neleidžiami tušti pavadinimai"
+
+#: ../gio/glib-compile-schemas.c:788
+#, c-format
+msgid "invalid name '%s': names must begin with a lowercase letter"
+msgstr ""
+"netinkamas pavadinimas „%s“: pavadinimai turi prasidėti mažosiomis raidėmis"
+
+#: ../gio/glib-compile-schemas.c:800
+#, c-format
+msgid ""
+"invalid name '%s': invalid character '%c'; only lowercase letters, numbers "
+"and hyphen ('-') are permitted."
+msgstr ""
+"netinkamas pavadinimas „%s“: netinkamas simbolis „%c“; leidžiamos tik "
+"mažosios raidės, skaitmenys ir brūkšniai („-“)."
+
+#: ../gio/glib-compile-schemas.c:809
+#, c-format
+msgid "invalid name '%s': two successive hyphens ('--') are not permitted."
+msgstr ""
+"netinkamas pavadinimas „%s“: du brūkšniai („--“) vienos po kito neleidžiami."
+
+#: ../gio/glib-compile-schemas.c:818
+#, c-format
+msgid "invalid name '%s': the last character may not be a hyphen ('-')."
+msgstr ""
+"netinkamas pavadinimas „%s“: paskutinis simbolis negali būti brūkšnys („-“)."
+
+#: ../gio/glib-compile-schemas.c:826
+#, c-format
+msgid "invalid name '%s': maximum length is 1024"
+msgstr "netinkamas pavadinimas „%s“: didžiausias leistinas ilgis yra 1024"
+
+#: ../gio/glib-compile-schemas.c:895
+#, c-format
+msgid "<child name='%s'> already specified"
+msgstr "<child name='%s'> jau nurodyta"
+
+#: ../gio/glib-compile-schemas.c:921
+msgid "cannot add keys to a 'list-of' schema"
+msgstr "nepavyko pridėti raktų į „list-of“ schemą"
+
+#: ../gio/glib-compile-schemas.c:932
+#, c-format
+msgid "<key name='%s'> already specified"
+msgstr "<key name='%s'> jau nurodytas"
+
+#: ../gio/glib-compile-schemas.c:950
+#, c-format
+msgid ""
+"<key name='%s'> shadows <key name='%s'> in <schema id='%s'>; use <override> "
+"to modify value"
+msgstr ""
+"<key name='%s'> paslėpia <key name='%s'> elemente <schema id='%s'>; "
+"naudokite <override> reikšmei pakeisti"
+
+#: ../gio/glib-compile-schemas.c:961
+#, c-format
+msgid ""
+"exactly one of 'type', 'enum' or 'flags' must be specified as an attribute "
+"to <key>"
+msgstr ""
+"Kaip atributas elementui <key> turi būti nurodytas vienintelis iš „type“, "
+"„enum“ arba „flags“"
+
+#: ../gio/glib-compile-schemas.c:980
+#, c-format
+msgid "<%s id='%s'> not (yet) defined."
+msgstr "<%s id='%s'> (dar) neapibrėžta."
+
+#: ../gio/glib-compile-schemas.c:995
+#, c-format
+msgid "invalid GVariant type string '%s'"
+msgstr "netinkama GVariant tipo eilutė „%s“"
+
+#: ../gio/glib-compile-schemas.c:1025
+msgid "<override> given but schema isn't extending anything"
+msgstr "<override> nurodytas, bet schema nieko neišplečia"
+
+#: ../gio/glib-compile-schemas.c:1038
+#, c-format
+msgid "no <key name='%s'> to override"
+msgstr "nėra perrašomo <key name='%s'>"
+
+#: ../gio/glib-compile-schemas.c:1046
+#, c-format
+msgid "<override name='%s'> already specified"
+msgstr "<override name='%s'> jau nurodytas"
+
+#: ../gio/glib-compile-schemas.c:1117
+#, c-format
+msgid "<schema id='%s'> already specified"
+msgstr "<schema id='%s'> jau nurodytas"
+
+#: ../gio/glib-compile-schemas.c:1129
+#, c-format
+#| msgid "<schema id='%s'> extends not-yet-existing schema '%s'"
+msgid "<schema id='%s'> extends not yet existing schema '%s'"
+msgstr "<schema id='%s'> išplečia dar neegzistuojančią schemą „%s“"
+
+#: ../gio/glib-compile-schemas.c:1145
+#, c-format
+#| msgid "<schema id='%s'> is list of not-yet-existing schema '%s'"
+msgid "<schema id='%s'> is list of not yet existing schema '%s'"
+msgstr "<schema id='%s'> yra sąrašas dar neegzistuojančios schemos „%s“"
+
+#: ../gio/glib-compile-schemas.c:1153
+#, c-format
+msgid "Can not be a list of a schema with a path"
+msgstr "Negali būti schemos sąrašas su keliu"
+
+#: ../gio/glib-compile-schemas.c:1163
+#, c-format
+msgid "Can not extend a schema with a path"
+msgstr "Negalima išplėsti schemos su keliu"
+
+#: ../gio/glib-compile-schemas.c:1173
+#, c-format
+msgid ""
+"<schema id='%s'> is a list, extending <schema id='%s'> which is not a list"
+msgstr ""
+"<schema id='%s'> yra sąrašas, išplečiantis <schema id='%s'>, kuris nėra "
+"sąrašas"
+
+#: ../gio/glib-compile-schemas.c:1183
+#, c-format
+msgid ""
+"<schema id='%s' list-of='%s'> extends <schema id='%s' list-of='%s'> but '%s' "
+"does not extend '%s'"
+msgstr ""
+"<schema id='%s' list-of='%s'> išplečia <schema id='%s' list-of='%s'>, bet "
+"„%s“ neišplečia „%s“"
+
+#: ../gio/glib-compile-schemas.c:1200
+#, c-format
+msgid "a path, if given, must begin and end with a slash"
+msgstr "kelias, jei pateiktas, turi prasidėti ir baigtis pasviruoju brūkšniu"
+
+#: ../gio/glib-compile-schemas.c:1207
+#, c-format
+msgid "the path of a list must end with ':/'"
+msgstr "sąrašo kelias turi baigtis „:/“"
+
+#: ../gio/glib-compile-schemas.c:1239
+#, c-format
+msgid "<%s id='%s'> already specified"
+msgstr "<%s id='%s'> jau nurodytas"
+
+#: ../gio/glib-compile-schemas.c:1463
+#, c-format
+msgid "Element <%s> not allowed at the top level"
+msgstr "Elementas <%s> neleidžiamas aukščiausiame lygyje"
+
+#. Translators: Do not translate "--strict".
+#: ../gio/glib-compile-schemas.c:1757 ../gio/glib-compile-schemas.c:1828
+#: ../gio/glib-compile-schemas.c:1904
+#, c-format
+msgid "--strict was specified; exiting.\n"
+msgstr "--strict buvo nurodyta; išeinama.\n"
+
+#: ../gio/glib-compile-schemas.c:1765
+#, c-format
+msgid "This entire file has been ignored.\n"
+msgstr "Visas failas nepaisomas.\n"
+
+#: ../gio/glib-compile-schemas.c:1824
+#, c-format
+msgid "Ignoring this file.\n"
+msgstr "Nepaisoma šio failo.\n"
+
+#: ../gio/glib-compile-schemas.c:1864
+#, c-format
+msgid "No such key '%s' in schema '%s' as specified in override file '%s'"
+msgstr "Nėra rakto „%s“ schemoje „%s“ kaip nurodyta perrašančiame faile „%s“"
+
+#: ../gio/glib-compile-schemas.c:1870 ../gio/glib-compile-schemas.c:1928
+#: ../gio/glib-compile-schemas.c:1956
+#, c-format
+msgid "; ignoring override for this key.\n"
+msgstr "; nepaisoma šio rakto perrašymo.\n"
+
+#: ../gio/glib-compile-schemas.c:1874 ../gio/glib-compile-schemas.c:1932
+#: ../gio/glib-compile-schemas.c:1960
+#, c-format
+msgid " and --strict was specified; exiting.\n"
+msgstr " ir --strict nurodyta; išeinama.\n"
+
+#: ../gio/glib-compile-schemas.c:1890
+#, c-format
+msgid ""
+"error parsing key '%s' in schema '%s' as specified in override file '%s': %s."
+msgstr ""
+"klaida skaitant raktą „%s“ schemoje „%s“ kaip nurodyta perrašančiame faile "
+"„%s“: %s."
+
+#: ../gio/glib-compile-schemas.c:1900
+#, c-format
+msgid "Ignoring override for this key.\n"
+msgstr "Nepaisoma šio rakto perrašymo.\n"
+
+#: ../gio/glib-compile-schemas.c:1918
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is outside the "
+"range given in the schema"
+msgstr ""
+"rakto „%s“ perrašymas schemoje „%s“ perrašančiame faile „%s“ yra už schemoje "
+"nurodytų ribų"
+
+#: ../gio/glib-compile-schemas.c:1946
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is not in the "
+"list of valid choices"
+msgstr ""
+"rakto „%s“ perrašymas schemoje „%s“ perrašančiame faile „%s“ nėra iš "
+"leistinų pasirinkimų"
+
+#: ../gio/glib-compile-schemas.c:1999
+msgid "where to store the gschemas.compiled file"
+msgstr "kur saugoti gschemas.compiled failą"
+
+#: ../gio/glib-compile-schemas.c:2000
+msgid "Abort on any errors in schemas"
+msgstr "Nutraukti darbą esant bet kokiai klaidai schemoje"
+
+#: ../gio/glib-compile-schemas.c:2001
+msgid "Do not write the gschema.compiled file"
+msgstr "Nerašyti gschema.compiled failo"
+
+#: ../gio/glib-compile-schemas.c:2002
+msgid "Do not enforce key name restrictions"
+msgstr "Nereikalauti raktų vardų apribojimų"
+
+#: ../gio/glib-compile-schemas.c:2031
+msgid ""
+"Compile all GSettings schema files into a schema cache.\n"
+"Schema files are required to have the extension .gschema.xml,\n"
+"and the cache file is called gschemas.compiled."
+msgstr ""
+"Kompiliuoti visus GSettings schamų failus į schemų podėlį.\n"
+"Schemų failai turi turėti plėtinį .gschema.xml,\n"
+"o podėlio failas yra vadinamas gschemas.compiled."
+
+#: ../gio/glib-compile-schemas.c:2047
+#, c-format
+msgid "You should give exactly one directory name\n"
+msgstr "Turite nurodyti vienintelį katalogo vardą\n"
+
+#: ../gio/glib-compile-schemas.c:2086
+#, c-format
+msgid "No schema files found: "
+msgstr "Nerasti schemų failai: "
+
+#: ../gio/glib-compile-schemas.c:2089
+#, c-format
+msgid "doing nothing.\n"
+msgstr "nedaro nieko.\n"
+
+#: ../gio/glib-compile-schemas.c:2092
+#, c-format
+msgid "removed existing output file.\n"
+msgstr "pašalintas egzistuojanti išvesties failas.\n"
+
+#: ../gio/glocaldirectorymonitor.c:252
+msgid "Unable to find default local directory monitor type"
+msgstr "Nepavyko rasti įprasto vietinių aplankų stebėjimo tipo"
+
+#: ../gio/glocalfile.c:602 ../gio/win32/gwinhttpfile.c:422
+#, c-format
+msgid "Invalid filename %s"
+msgstr "Netaisyklingas failo vardas %s"
+
+#: ../gio/glocalfile.c:979
+#, c-format
+msgid "Error getting filesystem info: %s"
+msgstr "Klaida skaitant failų sistemos informaciją: %s"
+
+#: ../gio/glocalfile.c:1147
+msgid "Can't rename root directory"
+msgstr "Nepavyko pervadinti šakninio aplanko"
+
+#: ../gio/glocalfile.c:1167 ../gio/glocalfile.c:1193
+#, c-format
+msgid "Error renaming file: %s"
+msgstr "Klaida pervadinant failą: %s"
+
+#: ../gio/glocalfile.c:1176
+msgid "Can't rename file, filename already exists"
+msgstr "Nepavyko pervadinti failo, failo vardas jau užimtas"
+
+#: ../gio/glocalfile.c:1189 ../gio/glocalfile.c:2206 ../gio/glocalfile.c:2235
+#: ../gio/glocalfile.c:2395 ../gio/glocalfileoutputstream.c:553
+msgid "Invalid filename"
+msgstr "Netaisyklingas failo vardas"
+
+#: ../gio/glocalfile.c:1356 ../gio/glocalfile.c:1380
+msgid "Can't open directory"
+msgstr "Nepavyko atverti aplanko"
+
+#: ../gio/glocalfile.c:1364
+#, c-format
+msgid "Error opening file: %s"
+msgstr "Klaida atveriant failą: %s"
+
+#: ../gio/glocalfile.c:1505
+#, c-format
+msgid "Error removing file: %s"
+msgstr "Klaida trinant failą: %s"
+
+#: ../gio/glocalfile.c:1885
+#, c-format
+msgid "Error trashing file: %s"
+msgstr "Klaida perkeliant į šiukšles failą: %s"
+
+#: ../gio/glocalfile.c:1908
+#, c-format
+msgid "Unable to create trash dir %s: %s"
+msgstr "Nepavyko sukurti šiukšlių aplanko %s: %s"
+
+#: ../gio/glocalfile.c:1929
+msgid "Unable to find toplevel directory for trash"
+msgstr "Nepavyko rasti šakninio aplanko šiukšlėms"
+
+#: ../gio/glocalfile.c:2008 ../gio/glocalfile.c:2028
+msgid "Unable to find or create trash directory"
+msgstr "Nepavyko rasti ar sukurti šiukšlių aplanko"
+
+#: ../gio/glocalfile.c:2062
+#, c-format
+msgid "Unable to create trashing info file: %s"
+msgstr "Nepavyko šiukšlių informacijos failo: %s"
+
+#: ../gio/glocalfile.c:2091 ../gio/glocalfile.c:2096 ../gio/glocalfile.c:2176
+#: ../gio/glocalfile.c:2183
+#, c-format
+msgid "Unable to trash file: %s"
+msgstr "Nepavyko į šiukšles perkelti failo: %s"
+
+#: ../gio/glocalfile.c:2184 ../glib/gregex.c:280
+msgid "internal error"
+msgstr "vidinė klaida"
+
+#: ../gio/glocalfile.c:2210
+#, c-format
+msgid "Error creating directory: %s"
+msgstr "Klaida atveriant aplanką: %s"
+
+#: ../gio/glocalfile.c:2239
+#, c-format
+msgid "Filesystem does not support symbolic links"
+msgstr "Failų sistema nepalaiko simbolinių nuorodų"
+
+#: ../gio/glocalfile.c:2243
+#, c-format
+msgid "Error making symbolic link: %s"
+msgstr "Klaida kuriant simbolinę nuorodą: %s"
+
+#: ../gio/glocalfile.c:2305 ../gio/glocalfile.c:2399
+#, c-format
+msgid "Error moving file: %s"
+msgstr "Klaida perkeliant failą: %s"
+
+#: ../gio/glocalfile.c:2328
+msgid "Can't move directory over directory"
+msgstr "Negalima perkelti aplanko per aplanką"
+
+#: ../gio/glocalfile.c:2355 ../gio/glocalfileoutputstream.c:929
+#: ../gio/glocalfileoutputstream.c:943 ../gio/glocalfileoutputstream.c:958
+#: ../gio/glocalfileoutputstream.c:974 ../gio/glocalfileoutputstream.c:988
+msgid "Backup file creation failed"
+msgstr "Atsarginės kopijos sukūrimas nesėkmingas"
+
+#: ../gio/glocalfile.c:2374
+#, c-format
+msgid "Error removing target file: %s"
+msgstr "Klaida trinant nurodytą failą: %s"
+
+#: ../gio/glocalfile.c:2388
+msgid "Move between mounts not supported"
+msgstr "Perkėlimas tarp prijungimo taškų nepalaikomas"
+
+#: ../gio/glocalfileinfo.c:722
+msgid "Attribute value must be non-NULL"
+msgstr "Atributo reikšmė turi būti netuščia"
+
+#: ../gio/glocalfileinfo.c:729
+msgid "Invalid attribute type (string expected)"
+msgstr "netaisyklingas atributo tipas (tikimasi simbolių sekos)"
+
+#: ../gio/glocalfileinfo.c:736
+msgid "Invalid extended attribute name"
+msgstr "netaisyklingas išplėstinio atributo pavadinimas"
+
+#: ../gio/glocalfileinfo.c:776
+#, c-format
+msgid "Error setting extended attribute '%s': %s"
+msgstr "Klaida nurodant išplėstinį atributą „%s“: %s"
+
+#: ../gio/glocalfileinfo.c:1544
+msgid " (invalid encoding)"
+msgstr " (netaisyklinga koduotė)"
+
+#: ../gio/glocalfileinfo.c:1736 ../gio/glocalfileoutputstream.c:807
+#, c-format
+msgid "Error when getting information for file '%s': %s"
+msgstr "Klaida gaunant informaciją apie failą „%s“: %s"
+
+#: ../gio/glocalfileinfo.c:1982
+#, c-format
+msgid "Error when getting information for file descriptor: %s"
+msgstr "Klaida gaunant informaciją failo aprašymui: %s"
+
+#: ../gio/glocalfileinfo.c:2027
+msgid "Invalid attribute type (uint32 expected)"
+msgstr "Klaidingas atributo tipas (tikimasi uint32)"
+
+#: ../gio/glocalfileinfo.c:2045
+msgid "Invalid attribute type (uint64 expected)"
+msgstr "Klaidingas atributo tipas (tikimasi uint64)"
+
+#: ../gio/glocalfileinfo.c:2064 ../gio/glocalfileinfo.c:2083
+msgid "Invalid attribute type (byte string expected)"
+msgstr "Klaidingas atributo tipas (tikimasi baitų sekos)"
+
+#: ../gio/glocalfileinfo.c:2118
+msgid "Cannot set permissions on symlinks"
+msgstr "Simbolinėms nuorodoms teisių nustatyti negalima"
+
+#: ../gio/glocalfileinfo.c:2134
+#, c-format
+msgid "Error setting permissions: %s"
+msgstr "Klaida nustatant teises: %s"
+
+#: ../gio/glocalfileinfo.c:2185
+#, c-format
+msgid "Error setting owner: %s"
+msgstr "Klaida nustatant savininką: %s"
+
+#: ../gio/glocalfileinfo.c:2208
+msgid "symlink must be non-NULL"
+msgstr "Simbolinė nuoroda turi būti netuščia"
+
+#: ../gio/glocalfileinfo.c:2218 ../gio/glocalfileinfo.c:2237
+#: ../gio/glocalfileinfo.c:2248
+#, c-format
+msgid "Error setting symlink: %s"
+msgstr "Klaida nustatant simbolinę nuorodą: %s"
+
+#: ../gio/glocalfileinfo.c:2227
+msgid "Error setting symlink: file is not a symlink"
+msgstr "Klaida nustatant simbolinę nuorodą: failas nėra simbolinė nuoroda"
+
+#: ../gio/glocalfileinfo.c:2353
+#, c-format
+msgid "Error setting modification or access time: %s"
+msgstr "Klaida nustatant pakeitimo arba prieigos laiką: %s"
+
+#: ../gio/glocalfileinfo.c:2376
+msgid "SELinux context must be non-NULL"
+msgstr "SELinux kontekstas būti nelygus NULL"
+
+#: ../gio/glocalfileinfo.c:2391
+#, c-format
+msgid "Error setting SELinux context: %s"
+msgstr "Klaida nustatant SELinux kontekstą: %s"
+
+#: ../gio/glocalfileinfo.c:2398
+msgid "SELinux is not enabled on this system"
+msgstr "SELinux šioje sistemoje neįjungtas"
+
+#: ../gio/glocalfileinfo.c:2490
+#, c-format
+msgid "Setting attribute %s not supported"
+msgstr "Atributo %s nustatymas nepalaikomas"
+
+#: ../gio/glocalfileinputstream.c:172 ../gio/glocalfileoutputstream.c:698
+#, c-format
+msgid "Error reading from file: %s"
+msgstr "Klaida skaitant failą: %s"
+
+#: ../gio/glocalfileinputstream.c:203 ../gio/glocalfileinputstream.c:215
+#: ../gio/glocalfileinputstream.c:322 ../gio/glocalfileoutputstream.c:460
+#: ../gio/glocalfileoutputstream.c:1006
+#, c-format
+msgid "Error seeking in file: %s"
+msgstr "Klaida keičiant poziciją faile: %s"
+
+#: ../gio/glocalfileinputstream.c:244 ../gio/glocalfileoutputstream.c:250
+#: ../gio/glocalfileoutputstream.c:344
+#, c-format
+msgid "Error closing file: %s"
+msgstr "Klaida užveriant failą: %s"
+
+#: ../gio/glocalfilemonitor.c:176
+msgid "Unable to find default local file monitor type"
+msgstr "Nepavyko rasti numatytojo vietinių failų stebyklės tipo"
+
+#: ../gio/glocalfileoutputstream.c:198 ../gio/glocalfileoutputstream.c:230
+#: ../gio/glocalfileoutputstream.c:719
+#, c-format
+msgid "Error writing to file: %s"
+msgstr "Klaida rašant į failą: %s"
+
+#: ../gio/glocalfileoutputstream.c:277
+#, c-format
+msgid "Error removing old backup link: %s"
+msgstr "Klaida šalinant senos atsarginės kopijos nuorodą: %s"
+
+#: ../gio/glocalfileoutputstream.c:291 ../gio/glocalfileoutputstream.c:304
+#, c-format
+msgid "Error creating backup copy: %s"
+msgstr "Klaida kuriant atsarginę kopiją: %s"
+
+#: ../gio/glocalfileoutputstream.c:322
+#, c-format
+msgid "Error renaming temporary file: %s"
+msgstr "Klaida pervadinant laikinąjį failą: %s"
+
+#: ../gio/glocalfileoutputstream.c:506 ../gio/glocalfileoutputstream.c:1057
+#, c-format
+msgid "Error truncating file: %s"
+msgstr "Klaida trumpinant failą: %s"
+
+#: ../gio/glocalfileoutputstream.c:559 ../gio/glocalfileoutputstream.c:789
+#: ../gio/glocalfileoutputstream.c:1038
+#, c-format
+msgid "Error opening file '%s': %s"
+msgstr "Klaida atveriant failą „%s“: %s"
+
+#: ../gio/glocalfileoutputstream.c:820
+msgid "Target file is a directory"
+msgstr "Paskirties failas yra aplankas"
+
+#: ../gio/glocalfileoutputstream.c:825
+msgid "Target file is not a regular file"
+msgstr "Paskirties failas nėra paprastas failas"
+
+#: ../gio/glocalfileoutputstream.c:837
+msgid "The file was externally modified"
+msgstr "Failas buvo pakeistas kitos programos"
+
+#: ../gio/glocalfileoutputstream.c:1022
+#, c-format
+msgid "Error removing old file: %s"
+msgstr "Klaida ištrinant senąjį failą: %s"
+
+#: ../gio/gmemoryinputstream.c:473 ../gio/gmemoryoutputstream.c:736
+msgid "Invalid GSeekType supplied"
+msgstr "Netaisyklingas GSeekType"
+
+#: ../gio/gmemoryinputstream.c:483
+msgid "Invalid seek request"
+msgstr "Netinkama pozicijos keitimo užklausa"
+
+#: ../gio/gmemoryinputstream.c:507
+msgid "Cannot truncate GMemoryInputStream"
+msgstr "Nepavyko sutrumpinti GMemoryInputStream"
+
+#: ../gio/gmemoryoutputstream.c:541
+msgid "Memory output stream not resizable"
+msgstr "Atminties išvedimo srauto dydis nekeičiamas"
+
+#: ../gio/gmemoryoutputstream.c:557
+msgid "Failed to resize memory output stream"
+msgstr "Nepavyko pakeisti atminties išvedimo srauto dydžio"
+
+#: ../gio/gmemoryoutputstream.c:645
+msgid ""
+"Amount of memory required to process the write is larger than available "
+"address space"
+msgstr ""
+"Atminties kiekis, reikalingas įrašymui apdoroti, netelpa į prieinamą adresų "
+"erdvę"
+
+#: ../gio/gmemoryoutputstream.c:746
+msgid "Requested seek before the beginning of the stream"
+msgstr "Prašoma perkelti poziciją dar prieš srauto pradžią"
+
+#: ../gio/gmemoryoutputstream.c:755
+msgid "Requested seek beyond the end of the stream"
+msgstr "Prašoma perkelti poziciją jau už srauto pabaigos"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement unmount.
+#: ../gio/gmount.c:395
+msgid "mount doesn't implement \"unmount\""
+msgstr "prijungtasis objektas nepalaiko atjungimo"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement eject.
+#: ../gio/gmount.c:471
+msgid "mount doesn't implement \"eject\""
+msgstr "prijungtasis objektas nepalaiko išstūmimo"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of unmount or unmount_with_operation.
+#: ../gio/gmount.c:549
+msgid "mount doesn't implement \"unmount\" or \"unmount_with_operation\""
+msgstr ""
+"prijungtasis objektas nepalaiko atjungimo nei su papildoma operacija, nei be "
+"jos"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gmount.c:634
+msgid "mount doesn't implement \"eject\" or \"eject_with_operation\""
+msgstr ""
+"prijungtasis objektas nepalaiko išstūmimo nei su papildoma operacija, nei be "
+"jos"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement remount.
+#: ../gio/gmount.c:722
+msgid "mount doesn't implement \"remount\""
+msgstr "prijungtasis objektas nepalaiko pakartotinio prijungimo"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:803
+msgid "mount doesn't implement content type guessing"
+msgstr "prijungimo taškas nepalaiko turinio tipo spėjimo"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:889
+msgid "mount doesn't implement synchronous content type guessing"
+msgstr "prijungimo taškas nepalaiko sinchroninio turinio tipo spėjimo"
+
+#: ../gio/gnetworkaddress.c:353
+#, c-format
+msgid "Hostname '%s' contains '[' but not ']'"
+msgstr "Mazgo varde „%s“ yra ženklas „[“, bet nėra „]“"
+
+#: ../gio/gnetworkmonitorbase.c:191 ../gio/gnetworkmonitorbase.c:294
+msgid "Network unreachable"
+msgstr "Tinklas nepasiekiamas"
+
+#: ../gio/gnetworkmonitorbase.c:229 ../gio/gnetworkmonitorbase.c:259
+msgid "Host unreachable"
+msgstr "Serveris nepasiekiamas"
+
+#: ../gio/gnetworkmonitornetlink.c:97 ../gio/gnetworkmonitornetlink.c:109
+#: ../gio/gnetworkmonitornetlink.c:128
+#, c-format
+msgid "Could not create network monitor: %s"
+msgstr "Nepavyko sukurti tinklo stebyklės: %s"
+
+#: ../gio/gnetworkmonitornetlink.c:118
+msgid "Could not create network monitor: "
+msgstr "Nepavyko sukurti tiklo stebėtojo: "
+
+#: ../gio/gnetworkmonitornetlink.c:176
+msgid "Could not get network status: "
+msgstr "Nepavyko gauti tinklo būsenos: "
+
+#: ../gio/goutputstream.c:201 ../gio/goutputstream.c:453
+msgid "Output stream doesn't implement write"
+msgstr "Išvedimo srautas nepalaiko rašymo"
+
+#: ../gio/goutputstream.c:414 ../gio/goutputstream.c:939
+msgid "Source stream is already closed"
+msgstr "Šaltinio srautas jau užvertas"
+
+#: ../gio/gresource.c:291 ../gio/gresource.c:539 ../gio/gresource.c:556
+#: ../gio/gresource.c:677 ../gio/gresource.c:746 ../gio/gresource.c:807
+#: ../gio/gresource.c:887 ../gio/gresourcefile.c:454
+#: ../gio/gresourcefile.c:555 ../gio/gresourcefile.c:657
+#, c-format
+msgid "The resource at '%s' does not exist"
+msgstr "Resursas vietoje „%s“ neegzistuoja"
+
+#: ../gio/gresource.c:456
+#, c-format
+msgid "The resource at '%s' failed to decompress"
+msgstr "Resurso vietoje „%s“ nepavyko išskleisti"
+
+#: ../gio/gresourcefile.c:653
+#, c-format
+msgid "The resource at '%s' is not a directory"
+msgstr "Resursas vietoje „%s“ nėra katalogas"
+
+#: ../gio/gresourcefile.c:861
+msgid "Input stream doesn't implement seek"
+msgstr "Švesties srautas nerealizuoja paieškos"
+
+#: ../gio/gresource-tool.c:475 ../gio/gsettings-tool.c:542
+msgid "Print help"
+msgstr "Spausdinti pagalbą"
+
+#: ../gio/gresource-tool.c:476 ../gio/gresource-tool.c:544
+msgid "[COMMAND]"
+msgstr "[KOMANDA]"
+
+#: ../gio/gresource-tool.c:481
+msgid "List sections containing resources in an elf FILE"
+msgstr "Išvardinti sekcijas, turinčias resursus elf FAILE"
+
+#: ../gio/gresource-tool.c:487
+msgid ""
+"List resources\n"
+"If SECTION is given, only list resources in this section\n"
+"If PATH is given, only list matching resources"
+msgstr ""
+"Išvardinti resursus\n"
+"Jei SEKCIJA pateikta, išvardinti tik resursus šioje sekcijoje\n"
+"Jei KELIAS yra pateiktas, išvardinti tik atitinkančius resursus"
+
+#: ../gio/gresource-tool.c:490 ../gio/gresource-tool.c:500
+msgid "FILE [PATH]"
+msgstr "FAILAS [KELIAS]"
+
+#: ../gio/gresource-tool.c:491 ../gio/gresource-tool.c:501
+#: ../gio/gresource-tool.c:508
+msgid "SECTION"
+msgstr "SEKCIJA"
+
+#: ../gio/gresource-tool.c:496
+msgid ""
+"List resources with details\n"
+"If SECTION is given, only list resources in this section\n"
+"If PATH is given, only list matching resources\n"
+"Details include the section, size and compression"
+msgstr ""
+"Išvardinti resursus su detalėmis\n"
+"Jei SEKCIJA pateikta, išvardinti tik resursus šioje sekcijoje\n"
+"Jei KELIAS pateiktas, išvardinti tik atitinkamus resursus\n"
+"Detalės įtraukia sekciją, dydį ir suspaudimą"
+
+#: ../gio/gresource-tool.c:506
+msgid "Extract a resource file to stdout"
+msgstr "Išgauti resurso failą į standartinę išvastį"
+
+#: ../gio/gresource-tool.c:507
+msgid "FILE PATH"
+msgstr "FAILO KELIAS"
+
+#: ../gio/gresource-tool.c:513 ../gio/gsettings-tool.c:628
+#, c-format
+msgid ""
+"Unknown command %s\n"
+"\n"
+msgstr ""
+"Nežinoma komanda „%s“\n"
+"\n"
+
+#: ../gio/gresource-tool.c:521
+msgid ""
+"Usage:\n"
+"  gresource [--section SECTION] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  sections                  List resource sections\n"
+"  list                      List resources\n"
+"  details                   List resources with details\n"
+"  extract                   Extract a resource\n"
+"\n"
+"Use 'gresource help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"Naudojimas:\n"
+"  gresource [--section SEKCIJA] KOMANDA [ARGUMENTAI...]\n"
+"\n"
+"Komandos:\n"
+"  help                      Rodyti šią informaciją\n"
+"  sections                  Išvardinti sekcijas\n"
+"  list                      Išvardinti resursus\n"
+"  details                   Išvardinti resursus su detalėmis\n"
+"  extract                   Išgauti resursą\n"
+"\n"
+"Naudokite „gresource help KOMANDA“ detalesnei pagalbai.\n"
+"\n"
+
+#: ../gio/gresource-tool.c:535
+#, c-format
+msgid ""
+"Usage:\n"
+"  gresource %s%s%s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"Naudojimas:\n"
+"  gresource %s%s%s %s\n"
+"\n"
+"%s\n"
+"\n"
+
+#: ../gio/gresource-tool.c:538 ../gio/gsettings-tool.c:661
+msgid "Arguments:\n"
+msgstr "Argumentai:\n"
+
+#: ../gio/gresource-tool.c:542
+msgid "  SECTION   An (optional) elf section name\n"
+msgstr "  SEKCIJA   (Nebūtinas) elf sekcijos pavadinimas\n"
+
+#: ../gio/gresource-tool.c:546 ../gio/gsettings-tool.c:668
+msgid "  COMMAND   The (optional) command to explain\n"
+msgstr "  KOMANDA   Komanda (nebūtina) paaiškinimui\n"
+
+#: ../gio/gresource-tool.c:552
+msgid "  FILE      An elf file (a binary or a shared library)\n"
+msgstr ""
+"  FAILAS    elf failas (dvejetainis arba bendro naudojimo biblioteka)\n"
+
+#: ../gio/gresource-tool.c:555
+msgid ""
+"  FILE      An elf file (a binary or a shared library)\n"
+"            or a compiled resource file\n"
+msgstr ""
+"  FAILAS    elf failas (dvejetainis arba bendro naudojimo biblioteka)\n"
+"            arba kompiliuotas resurso failas\n"
+
+#: ../gio/gresource-tool.c:559
+msgid "[PATH]"
+msgstr "[KELIAS]"
+
+#: ../gio/gresource-tool.c:561
+msgid "  PATH      An (optional) resource path (may be partial)\n"
+msgstr "  KELIAS    (Nebūtinas) resurso kelias (gali būti dalinis)\n"
+
+#: ../gio/gresource-tool.c:562
+msgid "PATH"
+msgstr "KELIAS"
+
+#: ../gio/gresource-tool.c:564
+msgid "  PATH      A resource path\n"
+msgstr "  KELIAS    Resurso kelias\n"
+
+#: ../gio/gsettings-tool.c:57 ../gio/gsettings-tool.c:78
+#, c-format
+msgid "No such schema '%s'\n"
+msgstr "Nėra schemos „%s“\n"
+
+#: ../gio/gsettings-tool.c:63
+#, c-format
+msgid "Schema '%s' is not relocatable (path must not be specified)\n"
+msgstr "Schema „%s“ yra neperkeliama (kelias neturi būti nurodomas)\n"
+
+#: ../gio/gsettings-tool.c:84
+#, c-format
+msgid "Schema '%s' is relocatable (path must be specified)\n"
+msgstr "Schema „%s“ yra perkeliama (kelias turi būti nurodytas)\n"
+
+#: ../gio/gsettings-tool.c:98
+#, c-format
+msgid "Empty path given.\n"
+msgstr "Pateiktas tuščias kelias.\n"
+
+#: ../gio/gsettings-tool.c:104
+#, c-format
+msgid "Path must begin with a slash (/)\n"
+msgstr "Kelias turi prasidėti pasviruoju brūkšniu (/)\n"
+
+#: ../gio/gsettings-tool.c:110
+#, c-format
+msgid "Path must end with a slash (/)\n"
+msgstr "Kelias turi baigtis pasviruoju brūkšniu (/)\n"
+
+#: ../gio/gsettings-tool.c:116
+#, c-format
+msgid "Path must not contain two adjacent slashes (//)\n"
+msgstr "Kelias neturi turėti dviejų gretimų pasvirųjų brūkšnių (//)\n"
+
+#: ../gio/gsettings-tool.c:137
+#, c-format
+msgid "No such key '%s'\n"
+msgstr "Nėra rakto „%s“\n"
+
+#: ../gio/gsettings-tool.c:511
+#, c-format
+msgid "The provided value is outside of the valid range\n"
+msgstr "Pateikta reikšmė yra už leistinų ribų\n"
+
+#: ../gio/gsettings-tool.c:518
+#, c-format
+#| msgid "Property '%s' is not writable"
+msgid "The key is not writable\n"
+msgstr "Raktas nėra rašomas\n"
+
+#: ../gio/gsettings-tool.c:548
+msgid "Print version information and exit"
+msgstr "Atspausdinti versijos informaciją ir išeiti"
+
+#: ../gio/gsettings-tool.c:554
+msgid "List the installed (non-relocatable) schemas"
+msgstr "Išvardinti įdiegtas (neperkeliamas) schemas"
+
+#: ../gio/gsettings-tool.c:560
+msgid "List the installed relocatable schemas"
+msgstr "Išvardinti įdiegtas perkeliamas schemas"
+
+#: ../gio/gsettings-tool.c:566
+msgid "List the keys in SCHEMA"
+msgstr "Išvardinti raktus SCHEMOJE"
+
+#: ../gio/gsettings-tool.c:567 ../gio/gsettings-tool.c:573
+#: ../gio/gsettings-tool.c:610
+msgid "SCHEMA[:PATH]"
+msgstr "SCHEMA[:KELIAS]"
+
+#: ../gio/gsettings-tool.c:572
+msgid "List the children of SCHEMA"
+msgstr "Išvardina vaikus SCHEMOJE"
+
+#: ../gio/gsettings-tool.c:578
+msgid ""
+"List keys and values, recursively\n"
+"If no SCHEMA is given, list all keys\n"
+msgstr ""
+"Rekursyviai išvardinti raktus ir reikšmes\n"
+"Jei SCHEMA nepateikta, išvardinti visus raktus\n"
+
+#: ../gio/gsettings-tool.c:580
+msgid "[SCHEMA[:PATH]]"
+msgstr "[SCHEMA[:KELIAS]]"
+
+#: ../gio/gsettings-tool.c:585
+msgid "Get the value of KEY"
+msgstr "Gauti RAKTO reikšmę"
+
+#: ../gio/gsettings-tool.c:586 ../gio/gsettings-tool.c:592
+#: ../gio/gsettings-tool.c:604 ../gio/gsettings-tool.c:616
+msgid "SCHEMA[:PATH] KEY"
+msgstr "SCHEMOS[:KELIO] RAKTAS"
+
+#: ../gio/gsettings-tool.c:591
+msgid "Query the range of valid values for KEY"
+msgstr "Užklausti galimų reikšmių rėžių RAKTUI"
+
+#: ../gio/gsettings-tool.c:597
+msgid "Set the value of KEY to VALUE"
+msgstr "Nustatyti RAKTO REIKŠMĘ"
+
+#: ../gio/gsettings-tool.c:598
+msgid "SCHEMA[:PATH] KEY VALUE"
+msgstr "SCHEMOS[:KELIO] RAKTO REIKŠMĖ"
+
+#: ../gio/gsettings-tool.c:603
+msgid "Reset KEY to its default value"
+msgstr "Nustatyti RAKTĄ į jo numatytąją reikšmę"
+
+#: ../gio/gsettings-tool.c:609
+msgid "Reset all keys in SCHEMA to their defaults"
+msgstr "Atstatyti visus SCHEMOS raktus į jų numatytasias reikšmes"
+
+#: ../gio/gsettings-tool.c:615
+msgid "Check if KEY is writable"
+msgstr "Patikrinti, ar RAKTAS yra rašomas"
+
+#: ../gio/gsettings-tool.c:621
+msgid ""
+"Monitor KEY for changes.\n"
+"If no KEY is specified, monitor all keys in SCHEMA.\n"
+"Use ^C to stop monitoring.\n"
+msgstr ""
+"Stebėti RAKTO pasikeitimus.\n"
+"Jei RAKTAS nenurodytas, stebėti visus raktus SCHEMOJE.\n"
+"Naudoti ^C stebėjimo nutraukimui.\n"
+
+#: ../gio/gsettings-tool.c:624
+msgid "SCHEMA[:PATH] [KEY]"
+msgstr "SCHEMA[:KELIAS] [RAKTAS]"
+
+#: ../gio/gsettings-tool.c:636
+msgid ""
+"Usage:\n"
+"  gsettings [--schemadir SCHEMADIR] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  list-schemas              List installed schemas\n"
+"  list-relocatable-schemas  List relocatable schemas\n"
+"  list-keys                 List keys in a schema\n"
+"  list-children             List children of a schema\n"
+"  list-recursively          List keys and values, recursively\n"
+"  range                     Queries the range of a key\n"
+"  get                       Get the value of a key\n"
+"  set                       Set the value of a key\n"
+"  reset                     Reset the value of a key\n"
+"  reset-recursively         Reset all values in a given schema\n"
+"  writable                  Check if a key is writable\n"
+"  monitor                   Watch for changes\n"
+"\n"
+"Use 'gsettings help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"Naudojimas:\n"
+"  gsettings [--schemadir SCHEMADIR] KOMANDA [ARGUMENTAI...]\n"
+"\n"
+"Komandos:\n"
+"  help                      Rodyti šią informaciją\n"
+"  list-schemas              Išvardinti įdiegtas schemas\n"
+"  list-relocatable-schemas  Išvardinti perskeliamas schemas\n"
+"  list-keys                 Išvardinti raktus schemoje\n"
+"  list-children             Išvardinti schemos vaikus\n"
+"  list-recursively          Rekursyviai išvardinti raktus ir reikšmes\n"
+"  range                     Užklausia rakto rėžių\n"
+"  get                       Gauti rakto reikšmę\n"
+"  set                       Nustatyti rakto reikšmę\n"
+"  reset                     Nuvalyti rakto reikšmę\n"
+"  writable                  Patikrinti, ar raktas yra rašomas\n"
+"  monitor                   Stebėti pasikeitimus\n"
+"\n"
+"Naudokite 'gsettings help KOMANDA' detalesnei pagalbai gauti.\n"
+"\n"
+
+#: ../gio/gsettings-tool.c:658
+#, c-format
+msgid ""
+"Usage:\n"
+"  gsettings [--schemadir SCHEMADIR] %s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"Naudojimas:\n"
+"  gsettings [--schemadir SCHEMADIR] %s %s\n"
+"\n"
+"%s\n"
+"\n"
+
+#: ../gio/gsettings-tool.c:664
+msgid "  SCHEMADIR A directory to search for additional schemas\n"
+msgstr " SCHEMOSKAT Katalogas, kur ieškoti papildomų schemų\n"
+
+#: ../gio/gsettings-tool.c:672
+msgid ""
+"  SCHEMA    The name of the schema\n"
+"  PATH      The path, for relocatable schemas\n"
+msgstr ""
+"  SCHEMA    Schemos pavadinimas\n"
+"  KELIAS    Kelias perkeliamoms schemoms\n"
+
+#: ../gio/gsettings-tool.c:677
+msgid "  KEY       The (optional) key within the schema\n"
+msgstr "  RAKTAS    Raktas schemoje (nebūtinas)\n"
+
+#: ../gio/gsettings-tool.c:681
+msgid "  KEY       The key within the schema\n"
+msgstr "  RAKTAS    Raktas schemoje\n"
+
+#: ../gio/gsettings-tool.c:685
+msgid "  VALUE     The value to set\n"
+msgstr "  REIKŠMĖ   Reikšmė, kurią nustatyti\n"
+
+#: ../gio/gsettings-tool.c:744
+#, c-format
+msgid "Could not load schemas from %s: %s\n"
+msgstr "Nepavyko atverti schemų iš „%s“: „%s“\n"
+
+#: ../gio/gsettings-tool.c:806
+#, c-format
+msgid "Empty schema name given\n"
+msgstr "Pateiktas tuščias schemos pavadinimas\n"
+
+#: ../gio/gsocket.c:312
+msgid "Invalid socket, not initialized"
+msgstr "Netinkamas lizdas, nepavyko inicijuoti"
+
+#: ../gio/gsocket.c:319
+#, c-format
+msgid "Invalid socket, initialization failed due to: %s"
+msgstr "Netinkamas lizdas, nepavyko inicijuoti: %s"
+
+#: ../gio/gsocket.c:327
+msgid "Socket is already closed"
+msgstr "Lizdas jau užvertas"
+
+#: ../gio/gsocket.c:335 ../gio/gsocket.c:3510 ../gio/gsocket.c:3565
+msgid "Socket I/O timed out"
+msgstr "Lizdo I/O baigėsi laikas"
+
+#: ../gio/gsocket.c:482
+#, c-format
+msgid "creating GSocket from fd: %s"
+msgstr "iš fd kuriamas GSocket: %s"
+
+#: ../gio/gsocket.c:510 ../gio/gsocket.c:564 ../gio/gsocket.c:571
+#, c-format
+msgid "Unable to create socket: %s"
+msgstr "Nepavyko sukurti lizdo: %s"
+
+#: ../gio/gsocket.c:564
+msgid "Unknown family was specified"
+msgstr "Nurodyta nežinoma šeima"
+
+#: ../gio/gsocket.c:571
+msgid "Unknown protocol was specified"
+msgstr "Nurodytas nežinomas protokolas"
+
+#: ../gio/gsocket.c:1727
+#, c-format
+msgid "could not get local address: %s"
+msgstr "nepavyko gauto lokalaus adreso: %s"
+
+#: ../gio/gsocket.c:1770
+#, c-format
+msgid "could not get remote address: %s"
+msgstr "nepavyko gauti nuotolinio adreso: %s"
+
+#: ../gio/gsocket.c:1831
+#, c-format
+msgid "could not listen: %s"
+msgstr "nepavyko klausytis: %s"
+
+#: ../gio/gsocket.c:1903
+#, c-format
+msgid "Error binding to address: %s"
+msgstr "Susiejimo su adresu klaida: %s"
+
+#: ../gio/gsocket.c:1956 ../gio/gsocket.c:1993
+#, c-format
+msgid "Error joining multicast group: %s"
+msgstr "Klaida prisijungian prie transliavimo grupės: %s"
+
+#: ../gio/gsocket.c:1957 ../gio/gsocket.c:1994
+#, c-format
+msgid "Error leaving multicast group: %s"
+msgstr "Klaida paliekant transliavimo grupę: %s"
+
+#: ../gio/gsocket.c:1958
+msgid "No support for source-specific multicast"
+msgstr "Nėra resursams specifinio transliavimo palaikymo"
+
+#: ../gio/gsocket.c:2177
+#, c-format
+msgid "Error accepting connection: %s"
+msgstr "Klaida priimant ryšį: %s"
+
+#: ../gio/gsocket.c:2298
+msgid "Connection in progress"
+msgstr "Prisijungiama"
+
+#: ../gio/gsocket.c:2345
+msgid "Unable to get pending error: "
+msgstr "Nepavyko gauti laukiančios klaidos: "
+
+#: ../gio/gsocket.c:2511
+#, c-format
+msgid "Error receiving data: %s"
+msgstr "Klaida priimant duomenis: %s"
+
+#: ../gio/gsocket.c:2689
+#, c-format
+msgid "Error sending data: %s"
+msgstr "Klaida siunčiant duomenis: %s"
+
+#: ../gio/gsocket.c:2803
+#, c-format
+msgid "Unable to shutdown socket: %s"
+msgstr "Nepavyko išjungti lizdo: %s"
+
+#: ../gio/gsocket.c:2882
+#, c-format
+msgid "Error closing socket: %s"
+msgstr "Klaida užveriant lizdą: %s"
+
+#: ../gio/gsocket.c:3503
+#, c-format
+msgid "Waiting for socket condition: %s"
+msgstr "Laukiama lizdo būsenos: %s"
+
+#: ../gio/gsocket.c:3781 ../gio/gsocket.c:3862
+#, c-format
+msgid "Error sending message: %s"
+msgstr "Klaida siunčiant pranešimą: %s"
+
+#: ../gio/gsocket.c:3806
+msgid "GSocketControlMessage not supported on Windows"
+msgstr "„Windows“ sistemoje „GSocketControlMessage“ nepalaikoma"
+
+#: ../gio/gsocket.c:4140 ../gio/gsocket.c:4275
+#, c-format
+msgid "Error receiving message: %s"
+msgstr "Klaida priimant pranešimą: %s"
+
+#: ../gio/gsocket.c:4357
+#, c-format
+#| msgid "Unable to create socket: %s"
+msgid "Unable to read socket credentials: %s"
+msgstr "Nepavyko perskaityti lizdo įgaliojimų: %s"
+
+#: ../gio/gsocket.c:4376
+msgid "g_socket_get_credentials not implemented for this OS"
+msgstr "g_socket_get_credentials nerealizuota šiai operacinei sistemai"
+
+#: ../gio/gsocketclient.c:177
+#, c-format
+msgid "Could not connect to proxy server %s: "
+msgstr "Nepavyko prisijungti prie tarpinio serverio %s: "
+
+#: ../gio/gsocketclient.c:191
+#, c-format
+msgid "Could not connect to %s: "
+msgstr "Nepavyko prisijungti prie %s: "
+
+#: ../gio/gsocketclient.c:193
+msgid "Could not connect: "
+msgstr "Nepavyko prisijungti: "
+
+#: ../gio/gsocketclient.c:1067 ../gio/gsocketclient.c:1631
+msgid "Unknown error on connect"
+msgstr "Nežinoma klaida prisijungiant"
+
+#: ../gio/gsocketclient.c:1120 ../gio/gsocketclient.c:1569
+msgid "Proxying over a non-TCP connection is not supported."
+msgstr "Bandymas naudoti proxy ne per TCP ryšį nepalaikomas."
+
+#: ../gio/gsocketclient.c:1146 ../gio/gsocketclient.c:1590
+#, c-format
+msgid "Proxy protocol '%s' is not supported."
+msgstr "Tarpinio serverio protokolas „%s“ nepalaikomas."
+
+#: ../gio/gsocketlistener.c:187
+msgid "Listener is already closed"
+msgstr "Gavėjas jau užvertas"
+
+#: ../gio/gsocketlistener.c:228
+msgid "Added socket is closed"
+msgstr "Pridėtasis lizdas yra užvertas"
+
+#: ../gio/gsocks4aproxy.c:120
+#, c-format
+msgid "SOCKSv4 does not support IPv6 address '%s'"
+msgstr "SOCKSv4 nepalaiko IPv6 adreso „%s“"
+
+#: ../gio/gsocks4aproxy.c:138
+msgid "Username is too long for SOCKSv4 protocol"
+msgstr "Naudotojo vardas yra per ilgas SOCKSv4 protokolui"
+
+#: ../gio/gsocks4aproxy.c:155
+#, c-format
+msgid "Hostname '%s' is too long for SOCKSv4 protocol"
+msgstr "Kompiuterio vardas „%s“ yra per ilgas SOCKSv4 protokolui"
+
+#: ../gio/gsocks4aproxy.c:181
+msgid "The server is not a SOCKSv4 proxy server."
+msgstr "Serveris nėra SOCKSv4 proxy serveris."
+
+#: ../gio/gsocks4aproxy.c:188
+msgid "Connection through SOCKSv4 server was rejected"
+msgstr "Ryšys per SOCKSv4 serverį buvo atmestas"
+
+#: ../gio/gsocks5proxy.c:155 ../gio/gsocks5proxy.c:326
+#: ../gio/gsocks5proxy.c:336
+msgid "The server is not a SOCKSv5 proxy server."
+msgstr "Serveris nėra SOCKSv5 proxy serveris."
+
+#: ../gio/gsocks5proxy.c:169
+msgid "The SOCKSv5 proxy requires authentication."
+msgstr "SOCKSv5 proxy reikalauja tapatybės patvirtinimo."
+
+#: ../gio/gsocks5proxy.c:179
+msgid ""
+"The SOCKSv5 proxy requires an authentication method that is not supported by "
+"GLib."
+msgstr ""
+"SOCKSv5 reikalauja tapatybės patvirtinimo metodo, kurio GLib nepalaiko."
+
+#: ../gio/gsocks5proxy.c:208
+msgid "Username or password is too long for SOCKSv5 protocol."
+msgstr "Naudotojo vardas arba slaptažodis yra per ilgas SOCKSv5 protokolui."
+
+#: ../gio/gsocks5proxy.c:238
+msgid "SOCKSv5 authentication failed due to wrong username or password."
+msgstr ""
+"SOCKSv5 tapatybės patvirtinimas nepavyko dėl neteisingo naudotojo vardo arba "
+"slaptažodžio."
+
+#: ../gio/gsocks5proxy.c:288
+#, c-format
+msgid "Hostname '%s' is too long for SOCKSv5 protocol"
+msgstr "Kompiuterio vardas „%s“ yra per ilgas SOCKSv5 protokolui"
+
+#: ../gio/gsocks5proxy.c:350
+msgid "The SOCKSv5 proxy server uses unknown address type."
+msgstr "SOCKSv5 proxy serveris naudoja nežinomą adresų tipą."
+
+#: ../gio/gsocks5proxy.c:357
+msgid "Internal SOCKSv5 proxy server error."
+msgstr "Vidinė SOCKSv5 proxy serverio klaida."
+
+#: ../gio/gsocks5proxy.c:363
+msgid "SOCKSv5 connection not allowed by ruleset."
+msgstr "SOCKSv5 ryšys neleidžiamas pagal taisykles."
+
+#: ../gio/gsocks5proxy.c:370
+msgid "Host unreachable through SOCKSv5 server."
+msgstr "Kompiuteris nepasiekiamas per SOCKSv5 serverį."
+
+#: ../gio/gsocks5proxy.c:376
+msgid "Network unreachable through SOCKSv5 proxy."
+msgstr "Tinklas nepasiekiamas per SOCKSv5 proxy."
+
+#: ../gio/gsocks5proxy.c:382
+msgid "Connection refused through SOCKSv5 proxy."
+msgstr "Ryšys per SOCKSv5 proxy atmestas."
+
+#: ../gio/gsocks5proxy.c:388
+msgid "SOCKSv5 proxy does not support 'connect' command."
+msgstr "SOCKSv5 proxy nepalaiko „connect“ komandos."
+
+#: ../gio/gsocks5proxy.c:394
+msgid "SOCKSv5 proxy does not support provided address type."
+msgstr "SOCKSv5 proxy nepalaiko pateikto adreso tipo."
+
+#: ../gio/gsocks5proxy.c:400
+msgid "Unknown SOCKSv5 proxy error."
+msgstr "Nežinoma SOCKSv5 proxy klaida."
+
+#: ../gio/gthemedicon.c:498
+#, c-format
+msgid "Can't handle version %d of GThemedIcon encoding"
+msgstr "Nepavyko apdoroti GThemedIcon koduotės versijos %d"
+
+#: ../gio/gthreadedresolver.c:110
+#, c-format
+msgid "Error resolving '%s': %s"
+msgstr "Klaida išrišant „%s“: %s"
+
+#: ../gio/gthreadedresolver.c:195
+#, c-format
+msgid "Error reverse-resolving '%s': %s"
+msgstr "Klaida atvirkščiai išrišant „%s“: %s"
+
+#: ../gio/gthreadedresolver.c:533 ../gio/gthreadedresolver.c:614
+#: ../gio/gthreadedresolver.c:715 ../gio/gthreadedresolver.c:766
+#, c-format
+msgid "No DNS record of the requested type for '%s'"
+msgstr "Nėra DNS įrašo prašomam tipui „%s“"
+
+#: ../gio/gthreadedresolver.c:538 ../gio/gthreadedresolver.c:720
+#, c-format
+msgid "Temporarily unable to resolve '%s'"
+msgstr "Laikinai nepavyko išrišti „%s“"
+
+#: ../gio/gthreadedresolver.c:543 ../gio/gthreadedresolver.c:725
+#, c-format
+msgid "Error resolving '%s'"
+msgstr "Klaida išrišant „%s“"
+
+#: ../gio/gtlscertificate.c:248
+msgid "Cannot decrypt PEM-encoded private key"
+msgstr "Nepavyko perskaityti PEM užkoduoto privataus rakto"
+
+#: ../gio/gtlscertificate.c:253
+msgid "No PEM-encoded private key found"
+msgstr "Nerastas PEM užkoduotas privatus raktas"
+
+#: ../gio/gtlscertificate.c:263
+msgid "Could not parse PEM-encoded private key"
+msgstr "Nepavyko perskaityti PEM užkoduoto privataus rakto"
+
+#: ../gio/gtlscertificate.c:288
+msgid "No PEM-encoded certificate found"
+msgstr "Nerastas PEM užkoduotas sertifikatas"
+
+#: ../gio/gtlscertificate.c:297
+msgid "Could not parse PEM-encoded certificate"
+msgstr "Nepavyko perskaityti PEM užkoduoto sertifikato"
+
+#: ../gio/gtlspassword.c:113
+msgid ""
+"This is the last chance to enter the password correctly before your access "
+"is locked out."
+msgstr ""
+"Tai yra paskutinis šansas įvesti teisingą slaptažodį, kitaip jūsų prieiga "
+"bus užrakinta."
+
+#: ../gio/gtlspassword.c:115
+msgid ""
+"Several password entered have been incorrect, and your access will be locked "
+"out after further failures."
+msgstr ""
+"Keli įvesti slaptažodžiai buvo neteisingi ir jūsų prieiga bus užblokuota po "
+"tolesnių nesėkmių."
+
+#: ../gio/gtlspassword.c:117
+msgid "The password entered is incorrect."
+msgstr "Įvestas slaptažodis yra neteisingas."
+
+#: ../gio/gunixconnection.c:159 ../gio/gunixconnection.c:554
+#, c-format
+#| msgid "Expecting 1 control message, got %d"
+msgid "Expecting 1 control message, got %d"
+msgid_plural "Expecting 1 control message, got %d"
+msgstr[0] "Tikėtasi 1 kontrolinio pranešimo, bet sulaukta %d"
+msgstr[1] "Tikėtasi 1 kontrolinio pranešimo, bet sulaukta %d"
+msgstr[2] "Tikėtasi 1 kontrolinio pranešimo, bet sulaukta %d"
+
+#: ../gio/gunixconnection.c:175 ../gio/gunixconnection.c:566
+msgid "Unexpected type of ancillary data"
+msgstr "Netikėtas tarnybinių duomenų tipas"
+
+#: ../gio/gunixconnection.c:193
+#, c-format
+#| msgid "Expecting one fd, but got %d\n"
+msgid "Expecting one fd, but got %d\n"
+msgid_plural "Expecting one fd, but got %d\n"
+msgstr[0] "Tikėtasi vieno fd, bet sulaukta %d\n"
+msgstr[1] "Tikėtasi vieno fd, bet sulaukta %d\n"
+msgstr[2] "Tikėtasi vieno fd, bet sulaukta %d\n"
+
+#: ../gio/gunixconnection.c:212
+msgid "Received invalid fd"
+msgstr "Gautas netinkamas fd"
+
+#: ../gio/gunixconnection.c:348
+msgid "Error sending credentials: "
+msgstr "Klaida siunčiant įgaliojimus: "
+
+#: ../gio/gunixconnection.c:496
+#, c-format
+msgid "Error checking if SO_PASSCRED is enabled for socket: %s"
+msgstr "Klaida tikrinant, ar SO_PASSCRED įjungta lizdui: %s"
+
+#: ../gio/gunixconnection.c:511
+#, c-format
+msgid "Error enabling SO_PASSCRED: %s"
+msgstr "Klaida leidžiant SO_PASSCRED: %s"
+
+#: ../gio/gunixconnection.c:540
+msgid ""
+"Expecting to read a single byte for receiving credentials but read zero bytes"
+msgstr ""
+"Tikimasi nustatyti vienintelį baitą įgaliojimų gavimui, bet nuskaityta nulis "
+"baitų"
+
+#: ../gio/gunixconnection.c:580
+#, c-format
+msgid "Not expecting control message, but got %d"
+msgstr "Nesitikėta kontrolinio pranešimo, bet sulaukta %d"
+
+#: ../gio/gunixconnection.c:604
+#, c-format
+msgid "Error while disabling SO_PASSCRED: %s"
+msgstr "Klaida išjungiant SO_PASSCRED: %s"
+
+#: ../gio/gunixinputstream.c:372 ../gio/gunixinputstream.c:393
+#, c-format
+msgid "Error reading from file descriptor: %s"
+msgstr "Klaida skaitant failą: %s"
+
+#: ../gio/gunixinputstream.c:426 ../gio/gunixoutputstream.c:412
+#, c-format
+msgid "Error closing file descriptor: %s"
+msgstr "Klaida užveriant failą: %s"
+
+#: ../gio/gunixmounts.c:1985 ../gio/gunixmounts.c:2038
+msgid "Filesystem root"
+msgstr "Failų sistemos šaknis"
+
+#: ../gio/gunixoutputstream.c:358 ../gio/gunixoutputstream.c:379
+#, c-format
+msgid "Error writing to file descriptor: %s"
+msgstr "Klaida rašant į failą: %s"
+
+#: ../gio/gunixsocketaddress.c:234
+msgid "Abstract UNIX domain socket addresses not supported on this system"
+msgstr "Abstrakčiųjų UNIX srities lizdų adresai šioje sistemoje nepalaikomi"
+
+#: ../gio/gvolume.c:439
+msgid "volume doesn't implement eject"
+msgstr "skirsnis nerealizuoja išstūmimo"
+
+#. Translators: This is an error
+#. * message for volume objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gvolume.c:516
+msgid "volume doesn't implement eject or eject_with_operation"
+msgstr "tomas nerealizuoja išstūmimo nei su papildoma operacija,nei be jos"
+
+#: ../gio/gwin32appinfo.c:276
+msgid "Can't find application"
+msgstr "Nepavyko rasti programos"
+
+#: ../gio/gwin32appinfo.c:308
+#, c-format
+msgid "Error launching application: %s"
+msgstr "Klaida paleidžiant programą: %s"
+
+#: ../gio/gwin32appinfo.c:344
+msgid "URIs not supported"
+msgstr "URI nepalaikomi"
+
+#: ../gio/gwin32appinfo.c:366
+msgid "association changes not supported on win32"
+msgstr "saitų keitimai win32 sistemose nepalaikomi"
+
+#: ../gio/gwin32appinfo.c:378
+msgid "Association creation not supported on win32"
+msgstr "Saitų kūrimas win32 sistemose nepalaikomas"
+
+#: ../gio/gwin32inputstream.c:343
+#, c-format
+msgid "Error reading from handle: %s"
+msgstr "Klaida skaitant iš rankenėlės: %s"
+
+#: ../gio/gwin32inputstream.c:375 ../gio/gwin32outputstream.c:362
+#, c-format
+msgid "Error closing handle: %s"
+msgstr "Klaida užveriant rankenėlę: %s"
+
+#: ../gio/gwin32outputstream.c:330
+#, c-format
+msgid "Error writing to handle: %s"
+msgstr "Klaida rašant į rankenėlę: %s"
+
+#: ../gio/gzlibcompressor.c:396 ../gio/gzlibdecompressor.c:349
+msgid "Not enough memory"
+msgstr "Nepakanka atminties"
+
+#: ../gio/gzlibcompressor.c:403 ../gio/gzlibdecompressor.c:356
+#, c-format
+msgid "Internal error: %s"
+msgstr "Vidinė klaida: %s"
+
+#: ../gio/gzlibcompressor.c:416 ../gio/gzlibdecompressor.c:370
+msgid "Need more input"
+msgstr "Reikia daugiau įvesties"
+
+#: ../gio/gzlibdecompressor.c:342
+msgid "Invalid compressed data"
+msgstr "Netinkami suspausti duomenys"
+
+#: ../gio/tests/gdbus-daemon.c:18
+msgid "Address to listen on"
+msgstr "Adresas, kurio klausytis"
+
+#: ../gio/tests/gdbus-daemon.c:19
+msgid "Ignored, for compat with GTestDbus"
+msgstr "Nepaisoma, suderinamumui su GTestDbus"
+
+#: ../gio/tests/gdbus-daemon.c:20
+msgid "Print address"
+msgstr "Spausdinti adresą"
+
+#: ../gio/tests/gdbus-daemon.c:21
+msgid "Print address in shell mode"
+msgstr "Spausdinti adresą apvalkalo veiksenoje"
+
+#: ../gio/tests/gdbus-daemon.c:28
+msgid "Run a dbus service"
+msgstr "Paleisti dbus tarnybą"
+
+#: ../gio/tests/gdbus-daemon.c:42
+#, c-format
+msgid "Wrong args\n"
+msgstr "Blogi argumentai\n"
+
+#: ../glib/gbookmarkfile.c:760
+#, c-format
+msgid "Unexpected attribute '%s' for element '%s'"
+msgstr "Netikėtas atributas „%s“ elementui „%s“"
+
+#: ../glib/gbookmarkfile.c:771 ../glib/gbookmarkfile.c:842
+#: ../glib/gbookmarkfile.c:852 ../glib/gbookmarkfile.c:959
+#, c-format
+msgid "Attribute '%s' of element '%s' not found"
+msgstr "Nerastas elemento „%2$s“ atributas „%1$s“"
+
+#: ../glib/gbookmarkfile.c:1129 ../glib/gbookmarkfile.c:1194
+#: ../glib/gbookmarkfile.c:1258 ../glib/gbookmarkfile.c:1268
+#, c-format
+msgid "Unexpected tag '%s', tag '%s' expected"
+msgstr "Netikėta žyma „%s“, tikėtasi žymos „%s“"
+
+#: ../glib/gbookmarkfile.c:1154 ../glib/gbookmarkfile.c:1168
+#: ../glib/gbookmarkfile.c:1236 ../glib/gbookmarkfile.c:1288
+#, c-format
+msgid "Unexpected tag '%s' inside '%s'"
+msgstr "Netikėta žyma „%s“ „%s“ viduje"
+
+#: ../glib/gbookmarkfile.c:1798
+msgid "No valid bookmark file found in data dirs"
+msgstr "Duomenų aplankuose nerasta tinkamo žymelių failo"
+
+#: ../glib/gbookmarkfile.c:1999
+#, c-format
+msgid "A bookmark for URI '%s' already exists"
+msgstr "URI „%s“ žymelė jau yra"
+
+#: ../glib/gbookmarkfile.c:2045 ../glib/gbookmarkfile.c:2203
+#: ../glib/gbookmarkfile.c:2288 ../glib/gbookmarkfile.c:2368
+#: ../glib/gbookmarkfile.c:2453 ../glib/gbookmarkfile.c:2536
+#: ../glib/gbookmarkfile.c:2614 ../glib/gbookmarkfile.c:2693
+#: ../glib/gbookmarkfile.c:2735 ../glib/gbookmarkfile.c:2832
+#: ../glib/gbookmarkfile.c:2952 ../glib/gbookmarkfile.c:3142
+#: ../glib/gbookmarkfile.c:3218 ../glib/gbookmarkfile.c:3386
+#: ../glib/gbookmarkfile.c:3475 ../glib/gbookmarkfile.c:3565
+#: ../glib/gbookmarkfile.c:3693
+#, c-format
+msgid "No bookmark found for URI '%s'"
+msgstr "Nerasta žymelė URI „%s“"
+
+#: ../glib/gbookmarkfile.c:2377
+#, c-format
+msgid "No MIME type defined in the bookmark for URI '%s'"
+msgstr "URI „%s“ žymelėje neapibrėžtas MIME tipas"
+
+#: ../glib/gbookmarkfile.c:2462
+#, c-format
+msgid "No private flag has been defined in bookmark for URI '%s'"
+msgstr "URI „%s“ žymelėje neapibrėžta privati vėliavėlė"
+
+#: ../glib/gbookmarkfile.c:2841
+#, c-format
+msgid "No groups set in bookmark for URI '%s'"
+msgstr "URI „%s“ žymelėje nenurodyta jokia grupė"
+
+#: ../glib/gbookmarkfile.c:3239 ../glib/gbookmarkfile.c:3396
+#, c-format
+msgid "No application with name '%s' registered a bookmark for '%s'"
+msgstr "Nėra programos pavadinimu „%s“ registravusios „%s“ žymelę"
+
+#: ../glib/gbookmarkfile.c:3419
+#, c-format
+msgid "Failed to expand exec line '%s' with URI '%s'"
+msgstr "Nepavyko išskleisti vykdomosios eilutės „%s“ su URI „%s“"
+
+#: ../glib/gconvert.c:506 ../glib/gutf8.c:829 ../glib/gutf8.c:1039
+#: ../glib/gutf8.c:1176 ../glib/gutf8.c:1280
+msgid "Partial character sequence at end of input"
+msgstr "Nepilna simbolio seka įvedimo pabaigoje"
+
+#: ../glib/gconvert.c:756
+#, c-format
+msgid "Cannot convert fallback '%s' to codeset '%s'"
+msgstr "Negalima keisti atgalinio varianto „%s“ į koduotę „%s“"
+
+#: ../glib/gconvert.c:1574
+#, c-format
+msgid "The URI '%s' is not an absolute URI using the \"file\" scheme"
+msgstr "Adresas „%s“ nėra absoliutus adresas naudojantis „file“ schemą"
+
+#: ../glib/gconvert.c:1584
+#, c-format
+msgid "The local file URI '%s' may not include a '#'"
+msgstr "Vietinio failo adresas „%s“ negali turėti simbolio „#“"
+
+#: ../glib/gconvert.c:1601
+#, c-format
+msgid "The URI '%s' is invalid"
+msgstr "Adresas „%s“ yra klaidingas"
+
+#: ../glib/gconvert.c:1613
+#, c-format
+msgid "The hostname of the URI '%s' is invalid"
+msgstr "Kompiuterio vardas „%s“ adrese yra klaidingas"
+
+#: ../glib/gconvert.c:1629
+#, c-format
+msgid "The URI '%s' contains invalidly escaped characters"
+msgstr "Adrese „%s“ yra klaidingai perkoduoti symboliai"
+
+#: ../glib/gconvert.c:1724
+#, c-format
+msgid "The pathname '%s' is not an absolute path"
+msgstr "Kelias „%s“ nėra absoliutus"
+
+#: ../glib/gconvert.c:1734
+msgid "Invalid hostname"
+msgstr "Klaidingas kompiuterio vardas"
+
+#. Translators: 'before midday' indicator
+#: ../glib/gdatetime.c:205
+msgctxt "GDateTime"
+msgid "AM"
+msgstr "AM"
+
+#. Translators: 'after midday' indicator
+#: ../glib/gdatetime.c:207
+msgctxt "GDateTime"
+msgid "PM"
+msgstr "PM"
+
+#. Translators: this is the preferred format for expressing the date and the time
+#: ../glib/gdatetime.c:210
+msgctxt "GDateTime"
+msgid "%a %b %e %H:%M:%S %Y"
+msgstr "%a, %Y m. %b %e d., %H:%M:%S"
+
+#. Translators: this is the preferred format for expressing the date
+#: ../glib/gdatetime.c:213
+msgctxt "GDateTime"
+msgid "%m/%d/%y"
+msgstr "%Y-%m-%d"
+
+#. Translators: this is the preferred format for expressing the time
+#: ../glib/gdatetime.c:216
+msgctxt "GDateTime"
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+#. Translators: this is the preferred format for expressing 12 hour time
+#: ../glib/gdatetime.c:219
+msgctxt "GDateTime"
+msgid "%I:%M:%S %p"
+msgstr "%I:%M:%S"
+
+#: ../glib/gdatetime.c:232
+msgctxt "full month name"
+msgid "January"
+msgstr "Sausis"
+
+#: ../glib/gdatetime.c:234
+msgctxt "full month name"
+msgid "February"
+msgstr "Vasaris"
+
+#: ../glib/gdatetime.c:236
+msgctxt "full month name"
+msgid "March"
+msgstr "Kovas"
+
+#: ../glib/gdatetime.c:238
+msgctxt "full month name"
+msgid "April"
+msgstr "Balandis"
+
+#: ../glib/gdatetime.c:240
+msgctxt "full month name"
+msgid "May"
+msgstr "Gegužė"
+
+#: ../glib/gdatetime.c:242
+msgctxt "full month name"
+msgid "June"
+msgstr "Birželis"
+
+#: ../glib/gdatetime.c:244
+msgctxt "full month name"
+msgid "July"
+msgstr "Liepa"
+
+#: ../glib/gdatetime.c:246
+msgctxt "full month name"
+msgid "August"
+msgstr "Rugpjūtis"
+
+#: ../glib/gdatetime.c:248
+msgctxt "full month name"
+msgid "September"
+msgstr "Rugsėjis"
+
+#: ../glib/gdatetime.c:250
+msgctxt "full month name"
+msgid "October"
+msgstr "Spalis"
+
+#: ../glib/gdatetime.c:252
+msgctxt "full month name"
+msgid "November"
+msgstr "Lapkritis"
+
+#: ../glib/gdatetime.c:254
+msgctxt "full month name"
+msgid "December"
+msgstr "Gruodis"
+
+#: ../glib/gdatetime.c:269
+msgctxt "abbreviated month name"
+msgid "Jan"
+msgstr "Sau"
+
+#: ../glib/gdatetime.c:271
+msgctxt "abbreviated month name"
+msgid "Feb"
+msgstr "Vas"
+
+#: ../glib/gdatetime.c:273
+msgctxt "abbreviated month name"
+msgid "Mar"
+msgstr "Kov"
+
+#: ../glib/gdatetime.c:275
+msgctxt "abbreviated month name"
+msgid "Apr"
+msgstr "Bal"
+
+#: ../glib/gdatetime.c:277
+msgctxt "abbreviated month name"
+msgid "May"
+msgstr "Geg"
+
+#: ../glib/gdatetime.c:279
+msgctxt "abbreviated month name"
+msgid "Jun"
+msgstr "Bir"
+
+#: ../glib/gdatetime.c:281
+msgctxt "abbreviated month name"
+msgid "Jul"
+msgstr "Lie"
+
+#: ../glib/gdatetime.c:283
+msgctxt "abbreviated month name"
+msgid "Aug"
+msgstr "Rgp"
+
+#: ../glib/gdatetime.c:285
+msgctxt "abbreviated month name"
+msgid "Sep"
+msgstr "Rgs"
+
+#: ../glib/gdatetime.c:287
+msgctxt "abbreviated month name"
+msgid "Oct"
+msgstr "Spa"
+
+#: ../glib/gdatetime.c:289
+msgctxt "abbreviated month name"
+msgid "Nov"
+msgstr "Lap"
+
+#: ../glib/gdatetime.c:291
+msgctxt "abbreviated month name"
+msgid "Dec"
+msgstr "Grd"
+
+#: ../glib/gdatetime.c:306
+msgctxt "full weekday name"
+msgid "Monday"
+msgstr "Pirmadienis"
+
+#: ../glib/gdatetime.c:308
+msgctxt "full weekday name"
+msgid "Tuesday"
+msgstr "Antradienis"
+
+#: ../glib/gdatetime.c:310
+msgctxt "full weekday name"
+msgid "Wednesday"
+msgstr "Trečiadienis"
+
+#: ../glib/gdatetime.c:312
+msgctxt "full weekday name"
+msgid "Thursday"
+msgstr "Ketvirtadienis"
+
+#: ../glib/gdatetime.c:314
+msgctxt "full weekday name"
+msgid "Friday"
+msgstr "Penktadienis"
+
+#: ../glib/gdatetime.c:316
+msgctxt "full weekday name"
+msgid "Saturday"
+msgstr "Šeštadienis"
+
+#: ../glib/gdatetime.c:318
+msgctxt "full weekday name"
+msgid "Sunday"
+msgstr "Sekmadienis"
+
+#: ../glib/gdatetime.c:333
+msgctxt "abbreviated weekday name"
+msgid "Mon"
+msgstr "Pir"
+
+#: ../glib/gdatetime.c:335
+msgctxt "abbreviated weekday name"
+msgid "Tue"
+msgstr "Ant"
+
+#: ../glib/gdatetime.c:337
+msgctxt "abbreviated weekday name"
+msgid "Wed"
+msgstr "Tre"
+
+#: ../glib/gdatetime.c:339
+msgctxt "abbreviated weekday name"
+msgid "Thu"
+msgstr "Ket"
+
+#: ../glib/gdatetime.c:341
+msgctxt "abbreviated weekday name"
+msgid "Fri"
+msgstr "Pen"
+
+#: ../glib/gdatetime.c:343
+msgctxt "abbreviated weekday name"
+msgid "Sat"
+msgstr "Šeš"
+
+#: ../glib/gdatetime.c:345
+msgctxt "abbreviated weekday name"
+msgid "Sun"
+msgstr "Sek"
+
+#: ../glib/gdir.c:120 ../glib/gdir.c:143
+#, c-format
+msgid "Error opening directory '%s': %s"
+msgstr "Klaida atidarant aplanką „%s“: %s"
+
+#: ../glib/gfileutils.c:671 ../glib/gfileutils.c:759
+#, c-format
+msgid "Could not allocate %lu byte to read file \"%s\""
+msgid_plural "Could not allocate %lu bytes to read file \"%s\""
+msgstr[0] "Nepavyko išskirti %lu baito failo „%s“ perskaitymui"
+msgstr[1] "Nepavyko išskirti %lu baitų failo „%s“ perskaitymui"
+msgstr[2] "Nepavyko išskirti %lu baitų failo „%s“ perskaitymui"
+
+#: ../glib/gfileutils.c:686
+#, c-format
+msgid "Error reading file '%s': %s"
+msgstr "Klaida skaitant failą „%s“: %s"
+
+#: ../glib/gfileutils.c:700
+#, c-format
+msgid "File \"%s\" is too large"
+msgstr "Failas „%s“ per didelis"
+
+#: ../glib/gfileutils.c:783
+#, c-format
+msgid "Failed to read from file '%s': %s"
+msgstr "Nepavyko perskaityti failo „%s“: %s"
+
+#: ../glib/gfileutils.c:834 ../glib/gfileutils.c:921
+#, c-format
+msgid "Failed to open file '%s': %s"
+msgstr "Nepavyko atverti failo „%s“: %s"
+
+#: ../glib/gfileutils.c:851
+#, c-format
+msgid "Failed to get attributes of file '%s': fstat() failed: %s"
+msgstr "Nepavyko gauti failo „%s“ atributų: fstat() klaida: %s"
+
+#: ../glib/gfileutils.c:885
+#, c-format
+msgid "Failed to open file '%s': fdopen() failed: %s"
+msgstr "Nepavyko atverti failo „%s“: fdopen() klaida: %s"
+
+#: ../glib/gfileutils.c:993
+#, c-format
+msgid "Failed to rename file '%s' to '%s': g_rename() failed: %s"
+msgstr "Nepavyko pervadinti failo „%s“ į „%s“: g_rename() klaida: %s"
+
+#: ../glib/gfileutils.c:1047 ../glib/gfileutils.c:1554
+#, c-format
+msgid "Failed to create file '%s': %s"
+msgstr "Nepavyko sukurti failo „%s“: %s"
+
+#: ../glib/gfileutils.c:1071
+#, c-format
+#| msgid "Failed to write file '%s': fwrite() failed: %s"
+msgid "Failed to write file '%s': write() failed: %s"
+msgstr "Nepavyko įrašyti failo „%s“: write() klaida: %s"
+
+#: ../glib/gfileutils.c:1111
+#, c-format
+msgid "Failed to write file '%s': fsync() failed: %s"
+msgstr "Nepavyko įrašyti failo „%s“: fsync() klaida: %s"
+
+#: ../glib/gfileutils.c:1243
+#, c-format
+msgid "Existing file '%s' could not be removed: g_unlink() failed: %s"
+msgstr "Nepavyko pašalinti egzistuojančio failo „%s“: g_unlink() failed: %s"
+
+#: ../glib/gfileutils.c:1517
+#, c-format
+msgid "Template '%s' invalid, should not contain a '%s'"
+msgstr "Šablonas „%s“ klaidingas, jame negali būti „%s“"
+
+#: ../glib/gfileutils.c:1530
+#, c-format
+msgid "Template '%s' doesn't contain XXXXXX"
+msgstr "Šablone „%s“ nėra XXXXXX"
+
+#: ../glib/gfileutils.c:2058
+#, c-format
+msgid "Failed to read the symbolic link '%s': %s"
+msgstr "Nepavyko perskaityti simbolinės nuorodos „%s“: %s"
+
+#: ../glib/gfileutils.c:2079
+msgid "Symbolic links not supported"
+msgstr "Simbolinės nuorodos nepalaikomos"
+
+#: ../glib/giochannel.c:1418
+#, c-format
+msgid "Could not open converter from '%s' to '%s': %s"
+msgstr "Nepavyko atverti keitiklio iš „%s“ į „%s“: %s"
+
+#: ../glib/giochannel.c:1763
+msgid "Can't do a raw read in g_io_channel_read_line_string"
+msgstr "Negalima vykdyti tiesioginio skaitymo iš g_io_channel_read_line_string"
+
+#: ../glib/giochannel.c:1810 ../glib/giochannel.c:2068
+#: ../glib/giochannel.c:2155
+msgid "Leftover unconverted data in read buffer"
+msgstr "Nepakeistų duomenų likučiai skaitymo buferyje"
+
+#: ../glib/giochannel.c:1891 ../glib/giochannel.c:1968
+msgid "Channel terminates in a partial character"
+msgstr "Kanalas pasibaigia nepilnu simboliu"
+
+#: ../glib/giochannel.c:1954
+msgid "Can't do a raw read in g_io_channel_read_to_end"
+msgstr "Negalima vykdyti tiesioginio skaitymo iš g_io_channel_read_to_end"
+
+#: ../glib/gkeyfile.c:722
+msgid "Valid key file could not be found in search dirs"
+msgstr "Paieškos aplankuose nepavyko rasti tinkamo raktų failo"
+
+#: ../glib/gkeyfile.c:758
+msgid "Not a regular file"
+msgstr "Nėra paprastas failas"
+
+#: ../glib/gkeyfile.c:1158
+#, c-format
+msgid ""
+"Key file contains line '%s' which is not a key-value pair, group, or comment"
+msgstr ""
+"Raktų faile yra eilutė „%s“, kuri nėra raktas-reikšmė pora, grupė ar "
+"komentaras"
+
+#: ../glib/gkeyfile.c:1215
+#, c-format
+msgid "Invalid group name: %s"
+msgstr "Netinkamas grupės pavadinimas: %s"
+
+#: ../glib/gkeyfile.c:1237
+msgid "Key file does not start with a group"
+msgstr "Raktų failas neprasideda grupe"
+
+#: ../glib/gkeyfile.c:1263
+#, c-format
+msgid "Invalid key name: %s"
+msgstr "Netinkamas rakto pavadinimas: %s"
+
+#: ../glib/gkeyfile.c:1290
+#, c-format
+msgid "Key file contains unsupported encoding '%s'"
+msgstr "Raktų faile yra nepalaikoma koduotė „%s“"
+
+#: ../glib/gkeyfile.c:1533 ../glib/gkeyfile.c:1695 ../glib/gkeyfile.c:3073
+#: ../glib/gkeyfile.c:3139 ../glib/gkeyfile.c:3265 ../glib/gkeyfile.c:3398
+#: ../glib/gkeyfile.c:3540 ../glib/gkeyfile.c:3770 ../glib/gkeyfile.c:3837
+#, c-format
+msgid "Key file does not have group '%s'"
+msgstr "Raktų failas neturi grupės „%s“"
+
+#: ../glib/gkeyfile.c:1707
+#, c-format
+msgid "Key file does not have key '%s'"
+msgstr "Raktų failas neturi rakto „%s“"
+
+#: ../glib/gkeyfile.c:1814 ../glib/gkeyfile.c:1930
+#, c-format
+msgid "Key file contains key '%s' with value '%s' which is not UTF-8"
+msgstr "Raktų faile yra raktas „%s“ su reikšme „%s“, kuri nėra UTF-8"
+
+#: ../glib/gkeyfile.c:1834 ../glib/gkeyfile.c:1950 ../glib/gkeyfile.c:2319
+#, c-format
+msgid ""
+"Key file contains key '%s' which has a value that cannot be interpreted."
+msgstr "Raktų faile yra raktas „%s“, turintis nesuprantamą reikšmę."
+
+#: ../glib/gkeyfile.c:2536 ../glib/gkeyfile.c:2902
+#, c-format
+msgid ""
+"Key file contains key '%s' in group '%s' which has a value that cannot be "
+"interpreted."
+msgstr ""
+"Raktų faile yra raktas „%s“ grupėje „%s“, kuriame yra reikšmė, kurios "
+"negalima suprasti."
+
+#: ../glib/gkeyfile.c:2614 ../glib/gkeyfile.c:2690
+#, c-format
+msgid "Key '%s' in group '%s' has value '%s' where %s was expected"
+msgstr "Raktas „%s“ grupėje „%s“ turi reikšmę „%s“, nors tikimasi %s"
+
+#: ../glib/gkeyfile.c:3088 ../glib/gkeyfile.c:3280 ../glib/gkeyfile.c:3848
+#, c-format
+msgid "Key file does not have key '%s' in group '%s'"
+msgstr "Raktų faile nėra rakto „%s“ grupėje „%s“"
+
+#: ../glib/gkeyfile.c:4080
+msgid "Key file contains escape character at end of line"
+msgstr "Raktų faile, eilutės pabaigoje yra pabėgimo simbolis"
+
+#: ../glib/gkeyfile.c:4102
+#, c-format
+msgid "Key file contains invalid escape sequence '%s'"
+msgstr "Raktų faile yra klaidinga pabėgimo eilutė „%s“"
+
+#: ../glib/gkeyfile.c:4244
+#, c-format
+msgid "Value '%s' cannot be interpreted as a number."
+msgstr "Reikšmės „%s“ negalima interpretuoti kaip skaičiaus."
+
+#: ../glib/gkeyfile.c:4258
+#, c-format
+msgid "Integer value '%s' out of range"
+msgstr "Sveikoji reikšmė „%s“ viršija ribas"
+
+#: ../glib/gkeyfile.c:4291
+#, c-format
+msgid "Value '%s' cannot be interpreted as a float number."
+msgstr ""
+"Reikšmės „%s“ negalima interpretuoti kaip slankiojo kablelio skaičiaus."
+
+#: ../glib/gkeyfile.c:4315
+#, c-format
+msgid "Value '%s' cannot be interpreted as a boolean."
+msgstr "Reikšmės „%s“ negalima interpretuoti kaip loginės."
+
+#: ../glib/gmappedfile.c:130
+#, c-format
+msgid "Failed to get attributes of file '%s%s%s%s': fstat() failed: %s"
+msgstr "Nepavyko gauti failo „%s%s%s%s“ atributų: fstat() klaida: %s"
+
+#: ../glib/gmappedfile.c:196
+#, c-format
+msgid "Failed to map %s%s%s%s: mmap() failed: %s"
+msgstr "Nepavyko pažymėti failo %s%s%s%s: mmap() klaida: %s"
+
+#: ../glib/gmappedfile.c:262
+#, c-format
+msgid "Failed to open file '%s': open() failed: %s"
+msgstr "Nepavyko atverti failo „%s“: open() klaida: %s"
+
+#: ../glib/gmarkup.c:397 ../glib/gmarkup.c:439
+#, c-format
+msgid "Error on line %d char %d: "
+msgstr "Klaida eilutėje %d simbolyje %d: "
+
+#: ../glib/gmarkup.c:461 ../glib/gmarkup.c:544
+#, c-format
+msgid "Invalid UTF-8 encoded text in name - not valid '%s'"
+msgstr "Klaidingai koduotas UTF-8 tekstas varde – netinkamas „%s“"
+
+#: ../glib/gmarkup.c:472
+#, c-format
+msgid "'%s' is not a valid name"
+msgstr "„%s“ nėra tinkamas vardas"
+
+#: ../glib/gmarkup.c:488
+#, c-format
+msgid "'%s' is not a valid name: '%c'"
+msgstr "„%s“ nėra tinkamas vardas: „%c“"
+
+#: ../glib/gmarkup.c:598
+#, c-format
+msgid "Error on line %d: %s"
+msgstr "Klaida eilutėje %d: %s"
+
+#: ../glib/gmarkup.c:682
+#, c-format
+msgid ""
+"Failed to parse '%-.*s', which should have been a digit inside a character "
+"reference (&#234; for example) - perhaps the digit is too large"
+msgstr ""
+"Nepavyko perskaityti „%-.*s“, kuris galėjo turėti skaičius simbolio aprašyme "
+"(pvz., &#234;) - gal skaičius per didelis"
+
+#: ../glib/gmarkup.c:694
+msgid ""
+"Character reference did not end with a semicolon; most likely you used an "
+"ampersand character without intending to start an entity - escape ampersand "
+"as &amp;"
+msgstr ""
+"Simbolio aprašymas nepasibaigė kabliataškiu; greičiausiai Jūs panaudojote "
+"ampersendo simbolį nepradėdami elemento įvedimo - apeikite ampersendą "
+"įvesdami &amp;"
+
+#: ../glib/gmarkup.c:720
+#, c-format
+msgid "Character reference '%-.*s' does not encode a permitted character"
+msgstr "Simbolio aprašymas „%-.*s“ neatitinka leistinų simbolių"
+
+#: ../glib/gmarkup.c:758
+msgid ""
+"Empty entity '&;' seen; valid entities are: &amp; &quot; &lt; &gt; &apos;"
+msgstr ""
+"Aptiktas tuščias elementas '&;'; galimi elementai yra: &amp; &quot; &lt; "
+"&gt; &apos;"
+
+#: ../glib/gmarkup.c:766
+#, c-format
+msgid "Entity name '%-.*s' is not known"
+msgstr "Elemento vardas „%-.*s“ nežinomas"
+
+#: ../glib/gmarkup.c:771
+msgid ""
+"Entity did not end with a semicolon; most likely you used an ampersand "
+"character without intending to start an entity - escape ampersand as &amp;"
+msgstr ""
+"Elementas nepasibaigė kabliataškiu; greičiausiai Jūs panaudojote ampersendo "
+"simbolį nepradėdami elemento įvedimo - apeikite ampersendą įvesdami &amp;"
+
+#: ../glib/gmarkup.c:1119
+msgid "Document must begin with an element (e.g. <book>)"
+msgstr "Dokumentas turėtų prasidėti elementu (pvz., <book>)"
+
+#: ../glib/gmarkup.c:1159
+#, c-format
+msgid ""
+"'%s' is not a valid character following a '<' character; it may not begin an "
+"element name"
+msgstr ""
+"„%s“ negali būti rašomas po „<“ simbolio; jis nepradeda jokio elemento vardo"
+
+#: ../glib/gmarkup.c:1227
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' character to end the empty-element tag "
+"'%s'"
+msgstr ""
+"Neįprastas simbolis „%s“, tikėtasi sulaukti „>“ simbolio, užbaigiančio "
+"tuščią žymą „%s“"
+
+#: ../glib/gmarkup.c:1311
+#, c-format
+msgid ""
+"Odd character '%s', expected a '=' after attribute name '%s' of element '%s'"
+msgstr ""
+"Neįprastas simbolis „%1$s“, tikėtasi sulaukti „=“ po elemento „%3$s“ požymio "
+"vardo „%2$s“"
+
+#: ../glib/gmarkup.c:1352
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' or '/' character to end the start tag of "
+"element '%s', or optionally an attribute; perhaps you used an invalid "
+"character in an attribute name"
+msgstr ""
+"Neįprastas simbolis „%s“, tikėtasi sulaukti „>“ arba „/“ simbolių, "
+"užbaigiančių žymą „%s“, arba papildomo požymio; gal Jūs panaudojote "
+"netinkama simbolį požymio varde"
+
+#: ../glib/gmarkup.c:1396
+#, c-format
+msgid ""
+"Odd character '%s', expected an open quote mark after the equals sign when "
+"giving value for attribute '%s' of element '%s'"
+msgstr ""
+"Neįprastas simbolis „%1$s“, po lygybės tikėtasi sulaukti atidarančio "
+"citavimo simbolio pradedant „%3$s“ elemento „%2$s“ požymio reikšmę"
+
+#: ../glib/gmarkup.c:1529
+#, c-format
+msgid ""
+"'%s' is not a valid character following the characters '</'; '%s' may not "
+"begin an element name"
+msgstr ""
+"„%s“ negali būti rašomas po simbolių „</“; „%s“ negali būti kokio nors "
+"elemento vardu"
+
+#: ../glib/gmarkup.c:1565
+#, c-format
+msgid ""
+"'%s' is not a valid character following the close element name '%s'; the "
+"allowed character is '>'"
+msgstr ""
+"„%s“ negali būti rašomas po uždarančio elemento vardo „%s“; leistinas "
+"simbolis yra „>“"
+
+#: ../glib/gmarkup.c:1576
+#, c-format
+msgid "Element '%s' was closed, no element is currently open"
+msgstr ""
+"Elemento „%s“ uždarymo simbolis sutiktas anksčiau už elemento atidarymo "
+"simbolį"
+
+#: ../glib/gmarkup.c:1585
+#, c-format
+msgid "Element '%s' was closed, but the currently open element is '%s'"
+msgstr ""
+"Sutiktas elemento „%s“ uždarymo simbolis, tačiau šiuo metu atidarytas kitas "
+"elementas „%s“"
+
+#: ../glib/gmarkup.c:1753
+msgid "Document was empty or contained only whitespace"
+msgstr "Dokumentas tuščias arba susideda tik iš tarpų"
+
+#: ../glib/gmarkup.c:1767
+msgid "Document ended unexpectedly just after an open angle bracket '<'"
+msgstr "Dokumentas netikėtai pasibaigė tuoj po atidarančių skliaustų '<'"
+
+#: ../glib/gmarkup.c:1775 ../glib/gmarkup.c:1820
+#, c-format
+msgid ""
+"Document ended unexpectedly with elements still open - '%s' was the last "
+"element opened"
+msgstr ""
+"Dokumentas netikėtai pasibaigė neuždarius dalies elementų - „%s“ yra "
+"paskutinis atviras elementas"
+
+#: ../glib/gmarkup.c:1783
+#, c-format
+msgid ""
+"Document ended unexpectedly, expected to see a close angle bracket ending "
+"the tag <%s/>"
+msgstr ""
+"Dokumentas netikėtai pasibaigė, tikėtasi uždarančių skliaustų simbolio, "
+"užbaigiančio žymą <%s/>"
+
+#: ../glib/gmarkup.c:1789
+msgid "Document ended unexpectedly inside an element name"
+msgstr "Dokumentas netikėtai pasibaigė elemento varde"
+
+#: ../glib/gmarkup.c:1795
+msgid "Document ended unexpectedly inside an attribute name"
+msgstr "Dokumentas netikėtai pasibaigė požymio varde"
+
+#: ../glib/gmarkup.c:1800
+msgid "Document ended unexpectedly inside an element-opening tag."
+msgstr "Dokumentas netikėtai pasibaigė elemento atvėrimo žyma."
+
+#: ../glib/gmarkup.c:1806
+msgid ""
+"Document ended unexpectedly after the equals sign following an attribute "
+"name; no attribute value"
+msgstr ""
+"Dokumentas netikėtai pasibaigė lygybės simboliu einančio po požymio vardo; "
+"nerasta požymio reikšmė"
+
+#: ../glib/gmarkup.c:1813
+msgid "Document ended unexpectedly while inside an attribute value"
+msgstr "Dokumentas netikėtai pasibaigė požymio verte"
+
+#: ../glib/gmarkup.c:1829
+#, c-format
+msgid "Document ended unexpectedly inside the close tag for element '%s'"
+msgstr "Dokumentas netikėtai pasibaigė žymos „%s“ uždarančiame simbolyje"
+
+#: ../glib/gmarkup.c:1835
+msgid "Document ended unexpectedly inside a comment or processing instruction"
+msgstr ""
+"Dokumentas netikėtai pasibaigė komentaruose arba apdorojimo instrukcijose"
+
+#: ../glib/goption.c:754
+msgid "Usage:"
+msgstr "Naudojimas:"
+
+#: ../glib/goption.c:754
+msgid "[OPTION...]"
+msgstr "[PARINKTIS…]"
+
+#: ../glib/goption.c:870
+msgid "Help Options:"
+msgstr "Pagalbos parinktys:"
+
+#: ../glib/goption.c:871
+msgid "Show help options"
+msgstr "Rodyti pagalbos parinktis"
+
+#: ../glib/goption.c:877
+msgid "Show all help options"
+msgstr "Rodyti visas pagalbos parinktis"
+
+#: ../glib/goption.c:939
+msgid "Application Options:"
+msgstr "Programos parinktys:"
+
+#: ../glib/goption.c:1003 ../glib/goption.c:1073
+#, c-format
+msgid "Cannot parse integer value '%s' for %s"
+msgstr "Nepavyko apdoroti sveikosios reikšmės „%s“, reikalingos %s"
+
+#: ../glib/goption.c:1013 ../glib/goption.c:1081
+#, c-format
+msgid "Integer value '%s' for %s out of range"
+msgstr "Sveikoji reikšmė „%s“, reikalinga %s, viršija ribas"
+
+#: ../glib/goption.c:1038
+#, c-format
+msgid "Cannot parse double value '%s' for %s"
+msgstr "Nepavyko apdoroti dvigubos reikšmės „%s“, reikalingos %s"
+
+#: ../glib/goption.c:1046
+#, c-format
+msgid "Double value '%s' for %s out of range"
+msgstr "Dviguboji reikšmė „%s“, reikalinga %s, viršija ribas"
+
+#: ../glib/goption.c:1309 ../glib/goption.c:1388
+#, c-format
+msgid "Error parsing option %s"
+msgstr "Klaida apdorojant parinktį %s"
+
+#: ../glib/goption.c:1419 ../glib/goption.c:1532
+#, c-format
+msgid "Missing argument for %s"
+msgstr "%s trūksta argumento"
+
+#: ../glib/goption.c:1985
+#, c-format
+msgid "Unknown option %s"
+msgstr "Nežinoma parinktis %s"
+
+#: ../glib/gregex.c:257
+msgid "corrupted object"
+msgstr "sugadintas objektas"
+
+#: ../glib/gregex.c:259
+msgid "internal error or corrupted object"
+msgstr "vidinė klaida arba sugadintas objektas"
+
+#: ../glib/gregex.c:261
+msgid "out of memory"
+msgstr "nebėra atminties"
+
+#: ../glib/gregex.c:266
+msgid "backtracking limit reached"
+msgstr "pasiekta atgalinio sekimo riba"
+
+#: ../glib/gregex.c:278 ../glib/gregex.c:286
+msgid "the pattern contains items not supported for partial matching"
+msgstr "šablone yra dalinio atitikimo nepalaikomų elementų "
+
+#: ../glib/gregex.c:288
+msgid "back references as conditions are not supported for partial matching"
+msgstr "atgalinės nuorodos kaip sąlygos nepalaikomos daliniam atitikimui"
+
+#: ../glib/gregex.c:297
+msgid "recursion limit reached"
+msgstr "pasiekta rekursijos riba"
+
+#: ../glib/gregex.c:299
+msgid "invalid combination of newline flags"
+msgstr "netinkama naujos eilutės vėliavėlių kombinacija"
+
+#: ../glib/gregex.c:301
+msgid "bad offset"
+msgstr "blogas poslinkis"
+
+#: ../glib/gregex.c:303
+msgid "short utf8"
+msgstr "trumpas utf8"
+
+#: ../glib/gregex.c:305
+msgid "recursion loop"
+msgstr "rekursijos ciklas"
+
+#: ../glib/gregex.c:309
+msgid "unknown error"
+msgstr "nežinoma klaida"
+
+#: ../glib/gregex.c:329
+msgid "\\ at end of pattern"
+msgstr "\\ šablono pabaigoje"
+
+#: ../glib/gregex.c:332
+msgid "\\c at end of pattern"
+msgstr "\\c šablono pabaigoje"
+
+#: ../glib/gregex.c:335
+msgid "unrecognized character following \\"
+msgstr "neatpažintas simbolis po \\"
+
+#: ../glib/gregex.c:338
+msgid "numbers out of order in {} quantifier"
+msgstr "skaičiai ne iš eilės {} kvantoriuje"
+
+#: ../glib/gregex.c:341
+msgid "number too big in {} quantifier"
+msgstr "skaičius per didelis {} kvantoriuje"
+
+#: ../glib/gregex.c:344
+msgid "missing terminating ] for character class"
+msgstr "trūksta baigiamojo ] simbolio klasei"
+
+#: ../glib/gregex.c:347
+msgid "invalid escape sequence in character class"
+msgstr "klaidinga speciali seka simbolio klasėje"
+
+#: ../glib/gregex.c:350
+msgid "range out of order in character class"
+msgstr "ruožas ne iš eilės simbolio klasėje"
+
+#: ../glib/gregex.c:353
+msgid "nothing to repeat"
+msgstr "nėra ką kartoti"
+
+#: ../glib/gregex.c:357
+msgid "unexpected repeat"
+msgstr "netikėtas pakartojimas"
+
+#: ../glib/gregex.c:360
+msgid "unrecognized character after (? or (?-"
+msgstr "neatpažintas simbolis po (? arba (?-"
+
+#: ../glib/gregex.c:363
+msgid "POSIX named classes are supported only within a class"
+msgstr "klasės POSIX vardais leidžiamos tik klasių viduje"
+
+#: ../glib/gregex.c:366
+msgid "missing terminating )"
+msgstr "trūksta baigiamojo )"
+
+#: ../glib/gregex.c:369
+msgid "reference to non-existent subpattern"
+msgstr "nuoroda į neegzistuojantį pošablonį"
+
+#: ../glib/gregex.c:372
+msgid "missing ) after comment"
+msgstr "trūksta ) po komentaro"
+
+#: ../glib/gregex.c:375
+msgid "regular expression is too large"
+msgstr "reguliarioji išraiška per didelė"
+
+#: ../glib/gregex.c:378
+msgid "failed to get memory"
+msgstr "nepavyko rezervuoti atminties"
+
+#: ../glib/gregex.c:382
+msgid ") without opening ("
+msgstr ") be atveriamojo ("
+
+#: ../glib/gregex.c:386
+msgid "code overflow"
+msgstr "kodo perviršis"
+
+#: ../glib/gregex.c:390
+msgid "unrecognized character after (?<"
+msgstr "neatpažintas simbolis po (?<"
+
+#: ../glib/gregex.c:393
+msgid "lookbehind assertion is not fixed length"
+msgstr "žiūros atgal teiginys nefiksuoto ilgio"
+
+#: ../glib/gregex.c:396
+msgid "malformed number or name after (?("
+msgstr "netaisyklingas skaičius ar vardas po (?("
+
+#: ../glib/gregex.c:399
+msgid "conditional group contains more than two branches"
+msgstr "sąlyginė grupė turi daugiau negu dvi šakas"
+
+#: ../glib/gregex.c:402
+msgid "assertion expected after (?("
+msgstr "tikimasi teiginio po (?("
+
+#. translators: '(?R' and '(?[+-]digits' are both meant as (groups of)
+#. * sequences here, '(?-54' would be an example for the second group.
+#.
+#: ../glib/gregex.c:409
+msgid "(?R or (?[+-]digits must be followed by )"
+msgstr "po (?R arba (?[+-]skaitmenys turi būti )"
+
+#: ../glib/gregex.c:412
+msgid "unknown POSIX class name"
+msgstr "nežinomas POSIX klasės vardas"
+
+#: ../glib/gregex.c:415
+msgid "POSIX collating elements are not supported"
+msgstr "POSIX gretinimo elementai nepalaikomi"
+
+#: ../glib/gregex.c:418
+msgid "character value in \\x{...} sequence is too large"
+msgstr "simbolio reikšmė \\x{…} sekoje per didelė"
+
+#: ../glib/gregex.c:421
+msgid "invalid condition (?(0)"
+msgstr "netaisyklinga sąlygą (?(0)"
+
+#: ../glib/gregex.c:424
+msgid "\\C not allowed in lookbehind assertion"
+msgstr "\\C neleistinas žiūros atgal teiginyje"
+
+#: ../glib/gregex.c:431
+msgid "escapes \\L, \\l, \\N{name}, \\U, and \\u are not supported"
+msgstr "pakaitos simboliai \\L, \\l, \\N{name}, \\U, and \\u nepalaikomi"
+
+#: ../glib/gregex.c:434
+msgid "recursive call could loop indefinitely"
+msgstr "rekursyvus iškvietimas gali veikti be galo"
+
+#: ../glib/gregex.c:438
+msgid "unrecognized character after (?P"
+msgstr "neatpažintas simbolis po (?P"
+
+#: ../glib/gregex.c:441
+msgid "missing terminator in subpattern name"
+msgstr "trūksta baigiamojo simbolio pošablonio pavadinime"
+
+#: ../glib/gregex.c:444
+msgid "two named subpatterns have the same name"
+msgstr "du vardiniai pošabloniai turi tą patį vardą"
+
+#: ../glib/gregex.c:447
+msgid "malformed \\P or \\p sequence"
+msgstr "netaisyklinga \\P arba \\p seka"
+
+#: ../glib/gregex.c:450
+msgid "unknown property name after \\P or \\p"
+msgstr "nežinomas savybės vardas po \\P arba \\p"
+
+#: ../glib/gregex.c:453
+msgid "subpattern name is too long (maximum 32 characters)"
+msgstr "pošablonio vardas per ilgas (turi būti iki 32 simbolių)"
+
+#: ../glib/gregex.c:456
+msgid "too many named subpatterns (maximum 10,000)"
+msgstr "per daug vardinių pošablonių (iki 10000)"
+
+#: ../glib/gregex.c:459
+msgid "octal value is greater than \\377"
+msgstr "aštuntainė reikšmė didesnė už \\377"
+
+#: ../glib/gregex.c:463
+msgid "overran compiling workspace"
+msgstr "perpildyta kompiliavimo sritis"
+
+#: ../glib/gregex.c:467
+msgid "previously-checked referenced subpattern not found"
+msgstr "anksčiau tikrintas nurodytas pošablonis nerastas"
+
+#: ../glib/gregex.c:470
+msgid "DEFINE group contains more than one branch"
+msgstr "DEFINE grupėje yra daugiau negu viena šaka"
+
+#: ../glib/gregex.c:473
+msgid "inconsistent NEWLINE options"
+msgstr "nenuoseklios NEWLINE savybės"
+
+#: ../glib/gregex.c:476
+msgid ""
+"\\g is not followed by a braced, angle-bracketed, or quoted name or number, "
+"or by a plain number"
+msgstr ""
+"po \\g nėra vardo riestiniuose arba lenktiniuose skliaustuose ar teigiamo "
+"skaičiaus, ar tiesiog skaičiaus"
+
+#: ../glib/gregex.c:480
+msgid "a numbered reference must not be zero"
+msgstr "numeruota nuoroda turi būti ne nulis"
+
+#: ../glib/gregex.c:483
+msgid "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)"
+msgstr "argumentas neleidžiamas veiksmams (*ACCEPT), (*FAIL), ir (*COMMIT)"
+
+#: ../glib/gregex.c:486
+msgid "(*VERB) not recognized"
+msgstr "(*VERB) neatpažintas"
+
+#: ../glib/gregex.c:489
+msgid "number is too big"
+msgstr "numeris per didelis"
+
+#: ../glib/gregex.c:492
+msgid "missing subpattern name after (?&"
+msgstr "trūksta baigiamojo simbolio pošablonio po (?&"
+
+#: ../glib/gregex.c:495
+msgid "digit expected after (?+"
+msgstr "laukta skaitmens po (?+"
+
+#: ../glib/gregex.c:498
+msgid "] is an invalid data character in JavaScript compatibility mode"
+msgstr "] yra netinkamas duomenų simbolis JavaScript suderinamumo veiksenoje"
+
+#: ../glib/gregex.c:501
+msgid "different names for subpatterns of the same number are not allowed"
+msgstr "skirtingi vardai to paties skaičiaus pošabloniams nėra leistini"
+
+#: ../glib/gregex.c:504
+msgid "(*MARK) must have an argument"
+msgstr "(*MARK) privalo turėti argumentą"
+
+#: ../glib/gregex.c:507
+msgid "\\c must be followed by an ASCII character"
+msgstr "Po \\c turi būti ASCII simbolis"
+
+#: ../glib/gregex.c:510
+msgid "\\k is not followed by a braced, angle-bracketed, or quoted name"
+msgstr ""
+"po \\k nėra vardo riestiniuose arba lenktiniuose skliaustuose arba kabutėse"
+
+#: ../glib/gregex.c:513
+msgid "\\N is not supported in a class"
+msgstr "\\N nepalaikomas klasėje"
+
+#: ../glib/gregex.c:516
+msgid "too many forward references"
+msgstr "per daug nuorodų tolyn"
+
+#: ../glib/gregex.c:519
+msgid "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)"
+msgstr "pavadinimas yra per ilgas (*MARK), (*PRUNE), (*SKIP), ir (*THEN)"
+
+#: ../glib/gregex.c:522
+msgid "character value in \\u.... sequence is too large"
+msgstr "simbolio reikšmė \\u… sekoje per didelė"
+
+#: ../glib/gregex.c:745 ../glib/gregex.c:1914
+#, c-format
+msgid "Error while matching regular expression %s: %s"
+msgstr "Klaida ieškant reguliariosios išraiškos %s atitikmens: %s"
+
+#: ../glib/gregex.c:1311
+msgid "PCRE library is compiled without UTF8 support"
+msgstr "PCRE biblioteka sukompiliuota be UTF8 palaikymo"
+
+#: ../glib/gregex.c:1315
+msgid "PCRE library is compiled without UTF8 properties support"
+msgstr "PCRE biblioteka sukompiliuota be UTF8 ypatybių palaikymo"
+
+#: ../glib/gregex.c:1323
+msgid "PCRE library is compiled with incompatible options"
+msgstr "PCRE biblioteka sukompiliuota su nesuderinamomis parinktimis"
+
+#: ../glib/gregex.c:1382
+#, c-format
+msgid "Error while compiling regular expression %s at char %d: %s"
+msgstr "Klaida kompiliuojanti reguliarią išraišką %s ties simboliu %d: %s"
+
+#: ../glib/gregex.c:1424
+#, c-format
+msgid "Error while optimizing regular expression %s: %s"
+msgstr "Klaida optimizuojant reguliariąją išraišką %s: %s"
+
+#: ../glib/gregex.c:2346
+msgid "hexadecimal digit or '}' expected"
+msgstr "laukta šešioliktainio skaitmens arba „}“"
+
+#: ../glib/gregex.c:2362
+msgid "hexadecimal digit expected"
+msgstr "laukta šešioliktainio skaitmens"
+
+#: ../glib/gregex.c:2402
+msgid "missing '<' in symbolic reference"
+msgstr "simbolinėje nuorodoje trūksta „<“"
+
+#: ../glib/gregex.c:2411
+msgid "unfinished symbolic reference"
+msgstr "nebaigta simbolinė nuoroda"
+
+#: ../glib/gregex.c:2418
+msgid "zero-length symbolic reference"
+msgstr "nulinio ilgio simbolinė nuoroda"
+
+#: ../glib/gregex.c:2429
+msgid "digit expected"
+msgstr "laukta skaitmens"
+
+#: ../glib/gregex.c:2447
+msgid "illegal symbolic reference"
+msgstr "neleistina simbolinė nuoroda"
+
+#: ../glib/gregex.c:2509
+msgid "stray final '\\'"
+msgstr "nevietoje galutinis „\\“"
+
+#: ../glib/gregex.c:2513
+msgid "unknown escape sequence"
+msgstr "nežinoma kaitos seka"
+
+#: ../glib/gregex.c:2523
+#, c-format
+msgid "Error while parsing replacement text \"%s\" at char %lu: %s"
+msgstr "Klaida apdorojant pakeitimo tekstą „%s“ ties simboliu %lu: %s"
+
+#: ../glib/gshell.c:88
+msgid "Quoted text doesn't begin with a quotation mark"
+msgstr "Cituojamas tekstas neprasideda citavimo ženklu"
+
+#: ../glib/gshell.c:178
+msgid "Unmatched quotation mark in command line or other shell-quoted text"
+msgstr ""
+"Nesutampantis citavimo simbolis komandinėje eilutėje arba kitame terpės "
+"cituotame tekste"
+
+#: ../glib/gshell.c:574
+#, c-format
+msgid "Text ended just after a '\\' character. (The text was '%s')"
+msgstr "Tekstas pasibaigė tuoj po „\\“ simbolio. (Tekste buvo įrašyta „%s“)"
+
+#: ../glib/gshell.c:581
+#, c-format
+msgid "Text ended before matching quote was found for %c. (The text was '%s')"
+msgstr ""
+"Tekstas pasibaigė nesulaukus %c atitinkančio citatos ženklo. (Tekste buvo "
+"įrašyta „%s“)"
+
+#: ../glib/gshell.c:593
+msgid "Text was empty (or contained only whitespace)"
+msgstr "Tekstas buvo tuščias arba turėjo vien tik tarpo simbolius)"
+
+#: ../glib/gspawn.c:202
+#, c-format
+msgid "Failed to read data from child process (%s)"
+msgstr "Nepavyko gauti duomenis iš antrinio proceso (%s)"
+
+#: ../glib/gspawn.c:345
+#, c-format
+msgid "Unexpected error in select() reading data from a child process (%s)"
+msgstr ""
+"Netikėta klaida tarp select() funkcijos duomenų gavimo iš antrinio proceso "
+"(%s) metu"
+
+#: ../glib/gspawn.c:430
+#, c-format
+msgid "Unexpected error in waitpid() (%s)"
+msgstr "Netikėta waitpid() klaida (%s)"
+
+#: ../glib/gspawn.c:849 ../glib/gspawn-win32.c:1233
+#, c-format
+msgid "Child process exited with code %ld"
+msgstr "Vaikinis procesas išėjo su kodu %ld"
+
+#: ../glib/gspawn.c:857
+#, c-format
+msgid "Child process killed by signal %ld"
+msgstr "Vaikinis procesas nutrauktas signalu %ld"
+
+#: ../glib/gspawn.c:864
+#, c-format
+msgid "Child process stopped by signal %ld"
+msgstr "Vaikinis procesas sustabdytas signalu %ld"
+
+#: ../glib/gspawn.c:871
+#, c-format
+msgid "Child process exited abnormally"
+msgstr "Vaikinis procesas išėjo nenormaliai"
+
+#: ../glib/gspawn.c:1276 ../glib/gspawn-win32.c:339 ../glib/gspawn-win32.c:347
+#, c-format
+msgid "Failed to read from child pipe (%s)"
+msgstr "Nepavyko perskaityti duomenų iš antrinio konvejerio (%s)"
+
+#: ../glib/gspawn.c:1344
+#, c-format
+msgid "Failed to fork (%s)"
+msgstr "Nepavyko atskirti (%s)"
+
+#: ../glib/gspawn.c:1493 ../glib/gspawn-win32.c:370
+#, c-format
+msgid "Failed to change to directory '%s' (%s)"
+msgstr "Nepavyko pakeisti į aplanką „%s“ (%s)"
+
+#: ../glib/gspawn.c:1503
+#, c-format
+msgid "Failed to execute child process \"%s\" (%s)"
+msgstr "Nepavyko paleisti antrinio proceso „%s“ (%s)"
+
+#: ../glib/gspawn.c:1513
+#, c-format
+msgid "Failed to redirect output or input of child process (%s)"
+msgstr "Nepavyko perimti antrinio proceso (%s) išvedimo arba įvedimo"
+
+#: ../glib/gspawn.c:1522
+#, c-format
+msgid "Failed to fork child process (%s)"
+msgstr "Nepavyko atskirti antrinio proceso (%s)"
+
+#: ../glib/gspawn.c:1530
+#, c-format
+msgid "Unknown error executing child process \"%s\""
+msgstr "Nežinoma klaida vykdant antrinį procesą „%s“"
+
+#: ../glib/gspawn.c:1554
+#, c-format
+msgid "Failed to read enough data from child pid pipe (%s)"
+msgstr ""
+"Nepavyko perskaityti reikiamo duomenų kiekio iš antrinio pid konvejerio (%s)"
+
+#: ../glib/gspawn.c:1627 ../glib/gspawn-win32.c:300
+#, c-format
+msgid "Failed to create pipe for communicating with child process (%s)"
+msgstr ""
+"Nepavyko sukurti konvejerio skirto keistis duomenimis su antriniu procesu "
+"(%s)"
+
+#: ../glib/gspawn-win32.c:283
+msgid "Failed to read data from child process"
+msgstr "Nepavyko gauti duomenų iš antrinio proceso"
+
+#: ../glib/gspawn-win32.c:376 ../glib/gspawn-win32.c:495
+#, c-format
+msgid "Failed to execute child process (%s)"
+msgstr "Nepavyko paleisti antrinio proceso (%s)"
+
+#: ../glib/gspawn-win32.c:445
+#, c-format
+msgid "Invalid program name: %s"
+msgstr "Netinkamas programos pavadinimas: %s"
+
+#: ../glib/gspawn-win32.c:455 ../glib/gspawn-win32.c:722
+#: ../glib/gspawn-win32.c:1297
+#, c-format
+msgid "Invalid string in argument vector at %d: %s"
+msgstr "Netinkama seka argumento vektoriuje, pozicijoje %d: %s"
+
+#: ../glib/gspawn-win32.c:466 ../glib/gspawn-win32.c:737
+#: ../glib/gspawn-win32.c:1330
+#, c-format
+msgid "Invalid string in environment: %s"
+msgstr "Netinka seka aplinkoje: %s"
+
+#: ../glib/gspawn-win32.c:718 ../glib/gspawn-win32.c:1278
+#, c-format
+msgid "Invalid working directory: %s"
+msgstr "Netinkamas darbinis aplankas: %s"
+
+#: ../glib/gspawn-win32.c:783
+#, c-format
+msgid "Failed to execute helper program (%s)"
+msgstr "Nepavyko paleisti pagalbinės programos (%s)"
+
+#: ../glib/gspawn-win32.c:997
+msgid ""
+"Unexpected error in g_io_channel_win32_poll() reading data from a child "
+"process"
+msgstr ""
+"Netikėta klaida tarp g_io_channel_win32_poll() funkcijos duomenų skaitymo iš "
+"antrinio proceso metu"
+
+#: ../glib/gutf8.c:907
+msgid "Character out of range for UTF-8"
+msgstr "Simbolis neatitinka UTF-8 simbolių diapazono"
+
+#: ../glib/gutf8.c:1007 ../glib/gutf8.c:1016 ../glib/gutf8.c:1146
+#: ../glib/gutf8.c:1155 ../glib/gutf8.c:1294 ../glib/gutf8.c:1390
+msgid "Invalid sequence in conversion input"
+msgstr "Klaidinga seka keitimo įvestyje"
+
+#: ../glib/gutf8.c:1305 ../glib/gutf8.c:1401
+msgid "Character out of range for UTF-16"
+msgstr "Simbolis neatitinka UTF-16 simbolių diapazono"
+
+#: ../glib/gutils.c:2179 ../glib/gutils.c:2206 ../glib/gutils.c:2310
+#, c-format
+msgid "%u byte"
+msgid_plural "%u bytes"
+msgstr[0] "%u baitas"
+msgstr[1] "%u baitai"
+msgstr[2] "%u baitų"
+
+#: ../glib/gutils.c:2185
+#, c-format
+msgid "%.1f KiB"
+msgstr "%.1f KiB"
+
+#: ../glib/gutils.c:2187
+#, c-format
+msgid "%.1f MiB"
+msgstr "%.1f MiB"
+
+#: ../glib/gutils.c:2190
+#, c-format
+msgid "%.1f GiB"
+msgstr "%.1f GiB"
+
+#: ../glib/gutils.c:2193
+#, c-format
+msgid "%.1f TiB"
+msgstr "%.1f TiB"
+
+#: ../glib/gutils.c:2196
+#, c-format
+msgid "%.1f PiB"
+msgstr "%.1f PiB"
+
+#: ../glib/gutils.c:2199
+#, c-format
+msgid "%.1f EiB"
+msgstr "%.1f EiB"
+
+#: ../glib/gutils.c:2212
+#, c-format
+msgid "%.1f kB"
+msgstr "%.1f kB"
+
+#: ../glib/gutils.c:2215 ../glib/gutils.c:2328
+#, c-format
+msgid "%.1f MB"
+msgstr "%.1f MB"
+
+#: ../glib/gutils.c:2218 ../glib/gutils.c:2333
+#, c-format
+msgid "%.1f GB"
+msgstr "%.1f GB"
+
+#: ../glib/gutils.c:2220 ../glib/gutils.c:2338
+#, c-format
+msgid "%.1f TB"
+msgstr "%.1f TB"
+
+#: ../glib/gutils.c:2223 ../glib/gutils.c:2343
+#, c-format
+msgid "%.1f PB"
+msgstr "%.1f PB"
+
+#: ../glib/gutils.c:2226 ../glib/gutils.c:2348
+#, c-format
+msgid "%.1f EB"
+msgstr "%.1f EB"
+
+#. Translators: the %s in "%s bytes" will always be replaced by a number.
+#: ../glib/gutils.c:2263
+#, c-format
+msgid "%s byte"
+msgid_plural "%s bytes"
+msgstr[0] "%s baitas"
+msgstr[1] "%s baitai"
+msgstr[2] "%s baitų"
+
+#. Translators: this is from the deprecated function g_format_size_for_display() which uses 'KB' to
+#. * mean 1024 bytes.  I am aware that 'KB' is not correct, but it has been preserved for reasons of
+#. * compatibility.  Users will not see this string unless a program is using this deprecated function.
+#. * Please translate as literally as possible.
+#.
+#: ../glib/gutils.c:2323
+#, c-format
+msgid "%.1f KB"
+msgstr "%.1f KB"
+

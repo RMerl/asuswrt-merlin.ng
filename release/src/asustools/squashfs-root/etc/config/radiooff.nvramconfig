@@ -1,0 +1,2 @@
+"radiooff_button"  "SES Radio Off"  "CHOICE"  "2"  "0"  "1"  "FALSE"  "0"
+"radiooff_boot_off"  "Auto Radio Off at Boot"  "CHOICE"  "2"  "0"  "1"  "FALSE"  "0"

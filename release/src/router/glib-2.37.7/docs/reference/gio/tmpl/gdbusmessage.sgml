@@ -1,0 +1,545 @@
+<!-- ##### SECTION Title ##### -->
+GDBusMessage
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusMessage ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GDBusMessage:locked ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GDBusMessageType ##### -->
+<para>
+
+</para>
+
+@G_DBUS_MESSAGE_TYPE_INVALID: 
+@G_DBUS_MESSAGE_TYPE_METHOD_CALL: 
+@G_DBUS_MESSAGE_TYPE_METHOD_RETURN: 
+@G_DBUS_MESSAGE_TYPE_ERROR: 
+@G_DBUS_MESSAGE_TYPE_SIGNAL: 
+
+<!-- ##### ENUM GDBusMessageFlags ##### -->
+<para>
+
+</para>
+
+@G_DBUS_MESSAGE_FLAGS_NONE: 
+@G_DBUS_MESSAGE_FLAGS_NO_REPLY_EXPECTED: 
+@G_DBUS_MESSAGE_FLAGS_NO_AUTO_START: 
+
+<!-- ##### ENUM GDBusMessageHeaderField ##### -->
+<para>
+
+</para>
+
+@G_DBUS_MESSAGE_HEADER_FIELD_INVALID: 
+@G_DBUS_MESSAGE_HEADER_FIELD_PATH: 
+@G_DBUS_MESSAGE_HEADER_FIELD_INTERFACE: 
+@G_DBUS_MESSAGE_HEADER_FIELD_MEMBER: 
+@G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME: 
+@G_DBUS_MESSAGE_HEADER_FIELD_REPLY_SERIAL: 
+@G_DBUS_MESSAGE_HEADER_FIELD_DESTINATION: 
+@G_DBUS_MESSAGE_HEADER_FIELD_SENDER: 
+@G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE: 
+@G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS: 
+
+<!-- ##### ENUM GDBusMessageByteOrder ##### -->
+<para>
+
+</para>
+
+@G_DBUS_MESSAGE_BYTE_ORDER_BIG_ENDIAN: 
+@G_DBUS_MESSAGE_BYTE_ORDER_LITTLE_ENDIAN: 
+
+<!-- ##### FUNCTION g_dbus_message_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_signal ##### -->
+<para>
+
+</para>
+
+@path: 
+@interface_: 
+@signal: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_method_call ##### -->
+<para>
+
+</para>
+
+@name: 
+@path: 
+@interface_: 
+@method: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_method_reply ##### -->
+<para>
+
+</para>
+
+@method_call_message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_method_error ##### -->
+<para>
+
+</para>
+
+@method_call_message: 
+@error_name: 
+@error_message_format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_method_error_valist ##### -->
+<para>
+
+</para>
+
+@method_call_message: 
+@error_name: 
+@error_message_format: 
+@var_args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_method_error_literal ##### -->
+<para>
+
+</para>
+
+@method_call_message: 
+@error_name: 
+@error_message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_print ##### -->
+<para>
+
+</para>
+
+@message: 
+@indent: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_locked ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_lock ##### -->
+<para>
+
+</para>
+
+@message: 
+
+
+<!-- ##### FUNCTION g_dbus_message_copy ##### -->
+<para>
+
+</para>
+
+@message: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_byte_order ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_byte_order ##### -->
+<para>
+
+</para>
+
+@message: 
+@byte_order: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_message_type ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_message_type ##### -->
+<para>
+
+</para>
+
+@message: 
+@type: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_serial ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_serial ##### -->
+<para>
+
+</para>
+
+@message: 
+@serial: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_flags ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_flags ##### -->
+<para>
+
+</para>
+
+@message: 
+@flags: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_body ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_body ##### -->
+<para>
+
+</para>
+
+@message: 
+@body: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_unix_fd_list ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_unix_fd_list ##### -->
+<para>
+
+</para>
+
+@message: 
+@fd_list: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_num_unix_fds ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_num_unix_fds ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_header_fields ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_header ##### -->
+<para>
+
+</para>
+
+@message: 
+@header_field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_header ##### -->
+<para>
+
+</para>
+
+@message: 
+@header_field: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_destination ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_destination ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_error_name ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_error_name ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_interface ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_interface ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_member ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_member ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_path ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_path ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_reply_serial ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_reply_serial ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_sender ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_sender ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_signature ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_set_signature ##### -->
+<para>
+
+</para>
+
+@message: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_message_get_arg0 ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_to_blob ##### -->
+<para>
+
+</para>
+
+@message: 
+@out_size: 
+@capabilities: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_bytes_needed ##### -->
+<para>
+
+</para>
+
+@blob: 
+@blob_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_new_from_blob ##### -->
+<para>
+
+</para>
+
+@blob: 
+@blob_len: 
+@capabilities: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_message_to_gerror ##### -->
+<para>
+
+</para>
+
+@message: 
+@error: 
+@Returns: 
+
+

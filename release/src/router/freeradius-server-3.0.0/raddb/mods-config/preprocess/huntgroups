@@ -1,0 +1,46 @@
+#
+# huntgroups	This file defines the `huntgroups' that you have. A
+#		huntgroup is defined by specifying the IP address of
+#		the NAS and possibly a port range. Port can be identified
+#		as just one port, or a range (from-to), and multiple ports
+#		or ranges of ports must be separated by a comma. For
+#		example: 1,2,3-8
+#
+#		Matching is done while RADIUS scans the user file; if it
+#		includes the selection criterium "Huntgroup-Name == XXX"
+#		the huntgroup is looked up in this file to see if it
+#		matches. There can be multiple definitions of the same
+#		huntgroup; the first one that matches will be used.
+#
+#		This file can also be used to define restricted access
+#		to certain huntgroups. The second and following lines
+#		define the access restrictions (based on username and
+#		UNIX usergroup) for the huntgroup.
+#
+
+#
+# Our POP in Alphen a/d Rijn has 3 terminal servers. Create a Huntgroup-Name
+# called Alphen that matches on all three terminal servers.
+#
+#alphen		NAS-IP-Address == 192.0.2.5
+#alphen		NAS-IP-Address == 192.0.2.6
+#alphen		NAS-IP-Address == 192.0.2.7
+
+#
+# The POP in Delft consists of only one terminal server.
+#
+#delft		NAS-IP-Address == 198.51.100.5
+
+#
+# Ports 0-7 on the first terminal server in Alphen are connected to
+# a huntgroup that is for business users only. Note that only one
+# of the username or groupname has to match to get access (OR/OR).
+#
+# Note that this huntgroup is a subset of the "alphen" huntgroup.
+#
+#business	NAS-IP-Address == 198.51.100.5, NAS-Port-Id == 0-7
+#		User-Name = rogerl,
+#		User-Name = henks,
+#		Group = business,
+#		Group = staff
+

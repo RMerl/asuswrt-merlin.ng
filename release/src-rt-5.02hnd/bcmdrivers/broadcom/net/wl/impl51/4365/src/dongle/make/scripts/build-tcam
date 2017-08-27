@@ -1,0 +1,544 @@
+#!/usr/bin/perl
+#
+# This script lists ROM symbols as absolute values in assembly using information
+# found in romtable.S and symtbl files and outputs the list to STDOUT.
+#
+#     - symtbl map ('nm -n roml' output) from STDIN
+#     - symbols in romtable.S with .extern keyword
+#
+# $Id: build-rommap,v 1.13.2.1 2010-12-23 07:27:07 lut Exp $
+#
+
+use strict;
+use warnings;
+use File::Basename;
+use Getopt::Std;
+use Log;
+
+sub usage {
+    print STDERR "Usage: build-tcam <romtbl> <file>\n";
+    exit 1;
+}
+
+my $idre = '([\w$]+)';
+my $fnre = '([\w.-]+)';
+my $adr = '([0-9a-fA-F]{1,8})';
+my $adr4 = '([0-9a-fA-F]{4})';
+my $fnromtbl = "nil";
+my $tcam_enab = 0;
+my $tcam_pcnt = 0;
+my $tcam_size = 0;
+my $tcam_pentry_size = 0;
+my $patch_hdr_size = 0;
+my $fnasm;
+my $rom_text_start = 0;
+my $fnromhex = "nil";
+my $fn_manual_tcam_cfg = "nil";
+
+# Name of this script.
+my $g_script = basename($0);
+
+# Hash that maps abandoned ROM functions that use TCAM entries to their ROM addresses.
+my %g_rom_abandon_sym_addrs;
+
+# Hash that tcam patch data that use manual tcam patch address.
+my %g_man_tcam_addr_datas;
+
+# Parse optional command line options.
+my %g_opts;
+getopts('m:', \%g_opts);
+if ($g_opts{m}) {
+        $fn_manual_tcam_cfg = $g_opts{m};
+}
+
+($fnromtbl = shift @ARGV) || &usage;
+(($tcam_enab, $tcam_pcnt, $tcam_size, $patch_hdr_size) = split(/\+/, shift @ARGV)) || &usage;
+($fnasm = shift @ARGV) || &usage;
+($rom_text_start = shift @ARGV) || &usage;
+$rom_text_start = hex($rom_text_start);
+($fnromhex = shift @ARGV) || &usage;
+
+my @nm = <STDIN>;
+# find all symbols with .extern keyword in the rom table
+my $fhromtbl;
+open($fhromtbl, "<$fnromtbl") or die "Unable to open file $fnromtbl: $!\n";
+my %g_extern = ();
+my %g_rodata = ();
+my %g_abandon = ();
+my @declare = ();
+my %abandoned = ();
+my %not_abandoned = ();
+map {
+    $g_extern{$1} = 1 if /^\s*\.extern\s+${idre}\b/;
+    $g_rodata{$1} = 1 if /^\s*\.extern\s+${idre}\s+\#\s*\.rodata\b/;
+    $g_abandon{$1} = 1 if /^\s*\.extern\s+${idre}\s+\#\s*\.abandon\b/;
+    my $sym = $1 if /^\s*\.extern\s+${idre}\b/;
+    if (defined $sym) {
+        if (/\#.*\.abandon\b/) {
+            $abandoned{$sym} = 1;
+        } else {
+            $not_abandoned{$sym} = 1;
+        }
+        die "$sym is both abandoned and not abandoned in $fnromtbl\n"
+            if $abandoned{$sym} && $not_abandoned{$sym};
+        push(@declare, $_);     # save whole line
+    }
+} <$fhromtbl>;
+close($fhromtbl);
+
+die if ($tcam_enab == 0);
+die if ($tcam_pcnt > 4 || $tcam_pcnt < 0);
+
+# TCAM patch entry size
+$tcam_pentry_size = (1 << $tcam_pcnt) * 4;
+
+my $fh;
+
+# Hash that maps abandoned ROM addrs to their replacement data.
+my %g_rom_abandon_addr_data = ();
+if ($fnasm && open($fh, $fnasm)) {
+    while (<$fh>) {
+	if(/^\s+${adr}:\s+${adr4}\s*${adr4}\b/) {
+	    $g_rom_abandon_addr_data{sprintf("%08s", $1)} = $3.$2;
+	}
+    }
+    close $fh;
+}
+
+# There are multiple patch/link stages for the TCAM. In the first stage, the encoding of branch
+# instructions is determined for abandoned ROM functions (based upon the address of the updated
+# functions in RAM). The disasembly file 'fnasm' will be empty for the first stage. In the
+# second (final) stage, branch instruction encodings are programmed into the TCAM entries.
+my $g_final_patch_stage = 0;
+if (keys(%g_rom_abandon_addr_data) > 0) {
+	$g_final_patch_stage = 1;
+}
+
+
+my @g_rom_data =();
+# Store data to g_rom_data from $fnromhex
+open($fh, "<$fnromhex") or die "$g_script: ERROR: Unable to open file $fnromhex: $!\n";
+foreach my $line (<$fh>) {
+	my @s = split(/\s+/, $line);
+	push(@g_rom_data, @s);
+}
+close $fh;
+
+# Setup logging.
+#
+# Log file to store debug info.
+my $g_debug_fd;
+my $g_debug_fname = $g_script . "-debug.txt";
+open($g_debug_fd, ">$g_debug_fname") or
+	die "$g_script: ERROR: Could not open $g_debug_fname for writing: $!\n";
+
+log_set_debug_fd($g_debug_fd);
+
+# Get rom data from address
+# Stored array data is start from $text_start
+#
+# Params:  addr:         IN  rom data address.
+#
+# Returns: 4-bytes rom data.
+sub get_rom_data {
+	my $addr = shift;
+	my $index = ($addr - $rom_text_start)/4;
+
+	if ($g_rom_data[$index]) {
+		return hex($g_rom_data[$index]);
+	} else {
+		$addr = sprintf("%08x", $addr);
+		die "$g_script: ERROR: rom data does not exist for 0x$addr\n";
+	}
+}
+
+# Calculate the data mask.
+#
+# Params:  start:         IN  start offset of data.
+#          end:           IN  end offset of data.
+#
+# Returns: 4-byte data mask.
+sub get_data_mask {
+	my ($start, $end) = @_;
+	my ($mask, $i);
+
+	$mask = 0;
+	for $i ($start..$end) {
+		$mask += 0xff << ($i * 8);
+	}
+
+	return $mask;
+}
+
+# Get manual tcam data from 1-byte array
+#
+# Params:  offset:        IN  start offset of manual tcam patch address.
+#          len:           IN  length of 1-byte data array.
+#          data:          IN  1-byte data array of manual tcam patch data
+#
+# Returns: 4-byte tcam patch data.
+sub get_manual_tcam_data {
+	my ($offset, $len, $data) = @_;
+	my ($tcam_data, $i);
+
+	# Convert the 1-byte array to 4-bytes data.
+	# Max length is 4.
+	$tcam_data = 0;
+	for $i (0..($len-1)) {
+		$tcam_data += $data->[$i] << (($i + $offset)* 8);
+	}
+
+	return $tcam_data;
+}
+
+# Parse the manual tcam patch entries file.
+#
+# The format is:
+#    0x1000 8 0x11 0x22 0x33 0x44 0x55 0x66 0x77 0x88
+#
+# Params:  fname:             IN  Input filename.
+#          m_tcam_addr_datas: OUT Hash that maps manual TCAM address to their patch data.
+#
+# Returns: Nothing.
+sub parse_manual_tcam_entries {
+	my ($fname, $m_tcam_addr_datas) = @_;
+	my ($fd, $line, $addr, $addr_mask, $dst_addr, $tot, $len);
+	my (@data, @data_bytes, $end_addr);
+
+	# Open the config file.
+        open($fd, "<$fname") or
+		die "$g_script: ERROR: Could not open $fname for reading: $!\n";
+
+	$addr_mask = ~(4 - 1); # 4-byte align mask
+
+	# Format is [addr] [len] [data] ...
+	foreach $line (<$fd>) {
+		# Skip comments and blank line.
+		if ($line =~ /^\s*#|^\s*$/) {
+			next;
+		}
+		@data = split(/\s+/, $line);
+
+		# Array size of data should at least be 3.
+		if (@data < 3) {
+			log_error("$g_script: ERROR: file $fname, wrong syntx for $line\n");
+			exit(1);
+		}
+
+		$addr = hex($data[0]);
+		$tot = int($data[1]);
+
+		# Remove addr and length.
+		splice(@data, 0, 2);
+
+		# Store data to one-byte array.
+		$len = $tot;
+		for my $value (@data) {
+			push(@data_bytes, hex($value));
+			$len--;
+		}
+
+		# Check actual data length
+		die "$g_script: ERROR Actual data length is wrong for manual tcam entries file!\n" if ($len > 0);
+
+		# Generate manual tcam entries, each is 4 bytes.
+		$dst_addr = $addr & $addr_mask;
+		$end_addr = $addr + $tot;
+		while ($dst_addr < $end_addr) {
+			my @tmp; # store the byte array of data to be merged with rom data.
+			my ($offset, $rom_mask); # patch start offset and rom data mask.
+			my $rom_data = get_rom_data($dst_addr);
+			my $patch_data;
+
+			# start case for patch address
+			if ($dst_addr <= $addr) {
+				$offset = $addr & 0x3;
+				$len = 4 - $offset;
+				$rom_mask = ~(get_data_mask($offset, 3));
+			# end case for patch address
+			} elsif (($dst_addr + 4) >= $end_addr) {
+				$offset = 0;
+				$len = ($addr + $tot) - $dst_addr;
+				$rom_mask = ~(get_data_mask(0, ($len - 1)));
+			} else {
+				$offset = 0;
+				$len = 4;
+				$rom_mask = 0;
+			}
+			@tmp = splice(@data_bytes, 0, $len);
+			$patch_data = get_manual_tcam_data($offset, $len, \@tmp);
+			$m_tcam_addr_datas->{$dst_addr} = $patch_data + ($rom_data & $rom_mask);
+			$dst_addr += 4;
+		}
+	}
+
+	close $fd;
+}
+
+# Add manually tcam entries with auto tcam entries.
+#
+# Params:  abandon_sym_addrs: IN  Hash that maps abandoned symbols to their ROM address.
+#          abandon_addr_data: IN  Hash that maps abandoned ROM addrs to their replacement data.
+#          m_tcam_addr_datas: IN  Hash that maps manual TCAM address to their patch data.
+#          pentry_size:       IN  TCAM patch entry size.
+#
+# Returns: Nothing.
+sub add_manual_tcam_entries {
+	my ($abandon_sym_addrs, $abandon_addr_data, $m_tcam_addr_datas, $pentry_size) = @_;
+	my ($sym, $addr, $m_addr, $index);
+
+	# TCAM patch address mask. Patched addresses are aligned based upon patch entry size.
+	my $addr_mask = ~($pentry_size - 1);
+
+	# Check TCAM overlap for manual and auto tcam entries.
+	foreach $m_addr (keys %{$m_tcam_addr_datas}) {
+		foreach $addr (values %{$abandon_sym_addrs}) {
+			if (($m_addr & $addr_mask) == ($addr & $addr_mask)) {
+				die "$g_script: ERROR: TCAM Overlap for auto and manual patch !!!!!\n" if (($m_addr + 4) > $addr);
+			}
+		}
+	}
+
+	# Add abandon symbol for manual tcam entries.
+	$index = 0;
+	foreach $addr (keys %{$m_tcam_addr_datas}) {
+		$sym = "m_tcam_entry".$index++;
+		$abandon_sym_addrs->{$sym} = $addr;
+		$abandon_addr_data->{sprintf("%08x", $addr)} = sprintf("%08x", $m_tcam_addr_datas->{$addr});
+	}
+}
+
+my %g_patchaddr = ();
+# Generating patch entry's first part.
+#
+# Params:  sym:               IN  Patch symbol name.
+#          addr:              IN  Abandon address of rom.
+#          pentry_size:       IN  Patch entry size.
+#
+# Returns: Nothing.
+sub generate_patch_entry {
+	my $sym = shift;
+	my $addr = shift;
+	my $pentry_size = shift;
+
+	printf("\t.global $sym\n");
+
+	# Track duplicate patch addresses
+	if ($g_patchaddr{$addr}) {
+		printf STDERR ("ERROR: Dup patch entry at 0x%x for $sym and %s\n", $addr, $g_patchaddr{$addr});
+		die;
+	}
+
+	$g_patchaddr{$addr} = $sym;
+
+	printf("\t/* Patch Entry: $sym */\n");
+	printf("\t.section        .patchentry.%s__patentry,\"aw\",%%progbits\n", $sym);
+	printf("\t.align 2\n");
+	printf("\t.type %s__patentry, %%object\n", $sym);
+	printf("\t.size %s__patentry, $pentry_size\n", $sym);  # SRPC_PATCHNLOC * 4
+	printf("\t.global %s__patentry\n", $sym);
+	printf("%s__patentry:\n", $sym);
+}
+
+# Generating each patch entry data from Hash array.
+#
+# Params:  start_addr:        IN  TCAM Patch start address.
+#          pentry_addr_syms:  IN  Hash that maps abandoned ROM addrs to their function symbol.
+#                                 They all have the same TCM patch address.
+#          abandon_addr_data: IN  Hash that maps abandoned ROM addrs to their replacement data.
+#          pentry_size:       IN  Patch entry size.
+#
+# Returns: Nothing.
+sub generate_patch_entry_data {
+	my ($start_addr, $pentry_addr_syms, $abandon_addr_data, $pentry_size) = @_;
+	my $dst_addr = $start_addr;
+	my $end_addr = $start_addr + $pentry_size;
+	my $data;
+
+	log_debug_raw("Original: ");
+	my $dump_addr = $start_addr;
+	while ($dump_addr < $end_addr) {
+		$data = get_rom_data($dump_addr);
+		log_debug_raw("0x%08x ", $data);
+		$dump_addr += 4;
+	}
+	log_debug_raw("\n");
+
+	# Generating patch entry data
+	log_debug_raw("Patched:  ");
+	while ($dst_addr < $end_addr) {
+		# Find address which will be patched.
+		if ($pentry_addr_syms->{$dst_addr}) {
+			my $sym = $pentry_addr_syms->{$dst_addr};
+			my $addr_orig = sprintf("%08x", $dst_addr);
+
+			if ($g_final_patch_stage) {
+				if ($abandon_addr_data->{$addr_orig}) {
+					printf("\t.word 0x%x\t/* $sym */\n", hex($abandon_addr_data->{$addr_orig}));
+					log_debug_raw("0x%08x ", hex($abandon_addr_data->{$addr_orig}));
+				} else {
+					printf STDERR ("ERROR:\n");
+					printf STDERR ("ERROR: Missing patch instruction $sym @ $addr_orig\n");
+					printf STDERR ("ERROR:\n");
+					log_error("ERROR: Missing patch instruction $sym @ $addr_orig\n");
+					exit 1;
+				}
+			} else {
+				#
+				# Reserve space for now; fill in with b.w instruction later
+				#
+				printf("\t.word 0\t/* $sym */\n");
+				log_debug_raw("$sym ");
+			}
+		} else {
+			# Fill original rom data
+			$data = get_rom_data($dst_addr);
+			printf("\t.word 0x%08x\t/* ROM data */\n", $data);
+			log_debug_raw("0x%08x ", $data);
+		}
+		$dst_addr += 4;
+	}
+
+	printf("\n");
+	log_debug_raw("\n\n");
+}
+
+# Generating patch header
+#
+# Params:  sym:               IN  Patch symbol name.
+#          addr:              IN  Abandon address of rom.
+#
+# Returns: Nothing.
+sub generate_patch_header {
+	my $sym = shift;
+	my $addr = shift;
+
+	printf("\t/* Patch Header: $sym */\n");
+	printf("\t.section        .patchhdr.%s__pathdr,\"aw\",%%progbits\n", $sym);
+	printf("\t.align 2\n");
+	printf("\t.type %s__pathdr, %%object\n", $sym);
+	printf("\t.size %s__pathdr, $patch_hdr_size\n", $sym);
+	printf("\t.global %s__pathdr\n", $sym);
+	printf("%s__pathdr:\n", $sym);
+	printf("\t.word 0x%x\n", $addr);		# ROM address to patch
+	printf("\t.word %s__patentry\n", $sym);
+	printf("\n");
+}
+
+# Generating the whole patch header and patch entry.
+#
+# Params:  abandon_sym_addrs: IN  Hash array of abandon symbol with address.
+#          abandon_addr_data: IN  Hash that maps abandoned ROM addrs to their replacement data.
+#          pentry_size:       IN  TCAM patch entry size.
+#
+# Returns: Nothing.
+sub generate_patch_table {
+	my ($abandon_sym_addrs, $abandon_addr_data, $pentry_size) = @_;
+
+	# Create a sorted list (based upon ROM address) of patched TCAM symbols.
+	my @abandon_syms_sorted =
+		sort { $abandon_sym_addrs->{$a} <=> $abandon_sym_addrs->{$b} } keys %{$abandon_sym_addrs};
+
+	# TCAM patch address mask. Patched addresses are aligned based upon patch entry size.
+	my $addr_mask = ~($pentry_size - 1);
+
+	my $num_abandons = $#abandon_syms_sorted+1;
+	my $i = 0;
+	my $tidx = 0;
+	# Iterates parsing each symbol if it need to be merged.
+	while ($i < $num_abandons) {
+		# Merge length is the left space of patch entry.
+		# It is used for merging for adjacent tcam patch.
+		my $merge_len = $pentry_size - 4;
+		my $sym = $abandon_syms_sorted[$i];
+		my $addr = $abandon_sym_addrs->{$sym};
+		my $addr_align = $addr & $addr_mask;
+		my %pentry_addr_syms;
+
+		generate_patch_entry($sym, $addr, $pentry_size);
+
+		# Store abandon symbol to hash array.
+		$pentry_addr_syms{$addr} = $sym;
+
+		# Merge TCAM patch entry data with the same tcam patch address.
+		while ($merge_len > 0 && ($i+1) < $num_abandons) {
+			my $next_sym = $abandon_syms_sorted[$i+1];
+			my $next_addr = $abandon_sym_addrs->{$next_sym};
+			my $next_addr_align = $next_addr & $addr_mask;
+
+			# Compare adjacent patch if their tcam patch address is the same.
+			if ($addr_align == $next_addr_align) {
+				# Store abandon symbol which tcam patch address is the same.
+				$pentry_addr_syms{$next_addr} = $next_sym;
+				$i++;
+				$merge_len -= 4;
+			} else {
+				last;
+			}
+		}
+		log_debug_raw("(%03d)patch addr - 0x%08x (start from 0x%08x)\n", $tidx++, $addr, $addr_align);
+		generate_patch_entry_data($addr_align, \%pentry_addr_syms, $abandon_addr_data, $pentry_size);
+
+		generate_patch_header($sym, $addr_align);
+
+		$i++;
+	}
+}
+
+# ROM func name suffix
+my $g_romdat_suffix = "__bcmromdat";
+my $g_romfn_suffix = "__bcmromfn";
+my $g_romdat_patch_suffix = "__bcmpatch";
+
+my %g_nm_decl = ();
+# Lookup symbols from romtable.S in nm
+foreach (@nm) {
+	chomp;
+	my($addr, $attr, $sym) = split(/\s+/);
+
+	$sym =~ s/$g_romfn_suffix$//; 
+	$sym =~ s/$g_romdat_suffix$//; 
+
+	push(@{$g_nm_decl{$sym}}, $_) if ($g_extern{$sym});
+}
+
+# print each symbol declared as .extern in romtable.S file as an absolute address
+# found in symtbl map file
+foreach my $line (sort keys %g_extern) {
+
+	if (!$g_nm_decl{$line}) {
+		printf("\t/* SYMBOL %s NOT FOUND IN ROM IMAGE */\n", $line);
+		printf("\n");
+		next;
+	}
+
+	my @nmsyms = @{$g_nm_decl{$line}};
+	my $abandon = 0;
+	my $noesc = 0;
+	my $data = 0;
+
+	$data = 1 if ($g_rodata{$line});
+	$abandon = 1 if ($g_abandon{$line});
+
+	foreach (@nmsyms) {
+		my ($addr, $flag, $sym) = split(/\s+/);
+
+		if ($abandon == 1 && $sym !~ /$g_romfn_suffix$/ && $data == 0) {
+			die "ERROR: $sym @ $addr not 4-byte aligned!\n" if (hex($addr) & 0x3);
+
+			# Hash abandoned ROM functions that use TCAM entries to their ROM addresses.
+			$g_rom_abandon_sym_addrs{$sym} = hex($addr);
+		}
+	}
+}
+
+# Parse manual tcam patch file.
+if ($fn_manual_tcam_cfg ne "nil") {
+	parse_manual_tcam_entries($fn_manual_tcam_cfg, \%g_man_tcam_addr_datas);
+	add_manual_tcam_entries(\%g_rom_abandon_sym_addrs,
+	                          \%g_rom_abandon_addr_data,
+	                          \%g_man_tcam_addr_datas,
+	                          $tcam_pentry_size);
+}
+
+generate_patch_table(\%g_rom_abandon_sym_addrs, \%g_rom_abandon_addr_data, $tcam_pentry_size);

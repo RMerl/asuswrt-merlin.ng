@@ -1,0 +1,56 @@
+
+<fieldset>
+	<legend><% tran("service.rflow_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.rflow_srv1"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="rflow_enable" <% nvram_checked("rflow_enable","1"); %> onclick="show_layer_ext(this, 'idrflow', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="rflow_enable" <% nvram_checked("rflow_enable","0"); %> onclick="show_layer_ext(this, 'idrflow', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idrflow">
+		<div class="setting">
+			<div class="label"><% tran("share.srvip"); %></div>
+			<input type="hidden" name="rflow_ip" value="0.0.0.0"/>
+			<input size="3" maxlength="3" class="num" name="rflow_ip_0" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("rflow_ip","0"); %>" />.<input size="3" maxlength="3" class="num" name="rflow_ip_1" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("rflow_ip","1"); %>" />.<input size="3" maxlength="3" class="num" name="rflow_ip_2" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("rflow_ip","2"); %>" />.<input size="3" maxlength="3" class="num" name="rflow_ip_3" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("rflow_ip","3"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("share.port"); %></div>
+			<input size="5" maxlength="5" class="num" name="rflow_port" onblur="valid_range(this,1,65535,share.port)" value="<% nvram_get("rflow_port"); %>" />
+			<span class="default"><script type="text/javascript">
+			//<![CDATA[
+			document.write("(" + share.deflt + ": 2055)");
+			//]]>
+			</script></span>
+		</div>
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("service.rflow_srv2"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="macupd_enable" <% nvram_checked("macupd_enable","1"); %> onclick="show_layer_ext(this, 'idMACupd', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="macupd_enable" <% nvram_checked("macupd_enable","0"); %> onclick="show_layer_ext(this, 'idMACupd', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idMACupd">
+		<div class="setting">
+			<div class="label"><% tran("share.srvip"); %></div>
+			<input type="hidden" name="macupd_ip" value="0.0.0.0"/>
+			<input size="3" maxlength="3" class="num" name="macupd_ip_0" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("macupd_ip","0"); %>" />.<input size="3" maxlength="3" class="num" name="macupd_ip_1" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("macupd_ip","1"); %>" />.<input size="3" maxlength="3" class="num" name="macupd_ip_2" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("macupd_ip","2"); %>" />.<input size="3" maxlength="3" class="num" name="macupd_ip_3" onblur="valid_range(this,0,255,share.srvip)" value="<% get_single_ip("macupd_ip","3"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("share.port"); %></div>
+			<input size="5" maxlength="5" class="num" name="macupd_port" onblur="valid_range(this,1,65535,share.port)" value="<% nvram_get("macupd_port"); %>" />
+			<span class="default"><script type="text/javascript">
+			//<![CDATA[
+			document.write("(" + share.deflt + ": 2056)");
+			//]]>
+			</script></span>
+		</div>
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("share.intrface"); %></div>
+		<select name="rflow_if">
+		<% show_rflowif(); %>
+		</select>
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("share.inter"); %></div>
+		<input size="5" maxlength="5" class="num" name="macupd_interval" value="<% nvram_get("macupd_interval"); %>" />
+	</div>
+</fieldset><br/>

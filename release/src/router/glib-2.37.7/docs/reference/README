@@ -1,0 +1,63 @@
+This package contains the reference documentation
+for GLib. For more information about Glib,
+see:
+
+ http://www.gtk.org
+
+For information about contributing to the
+GLib/GTK+ reference documentation project, see:
+
+ http://www.gtk.org/rdp/
+
+The GLib reference documentation is freely redistributable,
+see the file COPYING for details.
+
+
+REQUIREMENTS
+============
+
+To build the documentation, you must have the gtk-doc
+package installed. To rebuild the template files,
+you must have the current version of the GLib
+header files installed.
+
+
+BUILD
+=====
+
+First, run configure to generate the makefiles for this
+module. There is one option specific to this package
+
+  --with-html-dir=DIR   top of installed HTML documentation tree
+
+
+The Makefiles for this module define three targets:
+
+ templates:
+  
+  Scan the headers and merge the results with the current 
+  template files
+
+ sgml:
+
+  Generate SGML files using the DocBook DTD from
+  the template files
+
+ html:
+
+  Generate HTML from the SGML files.
+
+To build the documentation, do:
+
+ make sgml
+ make html
+
+You should only run the 'make templates' step if you
+need to regenerate the templates for a more recent
+version of the GLib sources.
+
+
+INSTALLATION
+============
+
+ make install

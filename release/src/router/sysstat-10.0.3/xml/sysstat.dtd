@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--DTD v2.13 for sysstat. See sadf.h -->
+
+<!ELEMENT sysstat (sysdata-version, host)>
+
+<!ELEMENT sysdata-version (#PCDATA)>
+
+<!ENTITY % TIMESTAMP_ELEMENTS "cpu-load|cpu-load-all|process-and-context-switch|interrupts|swap-pages|paging|io|memory|hugepages|kernel|queue|serial|disk|network|power-management">
+<!ENTITY % HOST_ELEMENTS "sysname|release|machine|number-of-cpus|file-date|statistics|restarts|comments">
+
+<!ELEMENT host (%HOST_ELEMENTS;)+>
+<!ATTLIST host
+	nodename CDATA #REQUIRED
+>
+
+<!ELEMENT sysname (#PCDATA)>
+
+<!ELEMENT release (#PCDATA)>
+
+<!ELEMENT machine (#PCDATA)>
+
+<!ELEMENT number-of-cpus (#PCDATA)>
+
+<!ELEMENT file-date (#PCDATA)>
+
+<!ELEMENT statistics (timestamp+)>
+
+<!ELEMENT timestamp (%TIMESTAMP_ELEMENTS;)+>
+<!ATTLIST timestamp
+	date CDATA #REQUIRED
+	time CDATA #REQUIRED
+	utc CDATA #REQUIRED
+	interval CDATA #REQUIRED
+>
+
+<!ELEMENT restarts (boot+)>
+
+<!ELEMENT boot EMPTY>
+<!ATTLIST boot
+	date CDATA #REQUIRED
+	time CDATA #REQUIRED
+	utc CDATA #REQUIRED
+>
+
+<!ELEMENT comments (comment+)>
+
+<!ELEMENT comment EMPTY>
+<!ATTLIST comment
+	date CDATA #REQUIRED
+	time CDATA #REQUIRED
+	utc CDATA #REQUIRED
+	com CDATA #REQUIRED
+>
+
+<!ELEMENT cpu-load (cpu+)>
+
+<!ELEMENT cpu EMPTY>
+<!ATTLIST cpu
+	number CDATA #REQUIRED
+	user CDATA #REQUIRED
+	nice CDATA #REQUIRED
+	system CDATA #REQUIRED
+	iowait CDATA #REQUIRED
+	steal CDATA #REQUIRED
+	idle CDATA #REQUIRED
+>
+
+<!ELEMENT cpu-load-all (cpu-all+)>
+
+<!ELEMENT cpu-all EMPTY>
+<!ATTLIST cpu-all
+	number CDATA #REQUIRED
+	usr CDATA #REQUIRED
+	nice CDATA #REQUIRED
+	sys CDATA #REQUIRED
+	iowait CDATA #REQUIRED
+	steal CDATA #REQUIRED
+	irq CDATA #REQUIRED
+	soft CDATA #REQUIRED
+	guest CDATA #REQUIRED
+	idle CDATA #REQUIRED
+>
+
+<!ELEMENT process-and-context-switch EMPTY>
+<!ATTLIST process-and-context-switch
+	per CDATA #REQUIRED
+	proc CDATA #REQUIRED
+	cswch CDATA #REQUIRED
+>
+
+<!ELEMENT interrupts (int-global)>
+
+<!ELEMENT int-global (irq+)>
+<!ATTLIST int-global
+	per CDATA #REQUIRED
+>
+
+<!ELEMENT irq EMPTY>
+<!ATTLIST irq
+	intr CDATA #REQUIRED
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT swap-pages EMPTY>
+<!ATTLIST swap-pages
+	per CDATA #REQUIRED
+	pswpin CDATA #REQUIRED
+	pswpout CDATA #REQUIRED
+>
+
+<!ELEMENT paging EMPTY>
+<!ATTLIST paging
+	per CDATA #REQUIRED
+	pgpgin CDATA #REQUIRED
+	pgpgout CDATA #REQUIRED
+	fault CDATA #REQUIRED
+	majflt CDATA #REQUIRED
+	pgfree CDATA #REQUIRED
+	pgscank CDATA #REQUIRED
+	pgscand CDATA #REQUIRED
+	pgsteal CDATA #REQUIRED
+	vmeff-percent CDATA #REQUIRED
+>
+
+<!ELEMENT io (tps, io-reads, io-writes)>
+<!ATTLIST io
+	per CDATA #REQUIRED
+>
+
+<!ELEMENT tps (#PCDATA)>
+
+<!ELEMENT io-reads EMPTY>
+<!ATTLIST io-reads
+	rtps CDATA #REQUIRED
+	bread CDATA #REQUIRED
+>
+
+<!ELEMENT io-writes EMPTY>
+<!ATTLIST io-writes
+	wtps CDATA #REQUIRED
+	bwrtn CDATA #REQUIRED
+>
+
+<!ELEMENT memory (memfree, memused, memused-percent, buffers, cached, commit, commit-percent, active, inactive, swpfree, swpused, swpused-percent, swpcad, swpcad-percent, frmpg, bufpg, campg)>
+<!ATTLIST memory
+	per CDATA #REQUIRED
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT memfree (#PCDATA)>
+
+<!ELEMENT memused (#PCDATA)>
+
+<!ELEMENT memused-percent (#PCDATA)>
+
+<!ELEMENT buffers (#PCDATA)>
+
+<!ELEMENT cached (#PCDATA)>
+
+<!ELEMENT commit (#PCDATA)>
+
+<!ELEMENT commit-percent (#PCDATA)>
+
+<!ELEMENT active (#PCDATA)>
+
+<!ELEMENT inactive (#PCDATA)>
+
+<!ELEMENT swpfree (#PCDATA)>
+
+<!ELEMENT swpused (#PCDATA)>
+
+<!ELEMENT swpused-percent (#PCDATA)>
+
+<!ELEMENT swpcad (#PCDATA)>
+
+<!ELEMENT swpcad-percent (#PCDATA)>
+
+<!ELEMENT frmpg (#PCDATA)>
+
+<!ELEMENT bufpg (#PCDATA)>
+
+<!ELEMENT campg (#PCDATA)>
+
+<!ELEMENT hugepages (hugfree, hugused, hugused-percent)>
+<!ATTLIST hugepages
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT hugfree (#PCDATA)>
+
+<!ELEMENT hugused (#PCDATA)>
+
+<!ELEMENT hugused-percent (#PCDATA)>
+
+<!ELEMENT kernel EMPTY>
+<!ATTLIST kernel
+	dentunusd CDATA #REQUIRED
+	file-nr CDATA #REQUIRED
+	inode-nr CDATA #REQUIRED
+	pty-nr CDATA #REQUIRED
+>
+
+<!ELEMENT queue EMPTY>
+<!ATTLIST queue
+	runq-sz CDATA #REQUIRED
+	plist-sz CDATA #REQUIRED
+	ldavg-1 CDATA #REQUIRED
+	ldavg-5 CDATA #REQUIRED
+	ldavg-15 CDATA #REQUIRED
+	blocked CDATA #REQUIRED
+>
+
+<!ELEMENT serial (tty+)>
+<!ATTLIST serial
+	per CDATA #REQUIRED
+>
+
+<!ELEMENT tty EMPTY>
+<!ATTLIST tty
+	line CDATA #REQUIRED
+	rcvin CDATA #REQUIRED
+	xmtin CDATA #REQUIRED
+	framerr CDATA #REQUIRED
+	prtyerr CDATA #REQUIRED
+	brk CDATA #REQUIRED
+	ovrun CDATA #REQUIRED
+>
+
+<!ELEMENT disk (disk-device+)>
+<!ATTLIST disk
+	per CDATA #REQUIRED
+>
+
+<!ELEMENT disk-device EMPTY>
+<!ATTLIST disk-device
+	dev CDATA #REQUIRED
+	tps CDATA #REQUIRED
+	rd_sec CDATA #REQUIRED
+	wr_sec CDATA #REQUIRED
+	avgrq-sz CDATA #REQUIRED
+	avgqu-sz CDATA #REQUIRED
+	await CDATA #REQUIRED
+	svctm CDATA #REQUIRED
+	util-percent CDATA #REQUIRED
+>
+
+<!ELEMENT network (net-dev+, net-edev+, net-nfs, net-nfsd, net-sock, net-ip, net-eip, net-icmp, net-eicmp, net-tcp, net-etcp, net-udp, net-sock6, net-ip6, net-eip6, net-icmp6, net-eicmp6, net-udp6)>
+<!ATTLIST network
+	per CDATA #REQUIRED
+>
+
+<!ELEMENT net-dev EMPTY>
+<!ATTLIST net-dev
+	iface CDATA #REQUIRED
+	rxpck CDATA #REQUIRED
+	txpck CDATA #REQUIRED
+	rxkB CDATA #REQUIRED
+	txkB CDATA #REQUIRED
+	rxcmp CDATA #REQUIRED
+	txcmp CDATA #REQUIRED
+	rxmcst CDATA #REQUIRED
+>
+
+<!ELEMENT net-edev EMPTY>
+<!ATTLIST net-edev
+	iface CDATA #REQUIRED
+	rxerr CDATA #REQUIRED
+	txerr CDATA #REQUIRED
+	coll CDATA #REQUIRED
+	rxdrop CDATA #REQUIRED
+	txdrop CDATA #REQUIRED
+	txcarr CDATA #REQUIRED
+	rxfram CDATA #REQUIRED
+	rxfifo CDATA #REQUIRED
+	txfifo CDATA #REQUIRED
+>
+
+<!ELEMENT net-nfs EMPTY>
+<!ATTLIST net-nfs
+	call CDATA #REQUIRED
+	retrans CDATA #REQUIRED
+	read CDATA #REQUIRED
+	write CDATA #REQUIRED
+	access CDATA #REQUIRED
+	getatt CDATA #REQUIRED
+>
+
+<!ELEMENT net-nfsd EMPTY>
+<!ATTLIST net-nfsd
+	scall CDATA #REQUIRED
+	badcall CDATA #REQUIRED
+	packet CDATA #REQUIRED
+	udp CDATA #REQUIRED
+	tcp CDATA #REQUIRED
+	hit CDATA #REQUIRED
+	miss CDATA #REQUIRED
+	sread CDATA #REQUIRED
+	swrite CDATA #REQUIRED
+	saccess CDATA #REQUIRED
+	sgetatt CDATA #REQUIRED
+>
+
+<!ELEMENT net-sock EMPTY>
+<!ATTLIST net-sock
+	totsck CDATA #REQUIRED
+	tcpsck CDATA #REQUIRED
+	udpsck CDATA #REQUIRED
+	rawsck CDATA #REQUIRED
+	ip-frag CDATA #REQUIRED
+	tcp-tw CDATA #REQUIRED
+>
+
+<!ELEMENT net-ip EMPTY>
+<!ATTLIST net-ip
+	irec CDATA #REQUIRED
+	fwddgm CDATA #REQUIRED
+	idel CDATA #REQUIRED
+	orq CDATA #REQUIRED
+	asmrq CDATA #REQUIRED
+	asmok CDATA #REQUIRED
+	fragok CDATA #REQUIRED
+	fragcrt CDATA #REQUIRED
+>
+
+<!ELEMENT net-eip EMPTY>
+<!ATTLIST net-eip
+	ihdrerr CDATA #REQUIRED
+	iadrerr CDATA #REQUIRED
+	iukwnpr CDATA #REQUIRED
+	idisc CDATA #REQUIRED
+	odisc CDATA #REQUIRED
+	onort CDATA #REQUIRED
+	asmf CDATA #REQUIRED
+	fragf CDATA #REQUIRED
+>
+
+<!ELEMENT net-icmp EMPTY>
+<!ATTLIST net-icmp
+	imsg CDATA #REQUIRED
+	omsg CDATA #REQUIRED
+	iech CDATA #REQUIRED
+	iechr CDATA #REQUIRED
+	oech CDATA #REQUIRED
+	oechr CDATA #REQUIRED
+	itm CDATA #REQUIRED
+	itmr CDATA #REQUIRED
+	otm CDATA #REQUIRED
+	otmr CDATA #REQUIRED
+	iadrmk CDATA #REQUIRED
+	iadrmkr CDATA #REQUIRED
+	oadrmk CDATA #REQUIRED
+	oadrmkr CDATA #REQUIRED
+>
+
+<!ELEMENT net-eicmp EMPTY>
+<!ATTLIST net-eicmp
+	ierr CDATA #REQUIRED
+	oerr CDATA #REQUIRED
+	idstunr CDATA #REQUIRED
+	odstunr CDATA #REQUIRED
+	itmex CDATA #REQUIRED
+	otmex CDATA #REQUIRED
+	iparmpb CDATA #REQUIRED
+	oparmpb CDATA #REQUIRED
+	isrcq CDATA #REQUIRED
+	osrcq CDATA #REQUIRED
+	iredir CDATA #REQUIRED
+	oredir CDATA #REQUIRED
+>
+
+<!ELEMENT net-tcp EMPTY>
+<!ATTLIST net-tcp
+	active CDATA #REQUIRED
+	passive CDATA #REQUIRED
+	iseg CDATA #REQUIRED
+	oseg CDATA #REQUIRED
+>
+
+<!ELEMENT net-etcp EMPTY>
+<!ATTLIST net-etcp
+	atmptf CDATA #REQUIRED
+	estres CDATA #REQUIRED
+	retrans CDATA #REQUIRED
+	isegerr CDATA #REQUIRED
+	orsts CDATA #REQUIRED
+>
+
+<!ELEMENT net-udp EMPTY>
+<!ATTLIST net-udp
+	idgm CDATA #REQUIRED
+	odgm CDATA #REQUIRED
+	noport CDATA #REQUIRED
+	idgmerr CDATA #REQUIRED
+>
+
+<!ELEMENT net-sock6 EMPTY>
+<!ATTLIST net-sock6
+	tcp6sck CDATA #REQUIRED
+	udp6sck CDATA #REQUIRED
+	raw6sck CDATA #REQUIRED
+	ip6-frag CDATA #REQUIRED
+>
+
+<!ELEMENT net-ip6 EMPTY>
+<!ATTLIST net-ip6
+	irec6 CDATA #REQUIRED
+	fwddgm6 CDATA #REQUIRED
+	idel6 CDATA #REQUIRED
+	orq6 CDATA #REQUIRED
+	asmrq6 CDATA #REQUIRED
+	asmok6 CDATA #REQUIRED
+	imcpck6 CDATA #REQUIRED
+	omcpck6 CDATA #REQUIRED
+	fragok6 CDATA #REQUIRED
+	fragcr6 CDATA #REQUIRED
+>
+
+<!ELEMENT net-eip6 EMPTY>
+<!ATTLIST net-eip6
+	ihdrer6 CDATA #REQUIRED
+	iadrer6 CDATA #REQUIRED
+	iukwnp6 CDATA #REQUIRED
+	i2big6 CDATA #REQUIRED
+	idisc6 CDATA #REQUIRED
+	odisc6 CDATA #REQUIRED
+	inort6 CDATA #REQUIRED
+	onort6 CDATA #REQUIRED
+	asmf6 CDATA #REQUIRED
+	fragf6 CDATA #REQUIRED
+	itrpck6 CDATA #REQUIRED
+>
+
+<!ELEMENT net-icmp6 EMPTY>
+<!ATTLIST net-icmp6
+	imsg6 CDATA #REQUIRED
+	omsg6 CDATA #REQUIRED
+	iech6 CDATA #REQUIRED
+	iechr6 CDATA #REQUIRED
+	oechr6 CDATA #REQUIRED
+	igmbq6 CDATA #REQUIRED
+	igmbr6 CDATA #REQUIRED
+	ogmbr6 CDATA #REQUIRED
+	igmbrd6 CDATA #REQUIRED
+	ogmbrd6 CDATA #REQUIRED
+	irtsol6 CDATA #REQUIRED
+	ortsol6 CDATA #REQUIRED
+	irtad6 CDATA #REQUIRED
+	inbsol6 CDATA #REQUIRED
+	onbsol6 CDATA #REQUIRED
+	inbad6 CDATA #REQUIRED
+	onbad6 CDATA #REQUIRED
+>
+
+<!ELEMENT net-eicmp6 EMPTY>
+<!ATTLIST net-eicmp6
+	ierr6 CDATA #REQUIRED
+	idtunr6 CDATA #REQUIRED
+	odtunr6 CDATA #REQUIRED
+	itmex6 CDATA #REQUIRED
+	otmex6 CDATA #REQUIRED
+	iprmpb6 CDATA #REQUIRED
+	oprmpb6 CDATA #REQUIRED
+	iredir6 CDATA #REQUIRED
+	oredir6 CDATA #REQUIRED
+	ipck2b6 CDATA #REQUIRED
+	opck2b6 CDATA #REQUIRED
+>
+
+<!ELEMENT net-udp6 EMPTY>
+<!ATTLIST net-udp6
+	idgm6 CDATA #REQUIRED
+	odgm6 CDATA #REQUIRED
+	noport6 CDATA #REQUIRED
+	idgmer6 CDATA #REQUIRED
+>
+
+<!ELEMENT power-management (cpu-frequency, fan-speed, temperature, voltage-input, cpu-weighted-frequency, usb-devices)>
+
+<!ELEMENT cpu-frequency (cpufreq+)>
+<!ATTLIST cpu-frequency
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT cpufreq EMPTY>
+<!ATTLIST cpufreq
+	number CDATA #REQUIRED
+	frequency CDATA #REQUIRED
+>
+
+<!ELEMENT fan-speed (fan+)>
+<!ATTLIST fan-speed
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT fan EMPTY>
+<!ATTLIST fan
+	number CDATA #REQUIRED
+	rpm CDATA #REQUIRED
+	drpm CDATA #REQUIRED
+	device CDATA #REQUIRED
+>
+
+<!ELEMENT temperature (temp+)>
+<!ATTLIST temperature
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT temp EMPTY>
+<!ATTLIST temp
+	number CDATA #REQUIRED
+	degC CDATA #REQUIRED
+	percent-temp CDATA #REQUIRED
+	device CDATA #REQUIRED
+>
+
+<!ELEMENT voltage-input (in+)>
+<!ATTLIST voltage-input
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT in EMPTY>
+<!ATTLIST in
+	number CDATA #REQUIRED
+	inV CDATA #REQUIRED
+	percent-in CDATA #REQUIRED
+	device CDATA #REQUIRED
+>
+
+<!ELEMENT cpu-weighted-frequency (cpuwfreq+)>
+<!ATTLIST cpu-weighted-frequency
+	unit CDATA #REQUIRED
+>
+
+<!ELEMENT cpuwfreq EMPTY>
+<!ATTLIST cpuwfreq
+	number CDATA #REQUIRED
+	weighted-frequency CDATA #REQUIRED
+>
+
+<!ELEMENT usb-devices (usb+)>
+
+<!ELEMENT usb EMPTY>
+<!ATTLIST usb
+	bus_number CDATA #REQUIRED
+	idvendor CDATA #REQUIRED
+	idprod CDATA #REQUIRED
+	maxpower CDATA #REQUIRED
+	manufact CDATA #REQUIRED
+	product CDATA #REQUIRED
+>

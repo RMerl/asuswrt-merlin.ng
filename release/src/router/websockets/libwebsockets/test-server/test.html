@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset=utf-8 http-equiv="Content-Language" content="en"/>
+ <title>Minimal Websocket test app</title>
+<style type="text/css">
+	div.title { font-size:18pt; font: Arial; font-weight:normal; text-align:center; color:#000000; }
+	.browser { font-size:18pt; font: Arial; font-weight:normal; text-align:center; color:#ffff00; vertical-align:middle; text-align:center; background:#d0b070; padding:12px; -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px;}
+	.group2 { width:600px; vertical-align:middle; text-align:center; background:#f0f0e0; padding:12px; -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px; }
+	.explain { vertical-align:middle; text-align:center; background:#f0f0c0; padding:12px; -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px; color:#404000; }
+	.content { vertical-align:top; text-align:center; background:#fffff0; padding:12px; -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px; }
+	.canvas { vertical-align:top; text-align:center; background:#efefd0; padding:12px; -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px; }
+</style>
+</head>
+
+<body>
+<header></header>
+<article>
+
+<table><tr><td>
+
+<table width="100%"><tr><td valign=middle align=center><a href="http://libwebsockets.org"><img src="/libwebsockets.org-logo.png"></a></td><td>
+<section class="browser">Detected Browser: <div id=brow>...</div></section></td></tr></table>
+
+</td></tr><tr><td>
+
+<section id="increment" class="group2">
+<div class="title">libwebsockets "dumb-increment-protocol"</div>
+<table><tr><td>
+<table class="content" width="200px">
+		<tr><td align=center><input type=button id=offset value="Reset counter" onclick="reset();" ></td></tr>
+		<tr><td width=200px align=center><div id=number> </div></td></tr>
+		<tr><td id=wsdi_statustd align=center class="explain"><div id=wsdi_status>Not initialized</div></td></tr>
+	</tr>
+</table>
+</td><td class="explain">
+The incrementing number is coming from the server and is individual for
+each connection to the server... try opening a second browser window.
+<br/><br/>
+The button zeros just this connection's number.
+<br/><br/>
+Click <a href="/leaf.jpg" target="_blank">Here</a> to have the test server send a big picture by http.
+</td></tr></table>
+</section>
+<br>
+<section id="mirror" class="group2">
+<div class="title">libwebsockets "lws-mirror-protocol"</div>
+<div class="explain">
+Use the mouse to draw on the canvas below -- all other browser windows open
+on this page see your drawing in realtime and you can see any of theirs as
+well.
+<br/><br/>
+The lws-mirror protocol doesn't interpret what is being sent to it, it just
+re-sends it to every other websocket it has a connection with using that
+protocol, including the guy who sent the packet.
+<br/><br/>
+<b>libwebsockets-test-client</b> joins in by spamming circles on to this shared canvas when
+run.
+</div>
+<table class="content">
+	<tr>
+		<td>Drawing color:
+		<select id="color" onchange="update_color();">
+			<option value=#000000>Black</option>
+			<option value=#0000ff>Blue</option>
+			<option value=#20ff20>Green</option>
+			<option value=#802020>Dark Red</option>
+		</select>
+		</td>
+		<td id=wslm_statustd align=center class="explain"><div id=wslm_status>Not initialized</div></td>
+	</tr>
+	<tr>
+		<td colspan=2 width=500 class="content">
+		<div id="wslm_drawing">
+		</div></td>
+	</tr>
+</table>
+</section>
+
+<section id="ot" class="group2">
+<div class="title">libwebsockets "open and close testing"</div>
+<table><tr><td>
+<table class="content" width="200px">
+		<tr>
+		<td align=center><input type=button id=ot_open_btn value="Open" onclick="ot_open();" ></td>
+		<td align=center><input type=button id=ot_close_btn disabled value="Close" onclick="ot_close();" ></td>
+		</tr>
+		<tr><td colspan="2" id=ot_statustd align=center class="explain"><div id=ot_status>Not initialized</div></td></tr>
+	</tr>
+</table>
+</td><td class="explain">
+To help with open and close testing, you can open and close a connection by hand using
+ the buttons.
+</td></tr></table>
+</section>
+<br>
+
+</td></tr><tr><td>
+Looking for support? <a href="http://libwebsockets.org">http://libwebsockets.org</a><br/>
+Join the mailing list: ​<a href="http://ml.libwebsockets.org/mailman/listinfo/libwebsockets">http://ml.libwebsockets.org/mailman/listinfo/libwebsockets</a>
+
+</td></tr></table>
+
+</article>
+
+<script>
+
+/* BrowserDetect came from http://www.quirksmode.org/js/detect.html */
+
+var BrowserDetect = {
+	init: function () {
+		this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+		this.version = this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "an unknown version";
+		this.OS = this.searchString(this.dataOS) || "an unknown OS";
+	},
+	searchString: function (data) {
+		for (var i=0;i<data.length;i++)	{
+			var dataString = data[i].string;
+			var dataProp = data[i].prop;
+			this.versionSearchString = data[i].versionSearch || data[i].identity;
+			if (dataString) {
+				if (dataString.indexOf(data[i].subString) != -1)
+					return data[i].identity;
+			}
+			else if (dataProp)
+				return data[i].identity;
+		}
+	},
+	searchVersion: function (dataString) {
+		var index = dataString.indexOf(this.versionSearchString);
+		if (index == -1) return;
+		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+	},
+	dataBrowser: [
+		{
+			string: navigator.userAgent,
+			subString: "Chrome",
+			identity: "Chrome"
+		},
+		{ 	string: navigator.userAgent,
+			subString: "OmniWeb",
+			versionSearch: "OmniWeb/",
+			identity: "OmniWeb"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Apple",
+			identity: "Safari",
+			versionSearch: "Version"
+		},
+		{
+			prop: window.opera,
+			identity: "Opera",
+			versionSearch: "Version"
+		},
+		{
+			string: navigator.vendor,
+			subString: "iCab",
+			identity: "iCab"
+		},
+		{
+			string: navigator.vendor,
+			subString: "KDE",
+			identity: "Konqueror"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Firefox",
+			identity: "Firefox"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Camino",
+			identity: "Camino"
+		},
+		{		// for newer Netscapes (6+)
+			string: navigator.userAgent,
+			subString: "Netscape",
+			identity: "Netscape"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "MSIE",
+			identity: "Explorer",
+			versionSearch: "MSIE"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Gecko",
+			identity: "Mozilla",
+			versionSearch: "rv"
+		},
+		{ 		// for older Netscapes (4-)
+			string: navigator.userAgent,
+			subString: "Mozilla",
+			identity: "Netscape",
+			versionSearch: "Mozilla"
+		}
+	],
+	dataOS : [
+		{
+			string: navigator.platform,
+			subString: "Win",
+			identity: "Windows"
+		},
+		{
+			string: navigator.platform,
+			subString: "Mac",
+			identity: "Mac"
+		},
+		{
+			   string: navigator.userAgent,
+			   subString: "iPhone",
+			   identity: "iPhone/iPod"
+	    },
+		{
+			string: navigator.platform,
+			subString: "Linux",
+			identity: "Linux"
+		}
+	]
+
+};
+BrowserDetect.init();
+
+document.getElementById("brow").textContent = " " + BrowserDetect.browser + " "
+	+ BrowserDetect.version +" " + BrowserDetect.OS +" ";
+
+	var pos = 0;
+
+function get_appropriate_ws_url()
+{
+	var pcol;
+	var u = document.URL;
+
+	/*
+	 * We open the websocket encrypted if this page came on an
+	 * https:// url itself, otherwise unencrypted
+	 */
+
+	if (u.substring(0, 5) == "https") {
+		pcol = "wss://";
+		u = u.substr(8);
+	} else {
+		pcol = "ws://";
+		if (u.substring(0, 4) == "http")
+			u = u.substr(7);
+	}
+
+	u = u.split('/');
+
+	/* + "/xxx" bit is for IE10 workaround */
+
+	return pcol + u[0] + "/xxx";
+}
+
+
+document.getElementById("number").textContent = get_appropriate_ws_url();
+
+/* dumb increment protocol */
+	
+	var socket_di;
+
+	if (typeof MozWebSocket != "undefined") {
+		socket_di = new MozWebSocket(get_appropriate_ws_url(),
+				   "dumb-increment-protocol");
+	} else {
+		socket_di = new WebSocket(get_appropriate_ws_url(),
+				   "dumb-increment-protocol");
+	}
+
+
+	try {
+		socket_di.onopen = function() {
+			document.getElementById("wsdi_statustd").style.backgroundColor = "#40ff40";
+			document.getElementById("wsdi_status").textContent = " websocket connection opened ";
+		} 
+
+		socket_di.onmessage =function got_packet(msg) {
+			document.getElementById("number").textContent = msg.data + "\n";
+		} 
+
+		socket_di.onclose = function(){
+			document.getElementById("wsdi_statustd").style.backgroundColor = "#ff4040";
+			document.getElementById("wsdi_status").textContent = " websocket connection CLOSED ";
+		}
+	} catch(exception) {
+		alert('<p>Error' + exception);  
+	}
+
+function reset() {
+	socket_di.send("reset\n");
+}
+
+var socket_ot;
+
+function ot_open() {
+	if (typeof MozWebSocket != "undefined") {
+		socket_ot = new MozWebSocket(get_appropriate_ws_url(),
+				   "dumb-increment-protocol");
+	} else {
+		socket_ot = new WebSocket(get_appropriate_ws_url(),
+				   "dumb-increment-protocol");
+	}
+	try {
+		socket_ot.onopen = function() {
+			document.getElementById("ot_statustd").style.backgroundColor = "#40ff40";
+			document.getElementById("ot_status").textContent = " websocket connection opened ";
+			document.getElementById("ot_open_btn").disabled = true;
+			document.getElementById("ot_close_btn").disabled = false;
+		} 
+
+		socket_ot.onclose = function(){
+			document.getElementById("ot_statustd").style.backgroundColor = "#ff4040";
+			document.getElementById("ot_status").textContent = " websocket connection CLOSED ";
+			document.getElementById("ot_open_btn").disabled = false;
+			document.getElementById("ot_close_btn").disabled = true;
+
+		}
+	} catch(exception) {
+		alert('<p>Error' + exception);  
+	}
+}
+
+function ot_close() {
+	socket_ot.close();
+}
+
+/* lws-mirror protocol */
+
+	var down = 0;
+	var no_last = 1;
+	var last_x = 0, last_y = 0;
+	var ctx;
+	var socket_lm;
+	var color = "#000000";
+
+	if (typeof MozWebSocket != "undefined") {
+		socket_lm = new MozWebSocket(get_appropriate_ws_url(),
+				   "lws-mirror-protocol");
+	} else {
+		socket_lm = new WebSocket(get_appropriate_ws_url(),
+				   "lws-mirror-protocol");
+	}
+
+
+	try {
+		socket_lm.onopen = function() {
+			document.getElementById("wslm_statustd").style.backgroundColor = "#40ff40";
+			document.getElementById("wslm_status").textContent = " websocket connection opened ";
+		} 
+
+		socket_lm.onmessage =function got_packet(msg) {
+			j = msg.data.split(';');
+			f = 0;
+			while (f < j.length - 1) {
+				i = j[f].split(' ');
+				if (i[0] == 'd') {
+					ctx.strokeStyle = i[1];
+					ctx.beginPath();
+					ctx.moveTo(+(i[2]), +(i[3]));
+					ctx.lineTo(+(i[4]), +(i[5]));
+					ctx.stroke();
+				}
+				if (i[0] == 'c') {
+					ctx.strokeStyle = i[1];
+					ctx.beginPath();
+					ctx.arc(+(i[2]), +(i[3]), +(i[4]), 0, Math.PI*2, true); 
+					ctx.stroke();
+				}
+
+				f++;
+			}
+		}
+
+		socket_lm.onclose = function(){
+			document.getElementById("wslm_statustd").style.backgroundColor = "#ff4040";
+			document.getElementById("wslm_status").textContent = " websocket connection CLOSED ";
+		}
+	} catch(exception) {
+		alert('<p>Error' + exception);  
+	}
+
+	var canvas = document.createElement('canvas');
+	canvas.height = 300;
+	canvas.width = 480;
+	ctx = canvas.getContext("2d");
+
+	document.getElementById('wslm_drawing').appendChild(canvas);
+
+	canvas.addEventListener('mousemove', ev_mousemove, false);
+	canvas.addEventListener('mousedown', ev_mousedown, false);
+	canvas.addEventListener('mouseup', ev_mouseup, false);
+
+	offsetX = offsetY = 0;
+	element = canvas;
+      if (element.offsetParent) {
+        do {
+          offsetX += element.offsetLeft;
+          offsetY += element.offsetTop;
+        } while ((element = element.offsetParent));
+      }
+ 
+function update_color() {
+	color = document.getElementById("color").value;
+}
+
+function ev_mousedown (ev) {
+	down = 1;
+}
+
+function ev_mouseup(ev) {
+	down = 0;
+	no_last = 1;
+}
+
+function ev_mousemove (ev) {
+	var x, y;
+
+	if (ev.offsetX) {
+		x = ev.offsetX;
+		y = ev.offsetY;
+	} else {
+		x = ev.layerX - offsetX;
+		y = ev.layerY - offsetY;
+
+	}
+
+	if (!down)
+		return;
+	if (no_last) {
+		no_last = 0;
+		last_x = x;
+		last_y = y;
+		return;
+	}
+	socket_lm.send("d " + color + " " + last_x + " " + last_y + " " + x + ' ' + y + ';');
+
+	last_x = x;
+	last_y = y;
+}
+
+
+</script>
+
+</body>
+</html>

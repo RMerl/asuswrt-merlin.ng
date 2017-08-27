@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GSimplePermission</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="permissions.html" title="Permissions">
+<link rel="prev" href="GPermission.html" title="GPermission">
+<link rel="next" href="application.html" title="Application support">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GSimplePermission.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GSimplePermission.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="permissions.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GPermission.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="application.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSimplePermission"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSimplePermission.top_of_page"></a>GSimplePermission</span></h2>
+<p>GSimplePermission — A GPermission that doesn't change value</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GSimplePermission.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GSimplePermission.html#GSimplePermission-struct" title="GSimplePermission">GSimplePermission</a>;
+<a class="link" href="GPermission.html" title="GPermission"><span class="returnvalue">GPermission</span></a> *       <a class="link" href="GSimplePermission.html#g-simple-permission-new" title="g_simple_permission_new ()">g_simple_permission_new</a>             (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> allowed</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSimplePermission.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GPermission.html" title="GPermission">GPermission</a>
+         +----GSimplePermission
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSimplePermission.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GSimplePermission.html" title="GSimplePermission"><span class="type">GSimplePermission</span></a> is a trivial implementation of <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> that
+represents a permission that is either always or never allowed.  The
+value is given at construction and doesn't change.
+</p>
+<p>
+Calling request or release will result in errors.
+</p>
+</div>
+<div class="refsect1">
+<a name="GSimplePermission.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GSimplePermission-struct"></a><h3>GSimplePermission</h3>
+<pre class="programlisting">typedef struct _GSimplePermission GSimplePermission;</pre>
+<p>
+<a class="link" href="GSimplePermission.html" title="GSimplePermission"><span class="type">GSimplePermission</span></a> is an opaque data structure.  There are no methods
+except for those defined by <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a>.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-simple-permission-new"></a><h3>g_simple_permission_new ()</h3>
+<pre class="programlisting"><a class="link" href="GPermission.html" title="GPermission"><span class="returnvalue">GPermission</span></a> *       g_simple_permission_new             (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> allowed</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance that represents an action that is
+either always or never allowed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>allowed</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the action is allowed</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="GSimplePermission.html" title="GSimplePermission"><span class="type">GSimplePermission</span></a>, as a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

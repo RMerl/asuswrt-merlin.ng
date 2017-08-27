@@ -1,0 +1,8 @@
+SQL Schemas
+===========
+
+SQL Schemas are included in raddb/<sql_module>/<sql_dialect>/schema.sql.
+
+It seemed like too much of a pain to split them out and put them here,
+especially in the case of SQLite where they're sometimes used for
+bootstrap.

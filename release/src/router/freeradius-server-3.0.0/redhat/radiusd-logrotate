@@ -1,0 +1,56 @@
+# You can use this to rotate the /var/log/radius/* files, simply copy
+# it to /etc/logrotate.d/radiusd
+
+# There are different detail-rotating strategies you can use.  One is
+# to write to a single detail file per IP and use the rotate config
+# below.  Another is to write to a daily detail file per IP with:
+#     detailfile = ${radacctdir}/%{Client-IP-Address}/%Y%m%d-detail
+# (or similar) in radiusd.conf, without rotation.  If you go with the
+# second technique, you will need another cron job that removes old
+# detail files.  You do not need to comment out the below for method #2.
+/var/log/radius/radacct/*/detail {
+	monthly
+	rotate 4
+	nocreate
+	missingok
+	compress
+}
+
+/var/log/radius/checkrad.log {
+	monthly
+	rotate 4
+	create
+	missingok
+	compress
+}
+
+/var/log/radius/radius.log {
+	monthly
+	rotate 4
+	create
+	missingok
+	compress
+}
+
+/var/log/radius/radutmp {
+	monthly
+	rotate 4
+	create
+	compress
+	missingok
+}
+
+/var/log/radius/radwtmp {
+	monthly
+	rotate 4
+	create
+	compress
+	missingok
+}
+/var/log/radius/sqllog.sql {
+        monthly
+        rotate 4
+        create
+        compress
+        missingok
+}

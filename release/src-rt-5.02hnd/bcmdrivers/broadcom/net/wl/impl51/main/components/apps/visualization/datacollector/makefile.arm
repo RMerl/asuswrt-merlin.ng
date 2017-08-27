@@ -1,0 +1,32 @@
+# <<Broadcom-WL-IPTag/Proprietary:>>
+
+
+SRCDIR = ../../../../../src
+IDIR = -I$(SRCDIR)/common/include/ -I$(SRCDIR)/include/ -I ../include/ \
+		-I$(SRCDIR)/shared/bcmwifi/include/ \
+		-I$(SRCDIR)/../components/opensource/libxml2/include/
+
+CC=/projects/hnd/hnd_tools/linux/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/arm-brcm-linux-uclibcgnueabi-gcc
+LIBS=-lxml2 -lm -lpthread
+CFLAGS=$(IDIR) -D _DEBUG_ -g -Wall -Werror
+BCMWIFIDIR=$(SRCDIR)/shared/bcmwifi/src
+SHAREDDIR=$(SRCDIR)/shared
+VISSHARED=../shared
+LIBPATH=-L../libs/arm
+OBJFILES=$(SHAREDDIR)/bcm_app_utils.o $(SHAREDDIR)/bcmutils.o \
+			$(SHAREDDIR)/bcmxtlv.o \
+			$(BCMWIFIDIR)/bcmwifi_channels.o vis_common.o \
+			$(VISSHARED)/vis_xmlshared.o $(VISSHARED)/vis_sock_util.o \
+			$(VISSHARED)/vis_shared_util.o \
+			vis_socketclient.o vis_xmlutility.o vis_savedata.o\
+			vis_wl.o vis_wlmetrics.o vis_wlcongestion.o vis_linux_main.o
+
+vis-datacollector: $(OBJFILES)
+	$(CC) $(LIBPATH) -o vis-datacollector $(OBJFILES) $(CFLAGS) $(LIBS)
+	
+clean:
+	rm *.o
+	rm $(SHAREDDIR)/bcm_app_utils.o
+	rm $(SHAREDDIR)/bcmutils.o
+	rm $(BCMWIFIDIR)/bcmwifi_channels.o
+	rm $(VISSHARED)/*.o

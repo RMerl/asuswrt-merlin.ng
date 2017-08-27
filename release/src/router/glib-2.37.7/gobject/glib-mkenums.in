@@ -1,0 +1,565 @@
+#! @PERL_PATH@
+
+use warnings;
+use File::Basename;
+use Safe;
+
+# glib-mkenums.pl 
+# Information about the current enumeration
+my $flags;			# Is enumeration a bitmask?
+my $option_underscore_name;	# Overriden underscore variant of the enum name
+				# for example to fix the cases we don't get the
+				# mixed-case -> underscorized transform right.
+my $option_lowercase_name;	# DEPRECATED.  A lower case name to use as part
+				# of the *_get_type() function, instead of the
+				# one that we guess. For instance, when an enum
+				# uses abnormal capitalization and we can not
+				# guess where to put the underscores.
+my $seenbitshift;		# Have we seen bitshift operators?
+my $enum_prefix;		# Prefix for this enumeration
+my $enumname;			# Name for this enumeration
+my $enumshort;			# $enumname without prefix
+my $enumname_prefix;		# prefix of $enumname
+my $enumindex = 0;		# Global enum counter
+my $firstenum = 1;		# Is this the first enumeration per file?
+my @entries;			# [ $name, $val ] for each entry
+my $sandbox = Safe->new;        # sandbox for safe evaluation of expressions
+
+sub parse_trigraph {
+    my $opts = shift;
+    my @opts;
+
+    for $opt (split /\s*,\s*/, $opts) {
+	$opt =~ s/^\s*//;
+	$opt =~ s/\s*$//;
+        my ($key,$val) = $opt =~ /(\w+)(?:=(.+))?/;
+	defined $val or $val = 1;
+	push @opts, $key, $val;
+    }
+    @opts;
+}
+sub parse_entries {
+    my $file = shift;
+    my $file_name = shift;
+    my $looking_for_name = 0;
+    
+    while (<$file>) {
+	# read lines until we have no open comments
+	while (m@/\*([^*]|\*(?!/))*$@) {
+	    my $new;
+	    defined ($new = <$file>) || die "Unmatched comment in $ARGV";
+	    $_ .= $new;
+	}
+	# strip comments w/o options
+	s@/\*(?!<)
+	    ([^*]+|\*(?!/))*
+	   \*/@@gx;
+	
+	# strip newlines
+	s@\n@ @;
+	
+	# skip empty lines
+	next if m@^\s*$@;
+	
+	if ($looking_for_name) {
+	    if (/^\s*(\w+)/) {
+		$enumname = $1;
+		return 1;
+	    }
+	}
+	
+	# Handle include files
+	if (/^\#include\s*<([^>]*)>/ ) {
+            my $file= "../$1";
+	    open NEWFILE, $file or die "Cannot open include file $file: $!\n";
+	    
+	    if (parse_entries (\*NEWFILE, $NEWFILE)) {
+		return 1;
+	    } else {
+		next;
+	    }
+	}
+	
+	if (/^\s*\}\s*(\w+)/) {
+	    $enumname = $1;
+	    $enumindex++;
+	    return 1;
+	}
+	
+	if (/^\s*\}/) {
+	    $enumindex++;
+	    $looking_for_name = 1;
+	    next;
+	}
+
+        if (m@^\s*
+              (\w+)\s*                   # name
+              (?:=(                      # value
+		   \s*\w+\s*\(.*\)\s*       # macro with multiple args
+		   |                        # OR
+                   (?:[^,/]|/(?!\*))*       # anything but a comma or comment
+                  ))?,?\s*
+              (?:/\*<                    # options
+                (([^*]|\*(?!/))*)
+               >\s*\*/)?,?
+              \s*$
+             @x) {
+            my ($name, $value, $options) = ($1,$2,$3);
+
+	    if (!defined $flags && defined $value && $value =~ /<</) {
+		$seenbitshift = 1;
+	    }
+
+	    if (defined $options) {
+		my %options = parse_trigraph($options);
+		if (!defined $options{skip}) {
+		    push @entries, [ $name, $value, $options{nick} ];
+		}
+	    } else {
+		push @entries, [ $name, $value ];
+	    }
+	} elsif (m@^\s*\#@) {
+	    # ignore preprocessor directives
+	} else {
+	    print STDERR "$0: $file_name:$.: Failed to parse `$_'\n";
+	}
+    }
+
+    return 0;
+}
+
+sub version {
+    print "glib-mkenums version glib-@GLIB_VERSION@\n";
+    print "glib-mkenums comes with ABSOLUTELY NO WARRANTY.\n";
+    print "You may redistribute copies of glib-mkenums under the terms of\n";
+    print "the GNU General Public License which can be found in the\n";
+    print "GLib source package. Sources, examples and contact\n";
+    print "information are available at http://www.gtk.org\n";
+    exit 0;
+}
+sub usage {
+    print "Usage:\n";
+    print "  glib-mkenums [OPTION...] [FILES...]\n\n";
+    print "Help Options:\n";
+    print "  -h, --help            Show this help message\n\n";
+    print "Utility Options:\n";
+    print "  --identifier-prefix <text>   Identifier prefix\n";
+    print "  --symbol-prefix <text>       Symbol prefix\n";
+    print "  --fhead <text>               Output file header\n";
+    print "  --fprod <text>               Per input file production\n";
+    print "  --ftail <text>               Output file trailer\n";
+    print "  --eprod <text>               Per enum text (produced prior to value itarations)\n";
+    print "  --vhead <text>               Value header, produced before iterating over enum values\n";
+    print "  --vprod <text>               Value text, produced for each enum value\n";
+    print "  --vtail <text>               Value tail, produced after iterating over enum values\n";
+    print "  --comments <text>            Comment structure\n";
+    print "  --template file              Template file\n";
+    print "  -v, --version                Print version informations\n\n";
+    print "Production text substitutions:\n";
+    print "  \@EnumName\@            PrefixTheXEnum\n";
+    print "  \@enum_name\@           prefix_the_xenum\n";
+    print "  \@ENUMNAME\@            PREFIX_THE_XENUM\n";
+    print "  \@ENUMSHORT\@           THE_XENUM\n";
+    print "  \@ENUMPREFIX\@          PREFIX\n";
+    print "  \@VALUENAME\@           PREFIX_THE_XVALUE\n";
+    print "  \@valuenick\@           the-xvalue\n";
+    print "  \@valuenum\@            the integer value (limited support, Since: 2.26)\n";
+    print "  \@type\@                either enum or flags\n";
+    print "  \@Type\@                either Enum or Flags\n";
+    print "  \@TYPE\@                either ENUM or FLAGS\n";
+    print "  \@filename\@            name of current input file\n";
+    print "  \@basename\@            base name of the current input file (Since: 2.22)\n";
+    exit 0;
+}
+
+# production variables:
+my $idprefix = "";    # "G", "Gtk", etc
+my $symprefix = "";   # "g", "gtk", etc, if not just lc($idprefix)
+my $fhead = "";   # output file header
+my $fprod = "";   # per input file production
+my $ftail = "";   # output file trailer
+my $eprod = "";   # per enum text (produced prior to value itarations)
+my $vhead = "";   # value header, produced before iterating over enum values
+my $vprod = "";   # value text, produced for each enum value
+my $vtail = "";   # value tail, produced after iterating over enum values
+my $comment_tmpl = "";   # comment template
+
+sub read_template_file {
+  my ($file) = @_;
+  my %tmpl = ('file-header', $fhead, 
+	      'file-production', $fprod, 
+	      'file-tail', $ftail, 
+	      'enumeration-production', $eprod,
+	      'value-header', $vhead,
+	      'value-production', $vprod,
+	      'value-tail', $vtail,
+	      'comment', $comment_tmpl);
+  my $in = 'junk';
+  open (FILE, $file) || die "Can't open $file: $!\n";
+  while (<FILE>) {
+    if (/^\/\*\*\*\s+(BEGIN|END)\s+([\w-]+)\s+\*\*\*\//) {
+      if (($in eq 'junk') && ($1 eq 'BEGIN') && (exists($tmpl{$2}))) {
+	$in = $2;
+	next;
+      }
+      elsif (($in eq $2) && ($1 eq 'END') && (exists($tmpl{$2}))) {
+	$in = 'junk';
+	next;
+      } else {
+	  die "Malformed template file $file\n";
+      }
+    }
+    if (!($in eq 'junk')) {
+	$tmpl{$in} .= $_;
+    }
+  }
+  close (FILE);
+  if (!($in eq 'junk')) {
+      die "Malformed template file $file\n";
+  }
+  $fhead = $tmpl{'file-header'};
+  $fprod = $tmpl{'file-production'};
+  $ftail = $tmpl{'file-tail'};
+  $eprod = $tmpl{'enumeration-production'};
+  $vhead = $tmpl{'value-header'};
+  $vprod = $tmpl{'value-production'};
+  $vtail = $tmpl{'value-tail'};
+  $comment_tmpl = $tmpl{'comment'};
+
+  # default to C-style comments
+  $comment_tmpl = "/* \@comment\@ */" if $comment_tmpl eq "";
+}
+
+if (!defined $ARGV[0]) {
+    usage;
+}
+while ($_=$ARGV[0],/^-/) {
+    shift;
+    last if /^--$/;
+    if (/^--template$/)                      { read_template_file (shift); }
+    elsif (/^--identifier-prefix$/)          { $idprefix = shift }
+    elsif (/^--symbol-prefix$/)              { $symprefix = shift }
+    elsif (/^--fhead$/)                      { $fhead = $fhead . shift }
+    elsif (/^--fprod$/)                      { $fprod = $fprod . shift }
+    elsif (/^--ftail$/)                      { $ftail = $ftail . shift }
+    elsif (/^--eprod$/)                      { $eprod = $eprod . shift }
+    elsif (/^--vhead$/)                      { $vhead = $vhead . shift }
+    elsif (/^--vprod$/)                      { $vprod = $vprod . shift }
+    elsif (/^--vtail$/)                      { $vtail = $vtail . shift }
+    elsif (/^--comments$/)                   { $comment_tmpl = shift }
+    elsif (/^--help$/ || /^-h$/ || /^-\?$/)  { usage; }
+    elsif (/^--version$/ || /^-v$/)          { version; }
+    else { usage; }
+    last if not defined($ARGV[0]);
+}
+
+# put auto-generation comment
+{
+    my $comment = $comment_tmpl;
+    $comment =~ s/\@comment\@/Generated data (by glib-mkenums)/;
+    print "\n" . $comment . "\n\n";
+}
+
+if (length($fhead)) {
+    my $prod = $fhead;
+    my $base = basename ($ARGV[0]);
+
+    $prod =~ s/\@filename\@/$ARGV[0]/g;
+    $prod =~ s/\@basename\@/$base/g;
+    $prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+    $prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+    chomp ($prod);
+		
+    print "$prod\n";
+}
+
+while (<>) {
+    if (eof) {
+	close (ARGV);		# reset line numbering
+	$firstenum = 1;		# Flag to print filename at next enum
+    }
+
+    # read lines until we have no open comments
+    while (m@/\*([^*]|\*(?!/))*$@) {
+	my $new;
+	defined ($new = <>) || die "Unmatched comment in $ARGV";
+	$_ .= $new;
+    }
+    # strip comments w/o options
+    s@/\*(?!<)
+       ([^*]+|\*(?!/))*
+       \*/@@gx;
+	
+    # ignore forward declarations
+    next if /^\s*typedef\s+enum.*;/;
+
+    if (m@^\s*typedef\s+enum\s*
+           ({)?\s*
+           (?:/\*<
+             (([^*]|\*(?!/))*)
+            >\s*\*/)?
+           \s*({)?
+         @x) {
+	if (defined $2) {
+	    my %options = parse_trigraph ($2);
+	    next if defined $options{skip};
+	    $enum_prefix = $options{prefix};
+	    $flags = $options{flags};
+	    $option_lowercase_name = $options{lowercase_name};
+	    $option_underscore_name = $options{underscore_name};
+	} else {
+	    $enum_prefix = undef;
+	    $flags = undef;
+	    $option_lowercase_name = undef;
+	    $option_underscore_name = undef;
+	}
+	if (defined $option_lowercase_name) {
+	    if (defined $option_underscore_name) {
+		print STDERR "$0: $ARGV:$.: lowercase_name overriden with underscore_name\n";
+		$option_lowercase_name = undef;
+	    } else {
+		print STDERR "$0: $ARGV:$.: lowercase_name is deprecated, use underscore_name\n";
+	    }
+	}
+	# Didn't have trailing '{' look on next lines
+	if (!defined $1 && !defined $4) {
+	    while (<>) {
+		if (eof) {
+		    die "Hit end of file while parsing enum in $ARGV";
+		}
+		if (s/^\s*\{//) {
+		    last;
+		}
+	    }
+	}
+
+	$seenbitshift = 0;
+	@entries = ();
+
+	# Now parse the entries
+	parse_entries (\*ARGV, $ARGV);
+
+	# figure out if this was a flags or enums enumeration
+	if (!defined $flags) {
+	    $flags = $seenbitshift;
+	}
+
+	# Autogenerate a prefix
+	if (!defined $enum_prefix) {
+	    for (@entries) {
+		my $nick = $_->[2];
+		if (!defined $nick) {
+		    my $name = $_->[0];
+		    if (defined $enum_prefix) {
+			my $tmp = ~ ($name ^ $enum_prefix);
+			($tmp) = $tmp =~ /(^\xff*)/;
+			$enum_prefix = $enum_prefix & $tmp;
+		    } else {
+			$enum_prefix = $name;
+		    }
+		}
+	    }
+	    if (!defined $enum_prefix) {
+		$enum_prefix = "";
+	    } else {
+		# Trim so that it ends in an underscore
+		$enum_prefix =~ s/_[^_]*$/_/;
+	    }
+	} else {
+	    # canonicalize user defined prefixes
+	    $enum_prefix = uc($enum_prefix);
+	    $enum_prefix =~ s/-/_/g;
+	    $enum_prefix =~ s/(.*)([^_])$/$1$2_/;
+	}
+	
+	for $entry (@entries) {
+	    my ($name,$num,$nick) = @{$entry};
+            if (!defined $nick) {
+ 	        ($nick = $name) =~ s/^$enum_prefix//;
+	        $nick =~ tr/_/-/;
+	        $nick = lc($nick);
+	        @{$entry} = ($name, $num, $nick);
+            }
+	}
+	
+
+	# Spit out the output
+	if (defined $option_underscore_name) {
+	    $enumlong = uc $option_underscore_name;
+	    $enumsym = lc $option_underscore_name;
+	    $enumshort = $enumlong;
+	    $enumshort =~ s/^[A-Z][A-Z0-9]*_//;
+
+	    $enumname_prefix = $enumlong;
+	    $enumname_prefix =~ s/_$enumshort$//;
+	} elsif (!$symprefix && !$idprefix) {
+	    # enumname is e.g. GMatchType
+	    $enspace = $enumname;
+	    $enspace =~ s/^([A-Z][a-z]*).*$/$1/;
+
+	    $enumshort = $enumname;
+	    $enumshort =~ s/^[A-Z][a-z]*//;
+	    $enumshort =~ s/([^A-Z])([A-Z])/$1_$2/g;
+	    $enumshort =~ s/([A-Z][A-Z])([A-Z][0-9a-z])/$1_$2/g;
+	    $enumshort = uc($enumshort);
+
+	    $enumname_prefix = $enumname;
+	    $enumname_prefix =~ s/^([A-Z][a-z]*).*$/$1/;
+	    $enumname_prefix = uc($enumname_prefix);
+
+	    $enumlong = uc($enspace) . "_" . $enumshort;
+	    $enumsym = lc($enspace) . "_" . lc($enumshort);
+
+	    if (defined($option_lowercase_name)) {
+		$enumsym = $option_lowercase_name;
+	    }
+	} else {
+	    $enumshort = $enumname;
+	    if ($idprefix) {
+		$enumshort =~ s/^${idprefix}//;
+	    } else {
+		$enumshort =~ s/^[A-Z][a-z]*//;
+	    }
+	    $enumshort =~ s/([^A-Z])([A-Z])/$1_$2/g;
+	    $enumshort =~ s/([A-Z][A-Z])([A-Z][0-9a-z])/$1_$2/g;
+	    $enumshort = uc($enumshort);
+
+	    $enumname_prefix = $symprefix && uc($symprefix) || uc($idprefix);
+
+	    $enumlong = $enumname_prefix . "_" . $enumshort;
+	    $enumsym = lc($enumlong);
+	}
+
+	if ($firstenum) {
+	    $firstenum = 0;
+	    
+	    if (length($fprod)) {
+		my $prod = $fprod;
+		my $base = basename ($ARGV);
+
+		$prod =~ s/\@filename\@/$ARGV/g;
+		$prod =~ s/\@basename\@/$base/g;
+		$prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+		$prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+	        chomp ($prod);
+		
+		print "$prod\n";
+	    }
+	}
+	
+	if (length($eprod)) {
+	    my $prod = $eprod;
+
+	    $prod =~ s/\@enum_name\@/$enumsym/g;
+	    $prod =~ s/\@EnumName\@/$enumname/g;
+	    $prod =~ s/\@ENUMSHORT\@/$enumshort/g;
+	    $prod =~ s/\@ENUMNAME\@/$enumlong/g;
+	    $prod =~ s/\@ENUMPREFIX\@/$enumname_prefix/g;
+	    if ($flags) { $prod =~ s/\@type\@/flags/g; } else { $prod =~ s/\@type\@/enum/g; }
+	    if ($flags) { $prod =~ s/\@Type\@/Flags/g; } else { $prod =~ s/\@Type\@/Enum/g; }
+	    if ($flags) { $prod =~ s/\@TYPE\@/FLAGS/g; } else { $prod =~ s/\@TYPE\@/ENUM/g; }
+	    $prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+	    $prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+            chomp ($prod);
+
+	    print "$prod\n";
+	}
+
+	if (length($vhead)) {
+	    my $prod = $vhead;
+
+	    $prod =~ s/\@enum_name\@/$enumsym/g;
+            $prod =~ s/\@EnumName\@/$enumname/g;
+            $prod =~ s/\@ENUMSHORT\@/$enumshort/g;
+            $prod =~ s/\@ENUMNAME\@/$enumlong/g;
+	    $prod =~ s/\@ENUMPREFIX\@/$enumname_prefix/g;
+	    if ($flags) { $prod =~ s/\@type\@/flags/g; } else { $prod =~ s/\@type\@/enum/g; }
+	    if ($flags) { $prod =~ s/\@Type\@/Flags/g; } else { $prod =~ s/\@Type\@/Enum/g; }
+	    if ($flags) { $prod =~ s/\@TYPE\@/FLAGS/g; } else { $prod =~ s/\@TYPE\@/ENUM/g; }
+            $prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+            $prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+            chomp ($prod);
+	    
+            print "$prod\n";
+	}
+
+	if (length($vprod)) {
+	    my $prod = $vprod;
+            my $next_num = 0;
+	    
+	    $prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+	    $prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+	    for (@entries) {
+		my ($name,$num,$nick) = @{$_};
+		my $tmp_prod = $prod;
+
+                if ($prod =~ /\@valuenum\@/) {
+                    # only attempt to eval the value if it is requested
+                    # this prevents us from throwing errors otherwise
+                    if (defined $num) {
+                        # use sandboxed perl evaluation as a reasonable
+                        # approximation to C constant folding
+                        $num = $sandbox->reval ($num);
+
+                        # make sure it parsed to an integer
+                        if (!defined $num or $num !~ /^-?\d+$/) {
+                            die "Unable to parse enum value '$num'";
+                        }
+                    } else {
+                        $num = $next_num;
+                    }
+
+                    $tmp_prod =~ s/\@valuenum\@/$num/g;
+                    $next_num = $num + 1;
+                }
+
+		$tmp_prod =~ s/\@VALUENAME\@/$name/g;
+		$tmp_prod =~ s/\@valuenick\@/$nick/g;
+		if ($flags) { $tmp_prod =~ s/\@type\@/flags/g; } else { $tmp_prod =~ s/\@type\@/enum/g; }
+		if ($flags) { $tmp_prod =~ s/\@Type\@/Flags/g; } else { $tmp_prod =~ s/\@Type\@/Enum/g; }
+		if ($flags) { $tmp_prod =~ s/\@TYPE\@/FLAGS/g; } else { $tmp_prod =~ s/\@TYPE\@/ENUM/g; }
+		chomp ($tmp_prod);
+
+		print "$tmp_prod\n";
+	    }
+	}
+
+	if (length($vtail)) {
+	    my $prod = $vtail;
+
+	    $prod =~ s/\@enum_name\@/$enumsym/g;
+            $prod =~ s/\@EnumName\@/$enumname/g;
+            $prod =~ s/\@ENUMSHORT\@/$enumshort/g;
+            $prod =~ s/\@ENUMNAME\@/$enumlong/g;
+	    $prod =~ s/\@ENUMPREFIX\@/$enumname_prefix/g;
+	    if ($flags) { $prod =~ s/\@type\@/flags/g; } else { $prod =~ s/\@type\@/enum/g; }
+	    if ($flags) { $prod =~ s/\@Type\@/Flags/g; } else { $prod =~ s/\@Type\@/Enum/g; }
+	    if ($flags) { $prod =~ s/\@TYPE\@/FLAGS/g; } else { $prod =~ s/\@TYPE\@/ENUM/g; }
+            $prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+            $prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+            chomp ($prod);
+	    
+            print "$prod\n";
+	}
+    }
+}
+
+if (length($ftail)) {
+    my $prod = $ftail;
+    my $base = basename ($ARGV);
+
+    $prod =~ s/\@filename\@/$ARGV/g;
+    $prod =~ s/\@basename\@/$base/g;
+    $prod =~ s/\\a/\a/g; $prod =~ s/\\b/\b/g; $prod =~ s/\\t/\t/g; $prod =~ s/\\n/\n/g;
+    $prod =~ s/\\f/\f/g; $prod =~ s/\\r/\r/g;
+    chomp ($prod);
+		
+    print "$prod\n";
+}
+
+# put auto-generation comment
+{
+    my $comment = $comment_tmpl;
+    $comment =~ s/\@comment\@/Generated data ends here/;
+    print "\n" . $comment . "\n\n";
+}

@@ -1,0 +1,162 @@
+#! /usr/bin/env python
+"""
+$Copyright Broadcom Corporation$
+
+$Id$
+
+Script that performs size checks against image files.
+
+Current working directory is assumed to be in the build area.
+"""
+
+import os
+import re
+import subprocess
+import sys
+
+def parse_mapfile(mapfile):
+    """ Converts mapfile to dictionary {symbol: address} """
+    res = {}
+    try:
+        f = open(mapfile)
+        for line in f:
+            # Mapfile contains lines in format:
+            # <address> <ignored> <symbol>
+            # eg,
+            # 00000000 a excvtbl
+            try:
+                addr, _, symbol = line.split()
+            except ValueError:
+                # Ignore case where a column is missing.
+                # I've come across one mapfile with no <symbol> column..
+                # $ head -n2 builds/4350b1-ram/sdio-ag-mfgtest-seqcmds-ndis/rtecdc.map
+                # 00000000 r 
+                # 00000000 a excvtbl
+                pass
+            else:
+                #assert symbol not in res, symbol
+                res[symbol] = int(addr, 16)
+    finally:
+        f.close()
+    return res
+
+
+def write_image_report(opts):
+    """ Checks sizing properties of the image.
+    Report is written to standard out.
+    Sizing summary is written to sizing YAML file.
+    """
+    mapfile_values = parse_mapfile(opts.mapfile)
+
+    # Convert raw mapfile values to things we can check.
+    size = mapfile_values['_end'] - opts.textstart
+    rsize = mapfile_values['_rend3'] - mapfile_values['_rstart1']
+    if rsize > 15:
+        reclaim = rsize
+    else:
+        reclaim = 0
+    # Add tcam tables to reclaim size if they exist.
+    try:
+        reclaim += (mapfile_values['_patch_table_start'] - mapfile_values['_patch_align_start'])
+        reclaim += (mapfile_values['_patch_table_end'] - mapfile_values['_patch_table_last'])
+        reclaim += (mapfile_values['_patch_hdr_end'] - mapfile_values['_patch_hdr_start'])
+    except KeyError:
+        pass
+
+    # Image size report and check
+    pipe = subprocess.Popen([opts.size_prog, opts.image], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    sizeout, _ = pipe.communicate()
+    assert pipe.returncode == 0
+    if opts.maxsize is None:
+        sys.stdout.write(sizeout)
+    else:
+        # Do not change error string below as imagesize_notify.pl script parses it
+        diff = opts.maxsize - size
+        if diff < 0:
+            if opts.nomaxsize == 0:
+                sizereport = "ERROR: "
+            else:
+                sizereport = "WARNING: "
+            sizereport += "Image %(target)s exceeds limit\n" % {'target': opts.target}
+        else:
+            sizereport = " INFO: Image %(target)s details\n" % {'target': opts.target}
+        sizereport += sizeout
+        sizereport += " size: %(size)d; limit: %(maxsize)d; diff: %(diff)d;\n" % {'size': size, 'maxsize': opts.maxsize, 'diff': diff}
+        if opts.nomaxsize:
+            if opts.warnlimit is None:
+                warnlimit = ''
+            else:
+                warnlimit = opts.warnlimit
+            sizereport += "reclaim: %(reclaim)s; warnlimit: %(warnlimit)s;\n" % {'reclaim': reclaim, 'warnlimit': warnlimit}
+        try:
+            f = open(opts.sizing_out, 'w')
+            f.write(sizereport)
+        finally:
+            f.close()
+        sys.stdout.write(sizereport)
+
+        if opts.nomaxsize == 0:
+            if diff < 0:
+                # With the print, simulate rm -v opts.bin.
+                os.unlink(opts.bin)
+                print "removed `%s'" % opts.bin
+                sys.exit(127)
+    # Reclaim size report
+    heap = opts.memsize - size - opts.stack
+    reclaimreport = "Reclaim: %(reclaim)s; " % {'reclaim': reclaim}
+    try:
+        shdat = (mapfile_values['shdat_end'] - mapfile_values['shdat_start'])
+    except KeyError:
+        pass
+    else:
+        if shdat > 15:
+            reclaimreport += "shared: %(shdat)s; " % {'shdat': shdat}
+    reclaimreport += "heap: %(heap)s; " % {'heap': heap}
+    reclaimreport += "static RAM usage after reclaim: %s\n" % (size - reclaim)
+    if heap < opts.heapmin:
+        reclaimreport += "\nWARNING: Initial heap size, %(heap)s, too small!\n\n" % {'heap': heap}
+    sys.stdout.write(reclaimreport)
+
+    # Write sizing info
+    try:
+        f = open(opts.sizing_info_yaml, 'w')
+        f.write("---\n")
+        f.write("static_ram_usage: %s\n" % (size - reclaim))
+        # Concat romtbl sizing info if it exists                                         \
+        if os.path.isfile(opts.romtbl_sizing_yaml):
+            try:
+                rs = open(opts.romtbl_sizing_yaml)
+                f.write(rs.read())
+            finally:
+                rs.close()
+    finally:
+        f.close()
+
+
+if __name__ == '__main__':
+    import optparse
+
+    parser = optparse.OptionParser()
+    parser.add_option('--bin')
+    parser.add_option('--heapmin', type='int', default=20480, help='Default: %default')
+    parser.add_option('--image', default=None)
+    parser.add_option('--mapfile')
+    parser.add_option('--maxsize', type='int', default=None)
+    parser.add_option('--memsize', type='int')
+    parser.add_option('--nomaxsize', type='int', default=0)
+    parser.add_option('--stack', type='int', default=8192, help='Default: %default')
+    parser.add_option('--size-prog', default='arm-eabi-none-size', help='Default: %default')
+    parser.add_option('--target', default=None)
+    parser.add_option('--textstart')
+    parser.add_option('--warnlimit', type='int', default=None)
+    parser.add_option('--sizing-out')
+    parser.add_option('--romtbl-sizing-yaml', default='romtbl.sizing_info.yaml', help="Default: %default")
+    parser.add_option('--sizing-info-yaml', default='sizing_info.yaml', help="Default: %default")
+    opts, args = parser.parse_args()
+
+    if opts.textstart is not None:
+        opts.textstart = int(opts.textstart, 16)
+
+    write_image_report(opts)
+
+# vim: et ts=4 sw=4 ft=python

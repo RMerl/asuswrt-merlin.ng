@@ -1,0 +1,101 @@
+<!-- ##### SECTION Title ##### -->
+GProxyResolver
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GProxyResolver ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GProxyResolverInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@is_supported: 
+@lookup: 
+@lookup_async: 
+@lookup_finish: 
+
+<!-- ##### MACRO G_PROXY_RESOLVER_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_proxy_resolver_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_resolver_is_supported ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_resolver_lookup ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@uri: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_resolver_lookup_async ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@uri: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_proxy_resolver_lookup_finish ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@result: 
+@error: 
+@Returns: 
+
+

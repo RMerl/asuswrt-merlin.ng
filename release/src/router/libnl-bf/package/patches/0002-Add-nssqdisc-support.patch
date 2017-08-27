@@ -1,0 +1,2006 @@
+diff --git a/include/Makefile.am b/include/Makefile.am
+index 79ade11..38d3117 100644
+--- a/include/Makefile.am
++++ b/include/Makefile.am
+@@ -59,6 +59,11 @@ nobase_libnlinclude_HEADERS = \
+ 	netlink/route/qdisc/codel.h \
+ 	netlink/route/qdisc/fq_codel.h \
+ 	netlink/route/qdisc/plug.h \
++	netlink/route/qdisc/nssbf.h \
++	netlink/route/qdisc/nsscodel.h \
++	netlink/route/qdisc/nssfifo.h \
++	netlink/route/qdisc/nssprio.h \
++	netlink/route/qdisc/nsstbl.h \
+ 	netlink/route/addr.h \
+ 	netlink/route/class.h \
+ 	netlink/route/classifier.h \
+diff --git a/include/linux/pkt_sched.h b/include/linux/pkt_sched.h
+index a614d99..2e89cc2 100644
+--- a/include/linux/pkt_sched.h
++++ b/include/linux/pkt_sched.h
+@@ -754,5 +754,96 @@ struct tc_bf_xstats {
+ 
+ #define TCA_BF_MAX      (__TCA_BF_MAX - 1)
+ 
++/* NSSFIFO section */
++
++enum {
++	TCA_NSSFIFO_UNSPEC,
++	TCA_NSSFIFO_PARMS,
++	__TCA_NSSFIFO_MAX
++};
++
++#define	TCA_NSSFIFO_MAX	(__TCA_NSSFIFO_MAX - 1)
++
++struct tc_nssfifo_qopt {
++	__u32   limit;		/* Queue length: bytes for bfifo, packets for pfifo */
++	__u8    set_default;	/* Sets qdisc to be the default qdisc for enqueue */
++};
++
++/* NSSCODEL section */
++
++enum {
++	TCA_NSSCODEL_UNSPEC,
++	TCA_NSSCODEL_PARMS,
++	__TCA_NSSCODEL_MAX
++};
++
++#define TCA_NSSCODEL_MAX	(__TCA_NSSCODEL_MAX - 1)
++
++struct tc_nsscodel_qopt {
++	__u32	target;		/* Acceptable queueing delay */
++	__u32	limit;		/* Maximum number of packets that can be held in the queue */
++	__u32	interval;	/* Monitoring interval */
++	__u8	set_default;	/* Sets qdisc to be the default qdisc for enqueue */
++};
++
++struct tc_nsscodel_xstats {
++	__u32 peak_queue_delay;	/* Peak delay experienced by a dequeued packet */
++	__u32 peak_drop_delay;	/* Peak delay experienced by a dropped packet */
++};
++
++/* NSSTBL section */
++
++enum {
++	TCA_NSSTBL_UNSPEC,
++	TCA_NSSTBL_PARMS,
++	__TCA_NSSTBL_MAX
++};
++
++#define TCA_NSSTBL_MAX	(__TCA_NSSTBL_MAX - 1)
++
++struct tc_nsstbl_qopt {
++	__u32	burst;		/* Maximum burst size */
++	__u32	rate;		/* Limiting rate of TBF */
++	__u32	peakrate;	/* Maximum rate at which TBF is allowed to send */
++	__u32	mtu;		/* Max size of packet, or minumim burst size */
++};
++
++/* NSSPRIO section */
++
++#define TCA_NSSPRIO_MAX_BANDS 256
++
++enum {
++	TCA_NSSPRIO_UNSPEC,
++	TCA_NSSPRIO_PARMS,
++	__TCA_NSSPRIO_MAX
++};
++
++#define TCA_NSSPRIO_MAX	(__TCA_NSSPRIO_MAX - 1)
++
++struct tc_nssprio_qopt {
++	int	bands;				/* Number of bands */
++};
++
++/* NSSBF section */
++
++enum {
++	TCA_NSSBF_UNSPEC,
++	TCA_NSSBF_CLASS_PARMS,
++	TCA_NSSBF_QDISC_PARMS,
++	__TCA_NSSBF_MAX
++};
++
++#define TCA_NSSBF_MAX	(__TCA_NSSBF_MAX - 1)
++
++struct tc_nssbf_class_qopt {
++	__u32	burst;		/* Maximum burst size */
++	__u32	rate;		/* Allowed bandwidth for this class */
++	__u32	mtu;		/* MTU of attached interface */
++	__u32	quantum;	/* Quantum allocation value for DRR */
++};
++
++struct tc_nssbf_qopt {
++	__u16	defcls;		/* Default class value */
++};
+ 
+ #endif
+diff --git a/include/netlink-types.h b/include/netlink-types.h
+index ea38faf..f8e318e 100644
+--- a/include/netlink-types.h
++++ b/include/netlink-types.h
+@@ -646,6 +646,47 @@ struct rtnl_sfb
+ 	uint32_t	qsb_mask;
+ };
+ 
++struct rtnl_nssfifo
++{
++	uint32_t	qpf_limit;
++	uint32_t	qpf_mask;
++	uint8_t		qpf_set_default;
++};
++
++struct rtnl_nsscodel {
++	uint32_t	anf_target;
++	uint32_t	anf_limit;
++	uint32_t	anf_interval;
++	uint32_t	anf_mask;
++	uint8_t		anf_set_default;
++};
++
++struct rtnl_nsstbl {
++	uint32_t	ias_rate;
++	uint32_t	ias_burst;
++	uint32_t	ias_peakrate;
++	uint32_t	ias_mtu;
++	uint32_t	ias_mask;
++};
++
++struct rtnl_nssprio {
++	int		agj_bands;
++	uint32_t	agj_mask;
++};
++
++struct rtnl_nssbf_class {
++	uint32_t	ery_burst;
++	uint32_t	ery_rate;
++	uint32_t	ery_mtu;
++	uint32_t	ery_quantum;
++	uint32_t	ery_mask;
++};
++
++struct rtnl_nssbf_qdisc {
++	uint16_t	awv_defcls;
++	uint32_t	awv_mask;
++};
++
+ struct rtnl_netem_corr
+ {
+ 	uint32_t	nmc_delay;
+diff --git a/include/netlink/route/qdisc/nssbf.h b/include/netlink/route/qdisc/nssbf.h
+new file mode 100644
+index 0000000..3d03126
+--- /dev/null
++++ b/include/netlink/route/qdisc/nssbf.h
+@@ -0,0 +1,49 @@
++/*
++ * netlink/route/sch/nssbf.h	NSSBF Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_NSSBF_H_
++#define NETLINK_NSSBF_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern int rtnl_nssbf_qdisc_set_defcls(struct rtnl_qdisc *qdisc, uint16_t defcls);
++extern uint32_t rtnl_nssbf_qdisc_get_defcls(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nssbf_class_set_rate(struct rtnl_class *class, uint32_t rate);
++extern uint32_t rtnl_nssbf_class_get_rate(struct rtnl_class *class);
++
++extern int rtnl_nssbf_class_set_burst(struct rtnl_class *class, uint32_t burst);
++extern uint32_t rtnl_nssbf_class_get_burst(struct rtnl_class *class);
++
++extern int rtnl_nssbf_class_set_mtu(struct rtnl_class *class, uint32_t mtu);
++extern uint32_t rtnl_nssbf_class_get_mtu(struct rtnl_class *class);
++
++extern int rtnl_nssbf_class_set_quantum(struct rtnl_class *class, uint32_t q);
++extern uint32_t rtnl_nssbf_class_get_quantum(struct rtnl_class *class);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/nsscodel.h b/include/netlink/route/qdisc/nsscodel.h
+new file mode 100644
+index 0000000..331032b
+--- /dev/null
++++ b/include/netlink/route/qdisc/nsscodel.h
+@@ -0,0 +1,46 @@
++/*
++ * netlink/route/sch/nsscodel.h	NSSCODEL Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_NSSCODEL_H_
++#define NETLINK_NSSCODEL_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern int rtnl_nsscodel_set_limit(struct rtnl_qdisc *qdisc, uint32_t limit);
++extern uint32_t rtnl_nsscodel_get_limit(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nsscodel_set_target(struct rtnl_qdisc *qdisc, uint32_t target);
++extern uint32_t rtnl_nsscodel_get_target(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nsscodel_set_interval(struct rtnl_qdisc *qdisc, uint32_t interval);
++extern uint32_t rtnl_nsscodel_get_interval(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nsscodel_set_default(struct rtnl_qdisc *qdisc, uint8_t set_default);
++extern uint8_t rtnl_nsscodel_get_default(struct rtnl_qdisc *qdisc);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/nssfifo.h b/include/netlink/route/qdisc/nssfifo.h
+new file mode 100644
+index 0000000..37e6475
+--- /dev/null
++++ b/include/netlink/route/qdisc/nssfifo.h
+@@ -0,0 +1,40 @@
++/*
++ * netlink/route/sch/nssfifo.c	NSSFIFO Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_NSSFIFO_H_
++#define NETLINK_NSSFIFO_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/qdisc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern int	rtnl_nssfifo_set_limit(struct rtnl_qdisc *, uint32_t);
++extern uint32_t	rtnl_nssfifo_get_limit(struct rtnl_qdisc *);
++
++extern int	rtnl_nssfifo_set_default(struct rtnl_qdisc *, uint8_t);
++extern uint8_t	rtnl_nssfifo_get_default(struct rtnl_qdisc *);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/nssprio.h b/include/netlink/route/qdisc/nssprio.h
+new file mode 100644
+index 0000000..39296d8
+--- /dev/null
++++ b/include/netlink/route/qdisc/nssprio.h
+@@ -0,0 +1,37 @@
++/*
++ * netlink/route/sch/nssprio.h	NSSPRIO Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_NSSPRIO_H_
++#define NETLINK_NSSPRIO_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern int rtnl_nssprio_set_bands(struct rtnl_qdisc *qdisc, int bands);
++extern int rtnl_nssprio_get_bands(struct rtnl_qdisc *qdisc);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/nsstbl.h b/include/netlink/route/qdisc/nsstbl.h
+new file mode 100644
+index 0000000..c896540
+--- /dev/null
++++ b/include/netlink/route/qdisc/nsstbl.h
+@@ -0,0 +1,46 @@
++/*
++ * netlink/route/sch/nsstbl.h	NSSTBL Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_NSSTBL_H_
++#define NETLINK_NSSTBL_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern int rtnl_nsstbl_set_rate(struct rtnl_qdisc *qdisc, uint32_t rate);
++extern uint32_t rtnl_nsstbl_get_rate(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nsstbl_set_burst(struct rtnl_qdisc *qdisc, uint32_t burst);
++extern uint32_t rtnl_nsstbl_get_burst(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nsstbl_set_mtu(struct rtnl_qdisc *qdisc, uint32_t mtu);
++extern uint32_t rtnl_nsstbl_get_mtu(struct rtnl_qdisc *qdisc);
++
++extern int rtnl_nsstbl_set_peakrate(struct rtnl_qdisc *qdisc, uint32_t peakrate);
++extern uint32_t rtnl_nsstbl_get_peakrate(struct rtnl_qdisc *qdisc);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/lib/Makefile.am b/lib/Makefile.am
+index cc88227..1a4c440 100644
+--- a/lib/Makefile.am
++++ b/lib/Makefile.am
+@@ -76,6 +76,8 @@ libnl_route_3_la_SOURCES = \
+ 	route/qdisc/hfsc.c route/qdisc/codel.c route/qdisc/fq_codel.c \
+ 	route/qdisc/drr.c \
+ 	route/qdisc/bf.c \
++	route/qdisc/nssfifo.c route/qdisc/nsstbl.c route/qdisc/nssbf.c \
++	route/qdisc/nssprio.c route/qdisc/nsscodel.c \
+ 	\
+ 	fib_lookup/lookup.c fib_lookup/request.c \
+ 	\
+@@ -108,6 +110,7 @@ nobase_pkglib_LTLIBRARIES = \
+ 	cli/qdisc/pfifo.la \
+ 	cli/qdisc/plug.la \
+ 	cli/qdisc/bfifo.la \
++	cli/qdisc/nsspfifo.la \
+ 	cli/cls/basic.la \
+ 	cli/cls/cgroup.la
+ 
+@@ -118,6 +121,7 @@ cli_qdisc_blackhole_la_LDFLAGS = -module -avoid-version
+ cli_qdisc_pfifo_la_LDFLAGS = -module -avoid-version
+ cli_qdisc_plug_la_LDFLAGS = -module -avoid-version
+ cli_qdisc_bfifo_la_LDFLAGS = -module -avoid-version
++cli_qdisc_nsspfifo_la_LDFLAGS = -module -avoid-version
+ cli_cls_basic_la_LDFLAGS = -module -avoid-version
+ cli_cls_cgroup_la_LDFLAGS = -module -avoid-version
+ endif
+diff --git a/lib/cli/qdisc/nsspfifo.c b/lib/cli/qdisc/nsspfifo.c
+new file mode 100644
+index 0000000..b9d3cf8
+--- /dev/null
++++ b/lib/cli/qdisc/nsspfifo.c
+@@ -0,0 +1,92 @@
++/*
++ * src/lib/nsspfifo.c     	nsspfifo module for CLI lib
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#include <netlink/cli/utils.h>
++#include <netlink/cli/tc.h>
++#include <netlink/route/qdisc/nssfifo.h>
++
++static void print_usage(void)
++{
++	printf(
++"Usage: nl-qdisc-add [...] nsspfifo [OPTIONS]...\n"
++"\n"
++"OPTIONS\n"
++"     --help                Show this help text.\n"
++"     --limit=LIMIT         Maximum queue length in number of packets.\n"
++"     --set_default         Set, if this needs to be the default enqueue node.\n"
++"\n"
++"EXAMPLE"
++"    # Attach nsspfifo with a 32 packet limit to eth1, and set as default\n"
++"    nl-qdisc-add --dev=eth1 --parent=root nsspfifo --limit=32 --set_default\n");
++}
++
++static void nsspfifo_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
++{
++	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) tc;
++
++	rtnl_qdisc_nssfifo_set_set_default(qdisc, 0);
++	for (;;) {
++		int c, optidx = 0;
++		enum {
++			ARG_LIMIT = 257,
++			ARG_SET_DEFAULT = 258,
++		};
++		static struct option long_opts[] = {
++			{ "help", 0, 0, 'h' },
++			{ "limit", 1, 0, ARG_LIMIT },
++			{ "set_default", 1, 0, ARG_SET_DEFAULT },
++			{ 0, 0, 0, 0 }
++		};
++	
++		c = getopt_long(argc, argv, "h", long_opts, &optidx);
++		if (c == -1)
++			break;
++
++		switch (c) {
++		case 'h':
++			print_usage();
++			return;
++
++		case ARG_LIMIT:
++			rtnl_qdisc_nssfifo_set_limit(qdisc, nl_cli_parse_u32(optarg));
++			break;
++
++		case ARG_SET_DEFAULT:
++			rtnl_qdisc_nssfifo_set_set_default(qdisc, 1);
++			break;
++		}
++ 	}
++}
++
++static struct nl_cli_tc_module nsspfifo_module =
++{
++	.tm_name		= "nsspfifo",
++	.tm_type		= RTNL_TC_TYPE_QDISC,
++	.tm_parse_argv		= nsspfifo_parse_argv,
++};
++
++static void __init nsspfifo_init(void)
++{
++	nl_cli_tc_register(&nsspfifo_module);
++}
++
++static void __exit nsspfifo_exit(void)
++{
++	nl_cli_tc_unregister(&nsspfifo_module);
++}
+diff --git a/lib/route/qdisc/nssbf.c b/lib/route/qdisc/nssbf.c
+new file mode 100644
+index 0000000..9a35621
+--- /dev/null
++++ b/lib/route/qdisc/nssbf.c
+@@ -0,0 +1,411 @@
++/*
++ * lib/route/qdisc/nssbf.c		NSSBF Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @ingroup class
++ * @defgroup qdisc_nssbf BF Scheduler (NSSBF)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/class.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/nssbf.h>
++
++/** @cond SKIP */
++#define NSSBF_QDISC_ATTR_DEFCLS		0x001
++#define NSSBF_CLASS_ATTR_RATE		0x002
++#define NSSBF_CLASS_ATTR_BURST		0x004
++#define NSSBF_CLASS_ATTR_MTU		0x008
++#define NSSBF_CLASS_ATTR_QUANTUM	0x010
++/** @endcond */
++
++static struct nla_policy nssbf_policy[TCA_NSSBF_MAX+1] = {
++	[TCA_NSSBF_QDISC_PARMS]	= { .minlen = sizeof(struct tc_nssbf_qopt) },
++	[TCA_NSSBF_CLASS_PARMS]	= { .minlen = sizeof(struct tc_nssbf_class_qopt) },
++};
++
++static struct nla_policy nssbf_class_policy[TCA_NSSBF_MAX+1] = {
++};
++
++static int nssbf_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_NSSBF_MAX + 1];
++	struct rtnl_nssbf_qdisc *nssbf = data;
++	struct tc_nssbf_qopt *opts;
++	int err;
++
++	if ((err = tca_parse(tb, TCA_NSSBF_MAX, tc, nssbf_policy)) < 0)
++		return err;
++
++	if (tb[TCA_NSSBF_QDISC_PARMS]) {
++		opts = nla_data(tb[TCA_NSSBF_QDISC_PARMS]);
++
++		nssbf->awv_mask = 0;
++
++		nssbf->awv_defcls = opts->defcls;
++		nssbf->awv_mask |= NSSBF_QDISC_ATTR_DEFCLS;
++	}
++
++	return 0;
++}
++
++static int nssbf_class_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_NSSBF_MAX + 1];
++	struct rtnl_nssbf_class *nssbf = data;
++	struct tc_nssbf_class_qopt *opts;
++	int err;
++
++	if ((err = tca_parse(tb, TCA_NSSBF_MAX, tc, nssbf_policy)) < 0)
++		return err;
++
++	if (tb[TCA_NSSBF_CLASS_PARMS]) {
++		opts = nla_data(tb[TCA_NSSBF_CLASS_PARMS]);
++
++		nssbf->ery_mask = 0;
++
++		nssbf->ery_rate = opts->rate;
++		nssbf->ery_mask |= NSSBF_CLASS_ATTR_RATE;
++
++		nssbf->ery_burst = opts->burst;
++		nssbf->ery_mask |= NSSBF_CLASS_ATTR_BURST;
++
++		nssbf->ery_mtu = opts->mtu;
++		nssbf->ery_mask |= NSSBF_CLASS_ATTR_MTU;
++
++		nssbf->ery_quantum = opts->quantum;
++		nssbf->ery_mask |= NSSBF_CLASS_ATTR_QUANTUM;
++	}
++
++	return 0;
++}
++
++static void nssbf_qdisc_dump_line(struct rtnl_tc *tc, void *data,
++			       struct nl_dump_params *p)
++{
++	struct rtnl_nssbf_qdisc *nssbf = data;
++
++	if (!nssbf)
++		return;
++
++	if (nssbf->awv_mask & NSSBF_QDISC_ATTR_DEFCLS) {
++		char buf[64];
++		nl_dump(p, " default-class %s",
++			rtnl_tc_handle2str(nssbf->awv_defcls,
++			buf, sizeof(buf)));
++	}
++}
++
++static void nssbf_class_dump_line(struct rtnl_tc *tc, void *data,
++			       struct nl_dump_params *p)
++{
++	struct rtnl_nssbf_class *nssbf = data;
++
++	if (!nssbf)
++		return;
++
++	if (nssbf->ery_mask & NSSBF_CLASS_ATTR_RATE) {
++		nl_dump(p, " Rate %u", nssbf->ery_rate);
++	}
++}
++
++static int nssbf_qdisc_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct rtnl_nssbf_qdisc *nssbf = data;
++	struct tc_nssbf_qopt opts;
++
++	memset(&opts, 0, sizeof(opts));
++
++	if (nssbf) {
++		if (nssbf->awv_mask & NSSBF_QDISC_ATTR_DEFCLS)
++			opts.defcls = nssbf->awv_defcls;
++	}
++
++	NLA_PUT(msg, TCA_NSSBF_QDISC_PARMS, sizeof(opts), &opts);
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++static int nssbf_class_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct rtnl_nssbf_class *nssbf = data;
++	struct tc_nssbf_class_qopt opts;
++	uint32_t required = NSSBF_CLASS_ATTR_RATE | NSSBF_CLASS_ATTR_BURST;
++
++	if (!nssbf)
++		return 0;
++
++	if ((nssbf->ery_mask & required) != required)
++		return -NLE_MISSING_ATTR;
++
++	memset(&opts, 0, sizeof(opts));
++
++	opts.rate = nssbf->ery_rate;
++	opts.burst = nssbf->ery_burst;
++
++	if (nssbf->ery_mask & NSSBF_CLASS_ATTR_MTU) {
++		opts.mtu = nssbf->ery_mtu;
++	}
++
++	if (nssbf->ery_mask & NSSBF_CLASS_ATTR_QUANTUM) {
++		opts.quantum = nssbf->ery_quantum;
++	}
++
++	NLA_PUT(msg, TCA_NSSBF_CLASS_PARMS, sizeof(opts), &opts);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Attribute Access
++ * @{
++ */
++
++/**
++ * Set defcls of NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc to be modified
++ * @arg defcls		New defcls for the qdisc
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssbf_qdisc_set_defcls(struct rtnl_qdisc *qdisc, uint16_t defcls)
++{
++	struct rtnl_nssbf_qdisc *nssbf_qdisc;
++
++	if (!(nssbf_qdisc = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nssbf_qdisc->awv_defcls = defcls;
++	nssbf_qdisc->awv_mask |= NSSBF_QDISC_ATTR_DEFCLS;
++	return 0;
++}
++
++/**
++ * Get defcls of a NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc.
++ * @return defcls value.
++ */
++uint32_t rtnl_nssbf_qdisc_get_defcls(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nssbf_qdisc *nssbf_qdisc;
++
++	if ((nssbf_qdisc = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nssbf_qdisc->awv_mask & NSSBF_QDISC_ATTR_DEFCLS)) {
++
++		return nssbf_qdisc->awv_defcls;
++	}
++
++	return TC_H_UNSPEC;
++}
++
++/**
++ * Set rate of NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc to be modified
++ * @arg rate		New rate in bytes per second
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssbf_class_set_rate(struct rtnl_class *class, uint32_t rate)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if (!(nssbf_class = rtnl_tc_data(TC_CAST(class))))
++		return -NLE_NOMEM;
++
++	nssbf_class->ery_rate = rate;
++	nssbf_class->ery_mask |= NSSBF_CLASS_ATTR_RATE;
++	return 0;
++}
++
++/**
++ * Get rate of a NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc.
++ * @return configured rate in bytes per second.
++ */
++uint32_t rtnl_nssbf_class_get_rate(struct rtnl_class *class)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if ((nssbf_class = rtnl_tc_data(TC_CAST(class))) &&
++		(nssbf_class->ery_mask & NSSBF_CLASS_ATTR_RATE)) {
++
++		return nssbf_class->ery_rate;
++	}
++
++	return 0;
++}
++
++/**
++ * Set burst of NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc to be modified
++ * @arg burst		New burst size in bytes.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssbf_class_set_burst(struct rtnl_class *class, uint32_t burst)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if (!(nssbf_class = rtnl_tc_data(TC_CAST(class))))
++		return -NLE_NOMEM;
++
++	nssbf_class->ery_burst = burst;
++	nssbf_class->ery_mask |= NSSBF_CLASS_ATTR_BURST;
++	return 0;
++}
++
++/**
++ * Get burst of a NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc.
++ * @return configured burst in bytes.
++ */
++uint32_t rtnl_nssbf_class_get_burst(struct rtnl_class *class)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if ((nssbf_class = rtnl_tc_data(TC_CAST(class))) &&
++		(nssbf_class->ery_mask & NSSBF_CLASS_ATTR_BURST)) {
++
++		return nssbf_class->ery_burst;
++	}
++
++	return 0;
++}
++
++/**
++ * Set mtu of NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc to be modified
++ * @arg mtu		New mtu in bytes
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssbf_class_set_mtu(struct rtnl_class *class, uint32_t mtu)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if (!(nssbf_class = rtnl_tc_data(TC_CAST(class))))
++		return -NLE_NOMEM;
++
++	nssbf_class->ery_mtu = mtu;
++	nssbf_class->ery_mask |= NSSBF_CLASS_ATTR_MTU;
++	return 0;
++}
++
++/**
++ * Get mtu of a NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc.
++ * @return configured mtu in bytes.
++ */
++uint32_t rtnl_nssbf_class_get_mtu(struct rtnl_class *class)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if ((nssbf_class = rtnl_tc_data(TC_CAST(class))) &&
++		(nssbf_class->ery_mask & NSSBF_CLASS_ATTR_MTU)) {
++
++		return nssbf_class->ery_mtu;
++	}
++
++	return 0;
++}
++
++/**
++ * Set quantum of NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc to be modified
++ * @arg quantum		New quantum
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssbf_class_set_quantum(struct rtnl_class *class, uint32_t quantum)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if (!(nssbf_class = rtnl_tc_data(TC_CAST(class))))
++		return -NLE_NOMEM;
++
++	nssbf_class->ery_quantum = quantum;
++	nssbf_class->ery_mask |= NSSBF_CLASS_ATTR_QUANTUM;
++	return 0;
++}
++
++/**
++ * Get quantum of a NSSBF qdisc.
++ * @arg qdisc		NSSBF qdisc.
++ * @return configured quantum
++ */
++uint32_t rtnl_nssbf_class_get_quantum(struct rtnl_class *class)
++{
++	struct rtnl_nssbf_class *nssbf_class;
++
++	if ((nssbf_class = rtnl_tc_data(TC_CAST(class))) &&
++		(nssbf_class->ery_mask & NSSBF_CLASS_ATTR_QUANTUM)) {
++
++		return nssbf_class->ery_quantum;
++	}
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops nssbf_qdisc_ops = {
++	.to_kind		= "nssbf",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_nssbf_qdisc),
++	.to_msg_parser		= nssbf_qdisc_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= nssbf_qdisc_dump_line,
++	    [NL_DUMP_DETAILS]	= NULL,
++	},
++	.to_msg_fill		= nssbf_qdisc_msg_fill,
++};
++
++static struct rtnl_tc_ops nssbf_class_ops = {
++	.to_kind		= "nssbf",
++	.to_type		= RTNL_TC_TYPE_CLASS,
++	.to_size		= sizeof(struct rtnl_nssbf_class),
++	.to_msg_parser		= nssbf_class_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= nssbf_class_dump_line,
++	    [NL_DUMP_DETAILS]	= NULL,
++	},
++	.to_msg_fill		= nssbf_class_msg_fill,
++};
++
++static void __init nssbf_init(void)
++{
++	rtnl_tc_register(&nssbf_qdisc_ops);
++	rtnl_tc_register(&nssbf_class_ops);
++}
++
++static void __exit nssbf_exit(void)
++{
++	rtnl_tc_unregister(&nssbf_class_ops);
++	rtnl_tc_unregister(&nssbf_qdisc_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/nsscodel.c b/lib/route/qdisc/nsscodel.c
+new file mode 100644
+index 0000000..f214430
+--- /dev/null
++++ b/lib/route/qdisc/nsscodel.c
+@@ -0,0 +1,312 @@
++/*
++ * lib/route/qdisc/nsscodel.c		NSSCODEL Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @defgroup qdisc_nsscodel CODEL Queue (NSSCODEL)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/nsscodel.h>
++
++/** @cond SKIP */
++#define NSSCODEL_ATTR_TARGET		0x01
++#define NSSCODEL_ATTR_LIMIT		0x02
++#define NSSCODEL_ATTR_INTERVAL		0x04
++#define NSSCODEL_ATTR_SET_DEFAULT	0x08
++/** @endcond */
++
++static struct nla_policy nsscodel_policy[TCA_NSSCODEL_MAX + 1] = {
++	[TCA_NSSCODEL_PARMS]	= { .minlen = sizeof(struct tc_nsscodel_qopt) },
++};
++
++static int nsscodel_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct rtnl_nsscodel *nsscodel = data;
++	struct nlattr *tb[TCA_NSSCODEL_MAX + 1];
++	struct tc_nsscodel_qopt *opts;
++	int err;
++
++	err = tca_parse(tb, TCA_NSSCODEL_MAX, tc, nsscodel_policy);
++	if (err < 0)
++		return err;
++
++
++	if (!tb[TCA_NSSCODEL_PARMS])
++		return -NLE_MISSING_ATTR;
++
++	opts = nla_data(tb[TCA_NSSCODEL_PARMS]);
++
++	nsscodel->anf_mask = 0;
++
++	nsscodel->anf_target = opts->target;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_TARGET;
++
++	nsscodel->anf_limit = opts->limit;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_LIMIT;
++
++	nsscodel->anf_interval = opts->interval;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_INTERVAL;
++
++	nsscodel->anf_set_default = opts->set_default;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_SET_DEFAULT;
++
++	return 0;
++}
++
++static void nsscodel_dump_line(struct rtnl_tc *tc, void *data,
++				  struct nl_dump_params *p)
++{
++	struct rtnl_nsscodel *nsscodel = data;
++
++	if (nsscodel && (nsscodel->anf_mask & NSSCODEL_ATTR_TARGET))
++		nl_dump(p, " target %u ms", nsscodel->anf_target);
++}
++
++static void nsscodel_dump_details(struct rtnl_tc *tc, void *data,
++				     struct nl_dump_params *p)
++{
++	struct rtnl_nsscodel *nsscodel = data;
++
++	if (!nsscodel)
++		return;
++
++	if (nsscodel->anf_mask & NSSCODEL_ATTR_LIMIT)
++		nl_dump(p, " limit %u packets", nsscodel->anf_limit);
++
++	if (nsscodel->anf_mask & NSSCODEL_ATTR_INTERVAL)
++		nl_dump(p, " interval %u ms", nsscodel->anf_interval);
++
++	if (nsscodel->anf_mask & NSSCODEL_ATTR_SET_DEFAULT)
++		nl_dump(p, " set_default %u", nsscodel->anf_set_default);
++}
++
++static int nsscodel_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct tc_nsscodel_qopt opts;
++	struct rtnl_nsscodel *nsscodel = data;
++	uint32_t required = NSSCODEL_ATTR_TARGET | NSSCODEL_ATTR_INTERVAL;
++
++	if (!nsscodel )
++		return 0;
++
++	if ((nsscodel->anf_mask & required) != required)
++		return -NLE_MISSING_ATTR;
++
++	memset(&opts, 0, sizeof(opts));
++
++	opts.target = nsscodel->anf_target;
++	opts.interval = nsscodel->anf_interval;
++
++	if (nsscodel->anf_mask & NSSCODEL_ATTR_LIMIT)
++		opts.limit = nsscodel->anf_limit;
++
++	if (nsscodel->anf_mask & NSSCODEL_ATTR_SET_DEFAULT)
++		opts.set_default = nsscodel->anf_set_default;
++
++	NLA_PUT(msg, TCA_NSSCODEL_PARMS, sizeof(opts), &opts);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Attribute Access
++ * @{
++ */
++
++/**
++ * Set limit of NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc to be modified
++ * @arg limit		Queue limit in packets
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsscodel_set_limit(struct rtnl_qdisc *qdisc, uint32_t limit)
++{
++	struct rtnl_nsscodel *nsscodel;
++
++	if (!(nsscodel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsscodel->anf_limit = limit;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_LIMIT;
++	return 0;
++}
++
++/**
++ * Get limit of a NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc.
++ * @return limit value in number of packets.
++ */
++uint32_t rtnl_nsscodel_get_limit(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsscodel *nsscodel;
++	
++	if ((nsscodel = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsscodel->anf_mask & NSSCODEL_ATTR_LIMIT)) {
++
++		return nsscodel->anf_limit;
++	}
++
++	return 0;
++}
++
++/**
++ * Set target of NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc to be modified
++ * @arg target		New target delay in usec.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsscodel_set_target(struct rtnl_qdisc *qdisc, uint32_t target)
++{
++	struct rtnl_nsscodel *nsscodel;
++
++	if (!(nsscodel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsscodel->anf_target = target;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_TARGET;
++	return 0;
++}
++
++/**
++ * Get target of a NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc.
++ * @return target value in usec.
++ */
++uint32_t rtnl_nsscodel_get_target(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsscodel *nsscodel;
++	
++	if ((nsscodel = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsscodel->anf_mask & NSSCODEL_ATTR_TARGET)) {
++
++		return nsscodel->anf_target;
++	}
++
++	return 0;
++}
++
++/**
++ * Set interval of NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc to be modified
++ * @arg interval	New interval for the qdisc in usec.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsscodel_set_interval(struct rtnl_qdisc *qdisc, uint32_t interval)
++{
++	struct rtnl_nsscodel *nsscodel;
++
++	if (!(nsscodel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsscodel->anf_interval = interval;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_INTERVAL;
++	return 0;
++}
++
++/**
++ * Get interval of a NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc.
++ * @return interval in usec.
++ */
++uint32_t rtnl_nsscodel_get_interval(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsscodel *nsscodel;
++	
++	if ((nsscodel = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsscodel->anf_mask & NSSCODEL_ATTR_INTERVAL)) {
++
++		return nsscodel->anf_interval;
++	}
++
++	return 0;
++}
++
++/**
++ * Set set_default of NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc to be modified
++ * @arg set_default	A value > 0 will make this the default enqueue node.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsscodel_set_default(struct rtnl_qdisc *qdisc, uint8_t set_default)
++{
++	struct rtnl_nsscodel *nsscodel;
++
++	if (!(nsscodel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsscodel->anf_set_default = set_default;
++	nsscodel->anf_mask |= NSSCODEL_ATTR_SET_DEFAULT;
++	return 0;
++}
++
++/**
++ * Get set_default of a NSSCODEL qdisc.
++ * @arg qdisc		NSSCODEL qdisc.
++ * @return set_default value. Value > 0 means this is the default enqueue node.
++ */
++uint8_t rtnl_nsscodel_get_default(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsscodel *nsscodel;
++	
++	if ((nsscodel = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsscodel->anf_mask & NSSCODEL_ATTR_SET_DEFAULT)) {
++
++		return nsscodel->anf_set_default;
++	}
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops nsscodel_qdisc_ops = {
++	.to_kind		= "nsscodel",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_nsscodel),
++	.to_msg_parser		= nsscodel_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]      = nsscodel_dump_line,
++	    [NL_DUMP_DETAILS]   = nsscodel_dump_details,
++	},
++	.to_msg_fill		= nsscodel_msg_fill,
++};
++
++static void __init nsscodel_init(void)
++{
++	rtnl_tc_register(&nsscodel_qdisc_ops);
++}
++
++static void __exit nsscodel_exit(void)
++{
++	rtnl_tc_unregister(&nsscodel_qdisc_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/nssfifo.c b/lib/route/qdisc/nssfifo.c
+new file mode 100644
+index 0000000..511fff0
+--- /dev/null
++++ b/lib/route/qdisc/nssfifo.c
+@@ -0,0 +1,216 @@
++/*
++ * lib/route/qdisc/nssfifo.c
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @defgroup qdisc_nssfifo FIFO Queue (NSSFIFO)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/qdisc/nssfifo.h>
++#include <netlink/utils.h>
++
++/** @cond */
++#define NSSFIFO_ATTR_LIMIT		0x01
++#define NSSFIFO_ATTR_SET_DEFAULT	0x02
++/** @endcond */
++
++static struct nla_policy nssfifo_policy[TCA_NSSFIFO_MAX + 1] = {
++	[TCA_NSSFIFO_PARMS]	= { .minlen = sizeof(struct tc_nssfifo_qopt) },
++};
++
++static int nssfifo_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_NSSFIFO_MAX + 1];
++	struct rtnl_nssfifo *nssfifo = data;
++	struct tc_nssfifo_qopt *opts;
++	int err;
++
++	err = tca_parse(tb, TCA_NSSFIFO_MAX, tc, nssfifo_policy);
++	if (err < 0)
++		return err;
++
++	if (!tb[TCA_NSSFIFO_PARMS])
++		return -NLE_MISSING_ATTR;
++
++	opts = nla_data(tb[TCA_NSSFIFO_PARMS]);
++
++	nssfifo->qpf_mask = 0;
++
++	nssfifo->qpf_limit = opts->limit;
++	nssfifo->qpf_mask |= NSSFIFO_ATTR_LIMIT;
++
++	nssfifo->qpf_set_default = opts->set_default;
++	nssfifo->qpf_mask |= NSSFIFO_ATTR_SET_DEFAULT;
++
++	return 0;
++}
++
++static void nssfifo_dump_line(struct rtnl_tc *tc, void *data,
++			    struct nl_dump_params *p)
++{
++	struct rtnl_nssfifo *nssfifo = data;
++
++	if (nssfifo && (nssfifo->qpf_mask & NSSFIFO_ATTR_LIMIT))
++		nl_dump(p, " limit %u packets", nssfifo->qpf_limit);
++}
++
++static void nssfifo_dump_details(struct rtnl_tc *tc, void *data, struct nl_dump_params *p)
++{
++	struct rtnl_nssfifo *nssfifo = data;
++
++	if (!nssfifo)
++		return;
++
++	if (nssfifo && (nssfifo->qpf_mask & NSSFIFO_ATTR_SET_DEFAULT))
++		nl_dump(p, " set_default %u", nssfifo->qpf_set_default);
++}
++
++static int nssfifo_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct rtnl_nssfifo *nssfifo = data;
++	struct tc_nssfifo_qopt opts;
++
++	if (!nssfifo)
++		return -NLE_INVAL;
++
++	memset(&opts, 0, sizeof(opts));
++
++	if (nssfifo->qpf_mask & NSSFIFO_ATTR_LIMIT)
++		opts.limit = nssfifo->qpf_limit;
++
++	if (nssfifo->qpf_mask & NSSFIFO_ATTR_SET_DEFAULT)
++		opts.set_default = nssfifo->qpf_set_default;
++
++	NLA_PUT(msg, TCA_NSSFIFO_PARMS, sizeof(opts), &opts);
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Attribute Modification
++ * @{
++ */
++
++/**
++ * Set limit of NSSFIFO qdisc.
++ * @arg qdisc		NSSFIFO qdisc to be modified.
++ * @arg limit		New limit in number of packets.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssfifo_set_limit(struct rtnl_qdisc *qdisc, uint32_t limit)
++{
++	struct rtnl_nssfifo *nssfifo;
++
++	if (!(nssfifo = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nssfifo->qpf_limit = limit;
++	nssfifo->qpf_mask |= NSSFIFO_ATTR_LIMIT;
++
++	return 0;
++}
++
++/**
++ * Get limit of a NSSFIFO qdisc.
++ * @arg qdisc		NSSFIFO qdisc.
++ * @return limit in number of packets.
++ */
++uint32_t rtnl_nssfifo_get_limit(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nssfifo *nssfifo;
++
++	if ((nssfifo = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nssfifo->qpf_mask & NSSFIFO_ATTR_LIMIT)) {
++
++		return nssfifo->qpf_limit;
++	}
++
++	return 0;
++}
++
++/**
++ * Set set_default of NSSFIFO qdisc.
++ * @arg qdisc		NSSFIFO qdisc to be modified.
++ * @arg set_default	If this qdisc needs to be the default enqueue node.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssfifo_set_default(struct rtnl_qdisc *qdisc, uint8_t set_default)
++{
++	struct rtnl_nssfifo *nssfifo;
++
++	if (!(nssfifo = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nssfifo->qpf_set_default = set_default;
++	nssfifo->qpf_mask |= NSSFIFO_ATTR_SET_DEFAULT;
++
++	return 0;
++}
++
++/**
++ * Get limit of a NSSFIFO qdisc.
++ * @arg qdisc		NSSFIFO qdisc.
++ * @return set_default flag
++ */
++uint8_t rtnl_nssfifo_get_default(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nssfifo *nssfifo;
++
++	if ((nssfifo = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nssfifo->qpf_mask & NSSFIFO_ATTR_SET_DEFAULT)) {
++
++		return nssfifo->qpf_set_default;
++	}
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops nsspfifo_ops = {
++	.to_kind		= "nsspfifo",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_nssfifo),
++	.to_msg_parser		= nssfifo_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= nssfifo_dump_line,
++	    [NL_DUMP_DETAILS]	= nssfifo_dump_details,
++	},
++	.to_msg_fill		= nssfifo_msg_fill,
++};
++
++static void __init nssfifo_init(void)
++{
++	rtnl_tc_register(&nsspfifo_ops);
++}
++
++static void __exit nssfifo_exit(void)
++{
++	rtnl_tc_unregister(&nsspfifo_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/nssprio.c b/lib/route/qdisc/nssprio.c
+new file mode 100644
+index 0000000..67ae66d
+--- /dev/null
++++ b/lib/route/qdisc/nssprio.c
+@@ -0,0 +1,162 @@
++/*
++ * lib/route/qdisc/nssprio.c		NSSPRIO Qdisc/Class
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @ingroup class
++ * @defgroup qdisc_nssprio PRIO Qdisc/Class (NSSPRIO)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/qdisc/nssprio.h>
++
++/** @cond SKIP */
++#define NSSPRIO_ATTR_BANDS	0x01
++/** @endcond */
++
++static struct nla_policy nssprio_policy[TCA_NSSPRIO_MAX + 1] = {
++	[TCA_NSSPRIO_PARMS]     = { .minlen = sizeof(struct tc_nssprio_qopt) },
++};
++
++static int nssprio_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_NSSPRIO_MAX + 1];
++	struct rtnl_nssprio *nssprio = data;
++	struct tc_nssprio_qopt *opt;
++	int err;
++
++	err = tca_parse(tb, TCA_NSSPRIO_MAX, tc, nssprio_policy);
++	if (err < 0)
++		return err;
++
++	if (!tb[TCA_NSSPRIO_PARMS])
++		return -NLE_MISSING_ATTR;
++
++	opt = nla_data(tb[TCA_NSSPRIO_PARMS]);
++
++	nssprio->agj_mask = 0;
++
++	nssprio->agj_bands = opt->bands;
++	nssprio->agj_mask |= NSSPRIO_ATTR_BANDS;
++
++	return 0;
++}
++
++static void nssprio_dump_line(struct rtnl_tc *tc, void *data,
++			   struct nl_dump_params *p)
++{
++	struct rtnl_nssprio *nssprio = data;
++
++	if (nssprio && (nssprio->agj_mask & NSSPRIO_ATTR_BANDS))
++		nl_dump(p, " bands %u", nssprio->agj_bands);
++}
++
++static int nssprio_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct rtnl_nssprio *nssprio = data;
++	struct tc_nssprio_qopt opt;
++
++	if (!nssprio)
++		return -NLE_INVAL;
++
++	memset(&opt, 0, sizeof(opt));
++
++	if (nssprio->agj_mask & NSSPRIO_ATTR_BANDS)
++		opt.bands = nssprio->agj_bands;
++
++	NLA_PUT(msg, TCA_NSSPRIO_PARMS, sizeof(opt), &opt);
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Attribute Modification
++ * @{
++ */
++
++/**
++ * Set bands for NSSPRIO qdisc.
++ * @arg qdisc		NSSPRIO qdisc to be modified.
++ * @arg bands		Number of bands for nssprio.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nssprio_set_bands(struct rtnl_qdisc *qdisc, int bands)
++{
++	struct rtnl_nssprio *nssprio;
++
++	if (!(nssprio = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nssprio->agj_bands = bands;
++	nssprio->agj_mask |= NSSPRIO_ATTR_BANDS;
++
++	return 0;
++}
++
++/**
++ * Get bands of a NSSPRIO qdisc.
++ * @arg qdisc		NSSPRIO qdisc.
++ * @return number of bands used.
++ */
++int rtnl_nssprio_get_bands(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nssprio *nssprio;
++
++	if ((nssprio = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nssprio->agj_mask & NSSPRIO_ATTR_BANDS)) {
++
++		return nssprio->agj_bands;
++	}
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops nssprio_ops = {
++	.to_kind		= "nssprio",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_nssprio),
++	.to_msg_parser		= nssprio_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= nssprio_dump_line,
++	    [NL_DUMP_DETAILS]	= NULL,
++	},
++	.to_msg_fill		= nssprio_msg_fill,
++};
++
++static void __init nssprio_init(void)
++{
++	rtnl_tc_register(&nssprio_ops);
++}
++
++static void __exit nssprio_exit(void)
++{
++	rtnl_tc_unregister(&nssprio_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/nsstbl.c b/lib/route/qdisc/nsstbl.c
+new file mode 100644
+index 0000000..577b89f
+--- /dev/null
++++ b/lib/route/qdisc/nsstbl.c
+@@ -0,0 +1,331 @@
++/*
++ * lib/route/qdisc/nsstbl.c		NSSTBL Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @defgroup qdisc_nsstbl NSS Token Bucket Limiter (NSSTBL)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/class.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/nsstbl.h>
++
++/** @cond SKIP */
++#define NSSTBL_ATTR_RATE			0x01
++#define NSSTBL_ATTR_BURST			0x02
++#define NSSTBL_ATTR_PEAKRATE			0x04
++#define NSSTBL_ATTR_MTU				0x08
++/** @endcond */
++
++static struct nla_policy nsstbl_policy[TCA_NSSTBL_MAX+1] = {
++	[TCA_NSSTBL_PARMS]	= { .minlen = sizeof(struct tc_nsstbl_qopt) },
++};
++
++static int nsstbl_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_NSSTBL_MAX + 1];
++	struct rtnl_nsstbl *nsstbl = data;
++	struct tc_nsstbl_qopt *opts;
++	int err;
++
++	if ((err = tca_parse(tb, TCA_NSSTBL_MAX, tc, nsstbl_policy)) < 0)
++		return err;
++
++	if (!tb[TCA_NSSTBL_PARMS])
++		return -NLE_MISSING_ATTR;
++
++	opts = nla_data(tb[TCA_NSSTBL_PARMS]);
++
++	nsstbl->ias_mask = 0;
++
++	nsstbl->ias_rate = opts->rate;
++	nsstbl->ias_mask |= NSSTBL_ATTR_RATE;
++
++	nsstbl->ias_burst = opts->burst;
++	nsstbl->ias_mask |= NSSTBL_ATTR_BURST;
++
++	nsstbl->ias_peakrate = opts->peakrate;
++	nsstbl->ias_mask |= NSSTBL_ATTR_PEAKRATE;
++
++	nsstbl->ias_mtu = opts->mtu;
++	nsstbl->ias_mask |= NSSTBL_ATTR_MTU;
++
++	return 0;
++}
++
++static void nsstbl_dump_line(struct rtnl_tc *tc, void *data,
++			  struct nl_dump_params *p)
++{
++	double r, rbit;
++	char *ru, *rubit;
++	struct rtnl_nsstbl *nsstbl = data;
++
++	if (!nsstbl)
++		return;
++
++	r = nl_cancel_down_bytes(nsstbl->ias_rate, &ru);
++	rbit = nl_cancel_down_bits(nsstbl->ias_rate*8, &rubit);
++
++	nl_dump(p, " rate %.2f%s/s (%.0f%s)",
++		r, ru, rbit, rubit);
++}
++
++static void nsstbl_dump_details(struct rtnl_tc *tc, void *data,
++			     struct nl_dump_params *p)
++{
++	struct rtnl_nsstbl *nsstbl = data;
++
++	if (!nsstbl)
++		return;
++
++	if (1) {
++		char *bu;
++		double bs = nl_cancel_down_bytes(nsstbl->ias_burst, &bu);
++
++		nl_dump(p, "rate-bucket-size %1.f%s ",
++			bs, bu);
++
++	}
++
++	if (nsstbl->ias_mask & NSSTBL_ATTR_PEAKRATE) {
++		char *pru, *prbu, *bsu;
++		double pr, prb, bs;
++		
++		pr = nl_cancel_down_bytes(nsstbl->ias_peakrate, &pru);
++		prb = nl_cancel_down_bits(nsstbl->ias_peakrate*8, &prbu);
++		bs = nl_cancel_down_bits(nsstbl->ias_mtu, &bsu);
++
++		nl_dump_line(p, "    peak-rate %.2f%s/s (%.0f%s) "
++				"bucket-size %.1f%s",
++			     pr, pru, prb, prbu, bs, bsu);
++	}
++}
++
++static int nsstbl_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct tc_nsstbl_qopt opts;
++	struct rtnl_nsstbl *nsstbl = data;
++	int required = NSSTBL_ATTR_RATE | NSSTBL_ATTR_BURST;
++
++	if ((nsstbl->ias_mask & required) != required)
++		return -NLE_MISSING_ATTR;
++
++	memset(&opts, 0, sizeof(opts));
++
++	opts.rate = nsstbl->ias_rate;
++	opts.burst = nsstbl->ias_burst;
++
++	if (nsstbl->ias_mask & NSSTBL_ATTR_MTU) {
++		opts.mtu = nsstbl->ias_mtu;
++	}
++
++	if (nsstbl->ias_mask & NSSTBL_ATTR_PEAKRATE) {
++		opts.peakrate = nsstbl->ias_peakrate;
++	}
++
++	NLA_PUT(msg, TCA_NSSTBL_PARMS, sizeof(opts), &opts);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Attribute Access
++ * @{
++ */
++
++/**
++ * Set rate of NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc to be modified
++ * @arg rate		New rate in bytes per second
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsstbl_set_rate(struct rtnl_qdisc *qdisc, uint32_t rate)
++{
++	struct rtnl_nsstbl *nsstbl;
++
++	if (!(nsstbl = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsstbl->ias_rate = rate;
++	nsstbl->ias_mask |= NSSTBL_ATTR_RATE;
++	return 0;
++}
++
++/**
++ * Get rate of a NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc.
++ * @return configured rate in bytes per second.
++ */
++uint32_t rtnl_nsstbl_get_rate(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsstbl *nsstbl;
++	
++	if ((nsstbl = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsstbl->ias_mask & NSSTBL_ATTR_RATE)) {
++
++		return nsstbl->ias_rate;
++	}
++
++	return 0;
++}
++
++/**
++ * Set burst of NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc to be modified
++ * @arg burst		New burst size in bytes.
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsstbl_set_burst(struct rtnl_qdisc *qdisc, uint32_t burst)
++{
++	struct rtnl_nsstbl *nsstbl;
++
++	if (!(nsstbl = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsstbl->ias_burst = burst;
++	nsstbl->ias_mask |= NSSTBL_ATTR_BURST;
++	return 0;
++}
++
++/**
++ * Get burst of a NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc.
++ * @return configured burst in bytes.
++ */
++uint32_t rtnl_nsstbl_get_burst(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsstbl *nsstbl;
++	
++	if ((nsstbl = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsstbl->ias_mask & NSSTBL_ATTR_BURST)) {
++
++		return nsstbl->ias_burst;
++	}
++
++	return 0;
++}
++
++/**
++ * Set mtu of NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc to be modified
++ * @arg mtu		New mtu in bytes
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsstbl_set_mtu(struct rtnl_qdisc *qdisc, uint32_t mtu)
++{
++	struct rtnl_nsstbl *nsstbl;
++
++	if (!(nsstbl = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsstbl->ias_mtu = mtu;
++	nsstbl->ias_mask |= NSSTBL_ATTR_MTU;
++	return 0;
++}
++
++/**
++ * Get mtu of a NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc.
++ * @return configured mtu in bytes.
++ */
++uint32_t rtnl_nsstbl_get_mtu(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsstbl *nsstbl;
++	
++	if ((nsstbl = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsstbl->ias_mask & NSSTBL_ATTR_MTU)) {
++
++		return nsstbl->ias_mtu;
++	}
++
++	return 0;
++}
++
++/**
++ * Set peakrate of NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc to be modified
++ * @arg peakrate	New peakrate in bytes per second
++ * @return 0 on success or a negative error code.
++ */
++int rtnl_nsstbl_set_peakrate(struct rtnl_qdisc *qdisc, uint32_t peakrate)
++{
++	struct rtnl_nsstbl *nsstbl;
++
++	if (!(nsstbl = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	nsstbl->ias_peakrate = peakrate;
++	nsstbl->ias_mask |= NSSTBL_ATTR_PEAKRATE;
++	return 0;
++}
++
++/**
++ * Get peakrate of a NSSTBL qdisc.
++ * @arg qdisc		NSSTBL qdisc.
++ * @return configured peakrate in bytes per second.
++ */
++uint32_t rtnl_nsstbl_get_peakrate(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_nsstbl *nsstbl;
++	
++	if ((nsstbl = rtnl_tc_data(TC_CAST(qdisc))) &&
++		(nsstbl->ias_mask & NSSTBL_ATTR_PEAKRATE)) {
++
++		return nsstbl->ias_peakrate;
++	}
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops nsstbl_tc_ops = {
++	.to_kind		= "nsstbl",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_nsstbl),
++	.to_msg_parser		= nsstbl_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= nsstbl_dump_line,
++	    [NL_DUMP_DETAILS]	= nsstbl_dump_details,
++	},
++	.to_msg_fill		= nsstbl_msg_fill,
++};
++
++static void __init nsstbl_init(void)
++{
++	rtnl_tc_register(&nsstbl_tc_ops);
++}
++
++static void __exit nsstbl_exit(void)
++{
++	rtnl_tc_unregister(&nsstbl_tc_ops);
++}
++
++/** @} */

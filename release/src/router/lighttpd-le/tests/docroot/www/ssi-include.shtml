@@ -1,0 +1,5 @@
+<!--#echo var=SCRIPT_NAME-->
+<!--#echo var='SCRIPT_NAME'-->
+<!--#echo var="SCRIPT_NAME"-->
+<!--#include virtual="ssi-include.txt" -->
+<!--#include file="ssi-include.txt" -->

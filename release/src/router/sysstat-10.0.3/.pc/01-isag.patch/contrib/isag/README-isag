@@ -1,0 +1,18 @@
+README file for the isag - Interactive System Activity Graph - command.
+
+isag is a command that enables you to plot data stored in a daily data file
+by a previous sar run.
+isag needs a recent version of Tcl/Tk installed, together with the
+gnuplot plotting program.
+
+isag is (C) 2000,2001 by David Doubrava <linux_monitor@volny.cz>.
+Send bug reports to <linux_monitor@volny.cz>.
+
+Note that the path to daily data files is hard coded in isag and
+its value is "/var/log/sa".
+Also isag assumes that sar is installed in /usr/bin directory.
+Update isag script if sar is located elsewhere.
+
+--
+Sébastien Godard (sysstat <at> wanadoo.fr)
+

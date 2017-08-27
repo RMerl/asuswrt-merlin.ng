@@ -1,0 +1,125 @@
+<!-- ##### SECTION Title ##### -->
+ExampleObjectManagerClient
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT ExampleObjectManagerClient ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT ExampleObjectManagerClientClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION example_object_manager_client_get_proxy_type ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object_path: 
+@interface_name: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_manager_client_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION example_object_manager_client_new_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_manager_client_new_sync ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_manager_client_new_for_bus ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION example_object_manager_client_new_for_bus_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_manager_client_new_for_bus_sync ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

@@ -1,0 +1,4 @@
+alice::ip -6 route del default via fec1:\:1
+carol::ipsec stop
+moon::ipsec stop
+moon::rm /etc/ipsec.d/ipsec.*

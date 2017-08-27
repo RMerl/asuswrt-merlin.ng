@@ -1,0 +1,82 @@
+<!-- ##### SECTION Title ##### -->
+GZlibCompressor
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GZlibCompressor ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GZlibCompressor:file-info ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GZlibCompressor:format ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GZlibCompressor:level ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GZlibCompressorFormat ##### -->
+<para>
+
+</para>
+
+@G_ZLIB_COMPRESSOR_FORMAT_ZLIB: 
+@G_ZLIB_COMPRESSOR_FORMAT_GZIP: 
+@G_ZLIB_COMPRESSOR_FORMAT_RAW: 
+
+<!-- ##### FUNCTION g_zlib_compressor_new ##### -->
+<para>
+
+</para>
+
+@format: 
+@level: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_zlib_compressor_get_file_info ##### -->
+<para>
+
+</para>
+
+@compressor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_zlib_compressor_set_file_info ##### -->
+<para>
+
+</para>
+
+@compressor: 
+@file_info: 
+
+

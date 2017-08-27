@@ -1,0 +1,87 @@
+<!-- ##### SECTION Title ##### -->
+GEmblem
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GEmblem ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GEmblem:icon ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GEmblem:origin ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GEmblemOrigin ##### -->
+<para>
+
+</para>
+
+@G_EMBLEM_ORIGIN_UNKNOWN: 
+@G_EMBLEM_ORIGIN_DEVICE: 
+@G_EMBLEM_ORIGIN_LIVEMETADATA: 
+@G_EMBLEM_ORIGIN_TAG: 
+
+<!-- ##### FUNCTION g_emblem_new ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_emblem_new_with_origin ##### -->
+<para>
+
+</para>
+
+@icon: 
+@origin: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_emblem_get_icon ##### -->
+<para>
+
+</para>
+
+@emblem: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_emblem_get_origin ##### -->
+<para>
+
+</para>
+
+@emblem: 
+@Returns: 
+
+

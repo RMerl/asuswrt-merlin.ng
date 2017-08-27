@@ -1,0 +1,96 @@
+.\" Copyright 1999 Frodo Looijaard <frodol@dds.nl>
+.\" Copyright (C) 2007-2012 Jean Delvare <jdelvare@suse.de>
+.\" sensors is distributed under the GPL
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.TH sensors 1  "November 2012" "lm-sensors 3" "Linux User's Manual"
+.SH NAME
+sensors \- print sensors information
+.SH SYNOPSIS
+.B sensors [
+.I options
+.B ] [
+.I chips
+.B ]
+.br
+.B sensors -s [
+.I chips
+.B ]
+.br
+.B sensors --bus-list
+
+.SH DESCRIPTION
+.B sensors
+is used to show the current readings of all sensor chips.
+.br
+.B sensors -s
+is used to set all limits as specified in the configuration file.
+.br
+.B sensors --bus-list
+is used to generate bus statements suitable for the configuration file.
+
+.SH OPTIONS
+.IP "-c, --config-file config-file"
+Specify a configuration file. If no file is specified, the libsensors
+default configuration file is used. Use `-c /dev/null' to temporarily
+disable this default configuration file.
+.IP "-h, --help"
+Print a help text and exit.
+.IP "-s, --set"
+Evaluate all `set' statements in the configuration file and exit. You must
+be `root' to do this. If this parameter is not specified, no `set' statement
+is evaluated.
+.IP "-A, --no-adapter"
+Do not show the adapter for each chip.
+.IP -u
+Raw output. This mode is suitable for debugging and for post-processing
+of the output by scripts. It is also useful when writing a configuration
+file because it shows the raw input names which must be referenced in the
+configuration file.
+.IP "-v, --version"
+Print the program version and exit.
+.IP "-f, --fahrenheit"
+Print the temperatures in degrees Fahrenheit instead of Celsius.
+.IP --bus-list
+Generate bus statements suitable for using in sensors.conf. Such bus statements
+are only needed if you have several chips sharing the same address on different
+buses of the same type. As bus numbers are usually not guaranteed to be stable
+over reboots, these statements let you refer to each bus by its name rather
+than numbers.
+.SH FILES
+.I /etc/sensors3.conf
+.br
+.I /etc/sensors.conf
+.RS
+The system wide configuration file. See
+.BR sensors.conf (5)
+for further details.
+.RE
+
+.SH SEE ALSO
+sensors.conf(5), sensors-detect(8).
+
+.SH AUTHOR
+Frodo Looijaard and the lm_sensors group
+http://www.lm-sensors.org/
+
+

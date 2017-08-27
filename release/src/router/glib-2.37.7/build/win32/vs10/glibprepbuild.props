@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PropertySheetDisplayName>glibprepbuildprops</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>
+if exist ..\..\..\config.h goto DONE_CONFIG_H
+
+copy ..\..\..\config.h.win32 ..\..\..\config.h
+
+:DONE_CONFIG_H
+
+
+if exist ..\..\..\glib\glibconfig.h goto DONE_GLIBCONFIG_H
+
+copy ..\..\..\glib\glibconfig.h.win32 ..\..\..\glib\glibconfig.h
+
+:DONE_GLIBCONFIG_H
+
+
+if exist ..\..\..\gmodule\gmoduleconf.h goto DONE_GMODULECONF_H
+
+copy ..\..\..\gmodule\gmoduleconf.h.win32 ..\..\..\gmodule\gmoduleconf.h
+
+:DONE_GMODULECONF_H
+
+
+if exist ..\..\..\gio\gnetworking.h goto DONE_GNETWORKING_H
+
+copy ..\..\..\gio\gnetworking.h.win32 ..\..\..\gio\gnetworking.h
+
+:DONE_GNETWORKING_H
+
+</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+</Project>

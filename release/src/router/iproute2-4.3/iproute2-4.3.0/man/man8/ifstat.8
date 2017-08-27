@@ -1,0 +1,59 @@
+.TH IFSTAT 8 "28 Oct 2015" "iproute2" "Linux"
+.SH NAME
+ifstat \- handy utility to read network interface statistics
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR ifstat " [ "
+.IR OPTIONS " ] [ " INTERFACE_LIST " ]"
+
+.ti -8
+.IR INTERFACE_LIST " := " INTERFACE_LIST " | " interface
+.SH DESCRIPTION
+\fBifstat\fP neatly prints out network interface statistics.
+The utility keeps records of the previous data displayed in history files and
+by default only shows difference between the last and the current call.
+Location of the history files defaults to /tmp/.ifstat.u$UID but may be
+overridden with the IFSTAT_HISTORY environment variable.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.TP
+.B \-V, \-\-version
+Show version of program.
+.TP
+.B \-a, \-\-ignore
+Ignore the history file.
+.TP
+.B \-d, \-\-scan=SECS
+Sample statistics every SECS second.
+.TP
+.B \-e, \-\-errors
+Show errors.
+.TP
+.B \-n, \-\-nooutput
+Don't display any output.  Update the history file only.
+.TP
+.B \-r, \-\-reset
+Reset history.
+.TP
+.B \-s, \-\-noupdate
+Don't update the history file.
+.TP
+.B \-t, \-\-interval=SECS
+Report average over the last SECS seconds.
+.TP
+.B \-z, \-\-zeros
+Show entries with zero activity.
+.SH ENVIRONMENT
+.TP
+.B IFSTAT_HISTORY
+If set, it's value is interpreted as alternate history file path.
+.SH SEE ALSO
+.BR ip (8)
+.br
+.SH AUTHOR
+ifstat was written by Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>.
+.PP
+This manual page was written by Petr Sabata <contyk@redhat.com>.

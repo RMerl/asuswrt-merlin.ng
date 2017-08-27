@@ -1,0 +1,27 @@
+medsrv.database =
+	Mediation server database URI. If it contains a password, make
+	sure to adjust the permissions of the config file accordingly.
+
+medsrv.debug = no
+	Debugging in mediation server web application.
+
+medsrv.dpd = 5m
+	DPD timeout to use in mediation server plugin.
+
+medsrv.load =
+	Plugins to load in mediation server plugin.
+
+medsrv.password_length = 6
+	Minimum password length required for mediation server user accounts.
+
+medsrv.rekey = 20m
+	Rekeying time on mediation connections in mediation server plugin.
+
+medsrv.socket =
+	Run Mediation server web application statically on socket.
+
+medsrv.threads = 5
+	Number of thread for mediation service web application.
+
+medsrv.timeout = 15m
+	Session timeout for mediation service.

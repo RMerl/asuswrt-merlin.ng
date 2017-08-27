@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GInetSocketAddress</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GSocketAddress.html" title="GSocketAddress">
+<link rel="next" href="GUnixSocketAddress.html" title="GUnixSocketAddress">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GInetSocketAddress.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GInetSocketAddress.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GInetSocketAddress.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GInetSocketAddress.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSocketAddress.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GUnixSocketAddress.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GInetSocketAddress"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GInetSocketAddress.top_of_page"></a>GInetSocketAddress</span></h2>
+<p>GInetSocketAddress — Internet GSocketAddress</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GInetSocketAddress.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GInetSocketAddress.html#GInetSocketAddress-struct" title="GInetSocketAddress">GInetSocketAddress</a>;
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    <a class="link" href="GInetSocketAddress.html#g-inet-socket-address-new" title="g_inet_socket_address_new ()">g_inet_socket_address_new</a>           (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>);
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *      <a class="link" href="GInetSocketAddress.html#g-inet-socket-address-get-address" title="g_inet_socket_address_get_address ()">g_inet_socket_address_get_address</a>   (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             <a class="link" href="GInetSocketAddress.html#g-inet-socket-address-get-port" title="g_inet_socket_address_get_port ()">g_inet_socket_address_get_port</a>      (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="GInetSocketAddress.html#g-inet-socket-address-get-flowinfo" title="g_inet_socket_address_get_flowinfo ()">g_inet_socket_address_get_flowinfo</a>  (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="GInetSocketAddress.html#g-inet-socket-address-get-scope-id" title="g_inet_socket_address_get_scope_id ()">g_inet_socket_address_get_scope_id</a>  (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetSocketAddress.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GSocketAddress.html" title="GSocketAddress">GSocketAddress</a>
+         +----GInetSocketAddress
+               +----<a class="link" href="GProxyAddress.html" title="GProxyAddress">GProxyAddress</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetSocketAddress.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GInetSocketAddress implements
+ <a class="link" href="GSocketConnectable.html" title="GSocketConnectable">GSocketConnectable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GInetSocketAddress.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GInetSocketAddress.html#GInetSocketAddress--address" title='The "address" property'>address</a>"                  <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>*         : Read / Write / Construct Only
+  "<a class="link" href="GInetSocketAddress.html#GInetSocketAddress--flowinfo" title='The "flowinfo" property'>flowinfo</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only
+  "<a class="link" href="GInetSocketAddress.html#GInetSocketAddress--port" title='The "port" property'>port</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only
+  "<a class="link" href="GInetSocketAddress.html#GInetSocketAddress--scope-id" title='The "scope-id" property'>scope-id</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetSocketAddress.description"></a><h2>Description</h2>
+<p>
+An IPv4 or IPv6 socket address; that is, the combination of a
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> and a port number.
+</p>
+</div>
+<div class="refsect1">
+<a name="GInetSocketAddress.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GInetSocketAddress-struct"></a><h3>GInetSocketAddress</h3>
+<pre class="programlisting">typedef struct _GInetSocketAddress GInetSocketAddress;</pre>
+<p>
+An IPv4 or IPv6 socket address, corresponding to a <span class="type">struct
+sockaddr_in</span> or <span class="type">struct sockaddr_in6</span>.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-socket-address-new"></a><h3>g_inet_socket_address_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    g_inet_socket_address_new           (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> for <em class="parameter"><code>address</code></em> and <em class="parameter"><code>port</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>port</code></em> :</span></p></td>
+<td>a port number</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.22</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-socket-address-get-address"></a><h3>g_inet_socket_address_get_address ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *      g_inet_socket_address_get_address   (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>address</code></em>'s <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>a <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> for <em class="parameter"><code>address</code></em>, which must be
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-ref"><code class="function">g_object_ref()</code></a>'d if it will be stored. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.22</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-socket-address-get-port"></a><h3>g_inet_socket_address_get_port ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             g_inet_socket_address_get_port      (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>address</code></em>'s port.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>a <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the port for <em class="parameter"><code>address</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.22</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-socket-address-get-flowinfo"></a><h3>g_inet_socket_address_get_flowinfo ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             g_inet_socket_address_get_flowinfo  (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);</pre>
+<p>
+Gets the <code class="literal">sin6_flowinfo</code> field from <em class="parameter"><code>address</code></em>,
+which must be an IPv6 address.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketAddress.html#G-SOCKET-FAMILY-IPV6:CAPS"><code class="literal">G_SOCKET_FAMILY_IPV6</code></a> <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the flowinfo field</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-socket-address-get-scope-id"></a><h3>g_inet_socket_address_get_scope_id ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             g_inet_socket_address_get_scope_id  (<em class="parameter"><code><a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> *address</code></em>);</pre>
+<p>
+Gets the <code class="literal">sin6_scope_id</code> field from <em class="parameter"><code>address</code></em>,
+which must be an IPv6 address.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>a <a class="link" href="GSocketAddress.html#G-SOCKET-FAMILY-IPV6:CAPS"><code class="literal">G_SOCKET_FAMILY_IPV6</code></a> <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the scope id field</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInetSocketAddress.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GInetSocketAddress--address"></a><h3>The <code class="literal">"address"</code> property</h3>
+<pre class="programlisting">  "address"                  <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>*         : Read / Write / Construct Only</pre>
+<p>The address.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetSocketAddress--flowinfo"></a><h3>The <code class="literal">"flowinfo"</code> property</h3>
+<pre class="programlisting">  "flowinfo"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only</pre>
+<p>
+The <code class="literal">sin6_flowinfo</code> field, for IPv6 addresses.
+</p>
+<p>Default value: 0</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetSocketAddress--port"></a><h3>The <code class="literal">"port"</code> property</h3>
+<pre class="programlisting">  "port"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only</pre>
+<p>The port.</p>
+<p>Allowed values: &lt;= 65535</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetSocketAddress--scope-id"></a><h3>The <code class="literal">"scope-id"</code> property</h3>
+<pre class="programlisting">  "scope-id"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only</pre>
+<p>IPv6 scope ID.</p>
+<p>Default value: 0</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

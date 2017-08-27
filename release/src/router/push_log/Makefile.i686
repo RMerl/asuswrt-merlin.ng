@@ -1,0 +1,60 @@
+#include ../common.mak
+
+export  SRCBASE := $(shell pwd)
+BUILD := i386-pc-linux-gnu
+HOSTCC := gcc
+PLATFORM := i686-cm-linux
+CROSS_COMPILE := i686-cm-linux-
+CONFIGURE := ./configure --host=i686-cm-linux --build=$(BUILD)
+export TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../../../.. && pwd)
+export IPKG_TOOLS := /home/magic/optware/mbwe-bluering/toolchain/ipkg-utils-1.7
+#export LD_DIR := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../../../../../staging && pwd)
+export LD_DIR := $(TOOLCHAIN)
+
+export CC := $(CROSS_COMPILE)gcc
+export AR := $(CROSS_COMPILE)ar
+export AS := $(CROSS_COMPILE)as
+export LD := $(CROSS_COMPILE)ld
+export NM := $(CROSS_COMPILE)nm
+export RANLIB := $(CROSS_COMPILE)ranlib
+export STRIP := $(CROSS_COMPILE)strip
+export SIZE := $(CROSS_COMPILE)size
+export CXX := $(CROSS_COMPILE)g++
+
+export EXTRACFLAGS := -DBCMWPA2 -fno-delete-null-pointer-checks
+export INSTALLDIR := /WorkSpace_oleg/AiCloud/shared
+
+OBJS = push_log.o
+PROGS = libpush_log.so push_log
+
+CFLAGS += -fPIC $(EXTRACFLAGS) -Wall -DAPP_IPKG
+CFLAGS += -I. -I../wb/ws_src -I/home/magic/GPL_aicloud_i686/opt
+#CFLAGS += -I. -I$(LINUXDIR)/include -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/wb/ws_src
+
+LDFLAGS = -L. -lpush_log
+#LDFLAGS += -L$(TOP)/nvram$(BCMEX) -lnvram
+#LDFLAGS += -L$(TOP)/shared -lshared
+LDFLAGS += -L../openssl-ipk -lcrypto -lssl
+LDFLAGS += -L../curl-7.21.7/lib/.libs -lcurl
+LDFLAGS += -L../libxml2/.libs -lxml2 -lpthread
+LDFLAGS += -L../wb -lws
+LDFLAGS += -ldl
+ifeq ($(RTCONFIG_BCMARM),y)
+LDFLAGS += -lgcc_s
+endif
+
+all: $(PROGS)
+
+libpush_log.so: push_log.o
+	$(LD) -shared -o $@ $^
+
+push_log: libpush_log.so main.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+install: all
+	$(STRIP) $(PROGS)
+	install -D libpush_log.so $(INSTALLDIR)/lib/libpush_log.so
+	install -D push_log $(INSTALLDIR)/sbin/push_log
+
+clean:
+	rm -f *.o $(PROGS)

@@ -1,0 +1,66 @@
+diff -ur ./mtd-utils-20090606/recv_image.c ./mtd-utils-20090606-new/recv_image.c
+--- ./mtd-utils-20090606/recv_image.c	2009-06-05 12:41:47.000000000 -0400
++++ ./mtd-utils-20090606-new/recv_image.c	2015-05-19 11:31:34.063052615 -0400
+@@ -5,6 +5,7 @@
+ #include <error.h>
+ #include <stdio.h>
+ #define __USE_GNU
++#define __USE_MISC
+ #include <netdb.h>
+ #include <stdlib.h>
+ #include <string.h>
+diff -ur mtd-utils-20090606.orig/Makefile mtd-utils-20090606/Makefile
+--- ./mtd-utils-20090606.orig/Makefile	2009-06-05 09:41:47.000000000 -0700
++++ ./mtd-utils-20090606/Makefile	2015-08-20 03:29:53.402360707 -0700
+@@ -15,7 +15,6 @@
+ 	jffs2dump \
+ 	nftldump nftl_format docfdisk \
+ 	rfddump rfdformat \
+-	serve_image recv_image \
+ 	sumtool #jffs2reader
+ 
+ SYMLINKS =
+
+diff -ur mtd-utils-20090606.org/mkfs.ubifs/hashtable/hashtable_itr.c mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.c
+--- ./mtd-utils-20090606.org/mkfs.ubifs/hashtable/hashtable_itr.c
++++ ./mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.c
+@@ -33,18 +33,6 @@
+     }
+     return itr;
+ }
+-
+-/*****************************************************************************/
+-/* key      - return the key of the (key,value) pair at the current position */
+-/* value    - return the value of the (key,value) pair at the current position */
+-
+-void *
+-hashtable_iterator_key(struct hashtable_itr *i)
+-{ return i->e->k; }
+-
+-void *
+-hashtable_iterator_value(struct hashtable_itr *i)
+-{ return i->e->v; }
+ 
+ /*****************************************************************************/
+ /* advance - advance the iterator to the next element
+diff -ur mtd-utils-20090606_orig/mkfs.ubifs/hashtable/hashtable_itr.h mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.h
+--- ./mtd-utils-20090606_orig/mkfs.ubifs/hashtable/hashtable_itr.h
++++ ./mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.h
+@@ -28,7 +28,7 @@
+ /* hashtable_iterator_key
+  * - return the value of the (key,value) pair at the current position */
+ 
+-extern inline void *
++static inline void *
+ hashtable_iterator_key(struct hashtable_itr *i)
+ {
+     return i->e->k;
+@@ -37,7 +37,7 @@
+ /*****************************************************************************/
+ /* value - return the value of the (key,value) pair at the current position */
+ 
+-extern inline void *
++static inline void *
+ hashtable_iterator_value(struct hashtable_itr *i)
+ {
+     return i->e->v;

@@ -1,0 +1,23 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>
+using EAP-TTLS authentication only with the gateway presenting a server certificate and
+the clients doing EAP-MD5 password-based authentication.
+<p/>
+In a next step the <b>RFC 7171 PT-EAP</b> transport protocol is used within the EAP-TTLS tunnel 
+to determine the state of <b>carol</b>'s and <b>dave</b>'s operating system via the <b>TNCCS 2.0</b>
+client-server interface compliant with <b>RFC 5793 PB-TNC</b>. The OS and Attestation IMCs
+exchange PA-TNC attributes with the OS IMV via the <b>IF-M 1.0</b> measurement protocol
+defined by <b>RFC 5792 PA-TNC</b>.
+<p/>
+<b>carol</b> sends information on her operating system consisting of the PA-TNC attributes
+<em>Product Information</em>, <em>String Version</em>, and <em>Device ID</em> up-front
+to the Attestation IMV, whereas <b>dave</b> must be prompted by the IMV to do so via an
+<em>Attribute Request</em> PA-TNC attribute. <b>dave</b> is instructed to do a reference
+measurement on all files in the <b>/bin</b> directory. <b>carol</b> is then prompted to
+measure a couple of individual files and the files in the <b>/bin</b> directory as
+well as to get metadata on the <b>/etc/tnc_confg</b> configuration file.
+<p>
+<b>carol</b> passes the health test and <b>dave</b> fails because IP forwarding is
+enabled. Based on these assessments which are communicated to the IMCs using the
+<em>Assessment Result</em> PA-TNC attribute, the clients are connected by gateway <b>moon</b>
+to the "rw-allow" and "rw-isolate" subnets, respectively.
+</p>

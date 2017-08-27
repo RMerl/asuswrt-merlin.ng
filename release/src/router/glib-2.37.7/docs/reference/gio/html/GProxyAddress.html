@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GProxyAddress</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GProxy.html" title="GProxy">
+<link rel="next" href="gio-gnetworking.h.html" title="gnetworking.h">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GProxyAddress.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GProxyAddress.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GProxyAddress.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GProxyAddress.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GProxy.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-gnetworking.h.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GProxyAddress"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GProxyAddress.top_of_page"></a>GProxyAddress</span></h2>
+<p>GProxyAddress — An internet address with proxy information</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GProxyAddress.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GProxyAddress.html#GProxyAddress-struct" title="GProxyAddress">GProxyAddress</a>;
+struct              <a class="link" href="GProxyAddress.html#GProxyAddressClass" title="struct GProxyAddressClass">GProxyAddressClass</a>;
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GProxyAddress.html#g-proxy-address-get-destination-protocol" title="g_proxy_address_get_destination_protocol ()">g_proxy_address_get_destination_protocol</a>
+                                                        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GProxyAddress.html#g-proxy-address-get-destination-hostname" title="g_proxy_address_get_destination_hostname ()">g_proxy_address_get_destination_hostname</a>
+                                                        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             <a class="link" href="GProxyAddress.html#g-proxy-address-get-destination-port" title="g_proxy_address_get_destination_port ()">g_proxy_address_get_destination_port</a>
+                                                        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GProxyAddress.html#g-proxy-address-get-password" title="g_proxy_address_get_password ()">g_proxy_address_get_password</a>        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GProxyAddress.html#g-proxy-address-get-protocol" title="g_proxy_address_get_protocol ()">g_proxy_address_get_protocol</a>        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GProxyAddress.html#g-proxy-address-get-username" title="g_proxy_address_get_username ()">g_proxy_address_get_username</a>        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GProxyAddress.html#g-proxy-address-get-uri" title="g_proxy_address_get_uri ()">g_proxy_address_get_uri</a>             (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    <a class="link" href="GProxyAddress.html#g-proxy-address-new" title="g_proxy_address_new ()">g_proxy_address_new</a>                 (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *inetaddr</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *protocol</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dest_hostname</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> dest_port</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *username</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *password</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GProxyAddress.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GSocketAddress.html" title="GSocketAddress">GSocketAddress</a>
+         +----<a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress">GInetSocketAddress</a>
+               +----GProxyAddress
+</pre>
+</div>
+<div class="refsect1">
+<a name="GProxyAddress.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GProxyAddress implements
+ <a class="link" href="GSocketConnectable.html" title="GSocketConnectable">GSocketConnectable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GProxyAddress.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--destination-hostname" title='The "destination-hostname" property'>destination-hostname</a>"     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--destination-port" title='The "destination-port" property'>destination-port</a>"         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--destination-protocol" title='The "destination-protocol" property'>destination-protocol</a>"     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--password" title='The "password" property'>password</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--protocol" title='The "protocol" property'>protocol</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--uri" title='The "uri" property'>uri</a>"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+  "<a class="link" href="GProxyAddress.html#GProxyAddress--username" title='The "username" property'>username</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GProxyAddress.description"></a><h2>Description</h2>
+<p>
+Support for proxied <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="GProxyAddress.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GProxyAddress-struct"></a><h3>GProxyAddress</h3>
+<pre class="programlisting">typedef struct _GProxyAddress GProxyAddress;</pre>
+<p>
+A <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> representing a connection via a proxy server
+</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddressClass"></a><h3>struct GProxyAddressClass</h3>
+<pre class="programlisting">struct GProxyAddressClass {
+  GInetSocketAddressClass parent_class;
+};
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-destination-protocol"></a><h3>g_proxy_address_get_destination_protocol ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_proxy_address_get_destination_protocol
+                                                        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets the protocol that is being spoken to the destination
+server; eg, "http" or "ftp".
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s destination protocol</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-destination-hostname"></a><h3>g_proxy_address_get_destination_hostname ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_proxy_address_get_destination_hostname
+                                                        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>proxy</code></em>'s destination hostname; that is, the name of the host
+that will be connected to via the proxy, not the name of the proxy
+itself.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s destination hostname</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-destination-port"></a><h3>g_proxy_address_get_destination_port ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             g_proxy_address_get_destination_port
+                                                        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>proxy</code></em>'s destination port; that is, the port on the
+destination host that will be connected to via the proxy, not the
+port number of the proxy itself.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s destination port</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-password"></a><h3>g_proxy_address_get_password ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_proxy_address_get_password        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>proxy</code></em>'s password.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s password</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-protocol"></a><h3>g_proxy_address_get_protocol ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_proxy_address_get_protocol        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>proxy</code></em>'s protocol. eg, "socks" or "http"
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s protocol</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-username"></a><h3>g_proxy_address_get_username ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_proxy_address_get_username        (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>proxy</code></em>'s username.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s username</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-get-uri"></a><h3>g_proxy_address_get_uri ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_proxy_address_get_uri             (<em class="parameter"><code><a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> *proxy</code></em>);</pre>
+<p>
+Gets the proxy URI that <em class="parameter"><code>proxy</code></em> was constructed from.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <em class="parameter"><code>proxy</code></em>'s URI, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if unknown</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-proxy-address-new"></a><h3>g_proxy_address_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *    g_proxy_address_new                 (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *inetaddr</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *protocol</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dest_hostname</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> dest_port</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *username</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *password</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> for <em class="parameter"><code>inetaddr</code></em> with <em class="parameter"><code>protocol</code></em> that should
+tunnel through <em class="parameter"><code>dest_hostname</code></em> and <em class="parameter"><code>dest_port</code></em>.
+</p>
+<p>
+(Note that this method doesn't set the <a class="link" href="GProxyAddress.html#GProxyAddress--uri" title='The "uri" property'><span class="type">"uri"</span></a> or
+<a class="link" href="GProxyAddress.html#GProxyAddress--destination-protocol" title='The "destination-protocol" property'><span class="type">"destination-protocol"</span></a> fields; use <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-new"><code class="function">g_object_new()</code></a>
+directly if you want to set those.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>inetaddr</code></em> :</span></p></td>
+<td>The proxy server <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>port</code></em> :</span></p></td>
+<td>The proxy server port.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>protocol</code></em> :</span></p></td>
+<td>The proxy protocol to support, in lower case (e.g. socks, http).</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>dest_hostname</code></em> :</span></p></td>
+<td>The destination hostname the proxy should tunnel to.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>dest_port</code></em> :</span></p></td>
+<td>The destination port to tunnel to.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>username</code></em> :</span></p></td>
+<td>The username to authenticate to the proxy server
+(or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>). <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>password</code></em> :</span></p></td>
+<td>The password to authenticate to the proxy server
+(or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>). <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GProxyAddress.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GProxyAddress--destination-hostname"></a><h3>The <code class="literal">"destination-hostname"</code> property</h3>
+<pre class="programlisting">  "destination-hostname"     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>The proxy destination hostname.</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddress--destination-port"></a><h3>The <code class="literal">"destination-port"</code> property</h3>
+<pre class="programlisting">  "destination-port"         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct Only</pre>
+<p>The proxy destination port.</p>
+<p>Allowed values: &lt;= 65535</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddress--destination-protocol"></a><h3>The <code class="literal">"destination-protocol"</code> property</h3>
+<pre class="programlisting">  "destination-protocol"     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>
+The protocol being spoke to the destination host, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+the <a class="link" href="GProxyAddress.html" title="GProxyAddress"><span class="type">GProxyAddress</span></a> doesn't know.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddress--password"></a><h3>The <code class="literal">"password"</code> property</h3>
+<pre class="programlisting">  "password"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>The proxy password.</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddress--protocol"></a><h3>The <code class="literal">"protocol"</code> property</h3>
+<pre class="programlisting">  "protocol"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>The proxy protocol.</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddress--uri"></a><h3>The <code class="literal">"uri"</code> property</h3>
+<pre class="programlisting">  "uri"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>
+The URI string that the proxy was constructed from (or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+if the creator didn't specify this).
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GProxyAddress--username"></a><h3>The <code class="literal">"username"</code> property</h3>
+<pre class="programlisting">  "username"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>The proxy username.</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

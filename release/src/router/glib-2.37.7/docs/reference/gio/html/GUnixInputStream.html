@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GUnixInputStream</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GDataOutputStream.html" title="GDataOutputStream">
+<link rel="next" href="GUnixOutputStream.html" title="GUnixOutputStream">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GUnixInputStream.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GUnixInputStream.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GUnixInputStream.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GUnixInputStream.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDataOutputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GUnixOutputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GUnixInputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GUnixInputStream.top_of_page"></a>GUnixInputStream</span></h2>
+<p>GUnixInputStream — Streaming input operations for UNIX file descriptors</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GUnixInputStream.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gunixinputstream.h&gt;
+
+struct              <a class="link" href="GUnixInputStream.html#GUnixInputStream-struct" title="struct GUnixInputStream">GUnixInputStream</a>;
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      <a class="link" href="GUnixInputStream.html#g-unix-input-stream-new" title="g_unix_input_stream_new ()">g_unix_input_stream_new</a>             (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> fd</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_fd</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GUnixInputStream.html#g-unix-input-stream-set-close-fd" title="g_unix_input_stream_set_close_fd ()">g_unix_input_stream_set_close_fd</a>    (<em class="parameter"><code><a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> *stream</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_fd</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GUnixInputStream.html#g-unix-input-stream-get-close-fd" title="g_unix_input_stream_get_close_fd ()">g_unix_input_stream_get_close_fd</a>    (<em class="parameter"><code><a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> *stream</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                <a class="link" href="GUnixInputStream.html#g-unix-input-stream-get-fd" title="g_unix_input_stream_get_fd ()">g_unix_input_stream_get_fd</a>          (<em class="parameter"><code><a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> *stream</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GInputStream.html" title="GInputStream">GInputStream</a>
+         +----GUnixInputStream
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GUnixInputStream implements
+ <a class="link" href="GPollableInputStream.html" title="GPollableInputStream">GPollableInputStream</a> and  <a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased">GFileDescriptorBased</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GUnixInputStream.html#GUnixInputStream--close-fd" title='The "close-fd" property'>close-fd</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write
+  "<a class="link" href="GUnixInputStream.html#GUnixInputStream--fd" title='The "fd" property'>fd</a>"                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>                  : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> implements <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> for reading from a UNIX
+file descriptor, including asynchronous operations. (If the file
+descriptor refers to a socket or pipe, this will use <code class="function">poll()</code> to do
+asynchronous I/O. If it refers to a regular file, it will fall back
+to doing asynchronous I/O in another thread.)
+</p>
+<p>
+Note that <code class="filename">&lt;gio/gunixinputstream.h&gt;</code> belongs
+to the UNIX-specific GIO interfaces, thus you have to use the
+<code class="filename">gio-unix-2.0.pc</code> pkg-config file when using it.
+</p>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GUnixInputStream-struct"></a><h3>struct GUnixInputStream</h3>
+<pre class="programlisting">struct GUnixInputStream;</pre>
+<p>
+Implements <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> for reading from selectable unix file descriptors
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-input-stream-new"></a><h3>g_unix_input_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      g_unix_input_stream_new             (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> fd</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_fd</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> for the given <em class="parameter"><code>fd</code></em>. 
+</p>
+<p>
+If <em class="parameter"><code>close_fd</code></em> is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, the file descriptor will be closed 
+when the stream is closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>fd</code></em> :</span></p></td>
+<td>a UNIX file descriptor</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>close_fd</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the file descriptor when done</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-input-stream-set-close-fd"></a><h3>g_unix_input_stream_set_close_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_unix_input_stream_set_close_fd    (<em class="parameter"><code><a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> *stream</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_fd</code></em>);</pre>
+<p>
+Sets whether the file descriptor of <em class="parameter"><code>stream</code></em> shall be closed
+when the stream is closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stream</code></em> :</span></p></td>
+<td>a <a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>close_fd</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the file descriptor when done</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.20</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-input-stream-get-close-fd"></a><h3>g_unix_input_stream_get_close_fd ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_unix_input_stream_get_close_fd    (<em class="parameter"><code><a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> *stream</code></em>);</pre>
+<p>
+Returns whether the file descriptor of <em class="parameter"><code>stream</code></em> will be
+closed when the stream is closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stream</code></em> :</span></p></td>
+<td>a <a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the file descriptor is closed when done</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.20</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-input-stream-get-fd"></a><h3>g_unix_input_stream_get_fd ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                g_unix_input_stream_get_fd          (<em class="parameter"><code><a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a> *stream</code></em>);</pre>
+<p>
+Return the UNIX file descriptor that the stream reads from.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stream</code></em> :</span></p></td>
+<td>a <a class="link" href="GUnixInputStream.html" title="GUnixInputStream"><span class="type">GUnixInputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The file descriptor of <em class="parameter"><code>stream</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.20</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GUnixInputStream--close-fd"></a><h3>The <code class="literal">"close-fd"</code> property</h3>
+<pre class="programlisting">  "close-fd"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write</pre>
+<p>
+Whether to close the file descriptor when the stream is closed.
+</p>
+<p>Default value: TRUE</p>
+<p class="since">Since 2.20</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUnixInputStream--fd"></a><h3>The <code class="literal">"fd"</code> property</h3>
+<pre class="programlisting">  "fd"                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>                  : Read / Write / Construct Only</pre>
+<p>
+The file descriptor that the stream reads from.
+</p>
+<p>Default value: -1</p>
+<p class="since">Since 2.20</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUnixInputStream.see-also"></a><h2>See Also</h2>
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

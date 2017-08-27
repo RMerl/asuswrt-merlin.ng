@@ -1,0 +1,193 @@
+<!-- ##### SECTION Title ##### -->
+Random Numbers
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GRand ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_rand_new_with_seed ##### -->
+<para>
+
+</para>
+
+@seed: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_new_with_seed_array ##### -->
+<para>
+
+</para>
+
+@seed: 
+@seed_length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_copy ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_free ##### -->
+<para>
+
+</para>
+
+@rand_: 
+
+
+<!-- ##### FUNCTION g_rand_set_seed ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@seed: 
+
+
+<!-- ##### FUNCTION g_rand_set_seed_array ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@seed: 
+@seed_length: 
+
+
+<!-- ##### MACRO g_rand_boolean ##### -->
+<para>
+
+</para>
+
+@rand_: 
+
+
+<!-- ##### FUNCTION g_rand_int ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_int_range ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@begin: 
+@end: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_double ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rand_double_range ##### -->
+<para>
+
+</para>
+
+@rand_: 
+@begin: 
+@end: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_random_set_seed ##### -->
+<para>
+
+</para>
+
+@seed: 
+
+
+<!-- ##### MACRO g_random_boolean ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_random_int ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_random_int_range ##### -->
+<para>
+
+</para>
+
+@begin: 
+@end: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_random_double ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_random_double_range ##### -->
+<para>
+
+</para>
+
+@begin: 
+@end: 
+@Returns: 
+
+

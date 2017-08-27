@@ -1,0 +1,2520 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name=viewport content="width=device-width, target-densitydpi=device-dpi, initial-scale=1, user-scalable=no">
+		<title><#Web_Title#> - <#QIS_title#></title>
+		<link rel="stylesheet" href="css/jquery.mobile.css"></link>
+		<link rel="stylesheet" href="css/icon.css"></link>
+		<link rel="stylesheet" href="css/qis.css"></link>
+		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/verge.min.js"></script>
+		<script type="text/javascript" src="js/jquery.mobile.js"></script>
+		<script type="text/javascript" src="/require/require.min.js"></script>
+		<script type="text/javascript" src="/validator.js"></script>
+		<script>
+			if(location.hash != "")	location.href = "QIS_wizard.htm";
+			
+			document.querySelector("meta[name=viewport]").setAttribute(
+				'content', 'width=' + verge.viewportW() + ', target-densitydpi=device-dpi, initial-scale=' + (0.5*verge.viewportW())/375 + ', maximum-scale=1, user-scalable=no'
+			);
+
+			String.prototype.repeat = function(times) {
+			   return (new Array(times + 1)).join(this);
+			};
+
+			String.prototype.strReverse = function() {
+				var newstring = "";
+				for (var s=0; s < this.length; s++) {
+					newstring = this.charAt(s) + newstring;
+				}
+				return newstring;
+			};
+			
+			jQuery.fn.showTextHint = function(hintStr){
+				this.parent().children().remove(".hint");
+				$("<div class='hint'>" + hintStr + "</div>").appendTo(this.parent());
+			}
+
+			var qisOriginData = {
+				/* user */
+				"http_username": '<% nvram_get("http_username"); %>',
+				"http_passwd": '<% nvram_get("http_passwd"); %>',
+			
+				/* wireless */
+				"wl0_ssid": decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>'),
+				"wl0_wpa_psk": decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>'),
+				"wl0_auth_mode_x": '<% nvram_get("wl0_auth_mode_x"); %>',
+				"wl0_crypto": '<% nvram_get("wl0_crypto"); %>',
+				"wl1_ssid": decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>'),
+				"wl1_wpa_psk": decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>'),
+				"wl1_auth_mode_x": '<% nvram_get("wl1_auth_mode_x"); %>',
+				"wl1_crypto": '<% nvram_get("wl1_crypto"); %>',
+				"wl2_ssid": decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'),
+				"wl2_wpa_psk": decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'),
+				"wl2_auth_mode_x": '<% nvram_get("wl2_auth_mode_x"); %>',
+				"wl2_crypto": '<% nvram_get("wl2_crypto"); %>',
+			
+				/* wan */
+				"wan_unit": '<% nvram_get("wan_unit"); %>',
+				"wan_proto": '<% nvram_get("wan_proto"); %>', /* dhcp or pppoe */
+				"wan_dhcpenable_x": '<% nvram_get("wan_dhcpenable_x"); %>',
+				"wan_dnsenable_x": '<% nvram_get("wan_dnsenable_x"); %>',
+				"wan_pppoe_username": '<% nvram_get("wan_pppoe_username"); %>',
+				"wan_pppoe_passwd": '<% nvram_get("wan_pppoe_passwd"); %>',
+				"wan_ipaddr_x": '<% nvram_get("wan_ipaddr_x"); %>',
+				"wan_netmask_x": '<% nvram_get("wan_netmask_x"); %>',
+				"wan_gateway_x": '<% nvram_get("wan_gateway_x"); %>',
+				"wan_dns1_x": '<% nvram_get("wan_dns1_x"); %>',
+				"wan_dns2_x": '<% nvram_get("wan_dns2_x"); %>',
+				"wan_heartbeat_x": '<% nvram_get("wan_heartbeat_x"); %>',
+				"vpn_enable": '<% nvram_get("vpn_enable"); %>',
+			
+				/* bwdpi */
+				"wrs_protect_enable": '<% nvram_get("wrs_protect_enable"); %>',
+				"wrs_mals_t": '<% nvram_get("wrs_mals_t"); %>',
+				"wrs_cc_t": '<% nvram_get("wrs_cc_t"); %>',
+				"wrs_vp_t": '<% nvram_get("wrs_vp_t"); %>',
+				"bwdpi_db_enable": '<% nvram_get("bwdpi_db_enable"); %>',
+				"apps_analysis": '<% nvram_get("apps_analysis"); %>',
+				"TM_EULA": '<% nvram_get("TM_EULA"); %>',
+
+				/* general */
+				"time_zone": '<% nvram_get("time_zone"); %>',
+				"time_zone_dst": '<% nvram_get("time_zone_dst"); %>',
+				"bt_turn_off_service": 'ble_qis_done',
+				"sw_mode": '<% nvram_get("sw_mode"); %>',
+				"x_Setting": '<% nvram_get("x_Setting"); %>',
+				"w_Setting": '1',
+				"qis_Setting": '<% nvram_get("qis_Setting"); %>'
+			}
+			
+			var qisPostData = {
+				/* user */
+				"http_username": '<% nvram_get("http_username"); %>',
+				"http_passwd": '<% nvram_get("http_passwd"); %>',
+			
+				/* wireless */
+				"wl0_ssid": decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>'),
+				"wl0_wpa_psk": decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>'),
+				"wl0_auth_mode_x": '<% nvram_get("wl0_auth_mode_x"); %>',
+				"wl0_crypto": '<% nvram_get("wl0_crypto"); %>',
+				"wl1_ssid": decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>'),
+				"wl1_wpa_psk": decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>'),
+				"wl1_auth_mode_x": '<% nvram_get("wl1_auth_mode_x"); %>',
+				"wl1_crypto": '<% nvram_get("wl1_crypto"); %>',
+				"wl2_ssid": decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'),
+				"wl2_wpa_psk": decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'),
+				"wl2_auth_mode_x": '<% nvram_get("wl2_auth_mode_x"); %>',
+				"wl2_crypto": '<% nvram_get("wl2_crypto"); %>',
+			
+				/* wan */
+				"wan_unit": '<% nvram_get("wan_unit"); %>',
+				"wan_proto": '<% nvram_get("wan_proto"); %>', /* dhcp or pppoe */
+				"wan_dhcpenable_x": '<% nvram_get("wan_dhcpenable_x"); %>',
+				"wan_dnsenable_x": '<% nvram_get("wan_dnsenable_x"); %>',
+				"wan_pppoe_username": '<% nvram_get("wan_pppoe_username"); %>',
+				"wan_pppoe_passwd": '<% nvram_get("wan_pppoe_passwd"); %>',
+				"wan_ipaddr_x": '<% nvram_get("wan_ipaddr_x"); %>',
+				"wan_netmask_x": '<% nvram_get("wan_netmask_x"); %>',
+				"wan_gateway_x": '<% nvram_get("wan_gateway_x"); %>',
+				"wan_dns1_x": '<% nvram_get("wan_dns1_x"); %>',
+				"wan_dns2_x": '<% nvram_get("wan_dns2_x"); %>',
+				"wan_heartbeat_x": '<% nvram_get("wan_heartbeat_x"); %>',
+				"vpn_enable": '<% nvram_get("vpn_enable"); %>',
+				
+				/* bwdpi */
+				"wrs_protect_enable": '1',
+				"wrs_mals_t": '0',
+				"wrs_cc_t": '0',
+				"wrs_vp_t": '0',
+				"bwdpi_db_enable": '1',
+				"apps_analysis": '1',
+				"TM_EULA": '1',
+
+				/* general */
+				"time_zone": '<% nvram_get("time_zone"); %>',
+				"time_zone_dst": '<% nvram_get("time_zone_dst"); %>',
+				"bt_turn_off_service": 'ble_qis_done',
+				"sw_mode": '1',
+				"x_Setting": '1',
+				"w_Setting": '1',
+				"qis_Setting": '1'
+			}
+			
+			var forceChangePW = ('<% check_pw(); %>' == '1') ? true : false;
+			var wanType = "";
+
+			$(document).ready(function(){
+				setTimeout(detectWanType, 500);
+
+				// setup time_zone
+				var isDefault = ('<% nvram_get("x_Setting"); %>' == 0) ? true : false;
+				if(isDefault){
+					require(['/require/modules/timeZone.js'], function(timeZone) {
+						var timeZoneObj = new timeZone.get('<% nvram_get("preferred_lang"); %>');
+			
+						qisPostData.time_zone = timeZoneObj.time_zone;
+						qisPostData.time_zone_dst = (timeZoneObj.hasDst) ? 1 : 0;
+					});
+				}
+				else{
+					$(".tos").hide();
+				}
+
+				$("#pap_ip_advance_setting_ipaddr").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#pap_ip_advance_setting_subnet").focus();
+					}
+				});
+
+				$("#pap_ip_advance_setting_subnet").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#pap_ip_advance_setting_gateway").focus();
+					}
+				});
+
+				$("#pap_ip_advance_setting_gateway").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#pap_ip_advance_setting_dns1").focus();
+					}
+				});
+
+				$("#pap_ip_advance_setting_dns1").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#pap_ip_advance_setting_dns2").focus();
+					}
+				});
+
+				$("#pap_ip_advance_setting_dns2").keyup(function(e){
+					if(e.keyCode == 13){
+						apply.static();
+					}
+				});
+
+				$("#wireless_ssid").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#wireless_key").focus();
+					}
+				});
+
+				$("#wireless_key").keyup(function(e){
+					if(e.keyCode == 13){
+						apply.wireless();
+					}
+				});
+
+				$("#http_username").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#http_passwd").focus();
+					}
+				});
+
+				$("#http_passwd").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#http_passwd_confirm").focus();
+					}
+				});
+
+				$("#http_passwd_confirm").keyup(function(e){
+					if(e.keyCode == 13){
+						apply.login();
+					}
+				});
+
+				$("#wan_pppoe_username").keyup(function(e){
+					if(e.keyCode == 13){
+						$("#wan_pppoe_passwd").focus();
+					}
+				});
+
+				$("#wan_pppoe_passwd").keyup(function(e){
+					if(e.keyCode == 13){
+						if($("#wan_heartbeat_x").is(":visible"))
+							$("#wan_heartbeat_x").focus();
+						else
+							apply.pppoe();
+					}
+				});
+
+				$("#wan_heartbeat_x").keyup(function(e){
+					if(e.keyCode == 13){
+						apply.pppoe();
+					}
+				});
+			});
+					
+			function start_welcome(){
+				if(!forceChangePW){
+					goTo.autoWan();
+				}
+				else{
+					if(!$("#tosCheckbox").prop("checked")){
+						$("html, body").animate({ scrollTop: $(document).height() }, 800);
+						$(".tos").fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+						return false;
+					}
+
+					$.mobile.changePage("#login_name", {transition: "slide", changeHash: false});
+				}
+			}
+
+			function getDetectResult(){
+				if(wanType == ""){
+					setTimeout(getDetectResult, 500);
+					return false;
+				}
+
+				goTo.autoWan();
+			}
+
+			var detectWanType = function(handler){
+				wanType = "";
+
+				$.ajax({
+					url: '/detwan.cgi?action_mode=GetWanStatus',
+					dataType: 'json',
+					error: function(xhr){
+						wanType = "unKnown";
+						finishDetect();
+					},
+					
+					success: function(response){
+						if(response.state === "2" || response.state === "5"){							
+							wanType = "DHCP";
+						}
+						else if(response.state === "3" || response.state === "6"){
+							wanType = "PPPoE";
+						}
+/*
+						else if(response.state == "1" || response.state === "4" || response.state === "7" || response.state === ""){
+							wanType = "unKnown";
+						}
+*/
+						else if(response.state === "0"){
+							wanType = "NoWan";
+						}
+						else{
+							wanType = "unKnown";
+						}
+
+						if(handler) handler.call(response);
+					}
+				});	
+			};
+
+			function finishDetect(){
+				clearInterval(window.noWanDetectTimer);
+				// $(".detectBtn").html('<#CTL_next#>');
+			}
+
+			function start_detect(){
+				// $(".detectBtn").html('<div class="loadingIcon"></div>');
+				detectWanType(function(){
+					if(wanType == "DHCP"){
+						goTo.DHCP();
+					}
+					else if(wanType == "PPPoE"){
+						goTo.PPPoE();
+					}
+					else if(wanType == "Static"){
+						goTo.Static();
+					}
+					else if(wanType == "unKnown"){
+						apply.manual();
+					}
+					else if(wanType == "NoWan"){
+						setTimeout(start_detect, 1000);
+					}
+					else{
+						return false;
+					}
+				});
+			}
+
+			var isSku = function(_ptn){
+				var ttc = '<% nvram_get("territory_code"); %>';
+				return (ttc.search(_ptn) == -1) ? false : true;
+			}
+	
+			var pass_checked = function(obj, icon){
+				var switchType = function(obj, hide){
+					var _Type = hide ? "text" : "password";
+					if (obj.type != _Type) {
+						if (navigator.userAgent.indexOf("MSIE") != -1) {
+							var input2 = document.createElement('input');
+							input2.mergeAttributes(obj);
+							input2.id = obj.id? obj.id : obj.name;
+							input2.value = obj.value;
+							input2.type = _Type;
+							input2.name = obj.name;
+							obj.parentNode.replaceChild(input2 ,obj);
+							if (hide)
+								setTimeout(function(){document.getElementById(input2.id).focus();document.getElementById(input2.id).select();},10);
+						} else
+							obj.type= _Type;
+					}
+				}
+			
+				var _obj = document.getElementById(obj);
+				if(_obj.type == "text"){
+					switchType(_obj, false);
+					icon.className = "icon_eye_close";
+					if(obj == "http_passwd")
+						switchType(http_passwd_confirm, false);
+				}
+				else{
+					switchType(_obj, true);
+					icon.className = "icon_eye_open";
+					if(obj == "http_passwd")
+						switchType(http_passwd_confirm, true);
+				}
+			}
+			
+			var check_common_string = function(pwd, flag){	
+				//Sequential
+				var termAlphas = "abcdefghijklmnopqrstuvwxyz";
+				var termNumerics = "01234567890";
+				var termSymbols = "~!@#$%^&*()_+";
+				var termKeyboards1 = "qwertyuiop";
+				var termKeyboards2 = "asdfghjkl";
+				var termKeyboards3 = "zxcvbnm";
+				var termCommon5 = ["123123","abc123","letmein","master","qazwsx","admin"];
+				var termCommon8 = ["adminpassword","loginpassword","passw0rd","password","useradmin","userpassword"];
+				var nSeqString = 0;
+
+				if(flag == "httpd_password"){	//at lease length 5		
+					if(termAlphas.toLowerCase().indexOf(pwd) != -1 || termAlphas.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termNumerics.toLowerCase().indexOf(pwd) != -1 || termNumerics.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termSymbols.toLowerCase().indexOf(pwd) != -1 || termSymbols.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termKeyboards1.toLowerCase().indexOf(pwd) != -1 || termKeyboards1.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termKeyboards2.toLowerCase().indexOf(pwd) != -1 || termKeyboards2.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termKeyboards3.toLowerCase().indexOf(pwd) != -1 || termKeyboards3.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					for(var s=0;s<termCommon5.length;s++){
+						if(pwd == termCommon5[s])	{ nSeqString++; }	
+					}
+					for(var t=0;t<termCommon8.length;t++){
+						if(pwd == termCommon8[t])	{ nSeqString++; }	
+					}		
+				}
+				else if(flag == "wpa_key"){	//at lease length 8
+					if(termAlphas.toLowerCase().indexOf(pwd) != -1 || termAlphas.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termNumerics.toLowerCase().indexOf(pwd) != -1 || termNumerics.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termSymbols.toLowerCase().indexOf(pwd) != -1 || termSymbols.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termKeyboards1.toLowerCase().indexOf(pwd) != -1 || termKeyboards1.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					if(termKeyboards2.toLowerCase().indexOf(pwd) != -1 || termKeyboards2.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+					for(var s=0;s<termCommon8.length;s++){
+						if(pwd == termCommon8[s]){ nSeqString++; }
+					}		
+				}
+				
+				//pure repeat character string
+				if(pwd == pwd.charAt(0).repeat(pwd.length)) { nSeqString++; }
+				
+				if(nSeqString > 0)
+					return true;
+				else		
+					return false;
+			}
+
+			var trim = function(val){
+				val = val+'';
+				for (var startIndex=0;startIndex<val.length && val.substring(startIndex,startIndex+1) == ' ';startIndex++);
+				for (var endIndex=val.length-1; endIndex>startIndex && val.substring(endIndex,endIndex+1) == ' ';endIndex--);
+				return val.substring(startIndex,endIndex+1);
+			}
+			
+			// Convert a obj to post
+			var postData = function(obj, action_mode, action_script, action_wait,  flag){
+				var obj_tmp = obj;
+				obj_tmp.action_mode = action_mode;
+				obj_tmp.rc_service = action_script;
+				obj_tmp.action_wait = action_wait;
+				obj_tmp.flag = flag;
+				return obj_tmp;
+			}
+			
+			// Nvram Set
+			var nvramSet = function(postData, handler){
+				$.ajax({
+					url: '/applyapp.cgi',
+					dataType: 'json',
+					data: postData,
+			
+					error: function(response){
+						if(handler) handler.call(response);
+					},
+			
+					success: function(response){ 
+						if(handler) handler.call(response);
+					}
+				});
+			};
+
+			function hasBlank(objArray){
+				$(".hint").remove();
+				$.each(objArray, function(idx, $obj){
+					if($obj.val() == ""){
+						$obj.showTextHint("<#JS_fieldblank#>");
+					}
+				})
+				if($(".hint").length > 0) return true;
+			}
+
+			var apply = {
+				"login": function(){
+					if(hasBlank([$("#http_username"), $("#http_passwd"), $("#http_passwd_confirm")])) return false;
+
+					var validForm = function(){
+						if($("#http_username").val() == 0){
+							$("#http_username").showTextHint("<#File_Pop_content_alert_desc1#>");
+							document.getElementById("http_username").focus();
+							document.getElementById("http_username").select();
+							return false;
+						}
+						else{
+							var alert_str = validator.hostName(document.getElementById("http_username"));
+			
+							if(alert_str != ""){
+								$("#http_username").showTextHint(alert_str);
+								document.getElementById("http_username").focus();
+								document.getElementById("http_username").select();
+								return false;
+							}
+			
+							document.getElementById("http_username").value = trim(document.getElementById("http_username").value);
+			
+							if(document.getElementById("http_username").value == "root"
+							|| document.getElementById("http_username").value == "guest"
+							|| document.getElementById("http_username").value == "anonymous"){
+								$("#http_username").showTextHint("<#USB_Application_account_alert#>");
+								document.getElementById("http_username").focus();
+								document.getElementById("http_username").select();
+								return false;
+							}
+						}
+			
+						var httpPassInput = document.getElementById("http_passwd");
+						var httpPassConfirmInput = document.getElementById("http_passwd_confirm");
+			
+						if(httpPassInput.value != httpPassConfirmInput.value){
+							$("#http_passwd").showTextHint("<#File_Pop_content_alert_desc7#>");
+
+							if(httpPassInput.value.length <= 0){
+								httpPassInput.focus();
+								httpPassInput.select();
+							}else{
+								httpPassConfirmInput.focus();
+								httpPassConfirmInput.select();
+							}
+							return false;
+						}
+			
+						if(httpPassInput.value.length <= 0 || httpPassConfirmInput.value.length <= 0){
+							$("#http_passwd").showTextHint("<#File_Pop_content_alert_desc6#>");
+							httpPassInput.focus();
+							httpPassInput.select();
+							return false;
+						}
+			
+						if(httpPassInput.value.length > 0 && httpPassConfirmInput.value.length < 5){
+							$("#http_passwd").showTextHint("<#JS_short_password#>");
+							httpPassInput.focus();
+							httpPassInput.select();
+							return false;
+						}
+			
+						if(!validator.string(httpPassInput)){
+							httpPassInput.focus();
+							httpPassInput.select();
+							return false;
+						}	
+			
+						if(httpPassInput.value == '<% nvram_default_get("http_passwd"); %>'){
+							$("#http_passwd").showTextHint("<#QIS_adminpass_confirm0#>");
+							httpPassInput.focus();
+							httpPassInput.select();
+							return false;
+						}	
+			
+						if(check_common_string(httpPassInput.value, "httpd_password")){
+							if(!confirm("<#JS_common_passwd#>")){
+								httpPassInput.focus();
+								httpPassInput.select();
+								return false;
+							}
+						}
+			
+						return true;
+					}
+			
+					if(validForm()){
+						qisPostData.http_username = $("#http_username").val();
+						qisPostData.http_passwd = $("#http_passwd").val();
+
+						goTo.autoWan();
+					}
+				},
+			
+				"dhcp": function(){
+					qisPostData.wan_dhcpenable_x = "1";
+					qisPostData.wan_dnsenable_x = "1";
+
+					$.mobile.changePage("#wireless_setting", {transition: "slide", changeHash: false, reverse: false});
+				},
+			
+				"pppoe": function(){
+					if(qisPostData.wan_proto === "l2tp" || qisPostData.wan_proto === "pptp"){
+						if(hasBlank([$("#wan_pppoe_username"), $("#wan_pppoe_passwd"), $("#wan_heartbeat_x")])) return false;
+
+						qisPostData.wan_pppoe_username = $("#wan_pppoe_username").val();
+						qisPostData.wan_pppoe_passwd = $("#wan_pppoe_passwd").val();
+
+						$.mobile.changePage("#getIp_setting", {transition: "slide", changeHash: false, reverse: false});
+					}
+					else{
+						if(hasBlank([$("#wan_pppoe_username"), $("#wan_pppoe_passwd")])) return false;
+						
+						qisPostData.wan_proto = "pppoe";
+						qisPostData.wan_pppoe_username = $("#wan_pppoe_username").val();
+						qisPostData.wan_pppoe_passwd = $("#wan_pppoe_passwd").val();
+				
+						$.mobile.changePage("#wireless_setting", {transition: "slide", changeHash: false, reverse: false});
+					}
+				},
+			
+				"static": function(){
+					if(hasBlank([
+						$("#pap_ip_advance_setting_ipaddr"), 
+						$("#pap_ip_advance_setting_subnet"), 
+						$("#pap_ip_advance_setting_gateway"),
+						$("#pap_ip_advance_setting_dns1")
+					])) return false;
+
+					qisPostData.wan_unit = "0";
+					qisPostData.wan_dhcpenable_x = "0";
+					qisPostData.wan_ipaddr_x = $("#pap_ip_advance_setting_ipaddr").val()
+					qisPostData.wan_netmask_x = $("#pap_ip_advance_setting_subnet").val()
+					qisPostData.wan_gateway_x = $("#pap_ip_advance_setting_gateway").val()
+					qisPostData.wan_dnsenable_x = "0";
+					qisPostData.wan_dns1_x = $("#pap_ip_advance_setting_dns1").val();
+					qisPostData.wan_dns2_x = $("#pap_ip_advance_setting_dns2").val();
+			
+					$.mobile.changePage("#wireless_setting", {transition: "slide", changeHash: false, reverse: false});
+				},
+			
+				"wireless": function(){
+					if(hasBlank([$("#wireless_ssid"), $("#wireless_key")])) return false;
+					if(!validator.stringSSID(document.getElementById("wireless_ssid"))) return false;
+
+					if($("#wireless_key").val() == ""){
+						if(isSku("KR")){
+							$("#wireless_key").showTextHint("<#JS_PSK64Hex_kr#> <#JS_validPWD#>");
+
+							document.getElementById("wireless_key").focus();
+							return false;
+						}
+
+						if(!confirm("<#QIS_confirm_recommand_encryp#>")){
+							document.getElementById("wireless_key").focus();
+							return false;			
+						}
+					}
+					else{
+						if(isSku("KR")){
+							if(!validator.psk_KR(document.getElementById("wireless_key"))) return false;
+						}
+						else{
+							if(!validator.psk(document.getElementById("wireless_key"))) return false;
+						}
+						
+						if(check_common_string($("#wireless_key").val(), "wpa_key")){
+							if(!confirm("<#JS_common_passwd#>")){
+								return false;
+							}
+						}
+					}
+
+					qisPostData.wl0_ssid = $("#wireless_ssid").val();
+					qisPostData.wl0_wpa_psk = $("#wireless_key").val();
+					qisPostData.wl0_auth_mode_x = (qisPostData.wl0_wpa_psk == "") ? "open" : "psk2";
+					qisPostData.wl0_crypto = "aes";
+
+					qisPostData.wl1_ssid = $("#wireless_ssid").val();
+					qisPostData.wl1_wpa_psk = $("#wireless_key").val();
+					qisPostData.wl1_auth_mode_x = ($("#wireless_key").val() == "") ? "open" : "psk2";
+					qisPostData.wl1_crypto = "aes";
+
+					qisPostData.wl2_ssid = $("#wireless_ssid").val();
+					qisPostData.wl2_wpa_psk = $("#wireless_key").val();
+					qisPostData.wl2_auth_mode_x = ($("#wireless_key").val() == "") ? "open" : "psk2";
+					qisPostData.wl2_crypto = "aes";
+
+					$("#ssidSummary").val(qisPostData.wl0_ssid);
+					$("#pskSummary").val((function(){
+						return (qisPostData.wl0_wpa_psk == "") ? "OPEN" : qisPostData.wl0_wpa_psk;
+					})());
+
+					nvramSet(new postData(qisPostData, "apply", "reboot", "", ""));
+					goTo.Finish();
+				},
+
+				"manual": function(){
+					finishDetect();
+					$.mobile.changePage("#wan_setting", {transition: "slide", changeHash: false});
+				},
+
+				"checkAddMore": function(){
+					$('.backToFinish').hide();
+					goTo.WPS();
+				}
+			};
+			
+			var abort = {
+				"login": function(){
+					qisPostData.http_username = qisOriginData.http_username;
+					qisPostData.http_passwd = qisOriginData.http_passwd;
+			
+					$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});
+				},
+			
+				"wan": function(){
+					qisPostData.wan_proto = qisOriginData.wan_proto;
+					qisPostData.wan_dhcpenable_x = qisOriginData.wan_dhcpenable_x;
+					qisPostData.wan_dnsenable_x = qisOriginData.wan_dnsenable_x;
+					qisPostData.wan_pppoe_username = qisOriginData.wan_pppoe_username;
+					qisPostData.wan_pppoe_passwd = qisOriginData.wan_pppoe_passwd;
+
+					if(wanType == "NoWan"){
+						start_detect();
+						$.mobile.changePage("#noWan_page", {transition: "slide", changeHash: false, reverse: true});
+					}
+					else{
+						if(!forceChangePW)
+							$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});
+						else
+							$.mobile.changePage("#login_name", {transition: "slide", changeHash: false, reverse: true});
+					}
+				},
+
+				"nowan": function(){
+					finishDetect();
+
+					if(!forceChangePW)
+						$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});
+					else
+						$.mobile.changePage("#login_name", {transition: "slide", changeHash: false, reverse: true});
+				},
+			
+				"pppoe": function(){
+					qisPostData.wan_proto = qisOriginData.wan_proto;
+					qisPostData.wan_pppoe_username = qisOriginData.wan_pppoe_username;
+					qisPostData.wan_pppoe_passwd = qisOriginData.wan_pppoe_passwd;
+					qisPostData.wan_heartbeat_x = qisOriginData.wan_heartbeat_x;
+
+					$("#vpnServerContainer").hide();
+
+					if(wanType == "PPPoE"){
+						if(!forceChangePW)
+							$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});
+						else
+							$.mobile.changePage("#login_name", {transition: "slide", changeHash: false, reverse: true});
+					}
+					else{										
+						$.mobile.changePage("#wan_setting", {transition: "slide", changeHash: false, reverse: true});
+					}
+				},
+
+				"getIp": function(){
+					qisPostData.wan_proto = qisOriginData.wan_proto;
+					$.mobile.changePage("#pppoe_setting", {transition: "slide", changeHash: false, reverse: true});	
+				},
+			
+				"static": function(){
+					qisPostData.wan_proto = qisOriginData.wan_proto;
+					qisPostData.wan_unit = qisOriginData.wan_unit;
+					qisPostData.wan_dhcpenable_x = qisOriginData.wan_dhcpenable_x;
+					qisPostData.wan_ipaddr_x = qisOriginData.wan_ipaddr_x;
+					qisPostData.wan_netmask_x = qisOriginData.wan_netmask_x;
+					qisPostData.wan_gateway_x = qisOriginData.wan_gateway_x;
+					qisPostData.wan_dnsenable_x = qisOriginData.wan_dnsenable_x;
+					qisPostData.wan_dns1_x = qisOriginData.wan_dns1_x;
+					qisPostData.wan_dns2_x = qisOriginData.wan_dns2_x;
+			
+					if(wanType == "Static"){
+						if(!forceChangePW)
+							$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});
+						else
+							$.mobile.changePage("#login_name", {transition: "slide", changeHash: false, reverse: true});
+					}
+					else{
+						$.mobile.changePage("#wan_setting", {transition: "slide", changeHash: false, reverse: true});
+					}
+				},
+			
+				"wireless": function(){
+					qisPostData.wl0_ssid = qisOriginData.wl0_ssid;
+					qisPostData.wl0_wpa_psk = qisOriginData.wl0_wpa_psk;
+					qisPostData.wl0_auth_mode_x = qisOriginData.wl0_auth_mode_x;
+					qisPostData.wl0_crypto = qisOriginData.wl0_crypto;
+			
+					qisPostData.wl1_ssid = qisOriginData.wl1_ssid;
+					qisPostData.wl1_wpa_psk = qisOriginData.wl1_wpa_psk;
+					qisPostData.wl1_auth_mode_x = qisOriginData.wl1_auth_mode_x;
+					qisPostData.wl1_crypto = qisOriginData.wl1_crypto;
+			
+					if(qisPostData.wan_proto == "dhcp" && wanType == "DHCP"){
+						if(!forceChangePW)
+							$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});
+						else
+							$.mobile.changePage("#login_name", {transition: "slide", changeHash: false, reverse: true});
+					}
+					else if(qisPostData.wan_proto == "pppoe"){
+						$.mobile.changePage("#pppoe_setting", {transition: "slide", changeHash: false, reverse: true});
+					}
+					else if(qisPostData.wan_proto == "static"){
+						$.mobile.changePage("#static_setting", {transition: "slide", changeHash: false, reverse: true});
+					}
+					else{
+						$.mobile.changePage("#wan_setting", {transition: "slide", changeHash: false, reverse: true});
+					}
+				},
+
+				"Pair": function(){
+					$.mobile.changePage("#wps_page", {transition: "slide", changeHash: false, reverse: true});	
+					$(".flashingColor").removeClass("blue");
+					window.flashTimer = setInterval(function(){
+						$(".flashingColor").toggleClass("green");
+					}, 500);
+				},
+
+				"APP": function(){
+					$.mobile.changePage("#pair_page", {transition: "slide", changeHash: false, reverse: true});	
+					clearInterval(window.flashTimer);
+					$(".flashingColor").removeClass("green");
+					setTimeout(function(){
+						$(".flashingColor").addClass("blue");
+					}, 300);
+				},
+
+				"WPS": function(){
+					$.mobile.changePage("#summary_page", {transition: "slide", changeHash: false, reverse: true});
+					clearInterval(window.flashTimer);
+					setTimeout(function(){
+						$(".flashingColor").removeClass("green").addClass("blue")
+					}, 300);
+				}
+			};
+			
+			var goTo = {
+				"autoWan": function(){
+					if(wanType == "DHCP"){
+						goTo.DHCP();
+					}
+					else if(wanType == "PPPoE"){
+						goTo.PPPoE();
+					}
+					else if(wanType == "Static"){
+						goTo.Static();
+					}
+					else if(wanType == "unKnown"){
+						apply.manual();
+					}
+					else if(wanType == "NoWan"){
+						goTo.NoWan();
+					}
+					else if(wanType == ""){
+						goTo.waiting();
+					}
+					else{
+						goTo.manual();
+					}
+				},
+
+				"DHCP": function(){
+					qisPostData.wan_proto = "dhcp";
+					apply.dhcp();
+				},
+
+				"PPPoE": function(){
+					qisPostData.wan_proto = "pppoe";
+					$.mobile.changePage("#pppoe_setting", {transition: "slide", changeHash: false, reverse: false});
+				},
+
+				"Static": function(){
+					qisPostData.wan_proto = "static";
+					$.mobile.changePage("#static_setting", {transition: "slide", changeHash: false, reverse: false});		
+				},
+
+				"PPTP": function(){
+					qisPostData.wan_proto = "pptp";
+					$("#vpnServerContainer").show();
+					$.mobile.changePage("#pppoe_setting", {transition: "slide", changeHash: false, reverse: false});
+				},
+
+				"L2TP": function(){
+					qisPostData.wan_proto = "l2tp";
+					$("#vpnServerContainer").show();
+					$.mobile.changePage("#pppoe_setting", {transition: "slide", changeHash: false, reverse: false});
+				},
+
+				"vpnStatic": function(){
+					$.mobile.changePage("#static_setting", {transition: "slide", changeHash: false, reverse: false});		
+				},
+
+				"Finish": function(){
+					$.mobile.changePage("#summary_page", {transition: "slide", changeHash: false, reverse: false});
+					clearInterval(window.flashTimer);
+					setTimeout(function(){
+						$(".flashingColor").removeClass("green").addClass("blue")
+					}, 300);
+				},
+
+				"APP": function(){
+					$.mobile.changePage("#app_page", {transition: "slide", changeHash: false, reverse: false});	
+				},
+
+				"WPS": function(){
+					$.mobile.changePage("#wps_page", {transition: "slide", changeHash: false, reverse: false});
+					$(".flashingColor").removeClass("blue");
+					window.flashTimer = setInterval(function(){
+						$(".flashingColor").toggleClass("green");
+					}, 500);
+				},
+
+				"Pair": function(){
+					$.mobile.changePage("#pair_page", {transition: "slide", changeHash: false, reverse: false});	
+					clearInterval(window.flashTimer);
+					setTimeout(function(){
+						$(".flashingColor").removeClass("green").addClass("blue")
+					}, 300);
+				},
+
+				"Welcome": function(){
+					$.mobile.changePage("#welcome", {transition: "slide", changeHash: false, reverse: true});	
+				},
+
+				"NoWan": function(){
+					start_detect();
+					$.mobile.changePage("#noWan_page", {transition: "slide", changeHash: false, reverse: false});	
+				},
+
+				"waiting": function(){
+					getDetectResult();
+					$.mobile.changePage("#waiting_page", {transition: "slide", changeHash: false, reverse: false});	
+				},
+
+				"AsusPP": function(){
+					$.mobile.changePage("#asuspp_page", {transition: "slide", changeHash: false, reverse: false});	
+				},
+
+				"AsusToS": function(){
+					$.mobile.changePage("#asustos_page", {transition: "slide", changeHash: false, reverse: false});	
+				},
+
+				"TMToS": function(){
+					$.mobile.changePage("#tmtos_page", {transition: "slide", changeHash: false, reverse: false});	
+				}
+			};
+		</script>
+	</head>
+	<body>
+		<!-- Welcome Page -->
+		<div id="welcome" data-role="page" class="qisBackgroundIndex">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a onclick="goTo.Finish()">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div>
+				<div style="font-family:Uni Sans Thin, Helvetica W01 Light, Arial;font-size:5em;color:#FFF;margin:50px 46px 0 46px;text-align:center;">
+					Welcome To Lyra
+				</div>
+				<!--div style="font-family:Uni Sans Thin, Helvetica W01 Light, Arial;font-size:2.5em;color:#999;text-align:center;margin:0px 20px 0 40px;">
+					Lyra makes sure your connection stable, well-covered and secure.
+				</div-->
+				<div id="model_image" class="model_image"></div>
+				<div id="model_welcome_field" style="text-align:center;color:#0ECDA4;font-size:30pt;font-family:HelveticaNeueW10-35Thin,Helvetica W01 Light,Arial;line-height:23px;margin:21px 0"></div>
+				<div style="text-align:center;margin:31px 0">
+					<div id="welcome_button" style="cursor:pointer;width:600px;height:88px;border-radius:4px;color:#FFF;background-color:#27D1A4;border:1px solid #27D1A4;font-size:2.25em;margin:auto;line-height:88px;" onclick="start_welcome();">Create A New Lyra Network</div>
+				</div>
+				<div style="color:#FFF;font-size:2em;text-align:center;"><a href="#" style="color:#27D1A4" onclick="apply.checkAddMore()">Or sign in to your existing Lyra network</a></div>
+				
+				<div class="tos">
+					<input id="tosCheckbox" type="checkbox">
+					<span id="tosTitle">By using ASUS Lyra, you agree to the</span>
+					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>, 
+					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> and 
+					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
+				</div>
+				<script>
+					$("#tosTitle").click(function(){
+						$("#tosCheckbox").prop('checked', !$("#tosCheckbox").prop("checked"));
+					})
+				</script>
+			</div>
+		</div>
+		
+		<!-- Login Page -->	
+		<div id="login_name" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div id="login_title">
+					<div style="font-size:60px;">Login</div>
+					<div style="font-size:32px;">Username/Passowrd</div>
+					<div style="font-size:32px;">Setting</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div id="login_desc" class="pageDesc">Create your Lyra account. The username and password will be used to login and manage your Lyra network.</div>
+				<div id="login_field">
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#Router_Login_Name#></div>
+						</div>
+						<div class="inputContainer">
+							<input id="http_username" type="text" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#PASS_new#></div>
+							<div class="icon_eye_close" onclick="pass_checked('http_passwd', this)"></div>
+						</div>
+						<div class="inputContainer">
+							<input id="http_passwd" type="password" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#PASS_retype#></div>
+						</div>
+						<div class="inputContainer">
+							<input id="http_passwd_confirm" type="password" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.login()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn" onclick="apply.login();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.login()'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="apply.login();">
+									<div class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Detecting -->
+		<div id="waiting_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div id="login_title">
+					<div style="font-size:60px;"><#Internet#></div>
+					<div style="font-size:32px;"><#QKSet_detect_sanglass#></div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">
+					<div><#QKSet_detect_waitdesc#></div>
+				</div>
+
+				<div>
+					<div class="cssload-bell">
+						<div class="cssload-circle">
+							<div class="cssload-inner"></div>
+						</div>
+						<div class="cssload-circle">
+							<div class="cssload-inner"></div>
+						</div>
+						<div class="cssload-circle">
+							<div class="cssload-inner"></div>
+						</div>
+						<div class="cssload-circle">
+							<div class="cssload-inner"></div>
+						</div>
+						<div class="cssload-circle">
+							<div class="cssload-inner"></div>
+						</div>
+					</div>
+					<!-- Action Button -->
+					<!--div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick="abort.nowan()"><#CTL_prev#></div>
+						<div class="desktop_applyBtn detectBtn" onclick="apply.manual()"><#Manual_Setting_btn#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.nowan()'>
+									<div  class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="apply.manual()">
+									<div  class="mobile_applyBtn detectBtn"><#Manual_Setting_btn#></div>
+								</td>
+							</tr>
+						</table>
+					</div-->
+				</div>
+			</div>
+		</div>
+
+		<!-- No WAN -->
+		<div id="noWan_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div id="login_title">
+					<div style="font-size:60px;"><#Internet#></div>
+					<div style="font-size:32px;"><#Settings#></div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">
+					<#QIS_desc_1#>
+				</div>
+
+				<div>
+					<div class="noWanPic"></div>
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick="abort.nowan()"><#CTL_prev#></div>
+						<div class="desktop_applyBtn detectBtn" onclick="apply.manual()"><#Manual_Setting_btn#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.nowan()'>
+									<div  class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="apply.manual()">
+									<div  class="mobile_applyBtn detectBtn"><#Manual_Setting_btn#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- WAN Setting -->
+		<div id="wan_setting" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;"><#Internet#></div>
+					<div style="font-size:32px;"><#Settings#></div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc"><#QIS_type_desc1#></div>
+				<div>
+					<div style="margin-left:35px;color:#888">
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="goTo.DHCP()">
+									DHCP
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="goTo.PPPoE()">
+									PPPoE
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="goTo.Static()">
+									Static IP
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%;">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="goTo.PPTP()">
+									PPTP
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%;">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="goTo.L2TP()">
+									L2TP
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Action Button -->
+					<div class="footer_desktop" style="color:#FFF;text-align:center;margin-top:30px;">
+						<div class="desktop_abortBtn" onclick='abort.wan()'><#CTL_prev#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:100%;" onclick='abort.wan()'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Get IP Setting -->
+		<div id="getIp_setting" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;"><#Internet#></div>
+					<div style="font-size:32px;"><#MER_cfg_title2#></div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc"><#LANHostConfig_x_LAN_DHCP_itemname#></div>
+				<div>
+					<div style="margin-left:35px;color:#888">
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="apply.dhcp()">
+									<#BOP_ctype_title1#>
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div style="border-bottom:1px solid #999;padding:29px 0;display:table;width:100%">
+							<div style="display:table-row;font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:2.25em;">
+								<div class="selectBar" onclick="goTo.vpnStatic()">
+									<#Manual_Setting_assign#>
+								</div>
+								<div style="display:table-cell;vertical-align:middle;width:30px;text-align:right;padding-right:28px;">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- Action Button -->
+					<div class="footer_desktop" style="color:#FFF;text-align:center;margin-top:30px;">
+						<div class="desktop_abortBtn" onclick='abort.getIp()'><#CTL_prev#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:100%;" onclick='abort.getIp()'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- PPPoE Setting -->
+		<div id="pppoe_setting" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div id="login_title">
+					<div style="font-size:60px;"><#Internet#></div>
+					<div style="font-size:32px;"><#QKSet_account_webtitle#></div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div id="pppoe_desc" class="pageDesc"><#qis_pppoe_desc1#></div>
+				<div id="pppoe_field">
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#HSDPAConfig_Username_itemname#></div>
+						</div>
+						<div class="inputContainer">
+							<input id="wan_pppoe_username" type="text" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#PPPConnection_Password_itemname#></div>
+							<div class="icon_eye_close" onclick="pass_checked('wan_pppoe_passwd', this)"></div>
+						</div>
+						<div class="inputContainer">
+							<input id="wan_pppoe_passwd" type="password" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+
+					<div id="vpnServerContainer" style="margin-left:17px;display:none">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#BOP_isp_heart_item#></div>
+						</div>
+						<div class="inputContainer">
+							<input id="wan_heartbeat_x" type="text" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.pppoe()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn" onclick="apply.pppoe();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.pppoe()'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="apply.pppoe();">
+									<div class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Static Setting -->
+		<div id="static_setting" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div id="login_title">
+					<div style="font-size:60px;"><#Internet#></div>
+					<div style="font-size:32px;"><#BOP_ctype_title5#></div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc"><#BOP_ctype_item5#></div>
+				<div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle">IP Address</div>
+						</div>
+						<div class="inputContainer">
+							<input id="pap_ip_advance_setting_ipaddr" class="textInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text">
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle">Subnet Mask</div>
+						</div>
+						<div class="inputContainer">
+							<input id="pap_ip_advance_setting_subnet" class="textInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text">
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle">Default Gateway</div>
+						</div>
+						<div class="inputContainer">
+							<input id="pap_ip_advance_setting_gateway" class="textInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text">
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle">DNS 1</div>
+						</div>
+						<div class="inputContainer">
+							<input id="pap_ip_advance_setting_dns1" class="textInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text">
+						</div>
+					</div>
+					<div style="margin-left:17px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle">DNS 2</div>
+						</div>
+						<div class="inputContainer">
+							<input id="pap_ip_advance_setting_dns2" class="textInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text">
+						</div>
+					</div>
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.static()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn" onclick="apply.static();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.static()'>
+									<div  class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="apply.static();">
+									<div  class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Wireless SSID/Password Setting -->
+		<div id="wireless_setting" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div style="font-size:60px"><#menu5_1#></div>
+				<div style="font-size:32px"><#Settings#></div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc"><#qis_wireless_setting#></div>
+				<div id="wireless_field" style="padding-bottom:35px;width:100%;">
+					<div style="margin:31px 48px 7px 46px">
+						<div>
+							<span style="font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:1.8em;color:#888;"><#QIS_finish_wireless_item1#></span>
+						</div>
+						<div style="display:table;margin:18px 0px 19px 0px;width:100%">
+							<input id="wireless_ssid" type="text" maxlength="32" onkeypress="return validator.isString(this, event)" class="textInput" data-role="none" data-clear-btn="true">
+						</div>
+					</div>
+					<div style="margin:31px 48px 7px 46px">
+						<div>
+							<table style="width:100%">
+								<tr>
+									<td>
+										<div style="font-family:HelveticaNeueW10-45Ligh,Helvetica,Arial;font-size:1.8em;color:#888;"><#QIS_finish_wireless_item2#></div>
+									</td>
+									<td style="width: 20px;">
+										<div class="icon_eye_close" onclick="pass_checked('wireless_key', this)"></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<div style="margin-top:19px">
+							<input id="wireless_key" type="password" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true"></input>
+						</div>
+					</div>
+				</div>
+				<!-- Action Button -->
+				<div class="footer_desktop" style="color:#FFF;text-align:center;margin-top:0;max-width:1000px;">
+					<div class="desktop_abortBtn" onclick='abort.wireless();'><#CTL_prev#></div>
+					<div class="desktop_applyBtn" onclick="apply.wireless();"><#CTL_apply#></div>
+				</div>
+				<div class="footer_mobile">
+					<table style="width:100%;" cellpadding="0" cellspacing="0">
+						<tr style="height:102px;text-align:center">
+							<td style="width:50%" onclick='abort.wireless();'>
+								<div class="mobile_abortBtn"><#CTL_prev#></div>
+							</td>
+							<td style="width:50%;background:#27D1A4" onclick="apply.wireless();">
+								<div class="mobile_applyBtn"><#CTL_apply#></div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- Summary -->
+		<div id="summary_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">Summary</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">
+					Congratulations! Lyra is creating new WiFi network for you, wait until solid blue light shows up, Lyra is ready.
+				</div>
+
+				<div>
+					<div class="flashingColor"></div>
+					<div class="wpsPic"></div>
+
+					<div style="margin-left:17px;" class="summaryNetwork">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#QIS_finish_wireless_item1#></div>
+						</div>
+						<div class="inputContainer">
+							<input id="ssidSummary" type="text" class="textInput" data-role="none" disabled>
+						</div>
+					</div>
+					<div style="margin-left:17px;margin-top: -50px;">
+						<div style="display:table;margin:18px 0 19px 30px;width:100%">
+							<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
+						</div>
+						<div class="inputContainer">
+							<input id="pskSummary" type="text" class="textInput" data-role="none" disabled>
+						</div>
+					</div>
+				</div>
+
+				<div>
+					<div class="footer_desktop">
+						<div class="desktop_applyBtn" onclick="goTo.WPS();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%;background:#27D1A4" onclick="goTo.WPS();">
+									<div class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- WPS button -->
+		<div id="wps_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">Tips</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">
+					<div>You can now press "Pair button" of first and second Lyra to setup another Lyra.</div>
+					<br/>
+					<div>During pair process, blinking green light means Lyra is communicating to each other.</div>
+				</div>
+
+				<div>
+					<div class="flashingColor"></div>
+					<div class="wpsPic"></div>
+
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn backToFinish" onclick='abort.WPS()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn" onclick="goTo.Pair()"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.WPS()' class="backToFinish">
+									<div  class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="goTo.Pair()">
+									<div  class="mobile_applyBtn detectBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Paring  -->
+		<div id="pair_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">Tips</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">
+					<div>Wait until all Lyra show solid blue, means the system is ready.</div>
+					<br/>
+					<div>You can repeat the steps to add another Lyra, please be noted, pair only works for First Lyra.</div>
+				</div>
+
+				<div>
+					<div class="flashingColor"></div>
+					<div class="wpsPic"></div>
+
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.Pair()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn" onclick="goTo.APP()"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.Pair()'>
+									<div  class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" onclick="goTo.APP()">
+									<div  class="mobile_applyBtn detectBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- APP -->
+		<div id="app_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">Tips</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">
+					<div>You can also download [ASUS Lyra] to connect another Lyra to the first Lyra.</div>
+
+					<div class="lyraGood"></div>
+					<div>
+						<div class="desktopView AppDownloadLink">
+							<table class="appTable">
+								<tr>
+									<td rowspan="2" align="right">
+										<div class="appQR"></div>
+									</td>
+									<td>
+										<div class="itunesStore"></div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="googlePlay"></div>
+									</td>
+								</tr>
+							</table>
+
+							<div class="appMobile"></div>
+						</div>
+		
+						<div class="mobileView">
+							<div class="appMobile"></div>
+						</div>
+					</div>
+				</div>
+
+				<div>
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.APP()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn iOS_go goToDownload AppDownloadLink" onclick="apply.openStore();">Open iTunes Store</div>
+						<div class="desktop_applyBtn android_go goToDownload AppDownloadLink" onclick="apply.openStore();">Open Google Play</div>
+					</div>
+
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%" onclick='abort.APP()'>
+									<div  class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td style="width:50%;background:#27D1A4" class="AppDownloadLink" onclick="goTo.openStore()">
+									<div class="mobile_applyBtn iOS_go AppDownloadLink goToDownload">Open iTunes Store</div>
+									<div class="mobile_applyBtn android_go AppDownloadLink goToDownload">Open Google Play</div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<script>
+					(function(){
+						var mobileOS = (function(){
+							var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+							if (/android/i.test(userAgent)) return "Android";
+							if(/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) return "iOS";
+							return "unknown"; 
+						})();
+
+						switch(mobileOS){
+							case "Android":
+								goTo.openStore = function(){
+									window.open("https://play.google.com/store/apps/details?id=com.asustek.aicloud");
+								}
+
+								$(".iOS_go").hide();
+								$(".desktopView").hide();							
+							break;
+
+							case "iOS":
+								goTo.openStore = function(){
+									window.open("https://itunes.apple.com/us/app/aicloud-lite/id527118674");
+								}
+
+								$(".android_go").hide();
+								$(".desktopView").hide();								
+							break;
+
+							case "unknown":
+								$(".mobileView").hide();
+								$(".goToDownload").hide();
+
+								$(".appIconContainer").css({
+									"margin-top": "0px",
+									"margin-left": "60px",
+									"padding-bottom": "20px",
+									"position": "relative"
+								})
+							break;
+						}
+					})()
+				</script>
+			</div>
+		</div>
+
+		<!-- TrendMicro TOS -->
+		<div id="tmtos_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">License Agreement</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">Trend Micro End User License Agreement</div>
+
+				<div class="tosDesc">
+					<p style="border-style: double; padding:10px;"><strong>IMPORTANT:</strong> THE FOLLOWING AGREEMENT (“AGREEMENT”) SETS FORTH THE TERMS AND CONDITIONS UNDER WHICH TREND MICRO INCORPORATED OR AN AFFILIATE LICENSOR ("TREND MICRO") IS WILLING TO LICENSE THE “SOFTWARE” AND ACCOMPANYING “DOCUMENTATION”  TO “YOU” AS AN INDIVIDUAL USER . BY ACCEPTING THIS AGREEMENT, YOU ARE ENTERING INTO A BINDING LEGAL CONTRACT WITH TREND MICRO. THE TERMS AND CONDITIONS OF THE AGREEMENT THEN APPLY TO YOUR USE OF THE SOFTWARE. PLEASE PRINT THIS AGREEMENT FOR YOUR RECORDS AND SAVE A COPY ELECTRONICALLY. 
+					</p>
+
+					<p>You must read and accept this Agreement before You use Software. If You are an individual, then You must be at least 18 years old and have attained the age of majority in the state, province or country where You live to enter into this Agreement. If You are using the Software, You accept this Agreement by selecting the "I accept the terms of the license agreement" button or box below.  If You do not agree to the terms of this Agreement, select "I do not accept the terms of the license agreement". Then no Agreement will be formed and You will not be permitted to use the Software.</p>
+
+					<p><strong>NOTE:</strong> SECTIONS 5 AND 14 OF THIS AGREEMENT LIMITS TREND MICRO’S LIABILITY. SECTIONS 6 AND 14 LIMIT OUR WARRANTY OBLIGATIONS AND YOUR REMEDIES. SECTION 4 SETS FORTH IMPORTANT RESTRICTIONS ON THE USE OF THE SOFTWARE AND OTHER TOOLS PROVIDED BY TREND MICRO. THE ATTACHED PRIVACY AND SECURITY STATEMENT DESCRIBES THE INFORMATION YOU CAUSE TO BE SENT TO TREND MICRO WHEN YOU USE THE SOFTWARE. BE SURE TO READ THESE SECTIONS CAREFULLY BEFORE ACCEPTING THE AGREEMENT.</p>
+					<br>
+
+					<ol style="font-size:1em;">
+					<li><b>APPLICABLE AGREEMENT AND TERMS.</b> This Agreement applies to  the Trend Micro Services (which includes but is not limited to features and functionality such as deep packet inspection, AppID signature, device ID signature, parental controls, Quality of Service (QoS) for improved performance and Security Services) (the “Software”) for use with certain ASUS routers. All rights in this Agreement are subject to Your acceptance of this Agreement.</li>
+					<li><b>SUBSCRIPTION LICENSE.</b> Trend Micro grants You and members of Your household a non-exclusive, non-transferable, non-assignable right to use the Software during the Subscription Term (as defined in Section 4 below) but only on the ASUS Router on which it was pre-installed. Trend Micro reserves the right to enhance, modify, or discontinue the Software or to impose new or different conditions on its use at any time without notice. The Software may require Updates to work effectively. “Updates” are new patterns, definitions or rules for the Software’s security components and minor enhancements to the Software and accompanying documentation. Updates are only available for download and use during Your Subscription Term and are subject to the terms of Trend Micro’s end user license agreement in effect on the date the Updates are available for download. Upon download, Updates become “Software” for the purposes of this Agreement.</li>
+					<li><b>SUBSCRIPTION TERM.</b> The “Subscription Term” starts on the date You purchase the ASUS router with the pre-installed Software and ends (a) when such ASUS router is in the end of its useful life as announced by ASUS (generally 3-5 years) or (b) on such other termination date as set by Trend Micro upon notice.</li>
+					<li><b>USE RESTRICTIONS.</b> The Software and any other software or tools provided by Trend Micro are licensed not sold. Trend Micro and its suppliers own their respective title, copyright and the trade secret, patent rights and other intellectual property rights in the Software and their respective copyright in the documentation, and reserve all respective rights not expressly granted to You in this Agreement. You agree that You will not rent, loan, lease or sublicense the Software, use components of the Software separately, exploit the Software for any commercial purposes, or use the Software to provide services to others. You also agree not to attempt to reverse engineer, decompile, modify, translate, disassemble, discover the source code of, or create derivative works from, any part of the Software. You agree not to permit third parties to benefit from the use or functionality of the Software via a timesharing, service bureau or other arrangement.  You agree not to encourage conduct that would constitute a criminal offense or engage in any activity that otherwise interferes with the use and enjoyment of the Software by other or utilize the Software or service to track or monitor the location and activities of any individual without their express consent.  You also agree not to authorize others to undertake any of these prohibited acts.  You may only use the Software in the region for which the Software was authorized to be used or distributed by Trend Micro.</li>
+					<li><b>LIMITED LIABILITY.</b> 
+					  <ol type="A">
+					  <li>SUBJECT TO SECTION 5(B) BELOW AND TO THE EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL TREND MICRO OR ITS SUPPLIERS BE LIABLE TO YOU (i) FOR ANY LOSSES WHICH WERE NOT REASONABLY FORSEEABLE AT THE TIME OF ENTERING INTO THIS AGREEMENT OR (ii) FOR ANY CONSEQUENTIAL, SPECIAL, INCIDENTAL OR INDIRECT DAMAGES OF ANY KIND OR FOR LOST OR CORRUPTED DATA OR MEMORY, SYSTEM CRASH, DISK/SYSTEM DAMAGE, LOST PROFITS OR SAVINGS, OR LOSS OF BUSINESS, ARISING OUT OF OR RELATED TO THIS AGREEMENT OR THE SOFTWARE. THESE LIMITATIONS APPLY EVEN IF TREND MICRO HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND REGARDLESS OF THE FORM OF ACTION, WHETHER FOR BREACH OF CONTRACT, NEGLIGENCE, STRICT PRODUCT LIABILITY OR ANY OTHER CAUSE OF ACTION OR THEORY OF LIABILITY.</li>
+					  <li>SECTION 5(A) DOES NOT SEEK TO LIMIT OR EXCLUDE THE LIABILITY OF TREND MICRO OR ITS SUPPLIERS IN THE EVENT OF DEATH OR PERSONAL INJURY CAUSED BY ITS NEGLIGENCE OR FOR FRAUD OR FOR ANY OTHER LIABILITY FOR WHICH IT IS NOT PERMITTED BY LAW TO EXCLUDE.</li>
+					  <li>SUBJECT TO SECTIONS 5(A) AND 5(B) ABOVE, IN NO EVENT WILL THE AGGREGATE LIABILITY OF TREND MICRO OR ITS SUPPLIERS FOR ANY CLAIM, WHETHER FOR BREACH OF CONTRACT, NEGLIGENCE, STRICT PRODUCT LIABILITY OR ANY OTHER CAUSE OF ACTION OR THEORY OF LIABILITY, EXCEED THE FEES FOR THE SOFTWARE AND SERVICE, AS APPLICABLE, PAID OR OWED BY YOU.</li>
+					  <li>THE LIMITATIONS OF LIABILITY IN THIS SECTION 5 ARE BASED ON THE FACT THAT CUSTOMERS USE THEIR COMPUTERS FOR DIFFERENT PURPOSES. THEREFORE, ONLY YOU CAN IMPLEMENT BACK-UP PLANS AND SAFEGUARDS APPROPRIATE TO YOUR NEEDS IN THE EVENT AN ERROR IN THE SOFTWARE CAUSES PROBLEMS AND RELATED DATA LOSSES. FOR THESE REASONS, YOU AGREE TO THE LIMITATIONS OF LIABILITY IN THIS SECTION 5 AND ACKNOWLEDGE THAT WITHOUT YOUR AGREEMENT TO THIS PROVISION, THE SOFTWARE  WOULD NOT BE AVAILABLE ROYALTY-FREE.</li>
+					  </ol>
+					</li>
+
+					<li><b>NO WARRANTY.</b> Trend Micro does not warrant that the Software will meet Your requirements or that Your use of the Software will be uninterrupted, error-free, timely or secure, that the results that may be obtained from Your use of the Software will be accurate or reliable; or that any errors or problems will be fixed or corrected. GIVEN THE NATURE AND VOLUME OF MALICIOUS AND UNWANTED ELECTRONIC CONTENT, TREND MICRO DOES NOT WARRANT THAT THE SOFTWARE IS COMPLETE OR ACCURATE OR THAT THEY DETECT, REMOVE OR CLEAN ALL, OR ONLY, MALICIOUS OR UNWANTED APPLICATIONS AND FILES.  SEE SECTION 7 FOR ADDITIONAL RIGHTS YOU MAY HAVE.  THE TERMS OF THIS AGREEMENT ARE IN LIEU OF ALL WARRANTIES, (EXPRESS OR IMPLIED), CONDITIONS, UNDERTAKINGS, TERMS AND OBLIGATIONS IMPLIED BY STATUTE, COMMON LAW, TRADE USAGE, COURSE OF DEALING OR OTHERWISE, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS, ALL OF WHICH ARE HEREBY EXCLUDED TO THE FULLEST EXTENT PERMITTED BY LAW. ANY IMPLIED WARRANTIES RELATING TO THE SOFTWARE WHICH CANNOT BE DISCLAIMED SHALL BE LIMITED TO 30 DAYS (OR THE MINIMUM LEGAL REQUIREMENT) FROM THE DATE YOU ACQUIRE THE SOFTWARE.</li>
+					<li><b>CONSUMER AND DATA PROTECTION.</b> SOME COUNTRIES, STATES AND PROVINCES, INCLUDING MEMBER STATES OF THE EUROPEAN ECONOMIC AREA, DO NOT ALLOW CERTAIN EXCLUSIONS OR LIMITATIONS OF LIABILITY, SO THE ABOVE EXCLUSION OR LIMITATION OF LIABILITIES AND DISCLAIMERS OF WARRANTIES (SECTIONS 5 AND 6) MAY NOT FULLY APPLY TO YOU. YOU MAY HAVE ADDITIONAL RIGHTS AND REMEDIES. SUCH POSSIBLE RIGHTS OR REMEDIES, IF ANY, SHALL NOT BE AFFECTED BY THIS AGREEMENT.</li>
+					<li><b>DATA PROTECTION REGULATIONS.</b>  The use of the Software may be subject to data protection laws or regulations in certain jurisdictions.  You are responsible for determining how and if You need to comply with those laws or regulations.  Trend Micro processes personal or other data received from You in the context of providing or supporting products or services only as a data processor on Your behalf as required to provide services to You or to perform obligations.  Such data may be transferred to servers of Trend Micro and its suppliers outside Your jurisdiction (including outside the European Union).</li>
+					<li><b>NOTIFICATION TO OTHER USERS.</b>  It is Your responsibility to notify all individuals whose activities will be monitored of the capabilities and functionality of Software, including but not limited to the following: (a) use of the Internet may be recorded and reported, and (b) personal data is automatically collected during the course of the operation of Software and that such data may be transferred and processed outside the European Union, which may not ensure an adequate level of protection.  In the event of any breach of the representations and warranties in this Section, Trend Micro may with prior notice and without prejudice to its other rights, suspend the performance of Software until You can show to Trend Micro's satisfaction that any such breach has been cured. </li>
+					<li><b>BACK-UP.</b> For as long as You use the Software, You agree regularly to back-up Your Computer programs and files (“Data”) on a separate media. You acknowledge that the failure to do so may cause You to lose Data in the event that any error in the Software causes Computer problems, and that Trend Micro is not responsible for any such Data loss.</li>
+					<li><b>TERMINATION.</b> Trend Micro may terminate Your rights under this Agreement and Your access to the Software immediately and without notice if You fail to comply with any material term or condition of this Agreement. Sections 1 and 4 through 17 survive any termination of the Agreement.</li>
+					<li><b>FORCE MAJEURE.</b>  Trend Micro will not be liable for any alleged or actual loss or damages resulting from delays or failures in performance caused by Your acts, acts of civil or military authority, governmental priorities, earthquake, fire, flood, epidemic, quarantine, energy crisis, strike, labor trouble, war, riot, terrorism, accident, shortage, delay in transportation, or any other cause beyond its reasonable control.  Trend Micro shall resume the performance of its obligations as soon as reasonably possible.</li>
+					<li><b>EXPORT CONTROL.</b> The Software is subject to export controls under the U.S. Export Administration Regulations. Therefore, the Software may not be exported or re-exported to entities within, or residents or citizens of, embargoed countries or countries subject to applicable trade sanctions, nor to prohibited or denied persons or entities without proper government licenses. Information about such restrictions can be found at the following websites:  www.treas.gov/offices/enforcement/ofac/ and www.bis.doc.gov/complianceandenforcement/liststocheck.htm. As of the Date above, countries embargoed by the U.S. include Cuba, Iran, North Korea, Sudan (North) and Syria.  You are responsible for any violation of the U.S. export control laws related to the Software. By accepting this Agreement, You confirm that You are not a resident or citizen of any country currently embargoed by the U.S. and that You are not otherwise prohibited from receiving the Software. </li>
+					<li><b>BINDING ARBITRATION AND CLASS ACTION WAIVER FOR U.S. RESIDENTS</b><br>
+					PLEASE READ THIS SECTION CAREFULLY.  THIS SECTION AFFECTS YOUR LEGAL RIGHTS CONCERNING ANY DISPUTES BETWEEN YOU AND TREND MICRO.  FOR PURPOSES OF THIS SECTION, “TREND MICRO” MEANS TREND MICRO INCORPORATED AND ITS SUBSIDIARIES, AFFILIATES, OFFICERS, DIRECTORS, EMPLOYEES, AGENTS AND SUPPLIERS.
+					<ol type="A">
+					  <li><b>DISPUTE.</b>  As used in this Agreement, “Dispute” means any dispute, claim, demand, action, proceeding or other controversy between You and Trend Micro concerning the Software and Your or Trend Micro’s obligations and performance under this Agreement or with respect to the Software, whether based in contact, warranty, tort (including any limitation, fraud, misrepresentation, fraudulent inducement, concealment, omission, negligence, conversion, trespass, strict liability and product liability), statue (including, without limitation, consumer protection and unfair competition statutes), regulation, ordinance, or any other legal or equitable basis or theory.  "Dispute" will be given the broadest possible meaning allowable under law.</li>
+					  <li><b>INFORMAL NEGOTIATION.</b>  You and Trend Micro agree to attempt in good faith to resolve any Dispute before commencing arbitration.  Unless You and Trend Micro otherwise agree in writing, the time for informal negotiation will be 60 days from the date on which You or Trend Micro mails a notice of the Dispute ("Notice of Dispute") as specified in Section 14C (Notice of Dispute). You and Trend Micro agree that neither will commence arbitration before the end of the time for informal negotiation. </li>
+					  <li><b>NOTICE OF DISPUTE.</b> If You give a Notice of Dispute to Trend Micro, You must send by U.S. Mail to Trend Micro Incorporated, ATTN: Arbitration Notice, Legal Department, 10101 N. De Anza Blvd, Cupertino, CA 95014, a written statement setting forth (a) Your name, address, and contact information, (b) Your Software serial number, if You have one, (c) the facts giving rise to the Dispute, and (d) the relief You seek. If Trend Micro gives a Notice of Dispute to You, we will send by U.S. Mail to Your billing address if we have it, or otherwise to Your e-mail address, a written statement setting forth (a) Trend Micro’s contact information for purposes of efforts to resolve the Dispute, (b) the facts giving rise to the Dispute, and (c) the relief Trend Micro seeks. </li>
+					  <li><b>BINDING ARBITRATION.</b> YOU AND TREND MICRO AGREE THAT IF YOU AND TREND MICRO DO NOT RESOLVE ANY DISPUTE BY INFORMAL NEGOTIATION AS SET FORTH ABOVE, ANY EFFORT TO RESOLVE THE DISPUTE WILL BE CONDUCTED EXCLUSIVELY BY BINDING ARBITRATION IN ACCORDANCE WITH THE ARBITRATION PROCEDURES SET FORTH BELOW. YOU UNDERSTAND AND ACKNOWLEDGE THAT BY AGREEING TO BINDING ARBITRATION, YOU ARE GIVING UP THE RIGHT TO LITIGATE (OR PARTICIPATE IN AS A PARTY OR CLASS MEMBER) ALL DISPUTES IN COURT BEFORE A JUDGE OR JURY. INSTEAD, YOU UNDERSTAND AND AGREE THAT ALL DISPUTES WILL BE RESOLVED BEFORE A NEUTRAL ARBITRATOR, WHOSE DECISION WILL BE BINDING AND FINAL, EXCEPT FOR A LIMITED RIGHT OF APPEAL UNDER THE FEDERAL ARBITRATION ACT. ANY COURT WITH JURISDICTION OVER THE PARTIES MAY ENFORCE THE ARBITRATOR'S AWARD. THE ONLY DISPUTES NOT COVERED BY THE AGREEMENT TO NEGOTIATE INFORMALLY AND ARBITRATE ARE DISPUTES ENFORCING, PROTECTING, OR CONCERNING THE VALIDITY OF ANY OF YOUR OR TREND MICRO’S (OR ANY OF YOUR OR TREND MICRO’S LICENSORS) INTELLECTUAL PROPERTY RIGHTS.</li>
+					  <li><b>SMALL CLAIMS COURT.</b> Notwithstanding the above, You have the right to litigate any Dispute in small claims court, if all requirements of the small claims court, including any limitations on jurisdiction and the amount at issue in the Dispute, are satisfied. Notwithstanding anything to the contrary herein, You agree to bring a Dispute in small claims court only in Your county of residence or Santa Clara County, California. </li>
+					  <li><b>CLASS ACTION WAIVER.</b> TO THE EXTENT ALLOWED BY LAW, YOU AND TREND MICRO AGREE THAT ANY PROCEEDINGS TO RESOLVE OR LITIGATE ANY DISPUTE, WHETHER IN ARBITRATION, IN COURT, OR OTHERWISE, WILL BE CONDUCTED SOLELY ON AN INDIVIDUAL BASIS, AND THAT NEITHER YOU NOR TREND MICRO WILL SEEK TO HAVE ANY DISPUTE HEARD AS A CLASS ACTION, A REPRESENTATIVE ACTION, A COLLECTIVE ACTION, A PRIVATE ATTORNEY-GENERAL ACTION, OR IN ANY PROCEEDING IN WHICH YOU OR TREND MICRO ACTS OR PROPOSES TO ACT IN A REPRESENTATIVE CAPACITY. YOU AND TREND MICRO FURTHER AGREE THAT NO ARBITRATION OR PROCEEDING WILL BE JOINED, CONSOLIDATED, OR COMBINED WITH ANOTHER ARBITRATION OR PROCEEDING WITHOUT THE PRIOR WRITTEN CONSENT OF YOU, TREND MICRO, AND ALL PARTIES TO ANY SUCH ARBITRATION OR PROECCEDING.</li>
+					  <li><b>ARBITRATION PROCEDURE.</b> The arbitration of any Dispute will be conducted by and according to the Commercial Arbitration Rules of the American Arbitration Association (the "AAA"). Information about the AAA, and how to commence arbitration before it, is available at www.adr.org. If You are an individual consumer and use the Software for personal or household use, or if the value of the Dispute is $75,000 or less, the Supplementary Procedures for Consumer-Related Disputes of the AAA will also apply. If the AAA rules or procedures conflict with the provisions of this Agreement, the provisions of this Agreement will govern. You may request a telephonic or in-person hearing by following the AAA rules and procedures. Where the value of a Dispute is $10,000 or less, any hearing will be through a telephonic hearing unless the arbitrator finds good cause to hold an in-person hearing. The arbitrator has the power to make any award of damages to the individual party asserting a claim that would be available to a court of law. The arbitrator may award declaratory or injunctive relief only in favor of the individual party asserting a claim, and only to the extent required to provide relief on that party's individual claim.</li>
+					  <li><b>ARBITRATION LOCATION.</b> You agree to commence arbitration only in Your county of residence or in Santa Clara County, California. Trend Micro agrees to commence arbitration only in Your county of residence.</li>
+					  <li><b>COSTS AND ATTORNEY'S FEES.</b> In a dispute involving $75,000 or less, Trend Micro will reimburse for payment of Your filing fees, and pay the AAA administrative fees and the arbitrator's fees and expenses, incurred in any arbitration You commence against Trend Micro unless the arbitrator finds it frivolous or brought for an improper purpose. Trend Micro will pay all filing and AAA administrative fees, and the arbitrator's fees and expenses, incurred in any arbitration Trend Micro commences against You. If a Dispute involving $75,000 or less proceeds to an award at the arbitration after You reject the last written settlement offer Trend Micro made before the arbitrator was appointed ("Trend Micro's Last Written Offer"), and the arbitrator makes an award in Your favor greater than Trend Micro's Last Written Offer, Trend Micro will pay You the greater of the award or $1,000, plus twice Your reasonable attorney's fees, if any, and reimburse any expenses (including expert witness fees and costs) that Your attorney reasonably accrues for investigating, preparing, and pursuing Your claim in arbitration, as determined by the arbitrator or agreed to by You and Trend Micro. In any arbitration You commence, Trend Micro will seek its AAA administrative fees or arbitrator's fees and expenses, or Your filing fees it reimbursed, only if the arbitrator finds the arbitration frivolous or brought for an improper purpose. Trend Micro will not seek its attorney's fees or expenses from You. In a Dispute involving more than $75,000, the AAA rules will govern payment of filing and AAA administrative fees and arbitrator's fees and expenses. Fees and expenses are not counted in determining how much a Dispute involves.</li>
+					  <li><b>IF CLASS ACTION WAIVER ILLEGAL OR UNENFORCEABLE.</b> If the class action waiver (which includes a waiver of private attorney-general actions) in Section 14F (class action waiver) is found to be illegal or unenforceable as to all or some parts of a Dispute, whether by judicial, legislative, or other action, then the remaining paragraphs in Section 14 will not apply to those parts. Instead, those parts of the Dispute will be severed and proceed in a court of law, with the remaining parts proceeding in arbitration. The definition of "Dispute" in this section will still apply to this Agreement. You and Trend Micro irrevocably consent to the exclusive jurisdiction and venue of the state or federal courts in Santa Clara County, California, USA, for all proceedings in court under this paragraph. </li>
+					  <li><b>YOUR RIGHT TO REJECT CHANGES TO ARBITRATION AGREEMENT.</b> Notwithstanding anything to the contrary in this Agreement, Trend Micro agrees that if it makes any change to Section 14 (other than a change to the notice address) while You are authorized to use the Software, You may reject the change by sending us written notice within 30 days of the change by U.S. Mail to the address in Section 14C. By rejecting the change, You agree that You will informally negotiate and arbitrate any Dispute between us in accordance with the most recent version of Section 14 before the change You rejected.</li>
+					  <li><b>SEVERABILITY.</b> If any provision of Section 14 and its subsections, other than Section 14F (class action waiver), is found to be illegal or unenforceable, that provision will be severed from Section 14, but the remainder paragraphs of Section 14 will remain in full force and effect. Section 14J says what happens if Section 14F (class action waiver) is found to be illegal or unenforceable. </li>
+					  </ol>
+					</li>
+					<li><b>GENERAL.</b> This Agreement and Subscription Term constitute the entire agreement between You and Trend Micro. Unless the Software is subject to an existing, written contract signed by Trend Micro, this Agreement supersedes any prior agreement or understanding, whether written or oral, relating to the subject matter of this Agreement. In the event that any provision of this Agreement is found invalid, that finding will not affect the validity of the remaining parts of this Agreement. Trend Micro may assign or subcontract some or all of its obligations under this Agreement to qualified third parties or its affiliates and/or subsidiaries, provided that no such assignment or subcontract shall relieve Trend Micro of its obligations under this Agreement.</li>
+					<li><b>GOVERNING LAW/TREND MICRO LICENSING ENTITY.</b> <br>
+					<p><b>North America:</b>  If You are located in the United States or Canada, the Licensor is: Trend Micro Incorporated, 10101 N. De Anza Blvd., Cupertino, CA 95014. Fax:  (408) 257-2003 and this Agreement is governed by the laws of the State of California, USA.</p> 
+
+					<p><b>Latin America:</b> If You are located in Spanish Latin America (other than in any countries embargoed by the U.S.), the Licensor is: Trend Micro Latinoamérica, S. A. de C. V., Insurgentes Sur No. 813, Piso 11, Col. Nápoles, 03810 México, D. F.  Tel: 3067-6000 and this Agreement is governed by the laws of Mexico.  If You are located in Brazil, the Licensor is Trend Micro do Brasil, LTDA, Rua Joaquim Floriano, 1.120 – 2º andar, CEP 04534-004, São Paulo/Capital, Brazil and this Agreement is governed by the laws of Brazil.</p>
+
+					<p><b>Europe, Middle East and Africa (other than countries embargoed by the U.S):</b>  If You are located in the United Kingdom, this Agreement is governed by the laws of England and Wales. If You are located in Austria, Germany or Switzerland, this Agreement is governed by the laws of the Federal Republic of Germany. If You are located in France, this Agreement is governed by the laws of France. If You are located in Italy, this Agreement is governed by the laws of Italy.  If You are located in Europe, the Licensor is: Trend Micro EMEA Limited, a company incorporated in Ireland under number 364963 and having its registered office at IDA Business and Technology Park, Model Farm Road, Cork, Ireland.  Fax: +353-21 730 7 ext. 373.
+					<br><br>
+					If You are located in Africa or the Middle East (other than in those countries embargoed by the U.S.), or Europe (other than Austria, France, Germany, Italy, Switzerland or the U.K.), the Licensor is: Trend Micro EMEA Limited, a company incorporated in Ireland under number 364963 and having its registered office at IDA Business and Technology Park, Model Farm Road, Cork, Ireland.  Fax: +353-21 730 7 ext. 373 and this Agreement is governed by the laws of the Republic of Ireland.</p> 
+
+					<p><b>Asia Pacific (other than Japan or countries embargoed by the U.S):</b>  If You are located in Australia or New Zealand, the Licensor is: Trend Micro Australia Pty Limited, Suite 302, Level 3, 2-4 Lyon Park Road, North Ryde, New South Wales, 2113, Australia, Fax: +612 9887 2511 or Tel: +612 9870 4888 and this Agreement is governed by the laws of New South Wales, Australia.
+					<br><br>
+					If You are located in Hong Kong, India, Indonesia, Malaysia, the Philippines, Singapore, Thailand or Vietnam, the Licensor is: Trend Taiwan Incorporated, 8F, No.198, Tun-Hwa S. Road, Sec. 2, Taipei 106, Taiwan. If You are located in Hong Kong, this Agreement is governed by the laws of Hong Kong. If You are located in India, this Agreement is governed by the laws of India. If You are located in Indonesia, Malaysia, the Philippines, or Singapore, this Agreement is governed by the laws of Singapore. If You are located in Thailand, this Agreement is governed by the laws of Thailand.  If You are located in Vietnam, this Agreement is governed by the laws of Viet Nam.</p> 
+
+					<p><b>Japan:</b>  If You are located in Japan, the licensor is Trend Micro Incorporated, Shinjuku MAYNDS Tower, 1-1 Yoyogi 2-Chome, Shibuya-ku, Tokyo 151-0053, Japan and this agreement is governed by laws of Japan.<br>
+					The United Nations Convention on Contracts for the International Sale of Goods and the conflict of laws provisions of Your state or country of residence do not apply to this Agreement under the laws of any country.</p>
+
+					</li>
+					<li><b>GOVERNMENT LICENSEES.</b> If the entity on whose behalf You are acquiring the Software is any unit or agency of the United States Government, then that Government entity acknowledges that the Software, (i) was developed at private expense, (ii) is commercial in nature, (iii) is not in the public domain, and (iv) is "Restricted Computer Software" as that term is defined in Clause 52.227 19 of the Federal Acquisition Regulations (FAR) and is "Commercial Computer Software" as that term is defined in Subpart 227.471 of the Department of Defense Federal Acquisition Regulation Supplement (DFARS). The Government agrees that (i) if the Software is supplied to the Department of Defense (DoD), the Software is classified as "Commercial Computer Software" and the Government is acquiring only "restricted rights" in the Software and its documentation as that term is defined in Clause 252.227 7013(c)(1) of the DFARS, and (ii) if the Software is supplied to any unit or agency of the United States Government other than DoD, the Government's rights in the Software and its documentation will be as defined in Clause 52.227 19(c)(2) of the FAR.</li>
+					<li><b>QUESTIONS.</b> If You have a question about the Software, visit: www.trendmicro.com/support/consumer. Direct all questions about this Agreement to: legalnotice@trendmicro.com.</li>
+
+					</ol>
+					<br>
+
+					<p style="border-style: double; padding:10px; text-align:center">THE SOFTWARE IS PROTECTED BY INTELLECTUAL PROPERTY LAWS AND INTERNATIONAL TREATY PROVISIONS. UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES. 
+					</p>
+
+				</div>
+				<div class="footHeight"></div>
+				<div>
+					<div class="footer_desktop">
+						<div class="desktop_applyBtn" onclick="goTo.Welcome();"><#CTL_close#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%;background:#27D1A4" onclick="goTo.Welcome();">
+									<div class="mobile_applyBtn"><#CTL_close#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ASUS Privacy Policy -->
+		<div id="asuspp_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">ASUS Privacy Policy</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">ASUS Privacy Policy</div>
+
+				<div class="tosDesc">
+					<p>ASUSTeK COMPUTER INC. and its affiliated companies (hereinafter referred to as “<strong>ASUS</strong>”, “<strong>we/our/us</strong>”) are committed to protecting and respecting your privacy. We endeavor to comply with all applicable laws on privacy protection and personal information security. ASUS Privacy Policy, together with any additional terms and conditions that contain supplementary information in connection with particular services you are using (hereinafter referred to as “Privacy Policy”), outline our privacy practices regarding the collection, use and safeguard of your personal information through ASUS websites, devices, applications and any services, both online and offline we provide (hereinafter referred to as “SERVICE”), along with whom we may share or disclose the collected information. If you are a minor, you shall access or use the SERVICE only after your parents (or your guardian) read and agree our Privacy Policy. <br><br>The use, access or submission of personal information to the SERVICE by you, or if you are a minor, the submission of your personal information either by your parents (or your guardian) or by you with the permission of your parents (or guardian) to ASUS will be deemed as your acceptance of the Privacy Policy.</p>
+					<h3>Information ASUS Collect</h3>
+					<p>When you use our SERVICE, we may need to collect certain information from you when use or interact with our SERVICE (hereinafter referred to as “Information”); we may ask for the following information:</p>
+					<h4>Information you provide to us</h4>
+					<ul>
+						<li>Your e-mail address and country/region when you sign up or log in ASUS Member account; if you use your social media account to log in or sign up for ASUS Member account to use our SERVICE, any publicly available information (including but not limited to your profile picture, gender, date of birth and language setting) associated to your social media account may also be collected by us.</li>
+						<li>Your name, mailing/shipping/billing address (including zip code), contact information, e-mail address, credit card number or other payment service information when you make a purchase of our devices, paid services or for certain customer service request.</li>
+						<li>Your name, mailing/shipping address (including zip code), contact information, e-mail, gender, date of birth and ID number when you enter our events or campaigns.</li>
+						<li>Your age, date of birth, gender, height, weight, body temperature, heart rate, blood pressure as well as certain data about your daily activities, for example, your step taken, calories burned and sleep patterns, when you use our healthcare devices or services.</li>
+					</ul>
+					<br>
+					<h4>Information from your use of SERVICE</h4>
+					<ul>
+						<li>Device information: such as your device model, serial number, the version and type of your operation system, IP Address, MAC Address, IMEI number and other unique device identifiers.</li>
+						<li>Log information: such as the settings, activation time of your devices, the network you use to connect to our SERVICE, the status of the network, telephony log information, standby status, crash history, preferred interface, type and language settings of browser, diagnose and usage data as well as your usage behavior on our SERVICE.</li>
+						<li>Location information: such as the version of your devices’ GPS and Wi-Fi module, GPS signal, data identifying nearby Wi-Fi access points and cell towers, the time zone and local time where the device is used.</li>
+						<li>Application information: such as the type of your installed applications or software, your usage and interaction with content offered through SERVICE, for instance, the install and uninstall time, frequency of your usage, the category of your preferred applications and software.</li>
+					</ul>
+					<br><br>
+					<h3>How ASUS use information </h3>
+					We may use information we collect for the purposes below:<br><br>
+					<ul>
+						<li>To assess and improve the SERVICE.</li>
+						<li>To obtain customer feedback and to analyze user experience for the purpose of development and evaluation of new services and devices.</li>
+						<li>To fulfill the sign-up process of ASUS Member account or device registration.</li>
+						<li>To deliver and fulfill any requests made by you, including but not limited to, providing information and documentation regarding purchases such as delivering purchase invoices or proof of purchase; provide software updates and technical notices.</li>
+						<li>To process and fulfill any subscriptions you have signed up for, including ASUS eDMs or newsletters to keep you up to date with the latest ASUS news, promotions and upcoming events. You may unsubscribe it at any time with no charge.</li>
+						<li>To send you important notifications, such as communications about changes to our terms, conditions and policies. Because of the importance of the communications, you may not opt out of receiving these communications.</li>
+						<li>To verify your identity, deliver campaign entries and rewards, provide shuttle services and cover you with insurance if it is a necessity when you enter our events or contests. </li>
+						<li>To assist you on recording, analyzing, modifying and storing information including data about you, your daily activities and the activity results calculated from the data above. Moreover, we will support you on editing and accessing the data and activity results, when you share this information with your family, caregivers, and health care professionals.</li>
+						<li>To provide you with recommendation about services you may be interest in based on your use of our SERVICE.</li>
+						<li>To provide you with marketing communications and advertising that we believe may be of interest of you.</li>
+						<li>To respond to customer support requests, such as product repair requests and respond to your questions.</li>
+						<li>To provide you with our customer care and customer satisfaction survey for user experience analysis.</li>
+						<li>Any other purposes with your consent.</li>
+					</ul>
+					<br><br>
+					<h3>To whom ASUS disclose your information</h3>
+					Your information will not be disclosed to any third parties without the following exceptions:<br><br>
+					<h4>Your Consent</h4>
+					<p>We will only disclose or share your information to other third parties with your consent.</p>
+					<h4>Business Partners</h4>
+					<p>We may disclose hashed and anonymized information to our business partners, for example, business partners who provide data analytics services or advertisings and marketing communications based on the hashed and anonymized information.</p>
+					<h4>Service Providers</h4>
+					<p>We may disclose and share your information to our service providers that provide services for or on behalf of us, for instance, service providers assist us with sending marketing communications, providing customer support, delivering purchases and billing. These service providers shall only use your information in compliance with our instruction and with the scope of the purposes hereof; Asus ensures that all of our service providers strictly comply with the Privacy Policy.</p>
+					<h4>For legal, protection, security purposes</h4>
+					We may disclose or share your information with third parties for legal or security purposes:<br><br>
+					<ul>
+						<li>To the extent it is required by applicable laws or regulations or competent governmental or judicial authorities, necessary to establish or preserve a legal claim or defense, or necessary to prevent fraud or other illegal activities. </li>
+						<li>To protect the rights, property or safety of ASUS, our service providers, customers or the public, as required or permitted by law.</li>
+					</ul>
+					<br><br>
+					<h3>International transfers of your information</h3>
+					<p>You understand and consent to the transfer, storage, use or process of your information to ASUS and any of its affiliated companies, service providers who may be located in a different country to you. All said transfer, storage, or process of your information, shall be subject to the Privacy Policy and applicable laws on privacy protection and personal information security.</p>
+					<h3>Cookies and similar technologies</h3>
+					ASUS uses cookies and similar technologies, such as web beacons to provide our SERVICE:<br><br>
+					<h4>Cookies</h4>
+					Cookies are small text files placed on your devices to personalize your user experience on our SERVICE. Cookies will not collect information that identifies you:<br>
+					<ul>
+						<li>Sign-up and authentication: We use cookies to store your unique sign-up ID number and authentication information on your device. Cookies allow you to visit and move from page to page within our websites without having to log in again on subsequent visits.</li>
+						<li>Storing your preferences and settings: Cookies maintain your settings and preferences on your devices, such as your preferred language or location; by storing the settings in cookies, it is not a necessity to reapply your preferences and settings each time you visit our websites.</li>
+						<li>Analytics: We use cookies to count the number and length of your visit on our websites as well as which part or features you visit the most as well. This information helps us analyze the performance and operation of our SERVICE to improve performance and develop new features, functions and services.</li>
+						<li>Advertising: We use cookies to collect data about your use on our websites and identify your interests, such as the advertisings you have viewed. ASUS, and our business partners, use this data so that we can provide advertising that is most relevant to you.</li>
+					</ul>
+					<p>Please note, you can configure cookies preferences by accessing [tools and settings] of the browser to accept, block or delete cookies. The location of the [tools and settings] of the browser may vary depending on the browser you install, please visit browser’s privacy or support page for further information. Certain features of our SERVICE depend on the use of cookies, if you choose to disable cookies, you may not be able to use the all of the features of our websites.<br><br>Cookies used on our websites have been categorized below; you may also refer to the charts to know which cookies we use on our websites and who hosts it:<br><br>Category 1: performance Cookies<br>Category 2: functionality Cookies<br>Category 3: targeting Cookies or advertising Cookies<br></p>
+					<h6>Category 1: performance cookies</h6>
+					Cookies collect information about how you use our websites, for instance which pages you go to most often, and if you get error messages from our web pages. Cookies will not collect information that identifies you. All information cookies collect is aggregated and anonymous. They are only used to improve the performance of our websites.<br><br>
+					<table frame="border" style="width:80%; background-color: #ffffff ;table-layout: fixed; border-spacing:1px; border-collapse: separate;" border="1">
+						<tbody>
+							<tr style="background-color: #ebebeb">
+								<td>Cookie Name</td>
+								<td>Host</td>
+							</tr>
+							<tr>
+								<td>Google Analytics</td>
+								<td>Google Inc.</td>
+							</tr>
+							<tr>
+								<td>TagMan</td>
+								<td>Ensighten, Inc.</td>
+							</tr>
+							<tr>
+								<td>eTrack</td>
+								<td>eTrack Products Pty. Ltd</td>
+							</tr>
+							<tr>
+								<td>Crazyegg</td>
+								<td>Crazy Egg, Inc</td>
+							</tr>
+							<tr>
+								<td>MIGO</td>
+								<td>MIGO Corp.</td>
+							</tr>
+							<tr>
+								<td>Yandex Metrica</td>
+								<td>Yandex Europe AG</td>
+							</tr>
+							<tr>
+								<td>Optimizely</td>
+								<td>Optimizely, Inc.</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					<h6>Category 2: functionality cookies</h6>
+					Cookies allow our websites to save your settings and preferences (such as your preferred language or the region you are in) in order to provide you with a more personal and consistent experience each time you visit our websites.<br><br>For instance, our websites are able to remember the web pages you recently viewed, the number of times you visit the forums listed on our websites or allow you to review the devices you recently compared on our websites. Cookies can also be used to remember changes you have made to text size, fonts and other parts of our websites that you can customize. Cookies may also be used to provide service you have asked for, such as watching a video on our websites. The collected information such as your browsing activities on our websites is anonymized and cannot be tracked by non-ASUS websites.<br><br>
+					<table frame="border" style="width:80%; background-color: #ffffff ;table-layout: fixed; border-spacing:1px; border-collapse: separate;" border="1">
+						<tbody>
+							<tr style="background-color: #ebebeb">
+								<td>Cookies Name</td>
+								<td>Host</td>
+							</tr>
+							<tr>
+								<td>Popup</td>
+								<td>ASUS</td>
+							</tr>
+							<tr>
+								<td>ProductGroup_RelationId</td>
+								<td>ASUS</td>
+							</tr>
+							<tr>
+								<td>comparecookiename</td>
+								<td>ASUS</td>
+							</tr>
+							<tr>
+								<td>isBusiness</td>
+								<td>ASUS</td>
+							</tr>
+							<tr>
+								<td>recently</td>
+								<td>ASUS</td>
+							</tr>
+							<tr>
+								<td>Lang</td>
+								<td>ASUS</td>
+							</tr>
+							<tr>
+								<td>Google Tag Manager</td>
+								<td>Google Inc.</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					<h6>Category 3: targeting cookies or advertising cookies</h6>
+					Cookies are used to deliver advertising that is more relevant to you and your interests by storing how you use our SERVICE. Cookies are also used to limit the number of times you see an advertisement as well as help measure the effectiveness of the advertising campaigns. ASUS places cookies by using advertising campaign services, such as Hubrus DSP, Google AdWords, and Google DoubleClick. The information cookies collect is only used between ASUS and advertising campaign service providers.<br><br>
+					<table frame="border" style="width:80%; background-color: #ffffff ;table-layout: fixed; border-spacing:1px; border-collapse: separate;" border="1">
+						<tbody>
+							<tr style="background-color: #ebebeb">
+								<td>Cookie Name</td>
+								<td>Host</td>
+							</tr>
+							<tr>
+								<td>Google AdWords: Conversion, and Remarketing Cookies</td>
+								<td>Google Inc.</td>
+							</tr>
+							<tr>
+								<td>Google DoubleClick</td>
+								<td>Google Inc.</td>
+							</tr>
+							<tr>
+								<td>Facebook: Conversion, and Remarketing Cookies</td>
+								<td>Facebook, Inc.</td>
+							</tr>
+							<tr>
+								<td>Adform</td>
+								<td>Adform</td>
+							</tr>
+							<tr>
+								<td>Hubrus DSP</td>
+								<td>HUBRUS</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					<ul>
+						<li>Web Beacons<br>     A web beacon is an often-transparent graphic 1x1 (pixel) GIF or PNG image that is implemented on websites or in an email to measure the effectiveness of campaigns. ASUS or our service providers may use web beacons to know if you visit certain pages or click links on our websites. We may implement web beacons in our marketing communications such as eDMs or ASUS newsletters to know which communication contents you have clicked or read. We will use the information from web beacons to improve our websites and SERVICE.</li>
+					</ul>
+					<br>
+					<h4>Third-party links on our websites</h4>
+					Our SERVICE may contain links to third-party websites. Please be aware that ASUS is not responsible for the security, the privacy practices and the materials of those third-party websites. We encourage you to be aware of when you leave our SERVICE, and to read the privacy statements of those third-party websites carefully. This Privacy Policy applies to ASUS SERVICE only.<br><br>
+					<h4>Security</h4>
+					We take precautions to protect your information against unauthorized access, alteration, disclosure or destruction. We conduct internal reviews of our information collection, storage and processing practices and security measures, as well as physical security measures to guard against unauthorized access to systems where we store your information. <br>Transmission of information between different locations of ASUS and its affiliated companies is performed through our secured wide area network. When you submit your information to us, your information is protected both online and offline.<br>However, ASUS cannot guarantee perfect security on the internet. To protect your data from unauthorized access, we recommend that you:
+					<ul>
+						<li>To use alphanumerical passwords when signing up ASUS Member account.</li>
+						<li>To change your passwords on a regular basis.</li>
+						<li>To keep your devices up to date by applying the latest available security updates for your software and use such tools as virus/spyware scanners.</li>
+					</ul>
+					If you become aware of a technical vulnerability affecting ASUS SERVICE, please do not hesitate to contact us through <strong>privacy@asus.com</strong><br><br>
+					<h4>Manage Your Information</h4>
+					We want to help you keep your information accurate. You may view and change your information by logging in your ASUS Member account and editing your account information. <br><br>For further inquiries about information ASUS collect about you, kindly contact us through <strong>privacy@asus.com</strong><br><br>Whenever you use our SERVICE, we strive to maintain the accuracy of your data and protect your information against any accidental or malicious destruction. We will accommodate your requests regarding your data; however, we may not be able to fulfill all your requests in the following circumstances:
+					<ul>
+						<li>As required or permitted under application laws;</li>
+						<li>For legitimate business purposes;</li>
+						<li>Unreasonably repetitive requests that require</li>
+						<li>disproportionate technical efforts and resources, for example, developing a new system or fundamentally changing the current practices;</li>
+						<li>Potentially risks on the privacy of others;</li>
+					</ul>
+					<br>
+					<h4>Minor’s Privacy</h4>
+					We do not knowingly collect information from a minor under the age of thirteen (13), or equivalent minimum age in the relevant jurisdiction, without parental consent. We encourage parents (or guardian) to take an active role in a minor’s online activities and interests while using our SERVICE. <br><br>If you are a minor, please seek parental consent before your use of our SERVICE. You may submit your information with parental consent to us only. Your parents (or guardian) can revoke any consent previously given at all times.<br><br>
+					<h4>Sensitive Personal Information</h4>
+					ASUS will never ask you to provide sensitive information such as information about your medical or health records, political or religious beliefs, criminal offences (alleged, or committed), criminal conviction background, sexual orientation, sexual history, behavior or genetic information. Please refrain from providing us with such information.<br><br>
+					<h4>Changes to ASUS Privacy Policy</h4>
+					We may change the Privacy Policy from time to time, we highly recommend you periodically review the Privacy Policy posted on our websites. By accessing or using our SERVICE after the Privacy Policy has been updated, ASUS will deem that you consent to the Privacy Policy, including any updates. The most current version of the Privacy Policy will always be available on this page; a prominent notice such as email notification will be delivered to you about any significant changes. You can always check the “updated time” at the bottom for the most current version of Privacy Policy.<br><br>
+					<h4>Contacting Us</h4>
+					If you have any inquiries, questions, comments or complaints about the Privacy Policy, or if you believe that ASUS did not comply with the Privacy Policy, please feel free to contact us. ASUSTeK COMPUTER INC. <br>Legal Compliance Department <br>Legal Affairs Center <br>15, Li-Te Rd., <br>Taipei 112, <br>Taiwan<br><strong>privacy@asus.com</strong><br>Updated March 23, 2016 by ASUS Legal Affairs Center
+				</div>
+				<div class="footHeight"></div>
+				<div>
+					<div class="footer_desktop">
+						<div class="desktop_applyBtn" onclick="goTo.Welcome();"><#CTL_close#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%;background:#27D1A4" onclick="goTo.Welcome();">
+									<div class="mobile_applyBtn"><#CTL_close#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ASUS Terms of Use -->
+		<div id="asustos_page" data-role="page" class="qisBackground">
+			<div style="margin:30px 0 0 30px;">
+				<table style="width:100%">
+					<tr>
+						<td style="padding:0;width:17px;">
+							<div style="margin-right:20px;">
+								<a href="#navigation">
+									<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+								</a>
+							</div>
+						</td>
+						<td style="padding:0;width:130px;">
+							<div>
+								<div class="icon_logo"></div>
+							</div>
+						</td>
+						<td style="padding:0;">
+							<div class="model_welcome"></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="desktop_left_field">
+				<div>
+					<div style="font-size:60px;">ASUS Terms of Use</div>
+				</div>
+			</div>
+			<div class="table_td">
+				<div class="pageDesc">ASUS Terms of Use</div>
+
+				<div class="tosDesc">
+					<div class="span9-line" id="member-page-content">
+						<span id="ctl00_ContentPlaceHolder1_ctl00_ContentPageContent1_span_product_content_area">
+							<h4>Terms Of Use Notice</h4>
+							<p style="text-align: justify; text-justify: inter-ideograph">ALL PRODUCTS AND SERVICES (“SERVICE”) PROVIDED BY ASUSTEK COMPUTER INC. (“ASUS”) ARE SUBJECT TO THIS TERMS OF USE NOTICE (“NOTICE”). SERVICE MEANS, INCLUDING BUT NOT LIMITED TO, ANY PRODUCT, WEBSITE, WEBSITE EVENT (DEFINED AS BELOW), SOFTWARE, APPLICATION AND INFORMATION PROVIDED UNDER ASUS BRAND OR ANY OTHER BRAND OWNED BY ASUS. YOU EXPRESSLY ACKNOWLEDGE THAT YOU HAVE READ THIS NOTICE AND UNDERSTAND THE RIGHTS, OBLIGATIONS, TERMS AND CONDITIONS SET FORTH HEREIN. IF YOU ARE A MINOR, YOU SHALL REGISTER AS THE MEMBER OR ACCESS THE SERVICES ONLY AFTER YOUR PARENTS (OR YOUR GUARDIAN) READ AND UNDERSTAND THE RIGHTS, OBLIGATIONS, TERMS AND CONDITIONS CONTAINED IN THIS NOTICE. BY CONTINUING TO INSTALL, COPY, SURF, DOWNLOAD, ACCESS, PURCHASE, ENTER AND/OR OTHERWISE USE THE SERVICE, YOU OR YOUR PARENTS (OR GUARDIAN) EXPRESSLY CONSENT TO BE BOUND BY THIS NOTICE, INCLUDING UPDATED VERSION, AND ALL APLICABLE LAWS AND REGULATIONS.
+							</p>
+							<strong>Acknowledgement</strong>
+							<dl>
+								<dt>1.1</dt>
+								<dd>
+									YOU acknowledge that this SERVICE will operate only on those designated hardware and software platforms. YOU acknowledge that it is YOUR responsibility to have the appropriate software, hardware and internet connection to operate the then-current version of the SERVICE. ASUS, in our sole discretion, may modify the SERVICE, terminate any events hold through this SERVICE (“Website Event”), or discontinue any service through SERVICE at any time without notice, and ASUS also reserve all rights to cease supporting any hardware or software platform at any time without notice.
+								</dd>
+								<dt>1.2</dt>
+								<dd>YOU acknowledge that some content of the SERVICE is provided by third parties, and YOU also acknowledge that this SERVICE may enable access to third parties’ services or websites. YOU agree to enjoy such services or websites and access at YOUR own discretion and such enjoyment shall be subject to the conditions and terms between YOU and such third parties, including but not limited to price of merchandize, order confirmation system, maximum order amount, product delivery and payment policy. YOU also acknowledge and agree that ASUS is not responsible for neither the agreement between YOU and such third parties nor any content provided by such third parties.
+								</dd>
+								<dt>1.3</dt>
+								<dd>YOU acknowledge that any software you downloaded or obtained via the SERVICE shall be used in compliance with the End User License Agreement (“EULA”) provided or contained therein.
+								</dd>
+								<dt>1.4</dt>
+								<dd>YOU acknowledge that nothing in thethis NOTICE gives YOU a right to use any of ASUS’s trademarks, service marks, product or service names, slogans, logos or images unless YOU have agreed otherwise in writing with ASUS.
+								</dd>
+								<dt>1.5</dt>
+								<dd>YOU acknowledge that this NOTICE may reference other guidelines, notices, agreements or other terms and conditions of website Event provided by ASUS or any information contained in the SERVICE, and such reference shall constitute an integral part of this NOTICE.
+								</dd>
+								<dt>1.6</dt>
+								<dd>YOU acknowledge that ASUS reserves the right to modify this NOTICE at any time, and each such modification shall be effective upon posting on the SERVICE. YOUR continued use of the SERVICE following any such modification will be deemed YOU agree to be bound by and YOUR acceptance of the modified NOTICE. It is therefore important that YOU read and visit this SERVICE on a regular basis to ensure YOU are updated as to the applicable NOTICE. If YOU do not agree to be bound by this NOTICE and to abide by all applicable law, YOU must discontinue using the SERVICE immediately.
+								</dd>
+								<dt>1.7</dt>
+								<dd>YOU agree that the electronic format is the sole manner of declaration of intention of this SERVICE or NOTICE.
+								</dd>
+								<dt>1.8</dt>
+								<dd>
+									YOU acknowledge that this NOTICE may referencein order to protect YOUR privileges, YOU shall abide by the Internet application custom. YOU agree the following actions are strictly prohibited:
+									<dl>
+										<dt>1.8.1</dt>
+										<dd>Any attempt to interfere, invade, or destroy any system or resource on the Internet.
+										</dd>
+										<dt>1.8.2</dt>
+										<dd>Transmitting materials that are threatening, obscene, pornographic, or destroying the public order and customs.
+										</dd>
+										<dt>1.8.3</dt>
+										<dd>Spreading computer virus through the network of the SERVICE.</dd>
+										<dt>1.8.4</dt>
+										<dd>Using any data mining, robots, or similar data gathering and/ or extraction tools. In the event that YOU use any software or tools above, YOU will be disqualified to participate in Website Event.</dd>
+									</dl>
+								</dd>
+							</dl>
+							<br><br>
+							<strong>Intellectual Property Right</strong>
+							<dl>
+								<dt>2.1</dt>
+								<dd>YOU acknowledge that YOU are solely responsible for the information upload, transmit, input or provide to this SERVICE by YOU, and none of such information represents the opinion of ASUS. For the avoidance of doubt, information includes without limitation to, information, data, text, software, music, sound, photographs, graphics, video, messages or other materials (“Information”).
+								</dd>
+								<dt>2.2</dt>
+								<dd>When YOU uploaded, transmitted, inputted or provided the Information to this SERVICE, YOU grant ASUS, its affiliates and subsidiaries, a worldwide, non-exclusive, non-revocable, royalty-free, transferable, sub-licensable right to promote and distribute part or all of the Information in any media formats with any manner, including without limitation to modify, reproduce, public broadcast, public transmission, adapt, distribute, publish, public release, or otherwise use the Information.
+								</dd>
+								<dt>2.3</dt>
+								<dd>If YOU do not have authorization for the above right, please do not upload, transmit, input or provide Information to this SERVICE.
+								</dd>
+								<dt>2.4</dt>
+								<dd>If YOU are accused of allegedly infringing any third party IPR on three or more occasions, ASUS reserves the right to terminate and/or restrict YOUR access to the SERVICE.</dd>
+								<dt>2.5</dt>
+								<dd>All title and intellectual property rights in and to any third party content that is contained in the SERVICE or may be accessed through the use of the SERVICE, is the property of the respective content owners and may be protected by applicable intellectual property related laws and treaties.</dd>
+								<dt>2.6</dt>
+								<dd>If YOU are aware of any actual or prospective infringement of any content of the SERVICE, or an infringement notification is required in accordance with applicable laws or regulations, please submit the notification to ASUS Legal Compliance Department with the contact information indicated in this NOTICE, ASUS will proceed with the corresponding procedure in accordance with applicable laws.
+								</dd>
+								<dt>2.7</dt>
+								<dd>Upon receipt of an infringement notification from a copyright holder or its agent, ASUS will remove, disable YOUR access to or may take other actions to alleged infringing content or services in accordance with applicable laws. If YOU believe that such content or services were not infringing, YOU may submit a counter notification to ASUS Legal Compliance Department with the contact information indicated in this NOTICE, ASUS will proceed with the corresponding procedure in accordance with applicable laws.
+								</dd>
+							</dl>
+							<br><br>
+							<strong>Registration</strong><br>
+							To use all services provided in this SERVICE, YOU acknowledge and accept the followings:
+							<dl>
+								<dt>3.1</dt>
+								<dd>YOU are required to provide true, accurate, current and complete information about YOURSELF if prompted and requested by a registration process of ASUS Account. YOU may access and correct YOUR personal information through this SERVICE at any time.
+								</dd>
+								<dt>3.2</dt>
+								<dd>YOU may view and change YOUR registration information by logging in and editing YOUR account settings on SERVICE. For the security of YOUR account, YOU will be required to sign in with YOUR login ID and password. YOU are solely and entirely responsible for securing the confidentiality of YOUR password and user name and for any and all activities that occur under YOUR account.
+								</dd>
+								<dt>3.3</dt>
+								<dd>If ASUS finds that the account/password of ASUS Account had been misappropriated, ASUS may immediately suspend or terminate such ASUS Account's password, account (or any part thereof) or use of this SERVICE, and remove all the Information related to such ASUS Account from this SERVICE.
+								</dd>
+								<dt>3.4</dt>
+								<dd>
+									YOU shall comply with this NOTICE and shall not be in violation of any applicable laws and regulations. ASUS reserves the right to verify the validity of YOUR membership at any time during or after any Website Event, and reserves the right to disqualify YOU (even a Winner) from any Website Event including YOUR prize qualification who constitutes any misconduct for tampering or suspicion of tampering with Website Event without any notice. Failure of ASUS to enforce any of its rights hereof does not constitute a waiver of those rights.
+									<p></p>
+								</dd>
+							</dl>
+							<br><br>
+							<strong>Privacy Policy</strong>
+							<p>Due to respect to personal information, ASUS is committed to protecting and respecting YOUR privacy with <a href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy">ASUS Privacy Policy</a>.</p>
+							<strong>License and Restriction</strong>
+							<dl>
+								<dt>5.1</dt>
+								<dd>Subject to the terms of this NOTICE, ASUS hereby grants YOU a limited, personal, non-commercial, non-exclusive, non-sublicensable, non-assignable, free of charge license to access or enter the SERVICE and its services. Except for rights granted expressly herein, YOU acknowledge that all other rights remain with ASUS. Any and all rights, including without limitation, in the SERVICE, are and shall remain the exclusive property of ASUS and/or its licensors. Nothing in this NOTICE intends to transfer any such rights, or to vest any such rights to YOU.
+								</dd>
+								<dt>5.2</dt>
+								<dd>No Removal of Notices: YOU agree that YOU will not remove, obscure, make illegible or alter any notices or indications of any rights and/or ASUS’s rights and ownership thereof, whether such notice or indications are affixed on, contained in or otherwise connected to any materials.
+								</dd>
+							</dl>
+							<br><br>
+							<strong>E-Commerce</strong>
+							<p>Any purchases of products and services/support packages provided by ASUS, shall be governed by the terms and conditions of the e-commerce store, please refer to ASUS sales agreements and relevant policies.</p>
+							<strong>Term and Termination</strong>
+							<dl>
+								<dt>7.1</dt>
+								<dd>If for any reason this SERVICE is not capable of running as planned, including but not limited to force majeure, technical failures, unauthorized intervention, fraud or any other cause beyond the control of ASUS which corrupts or affects the administration, security, fairness, integrity or proper conduct of this SERVICE, ASUS reserves the right in its sole discretion to <#CTL_prev#>, terminate, modify or suspend the SERVICE subject to any written directions from a relevant governmental authority.
+								</dd>
+								<dt>7.1</dt>
+								<dd>This NOTICE is effective until terminated by YOU or ASUS. YOUR rights to use the SERVICE will be terminated automatically without notice if YOU fail to comply with the terms and conditions mentioned in this NOTICE. In this regard, ASUS will not bear any responsibility to YOU. Upon termination of this NOTICE, YOU shall immediately cease all use of the SERVICE and its copies, in whole or in part.
+								</dd>
+							</dl>
+							<br><br>
+							<strong>Warranty Disclaimer and Limitation of Liability</strong>
+							<dl>
+								<dt>8.1</dt>
+								<dd>ASUS ensures that the computer system used in the SERVICE has the reasonable expected safety standard.
+								</dd>
+								<dt>8.2</dt>
+								<dd>YOU ACKNOWLEDGE THAT THE SERVICE IS PROVIDED “AS IS.” THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THIS SERVICE IS WITH YOU, INCLUDING BUT NOT LIMITED TO RELATED COST OF ALL NECESSARY SERVICING AND REPAIR. TO THE EXTENT PERMITTED BY LAW, ASUS MAKES NO WARRANTIES, EXPRESS OR IMPLIED, WITH RESPECT TO THIS SERVICE OR ANY OTHER INFORMATION OR DOCUMENTATION PROVIDED UNDER THIS NOTICE OR FOR THIS SERVICE, INCLUDING BUT NOT LIMITED TO ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE OR AGAINST INFRINGEMENT, OR ANY WARRANTY ARISING OUT OF USAGE OR OUT OF COURSE OF PERFORMANCE. ASUS ALSO MAKES NO WARRANTY AS TO THE RESULTS THAT MAY BE OBTAINED FROM THE USE OF THIS SERVICES OR AS TO THE ACCURACY OR RELIABILITY OF ANY INFORMATION OBTAINED THROUGH THIS SERVICE. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR CERTAIN DAMAGES. ACCORDINGLY, SOME OF THE ABOVE DISCLAIMERS AND LIMITATIONS OF LIABILITY MAY NOT APPLY TO YOU.
+								</dd>
+								<dt>8.3</dt>
+								<dd>THE ENTIRE RISK ARISING OUT OF THE USE AND/OR PERFORMANCE OF THIS SERVICE REMAINS WITH YOU. IN NO EVENT SHALL ASUS, ITS LICENSORS OR ANY OF THEIR RESPECTIVE OFFICERS, DIRECTORS, EMPLOYEES, AGENTS OR AFFILIATES BE LIABLE FOR ANY CONSEQUENTIAL, INCIDENTAL, DIRECT, INDIRECT, SPECIAL, PUNITIVE, OR OTHER DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, INTERRUPTION, LOSS OF INFORMATION, OR OTHER PECUNIARY LOSS) ARISING OUT OF OR RELATING TO THIS NOTICE OR THE USE OF OR INABILITY TO USE THE SERVICE OR ANY PART THEREOF, EVEN IF ASUS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR CERTAIN DAMAGES. ACCORDINGLY, SOME OF THE ABOVE DISCLAIMERS AND LIMITATIONS OF LIABILITY MAY NOT APPLY TO YOU.
+								</dd>
+								<dt>8.4</dt>
+								<dd>ASUS shall not be responsible for any incorrect or inaccurate information, caused by the internet user or for any of the equipment or programming associated with or utilized in this SERVICE, or for any technical error, or any combination thereof that may occur in the course of the administration of this SERVICE including any omission, interruption, deletion, defect, delay in operation or transmission, communications line or telephone, mobile or satellite network failure, technical problems or traffic congestion on the internet or SERVICE, software failure, theft or destruction or unauthorized access to or alteration of entries and any injury or damage to YOUR computer related to or resulting from participating in or downloading any materials in this SERVICE.
+								</dd>
+								<dt>8.5</dt>
+								<dd>
+									In the event that any prize is provided in Website Event, YOU acknowledge the following:
+									<dl>
+										<dt>8.5.1</dt>
+										<dd>ASUS accepts no responsibility for any tax implications that may arise from YOUR acceptance of the prize. Independent financial advice should be sought by YOU.
+										</dd>
+										<dt>8.5.2</dt>
+										<dd>A prize, in whole or in part, is not allowed to transfer or exchange and cannot be liquidated unless specified otherwise.
+										</dd>
+										<dt>8.5.3</dt>
+										<dd>In the event that a prize is not available despite ASUS’s reasonable endeavors to procure the prize, ASUS reserves the right to substitute a prize of equal recommended retail value, subject to any written directions from a relevant governmental authority.
+										</dd>
+										<dt>8.5.4</dt>
+										<dd>ASUS accepts no responsibility for any subsequent variation in the prize value.</dd>
+										<dt>8.5.5</dt>
+										<dd>In the event that any failure of a prize winner to take the prize within a certain period of time indicated in the Website Event is deemed a waiver of the right for a prize, and ASUS, on its sole discretion, has the right to decide the substitution method of such prize winner.
+										</dd>
+									</dl>
+								</dd>
+							</dl>
+							<br><br>
+							<strong>Indemnity</strong>
+							<p>YOU agree to defend, indemnify and hold harmless ASUS and its affiliates, service providers, syndicators, distributors, licensors, officers, directors and employees, from and against any and all losses, damages, liabilities, and expenses arising out of any claim or demand (including reasonable attorneys' fees and court costs), due to or in connection with YOUR violation of this Notice or any applicable law or regulation, or third-party right. </p>
+							<p>For further information regarding this NOTICE and referenced guidelines, contact ASUS Legal Compliance Department by registered mail, facsimile, e-mail or phone at:</p>
+							ASUSTeK Computer Inc.<br>
+							Company Representative: Mr. Jonney Shih<br>
+							Legal Affairs Center <br>
+							Legal Compliance Department<br>
+							Address: 15, Li-Te Rd., Taipei 112, Taiwan<br>
+							Email: LegalCompliance@asus.com<br>
+							Telephone: (886) 2 2894 3447<br>
+							Fax: (886) 2 2890 7674<br>
+							Updated March 4, 2015 by ASUS Legal Affairs Center
+						</span>
+					</div>
+				</div>
+				<div class="footHeight"></div>
+				<div>
+					<div class="footer_desktop">
+						<div class="desktop_applyBtn" onclick="goTo.Welcome();"><#CTL_close#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr style="height:102px;text-align:center">
+								<td style="width:50%;background:#27D1A4" onclick="goTo.Welcome();">
+									<div class="mobile_applyBtn"><#CTL_close#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

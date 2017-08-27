@@ -1,0 +1,471 @@
+<!-- ##### SECTION Title ##### -->
+GAppInfo
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GAppInfoCreateFlags ##### -->
+<para>
+
+</para>
+
+@G_APP_INFO_CREATE_NONE: 
+@G_APP_INFO_CREATE_NEEDS_TERMINAL: 
+@G_APP_INFO_CREATE_SUPPORTS_URIS: 
+@G_APP_INFO_CREATE_SUPPORTS_STARTUP_NOTIFICATION: 
+
+<!-- ##### STRUCT GAppInfo ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GAppInfoIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@dup: 
+@equal: 
+@get_id: 
+@get_name: 
+@get_description: 
+@get_executable: 
+@get_icon: 
+@launch: 
+@supports_uris: 
+@supports_files: 
+@launch_uris: 
+@should_show: 
+@set_as_default_for_type: 
+@set_as_default_for_extension: 
+@add_supports_type: 
+@can_remove_supports_type: 
+@remove_supports_type: 
+@can_delete: 
+@do_delete: 
+@get_commandline: 
+@get_display_name: 
+@set_as_last_used_for_type: 
+@get_supported_types: 
+
+<!-- ##### STRUCT GAppLaunchContext ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GAppLaunchContext::launch-failed ##### -->
+<para>
+
+</para>
+
+@gapplaunchcontext: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GAppLaunchContext::launched ##### -->
+<para>
+
+</para>
+
+@gapplaunchcontext: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### FUNCTION g_app_info_create_from_commandline ##### -->
+<para>
+
+</para>
+
+@commandline: 
+@application_name: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_dup ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_equal ##### -->
+<para>
+
+</para>
+
+@appinfo1: 
+@appinfo2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_id ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_name ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_display_name ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_description ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_executable ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_commandline ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_icon ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_launch ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@files: 
+@launch_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_supports_files ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_supports_uris ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_launch_uris ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@uris: 
+@launch_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_should_show ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_can_delete ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_delete ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_reset_type_associations ##### -->
+<para>
+
+</para>
+
+@content_type: 
+
+
+<!-- ##### FUNCTION g_app_info_set_as_default_for_type ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@content_type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_set_as_default_for_extension ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@extension: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_set_as_last_used_for_type ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@content_type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_add_supports_type ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@content_type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_can_remove_supports_type ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_remove_supports_type ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@content_type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_supported_types ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_all ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_all_for_type ##### -->
+<para>
+
+</para>
+
+@content_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_default_for_type ##### -->
+<para>
+
+</para>
+
+@content_type: 
+@must_support_uris: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_default_for_uri_scheme ##### -->
+<para>
+
+</para>
+
+@uri_scheme: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_fallback_for_type ##### -->
+<para>
+
+</para>
+
+@content_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_get_recommended_for_type ##### -->
+<para>
+
+</para>
+
+@content_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_info_launch_default_for_uri ##### -->
+<para>
+
+</para>
+
+@uri: 
+@launch_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_setenv ##### -->
+<para>
+
+</para>
+
+@context: 
+@variable: 
+@value: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_unsetenv ##### -->
+<para>
+
+</para>
+
+@context: 
+@variable: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_get_environment ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_get_display ##### -->
+<para>
+
+</para>
+
+@context: 
+@info: 
+@files: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_get_startup_notify_id ##### -->
+<para>
+
+</para>
+
+@context: 
+@info: 
+@files: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_launch_failed ##### -->
+<para>
+
+</para>
+
+@context: 
+@startup_notify_id: 
+
+
+<!-- ##### FUNCTION g_app_launch_context_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

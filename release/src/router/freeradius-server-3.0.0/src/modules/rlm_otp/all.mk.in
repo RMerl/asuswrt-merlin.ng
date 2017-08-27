@@ -1,0 +1,14 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= $(TARGETNAME).c otp_radstate.c otp_pwe.c otp_pw_valid.c
+SOURCES		+= otp_util.c otp_mppe.c
+
+SRC_CFLAGS	:= @mod_cflags@
+TGT_LDLIBS	:= @mod_ldflags@
+TGT_LDLIBS	+= $(LIBS)
+TGT_LDLIBS	+= $(OPENSSL_LIBS)
+TGT_LDLIBS	+= $(CARDOPS_LTLIBS)

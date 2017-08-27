@@ -1,0 +1,42 @@
+
+KERNEL_HEADERS=-I@KERNEL_HEADERS@
+srcdir=@srcdir@
+
+AR=ar
+RANLIB=@RANLIB@
+
+CC=@CC@
+CFLAGS = -Wall -g $(KERNEL_HEADERS) @CFLAGS@ -I.
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+
+libbridge_SOURCES= \
+	libbridge_devif.c \
+	libbridge_if.c \
+	libbridge_init.c \
+	libbridge_misc.c 
+
+libbridge_OBJECTS=$(libbridge_SOURCES:.c=.o)
+
+all:	libbridge.a
+
+# At present there is no need for a bridge-utils-devel package
+install:
+
+
+clean:
+	rm -f *.o libbridge.a
+
+libbridge.a:	$(libbridge_OBJECTS)
+	$(AR) rcs $@ $(libbridge_OBJECTS)
+	$(RANLIB) $@
+
+%.o: $(srcdir)/%.c $(srcdir)/libbridge.h $(srcdir)/libbridge_private.h
+	$(CC) $(CFLAGS) $(INCLUDE) -c $<
+
+libbridge_compat.o:	$(srcdir)/libbridge_compat.c $(srcdir)/if_index.c
+	$(CC) $(CFLAGS) -c libbridge_compat.c
+

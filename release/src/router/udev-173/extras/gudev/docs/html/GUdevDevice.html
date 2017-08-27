@@ -1,0 +1,979 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GUdevDevice</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="GUDev Reference Manual">
+<link rel="up" href="ref-API.html" title="API Reference">
+<link rel="prev" href="GUdevClient.html" title="GUdevClient">
+<link rel="next" href="GUdevEnumerator.html" title="GUdevEnumerator">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="GUdevClient.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ref-API.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">GUDev Reference Manual</th>
+<td><a accesskey="n" href="GUdevEnumerator.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#GUdevDevice.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#GUdevDevice.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GUdevDevice.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="GUdevDevice"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GUdevDevice.top_of_page"></a>GUdevDevice</span></h2>
+<p>GUdevDevice — Get information about a device</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GUdevDevice.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GUdevDevice.html#GUdevDevice-struct" title="GUdevDevice">GUdevDevice</a>;
+struct              <a class="link" href="GUdevDevice.html#GUdevDeviceClass" title="struct GUdevDeviceClass">GUdevDeviceClass</a>;
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-subsystem" title="g_udev_device_get_subsystem ()">g_udev_device_get_subsystem</a>         (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-devtype" title="g_udev_device_get_devtype ()">g_udev_device_get_devtype</a>           (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-name" title="g_udev_device_get_name ()">g_udev_device_get_name</a>              (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-number" title="g_udev_device_get_number ()">g_udev_device_get_number</a>            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-path" title="g_udev_device_get_sysfs_path ()">g_udev_device_get_sysfs_path</a>        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-driver" title="g_udev_device_get_driver ()">g_udev_device_get_driver</a>            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-action" title="g_udev_device_get_action ()">g_udev_device_get_action</a>            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             <a class="link" href="GUdevDevice.html#g-udev-device-get-seqnum" title="g_udev_device_get_seqnum ()">g_udev_device_get_seqnum</a>            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a class="link" href="GUdevClient.html#GUdevDeviceType"><span class="returnvalue">GUdevDeviceType</span></a>     <a class="link" href="GUdevDevice.html#g-udev-device-get-device-type" title="g_udev_device_get_device_type ()">g_udev_device_get_device_type</a>       (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a class="link" href="GUdevClient.html#GUdevDeviceNumber" title="GUdevDeviceNumber"><span class="returnvalue">GUdevDeviceNumber</span></a>   <a class="link" href="GUdevDevice.html#g-udev-device-get-device-number" title="g_udev_device_get_device_number ()">g_udev_device_get_device_number</a>     (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-device-file" title="g_udev_device_get_device_file ()">g_udev_device_get_device_file</a>       (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * <a class="link" href="GUdevDevice.html#g-udev-device-get-device-file-symlinks" title="g_udev_device_get_device_file_symlinks ()">g_udev_device_get_device_file_symlinks</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-parent" title="g_udev_device_get_parent ()">g_udev_device_get_parent</a>            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-parent-with-subsystem" title="g_udev_device_get_parent_with_subsystem ()">g_udev_device_get_parent_with_subsystem</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devtype</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * <a class="link" href="GUdevDevice.html#g-udev-device-get-tags" title="g_udev_device_get_tags ()">g_udev_device_get_tags</a>            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GUdevDevice.html#g-udev-device-get-is-initialized" title="g_udev_device_get_is_initialized ()">g_udev_device_get_is_initialized</a>    (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             <a class="link" href="GUdevDevice.html#g-udev-device-get-usec-since-initialized" title="g_udev_device_get_usec_since_initialized ()">g_udev_device_get_usec_since_initialized</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * <a class="link" href="GUdevDevice.html#g-udev-device-get-property-keys" title="g_udev_device_get_property_keys ()">g_udev_device_get_property_keys</a>   (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GUdevDevice.html#g-udev-device-has-property" title="g_udev_device_has_property ()">g_udev_device_has_property</a>          (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-property" title="g_udev_device_get_property ()">g_udev_device_get_property</a>          (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                <a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-int" title="g_udev_device_get_property_as_int ()">g_udev_device_get_property_as_int</a>   (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             <a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-uint64" title="g_udev_device_get_property_as_uint64 ()">g_udev_device_get_property_as_uint64</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="returnvalue">gdouble</span></a>             <a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-double" title="g_udev_device_get_property_as_double ()">g_udev_device_get_property_as_double</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-boolean" title="g_udev_device_get_property_as_boolean ()">g_udev_device_get_property_as_boolean</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * <a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-strv" title="g_udev_device_get_property_as_strv ()">g_udev_device_get_property_as_strv</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr" title="g_udev_device_get_sysfs_attr ()">g_udev_device_get_sysfs_attr</a>        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-int" title="g_udev_device_get_sysfs_attr_as_int ()">g_udev_device_get_sysfs_attr_as_int</a> (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-uint64" title="g_udev_device_get_sysfs_attr_as_uint64 ()">g_udev_device_get_sysfs_attr_as_uint64</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="returnvalue">gdouble</span></a>             <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-double" title="g_udev_device_get_sysfs_attr_as_double ()">g_udev_device_get_sysfs_attr_as_double</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-boolean" title="g_udev_device_get_sysfs_attr_as_boolean ()">g_udev_device_get_sysfs_attr_as_boolean</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * <a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-strv" title="g_udev_device_get_sysfs_attr_as_strv ()">g_udev_device_get_sysfs_attr_as_strv</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevDevice.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GUdevDevice
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevDevice.description"></a><h2>Description</h2>
+<p>
+The <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> class is used to get information about a specific
+device. Note that you cannot instantiate a <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> object
+yourself. Instead you must use <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> to obtain <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>
+objects.
+</p>
+<p>
+To get basic information about a device, use
+<a class="link" href="GUdevDevice.html#g-udev-device-get-subsystem" title="g_udev_device_get_subsystem ()"><code class="function">g_udev_device_get_subsystem()</code></a>, <a class="link" href="GUdevDevice.html#g-udev-device-get-devtype" title="g_udev_device_get_devtype ()"><code class="function">g_udev_device_get_devtype()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-name" title="g_udev_device_get_name ()"><code class="function">g_udev_device_get_name()</code></a>, <a class="link" href="GUdevDevice.html#g-udev-device-get-number" title="g_udev_device_get_number ()"><code class="function">g_udev_device_get_number()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-path" title="g_udev_device_get_sysfs_path ()"><code class="function">g_udev_device_get_sysfs_path()</code></a>, <a class="link" href="GUdevDevice.html#g-udev-device-get-driver" title="g_udev_device_get_driver ()"><code class="function">g_udev_device_get_driver()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-action" title="g_udev_device_get_action ()"><code class="function">g_udev_device_get_action()</code></a>, <a class="link" href="GUdevDevice.html#g-udev-device-get-seqnum" title="g_udev_device_get_seqnum ()"><code class="function">g_udev_device_get_seqnum()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-device-type" title="g_udev_device_get_device_type ()"><code class="function">g_udev_device_get_device_type()</code></a>, <a class="link" href="GUdevDevice.html#g-udev-device-get-device-number" title="g_udev_device_get_device_number ()"><code class="function">g_udev_device_get_device_number()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-device-file" title="g_udev_device_get_device_file ()"><code class="function">g_udev_device_get_device_file()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-device-file-symlinks" title="g_udev_device_get_device_file_symlinks ()"><code class="function">g_udev_device_get_device_file_symlinks()</code></a>.
+</p>
+<p>
+To navigate the device tree, use <a class="link" href="GUdevDevice.html#g-udev-device-get-parent" title="g_udev_device_get_parent ()"><code class="function">g_udev_device_get_parent()</code></a> and
+<a class="link" href="GUdevDevice.html#g-udev-device-get-parent-with-subsystem" title="g_udev_device_get_parent_with_subsystem ()"><code class="function">g_udev_device_get_parent_with_subsystem()</code></a>.
+</p>
+<p>
+To access udev properties for the device, use
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property-keys" title="g_udev_device_get_property_keys ()"><code class="function">g_udev_device_get_property_keys()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-has-property" title="g_udev_device_has_property ()"><code class="function">g_udev_device_has_property()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property" title="g_udev_device_get_property ()"><code class="function">g_udev_device_get_property()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-int" title="g_udev_device_get_property_as_int ()"><code class="function">g_udev_device_get_property_as_int()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-uint64" title="g_udev_device_get_property_as_uint64 ()"><code class="function">g_udev_device_get_property_as_uint64()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-double" title="g_udev_device_get_property_as_double ()"><code class="function">g_udev_device_get_property_as_double()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-boolean" title="g_udev_device_get_property_as_boolean ()"><code class="function">g_udev_device_get_property_as_boolean()</code></a> and
+<a class="link" href="GUdevDevice.html#g-udev-device-get-property-as-strv" title="g_udev_device_get_property_as_strv ()"><code class="function">g_udev_device_get_property_as_strv()</code></a>.
+</p>
+<p>
+To access sysfs attributes for the device, use
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr" title="g_udev_device_get_sysfs_attr ()"><code class="function">g_udev_device_get_sysfs_attr()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-int" title="g_udev_device_get_sysfs_attr_as_int ()"><code class="function">g_udev_device_get_sysfs_attr_as_int()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-uint64" title="g_udev_device_get_sysfs_attr_as_uint64 ()"><code class="function">g_udev_device_get_sysfs_attr_as_uint64()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-double" title="g_udev_device_get_sysfs_attr_as_double ()"><code class="function">g_udev_device_get_sysfs_attr_as_double()</code></a>,
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-boolean" title="g_udev_device_get_sysfs_attr_as_boolean ()"><code class="function">g_udev_device_get_sysfs_attr_as_boolean()</code></a> and
+<a class="link" href="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-strv" title="g_udev_device_get_sysfs_attr_as_strv ()"><code class="function">g_udev_device_get_sysfs_attr_as_strv()</code></a>.
+</p>
+<p>
+Note that all getters on <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> are non-reffing – returned
+values are owned by the object, should not be freed and are only
+valid as long as the object is alive.
+</p>
+<p>
+By design, <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> will not react to changes for a device – it
+only contains a snapshot of information when the <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>
+object was created. To work with changes, you typically connect to
+the <a class="link" href="GUdevClient.html#GUdevClient-uevent" title='The "uevent" signal'><span class="type">"uevent"</span></a> signal on a <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> and get a new
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> whenever an event happens.
+</p>
+</div>
+<div class="refsect1">
+<a name="GUdevDevice.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GUdevDevice-struct"></a><h3>GUdevDevice</h3>
+<pre class="programlisting">typedef struct _GUdevDevice GUdevDevice;</pre>
+<p>
+The <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> struct is opaque and should not be accessed directly.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUdevDeviceClass"></a><h3>struct GUdevDeviceClass</h3>
+<pre class="programlisting">struct GUdevDeviceClass {
+  GObjectClass parent_class;
+};
+</pre>
+<p>
+Class structure for <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> <em class="structfield"><code><a name="GUdevDeviceClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>Parent class.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-subsystem"></a><h3>g_udev_device_get_subsystem ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_subsystem         (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the subsystem for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The subsystem for <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-devtype"></a><h3>g_udev_device_get_devtype ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_devtype           (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the device type for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The devtype for <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-name"></a><h3>g_udev_device_get_name ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_name              (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the name of <em class="parameter"><code>device</code></em>, e.g. "sda3".
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The name of <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-number"></a><h3>g_udev_device_get_number ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_number            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the number of <em class="parameter"><code>device</code></em>, e.g. "3" if <a class="link" href="GUdevDevice.html#g-udev-device-get-name" title="g_udev_device_get_name ()"><code class="function">g_udev_device_get_name()</code></a> returns "sda3".
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The number of <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-path"></a><h3>g_udev_device_get_sysfs_path ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_sysfs_path        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the sysfs path for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The sysfs path for <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-driver"></a><h3>g_udev_device_get_driver ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_driver            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the name of the driver used for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The name of the driver for <em class="parameter"><code>device</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if unknown.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-action"></a><h3>g_udev_device_get_action ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_action            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the most recent action (e.g. "add", "remove", "change", etc.) for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>An action string.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-seqnum"></a><h3>g_udev_device_get_seqnum ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             g_udev_device_get_seqnum            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the most recent sequence number for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A sequence number.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-device-type"></a><h3>g_udev_device_get_device_type ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevClient.html#GUdevDeviceType"><span class="returnvalue">GUdevDeviceType</span></a>     g_udev_device_get_device_type       (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the type of the device file, if any, for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The device number for <em class="parameter"><code>device</code></em> or <a class="link" href="GUdevClient.html#G-UDEV-DEVICE-TYPE-NONE:CAPS"><span class="type">G_UDEV_DEVICE_TYPE_NONE</span></a> if the device does not have a device file.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-device-number"></a><h3>g_udev_device_get_device_number ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevClient.html#GUdevDeviceNumber" title="GUdevDeviceNumber"><span class="returnvalue">GUdevDeviceNumber</span></a>   g_udev_device_get_device_number     (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the device number, if any, for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The device number for <em class="parameter"><code>device</code></em> or 0 if unknown.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-device-file"></a><h3>g_udev_device_get_device_file ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_device_file       (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the device file for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The device file for <em class="parameter"><code>device</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no device file
+exists.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-device-file-symlinks"></a><h3>g_udev_device_get_device_file_symlinks ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * g_udev_device_get_device_file_symlinks
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets a list of symlinks (in <code class="literal">/dev</code>) that points to
+the device file for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> terminated string array of symlinks. This array is owned by <em class="parameter"><code>device</code></em> and should not be freed by the caller. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>][<a href="http://foldoc.org/array"><span class="acronym">array</span></a> zero-terminated=1][<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> utf8]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-parent"></a><h3>g_udev_device_get_parent ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       g_udev_device_get_parent            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the immediate parent of <em class="parameter"><code>device</code></em>, if any.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>device</code></em> has no parent. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-parent-with-subsystem"></a><h3>g_udev_device_get_parent_with_subsystem ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       g_udev_device_get_parent_with_subsystem
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *devtype</code></em>);</pre>
+<p>
+Walks up the chain of parents of <em class="parameter"><code>device</code></em> and returns the first
+device encountered where <em class="parameter"><code>subsystem</code></em> and <em class="parameter"><code>devtype</code></em> matches, if any.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>The subsystem of the parent to get.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>devtype</code></em> :</span></p></td>
+<td>The devtype of the parent to get or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<a href="http://foldoc.org/allow-none"><span class="acronym">allow-none</span></a>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>device</code></em> has no parent with <em class="parameter"><code>subsystem</code></em> and <em class="parameter"><code>devtype</code></em>. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-tags"></a><h3>g_udev_device_get_tags ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * g_udev_device_get_tags            (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets all tags for <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> terminated string array of tags. This array is owned by <em class="parameter"><code>device</code></em> and should not be freed by the caller. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>][<a href="http://foldoc.org/array"><span class="acronym">array</span></a> zero-terminated=1][<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> utf8]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-is-initialized"></a><h3>g_udev_device_get_is_initialized ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_udev_device_get_is_initialized    (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets whether <em class="parameter"><code>device</code></em> has been initalized.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>Whether <em class="parameter"><code>device</code></em> has been initialized.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-usec-since-initialized"></a><h3>g_udev_device_get_usec_since_initialized ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             g_udev_device_get_usec_since_initialized
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets number of micro-seconds since <em class="parameter"><code>device</code></em> was initialized.
+</p>
+<p>
+This only works for devices with properties in the udev
+database. All other devices return 0.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>Number of micro-seconds since <em class="parameter"><code>device</code></em> was initialized or 0 if unknown.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property-keys"></a><h3>g_udev_device_get_property_keys ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * g_udev_device_get_property_keys   (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets all keys for properties on <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> terminated string array of property keys. This array is owned by <em class="parameter"><code>device</code></em> and should not be freed by the caller. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>][<a href="http://foldoc.org/array"><span class="acronym">array</span></a> zero-terminated=1][<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> utf8]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-has-property"></a><h3>g_udev_device_has_property ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_udev_device_has_property          (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Check if a the property with the given key exists.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> only if the value for <em class="parameter"><code>key</code></em> exist.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property"></a><h3>g_udev_device_get_property ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_property          (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Look up the value for <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value for <em class="parameter"><code>key</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>key</code></em> doesn't exist on <em class="parameter"><code>device</code></em>. Do not free this string, it is owned by <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property-as-int"></a><h3>g_udev_device_get_property_as_int ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                g_udev_device_get_property_as_int   (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Look up the value for <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em> and convert it to an integer
+using <code class="function">strtol()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value for <em class="parameter"><code>key</code></em> or 0 if <em class="parameter"><code>key</code></em> doesn't exist or
+isn't an integer.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property-as-uint64"></a><h3>g_udev_device_get_property_as_uint64 ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             g_udev_device_get_property_as_uint64
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Look up the value for <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em> and convert it to an unsigned
+64-bit integer using <code class="function">strtoll()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value  for <em class="parameter"><code>key</code></em> or 0 if <em class="parameter"><code>key</code></em> doesn't  exist or isn't a
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="type">guint64</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property-as-double"></a><h3>g_udev_device_get_property_as_double ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="returnvalue">gdouble</span></a>             g_udev_device_get_property_as_double
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Look up the value for <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em> and convert it to a double
+precision floating point number using <code class="function">strtod()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value for <em class="parameter"><code>key</code></em> or 0.0 if <em class="parameter"><code>key</code></em> doesn't exist or isn't a
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="type">gdouble</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property-as-boolean"></a><h3>g_udev_device_get_property_as_boolean ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_udev_device_get_property_as_boolean
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Look up the value for <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em> and convert it to an
+boolean. This is done by doing a case-insensitive string comparison
+on the string value against "1" and "true".
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value for <em class="parameter"><code>key</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>key</code></em> doesn't exist or
+isn't a <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-property-as-strv"></a><h3>g_udev_device_get_property_as_strv ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * g_udev_device_get_property_as_strv
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key</code></em>);</pre>
+<p>
+Look up the value for <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em> and return the result of
+splitting it into non-empty tokens split at white space (only space
+(' '), form-feed ('\f'), newline ('\n'), carriage return ('\r'),
+horizontal tab ('\t'), and vertical tab ('\v') are considered; the
+locale is not taken into account).
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>Name of property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of <em class="parameter"><code>key</code></em> on <em class="parameter"><code>device</code></em> split into tokens or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>key</code></em> doesn't exist. This array is owned by <em class="parameter"><code>device</code></em> and should not be freed by the caller. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>][<a href="http://foldoc.org/array"><span class="acronym">array</span></a> zero-terminated=1][<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> utf8]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-attr"></a><h3>g_udev_device_get_sysfs_attr ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_udev_device_get_sysfs_attr        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Look up the sysfs attribute with <em class="parameter"><code>name</code></em> on <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Name of the sysfs attribute.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of the sysfs attribute or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there is no
+such attribute. Do not free this string, it is owned by <em class="parameter"><code>device</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-attr-as-int"></a><h3>g_udev_device_get_sysfs_attr_as_int ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                g_udev_device_get_sysfs_attr_as_int (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Look up the sysfs attribute with <em class="parameter"><code>name</code></em> on <em class="parameter"><code>device</code></em> and convert it to an integer
+using <code class="function">strtol()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Name of the sysfs attribute.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of the sysfs attribute or 0 if there is no such
+attribute.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-attr-as-uint64"></a><h3>g_udev_device_get_sysfs_attr_as_uint64 ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64"><span class="returnvalue">guint64</span></a>             g_udev_device_get_sysfs_attr_as_uint64
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Look up the sysfs attribute with <em class="parameter"><code>name</code></em> on <em class="parameter"><code>device</code></em> and convert it to an unsigned
+64-bit integer using <code class="function">strtoll()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Name of the sysfs attribute.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of the sysfs attribute or 0 if there is no such
+attribute.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-attr-as-double"></a><h3>g_udev_device_get_sysfs_attr_as_double ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="returnvalue">gdouble</span></a>             g_udev_device_get_sysfs_attr_as_double
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Look up the sysfs attribute with <em class="parameter"><code>name</code></em> on <em class="parameter"><code>device</code></em> and convert it to a double
+precision floating point number using <code class="function">strtod()</code>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Name of the sysfs attribute.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of the sysfs attribute or 0.0 if there is no such
+attribute.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-attr-as-boolean"></a><h3>g_udev_device_get_sysfs_attr_as_boolean ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_udev_device_get_sysfs_attr_as_boolean
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Look up the sysfs attribute with <em class="parameter"><code>name</code></em> on <em class="parameter"><code>device</code></em> and convert it to an
+boolean. This is done by doing a case-insensitive string comparison
+on the string value against "1" and "true".
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Name of the sysfs attribute.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of the sysfs attribute or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if there is no such
+attribute.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-device-get-sysfs-attr-as-strv"></a><h3>g_udev_device_get_sysfs_attr_as_strv ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * g_udev_device_get_sysfs_attr_as_strv
+                                                        (<em class="parameter"><code><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Look up the sysfs attribute with <em class="parameter"><code>name</code></em> on <em class="parameter"><code>device</code></em> and return the result of
+splitting it into non-empty tokens split at white space (only space (' '),
+form-feed ('\f'), newline ('\n'), carriage return ('\r'), horizontal
+tab ('\t'), and vertical tab ('\v') are considered; the locale is
+not taken into account).
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Name of the sysfs attribute.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The value of the sysfs attribute split into tokens or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there is no such attribute. This array is owned by <em class="parameter"><code>device</code></em> and should not be freed by the caller. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>][<a href="http://foldoc.org/array"><span class="acronym">array</span></a> zero-terminated=1][<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> utf8]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

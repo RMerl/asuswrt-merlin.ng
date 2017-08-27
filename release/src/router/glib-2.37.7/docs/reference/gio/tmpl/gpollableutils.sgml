@@ -1,0 +1,97 @@
+<!-- ##### SECTION Title ##### -->
+gpollableutils
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### USER_FUNCTION GPollableSourceFunc ##### -->
+<para>
+
+</para>
+
+@pollable_stream: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_source_new ##### -->
+<para>
+
+</para>
+
+@pollable_stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_source_new_full ##### -->
+<para>
+
+</para>
+
+@pollable_stream: 
+@child_source: 
+@cancellable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_stream_read ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@blocking: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_stream_write ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@blocking: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_stream_write_all ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@blocking: 
+@bytes_written: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

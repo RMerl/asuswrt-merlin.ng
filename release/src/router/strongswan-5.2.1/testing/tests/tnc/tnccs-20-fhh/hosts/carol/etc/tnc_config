@@ -1,0 +1,3 @@
+#IMC configuration file for strongSwan client 
+
+IMC "Dummy"	/usr/local/lib/libdummyimc.so

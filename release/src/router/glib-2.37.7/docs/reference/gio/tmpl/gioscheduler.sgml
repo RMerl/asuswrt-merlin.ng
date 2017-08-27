@@ -1,0 +1,84 @@
+<!-- ##### SECTION Title ##### -->
+GIOScheduler
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GIOSchedulerJob ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION GIOSchedulerJobFunc ##### -->
+<para>
+
+</para>
+
+@job: 
+@cancellable: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_scheduler_push_job ##### -->
+<para>
+
+</para>
+
+@job_func: 
+@user_data: 
+@notify: 
+@io_priority: 
+@cancellable: 
+
+
+<!-- ##### FUNCTION g_io_scheduler_cancel_all_jobs ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### FUNCTION g_io_scheduler_job_send_to_mainloop ##### -->
+<para>
+
+</para>
+
+@job: 
+@func: 
+@user_data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_scheduler_job_send_to_mainloop_async ##### -->
+<para>
+
+</para>
+
+@job: 
+@func: 
+@user_data: 
+@notify: 
+
+

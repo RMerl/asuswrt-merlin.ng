@@ -1,0 +1,221 @@
+<!-- ##### SECTION Title ##### -->
+Generic values
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_VALUE_INIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VALUE_HOLDS ##### -->
+<para>
+
+</para>
+
+@value: 
+@type: 
+
+
+<!-- ##### MACRO G_VALUE_TYPE ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_VALUE_TYPE_NAME ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_IS_VALUE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_VALUE_ABSTRACT ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_IS_VALUE ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### STRUCT GValue ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_TYPE_VALUE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_VALUE_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_value_init ##### -->
+<para>
+
+</para>
+
+@value: 
+@g_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_copy ##### -->
+<para>
+
+</para>
+
+@src_value: 
+@dest_value: 
+
+
+<!-- ##### FUNCTION g_value_reset ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_unset ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### FUNCTION g_value_set_instance ##### -->
+<para>
+
+</para>
+
+@value: 
+@instance: 
+
+
+<!-- ##### FUNCTION g_value_fits_pointer ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_peek_pointer ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_type_compatible ##### -->
+<para>
+
+</para>
+
+@src_type: 
+@dest_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_type_transformable ##### -->
+<para>
+
+</para>
+
+@src_type: 
+@dest_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_transform ##### -->
+<para>
+
+</para>
+
+@src_value: 
+@dest_value: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GValueTransform ##### -->
+<para>
+
+</para>
+
+@src_value: 
+@dest_value: 
+
+
+<!-- ##### FUNCTION g_value_register_transform_func ##### -->
+<para>
+
+</para>
+
+@src_type: 
+@dest_type: 
+@transform_func: 
+
+
+<!-- ##### FUNCTION g_strdup_value_contents ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+

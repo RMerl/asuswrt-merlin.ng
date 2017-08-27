@@ -1,0 +1,44 @@
+# -*- text -*-
+######################################################################
+#
+#	This is a virtual server that handles DHCP relaying
+#
+#	Only one server can listen on a socket, so you cannot
+#	do DHCP relaying && run a DHCP server at the same time.
+#
+######################################################################
+
+server dhcp.eth1 {
+	listen {
+		ipaddr = *
+		port = 67
+		type = dhcp
+		interface = eth1
+	}
+
+	#  Packets received on the socket will be processed through one
+	#  of the following sections, named after the DHCP packet type.
+	#  See dictionary.dhcp for the packet types.
+	dhcp DHCP-Discover {
+		update config {
+			# IP Address of the DHCP server
+			DHCP-Relay-To-IP-Address := 192.0.2.2
+		}
+		update request {
+			# IP Address of the DHCP relay (ourselves)
+			DHCP-Gateway-IP-Address := 192.0.2.1
+		}
+		ok
+	}
+
+	dhcp DHCP-Request {
+		update config {
+			# IP Address of the DHCP server
+			DHCP-Relay-To-IP-Address := 192.0.2.2
+		}
+		update request {
+			DHCP-Gateway-IP-Address := 192.0.2.2
+		}
+		ok
+	}
+}

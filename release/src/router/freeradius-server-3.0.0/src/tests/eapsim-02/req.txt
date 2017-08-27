@@ -1,0 +1,8 @@
+User-Name = "eapsim"
+Cleartext-Password = "md5md5"
+NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+EAP-Code = Response
+EAP-Id = 210
+EAP-Type-Identity = "eapsim"
+Message-Authenticator = 0
+NAS-Port = 0

@@ -1,0 +1,104 @@
+<!-- ##### SECTION Title ##### -->
+GSrvTarget
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSrvTarget ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_srv_target_new ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@port: 
+@priority: 
+@weight: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_srv_target_copy ##### -->
+<para>
+
+</para>
+
+@target: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_srv_target_free ##### -->
+<para>
+
+</para>
+
+@target: 
+
+
+<!-- ##### FUNCTION g_srv_target_get_hostname ##### -->
+<para>
+
+</para>
+
+@target: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_srv_target_get_port ##### -->
+<para>
+
+</para>
+
+@target: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_srv_target_get_priority ##### -->
+<para>
+
+</para>
+
+@target: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_srv_target_get_weight ##### -->
+<para>
+
+</para>
+
+@target: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_srv_target_list_sort ##### -->
+<para>
+
+</para>
+
+@targets: 
+@Returns: 
+
+

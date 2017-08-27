@@ -1,0 +1,14 @@
+#
+#  Enforces UTF-8 on strings coming in from the NAS.
+#
+#  An attribute of type "string" containing UTF-8 makes
+#  the module return NOOP.
+#
+#  An attribute of type "string" containing non-UTF-8 data
+#  makes the module return FAIL.
+#
+#  This module takes no configuration.
+#
+utf8 {
+
+}

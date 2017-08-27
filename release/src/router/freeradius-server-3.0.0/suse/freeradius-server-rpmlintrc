@@ -1,0 +1,7 @@
+#freeradius-server.x86_64: E: dir-or-file-in-var-run (Badness: 900) /var/run/radiusd
+#A file or directory in the package is located in /var/run. It's not permitted
+#for packages to install files in this directory as it might be created as
+#tmpfs during boot. Modify your package to create the  necessary files during
+#runtime.
+
+addFilter("dir-or-file-in-var-run")

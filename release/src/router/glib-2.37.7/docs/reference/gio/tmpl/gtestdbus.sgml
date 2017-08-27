@@ -1,0 +1,110 @@
+<!-- ##### SECTION Title ##### -->
+GTestDBus
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTestDBus ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GTestDBus:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GTestDBusFlags ##### -->
+<para>
+
+</para>
+
+@G_TEST_DBUS_NONE: 
+
+<!-- ##### FUNCTION g_test_dbus_new ##### -->
+<para>
+
+</para>
+
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_test_dbus_get_flags ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_test_dbus_get_bus_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_test_dbus_add_service_dir ##### -->
+<para>
+
+</para>
+
+@self: 
+@path: 
+
+
+<!-- ##### FUNCTION g_test_dbus_up ##### -->
+<para>
+
+</para>
+
+@self: 
+
+
+<!-- ##### FUNCTION g_test_dbus_stop ##### -->
+<para>
+
+</para>
+
+@self: 
+
+
+<!-- ##### FUNCTION g_test_dbus_down ##### -->
+<para>
+
+</para>
+
+@self: 
+
+
+<!-- ##### FUNCTION g_test_dbus_unset ##### -->
+<para>
+
+</para>
+
+@void: 
+
+

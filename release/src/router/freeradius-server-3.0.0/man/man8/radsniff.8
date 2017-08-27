@@ -1,0 +1,71 @@
+.TH RADSNIFF 8
+.SH NAME
+radsniff - dump radius protocol
+.SH SYNOPSIS
+.B radsniff
+.RB [ \-c
+.IR count ]
+.RB [ \-d
+.IR directory ]
+.RB [ \-F ]
+.RB [ \-f
+.IR filter ]
+.RB [ \-h ]
+.RB [ \-i
+.IR interface ]
+.RB [ \-I
+.IR filename ]
+.RB [ \-m ]
+.RB [ \-p
+.IR port ]
+.RB [ \-r
+.IR filter ]
+.RB [ \-s
+.IR secret ]
+.RB [ \-S ]
+.RB [ \-w
+.IR file ]
+.RB [ \-x ]
+
+.SH DESCRIPTION
+\fBradsniff\fP is a simple wrapper around libpcap.  It can also print
+out the contents of RADIUS packets using the FreeRADIUS dictionaries.
+
+.SH OPTIONS
+
+.IP \-c\ \fIcount\fP
+Number of packets to capture.
+.IP \-d\ \fIdirectory\fP
+Directory where the dictionaries are found.
+.IP \-F
+Filter PCAP file from stdin to stdout.
+Output file will contain RADIUS packets.
+.IP \-f\ \fIfilter\fP
+PCAP filter. (default is udp port 1812 or 1813)
+.IP \-h
+Print usage help information.
+.IP \-i\ \fIinterface\fP
+Interface to capture.
+.IP \-I\ \fIfilename\fP
+Read packets from filename.
+.IP \-m
+Print packet headers only, not contents.
+.IP \-p\ \fIport\fP
+\tListen for packets on port.
+.IP \-r\ \fIfilter\fP
+RADIUS attribute filter.
+.IP \-s\ \fIsecret\fP
+RADIUS secret.
+.IP \-S
+Sort attributes in the packet.
+Used to compare server results.
+.IP \-w\ \fIfile\fP
+Write output packets to file.
+.IP \-x
+Print out debugging information.
+
+
+.SH SEE ALSO
+radiusd(8),pcap(3)
+.SH AUTHORS
+Nicolas Baradakis <nicolas.baradakis@cegetel.net>

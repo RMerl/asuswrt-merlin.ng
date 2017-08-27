@@ -1,0 +1,58 @@
+.TH "Traffic control index filter" 8 "21 Oct 2015" "iproute2" "Linux"
+
+.SH NAME
+tcindex \- traffic control index filter
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " " filter " ... " tcindex " [ " hash
+.IR SIZE " ] [ "
+.B mask
+.IR MASK " ] [ "
+.B shift
+.IR SHIFT " ] [ "
+.BR pas_on " | " fall_through " ] [ " classid
+.IR CLASSID " ] [ "
+.B action
+.BR ACTION_SPEC " ]"
+.SH DESCRIPTION
+This filter allows to match packets based on their
+.B tcindex
+field value, i.e. the combination of the DSCP and ECN fields as present in IPv4
+and IPv6 headers.
+.SH OPTIONS
+.TP
+.BI action " ACTION_SPEC"
+Apply an action from the generic actions framework on matching packets.
+.TP
+.BI classid " CLASSID"
+Push matching packets into the class identified by
+.IR CLASSID .
+.TP
+.BI hash " SIZE"
+Hash table size in entries to use. Defaults to 64.
+.TP
+.BI mask " MASK"
+An optional bitmask to binary
+.BR AND " to the packet's " tcindex
+field before use.
+.TP
+.BI shift " SHIFT"
+The number of bits to right-shift a packet's
+.B tcindex
+value before use. If a
+.B mask
+has been set, masking is done before shifting.
+.TP
+.B pass_on
+If this flag is set, failure to find a class for the resulting ID will make the
+filter fail and lead to the next filter being consulted.
+.TP
+.B fall_through
+This is the opposite of
+.B pass_on
+and the default. The filter will classify the packet even if there is no class
+present for the resulting class ID.
+
+.SH SEE ALSO
+.BR tc (8)

@@ -1,0 +1,54 @@
+#
+#	The SANDY Vendor-Specific dictionary.
+#
+# Version:	$Id$
+#
+#	For a complete list of Private Enterprise Codes, see:
+#
+#	http://www.isi.edu/in-notes/iana/assignments/enterprise-numbers
+#
+
+VENDOR		Sandy		11406
+
+BEGIN-VENDOR Sandy
+
+ATTRIBUTE	Sandy-User-Id		1	integer
+ATTRIBUTE	Sandy-Group-Id		2	integer
+ATTRIBUTE	Sandy-GECOS		3	string
+ATTRIBUTE	Sandy-Shell		4	string
+ATTRIBUTE	Sandy-Home		5	string
+
+ATTRIBUTE	Sandy-Mail-Service	100	integer
+ATTRIBUTE	Sandy-Mail-Authtype	101	integer
+ATTRIBUTE	Sandy-Mail-Challenge	102	string
+ATTRIBUTE	Sandy-Mail-Response	103	octets
+ATTRIBUTE	Sandy-Mail-Address	104	string
+ATTRIBUTE	Sandy-Mail-Spamcontrol	105	integer
+ATTRIBUTE	Sandy-Mail-Notification	106	octets
+ATTRIBUTE	Sandy-Mail-Box		107	string
+ATTRIBUTE	Sandy-Mail-Quota	108	integer
+ATTRIBUTE	Sandy-Mail-Filter	109	octets
+ATTRIBUTE	Sandy-Mail-Box-Control	110	integer
+ATTRIBUTE	Sandy-Mail-Client-IP	111	ipaddr
+ATTRIBUTE	Sandy-Mail-Client-Helo	110	string
+
+
+VALUE	Sandy-Mail-Service		Transfer	1
+VALUE	Sandy-Mail-Service		Delivery	2
+VALUE	Sandy-Mail-Service		POP		3
+VALUE	Sandy-Mail-Service		IMAP		4
+VALUE	Sandy-Mail-Service		WEBMAIL		5
+VALUE	Sandy-Mail-Service		Control		6
+
+VALUE	Sandy-Mail-Authtype	NONE		0
+VALUE	Sandy-Mail-Authtype	PLAIN		1
+VALUE	Sandy-Mail-Authtype	CRAM-MD5	2
+VALUE	Sandy-Mail-Authtype	APOP		3
+VALUE	Sandy-Mail-Authtype	KRB4		4
+VALUE	Sandy-Mail-Authtype	KRB5		5
+VALUE	Sandy-Mail-Authtype	NTLM		6
+VALUE	Sandy-Mail-Authtype	NTLM2		7
+VALUE	Sandy-Mail-Authtype	CRAM-MD4	8
+VALUE	Sandy-Mail-Authtype	CRAM-SHA1	9
+
+END-VENDOR Sandy

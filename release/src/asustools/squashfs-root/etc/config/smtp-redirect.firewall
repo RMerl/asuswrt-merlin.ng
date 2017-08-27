@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ -z "$(nvram get smtp_redirect_enable)" ]; then
+    nvram set smtp_redirect_enable=0
+    nvram set smtp_redirect_destination=0.0.0.0
+    nvram set smtp_source_network=0.0.0.0
+    #nvram set need_commit=1
+fi
+
+iptables -t nat -D PREROUTING -s $(nvram get smtp_source_network)/24 -p tcp --dport 25 -j DNAT --to $(nvram get smtp_redirect_destination)    
+if [ "$(nvram get smtp_redirect_enable)" = "1" ]; then
+    iptables -t nat -A PREROUTING -s $(nvram get smtp_source_network)/24 -p tcp --dport 25 -j DNAT --to $(nvram get smtp_redirect_destination)    
+fi

@@ -1,0 +1,11 @@
+moon:: cat /var/log/daemon.log::using certificate.*OU=Research, CN=carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::alice.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+moon:: cat /var/log/daemon.log::signature validation failed, looking for another key::YES
+moon:: cat /var/log/daemon.log::using certificate.*OU=Research, SN=002, CN=carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::venus.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_req=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES

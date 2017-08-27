@@ -1,0 +1,43 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+alice::ipsec status 2> /dev/null::home.*ESTABLISHED.*alice@strongswan.org.*moon.strongswan.org::YES
+venus::ipsec status 2> /dev/null::home.*ESTABLISHED.*venus.strongswan.org.*moon.strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+alice::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+venus::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::ext\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::ext\[2]: ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::int\[3]: ESTABLISHED.*moon.strongswan.org.*alice@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::int\[4]: ESTABLISHED.*moon.strongswan.org.*venus.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::ext[{]1}.*INSTALLED. TUNNEL::YES
+moon:: ipsec status 2> /dev/null::ext[{]2}.*INSTALLED. TUNNEL::YES
+moon:: ipsec status 2> /dev/null::int[{]3}.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::int[{]4}.*INSTALLED, TUNNEL::YES
+moon:: ipsec pool --status 2> /dev/null::extpool.*10.3.0.1.*10.3.1.244.*48h.*2::YES
+moon:: ipsec pool --status 2> /dev/null::intpool.*10.4.0.1.*10.4.1.244.*static.*2::YES
+moon:: ipsec pool --leases --filter pool=extpool,addr=10.3.0.1,id=carol@strongswan.org 2> /dev/null::online::YES
+moon:: ipsec pool --leases --filter pool=extpool,addr=10.3.0.2,id=dave@strongswan.org 2> /dev/null::online::YES
+moon:: ipsec pool --leases --filter pool=intpool,addr=10.4.0.1,id=alice@strongswan.org 2> /dev/null::online::YES
+moon:: ipsec pool --leases --filter pool=intpool,addr=10.4.0.2,id=venus.strongswan.org 2> /dev/null::online::YES
+carol::cat /var/log/daemon.log::installing new virtual IP 10.3.0.1::YES
+dave:: cat /var/log/daemon.log::installing new virtual IP 10.3.0.2::YES
+alice::cat /var/log/daemon.log::installing new virtual IP 10.4.0.1::YES
+venus::cat /var/log/daemon.log::installing new virtual IP 10.4.0.2::YES
+carol::cat /var/log/daemon.log::installing DNS server PH_IP_WINNETOU to /etc/resolv.conf::YES
+dave:: cat /var/log/daemon.log::installing DNS server PH_IP_WINNETOU to /etc/resolv.conf::YES
+alice::cat /var/log/daemon.log::installing DNS server PH_IP_ALICE to /etc/resolv.conf::YES
+venus::cat /var/log/daemon.log::installing DNS server PH_IP_VENUS to /etc/resolv.conf::YES
+alice::ping -c 1 PH_IP_CAROL1::64 bytes from PH_IP_CAROL1: icmp_req=1::YES
+dave:: ping -c 1 PH_IP_CAROL1::64 bytes from PH_IP_CAROL1: icmp_req=1::YES
+alice::ping -c 1 10.4.0.2::64 bytes from 10.4.0.2: icmp_req=1::YES
+dave:: ping -c 1 10.4.0.2::64 bytes from 10.4.0.2: icmp_req=1::YES
+alice::tcpdump::IP alice.strongswan.org > moon1.strongswan.org: ESP::YES
+alice::tcpdump::IP moon1.strongswan.org > alice.strongswan.org: ESP::YES
+dave::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+dave::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES
+carol::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+carol::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+venus::tcpdump::IP moon1.strongswan.org > venus.strongswan.org: ESP::YES
+venus::tcpdump::IP venus.strongswan.org > moon1.strongswan.org: ESP::YES
+

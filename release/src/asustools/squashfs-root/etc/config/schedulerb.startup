@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# mod by BrainSlayer to preinitialize vars
+if [ -z "$(nvram get schedule_enable)" ]; then
+    nvram set schedule_enable=0
+    nvram set schedule_time=86400
+    nvram set schedule_hour_time=0
+    nvram set schedule_hours=0
+    nvram set schedule_minutes=0
+    nvram set schedule_weekdays=0
+    nvram set schedule_time=3600
+ #jc: this commit can be safely removed since this pre-init
+ #    will persist until router is rebooted. 
+    #nvram set need_commit=1
+fi
+
+SCHEDULE_HOURS=$(nvram get schedule_hours)
+SCHEDULE_MINUTES=$(nvram get schedule_minutes)
+SCHEDULE_WEEKDAYS=$(nvram get schedule_weekdays)
+killall -9 schedulerb.sh
+if [ "$(nvram get schedule_enable)" = "1" ]; then
+    if [ "$(nvram get schedule_hour_time)" = "1" ]; then
+        /etc/config/schedulerb.sh&
+    fi
+    if [ "$(nvram get schedule_hour_time)" = "2" ]; then
+	if [ "$(nvram get cron_enable)" = "0" ]; then
+	    nvram set cron_enable=1
+	    nvram set need_commit=1
+	fi
+    fi
+else
+	rm -f /tmp/cron.d/check_schedules
+fi

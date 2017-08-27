@@ -1,0 +1,4 @@
+#IMV configuration file for strongSwan client 
+
+IMV "Test"	/usr/local/lib/ipsec/imcvs/imv-test.so
+IMV "Scanner"	/usr/local/lib/ipsec/imcvs/imv-scanner.so

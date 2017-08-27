@@ -1,0 +1,19 @@
+
+<fieldset>
+	<legend><% tran("alive.legend2"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("alive.sevr2"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="wds_watchdog_enable" <% nvram_checked("wds_watchdog_enable","1"); %> onclick="setWDS(this.value);show_layer_ext(this, 'idwds_watchdog', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="wds_watchdog_enable" <% nvram_checked("wds_watchdog_enable","0"); %> onclick="setWDS(this.value);show_layer_ext(this, 'idwds_watchdog', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idwds_watchdog">
+		<div class="setting">
+			<div class="label"><% tran("share.inter"); %></div>
+			<input size="4" maxLength="4" class="num" name="wds_watchdog_interval_sec" onblur="valid_range(this,0,9999,share.inter)" value="<% nvram_get("wds_watchdog_interval_sec"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("alive.IP"); %></div>
+			<input size="40" maxLength="47" class="text" name="wds_watchdog_ips" value="<% nvram_get("wds_watchdog_ips"); %>" />
+		</div>
+	</div>
+</fieldset><br/>

@@ -1,0 +1,688 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GDBusInterfaceSkeleton</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="Highlevel D-Bus Support">
+<link rel="prev" href="GDBusInterface.html" title="GDBusInterface">
+<link rel="next" href="GDBusProxy.html" title="GDBusProxy">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GDBusInterfaceSkeleton.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GDBusInterfaceSkeleton.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GDBusInterfaceSkeleton.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GDBusInterfaceSkeleton.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#GDBusInterfaceSkeleton.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusInterface.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusProxy.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusInterfaceSkeleton"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusInterfaceSkeleton.top_of_page"></a>GDBusInterfaceSkeleton</span></h2>
+<p>GDBusInterfaceSkeleton — Service-side D-Bus interface</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GDBusInterfaceSkeleton.synopsis"></a><h2>Synopsis</h2>
+<a name="GDBusInterfaceSkeletonFlags"></a><pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeleton-struct" title="GDBusInterfaceSkeleton">GDBusInterfaceSkeleton</a>;
+struct              <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonClass" title="struct GDBusInterfaceSkeletonClass">GDBusInterfaceSkeletonClass</a>;
+<span class="returnvalue">void</span>                <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-flush" title="g_dbus_interface_skeleton_flush ()">g_dbus_interface_skeleton_flush</a>     (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> * <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-info" title="g_dbus_interface_skeleton_get_info ()">g_dbus_interface_skeleton_get_info</a> (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="returnvalue">GDBusInterfaceVTable</span></a> * <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-vtable" title="g_dbus_interface_skeleton_get_vtable ()">g_dbus_interface_skeleton_get_vtable</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-properties" title="g_dbus_interface_skeleton_get_properties ()">g_dbus_interface_skeleton_get_properties</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-export" title="g_dbus_interface_skeleton_export ()">g_dbus_interface_skeleton_export</a>    (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-unexport" title="g_dbus_interface_skeleton_unexport ()">g_dbus_interface_skeleton_unexport</a>  (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-unexport-from-connection" title="g_dbus_interface_skeleton_unexport_from_connection ()">g_dbus_interface_skeleton_unexport_from_connection</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>);
+<a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *   <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-connection" title="g_dbus_interface_skeleton_get_connection ()">g_dbus_interface_skeleton_get_connection</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-connections" title="g_dbus_interface_skeleton_get_connections ()">g_dbus_interface_skeleton_get_connections</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-has-connection" title="g_dbus_interface_skeleton_has_connection ()">g_dbus_interface_skeleton_has_connection</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-object-path" title="g_dbus_interface_skeleton_get_object_path ()">g_dbus_interface_skeleton_get_object_path</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+enum                <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags-enum" title="enum GDBusInterfaceSkeletonFlags">GDBusInterfaceSkeletonFlags</a>;
+<a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="returnvalue">GDBusInterfaceSkeletonFlags</span></a> <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-flags" title="g_dbus_interface_skeleton_get_flags ()">g_dbus_interface_skeleton_get_flags</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-set-flags" title="g_dbus_interface_skeleton_set_flags ()">g_dbus_interface_skeleton_set_flags</a> (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a> flags</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GDBusInterfaceSkeleton
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----GDBusInterfaceSkeletonFlags
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDBusInterfaceSkeleton implements
+ <a class="link" href="GDBusInterface.html" title="GDBusInterface">GDBusInterface</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeleton--g-flags" title='The "g-flags" property'>g-flags</a>"                  <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a>  : Read / Write
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeleton-g-authorize-method" title='The "g-authorize-method" signal'>g-authorize-method</a>"                             : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.description"></a><h2>Description</h2>
+<p>
+Abstract base class for D-Bus interfaces on the service side.
+</p>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GDBusInterfaceSkeleton-struct"></a><h3>GDBusInterfaceSkeleton</h3>
+<pre class="programlisting">typedef struct _GDBusInterfaceSkeleton GDBusInterfaceSkeleton;</pre>
+<p>
+The <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> structure contains private data and should
+only be accessed using the provided API.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusInterfaceSkeletonClass"></a><h3>struct GDBusInterfaceSkeletonClass</h3>
+<pre class="programlisting">struct GDBusInterfaceSkeletonClass {
+  GObjectClass parent_class;
+
+  /* Virtual Functions */
+  GDBusInterfaceInfo   *(*get_info)       (GDBusInterfaceSkeleton  *interface_);
+  GDBusInterfaceVTable *(*get_vtable)     (GDBusInterfaceSkeleton  *interface_);
+  GVariant             *(*get_properties) (GDBusInterfaceSkeleton  *interface_);
+  void                  (*flush)          (GDBusInterfaceSkeleton  *interface_);
+
+
+  /* Signals */
+  gboolean (*g_authorize_method) (GDBusInterfaceSkeleton  *interface_,
+                                  GDBusMethodInvocation   *invocation);
+};
+</pre>
+<p>
+Class structure for <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> <em class="structfield"><code><a name="GDBusInterfaceSkeletonClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>The parent class.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GDBusInterfaceSkeletonClass.get-info"></a>get_info</code></em> ()</span></p></td>
+<td>Returns a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>. See <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-info" title="g_dbus_interface_skeleton_get_info ()"><code class="function">g_dbus_interface_skeleton_get_info()</code></a> for details.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GDBusInterfaceSkeletonClass.get-vtable"></a>get_vtable</code></em> ()</span></p></td>
+<td>Returns a <a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a>. See <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-vtable" title="g_dbus_interface_skeleton_get_vtable ()"><code class="function">g_dbus_interface_skeleton_get_vtable()</code></a> for details.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GDBusInterfaceSkeletonClass.get-properties"></a>get_properties</code></em> ()</span></p></td>
+<td>Returns a <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> with all properties. See <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-get-properties" title="g_dbus_interface_skeleton_get_properties ()"><code class="function">g_dbus_interface_skeleton_get_properties()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GDBusInterfaceSkeletonClass.flush"></a>flush</code></em> ()</span></p></td>
+<td>Emits outstanding changes, if any. See <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-flush" title="g_dbus_interface_skeleton_flush ()"><code class="function">g_dbus_interface_skeleton_flush()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GDBusInterfaceSkeletonClass.g-authorize-method"></a>g_authorize_method</code></em> ()</span></p></td>
+<td>Signal class handler for the <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeleton-g-authorize-method" title='The "g-authorize-method" signal'><span class="type">"g-authorize-method"</span></a> signal.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-flush"></a><h3>g_dbus_interface_skeleton_flush ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_dbus_interface_skeleton_flush     (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+If <em class="parameter"><code>interface_</code></em> has outstanding changes, request for these changes to be
+emitted immediately.
+</p>
+<p>
+For example, an exported D-Bus interface may queue up property
+changes and emit the
+<code class="literal">org.freedesktop.DBus.Properties::PropertiesChanged</code>
+signal later (e.g. in an idle handler). This technique is useful
+for collapsing multiple property changes into one.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-info"></a><h3>g_dbus_interface_skeleton_get_info ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> * g_dbus_interface_skeleton_get_info (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets D-Bus introspection information for the D-Bus interface
+implemented by <em class="parameter"><code>interface_</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> (never <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>). Do not free. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-vtable"></a><h3>g_dbus_interface_skeleton_get_vtable ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="returnvalue">GDBusInterfaceVTable</span></a> * g_dbus_interface_skeleton_get_vtable
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets the interface vtable for the D-Bus interface implemented by
+<em class="parameter"><code>interface_</code></em>. The returned function pointers should expect <em class="parameter"><code>interface_</code></em>
+itself to be passed as <em class="parameter"><code>user_data</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> (never <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-properties"></a><h3>g_dbus_interface_skeleton_get_properties ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          g_dbus_interface_skeleton_get_properties
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets all D-Bus properties for <em class="parameter"><code>interface_</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> of type <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariantType.html#G-VARIANT-TYPE-VARDICT:CAPS">'a{sv}'</a>. Free with <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-export"></a><h3>g_dbus_interface_skeleton_export ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_dbus_interface_skeleton_export    (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Exports <em class="parameter"><code>interface_</code></em> at <em class="parameter"><code>object_path</code></em> on <em class="parameter"><code>connection</code></em>.
+</p>
+<p>
+This can be called multiple times to export the same <em class="parameter"><code>interface_</code></em>
+onto multiple connections however the <em class="parameter"><code>object_path</code></em> provided must be
+the same for all connections.
+</p>
+<p>
+Use <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-unexport" title="g_dbus_interface_skeleton_unexport ()"><code class="function">g_dbus_interface_skeleton_unexport()</code></a> to unexport the object.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>The D-Bus interface to export.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> to export <em class="parameter"><code>interface_</code></em> on.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>The path to export the interface at.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the interface was exported on <em class="parameter"><code>connection</code></em>, otherwise <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> with
+<em class="parameter"><code>error</code></em> set.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-unexport"></a><h3>g_dbus_interface_skeleton_unexport ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_dbus_interface_skeleton_unexport  (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Stops exporting <em class="parameter"><code>interface_</code></em> on all connections it is exported on.
+</p>
+<p>
+To unexport <em class="parameter"><code>interface_</code></em> from only a single connection, use
+<a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-unexport-from-connection" title="g_dbus_interface_skeleton_unexport_from_connection ()"><code class="function">g_dbus_interface_skeleton_unexport_from_connection()</code></a>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-unexport-from-connection"></a><h3>g_dbus_interface_skeleton_unexport_from_connection ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_dbus_interface_skeleton_unexport_from_connection
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>);</pre>
+<p>
+Stops exporting <em class="parameter"><code>interface_</code></em> on <em class="parameter"><code>connection</code></em>.
+</p>
+<p>
+To stop exporting on all connections the interface is exported on,
+use <a class="link" href="GDBusInterfaceSkeleton.html#g-dbus-interface-skeleton-unexport" title="g_dbus_interface_skeleton_unexport ()"><code class="function">g_dbus_interface_skeleton_unexport()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-connection"></a><h3>g_dbus_interface_skeleton_get_connection ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *   g_dbus_interface_skeleton_get_connection
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets the first connection that <em class="parameter"><code>interface_</code></em> is exported on, if any.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>interface_</code></em> is
+not exported anywhere. Do not free, the object belongs to <em class="parameter"><code>interface_</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-connections"></a><h3>g_dbus_interface_skeleton_get_connections ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             g_dbus_interface_skeleton_get_connections
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets a list of the connections that <em class="parameter"><code>interface_</code></em> is exported on.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A list of
+all the connections that <em class="parameter"><code>interface_</code></em> is exported on. The returned
+list should be freed with <a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a> after each element has
+been freed with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GDBusConnection][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-has-connection"></a><h3>g_dbus_interface_skeleton_has_connection ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_dbus_interface_skeleton_has_connection
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>);</pre>
+<p>
+Checks if <em class="parameter"><code>interface_</code></em> is exported on <em class="parameter"><code>connection</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>interface_</code></em> is exported on <em class="parameter"><code>connection</code></em>, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-object-path"></a><h3>g_dbus_interface_skeleton_get_object_path ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_dbus_interface_skeleton_get_object_path
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets the object path that <em class="parameter"><code>interface_</code></em> is exported on, if any.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A string owned by <em class="parameter"><code>interface_</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>interface_</code></em> is not exported
+anywhere. Do not free, the string belongs to <em class="parameter"><code>interface_</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusInterfaceSkeletonFlags-enum"></a><h3>enum GDBusInterfaceSkeletonFlags</h3>
+<pre class="programlisting">typedef enum {
+  G_DBUS_INTERFACE_SKELETON_FLAGS_NONE = 0,
+  G_DBUS_INTERFACE_SKELETON_FLAGS_HANDLE_METHOD_INVOCATIONS_IN_THREAD = (1&lt;&lt;0)
+} GDBusInterfaceSkeletonFlags;
+</pre>
+<p>
+Flags describing the behavior of a <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> instance.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="G-DBUS-INTERFACE-SKELETON-FLAGS-NONE:CAPS"></a><span class="term"><code class="literal">G_DBUS_INTERFACE_SKELETON_FLAGS_NONE</code></span></p></td>
+<td>No flags set.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-DBUS-INTERFACE-SKELETON-FLAGS-HANDLE-METHOD-INVOCATIONS-IN-THREAD:CAPS"></a><span class="term"><code class="literal">G_DBUS_INTERFACE_SKELETON_FLAGS_HANDLE_METHOD_INVOCATIONS_IN_THREAD</code></span></p></td>
+<td>Each method invocation is handled in
+  a thread dedicated to the invocation. This means that the method implementation can use blocking IO
+  without blocking any other part of the process. It also means that the method implementation must
+  use locking to access data structures used by other threads.
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-get-flags"></a><h3>g_dbus_interface_skeleton_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="returnvalue">GDBusInterfaceSkeletonFlags</span></a> g_dbus_interface_skeleton_get_flags
+                                                        (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>);</pre>
+<p>
+Gets the <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a> that describes what the behavior
+of <em class="parameter"><code>interface_</code></em>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>One or more flags from the <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a> enumeration.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-skeleton-set-flags"></a><h3>g_dbus_interface_skeleton_set_flags ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_dbus_interface_skeleton_set_flags (<em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface_</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a> flags</code></em>);</pre>
+<p>
+Sets flags describing what the behavior of <em class="parameter"><code>skeleton</code></em> should be.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface_</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>Flags from the <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a> enumeration.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDBusInterfaceSkeleton--g-flags"></a><h3>The <code class="literal">"g-flags"</code> property</h3>
+<pre class="programlisting">  "g-flags"                  <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a>  : Read / Write</pre>
+<p>
+Flags from the <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags"><span class="type">GDBusInterfaceSkeletonFlags</span></a> enumeration.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusInterfaceSkeleton.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GDBusInterfaceSkeleton-g-authorize-method"></a><h3>The <code class="literal">"g-authorize-method"</code> signal</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            user_function                      (<a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> *interface,
+                                                        <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>  *invocation,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>                user_data)       : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Emitted when a method is invoked by a remote caller and used to
+determine if the method call is authorized.
+</p>
+<p>
+Note that this signal is emitted in a thread dedicated to
+handling the method call so handlers are allowed to perform
+blocking IO. This means that it is appropriate to call
+e.g. <a class="ulink" href="http://hal.freedesktop.org/docs/polkit/PolkitAuthority.html#polkit-authority-check-authorization-sync" target="_top">polkit_authority_check_authorization_sync()</a>
+with the <a class="ulink" href="http://hal.freedesktop.org/docs/polkit/PolkitAuthority.html#POLKIT-CHECK-AUTHORIZATION-FLAGS-ALLOW-USER-INTERACTION:CAPS" target="_top">POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION</a> flag set.
+</p>
+<p>
+If <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned then no further handlers are run and the
+signal handler must take a reference to <em class="parameter"><code>invocation</code></em> and finish
+handling the call (e.g. return an error via
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a>).
+</p>
+<p>
+Otherwise, if <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned, signal emission continues. If no
+handlers return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>, then the method is dispatched. If
+<em class="parameter"><code>interface</code></em> has an enclosing <a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton"><span class="type">GDBusObjectSkeleton</span></a>, then the
+<a class="link" href="GDBusObjectSkeleton.html#GDBusObjectSkeleton-authorize-method" title='The "authorize-method" signal'><span class="type">"authorize-method"</span></a> signal handlers run before
+the handlers for this signal.
+</p>
+<p>
+The default class handler just returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>.
+</p>
+<p>
+Please note that the common case is optimized: if no signals
+handlers are connected and the default class handler isn't
+overridden (for both <em class="parameter"><code>interface</code></em> and the enclosing
+<a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton"><span class="type">GDBusObjectSkeleton</span></a>, if any) and <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeleton--g-flags" title='The "g-flags" property'><span class="type">"g-flags"</span></a> does
+not have the
+<a class="link" href="GDBusInterfaceSkeleton.html#G-DBUS-INTERFACE-SKELETON-FLAGS-HANDLE-METHOD-INVOCATIONS-IN-THREAD:CAPS"><code class="literal">G_DBUS_INTERFACE_SKELETON_FLAGS_HANDLE_METHOD_INVOCATIONS_IN_THREAD</code></a>
+flags set, no dedicated thread is ever used and the call will be
+handled in the same thread as the object that <em class="parameter"><code>interface</code></em> belongs
+to was exported in.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>interface</code></em> :</span></p></td>
+<td>The <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> emitting the signal.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>invocation</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the call is authorized, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

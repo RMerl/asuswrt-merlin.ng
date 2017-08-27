@@ -1,0 +1,8 @@
+moon::wget -q http://crl.strongswan.org/strongswan.crl
+moon::mv strongswan.crl /etc/ipsec.d/crls/5da7dd700651327ee7b66db3b5e5e060ea2e4def.crl
+carol::wget -q http://crl.strongswan.org/strongswan.crl
+carol::mv strongswan.crl /etc/ipsec.d/crls/5da7dd700651327ee7b66db3b5e5e060ea2e4def.crl
+moon::ipsec start
+carol::ipsec start
+carol::sleep 2
+carol::ipsec up home

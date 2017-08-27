@@ -1,0 +1,6 @@
+charon.plugins.eap-tnc.max_message_count = 10
+	Maximum number of processed EAP-TNC packets (0 = no limit).
+
+charon.plugins.eap-tnc.protocol = tnccs-2.0
+	IF-TNCCS protocol version to be used (_tnccs-1.1_, _tnccs-2.0_,
+	_tnccs-dynamic_).

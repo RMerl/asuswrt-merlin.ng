@@ -1,0 +1,11 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= $(TARGETNAME).c
+
+SRC_CFLAGS	:= @mod_cflags@
+SRC_CFLAGS	:= -I$(top_builddir)/src/modules/rlm_redis
+TGT_LDLIBS	:= @mod_ldflags@

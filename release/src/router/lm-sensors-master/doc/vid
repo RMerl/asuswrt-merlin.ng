@@ -1,0 +1,58 @@
+VID pin settings
+--------------------
+
+The VID (Voltage Identification) pins on sensor chips
+are used to read the CPU Core voltage setting.
+
+The VID setting can be controlled by jumpers on the board,
+or, in newer motherboards, by settings in the BIOS.
+On these newer boards, the BIOS programs some device's
+pins which in turn controls a DC-DC Converter to set its
+output to a certain voltage. These pins are also connected to
+the sensor chip so that the VID setting can be read back
+by applications.
+
+There are between 4 and 8 VID pins (the more recent the CPU, the more
+numerous the VID pins.) The VID codes are defined by Intel in documents
+titled "VRM X.X DC-DC Converter Design Guidelines".
+(VRM = Voltage Regulator Module), or
+"Voltage Regulator-Down (VRD) X.X Design Guide".
+These documents are available at http://developer.intel.com.
+There are equivalent documents for AMD processors (look for a table
+named "VID Code Voltages" in processor specifications.)
+
+There are several different VRM document versions.
+The common versions are as follows:
+
+Document Version	Voltage Range	Increment	Processors
+----------------	-------------	---------	----------
+"2.4"			0.8 - 1.55	0.025V		AMD Opteron 24x
+
+8.2 (8.1, 8.3)		1.30 - 2.05V    0.05V		PII, PIII, Celeron
+			2.1 - 3.5V	0.10V
+
+8.4			1.30 - 2.05V    0.05V		PIII, Celeron
+							4 pins only
+
+8.5			1.050 - 1.825V	0.05V		PIII-S Tualatin
+
+9.0, (9.1)		1.100 - 1.850V	0.025V		P4, AMD Socket A
+
+10.0			0.8375 - 1.6000 0.0125V		Desktop Socket 478
+
+
+"2.4" is not an actual document version but simply a way to identify
+AMD Opteron 24x processors.
+Note that versions 8.1 - 8.4 are compatible.
+
+Since Linux 2.6.9, the correct VRM version is selected automatically
+based on the CPU brand and model. Thus you shouldn't have to care about
+it. If you are using a brand new CPU and even the latest kernel complains
+("Unknown VRM version of your CPU"), this means that the kernel must be
+taught about this new CPU model. Please report to us in this case.
+
+Remember, the VID pins on the sensor chips are inputs only.
+You cannot use them to manipulate the actual processor core voltage.
+
+------------------
+Copyright (c) 2002-2004 Mark D. Studebaker

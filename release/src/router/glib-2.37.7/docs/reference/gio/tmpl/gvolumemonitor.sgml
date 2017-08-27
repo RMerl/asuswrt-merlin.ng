@@ -1,0 +1,198 @@
+<!-- ##### SECTION Title ##### -->
+GVolumeMonitor
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GVolumeMonitor ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GVolumeMonitor::drive-changed ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::drive-connected ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::drive-disconnected ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::drive-eject-button ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::drive-stop-button ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::mount-added ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::mount-changed ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::mount-pre-unmount ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::mount-removed ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::volume-added ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::volume-changed ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GVolumeMonitor::volume-removed ##### -->
+<para>
+
+</para>
+
+@gvolumemonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### MACRO G_VOLUME_MONITOR_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_volume_monitor_get ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_monitor_get_connected_drives ##### -->
+<para>
+
+</para>
+
+@volume_monitor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_monitor_get_volumes ##### -->
+<para>
+
+</para>
+
+@volume_monitor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_monitor_get_mounts ##### -->
+<para>
+
+</para>
+
+@volume_monitor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_monitor_adopt_orphan_mount ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_monitor_get_mount_for_uuid ##### -->
+<para>
+
+</para>
+
+@volume_monitor: 
+@uuid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_monitor_get_volume_for_uuid ##### -->
+<para>
+
+</para>
+
+@volume_monitor: 
+@uuid: 
+@Returns: 
+
+

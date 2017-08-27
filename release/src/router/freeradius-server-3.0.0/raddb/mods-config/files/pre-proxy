@@ -1,0 +1,31 @@
+#
+#  Configuration file for the rlm_files module.
+#  Please see rlm_files(5) manpage for more information.
+#
+#  $Id$
+#
+#  This file is similar to the "users" file.  The check items
+#  are compared against the request, but the "reply" items are
+#  used to update the proxied packet, not the reply to the NAS.
+#
+#  You can use this file to re-write requests which are about to
+#  be sent to a home server.
+#
+
+#
+#  Requests destinated to realm "extisp" are sent to a RADIUS
+#  home server hosted by an other company which doesn't know about
+#  the IP addresses of our NASes. Therefore we replace the value of
+#  the NAS-IP-Address attribute by a unique value we communicated
+#  to them.
+#
+#DEFAULT Realm == "extisp"
+#	NAS-IP-Address := 10.1.2.3
+
+#
+#  For all proxied packets, set the User-Name in the proxied packet
+#  to the Stripped-User-Name, if it exists.  If not, set it to the
+#  User-Name from the original request.
+#
+#DEFAULT
+#	User-Name := `%{Stripped-User-Name:-%{User-Name}}`

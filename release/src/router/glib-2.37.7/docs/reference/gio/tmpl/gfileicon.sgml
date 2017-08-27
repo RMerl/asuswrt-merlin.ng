@@ -1,0 +1,53 @@
+<!-- ##### SECTION Title ##### -->
+GFileIcon
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFileIcon ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GFileIcon:file ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_file_icon_new ##### -->
+<para>
+
+</para>
+
+@file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_icon_get_file ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+

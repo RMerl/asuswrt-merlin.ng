@@ -1,0 +1,22 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12, i_size is 0, should be 5120.  Fix? yes
+
+Directory inode 13 block 2 should be at block 1.  Fix? yes
+
+Pass 2: Checking directory structure
+Directory inode 12 has an unallocated block #3.  Allocate? yes
+
+Pass 3: Checking directory connectivity
+Pass 3A: Optimizing directories
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Free blocks count wrong for group #0 (78, counted=77).
+Fix? yes
+
+Free blocks count wrong (78, counted=77).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 13/16 files (7.7% non-contiguous), 23/100 blocks
+Exit status is 1

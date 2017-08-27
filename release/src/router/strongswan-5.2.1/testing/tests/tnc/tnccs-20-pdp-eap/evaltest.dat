@@ -1,0 +1,29 @@
+dave:: cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with RSA signature successful::YES
+dave:: cat /var/log/daemon.log::PDP server.*aaa.strongswan.org.*is listening on port 271::YES
+dave:: cat /var/log/daemon.log::collected ... SWID tags::YES
+dave:: cat /var/log/daemon.log::PB-TNC access recommendation is .*Quarantined::YES
+dave:: cat /var/log/daemon.log::EAP method EAP_TTLS succeeded, MSK established::YES
+dave:: cat /var/log/daemon.log::CHILD_SA home{1} established.*TS 192.168.0.200/32 === 10.1.0.16/28::YES
+carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with RSA signature successful::YES
+carol::cat /var/log/daemon.log::PDP server.*aaa.strongswan.org.*is listening on port 271::YES
+carol::cat /var/log/daemon.log::collected ... SWID tag IDs::YES
+carol::cat /var/log/daemon.log::collected 1 SWID tag::YES
+carol::cat /var/log/daemon.log::PB-TNC access recommendation is .*Access Allowed::YES
+carol::cat /var/log/daemon.log::EAP method EAP_TTLS succeeded, MSK established::YES
+carol::cat /var/log/daemon.log::CHILD_SA home{1} established.*TS 192.168.0.100/32 === 10.1.0.0/28::YES
+alice::cat /var/log/daemon.log::user AR identity.*dave.*authenticated by password::YES
+alice::cat /var/log/daemon.log::IMV 2 handled SWIDT workitem 3: allow - received inventory of 0 SWID tag IDs and ... SWID tags::YES
+alice::cat /var/log/daemon.log::user AR identity.*carol.*authenticated by password::YES
+alice::cat /var/log/daemon.log::IMV 2 handled SWIDT workitem 9: allow - received inventory of ... SWID tag IDs and 1 SWID tag::YES
+moon:: cat /var/log/daemon.log::received RADIUS attribute Filter-Id: 'isolate'::YES
+moon:: cat /var/log/daemon.log::RADIUS authentication of 'dave' successful::YES
+moon:: cat /var/log/daemon.log::authentication of '192.168.0.200' with EAP successful::YES
+moon:: cat /var/log/daemon.log::received RADIUS attribute Filter-Id: 'allow'::YES
+moon:: cat /var/log/daemon.log::RADIUS authentication of 'carol' successful::YES
+moon:: cat /var/log/daemon.log::authentication of '192.168.0.100' with EAP successful::YES
+moon:: ipsec statusall 2>/dev/null::rw-isolate.*10.1.0.16/28 === 192.168.0.200/32::YES
+moon:: ipsec statusall 2>/dev/null::rw-allow.*10.1.0.0/28 === 192.168.0.100/32::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+carol::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_req=1::NO
+dave:: ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_req=1::YES
+dave:: ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::NO

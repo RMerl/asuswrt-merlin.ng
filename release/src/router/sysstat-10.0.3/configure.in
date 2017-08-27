@@ -1,0 +1,530 @@
+# configure.in
+#
+# (C) 2007 - Ivana Varekova <varekova@redhat.com>
+# Modified by Sebastien Godard (sysstat <at> orange.fr)
+
+# Initialization of $PACKAGE_VERSION and $PACKAGE_NAME variables
+AC_INIT(sysstat, 10.0.3)
+
+# Ensure that a recent enough version of Autoconf is being used
+AC_PREREQ(2.53)
+
+# Check whether the configure script is in the right dir
+AC_CONFIG_SRCDIR(ioconf.h)
+
+# Check programs
+echo .
+echo Check programs:
+echo .
+
+AC_PROG_CC
+AC_GNU_SOURCE
+AC_PROG_LN_S
+
+DFLAGS=""
+
+AC_CHECK_PROG(CHMOD, chmod, chmod)
+AC_CHECK_PROG(CHOWN, chown, chown)
+AC_CHECK_PROG(AR, ar, ar)
+AC_CHECK_PROG(INSTALL, install, install)
+AC_CHECK_PROG(MSGFMT, msgfmt, msgfmt)
+AC_CHECK_PROG(XGETTEXT, xgettext, xgettext)
+AC_CHECK_PROG(MSGMERGE, msgmerge, msgmerge)
+AC_CHECK_PROGS(ZIP, bzip2 gzip, gzip, /bin /etc /sbin /usr/bin /usr/etc /usr/sbin /usr/ucb /usr/local/bin /usr/local/etc /usr/local/sbin)
+INSTALL_DATA="\${INSTALL} -m 644"
+AC_SUBST(INSTALL_DATA)
+INSTALL_BIN="\${INSTALL} -m 755"
+AC_SUBST(INSTALL_BIN)
+
+AC_PATH_PROGS(PATH_CP, cp, cp, /bin /etc /sbin /usr/bin /usr/etc /usr/sbin /usr/ucb /usr/local/bin /usr/local/etc /usr/local/sbin)
+AC_PATH_PROGS(PATH_CHKCONFIG, chkconfig, chkconfig, /bin /etc /sbin /usr/bin /usr/etc /usr/sbin /usr/ucb /usr/local/bin /usr/local/etc /usr/local/sbin)
+
+# Check libraries
+
+# Check header files
+echo .
+echo Check header files:
+echo .
+HAVE_LIBINTL_H=
+HAVE_LOCALE_H=
+AC_HEADER_STDC
+AC_HEADER_DIRENT
+AC_CHECK_HEADERS(ctype.h)
+AC_CHECK_HEADERS(errno.h)
+AC_CHECK_HEADERS(libintl.h, HAVE_LIBINTL_H=1)
+AC_CHECK_HEADERS(locale.h, HAVE_LOCALE_H=1)
+AC_CHECK_HEADERS(net/if.h)
+AC_CHECK_HEADERS(regex.h)
+AC_CHECK_HEADERS(signal.h)
+AC_CHECK_HEADERS(stdio.h)
+AC_CHECK_HEADERS(sys/file.h)
+AC_CHECK_HEADERS(sys/ioctl.h)
+AC_CHECK_HEADERS(sys/stat.h)
+
+echo .
+echo Check typedefs, structures and compiler characteristics:
+echo .
+AC_TYPE_SIGNAL
+AC_TYPE_SIZE_T
+AC_TYPE_OFF_T
+
+echo .
+echo Check library functions:
+echo .
+AC_CHECK_FUNCS(strchr)
+AC_CHECK_FUNCS(strcspn)
+AC_CHECK_FUNCS(strspn)
+AC_CHECK_FUNCS(strstr)
+
+# Should we check for lm_sensors?
+AC_MSG_CHECKING(for sensors support)
+AC_ARG_ENABLE(sensors,
+	      AC_HELP_STRING([--disable-sensors],
+			     [disable sensors support]),
+			     SENSORS=$enableval,SENSORS=yes)
+if test $SENSORS != "yes"; then
+   HAVE_SENSORS="n"
+else
+   HAVE_SENSORS="y"
+fi
+AC_MSG_RESULT($SENSORS)
+
+# Check for lm_sensors
+SENSORS=no
+LFSENSORS=""
+DFSENSORS=""
+AC_CHECK_LIB(sensors, sensors_get_detected_chips, LFSENSORS="-lsensors", HAVE_SENSORS="n")
+AC_MSG_CHECKING(for sensors lib)
+AC_TRY_COMPILE(#include <sensors/sensors.h>
+#include <sensors/error.h>
+		, sensors_cleanup();,SENSORS=yes; DFSENSORS="-DHAVE_SENSORS", HAVE_SENSORS="n"; SENSORS=no)
+AC_MSG_RESULT($SENSORS)
+AC_SUBST(HAVE_SENSORS)
+AC_SUBST(LFSENSORS)
+AC_SUBST(DFSENSORS)
+
+echo .
+echo Check system services:
+echo .
+AC_SYS_LARGEFILE
+
+echo .
+echo Check configuration:
+echo .
+# Check arguments used
+#
+# Optional Features:
+#  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+#  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+#  --disable-largefile     omit support for large files
+#  --disable-nls           disable National Language Support
+#  --enable-yesterday      tell sa2 to use "yesterday" data files
+#  --disable-man-group     ignore man_group variable value
+#  --enable-install-cron   tell sysstat to install cron scripts
+#  --enable-clean-sa-dir   clean system activity directory
+#  --enable-compress-manpg compress manual pages
+#  --enable-install-isag   install isag script
+#  --enable-debuginfo      enable debug output (--debuginfo option)
+#  --disable-documentation do not install documentation (man pages...)
+#  --disable-sensors	   do not link against libsensors even if available
+#
+# Some influential environment variables:
+#  rcdir	 directory where startup scripts are installed
+#  sa_lib_dir    sadc, sa1 and sa2 directory
+#  sa_dir        system activity daily datafiles directory
+#  conf_dir	 sysstat configuration directory (default is /etc/sysconfig)
+#  history       number of daily datafiles to keep (default value is 7)
+#  compressafter number of days after which datafiles are compressed
+#  man_group     group for man pages
+#  cron_owner    crontab owner
+#  cron_interval crontab sampling interval
+#
+# Fine tuning the installation directories:
+#  --mandir=DIR           man documentation directory [PREFIX/man]
+#  --docdir=DIR		  other documentation directory [PREFIX/share/doc]
+#
+# Installation directories:
+#  --prefix=PREFIX         install architecture-independent files in PREFIX
+#                            [/usr/local]
+#  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
+#                            [PREFIX]
+
+# Set directories
+if test -d /etc/init.d && test ! -L /etc/init.d; then
+   if test -d /etc/init.d/rc2.d; then
+      RC_DIR=/etc/init.d
+      INITD_DIR=.
+   else
+      RC_DIR=/etc
+      INITD_DIR=init.d
+   fi
+   INIT_DIR=/etc/init.d
+elif test -d /sbin/init.d; then
+   RC_DIR=/sbin/init.d
+   INIT_DIR=/sbin/init.d
+   INITD_DIR=.
+else
+   RC_DIR=/etc/rc.d
+   INIT_DIR=/etc/rc.d/init.d
+   INITD_DIR=init.d
+fi
+
+AC_MSG_CHECKING(run-commands directory)
+AC_ARG_VAR([rcdir],[run-commands directory])
+if test x$rcdir != x""; then
+	# Override previous rc directories values
+	RC_DIR=$rcdir
+	INIT_DIR=$rcdir/init.d
+	INITD_DIR=init.d
+fi
+AC_MSG_RESULT($RC_DIR)
+if test ! -d $RC_DIR; then
+	echo "INFO: Directory ${RC_DIR} doesn't exist."
+	echo "INFO: Startup scripts won't be installed."
+fi
+
+AC_SUBST(RC_DIR)
+AC_SUBST(INIT_DIR)
+AC_SUBST(INITD_DIR)
+
+# Set sadc directory
+if test $prefix != "NONE"; then
+   AuxPrefix=$prefix
+else
+   AuxPrefix=/usr/local
+fi
+
+if test -d $AuxPrefix/lib; then
+   SADC_DIR=$AuxPrefix/lib
+elif test -d $AuxPrefix/lib64; then
+   SADC_DIR=$AuxPrefix/lib64
+else
+   SADC_DIR=$AuxPrefix/lib
+fi
+
+AC_MSG_CHECKING(sadc directory)
+AC_ARG_VAR([sa_lib_dir],[sadc directory])
+if test x$sa_lib_dir != x""; then
+   SA_LIB_DIR=$sa_lib_dir
+else
+   SA_LIB_DIR=$SADC_DIR/sa
+fi
+AC_MSG_RESULT($SA_LIB_DIR)
+if test ! -d $SA_LIB_DIR; then
+   echo "INFO: Directory ${SA_LIB_DIR} will be created during installation stage."
+fi
+AC_SUBST(SA_LIB_DIR)
+
+# Set system activity directory
+AC_MSG_CHECKING(system activity directory)
+AC_ARG_VAR([sa_dir],[system activity directory])
+if test x$sa_dir != x""; then
+   SA_DIR=$sa_dir
+else
+   SA_DIR=/var/log/sa
+fi
+AC_MSG_RESULT($SA_DIR)
+if test ! -d $SA_DIR; then
+   echo "INFO: Directory ${SA_DIR} will be created during installation stage." 
+fi
+AC_SUBST(SA_DIR)
+
+# Set configuration directory
+AC_MSG_CHECKING(sysstat configuration directory)
+AC_ARG_VAR([conf_dir],[sysstat configuration directory])
+if test x$conf_dir != x""; then
+   SYSCONFIG_DIR=$conf_dir
+else
+   SYSCONFIG_DIR=/etc/sysconfig
+fi
+AC_MSG_RESULT($SYSCONFIG_DIR)
+if test ! -d $SYSCONFIG_DIR; then
+   echo "INFO: Directory ${SYSCONFIG_DIR} will be created during installation stage." 
+fi
+AC_SUBST(SYSCONFIG_DIR)
+
+# National Language Support
+AC_MSG_CHECKING(National Language Support)
+AC_ARG_ENABLE(nls,
+	      AC_HELP_STRING([--disable-nls],
+			     [disable National Language Support]),
+			     AUX_NLS=$enableval,AUX_NLS=yes)
+if test $AUX_NLS != "no" && test $HAVE_LIBINTL_H && test $HAVE_LOCALE_H; then
+   AUX_NLS="yes"
+   NLS="y"
+else
+   AUX_NLS="no"
+   NLS="n"
+fi
+AC_MSG_RESULT($AUX_NLS)
+AC_SUBST(NLS)
+if test $AUX_NLS = "yes" &&  test x$MSGFMT != x"msgfmt"; then 
+   echo "WARNING: msgfmt command not found!"
+fi
+if test $AUX_NLS = "yes" &&  test x$XGETTEXT != x"xgettext"; then 
+   echo "WARNING: xgettext command not found!"
+fi
+if test $AUX_NLS = "yes" &&  test x$MSGMERGE != x"msgmerge"; then 
+   echo "WARNING: msgmerge command not found!"
+fi
+
+# Check whether sa2 should process data file of the day before
+AC_MSG_CHECKING(whether sa2 should process data file of the day before)
+AC_ARG_ENABLE(yesterday,
+	      AC_HELP_STRING([--enable-yesterday],
+			     [tell sa2 to use data file of the day before]),
+			     AUX_YESTERDAY=$enableval,AUX_YESTERDAY=no)
+if test $AUX_YESTERDAY = "yes"; then
+   YESTERDAY="--date=yesterday"
+   AC_MSG_RESULT(yes)
+else
+   YESTERDAY=""
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(YESTERDAY)
+
+# Data history to keep by sa2
+AC_MSG_CHECKING(number of daily data files to keep)
+AC_ARG_VAR([history],[number of daily data files to keep (default value is 7)]) 
+if test x$history = x""; then
+   HISTORY=7
+else
+   HISTORY=$history
+fi
+AC_MSG_RESULT($HISTORY)
+AC_SUBST(HISTORY)
+
+# Number of days after which datafiles are compressed
+AC_MSG_CHECKING(number of days after which data files are compressed)
+AC_ARG_VAR([compressafter],[number of days after which data files are compressed (default value is 10)])
+if test x$compressafter = x""; then
+   COMPRESSAFTER=10
+else
+   COMPRESSAFTER=$compressafter
+fi
+AC_MSG_RESULT($COMPRESSAFTER)
+AC_SUBST(COMPRESSAFTER)
+
+# Manual page group
+if `grep ^man: /etc/group >/dev/null 2>&1`; then
+   GRP=man
+else
+   GRP=root
+fi
+
+AC_MSG_CHECKING(group for manual pages)
+AC_ARG_VAR([man_group],[group for manual pages])
+if test x$man_group = x""; then
+   MAN_GROUP=$GRP
+   AC_MSG_RESULT($MAN_GROUP)
+else
+   if !(`grep ^$man_group: /etc/group >/dev/null 2>&1`); then 
+      MAN_GROUP=$GRP
+      AC_MSG_RESULT($MAN_GROUP) 
+      echo "WARNING: Group ${man_group} not found: Using ${GRP} instead"
+   else
+      MAN_GROUP=$man_group
+      AC_MSG_RESULT($MAN_GROUP)
+   fi
+fi
+AC_SUBST(MAN_GROUP)
+
+# Ignore manual pages group?
+AC_MSG_CHECKING(whether man_group variable should be ignored)
+AC_ARG_ENABLE(man-group,
+	      AC_HELP_STRING([--disable-man-group],
+			     [ignore man_group variable value]),
+			     AUX_IMG=$enableval,AUX_IMG=yes)
+if test $AUX_IMG != "no"; then
+   IGNORE_MAN_GROUP=n
+   AUX_IMG=no
+else
+   IGNORE_MAN_GROUP=y
+   AUX_IMG=yes
+fi
+AC_MSG_RESULT($AUX_IMG)
+AC_SUBST(IGNORE_MAN_GROUP)
+
+# Compress manual pages?
+AC_MSG_CHECKING(whether manual pages should be compressed)
+AC_ARG_ENABLE(compress-manpg,
+	      AC_HELP_STRING([--enable-compress-manpg],
+			     [compress sysstat manual pages]),
+			     AUX_MPG=$enableval,AUX_MPG=no)
+if test $AUX_MPG != "yes"; then
+   COMPRESS_MANPG=n
+   AUX_MPG=no
+else
+   COMPRESS_MANPG=y
+fi
+AC_MSG_RESULT($AUX_MPG)
+AC_SUBST(COMPRESS_MANPG)
+
+# Check whether isag should be installed
+AC_MSG_CHECKING(whether isag script should be installed)
+AC_ARG_ENABLE(install-isag,
+	      AC_HELP_STRING([--enable-install-isag],
+			     [install isag script]),
+			     AUX_IIS=$enableval,AUX_IIS=no)
+if test $AUX_IIS != "yes"; then
+   INSTALL_ISAG=n
+   AUX_IIS=no
+else
+   INSTALL_ISAG=y
+fi
+AC_MSG_RESULT($AUX_IIS)
+AC_SUBST(INSTALL_ISAG)
+
+# Check whether sa directory should be cleaned
+AC_MSG_CHECKING(whether system activity directory should be cleaned)
+AC_ARG_ENABLE(clean-sa-dir,
+	      AC_HELP_STRING([--enable-clean-sa-dir],
+			     [clean system activity directory]),
+			    AUX_CSD=$enableval,AUX_CSD=no)
+if test $AUX_CSD != "yes"; then
+   CLEAN_SA_DIR=n
+   AUX_CSD=no
+else
+   CLEAN_SA_DIR=y
+fi
+AC_MSG_RESULT($AUX_CSD)
+AC_SUBST(CLEAN_SA_DIR)
+
+# Crontab
+AC_MSG_CHECKING(whether cron should start sar automatically)
+AC_ARG_ENABLE(install-cron, 
+	      AC_HELP_STRING([--enable-install-cron],
+			     [install a crontab to start sar]),
+			     INSTALL_CRON=$enableval,INSTALL_CRON=n)
+if test $INSTALL_CRON != "yes"; then
+   INSTALL_CRON=n
+   AUX_CRON=no
+else 
+   INSTALL_CRON=y
+   AUX_CRON=yes
+fi
+AC_MSG_RESULT($AUX_CRON)
+AC_SUBST(INSTALL_CRON)
+
+CUSR="root"
+if test $INSTALL_CRON = "y"; then 
+   AC_MSG_CHECKING(crontab owner)
+   AC_ARG_VAR([cron_owner],[crontab owner])
+   if test x$cron_owner = x""; then
+      CRON_OWNER=$CUSR
+      AC_MSG_RESULT($CRON_OWNER)
+   else
+      if !(`grep ^$cron_owner: /etc/passwd >/dev/null 2>&1`); then
+         CRON_OWNER=$CUSR;
+         AC_MSG_RESULT($CRON_OWNER)
+         echo "WARNING: User ${cron_owner} not found: Using ${CUSR} instead."
+      else 
+         CRON_OWNER=$cron_owner
+         AC_MSG_RESULT($CRON_OWNER)
+      fi
+   fi
+   echo "INFO: Crontab for ${CRON_OWNER} will be saved in current directory if necessary"
+   if test $CRON_OWNER = "root"; then 
+      SU_C_OWNER=""
+      QUOTE=""
+      REM_CHOWN="# REM_CHOWN"
+   else 
+      SU_C_OWNER="su $CRON_OWNER -c "
+      QUOTE=\"
+      # " (ignore this line)
+      REM_CHOWN=$CHOWN
+   fi
+
+   AC_MSG_CHECKING(crontab interval)
+   AC_ARG_VAR([cron_interval],[crontab interval])
+   if test x$cron_interval = x""; then
+      CRON_INTERVAL=10
+   else
+      CRON_INTERVAL=$cron_interval
+   fi
+   AC_MSG_RESULT($CRON_INTERVAL)
+   CRON_INTERVAL_SEC=`expr ${CRON_INTERVAL} \* 60`
+   CRON_COUNT=`expr 60 / ${CRON_INTERVAL}`
+else
+   CRON_OWNER="root"
+   SU_C_OWNER=""
+   QUOTE=""
+   REM_CHOWN="# REM_CHOWN"
+   CRON_INTERVAL=10
+   CRON_INTERVAL_SEC=600
+   CRON_COUNT=6
+fi
+AC_SUBST(CRON_OWNER)
+AC_SUBST(SU_C_OWNER)
+AC_SUBST(CRON_INTERVAL)
+AC_SUBST(CRON_INTERVAL_SEC)
+AC_SUBST(CRON_COUNT)
+AC_SUBST(QUOTE)
+AC_SUBST(REM_CHOWN)
+
+# Check whether documentation should be installed
+AC_MSG_CHECKING(whether documentation should be installed)
+AC_ARG_ENABLE(documentation,
+	      AC_HELP_STRING([--disable-documentation],
+			     [do not install documentation]),
+			     AUX_DOC=$enableval,AUX_DOC=yes)
+if  test  $AUX_DOC !=  "no"; then
+   AUX_DOC="yes"
+   INSTALL_DOC="y"
+else
+   AUX_DOC="no"
+   INSTALL_DOC="n"
+fi
+AC_MSG_RESULT($AUX_DOC)
+AC_SUBST(INSTALL_DOC)
+
+# Set directory for installing manual pages (see comment in Makefile)
+AC_SUBST(mandir)
+
+# Check whether --debuginfo options should be allowed
+AC_ARG_ENABLE(debuginfo, 
+	      AC_HELP_STRING([--enable-debuginfo],
+			     [enable debug output (--debuginfo option)]),
+			     WITH_DEBUG=yes ; DFLAGS="$DFLAGS -DDEBUG" , WITH_DEBUG=no)
+AC_SUBST(WITH_DEBUG)
+AC_SUBST(DFLAGS)
+
+# Create files
+echo .
+echo Now create files:
+echo .
+AC_CONFIG_FILES([sa1], [chmod +x sa1])  	# Permissions must be changed
+AC_CONFIG_FILES([sa2], [chmod +x sa2])		# Permissions must be changed
+AC_CONFIG_FILES([cron/crontab:cron/crontab.sample])	# File must be renamed
+AC_CONFIG_FILES([sysstat.sysconfig])
+AC_CONFIG_FILES([version.h:version.in])		# File must be renamed
+AC_CONFIG_FILES([sysconfig.h:sysconfig.in])	# File must be renamed
+AC_CONFIG_FILES([cron/sysstat.cron.daily])
+AC_CONFIG_FILES([cron/sysstat.cron.hourly])
+AC_CONFIG_FILES([cron/sysstat.crond])
+AC_CONFIG_FILES([cron/sysstat.crond.sample.in:cron/sysstat.crond.in], [sed s/^/#/ cron/sysstat.crond.sample.in > cron/sysstat.crond.sample])
+AC_CONFIG_FILES([sysstat], [chmod +x sysstat])	# Permissions must be changed
+AC_CONFIG_FILES([man/sa1.8:man/sa1.in])		# File must be renamed
+AC_CONFIG_FILES([man/sa2.8:man/sa2.in])		# File must be renamed
+AC_CONFIG_FILES([man/sadc.8:man/sadc.in])	# File must be renamed
+AC_CONFIG_FILES([man/sadf.1:man/sadf.in])	# File must be renamed
+AC_CONFIG_FILES([man/sar.1:man/sar.in])		# File must be renamed
+AC_CONFIG_FILES([man/sysstat.5:man/sysstat.in])	# File must be renamed
+AC_CONFIG_FILES([man/iostat.1:man/iostat.in])	# File must be renamed
+AC_CONFIG_FILES([man/cifsiostat.1:man/cifsiostat.in])	# File must be renamed
+AC_CONFIG_FILES([man/nfsiostat.1:man/nfsiostat.in])	# File must be renamed
+AC_CONFIG_FILES([contrib/isag/isag], [chmod +x contrib/isag/isag]) # Permissions must be changed
+
+AC_OUTPUT(Makefile)
+
+echo "
+   Sysstat version:		$PACKAGE_VERSION
+   Installation prefix:		$prefix
+   rc directory:		${RC_DIR}
+   Init directory:		${INIT_DIR}
+   Configuration directory:	${SYSCONFIG_DIR}
+   Man pages directory:		$mandir
+   Compiler:			$CC
+   Compiler flags:		$CFLAGS
+"
+

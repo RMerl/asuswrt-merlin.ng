@@ -1,0 +1,87 @@
+<!-- ##### SECTION Title ##### -->
+Timers
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTimer ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_timer_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timer_start ##### -->
+<para>
+
+</para>
+
+@timer: 
+
+
+<!-- ##### FUNCTION g_timer_stop ##### -->
+<para>
+
+</para>
+
+@timer: 
+
+
+<!-- ##### FUNCTION g_timer_continue ##### -->
+<para>
+
+</para>
+
+@timer: 
+
+
+<!-- ##### FUNCTION g_timer_elapsed ##### -->
+<para>
+
+</para>
+
+@timer: 
+@microseconds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timer_reset ##### -->
+<para>
+
+</para>
+
+@timer: 
+
+
+<!-- ##### FUNCTION g_timer_destroy ##### -->
+<para>
+
+</para>
+
+@timer: 
+
+

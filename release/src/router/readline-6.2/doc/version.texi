@@ -1,0 +1,10 @@
+@ignore
+Copyright (C) 1988-2011 Free Software Foundation, Inc. 
+@end ignore
+
+@set EDITION 6.2
+@set VERSION 6.2
+@set UPDATED September 6 2010
+@set UPDATED-MONTH September 2010
+
+@set LASTCHANGE Mon Sep  6 22:07:10 EDT 2010

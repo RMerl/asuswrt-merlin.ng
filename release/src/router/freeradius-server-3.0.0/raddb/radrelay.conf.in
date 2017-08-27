@@ -1,0 +1,166 @@
+# -*- text -*-
+##
+## radrelay.conf  -- FreeRADIUS server configuration file.
+##
+##	Use with: radiusd -n radrelay
+##
+##	http://www.freeradius.org/
+##	$Id$
+##
+
+######################################################################
+#
+#	This file is a sample configuration that replaces the old
+#	"radrelay" program.  It is a *minimal* configuration that
+#	does little more than read the detail file, and proxy the
+#	packets to a home server.  If you need it to do more than
+#	just replace radrelay, you will need to add additional
+#	configuration.
+#
+#	See raddb/sites-available/copy-acct-to-home-server for a
+#	more complete example.  That example is intended to be run
+#	as part of a larger radius configuration, where the server
+#	also listens on ports 1812, etc.  The example given here
+#	is a minimal example that has ONLY radrelay functionality.
+#
+#	See radiusd.conf for a complete description of the configuration
+#	parameters used here.
+#
+######################################################################
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+sysconfdir = @sysconfdir@
+localstatedir = @localstatedir@
+sbindir = @sbindir@
+logdir = @logdir@
+raddbdir = @raddbdir@
+radacctdir = @radacctdir@
+
+#
+#  name of the running server.  See also the "-n" command-line option.
+#
+name = radrelay
+
+#
+#  Generic configuration
+#
+confdir = ${raddbdir}
+run_dir = ${localstatedir}/run/${name}
+libdir = @libdir@
+pidfile = ${run_dir}/${name}.pid
+
+#
+#  Request handling configuration
+#
+max_request_time = 30
+cleanup_delay = 5
+max_requests = 65536
+
+#
+#  Logging section.
+#
+log {
+	destination = files
+	file = ${logdir}/${name}.log
+}
+
+#
+#  Security configuration
+#
+security {
+	max_attributes = 200
+
+	# reject_delay && status_server don't apply when we are
+	# only reading accounting packets from the detail file
+}
+
+#
+#  If you need more modules, add them here.
+#
+modules {
+	$INCLUDE ${confdir}/modules/always
+}
+
+#
+#  If you need to instantiate modules, add them here.
+#
+instantiate {
+}
+
+#
+#  Configuration of home servers, etc.
+#
+proxy_requests  = yes
+
+#
+#  See proxy.conf for additional home server configuration.
+#
+home_server home1 {
+	type = acct
+
+	#
+	#  This directive replaces the "-r" command-line option
+	#  in radrelay
+	#
+	ipaddr = 192.0.2.20
+
+	port = 1812
+
+	#
+	#  This directive replaces the "-i" command-line option
+	#  in radrelay
+	#
+#	src_ipaddr = 192.0.2.1
+
+	#
+	#  This directive replaces the "-s", "-S", and "-n" command-line
+	#  options in radrelay
+	#
+	secret = testing123
+}
+
+#
+#  List one or more home servers here for fail-over, load-balancing, etc.
+#
+home_server_pool radrelay {
+	type = fail-over
+	home_server = home1
+}
+
+#
+#  A dummy realm.
+#
+realm radrelay {
+	acct_pool = radrelay
+}
+
+#
+#  Read the detail file.
+#
+listen {
+	type = detail
+
+	#
+	#  The filename here should be the same as the one used by the
+	#  main radiusd program.  It writes the file using the "detail"
+	#  module (see raddb/modules/detail).
+	#
+	filename = ${radacctdir}/detail
+	load_factor = 90
+}
+
+#
+#  See also raddb/sites-available/copy-acct-to-home-server
+#  for additional description.
+#
+preacct {
+	#
+	#  Proxy the packet using the given realm.
+	#  Note that we do not use the realm for anything else such
+	#  as prefix/suffix stripping or comparisons.
+	#
+	update control {
+		Proxy-To-Realm := "radrelay"
+	}
+}

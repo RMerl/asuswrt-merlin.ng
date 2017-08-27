@@ -1,0 +1,5 @@
+A connection between the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>Preshared Keys</b> (PSK), but gateway <b>moon</b>
+uses a wrong PSK. This makes it impossible for gateway <b>sun</b> to decrypt the
+IKEv1 message correctly. Thus <b>sun</b> returns a <b>PAYLOAD-MALFORMED</b> error
+notify which in turn cannot be decrypted by <b>moon</b>.

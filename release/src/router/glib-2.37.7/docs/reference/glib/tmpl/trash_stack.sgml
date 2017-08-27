@@ -1,0 +1,65 @@
+<!-- ##### SECTION Title ##### -->
+Trash Stacks
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTrashStack ##### -->
+<para>
+
+</para>
+
+@next: 
+
+<!-- ##### FUNCTION g_trash_stack_push ##### -->
+<para>
+
+</para>
+
+@stack_p: 
+@data_p: 
+
+
+<!-- ##### FUNCTION g_trash_stack_pop ##### -->
+<para>
+
+</para>
+
+@stack_p: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_trash_stack_peek ##### -->
+<para>
+
+</para>
+
+@stack_p: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_trash_stack_height ##### -->
+<para>
+
+</para>
+
+@stack_p: 
+@Returns: 
+
+

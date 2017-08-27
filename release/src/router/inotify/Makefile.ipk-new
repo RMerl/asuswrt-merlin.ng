@@ -1,0 +1,24 @@
+#***********************************************************************
+#
+# Makefile
+#
+#***********************************************************************
+
+#CFLAGS = -g -rdynamic -DMYDEBUG -DDEBUG
+CFLAGS = -g -rdynamic
+LIBS = -lpthread
+#CFLAGS += -I/usr/include
+#all: asuswebstorage inotify
+all: inotify
+
+#https: https.o md5.o urlencode.o oauth.o oauth_http.o xmalloc.o
+#asuswebstorage: asuswebstorage.o api.o function.o 
+	#$(CC) $(CFLAGS) $(LIBS)  $^ -o $@ 
+
+inotify: event_queue.o inotify_utils.o inotify.o
+	$(CC) $(CFLAGS) $(LIBS)  $^ -o $@ -Wl,-dynamic-linker=/opt/lib/ld-uClibc.so.1
+	#cp -rf inotify ../Inotify-ipk/opt/tmp/bin/
+
+.PHONY: clean
+clean:
+	-rm -rf *.o inotify

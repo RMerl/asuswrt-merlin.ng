@@ -1,0 +1,9 @@
+Package: fapi_wlan_common
+Version: 1.0.0.1-1
+Depends: libc, libssp, libhelper, libncurses, librt
+Source: ugw/feeds_ugw/wlan/fapi_wlan_common
+Section: net
+Maintainer: LANTIQ DEUTSCHLAND GMBH
+Architecture: lantiq
+Installed-Size: 190192
+Description:  Lantiq Common FAPI layer

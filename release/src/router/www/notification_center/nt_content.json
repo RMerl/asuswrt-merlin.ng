@@ -1,0 +1,487 @@
+{
+"10001":{"group":"2","contents":"","callback":"", "icon":"0"},
+"10002":{"group":"2","contents":"","callback":"", "icon":"0"},
+"10003":{
+	"group":"1",
+	"item":"WiFi Password is the Same",
+	"contents":"WiFi password is same as administrator password. Please change a password to reduce security risks.",
+	"buttom1":"Change",
+	"callback":"Advanced_Wireless_Content.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"10004":{
+	"group":"1",
+	"item":"WiFi Password is Weak",
+	"contents":"WiFi password strength is weak. We strongly recommend changing your password to reduce security risks.",
+	"buttom1":"Change",
+	"callback":"Advanced_Wireless_Content.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"10005":{
+	"group":"1",
+	"item":"Admin Password is Weak",
+	"contents":"Administrator password strength is weak. We strongly recommend changing your password to reduce security risks.",
+	"buttom1":"Change",
+	"callback":"Advanced_System_Content.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"10006":{
+	"group":"1",
+	"item":"Guest Network is avaiable now!",
+	"contents":"Click to share Wi-Fi to your friends",
+	"buttom1":"Skip",
+	"callback":"",
+	"buttom2":"",
+	"icon":"2"
+	},
+"10007":{
+	"group":"1",
+	"item":"Guest Network is avaiable now!",
+	"contents":"Click to share Wi-Fi to your friends",
+	"buttom1":"Skip",
+	"callback":"",
+	"buttom2":"",
+	"icon":"2"
+	},
+"10008":{
+	"group":"1",
+	"item":"Get better signal!",
+	"contents":"Learn more about range extender",
+	"buttom1":"Skip",
+	"callback":"",
+	"buttom2":"",
+	"icon":"2"
+	},
+"10009":{
+	"group":"1",
+	"item":"Get better signal!",
+	"contents":"Move your range extender closer to router",
+	"buttom1":"Skip",
+	"callback":"",
+	"buttom2":"",
+	"icon":"2"
+	},
+"1000A":{
+	"group":"1",
+	"item":"Failover Completed",
+	"contents":"Primary WAN is disconnected. <% nvram_get("productid"); %> has switched to backup network.",
+	"buttom1":"Skip",
+	"callback":"",
+	"icon":"2"
+	},
+"1000B":{
+	"group":"1",
+	"item":"Failback Completed",
+	"contents":"Primary WAN connection has been restored.",
+	"buttom1":"Skip",
+	"callback":"",
+	"icon":"2"
+	},
+"1000C":{
+	"group":"1",
+	"item":"AiPlayer device is found",
+	"contents":"Click to use ASUS AiPlayer",
+	"buttom1":"Skip",
+	"callback":"",
+	"icon":"2"
+	},
+"1000D":{
+	"group":"1",
+	"item":"ASUS router is found and need configuration",
+	"contents":"Click here to set it up",
+	"buttom1":"Skip",
+	"callback":"",
+	"icon":"2"
+	},
+"1000E":{
+	"group":"1",
+	"item":"ECO Mode is on",
+	"contents":"Click to do more related settings",
+	"buttom1":"Skip",
+	"callback":"",
+	"icon":"2"
+	},
+"1000F":{
+	"group":"1",
+	"item":"Game mode is on",
+	"contents":"Click to do more related settings",
+	"buttom1":"Skip",
+	"callback":"",
+	"icon":"2"
+	},
+"10010":{"group":"1",
+	"item":"New Device Connected",
+	"contents":" is connected to <% nvram_get("productid"); %>. Allow access?",
+	"buttom1":"Block",
+	"callback":"Advanced_ACL_Content.asp",
+	"buttom2":"Allow",
+	"icon":"5"
+	},
+"10011":{"group":"1",
+	"item":"Device Disconnected.",
+	"contents":" is disconnected to <% nvram_get("productid"); %>.",
+	"buttom1":"",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"5"
+	},
+"10012":{"group":"1",
+	"item":"New Firmware Available",
+	"contents":"New firmware, version ",
+	"contents_1":" is available for <% nvram_get("productid"); %>. Please click on details to find release notes and update to the latest firmware.",
+	"buttom1":"Detail",
+	"callback":"Advanced_FirmwareUpgrade_Content.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10013":{
+	"group":"1",
+	"item":"Signature Updated",
+	"contents":"Signature is updated to version ",
+	"contents_1":". You get up-to-date network protection and the latest device&apps identification.",
+	"buttom1":"",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"2"
+	},
+"10014":{"group":"1",
+	"item":"Manage Your Wireless Client",
+	"contents":" is connected to <% nvram_get("productid"); %>. Manage Client's access time?",
+	"buttom1":"Manage",
+	"callback":"Advanced_ACL_Content.asp",
+	"buttom2":"Allow",
+	"icon":"5"
+	},
+"20001":{
+	"group":"1",
+	"item":"Unusual Router Sign-In",
+	"contents":" has failed to log into <% nvram_get("productid"); %>. Regular password change is recommended to reduce security risks.",
+	"buttom1":"Change",
+	"callback":"Advanced_System_Content.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"20002":{"group":"2","contents":"","callback":""},
+"20003":{
+	"group":"1",
+	"item":"Unusual Router Sign-In",
+	"contents":" has failed to log into <% nvram_get("productid"); %> many times. Regular password change is recommended to reduce security risks.",
+	"buttom1":"Detail",
+	"callback":"Advanced_System_Content.asp",
+	"icon":"1"
+	},
+"20004":{
+	"group":"1",
+	"item":"Unusual Router Sign-In",
+	"contents":" has failed to log into <% nvram_get("productid"); %> many times. Regular password change is recommended to reduce security risks.",
+	"buttom1":"Detail",
+	"callback":"Advanced_System_Content.asp",
+	"icon":"1"
+	},
+"20005":{
+	"group":"1",
+	"item":"Unusual Wireless Sign-In",
+	"contents":"%Client device% has failed to log into <% nvram_get("productid"); %> many times. Regular password change is recommended to reduce security risks.",
+	"buttom1":"Allow",
+	"callback":"",
+	"buttom2":"Block",
+	"buttom3":"Skip",
+	"icon":"5"
+	},
+"20006":{
+	"group":"1",
+	"item":"Multiple admin login",
+	"contents":"%Client device% is logging from ASUS Router App. Kick App user?",
+	"buttom1":"Allow",
+	"callback":"",
+	"buttom2":"Kick",
+	"buttom3":"Skip",
+	"icon":"5"
+	},
+"20007":{
+	"group":"3",
+	"item":"Multiple admin login",
+	"contents":"%Client device% is logged from ASUS Router App. Kick App user?",
+	"buttom1":"Allow",
+	"callback":"",
+	"buttom2":"Kick",
+	"buttom3":"Skip",
+	"icon":"5"
+	},
+"20008":{
+	"group":"1",
+	"item":"Unusual AiCloud Sign-In",
+	"contents":"%Client IP address% has failed to log in to AiCloud many times. We recommend that you enable the password protection feature to block malicious connections.",
+	"buttom1":"Enable",
+	"callback":"/cloud_settings.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"20009":{
+	"group":"1",
+	"item":"Unusual VPN Server Sign-In",
+	"contents":"%Cleint IP address% has failed to log in to VPN server many times. Allow access?",
+	"buttom1":"Allow",
+	"callback":"Advanced_VPN_PPTP.asp",
+	"buttom2":"Block (add IP address to block list)",
+	"icon":"5"
+	 },
+"30001":{
+	"group":"1",
+	"item":"Intrusion Alert",
+	"contents":"A network attack has been detected on %Client device%. It is recommended that you turn on AiProtection to protect your internet device.",
+	"buttom1":"Enable",
+	"callback":"AiProtection_HomeProtection.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"30002":{
+	"group":"1",
+	"item":"Intrusion Prevention System Alert",
+	"contents":"A vulnerability attack has been detected on ",
+	"contents_1":" and blocked by the IPS. Click details to see more info.",
+	"buttom1":"Detail",
+	"callback":"AiProtection_HomeProtection.asp",
+	"buttom2":"Skip",
+	"icon":"5"
+	},
+"30003":{
+	"group":"1",
+	"item":"Infected Device Detected and Blocked",
+	"contents":"A suspicious communication has been detected on ",
+	"contents_1":" and blocked by AiProtection. Click details to see more info.",
+	"buttom1":"Detail",
+	"callback":"AiProtection_HomeProtection.asp",
+	"buttom2":"Skip",
+	"icon":"5"
+	},
+"30004":{
+	"group":"1",
+	"item":"DoS Protection Alert",
+	"contents":"A DoS attack has been detected and blocked. Click details to see more info.",
+	"buttom1":"Detail",
+	"callback":"AiProtection_HomeProtection.asp",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"30005":{
+	"group":"1",
+	"item":"Securtiy Risk - Samba",
+	"contents":"Your current Network place(samba) permission allows unauthorized users to log in. We recommend that you disable [ Allow guest login ] to avoid security risks. Disable \"Allow guest login\"?",
+	"buttom1":"Disable",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"30006":{
+	"group":"1",
+	"item":"Securtiy Risk - FTP",
+	"contents":"Your current AiDisk FTP permission allows unauthorized users to log in. We recommend that you disable [ Allow anonymous login ] to avoid security risks. Disable \"Allow anonymous login\"?",
+	"buttom1":"Disable",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"30007":{
+	"group":"1",
+	"item":"Securtiy Risk - Firewall Disable",
+	"contents":"Your firewall is disable now. We recommend that you turn on firewall to avoid security risks. Enable firewall?",
+	"buttom1":"Enable",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"1"
+	},
+"30008":{
+	"group":"1",
+	"item":"Malicious Site Access Blocked",
+	"contents":" has been blocked from accessing a known malicious website for purposes of network security. Click details to see more info.",
+	"buttom1":"Detail",
+	"callback":"AiProtection_HomeProtection.asp",
+	"buttom2":"Skip",
+	"icon":"5"
+	},
+"40001":{
+	"group":"1",
+	"item":"Parental Contorl Alert",
+	"contents":"%client device% is blocked access to unwanted website %website cagtegory%.",
+	"buttom1":"",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"5"
+	},
+"40002":{
+	"group":"1",
+	"item":"Permission Request",
+	"contents":"(client device) is requesting permission to accss (website cagtegory). Allow access?",
+	"buttom1":"Allow",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"5"
+	},
+"40003":{
+	"group":"1",
+	"item":"Permission Request",
+	"contents":"(client device) is requesting permission to access the internet. Allow access?",
+	"buttom1":"Allow",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"5"
+	},	
+"50001":{
+	"group":"1",
+	"item":"Traffic Limiter Alert",
+	"contents":"Network traffic is reached max limited value. Internet connection is cut-off.",
+	"buttom1":"Restore",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"4"
+	},
+"50002":{
+	"group":"1",
+	"item":"Traffic Limiter Alert",
+	"contents":"Network traffic has reached alert threshold. Please watch your network usage. <Current traffic - (current traffic) >",
+	"buttom1":"",
+	"callback":"",
+	"buttom2":"Skip",
+	"icon":"4"
+	},
+"50003":{"group":"2","contents":"","callback":""},
+"60001":{
+	"group":"1",
+	"item":"Download Master Notification",
+	"contents":"(task name) download is completed. Do you want to open containing folder?",
+	"buttom1":"Check",
+	"callback":"router.asus.com:8081",
+	"buttom2":"Skip",
+	"icon":"2"
+	},
+"60002":{
+	"group":"1",
+	"item":"USB Disk Failed",
+	"contents":"Your disk (disk name) is damaged. Click details to see logs.",
+	"buttom1":"Check",
+	"callback":"Main_LogStatus_Content.asp",
+	"buttom2":"Skip",
+	"icon":"4"
+	},
+"60003":{
+	"group":"1",
+	"item":"External Device Not Ejected Properly",
+	"contents":"External device was not ejected properly. Please remove external device by clicking on the USB icon in the upper right-hand corner.",
+	"buttom1":"Skip",
+	"callback":"Main_LogStatus_Content.asp",
+	"icon":"4"
+	},
+"60004":{
+	"group":"1",
+	"item":"USB Partition Full <1%>",
+	"contents":"Your partition (partition name) is almost full. Click details to see logs.",
+	"buttom1":"Check",
+	"callback":"Main_LogStatus_Content.asp",
+	"buttom2":"Skip",
+	"icon":"4"
+	},
+"60005":{
+	"group":"1",
+	"item":"USB Disk Full <1%>",
+	"contents":"Your disk (disk name) is almost full. Click details to see logs.",
+	"buttom1":"Check",
+	"callback":"Main_LogStatus_Content.asp",
+	"buttom2":"Skip",
+	"icon":"4"
+	},
+"10000001":{
+	"group":"1",
+	"item":"Get a Private Cloud!",
+	"contents":"You are not using the USB port. It is recommended that you connect a USB storage to your compatible ASUS router so you can access files and stream media from your AiCloud app on mobile devices. View more details?",
+	"buttom1":"Detail",
+	"callback":"cloud_main.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000002":{
+	"group":"1",
+	"item":"Get a Private Cloud!",
+	"contents":"Enjoy diverse cloud services at home or your office, with cloud storage expansion available on demand at no additional charge!",
+	"buttom1":"Detail",
+	"callback":"cloud_main.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000003":{
+	"group":"1",
+	"item":"Get a Private Cloud!",
+	"contents":"Enjoy diverse cloud services at home or your office, with cloud storage expansion available on demand at no additional charge!",
+	"buttom1":"Detail",
+	"callback":"cloud_main.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000004":{
+	"group":"1",
+	"item":"Back Up Your MacOS!",
+	"contents":"<% nvram_get("productid"); %> can back up your important data with time machine function. Click for more details.",
+	"buttom1":"Check",
+	"callback":"Advanced_TimeMachine.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000005":{"group":"2","contents":"","callback":""},
+"10000006":{
+	"group":"1",
+	"item":"Enhance USB trasmission speed!",
+	"contents":"Try to plug USB disk to USB 3.0 Port and disable reducing USB 3.0 interference to enhance USB trasmission speed.",
+	"buttom1":"Detail",
+	"callback":"Advanced_WAdvanced_Content.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000007":{
+	"group":"1",
+	"item":"Adaptive QoS",
+	"contents":"Are you playing online games? We suggest you turn on the Adaptive QoS function for a smoother gaming experience. Enable Adaptive QoS?",
+	"buttom1":"Enable",
+	"callback":"AdaptiveQoS_Bandwidth_Monitor.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000008":{
+	"group":"1",
+	"item":"Enjoy Streaming Music Now!",
+	"contents":"ASUS AiPlayer is an app that allows you to stream music saved on mobile devices or USB storage paired with ASUS enhanced media routers",
+	"buttom1":"Detail",
+	"callback":"https://itunes.apple.com/tw/app/asus-aiplayer/id660554463?l=zh&mt=8",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"10000009":{
+	"group":"1",
+	"item":"Game Boost",
+	"contents":"Are you playing online games? Try using Game Boost to enjoy a high-speed gaming experience. Click here for details.",
+	"buttom1":"Detail",
+	"callback":"GameBoost.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"1000000A":{
+	"group":"1",
+	"item":"DFS Channel",
+	"contents":"For improved 5GHz Wi-Fi performance, we recommend checking \"Auto-Select Channel Including DFS Channels\" option to support 5GHz devices with DFS function-enabled connection. Enable auto-select channel?",
+	"buttom1":"Enable",
+	"callback":"Advanced_Wireless_Content.asp",
+	"buttom2":"Skip",
+	"icon":"3"
+	},
+"1000000B":{
+	"group":"1",
+	"item":"Please Update Internet Explorer.",
+	"contents":"由於安全性及相容性考量, IE8/IE9/IE10已停止支援。使用舊版Internet EXplore開啟這個網頁可能會有網頁內容不正確的情況發生。我們建議您升級到最新版本的Internet Explore。更多資訊可參考",
+	"buttom1":"Detail",
+	"callback":"mircosoft_page",
+	"buttom2":"Skip",
+	"icon":"3"
+	}
+}

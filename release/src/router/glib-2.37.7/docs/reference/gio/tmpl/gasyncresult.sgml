@@ -1,0 +1,88 @@
+<!-- ##### SECTION Title ##### -->
+GAsyncResult
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GAsyncResult ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GAsyncResultIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@get_user_data: 
+@get_source_object: 
+@is_tagged: 
+
+<!-- ##### USER_FUNCTION GAsyncReadyCallback ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@res: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_async_result_get_user_data ##### -->
+<para>
+
+</para>
+
+@res: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_async_result_get_source_object ##### -->
+<para>
+
+</para>
+
+@res: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_async_result_is_tagged ##### -->
+<para>
+
+</para>
+
+@res: 
+@source_tag: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_async_result_legacy_propagate_error ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+

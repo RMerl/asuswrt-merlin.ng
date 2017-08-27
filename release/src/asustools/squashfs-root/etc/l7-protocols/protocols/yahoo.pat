@@ -1,0 +1,2 @@
+yahoo
+^(ymsg|ypns|yhoo).?.?.?.?.?.?.?[lwt].*\xc0\x80

@@ -1,0 +1,110 @@
+<!-- ##### SECTION Title ##### -->
+GSimpleAction
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSimpleAction ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GSimpleAction::activate ##### -->
+<para>
+
+</para>
+
+@gsimpleaction: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GSimpleAction::change-state ##### -->
+<para>
+
+</para>
+
+@gsimpleaction: the object which received the signal.
+@arg1: 
+
+<!-- ##### ARG GSimpleAction:enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSimpleAction:name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSimpleAction:parameter-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSimpleAction:state ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSimpleAction:state-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_simple_action_new ##### -->
+<para>
+
+</para>
+
+@name: 
+@parameter_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_action_new_stateful ##### -->
+<para>
+
+</para>
+
+@name: 
+@parameter_type: 
+@state: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_action_set_enabled ##### -->
+<para>
+
+</para>
+
+@simple: 
+@enabled: 
+
+
+<!-- ##### FUNCTION g_simple_action_set_state ##### -->
+<para>
+
+</para>
+
+@simple: 
+@value: 
+
+

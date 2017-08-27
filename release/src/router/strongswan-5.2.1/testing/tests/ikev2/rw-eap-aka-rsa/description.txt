@@ -1,0 +1,7 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+<b>carol</b> uses the <i>Extensible Authentication Protocol</i>
+in association with the <i>Authentication and Key Agreement</i> protocol
+(<b>EAP-AKA</b>) to authenticate against the gateway. This protocol is used
+in UMTS, but here a secret from <b>ipsec.secrets</b> is used instead of a USIM/(R)UIM.
+Gateway <b>moon</b> additionally uses an <b>RSA signature</b> to authenticate itself
+against <b>carol</b>.

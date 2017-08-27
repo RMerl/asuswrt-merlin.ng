@@ -1,0 +1,44 @@
+This is now called Post-Auth-Type, for consistency.
+
+O.INTRODUCTION
+
+  Post-Auth-Type is used to select between groupings of
+  modules in the post-auth stanza using arbitrary attributes.
+  It is functionally identical to Acct-Type, apart from
+  the name of the attribute and its dealing with rejected
+  requests.. This means that (unlike Autz-Type) the attribute
+  must be set before the stanza is run. Changes to
+  Post-Auth-Type during post-auth will have no effect.
+
+1.HOW IT WORKS
+
+  If a request has been rejected, the value of Post-Auth-Type
+  is overwritten with REJECT automatically, so anonymous
+  modules outside the REJECT substanza will not be run, only
+  modules within the appropriate substanza will be run.
+
+2.EXAMPLES
+
+  In the example below, when a request has been rejected, the
+  module my_ippool will not be run, only the module my_detail
+  will be run.
+  If the request is not rejected, the my_ippool module will be
+  run, but not the my_detail module
+
+  post-auth {
+      my_ippool
+      Post-Auth-Type REJECT {
+          my_detail
+      }
+  }
+
+  In the following example, 2 different sql modules are used
+  to store accepted requests and rejected requests.
+
+  post-auth {
+      my_sql_accept
+      Post-Auth-Type REJECT {
+          my_sql_reject
+      }
+  }
+

@@ -1,0 +1,209 @@
+<!-- ##### SECTION Title ##### -->
+Pointer Arrays
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GPtrArray ##### -->
+<para>
+
+</para>
+
+@pdata: 
+@len: 
+
+<!-- ##### FUNCTION g_ptr_array_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_sized_new ##### -->
+<para>
+
+</para>
+
+@reserved_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_new_with_free_func ##### -->
+<para>
+
+</para>
+
+@element_free_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_new_full ##### -->
+<para>
+
+</para>
+
+@reserved_size: 
+@element_free_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_set_free_func ##### -->
+<para>
+
+</para>
+
+@array: 
+@element_free_func: 
+
+
+<!-- ##### FUNCTION g_ptr_array_ref ##### -->
+<para>
+
+</para>
+
+@array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_unref ##### -->
+<para>
+
+</para>
+
+@array: 
+
+
+<!-- ##### FUNCTION g_ptr_array_add ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+
+
+<!-- ##### FUNCTION g_ptr_array_remove ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_remove_index ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_remove_fast ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_remove_index_fast ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_remove_range ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@length: 
+
+
+<!-- ##### FUNCTION g_ptr_array_sort ##### -->
+<para>
+
+</para>
+
+@array: 
+@compare_func: 
+
+
+<!-- ##### FUNCTION g_ptr_array_sort_with_data ##### -->
+<para>
+
+</para>
+
+@array: 
+@compare_func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_ptr_array_set_size ##### -->
+<para>
+
+</para>
+
+@array: 
+@length: 
+
+
+<!-- ##### MACRO g_ptr_array_index ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+
+
+<!-- ##### FUNCTION g_ptr_array_free ##### -->
+<para>
+
+</para>
+
+@array: 
+@free_seg: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ptr_array_foreach ##### -->
+<para>
+
+</para>
+
+@array: 
+@func: 
+@user_data: 
+
+

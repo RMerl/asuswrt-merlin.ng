@@ -1,0 +1,380 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Reference Manual: Base64 Encoding</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Unicode-Manipulation.html" title="Unicode Manipulation">
+<link rel="next" href="glib-Data-Checksums.html" title="Data Checksums">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#glib-Base64-Encoding.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Unicode-Manipulation.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Data-Checksums.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Base64-Encoding"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Base64-Encoding.top_of_page"></a>Base64 Encoding</span></h2>
+<p>Base64 Encoding — encodes and decodes data in Base64 format</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="glib-Base64-Encoding.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;glib.h&gt;
+
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>               <a class="link" href="glib-Base64-Encoding.html#g-base64-encode-step" title="g_base64_encode_step ()">g_base64_encode_step</a>                (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *in</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> break_lines</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *out</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *state</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *save</code></em>);
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>               <a class="link" href="glib-Base64-Encoding.html#g-base64-encode-close" title="g_base64_encode_close ()">g_base64_encode_close</a>               (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> break_lines</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *out</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *state</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *save</code></em>);
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="glib-Base64-Encoding.html#g-base64-encode" title="g_base64_encode ()">g_base64_encode</a>                     (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *data</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>);
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>               <a class="link" href="glib-Base64-Encoding.html#g-base64-decode-step" title="g_base64_decode_step ()">g_base64_decode_step</a>                (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *in</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *out</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *state</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> *save</code></em>);
+<a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="returnvalue">guchar</span></a> *            <a class="link" href="glib-Base64-Encoding.html#g-base64-decode" title="g_base64_decode ()">g_base64_decode</a>                     (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *text</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *out_len</code></em>);
+<a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="returnvalue">guchar</span></a> *            <a class="link" href="glib-Base64-Encoding.html#g-base64-decode-inplace" title="g_base64_decode_inplace ()">g_base64_decode_inplace</a>             (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *text</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *out_len</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Base64-Encoding.description"></a><h2>Description</h2>
+<p>
+Base64 is an encoding that allows a sequence of arbitrary bytes to be
+encoded as a sequence of printable ASCII characters. For the definition
+of Base64, see <a class="ulink" href="http://www.ietf.org/rfc/rfc1421.txt" target="_top">RFC
+1421</a> or <a class="ulink" href="http://www.ietf.org/rfc/rfc2045.txt" target="_top">RFC
+2045</a>. Base64 is most commonly used as a MIME transfer encoding
+for email.
+</p>
+<p>
+GLib supports incremental encoding using <a class="link" href="glib-Base64-Encoding.html#g-base64-encode-step" title="g_base64_encode_step ()"><code class="function">g_base64_encode_step()</code></a> and
+<a class="link" href="glib-Base64-Encoding.html#g-base64-encode-close" title="g_base64_encode_close ()"><code class="function">g_base64_encode_close()</code></a>. Incremental decoding can be done with
+<a class="link" href="glib-Base64-Encoding.html#g-base64-decode-step" title="g_base64_decode_step ()"><code class="function">g_base64_decode_step()</code></a>. To encode or decode data in one go, use
+<a class="link" href="glib-Base64-Encoding.html#g-base64-encode" title="g_base64_encode ()"><code class="function">g_base64_encode()</code></a> or <a class="link" href="glib-Base64-Encoding.html#g-base64-decode" title="g_base64_decode ()"><code class="function">g_base64_decode()</code></a>. To avoid memory allocation when
+decoding, you can use <a class="link" href="glib-Base64-Encoding.html#g-base64-decode-inplace" title="g_base64_decode_inplace ()"><code class="function">g_base64_decode_inplace()</code></a>.
+</p>
+<p>
+Support for Base64 encoding has been added in GLib 2.12.
+</p>
+</div>
+<div class="refsect1">
+<a name="glib-Base64-Encoding.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="g-base64-encode-step"></a><h3>g_base64_encode_step ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>               g_base64_encode_step                (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *in</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> break_lines</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *out</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *state</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *save</code></em>);</pre>
+<p>
+Incrementally encode a sequence of binary data into its Base-64 stringified
+representation. By calling this function multiple times you can convert
+data in chunks to avoid having to have the full encoded data in memory.
+</p>
+<p>
+When all of the data has been converted you must call
+<a class="link" href="glib-Base64-Encoding.html#g-base64-encode-close" title="g_base64_encode_close ()"><code class="function">g_base64_encode_close()</code></a> to flush the saved state.
+</p>
+<p>
+The output buffer must be large enough to fit all the data that will
+be written to it. Due to the way base64 encodes you will need
+at least: (<em class="parameter"><code>len</code></em> / 3 + 1) * 4 + 4 bytes (+ 4 may be needed in case of
+non-zero state). If you enable line-breaking you will need at least:
+((<em class="parameter"><code>len</code></em> / 3 + 1) * 4 + 4) / 72 + 1 bytes of extra space.
+</p>
+<p>
+<em class="parameter"><code>break_lines</code></em> is typically used when putting base64-encoded data in emails.
+It breaks the lines at 72 columns instead of putting all of the text on
+the same line. This avoids problems with long lines in the email system.
+Note however that it breaks the lines with <code class="literal">LF</code>
+characters, not <code class="literal">CR LF</code> sequences, so the result cannot
+be passed directly to SMTP or certain other protocols.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>in</code></em> :</span></p></td>
+<td>the binary data to encode. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>len</code></em> :</span></p></td>
+<td>the length of <em class="parameter"><code>in</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>break_lines</code></em> :</span></p></td>
+<td>whether to break long lines</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out</code></em> :</span></p></td>
+<td>pointer to destination buffer. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>state</code></em> :</span></p></td>
+<td>Saved state between steps, initialize to 0. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>save</code></em> :</span></p></td>
+<td>Saved state between steps, initialize to 0. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The number of bytes of output that was written</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-base64-encode-close"></a><h3>g_base64_encode_close ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>               g_base64_encode_close               (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> break_lines</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *out</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *state</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *save</code></em>);</pre>
+<p>
+Flush the status from a sequence of calls to <a class="link" href="glib-Base64-Encoding.html#g-base64-encode-step" title="g_base64_encode_step ()"><code class="function">g_base64_encode_step()</code></a>.
+</p>
+<p>
+The output buffer must be large enough to fit all the data that will
+be written to it. It will need up to 4 bytes, or up to 5 bytes if
+line-breaking is enabled.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>break_lines</code></em> :</span></p></td>
+<td>whether to break long lines</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out</code></em> :</span></p></td>
+<td>pointer to destination buffer. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>state</code></em> :</span></p></td>
+<td>Saved state from <a class="link" href="glib-Base64-Encoding.html#g-base64-encode-step" title="g_base64_encode_step ()"><code class="function">g_base64_encode_step()</code></a>. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>save</code></em> :</span></p></td>
+<td>Saved state from <a class="link" href="glib-Base64-Encoding.html#g-base64-encode-step" title="g_base64_encode_step ()"><code class="function">g_base64_encode_step()</code></a>. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The number of bytes of output that was written</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-base64-encode"></a><h3>g_base64_encode ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *             g_base64_encode                     (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *data</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>);</pre>
+<p>
+Encode a sequence of binary data into its Base-64 stringified
+representation.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the binary data to encode. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>len</code></em> :</span></p></td>
+<td>the length of <em class="parameter"><code>data</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a newly allocated, zero-terminated Base-64
+encoded string representing <em class="parameter"><code>data</code></em>. The returned string must
+be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-base64-decode-step"></a><h3>g_base64_decode_step ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>               g_base64_decode_step                (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *in</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *out</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> *state</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> *save</code></em>);</pre>
+<p>
+Incrementally decode a sequence of binary data from its Base-64 stringified
+representation. By calling this function multiple times you can convert
+data in chunks to avoid having to have the full encoded data in memory.
+</p>
+<p>
+The output buffer must be large enough to fit all the data that will
+be written to it. Since base64 encodes 3 bytes in 4 chars you need
+at least: (<em class="parameter"><code>len</code></em> / 4) * 3 + 3 bytes (+ 3 may be needed in case of non-zero
+state).
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>in</code></em> :</span></p></td>
+<td>binary input data. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>len</code></em> :</span></p></td>
+<td>max length of <em class="parameter"><code>in</code></em> data to decode</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out</code></em> :</span></p></td>
+<td>output buffer. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>state</code></em> :</span></p></td>
+<td>Saved state between steps, initialize to 0. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>save</code></em> :</span></p></td>
+<td>Saved state between steps, initialize to 0. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The number of bytes of output that was written</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-base64-decode"></a><h3>g_base64_decode ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="returnvalue">guchar</span></a> *            g_base64_decode                     (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *text</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *out_len</code></em>);</pre>
+<p>
+Decode a sequence of Base-64 encoded text into binary data.  Note
+that the returned binary data is not necessarily zero-terminated,
+so it should not be used as a character string.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>text</code></em> :</span></p></td>
+<td>zero-terminated string with base64 text to decode</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out_len</code></em> :</span></p></td>
+<td>The length of the decoded data is written here. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>newly allocated buffer containing the binary data
+that <em class="parameter"><code>text</code></em> represents. The returned buffer must
+be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=out_len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-base64-decode-inplace"></a><h3>g_base64_decode_inplace ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="returnvalue">guchar</span></a> *            g_base64_decode_inplace             (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *text</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *out_len</code></em>);</pre>
+<p>
+Decode a sequence of Base-64 encoded text into binary data
+by overwriting the input data.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>text</code></em> :</span></p></td>
+<td>zero-terminated
+string with base64 text to decode. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=out_len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out_len</code></em> :</span></p></td>
+<td>The length of the decoded data is written here. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The binary data that <em class="parameter"><code>text</code></em> responds. This pointer
+is the same as the input <em class="parameter"><code>text</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.20</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

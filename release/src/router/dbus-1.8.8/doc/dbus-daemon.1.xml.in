@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry id='dbusdaemon1'>
+
+<!--  dbus&bsol;-daemon manual page.
+ Copyright (C) 2003,2008 Red Hat, Inc. -->
+
+<refmeta>
+<refentrytitle>dbus-daemon</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+<refmiscinfo class="source">D-Bus</refmiscinfo>
+<refmiscinfo class="version">@DBUS_VERSION@</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>dbus-daemon</refname>
+<refpurpose>Message bus daemon</refpurpose>
+</refnamediv>
+<!-- body begins here -->
+<refsynopsisdiv id='synopsis'>
+<cmdsynopsis>
+  <command>dbus-daemon</command></cmdsynopsis>
+<cmdsynopsis>
+  <command>dbus-daemon</command>    <arg choice='opt'>--version </arg>
+    <arg choice='opt'>--session </arg>
+    <arg choice='opt'>--system </arg>
+    <arg choice='opt'>--config-file=<replaceable>FILE</replaceable></arg>
+    <arg choice='opt'><arg choice='plain'>--print-address </arg><arg choice='opt'><replaceable>=DESCRIPTOR</replaceable></arg></arg>
+    <arg choice='opt'><arg choice='plain'>--print-pid </arg><arg choice='opt'><replaceable>=DESCRIPTOR</replaceable></arg></arg>
+    <arg choice='opt'>--fork </arg>
+    <sbr/>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+
+<refsect1 id='description'><title>DESCRIPTION</title>
+<para><command>dbus-daemon</command> is the D-Bus message bus daemon. See
+<ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink> for more information about
+the big picture. D-Bus is first a library that provides one-to-one
+communication between any two applications; <command>dbus-daemon</command> is an
+application that uses this library to implement a message bus
+daemon. Multiple programs connect to the message bus daemon and can
+exchange messages with one another.</para>
+
+<para>There are two standard message bus instances: the systemwide message bus
+(installed on many systems as the "messagebus" init service) and the
+per-user-login-session message bus (started each time a user logs in).
+<command>dbus-daemon</command> is used for both of these instances, but with
+a different configuration file.</para>
+
+<para>The --session option is equivalent to
+"--config-file=@EXPANDED_SYSCONFDIR@/dbus-1/session.conf" and the --system
+option is equivalent to
+"--config-file=@EXPANDED_SYSCONFDIR@/dbus-1/system.conf". By creating
+additional configuration files and using the --config-file option,
+additional special-purpose message bus daemons could be created.</para>
+
+<para>The systemwide daemon is normally launched by an init script,
+standardly called simply "messagebus".</para>
+
+<para>The systemwide daemon is largely used for broadcasting system events,
+such as changes to the printer queue, or adding/removing devices.</para>
+
+<para>The per-session daemon is used for various interprocess communication
+among desktop applications (however, it is not tied to X or the GUI
+in any way).</para>
+
+<para>SIGHUP will cause the D-Bus daemon to PARTIALLY reload its
+configuration file and to flush its user/group information caches. Some
+configuration changes would require kicking all apps off the bus; so they will
+only take effect if you restart the daemon. Policy changes should take effect
+with SIGHUP.</para>
+
+</refsect1>
+
+<refsect1 id='options'><title>OPTIONS</title>
+<para>The following options are supported:</para>
+<variablelist remap='TP'>
+  <varlistentry>
+  <term><option>--config-file=FILE</option></term>
+  <listitem>
+<para>Use the given configuration file.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--fork</option></term>
+  <listitem>
+<para>Force the message bus to fork and become a daemon, even if
+the configuration file does not specify that it should.
+In most contexts the configuration file already gets this
+right, though. This option is not supported on Windows.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--nofork</option></term>
+  <listitem>
+    <para>Force the message bus not to fork and become a daemon, even if
+      the configuration file specifies that it should. On Windows,
+      the dbus-daemon never forks, so this option is allowed but does
+      nothing.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--print-address[=DESCRIPTOR]</option></term>
+  <listitem>
+<para>Print the address of the message bus to standard output, or
+to the given file descriptor. This is used by programs that
+launch the message bus.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--print-pid[=DESCRIPTOR]</option></term>
+  <listitem>
+<para>Print the process ID of the message bus to standard output, or
+to the given file descriptor. This is used by programs that
+launch the message bus.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--session</option></term>
+  <listitem>
+<para>Use the standard configuration file for the per-login-session message
+bus.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--system</option></term>
+  <listitem>
+<para>Use the standard configuration file for the systemwide message bus.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--version</option></term>
+  <listitem>
+<para>Print the version of the daemon.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--introspect</option></term>
+  <listitem>
+<para>Print the introspection information for all D-Bus internal interfaces.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--address[=ADDRESS]</option></term>
+  <listitem>
+<para>Set the address to listen on. This option overrides the address
+configured in the configuration file.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--systemd-activation</option></term>
+  <listitem>
+<para>Enable systemd-style service activation. Only useful in conjunction
+with the systemd system and session manager on Linux.</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--nopidfile</option></term>
+  <listitem>
+<para>Don't write a PID file even if one is configured in the configuration
+files.</para>
+
+  </listitem>
+  </varlistentry>
+</variablelist>
+</refsect1>
+
+<refsect1 id='configuration_file'><title>CONFIGURATION FILE</title>
+<para>A message bus daemon has a configuration file that specializes it
+for a particular application. For example, one configuration
+file might set up the message bus to be a systemwide message bus,
+while another might set it up to be a per-user-login-session bus.</para>
+
+<para>The configuration file also establishes resource limits, security
+parameters, and so forth.</para>
+
+<para>The configuration file is not part of any interoperability
+specification and its backward compatibility is not guaranteed; this
+document is documentation, not specification.</para>
+
+<para>The standard systemwide and per-session message bus setups are
+configured in the files "@EXPANDED_SYSCONFDIR@/dbus-1/system.conf" and
+"@EXPANDED_SYSCONFDIR@/dbus-1/session.conf".  These files normally
+&lt;include&gt; a system-local.conf or session-local.conf; you can put local
+overrides in those files to avoid modifying the primary configuration
+files.</para>
+
+
+<para>The configuration file is an XML document. It must have the following
+doctype declaration:</para>
+<literallayout remap='.nf'>
+
+   &lt;!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+    "<ulink url='http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd'>http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd</ulink>"&gt;
+
+</literallayout> <!-- .fi -->
+
+
+<para>The following elements may be present in the configuration file.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;busconfig&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>Root element.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;type&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>The well-known type of the message bus. Currently known values are
+"system" and "session"; if other values are set, they should be
+either added to the D-Bus specification, or namespaced.  The last
+&lt;type&gt; element "wins" (previous values are ignored). This element
+only controls which message bus specific environment variables are
+set in activated clients.  Most of the policy that distinguishes a
+session bus from the system bus is controlled from the other elements
+in the configuration file.</para>
+
+
+<para>If the well-known type of the message bus is "session", then the
+DBUS_STARTER_BUS_TYPE environment variable will be set to "session"
+and the DBUS_SESSION_BUS_ADDRESS environment variable will be set
+to the address of the session bus.  Likewise, if the type of the
+message bus is "system", then the DBUS_STARTER_BUS_TYPE environment
+variable will be set to "system" and the DBUS_SESSION_BUS_ADDRESS
+environment variable will be set to the address of the system bus
+(which is normally well known anyway).</para>
+
+
+<para>Example: &lt;type&gt;session&lt;/type&gt;</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;include&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>Include a file &lt;include&gt;filename.conf&lt;/include&gt; at this point.  If the
+filename is relative, it is located relative to the configuration file
+doing the including.</para>
+
+
+<para>&lt;include&gt; has an optional attribute "ignore_missing=(yes|no)"
+which defaults to "no" if not provided. This attribute
+controls whether it's a fatal error for the included file
+to be absent.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;includedir&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>Include all files in &lt;includedir&gt;foo.d&lt;/includedir&gt; at this
+point. Files in the directory are included in undefined order.
+Only files ending in ".conf" are included.</para>
+
+
+<para>This is intended to allow extension of the system bus by particular
+packages. For example, if CUPS wants to be able to send out
+notification of printer queue changes, it could install a file to
+@EXPANDED_SYSCONFDIR@/dbus-1/system.d that allowed all apps to receive
+this message and allowed the printer daemon user to send it.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;user&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>The user account the daemon should run as, as either a username or a
+UID. If the daemon cannot change to this UID on startup, it will exit.
+If this element is not present, the daemon will not change or care
+about its UID.</para>
+
+
+<para>The last &lt;user&gt; entry in the file "wins", the others are ignored.</para>
+
+
+<para>The user is changed after the bus has completed initialization.  So
+sockets etc. will be created before changing user, but no data will be
+read from clients before changing user. This means that sockets
+and PID files can be created in a location that requires root
+privileges for writing.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;fork&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, the bus daemon becomes a real daemon (forks
+into the background, etc.). This is generally used
+rather than the --fork command line option.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;keep_umask&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, the bus daemon keeps its original umask when forking.
+This may be useful to avoid affecting the behavior of child processes.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;syslog&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, the bus daemon will log to syslog.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;pidfile&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, the bus daemon will write its pid to the specified file.
+The --nopidfile command-line option takes precedence over this setting.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;allow_anonymous&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>If present, connections that authenticated using the ANONYMOUS
+mechanism will be authorized to connect. This option has no practical
+effect unless the ANONYMOUS mechanism has also been enabled using the
+<emphasis remap='I'>&lt;auth&gt;</emphasis> element, described below.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;listen&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>Add an address that the bus should listen on. The
+address is in the standard D-Bus format that contains
+a transport name plus possible parameters/options.</para>
+
+
+<para>Example: &lt;listen&gt;unix:path=/tmp/foo&lt;/listen&gt;</para>
+
+
+<para>Example: &lt;listen&gt;tcp:host=localhost,port=1234&lt;/listen&gt;</para>
+
+
+<para>If there are multiple &lt;listen&gt; elements, then the bus listens
+on multiple addresses. The bus will pass its address to
+started services or other interested parties with
+the last address given in &lt;listen&gt; first. That is,
+apps will try to connect to the last &lt;listen&gt; address first.</para>
+
+
+<para>tcp sockets can accept IPv4 addresses, IPv6 addresses or hostnames.
+If a hostname resolves to multiple addresses, the server will bind
+to all of them. The family=ipv4 or family=ipv6 options can be used
+to force it to bind to a subset of addresses</para>
+
+
+<para>Example: &lt;listen&gt;tcp:host=localhost,port=0,family=ipv4&lt;/listen&gt;</para>
+
+
+<para>A special case is using a port number of zero (or omitting the port),
+which means to choose an available port selected by the operating
+system. The port number chosen can be obtained with the
+--print-address command line parameter and will be present in other
+cases where the server reports its own address, such as when
+DBUS_SESSION_BUS_ADDRESS is set.</para>
+
+
+<para>Example: &lt;listen&gt;tcp:host=localhost,port=0&lt;/listen&gt;</para>
+
+
+<para>tcp/nonce-tcp addresses also allow a bind=hostname option,
+used in a listenable address to configure the interface on which
+the server will listen: either the hostname is the IP address of
+one of the local machine's interfaces (most commonly 127.0.0.1),
+or a DNS name that resolves to one of those IP addresses, or '*'
+to listen on all interfaces simultaneously.  If not specified,
+the default is the same value as "host".</para>
+
+
+<para>Example: &lt;listen&gt;tcp:host=localhost,bind=*,port=0&lt;/listen&gt;</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;auth&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>Lists permitted authorization mechanisms. If this element doesn't
+exist, then all known mechanisms are allowed.  If there are multiple
+&lt;auth&gt; elements, all the listed mechanisms are allowed.  The order in
+which mechanisms are listed is not meaningful.</para>
+
+
+<para>Example: &lt;auth&gt;EXTERNAL&lt;/auth&gt;</para>
+
+
+<para>Example: &lt;auth&gt;DBUS_COOKIE_SHA1&lt;/auth&gt;</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;servicedir&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>Adds a directory to scan for .service files. Directories are
+scanned starting with the first to appear in the config file
+(the first .service file found that provides a particular
+service will be used).</para>
+
+
+<para>Service files tell the bus how to automatically start a program.
+They are primarily used with the per-user-session bus,
+not the systemwide bus.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;standard_session_servicedirs/&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>&lt;standard_session_servicedirs/&gt; is equivalent to specifying a series
+of &lt;servicedir/&gt; elements for each of the data directories in the "XDG
+Base Directory Specification" with the subdirectory "dbus-1/services",
+so for example "/usr/share/dbus-1/services" would be among the
+directories searched.</para>
+
+
+<para>The "XDG Base Directory Specification" can be found at
+<ulink url='http://freedesktop.org/wiki/Standards/basedir-spec'>http://freedesktop.org/wiki/Standards/basedir-spec</ulink> if it hasn't moved,
+otherwise try your favorite search engine.</para>
+
+
+<para>The &lt;standard_session_servicedirs/&gt; option is only relevant to the
+per-user-session bus daemon defined in
+@EXPANDED_SYSCONFDIR@/dbus-1/session.conf. Putting it in any other
+configuration file would probably be nonsense.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;standard_system_servicedirs/&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>&lt;standard_system_servicedirs/&gt; specifies the standard system-wide
+activation directories that should be searched for service files.
+This option defaults to @EXPANDED_DATADIR@/dbus-1/system-services.</para>
+
+
+<para>The &lt;standard_system_servicedirs/&gt; option is only relevant to the
+per-system bus daemon defined in
+@EXPANDED_SYSCONFDIR@/dbus-1/system.conf. Putting it in any other
+configuration file would probably be nonsense.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;servicehelper/&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>&lt;servicehelper/&gt; specifies the setuid helper that is used to launch
+system daemons with an alternate user. Typically this should be
+the dbus-daemon-launch-helper executable in located in libexec.</para>
+
+
+<para>The &lt;servicehelper/&gt; option is only relevant to the per-system bus daemon
+defined in @EXPANDED_SYSCONFDIR@/dbus-1/system.conf. Putting it in any other
+configuration file would probably be nonsense.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;limit&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>&lt;limit&gt; establishes a resource limit. For example:</para>
+<literallayout remap='.nf'>
+  &lt;limit name="max_message_size"&gt;64&lt;/limit&gt;
+  &lt;limit name="max_completed_connections"&gt;512&lt;/limit&gt;
+</literallayout> <!-- .fi -->
+
+
+<para>The name attribute is mandatory.
+Available limit names are:</para>
+<literallayout remap='.nf'>
+      "max_incoming_bytes"         : total size in bytes of messages
+                                     incoming from a single connection
+      "max_incoming_unix_fds"      : total number of unix fds of messages
+                                     incoming from a single connection
+      "max_outgoing_bytes"         : total size in bytes of messages
+                                     queued up for a single connection
+      "max_outgoing_unix_fds"      : total number of unix fds of messages
+                                     queued up for a single connection
+      "max_message_size"           : max size of a single message in
+                                     bytes
+      "max_message_unix_fds"       : max unix fds of a single message
+      "service_start_timeout"      : milliseconds (thousandths) until
+                                     a started service has to connect
+      "auth_timeout"               : milliseconds (thousandths) a
+                                     connection is given to
+                                     authenticate
+      "pending_fd_timeout"         : milliseconds (thousandths) a
+                                     fd is given to be transmitted to
+                                     dbus-daemon before disconnecting the
+                                     connection
+      "max_completed_connections"  : max number of authenticated connections
+      "max_incomplete_connections" : max number of unauthenticated
+                                     connections
+      "max_connections_per_user"   : max number of completed connections from
+                                     the same user
+      "max_pending_service_starts" : max number of service launches in
+                                     progress at the same time
+      "max_names_per_connection"   : max number of names a single
+                                     connection can own
+      "max_match_rules_per_connection": max number of match rules for a single
+                                        connection
+      "max_replies_per_connection" : max number of pending method
+                                     replies per connection
+                                     (number of calls-in-progress)
+      "reply_timeout"              : milliseconds (thousandths)
+                                     until a method call times out
+</literallayout> <!-- .fi -->
+
+
+<para>The max incoming/outgoing queue sizes allow a new message to be queued
+if one byte remains below the max. So you can in fact exceed the max
+by max_message_size.</para>
+
+
+<para>max_completed_connections divided by max_connections_per_user is the
+number of users that can work together to denial-of-service all other users by using
+up all connections on the systemwide bus.</para>
+
+
+<para>Limits are normally only of interest on the systemwide bus, not the user session
+buses.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;policy&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>The &lt;policy&gt; element defines a security policy to be applied to a particular
+set of connections to the bus. A policy is made up of
+&lt;allow&gt; and &lt;deny&gt; elements. Policies are normally used with the systemwide bus;
+they are analogous to a firewall in that they allow expected traffic
+and prevent unexpected traffic.</para>
+
+
+<para>Currently, the system bus has a default-deny policy for sending method calls
+and owning bus names.  Everything else, in particular reply messages, receive
+checks, and signals has a default allow policy.</para>
+
+
+<para>In general, it is best to keep system services as small, targeted programs which
+run in their own process and provide a single bus name.  Then, all that is needed
+is an &lt;allow&gt; rule for the "own" permission to let the process claim the bus
+name, and a "send_destination" rule to allow traffic from some or all uids to
+your service.</para>
+
+
+<para>The &lt;policy&gt; element has one of four attributes:</para>
+<literallayout remap='.nf'>
+  context="(default|mandatory)"
+  at_console="(true|false)"
+  user="username or userid"
+  group="group name or gid"
+</literallayout> <!-- .fi -->
+
+
+<para>Policies are applied to a connection as follows:</para>
+<literallayout remap='.nf'>
+   - all context="default" policies are applied
+   - all group="connection's user's group" policies are applied
+     in undefined order
+   - all user="connection's auth user" policies are applied
+     in undefined order
+   - all at_console="true" policies are applied
+   - all at_console="false" policies are applied
+   - all context="mandatory" policies are applied
+</literallayout> <!-- .fi -->
+
+
+<para>Policies applied later will override those applied earlier,
+when the policies overlap. Multiple policies with the same
+user/group/context are applied in the order they appear
+in the config file.</para>
+
+<variablelist remap='TP'>
+  <varlistentry>
+  <term><emphasis remap='I'>&lt;deny&gt;</emphasis></term>
+  <listitem>
+<para><emphasis remap='I'>&lt;allow&gt;</emphasis></para>
+
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>A &lt;deny&gt; element appears below a &lt;policy&gt; element and prohibits some
+action. The &lt;allow&gt; element makes an exception to previous &lt;deny&gt;
+statements, and works just like &lt;deny&gt; but with the inverse meaning.</para>
+
+
+<para>The possible attributes of these elements are:</para>
+<literallayout remap='.nf'>
+   send_interface="interface_name"
+   send_member="method_or_signal_name"
+   send_error="error_name"
+   send_destination="name"
+   send_type="method_call" | "method_return" | "signal" | "error"
+   send_path="/path/name"
+
+   receive_interface="interface_name"
+   receive_member="method_or_signal_name"
+   receive_error="error_name"
+   receive_sender="name"
+   receive_type="method_call" | "method_return" | "signal" | "error"
+   receive_path="/path/name"
+
+   send_requested_reply="true" | "false"
+   receive_requested_reply="true" | "false"
+
+   eavesdrop="true" | "false"
+
+   own="name"
+   own_prefix="name"
+   user="username"
+   group="groupname"
+</literallayout> <!-- .fi -->
+
+
+<para>Examples:</para>
+<literallayout remap='.nf'>
+   &lt;deny send_destination="org.freedesktop.Service" send_interface="org.freedesktop.System" send_member="Reboot"/&gt;
+   &lt;deny send_destination="org.freedesktop.System"/&gt;
+   &lt;deny receive_sender="org.freedesktop.System"/&gt;
+   &lt;deny user="john"/&gt;
+   &lt;deny group="enemies"/&gt;
+</literallayout> <!-- .fi -->
+
+
+<para>The &lt;deny&gt; element's attributes determine whether the deny "matches" a
+particular action. If it matches, the action is denied (unless later
+rules in the config file allow it).</para>
+
+<para>send_destination and receive_sender rules mean that messages may not be
+sent to or received from the *owner* of the given name, not that
+they may not be sent *to that name*. That is, if a connection
+owns services A, B, C, and sending to A is denied, sending to B or C
+will not work either.</para>
+
+<para>The other send_* and receive_* attributes are purely textual/by-value
+matches against the given field in the message header.</para>
+
+<para>"Eavesdropping" occurs when an application receives a message that
+was explicitly addressed to a name the application does not own, or
+is a reply to such a message. Eavesdropping thus only applies to
+messages that are addressed to services and replies to such messages
+(i.e. it does not apply to signals).</para>
+
+<para>For &lt;allow&gt;, eavesdrop="true" indicates that the rule matches even
+when eavesdropping. eavesdrop="false" is the default and means that
+the rule only allows messages to go to their specified recipient.
+For &lt;deny&gt;, eavesdrop="true" indicates that the rule matches
+only when eavesdropping. eavesdrop="false" is the default for &lt;deny&gt;
+also, but here it means that the rule applies always, even when
+not eavesdropping. The eavesdrop attribute can only be combined with
+send and receive rules (with send_* and receive_* attributes).</para>
+
+<para>The [send|receive]_requested_reply attribute works similarly to the eavesdrop
+attribute. It controls whether the &lt;deny&gt; or &lt;allow&gt; matches a reply
+that is expected (corresponds to a previous method call message).
+This attribute only makes sense for reply messages (errors and method
+returns), and is ignored for other message types.</para>
+
+
+<para>For &lt;allow&gt;, [send|receive]_requested_reply="true" is the default and indicates that
+only requested replies are allowed by the
+rule. [send|receive]_requested_reply="false" means that the rule allows any reply
+even if unexpected.</para>
+
+
+<para>For &lt;deny&gt;, [send|receive]_requested_reply="false" is the default but indicates that
+the rule matches only when the reply was not
+requested. [send|receive]_requested_reply="true" indicates that the rule applies
+always, regardless of pending reply state.</para>
+
+
+<para>user and group denials mean that the given user or group may
+not connect to the message bus.</para>
+
+
+<para>For "name", "username", "groupname", etc.
+the character "*" can be substituted, meaning "any." Complex globs
+like "foo.bar.*" aren't allowed for now because they'd be work to
+implement and maybe encourage sloppy security anyway.</para>
+
+
+<para>&lt;allow own_prefix="a.b"/&gt; allows you to own the name "a.b" or any
+name whose first dot-separated elements are "a.b": in particular,
+you can own "a.b.c" or "a.b.c.d", but not "a.bc" or "a.c".
+This is useful when services like Telepathy and ReserveDevice
+define a meaning for subtrees of well-known names, such as
+org.freedesktop.Telepathy.ConnectionManager.(anything)
+and org.freedesktop.ReserveDevice1.(anything).</para>
+
+
+<para>It does not make sense to deny a user or group inside a &lt;policy&gt;
+for a user or group; user/group denials can only be inside
+context="default" or context="mandatory" policies.</para>
+
+
+<para>A single &lt;deny&gt; rule may specify combinations of attributes such as
+send_destination and send_interface and send_type. In this case, the
+denial applies only if both attributes match the message being denied.
+e.g. &lt;deny send_interface="foo.bar" send_destination="foo.blah"/&gt; would
+deny messages with the given interface AND the given bus name.
+To get an OR effect you specify multiple &lt;deny&gt; rules.</para>
+
+
+<para>You can't include both send_ and receive_ attributes on the same
+rule, since "whether the message can be sent" and "whether it can be
+received" are evaluated separately.</para>
+
+
+<para>Be careful with send_interface/receive_interface, because the
+interface field in messages is optional.  In particular, do NOT
+specify &lt;deny send_interface="org.foo.Bar"/&gt;!  This will cause
+no-interface messages to be blocked for all services, which is
+almost certainly not what you intended.  Always use rules of
+the form: &lt;deny send_interface="org.foo.Bar" send_destination="org.foo.Service"/&gt;</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;selinux&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>The &lt;selinux&gt; element contains settings related to Security Enhanced Linux.
+More details below.</para>
+
+<itemizedlist remap='TP'>
+
+  <listitem><para><emphasis remap='I'>&lt;associate&gt;</emphasis></para></listitem>
+
+
+</itemizedlist>
+
+<para>An &lt;associate&gt; element appears below an &lt;selinux&gt; element and
+creates a mapping. Right now only one kind of association is possible:</para>
+<literallayout remap='.nf'>
+   &lt;associate own="org.freedesktop.Foobar" context="foo_t"/&gt;
+</literallayout> <!-- .fi -->
+
+
+<para>This means that if a connection asks to own the name
+"org.freedesktop.Foobar" then the source context will be the context
+of the connection and the target context will be "foo_t" - see the
+short discussion of SELinux below.</para>
+
+
+<para>Note, the context here is the target context when requesting a name,
+NOT the context of the connection owning the name.</para>
+
+
+<para>There's currently no way to set a default for owning any name, if
+we add this syntax it will look like:</para>
+<literallayout remap='.nf'>
+   &lt;associate own="*" context="foo_t"/&gt;
+</literallayout> <!-- .fi -->
+<para>If you find a reason this is useful, let the developers know.
+Right now the default will be the security context of the bus itself.</para>
+
+
+<para>If two &lt;associate&gt; elements specify the same name, the element
+appearing later in the configuration file will be used.</para>
+
+</refsect1>
+
+<refsect1 id='selinux'><title>SELinux</title>
+<para>See <ulink url='http://www.nsa.gov/selinux/'>http://www.nsa.gov/selinux/</ulink> for full details on SELinux. Some useful excerpts:</para>
+
+
+<para>Every subject (process) and object (e.g. file, socket, IPC object,
+etc) in the system is assigned a collection of security attributes,
+known as a security context. A security context contains all of the
+security attributes associated with a particular subject or object
+that are relevant to the security policy.</para>
+
+
+<para>In order to better encapsulate security contexts and to provide
+greater efficiency, the policy enforcement code of SELinux typically
+handles security identifiers (SIDs) rather than security contexts. A
+SID is an integer that is mapped by the security server to a security
+context at runtime.</para>
+
+
+<para>When a security decision is required, the policy enforcement code
+passes a pair of SIDs (typically the SID of a subject and the SID of
+an object, but sometimes a pair of subject SIDs or a pair of object
+SIDs), and an object security class to the security server. The object
+security class indicates the kind of object, e.g. a process, a regular
+file, a directory, a TCP socket, etc.</para>
+
+
+<para>Access decisions specify whether or not a permission is granted for a
+given pair of SIDs and class. Each object class has a set of
+associated permissions defined to control operations on objects with
+that class.</para>
+
+
+<para>D-Bus performs SELinux security checks in two places.</para>
+
+
+<para>First, any time a message is routed from one connection to another
+connection, the bus daemon will check permissions with the security context of
+the first connection as source, security context of the second connection
+as target, object class "dbus" and requested permission "send_msg".</para>
+
+
+<para>If a security context is not available for a connection
+(impossible when using UNIX domain sockets), then the target
+context used is the context of the bus daemon itself.
+There is currently no way to change this default, because we're
+assuming that only UNIX domain sockets will be used to
+connect to the systemwide bus. If this changes, we'll
+probably add a way to set the default connection context.</para>
+
+
+<para>Second, any time a connection asks to own a name,
+the bus daemon will check permissions with the security
+context of the connection as source, the security context specified
+for the name in the config file as target, object
+class "dbus" and requested permission "acquire_svc".</para>
+
+
+<para>The security context for a bus name is specified with the
+&lt;associate&gt; element described earlier in this document.
+If a name has no security context associated in the
+configuration file, the security context of the bus daemon
+itself will be used.</para>
+
+</refsect1>
+
+<refsect1 id='debugging'><title>DEBUGGING</title>
+<para>If you're trying to figure out where your messages are going or why
+you aren't getting messages, there are several things you can try.</para>
+
+<para>Remember that the system bus is heavily locked down and if you
+haven't installed a security policy file to allow your message
+through, it won't work. For the session bus, this is not a concern.</para>
+
+<para>The simplest way to figure out what's happening on the bus is to run
+the <emphasis remap='I'>dbus-monitor</emphasis> program, which comes with the D-Bus
+package. You can also send test messages with <emphasis remap='I'>dbus-send</emphasis>. These
+programs have their own man pages.</para>
+
+<para>If you want to know what the daemon itself is doing, you might consider
+running a separate copy of the daemon to test against. This will allow you
+to put the daemon under a debugger, or run it with verbose output, without
+messing up your real session and system daemons.</para>
+
+<para>To run a separate test copy of the daemon, for example you might open a terminal
+and type:</para>
+<literallayout remap='.nf'>
+  DBUS_VERBOSE=1 dbus-daemon --session --print-address
+</literallayout> <!-- .fi -->
+
+<para>The test daemon address will be printed when the daemon starts. You will need
+to copy-and-paste this address and use it as the value of the
+DBUS_SESSION_BUS_ADDRESS environment variable when you launch the applications
+you want to test. This will cause those applications to connect to your
+test bus instead of the DBUS_SESSION_BUS_ADDRESS of your real session bus.</para>
+
+<para>DBUS_VERBOSE=1 will have NO EFFECT unless your copy of D-Bus
+was compiled with verbose mode enabled. This is not recommended in
+production builds due to performance impact. You may need to rebuild
+D-Bus if your copy was not built with debugging in mind. (DBUS_VERBOSE
+also affects the D-Bus library and thus applications using D-Bus; it may
+be useful to see verbose output on both the client side and from the daemon.)</para>
+
+<para>If you want to get fancy, you can create a custom bus
+configuration for your test bus (see the session.conf and system.conf
+files that define the two default configurations for example). This
+would allow you to specify a different directory for .service files,
+for example.</para>
+
+</refsect1>
+
+<refsect1 id='author'><title>AUTHOR</title>
+<para>See <ulink url='http://www.freedesktop.org/software/dbus/doc/AUTHORS'>http://www.freedesktop.org/software/dbus/doc/AUTHORS</ulink></para>
+
+</refsect1>
+
+<refsect1 id='bugs'><title>BUGS</title>
+<para>Please send bug reports to the D-Bus mailing list or bug tracker,
+see <ulink url='http://www.freedesktop.org/software/dbus/'>http://www.freedesktop.org/software/dbus/</ulink></para>
+</refsect1>
+</refentry>

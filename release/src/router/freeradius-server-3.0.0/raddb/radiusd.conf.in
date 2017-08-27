@@ -1,0 +1,723 @@
+# -*- text -*-
+##
+## radiusd.conf	-- FreeRADIUS server configuration file - @RADIUSD_VERSION_STRING@
+##
+##	http://www.freeradius.org/
+##	$Id$
+##
+
+######################################################################
+#
+#	Read "man radiusd" before editing this file.  See the section
+#	titled DEBUGGING.  It outlines a method where you can quickly
+#	obtain the configuration you want, without running into
+#	trouble.
+#
+#	Run the server in debugging mode, and READ the output.
+#
+#		$ radiusd -X
+#
+#	We cannot emphasize this point strongly enough.  The vast
+#	majority of problems can be solved by carefully reading the
+#	debugging output, which includes warnings about common issues,
+#	and suggestions for how they may be fixed.
+#
+#	There may be a lot of output, but look carefully for words like:
+#	"warning", "error", "reject", or "failure".  The messages there
+#	will usually be enough to guide you to a solution.
+#
+#	If you are going to ask a question on the mailing list, then
+#	explain what you are trying to do, and include the output from
+#	debugging mode (radiusd -X).  Failure to do so means that all
+#	of the responses to your question will be people telling you
+#	to "post the output of radiusd -X".
+
+######################################################################
+#
+#  	The location of other config files and logfiles are declared
+#  	in this file.
+#
+#  	Also general configuration for modules can be done in this
+#  	file, it is exported through the API to modules that ask for
+#  	it.
+#
+#	See "man radiusd.conf" for documentation on the format of this
+#	file.  Note that the individual configuration items are NOT
+#	documented in that "man" page.  They are only documented here,
+#	in the comments.
+#
+#	As of 2.0.0, FreeRADIUS supports a simple processing language
+#	in the "authorize", "authenticate", "accounting", etc. sections.
+#	See "man unlang" for details.
+#
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+sysconfdir = @sysconfdir@
+localstatedir = /var
+sbindir = @sbindir@
+logdir = @logdir@
+raddbdir = @raddbdir@
+radacctdir = @radacctdir@
+
+#
+#  name of the running server.  See also the "-n" command-line option.
+name = radiusd
+
+#  Location of config and logfiles.
+confdir = ${raddbdir}
+modconfdir = ${confdir}/mods-config
+certdir = ${confdir}/certs
+cadir   = ${confdir}/certs
+run_dir = ${localstatedir}/run/${name}
+
+# Should likely be ${localstatedir}/lib/radiusd
+db_dir = ${raddbdir}
+
+#
+# libdir: Where to find the rlm_* modules.
+#
+#   This should be automatically set at configuration time.
+#
+#   If the server builds and installs, but fails at execution time
+#   with an 'undefined symbol' error, then you can use the libdir
+#   directive to work around the problem.
+#
+#   The cause is usually that a library has been installed on your
+#   system in a place where the dynamic linker CANNOT find it.  When
+#   executing as root (or another user), your personal environment MAY
+#   be set up to allow the dynamic linker to find the library.  When
+#   executing as a daemon, FreeRADIUS MAY NOT have the same
+#   personalized configuration.
+#
+#   To work around the problem, find out which library contains that symbol,
+#   and add the directory containing that library to the end of 'libdir',
+#   with a colon separating the directory names.  NO spaces are allowed.
+#
+#   e.g. libdir = /usr/local/lib:/opt/package/lib
+#
+#   You can also try setting the LD_LIBRARY_PATH environment variable
+#   in a script which starts the server.
+#
+#   If that does not work, then you can re-configure and re-build the
+#   server to NOT use shared libraries, via:
+#
+#	./configure --disable-shared
+#	make
+#	make install
+#
+libdir = @libdir@
+
+#  pidfile: Where to place the PID of the RADIUS server.
+#
+#  The server may be signalled while it's running by using this
+#  file.
+#
+#  This file is written when ONLY running in daemon mode.
+#
+#  e.g.:  kill -HUP `cat /var/run/radiusd/radiusd.pid`
+#
+pidfile = ${run_dir}/${name}.pid
+
+#  max_request_time: The maximum time (in seconds) to handle a request.
+#
+#  Requests which take more time than this to process may be killed, and
+#  a REJECT message is returned.
+#
+#  WARNING: If you notice that requests take a long time to be handled,
+#  then this MAY INDICATE a bug in the server, in one of the modules
+#  used to handle a request, OR in your local configuration.
+#
+#  This problem is most often seen when using an SQL database.  If it takes
+#  more than a second or two to receive an answer from the SQL database,
+#  then it probably means that you haven't indexed the database.  See your
+#  SQL server documentation for more information.
+#
+#  Useful range of values: 5 to 120
+#
+max_request_time = 30
+
+#  cleanup_delay: The time to wait (in seconds) before cleaning up
+#  a reply which was sent to the NAS.
+#
+#  The RADIUS request is normally cached internally for a short period
+#  of time, after the reply is sent to the NAS.  The reply packet may be
+#  lost in the network, and the NAS will not see it.  The NAS will then
+#  re-send the request, and the server will respond quickly with the
+#  cached reply.
+#
+#  If this value is set too low, then duplicate requests from the NAS
+#  MAY NOT be detected, and will instead be handled as separate requests.
+#
+#  If this value is set too high, then the server will cache too many
+#  requests, and some new requests may get blocked.  (See 'max_requests'.)
+#
+#  Useful range of values: 2 to 10
+#
+cleanup_delay = 5
+
+#  max_requests: The maximum number of requests which the server keeps
+#  track of.  This should be 256 multiplied by the number of clients.
+#  e.g. With 4 clients, this number should be 1024.
+#
+#  If this number is too low, then when the server becomes busy,
+#  it will not respond to any new requests, until the 'cleanup_delay'
+#  time has passed, and it has removed the old requests.
+#
+#  If this number is set too high, then the server will use a bit more
+#  memory for no real benefit.
+#
+#  If you aren't sure what it should be set to, it's better to set it
+#  too high than too low.  Setting it to 1000 per client is probably
+#  the highest it should be.
+#
+#  Useful range of values: 256 to infinity
+#
+max_requests = 1024
+
+#  hostname_lookups: Log the names of clients or just their IP addresses
+#  e.g., www.freeradius.org (on) or 206.47.27.232 (off).
+#
+#  The default is 'off' because it would be overall better for the net
+#  if people had to knowingly turn this feature on, since enabling it
+#  means that each client request will result in AT LEAST one lookup
+#  request to the nameserver.   Enabling hostname_lookups will also
+#  mean that your server may stop randomly for 30 seconds from time
+#  to time, if the DNS requests take too long.
+#
+#  Turning hostname lookups off also means that the server won't block
+#  for 30 seconds, if it sees an IP address which has no name associated
+#  with it.
+#
+#  allowed values: {no, yes}
+#
+hostname_lookups = no
+
+#
+#  Logging section.  The various "log_*" configuration items
+#  will eventually be moved here.
+#
+log {
+	#
+	#  Destination for log messages.  This can be one of:
+	#
+	#	files - log to "file", as defined below.
+	#	syslog - to syslog (see also the "syslog_facility", below.
+	#	stdout - standard output
+	#	stderr - standard error.
+	#
+	#  The command-line option "-X" over-rides this option, and forces
+	#  logging to go to stdout.
+	#
+	destination = files
+
+	#
+	#  Highlight important messages sent to stderr and stdout.
+	#
+	#  Option will be ignored (disabled) if output if TERM is not
+	#  an xterm or output is not to a TTY.
+	#
+	colourise = yes
+
+	#
+	#  The logging messages for the server are appended to the
+	#  tail of this file if destination == "files"
+	#
+	#  If the server is running in debugging mode, this file is
+	#  NOT used.
+	#
+	file = ${logdir}/radius.log
+
+	#
+	#  If this configuration parameter is set, then log messages for
+	#  a *request* go to this file, rather than to radius.log.
+	#
+	#  i.e. This is a log file per request, once the server has accepted
+	#  the request as being from a valid client.  Messages that are
+	#  not associated with a request still go to radius.log.
+	#
+	#  Not all log messages in the server core have been updated to use
+	#  this new internal API.  As a result, some messages will still
+	#  go to radius.log.  Please submit patches to fix this behavior.
+	#
+	#  The file name is expanded dynamically.  You should ONLY user
+	#  server-side attributes for the filename (e.g. things you control).
+	#  Using this feature MAY also slow down the server substantially,
+	#  especially if you do thinks like SQL calls as part of the
+	#  expansion of the filename.
+	#
+	#  The name of the log file should use attributes that don't change
+	#  over the lifetime of a request, such as User-Name,
+	#  Virtual-Server or Packet-Src-IP-Address.  Otherwise, the log
+	#  messages will be distributed over multiple files.
+	#
+	#  Logging can be enabled for an individual request by a special
+	#  dynamic expansion macro:  %{debug: 1}, where the debug level
+	#  for this request is set to '1' (or 2, 3, etc.).  e.g.
+	#
+	#	...
+	#	update control {
+	#	       Tmp-String-0 = "%{debug:1}"
+	#	}
+	#	...
+	#
+	#  The attribute that the value is assigned to is unimportant,
+	#  and should be a "throw-away" attribute with no side effects.
+	#
+	#requests = ${logdir}/radiusd-%{%{Virtual-Server}:-DEFAULT}-%Y%m%d.log
+
+	#
+	#  Which syslog facility to use, if ${destination} == "syslog"
+	#
+	#  The exact values permitted here are OS-dependent.  You probably
+	#  don't want to change this.
+	#
+	syslog_facility = daemon
+
+	#  Log the full User-Name attribute, as it was found in the request.
+	#
+	# allowed values: {no, yes}
+	#
+	stripped_names = no
+
+	#  Log authentication requests to the log file.
+	#
+	#  allowed values: {no, yes}
+	#
+	auth = no
+
+	#  Log passwords with the authentication requests.
+	#  auth_badpass  - logs password if it's rejected
+	#  auth_goodpass - logs password if it's correct
+	#
+	#  allowed values: {no, yes}
+	#
+	auth_badpass = no
+	auth_goodpass = no
+
+	#  Log additional text at the end of the "Login OK" messages.
+	#  for these to work, the "auth" and "auth_goodpass" or "auth_badpass"
+	#  configurations above have to be set to "yes".
+	#
+	#  The strings below are dynamically expanded, which means that
+	#  you can put anything you want in them.  However, note that
+	#  this expansion can be slow, and can negatively impact server
+	#  performance.
+	#
+#	msg_goodpass = ""
+#	msg_badpass = ""
+}
+
+#  The program to execute to do concurrency checks.
+checkrad = ${sbindir}/checkrad
+
+# SECURITY CONFIGURATION
+#
+#  There may be multiple methods of attacking on the server.  This
+#  section holds the configuration items which minimize the impact
+#  of those attacks
+#
+security {
+	#  chroot: directory where the server does "chroot".
+	#
+	#  The chroot is done very early in the process of starting
+	#  the server.  After the chroot has been performed it
+	#  switches to the "user" listed below (which MUST be
+	#  specified).  If "group" is specified, it switches to that
+	#  group, too.  Any other groups listed for the specified
+	#  "user" in "/etc/group" are also added as part of this
+	#  process.
+	#
+	#  The current working directory (chdir / cd) is left
+	#  *outside* of the chroot until all of the modules have been
+	#  initialized.  This allows the "raddb" directory to be left
+	#  outside of the chroot.  Once the modules have been
+	#  initialized, it does a "chdir" to ${logdir}.  This means
+	#  that it should be impossible to break out of the chroot.
+	#
+	#  If you are worried about security issues related to this
+	#  use of chdir, then simply ensure that the "raddb" directory
+	#  is inside of the chroot, end be sure to do "cd raddb"
+	#  BEFORE starting the server.
+	#
+	#  If the server is statically linked, then the only files
+	#  that have to exist in the chroot are ${run_dir} and
+	#  ${logdir}.  If you do the "cd raddb" as discussed above,
+	#  then the "raddb" directory has to be inside of the chroot
+	#  directory, too.
+	#
+#	chroot = /path/to/chroot/directory
+
+	# user/group: The name (or #number) of the user/group to run radiusd as.
+	#
+	#   If these are commented out, the server will run as the
+	#   user/group that started it.  In order to change to a
+	#   different user/group, you MUST be root ( or have root
+	#   privileges ) to start the server.
+	#
+	#   We STRONGLY recommend that you run the server with as few
+	#   permissions as possible.  That is, if you're not using
+	#   shadow passwords, the user and group items below should be
+	#   set to radius'.
+	#
+	#  NOTE that some kernels refuse to setgid(group) when the
+	#  value of (unsigned)group is above 60000; don't use group
+	#  "nobody" on these systems!
+	#
+	#  On systems with shadow passwords, you might have to set
+	#  'group = shadow' for the server to be able to read the
+	#  shadow password file.  If you can authenticate users while
+	#  in debug mode, but not in daemon mode, it may be that the
+	#  debugging mode server is running as a user that can read
+	#  the shadow info, and the user listed below can not.
+	#
+	#  The server will also try to use "initgroups" to read
+	#  /etc/groups.  It will join all groups where "user" is a
+	#  member.  This can allow for some finer-grained access
+	#  controls.
+	#
+#	user = radius
+#	group = radius
+
+	#  Core dumps are a bad thing.  This should only be set to
+	#  'yes' if you're debugging a problem with the server.
+	#
+	#  allowed values: {no, yes}
+	#
+	allow_core_dumps = no
+
+	#
+	#  max_attributes: The maximum number of attributes
+	#  permitted in a RADIUS packet.  Packets which have MORE
+	#  than this number of attributes in them will be dropped.
+	#
+	#  If this number is set too low, then no RADIUS packets
+	#  will be accepted.
+	#
+	#  If this number is set too high, then an attacker may be
+	#  able to send a small number of packets which will cause
+	#  the server to use all available memory on the machine.
+	#
+	#  Setting this number to 0 means "allow any number of attributes"
+	max_attributes = 200
+
+	#
+	#  reject_delay: When sending an Access-Reject, it can be
+	#  delayed for a few seconds.  This may help slow down a DoS
+	#  attack.  It also helps to slow down people trying to brute-force
+	#  crack a users password.
+	#
+	#  Setting this number to 0 means "send rejects immediately"
+	#
+	#  If this number is set higher than 'cleanup_delay', then the
+	#  rejects will be sent at 'cleanup_delay' time, when the request
+	#  is deleted from the internal cache of requests.
+	#
+	#  Useful ranges: 1 to 5
+	reject_delay = 1
+
+	#
+	#  status_server: Whether or not the server will respond
+	#  to Status-Server requests.
+	#
+	#  When sent a Status-Server message, the server responds with
+	#  an Access-Accept or Accounting-Response packet.
+	#
+	#  This is mainly useful for administrators who want to "ping"
+	#  the server, without adding test users, or creating fake
+	#  accounting packets.
+	#
+	#  It's also useful when a NAS marks a RADIUS server "dead".
+	#  The NAS can periodically "ping" the server with a Status-Server
+	#  packet.  If the server responds, it must be alive, and the
+	#  NAS can start using it for real requests.
+	#
+	#  See also raddb/sites-available/status
+	#
+	status_server = yes
+}
+
+# PROXY CONFIGURATION
+#
+#  proxy_requests: Turns proxying of RADIUS requests on or off.
+#
+#  The server has proxying turned on by default.  If your system is NOT
+#  set up to proxy requests to another server, then you can turn proxying
+#  off here.  This will save a small amount of resources on the server.
+#
+#  If you have proxying turned off, and your configuration files say
+#  to proxy a request, then an error message will be logged.
+#
+#  To disable proxying, change the "yes" to "no", and comment the
+#  $INCLUDE line.
+#
+#  allowed values: {no, yes}
+#
+#proxy_requests  = yes
+#$INCLUDE proxy.conf
+
+
+# CLIENTS CONFIGURATION
+#
+#  Client configuration is defined in "clients.conf".
+#
+
+#  The 'clients.conf' file contains all of the information from the old
+#  'clients' and 'naslist' configuration files.  We recommend that you
+#  do NOT use 'client's or 'naslist', although they are still
+#  supported.
+#
+#  Anything listed in 'clients.conf' will take precedence over the
+#  information from the old-style configuration files.
+#
+#$INCLUDE clients.conf
+
+
+# THREAD POOL CONFIGURATION
+#
+#  The thread pool is a long-lived group of threads which
+#  take turns (round-robin) handling any incoming requests.
+#
+#  You probably want to have a few spare threads around,
+#  so that high-load situations can be handled immediately.  If you
+#  don't have any spare threads, then the request handling will
+#  be delayed while a new thread is created, and added to the pool.
+#
+#  You probably don't want too many spare threads around,
+#  otherwise they'll be sitting there taking up resources, and
+#  not doing anything productive.
+#
+#  The numbers given below should be adequate for most situations.
+#
+thread pool {
+	#  Number of servers to start initially --- should be a reasonable
+	#  ballpark figure.
+	start_servers = 5
+
+	#  Limit on the total number of servers running.
+	#
+	#  If this limit is ever reached, clients will be LOCKED OUT, so it
+	#  should NOT BE SET TOO LOW.  It is intended mainly as a brake to
+	#  keep a runaway server from taking the system with it as it spirals
+	#  down...
+	#
+	#  You may find that the server is regularly reaching the
+	#  'max_servers' number of threads, and that increasing
+	#  'max_servers' doesn't seem to make much difference.
+	#
+	#  If this is the case, then the problem is MOST LIKELY that
+	#  your back-end databases are taking too long to respond, and
+	#  are preventing the server from responding in a timely manner.
+	#
+	#  The solution is NOT do keep increasing the 'max_servers'
+	#  value, but instead to fix the underlying cause of the
+	#  problem: slow database, or 'hostname_lookups=yes'.
+	#
+	#  For more information, see 'max_request_time', above.
+	#
+	max_servers = 32
+
+	#  Server-pool size regulation.  Rather than making you guess
+	#  how many servers you need, FreeRADIUS dynamically adapts to
+	#  the load it sees, that is, it tries to maintain enough
+	#  servers to handle the current load, plus a few spare
+	#  servers to handle transient load spikes.
+	#
+	#  It does this by periodically checking how many servers are
+	#  waiting for a request.  If there are fewer than
+	#  min_spare_servers, it creates a new spare.  If there are
+	#  more than max_spare_servers, some of the spares die off.
+	#  The default values are probably OK for most sites.
+	#
+	min_spare_servers = 3
+	max_spare_servers = 10
+
+	#  When the server receives a packet, it places it onto an
+	#  internal queue, where the worker threads (configured above)
+	#  pick it up for processing.  The maximum size of that queue
+	#  is given here.
+	#
+	#  When the queue is full, any new packets will be silently
+	#  discarded.
+	#
+	#  The most common cause of the queue being full is that the
+	#  server is dependent on a slow database, and it has received
+	#  a large "spike" of traffic.  When that happens, there is
+	#  very little you can do other than make sure the server
+	#  receives less traffic, or make sure that the database can
+	#  handle the load.
+	#
+#	max_queue_size = 65536
+
+	#  There may be memory leaks or resource allocation problems with
+	#  the server.  If so, set this value to 300 or so, so that the
+	#  resources will be cleaned up periodically.
+	#
+	#  This should only be necessary if there are serious bugs in the
+	#  server which have not yet been fixed.
+	#
+	#  '0' is a special value meaning 'infinity', or 'the servers never
+	#  exit'
+	max_requests_per_server = 0
+
+	#  Automatically limit the number of accounting requests.
+	#  This configuration item tracks how many requests per second
+	#  the server can handle.  It does this by tracking the
+	#  packets/s received by the server for processing, and
+	#  comparing that to the packets/s handled by the child
+	#  threads.
+	#
+
+	#  If the received PPS is larger than the processed PPS, *and*
+	#  the queue is more than half full, then new accounting
+	#  requests are probabilistically discarded.  This lowers the
+	#  number of packets that the server needs to process.  Over
+	#  time, the server will "catch up" with the traffic.
+	#
+	#  Throwing away accounting packets is usually safe and low
+	#  impact.  The NAS will retransmit them in a few seconds, or
+	#  even a few minutes.  Vendors should read RFC 5080 Section 2.2.1
+	#  to see how accounting packets should be retransmitted.  Using
+	#  any other method is likely to cause network meltdowns.
+	#
+	auto_limit_acct = no
+}
+
+# MODULE CONFIGURATION
+#
+#  The names and configuration of each module is located in this section.
+#
+#  After the modules are defined here, they may be referred to by name,
+#  in other sections of this configuration file.
+#
+modules {
+	#
+	#  Each module has a configuration as follows:
+	#
+	#	name [ instance ] {
+	#		config_item = value
+	#		...
+	#	}
+	#
+	#  The 'name' is used to load the 'rlm_name' library
+	#  which implements the functionality of the module.
+	#
+	#  The 'instance' is optional.  To have two different instances
+	#  of a module, it first must be referred to by 'name'.
+	#  The different copies of the module are then created by
+	#  inventing two 'instance' names, e.g. 'instance1' and 'instance2'
+	#
+	#  The instance names can then be used in later configuration
+	#  INSTEAD of the original 'name'.  See the 'radutmp' configuration
+	#  for an example.
+	#
+
+	#
+	#  As of 3.0, modules are in mods-enabled/.  Files matching
+	#  the regex /[a-zA-Z0-9_.]+/ are loaded.  The modules are
+	#  initialized ONLY if they are referenced in a processing
+	#  section, such as authorize, authenticate, accounting,
+	#  pre/post-proxy, etc.
+	#
+	$INCLUDE mods-enabled/
+}
+
+# Instantiation
+#
+#  This section orders the loading of the modules.  Modules
+#  listed here will get loaded BEFORE the later sections like
+#  authorize, authenticate, etc. get examined.
+#
+#  This section is not strictly needed.  When a section like
+#  authorize refers to a module, it's automatically loaded and
+#  initialized.  However, some modules may not be listed in any
+#  of the following sections, so they can be listed here.
+#
+#  Also, listing modules here ensures that you have control over
+#  the order in which they are initialized.  If one module needs
+#  something defined by another module, you can list them in order
+#  here, and ensure that the configuration will be OK.
+#
+#  After the modules listed here have been loaded, all of the modules
+#  in the "mods-enabled" directory will be loaded.  Loading the
+#  "mods-enabled" directory means that unlike Version 2, you usually
+#  don't need to list modules here.
+#
+instantiate {
+	#
+	# We list the counter module here so that it registers
+	# the check_name attribute before any module which sets
+	# it
+#	daily
+
+	# subsections here can be thought of as "virtual" modules.
+	#
+	# e.g. If you have two redundant SQL servers, and you want to
+	# use them in the authorize and accounting sections, you could
+	# place a "redundant" block in each section, containing the
+	# exact same text.  Or, you could uncomment the following
+	# lines, and list "redundant_sql" in the authorize and
+	# accounting sections.
+	#
+	#redundant redundant_sql {
+	#	sql1
+	#	sql2
+	#}
+}
+
+######################################################################
+#
+#  Policies are virtual modules, similar to those defined in the
+#  "instantiate" section above.
+#
+#  Defining a policy in one of the policy.d files means that it can be
+#  referenced in multiple places as a *name*, rather than as a series of
+#  conditions to match, and actions to take.
+#
+#  Policies are something like subroutines in a normal language, but
+#  they cannot be called recursively. They MUST be defined in order.
+#  If policy A calls policy B, then B MUST be defined before A.
+#
+######################################################################
+policy {
+	$INCLUDE policy.d/
+}
+
+######################################################################
+#
+#  SNMP notifications.  Uncomment the following line to enable
+#  snmptraps.  Note that you MUST also configure the full path
+#  to the "snmptrap" command in the "trigger.conf" file.
+#
+#$INCLUDE trigger.conf
+
+######################################################################
+#
+#	Load virtual servers.
+#
+#	This next $INCLUDE line loads files in the directory that
+#	match the regular expression: /[a-zA-Z0-9_.]+/
+#
+#	It allows you to define new virtual servers simply by placing
+#	a file into the raddb/sites-enabled/ directory.
+#
+$INCLUDE sites-enabled/
+
+######################################################################
+#
+#	All of the other configuration sections like "authorize {}",
+#	"authenticate {}", "accounting {}", have been moved to the
+#	the file:
+#
+#		raddb/sites-available/default
+#
+#	This is the "default" virtual server that has the same
+#	configuration as in version 1.0.x and 1.1.x.  The default
+#	installation enables this virtual server.  You should
+#	edit it to create policies for your local site.
+#
+#	For more documentation on virtual servers, see:
+#
+#		raddb/sites-available/README
+#
+######################################################################

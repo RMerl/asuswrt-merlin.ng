@@ -1,0 +1,92 @@
+# Translation of sysstat debconf templates to French
+# Copyright (C) 2005-2009 Debian French l10n team <debian-l10n-french@lists.debian.org>
+# This file is distributed under the same license as the sysstat package.
+#
+# Translators:
+# Christian Perrier <bubulle@debian.org>, 2005-2009.
+msgid ""
+msgstr ""
+"Project-Id-Version: fr\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-04 19:50+0100\n"
+"Last-Translator: Christian Perrier <bubulle@debian.org>\n"
+"Language-Team: French <debian-l10n-french@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr ""
+"Faut-il supprimer les fichiers de statistiques qui utilisent l'ancien "
+"format ?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Le format des fichiers quotidiens de statistiques a changé dans la version "
+"${s_version} de sysstat et n'est *pas* compatible avec le format antérieur."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Si vous choisissez cette option, tous les fichiers de données qui se "
+"trouvent dans le répertoire /var/log/sysstat seront effacés."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Si vous ne choisissez pas cette option, la commande sar(1) ne fonctionnera "
+"pas correctement tant que vous n'aurez pas supprimé les fichiers."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Faut-il activer la tâche quotidienne de cron pour sysstat ?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Si vous choisissez cette option, le paquet sysstat surveillera l'activité du "
+"système et conservera ces informations dans des journaux placés dans le "
+"répertoire /var/log/sysstat."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Ces données permettront à la commande sar(1) d'afficher des statistiques sur "
+"l'activité du système pour la journée entière."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Si vous ne choisissez pas cette option, la commande sar(1) n'affichera que "
+"les statistiques courantes."

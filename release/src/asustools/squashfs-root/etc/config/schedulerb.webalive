@@ -1,0 +1,38 @@
+
+<fieldset>
+	<legend><% tran("alive.legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("alive.sevr1"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="schedule_enable" <% nvram_checked("schedule_enable","1"); %> onclick="setAlive();show_layer_ext(this, 'idschedule', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="schedule_enable" <% nvram_checked("schedule_enable","0"); %> onclick="setAlive();show_layer_ext(this, 'idschedule', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idschedule">
+		<div class="setting">
+			<div class="label"><% tran("share.inter"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="schedule_hour_time" <% nvram_checked("schedule_hour_time","1"); %> onclick="setAlive()" />&nbsp;
+			<input class="num" maxlength="5" size="7" name="schedule_time" value="<% nvram_get("schedule_time"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("alive.hour"); %></div>
+			<input class="spaceradio" type="radio" value="2" name="schedule_hour_time" <% nvram_checked("schedule_hour_time","2"); %> onclick="setAlive()" />&nbsp;
+			<select name="schedule_hours">
+				<% make_time_list("schedule_hours","0","23"); %>
+			</select>:<select name="schedule_minutes">
+				<% make_time_list("schedule_minutes","0","59"); %>
+			</select>&nbsp;<select name="schedule_weekdays">
+				<script type="text/javascript">
+				//<![CDATA[
+				document.write("<option value=\"*\" <% nvram_selected_js("schedule_weekdays","*"); %> >" + share.everyday + "</option>");
+				document.write("<option value=\"00\" <% nvram_selected_js("schedule_weekdays","00"); %> >" + share.sun + "</option>");
+				document.write("<option value=\"01\" <% nvram_selected_js("schedule_weekdays","01"); %> >" + share.mon + "</option>");
+				document.write("<option value=\"02\" <% nvram_selected_js("schedule_weekdays","02"); %> >" + share.tue + "</option>");
+				document.write("<option value=\"03\" <% nvram_selected_js("schedule_weekdays","03"); %> >" + share.wed + "</option>");
+				document.write("<option value=\"04\" <% nvram_selected_js("schedule_weekdays","04"); %> >" + share.thu + "</option>");
+				document.write("<option value=\"05\" <% nvram_selected_js("schedule_weekdays","05"); %> >" + share.fri + "</option>");
+				document.write("<option value=\"06\" <% nvram_selected_js("schedule_weekdays","06"); %> >" + share.sat + "</option>");
+				//]]>
+				</script>
+			</select>
+		</div>
+	</div>
+</fieldset><br/>

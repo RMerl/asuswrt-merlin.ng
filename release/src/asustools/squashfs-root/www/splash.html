@@ -1,0 +1,21 @@
+<html>
+<head><title>Welcome to the NoCat Authentication System running DD-WRT</title></head>
+<body bgcolor=#FFFFFF text=000000>
+<form method="POST" action="$action">
+<input type="hidden" name="mode_login">
+<input type="hidden" name="redirect" value="$redirect">
+<input type="hidden" name="accept_terms" value="yes">
+<table border=0 cellpadding=5 cellspacing=0>
+<tr>
+  <td>Welcome to <a href="/status">$GatewayName</a>.</td>
+</tr>
+<tr>
+      <td align=center height="23"><input type="submit" value="Login/Enter">
+</table>
+<!--
+There are currently $ConnectionCount user(s) connected.<BR>
+The last connection was at: $LastConnectionTime.
+-->
+</form>
+</body>
+</html>

@@ -1,0 +1,41 @@
+#!/bin/bash
+# Restore the default host configurations
+#
+# Copyright (C) 2004  Eric Marchionni, Patrik Rayo
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+SSHCONF="-F $DIR/../ssh_config"
+
+testname=$1
+
+HOSTCONFIGDIR=$DIR/../hosts
+TESTSDIR=$BUILDDIR/tests
+
+[ -d $TESTSDIR ] || die "Directory '$TESTSDIR' not found"
+[ -d $TESTSDIR/$testname ] || die "Test '$testname' not found"
+[ -f $TESTSDIR/$testname/test.conf ] || die "File 'test.conf' is missing"
+
+. $TESTSDIR/$testname/test.conf
+
+if [ -d $TESTSDIR/${testname}/hosts ]
+then
+    for host in `ls $TESTSDIR/${testname}/hosts`
+    do
+	eval HOSTLOGIN="root@`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+	scp $SSHCONF -r $HOSTCONFIGDIR/${host}/etc $HOSTLOGIN:/ > /dev/null 2>&1
+	scp $SSHCONF -r $HOSTCONFIGDIR/default/etc $HOSTLOGIN:/ > /dev/null 2>&1
+    done
+fi

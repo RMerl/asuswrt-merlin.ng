@@ -1,0 +1,10 @@
+
+<fieldset>
+  <legend><% tran("management.lang_legend"); %></legend>
+  <div class="setting">
+      <div class="label"><% tran("management.lang_srv"); %></div>
+      <select name="language">
+      <% show_languages(); %>
+      </select>
+  </div>
+</fieldset><br/>

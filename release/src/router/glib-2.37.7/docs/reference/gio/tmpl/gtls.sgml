@@ -1,0 +1,67 @@
+<!-- ##### SECTION Title ##### -->
+gtls
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_TLS_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GTlsError ##### -->
+<para>
+
+</para>
+
+@G_TLS_ERROR_UNAVAILABLE: 
+@G_TLS_ERROR_MISC: 
+@G_TLS_ERROR_BAD_CERTIFICATE: 
+@G_TLS_ERROR_NOT_TLS: 
+@G_TLS_ERROR_HANDSHAKE: 
+@G_TLS_ERROR_CERTIFICATE_REQUIRED: 
+@G_TLS_ERROR_EOF: 
+
+<!-- ##### ENUM GTlsAuthenticationMode ##### -->
+<para>
+
+</para>
+
+@G_TLS_AUTHENTICATION_NONE: 
+@G_TLS_AUTHENTICATION_REQUESTED: 
+@G_TLS_AUTHENTICATION_REQUIRED: 
+
+<!-- ##### ENUM GTlsCertificateFlags ##### -->
+<para>
+
+</para>
+
+@G_TLS_CERTIFICATE_UNKNOWN_CA: 
+@G_TLS_CERTIFICATE_BAD_IDENTITY: 
+@G_TLS_CERTIFICATE_NOT_ACTIVATED: 
+@G_TLS_CERTIFICATE_EXPIRED: 
+@G_TLS_CERTIFICATE_REVOKED: 
+@G_TLS_CERTIFICATE_INSECURE: 
+@G_TLS_CERTIFICATE_GENERIC_ERROR: 
+@G_TLS_CERTIFICATE_VALIDATE_ALL: 
+

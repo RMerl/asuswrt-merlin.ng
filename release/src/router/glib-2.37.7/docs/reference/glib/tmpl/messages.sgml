@@ -1,0 +1,192 @@
+<!-- ##### SECTION Title ##### -->
+Message Logging
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_LOG_DOMAIN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_LOG_FATAL_MASK ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_LOG_LEVEL_USER_SHIFT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### USER_FUNCTION GLogFunc ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@log_level: 
+@message: 
+@user_data: 
+
+
+<!-- ##### ENUM GLogLevelFlags ##### -->
+<para>
+
+</para>
+
+@G_LOG_FLAG_RECURSION: 
+@G_LOG_FLAG_FATAL: 
+@G_LOG_LEVEL_ERROR: 
+@G_LOG_LEVEL_CRITICAL: 
+@G_LOG_LEVEL_WARNING: 
+@G_LOG_LEVEL_MESSAGE: 
+@G_LOG_LEVEL_INFO: 
+@G_LOG_LEVEL_DEBUG: 
+@G_LOG_LEVEL_MASK: 
+
+<!-- ##### FUNCTION g_log ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@log_level: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_logv ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@log_level: 
+@format: 
+@args: 
+
+
+<!-- ##### MACRO g_message ##### -->
+<para>
+
+</para>
+
+@...: 
+
+
+<!-- ##### MACRO g_warning ##### -->
+<para>
+
+</para>
+
+@...: 
+
+
+<!-- ##### MACRO g_critical ##### -->
+<para>
+
+</para>
+
+@...: 
+
+
+<!-- ##### MACRO g_error ##### -->
+<para>
+
+</para>
+
+@...: 
+
+
+<!-- ##### MACRO g_debug ##### -->
+<para>
+
+</para>
+
+@...: 
+
+
+<!-- ##### FUNCTION g_log_set_handler ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@log_levels: 
+@log_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_log_remove_handler ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@handler_id: 
+
+
+<!-- ##### FUNCTION g_log_set_always_fatal ##### -->
+<para>
+
+</para>
+
+@fatal_mask: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_log_set_fatal_mask ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@fatal_mask: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_log_default_handler ##### -->
+<para>
+
+</para>
+
+@log_domain: 
+@log_level: 
+@message: 
+@unused_data: 
+
+
+<!-- ##### FUNCTION g_log_set_default_handler ##### -->
+<para>
+
+</para>
+
+@log_func: 
+@user_data: 
+@Returns: 
+
+

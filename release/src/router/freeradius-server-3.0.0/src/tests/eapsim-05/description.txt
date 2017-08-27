@@ -1,0 +1,2 @@
+This test is identical to eapsim-03, except that the RAND is purposely
+wrong.

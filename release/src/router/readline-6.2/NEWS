@@ -1,0 +1,19 @@
+This is a terse description of the new features added to readline-6.2 since
+the release of readline-6.1.
+
+a.  The history library does not try to write the history filename in the
+    current directory if $HOME is unset.  This closes a potential security
+    problem if the application does not specify a history filename.
+
+b.  New bindable variable `completion-display-width' to set the number of
+    columns used when displaying completions.
+
+c.  New bindable variable `completion-case-map' to cause case-insensitive
+    completion to treat `-' and `_' as identical.
+
+d.  There are new bindable vi-mode command names to avoid readline's case-
+    insensitive matching not allowing them to be bound separately.
+
+e.  New bindable variable `menu-complete-display-prefix' causes the menu
+    completion code to display the common prefix of the possible completions
+    before cycling through the list, instead of after.

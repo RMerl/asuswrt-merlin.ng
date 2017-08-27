@@ -1,0 +1,353 @@
+/*
+ * CSS styles used in Device Summary Page
+ *
+ * $ Copyright Open Broadcom Corporation $
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: iQoS.css, v 1.0 2015-02-12 18:43:43 vbemblek $
+ */
+
+#DeviceSummaryTable{
+	background:rgb(226,226,226);
+	height:176px;
+}
+
+.iQoSSummaryHeading{
+	padding-top:10px;
+	padding-left:0.8%;
+}
+
+.appheading {
+	width:100%;
+	border:0;
+	padding:0;
+}
+
+.systemdetailstable{
+	width:100%;
+	padding-left:3%;
+	background-color:white;
+	box-shadow:3px 3px 3px #999;
+}
+
+.systemdetailstable td{
+	font-weight:bold;
+	padding-top:9px;
+	padding-bottom:9px;
+}
+
+.datatransferdetails{
+	width:100%;
+	padding-left:3%;
+	background-color:white;
+	box-shadow:3px 3px 3px #999;
+}
+
+.datatransferdetails td{
+	font-weight:bold;
+	padding-top:2px;
+	padding-bottom:2px;
+}
+
+.iQoSSystemDetails{
+	float: left;
+	width:40%;
+	padding-top:10px;
+	margin-left:0.8%;
+	margin-right:9.2%;
+}
+
+#DeviceApplicationTable{
+	background:rgb(226,226,226);
+	margin-top:16px;
+}
+
+.deviceselectedtbl{
+	padding-left:0.8%;
+	width:35%;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.deviceselectedtbl td{
+	font-size:1.3em;
+	font-weight:bold;
+	color:white;
+}
+
+.appselectedtbl{
+	padding-left:0.8%;
+	width:70%;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.appselectedtbl td{
+	font-size:1.3em;
+	font-weight:bold;
+	color:white;
+}
+
+.appselectedtbl1{
+	padding-left:0.8%;
+	width:70%;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.appselectedtbl1 td{
+	font-size:1.3em;
+	font-weight:bold;
+	color:white;
+}
+
+.appselectedtbl2{
+	padding-left:0.8%;
+	width:100%;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.appselectedtbl2 td{
+	font-size:1.3em;
+	font-weight:bold;
+	color:white;
+}
+
+.AppBandwidthHeading{
+	padding-top:10px;
+	padding-left:0.8%
+}
+
+.DeviceImages{
+	padding-left:1.5%;
+	padding-top:10px;
+}
+
+#LinkBandwidthTable{
+	background:rgb(226,226,226);
+	height:430px;
+	margin-top:16px;
+}
+
+.LinkRateHeading{
+	width:100%;
+	padding-left:0.8%;
+}
+
+#BandwidthCategoryHeading{
+	position:relative;
+	width:350px;
+	margin-left:150px;
+	font-size: 18px;
+	background:rgb(0,139,176);
+	color:white;
+	font-weight:bold;
+	border-radius:10px;
+	padding:3px;
+}
+
+.BandwidthCategoryHeading{
+	width:100%;
+	padding-left:0.8%;
+}
+
+.vertical-line{
+	width:0.25%;
+	position:relative;
+	background-color: rgb(0,139,176);
+	float: left;
+	margin-left:2.5%;
+	padding:0px;
+	box-shadow:2px 2px 2px #999;
+}
+
+.Line1{
+	height: 4px;
+	background-color: rgb(0,139,176);
+	float:left;
+	width:3%;
+	margin-top:20px;
+	margin-left:2.4%;
+	padding:0px;
+	box-shadow:2px 2px 2px #999;
+}
+
+.RectTextbox1{
+	background-color:rgb(255,229,154);
+	position:relative;
+	float:left;
+	text-align:left;
+	width:18%;
+	border:1px solid #008bb0;
+	padding:5px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.RectTextbox2{
+	background-color:rgb(255,250,235);
+	position:relative;
+	float:left;
+	text-align:left;
+	width:18%;
+	border:1px solid #008bb0;
+	padding-right:2.5%;
+	box-shadow:3px 3px 3px #999;
+}
+
+#LinkRateGraphContent{
+	position:relative;
+	top: 26px;
+	left:0%;
+	width: 90%;
+	height: 350px;
+	text-align: center;
+	margin: 0;/* auto; */
+	border: 0px;
+}
+
+#BandwidthBarGraph
+{
+	position:relative;
+	top:26px;
+	left:0%;
+	width: 90%;
+	height: 350px;
+	text-align: center;
+	margin: 0; /* auto; */
+	border: 0px;
+}
+#BandwidthBarGraph div.xAxis div.tickLabel
+{
+	padding:30px;
+	padding-top:20px;
+	font-family:arial, sans-serif;
+	font-size:11pt;
+	font-weight:normal;
+	color:black;
+	-ms-transform:rotate(300deg); /* IE 9 */
+	-moz-transform:rotate(300deg); /* Firefox */
+	-webkit-transform:rotate(300deg); /* Safari and Chrome */
+	-o-transform:rotate(300deg); /* Opera */
+}
+
+.devlist{
+	padding-left:1%;
+	padding-right:1%;
+	padding-top:0.5%;
+	padding-bottom:0.5%;
+	font-size:0.9em;
+	font-weight:bold;
+	width:40%;
+	height:auto;
+	margin:2%;
+}
+
+.applicationlist{
+	position:absolute;
+	border:0;
+	width:94%;
+	padding-top:8px;
+}
+
+.bandwidthusage{
+	background-color: rgb(189, 197, 147);
+	position:absolute;
+	width:47%;
+	height:30px;
+	margin-left:51.2%;
+	margin-top:10px;
+	border-radius: 6px;
+	vertical-align:center;
+	box-shadow:2px 2px 2px #999;
+}
+
+.bandwidthusagediv{
+	background-color: rgb(0,112,176);
+	height:30px;
+	border-radius: 6px;
+	vertical-align:center;
+	box-shadow:2px 2px 2px #999;
+}
+
+.selectcategory{
+	height:30px;
+	position:relative;
+	text-align:right;
+	margin-right:5%;
+	padding-top:10px;
+}
+
+#selectcategorybtn{
+	font-size:1.4em;
+	font-weight:bold;
+	border-radius: 0px;
+	text-align:right;
+}
+
+.selectcategorytbl{
+	position:absolute;
+	width:200px;
+	padding:1px;
+	text-align:left;
+	background-color:white;
+	border:2px solid black;
+}
+
+.selectcategorytbl tr td{
+	width:200px;
+	padding:1px;
+}
+
+.vlines{
+	width:0.6%;
+	position:relative;
+	background-color: rgb(0,139,176);
+	height: 30px;
+	color:rgb(200,0,0);
+	box-shadow:2px 2px 2px #999;
+	font-weight:bold;
+	font-size:1.2em;
+	border:0;
+	padding:0;
+	float:left;
+}
+
+.vlines1{
+	width:0.6%;
+	position:relative;
+	background-color: rgb(0,139,176);
+	height: 20px;
+	color:rgb(200,0,0);
+	box-shadow:2px 2px 2px #999;
+	font-weight:bold;
+	font-size:1.2em;
+	border:0;
+	padding:0;
+	float:left;
+}
+
+.bandwidthxaxis {
+	width:100%;
+	padding-left:3%;
+	padding-right:3%;
+	border-spacing:0;
+}
+.bandwidthyaxis {
+	padding:0;
+	border-spacing:0;
+	position:relative;
+}
+
+.hlines{
+	background-color: rgb(0,139,176);
+	height: 4px;
+	box-shadow:2px 2px 2px #999;
+}
+

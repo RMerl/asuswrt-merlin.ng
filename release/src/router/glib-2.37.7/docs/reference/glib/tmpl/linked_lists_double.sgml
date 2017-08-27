@@ -1,0 +1,391 @@
+<!-- ##### SECTION Title ##### -->
+Doubly-Linked Lists
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GList ##### -->
+<para>
+
+</para>
+
+@data: 
+@next: 
+@prev: 
+
+<!-- ##### FUNCTION g_list_append ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_prepend ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_insert ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@position: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_insert_before ##### -->
+<para>
+
+</para>
+
+@list: 
+@sibling: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_insert_sorted ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_remove ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_remove_link ##### -->
+<para>
+
+</para>
+
+@list: 
+@llink: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_delete_link ##### -->
+<para>
+
+</para>
+
+@list: 
+@link_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_remove_all ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_free ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### FUNCTION g_list_free_full ##### -->
+<para>
+
+</para>
+
+@list: 
+@free_func: 
+
+
+<!-- ##### FUNCTION g_list_alloc ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_free_1 ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### MACRO g_list_free1 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_list_length ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_copy ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_copy_deep ##### -->
+<para>
+
+</para>
+
+@list: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_reverse ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_sort ##### -->
+<para>
+
+</para>
+
+@list: 
+@compare_func: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GCompareFunc ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_insert_sorted_with_data ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_sort_with_data ##### -->
+<para>
+
+</para>
+
+@list: 
+@compare_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GCompareDataFunc ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_concat ##### -->
+<para>
+
+</para>
+
+@list1: 
+@list2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_foreach ##### -->
+<para>
+
+</para>
+
+@list: 
+@func: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_list_first ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_last ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### MACRO g_list_previous ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### MACRO g_list_next ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### FUNCTION g_list_nth ##### -->
+<para>
+
+</para>
+
+@list: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_nth_data ##### -->
+<para>
+
+</para>
+
+@list: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_nth_prev ##### -->
+<para>
+
+</para>
+
+@list: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_find ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_find_custom ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_position ##### -->
+<para>
+
+</para>
+
+@list: 
+@llink: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_list_index ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+

@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html lang="en">
+<head>
+<title>Broadcom MDK Programmer's Reference</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700"><h2>Broadcom MDK Programmer's Reference</h2>
+<h3>Section Reference</h3>
+<table cellpadding=0 cellspacing=2 border=0 summary="reference" >
+<tr><td><a href="sect_mdk_ug_introduction.html">1.  Introduction
+</a></td>
+<tr><td><a href="sect_mdk_ug_architecture_overview.html">2.  Architecture Overview
+</a></td>
+<tr><td><a href="sect_mdk_ug_source_code_organization.html">3.  Source Code Organization
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_source_code_organization.html#mdk_ug_common_pkg_infrastructure">3.1.  Common Package Infrastructure
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_source_code_organization.html#mdk_ug_pkg_versioning">3.2.  Package Versioning
+</a></td>
+<tr><td><a href="sect_mdk_ug_cdk_components.html">4.  CDK Components
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_basic_programming_interface">4.1.  Basic Programming Interface
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_system_interface">4.2.  System Interface
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_debug_shell">4.3.  Debug Shell
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shell_commands">4.4.  CDK Shell Commands
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_help">4.4.1.  help
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_quit_exit">4.4.2.  quit, exit
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_cdk">4.4.3.  cdk
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_debug">4.4.4.  debug
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_unit">4.4.5.  unit
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_geti">4.4.6.  geti
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_seti">4.4.7.  seti
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_list">4.4.8.  list
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_get">4.4.9.  get
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_shcmd_set">4.4.10.  set
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_minimal_c_library">4.5.  Minimal C Library
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_configuration">4.6.  CDK Configuration
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_building_the_cdk_libraries">4.7.  Building the CDK libraries
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_chip_configuration">4.8.  CDK Chip Configuration
+</a></td>
+<tr><td><a href="sect_mdk_ug_cdk_bmd_components.html">5.  BMD Components
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_api">5.1.  BMD API
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_driver_initialization">5.1.1.  Driver Initialization
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_chip_initialization">5.1.2.  Chip Initialization
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_port_configuration">5.1.3.  Port Configuration
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_vlan_management">5.1.4.  VLAN Management
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_stp_management">5.1.5.  Spanning Tree Management
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_unmanaged_mode">5.1.6.  Unmanaged Mode
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_l2_management">5.1.7.  L2 Table Management
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_cpu_packet_interface">5.1.8.  CPU Packet Interface
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_bmd_statistics_functions">5.1.9.  Statistics Functions
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#bmd_api_bmd_miscellaneous_functions">5.1.10.  Miscellaneous Functions
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_cdk_bmd_shell_commands">5.2.  BMD Shell Commands
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_bmd">5.2.1.  bmd
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_pdl">5.2.2.  pdl
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_reset">5.2.3.  reset
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_init">5.2.4.  init
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_vlan">5.2.5.  vlan
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_pvlan">5.2.6.  pvlan
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_stp">5.2.7.  stp
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_portmode">5.2.8.  portmode
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_tx">5.2.9.  tx
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_rx">5.2.10.  rx
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_cpumac">5.2.11.  cpumac
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_pmac">5.2.12.  pmac
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_stat">5.2.13.  stat
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_swinit">5.2.14.  swinit
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_phy">5.2.15.  phy
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_shcmd_pinfo">5.2.16.  pinfo
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_configuration">5.3.  BMD Configuration
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_dma_memory_management">5.4.  BMD DMA Memory Management
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_port_mapping">5.5.  BMD Port Mapping
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_phy_management">5.6.  BMD PHY Management
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_phy_probing">5.6.1.  PHY Probing
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_phy_bus_driver">5.6.2.  PHY Bus Drivers
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_phy_driver_call_backs">5.6.3.  PHY Driver Call-back Functions
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_phy_bus_driver_backward_compatibility">5.6.4.  PHY Bus Driver Backward Compatibility
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_higig_support">5.7.  BMD HiGig Support
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_higig_dump_rx_dma">5.7.1.  Dumping Rx DMA Information
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_higig_parse_rx">5.7.2.  Parsing Rx HiGig Information
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_higig_encode_tx">5.7.3.  Encoding Tx HiGig Information
+</a></td>
+<tr><td><a href="sect_mdk_ug_phy_driver_library.html">6.  PHY Driver Library
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_phy_driver_library.html#mdk_ug_phy_probing">6.1.  PHY Probing
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_phy_driver_library.html#mdk_ug_pdl_configuration">6.2.  PDL Configuration
+</a></td>
+<tr><td><a href="sect_mdk_ug_sample_applications.html">7.  Sample Applications
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_building_the_sample_applications">7.1.  Building the Sample Applications
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_basic_cdk_shell">7.2.  Basic CDK Shell Simulator
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_example_linux">7.3.  Basic Linux Usermode MDK Application
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_cfe_integration">7.4.  CFE Integration
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_mdk_probe">7.4.1.  mdk probe
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_mdk_swinit">7.4.2.  mdk swinit
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_mdk_netinit">7.4.3.  mdk netinit
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sect_mdk_ug_sample_applications.html#mdk_ug_mdk_shell">7.4.4.  mdk shell
+</a></td>
+<tr><td><a href="sect_bmd_api_function_reference.html">8.  BMD API Function Reference
+</a></td>
+</table>
+<hr noshade>
+<h3>Alphabetical list of all APIs</h3>
+<table cellpadding=0 cellspacing=2 border=0 summary="api" >
+<tr><td><a href=sect_bmd_api_function_reference.html#bmd_attach><tt>bmd_attach</tt></a></td>
+<td>&nbsp;</td><td>Attach BMD device to a CDK device.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_cpu_mac_addr_add><tt>bmd_cpu_mac_addr_add</tt></a></td>
+<td>&nbsp;</td><td>Configure CPU MAC address.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_cpu_mac_addr_remove><tt>bmd_cpu_mac_addr_remove</tt></a></td>
+<td>&nbsp;</td><td>Delete CPU MAC address.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_detach><tt>bmd_detach</tt></a></td>
+<td>&nbsp;</td><td>Detaches BMD device from a CDK device.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_download><tt>bmd_download</tt></a></td>
+<td>&nbsp;</td><td>Download code to subdevice.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_init><tt>bmd_init</tt></a></td>
+<td>&nbsp;</td><td>Initialize switch chip.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_mac_addr_add><tt>bmd_port_mac_addr_add</tt></a></td>
+<td>&nbsp;</td><td>Configure port MAC address.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_mac_addr_remove><tt>bmd_port_mac_addr_remove</tt></a></td>
+<td>&nbsp;</td><td>Delete port MAC address.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_mode_get><tt>bmd_port_mode_get</tt></a></td>
+<td>&nbsp;</td><td>Get current port mode.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_mode_set><tt>bmd_port_mode_set</tt></a></td>
+<td>&nbsp;</td><td>Set port mode.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_mode_update><tt>bmd_port_mode_update</tt></a></td>
+<td>&nbsp;</td><td>Update port mode based on link status.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_stp_get><tt>bmd_port_stp_get</tt></a></td>
+<td>&nbsp;</td><td>Get spanning tree protocol state.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_stp_set><tt>bmd_port_stp_set</tt></a></td>
+<td>&nbsp;</td><td>Set spanning tree protocol state.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_vlan_get><tt>bmd_port_vlan_get</tt></a></td>
+<td>&nbsp;</td><td>Get default VLAN for a port.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_port_vlan_set><tt>bmd_port_vlan_set</tt></a></td>
+<td>&nbsp;</td><td>Set default VLAN for a port.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_reset><tt>bmd_reset</tt></a></td>
+<td>&nbsp;</td><td>Reset switch chip.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_rx_poll><tt>bmd_rx_poll</tt></a></td>
+<td>&nbsp;</td><td>Poll for Rx packet complete.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_rx_start><tt>bmd_rx_start</tt></a></td>
+<td>&nbsp;</td><td>Submit Rx packet to DMA queue.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_rx_stop><tt>bmd_rx_stop</tt></a></td>
+<td>&nbsp;</td><td>Abort Rx DMA.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_stat_clear><tt>bmd_stat_clear</tt></a></td>
+<td>&nbsp;</td><td>Clear statistics counter.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_stat_get><tt>bmd_stat_get</tt></a></td>
+<td>&nbsp;</td><td>Get statistics counter.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_switching_init><tt>bmd_switching_init</tt></a></td>
+<td>&nbsp;</td><td>Initialize chip for L2 switching.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_test_interrupt_assert><tt>bmd_test_interrupt_assert</tt></a></td>
+<td>&nbsp;</td><td>Assert test interrupt.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_test_interrupt_clear><tt>bmd_test_interrupt_clear</tt></a></td>
+<td>&nbsp;</td><td>Clear test interrupt.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_tx><tt>bmd_tx</tt></a></td>
+<td>&nbsp;</td><td>Transmit a packet.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_vlan_create><tt>bmd_vlan_create</tt></a></td>
+<td>&nbsp;</td><td>Create a VLAN.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_vlan_destroy><tt>bmd_vlan_destroy</tt></a></td>
+<td>&nbsp;</td><td>Destroy VLAN.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_vlan_port_add><tt>bmd_vlan_port_add</tt></a></td>
+<td>&nbsp;</td><td>Add port to a VLAN.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_vlan_port_get><tt>bmd_vlan_port_get</tt></a></td>
+<td>&nbsp;</td><td>Get list of ports belonging to VLAN.
+</td></tr><tr><td><a href=sect_bmd_api_function_reference.html#bmd_vlan_port_remove><tt>bmd_vlan_port_remove</tt></a></td>
+<td>&nbsp;</td><td>Remove port from a VLAN.
+</td></tr></table>
+
+</table>
+</body>
+</html>

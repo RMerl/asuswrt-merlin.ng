@@ -1,0 +1,26 @@
+# -*- text -*-
+#
+#  $Id$
+
+
+# Pluggable Authentication Modules
+#
+#  For Linux, see:
+#	http://www.kernel.org/pub/linux/libs/pam/index.html
+#
+#  WARNING: On many systems, the system PAM libraries have
+#           memory leaks!  We STRONGLY SUGGEST that you do not
+#	    use PAM for authentication, due to those memory leaks.
+#
+pam {
+	#
+	#  The name to use for PAM authentication.
+	#  PAM looks in /etc/pam.d/${pam_auth_name}
+	#  for it's configuration.  See 'redhat/radiusd-pam'
+	#  for a sample PAM configuration file.
+	#
+	#  Note that any Pam-Auth attribute set in the 'authorize'
+	#  section will over-ride this one.
+	#
+	pam_auth = radiusd
+}

@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM
+"/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='radius'>
+<service
+       name='network/radius'
+       type='service'
+       version='1'>
+       <create_default_instance enabled='false' />
+       <single_instance/>
+  
+       <dependency name='fs-local'
+                grouping='require_all'
+                restart_on='none'
+                type='service'>
+                <service_fmri value='svc:/system/filesystem/local' />
+       </dependency>
+
+       <dependency name='fs-autofs'
+               grouping='optional_all'
+               restart_on='none'
+               type='service'>
+               <service_fmri value='svc:/system/filesystem/autofs' />
+       </dependency>
+
+       <dependency name='net-loopback'
+               grouping='require_all'
+               restart_on='none'
+               type='service'>
+               <service_fmri value='svc:/network/loopback' />
+       </dependency>
+
+       <dependency name='net-physical'
+               grouping='require_all'
+               restart_on='none'
+               type='service'>
+               <service_fmri value='svc:/network/physical' />
+       </dependency>
+
+       <exec_method
+               type='method'
+               name='start'
+               exec='/lib/svc/method/svc-radius %m'
+               timeout_seconds='10' />
+       <exec_method
+               type='method'
+               name='stop'
+               exec='/lib/svc/method/svc-radius %m %{restarter/contract}'
+               timeout_seconds='10' />
+       <exec_method
+               type='method'
+               name='refresh'
+               exec='/lib/svc/method/svc-radius %m'
+               timeout_seconds='10' />
+
+       <stability value='Unstable' />
+       <template>
+               <common_name>
+                       <loctext xml:lang='C'> radius
+                       </loctext>
+               </common_name>
+               <documentation>
+                       <manpage title='radius' section='1M'
+                               manpath='/usr/share/man' />
+              </documentation>
+       </template>
+</service>
+</service_bundle>

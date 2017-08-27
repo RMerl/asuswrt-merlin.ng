@@ -1,0 +1,30 @@
+commit 17293c0eb04e4b38fe058eac09c0161038040746
+Author: Frederik Schüler <fs@debian.org>
+Date:   Thu Apr 29 00:48:45 2010 +0200
+
+    Add missing syscall declarations.
+    
+    Signed-off-by: Frederik Schüler <fs@debian.org>
+
+diff --git a/linux/sparc/syscall.h b/linux/sparc/syscall.h
+index 03e3a71..7237777 100644
+--- a/linux/sparc/syscall.h
++++ b/linux/sparc/syscall.h
+@@ -208,12 +208,17 @@ int	sys_timer_create(), sys_timer_settime(), sys_timer_gettime();
+ int	sys_io_setup(), sys_io_destroy(), sys_io_submit(), sys_io_cancel(), sys_io_getevents();
+ int	sys_mq_open(), sys_mq_unlink(), sys_mq_timedsend(), sys_mq_timedreceive(), sys_mq_notify(), sys_mq_getsetattr();
+ int	sys_waitid();
++int sys_mbind(), sys_get_mempolicy(), sys_set_mempolicy();
++int sys_utimensat();
++int sys_fallocate(), sys_timerfd_create(), sys_timerfd_settime(), sys_timerfd_gettime();
+ int	sys_openat(), sys_mkdirat(), sys_mknodat(), sys_fchownat(), sys_futimesat(), sys_newfstatat(), sys_unlinkat(), sys_renameat(), sys_linkat(), sys_symlinkat(), sys_readlinkat(), sys_fchmodat(),	sys_faccessat();
+ int	sys_pselect6(), sys_ppoll();
+ int	sys_unshare();
+ int	sys_move_pages(), sys_getcpu();
+ int	sys_epoll_pwait();
+ int	sys_signalfd(), sys_timerfd(), sys_eventfd();
++int sys_signalfd4(), sys_eventfd2(), sys_epoll_create1(), sys_dup3(), sys_pipe2();
++int sys_inotify_init1();
+ 
+ #  define SYS_socket_subcall	353
+ #define SYS_sub_socket		(SYS_socket_subcall + 1)

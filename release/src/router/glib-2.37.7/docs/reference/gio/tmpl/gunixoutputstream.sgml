@@ -1,0 +1,77 @@
+<!-- ##### SECTION Title ##### -->
+GUnixOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GUnixOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GUnixOutputStream:close-fd ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GUnixOutputStream:fd ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_unix_output_stream_new ##### -->
+<para>
+
+</para>
+
+@fd: 
+@close_fd: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_output_stream_set_close_fd ##### -->
+<para>
+
+</para>
+
+@stream: 
+@close_fd: 
+
+
+<!-- ##### FUNCTION g_unix_output_stream_get_close_fd ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_output_stream_get_fd ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+

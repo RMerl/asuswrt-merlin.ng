@@ -1,0 +1,2818 @@
+////
+	vim.syntax: asciidoc
+
+	Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
+////
+
+Netlink Library (libnl)
+=======================
+Thomas Graf <tgraf@suug.ch>
+3.2, Sep 13 2011:
+:numbered:
+
+== Introduction
+
+The core library contains the fundamentals required to communicate
+over netlink sockets. It deals with connecting and disconnectng of
+sockets, sending and receiving of data, construction and parsing of
+messages, provides a customizeable receiving state machine, and
+provides a abstract data type framework which eases the implementation
+of object based netlink protocols where objects are added, removed, or
+modified using a netlink based protocol.
+
+.Library Hierarchy
+
+The suite is split into multiple libraries:
+
+image:library_overview.png["Library Hierarchy"]
+
+link:core.html[Netlink Library] (libnl)::
+Socket handling, sending and receiving, message construction and parsing, ...
+
+link:route.html[Routing Family Library] (libnl-route)::
+Adresses, links, neighbours, routing, traffic control, neighbour tables, ...
+
+Netfilter Library (libnl-nf)::
+Connection tracking, logging, queueing
+
+Generic Netlink Library (libnl-genl)::
+Controller API, family and command registration
+
+
+=== How To Read This Documentation
+
+The libraries provide a broad set of APIs of which most applications only
+require a small subset of it. Depending on the type of application, some
+users may only be interested in the low level netlink messaging API while
+others wish to make heavy use of the high level API.
+
+In any case it is recommended to get familiar with the netlink protocol
+first.
+
+- <<core_netlink_fundamentals>>
+
+The low level APIs are described in:
+
+- <<core_sockets>>
+- <<core_send_recv>>
+
+
+=== Linking to this Library
+
+.Checking the presence using autoconf
+
+Projects using autoconf may use +PKG_CHECK_MODULES()+ to check if
+a specific version of libnl is available on the system. The example
+below also shows how to retrieve the +CFLAGS+ and linking dependencies
+required to link against the library.
+
+[source]
+----
+PKG_CHECK_MODULES(LIBNL3, libnl-3.0 >= 3.1, [have_libnl3=yes], [have_libnl3=no])
+if (test "${have_libnl3}" = "yes"); then
+	CFLAGS="$LIBNL3_CFLAGS"
+	LIBS="$LIBNL3_LIBS"
+fi
+----
+
+NOTE: The pkgconfig file is named +libnl-3.0.pc+ for historic reasons, it also
+      covers library versions >= 3.1.
+
+.Main Header
+
+The main header is `<netlink/netlink.h>`. Additional headers need to
+be included in your sources depending on the subsystems your program
+makes use of.
+
+.Version Checking
+[source,c]
+-----
+#include <netlink/version.h>
+
+#if LIBNL_VER_NUM >= LIBNL_VER(3,1)
+	/* include code if compiled with libnl version >= 3.1 */
+#endif
+-----
+
+.Linking to libnl
+-----
+$ gcc myprogram.c -o myprogram $(pkgconfig --cflags --libs libnl-3.0)
+-----
+
+=== Debugging
+
+The library has been compiled with debugging statements enabled it will
+print debug information to +stderr+ if the environment variable +NLDBG+
+is set to > 0.
+
+-----
+$ NLDBG=2 ./myprogram
+-----
+
+.Debugging Levels
+[options="header", width="80%", cols="1,5", align="center"]
+|===============================================================
+| Level | Description
+| 0     | Debugging disabled (default)
+| 1     | Warnings, important events and notifications
+| 2     | More or less important debugging messages
+| 3     | Repetitive events causing a flood of debugging messages
+| 4     | Even less important messages
+|===============================================================
+
+.Debugging Netlink Messages
+
+Often it is useful to peek into the stream of netlink messages
+exchanged with other sockets. Setting the environment variable
++NLCB=debug+ will cause the debugging message handlers to be used
+causing the netlink messages exchanged to be printed to +stderr+ in a
+human readable format:
+
+-----
+$ NLCB=debug ./myprogram
+-- Debug: Sent Message:
+--------------------------   BEGIN NETLINK MESSAGE ---------------------------
+  [HEADER] 16 octets
+    .nlmsg_len = 20
+    .nlmsg_type = 18 <route/link::get>
+    .nlmsg_flags = 773 <REQUEST,ACK,ROOT,MATCH>
+    .nlmsg_seq = 1301410712
+    .nlmsg_pid = 20014
+  [PAYLOAD] 16 octets
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00       ................
+---------------------------  END NETLINK MESSAGE   ---------------------------
+-- Debug: Received Message:
+--------------------------   BEGIN NETLINK MESSAGE ---------------------------
+  [HEADER] 16 octets
+    .nlmsg_len = 996
+    .nlmsg_type = 16 <route/link::new>
+    .nlmsg_flags = 2 <MULTI>
+    .nlmsg_seq = 1301410712
+    .nlmsg_pid = 20014
+  [PAYLOAD] 16 octets
+    00 00 04 03 01 00 00 00 49 00 01 00 00 00 00 00       ........I.......
+  [ATTR 03] 3 octets
+    6c 6f 00                                              lo.
+  [PADDING] 1 octets
+    00                                                    .
+  [ATTR 13] 4 octets
+    00 00 00 00                                           ....
+  [ATTR 16] 1 octets
+    00                                                    .
+  [PADDING] 3 octets
+    00 00 00                                              ...
+  [ATTR 17] 1 octets
+    00                                                    .
+  [...]
+---------------------------  END NETLINK MESSAGE   ---------------------------
+
+-----
+
+[[core_netlink_fundamentals]]
+== Netlink Protocol Fundamentals
+
+The netlink protocol is a socket based IPC mechanism used for
+communication between userspace processes and the kernel or between
+userspace processes themselves. The netlink protocol is based on BSD
+sockets and uses the +AF_NETLINK+ address family. Every netlink
+protocol uses its own protocol number (e.g. +NETLINK_ROUTE+,
++NETLINK_NETFILTER+, etc). Its addressing schema is based on a 32 bit
+port number, formerly referred to as PID, which uniquely identifies
+each peer.
+
+[[core_msg_format]]
+=== Message Format
+
+A netlink protocol is typically based on messages and consists of the
+netlink message header (+struct nlmsghdr+) plus the payload attached
+to it.  The payload can consist of arbitrary data but usually contains
+a fixed size protocol specific header followed by a stream of
+attributes.
+
+.Netlink message header (struct nlmsghdr)
+
+image:nlmsghdr.png[align="center", alt="Netlink Message Header"]
+
+Total Length (32bit)::
+Total length of the message in bytes including the netlink message header.
+
+Message Type (16bit)::
+The message type specifies the type of payload the message is carrying.
+Several standard message types are defined by the netlink protocol.
+Additional message types may be defined by each protocol family. See
+<<core_msg_types>> for additional information.
+
+Message Flags (16bit)::
+The message flags may be used to modify the behaviour of a message type.
+See section <<core_msg_flags>> for a list of standard message flags.
+
+Sequence Number (32bit)::
+The sequence number is optional and may be used to allow referring to
+a previous message, e.g. an error message can refer to the original
+request causing the error.
+
+Port Number (32bit)::
+The port number specifies the peer to which the message should be delivered
+to. If not specified, the message will be delivered to the first matching
+kernel side socket of the same protocol family.
+
+[[core_msg_types]]
+=== Message Types
+
+Netlink differs between requests, notifications, and replies. Requests
+are messages which have the +NLM_F_REQUEST+ flag set and are meant to
+request an action from the receiver. A request is typically sent from
+a userspace process to the kernel. While not strictly enforced, requests
+should carry a sequence number incremented for each request sent.
+
+Depending on the nature of the request, the receiver may reply to the
+request with another netlink message. The sequence number of a reply
+must match the sequence number of the request it relates to.
+
+Notifications are of informal nature and no reply is expected, therefore
+the sequence number is typically set to 0.
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A=>B [label="GET (seq=1, NLM_F_REQUEST)"];
+  A<=B [label="PUT (seq=1)"];
+  ...;
+  A<=B [label="NOTIFY (seq=0)"];
+}
+--------
+
+
+The type of message is primarly identified by its 16 bit message type set
+in the message header. The following standard message types are defined:
+
+- +NLMSG_NOOP+ - No operation, message must be discarded
+- +NLMSG_ERROR+ - Error message or ACK, see <<core_errmsg>>
+  respectively <<core_msg_ack>>
+- +NLMSG_DONE+ - End of multipart sequence, see <<core_multipart>>
+- +NLMSG_OVERRUN+ - Overrun notification (Error)
+
+Every netlink protocol is free to define own message types. Note that
+message type values  +< NLMSG_MIN_TYPE (0x10)+ are reserved and may
+not be used.
+
+It is common practice to use own message types to implement RPC schemas.
+Suppose the goal of the netlink protocol you are implementing is allow
+configuration of a particular network device, therefore you want to
+provide read/write access to various configuration options. The typical
+"netlink way" of doing this would be to define two message types
++MSG_SETCFG+, +MSG_GETCFG+:
+
+[source,c]
+--------
+#define MSG_SETCFG	0x11
+#define MSG_GETCFG	0x12
+--------
+
+Sending a +MSG_GETCFG+ request message will typically trigger a reply
+with the message type +MSG_SETCFG+ containing the current configuration.
+In object oriented terms one would describe this as "the kernel sets
+the local copy of the configuration in userspace".
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A=>B [label="MSG_GETCFG (seq=1, NLM_F_REQUEST)"];
+  A<=B [label="MSG_SETCFG (seq=1)"];
+}
+--------
+
+The configuration may be changed by sending a +MSG_SETCFG+ which will
+be responded to with either a ACK (see <<core_msg_ack>>)
+or a error message (see <<core_errmsg>>).
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A=>B [label="MSG_SETCFG (seq=1, NLM_F_REQUEST, NLM_F_ACK)"];
+  A<=B [label="ACK (seq=1)"];
+}
+--------
+
+Optionally, the kernel may send out notifications for configuration
+changes allowing userspace to listen for changes instead of polling
+frequently. Notifications typically reuse an existing message type
+and rely on the application using a separate socket to differ between
+requests and notifications but you may also specify a separate message
+type.
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A<=B [label="MSG_SETCFG (seq=0)"];
+}
+--------
+
+[[core_multipart]]
+==== Multipart Messages
+
+Although in theory a netlink message can be up to 4GiB in size. The socket
+buffers are very likely not large enough to hold message of such sizes.
+Therefore it is common to limit messages to one page size (PAGE_SIZE) and
+use the multipart mechanism to split large pieces of data into several
+messages.  A multipart message has the flag +NLM_F_MULTI+ set and the
+receiver is expected to continue receiving and parsing until the special
+message type +NLMSG_DONE+ is received.
+
+Multipart messages unlike fragmented ip packets must not be reassmbled
+even though it is perfectly legal to do so if the protocols wishes to
+work this way. Often multipart message are used to send lists or trees
+of objects were each multipart message simply carries multiple objects
+allow for each message to be parsed independently.
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A=>B [label="GET (seq=1, NLM_F_REQUEST)"];
+  A<=B [label="PUT (seq=1, NLM_F_MULTI)"];
+  ...;
+  A<=B [label="PUT (seq=1, NLM_F_MULTI)"];
+  A<=B [label="NLMSG_DONE (seq=1)"];
+}
+--------
+
+[[core_errmsg]]
+==== Error Message
+
+Error messages can be sent in response to a request. Error messages must
+use the standard message type +NLMSG_ERROR+. The payload consists of a
+error code and the original netlink mesage header of the request. 
+
+image:nlmsgerr.png["Netlink Errror Message header"]
+
+Error messages should set the sequence number to the sequence number
+of the request which caused the error.
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A=>B [label="GET (seq=1, NLM_F_REQUEST)"];
+  A<=B [label="NLMSG_ERROR code=EINVAL (seq=1)"];
+}
+--------
+
+[[core_msg_ack]]
+==== ACKs
+
+A sender can request an ACK message to be sent back for each request
+processed by setting the +NLM_F_ACK+ flag in the request. This is typically
+used to allow the sender to synchronize further processing until the
+request has been processed by the receiver.
+
+["mscgen"]
+--------
+msc {
+  A,B;
+  A=>B [label="GET (seq=1, NLM_F_REQUEST | NLM_F_ACK)"];
+  A<=B [label="ACK (seq=1)"];
+}
+--------
+
+ACK messages also use the message type +NLMSG_ERROR+ and payload
+format but the error code is set to 0.
+
+[[core_msg_flags]]
+==== Message Flags
+
+The following standard flags are defined
+
+[source,c]
+--------
+#define NLM_F_REQUEST		1
+#define NLM_F_MULTI		2
+#define NLM_F_ACK		4
+#define NLM_F_ECHO		8
+--------
+
+- `NLM_F_REQUEST` - Message is a request, see <<core_msg_type>>.
+- `NLM_F_MULTI` - Multipart message, see <<core_multipart>>
+- `NLM_F_ACK` - ACK message requested, see <<core_msg_ack>>.
+- `NLM_F_ECHO` - Request to echo the request.
+
+The flag +NLM_F_ECHO+ is similar to the `NLM_F_ACK` flag. It can be
+used in combination with `NLM_F_REQUEST` and causes a notification
+which is sent as a result of a request to also be sent to the sender
+regardless of whether the sender has subscribed to the corresponding
+multicast group or not. See <<core_multicast>>
+
+Additional universal message flags are defined which only apply for
++GET+ requests:
+
+[source,c]
+--------
+#define NLM_F_ROOT	0x100
+#define NLM_F_MATCH	0x200
+#define NLM_F_ATOMIC	0x400
+#define NLM_F_DUMP	(NLM_F_ROOT|NLM_F_MATCH)
+--------
+
+- `NLM_F_ROOT` - Return based on root of tree.
+- `NLM_F_MATCH` - Return all matching entries.
+- `NLM_F_ATOMIC` - Obsoleted, once used to request an atomic operation.
+- `NLM_F_DUMP` - Return a list of all objects
+  (`NLM_F_ROOT`|`NLM_F_MATCH`).
+
+Use of these flags is completely optional and many netlink protocols only
+make use of the `NLM_F_DUMP` flag which typically requests the receiver
+to send a list of all objects in the context of the message type as a
+sequence of multipart messages (see <<core_multipart>>).
+
+Another set of flags exist related to `NEW` or `SET` requests. These
+flags are mutually exclusive to the `GET` flags:
+
+[source,c]
+--------
+#define NLM_F_REPLACE	0x100
+#define NLM_F_EXCL	0x200
+#define NLM_F_CREATE	0x400
+#define NLM_F_APPEND	0x800
+--------
+
+- `NLM_F_REPLACE` - Replace an existing object if it exists.
+- `NLM_F_EXCL` - Do not update object if it exists already.
+- `NLM_F_CREATE` - Create object if it does not exist yet.
+- `NLM_F_APPEND` - Add object at end of list.
+
+Behaviour of these flags may differ slightly between different netlink
+protocols.
+
+=== Sequence Numbers
+
+Netlink allows the use of sequence numbers to help relate replies to
+requests. It should be noted that unlike in protocols such as TCP
+there is no strict enforcment of the sequence number. The sole purpose
+of sequence numbers is to assist a sender in relating replies to the
+corresponding requests. See <<core_msg_type>> for more information.
+
+Sequence numbers are managed on a per socket basis, see
+<<core_sk_seq_num>> for more information on how to use sequence numbers.
+
+[[core_multicast]]
+=== Multicast Groups
+
+TODO
+
+See <<core_sk_multicast>>
+
+[[core_sockets]]
+== Netlink Sockets
+
+In order to use the netlink protocol, a netlink socket is required.
+Each socket defines a completely independent context for sending and
+receiving of messages. An application may use multiple sockets for the
+same netlink protocol, e.g. one socket to send requests and receive
+replies and another socket subscribed to a multicast group to receive
+notifications.
+
+=== Allocation & Freeing
+
+The netlink socket and all its related attributes are represented by
++struct nl_sock+.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+struct nl_sock *nl_socket_alloc(void)
+void nl_socket_free(struct nl_sock *sk)
+--------
+
+[[core_sk_seq_num]]
+=== Sequence Numbers
+
+The library will automatically take care of sequence number handling
+for the application. A sequence number counter is stored in struct
+nl_sock which is meant to be used when sending messages which will
+produce a reply, error or any other message which needs to be
+related to the original message.
+
+The counter can be used directly with the function nl_socket_use_seq()
+which will return the current value of the counter and increment it by
+one afterwards.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+unsigned int nl_socket_use_seq(struct nl_sock *sk);
+--------
+
+Most applications will not want to deal with sequence number handling
+themselves though. When using nl_send_auto() the sequence number is
+filled out automatically and matched again on the receiving side. See
+<<core_send_recv>> for more information.
+
+This behaviour can and must be disabled if the netlink protocol
+implemented does not use a request/reply model, e.g. when a socket is
+used to receive notification messages.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+void nl_socket_disable_seq_check(struct nl_sock *sk);
+--------
+
+[[core_sk_multicast]]
+=== Multicast Group Subscriptions
+
+Each socket can subscribe to any number of multicast groups of the
+netlink protocol it is connected to. The socket will then receive a
+copy of each message sent to any of the groups. Multicast groups are
+commonly used to implement event notifications.
+
+Prior to kernel 2.6.14 the group subscription was performed using a
+bitmask which limited the number of groups per protocol family to 32.
+This outdated interface can still be accessed via the function
+nl_join_groups even though it is not recommended for new code.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+void nl_join_groups(struct nl_sock *sk, int bitmask);
+--------
+
+Starting with 2.6.14 a new method was introduced which supports subscribing
+to an almost infinite number of multicast groups.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_add_memberships(struct nl_sock *sk, int group, ...);
+int nl_socket_drop_memberships(struct nl_sock *sk, int group, ...);
+--------
+
+==== Multicast Example
+
+[source,c]
+--------
+#include <netlink/netlink.h>
+#include <netlink/socket.h>
+#include <netlink/msg.h>
+
+/*
+ * This function will be called for each valid netlink message received
+ * in nl_recvmsgs_default()
+ */
+static int my_func(struct nl_msg *msg, void *arg)
+{
+	return 0;
+}
+
+struct nl_sock *sk;
+
+/* Allocate a new socket */
+sk = nl_socket_alloc();
+
+/*
+ * Notifications do not use sequence numbers, disable sequence number
+ * checking.
+ */
+nl_socket_disable_seq_check(sk);
+
+/*
+ * Define a callback function, which will be called for each notification
+ * received
+ */
+nl_socket_modify_cb(sk, NL_CB_VALID, NL_CB_CUSTOM, my_func, NULL);
+
+/* Connect to routing netlink protocol */
+nl_connect(sk, NETLINK_ROUTE);
+
+/* Subscribe to link notifications group */
+nl_socket_add_memberships(sk, RTNLGRP_LINK, 0);
+
+/*
+ * Start receiving messages. The function nl_recvmsgs_default() will block
+ * until one or more netlink messages (notification) are received which
+ * will be passed on to my_func().
+ */
+while (1)
+	nl_recvmsgs_default(sock);
+--------
+
+[[core_sk_cb]]
+=== Modifiying Socket Callback Configuration
+
+See <<core_cb>> for more information on
+callback hooks and overwriting capabilities.
+
+Each socket is assigned a callback configuration which controls the
+behaviour of the socket. This is f.e. required to have a separate
+message receive function per socket. It is perfectly legal to share
+callback configurations between sockets though.
+
+The following functions can be used to access and set the callback
+configuration of a socket:
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+struct nl_cb *nl_socket_get_cb(const struct nl_sock *sk);
+void nl_socket_set_cb(struct nl_sock *sk, struct nl_cb *cb);
+--------
+
+Additionaly a shortcut exists to modify the callback configuration
+assigned to a socket directly:
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_modify_cb(struct nl_sock *sk, enum nl_cb_type type, enum nl_cb_kind kind,
+                        nl_recvmsg_msg_cb_t func, void *arg);
+--------
+
+.Example:
+[source,c]
+--------
+#include <netlink/socket.h>
+
+// Call my_input() for all valid messages received in socket sk
+nl_socket_modify_cb(sk, NL_CB_VALID, NL_CB_CUSTOM, my_input, NULL);
+--------
+
+=== Socket Attributes
+
+.Local Port
+
+The local port number uniquely identifies the socket and is used to
+address it. A unique local port is generated automatically when the
+socket is allocated. It will consist of the Process ID (22 bits) and a
+random number (10 bits) thus allowing up to 1024 sockets per process.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+uint32_t nl_socket_get_local_port(const struct nl_sock *sk);
+void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port);
+--------
+
+CAUTION: Overwriting the local port is possible but you have to ensure
+that the provided value is unique and no other socket in any other
+application is using the same value.
+
+.Peer Port
+
+A peer port can be assigned to the socket which will result in all
+unicast messages sent over the socket to be addresses to the peer. If
+no peer is specified, the message is sent to the kernel which will try
+to automatically bind the socket to a kernel side socket of the same
+netlink protocol family.  It is common practice not to bind the socket
+to a peer port as typically only one kernel side socket exists per
+netlink protocol family.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+uint32_t nl_socket_get_peer_port(const struct nl_sock *sk);
+void nl_socket_set_peer_port(struct nl_sock *sk, uint32_t port);
+--------
+
+.File Descriptor
+
+Netlink uses the BSD socket interface, therefore a file descriptor is
+behind each socket and you may use it directly.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_get_fd(const struct nl_sock *sk);
+--------
+
+If a socket is used to only receive notifications it usually is best
+to put the socket in non-blocking mode and periodically poll for new
+notifications.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_set_nonblocking(const struct nl_sock *sk);
+--------
+
+.Send/Receive Buffer Size
+
+The socket buffer is used to queue netlink messages between sender and
+receiver. The size of these buffers specifies the maximum size you
+will be able to write() to a netlink socket, i.e. it will indirectly
+define the maximum message size. The default is 32KiB.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_set_buffer_size(struct nl_sock *sk, int rx, int tx);
+--------
+
+[[core_sk_cred]]
+.Enable/Disable Credentials
+
+TODO
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_set_passcred(struct nl_sock *sk, int state);
+--------
+
+.Enable/Disable Auto-ACK Mode
+
+The following functions allow to enable/disable Auto-ACK mode on a socket.
+See <<core_auto_ack>> for more information on what implications that has.
+Auto-ACK mode is enabled by default.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+void nl_socket_enable_auto_ack(struct nl_sock *sk);
+void nl_socket_disable_auto_ack(struct nl_sock *sk);
+--------
+
+.Enable/Disable Message Peeking
+
+If enabled, message peeking causes nl_recv() to try and use MSG_PEEK
+to retrieve the size of the next message received and allocate a
+buffer of that size. Message peeking is enabled by default but can be
+disabled using the following function:
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+void nl_socket_enable_msg_peek(struct nl_sock *sk);
+void nl_socket_disable_msg_peek(struct nl_sock *sk);
+--------
+
+.Enable/Disable Receival of Packet Information
+
+If enabled, each received netlink message from the kernel will include
+an additional struct nl_pktinfo in the control message. The following
+function can be used to enable/disable receival of packet information.
+
+[source,c]
+--------
+#include <netlink/socket.h>
+
+int nl_socket_recv_pktinfo(struct nl_sock *sk, int state);
+--------
+
+NOTE: Processing of NETLINK_PKTINFO has not been implemented yet.
+
+[[core_send_recv]]
+== Sending and Receiving of Messages / Data
+
+[[core_send]]
+=== Sending Messages
+
+The standard method of sending a netlink message over a netlink socket
+is to use the function nl_send_auto(). It will automatically complete
+the netlink message by filling the missing bits and pieces in the
+netlink message header and will deal with addressing based on the
+options and address set in the netlink socket. The message is then
+passed on to nl_send().
+
+If the default sending semantics implemented by nl_send() do not suit
+the application, it may overwrite the sending function nl_send() by
+specifying an own implementation using the function
+nl_cb_overwrite_send().
+
+[source,c]
+--------
+   nl_send_auto(sk, msg)
+         |
+         |-----> nl_complete_msg(sk, msg)
+         |
+         |
+         |              Own send function specified via nl_cb_overwrite_send()
+         |- - - - - - - - - - - - - - - - - - - -
+         v                                      v
+   nl_send(sk, msg)                         send_func()
+--------
+
+.Using nl_send()
+
+If you do not require any of the automatic message completion
+functionality you may use nl_send() directly but beware that any
+internal calls to nl_send_auto() by the library to send netlink
+messages will still use nl_send(). Therefore if you wish to use any
+higher level interfaces and the behaviour of nl_send() is to your
+dislike then you must overwrite the nl_send() function via
+nl_cb_overwrite_send()
+
+The purpose of nl_send() is to embed the netlink message into a iovec
+structure and pass it on to nl_send_iovec().
+
+[source,c]
+--------
+   nl_send(sk, msg)
+         |
+         v
+   nl_send_iovec(sk, msg, iov, iovlen)
+--------
+
+.Using nl_send_iovec()
+
+nl_send_iovec() expects a finalized netlink message and fills out the
+struct msghdr used for addressing. It will first check if the struct
+nl_msg is addressed to a specific peer (see nlmsg_set_dst()). If not,
+it will try to fall back to the peer address specified in the socket
+(see nl_socket_set_peer_port(). Otherwise the message will be sent
+unaddressed and it is left to the kernel to find the correct peer.
+
+nl_send_iovec() also adds credentials if present and enabled
+(see <<core_sk_cred>>).
+
+The message is then passed on to nl_sendmsg().
+
+[source,c]
+--------
+   nl_send_iovec(sk, msg, iov, iovlen)
+         |
+         v
+   nl_sendmsg(sk, msg, msghdr)
+--------
+
+.Using nl_sendmsg()
+
+nl_sendmsg() expects a finalized netlink message and an optional
+struct msghdr containing the peer address. It will copy the local
+address as defined in the socket (see nl_socket_set_local_port()) into
+the netlink message header.
+
+At this point, construction of the message finished and it is ready to
+be sent.
+
+[source,c]
+--------
+   nl_sendmsg(sk, msg, msghdr)
+         |- - - - - - - - - - - - - - - - - - - - v
+         |                                 NL_CB_MSG_OUT()
+         |<- - - - - - - - - - - - - - - - - - - -+
+         v
+   sendmsg()
+--------
+
+Before sending the application has one last chance to modify the
+message.  It is passed to the NL_CB_MSG_OUT callback function which
+may inspect or modify the message and return an error code. If this
+error code is NL_OK the message is sent using sendmsg() resulting in
+the number of bytes written being returned. Otherwise the message
+sending process is aborted and the error code specified by the
+callback function is returned. See <<core_sk_cb>> for more information
+on how to set callbacks.
+
+.Sending Raw Data with nl_sendto()
+
+If you wish to send raw data over a netlink socket, the following
+function will pass on any buffer provided to it directly to sendto():
+
+[source,c]
+--------
+#include <netlink/netlink.h>
+
+int nl_sendto(struct nl_sock *sk, void *buf, size_t size);
+--------
+
+.Sending of Simple Messages
+
+A special interface exists for sending of trivial messages. The function
+expects the netlink message type, optional netlink message flags, and an
+optional data buffer and data length.  
+[source,c]
+--------
+#include <netlink/netlink.h>
+
+int nl_send_simple(struct nl_sock *sk, int type, int flags,
+                   void *buf, size_t size);
+--------
+
+The function will construct a netlink message header based on the message
+type and flags provided and append the data buffer as message payload. The
+newly constructed message is sent with nl_send_auto().
+
+The following example will send a netlink request message causing the
+kernel to dump a list of all network links to userspace:
+
+[source,c]
+--------
+#include <netlink/netlink.h>
+
+struct nl_sock *sk;
+struct rtgenmsg rt_hdr = {
+	.rtgen_family = AF_UNSPEC,
+};
+
+sk = nl_socket_alloc();
+nl_connect(sk, NETLINK_ROUTE);
+
+nl_send_simple(sock, RTM_GETLINK, NLM_F_DUMP, &rt_hdr, sizeof(rt_hdr));
+--------
+
+[[core_recv]]
+=== Receiving Messages
+
+The easiest method to receive netlink messages is to call nl_recvmsgs_default().
+It will receive messages based on the semantics defined in the socket. The
+application may customize these in detail although the default behaviour will
+probably suit most applications.
+
+nl_recvmsgs_default() will also be called internally by the library whenever
+it needs to receive and parse a netlink message.
+
+The function will fetch the callback configuration stored in the socket and
+call nl_recvmsgs():
+
+[source,c]
+--------
+   nl_recvmsgs_default(sk)
+         |
+         | cb = nl_socket_get_cb(sk)
+         v
+   nl_recvmsgs(sk, cb)
+--------
+
+.Using nl_recvmsgs()
+
+nl_recvmsgs() implements the actual receiving loop, it blocks until a
+netlink message has been received unless the socket has been put into
+non-blocking mode.
+
+For the unlikely scenario that certain required receive characteristics
+can not be achieved by fine tuning the internal recvmsgs function using
+the callback configuration (see <<core_sk_cb>>) the application may provide
+a complete own implementation of it and overwrite all calls to nl_recvmsgs()
+with the function nl_cb_overwrite_recvmsgs().
+
+[source,c]
+--------
+   nl_recvmsgs(sk, cb)
+         |
+         |     Own recvmsgs function specified via nl_cb_overwrite_recvmsgs()
+         |- - - - - - - - - - - - - - - - - - - -
+         v                                      v
+   internal_recvmsgs()                    my_recvmsgs()
+--------
+
+[[core_recv_character]]
+.Receive Characteristics
+
+If the application does not provide its own recvmsgs() implementation
+with the function nl_cb_overwrite_recvmsgs() the following characteristics
+apply while receiving data from a netlink socket:
+
+[source,c]
+--------
+        internal_recvmsgs()
+                |
++-------------->|     Own recv function specified with nl_cb_overwrite_recv()
+|               |- - - - - - - - - - - - - - - -
+|               v                              v
+|           nl_recv()                      my_recv()
+|               |<- - - - - - - - - - - - - - -+
+|               |<-------------+
+|               v              | More data to parse? (nlmsg_next())
+|         Parse Message        | 
+|               |--------------+
+|               v
++------- NLM_F_MULTI set?
+                |
+                v
+            (SUCCESS)
+--------
+
+The function nl_recv() is invoked first to receive data from the
+netlink socket.  This function may be overwritten by the application
+by an own implementation using the function nl_cb_overwrite_recv().
+This may be useful if the netlink byte stream is in fact not received
+from a socket directly but is read from a file or another source.
+
+If data has been read, it will be attemped to parse the data. This
+will be done repeately until the parser returns NL_STOP, an error was
+returned or all data has been parsed.
+
+In case the last message parsed successfully was a multipart message
+(see <<core_multipart>>) and the parser did not
+quit due to either an error or NL_STOP nl_recv() respectively the
+applications own implementation will be called again and the parser
+starts all over.
+
+See <<core_parse_character>> for information on how to extract valid
+netlink messages from the parser and on how to control the behaviour
+of it.
+
+[[core_parse_character]]
+.Parsing Characteristics
+
+The internal parser is invoked for each netlink message received from
+a netlink socket. It is typically fed by nl_recv() (see
+<<core_recv_character>>).
+
+The parser will first ensure that the length of the data stream
+provided is sufficient to contain a netlink message header and that
+the message length as specified in the message header does not exceed
+it.
+
+If this criteria is met, a new struct nl_msg is allocated and the
+message is passed on to the the callback function NL_CB_MSG_IN if one
+is set. Like any other callback function, it may return NL_SKIP to
+skip the current message but continue parsing the next message or
+NL_STOP to stop parsing completely.
+
+The next step is to check the sequence number of the message against
+the currently expected sequence number. The application may provide
+its own sequence number checking algorithm by setting the callback
+function NL_CB_SEQ_CHECK to its own implementation. In fact, calling
+nl_socket_disable_seq_check() to disable sequence number checking will
+do nothing more than set the NL_CB_SEQ_CHECK hook to a function which
+always returns NL_OK.
+
+Another callback hook NL_CB_SEND_ACK exists which is called if the
+message has the NLM_F_ACK flag set. Although I am not aware of any
+userspace netlink socket doing this, the application may want to send
+an ACK message back to the sender (see <<core_msg_ack>>).
+
+[source,c]
+--------
+        parse()
+          |
+          v
+      nlmsg_ok() --> Ignore
+          |
+          |- - - - - - - - - - - - - - - v
+          |                         NL_CB_MSG_IN()
+          |<- - - - - - - - - - - - - - -+
+          |
+          |- - - - - - - - - - - - - - - v
+     Sequence Check                NL_CB_SEQ_CHECK()
+          |<- - - - - - - - - - - - - - -+
+          |
+          |              Message has NLM_F_ACK set
+          |- - - - - - - - - - - - - - - v 
+          |                      NL_CB_SEND_ACK()
+          |<- - - - - - - - - - - - - - -+
+          |
+ Handle Message Type
+--------
+
+[[core_auto_ack]]
+=== Auto-ACK Mode
+
+TODO
+
+== Message Parsing & Construction
+
+=== Message Format
+
+See <<core_netlink_fundamentals>> for an introduction to the netlink
+protocol and its message format.
+
+.Alignment
+
+Most netlink protocols enforce a strict alignment policy for all
+boundries.  The alignment value is defined by NLMSG_ALIGNTO and is
+fixed to 4 bytes.  Therefore all netlink message headers, begin of
+payload sections, protocol specific headers, and attribute sections
+must start at an offset which is a multiple of NLMSG_ALIGNTO.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+int nlmsg_size(int payloadlen);
+int nlmsg_total_size(int payloadlen);
+--------
+
+The library provides a set of function to handle alignment
+requirements automatically. The function nlmsg_total_size() returns
+the total size of a netlink message including the padding to ensure
+the next message header is aligned correctly.
+
+[source,c]
+--------
+     <----------- nlmsg_total_size(len) ------------>
+     <----------- nlmsg_size(len) ------------>
+    +-------------------+- - -+- - - - - - - - +- - -+-------------------+- - -
+    |  struct nlmsghdr  | Pad |     Payload    | Pad |  struct nlsmghdr  |
+    +-------------------+- - -+- - - - - - - - +- - -+-------------------+- - -
+     <---- NLMSG_HDRLEN -----> <- NLMSG_ALIGN(len) -> <---- NLMSG_HDRLEN ---
+--------
+
+If you need to know if padding needs to be added at the end of a
+message, nlmsg_padlen() returns the number of padding bytes that need
+to be added for a specific payload length.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+int nlmsg_padlen(int payloadlen);
+--------
+
+=== Parsing a Message
+
+The library offers two different methods of parsing netlink messages.
+It offers a low level interface for applications which want to do all
+the parsing manually. This method is described below. Alternatively
+the library also offers an interface to implement a parser as part of
+a cache operations set which is especially useful when your protocol
+deals with objects of any sort such as network links, routes, etc.
+This high level interface is described in <<core_cache>>.
+
+.Splitting a byte stream into separate messages
+
+What you receive from a netlink socket is typically a stream of
+messages. You will be given a buffer and its length, the buffer may
+contain any number of netlink messages.
+
+The first message header starts at the beginning of message stream.
+Any subsequent message headers are access by calling nlmsg_next() on
+the previous header.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nlmsghdr *nlmsg_next(struct nlmsghdr *hdr, int *remaining);
+--------
+
+The function nlmsg_next() will automatically substract the size of the
+previous message from the remaining number of bytes.
+
+Please note, there is no indication in the previous message whether
+another message follows or not. You must assume that more messages
+follow until all bytes of the message stream have been processed.
+
+To simplify this, the function nlmsg_ok() exists which returns true if
+another message fits into the remaining number of bytes in the message
+stream. nlmsg_valid_hdr() is similar, it checks whether a specific
+netlink message contains at least a minimum of payload.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+int nlmsg_valid_hdr(const struct nlmsghdr *hdr, int payloadlen);
+int nlmsg_ok(const struct nlmsghdr *hdr, int remaining);
+--------
+
+A typical use of these functions looks like this:
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+void my_parse(void *stream, int length)
+{
+	struct nlmsghdr *hdr = stream;
+
+	while (nlmsg_ok(hdr, length)) {
+		// Parse message here
+		hdr = nlmsg_next(hdr, &length);
+	}
+}
+--------
+
+CAUTION: nlmsg_ok() only returns true if the *complete* message including
+         the message payload fits into the remaining buffer length. It will
+	 return false if only a part of it fits.
+
+The above can also be written using the iterator nlmsg_for_each():
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nlmsghdr *hdr;
+
+nlmsg_for_each(hdr, stream, length) {
+	/* do something with message */
+}
+--------
+
+.Message Payload
+
+The message payload is appended to the message header and is guranteed
+to start at a multiple of +NLMSG_ALIGNTO+. Padding at the end of the
+message header is added if necessary to ensure this. The function
+nlmsg_data() will calculate the necessary offset based on the message
+and returns a pointer to the start of the message payload.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+void *nlmsg_data(const struct nlmsghdr *nlh);
+void *nlmsg_tail(const struct nlmsghdr *nlh);
+int nlmsg_datalen(const struct nlmsghdr *nlh);
+--------
+
+The length of the message payload is returned by nlmsg_datalen().
+
+[source,c]
+--------
+                               <--- nlmsg_datalen(nlh) --->
+    +-------------------+- - -+----------------------------+- - -+
+    |  struct nlmsghdr  | Pad |           Payload          | Pad |
+    +-------------------+- - -+----------------------------+- - -+
+nlmsg_data(nlh) ---------------^                                  ^
+nlmsg_tail(nlh) --------------------------------------------------^
+--------
+
+The payload may consist of arbitary data but may have strict alignment
+and formatting rules depening on the actual netlink protocol.
+
+[[core_msg_attr]]
+.Message Attributes
+
+Most netlink protocols use netlink attributes. It not only makes the
+protocol self documenting but also gives flexibility in expanding the
+protocol at a later point. New attributes can be added at any time and
+older attributes can be obsoleted by newer ones without breaking
+binary compatibility of the protocol.
+
+[source,c]
+--------
+                               <---------------------- payload ------------------------->
+                               <----- hdrlen ---->       <- nlmsg_attrlen(nlh, hdrlen) ->
+    +-------------------+- - -+-----  ------------+- - -+--------------------------------+- - -+
+    |  struct nlmsghdr  | Pad |  Protocol Header  | Pad |           Attributes           | Pad |
+    +-------------------+- - -+-------------------+- - -+--------------------------------+- - -+
+nlmsg_attrdata(nlh, hdrlen) -----------------------------^
+--------
+
+The function nlmsg_attrdata() returns a pointer to the begin of the
+attributes section. The length of the attributes section is returned
+by the function nlmsg_attrlen().
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nlattr *nlmsg_attrdata(const struct nlmsghdr *hdr, int hdrlen);
+int nlmsg_attrlen(const struct nlmsghdr *hdr, int hdrlen);
+--------
+
+See <<core_attr>> for more information on how to use netlink attributes.
+
+.Parsing a Message the Easy Way
+
+The function nlmsg_parse() validate a complete netlink message in one
+step. If +hdrlen > 0+ it will first call nlmsg_valid_hdr() to check
+if the protocol header fits into the message. If there is more payload
+to parse, it will assume it to be attributes and parse the payload
+accordingly. The function behaves exactly like nla_parse() when
+parsing attributes, see <<core_attr_parse_easy>>.
+
+[source,c]
+--------
+int nlmsg_parse(struct nlmsghdr *hdr, int hdrlen, struct nlattr **attrs,
+                int maxtype, struct nla_policy *policy);
+--------
+
+The function nlmsg_validate() is based on nla_validate() and behaves
+exactly the same as nlmsg_parse() except that it only validates and
+will not fill a array with pointers to each attribute.
+
+[source,c]
+--------
+int nlmsg_validate(struct nlmsghdr *hdr, int hdrlen, intmaxtype,
+                   struct nla_policy *policy);
+--------
+
+See <<core_attr_parse_easy>> for an example and more information on
+attribute parsing.
+
+=== Construction of a Message
+
+See <<core_msg_format>> for information on the netlink message format
+and alignment requirements.
+
+Message construction is based on struct nl_msg which uses an internal
+buffer to store the actual netlink message. struct nl_msg +does not+
+point to the netlink message header. Use nlmsg_hdr() to retrieve a
+pointer to the netlink message header.
+
+At allocation time, a maximum message size is specified. It defaults
+to a page (PAGE_SIZE). The application constructing the message will
+reserve space out of this maximum message size repeatedly for each
+header or attribute added. This allows construction of messages across
+various layers of code where lower layers do not need to know about
+the space requirements of upper layers.
+
++Why is setting the maximum message size necessary?+ This
+question is often raised in combination with the proposed solution of
+reallocating the message payload buffer on the fly using realloc().
+While it is possible to reallocate the buffer during construction
+using nlmsg_expand() it will make all pointers into the message buffer
+become stale. This breaks usage of nlmsg_hdr(), nla_nest_start(), and
+nla_nest_end() and is therefore not acceptable as default behaviour.
+
+.Allocating struct nl_msg
+
+The first step in constructing a new netlink message it to allocate a
+`struct nl_msg` to hold the message header and payload. Several
+functions exist to simplify various tasks.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nl_msg *nlmsg_alloc(void);
+void nlmsg_free(struct nl_msg *msg);
+--------
+
+The function nlmsg_alloc() is the default message allocation function.
+It allocates a new message using the default maximum message size which
+equals to one page (PAGE_SIZE). The application can change the default
+size for messages by calling nlmsg_set_default_size():
+
+[source,c]
+--------
+void	  nlmsg_set_default_size(size_t);
+--------
+
+NOTE: Calling nlmsg_set_default_size() does not change the maximum
+      message size of already allocated messages.
+
+[source,c]
+--------
+struct nl_msg *nlmsg_alloc_size(size_t max);
+--------
+
+Instead of changing the default message size, the function
+nlmsg_alloc_size() can be used to allocate a message with a individual
+maximum message size.
+
+
+If the netlink message header is already known at allocation time, the
+application may sue nlmsg_inherit(). It will allocate a message using
+the default maximum message size and copy the header into the message.
+Calling nlmsg_inherit with +set+ to NULL is equivalent to calling
+nlmsg_alloc().
+
+[source,c]
+--------
+struct nl_msg *nlmsg_inherit(struct nlmsghdr *hdr);
+--------
+
+Alternatively nlmsg_alloc_simple() takes a netlink message type and
+netlink message flags. It is equivalent to nlmsg_inherit() except that it
+takes the two common header fields as arguments instead of a complete
+header.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nl_msg *nlmsg_alloc_simple(int nlmsg_type, int flags);
+--------
+
+.Appending the netlink message header
+
+After allocating struct nl_msg, the netlink message header needs to be
+added unless one of the function nlmsg_alloc_simple() or nlmsg_inherit()
+have been used for allocation in which case this step will replace the
+netlink message header already in place.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nlmsghdr *nlmsg_put(struct nl_msg *msg, uint32_t port, uint32_t seqnr,
+                           int nlmsg_type, int payload, int nlmsg_flags);
+--------
+
+The function nlmsg_put() will build a netlink message header out of
++nlmsg_type+, +nlmsg_flags+, +seqnr+, and +port+ and copy it into the
+netlink message. +seqnr+ can be set to +NL_AUTO_SEQ+ to indiciate
+that the next possible sequence number should be used automatically.
+To use this feature, the message must be sent using the function
+nl_send_auto(). Like +port+, the argument +seqnr+ can be set to
++NL_AUTO_PORT+ indicating that the local port assigned to the socket
+should be used as source port. This is generally a good idea unless
+you are replying to a request. See <<core_netlink_fundamentals>>
+for more information on how to fill the header.
+
+NOTE: The argument +payload+ can be used by the application to reserve
+      room for additional data after the header. A value of > 0 is
+      equivalent to calling +nlmsg_reserve(msg, payload, NLMSG_ALIGNTO)+.
+      See <<core_msg_reserve>> for more information on reserving room for
+      data.
+
+.Example
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nlmsghdr *hdr;
+struct nl_msg *msg;
+struct myhdr {
+	uint32_t foo1, foo2;
+} hdr = { 10, 20 };
+
+/* Allocate a message with the default maximum message size */
+msg = nlmsg_alloc();
+
+/*
+ * Add header with message type MY_MSGTYPE, the flag NLM_F_CREATE,
+ * let library fill port and sequence number, and reserve room for
+ * struct myhdr
+ */
+hdr = nlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, MY_MSGTYPE, sizeof(hdr), NLM_F_CREATE);
+
+/* Copy own header into newly reserved payload section */
+memcpy(nlmsg_data(hdr), &hdr, sizeof(hdr));
+
+/*
+ * The message will now look like this:
+ *     +-------------------+- - -+----------------+- - -+
+ *     |  struct nlmsghdr  | Pad |  struct myhdr  | Pad |
+ *     +-------------------+-----+----------------+- - -+
+ * nlh -^                        /                \
+ *                              +--------+---------+
+ *                              |  foo1  |  foo2   |
+ *                              +--------+---------+
+ */
+--------
+
+[[core_msg_reserve]]
+.Reserving room at the end of the message
+
+Most functions described later on will automatically take care of
+reserving room for the data that is added to the end of the netlink
+message. In some situations it may be requried for the application
+to reserve room directly though.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+void *nlmsg_reserve(struct nl_msg *msg, size_t len, int pad);
+--------
+
+The function nlmsg_reserve() reserves +len+ bytes at the end of the
+netlink message and returns a pointer to the start of the reserved area.
+The +pad+ argument can be used to request +len+ to be aligned to any
+number of bytes prior to reservation.
+
+The following example requests to reserve a 17 bytes area at the end of
+message aligned to 4 bytes. Therefore a total of 20 bytes will be
+reserved.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+void *buf = nlmsg_reserve(msg, 17, 4);
+--------
+
+NOTE: `nlmsg_reserve()` will *not* align the start of the buffer. Any
+      alignment requirements must be provided by the owner of the
+      previous message section.
+
+.Appending data at the end of the message
+
+The function `nlmsg_append()` appends `len` bytes at the end of the
+message, padding it if requested and necessary.
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+int nlmsg_append(struct nl_msg *msg, void *data, size_t len, int pad);
+--------
+
+It is equivalent to calling `nlmsg_reserve()` and `memcpy()`ing the
+data into the freshly reserved data section.
+
+NOTE: `nlmsg_append()` will *not* align the start of the data. Any
+      alignment requirements must be provided by the owner of the
+      previous message section.
+
+.Adding attribtues to a message
+
+Construction of attributes and addition of attribtues to the message is
+covereted in section <<core_attr>>.
+
+[[core_attr]]
+== Attributes
+
+Any form of payload should be encoded as netlink attributes whenever
+possible. Use of attributes allows to extend any netlink protocol in
+the future without breaking binary compatibility. F.e. Suppose your
+device may currently be using 32 bit counters for statistics but years
+later the device switches to maintaining 64 bit counters to account
+for faster network hardware. If your protocol is using attributes the
+move to 64 bit counters is trivial and only involves in sending an
+additional attribute containing the 64 bit variants while still
+providing the old legacy 32 bit counters. If your protocol is not using
+attributes you will not be able to switch data types without breaking
+all existing users of the protocol. 
+
+The concept of nested attributes also allows for subsystems of your
+protocol to implement and maintain their own attribute schemas. Suppose
+a new generation of network device is introduced which requires a
+completely new set of configuration settings which was unthinkable when
+the netlink protocol was initially designed. Using attributes the new
+generation of devices may define a new attribute and fill it with its
+own new structure of attributes which extend or even obsolete the old
+attributes.
+
+Therefore, _always_ use attributes even if you are almost certain that
+the message format will never ever change in the future.
+
+[[core_attr_format]]
+=== Attribute Format
+
+Netlink attributes allow for any number of data chunks of arbitary
+length to be attached to a netlink message. See <<core_msg_attr>>
+for more information on where attributes are stored in the message.
+
+The format of the attributes data returned by nlmsg_attrdata() is as
+follows:
+
+[source,c]
+--------
+     <----------- nla_total_size(payload) ----------->
+     <---------- nla_size(payload) ----------->
+    +-----------------+- - -+- - - - - - - - - +- - -+-----------------+- - -
+    |  struct nlattr  | Pad |     Payload      | Pad |  struct nlattr  |
+    +-----------------+- - -+- - - - - - - - - +- - -+-----------------+- - -
+     <---- NLA_HDRLEN -----> <--- NLA_ALIGN(len) ---> <---- NLA_HDRLEN ---
+--------
+
+Every attribute must start at an offset which is a multiple of
++NLA_ALIGNTO+ (4 bytes). If you need to know whether an attribute needs
+to be padded at the end, the function nla_padlen() returns the number
+of padding bytes that will or need to be added.
+
+image:attribute_hdr.png["Netlink Attribute Header"]
+
+Every attribute is encoded with a type and length field, both 16 bits,
+stored in the attribute header (struct nlattr) preceding the attribute
+payload. The length of an attribute is used to calculate the offset to
+the next attribute.
+
+[[core_attr_parse]]
+=== Parsing Attributes
+
+[[core_attr_parse_split]]
+.Splitting an Attributes Stream into Attributes
+
+Although most applications will use one of the functions from the
+nlmsg_parse() family (See <<core_attr_parse_easy>>) an interface exists
+to split the attributes stream manually.
+
+As described in <<core_attr_format>> the attributes section contains a
+infinite sequence or stream of attributes. The pointer returned by
+nlmsg_attrdata() (See <<core_msg_attr>>) points to the first attribute
+header. Any subsequent attribute is accessed with the function nla_next()
+based on the previous header.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+struct nlattr *nla_next(const struct nlattr *attr, int *remaining);
+--------
+
+The semantics are equivalent to nlmsg_next() and thus nla_next() will also
+subtract the size of the previous attribute from the remaining number of
+bytes in the attributes stream.
+
+Like messages, attributes do not contain an indicator whether another
+attribute follows or not. The only indication is the number of bytes left
+in the attribute stream. The function nla_ok() exists to determine whether
+another attribute fits into the remaining number of bytes or not.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+int nla_ok(const struct nlattr *attr, int remaining);
+--------
+
+A typical use of nla_ok() and nla_next() looks like this:
+
+.nla_ok()/nla_next() usage
+[source,c]
+--------
+#include <netlink/msg.h>
+#include <netlink/attr.h>
+
+struct nlattr *hdr = nlmsg_attrdata(msg, 0);
+int remaining = nlmsg_attrlen(msg, 0);
+
+while (nla_ok(hdr, remaining)) {
+	/* parse attribute here */
+	hdr = nla_next(hdr, &remaining);
+};
+--------
+
+NOTE: `nla_ok()` only returns true if the *complete* attributes
+      including the attribute payload fits into the remaining number
+      of bytes.
+
+.Accessing Attribute Header and Payload
+
+Once the individual attributes have been sorted out by either splitting
+the attributes stream or using another interface the attribute header
+and payload can be accessed.
+
+[source,c]
+--------
+                             <- nla_len(hdr) ->
+    +-----------------+- - -+- - - - - - - - - +- - -+
+    |  struct nlattr  | Pad |     Payload      | Pad |
+    +-----------------+- - -+- - - - - - - - - +- - -+
+nla_data(hdr) ---------------^
+--------
+
+The functions nla_len() and nla_type() can be used to access the attribute
+header. nla_len() will return the length of the payload not including
+eventual padding bytes. nla_type returns the attribute type.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+int nla_len(const struct nlattr *hdr);
+int nla_type(const struct nlattr *hdr);
+--------
+
+The function nla_data() will return a pointer to the attribute
+payload. Please note that due to +NLA_ALIGNTO+ being 4 bytes it may
+not be safe to cast and dereference the pointer for any datatype
+larger than 32 bit depending on the architecture the application is
+run on.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+void *nla_data(const struct nlattr *hdr);
+--------
+
+[NOTE]
+Never rely on the size of a payload being what you expect it to be.
+_Always_ verify the payload size and make sure that it matches your
+expectations. See <<core_attr_validation>>
+
+[[core_attr_validation]]
+.Attribute Validation
+
+When receiving netlink attributes, the receiver has certain expections
+on how the attributes should look like. These expectations must be
+defined to make sure the sending side meets our expecations. For this
+purpose, a attribute validation interface exists which must be used
+prior to accessing any payload.
+
+All functions providing attribute validation functionality are based
+on struct nla_policy:
+
+[source,c]
+--------
+struct nla_policy {
+	uint16_t	type;
+	uint16_t	minlen;
+	uint16_t	maxlen;
+};
+--------
+
+The +type+ member specifies the datatype of the attribute, e.g.
++NLA_U32+, +NLA_STRING+, +NLA_FLAG+. The default is +NLA_UNSPEC+. The
++minlen+ member defines the minmum payload length of an attribute to
+be considered a valid attribute. The value for +minlen+ is implicit
+for most basic datatypes such as integers or flags. The +maxlen+
+member can be used to define a maximum payload length for an
+attribute to still be considered valid.
+
+NOTE: Specyfing a maximum payload length is not recommended when
+      encoding structures in an attribute as it will prevent any
+      extension of the structure in the future. Something that is
+      frequently done in netlink protocols and does not break
+      backwards compatibility.
+
+One of the functions which use struct nla_policy is nla_validate().
+The function expects an array of struct nla_policy and will access the
+array using the attribute type as index. If an attribute type is out
+of bounds the attribute is assumed to be valid. This is intentional
+behaviour to allow older applications not yet aware of recently
+introduced attributes to continue functioning.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+int nla_validate(struct nlattr *head, int len, int maxtype, struct nla_policy *policy);
+--------
+
+The function nla_validate() returns 0 if all attributes are valid,
+otherwise a validation failure specific error code is returned.
+
+Most applications will rarely use nla_validate() directly but use
+nla_parse() instead which takes care of validation in the same way but
+also parses the the attributes in the same step. See
+<<core_attr_parse_easy>> for an example and more information.
+
+The validation process in detail:
+
+. If attribute type is 0 or exceeds +maxtype+ attribute is 
+  considered valid, 0 is returned.
+. If payload length is < +minlen+, +-NLE_ERANGE+ is returned.
+. If +maxlen+ is defined and payload exceeds it, +-NLE_ERANGE+
+  is returned.
+. Datatype specific requirements rules, see <<core_attr_types>>
+. If all is ok, 0 is returned.
+
+[[core_attr_parse_easy]]
+.Parsing Attributes the Easy Way
+
+Most applications will not want to deal with splitting attribute
+streams themselves as described in <<core_attr_parse_split>>
+A much easier method is to use nla_parse().
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+int nla_parse(struct nlattr **attrs, int maxtype, struct nlattr *head,
+              int len, struct nla_policy *policy);
+--------
+
+The function nla_parse() will iterate over a stream of attributes,
+validate each attribute as described in <<core_attr_validation>>
+If the validation of all attributes succeeds, a pointer to each attribute
+is stored in the +attrs+ array at `attrs[nla_type(attr)]`.
+
+As an alernative to nla_parse() the function nlmsg_parse() can be used
+to parse the message and its attributes in one step. See
+<<core_attr_parse_easy>> for information on how to use these functions.
+
+.Example:
+
+The following example demonstrates how to parse a netlink message sent
+over a netlink protocol which does not use protocol headers. The example
+does enforce a attribute policy however, the attribute MY_ATTR_FOO must
+be a 32 bit integer, and the attribute MY_ATTR_BAR must be a string with
+a maximum length of 16 characters.
+
+[source,c]
+---------
+#include <netlink/msg.h>
+#include <netlink/attr.h>
+
+enum {
+	MY_ATTR_FOO = 1,
+	MY_ATTR_BAR,
+	__MY_ATTR_MAX,
+};
+
+#define MY_ATTR_MAX (__MY_ATTR_MAX - 1)
+
+static struct nla_policy my_policy[MY_ATTR_MAX+1] = {
+	[MY_ATTR_FOO] = { .type = NLA_U32 },
+	[MY_ATTR_BAR] = { .type = NLA_STRING,
+			  .maxlen = 16 },
+};
+
+void parse_msg(struct nlmsghdr *nlh)
+{
+	struct nlattr *attrs[MY_ATTR_MAX+1];
+
+	if (nlmsg_parse(nlh, 0, attrs, MY_ATTR_MAX, my_policy) < 0)
+		/* error */
+
+	if (attrs[MY_ATTR_FOO]) {
+		/* MY_ATTR_FOO is present in message */
+		printf("value: %u\n", nla_get_u32(attrs[MY_ATTR_FOO]));
+	}
+}
+---------
+
+.Locating a Single Attribute
+
+An application only interested in a single attribute can use one of the
+functions nla_find() or  nlmsg_find_attr(). These function will iterate
+over all attributes, search for a matching attribute and return a pointer
+to the corresponding attribute header.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+struct nlattr *nla_find(struct nlattr *head, int len, int attrtype);
+--------
+
+[source,c]
+--------
+#include <netlink/msg.h>
+
+struct nlattr *nlmsg_find_attr(struct nlmsghdr *hdr, int hdrlen, int attrtype);
+--------
+
+NOTE: `nla_find()` and `nlmsg_find_attr()` will *not* search in nested
+      attributes recursively, see <<core_attr_nested>>.
+
+==== Iterating over a Stream of Attributes
+
+In some situations it does not make sense to assign a unique attribute
+type to each attribute in the attribute stream. For example a list may
+be transferd using a stream of attributes and even if the attribute type
+is incremented for each attribute it may not make sense to use the
+nlmsg_parse() or nla_parse() function to fill an array.
+
+Therefore methods exist to iterate over a stream of attributes:
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+nla_for_each_attr(attr, head, len, remaining)
+--------
+
+nla_for_each_attr() is a macro which can be used in front of a code
+block:
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+struct nalttr *nla;
+int rem;
+
+nla_for_each_attr(nla, attrstream, streamlen, rem) {
+	/* validate & parse attribute */
+}
+
+if (rem > 0)
+	/* unparsed attribute data */
+--------
+
+[[core_attr_constr]]
+=== Attribute Construction
+
+The interface to add attributes to a netlink message is based on the
+regular message construction interface. It assumes that the message
+header and an eventual protocol header has been added to the message
+already.
+
+[source,c]
+--------
+struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int len);
+--------
+
+The function nla_reserve() adds an attribute header at the end of the
+message and reserves room for +len+ bytes of payload. The function
+returns a pointer to the attribute payload section inside the message.
+Padding is added at the end of the attribute to ensure the next
+attribute is properly aligned.
+
+[source,c]
+--------
+int nla_put(struct nl_msg *msg, int attrtype, int attrlen, const void *data);
+--------
+
+The function nla_put() is base don nla_reserve() but takes an additional
+pointer +data+ pointing to a buffer containing the attribute payload.
+It will copy the buffer into the message automatically.
+
+.Example:
+
+[source,c]
+--------
+struct my_attr_struct {
+	uint32_t a;
+	uint32_t b;
+};
+
+int my_put(struct nl_msg *msg)
+{
+	struct my_attr_struct obj = {
+		.a = 10,
+		.b = 20,
+	};
+
+	return nla_put(msg, ATTR_MY_STRUCT, sizeof(obj), &obj);
+}
+--------
+
+See <<core_attr_types>> for datatype specific attribute construction
+functions.
+
+.Exception Based Attribute Construction
+
+Like in the kernel API an exception based construction interface is
+provided. The behaviour of the macros is identical to their regular
+function counterparts except that in case of an error, the target
+`nla_put_failure` is jumped.
+
+.Example:
+[source,c]
+--------
+#include <netlink/msg.h>
+#include <netlink/attr.h>
+
+void construct_attrs(struct nl_msg *msg)
+{
+	NLA_PUT_STRING(msg, MY_ATTR_FOO1, "some text");
+	NLA_PUT_U32(msg, MY_ATTR_FOO1, 0x1010);
+	NLA_PUT_FLAG(msg, MY_ATTR_FOO3, 1);
+
+	return 0;
+
+nla_put_failure:
+	/* NLA_PUT* macros jump here in case of an error */
+	return -EMSGSIZE;
+}
+--------
+
+See <<core_attr_types>> for more information on the datatype specific
+exception based variants.
+
+[[core_attr_types]]
+=== Attribute Data Types
+
+A number of basic data types have been defined to simplify access and
+validation of attributes. The datatype is not encoded in the
+attribute, therefore bthe sender and receiver are required to use the
+same definition on what attribute is of what type.
+
+[options="header", cols="1m,5"]
+|================================================
+| Type             | Description
+| NLA_UNSPEC       | Unspecified attribute
+| NLA_U{8\|16\|32} | Integers
+| NLA_STRING       | String
+| NLA_FLAG         | Flag
+| NLA_NESTED       | Nested attribute
+|================================================
+
+Besides simplified access to the payload of such datatypes, the major
+advantage is the automatic validation of each attribute based on a
+policy. The validation ensures safe access to the payload by checking
+for minimal payload size and can also be used to enforce maximum
+payload size for some datatypes.
+
+==== Integer Attributes
+
+The most frequently used datatypes are integers. Integers come in four
+different sizes:
+[horizontal]
+NLA_U8::  8bit integer
+NLA_U16:: 16bit integer
+NLA_U32:: 32bit integer
+NLA_U64:: 64bit integer
+
+Note that due to the alignment requirements of attributes the integer
+attribtue +NLA_u8+ and +NLA_U16+ will not result in space savings in
+the netlink message. Their use is intended to limit the range of
+values.
+
+.Parsing Integer Attributes
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+uint8_t  nla_get_u8(struct nlattr *hdr);
+uint16_t nla_get_u16(struct nlattr *hdr);
+uint32_t nla_get_u32(struct nlattr *hdr);
+uint64_t nla_get_u64(struct nlattr *hdr);
+--------
+
+Example:
+
+[source,c]
+--------
+if (attrs[MY_ATTR_FOO])
+	uint32_t val = nla_get_u32(attrs[MY_ATTR_FOO]);
+--------
+
+.Constructing Integer Attributes
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+int nla_put_u8(struct nl_msg *msg, int attrtype, uint8_t value);
+int nla_put_u16(struct nl_msg *msg, int attrtype, uint16_t value);
+int nla_put_u32(struct nl_msg *msg, int attrtype, uint32_t value);
+int nla_put_u64(struct nl_msg *msg, int attrtype, uint64_t value);
+--------
+
+Exception based:
+
+[source,c]
+--------
+NLA_PUT_U8(msg, attrtype, value)
+NLA_PUT_U16(msg, attrtype, value)
+NLA_PUT_U32(msg, attrtype, value)
+NLA_PUT_U64(msg, attrtype, value)
+--------
+
+.Validation
+
+Use +NLA_U8+, +NLA_U16+, +NLA_U32+, or +NLA_U64+ to define the type of
+integer when filling out a struct nla_policy array. It will
+automatically enforce the correct minimum payload length policy.
+
+Validation does not differ between signed and unsigned integers, only
+the size matters. If the appliaction wishes to enforce particular value
+ranges it must do so itself.
+
+[source,c]
+--------
+static struct nla_policy my_policy[ATTR_MAX+1] = {
+	[ATTR_FOO] = { .type = NLA_U32 },
+	[ATTR_BAR] = { .type = NLA_U8 },
+};
+--------
+
+The above is equivalent to:
+[source,c]
+--------
+static struct nla_policy my_policy[ATTR_MAX+1] = {
+	[ATTR_FOO] = { .minlen = sizeof(uint32_t) },
+	[ATTR_BAR] = { .minlen = sizeof(uint8_t) },
+};
+--------
+
+==== String Attributes
+
+The string datatype represents a NUL termianted character string of
+variable length. It is not intended for binary data streams.
+
+The payload of string attributes can be accessed with the function
+nla_get_string(). nla_strdup() calls strdup() on the payload and returns
+the newly allocated string.
+
+[source,c]
+--------
+#include <netlink/attr.h>
+
+char *nla_get_string(struct nlattr *hdr);
+char *nla_strdup(struct nlattr *hdr);
+--------
+
+String attributes are constructed with the function +nla_put_string()+
+respectively +NLA_PUT_STRING()+. The length of the payload will be
+strlen()+1, the trailing NUL byte is included.
+
+[source,c]
+--------
+int nla_put_string(struct nl_msg *msg, int attrtype, const char *data);
+
+NLA_PUT_STRING(msg, attrtype, data)
+--------
+
+For validation purposes the type +NLA_STRING+ can be used in
++struct nla_policy+ definitions. It implies a minimum payload length
+of 1 byte and checks for a trailing NUL byte. Optionally the +maxlen+
+member defines the maximum length of a character string (including the
+trailing NUL byte).
+
+[source,c]
+--------
+static struct nla_policy my_policy[] = {
+	[ATTR_FOO] = { .type = NLA_STRING,
+		       .maxlen = IFNAMSIZ },
+};
+--------
+
+==== Flag Attributes
+
+The flag attribute represents a boolean datatype. The presence of the
+attribute implies a value of +true+, the absence of the attribute
+implies the value +false+. Therefore the payload length of flag
+attributes is always 0.
+
+[source,c]
+--------
+int nla_get_flag(struct nlattr *hdr);
+int nla_put_flag(struct nl_msg *msg, int attrtype);
+--------
+
+The type +NLA_FLAG+ is used for validation purposes. It implies a 
++maxlen+ value of 0 and thus enforces a maximum payload length of 0.
+
+.Example:
+[source,c]
+--------
+/* nla_put_flag() appends a zero sized attribute to the message. */
+nla_put_flag(msg, ATTR_FLAG);
+
+/* There is no need for a receival function, the presence is the value. */
+if (attrs[ATTR_FLAG])
+	/* flag is present */
+--------
+
+[[core_attr_nested]]
+==== Nested Attributes
+
+As described in <<core_attr>>, attributes can be nested allowing for
+complex tree structures of attributes. It is commonly used to delegate
+the responsibility of a subsection of the message to a subsystem.
+Nested attributes are also commonly used for transmitting list of objects.
+
+When nesting attributes, the nested attributes are included as payload
+of a container attribute.
+
+NOTE: When validating the attributes using nlmsg_validate(),
+      nlmsg_parse(), nla_validate(), or nla_parse() only the
+      attributes on the first level are being validated. None of these
+      functions will validate attributes recursively. Therefore you
+      must explicitely call nla_validate() or use nla_parse_nested()
+      for each level of nested attributes.
+
+The type +NLA_NESTED+ should be used when defining nested attributes
+in a struct nla_policy definition. It will not enforce any minimum
+payload length unless +minlen+ is specified explicitely. This is
+because some netlink protocols implicitely allow empty container
+attributes.
+
+[source,c]
+--------
+static struct nla_policy my_policy[] = {
+	[ATTR_OPTS] = { .type = NLA_NESTED },
+};
+--------
+
+.Parsing of Nested Attributes
+
+The function nla_parse_nested() is used to parse nested attributes.
+Its behaviour is identical to nla_parse() except that it takes a
+struct nlattr as argument and will use the payload as stream of
+attributes.
+
+[source,c]
+--------
+if (attrs[ATTR_OPTS]) {
+	struct nlattr *nested[NESTED_MAX+1];
+	struct nla_policy nested_policy[] = {
+		[NESTED_FOO] = { .type = NLA_U32 },
+	};
+
+	if (nla_parse_nested(nested, NESTED_MAX, attrs[ATTR_OPTS], nested_policy) < 0)
+		/* error */
+	
+	if (nested[NESTED_FOO])
+		uint32_t val = nla_get_u32(nested[NESTED_FOO]);
+}
+--------
+
+.Construction of Nested Attributes
+
+Attributes are nested by surrounding them with calls to nla_nest_start()
+and nla_nest_end(). nla_nest_start() will add a attribute header to
+the message but no actual payload. All data added to the message from
+this point on will be part of the container attribute until nla_nest_end()
+is called which "closes" the attribute, correcting its payload length to
+include all data length.
+
+[source,c]
+--------
+int put_opts(struct nl_msg *msg)
+{
+	struct nlattr *opts;
+
+	if (!(opts = nla_nest_start(msg, ATTR_OPTS)))
+		goto nla_put_failure;
+
+	NLA_PUT_U32(msg, NESTED_FOO, 123);
+	NLA_PUT_STRING(msg, NESTED_BAR, "some text");
+
+	nla_nest_end(msg, opts);
+	return 0;
+
+nla_put_failure:
+	return -EMSGSIZE;
+}
+--------
+
+==== Unspecified Attribute
+
+This is the default attribute type and used when none of the basic
+datatypes is suitable. It represents data of arbitary type and length.
+
+See <<core_addr_alloc, Address Allocation>> for a more information on
+a special interface allowing the allocation of abstract address object
+based on netlink attributes which carry some form of network address.
+
+See <<core_data_alloc, Abstract Data Allocation>> for more information
+on how to allocate abstract data objects based on netlink attributes.
+
+Use the function nla_get() and nla_put() to access the payload and
+construct attributes. See <<core_attr_constr, Attribute Construction>>
+for an example.
+
+=== Examples
+
+==== Constructing a Netlink Message with Attributes
+
+[source,c]
+--------
+struct nl_msg *build_msg(int ifindex, struct nl_addr *lladdr, int mtu)
+{
+	struct nl_msg *msg;
+	struct nlattr *info, *vlan;
+	struct ifinfomsg ifi = {
+		.ifi_family = AF_INET,
+		.ifi_index = ifindex,
+	};
+
+	/* Allocate a default sized netlink message */
+	if (!(msg = nlmsg_alloc_simple(RTM_SETLINK, 0)))
+		return NULL;
+
+	/* Append the protocol specific header (struct ifinfomsg)*/
+	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure
+
+	/* Append a 32 bit integer attribute to carry the MTU */
+	NLA_PUT_U32(msg, IFLA_MTU, mtu);
+
+	/* Append a unspecific attribute to carry the link layer address */
+	NLA_PUT_ADDR(msg, IFLA_ADDRESS, lladdr);
+
+	/* Append a container for nested attributes to carry link information */
+	if (!(info = nla_nest_start(msg, IFLA_LINKINFO)))
+		goto nla_put_failure;
+
+	/* Put a string attribute into the container */
+	NLA_PUT_STRING(msg, IFLA_INFO_KIND, "vlan");
+
+	/*
+	 * Append another container inside the open container to carry
+	 * vlan specific attributes
+	 */
+	if (!(vlan = nla_nest_start(msg, IFLA_INFO_DATA)))
+		goto nla_put_failure;
+
+	/* add vlan specific info attributes here... */
+
+	/* Finish nesting the vlan attributes and close the second container. */
+	nla_nest_end(msg, vlan);
+
+	/* Finish nesting the link info attribute and close the first container. */
+	nla_nest_end(msg, info);
+
+	return msg;
+
+nla_put_failure:
+	nlmsg_free(msg);
+	return NULL;
+}
+------
+
+==== Parsing a Netlink Message with Attributes
+
+[source,c]
+--------
+int parse_message(struct nlmsghdr *hdr)
+{
+	/*
+	 * The policy defines two attributes: a 32 bit integer and a container
+	 * for nested attributes.
+	 */
+	struct nla_policy attr_policy[] = {
+		[ATTR_FOO] = { .type = NLA_U32 },
+		[ATTR_BAR] = { .type = NLA_NESTED },
+	};
+	struct nlattr *attrs[ATTR_MAX+1];
+	int err;
+
+	/*
+	 * The nlmsg_parse() function will make sure that the message contains
+	 * enough payload to hold the header (struct my_hdr), validates any
+	 * attributes attached to the messages and stores a pointer to each
+	 * attribute in the attrs[] array accessable by attribute type.
+	 */
+	if ((err = nlmsg_parse(hdr, sizeof(struct my_hdr), attrs, ATTR_MAX,
+			       attr_policy)) < 0)
+		goto errout;
+
+	if (attrs[ATTR_FOO]) {
+		/*
+		 * It is safe to directly access the attribute payload without
+		 * any further checks since nlmsg_parse() enforced the policy.
+		 */
+		uint32_t foo = nla_get_u32(attrs[ATTR_FOO]);
+	}
+
+	if (attrs[ATTR_BAR]) {
+		struct *nested[NESTED_MAX+1];
+
+		/*
+		 * Attributes nested in a container can be parsed the same way
+		 * as top level attributes.
+		 */
+		err = nla_parse_nested(nested, NESTED_MAX, attrs[ATTR_BAR],
+                		       nested_policy);
+		if (err < 0)
+			goto errout;
+
+		// Process nested attributes here.
+	}
+
+	err = 0;
+errout:
+	return err;
+}
+--------
+
+[[core_cb]]
+== Callback Configurations
+
+Callback hooks and overwriting capabilities are provided in various places
+inside library to control the behaviour of several functions. All the
+callback and overwrite functions are packed together in struct nl_cb which
+is attached to a netlink socket or passed on to functions directly.
+
+=== Callback Hooks
+
+Callback hooks are spread across the library to provide entry points for
+message processing and to take action upon certain events.
+
+Callback functions may return the following return codes:
+[options="header", cols="1m,4"]
+|========================================================================
+| Return Code      | Description
+| NL_OK            | Proceed.
+| NL_SKIP          | Skip message currently being processed and continue
+                     parsing the receive buffer.
+| NL_STOP          | Stop parsing and discard all remaining data in the
+                    receive buffer.
+|========================================================================
+
+.Default Callback Implementations
+
+The library provides three sets of default callback implementations:
+* +NL_CB_DEFAULT+ This is the default set. It implets the default behaviour.
+     See the table below for more information on the return codes of each
+     function.
+* +NL_CB_VERBOSE+ This set is based on the default set but will cause an
+     error message to be printed to stderr for error messages, invalid
+     messages, message overruns and unhandled valid messages. The
+     +arg+ pointer in nl_cb_set() and nl_cb_err() can be used to
+     provide a FILE * which overwrites stderr.
+* +NL_CB_DEBUG+ This set is intended for debugging purposes. It is
+  based on the verbose set but will decode and dump each message sent
+  or received to the console.
+
+.Message Processing Callbacks
+
+.nl_sendmsg() callback hooks:
+[cols="2m,4e,1m", options="header"]
+|============================================================================
+| Callback ID        | Description                       | Default Return Value
+| NL_CB_MSG_OUT      | Each message sent                 | NL_OK
+|============================================================================
+
+Any function called by NL_CB_MSG_OUT may return a negative error code to
+prevent the message from being sent and the error code being returned.
+
+nl_recvmsgs() callback hooks (ordered by priority):
+[cols="2m,4e,1m", options="header"]
+|============================================================================
+| Callback ID        | Description                       | Default Return Value
+| NL_CB_MSG_IN       | Each message received             | NL_OK
+| NL_CB_SEQ_CHECK    | May overwrite sequence check algo | NL_OK
+| NL_CB_INVALID      | Invalid messages                  | NL_STOP
+| NL_CB_SEND_ACK     | Messages with NLM_F_ACK flag set  | NL_OK
+| NL_CB_FINISH       | Messages of type NLMSG_DONE       | NL_STOP
+| NL_CB_SKIPPED      | Messages of type NLMSG_NOOP       | NL_SKIP
+| NL_CB_OVERRUN      | Messages of type NLMSG_OVERRUN    | NL_STOP
+| NL_CB_ACK          | ACK Messages                      | NL_STOP
+| NL_CB_VALID        | Each valid message                | NL_OK
+|============================================================================
+
+Any of these functions may return NL_OK, NL_SKIP, or NL_STOP.
+
+Message processing callback functions are set with nl_cb_set():
+[source,c]
+--------
+#include <netlink/handlers.h>
+
+int nl_cb_set(struct nl_cb *cb, enum nl_cb_type type, enum nl_cb_kind kind,
+              nl_recvmsg_msg_cb_t func, void *cb);
+
+typedef int (*nl_recvmsg_msg_cb_t)(struct nl_msg *msg, void *arg);
+--------
+
+.Callback for Error Messages
+
+A special function prototype is used for the error message callback hook:
+
+[source,c]
+--------
+#include <netlink/handlers.h>
+
+int nl_cb_err(struct nl_cb *cb, enum nl_cb_kind kind, nl_recvmsg_err_cb_t func, void * arg);
+
+typedef int(* nl_recvmsg_err_cb_t)(struct sockaddr_nl *nla, struct nlmsgerr *nlerr, void *arg);
+--------
+
+.Example: Setting up a callback set
+[source,c]
+--------
+#include <netlink/handlers.h>
+
+/* Allocate a callback set and initialize it to the verbose default set */
+struct nl_cb *cb = nl_cb_alloc(NL_CB_VERBOSE);
+
+/* Modify the set to call my_func() for all valid messages */
+nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, my_func, NULL);
+
+/*
+ * Set the error message handler to the verbose default implementation
+ * and direct it to print all errors to the given file descriptor.
+ */
+FILE *file = fopen(...);
+nl_cb_err(cb, NL_CB_VERBOSE, NULL, file);
+--------
+
+=== Overwriting of Internal Functions
+
+When the library needs to send or receive netlink messages in high level
+interfaces it does so by calling its own low level API. In the case the
+default characteristics are not sufficient for the application, it may
+overwrite several internal function calls with own implementations.
+
+.Overwriting recvmsgs()
+
+See <<core_recv, Receiving Netlink Messages>> for more information on
+how and when recvmsgs() is called internally.
+
+[source,c]
+--------
+#include <netlink/handlers.h>
+
+void nl_cb_overwrite_recvmsgs(struct nl_cb *cb,
+                              int (*func)(struct nl_sock *sk, struct nl_cb *cb));
+--------
+
+The following criteras must be met if a recvmsgs() implementation is
+supposed to work with high level interfaces:
+
+- MUST respect the callback configuration +cb+, therefore:
+  - MUST call +NL_CB_VALID+ for all valid messages, passing on 
+  - MUST call +NL_CB_ACK+ for all ACK messages
+  - MUST correctly handle multipart messages, calling NL_CB_VALID for
+    each message until a NLMSG_DONE message is received.
+- MUST report error code if a NLMSG_ERROR or NLMSG_OVERRUN mesasge is
+  received.
+
+.Overwriting nl_recv()
+
+Often it is sufficient to overwrite `nl_recv()` which is responsible
+from receiving the actual data from the socket instead of replacing
+the complete `recvmsgs()` logic.
+
+See <<core_recv_character, Receive Characteristics>> for more
+information on how and when `nl_recv()` is called internally.
+
+[source,c]
+--------
+#include <netlink/handlers.h>
+
+void nl_cb_overwrite_recv(struct nl_cb *cb,
+                          int (*func)(struct nl_sock * sk,
+                                      struct sockaddr_nl *addr,
+                                      unsigned char **buf,
+                                      struct ucred **cred));
+--------
+
+The following criteras must be met for an own `nl_recv()`
+implementation:
+
+ - *MUST* return the number of bytes read or a negative error code if
+   an error occured. The function may also return 0 to indicate that
+   no data has been read.
+ - *MUST* set `*buf` to a buffer containing the data read. It must be
+   safe for the caller to access the number of bytes read returned as
+   return code.
+ - *MAY* fill out `*addr` with the netlink address of the peer the
+   data has been received from.
+ - *MAY* set `*cred` to a newly allocated struct ucred containg
+   credentials.
+
+.Overwriting nl_send()
+
+See <<core_send, Sending Netlink Messages>> for more information on
+how and when nl_send() is called internally.
+
+[source,c]
+--------
+#include <netlink/handlers.h>
+
+void nl_cb_overwrite_send(struct nl_cb *cb, int (*func)(struct nl_sock *sk,
+                                                        struct nl_msg *msg));
+--------
+
+Own implementations must send the netlink message and return 0 on success
+or a negative error code.
+
+[[core_cache]]
+== Cache System
+
+=== Allocation of Caches
+
+Almost all subsystem provide a function to allocate a new cache
+of some form. The function usually looks like this:
+[source,c]
+--------
+struct nl_cache *<object name>_alloc_cache(struct nl_sock *sk);
+--------
+
+These functions allocate a new cache for the own object type,
+initializes it properly and updates it to represent the current
+state of their master, e.g. a link cache would include all
+links currently configured in the kernel.
+
+Some of the allocation functions may take additional arguments
+to further specify what will be part of the cache.
+
+All such functions return a newly allocated cache or NULL
+in case of an error.
+
+== Abstract Data Types
+
+A few high level abstract data types which are used by a majority netlink
+protocols are implemented in the core library. More may be added in the
+future if the need arises.
+
+=== Abstract Address
+
+Most netlink protocols deal with networking related topics and thus
+dealing with network addresses is a common task.
+
+Currently the following address families are supported:
+
+[options="compact"]
+ * `AF_INET`
+ * `AF_INET6`
+ * `AF_LLC`
+ * `AF_DECnet`
+ * `AF_UNSPEC`
+
+[[core_addr_alloc]]
+.Address Allocation
+
+The function nl_addr_alloc() allocates a new empty address. The
++maxsize+ argument defines the maximum length of an address in bytes.
+The size of an address is address family specific. If the address
+family and address data are known at allocation time the function
+nl_addr_build() can be used alternatively. You may also clone
+an address by calling nl_addr_clone()
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+struct nl_addr *nl_addr_alloc(size_t maxsize);
+struct nl_addr *nl_addr_clone(struct nl_addr *addr);
+struct nl_addr *nl_addr_build(int family, void *addr, size_t size);
+--------
+
+If the address is transported in a netlink attribute, the function
+nl_addr_alloc_attr() allocates a new address based on the payload
+of the attribute provided. The +family+ argument is used to specify
+the address family of the address, set to +AF_UNSPEC+ if unknown.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+struct nl_addr *nl_addr_alloc_attr(struct nlattr *attr, int family);
+--------
+
+If the address is provided by a user, it is usually stored in a human
+readable format. The function nl_addr_parse() parses a character
+string representing an address and allocates a new address based on
+it.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+int nl_addr_parse(const char *addr, int hint, struct nl_addr **result);
+--------
+
+If parsing succeeds the function returns 0 and the allocated address
+is stored in +*result+.
+
+NOTE: Make sure to return the reference to an address using
+      `nl_addr_put()` after usage to allow memory being freed.
+
+.Address References
+
+Abstract addresses use reference counting to account for all users of
+a particular address. After the last user has returned the reference
+the address is freed.
+
+If you pass on a address object to another function and you are not
+sure how long it will be used, make sure to call nl_addr_get() to
+acquire an additional reference and have that function or code path
+call nl_addr_put() as soon as it has finished using the address.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+struct nl_addr *nl_addr_get(struct nl_addr *addr);
+void nl_addr_put(struct nl_addr *addr);
+int nl_addr_shared(struct nl_addr *addr);
+--------
+
+You may call nl_addr_shared() at any time to check if you are the only
+user of an address.
+
+.Address Attributes
+
+The address is usually set at allocation time. If it was unknown at that
+time it can be specified later by calling nl_addr_set_family() and is
+accessed with the function nl_addr_get_family().
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+void nl_addr_set_family(struct nl_addr *addr, int family);
+int nl_addr_get_family(struct nl_addr *addr);
+--------
+
+The same is true for the actual address data. It is typically present
+at allocation time. For exceptions it can be specified later or
+overwritten with the function `nl_addr_set_binary_addr()`. Beware that
+the length of the address may not exceed `maxlen` specified at
+allocation time. The address data is returned by the function
+`nl_addr_get_binary_addr()` and its length by the function
+`nl_addr_get_len()`.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+int nl_addr_set_binary_addr(struct nl_addr *addr, void *data, size_t size);
+void *nl_addr_get_binary_addr(struct nl_addr *addr);
+unsigned int nl_addr_get_len(struct nl_addr *addr);
+--------
+
+If you only want to check if the address data consists of all zeros
+the function `nl_addr_iszero()` is a shortcut to that.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+int nl_addr_iszero(struct nl_addr *addr);
+--------
+
+==== Address Prefix Length
+
+Although this functionality is somewhat specific to routing it has
+been implemented here. Addresses can have a prefix length assigned
+which implies that only the first n bits are of importance. This is
+f.e. used to implement subnets.
+
+Use set functions `nl_addr_set_prefixlen()` and
+`nl_addr_get_prefixlen()` to work with prefix lengths.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+void nl_addr_set_prefixlen(struct nl_addr *addr, int n);
+unsigned int nl_addr_get_prefixlen(struct nl_addr *addr);
+--------
+
+NOTE: The default prefix length is set to (address length * 8)
+
+.Address Helpers
+
+Several functions exist to help when dealing with addresses. The
+function `nl_addr_cmp()` compares two addresses and returns an integer
+less than, equal to or greater than zero without considering the
+prefix length at all. If you want to consider the prefix length, use
+the function `nl_addr_cmp_prefix()`.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+int nl_addr_cmp(struct nl_addr *addr, struct nl_addr *addr);
+int nl_addr_cmp_prefix(struct nl_addr *addr, struct nl_addr *addr);
+--------
+
+If an abstract address needs to presented to the user it should be
+done in a human readable format which differs depending on the address
+family. The function `nl_addr2str()` takes care of this by calling the
+appropriate conversion functions internaly. It expects a `buf` of
+length `size` to write the character string into and returns a pointer
+to `buf` for easy `printf()` usage.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+char *nl_addr2str(struct nl_addr *addr, char *buf, size_t size);
+--------
+
+If the address family is unknown, the address data will be printed in
+hexadecimal format `AA:BB:CC:DD:...`
+
+Often the only way to figure out the address family is by looking at
+the length of the address. The function `nl_addr_guess_family()` does
+just this and returns the address family guessed based on the address
+size.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+int nl_addr_guess_family(struct nl_addr *addr);
+--------
+
+Before allocating an address you may want to check if the character
+string actually represents a valid address of the address family you
+are expecting. The function `nl_addr_valid()` can be used for that, it
+returns 1 if the supplised `addr` is a valid address in the context of
+`family`.  See `inet_pton(3)`, `dnet_pton(3)` for more information on
+valid adddress formats.
+
+[source,c]
+--------
+#include <netlink/addr.h>
+
+int nl_addr_valid(char *addr, int family);
+--------
+
+=== Abstract Data
+
+The abstract data type is a trivial datatype with the primary purpose
+to simplify usage of netlink attributes of arbitary length.
+
+[[core_data_alloc]]
+.Allocation of a Data Object
+The function `nl_data_alloc()` alloctes a new abstract data object and
+fill it with the provided data. `nl_data_alloc_attr()` does the same
+but bases the data on the payload of a netlink attribute. New data
+objects can also be allocated by cloning existing ones by using
+`nl_data_clone()`.
+
+[source,c]
+--------
+struct nl_data *nl_data_alloc(void *buf, size_t size);
+struct nl_data *nl_data_alloc_attr(struct nlattr *attr);
+struct nl_data *nl_data_clone(struct nl_data *data);
+void nl_data_free(struct nl_data *data);
+--------
+
+.Access to Data
+
+The function `nl_data_get()` returns a pointer to the data, the size
+of data is returned by `nl_data_get_size()`.
+
+[source,c]
+--------
+void *nl_data_get(struct nl_data *data);
+size_t nl_data_get_size(struct nl_data *data);
+--------
+
+.Data Helpers
+
+The function nl_data_append() reallocates the internal data buffers
+and appends the specified `buf` to the existing data.
+
+[source,c]
+--------
+int nl_data_append(struct nl_data *data, void *buf, size_t size);
+--------
+
+CAUTION: Any call to `nl_data_append()` invalidates all pointers
+         returned by `nl_data_get()` of the same data object.
+
+[source,c]
+--------
+int nl_data_cmp(struct nl_data *data, struct nl_data *data);
+--------

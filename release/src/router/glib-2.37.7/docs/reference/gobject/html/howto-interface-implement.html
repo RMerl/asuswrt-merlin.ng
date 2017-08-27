@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Implementing interfaces</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-interface.html" title="How to define and implement interfaces">
+<link rel="prev" href="howto-interface.html" title="How to define and implement interfaces">
+<link rel="next" href="howto-interface-prerequisite.html" title="Interface definition prerequisites">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-interface.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-interface-prerequisite.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-implement"></a>Implementing interfaces</h2></div></div></div>
+<p>
+      Once the interface is defined, implementing it is rather trivial.
+    </p>
+<p>
+      The first step is to define a normal GObject class, like:
+</p>
+<pre class="programlisting">
+#ifndef __MAMAN_BAZ_H__
+#define __MAMAN_BAZ_H__
+
+#include &lt;glib-object.h&gt;
+
+#define MAMAN_TYPE_BAZ             (maman_baz_get_type ())
+#define MAMAN_BAZ(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAMAN_TYPE_BAZ, Mamanbaz))
+#define MAMAN_IS_BAZ(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAMAN_TYPE_BAZ))
+#define MAMAN_BAZ_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MAMAN_TYPE_BAZ, MamanbazClass))
+#define MAMAN_IS_BAZ_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MAMAN_TYPE_BAZ))
+#define MAMAN_BAZ_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MAMAN_TYPE_BAZ, MamanbazClass))
+
+
+typedef struct _MamanBaz        MamanBaz;
+typedef struct _MamanBazClass   MamanBazClass;
+
+struct _MamanBaz
+{
+  GObject parent_instance;
+
+  gint instance_member;
+};
+
+struct _MamanBazClass
+{
+  GObjectClass parent_class;
+};
+
+GType maman_baz_get_type (void);
+
+#endif /* __MAMAN_BAZ_H__ */
+</pre>
+<p>
+      
+      There is clearly nothing specifically weird or scary about this header:
+      it does not define any weird API or derive from a weird type.
+    </p>
+<p>
+      The second step is to implement <span class="type">MamanBaz</span> by defining
+      its GType. Instead of using
+      <code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-TYPE:CAPS" title="G_DEFINE_TYPE()">G_DEFINE_TYPE</a></code>
+      we use
+      <code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-TYPE-WITH-CODE:CAPS" title="G_DEFINE_TYPE_WITH_CODE()">G_DEFINE_TYPE_WITH_CODE</a></code>
+      and the
+      <code class="function"><a class="link" href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS" title="G_IMPLEMENT_INTERFACE()">G_IMPLEMENT_INTERFACE</a></code>
+      macros.
+</p>
+<pre class="programlisting">
+static void maman_ibaz_interface_init (MamanIbazInterface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MamanBar, maman_bar, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (MAMAN_TYPE_IBAZ,
+                                                maman_ibaz_interface_init))
+</pre>
+<p>
+      This definition is very much like all the similar functions we looked
+      at previously. The only interface-specific code present here is the call to
+      <code class="function"><a class="link" href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS" title="G_IMPLEMENT_INTERFACE()">G_IMPLEMENT_INTERFACE</a></code>.
+    </p>
+<div class="note">
+<h3 class="title">Note</h3>
+<p>Classes can implement multiple interfaces by using multiple calls to
+    <code class="function"><a class="link" href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS" title="G_IMPLEMENT_INTERFACE()">G_IMPLEMENT_INTERFACE</a></code>
+    inside the call to
+    <code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-TYPE-WITH-CODE:CAPS" title="G_DEFINE_TYPE_WITH_CODE()">G_DEFINE_TYPE_WITH_CODE</a></code>
+    </p>
+</div>
+<p>
+      <code class="function">maman_baz_interface_init</code>, the interface
+      initialization function: inside it every virtual method of the interface
+      must be assigned to its implementation:
+</p>
+<pre class="programlisting">
+static void
+maman_baz_do_action (MamanBaz *self)
+{
+  g_print ("Baz implementation of Ibaz interface Action: 0x%x.\n",
+           self-&gt;instance_member);
+}
+
+static void
+maman_baz_do_something (MamanBaz *self)
+{
+  g_print ("Baz implementation of Ibaz interface Something: 0x%x.\n",
+           self-&gt;instance_member);
+}
+
+static void
+maman_ibaz_interface_init (MamanIbazInterface *iface)
+{
+  iface-&gt;do_action = maman_baz_do_action;
+  iface-&gt;do_something = maman_baz_do_something;
+}
+
+static void
+maman_baz_init (MamanBaz *self)
+{
+  MamanBaz *self = MAMAN_BAZ (instance);
+  self-&gt;instance_member = 0xdeadbeaf;
+}
+</pre>
+<p>
+    </p>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

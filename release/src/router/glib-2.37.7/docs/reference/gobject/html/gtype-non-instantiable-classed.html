@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Non-instantiable classed types: interfaces</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gtype.html" title="The GLib Dynamic Type System">
+<link rel="prev" href="gtype-instantiable-classed.html" title="Instantiable classed types: objects">
+<link rel="next" href="chapter-gobject.html" title="The GObject base class">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gtype.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gtype-instantiable-classed.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="chapter-gobject.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gtype-non-instantiable-classed"></a>Non-instantiable classed types: interfaces</h2></div></div></div>
+<p>
+          GType's interfaces are very similar to Java's interfaces. They allow
+          to describe a common API that several classes will adhere to.
+          Imagine the play, pause and stop buttons on hi-fi equipment - those can
+          be seen as a playback interface. Once you know what they do, you can
+          control your CD player, MP3 player or anything that uses these symbols.
+          To declare an interface you have to register a non-instantiable
+          classed type which derives from 
+          <a class="link" href="gobject-Type-Information.html#GTypeInterface" title="struct GTypeInterface"><span class="type">GTypeInterface</span></a>. The following piece of code declares such an interface.
+</p>
+<pre class="programlisting">
+#define MAMAN_TYPE_IBAZ                (maman_ibaz_get_type ())
+#define MAMAN_IBAZ(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAMAN_TYPE_IBAZ, MamanIbaz))
+#define MAMAN_IS_IBAZ(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAMAN_TYPE_IBAZ))
+#define MAMAN_IBAZ_GET_INTERFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE ((inst), MAMAN_TYPE_IBAZ, MamanIbazInterface))
+
+typedef struct _MamanIbaz MamanIbaz; /* dummy object */
+typedef struct _MamanIbazInterface MamanIbazInterface;
+
+struct _MamanIbazInterface {
+  GTypeInterface parent;
+
+  void (*do_action) (MamanIbaz *self);
+};
+
+GType maman_ibaz_get_type (void);
+
+void maman_ibaz_do_action (MamanIbaz *self);
+</pre>
+<p>
+          The interface function, <code class="function">maman_ibaz_do_action</code> is implemented
+          in a pretty simple way:
+</p>
+<pre class="programlisting">
+void maman_ibaz_do_action (MamanIbaz *self)
+{
+  MAMAN_IBAZ_GET_INTERFACE (self)-&gt;do_action (self);
+}
+</pre>
+<p>
+         <code class="function">maman_ibaz_get_type</code> registers a type named <span class="emphasis"><em>MamanIbaz</em></span>
+         which inherits from G_TYPE_INTERFACE. All interfaces must be children of G_TYPE_INTERFACE in the 
+         inheritance tree.
+        </p>
+<p>
+          An interface is defined by only one structure which must contain as first member
+          a <a class="link" href="gobject-Type-Information.html#GTypeInterface" title="struct GTypeInterface"><span class="type">GTypeInterface</span></a> structure. The interface structure is expected to
+          contain the function pointers of the interface methods. It is good style to 
+          define helper functions for each of the interface methods which simply call
+          the interface' method directly: <code class="function">maman_ibaz_do_action</code>
+          is one of these.
+        </p>
+<p>
+          Once an interface type is registered, you must register implementations for these
+          interfaces. The function named <code class="function">maman_baz_get_type</code> registers
+          a new GType named MamanBaz which inherits from <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> and which
+          implements the interface <span class="type">MamanIbaz</span>.
+</p>
+<pre class="programlisting">
+static void maman_baz_do_action (MamanIbaz *self)
+{
+  g_print ("Baz implementation of Ibaz interface Action.\n");
+}
+
+static void
+baz_interface_init (gpointer         g_iface,
+                    gpointer         iface_data)
+{
+  MamanIbazInterface *iface = (MamanIbazInterface *)g_iface;
+  iface-&gt;do_action = maman_baz_do_action;
+}
+
+GType 
+maman_baz_get_type (void)
+{
+  static GType type = 0;
+  if (type == 0) {
+    const GTypeInfo info = {
+      sizeof (MamanBazClass),
+      NULL,   /* base_init */
+      NULL,   /* base_finalize */
+      NULL,   /* class_init */
+      NULL,   /* class_finalize */
+      NULL,   /* class_data */
+      sizeof (MamanBaz),
+      0,      /* n_preallocs */
+      NULL    /* instance_init */
+    };
+    const GInterfaceInfo ibaz_info = {
+      (GInterfaceInitFunc) baz_interface_init,    /* interface_init */
+      NULL,               /* interface_finalize */
+      NULL          /* interface_data */
+    };
+    type = g_type_register_static (G_TYPE_OBJECT,
+                                   "MamanBazType",
+                                   &amp;info, 0);
+    g_type_add_interface_static (type,
+                                 MAMAN_TYPE_IBAZ,
+                                 &amp;ibaz_info);
+  }
+  return type;
+}
+</pre>
+<p>
+        </p>
+<p>
+          <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-add-interface-static" title="g_type_add_interface_static ()">g_type_add_interface_static</a></code> records in the type system that
+          a given type implements also <span class="type">FooInterface</span> 
+          (<code class="function">foo_interface_get_type</code> returns the type of 
+          <span class="type">FooInterface</span>).
+                The <a class="link" href="gobject-Type-Information.html#GInterfaceInfo" title="struct GInterfaceInfo"><span class="type">GInterfaceInfo</span></a> structure holds
+          information about the implementation of the interface:
+</p>
+<pre class="programlisting">
+struct _GInterfaceInfo
+{
+  GInterfaceInitFunc     interface_init;
+  GInterfaceFinalizeFunc interface_finalize;
+  gpointer               interface_data;
+};
+</pre>
+<p>
+        </p>
+<p>
+        If you have no special requirements you can use the
+        <a class="link" href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS" title="G_IMPLEMENT_INTERFACE()">G_IMPLEMENT_INTERFACE</a> macro
+        to implement an interface:
+</p>
+<pre class="programlisting">
+static void
+maman_baz_do_action (MamanIbaz *self)
+{
+  g_print ("Baz implementation of Ibaz interface Action.\n");
+}
+
+static void
+maman_ibaz_interface_init (MamanIbazInterface *iface)
+{
+  iface-&gt;do_action = maman_baz_do_action;
+}
+
+G_DEFINE_TYPE_WITH_CODE (MamanBaz, maman_baz, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (MAMAN_TYPE_IBAZ,
+                                                maman_ibaz_interface_init));
+</pre>
+<p>
+        </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gtype-non-instantiable-classed-init"></a>Interface Initialization</h3></div></div></div>
+<p>
+            When an instantiable classed type which implements an interface
+            (either directly or by inheriting an implementation from a superclass)
+            is created for the first time, its class structure is initialized
+            following the process described in <a class="xref" href="gtype-instantiable-classed.html" title="Instantiable classed types: objects">the section called “Instantiable classed types: objects”</a>.
+            After that, the interface implementations associated with
+            the type are initialized.
+          </p>
+<p>
+            First a memory buffer is allocated to hold the interface structure. The parent's
+            interface structure is then copied over to the new interface structure (the parent
+            interface is already initialized at that point). If there is no parent interface,
+            the interface structure is initialized with zeros. The g_type and the g_instance_type
+            fields are then initialized: g_type is set to the type of the most-derived interface
+            and g_instance_type is set to the type of the most derived type which implements 
+            this interface.
+          </p>
+<p>
+            The interface's <code class="function">base_init</code> function is called,
+            and then the interface's <code class="function">default_init</code> is invoked.
+            Finally if the type has registered an implementation of the interface,
+            the implementation's <code class="function">interface_init</code>
+            function is invoked. If there are multiple implementations of an
+            interface the <code class="function">base_init</code> and
+            <code class="function">interface_init</code> functions will be invoked once
+            for each implementation initialized.
+          </p>
+<p>
+            It is thus recommended to use a <code class="function">default_init</code> function to
+            initialize an interface. This function is called only once for the interface no
+            matter how many implementations there are. The
+            <code class="function">default_init</code> function is declared by
+            <a class="link" href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS" title="G_DEFINE_INTERFACE()">G_DEFINE_INTERFACE</a>
+            which can be used to define the interface:
+</p>
+<pre class="programlisting">
+G_DEFINE_INTERFACE (MamanIbaz, maman_ibaz, G_TYPE_OBJECT);
+
+static void
+maman_ibaz_default_init (MamanIbazInterface *iface)
+{
+  /* add properties and signals here, will only called once */
+}
+</pre>
+<p>
+          </p>
+<p>
+            Or you can do that yourself in a GType function for your interface:
+</p>
+<pre class="programlisting">
+GType
+maman_ibaz_get_type (void)
+{
+  static volatile gsize type_id = 0;
+  if (g_once_init_enter (&amp;type_id)) {
+    const GTypeInfo info = {
+      sizeof (MamanIbazInterface),
+      NULL,   /* base_init */
+      NULL,   /* base_finalize */
+      maman_ibaz_default_init, /* class_init */
+      NULL,   /* class_finalize */
+      NULL,   /* class_data */
+      0,      /* instance_size */
+      0,      /* n_preallocs */
+      NULL    /* instance_init */
+    };
+    GType type = g_type_register_static (G_TYPE_INTERFACE,
+                                        "MamanIbaz",
+                                        &amp;info, 0);
+    g_once_init_leave (&amp;type_id, type);
+  }
+  return type_id;
+}
+
+static void
+maman_ibaz_default_init (MamanIbazInterface *iface)
+{
+  /* add properties and signals here, will only called once */
+}
+</pre>
+<p>
+          </p>
+<p>
+          If you have found the stuff about interface hairy, you are right: it is hairy but
+          there is not much I can do about it. What I can do is summarize what you need to know
+          about interfaces:          
+        </p>
+<p>
+          </p>
+<div class="table">
+<a name="ginterface-init-table"></a><p class="title"><b>Table 2. Interface Initialization</b></p>
+<div class="table-contents"><table summary="Interface Initialization" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function Invoked</th>
+<th align="left">Function's parameters</th>
+<th>Remark</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>
+                    for <span class="emphasis"><em>any</em></span> type implementing interface
+                   </td>
+<td align="left">interface's <code class="function">base_init</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>Rarely necessary to use this. Called once per instantiated classed type implementing the interface.</td>
+</tr>
+<tr>
+<td align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>
+                    for <span class="emphasis"><em>each</em></span> type implementing interface
+                   </td>
+<td align="left">interface's <code class="function">default_init</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>Register interface's signals, properties, etc. here. Will be called once.</td>
+</tr>
+<tr>
+<td align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>
+                    for <span class="emphasis"><em>any</em></span> type implementing interface
+                   </td>
+<td align="left">implementation's <code class="function">interface_init</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>
+                    Initialize interface implementation. Called for each class that that
+                    implements the interface. Initialize the interface method pointers
+                    in the interface structure to the implementing class's implementation.
+                  </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+          It is highly unlikely (i.e. I do not know of <span class="emphasis"><em>anyone</em></span> who actually 
+          used it) you will ever need other more fancy things such as the ones described in the
+          following section (<a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-dest" title="Interface Destruction">the section called “Interface Destruction”</a>).
+        </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gtype-non-instantiable-classed-dest"></a>Interface Destruction</h3></div></div></div>
+<p>
+            When the last instance of an instantiable type which registered 
+            an interface implementation is destroyed, the interface's 
+            implementations associated to the type are destroyed.
+          </p>
+<p>
+            To destroy an interface implementation, GType first calls the 
+            implementation's <code class="function">interface_finalize</code> function 
+            and then the interface's most-derived 
+            <code class="function">base_finalize</code> function.
+          </p>
+<p>
+            Again, it is important to understand, as in 
+            <a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-init" title="Interface Initialization">the section called “Interface Initialization”</a>,
+              that both <code class="function">interface_finalize</code> and <code class="function">base_finalize</code>
+              are invoked exactly once for the destruction of each implementation of an interface. Thus,
+              if you were to use one of these functions, you would need to use a static integer variable
+              which would hold the number of instances of implementations of an interface such that
+              the interface's class is destroyed only once (when the integer variable reaches zero).
+          </p>
+<p>
+          The above process can be summarized as follows:
+          </p>
+<div class="table">
+<a name="ginterface-fini-table"></a><p class="title"><b>Table 3. Interface Finalization</b></p>
+<div class="table-contents"><table summary="Interface Finalization" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function Invoked</th>
+<th align="left">Function's parameters</th>
+</tr></thead>
+<tbody>
+<tr>
+<td rowspan="2" align="left">Last call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> for type
+                    implementing interface
+                   </td>
+<td align="left">interface' interface_finalize function</td>
+<td align="left">On interface' vtable</td>
+</tr>
+<tr>
+<td align="left">interface' base_finalize function</td>
+<td align="left">On interface' vtable</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+        </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

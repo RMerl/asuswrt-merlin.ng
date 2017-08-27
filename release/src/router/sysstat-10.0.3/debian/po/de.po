@@ -1,0 +1,91 @@
+# translation of sysstat_8.1.7-2_de.po to German
+#
+# Erik Schanze <eriks@debian.org>, 2004 - 2009.
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat_8.1.7-2_de\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-16 22:45+0100\n"
+"Last-Translator: Erik Schanze <eriks@debian.org>\n"
+"Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"org>\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Daten-Statistik-Dateien im alten Format entfernen?"
+
+#
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Das Format der täglichen Daten-Statistik-Dateien wurde in der Version "
+"${s_version} von Sysstat geändert und ist zum vorherigen nicht kompatibel."
+
+#
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Falls Sie zustimmen, werden alle Daten-Dateien im Verzeichnis /var/log/"
+"sysstat/ gelöscht."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Falls Sie dieser Option nicht zustimmen, funktioniert der Befehl sar(1) "
+"nicht richtig bis die Dateien gelöscht werden."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Einen Cronjob für Sysstat einrichten?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Falls Sie zustimmen, wird Sysstat Systemaktivitäten überwachen und die Daten "
+"in Protokolldateien im Verzeichnis /var/log/sysstat/ ablegen."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Mit diesen Daten kann der Befehl sar(1) ganztägige Systemstatistiken "
+"anzeigen."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Falls Sie nicht zustimmen, kann der Befehl sar(1) nur die aktuellen "
+"Statistiken anzeigen."

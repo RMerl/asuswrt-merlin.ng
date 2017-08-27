@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xml>
+	<disk_flag><% nvram_get("disk_format_flag"); %></disk_flag>
+	<disk_log><% get_disk_format_log(); %></disk_log>
+</xml>

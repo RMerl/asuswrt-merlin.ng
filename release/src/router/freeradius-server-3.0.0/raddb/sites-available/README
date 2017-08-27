@@ -1,0 +1,335 @@
+1.  Virtual Servers.
+
+  FreeRADIUS 2.0 supports virtual servers.  This is probably the
+single largest change that is NOT backwards compatible with 1.x.
+
+  The virtual servers do NOT have to be set up with the
+"sites-available" and "sites-enabled" directories.  You can still have
+one "radiusd.conf" file, and put the server configuration there:
+
+	...
+	server {
+		authorize {
+			...
+		}
+		authenticate {
+			...
+		}
+		...
+	}
+	...
+
+  The power of virtual servers lies in their ability to separate
+policies.  A policy can be placed into a virtual server, where it is
+guaranteed to affect only the requests that are passed through that
+virtual server.  In 1.x, the policies were global, and it sometimes
+took much effort to write a policy so that it only applied in certain
+limited situations.
+
+
+2.  What do we mean by "virtual server"?
+
+
+  A virtual server is a (nearly complete) RADIUS server, just like a
+configuration for FreeRADIUS 1.x.  However, FreeRADIUS can now run
+multiple virtual servers at the same time.  The virtual servers can
+even proxy requests to each other!
+
+  The simplest way to create a virtual server is to take the all of
+the request processing sections from radius.conf, ("authorize" ,
+"authenticate", etc.) and wrap them in a "server {}" block, as above.
+
+  You can create another virtual server by:
+
+    1) defining a new "server foo {...}" section in radiusd.conf
+    2) Putting the normal "authorize", etc. sections inside of it
+    3) Adding a "listen" section *inside* of the "server" section.
+
+  e.g.
+
+	...
+	server foo {
+		listen {
+			ipaddr = 127.0.0.1
+			port = 2000
+			type = auth
+		}
+
+		authorize {
+			update control {
+				Cleartext-Password := "bob"
+			}
+			pap
+		}
+
+		authenticate {
+			pap
+		}
+	}
+	...
+
+  With that text added to "radiusd.conf", run the server in debugging
+mode (radiusd -X), and in another terminal window, type:
+
+$ radtest bob bob localhost:2000 0 testing123
+
+  You should see the server return an Access-Accept.
+
+
+3. Capabilities and limitations
+
+
+  The only sub-sections that can appear in a virtual server section
+are:
+
+	listen
+	client
+	authorize
+	authenticate
+	post-auth
+	pre-proxy
+	post-proxy
+	preacct
+	accounting
+	session
+
+  All other configuration parameters (modules, etc.) are global.
+
+  Inside of a virtual server, the authorize, etc. sections have their
+normal meaning, and can contain anything that an authorize section
+could contain in 1.x.
+
+  When a "listen" section is inside of a virtual server definition, it
+means that all requests sent to that IP/port will be processed through
+the virtual server.  There cannot be two "listen" sections with the
+same IP address and port number.
+
+  When a "client" section is inside of a virtual server definition, it
+means that that client is known only to the "listen" sections that are
+also inside of that virtual server.  Not only is this client
+definition available only to this virtual server, but the details of
+the client configuration is also available only to this virtual
+server.
+
+  i.e. Two virtual servers can listen on different IP address and
+ports, but both can have a client with IP address 127.0.0.1.  The
+shared secret for that client can be different for each virtual
+server.
+
+
+4. More complex "listen" capabilities
+
+  The "listen" sections have a few additional configuration items that
+were not in 1.x, and were not mentioned above.  These configuration
+items enable almost any mapping of IP / port to clients to virtual
+servers.
+
+  The configuration items are:
+
+	virtual_server = <name>
+
+		If set, all requests sent to this IP / port are processed
+		through the named virtual server.
+
+		This directive can be used only for "listen" sections
+		that are global.  i.e. It CANNOT be used if the
+		"listen" section is inside of a virtual server.
+
+	clients = <name>
+
+		If set, the "listen" section looks for a "clients" section:
+
+			clients <name> {
+				...
+			}
+
+		It looks inside of that named "clients" section for
+		"client" subsections, at least one of which must
+		exist.  Each client in that section is added to the
+		list of known clients for this IP / port.  No other
+		clients are known.
+
+		If it is set, it over-rides the list of clients (if
+		any) in the same virtual server.  Note that the
+		clients are NOT additive!
+
+		If it is not set, then the clients from the current
+		virtual server (if any) are used.  If there are no
+		clients in this virtual server, then the global
+		clients are used.
+
+		i.e. The most specific directive is used:
+			* configuration in this "listen" section
+			* clients in the same virtual server
+			* global clients
+
+		The directives are also *exclusive*, not *additive*.
+		If you have one client in a virtual server, and
+		another client referenced from a "listen" section,
+		then that "listen" section will ONLY use the second
+		client.  It will NOT use both clients.
+
+
+5. More complex "client" capabilities
+
+  The "client" sections have a few additional configuration items that
+were not in 1.x, and were not mentioned above.  These configuration
+items enable almost any mapping of IP / port to clients to virtual
+servers.
+
+  The configuration items are:
+
+	virtual_server = <name>
+
+		If set, all requests from this client are processed
+		through the named virtual server.
+
+		This directive can be used only for "client" sections
+		that are global.  i.e. It CANNOT be used if the
+		"client" section is inside of a virtual server.
+
+  If the "listen" section has a "server" entry, and a matching
+client is found ALSO with a "server" entry, then the clients server is
+used for that request.
+
+
+6. Worked examples
+
+
+  Listening on one socket, and mapping requests from two clients to
+two different servers.
+
+	listen {
+		...
+	}
+	client one {
+		...
+		virtual_server = server_one
+	}
+	client two {
+		...
+		virtual_server = server_two
+	}
+	server server_one {
+		authorize {
+			...
+		}
+		...
+	}
+	server server_two {
+		authorize {
+			...
+		}
+		...
+	}
+
+  This could also be done as:
+
+
+	listen {
+		...
+		virtual_server = server_one
+	}
+	client one {
+		...
+	}
+	client two {
+		...
+		virtual_server = server_two
+	}
+	server server_one {
+		authorize {
+			...
+		}
+		...
+	}
+	server server_two {
+		authorize {
+			...
+		}
+		...
+	}
+
+  In this case, the default server for the socket is "server_one", so
+there is no need to set that in the client "one" configuration.  The
+"server_two" configuration for client "two" over-rides the default
+setting for the socket.
+
+  Note that the following configuration will NOT work:
+
+	listen {
+		...
+		virtual_server = server_one
+	}
+	client one {
+		...
+	}
+	server server_one {
+		authorize {
+			...
+		}
+		...
+	}
+	server server_two {
+		client two {
+			...
+		}
+		authorize {
+			...
+		}
+		...
+	}
+
+  In this example, client "two" is hidden inside of the virtual
+server, where the "listen" section cannot find it.
+
+
+7. Outlined examples
+
+  This section outlines a number of examples, with alternatives.
+
+  One server, multiple sockets
+	- multiple "listen" sections in a "server" section
+
+  one server per client
+	- define multiple servers
+	- have a global "listen" section
+	- have multiple global "clients", each with "virtual_server = X"
+
+  two servers, each with their own sockets
+	- define multiple servers
+	- put "client" sections into each "server"
+	- put a "listen" section into each "server"
+
+	Each server can list the same client IP, and the secret
+	can be different
+
+  two sockets, sharing a list of clients, but pointing to different servers
+	- define global "listen" sections
+	- in each, set "virtual_server = X"
+	- in each, set "clients = Y"
+	- define "clients Y" section, containing multiple clients.
+
+	This also means that you can have a third socket, which
+	doesn't share any of these clients.
+
+
+8.  How to decide what to do
+
+
+  If you want *completely* separate policies for a socket or a client,
+then create a separate virtual server.  Then, map the request to that
+server by setting configuration entries in a "listen" section or in a
+"client" section.
+
+  Start off with the common cases first.  If most of the clients
+and/or sockets get a particular policy, make that policy the default.
+Configure it without paying attention to the sockets or clients you
+want to add later, and without adding a second virtual server.  Once
+it works, then add the second virtual server.
+
+  If you want to re-use the previously defined sockets with the second
+virtual server, then you will need one or more global "client"
+sections.  Those clients will contain a "virtual_server = ..." entry
+that will direct requests from those clients to the appropriate
+virtual server.

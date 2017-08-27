@@ -1,0 +1,2 @@
+charon.plugins.ipseckey.enable = no
+	Enable fetching of IPSECKEY RRs via DNS.

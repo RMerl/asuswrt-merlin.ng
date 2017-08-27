@@ -1,0 +1,142 @@
+/*
+ * Copyright (c) 1993 Branko Lankester <branko@hacktic.nl>
+ * Copyright (c) 1993, 1994, 1995 Rick Sladkey <jrs@world.std.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *	$Id$
+ */
+
+#include "dummy.h"
+
+/* primary syscalls */
+
+int sys_setup(), sys_exit(), sys_fork(), sys_read(), sys_write();
+int sys_open(), sys_close(), sys_waitpid(), sys_creat(), sys_link();
+int sys_unlink(), sys_execve(), sys_chdir(), sys_time(), sys_mknod();
+int sys_chmod(), sys_chown(), sys_break(), sys_oldstat();
+int sys_lseek(), sys_getpid(), sys_mount(), sys_umount();
+int sys_setuid(), sys_getuid(), sys_stime(), sys_ptrace();
+int sys_alarm(), sys_oldfstat(), sys_pause(), sys_utime();
+int sys_stty(), sys_gtty(), sys_access(), sys_nice(), sys_ftime();
+int sys_sync(), sys_kill(), sys_rename(), sys_mkdir(), sys_rmdir();
+int sys_dup(), sys_pipe(), sys_times(), sys_prof(), sys_brk();
+int sys_setgid(), sys_getgid(), sys_signal(), sys_geteuid();
+int sys_getegid(), sys_acct(), sys_phys(), sys_lock(), sys_ioctl();
+int sys_fcntl(), sys_mpx(), sys_setpgid(), sys_ulimit();
+int sys_olduname(), sys_umask(), sys_chroot(), sys_ustat();
+int sys_dup2(), sys_getppid(), sys_getpgrp(), sys_setsid();
+int sys_sigaction(), sys_siggetmask(), sys_sigsetmask();
+int sys_setreuid(), sys_setregid(), sys_sigsuspend();
+int sys_sigpending(), sys_sethostname(), sys_setrlimit();
+int sys_getrlimit(), sys_getrusage(), sys_gettimeofday();
+int sys_settimeofday(), sys_getgroups(), sys_setgroups();
+int sys_oldselect(), sys_symlink(), sys_oldlstat(), sys_readlink();
+int sys_uselib(), sys_swapon(), sys_reboot(), sys_readdir();
+int sys_mmap(), sys_munmap(), sys_truncate(), sys_ftruncate();
+int sys_fchmod(), sys_fchown(), sys_getpriority();
+int sys_setpriority(), sys_profil(), sys_statfs(), sys_fstatfs();
+int sys_ioperm(), sys_socketcall(), sys_syslog(), sys_setitimer();
+int sys_getitimer(), sys_stat(), sys_lstat(), sys_fstat();
+int sys_uname(), sys_iopl(), sys_vhangup(), sys_idle(), sys_vm86();
+int sys_wait4(), sys_swapoff(), sys_ipc(), sys_sigreturn();
+int sys_fsync(), sys_clone(), sys_setdomainname(), sys_sysinfo();
+int sys_modify_ldt(), sys_adjtimex(), sys_mprotect();
+int sys_sigprocmask(), sys_create_module(), sys_init_module();
+int sys_delete_module(), sys_get_kernel_syms(), sys_quotactl();
+int sys_getpgid(), sys_fchdir(), sys_bdflush();
+int sys_sysfs(), sys_personality(), sys_afs_syscall();
+int sys_setfsuid(), sys_setfsgid(), sys_llseek();
+int sys_getdents(), sys_flock(), sys_msync();
+int sys_readv(), sys_writev(), sys_select();
+int sys_getsid(), sys_fdatasync(), sys_sysctl();
+int sys_mlock(), sys_munlock(), sys_mlockall(), sys_munlockall();
+int sys_sched_setparam(), sys_sched_getparam();
+int sys_sched_setscheduler(), sys_sched_getscheduler(), sys_sched_yield();
+int sys_sched_get_priority_max(), sys_sched_get_priority_min();
+int sys_sched_rr_get_interval(), sys_nanosleep(), sys_mremap();
+int sys_sendmsg(), sys_recvmsg();
+
+/* sys_socketcall subcalls */
+
+int sys_socket(), sys_bind(), sys_connect(), sys_listen();
+int sys_accept(), sys_getsockname(), sys_getpeername(), sys_socketpair();
+int sys_send(), sys_recv(), sys_sendto(), sys_recvfrom();
+int sys_shutdown(), sys_setsockopt(), sys_getsockopt();
+
+#ifndef ALPHA
+#define SYS_socket_subcall	180
+#define SYS_socket		(SYS_socket_subcall + 1)
+#define SYS_bind		(SYS_socket_subcall + 2)
+#define SYS_connect		(SYS_socket_subcall + 3)
+#define SYS_listen		(SYS_socket_subcall + 4)
+#define SYS_accept		(SYS_socket_subcall + 5)
+#define SYS_getsockname		(SYS_socket_subcall + 6)
+#define SYS_getpeername		(SYS_socket_subcall + 7)
+#define SYS_socketpair		(SYS_socket_subcall + 8)
+#define SYS_send		(SYS_socket_subcall + 9)
+#define SYS_recv		(SYS_socket_subcall + 10)
+#define SYS_sendto		(SYS_socket_subcall + 11)
+#define SYS_recvfrom		(SYS_socket_subcall + 12)
+#define SYS_shutdown		(SYS_socket_subcall + 13)
+#define SYS_setsockopt		(SYS_socket_subcall + 14)
+#define SYS_getsockopt		(SYS_socket_subcall + 15)
+
+#define SYS_socket_nsubcalls	16
+#endif /* !ALPHA */
+
+/* sys_ipc subcalls */
+
+int sys_semget(), sys_semctl();
+int sys_msgsnd(), sys_msgrcv(), sys_msgget(), sys_msgctl();
+int sys_shmat(), sys_shmdt(), sys_shmget(), sys_shmctl();
+
+#ifndef ALPHA
+#define SYS_ipc_subcall		200
+#define SYS_semop		(SYS_ipc_subcall + 1)
+#define SYS_semget		(SYS_ipc_subcall + 2)
+#define SYS_semctl		(SYS_ipc_subcall + 3)
+#define SYS_msgsnd		(SYS_ipc_subcall + 11)
+#define SYS_msgrcv		(SYS_ipc_subcall + 12)
+#define SYS_msgget		(SYS_ipc_subcall + 13)
+#define SYS_msgctl		(SYS_ipc_subcall + 14)
+#define SYS_shmat		(SYS_ipc_subcall + 21)
+#define SYS_shmdt		(SYS_ipc_subcall + 22)
+#define SYS_shmget		(SYS_ipc_subcall + 23)
+#define SYS_shmctl		(SYS_ipc_subcall + 24)
+
+#define SYS_ipc_nsubcalls	25
+#endif /* ALPHA */
+
+#ifdef ALPHA
+int osf_statfs(), osf_fstatfs(), sys_getpagesize(), sys_madvise();
+int sys_setpgrp(), sys_gethostname(), sys_getdtablesize(), sys_utimes();
+#endif
+
+int sys__llseek(), sys__newselect(), sys__sysctl(), sys_klog();
+int sys_prev_fstat(), sys_prev_lstat(), sys_prev_mknod(), sys_prev_stat();
+int sys_prev_ustat(), sys_syscall_flock(), sys_syscall_readv();
+int sys_syscall_writev();
+
+#include "syscall1.h"

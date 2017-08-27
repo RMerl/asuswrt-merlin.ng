@@ -1,0 +1,7 @@
+
+Answering y here disable sensors support. Sysstat commands
+will not be linked against sensors library even if this library
+is installed on your system.
+Without sensors support, some statistics related to power management
+will not be available (fan speed, device temperature, etc.)
+

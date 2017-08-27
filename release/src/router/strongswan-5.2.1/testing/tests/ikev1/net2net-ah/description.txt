@@ -1,0 +1,8 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b>
+is set up using the IKEv1 protocol.
+With <b>ah=md5,sha1</b> gateway <b>moon</b> proposes the use of an
+<b>AH proposal</b>. Gateway <b>sun</b> selects SHA1 for integrity protection
+with its <b>ah=sha1!</b> configuration.
+<p/>
+Upon the successful establishment of the AH CHILD SA, client <b>alice</b> behind
+gateway <b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b>.

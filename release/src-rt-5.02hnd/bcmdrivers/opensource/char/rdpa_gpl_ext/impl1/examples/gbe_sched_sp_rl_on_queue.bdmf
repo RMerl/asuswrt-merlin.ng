@@ -1,0 +1,75 @@
+#
+# <:copyright-BRCM:2013:DUAL/GPL:standard
+# 
+#    Copyright (c) 2013 Broadcom 
+#    All Rights Reserved
+# 
+# Unless you and Broadcom execute a separate written software license
+# agreement governing use of this software, this software is licensed
+# to you under the terms of the GNU General Public License version 2
+# (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+# with the following added to such license:
+# 
+#    As a special exception, the copyright holders of this software give
+#    you permission to link this software with independent modules, and
+#    to copy and distribute the resulting executable under terms of your
+#    choice, provided that you also meet, for each linked independent
+#    module, the terms and conditions of the license of that module.
+#    An independent module is a module which is not derived from this
+#    software.  The special exception does not apply to any modifications
+#    of the software.
+# 
+# Not withstanding the above, under no circumstances may you combine
+# this software in any way with any other Broadcom software provided
+# under a license other than the GPL, without Broadcom's express prior
+# written consent.
+# 
+# :> 
+#
+
+# RDPA test
+# - GbE mode
+# - SP_Schedule_RL_on_queue diagram
+#
+# wan_port - egress_tm0(level=group, mode=sp)
+#	egress_tm1(level=queue,mode=disable) - af=200000
+#		queue[0]={queue_id=100,drop_threshold=128}
+#	egress_tm2(level=queue,mode=disable) - af=300000
+#		queue[0]={queue_id=200,drop_threshold=128}
+#	egress_tm3(level=queue,mode=disable) - af=400000
+#		queue[0]={queue_id=300,drop_threshold=128}
+#
+#   egress_tm2.q0 dynamically reconfigured to af=350000,queue_id=201,drop_threshold=256 
+#
+
+/bdmf
+trace debug egress_tm
+new system/init_cfg=<wan_type=gbe,wan_emac=emac4>
+new port/index=wan0,cfg={emac=emac4}
+new egress_tm/dir=us,index=0,level=egress_tm,mode=sp
+new egress_tm/dir=us,index=1,level=queue,mode=disable
+new egress_tm/dir=us,index=2,level=queue,mode=disable
+new egress_tm/dir=us,index=3,level=queue,mode=disable
+conf egress_tm/dir=us,index=1 rl={af=200000},queue_cfg[0]={queue_id=100,drop_threshold=128}
+conf egress_tm/dir=us,index=2 rl={af=300000},queue_cfg[0]={queue_id=200,drop_threshold=128}
+conf egress_tm/dir=us,index=3 rl={af=400000},queue_cfg[0]={queue_id=300,drop_threshold=128}
+conf egress_tm/dir=us,index=0 subsidiary[0]={egress_tm/dir=us,index=1}
+conf egress_tm/dir=us,index=0 subsidiary[1]={egress_tm/dir=us,index=2}
+conf egress_tm/dir=us,index=0 subsidiary[2]={egress_tm/dir=us,index=3}
+
+# Attach to port. At this point egress_tm gets activated if port is enabled
+conf port/index=wan0 tm_cfg={egress_tm={egress_tm/dir=us,index=0}}
+
+#
+# At this point configuration is completed.
+# The following commands demonstrate dynamic re-configuration
+#
+
+conf egress_tm/dir=us,index=2 rl={af=350000},queue_cfg[0]={drop_threshold=256,queue_id=201}
+
+# Send packet US to queue 100
+conf cpu/index=host send_packet[{port=wan0,wan_flow=0,queue_id=100,as=skb}]=00112233445500aabbccddee0030001122334455667788
+
+
+
+/quit

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Generate a daily summary of process accounting.  Since this will probably
+# get kicked off in the morning, it would probably be better to run against
+# the previous days data.
+@SA_LIB_DIR@/sa2 -A &

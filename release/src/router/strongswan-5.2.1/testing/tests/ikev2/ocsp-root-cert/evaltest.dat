@@ -1,0 +1,10 @@
+moon:: cat /var/log/daemon.log::requesting ocsp status::YES
+moon:: cat /var/log/daemon.log::ocsp response correctly signed by::YES
+moon:: cat /var/log/daemon.log::ocsp response is valid::YES
+moon:: cat /var/log/daemon.log::certificate status is good::YES
+carol::cat /var/log/daemon.log::requesting ocsp status::YES
+carol::cat /var/log/daemon.log::ocsp response correctly signed by::YES
+carol::cat /var/log/daemon.log::ocsp response is valid::YES
+carol::cat /var/log/daemon.log::certificate status is good::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES

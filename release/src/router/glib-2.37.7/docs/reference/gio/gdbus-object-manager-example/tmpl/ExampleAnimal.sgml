@@ -1,0 +1,342 @@
+<!-- ##### SECTION Title ##### -->
+ExampleAnimal
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT ExampleAnimal ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL ExampleAnimal::handle-poke ##### -->
+<para>
+
+</para>
+
+@exampleanimal: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+@Returns: 
+
+<!-- ##### SIGNAL ExampleAnimal::jumped ##### -->
+<para>
+
+</para>
+
+@exampleanimal: the object which received the signal.
+@arg1: 
+
+<!-- ##### ARG ExampleAnimal:bar ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG ExampleAnimal:foo ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG ExampleAnimal:mood ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT ExampleAnimalIface ##### -->
+<para>
+
+</para>
+
+@parent_iface: 
+@handle_poke: 
+@get_foo: 
+@get_mood: 
+@jumped: 
+@get_bar: 
+
+<!-- ##### FUNCTION example_animal_interface_info ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_override_properties ##### -->
+<para>
+
+</para>
+
+@klass: 
+@property_id_begin: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_call_poke ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@arg_make_sad: 
+@arg_make_happy: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION example_animal_call_poke_finish ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_call_poke_sync ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@arg_make_sad: 
+@arg_make_happy: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_complete_poke ##### -->
+<para>
+
+</para>
+
+@object: 
+@invocation: 
+
+
+<!-- ##### FUNCTION example_animal_emit_jumped ##### -->
+<para>
+
+</para>
+
+@object: 
+@arg_height: 
+
+
+<!-- ##### FUNCTION example_animal_get_mood ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_get_foo ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_get_bar ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_dup_mood ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_dup_foo ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_dup_bar ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_set_mood ##### -->
+<para>
+
+</para>
+
+@object: 
+@value: 
+
+
+<!-- ##### FUNCTION example_animal_set_foo ##### -->
+<para>
+
+</para>
+
+@object: 
+@value: 
+
+
+<!-- ##### FUNCTION example_animal_set_bar ##### -->
+<para>
+
+</para>
+
+@object: 
+@value: 
+
+
+<!-- ##### STRUCT ExampleAnimalProxy ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT ExampleAnimalProxyClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION example_animal_proxy_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION example_animal_proxy_new_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_proxy_new_sync ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_proxy_new_for_bus ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION example_animal_proxy_new_for_bus_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_animal_proxy_new_for_bus_sync ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@name: 
+@object_path: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### STRUCT ExampleAnimalSkeleton ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT ExampleAnimalSkeletonClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION example_animal_skeleton_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

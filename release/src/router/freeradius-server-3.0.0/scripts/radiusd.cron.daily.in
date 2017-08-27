@@ -1,0 +1,34 @@
+#! /bin/sh
+#
+# radiusd	Cron script to rotate radiusd log files daily.
+#
+
+prefix=@prefix@
+localstatedir=@localstatedir@
+logdir=@logdir@
+
+umask 027
+cd $logdir
+
+# Take care of the standard logfiles.
+cd $logdir
+if [ -f radius.log ]
+then
+	savelog -g adm -m 640 -c 3 radius.log > /dev/null
+fi
+
+# Rotate "details" files.
+if [ ! -d radacct/. ]
+then
+	exit 0
+fi
+cd radacct
+
+for LOG in */detail
+do
+	if [ -f $LOG ]
+	then
+		savelog -g adm -m 640 -u root -c 3 $LOG >/dev/null
+	fi
+done
+

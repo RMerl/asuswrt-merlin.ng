@@ -1,0 +1,9 @@
+
+NLS stands for National Language Support.
+With NLS enabled, the sysstat utilities will behave in accordance with your
+current locale. Sysstat messages will be translated into the language specified
+by the LANG environment variable, among other.
+Read the nls/README-nls file for more information.
+So you should not disable NLS support by default.
+Note that NLS needs the GNU gettext package to work.
+

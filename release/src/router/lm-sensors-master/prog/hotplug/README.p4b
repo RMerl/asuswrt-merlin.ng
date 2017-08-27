@@ -1,0 +1,38 @@
+What is it?
+-----------
+
+It unhides the SMBus of Intel ICH southbridges hidden on Asus P4B series
+and some other Asus and non-Asus systems. It is implemented as a shell
+script for kernel 2.6.5 and later: unhide_ICH_SMBus.
+
+It works with the following chips:
+ * ICH2   (82801BA)
+ * ICH2-M (82801BAM)
+ * ICH3   (82801CA)
+ * ICH3-M (82801CAM)
+ * ICH4   (82801DB)
+ * ICH4-M (82801DBM)
+ * ICH5   (82801EB)
+
+ASUS switches off the SMBus PCI Device in the i801 ICH chip. I spoke twice
+with the German support and learned that: "We do not want the users to be
+irritated by just another PCI Device in the Win98 device manager."
+Really funny :-).
+
+Activation is normally handled by the code in drivers/pci/quirks.c in the
+kernel source. If the quirks code does not activate your SMBus, you may:
+
+ * first of all, read the paragraph "Hidden ICH SMBus" in
+   Documentation/i2c/busses/i2c-i801 in the kernel source.
+
+ * check if you have kernel version from 2.6.16 to 2.6.19
+   If so, you need to disable ACPI sleep support and recompile kernel. 
+   If you don't use suspend try below instead of recompilation.
+
+ * run as root the ./unhide_ICH_SMBus script. It will unhide the bus 
+   and load the i2c-i801 driver. Beware that you should then no longer
+   use system suspend as bad things might happen on resume.
+
+ * if above script works and you have latest kernel, you may 
+   try to fix the quirks.c, recompile and test your new kernel,
+   and then submit a patch to us. Contact us if you need assistance.

@@ -1,0 +1,32 @@
+  The files in this directory replace the old FreeRADIUS SNMP
+implementantion with a new one.
+
+net-radius-freeradius-dictionary.diff
+	Patch to enable the Perl Net::RADIUS module to read the
+	FreeRADIUS dictionary file format.
+
+dictionary.hacked
+	Dictionary used by Perl Net::RADIUS if it is NOT patched.
+	Do NOT use this dictionary with the FreeRADIUS server!
+
+freeradius-snmp.pl
+	Perl module that implements the connection between SNMP
+	and FreeRADIUS.
+
+	See raddb/sites-available/status for information on using
+	Status-Server packets to obtain internal server statistics.
+
+make sure snmpd is agentx master (snmpd.conf):
+
+     master agentx
+
+run the script (no demonizing support yet):
+
+    $ ./freeradius-snmp.pl
+
+then you can walk the tree (default oid):
+
+     $ snmpbulkwalk -On -v2c -cpublic localhost .1.3.6.1.2.1.67
+
+This code is ALPHA.  Please test, and return any fixes back to the
+mailing list, or to bugs.freeradius.org.

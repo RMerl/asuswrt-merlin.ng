@@ -1,0 +1,240 @@
+<!-- ##### SECTION Title ##### -->
+Simple XML Subset Parser
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GMarkupError ##### -->
+<para>
+
+</para>
+
+@G_MARKUP_ERROR_BAD_UTF8: 
+@G_MARKUP_ERROR_EMPTY: 
+@G_MARKUP_ERROR_PARSE: 
+@G_MARKUP_ERROR_UNKNOWN_ELEMENT: 
+@G_MARKUP_ERROR_UNKNOWN_ATTRIBUTE: 
+@G_MARKUP_ERROR_INVALID_CONTENT: 
+@G_MARKUP_ERROR_MISSING_ATTRIBUTE: 
+
+<!-- ##### MACRO G_MARKUP_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GMarkupParseFlags ##### -->
+<para>
+
+</para>
+
+@G_MARKUP_DO_NOT_USE_THIS_UNSUPPORTED_FLAG: 
+@G_MARKUP_TREAT_CDATA_AS_TEXT: 
+@G_MARKUP_PREFIX_ERROR_POSITION: 
+
+<!-- ##### STRUCT GMarkupParseContext ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GMarkupParser ##### -->
+<para>
+
+</para>
+
+@start_element: 
+@end_element: 
+@text: 
+@passthrough: 
+@error: 
+
+<!-- ##### FUNCTION g_markup_escape_text ##### -->
+<para>
+
+</para>
+
+@text: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_printf_escaped ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_vprintf_escaped ##### -->
+<para>
+
+</para>
+
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_end_parse ##### -->
+<para>
+
+</para>
+
+@context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_free ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_get_position ##### -->
+<para>
+
+</para>
+
+@context: 
+@line_number: 
+@char_number: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_get_element ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_get_element_stack ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_get_user_data ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_new ##### -->
+<para>
+
+</para>
+
+@parser: 
+@flags: 
+@user_data: 
+@user_data_dnotify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_parse ##### -->
+<para>
+
+</para>
+
+@context: 
+@text: 
+@text_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_push ##### -->
+<para>
+
+</para>
+
+@context: 
+@parser: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_pop ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_ref ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_markup_parse_context_unref ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### ENUM GMarkupCollectType ##### -->
+<para>
+
+</para>
+
+@G_MARKUP_COLLECT_INVALID: 
+@G_MARKUP_COLLECT_STRING: 
+@G_MARKUP_COLLECT_STRDUP: 
+@G_MARKUP_COLLECT_BOOLEAN: 
+@G_MARKUP_COLLECT_TRISTATE: 
+@G_MARKUP_COLLECT_OPTIONAL: 
+
+<!-- ##### FUNCTION g_markup_collect_attributes ##### -->
+<para>
+
+</para>
+
+@element_name: 
+@attribute_names: 
+@attribute_values: 
+@error: 
+@first_type: 
+@first_attr: 
+@...: 
+@Returns: 
+
+

@@ -1,0 +1,8 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+The authentication is based on RSA signatures (<b>RSASIG</b>) using X.509 certificates
+followed by extended authentication (<b>XAUTH</b>) of <b>carol</b> based on a user name
+equal to the <b>IKEv1</b> identity (<b>carol@strongswan.org</b>) and a user password
+defined and stored by <b>carol</b> in ipsec.secrets. Gateway <b>moon</b> starts
+an EAP-RADIUS connection with AAA server <b>alice</b> and uses <b>carol</b>'s 
+forwarded XAUTH user credentials for an EAP-MD5 based client authentication with
+<b>alice</b>.

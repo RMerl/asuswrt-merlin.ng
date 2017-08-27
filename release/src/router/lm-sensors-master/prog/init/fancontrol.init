@@ -1,0 +1,100 @@
+#!/bin/sh
+#
+# $Id$
+#
+# fancontrol
+#
+# chkconfig: 2345 90 01
+# description: start/stop fancontrol
+# pidfile: /var/run/fancontrol.pid
+#
+
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+export PATH
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+FANCONTROL="/usr/local/sbin/fancontrol"
+PIDFILE="/var/run/fancontrol.pid"
+
+RETVAL=0
+
+start()
+{
+   echo -n "Starting fancontrol daemon"
+   daemon $FANCONTROL -d
+   RETVAL=$?
+   [ $RETVAL -eq 0 ] && touch /var/lock/subsys/fancontrol
+   echo
+}
+
+stop()
+{
+   echo -n "Stopping fancontrol daemon"
+   killproc $FANCONTROL
+   RETVAL=$?
+   rm -f /var/lock/subsys/fancontrol
+   echo
+}
+
+status()
+{
+   if [ -f $PIDFILE ] ; then
+     pid=`cat $PIDFILE`
+   else
+     echo -n "$FANCONTROL does not appear to be running"
+     echo
+     exit
+   fi
+
+   if [ -n "$pid" ] ; then
+     ps -p $pid > /dev/null
+     if [ $? ] ; then
+       echo -n "$FANCONTROL appears to be running"
+     else
+       echo -n "$FANCONTROL does not appear to be running"
+     fi
+     echo
+   fi
+}
+
+condrestart()
+{
+   [ -e /var/lock/subsys/fancontrol ] && restart || :
+}
+
+if [ ! -x $FANCONTROL ] ; then
+   echo "Cannot run $FANCONTROL"
+   exit 0
+fi
+
+case "$1" in
+   start)
+     start
+     ;;
+
+   stop)
+     stop
+     ;;
+
+   status)
+     status
+     ;;
+
+   restart)
+     stop
+     start
+     ;;
+
+   condrestart)
+     condrestart
+     ;;
+
+   *)
+     echo "Usage: /etc/init.d/fancontrol 
+{start|stop|status|restart|condrestart}"
+     RETVAL=1
+esac
+
+exit $RETVAL

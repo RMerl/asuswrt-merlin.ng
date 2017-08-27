@@ -1,0 +1,58 @@
+------------ MAIN SERVER -------------
+o If you have a large user base and/or many authentication requests try
+  using a scalable authentication mechanism like ldap or sql.
+o Enable noatime on all the freeradius log files or better yet on the
+  freeradius log directory.
+o Always use the latest cvs version.  It will probably contain a few
+  fixes and enhancements.
+o Always try to use the least modules possible.  In particular if you
+  can avoid it do not use the detail and radwtmp (files) modules.
+  They will slow down your accounting.
+o Use the users file to only set default profiles.  Do not place any
+  users there.  Keep it as small as possible.  Always set default
+  attributes in the users file and don't fill the user entries in
+  ldap/sql with default values.  In general the ldap/sql user profiles
+  should contain user attributes only in special user cases.
+o Tune thread pool parameters to match your size requirements.
+  Set max_requests_per_server to zero to avoid server thread restarts.
+o Enlarge the timeout (10 secs) and retries (5-7) in the access servers
+  for accounting.  That way you won't lose any accounting information.
+o Use well tuned Fast Ethernet connections to minimize latency.
+o freeradius is multi threaded and i/o bound.  That means you should use
+  the latest OS kernels/patches for improved multi processor and
+  network performance.
+
+------------ LDAP MODULE -------------
+o Try to maximize caching in the ldap server.  In particular *always*
+  enable indexing of the uid attribute (equality index) and the
+  cn attribute (equality index - the cn attribute is used to search
+  for groups).  Make the ldap server entry/directory cache memory sizes
+  as large as possible.  In general try allocating as much memory as you
+  can afford to your ldap server.
+o Put default profiles in ldap.  User entries should only contain
+  non standard values in order to remain small and maximize the gains
+  of caching the user default/regular profiles.
+o Enable group caching in groups.
+
+------------ SQL MODULE --------------
+o Use the sql module in the session section instead of the radutmp module.
+  It works *much* quicker.
+o Create a multi column index for the (UserName,AcctStopTime) attributes especially
+  if you are using sql for double login detection.
+o If you are using mysql and you do a lot of accounting try using InnoDB for the radacct
+  table instead of MyISAM (this should be the default in all schemas)
+o Add AcctUniqueId in the accounting_stop query. Especially if you have a lot of access
+  servers or your NAS does not send very random Session-Ids. That way you will always have
+  one candidate row to search for, instead of all the rows that have the same AcctSessionId
+
+------------ COUNTER MODULE ----------
+o Enable noatime on the counter db files.
+o Tune the cache_size configuration directive to match your needs.
+  The cache size should be set to 2-3 * number of available nas ports.
+o Keep the database in a memory mapped file if you can help. Backup the
+  file every 10 mins to the disk and copy it to the memory mapped one
+  on server startup.
+
+------------ RADUTMP MODULE ----------
+o Enable noatime on the radutmp file
+o Don't use it

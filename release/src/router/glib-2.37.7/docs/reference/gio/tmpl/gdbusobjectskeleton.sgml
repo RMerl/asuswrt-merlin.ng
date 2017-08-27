@@ -1,0 +1,106 @@
+<!-- ##### SECTION Title ##### -->
+GDBusObjectSkeleton
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusObjectSkeleton ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusObjectSkeleton::authorize-method ##### -->
+<para>
+
+</para>
+
+@gdbusobjectskeleton: the object which received the signal.
+@arg1: 
+@arg2: 
+@Returns: 
+
+<!-- ##### ARG GDBusObjectSkeleton:g-object-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GDBusObjectSkeletonClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+@authorize_method: 
+
+<!-- ##### FUNCTION g_dbus_object_skeleton_new ##### -->
+<para>
+
+</para>
+
+@object_path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_skeleton_flush ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### FUNCTION g_dbus_object_skeleton_add_interface ##### -->
+<para>
+
+</para>
+
+@object: 
+@interface_: 
+
+
+<!-- ##### FUNCTION g_dbus_object_skeleton_remove_interface ##### -->
+<para>
+
+</para>
+
+@object: 
+@interface_: 
+
+
+<!-- ##### FUNCTION g_dbus_object_skeleton_remove_interface_by_name ##### -->
+<para>
+
+</para>
+
+@object: 
+@interface_name: 
+
+
+<!-- ##### FUNCTION g_dbus_object_skeleton_set_object_path ##### -->
+<para>
+
+</para>
+
+@object: 
+@object_path: 
+
+

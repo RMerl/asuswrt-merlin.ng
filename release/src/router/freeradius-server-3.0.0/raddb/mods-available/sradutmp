@@ -1,0 +1,16 @@
+# -*- text -*-
+#
+#  $Id$
+
+# "Safe" radutmp - does not contain caller ID, so it can be
+# world-readable, and radwho can work for normal users, without
+# exposing any information that isn't already exposed by who(1).
+#
+# This is another 'instance' of the radutmp module, but it is given
+# then name "sradutmp" to identify it later in the "accounting"
+# section.
+radutmp sradutmp {
+	filename = ${logdir}/sradutmp
+	permissions = 0644
+	caller_id = "no"
+}

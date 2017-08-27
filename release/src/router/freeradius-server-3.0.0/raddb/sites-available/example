@@ -1,0 +1,122 @@
+######################################################################
+#
+#	An example virtual server configuration.
+#
+#	$Id$
+#
+######################################################################
+
+
+#
+#	This client will be available to any "listen" section that
+#	are defined outside of a virtual server section.  However,
+#	when the server receives a packet from this client, the
+#	request will be processed through the "example" virtual
+#	server, as the "client" section contains a configuration item
+#	to that effect.
+#
+#	Note that this client will be able to send requests to any
+#	port defined in a global "listen" section.  It will NOT,
+#	however, be able to send requests to a port defined in a
+#	"listen" section that is contained in a "server" section.
+#
+#	With careful matching of configurations, you should be able
+#	to:
+#
+#	- Define one authentication port, but process each client
+#	  through a separate virtual server.
+#
+#	- define multiple authentication ports, each with a private
+#	  list of clients.
+#
+#	- define multiple authentication ports, each of which may
+#	  have the same client listed, but with different shared
+#	  secrets
+#
+#	FYI: We use an address in the 192.0.2.* space for this example,
+#	as RFC 3330 says that that /24 range is used for documentation
+#	and examples, and should not appear on the net.  You shouldn't
+#	use it for anything, either.
+#
+client 192.0.2.10 {
+	shortname	= example-client
+	secret		= testing123
+	virtual_server  = example
+}
+
+######################################################################
+#
+#	An example virtual server.  It starts off with "server name {"
+#	The "name" is used to reference this server from a "listen"
+#	or "client" section.
+#
+######################################################################
+server example {
+	#
+	#	Listen on 192.0.2.1:1812 for Access-Requests
+	#
+	#	When the server receives a packet, it is processed
+	#	through the "authorize", etc. sections listed here,
+	#	NOT the global ones the "default" site.
+	#
+	listen {
+		ipaddr = 192.0.2.1
+		port = 1821
+		type = auth
+	}
+
+	#
+	#	This client is listed within the "server" section,
+	#	and is therefore known ONLY to the socket defined
+	#	in the "listen" section above.  If the client IP
+	#	sends a request to a different socket, the server
+	#	will treat it as an unknown client, and will not
+	#	respond.
+	#
+	#	In contrast, the client listed at the top of this file
+	#	is outside of any "server" section, and is therefore
+	#	global in scope.  It can send packets to any port
+	#	defined in a global "listen" section.  It CANNOT send
+	#	packets to the listen section defined above, though.
+	#
+	#	Note that you don't have to have a "virtual_server = example"
+	#	line here, as the client is encapsulated within
+	#	the "server" section.
+	#
+	client 192.0.2.9 {
+		shortname	= example-client
+		secret		= testing123
+	}
+
+	authorize {
+		#
+		#  Some example policies.  See "man unlang" for more.
+		#
+		if ("%{User-Name}" == "bob") {
+			update control {
+				Cleartext-Password := "bob"
+			}
+		}
+
+		#
+		#  And then reject the user.  The next line requires
+		#  that the "always reject {}" section is defined in
+		#  the "modules" section of radiusd.conf.
+		#
+		reject
+	}
+
+	authenticate {
+
+	}
+
+	post-auth {
+
+		Post-Auth-Type Reject {
+			update reply {
+				Reply-Message = "This is only an example."
+			}
+		}
+	}
+
+}

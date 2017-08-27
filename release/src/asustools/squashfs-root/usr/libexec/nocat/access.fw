@@ -1,0 +1,63 @@
+#!/bin/sh
+
+##
+# VERY simple access control script for leeenux
+##
+
+export PATH=/tmp/sbin:/tmp/bin:/bin:/usr/bin:/sbin:/usr/sbin
+
+action=$1
+mac=$2
+ip=$3
+class=$4
+
+if [ -z "$action" -o -z "$mac" -o -z "$ip" -o -z "$class" ]; then 
+    echo Usage: $0 [permit\|deny] [MAC] [IP] [Class]
+    echo Example: $0 permit 00:02:2d:aa:bb:cc 10.0.0.105 member
+    exit 1
+fi
+
+if [ "$action" = "permit" ]; then
+    #I prefer that the older connections fall off the end of the table -TJ
+    cmd=-I
+    pos=2
+elif [ "$action" = "deny" ]; then
+    cmd=-D
+    pos=
+else
+    echo "FATAL: Bad action: $action!"
+    exit 1
+fi
+
+if [ "$class" = "Owner" ]; then
+    mark=1
+elif [ "$class" = "Member" ]; then
+    mark=2
+elif [ "$class" = "Public" ]; then
+    mark=3
+else
+    echo "FATAL: Bad class: $class!"
+    exit 1
+fi
+
+# Mark outbound traffic from this node.
+# Because we use insert, we must insert below rule 1, 
+# since rule 1 starts out by marking packets not authed via this chain as such (class 4)
+iptables -t mangle $cmd NoCat $pos -m mac --mac-source $mac -s $ip -j MARK --set-mark $mark
+
+# Traffic counting in FORWARDED chains
+if [ "$InternalDevice" ]; then
+    iptables -t filter $cmd NoCat_Download -o $InternalDevice -d $ip -j RETURN
+    iptables -t filter $cmd NoCat_Upload -i $InternalDevice -s $ip -j RETURN
+else
+    iptables -t filter $cmd NoCat_Download -d $ip -j RETURN
+    iptables -t filter $cmd NoCat_Upload -s $ip -j RETURN
+fi
+
+# Mark inbound RELATED,ESTABLISHED traffic to this node as ACCEPT
+iptables -t filter $cmd NoCat_Inbound -d $ip -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+#echo 0
+#
+# Ende
+#

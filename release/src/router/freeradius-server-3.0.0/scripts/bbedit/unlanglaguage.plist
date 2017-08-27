@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!--
+
+	UnlangLanguage.plist
+		A codeless language module for Unlang in BBEdit.
+		Copyright Arran Cudbard-Bell <a.cudbardb@freeradius.org>, 2012.
+		
+		This work is licensed under a Creative Commons Attribution-Share Alike 3.0 License.
+		http://creativecommons.org/licenses/by-sa/3.0/
+		
+		Version 1.0
+
+-->
+<dict>
+	<key>BBEditDocumentType</key>
+	<string>CodelessLanguageModule</string>
+	<key>BBLMLanguageDisplayName</key>
+	<string>Unlang</string>
+	<key>BBLMLanguageCode</key>
+	<string>unlg</string>
+	<key>BBLMColorsSyntax</key>
+	<true/>
+	<key>BBLMScansFunctions</key>
+	<true/>
+	<key>BBLMIsCaseSensitive</key>
+	<true/>
+	<key>BBLMKeywordList</key>
+	<array>
+		<string>update</string>
+		<string>switch</string>
+		<string>case</string>
+		<string>if</string>
+		<string>else</string>
+		<string>elsif</string>
+		<string>redundant</string>
+		<string>load-balance</string>
+		<string>redundant-load-balance</string>
+		<string>notfound</string>
+		<string>noop</string>
+		<string>ok</string>
+		<string>updated</string>
+		<string>fail</string>
+		<string>userlock</string>
+		<string>invalid</string>
+		<string>handled</string>
+	</array>
+	<key>BBLMSuffixMap</key>
+	<array>
+		<dict>
+			<key>BBLMLanguageSuffix</key>
+			<string>.policy</string>
+		</dict>
+	</array>
+	<key>BBLMCommentLineDefault</key>
+	<string>#</string>
+	<key>Language Features</key> 
+	<dict> 
+		<key>Identifier and Keyword Character Class</key>
+		<string><![CDATA[0-9A-Z_a-z]]></string>
+
+		<key>Function Pattern</key>
+		<string><![CDATA[(?x:
+			(?x: 
+    				(?P<leadspace>^\s*)
+				(?P<function>
+					(?P<function_name>[a-zA-Z0-9_-\.]+)
+					\s+{\n
+					(?P<function_body>[^}]+)
+					}
+				)
+			)
+		)]]></string>
+
+		<key>Skip Pattern</key>
+		<string><![CDATA[
+		(?x:
+		    (?P>comment) |
+		    (?P>string)
+		)]]></string>
+		<key>Open Line Comments</key>
+		<string>#</string>
+		
+		<key>Open Statement Blocks</key>
+		<string>{</string>
+		
+		<key>Close Statement Blocks</key>
+		<string>}</string>
+		
+		<key>Open Strings 1</key>
+		<string>"</string>
+		
+		<key>Close Strings 1</key>
+		<string>"</string>
+		
+		<key>Escape Char in Strings 1</key>
+		<string>\</string>
+		
+		<key>End-of-line Ends Strings 1</key>
+		<true/>
+		
+		<key>Open Strings 2</key>
+		<string>'</string>
+		
+		<key>Close Strings 2</key>
+		<string>'</string>
+		
+		<key>Escape Char in Strings 2</key>
+		<string>\</string>
+		
+		<key>End-of-line Ends Strings 2</key>
+		<true/>
+	</dict> 
+</dict>
+</plist>

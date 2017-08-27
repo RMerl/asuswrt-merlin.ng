@@ -1,0 +1,19 @@
+## message that's missing an expected body
+
+VALID_HEADER method_call
+HEADER_FIELD INTERFACE
+TYPE STRING
+STRING 'org.freedesktop.Foo'
+HEADER_FIELD MEMBER
+TYPE STRING
+STRING 'Bar'
+ALIGN 8
+END_LENGTH Header
+
+## create the body, then chop it off
+START_LENGTH Body
+TYPE INT32
+INT32 37
+END_LENGTH Body
+
+CHOP 8

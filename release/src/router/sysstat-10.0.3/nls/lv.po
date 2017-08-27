@@ -1,0 +1,446 @@
+# translation of sysstat to Latvian
+# Copyright (C) 2009 sysstat
+# This file is distributed under the same license as the sysstat package.
+#
+# Rihards Prieditis <rprieditis@gmail.com>, 2009, 2010,2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat-10.0.2\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2011-08-16 14:17+0200\n"
+"PO-Revision-Date: 2011-09-02 11:06-0000\n"
+"Last-Translator: Rihards Priedītis <rprieditis@gmail.com>\n"
+"Language-Team: Latvian <translation-team-lv@lists.sourceforge.net>\n"
+"Language: lv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Lokalize 1.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+
+#: cifsiostat.c:69 iostat.c:80 mpstat.c:86 nfsiostat.c:68 pidstat.c:78
+#: sar.c:90
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ]\n"
+msgstr "Lietošana: %s [izvēles] [<intervāls> [<skaits>]]\n"
+
+#: cifsiostat.c:73 nfsiostat.c:72
+#, c-format
+msgid ""
+"Options are:\n"
+"[ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+
+#: cifsiostat.c:76 nfsiostat.c:75
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat versija %s\n"
+
+#: ioconf.c:490 rd_stats.c:68 rd_stats.c:2120 sa_common.c:1061 sadc.c:623
+#: sadc.c:632 sadc.c:692
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Nevar atvērt %s: %s\n"
+
+#: iostat.c:83
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ] [ --debuginfo ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <ierīce> [...] | ALL ] [ -p [ <ierīce> [,...] | ALL ] ] [ --debuginfo ]\n"
+
+#: iostat.c:87
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <ierīce> [...] | ALL ] [ -p [ <ierīce> [,...] | ALL ] ]\n"
+
+#: iostat.c:313
+#, c-format
+msgid "Cannot find disk data\n"
+msgstr "Nevar atrast diska datus\n"
+
+#: mpstat.c:89
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ]\n"
+"[ -P { <cpu> [,...] | ON | ALL } ] [ -V ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ]\n"
+"[ -P { <cpu> [,...] | ON | ALL } ] [ -V ]\n"
+
+#: mpstat.c:582 pidstat.c:1823 sar.c:381
+msgid "Average:"
+msgstr "Vidēji:"
+
+#: mpstat.c:929
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Ne tik daudz procesoru!\n"
+
+#: pidstat.c:81
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <command> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -s ]\n"
+"[ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -C <kommanda> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -s ]\n"
+"[ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:199 sar.c:1013
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "Pieprasītās darbības nav pieejamas\n"
+
+#: pr_stats.c:2319 pr_stats.c:2332
+msgid "Summary"
+msgstr "Kopsavilkums"
+
+#: pr_stats.c:2370
+msgid "Other devices not listed here"
+msgstr "Citas iekārtas, kas nav šai sarakstā"
+
+#: rd_stats.c:2166
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Nevar vadīt tik daudz procesoru!\n"
+
+#: sa_common.c:870
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Kļūda lasot sistēmas aktivitātes failu: %s\n"
+
+#: sa_common.c:880
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Negaidītas beigas sistēmas aktivitātes failam\n"
+
+#: sa_common.c:898
+#, c-format
+msgid "File created using sar/sadc from sysstat version %d.%d.%d"
+msgstr "Fails izveidots izmantojot sar/sadc no sysstat versijas %d.%d.%d"
+
+#: sa_common.c:929
+#, c-format
+msgid "Invalid system activity file: %s\n"
+msgstr "Nederīgs sistēmas aktivitātes fails: %s\n"
+
+#: sa_common.c:936
+#, c-format
+msgid "Current sysstat version can no longer read the format of this file (%#x)\n"
+msgstr "Patreizējā sysstat versija nav spējīga lasīt formātu šim failam (%#x)\n"
+
+#: sa_common.c:1168
+#, c-format
+msgid "Requested activities not available in file %s\n"
+msgstr "Pieprasītās darbības nav pieejamas failā %s\n"
+
+#: sadc.c:81
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+msgstr "Lietošana: %s [ izvēles ] [ <intervāls> [ <skaits> ] ] [ <izejasfails> ]\n"
+
+#: sadc.c:84
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <comment> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -C <komentārs> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+
+#: sadc.c:223
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Nevar ierakstīt datus sistēmas aktivitātes failā: %s\n"
+
+#: sadc.c:510
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Nevar ierakstīt virsrakstu sistēmas aktivitātes failā: %s\n"
+
+#: sadc.c:791
+#, c-format
+msgid "Cannot append data to that file (%s)\n"
+msgstr "Nevar apvienot datus sistēmas aktivitātes failā: %s\n"
+
+#: sadf.c:88
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+msgstr "Lietošana: %s [ Izvēles ] [ <intervāls> [ <skaits> ] ] [ <datufails> ]\n"
+
+#: sadf.c:91
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -d | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options> ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -d | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_iespējas> ]\n"
+
+#: sadf_misc.c:379
+#, c-format
+msgid "System activity data file: %s (%#x)\n"
+msgstr "Sistēmas aktivitātes datu fails: %s (%#x)\n"
+
+#: sadf_misc.c:388
+#, c-format
+msgid "Host: "
+msgstr "Resursdators:"
+
+#: sadf_misc.c:394
+#, c-format
+msgid "Size of a long int: %d\n"
+msgstr "Izmērs lielajam int: %d\n"
+
+#: sadf_misc.c:396
+#, c-format
+msgid "List of activities:\n"
+msgstr "Darbību saraksts:\n"
+
+#: sadf_misc.c:409
+#, c-format
+msgid "\t[Unknown activity format]"
+msgstr "\t[Nezināms aktivitātes formāts]"
+
+#: sar.c:105
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -p ] [ -q ] [ -r ]\n"
+"[ -R ] [ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -m { <keyword> [,...] | ALL } ] [ -n { <keyword> [,...] | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Izvēles ir:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -p ] [ -q ] [ -r ]\n"
+"[ -R ] [ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -m { <atslēgu_vārds> [,...] | ALL } ] [ -n { <atslēgu_vārds> [,...] | ALL } ]\n"
+"[ -o [ <faila_nosaukums> ] | -f [ <faila_nosaukums> ] ]\n"
+"[ -i <intervāls> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:126
+#, c-format
+msgid "Main options and reports:\n"
+msgstr "Galvenās iespējas un ziņojumi:\n"
+
+#: sar.c:127
+#, c-format
+msgid "\t-b\tI/O and transfer rate statistics\n"
+msgstr "\t-b\tI/O un pārraides ātrums statistika\n"
+
+#: sar.c:128
+#, c-format
+msgid "\t-B\tPaging statistics\n"
+msgstr "\t-B\tLapošanas statistika\n"
+
+#: sar.c:129
+#, c-format
+msgid "\t-d\tBlock device statistics\n"
+msgstr "\t-d\tBloku ierīces statistika\n"
+
+#: sar.c:130
+#, c-format
+msgid "\t-H\tHugepages utilization statistics\n"
+msgstr "\t-H\tHugepages izmantošanas statistika\n"
+
+#: sar.c:131
+#, c-format
+msgid ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tInterrupts statistics\n"
+msgstr ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tPārtraukumu statistika\n"
+
+#: sar.c:133
+#, c-format
+msgid ""
+"\t-m { <keyword> [,...] | ALL }\n"
+"\t\tPower management statistics\n"
+"\t\tKeywords are:\n"
+"\t\tCPU\tCPU instantaneous clock frequency\n"
+"\t\tFAN\tFans speed\n"
+"\t\tFREQ\tCPU average clock frequency\n"
+"\t\tIN\tVoltage inputs\n"
+"\t\tTEMP\tDevices temperature\n"
+"\t\tUSB\tUSB devices plugged into the system\n"
+msgstr ""
+"\t-m { <atslēgu_vārds> [,...] | ALL }\n"
+"\t\tEnerģijas vadības statistika\n"
+"\t\tAtslēgu vārdi ir:\n"
+"\t\tCPU\tProcesora takts frekvence uz pieprasījuma brīdi\n"
+"\t\tFAN\tVentilātora ātrums\n"
+"\t\tFREQ\tProcesora vidējā takts frekvence\n"
+"\t\tIN\tSprieguma ievadi\n"
+"\t\tTEMP\tIerīces tempratūra\n"
+"\t\tUSB\tPievienotās USB iekārtas\n"
+
+#: sar.c:142
+#, c-format
+msgid ""
+"\t-n { <keyword> [,...] | ALL }\n"
+"\t\tNetwork statistics\n"
+"\t\tKeywords are:\n"
+"\t\tDEV\tNetwork interfaces\n"
+"\t\tEDEV\tNetwork interfaces (errors)\n"
+"\t\tNFS\tNFS client\n"
+"\t\tNFSD\tNFS server\n"
+"\t\tSOCK\tSockets\t(v4)\n"
+"\t\tIP\tIP traffic\t(v4)\n"
+"\t\tEIP\tIP traffic\t(v4) (errors)\n"
+"\t\tICMP\tICMP traffic\t(v4)\n"
+"\t\tEICMP\tICMP traffic\t(v4) (errors)\n"
+"\t\tTCP\tTCP traffic\t(v4)\n"
+"\t\tETCP\tTCP traffic\t(v4) (errors)\n"
+"\t\tUDP\tUDP traffic\t(v4)\n"
+"\t\tSOCK6\tSockets\t(v6)\n"
+"\t\tIP6\tIP traffic\t(v6)\n"
+"\t\tEIP6\tIP traffic\t(v6) (errors)\n"
+"\t\tICMP6\tICMP traffic\t(v6)\n"
+"\t\tEICMP6\tICMP traffic\t(v6) (errors)\n"
+"\t\tUDP6\tUDP traffic\t(v6)\n"
+msgstr ""
+"\t-n { <atslēgas_vārds> [,...] | ALL }\n"
+"\t\tTīkla statistika\n"
+"\t\tAtslēgas vārdi ir:\n"
+"\t\tDEV\tTīkla interfeisi\n"
+"\t\tEDEV\tTīkla interfeisi (kļūdas)\n"
+"\t\tNFS\tNFS klienti\n"
+"\t\tNFSD\tNFS serveri\n"
+"\t\tSOCK\tSoketi\t(v4)\n"
+"\t\tIP\tIP plūsma\t(v4)\n"
+"\t\tEIP\tIP plūsma\t(v4) (kļūdas)\n"
+"\t\tICMP\tICMP plūsma\t(v4)\n"
+"\t\tEICMP\tICMP plūsma\t(v4) (kļūdas)\n"
+"\t\tTCP\tTCP plūsma\t(v4)\n"
+"\t\tETCP\tTCP plūsma\t(v4) (kļūdas)\n"
+"\t\tUDP\tUDP plūsma\t(v4)\n"
+"\t\tSOCK6\tSoketi\t(v6)\n"
+"\t\tIP6\tIP plūsma\t(v6)\n"
+"\t\tEIP6\tIP plūsma\t(v6) (kļūdas)\n"
+"\t\tICMP6\tICMP plūsma\t(v6)\n"
+"\t\tEICMP6\tICMP plūsam\t(v6) (kļūdas)\n"
+"\t\tUDP6\tUDP plūsmas\t(v6)\n"
+
+#: sar.c:163
+#, c-format
+msgid "\t-q\tQueue length and load average statistics\n"
+msgstr "\t-q\tRindas garums un vidējās noslodzes statistika\n"
+
+#: sar.c:164
+#, c-format
+msgid "\t-r\tMemory utilization statistics\n"
+msgstr "\t-r\tAtmiņas izmantošanas statistika\n"
+
+#: sar.c:165
+#, c-format
+msgid "\t-R\tMemory statistics\n"
+msgstr "\t-R\tAtmiņas statistika\n"
+
+#: sar.c:166
+#, c-format
+msgid "\t-S\tSwap space utilization statistics\n"
+msgstr "\t-S\tApmaiņas vietas izmantošanas statistika\n"
+
+#: sar.c:167
+#, c-format
+msgid ""
+"\t-u [ ALL ]\n"
+"\t\tCPU utilization statistics\n"
+msgstr ""
+"\t-u [ ALL ]\n"
+"\t\tCPU izmantošanas statistika\n"
+
+#: sar.c:169
+#, c-format
+msgid "\t-v\tKernel table statistics\n"
+msgstr "\t-v\tKodola tabulas statistika\n"
+
+#: sar.c:170
+#, c-format
+msgid "\t-w\tTask creation and system switching statistics\n"
+msgstr "\t-w\tUzdevumu izveidošanas un sistemas pārslēgšanas statistika\n"
+
+#: sar.c:171
+#, c-format
+msgid "\t-W\tSwapping statistics\n"
+msgstr "\t-W\tApmaiņas statistika\n"
+
+#: sar.c:172
+#, c-format
+msgid "\t-y\tTTY device statistics\n"
+msgstr "\t-y\tTTY ierīces statistika\n"
+
+#: sar.c:215
+#, c-format
+msgid "End of data collecting unexpected\n"
+msgstr "Negaidītas datu vākšanas beigas\n"
+
+#: sar.c:802
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Nederīgs datu formāts\n"
+
+#: sar.c:806
+#, c-format
+msgid "Using a wrong data collector from a different sysstat version\n"
+msgstr "Tiek izmantots nepareizs datu vācējs, no iepriekšējās sysstat versijas\n"
+
+#: sar.c:830
+#, c-format
+msgid "Inconsistent input data\n"
+msgstr "Nesaderīgs datu ievads\n"
+
+#: sar.c:1260
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "-f un -o iespējas ir savstarpēji izslēdzošas\n"
+
+#: sar.c:1266
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Netiek lasīts no sistēmas aktivitātes faila (izmantojies -f iespēju)\n"
+
+#: sar.c:1393
+#, c-format
+msgid "Cannot find the data collector (%s)\n"
+msgstr "Nevar atrast datu vācēju (%s)\n"
+
+#~ msgid "\t-m\tPower management statistics\n"
+#~ msgstr "\t-m\tEnerģijas pārvaldības statistika\n"

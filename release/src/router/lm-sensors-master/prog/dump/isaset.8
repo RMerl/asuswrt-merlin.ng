@@ -1,0 +1,83 @@
+.TH ISASET 8 "April 2011"
+.SH "NAME"
+isaset \- set ISA registers
+
+.SH SYNOPSIS
+.B isaset
+.RB [ -y ]
+.RB [ -W | -L ]
+.I addrreg
+.I datareg
+.I address
+.I value
+.RI [ mask ]
+#for I2C-like access
+.br
+.B isaset
+.B -f
+.RB [ -y ]
+.RB [ -W | -L ]
+.I address
+.I value
+.RI [ mask ]
+#for flat address space
+
+.SH DESCRIPTION
+isaset is a small helper program to set registers visible through the ISA
+bus.
+
+.SH OPTIONS
+.TP
+.B -f
+Enable flat address space mode.
+.TP
+.B -y
+Disable interactive mode. By default, isaset will wait for a confirmation
+from the user before messing with the ISA bus. When this flag is used, it
+will perform the operation directly. This is mainly meant to be used in
+scripts.
+.TP
+.B -W
+Perform a 16-bit write.
+.TP
+.B -L
+Perform a 32-bit write.
+
+.SH OPTIONS (I2C-like access mode)
+Four options must be provided to isaset. \fIaddrreg\fR contains the
+ISA address of the address register for the chip to probe; \fIdatareg\fR
+contains the address of the data register. Both addresses are integers between
+0x0000 and 0x3FFF. Usually, if the chip's base address is 0x0nn0, the
+address register is at 0x0nn5 and the data register is at 0x0nn6. The most
+common base address for hardware monitoring chips is 0x0290.
+For Super-I/O chips, address register is typically at 0x2E with data
+register at 0x2F.
+The \fIaddress\fR and \fIvalue\fR parameters are two integers between
+0x00 and 0xFF. isaset will write value \fIvalue\fR to address \fIaddress\fR.
+An optional \fImask\fR can be provided as a fifth parameter, preserving
+unmasked bits at the written location.
+
+.SH OPTIONS (flat address space mode)
+In flat mode, two parameters must
+be provided. \fIaddress\fR contains the ISA address of the register to
+write to; it is an integer between 0x0000 and 0xFFFF. Basically, it is
+the sum of the chip's base address and the chip register's address. isaset
+will write value \fIvalue\fR at this address.
+An optional \fImask\fR can be provided as a third parameter, preserving
+unmasked bits at the written location.
+
+.SH WARNING
+Poking around in ISA data space is extremely dangerous.
+Running isaset with random parameters can cause system
+crashes, data loss, and worse!  Be extremely careful when using
+this program.
+
+.SH SEE ALSO
+i2cset(8), isadump(8)
+
+.SH AUTHOR
+Mark D. Studebaker, and the lm_sensors group
+(http://www.lm-sensors.org/)
+.PP
+This manual page was shamelessly ripped from the i2cset and isadump manual
+pages by Jean Delvare.

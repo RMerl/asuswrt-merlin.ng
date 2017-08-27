@@ -1,0 +1,8 @@
+<fieldset>
+	<legend><% tran("service.ttraff_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.ttraff_daemon"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="ttraff_enable" <% nvram_checked("ttraff_enable","1"); %> /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="ttraff_enable" <% nvram_checked("ttraff_enable","0"); %> /><% tran("share.disable"); %>
+	</div>
+</fieldset><br/>

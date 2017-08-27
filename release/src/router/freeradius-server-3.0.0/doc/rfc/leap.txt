@@ -1,0 +1,156 @@
+                        Cisco LEAP protocol description
+
+		CLEAP = Cisco LEAP
+			LEAP = Lightweight EAP
+				EAP = Extensible Authentication Protocol
+
+     _________________________________________________________________
+
+by:
+	cameron macnally <descriptive2001@yahoo.com>
+
+date:
+	Thu, 6 Sep 2001 03:39:40 -0700 (PDT)
+
+generated from
+	http://lists.cistron.nl/pipermail/cistron-radius/2001-September/002042.html
+
+Adam Sulmicki <adam@cfar.umd.edu>
+	since I could not find any ASCII version I took above html version
+	and formated it as it is below.
+
+Alan DeKok <aland@freeradius.org>
+       The information in the original posting wasn't entirely
+       correct, but it was close.  This updated version is correct,
+       and contains additional specifics not found in the original post.
+
+     _________________________________________________________________
+
+
+This document describes the LEAP authentication protocol as used by Cisco
+Aironet wireless routers etc. It was deduced by analysis of packets passed
+between an Aironet and Cisco ACS.
+
+Relevant RFCs are: 2284, 2716, 2433.
+
+LEAP is a type of Radius EAP protocol (see RFC draft-ietf-radius-eap-05.txt
+"Extensible Authentication Protocol Support in RADIUS"). The EAP type for
+LEAP is 17 (0x11). It is used to authenticate access by a wireless client
+(typically a laptop or pc) to a wireless router, typically a Cisco Aironet
+base station.
+
+Definitions
+AP:	Access Point (the Aironet base station)
+RS:	Radius Server
+APC:	Access Point Challenge
+APR:	Access Point Response
+PC:	Peer Challenge
+PR:	Peer Response
+PW:	Users plaintext ASCII password
+SK:	Session Key
+SS:	Shared Secret shared between AP (or upstream proxy) and RS
+AUTH:	The 16 octet Radius authenticator of the incomintg request
+
+A typical successful LEAP authentication sequence consists of the
+following Radius packets passed between the wireless access point (AP) and
+the Radius server (RS). Each packet contains an EAP-Message as described
+below. The EAP Message-Authenticator attribute is always present as usual
+for EAP.
+
+The general description of the protocol is:
+
+1. AP->RS: Access-Request/EAP Identity, containing the name of the
+   user to be authenticated
+
+2. RS->AP: Access-Challenge/EAP Request/LEAP, containing a 8 octet random
+   MSCHAP Peer Challenge (PC) + State
+
+3. AP->RS: Access-Request/EAP Response/LEAP, containing the 24 octet MSCHAP
+   response to the challenge in 2 above (PR) + State
+
+4. RS->AP: Access-Challenge/EAP Success (with EAP id++)
+   + State (may be different than the satate send in <2>)
+
+5. AP->RS: Access-Request/EAP Request/LEAP, containing 8 octet Access Point
+   Challenge (APC) + State
+
+6. RS->AP: Radius Access-Accept/EAP Response/LEAP, containing 24 octet
+   response to the challenge in 5 above (APR), plus a session key sent
+   in a cisco-avpair vendor-specific attribute:
+
+	Cisco-AVPair = "leap:session-key=..."
+
+  where the '...' are 34 binary octets of encrypted data.  This data MUST
+  follow the '=', and is NOT in ASCII.
+
+LEAP data is carried in an EAP-Message in the Type-Data subfield. The
+format of the Type-Data subfield is:
+
+1 octet LEAP protocol version number, currently always 0x01.
+1 unused octet, currently always 0x00.
+1 octet byte count for the following binary data
+m octets of binary data
+n octets, the name of the user being authenticated
+
+So, for example, packet 2 in the above sequence, containg the access point
+challenge (APC) would contain an EAP-Message Request (Code 0x01) attribute
+something like this:
+
+    0                   1                   2		        3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Code 0x01 |  Identifier   |             Length            |
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Type 0x11 |  Version 0x01 | Unused 0x00   | Count 0x08    |
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |               Peer Challenge		                   |
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |               Peer Challenge		                   |
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |   User Name .....
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+
+Count is 8 octets since the Peer challenge is 8 bytes.
+count is 24 for EAP response, with MSCHAP response.
+Length is the total number of octets in the EAP-Message.
+
+The Session Key (SK) is sent from RS to AP in the final packet. It is
+carried in a cisco-avpair vendor specific radius attribute. The value of
+the attribute is: "leap:session-key=nnnn" where nnnn is 34 octets of
+binary data as described in SK below.
+
+Algorithms for each field are described below. Function names are those
+from RFC 2433. '+' means concatenation. mppe_encrypt is the algorithm for
+encrypting MS-MPPE-Send-Key as described in RFC 2548.txt, which is
+also the same as the 'Tunnel-Password' encryption.
+
+PC:	8 octets random binary data sent to AP
+
+PR:	24 octets NtChallengeResponse(PC, Unicode(PW))
+	e.g. AP sends MS-CHAP response to RADIUS server challenge.
+
+APC:	8 octets random binary data sent by the AP
+
+MPPEHASH: 16 octets NtPasswordHash(NtPasswordHash(Unicode(PW))))
+
+APR:	24 octets ChallengeResponse(APC, MPPEHASH)
+	e.g. RADIUS server sends MS-CHAP response to AP challenge.
+
+SK: 34 octets mppe_encrypt(SS, AUTH,MD5Digest(MPPEHASH + APC + APR + PC + PR))
+       via rad_tunnel_pwencode()
+
+Notes:
+1. Some versions of Cisco ACS incorrectly drop the first 2 bytes of the
+user name at the end of the EAP-MEssage in the Peer Challenge packet.
+
+2. If the user name does not exist, the response to packet 1 is a
+   Radius Access-Reject/EAP Failure
+
+     _________________________________________________________________
+

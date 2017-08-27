@@ -1,0 +1,67 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_unix 5 "17 February 2005" "" "FreeRADIUS Module"
+.SH NAME
+rlm_unix \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_unix\fP module reads crypt(3) passwords from the system
+password file, and allows the server to use them for authentication.
+The module also provides FreeRADIUS an interface into a radwtmp file
+(used by "radlast") when added to the accounting section.
+.PP
+The \fIrlm_unix\fP module does provides the functionality for
+"Auth-Type = System".  The module should be listed in the
+"authenticate" section.  Please see the default \fIradiusd.conf\fP
+shipped with the server for an example of the correct usage of this
+module.
+.PP
+As of FreeRADIUS 1.1.0, the module no longer reads, or caches
+/etc/passwd, /etc/shadow, or /etc/group.  If you wish to cache those
+files, see \fIrlm_passwd\fP.  Most, if not all, configurations should
+not need those files to be cached.
+.PP
+The main configuration items to be aware of are:
+.IP radwtmp
+The path to the system wtmp file to be used for keeping the database
+of online users as read by the 'radlast' program.
+.SH CONFIGURATION
+.PP
+.DS
+modules {
+  ...
+.br
+  unix {
+.br
+    radwtmp = ${logdir}/radwtmp
+.br
+  }
+.br
+  ...
+.br
+}
+.DE
+.PP
+.SH SECTIONS
+.BR authentication,
+.BR accounting
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf,
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5),
+.BR rlm_passwd (5),
+.BR radlast (1)
+.SH AUTHORS
+Chris Parker, cparker@segv.org

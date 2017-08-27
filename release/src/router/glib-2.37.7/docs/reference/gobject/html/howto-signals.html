@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: How to create and use signals</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt02.html" title="Part IV. Tutorial">
+<link rel="prev" href="howto-interface-override.html" title="Overriding interface methods">
+<link rel="next" href="pt03.html" title="Part V. Related Tools">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface-override.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="pt03.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="howto-signals"></a>How to create and use signals</h2></div></div></div>
+<div class="toc"><dl class="toc"><dt><span class="sect1"><a href="howto-signals.html#howto-simple-signals">Simple use of signals</a></span></dt></dl></div>
+<p>
+    The signal system which was built in GType is pretty complex and
+    flexible: it is possible for its users to connect at runtime any
+    number of callbacks (implemented in any language for which a binding
+    exists)
+    <a href="#ftn.id-1.6.5.2.1" class="footnote" name="id-1.6.5.2.1"><sup class="footnote">[13]</sup></a>
+    to any signal and to stop the emission of any signal at any 
+    state of the signal emission process. This flexibility makes it
+    possible to use GSignal for much more than just emit signals which
+    can be received by numerous clients. 
+  </p>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-simple-signals"></a>Simple use of signals</h2></div></div></div>
+<p>
+      The most basic use of signals is to implement simple event
+      notification: for example, if we have a MamanFile object, and
+      if this object has a write method, we might wish to be notified
+      whenever someone has changed something via our MamanFile instance.
+      The code below shows how the user can connect a callback to the
+      "changed" signal.
+</p>
+<pre class="programlisting">
+file = g_object_new (MAMAN_FILE_TYPE, NULL);
+
+g_signal_connect (file, "changed", G_CALLBACK (changed_event), NULL);
+
+maman_file_write (file, buffer, strlen (buffer));
+</pre>
+<p>
+    </p>
+<p>
+      The <span class="type">MamanFile</span> signal is registered in the class_init
+      function:
+</p>
+<pre class="programlisting">
+file_signals[CHANGED] = 
+  g_signal_newv ("changed",
+                 G_TYPE_FROM_CLASS (gobject_class),
+                 G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                 NULL /* closure */,
+                 NULL /* accumulator */,
+                 NULL /* accumulator data */,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE /* return_type */,
+                 0     /* n_params */,
+                 NULL  /* param_types */);
+</pre>
+<p>
+      and the signal is emitted in <code class="function">maman_file_write</code>:
+</p>
+<pre class="programlisting">
+void
+maman_file_write (MamanFile    *self,
+                  const guchar *buffer,
+                  gssize        size)
+{
+  /* First write data. */
+
+  /* Then, notify user of data written. */
+  g_signal_emit (self, file_signals[CHANGED], 0 /* details */);
+}
+</pre>
+<p>
+      As shown above, you can safely set the details parameter to zero if
+      you do not know what it can be used for. For a discussion of what you
+      could used it for, see <a class="xref" href="signal.html#signal-detail" title="The detail argument">the section called “The <span class="emphasis"><em>detail</em></span> argument”</a>
+    </p>
+<p>
+      The signature of the signal handler in the above example is defined as
+      <code class="function">g_cclosure_marshal_VOID__VOID</code>. Its name follows
+      a simple convention which encodes the function parameter and return value
+      types in the function name. Specifically, the value in front of the
+      double underscore is the type of the return value, while the value(s)
+      after the double underscore denote the parameter types.
+    </p>
+<p>
+      The header <code class="filename">gobject/gmarshal.h</code> defines a set of
+      commonly needed closures that one can use. If you want to have complex
+      marshallers for your signals you should probably use glib-genmarshal
+      to autogenerate them from a file containing their return and
+      parameter types.
+    </p>
+</div>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.6.5.2.1" class="footnote"><p><a href="#id-1.6.5.2.1" class="para"><sup class="para">[13] </sup></a>A Python callback can be connected to any signal on any
+      C-based GObject, and vice versa, assuming that the Python object
+      inherits from GObject.</p></div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

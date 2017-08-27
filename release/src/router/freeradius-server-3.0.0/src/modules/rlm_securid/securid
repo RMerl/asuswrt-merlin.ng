@@ -1,0 +1,20 @@
+#
+#  This is the configuration for the "securid" module.
+#  It should be copied to raddb/modules/
+#
+
+securid {
+	#  How long the module waits before expiring a session.
+	#
+	timer_expire = 600
+
+	#  The sessions are tracked internally.  This configuration
+	#  item limits the total number of allowed sessions.
+	#
+	max_sessions = 2048
+
+	#  How many round trips are allowed before the authentication
+	#  is forced to fail/
+	#
+	max_round_trips = 6
+}

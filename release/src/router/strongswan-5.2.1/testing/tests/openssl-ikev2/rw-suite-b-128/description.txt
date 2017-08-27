@@ -1,0 +1,12 @@
+The roadwarrior <b>dave</b> tries to set up a connection to roadwarrior <b>carol</b>
+but because <b>carol</b> has set the strongswan.conf option <b>initiator_only = yes</b>
+she ignores the repeated IKE requests sent by <b>dave</b>.
+<p/>
+After the failed connection attempt by <b>dave</b>, roadwarrior <b>carol</b> sets up a
+connection to gateway <b>moon</b>. The authentication is based on Suite B with <b>128 bit</b>
+security based on <b>X.509 ECDSA</b> certificates, <b>ECP Diffie-Hellman</b> groups and <b>AES-GCM</b>
+authenticated encryption.
+<p/>
+Upon the successful establishment of the IPsec tunnel, the static IPsec policy rules of
+an iptables-based firewall let pass the tunneled traffic. In order to test both tunnel and firewall,
+<b>carol</b> pings the client <b>alice</b> behind the gateway <b>moon</b>.

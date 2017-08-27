@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ -z "$(nvram get NC_enable)" ]; then
+    nvram set NC_enable=0
+    nvram need_commit=1
+fi
+

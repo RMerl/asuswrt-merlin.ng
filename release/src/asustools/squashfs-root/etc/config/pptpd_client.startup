@@ -1,0 +1,24 @@
+#!/bin/sh
+if [ -z "$(nvram get pptpd_client_enable)" ]; then
+    nvram set pptpd_client_enable=0
+    nvram set pptpd_client_srvuser="DOMAIN\\\\Username"
+    nvram set pptpd_client_srvsec="mppe required"
+    nvram set pptpd_client_srvmtu="1450"
+    nvram set pptpd_client_srvmru="1450"
+    nvram set pptpd_client_nat="1"  
+    nvram need_commit=1
+fi
+
+if [ "$(nvram get pptpd_client_enable)" = "0" ]; then
+    if test -e "/tmp/pptpd_client/vpn"; then nohup /tmp/pptpd_client/vpn stop; fi
+fi
+
+if [ "$(nvram get pptpd_client_enable)" = "1" ]; then
+    if [ -z "$(nvram get pptpd_client_srvip)" ]
+    then
+     echo "No Ip or DNS name have been entered"
+    if test -e "/tmp/pptpd_client/vpn"; then nohup /tmp/pptpd_client/vpn stop; fi
+    else    
+    /etc/config/pptpd_client.sh &
+    fi
+fi

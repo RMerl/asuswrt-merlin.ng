@@ -1,0 +1,130 @@
+<!-- ##### SECTION Title ##### -->
+Value arrays
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GValueArray ##### -->
+<para>
+
+</para>
+
+@n_values: 
+@values: 
+
+<!-- ##### FUNCTION g_value_array_get_nth ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_new ##### -->
+<para>
+
+</para>
+
+@n_prealloced: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_copy ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_free ##### -->
+<para>
+
+</para>
+
+@value_array: 
+
+
+<!-- ##### FUNCTION g_value_array_append ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_prepend ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_insert ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@index_: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_remove ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_sort ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@compare_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_array_sort_with_data ##### -->
+<para>
+
+</para>
+
+@value_array: 
+@compare_func: 
+@user_data: 
+@Returns: 
+
+

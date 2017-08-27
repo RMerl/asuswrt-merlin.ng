@@ -1,0 +1,64 @@
+.\"
+.\"  eeprom.8 - manpage for the i2c-tools/eeprom utility
+.\"  Copyright (C) 2013  Jaromir Capik
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License along
+.\"  with this program; if not, write to the Free Software Foundation, Inc.,
+.\"  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.\"
+.TH eeprom "8" "Jul 2013" "i2c-tools" "System Administration"
+.SH NAME
+eeprom \- reads and writes 24Cxx EEPROMs connected to I2C serial bus
+.SH SYNOPSIS
+.B eeprom
+[-d dev] [-a addr] [-p pgs] [-w] [-y] [-f file]
+.SH DESCRIPTION
+.B eeprom
+can be used for reading from / writing to I2C EEPROMs like the popular
+24C16, 24C08, 24C04, etc.
+In contrast to
+.B eeprommer
+which supports 24C256-type EEPROMs,
+this tool works with 1-byte addresses!
+.SH NOTES
+Don't forget to load your i2c chipset and the i2c-dev drivers.
+.P
+Pages/addresses:
+    EEPROMs with more than 256 bytes appear as if they
+    were several EEPROMs with consecutive addresses on the bus
+    so we might as well address several separate EEPROMs with
+    increasing addresses
+.SH PARAMETERS
+.TP
+.B dev
+device (default /dev/i2c-0)
+.TP
+.B addr
+base address of EEPROM (default 0xA0)
+.TP
+.B pgs
+number of pages to read (default 8)
+.TP
+.B \-w
+write to EEPROM (default is reading!)
+.TP
+.B \-y
+suppress warning when writing (default is to warn!)
+.TP
+.B \-f file
+copy EEPROM contents to/from file (default for read is test only; for write is all zeros)
+.SH SEE ALSO
+.BR eeprog (8),
+.BR eepromer (8)
+.SH AUTHOR
+Christian Vogel

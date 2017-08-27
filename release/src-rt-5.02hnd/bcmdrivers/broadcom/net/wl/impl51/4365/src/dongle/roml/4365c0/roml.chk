@@ -1,0 +1,1385 @@
+p/x &((MD4_CTX *)0)->done
+p/x &((MD5_CTX *)0)->digest
+p/x &((ProtocolVersion *)0)->minor
+p/x &((struct SHA1Context *)0)->Corrupted
+p/x &((struct SHA256state_st *)0)->md_len
+p/x &((struct TX_BLOCK_POOL_STRUCT *)0)->tx_block_pool_created_previous
+p/x &((struct TX_BYTE_POOL_STRUCT *)0)->tx_byte_pool_created_previous
+p/x &((struct TX_EVENT_FLAGS_GROUP_STRUCT *)0)->tx_event_flags_group_delayed_clear
+p/x &((struct TX_MUTEX_STRUCT *)0)->tx_mutex_owned_previous
+p/x &((struct TX_QUEUE_STRUCT *)0)->tx_queue_created_previous
+p/x &((struct TX_SEMAPHORE_STRUCT *)0)->tx_semaphore_created_previous
+p/x &((struct TX_THREAD_STRUCT *)0)->tx_thread_exec_time
+p/x &((struct TX_TIMER_INTERNAL_STRUCT *)0)->tx_timer_internal_list_head
+p/x &((struct TX_TIMER_STRUCT *)0)->tx_timer_created_previous
+p/x &((struct _acphy_rxcal_phyregs *)0)->spur_can_en
+p/x &((struct _acphy_txcal_radioregs *)0)->pa5g_cfg1
+p/x &((struct _acphy_vcocal_radregs_t *)0)->is_orig
+p/x &((struct _aidmp *)0)->componentid3
+p/x &((struct _bmc_params *)0)->minbufs
+p/x &((struct _bphy_desense_info *)0)->drop_initBiq1
+p/x &((struct _btc_flags_ucode *)0)->mask
+p/x &((struct _chan_info_rx_farrow *)0)->farrow_ctrl
+p/x &((struct _chan_info_tx_farrow *)0)->MuDeltaInit_u
+p/x &((struct _cint32 *)0)->i
+p/x &((struct _coreid_entry *)0)->coreid_alias
+p/x &((struct _corerev_entry *)0)->corerev_alias
+p/x &((struct _d11regs *)0)->sbconfig
+p/x &((struct _fcbs_info *)0)->FCBS_INPROG
+p/x &((struct _fcbs_phyreg_buf_entry *)0)->val
+p/x &((struct _fcbs_phytbl_list_entry *)0)->num_entries
+p/x &((struct _fcbs_radioreg_buf_entry *)0)->val
+p/x &((struct _fcbs_radioreg_core_list_entry *)0)->core_info
+p/x &((struct _htphy_dac_adc_decouple_war *)0)->PapdCalSettle
+p/x &((struct _htphy_lpfCT_phyregs *)0)->RfctrlCoreLpfCT
+p/x &((struct _htphy_nshapetbl_mon *)0)->length
+p/x &((struct _htphy_rcal_rccal_cache *)0)->rccal_hpc_val
+p/x &((struct _htphy_rxcal_phyregs *)0)->PapdEnable
+p/x &((struct _htphy_rxcal_radioregs *)0)->RF_rxbuf_degen
+p/x &((struct _htphy_rxgain_phyregs *)0)->Rfctrl_lpf_gain
+p/x &((struct _htphy_txcal_phyregs *)0)->PapdEnable
+p/x &((struct _htphy_txcal_radioregs *)0)->RF_TX_tssi_vcm
+p/x &((struct _mchan_air_time *)0)->w
+p/x &((struct _mchan_dyn_algo *)0)->if_air
+p/x &((struct _mchan_fw_time *)0)->w
+p/x &((struct _mchan_list_elem *)0)->next
+p/x &((struct _mchan_sched_elem *)0)->end_tsf_l
+p/x &((struct _mem *)0)->next
+p/x &((struct _nphy_iq_comp *)0)->b1
+p/x &((struct _nphy_noise_cal *)0)->iteration_c1
+p/x &((struct _nphy_noisevar_buf *)0)->min_noise_vars
+p/x &((struct _nphy_pwrctrl *)0)->b1
+p/x &((struct _nphy_txgains *)0)->ipa
+p/x &((struct _nphy_txpwrindex *)0)->locomp
+p/x &((struct _pmkid *)0)->PMKID
+p/x &((struct _pmkid_cand *)0)->preauth
+p/x &((struct _pmkid_cand_list *)0)->pmkid_cand
+p/x &((struct _pmkid_list *)0)->pmkid
+p/x &((struct _ravg *)0)->idx
+p/x &((struct _sbconfig *)0)->sbidhigh
+p/x &((struct _sup_pmkid *)0)->opportunistic
+p/x &((struct _vars *)0)->vsizes
+p/x &((struct _wlcband_inst *)0)->pi
+p/x &((struct acphy_aci_params *)0)->hwaci_sleep
+p/x &((acphy_cal_result_t *)0)->txiqlocal_biq2byp_coeffs
+p/x &((acphy_calcache_t *)0)->eps_offset_cache
+p/x &((struct acphy_desense_values *)0)->mix_idx_max
+p/x &((struct acphy_fe_ctrl_table *)0)->hw_offset
+p/x &((acphy_fem_rxgains_t *)0)->lna1byp
+p/x &((acphy_hwaci_setup_t *)0)->w2
+p/x &((acphy_hwaci_state_t *)0)->mix_idx_max
+p/x &((struct acphy_lpfCT_phyregs *)0)->RfctrlCoreLpfCT
+p/x &((acphy_nvram_femctrl_t *)0)->txswctrlmap_5g
+p/x &((acphy_rssioffset_t *)0)->rssi_tr_offset
+p/x &((struct acphy_rx_fdiqi_ctl_struct *)0)->leakage_comp_mode
+p/x &((struct acphy_rxgainctrl_params *)0)->gainbitstbl
+p/x &((acphy_srom_info_t *)0)->swctrlmap4
+p/x &((acphy_swctrlmap4_t *)0)->misc5g
+p/x &((struct aes_igtk *)0)->key
+p/x &((struct aes_key *)0)->key
+p/x &((struct aironet_assoc_ie *)0)->radiotype
+p/x &((struct amsdu_deagg *)0)->amsdu_deagg_ptail
+p/x &((struct amsdu_info *)0)->cnt
+p/x &((amsdu_scb_prio *)0)->headroom_pad_need
+p/x &((struct antsel_info *)0)->antcfg_cur
+p/x &((struct ap_bsscfg_cubby *)0)->opmode_cap_reqd
+p/x &((ap_tpc_bsscfg_cubby_t *)0)->ap_link_margin
+p/x &((ap_tpc_scb_cubby_t *)0)->ap_link_margin
+p/x &((struct apps_bss_info *)0)->ps_trans_status
+p/x &((struct apps_scb_psinfo *)0)->in_transit
+p/x &((struct apps_wlc_psinfo *)0)->ps_nodes_all
+p/x &((struct arp_entry *)0)->age
+p/x &((struct arp_ol_stats_t *)0)->peer_service
+p/x &((struct arp_table *)0)->parp_cmac
+p/x &((assoc_decision_t *)0)->sys_time
+p/x &((assoc_info_t *)0)->ofdm
+p/x &((struct auth_cubby *)0)->cubby
+p/x &((struct authenticator *)0)->gtk_interval
+p/x &((authops_t *)0)->ioctl_args
+p/x &((struct axi_wrapper *)0)->wrapper_size
+p/x &((struct band_info *)0)->phy_minor_rev
+p/x &((struct bcm_bit_desc *)0)->name
+p/x &((struct bcm_bit_desc_ex *)0)->bitfield
+p/x &((bcm_decode_advertisement_protocol_t *)0)->protocol
+p/x &((bcm_decode_anqp_3gpp_cellular_network_t *)0)->plmn
+p/x &((bcm_decode_anqp_auth_t *)0)->value
+p/x &((bcm_decode_anqp_capability_list_t *)0)->hspotCapList
+p/x &((bcm_decode_anqp_domain_name_list_t *)0)->domain
+p/x &((bcm_decode_anqp_domain_name_t *)0)->name
+p/x &((bcm_decode_anqp_eap_method_t *)0)->auth
+p/x &((bcm_decode_anqp_ip_type_t *)0)->ipv4
+p/x &((bcm_decode_anqp_nai_realm_data_t *)0)->eap
+p/x &((bcm_decode_anqp_nai_realm_list_t *)0)->realm
+p/x &((bcm_decode_anqp_network_authentication_type_t *)0)->unit
+p/x &((bcm_decode_anqp_network_authentication_unit_t *)0)->url
+p/x &((bcm_decode_anqp_oi_duple_t *)0)->oi
+p/x &((bcm_decode_anqp_plmn_t *)0)->mnc
+p/x &((bcm_decode_anqp_query_list_t *)0)->queryId
+p/x &((bcm_decode_anqp_query_request_vendor_specific_tlv_t *)0)->queryData
+p/x &((bcm_decode_anqp_query_response_vendor_specific_tlv_t *)0)->numService
+p/x &((bcm_decode_anqp_roaming_consortium_t *)0)->oi
+p/x &((bcm_decode_anqp_t *)0)->wfaServiceDiscoveryBuffer
+p/x &((bcm_decode_anqp_vendor_list_t *)0)->vendorData
+p/x &((bcm_decode_anqp_venue_name_duple_t *)0)->name
+p/x &((bcm_decode_anqp_venue_name_t *)0)->venueName
+p/x &((bcm_decode_anqp_wfds_request_t *)0)->serviceInfoReq
+p/x &((bcm_decode_anqp_wfds_response_t *)0)->serviceInfo
+p/x &((bcm_decode_bss_load_t *)0)->availableAdmissionCapacity
+p/x &((bcm_decode_hotspot_indication_t *)0)->releaseNumber
+p/x &((bcm_decode_hspot_anqp_capability_list_t *)0)->capId
+p/x &((bcm_decode_ie_adv_proto_tuple_t *)0)->protocolId
+p/x &((bcm_decode_ie_t *)0)->p2p
+p/x &((bcm_decode_interworking_t *)0)->hessid
+p/x &((bcm_decode_oi_t *)0)->data
+p/x &((bcm_decode_p2p_capability_t *)0)->group
+p/x &((bcm_decode_p2p_device_info_t *)0)->deviceName
+p/x &((bcm_decode_p2p_t *)0)->advertiseServiceBuffer
+p/x &((bcm_decode_probe_response_t *)0)->hotspotConfig
+p/x &((bcm_decode_roaming_consortium_t *)0)->oi
+p/x &((bcm_decode_t *)0)->buf
+p/x &((bcm_decode_time_advertisement_t *)0)->timeUpdate
+p/x &((bcm_decode_time_t *)0)->reserved
+p/x &((bcm_encode_t *)0)->buf
+p/x &((struct bcm_event *)0)->event
+p/x &((bcm_gas_fragment_t *)0)->fragmentId
+p/x &((bcm_gas_packet_t *)0)->fragmentId
+p/x &((bcm_gas_query_request_t *)0)->data
+p/x &((bcm_gas_status_t *)0)->statusCode
+p/x &((struct bcm_gas_struct *)0)->next
+p/x &((struct bcm_iovar *)0)->minlen
+p/x &((struct bcm_mp_free_list *)0)->next
+p/x &((struct bcm_mp_heap_pool *)0)->osh
+p/x &((struct bcm_mp_pool *)0)->u
+p/x &((struct bcm_mp_prealloc_pool *)0)->free_objp
+p/x &((struct bcm_mp_stats *)0)->failed_alloc
+p/x &((struct bcm_mpm_mgr *)0)->osh
+p/x &((struct bcm_mwbmap *)0)->id_bitmap
+p/x &((struct bcm_nd_msg *)0)->target
+p/x &((struct bcm_notif_client_request *)0)->next
+p/x &((struct bcm_notif_list_struct *)0)->allow_list_operations
+p/x &((struct bcm_notif_module *)0)->client_mem_pool
+p/x &((struct bcm_p2p_disc_s *)0)->searchCount
+p/x &((bcm_p2p_disc_search_params_t *)0)->flags
+p/x &((bcm_pkt_gas_comeback_response_t *)0)->rsp
+p/x &((bcm_pkt_gas_request_t *)0)->req
+p/x &((bcm_pkt_gas_response_t *)0)->rsp
+p/x &((struct bcm_rxcplid_list *)0)->free_list
+p/x &((struct bcm_tlv *)0)->data
+p/x &((struct bcm_xtlv *)0)->data
+p/x &((struct bcm_xtlvbuf *)0)->buf
+p/x &((struct bcmarp *)0)->dst_ip
+p/x &((struct bcmeth_hdr *)0)->usr_subtype
+p/x &((struct bcmicmp_hdr *)0)->chksum
+p/x &((struct bcmstrbuf *)0)->origsize
+p/x &((struct bcmtcp_hdr *)0)->urg_ptr
+p/x &((struct bcmudp_hdr *)0)->chksum
+p/x &((struct bcnreq *)0)->reps
+p/x &((struct bmac_dmactl *)0)->rxblen
+p/x &((struct bmac_led *)0)->restart
+p/x &((struct bmac_led_info *)0)->blink_adjust
+p/x &((struct bmac_pmq *)0)->pmq_size
+p/x &((struct bmac_pmq_entry *)0)->next
+p/x &((struct bmac_suspend_stats *)0)->suspend_max
+p/x &((struct brcm_ie *)0)->amsdu_mtu_pref
+p/x &((struct brcm_prop_ie_s *)0)->cap
+p/x &((bss_akm_info_t *)0)->wpa2_preauth
+p/x &((bss_assoc_state_data_t *)0)->state
+p/x &((struct bss_ccxsup_info *)0)->bss_priv
+p/x &((struct bss_ccxsup_priv *)0)->base_transient_key
+p/x &((struct bss_fbt_info *)0)->bss_priv
+p/x &((struct bss_fbt_priv *)0)->use_sup_wpa
+p/x &((struct bss_fbt_pub *)0)->ini_fbt
+p/x &((bss_macfltr_info_t *)0)->maclist
+p/x &((bss_mbss_info_t *)0)->cnt
+p/x &((bss_mcnx_info_t *)0)->unaligned_tbtt_tsfo
+p/x &((bss_p2p_cmn_info_t *)0)->flags
+p/x &((bss_p2p_info_t *)0)->send_noa_cb_arg
+p/x &((bss_peer_info_param_t *)0)->ea
+p/x &((bss_peer_info_t *)0)->age
+p/x &((bss_peer_list_info_t *)0)->peer_info
+p/x &((struct bss_pmkid_info *)0)->npmkid
+p/x &((bss_pretbtt_query_data_t *)0)->pretbtt
+p/x &((bss_probresp_mac_filter_info_t *)0)->probresp_mac_filter_mode
+p/x &((bss_prot_cfg_t *)0)->overlap
+p/x &((bss_prot_g_cfg_t *)0)->barker_overlap_control
+p/x &((bss_prot_g_cond_t *)0)->longpre_assoc
+p/x &((bss_prot_g_t *)0)->to
+p/x &((bss_prot_g_to_t *)0)->g_ibss_timeout
+p/x &((bss_prot_n_cfg_t *)0)->n_obss
+p/x &((bss_prot_n_cond_t *)0)->wme_apsd_assoc
+p/x &((bss_prot_n_t *)0)->to
+p/x &((bss_prot_n_to_t *)0)->non_gf_ibss_timeout
+p/x &((bss_prot_t *)0)->priv
+p/x &((bss_proxd_cubby_t *)0)->flags
+p/x &((struct bss_sup_info *)0)->bss_priv
+p/x &((bss_tplt_upd_data_t *)0)->type
+p/x &((struct bsscfg_cubby_info *)0)->fn_set
+p/x &((struct bsscfg_cubby_info_ctx *)0)->ctx
+p/x &((struct bsscfg_module *)0)->type_ctx
+p/x &((struct bsscfg_type_ctx *)0)->ctx
+p/x &((struct bsscfg_type_info *)0)->fn_type_init
+p/x &((struct bsscfg_up_down_event_data_t *)0)->callbacks_pending
+p/x &((struct cac_scb_acinfo *)0)->tsentryq
+p/x &((cc_reg_ent_t *)0)->cbdata
+p/x &((cc_reg_t *)0)->cc_intmask
+p/x &((cca_chan_qual_t *)0)->level
+p/x &((cca_ucode_counts_t *)0)->PM
+p/x &((struct cck_phy_hdr *)0)->crc
+p/x &((struct cckm_reassoc_req_ie_s *)0)->mic
+p/x &((struct cckm_reassoc_resp_ie_s *)0)->egtk
+p/x &((struct ccx_cell_pwr *)0)->reserved
+p/x &((struct ccx_ddp_pkt_s *)0)->rogue_name
+p/x &((struct ccx_iapp_hdr *)0)->data
+p/x &((struct ccx_link_test_s *)0)->data
+p/x &((ccx_msdu_lifetime_t *)0)->msdu_lifetime
+p/x &((struct ccx_neighbor_rept_ie *)0)->phy_type
+p/x &((struct ccx_qos_params *)0)->txop_3
+p/x &((struct ccx_radio_mgmt *)0)->state
+p/x &((struct ccx_radio_param_subie *)0)->roam_time
+p/x &((struct ccx_rm_beacon_rep *)0)->data
+p/x &((struct ccx_rm_frame_rep *)0)->elt
+p/x &((struct ccx_rm_frm_rep_elt *)0)->frames
+p/x &((struct ccx_rm_load_rep *)0)->fraction
+p/x &((struct ccx_rm_noise_rep *)0)->rpi
+p/x &((struct ccx_rm_pathlossmeas_frame *)0)->txchannel
+p/x &((struct ccx_rm_pathlossreq *)0)->channel
+p/x &((struct ccx_rm_pl_data *)0)->req
+p/x &((struct ccx_rm_rep *)0)->data
+p/x &((struct ccx_rm_rep_ie *)0)->data
+p/x &((struct ccx_rm_req *)0)->data
+p/x &((struct ccx_rm_req_ie *)0)->duration
+p/x &((struct ccx_roam_ap_ie_s *)0)->disassoc_time
+p/x &((struct ccx_roam_iapp_pkt_s *)0)->ap_ie
+p/x &((struct ccx_roam_reason_ie *)0)->reason
+p/x &((struct ccx_sfa_ie *)0)->capability
+p/x &((ccx_stream_rs_t *)0)->rateset
+p/x &((struct ccx_ts_metrics *)0)->total_used_time
+p/x &((ccx_ts_metrics_t *)0)->measure_interval
+p/x &((ccx_tsm_param_t *)0)->tid
+p/x &((struct ccx_version_ie *)0)->version
+p/x &((struct ch_calcache *)0)->in_use
+p/x &((struct chan20_info *)0)->adj_sbs
+p/x &((chan_rc_t *)0)->rclass
+p/x &((chanim_accum_t *)0)->bphy_badplcp_cnt
+p/x &((chanim_acs_record_t *)0)->timestamp
+p/x &((chanim_cnt_t *)0)->bphy_badplcp_cnt
+p/x &((chanim_config_t *)0)->scb_max_probe
+p/x &((chanim_info_t *)0)->ifs
+p/x &((chanim_interface_info_t *)0)->idx
+p/x &((struct chanim_interfaces *)0)->num_ifs
+p/x &((chanim_mark_t *)0)->scb_timeout
+p/x &((struct chanim_stats *)0)->chan_idle
+p/x &((struct channel_info *)0)->scan_channel
+p/x &((channel_list *)0)->channels
+p/x &((struct channel_switch_timing_ie *)0)->switch_timeout
+p/x &((chanspec_list_t *)0)->list
+p/x &((chanswitch_times_t *)0)->index
+p/x &((chanvec_t *)0)->vec
+p/x &((cis_tuple_t *)0)->params
+p/x &((struct client *)0)->event
+p/x &((struct clm_advertised_cc *)0)->aliases
+p/x &((struct clm_advertised_cc_set *)0)->set
+p/x &((struct clm_aggregate_cc_set *)0)->set
+p/x &((struct clm_cc_rev *)0)->rev
+p/x &((struct clm_cc_rev_set *)0)->set
+p/x &((struct clm_channel_comb *)0)->stride
+p/x &((struct clm_channel_comb_set *)0)->set
+p/x &((struct clm_channel_range *)0)->end
+p/x &((struct clm_channels *)0)->bitvec
+p/x &((struct clm_country_locales *)0)->country_flags_2
+p/x &((struct clm_country_rev_definition_cd8 *)0)->extra
+p/x &((struct clm_country_rev_definition_set *)0)->set
+p/x &((struct clm_data_header *)0)->apps_version
+p/x &((struct clm_data_registry *)0)->sub_chan_rules_5g_40m
+p/x &((struct clm_limits_params *)0)->other_80_80_chan
+p/x &((struct clm_power_limits *)0)->limit
+p/x &((struct clm_regrev_cc_remap *)0)->index
+p/x &((struct clm_regrev_cc_remap_set *)0)->regrev_remaps
+p/x &((struct clm_regrev_regrev_remap *)0)->r8
+p/x &((struct clm_sub_chan_rules_set_160 *)0)->region_rules
+p/x &((struct clm_sub_chan_rules_set_40 *)0)->region_rules
+p/x &((struct clm_sub_chan_rules_set_80 *)0)->region_rules
+p/x &((struct cs_info *)0)->cs_scan_ini
+p/x &((struct csco_reassoc_pkt *)0)->a3
+p/x &((struct cubby_info *)0)->fn_dump
+p/x &((struct cubby_info_ctx *)0)->context
+p/x &((struct d11ac_tso_s *)0)->tcp_hdr_offset
+p/x &((struct d11actxh *)0)->u
+p/x &((struct d11actxh_cache *)0)->TSCPN
+p/x &((struct d11actxh_pkt *)0)->TxStatus
+p/x &((struct d11actxh_rate *)0)->Bfm0
+p/x &((struct d11init *)0)->value
+p/x &((struct d11rxhdr *)0)->HdrConvSt
+p/x &((struct d11rxhdrshort *)0)->aux_status
+p/x &((struct d11txh *)0)->rts_frame
+p/x &((struct delta_stats_info *)0)->stats
+p/x &((struct desense_history *)0)->no_desense_change_time_cnt
+p/x &((struct di_fcn_s *)0)->endnum
+p/x &((struct dll *)0)->prev_p
+p/x &((struct dll_pool *)0)->elements
+p/x &((dma64addr_t *)0)->hiaddr
+p/x &((struct dma_common *)0)->chnflushstatus
+p/x &((struct dma_info *)0)->trans_coherent
+p/x &((struct dms_desc *)0)->tclas_proc
+p/x &((struct dngl *)0)->ioctl_seq_no_prev
+p/x &((dngl_stats_t *)0)->multicast
+p/x &((struct do11_ap_chrep *)0)->chanlist
+p/x &((struct dot11_action_ext_csa *)0)->chan_switch_ie
+p/x &((struct dot11_action_frmhdr *)0)->data
+p/x &((struct dot11_action_ht_ch_width *)0)->ch_width
+p/x &((struct dot11_action_ht_mimops *)0)->control
+p/x &((struct dot11_action_measure *)0)->data
+p/x &((struct dot11_action_sa_query *)0)->id
+p/x &((struct dot11_action_vht_oper_mode *)0)->mode
+p/x &((struct dot11_action_vs_frmhdr *)0)->data
+p/x &((struct dot11_assoc_req *)0)->listen
+p/x &((struct dot11_assoc_resp *)0)->aid
+p/x &((struct dot11_auth *)0)->status
+p/x &((struct dot11_bcn_prb *)0)->capability
+p/x &((struct dot11_brcm_extch *)0)->extch
+p/x &((struct dot11_bss_max_idle_period_ie *)0)->idle_opt
+p/x &((struct dot11_bsstrans_query *)0)->data
+p/x &((struct dot11_bsstrans_req *)0)->data
+p/x &((struct dot11_bsstrans_resp *)0)->data
+p/x &((struct dot11_channel_switch *)0)->count
+p/x &((struct dot11_channel_switch_wrapper *)0)->wb_chan_switch_ie
+p/x &((struct dot11_csa_body *)0)->count
+p/x &((struct dot11_dms_req *)0)->data
+p/x &((struct dot11_dms_req_desc *)0)->data
+p/x &((struct dot11_dms_req_ie *)0)->data
+p/x &((struct dot11_dms_resp *)0)->data
+p/x &((struct dot11_dms_resp_ie *)0)->data
+p/x &((struct dot11_dms_resp_st *)0)->data
+p/x &((struct dot11_ext_csa *)0)->b
+p/x &((struct dot11_extcap *)0)->extcap
+p/x &((struct dot11_extcap_ie *)0)->cap
+p/x &((struct dot11_extch *)0)->extch
+p/x &((struct dot11_ft_ie *)0)->snonce
+p/x &((struct dot11_ft_req *)0)->data
+p/x &((struct dot11_ft_res *)0)->data
+p/x &((struct dot11_gtk_ie *)0)->data
+p/x &((struct dot11_header *)0)->a4
+p/x &((struct dot11_llc_snap_header *)0)->type
+p/x &((struct dot11_lmrep *)0)->rsni
+p/x &((struct dot11_lmreq *)0)->maxtxpwr
+p/x &((struct dot11_management_header *)0)->seq
+p/x &((struct dot11_management_notification *)0)->data
+p/x &((struct dot11_mdid_ie *)0)->cap
+p/x &((struct dot11_meas_rep *)0)->rep
+p/x &((struct dot11_meas_req *)0)->duration
+p/x &((struct dot11_neighbor_rep_ie *)0)->data
+p/x &((struct dot11_ngbr_bss_term_dur_se *)0)->duration
+p/x &((struct dot11_ngbr_bsstrans_pref_se *)0)->preference
+p/x &((struct dot11_obss_coex *)0)->info
+p/x &((struct dot11_oper_mode_notif_ie *)0)->mode
+p/x &((struct dot11_power_cap *)0)->max
+p/x &((struct dot11_power_cnst *)0)->power
+p/x &((struct dot11_ps_poll_frame *)0)->ta
+p/x &((struct dot11_qbss_load_ie *)0)->aac
+p/x &((struct dot11_quiet *)0)->offset
+p/x &((struct dot11_rde_ie *)0)->status
+p/x &((struct dot11_reassoc_req *)0)->ap
+p/x &((struct dot11_rm_action *)0)->data
+p/x &((struct dot11_rm_ie *)0)->type
+p/x &((struct dot11_rmrep_bcn *)0)->parent_tsf
+p/x &((struct dot11_rmrep_chanload *)0)->channel_load
+p/x &((struct dot11_rmrep_frame *)0)->duration
+p/x &((struct dot11_rmrep_frmentry *)0)->frame_cnt
+p/x &((struct dot11_rmrep_noise *)0)->ipi10_dens
+p/x &((struct dot11_rmrep_stat *)0)->group_id
+p/x &((struct dot11_rmreq *)0)->data
+p/x &((struct dot11_rmreq_bcn *)0)->bssid
+p/x &((struct dot11_rmreq_chanload *)0)->duration
+p/x &((struct dot11_rmreq_frame *)0)->ta
+p/x &((struct dot11_rmreq_noise *)0)->duration
+p/x &((struct dot11_rmreq_stat *)0)->group_id
+p/x &((struct dot11_rmreq_tx_stream *)0)->bin0_range
+p/x &((struct dot11_rrm_cap_ie *)0)->cap
+p/x &((struct dot11_rts_frame *)0)->ta
+p/x &((struct dot11_tclas_fc_0_eth *)0)->eth_type
+p/x &((struct dot11_tclas_fc_1_ipv4 *)0)->reserved
+p/x &((struct dot11_tclas_fc_2_8021q *)0)->tci
+p/x &((struct dot11_tclas_fc_3_filter *)0)->data
+p/x &((struct dot11_tclas_fc_4_ipv6 *)0)->flow_lbl
+p/x &((struct dot11_tclas_fc_5_8021d *)0)->vid
+p/x &((struct dot11_tclas_fc_hdr *)0)->data
+p/x &((struct dot11_tclas_ie *)0)->fc
+p/x &((struct dot11_tclas_proc_ie *)0)->process
+p/x &((struct dot11_tfs_notify_req *)0)->tfs_id
+p/x &((struct dot11_tfs_notify_resp *)0)->tfs_id
+p/x &((struct dot11_tfs_req *)0)->data
+p/x &((struct dot11_tfs_req_ie *)0)->data
+p/x &((struct dot11_tfs_resp *)0)->data
+p/x &((struct dot11_tfs_resp_ie *)0)->data
+p/x &((struct dot11_tfs_se *)0)->data
+p/x &((struct dot11_tfs_status_se *)0)->data
+p/x &((struct dot11_tim_ie *)0)->pvb
+p/x &((struct dot11_timbc *)0)->tim_ie
+p/x &((struct dot11_timbc_req *)0)->data
+p/x &((struct dot11_timbc_req_ie *)0)->interval
+p/x &((struct dot11_timbc_resp *)0)->data
+p/x &((struct dot11_timbc_resp_ie *)0)->low_rate
+p/x &((struct dot11_timeout_ie *)0)->value
+p/x &((struct dot11_tpc_rep *)0)->margin
+p/x &((struct dot11_vht_transmit_power_envelope *)0)->local_max_transmit_power_20
+p/x &((struct dot11_wide_bw_channel_switch *)0)->center_frequency_segment_1
+p/x &((struct dot11_wnm_sleep_ie *)0)->interval
+p/x &((struct dot11_wnm_sleep_req *)0)->data
+p/x &((struct dot11_wnm_sleep_resp *)0)->data
+p/x &((struct dot11_wnm_sleep_subelem_gtk *)0)->key
+p/x &((struct dot11_wnm_sleep_subelem_igtk *)0)->key
+p/x &((struct dot11y_action_ext_csa *)0)->b
+p/x &((struct dot3_mac_llc_snap_header *)0)->type
+p/x &((struct dot3_mac_llc_snapvlan_header *)0)->ether_type
+p/x &((struct dumpcb_s *)0)->next
+p/x &((eap_header_t *)0)->data
+p/x &((eapol_hdr_t *)0)->length
+p/x &((eapol_header_t *)0)->body
+p/x &((eapol_key_header_t *)0)->key
+p/x &((eapol_wpa2_encap_data_t *)0)->data
+p/x &((eapol_wpa2_key_gtk_encap_t *)0)->gtk
+p/x &((eapol_wpa2_key_igtk_encap_t *)0)->key
+p/x &((eapol_wpa_key_header_t *)0)->data
+p/x &((struct eci_prerev35 *)0)->eci_eventmaskhi
+p/x &((struct eci_rev35 *)0)->eci_uartfifolevel
+p/x &((struct edcf_acparam *)0)->TXOP
+p/x &((struct ether_addr *)0)->octet
+p/x &((struct ether_header *)0)->ether_type
+p/x &((struct ether_llist *)0)->addr
+p/x &((struct ethervlan_header *)0)->ether_type
+p/x &((struct eventmsgs_ext *)0)->mask
+p/x &((exempt_list_t *)0)->exempt
+p/x &((exempt_t *)0)->exempt_pkttype
+p/x &((struct fetch_module_info *)0)->arg
+p/x &((struct fetch_rqst *)0)->next
+p/x &((struct fetch_rqst_q_t *)0)->tail
+p/x &((struct fielddesc *)0)->len
+p/x &((struct flash_config *)0)->flashstrconfig
+p/x &((struct flowring_op_data *)0)->extra_params
+p/x &((frame_proto_t *)0)->l4_len
+p/x &((struct framereq *)0)->reps
+p/x &((struct ftm_sample *)0)->rssi
+p/x &((gEventCallback_t *)0)->context
+p/x &((struct gci_gpio_item *)0)->next
+p/x &((struct get_pktcnt *)0)->rx_ocast_good_pkt
+p/x &((struct hash_bucket_desc *)0)->first_bucket_element
+p/x &((struct hash_element_desc *)0)->filter
+p/x &((struct hash_heap_desc *)0)->first_free_element
+p/x &((struct hnd_dev *)0)->pdev
+p/x &((struct hnd_dev_stats *)0)->multicast
+p/x &((hnd_image_info_t *)0)->_boot_patch_end
+p/x &((struct hnd_isr_action *)0)->thread
+p/x &((struct hnd_isr_instance *)0)->hnd_action_flags
+p/x &((struct hnddma_pub *)0)->txnodesc
+p/x &((hnddma_seg_map_t *)0)->segs
+p/x &((hnddma_seg_t *)0)->length
+p/x &((struct ht_add_ie *)0)->basic_mcs
+p/x &((struct ht_cap_ie *)0)->as_cap
+p/x &((struct ht_prop_add_ie *)0)->add_ie
+p/x &((struct ht_prop_cap_ie *)0)->cap_ie
+p/x &((htphy_cal_result_t *)0)->chanspec
+p/x &((htphy_calcache_t *)0)->Vmid
+p/x &((ibss_mute_upd_data_t *)0)->mute
+p/x &((struct icmp6_hdr *)0)->opt
+p/x &((struct icmp6_opt *)0)->data
+p/x &((struct id16_map *)0)->stack
+p/x &((ie_getbuf_t *)0)->id
+p/x &((struct ieee_80211_mcs_rate_info *)0)->coding_d
+p/x &((iem_fns_t *)0)->build
+p/x &((interference_info_t *)0)->link_rssi
+p/x &((iov_bs_data_counters_t *)0)->airtime
+p/x &((iov_bs_data_record_t *)0)->station_counters
+p/x &((iov_bs_data_struct_t *)0)->structure_record
+p/x &((struct ipv4_addr *)0)->addr
+p/x &((struct ipv4_hdlr *)0)->next
+p/x &((struct ipv4_hdr *)0)->dst_ip
+p/x &((struct ipv6_addr *)0)->addr
+p/x &((struct ipv6_exthdr *)0)->hdrlen
+p/x &((struct ipv6_hdr *)0)->daddr
+p/x &((struct iscan_ignore *)0)->chanspec
+p/x &((struct ivtw_key_info *)0)->seq_info
+p/x &((struct ivtw_seq_info *)0)->window
+p/x &((struct join_pref *)0)->rssi
+p/x &((struct keepalives_max_idle *)0)->max_interval
+p/x &((struct key_algo_callbacks *)0)->dump
+p/x &((struct key_algo_entry *)0)->init
+p/x &((struct key_algo_impl *)0)->ctx
+p/x &((struct key_hw_rx_info *)0)->status
+p/x &((struct km_alloc_key_info *)0)->bss_info
+p/x &((struct km_bsscfg *)0)->amt_idx
+p/x &((struct km_hw *)0)->skl
+p/x &((struct km_hw_algo_callbacks *)0)->destroy
+p/x &((struct km_hw_algo_entry *)0)->impl
+p/x &((struct km_hw_algo_impl *)0)->dt_mask
+p/x &((struct km_hw_impl *)0)->ctx
+p/x &((struct km_ibss_scb *)0)->key_idx
+p/x &((struct km_iov_wsec_tlv_ent *)0)->set_cb
+p/x &((struct km_ivtw *)0)->key_info
+p/x &((struct km_key_cache *)0)->hw_idx
+p/x &((struct km_pvt_key *)0)->key_algo
+p/x &((struct km_scb *)0)->amt_idx
+p/x &((struct km_stats *)0)->num_pkt_fetch
+p/x &((struct l2_filter_info *)0)->gtk_per_sta
+p/x &((struct lbuf *)0)->pkttag
+p/x &((struct lbuf_flist *)0)->ring_idx
+p/x &((struct lbuf_frag *)0)->flist
+p/x &((struct lcb *)0)->phy_ctrl_word
+p/x &((lcnphy_aci_t *)0)->bcn_thresh
+p/x &((lcnphy_calcache_t *)0)->rxiqcal_coeff_b0
+p/x &((struct lcnphytbl_info *)0)->tbl_phywidth
+p/x &((leap_challenge_t *)0)->username
+p/x &((leap_response_t *)0)->username
+p/x &((leap_sup_t *)0)->session_key
+p/x &((struct led *)0)->blink_sync
+p/x &((struct led_info *)0)->blink_pins
+p/x &((struct legacy_phycfg *)0)->tx_phy_ctl3
+p/x &((struct link_id_ie *)0)->tdls_resp_mac
+p/x &((low_txq_map_t *)0)->wlc
+p/x &((struct lpc_cubby *)0)->scb_cubby
+p/x &((struct lpc_info *)0)->lpc_params
+p/x &((struct lpc_params *)0)->pwrdn_slow_step
+p/x &((struct lu_reassoc_pkt *)0)->data
+p/x &((struct maclist *)0)->ea
+p/x &((mchan_bss_info_t *)0)->mchan_tbtt_since_bcn
+p/x &((struct mchan_info *)0)->multi_if_adjustment
+p/x &((struct mcs_info *)0)->leg_ofdm
+p/x &((struct member_of_brcm_prop_ie *)0)->ea
+p/x &((struct memuse_info *)0)->inuse_total
+p/x &((struct mfp_bsscfg *)0)->bip_type
+p/x &((struct mfp_scb *)0)->saq
+p/x &((mic_context *)0)->part
+p/x &((struct mkeep_alive_indiv *)0)->override_period_msec
+p/x &((struct mmic_ie *)0)->mic
+p/x &((struct modulecb *)0)->patch
+p/x &((struct modulecb_data *)0)->hdl
+p/x &((struct modulecb_patch *)0)->iovar_fn
+p/x &((mws_params_t *)0)->mws_channel_type
+p/x &((mws_wci2_msg_t *)0)->mws_wci2_repeat
+p/x &((nar_scb_cubby_t *)0)->last_state_flags
+p/x &((struct nbr_element *)0)->phytype
+p/x &((struct nd_advt *)0)->reserved2
+p/x &((struct nd_msg_opt *)0)->mac_addr
+p/x &((struct nd_ol_stats_t *)0)->peer_service
+p/x &((struct nd_param *)0)->offload_id
+p/x &((noise_t *)0)->update_step_interval
+p/x &((noise_thresholds_t *)0)->undesense_step
+p/x &((nphy_cal_result_t *)0)->txiqlocal_coeffsvalid
+p/x &((nphy_calcache_t *)0)->noisecal_regs
+p/x &((struct obss_params *)0)->activity_threshold
+p/x &((struct ofdm_phy_hdr *)0)->service
+p/x &((struct okc_info *)0)->pmk
+p/x &((struct osl_cmn_info *)0)->refcount
+p/x &((struct osl_info *)0)->tx_ctx
+p/x &((struct p2p_scb_cubby *)0)->dummy
+p/x &((struct parp_entry *)0)->ip
+p/x &((passhash_t *)0)->iters
+p/x &((pavars_t *)0)->vars
+p/x &((struct pcie_devdmaregs *)0)->rx
+p/x &((struct pcie_doorbell *)0)->dev2host_1
+p/x &((struct pdmthd_interface *)0)->params_ptr
+p/x &((struct pdsvc_funcs *)0)->notifyptr
+p/x &((struct pdsvc_payload *)0)->data
+p/x &((struct pdsvc_tofobj *)0)->seq_len
+p/x &((struct peer_s *)0)->num_retries
+p/x &((phy_cal_info_t *)0)->last_cal_temp
+p/x &((struct phy_cmn_info *)0)->phymode
+p/x &((struct phy_func_ptr *)0)->txswctrlmapgetptr
+p/x &((phy_idletssi_perband_info_t *)0)->idletssi_5gh
+p/x &((struct phy_info *)0)->pi_fptr
+p/x &((struct phy_info_acphy *)0)->tia_idx_max_eq_init
+p/x &((struct phy_info_htphy *)0)->btc_saved_lna2gainbits
+p/x &((struct phy_info_lcn40phy *)0)->dac_scram_off_5g
+p/x &((struct phy_info_lcnphy *)0)->alt_gaintbl_5g
+p/x &((struct phy_info_nphy *)0)->txidxcap_lo_inuse
+p/x &((phy_iq_est_t *)0)->q_pwr
+p/x &((struct phy_pub *)0)->phy_minor_rev
+p/x &((struct phy_pwr_ctrl_save_acphy *)0)->stored_not_restored_5g
+p/x &((struct phy_srom_info *)0)->elnabypass5g
+p/x &((phy_tx_gain_tbl_entry *)0)->bb_mult
+p/x &((phy_tx_power_t *)0)->ppr_target_powers
+p/x &((struct phy_txcore_pwr_offsets *)0)->offset
+p/x &((phy_txcore_temp_t *)0)->degrade1RXen
+p/x &((struct piof_s *)0)->detach
+p/x &((struct pios *)0)->pio_fn
+p/x &((struct pkt_cb *)0)->entered
+p/x &((struct pkt_filter *)0)->u
+p/x &((struct pkt_filter_info *)0)->cached_wake_packet
+p/x &((struct pktfetch_generic_ctx *)0)->ctx
+p/x &((struct pktfetch_info *)0)->next
+p/x &((struct pktfetch_module_ctx *)0)->orig_ctx
+p/x &((struct pktfetch_q *)0)->count
+p/x &((struct pktfetch_rqstpool *)0)->max
+p/x &((struct pktfree_cb *)0)->entered
+p/x &((struct pktpool *)0)->dmarxfill
+p/x &((pktpool_cbextn_info_t *)0)->arg
+p/x &((pktpool_cbinfo_t *)0)->arg
+p/x &((struct pktq *)0)->pktqlog
+p/x &((pktq_counters_t *)0)->_logtime
+p/x &((pktq_log_counters_v04_t *)0)->time_delta
+p/x &((pktq_log_counters_v05_t *)0)->airtime
+p/x &((pktq_log_format_v04_t *)0)->headings
+p/x &((pktq_log_format_v05_t *)0)->headings
+p/x &((pktq_log_t *)0)->_prec_cnt
+p/x &((struct pktq_prec *)0)->max
+p/x &((struct pm_wake_packet *)0)->packet
+p/x &((povars_t *)0)->vars
+p/x &((struct ppbw *)0)->bw40
+p/x &((struct ppbw_ag_2g *)0)->bw20
+p/x &((struct ppbw_ag_5g *)0)->bw20
+p/x &((struct ppbw_cck *)0)->bw20in40
+p/x &((struct ppbw_nac_2g *)0)->bw40
+p/x &((struct ppbw_nac_5g *)0)->bw80
+p/x &((struct ppr *)0)->ppr_bw
+p/x &((struct ppr_bw_160 *)0)->b80in160
+p/x &((struct ppr_bw_20 *)0)->b20
+p/x &((struct ppr_bw_40 *)0)->b20in40
+p/x &((struct ppr_bw_80 *)0)->b40in80
+p/x &((struct ppr_bw_8080 *)0)->b40in8080
+p/x &((struct ppr_deser_header *)0)->chain3size
+p/x &((struct ppr_dsss_rateset *)0)->pwr
+p/x &((struct ppr_ht_mcs_rateset *)0)->pwr
+p/x &((struct ppr_ofdm_rateset *)0)->pwr
+p/x &((struct ppr_rateset *)0)->vht_mcsmap_prop
+p/x &((struct ppr_ser_mem_flag *)0)->flag
+p/x &((struct ppr_support_rates *)0)->ppr_160_rates
+p/x &((struct ppr_vht_mcs_rateset *)0)->pwr
+p/x &((struct pprpb *)0)->p_4x4txbf_vhtss4
+p/x &((struct probe_resp *)0)->buf
+p/x &((struct probreqcb *)0)->filter_fn
+p/x &((struct prot_hdlr *)0)->next
+p/x &((struct proxd_event_data *)0)->ftm_buff
+p/x &((proxd_ie_t *)0)->params
+p/x &((struct proxy_arp_scb_cubby *)0)->ipv6_global
+p/x &((struct psr_info *)0)->timestamp
+p/x &((struct psta_bsscfg_cubby *)0)->psa
+p/x &((struct pti_control_ie *)0)->seq_control
+p/x &((struct qos_cap_ie *)0)->qosinfo
+p/x &((struct radio_20671_regs *)0)->do_init
+p/x &((struct radio_20xx_prefregs *)0)->init
+p/x &((struct radio_20xx_regs *)0)->do_init
+p/x &((struct radio_regs *)0)->do_init_g
+p/x &((struct rate_lcb_info *)0)->hi_rate_kbps
+p/x &((struct ratesel_cubby *)0)->scb_cubby
+p/x &((struct ratesel_info *)0)->sgi_tmax
+p/x &((struct ratesel_txparams *)0)->ac
+p/x &((struct ratesel_txs *)0)->ac
+p/x &((struct ratmodel_paparams *)0)->det_c1
+p/x &((struct rc4_ks *)0)->y
+p/x &((struct rcb *)0)->max_mcs
+p/x &((rcinfo_t *)0)->rctbl
+p/x &((rcvec_t *)0)->vec
+p/x &((struct reg_nbr_count *)0)->nbr_count_by_channel
+p/x &((struct relmcast_brcm_prop_ie *)0)->updtmo
+p/x &((struct reorder_rxcpl_id_list *)0)->cnt
+p/x &((struct rm_info *)0)->rm_rpi_timer
+p/x &((struct rmc_dot11_action_vs_frmhdr *)0)->data
+p/x &((struct rmc_notify_af *)0)->artmo
+p/x &((struct rrm_bcnreq_ *)0)->scan_results
+p/x &((rrm_bsscfg_cubby_t *)0)->rrm_cap
+p/x &((struct rrm_nbr_rep *)0)->nbr_elt
+p/x &((struct rrm_scb_cubby *)0)->scb_info
+p/x &((struct rrm_scb_info *)0)->data
+p/x &((struct rrmreq *)0)->reps
+p/x &((struct rsn_parms *)0)->cap
+p/x &((rssical_cache_t *)0)->rssical_phyregs_5G
+p/x &((struct rte_gpio *)0)->gpioh_head
+p/x &((struct rte_gpioh *)0)->next
+p/x &((rx_ctxt_t *)0)->channel
+p/x &((struct rxcpl_data_len *)0)->datalen
+p/x &((struct rxcpl_id *)0)->flags
+p/x &((rxgain_ovrd_t *)0)->lpfgain
+p/x &((rxgain_t *)0)->dvga
+p/x &((struct sa_query *)0)->timer
+p/x &((struct sa_seqctl *)0)->seqctl_nonqos
+p/x &((struct saved_psta *)0)->ds_ea
+p/x &((struct sbpcieregs *)0)->sprom
+p/x &((struct sbpciregs *)0)->sprom
+p/x &((struct sbsocramregs *)0)->sr_data
+p/x &((struct scan_data *)0)->dur
+p/x &((struct scan_info *)0)->scan_pwrsave_enable
+p/x &((struct scan_info_cmn *)0)->defaults
+p/x &((struct scan_iter_params *)0)->current_ts
+p/x &((struct scb *)0)->restrict_deadline
+p/x &((struct scb_amsduinfo *)0)->prio
+p/x &((struct scb_auth *)0)->wpa_info
+p/x &((struct scb_bsscfg_cubby *)0)->scb
+p/x &((struct scb_delay_stats *)0)->delay_hist
+p/x &((struct scb_info *)0)->band
+p/x &((struct scb_intfer_stats *)0)->tcppkts
+p/x &((struct scb_iter *)0)->all
+p/x &((struct scb_module *)0)->scb_state_notif_hdl
+p/x &((scb_state_upd_data_t *)0)->oldstate
+p/x &((struct scb_tdls *)0)->base_chan_rateset
+p/x &((struct scb_tdls_cubby *)0)->cubby
+p/x &((struct scb_txc_info *)0)->txh
+p/x &((scb_val_t *)0)->ea
+p/x &((struct sd_instance *)0)->p2po
+p/x &((struct segment *)0)->length
+p/x &((struct serial_dev *)0)->reg_shift
+p/x &((struct shared_phy *)0)->sromi
+p/x &((struct shared_phy_params *)0)->boardflags4
+p/x &((struct shm_acparams *)0)->rsvd
+p/x &((struct shm_mbss_prq_entry_s *)0)->flags
+p/x &((struct si_cores_info *)0)->cib
+p/x &((struct si_info *)0)->macclk_mul_fact
+p/x &((si_mux_uartopt_t *)0)->uart_rx
+p/x &((struct si_pub *)0)->pci_pr32414
+p/x &((struct spktq *)0)->q
+p/x &((struct srom11_ppr *)0)->offset_40in80_h
+p/x &((struct srom11_pwrdet *)0)->pdoffsetcck
+p/x &((struct srom12_pwrdet *)0)->pdoffset40in80
+p/x &((struct srom13_ppr *)0)->ppmcsexp
+p/x &((struct srom8_ppr *)0)->cck2gpo
+p/x &((struct srom9_ppr *)0)->mcs
+p/x &((srom_fem_t *)0)->antswctrllut
+p/x &((struct srom_lcn40_ppr *)0)->mcs5ghpo3
+p/x &((struct srom_lcn_ppr *)0)->cck2gpo
+p/x &((struct srom_lgcy_ppr *)0)->ofdmahpo
+p/x &((struct srom_pwrdet *)0)->tssifloor
+p/x &((srom_rw_t *)0)->buf
+p/x &((sromvar_t *)0)->mask
+p/x &((struct srvsdb_backup *)0)->do_acimode_reset
+p/x &((struct srvsdb_info *)0)->switch_successful
+p/x &((struct ssid_llist *)0)->ssid
+p/x &((sta_info_t *)0)->tx_rate_fallback
+p/x &((struct staprio_scb_cubby *)0)->staprio_scb_info
+p/x &((struct staprio_scb_info *)0)->prio
+p/x &((struct statreq *)0)->reps
+p/x &((statrpt_t *)0)->data
+p/x &((sup_bss_pub_t *)0)->sup_enable_wpa
+p/x &((struct sup_init_event_data *)0)->up
+p/x &((struct supplicant *)0)->pmkid_sup
+p/x &((struct sysmemregs *)0)->sr_data
+p/x &((struct tdls_chsw_req *)0)->switch_timeout
+p/x &((struct tdls_chsw_resp *)0)->switch_timeout
+p/x &((struct tdls_info *)0)->wl_down_triggered
+p/x &((struct tdls_iovar *)0)->chanspec
+p/x &((struct tdls_lookaside *)0)->pmoverride_set
+p/x &((struct tdls_pub_act_frame *)0)->elts
+p/x &((struct tdls_timer_arg *)0)->idx
+p/x &((struct tdls_wfd_ie_iovar *)0)->data
+p/x &((struct ti_ie *)0)->ti_val
+p/x &((struct tkip_key *)0)->rx_seq
+p/x &((struct tkip_key_rx_state *)0)->next_seq
+p/x &((struct tkip_key_tx_state *)0)->mic_off
+p/x &((struct tkip_mic_ctx *)0)->rem_off
+p/x &((tls_info_t *)0)->write_ks
+p/x &((tls_param_info_t *)0)->app_syncid
+p/x &((tlv_t *)0)->data
+p/x &((struct toe_ol_stats_t *)0)->rx_icmp_errinj
+p/x &((struct tof_measure *)0)->max_TOA
+p/x &((tof_rq_params_t *)0)->schk
+p/x &((tof_rqend_params_t *)0)->tgtmac
+p/x &((struct tof_rtd_adj_params *)0)->gd
+p/x &((struct tof_trig_frm *)0)->ftm_ie
+p/x &((struct tof_tslist *)0)->tslist
+p/x &((struct tofts *)0)->discard
+p/x &((struct trf_mgmt_config *)0)->min_rx_bandwidth
+p/x &((trf_mgmt_dwm_info_t *)0)->filter_enabled
+p/x &((trf_mgmt_dwm_tbl_t *)0)->dwm_tbl
+p/x &((struct trf_mgmt_filter *)0)->dscp
+p/x &((struct trf_mgmt_filter_list *)0)->filter
+p/x &((struct trf_mgmt_queue *)0)->pkt_queue
+p/x &((struct trf_mgmt_queue_sample *)0)->bytes_consumed
+p/x &((trf_mgmt_rssi_info_t *)0)->rssi_on
+p/x &((struct trf_mgmt_shaping_info *)0)->num_queued_bytes
+p/x &((struct trf_mgmt_stats *)0)->num_discarded_packets
+p/x &((struct trf_mgmt_stats_array *)0)->rx_queue_stats
+p/x &((struct tsentry *)0)->dialog_token
+p/x &((struct tsinfo *)0)->octets
+p/x &((struct tsinfo_arg *)0)->octets
+p/x &((struct tslist *)0)->tsinfo
+p/x &((struct tspec *)0)->medium_time
+p/x &((struct tspec_arg *)0)->dialog_token
+p/x &((struct tspec_per_sta_arg *)0)->ts
+p/x &((struct tssi_cal_info *)0)->paparams_new
+p/x &((struct tx_inst_power *)0)->txpwr_est_Pout_gofdm
+p/x &((struct tx_path_node *)0)->configured
+p/x &((struct tx_pwr_cache_entry *)0)->stf_tx_max_offset
+p/x &((struct tx_status *)0)->status
+p/x &((struct tx_status_macinfo *)0)->s8
+p/x &((struct txbf_scb_cubby *)0)->txbf_scb_info
+p/x &((struct txbf_scb_info *)0)->bfe_nrx
+p/x &((struct txcal_coeffs *)0)->rxb
+p/x &((struct txdelay_params *)0)->tune
+p/x &((txgain_setting_t *)0)->bbmult
+p/x &((txiqcal_cache_t *)0)->rxcal_coeffs_5G
+p/x &((struct txmod_fns *)0)->activate_notify_fn
+p/x &((struct txmod_info *)0)->ctx
+p/x &((struct txpwr204080 *)0)->pbw
+p/x &((txpwr_target_max_t *)0)->rf_cores
+p/x &((struct txq *)0)->nswq
+p/x &((struct txq_fifo_cnt *)0)->hw_service
+p/x &((struct txq_fifo_state *)0)->buffered
+p/x &((struct txq_info *)0)->txq_list
+p/x &((txrc_ctxt_t *)0)->seq
+p/x &((struct udp_hdlr *)0)->next
+p/x &((struct varbuf *)0)->size
+p/x &((struct vht_cap_ie *)0)->tx_max_rate
+p/x &((struct vht_features_ie_hdr *)0)->rate_mask
+p/x &((struct vht_op_ie *)0)->supp_mcs
+p/x &((struct vlan_header *)0)->vlan_tag
+p/x &((struct vndr_ie *)0)->data
+p/x &((vndr_ie_buf_t *)0)->vndr_ie_list
+p/x &((vndr_ie_info_t *)0)->vndr_ie_data
+p/x &((struct vndr_ie_listel *)0)->vndr_ie_infoel
+p/x &((vndr_ie_setbuf_t *)0)->vndr_ie_buffer
+p/x &((struct wapi_key *)0)->rx_count
+p/x &((struct wapi_sta_msg_t *)0)->wie
+p/x &((wci2_config_t *)0)->mws_prio_assert_offset_req
+p/x &((wci2_loopback_rsp_t *)0)->nbytes_err
+p/x &((wci2_loopback_t *)0)->repeat_ct
+p/x &((struct wep_key *)0)->ckip_state
+p/x &((struct wep_key_ckip_state *)0)->mcrx_seq_bitmap
+p/x &((struct wet_sta *)0)->next_mac
+p/x &((struct wet_tunnel_sta *)0)->used
+p/x &((struct wifi_p2p_action_frame *)0)->elts
+p/x &((struct wifi_p2p_adv_serv_info_s *)0)->serv_name
+p/x &((struct wifi_p2p_advt_serv_se_s *)0)->p_advt_serv_info
+p/x &((struct wifi_p2p_cid_fixed_s *)0)->secdts
+p/x &((struct wifi_p2p_devid_se_s *)0)->addr
+p/x &((struct wifi_p2p_di_fixed_s *)0)->secdts
+p/x &((struct wifi_p2p_gi_fixed_s *)0)->len
+p/x &((struct wifi_p2p_ie *)0)->subelts
+p/x &((struct wifi_p2p_info_se_s *)0)->group
+p/x &((struct wifi_p2p_noa_desc *)0)->start
+p/x &((struct wifi_p2p_noa_se *)0)->desc
+p/x &((struct wifi_p2p_pub_act_frame *)0)->elts
+p/x &((struct wifi_p2p_serv_hash_se_s *)0)->hash
+p/x &((wl_acs_record_t *)0)->timestamp
+p/x &((struct wl_action_frame *)0)->data
+p/x &((struct wl_af_params *)0)->action_frame
+p/x &((wl_anqpo_ignore_bssid_list_t *)0)->bssid
+p/x &((wl_anqpo_ignore_ssid_list_t *)0)->ssid
+p/x &((struct wl_anqpo_info *)0)->gasi
+p/x &((wl_anqpo_peer_list_t *)0)->peer
+p/x &((wl_anqpo_peer_t *)0)->addr
+p/x &((wl_anqpo_set_t *)0)->query_data
+p/x &((struct wl_arp_info *)0)->src_mac
+p/x &((struct wl_assoc_info *)0)->resp
+p/x &((struct wl_assoc_params *)0)->chanspec_list
+p/x &((struct wl_band *)0)->phyrev
+p/x &((struct wl_bcmdcs_data *)0)->chspec
+p/x &((struct wl_bss_config *)0)->chanspec
+p/x &((struct wl_bss_info *)0)->vht_txmcsmap_prop
+p/x &((struct wl_bsscfg *)0)->assoc_state
+p/x &((struct wl_bssload *)0)->chan_util
+p/x &((struct wl_bssload_cfg *)0)->util_levels
+p/x &((struct wl_bssload_static *)0)->aac
+p/x &((struct wl_bsstrans_req *)0)->unicast
+p/x &((struct wl_bsstrans_roamthrottle *)0)->scans_allowed
+p/x &((struct wl_bsstrans_rssi *)0)->rssi_5g
+p/x &((struct wl_bsstrans_rssi_rate_map *)0)->phy_ac
+p/x &((struct wl_chan_qual_event *)0)->metric
+p/x &((struct wl_chan_qual_metric *)0)->ltoh
+p/x &((struct wl_chan_switch *)0)->frame_type
+p/x &((wl_chanim_stats_t *)0)->stats
+p/x &((struct wl_channels_in_country *)0)->channel
+p/x &((struct wl_cmn_data *)0)->objreg
+p/x &((wl_cnt_ge40mcst_v1_t *)0)->bphy_badplcp
+p/x &((wl_cnt_info_t *)0)->data
+p/x &((wl_cnt_lt40mcst_v1_t *)0)->bphy_badplcp
+p/x &((wl_cnt_wlc_t *)0)->txlost
+p/x &((struct wl_country *)0)->ccode
+p/x &((struct wl_country_list *)0)->country_abbrev
+p/x &((wl_delta_stats_t *)0)->bphy_badplcp
+p/x &((struct wl_disc_info *)0)->wlc
+p/x &((struct wl_dload_data *)0)->data
+p/x &((struct wl_dms_desc *)0)->data
+p/x &((struct wl_dms_set *)0)->tclas_proc
+p/x &((struct wl_dms_status *)0)->desc
+p/x &((struct wl_dms_term *)0)->user_id
+p/x &((struct wl_escan_params *)0)->params
+p/x &((struct wl_escan_result *)0)->bss_info
+p/x &((struct wl_event_data_if *)0)->role
+p/x &((struct wl_event_data_rssi *)0)->noise
+p/x &((struct wl_event_gas *)0)->data
+p/x &((wl_event_msg_t *)0)->bsscfgidx
+p/x &((struct wl_event_rx_frame_data *)0)->rate
+p/x &((struct wl_eventq_info *)0)->client
+p/x &((struct wl_extjoin_params *)0)->assoc
+p/x &((struct wl_gas_config *)0)->max_retries
+p/x &((struct wl_gas_info *)0)->wlevtq
+p/x &((struct wl_header *)0)->rssi
+p/x &((struct wl_if *)0)->nfci
+p/x &((struct wl_if_add *)0)->wlc_index
+p/x &((struct wl_if_stats *)0)->rxmulti
+p/x &((struct wl_info *)0)->nfci
+p/x &((struct wl_interface_create *)0)->mac_addr
+p/x &((struct wl_interface_info *)0)->bsscfgidx
+p/x &((struct wl_intfer_event *)0)->txfail_histo
+p/x &((struct wl_intfer_params *)0)->tcptxfail_thresh
+p/x &((wl_iov_mac_extra_params_t *)0)->addr_info
+p/x &((wl_iov_mac_full_params_t *)0)->extra_params
+p/x &((wl_iov_mac_params_t *)0)->ea
+p/x &((wl_iov_pktq_log_t *)0)->pktq_log
+p/x &((struct wl_iscan_results *)0)->results
+p/x &((struct wl_join_params *)0)->params
+p/x &((struct wl_join_scan_params *)0)->home_time
+p/x &((struct wl_keep_alive_info *)0)->mkeep_alive
+p/x &((struct wl_keep_alive_pkt *)0)->data
+p/x &((struct wl_leap_info *)0)->domain
+p/x &((struct wl_leap_list *)0)->leap_info
+p/x &((struct wl_led_info *)0)->activehi
+p/x &((struct wl_lifetime *)0)->lifetime
+p/x &((wl_mac_ratehisto_res_t *)0)->prop11n_mcs
+p/x &((struct wl_mempool_stats *)0)->s
+p/x &((struct wl_mkeep_alive_pkt *)0)->data
+p/x &((struct wl_msglevel2 *)0)->high
+p/x &((struct wl_nd_info *)0)->ra_info
+p/x &((struct wl_nd_ra_info *)0)->ring_index
+p/x &((struct wl_nd_ra_node *)0)->time_stamp
+p/x &((struct wl_p2p_disc_st *)0)->dwell
+p/x &((struct wl_p2p_if *)0)->chspec
+p/x &((struct wl_p2p_ifq *)0)->ifname
+p/x &((struct wl_p2p_ops *)0)->ctw
+p/x &((struct wl_p2p_scan *)0)->reserved
+p/x &((struct wl_p2p_sched *)0)->desc
+p/x &((struct wl_p2p_sched_desc *)0)->count
+p/x &((struct wl_p2p_wfds_hash *)0)->service_name
+p/x &((struct wl_p2p_wfds_hash_list *)0)->next
+p/x &((wl_p2po_adv_match_t *)0)->match_svc_info
+p/x &((struct wl_p2po_find_config *)0)->social_channels
+p/x &((struct wl_p2po_info *)0)->prbreq_svc_hash_vndr_ie_len
+p/x &((wl_p2po_listen_t *)0)->interval
+p/x &((wl_p2po_seek_t *)0)->query_data
+p/x &((struct wl_p2po_service *)0)->num_service
+p/x &((wl_p2po_wfds_advertise_add_t *)0)->service_info
+p/x &((wl_p2po_wfds_advertise_del_t *)0)->advertise_hdl
+p/x &((wl_p2po_wfds_seek_add_t *)0)->service_info_req
+p/x &((wl_p2po_wfds_seek_del_t *)0)->seek_hdl
+p/x &((struct wl_pfn *)0)->wsec
+p/x &((struct wl_pfn_bdcast_list *)0)->bssidinfo
+p/x &((struct wl_pfn_bestinfo *)0)->timestamp
+p/x &((struct wl_pfn_bestnet *)0)->bestnetinfo
+p/x &((struct wl_pfn_bssid *)0)->flags
+p/x &((struct wl_pfn_bssid_list *)0)->pbssidinfo
+p/x &((struct wl_pfn_bssidinfo *)0)->ssid
+p/x &((struct wl_pfn_cfg *)0)->flags
+p/x &((struct wl_pfn_info *)0)->rttn
+p/x &((struct wl_pfn_internal *)0)->pad
+p/x &((struct wl_pfn_lnet_info *)0)->rtt1
+p/x &((struct wl_pfn_lscanresults *)0)->netinfo
+p/x &((struct wl_pfn_net_info *)0)->timestamp
+p/x &((struct wl_pfn_param *)0)->slow_freq
+p/x &((struct wl_pfn_scanresult *)0)->bss_info
+p/x &((struct wl_pfn_scanresults *)0)->netinfo
+p/x &((struct wl_pfn_subnet_info *)0)->SSID
+p/x &((struct wl_pkt_decrypter *)0)->dec_ctx
+p/x &((struct wl_pkt_filter *)0)->u
+p/x &((struct wl_pkt_filter_enable *)0)->enable
+p/x &((struct wl_pkt_filter_list *)0)->filter
+p/x &((struct wl_pkt_filter_pattern *)0)->mask_and_pattern
+p/x &((struct wl_pkt_filter_pattern_list *)0)->patterns
+p/x &((struct wl_pkt_filter_pattern_listel *)0)->mask_and_data
+p/x &((struct wl_pkt_filter_stats *)0)->num_pkts_discarded
+p/x &((struct wl_pm2_sleep_ret_ext *)0)->txrx_bytes_threshold
+p/x &((struct wl_proxd_collect_query *)0)->remote
+p/x &((struct wl_proxd_params_common *)0)->duration
+p/x &((struct wl_proxd_params_tof_method *)0)->vht_rate
+p/x &((struct wl_proxd_params_tof_tune *)0)->ftm_cnt
+p/x &((struct wl_proxd_status_iovar *)0)->adj_type_cnt
+p/x &((struct wl_psta_primary_intf_event *)0)->prim_ea
+p/x &((struct wl_pwr_scan_stats *)0)->other_scans
+p/x &((struct wl_rates_info *)0)->txstreams
+p/x &((struct wl_rateset *)0)->rates
+p/x &((struct wl_rateset_args *)0)->vht_mcs
+p/x &((struct wl_relmcast_client *)0)->addr
+p/x &((struct wl_relmcast_st *)0)->actf_time
+p/x &((struct wl_rm_rep *)0)->rep
+p/x &((struct wl_rm_rep_elt *)0)->data
+p/x &((struct wl_rm_req *)0)->req
+p/x &((struct wl_rm_req_elt *)0)->dur
+p/x &((struct wl_rm_rpi_rep *)0)->rpi_max
+p/x &((struct wl_rmc_cnts *)0)->mc_tr_cnt_exceeded
+p/x &((struct wl_rmc_entry *)0)->addr
+p/x &((struct wl_rmc_entry_table *)0)->entry
+p/x &((struct wl_rmc_trans_elem *)0)->flag
+p/x &((struct wl_rmc_trans_in_network *)0)->trs
+p/x &((struct wl_rmc_vsie *)0)->payload
+p/x &((struct wl_roam_prof *)0)->max_scan_period
+p/x &((struct wl_roam_prof_band *)0)->roam_prof
+p/x &((wl_rssi_ant_t *)0)->rssi_ant
+p/x &((struct wl_rssi_event *)0)->rssi_levels
+p/x &((struct wl_rxsts *)0)->ampdu_counter
+p/x &((struct wl_scan_params *)0)->channel_list
+p/x &((struct wl_scan_results *)0)->bss_info
+p/x &((wl_scb_probe_t *)0)->scb_max_probe
+p/x &((struct wl_segment *)0)->flags
+p/x &((struct wl_segment_info *)0)->segments
+p/x &((struct wl_service_term *)0)->u
+p/x &((struct wl_smf_stats *)0)->elem
+p/x &((struct wl_smfs_elem *)0)->code
+p/x &((struct wl_staprio_cfg *)0)->prio
+p/x &((struct wl_tclas *)0)->fc
+p/x &((struct wl_timbc_offset *)0)->tsf_present
+p/x &((struct wl_timbc_set *)0)->rate_max
+p/x &((struct wl_timbc_status *)0)->rate_low
+p/x &((struct wl_tmr *)0)->timer
+p/x &((struct wl_toe_info *)0)->toe_stats
+p/x &((wl_traffic_stats_t *)0)->bytes
+p/x &((struct wl_txbf_rateset *)0)->txbf_rate_ofdm_cnt_bcm
+p/x &((struct wl_txchain_pwr_offsets *)0)->offset
+p/x &((wl_txppr_t *)0)->pprbuf
+p/x &((struct wl_uint32_list *)0)->element
+p/x &((struct wl_wlc_version *)0)->wlc_ver_minor
+p/x &((wl_wme_cnt_t *)0)->tx_expired
+p/x &((struct wl_wowl_pattern *)0)->type
+p/x &((struct wl_wowl_pattern_list *)0)->pattern
+p/x &((struct wl_wowl_wakeind *)0)->ucode_wakeind
+p/x &((struct wl_wsec_info *)0)->tlvs
+p/x &((wl_wsec_info_tlv_t *)0)->data
+p/x &((struct wl_wsec_key *)0)->ea
+p/x &((struct wlc_11d_info *)0)->awaiting_cntry_info
+p/x &((struct wlc_11h_info *)0)->_spect_management
+p/x &((wlc_11h_t *)0)->spect_state
+p/x &((wlc_11u_bsscfg_cubby_t *)0)->interworking
+p/x &((struct wlc_11u_info *)0)->cfgh
+p/x &((struct wlc_akm_info *)0)->cfgh
+p/x &((struct wlc_amsdu_cnt *)0)->tx_padding_no_pad
+p/x &((wlc_antselcfg_t *)0)->num_antcfg
+p/x &((struct wlc_ap_info *)0)->scb_max_probe
+p/x &((wlc_ap_info_pvt_t *)0)->wlancoex
+p/x &((struct wlc_assoc *)0)->block_disassoc_tx
+p/x &((struct wlc_assoc_info *)0)->join_targets_last
+p/x &((struct wlc_assoc_req *)0)->status
+p/x &((struct wlc_auth_info *)0)->wpa_info_mpool_h
+p/x &((struct wlc_blob_info *)0)->segment_count
+p/x &((wlc_bmac_obss_counts_t *)0)->rxglitch
+p/x &((struct wlc_bmac_revinfo *)0)->wowl_gpiopol
+p/x &((struct wlc_bmac_state *)0)->preamble_ovr
+p/x &((wlc_bs_data_counters_t *)0)->airtime
+p/x &((struct wlc_bs_data_info *)0)->scb_handle
+p/x &((wlc_bs_data_scb_cubby_t *)0)->airtime
+p/x &((struct wlc_bss_info *)0)->wapi
+p/x &((struct wlc_bss_list *)0)->ptrs
+p/x &((struct wlc_bsscfg *)0)->flags2
+p/x &((struct wlc_bsscfg_opermode_ctx *)0)->pkt
+p/x &((struct wlc_bsscfg_opermode_info *)0)->op_ctx
+p/x &((struct wlc_bssload *)0)->event_util_level
+p/x &((struct wlc_bssload_info *)0)->bssload_static
+p/x &((struct wlc_btc_info *)0)->btrssi_ptr
+p/x &((struct wlc_btc_param_vars_entry *)0)->value
+p/x &((struct wlc_btc_param_vars_info *)0)->param_list
+p/x &((struct wlc_cac *)0)->rfaware_lifetime
+p/x &((struct wlc_cac_ac *)0)->ccx_tsm
+p/x &((struct wlc_ccx *)0)->ccx_network
+p/x &((struct wlc_ccx_droam *)0)->roam_trigger
+p/x &((struct wlc_ccx_info *)0)->key_refresh_key
+p/x &((struct wlc_ccx_rm *)0)->plm_dur_timer
+p/x &((struct wlc_ccx_rm_frm_elt *)0)->rssi_sum
+p/x &((struct wlc_ccx_rm_rept *)0)->data
+p/x &((wlc_ccx_rogue_t *)0)->ap_name
+p/x &((struct wlc_ccxsup_info *)0)->mod_priv
+p/x &((struct wlc_ccxsup_priv *)0)->bss_ccxsup_priv_offset
+p/x &((struct wlc_ccxsup_pub *)0)->cfgh
+p/x &((struct wlc_chanim_stats *)0)->is_valid
+p/x &((struct wlc_channel_txchain_limits *)0)->chain_limit
+p/x &((struct wlc_cm_band *)0)->chain_limits
+p/x &((struct wlc_cm_data *)0)->clmload_wbi
+p/x &((struct wlc_cm_info *)0)->cm
+p/x &((struct wlc_cmn_info *)0)->hostmem_access_enabled
+p/x &((struct wlc_cntry_info *)0)->country_abbrev_override
+p/x &((wlc_cs_chan_info_t *)0)->nEXs
+p/x &((struct wlc_csa_info *)0)->scbh
+p/x &((wlc_csa_scb_cubby_t *)0)->dcs_ack_counter
+p/x &((wlc_csa_t *)0)->channel_sw
+p/x &((wlc_cxn_t *)0)->ign_bcn_lost_det
+p/x &((struct wlc_deauth_send_cbargs *)0)->pkt
+p/x &((struct wlc_dpc_info *)0)->processed
+p/x &((struct wlc_dwds_config *)0)->ea
+p/x &((struct wlc_early_bcn_detect *)0)->uatbtt_start_time
+p/x &((struct wlc_event *)0)->next
+p/x &((struct wlc_eventq *)0)->event_inds_mask
+p/x &((struct wlc_excess_pm_wake_info *)0)->last_cal_dur
+p/x &((struct wlc_fbt_info *)0)->mod_priv
+p/x &((struct wlc_fbt_priv *)0)->bss_fbt_priv_offset
+p/x &((struct wlc_fbt_pub *)0)->cfgh
+p/x &((struct wlc_frminfo *)0)->wrxh
+p/x &((struct wlc_hrt_info *)0)->timer_armed
+p/x &((struct wlc_hrt_to *)0)->expired
+p/x &((wlc_hs20_bsscfg_cubby_t *)0)->osen
+p/x &((struct wlc_hs20_info *)0)->cfgh
+p/x &((struct wlc_ht_bss_cubby *)0)->priv
+p/x &((struct wlc_ht_bss_info_priv *)0)->rifs_mode
+p/x &((struct wlc_ht_bss_info_pub *)0)->txburst_limit
+p/x &((struct wlc_ht_info *)0)->ampdu_rts
+p/x &((struct wlc_ht_priv_info *)0)->bss_priv_offset
+p/x &((struct wlc_ht_scb_cubby *)0)->priv
+p/x &((struct wlc_ht_scb_info_priv *)0)->rclist
+p/x &((struct wlc_ht_scb_info_pub *)0)->ht_mimops_rtsmode
+p/x &((struct wlc_hw *)0)->aqm_di
+p/x &((struct wlc_hw_btc_info *)0)->bt_period_out_of_sync_cnt
+p/x &((struct wlc_hw_info *)0)->hw_ulb_cap
+p/x &((struct wlc_hwband *)0)->phy_minor_rev
+p/x &((struct wlc_hwrs_iterator_t *)0)->cur_idx
+p/x &((wlc_iem_build_data_t *)0)->buf_len
+p/x &((wlc_iem_calc_data_t *)0)->tag
+p/x &((wlc_iem_cbe_t *)0)->ctx
+p/x &((struct wlc_iem_cbparm *)0)->ft
+p/x &((wlc_iem_cbvsie_data_t *)0)->ie_len
+p/x &((struct wlc_iem_info *)0)->vs_parse_ft_offset
+p/x &((wlc_iem_ins_data_t *)0)->ie_len
+p/x &((wlc_iem_mod_data_t *)0)->ie_len
+p/x &((wlc_iem_nhdlr_data_t *)0)->ie_len
+p/x &((wlc_iem_parse_data_t *)0)->buf_len
+p/x &((wlc_iem_pe_t *)0)->ctx
+p/x &((struct wlc_iem_pparm *)0)->ft
+p/x &((wlc_iem_pvsie_data_t *)0)->ie_len
+p/x &((wlc_iem_tag_t *)0)->cnt
+p/x &((wlc_iem_uiel_cbparm_t *)0)->cbdata
+p/x &((wlc_iem_uiel_t *)0)->ctx
+p/x &((wlc_iem_upp_t *)0)->ctx
+p/x &((struct wlc_ier_info *)0)->regs_offset
+p/x &((struct wlc_ier_reg *)0)->parse_tt_offset
+p/x &((struct wlc_if *)0)->_cnt
+p/x &((struct wlc_info *)0)->taf_handle
+p/x &((wlc_ioc_ent_t *)0)->ctx
+p/x &((wlc_ioc_high_ent_t *)0)->hdlr
+p/x &((wlc_ioct_desc_t *)0)->ctx
+p/x &((struct wlc_ioctl_cb_s *)0)->next
+p/x &((struct wlc_ioctl_cmd *)0)->min_len
+p/x &((wlc_iocv_high_t *)0)->ioc
+p/x &((struct wlc_iocv_info *)0)->obj
+p/x &((wlc_iocv_low_t *)0)->ioc
+p/x &((wlc_iocv_mem_t *)0)->ii
+p/x &((wlc_iov_ent_t *)0)->ctx
+p/x &((wlc_iov_high_ent_t *)0)->hdlr
+p/x &((wlc_iovt_desc_t *)0)->ctx
+p/x &((wlc_join_pref_t *)0)->band
+p/x &((struct wlc_key *)0)->algo_impl
+p/x &((struct wlc_key_info *)0)->icv_len
+p/x &((struct wlc_keymgmt *)0)->key_cache
+p/x &((struct wlc_keymgmt_event_data *)0)->pkt
+p/x &((struct wlc_link_qual *)0)->rssi_qdb
+p/x &((struct wlc_lpc_info *)0)->cubby_sz
+p/x &((struct wlc_lq_stats_notif *)0)->notif_timer
+p/x &((struct wlc_ltecx_info *)0)->wci2_config
+p/x &((struct wlc_macfltr_info *)0)->cfgh
+p/x &((struct wlc_mbss_cnt *)0)->ps_trans
+p/x &((struct wlc_mbss_info *)0)->bcast_next_start
+p/x &((struct wlc_mchan_context *)0)->pm_pending
+p/x &((wlc_mcnx_abs_t *)0)->count
+p/x &((wlc_mcnx_assoc_upd_data_t *)0)->assoc
+p/x &((wlc_mcnx_bss_upd_data_t *)0)->up
+p/x &((struct wlc_mcnx_info *)0)->mac_suspends
+p/x &((wlc_mcnx_intr_data_t *)0)->tsf_l
+p/x &((wlc_mcnx_tsf_upd_data_t *)0)->cfg
+p/x &((struct wlc_mfp_info *)0)->h_scb
+p/x &((struct wlc_monitor_info *)0)->mon_cal_timer
+p/x &((struct wlc_nar_info *)0)->txq_time_allowance_us
+p/x &((struct wlc_p2p_adv_svc_info_attr *)0)->next
+p/x &((struct wlc_p2p_data *)0)->to_send_wfds_adv_list
+p/x &((struct wlc_p2p_info *)0)->p2p_data
+p/x &((wlc_p2p_sched_t *)0)->desc
+p/x &((wlc_pcb_cd_t *)0)->shift
+p/x &((struct wlc_pcb_info *)0)->pktfree_callback
+p/x &((struct wlc_pdsvc_config *)0)->bssid
+p/x &((struct wlc_pdsvc_info *)0)->rptlist
+p/x &((struct wlc_pdtof_data *)0)->tof_dstea
+p/x &((struct wlc_pdtof_sm *)0)->ampdulen
+p/x &((struct wlc_pdu_tx_params *)0)->rspec_override
+p/x &((struct wlc_pkt_desc *)0)->dscp
+p/x &((struct wlc_pktc_info *)0)->policy
+p/x &((wlc_pkttag_t *)0)->wl_hdr_information
+p/x &((struct wlc_pm_st *)0)->dfrts_reached_threshold
+p/x &((struct wlc_pmkid_info *)0)->cfgh
+p/x &((wlc_ppr_get_bw_pwrs_pair_t *)0)->fn
+p/x &((struct wlc_pps_info *)0)->is_ps_pretend_probe_timer_running
+p/x &((wlc_pre_parse_frame_t *)0)->chan
+p/x &((struct wlc_probresp_info *)0)->p2p_index
+p/x &((struct wlc_probresp_mac_filter_info *)0)->bsscfgh
+p/x &((wlc_prot_cfg_t *)0)->shortpreamble
+p/x &((wlc_prot_g_cfg_t *)0)->_g
+p/x &((struct wlc_prot_g_info *)0)->cfgh
+p/x &((wlc_prot_g_info_priv_t *)0)->gmode_user
+p/x &((struct wlc_prot_info *)0)->cfgh
+p/x &((wlc_prot_info_priv_t *)0)->cfg_offset
+p/x &((struct wlc_prot_n_cfg *)0)->nongf
+p/x &((struct wlc_prot_n_info *)0)->n_pam_override
+p/x &((wlc_prot_n_info_priv_t *)0)->nmode_user
+p/x &((struct wlc_prot_obss_info *)0)->protection
+p/x &((struct wlc_prq_info_s *)0)->is_htsta
+p/x &((struct wlc_psa *)0)->saved_psta_mode
+p/x &((struct wlc_psta_info *)0)->pstadupdetect
+p/x &((struct wlc_pub *)0)->_taf
+p/x &((struct wlc_pub_cmn *)0)->driverrev
+p/x &((struct wlc_pwrsave *)0)->pps_threshold
+p/x &((struct wlc_quiet *)0)->offset
+p/x &((struct wlc_quiet_info *)0)->cfgh
+p/x &((struct wlc_radio_pwrsave *)0)->pwrsave
+p/x &((wlc_rate_measurement_t *)0)->rxframes_rate
+p/x &((struct wlc_ratesel_info *)0)->ppr_rates
+p/x &((struct wlc_rateset *)0)->vht_mcsmap_prop
+p/x &((struct wlc_rev_info *)0)->phyminorrev
+p/x &((struct wlc_rfc *)0)->ac
+p/x &((struct wlc_rm_req *)0)->dur
+p/x &((struct wlc_rm_req_state *)0)->cb_arg
+p/x &((struct wlc_rmc_info *)0)->auto_ar_select
+p/x &((struct wlc_rmc_trans_info *)0)->next
+p/x &((struct wlc_roam *)0)->roam_prof_idx
+p/x &((struct wlc_rrm_info *)0)->data_activity_ts
+p/x &((struct wlc_rrm_req *)0)->intval
+p/x &((struct wlc_rrm_req_state *)0)->cb_arg
+p/x &((struct wlc_rxchain_pwrsave *)0)->pwrsave
+p/x &((struct wlc_scan_cmn_info *)0)->scan_stop_time
+p/x &((struct wlc_scan_info *)0)->iscan_cont
+p/x &((struct wlc_scandb *)0)->list
+p/x &((struct wlc_scandb_entry *)0)->datalen
+p/x &((wlc_scb_intfer_cubby_t *)0)->stats
+p/x &((struct wlc_scb_stats *)0)->tx_pkts_fw_retry_exhausted
+p/x &((struct wlc_smf_stats *)0)->stats
+p/x &((struct wlc_smfs_elem *)0)->smfs_elem
+p/x &((struct wlc_smfs_info *)0)->smf_stats
+p/x &((struct wlc_spt *)0)->bcn_modified
+p/x &((struct wlc_srvsdb_info *)0)->vsdb_txpwr_ctl
+p/x &((struct wlc_ssid *)0)->SSID
+p/x &((struct wlc_stamon_info *)0)->amt_max_idx
+p/x &((struct wlc_stamon_sta_cfg_entry *)0)->sniff_enab
+p/x &((struct wlc_stamon_sta_config *)0)->ea
+p/x &((struct wlc_staprio_info *)0)->per_ea_settings
+p/x &((struct wlc_staprio_settings *)0)->prio
+p/x &((struct wlc_stf *)0)->channel_bonding_cores
+p/x &((struct wlc_stf_rs_shm_offset *)0)->val
+p/x &((struct wlc_sup_info *)0)->mod_priv
+p/x &((wlc_sup_priv_t *)0)->sup_up_down_notif_hdl
+p/x &((wlc_sup_pub_t *)0)->cfgh
+p/x &((wlc_tbtt_ent_data_t *)0)->tsf_l
+p/x &((wlc_tbtt_ent_t *)0)->req_adj
+p/x &((struct wlc_tbtt_info *)0)->cfgh
+p/x &((struct wlc_tdls *)0)->sup_ch_ie_len
+p/x &((struct wlc_tdls_cnt *)0)->buf_reinserted
+p/x &((struct wlc_tpc_info *)0)->pwr_constraint
+p/x &((struct wlc_trf_mgmt_ctxt *)0)->scbh
+p/x &((struct wlc_trf_mgmt_info *)0)->dwm_info
+p/x &((struct wlc_tunables *)0)->mrrs
+p/x &((struct wlc_txbf_info *)0)->impbf_usr_idx
+p/x &((struct wlc_txc_info *)0)->_txc
+p/x &((wlc_txc_info_priv_t *)0)->ucache_entry_inuse
+p/x &((struct wlc_txchain_pwr *)0)->chain
+p/x &((struct wlc_txh_info *)0)->seq
+p/x &((struct wlc_txq_info *)0)->epoch
+p/x &((struct wlc_vht_info *)0)->vht_op
+p/x &((struct wlc_vht_scb_cubby *)0)->vht_scb_info
+p/x &((struct wlc_vht_scb_info *)0)->ampdu_max_exp
+p/x &((struct wlc_wapi_bsscfg_cubby_priv *)0)->wapi_ie_len
+p/x &((struct wlc_wapi_bsscfg_cubby_pub *)0)->wai_restrict
+p/x &((struct wlc_wapi_info *)0)->priv_offset
+p/x &((struct wlc_wds_info *)0)->wds_timeout
+p/x &((struct wlc_wet_info *)0)->stahash_mac
+p/x &((struct wlc_wet_tunnel_info *)0)->sta_timeout
+p/x &((struct wlc_wme *)0)->wme_admctl
+p/x &((struct wlc_wnm_info *)0)->bsstrans_stainfo
+p/x &((struct wlcband *)0)->phy_minor_rev
+p/x &((struct wlccore *)0)->txpktpend
+p/x &((struct wlfc_fw_dbgstats *)0)->credits
+p/x &((struct wlfc_fw_stats *)0)->txstats_other
+p/x &((struct wlfc_info_state *)0)->dbgstats
+p/x &((struct wlfc_mac_desc_handle_map *)0)->replay_counter
+p/x &((struct wme_ie *)0)->qosinfo
+p/x &((struct wme_param_ie *)0)->acparam
+p/x &((wnm_bsscfg_cubby_t *)0)->chainable
+p/x &((struct wnm_bsstrans_rateidx2rate500k *)0)->phy_ac
+p/x &((struct wnm_bsstrans_req_info *)0)->reqmode
+p/x &((struct wnm_bsstrans_roam_throttle *)0)->scans_done
+p/x &((struct wnm_bsstrans_sta_info *)0)->btm_rssi_thresh
+p/x &((struct wnm_bsstrans_sta_info_mem *)0)->idx2rate_mem
+p/x &((struct wnm_dms_info *)0)->dms_desc_head
+p/x &((struct wnm_dms_scb *)0)->scb
+p/x &((wnm_scb_cubby_t *)0)->cap
+p/x &((struct wnm_tclas *)0)->fc
+p/x &((struct wnm_tfs_info *)0)->tfs_req_num
+p/x &((struct wnm_tfs_req *)0)->notify_enable
+p/x &((struct wnm_tfs_req_se *)0)->tclas_len
+p/x &((wnm_timbc_fset_t *)0)->check_beacon
+p/x &((struct wnm_url *)0)->data
+p/x &((struct wowl_net_session *)0)->message_sending
+p/x &((struct wowl_pattern *)0)->pattern
+p/x &((struct wowlpf_info *)0)->tls
+p/x &((wpa_ie_fixed_t *)0)->version
+p/x &((wpa_pmkid_list_t *)0)->list
+p/x &((wpa_suite_auth_key_mgmt_t *)0)->list
+p/x &((wpa_suite_mcast_t *)0)->type
+p/x &((wpa_suite_t *)0)->type
+p/x &((wpa_suite_ucast_t *)0)->list
+p/x &((struct wpapsk_info *)0)->pmk_psk
+p/x &((wpapsk_t *)0)->retries
+p/x &((struct wpi_iv *)0)->PN
+p/x &((struct wps_at_fixed *)0)->data
+p/x &((wsec_pmk_t *)0)->key
+p/x &((xtlv_desc_t *)0)->ptr
+enum _freqtrack_override_t FREQTRACK_ON
+enum _opmode_cap_t OMC_VHT
+enum _pm2rd_state_t PM2RD_WAIT_TMO
+enum bs_data_iovar_numbers IOV_SCB_BS_DATA
+enum bsscfg_type BSSCFG_TYPE_PROXD
+enum clm_band CLM_BAND_5G
+enum clm_bandwidth CLM_BW_10
+enum clm_data_const CLM_REGISTRY_FLAG_REGION_FLAG_2
+enum clm_data_sub_chan_id CLM_DATA_SUB_CHAN_MAX_80
+enum clm_flags CLM_FLAG_HAS_DSSS_EIRP
+enum clm_limits_type CLM_LIMITS_TYPE_SUBCHAN_UUU
+enum clm_rates WL_RATE_P_4X4_TXBF_VHT10SS4
+enum clm_result CLM_RESULT_ERR
+enum clm_string_source CLM_STRING_SOURCE_EFFECTIVE
+enum clm_string_type CLM_STRING_TYPE_USER_STRING
+enum dma_param_id HNDDMA_SEP_RX_HDR
+enum event_msgs_ext_command EVENTMSGS_RESET_BIT
+enum frame_l2_hdr FRAME_L2_ETHVLAN_H
+enum frame_l3_hdr FRAME_L3_8021X_EAPOLKEY_H
+enum frame_l4_hdr FRAME_L4_ICMP6_H
+enum hnd_ioctl_cmd BUS_FLUSH_CHAINED_PKTS
+enum km_hw_flags KM_HW_STA_BSSID_AMT
+enum km_key_pkt_type KM_KEY_PKT_DOT11
+enum lbuf_type lbuf_frag
+enum mws_wlanrx_prot_e C_LTECX_MWS_WLANRX_PROT_PM
+enum obj_registry_key OBJR_DFS_SCAN_INFO
+enum osl_ext_status_t OSL_EXT_ERROR
+enum p2psd_svc_protype SVC_RPOTYPE_WFDS
+enum phy_radar_detect_mode RADAR_DETECT_MODE_EU
+enum pktfetchq_state STOPPED_UNABLE_TO_GET_LBUF
+enum proxd_method PROXD_RSSI_METHOD
+enum prxs_subband PRXS_SUBBAND_80U
+enum prxs_subband_bphy PRXS_SUBBAND_BPHY_20L
+enum rmcActionType ERMC_ACT_DELETE
+enum rmc_iovar_tbl IOV_RELMCAST_ARTMO
+enum rmc_modes WL_RMC_MODE_TRANSMITTER
+enum rmc_opcodes RELMCAST_ENTRY_OP_ENABLE
+enum rmc_returncode ERMC_MC_TAKEN_BY_OTHER_TR
+enum rmc_subtype ERMC_SUBTYPE_RCVR_CLEAR_ENTRIES
+enum scb_txmod TXMOD_TRANSMIT
+enum shm_ltecx_hflags_e C_LTECX_HOST_SCANJOIN_PROT
+enum shm_mbss_prq_ft_e SHM_MBSS_PRQ_FT_MIMO
+enum smfs_type SMFS_TYPE_DEAUTH_RX
+enum sup_auth_status WLC_SUP_KEYXCHANGE_WAIT_G1
+enum tagPFNNETSTATE PFN_NET_DISASSOCIATED
+enum tagPFNSCANSTATE PFN_SCAN_IDLE
+enum tof_adj_mode TOF_ADJ_SEQ
+enum tof_bw_index TOF_BW_SEQTX_INDEX
+enum tof_event TOF_EVENT_WAITMTMO
+enum tof_mode_type TOF_LEGACY_AP
+enum tof_rate_type TOF_FRAME_RATE_VHT
+enum tof_reason TOF_REASON_INITIAL
+enum tof_ret TOF_RET_ALIVE
+enum tof_state TOF_STATE_ICONFIRM
+enum tof_type TOF_TYPE_MEASURE
+enum tof_way_type TOF_TYPE_TWO_WAY
+enum tpk_handshake_msg HANDSHAKE_MSG_2
+enum trf_mgmt_dscp_values trf_mgmt_dscp_be
+enum trf_mgmt_priority_class trf_mgmt_priority_nochange
+enum txcore_index NSTS4_IDX
+enum txd_range HNDDMA_RANGE_TRANSMITTED
+enum txpwr_cache_info_type TXPWR_CACHE_POWER_OFFSETS
+enum vht_cap_chan_width VHT_CAP_CHAN_WIDTH_SUPPORT_160
+enum vht_cap_max_mpdu_len VHT_CAP_MPDU_MAX_8K
+enum vht_op_chan_width VHT_OP_CHAN_WIDTH_160
+enum wl_cnt_xtlv_id WL_CNT_XTLV_GE40_UCODE_V1
+enum wl_pkt_filter_type WL_PKT_FILTER_TYPE_PATTERN_LIST_MATCH
+enum wl_stamon_cfg_cmd_type STAMON_CFG_CMD_DEL
+enum wl_tx_bw WL_TX_BW_5
+enum wl_tx_chains WL_TX_CHAINS_3
+enum wl_tx_mode WL_TX_MODE_TXBF
+enum wl_tx_nss WL_TX_NSS_3
+enum wlc_ap_iov_operation WLC_AP_IOV_OP_MANUAL_STA_BSSCFG_CREATE
+enum wlc_keymgmt_event WLC_KEYMGMT_EVENT_TKIP_CM_ACTIVE
+enum wlc_keymgmt_notif WLC_KEYMGMT_NOTIF_NEED_PKTFETCH

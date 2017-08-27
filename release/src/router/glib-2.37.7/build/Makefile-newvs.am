@@ -1,0 +1,37 @@
+# Centralized autotools file
+# Create the Visual Studio 2012 project files
+# from the Visual Studio 2010 project files
+
+# Author: Fan, Chun-wei
+# November 05, 2012
+
+# MSVC_SLN: name of root project
+
+VCXPROJ_FILES =
+
+$(MSVC_SLN).sln: $(top_srcdir)/build/win32/vs10/$(MSVC_SLN).sln create_vcxproj copy_filters create_props
+	cat $(top_srcdir)/build/win32/vs10/$(MSVC_SLN).sln | sed 's/11\.00/12\.00/g' | sed 's/2010/2012/g' > $(top_builddir)/build/win32/vs11/$(MSVC_SLN).sln
+
+README.txt: $(top_srcdir)/build/win32/vs10/README.txt
+	cat $(top_srcdir)/build/win32/vs10/README.txt | sed 's/vs10/vs11/g' | sed 's/VS10/VS11/g' > $(top_builddir)/build/win32/vs11/README.txt
+
+create_vcxproj:
+	for F in `(cd $(top_builddir)/build/win32/vs10 && ls *.vcxproj)`; do \
+		case $$F in \
+			*)	cat $(top_builddir)/build/win32/vs10/$$F | sed 's/v100/v110/g' > $(top_builddir)/build/win32/vs11/$$F \
+			;; \
+		esac; \
+	done
+
+create_props:
+	for F in `(cd $(top_builddir)/build/win32/vs10 && ls *.props)`; do \
+		case $$F in \
+			*)	cat $(top_builddir)/build/win32/vs10/$$F | sed 's/10/11/g' > $(top_builddir)/build/win32/vs11/$$F \
+			;; \
+		esac; \
+	done
+
+copy_filters:
+	cp  $(top_srcdir)/build/win32/vs10/*.vcxproj.filters $(top_builddir)/build/win32/vs11/
+
+

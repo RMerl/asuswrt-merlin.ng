@@ -1,0 +1,46 @@
+#
+#  The following policies are for the Operator-Name
+#  configuration.
+#
+#  The policies below can be called as just 'oprator-name' (not
+#  oprator-name.authorize etc..)  from the various config sections.
+#
+
+#  If you require that the Operator-Name be set
+#  for local clients then call the 'operator-name' policy
+#  in the authorize section of the virtual-server for your clients in clients.conf
+
+#  to inject an Operator-Name whilst proxying, call the
+#  'operator-name' policy in the pre-proxy section of the virtual server
+#  No need to call this if you have already enabled this in
+#  the authorize section.
+
+#
+#  We assume that clients can have the operator-name definition
+#  in the client.conf, e.g.
+#  client xxxx {
+#    ...
+#    Operator-Name = 1your.domain
+#  }
+#  If this parameter is found for a client, then we add
+#  an Operator-Name attribute
+#
+operator-name.authorize {
+	if ("%{client:Operator-Name}") {
+		update request {
+			Operator-Name = "%{client:Operator-Name}"
+		}
+	}
+}
+
+#
+# Before proxing the client add an Operator-Name
+# attribute identifying this site if the operator-name is found for this client
+#
+operator-name.pre-proxy {
+	if (("%{request:Packet-Type}" == 'Access-Request') && "%{client:Operator-Name}") {
+		update proxy-request {
+			Operator-Name := "%{client:Operator-Name}"
+		}
+	}
+}

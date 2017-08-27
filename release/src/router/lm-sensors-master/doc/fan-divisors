@@ -1,0 +1,132 @@
+Fan reading problems and solutions
+----------------------------------
+
+If you aren't getting the expected readings on your fans,
+try the following:
+
+- Do you get a fan reading in the BIOS or using a different OS?
+  If not, you may not have a fan with a tachometer output.
+  Look and see. Fans with tachometer outputs have at least 3 wires.
+  Fans with only 2 wires cannot, in general, report their speed.
+
+- If your monitoring chip supports fan divisors, try experimenting
+  with the fan divisor settings.
+
+
+Does my monitoring chip use fan divisors?
+-----------------------------------------
+
+  Recent monitoring chips tend to store fan speed values on 12 or even
+  16 bits, so divisors are no longer required. In that case, you won't
+  see "div" values in the output of sensors, and nothing needs to be
+  configured:
+  
+  CPU1 Fan:    2160 RPM  (min =  800 RPM)
+  CPU2 Fan:       0 RPM  (min =  799 RPM)  ALARM
+  Front3 Fan:     0 RPM  (min =    0 RPM)
+  Front4 Fan:   779 RPM  (min =  600 RPM)
+
+  If your "sensors" output looks like the above, stop reading here,
+  the explanations below do not apply to your case.
+
+  Older chips stored the fan speed values on 8 bits, which wasn't
+  sufficient to cover the full range from very slow fans to very
+  fast fans with good accuracy. This is where fan divisors came
+  into play:
+
+  Case Fan:       0 RPM  (min =  998 RPM, div = 8)  ALARM
+  CPU Fan:     2500 RPM  (min = 1500 RPM, div = 4)
+
+  If your "sensors" output looks like the above, read below.
+
+  As a notable exception, the w83627ehf driver exposes fan divisor
+  values, but they are adjusted automatically by the driver, so you
+  shouldn't have to care.
+
+
+Fan Divisor Settings
+--------------------
+
+Fan Divisor	Minimum RPM	Maximum RPM
+-----------	-----------	-----------
+  1		5314		1350000
+  2		2657		 675000		default on most chips
+  4		1328		 337500
+  8		 664		 168750
+ 16		 332		  84375		not supported on most chips
+ 32		 166		  42187		""
+ 64		  83		  21093		""
+128		  41		  10546		""
+
+Pick a divisor so that the nominal RPM is about 50%
+above the minimum. This is a good compromise between
+margin and accuracy. Note that most chips only support
+fan divisors of 1, 2, 4, and 8.
+
+If you have a 0 RPM reading some or all of the time,
+increase the divisor until you get good readings.
+
+If you have a nominal reading less than 1.25 times the
+minimum, increase the divisor to give you margin
+so that you will not get spurious alarms.
+
+If you have a nominal reading more than 3 times the
+minimum, decrease the divisor to provide better
+accuracy.
+
+
+How to change fan divisors
+--------------------------
+
+Put an entry "set fanN_div X" in the appropriate section of
+/etc/sensors3.conf and run 'sensors -s'
+(N is the number of the fan, and X is the divisor you want).
+
+
+Further details
+---------------
+
+Fan divisors are quite confusing.
+
+Sensor chips count fan speed by using the fan signal
+to gate an 8-bit counter driven by a 22.5 kHz clock.
+So the _higher_ the counter value, the _slower_ the fan,
+and vice versa.
+
+The term 'fan divisor' is a misnomer because it doesn't divide
+the fan signal, it divides the 22.5 kHz clock.
+Thus you _increase_ the divisor if you have a slow fan.
+
+The drivers account for the 'fan divisor' in their calculation
+of RPM. So changing the fan divisor will NOT change the
+nominal RPM reading, it will only affect the minimum and maximum
+readings and the accuracy of the readings.
+
+The actual formula is RPM = (60 * 22500) / (count * divisor)
+
+The readings are most accurate when the fan speed is low
+(i.e., close to the minimum possible RPM reading).
+As fan speed gets closer to the maximum possible RPM reading,
+the reading becomes quite inaccurate. Fortunately, most computer
+fans do not approach 1,000,000 RPM !
+
+
+Fan readings 2X too high
+------------------------
+
+This is rare, but can happen. This is typically caused by a fan which
+outputs 4 pulses by revolution, instead of the standard 2.
+
+As we learned above, you can _not_ fix this by changing
+the fan divisor. You must add entries into the appropriate
+section of /etc/sensors3.conf:
+
+	compute fanN  @/2,  2*@
+
+(N is the number of the fan)
+
+
+
+------------------
+Copyright (c) 2000-2004 Mark D. Studebaker
+Copyright (c) 2006-2012 Jean Delvare

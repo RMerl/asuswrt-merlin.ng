@@ -1,0 +1,156 @@
+<!-- ##### SECTION Title ##### -->
+Datasets
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO g_dataset_id_set_data ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+@d: 
+
+
+<!-- ##### FUNCTION g_dataset_id_set_data_full ##### -->
+<para>
+
+</para>
+
+@dataset_location: 
+@key_id: 
+@data: 
+@destroy_func: 
+
+
+<!-- ##### USER_FUNCTION GDestroyNotify ##### -->
+<para>
+
+</para>
+
+@data: 
+
+
+<!-- ##### FUNCTION g_dataset_id_get_data ##### -->
+<para>
+
+</para>
+
+@dataset_location: 
+@key_id: 
+@Returns: 
+
+
+<!-- ##### MACRO g_dataset_id_remove_data ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+
+
+<!-- ##### FUNCTION g_dataset_id_remove_no_notify ##### -->
+<para>
+
+</para>
+
+@dataset_location: 
+@key_id: 
+@Returns: 
+
+
+<!-- ##### MACRO g_dataset_set_data ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+@d: 
+
+
+<!-- ##### MACRO g_dataset_set_data_full ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+@d: 
+@f: 
+
+
+<!-- ##### MACRO g_dataset_get_data ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+
+
+<!-- ##### MACRO g_dataset_remove_data ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+
+
+<!-- ##### MACRO g_dataset_remove_no_notify ##### -->
+<para>
+
+</para>
+
+@l: 
+@k: 
+
+
+<!-- ##### FUNCTION g_dataset_foreach ##### -->
+<para>
+
+</para>
+
+@dataset_location: 
+@func: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GDataForeachFunc ##### -->
+<para>
+
+</para>
+
+@key_id: 
+@data: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dataset_destroy ##### -->
+<para>
+
+</para>
+
+@dataset_location: 
+
+

@@ -1,0 +1,113 @@
+<!-- ##### SECTION Title ##### -->
+GTlsBackend
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_TLS_BACKEND_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GTlsBackend ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GTlsBackendInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@supports_tls: 
+@get_certificate_type: 
+@get_client_connection_type: 
+@get_server_connection_type: 
+@get_file_database_type: 
+@get_default_database: 
+
+<!-- ##### FUNCTION g_tls_backend_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_backend_supports_tls ##### -->
+<para>
+
+</para>
+
+@backend: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_backend_get_default_database ##### -->
+<para>
+
+</para>
+
+@backend: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_backend_get_certificate_type ##### -->
+<para>
+
+</para>
+
+@backend: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_backend_get_client_connection_type ##### -->
+<para>
+
+</para>
+
+@backend: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_backend_get_server_connection_type ##### -->
+<para>
+
+</para>
+
+@backend: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_backend_get_file_database_type ##### -->
+<para>
+
+</para>
+
+@backend: 
+@Returns: 
+
+

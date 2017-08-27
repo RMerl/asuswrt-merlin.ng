@@ -1,0 +1,33 @@
+/* -*- Mode: C -*-
+  ======================================================================
+  FILE: icalderivedproperties.{c,h}
+  CREATOR: eric 09 May 1999
+  
+  $Id: icalderivedproperty.h.in,v 1.7 2007-04-30 13:57:48 artcancro Exp $
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of either:
+
+    The LGPL as published by the Free Software Foundation, version
+    2.1, available at: http://www.fsf.org/copyleft/lesser.html
+
+  Or:
+
+    The Mozilla Public License Version 1.0. You may obtain a copy of
+    the License at http://www.mozilla.org/MPL/
+
+ (C) COPYRIGHT 2000, Eric Busboom, http://www.softwarestudio.org
+ ======================================================================*/
+
+
+#ifndef ICALDERIVEDPROPERTY_H
+#define ICALDERIVEDPROPERTY_H
+
+#include <time.h>
+#include "icalparameter.h"
+#include "icalderivedvalue.h"  
+#include "icalrecur.h"
+
+typedef struct icalproperty_impl icalproperty;
+
+<insert_code_here>

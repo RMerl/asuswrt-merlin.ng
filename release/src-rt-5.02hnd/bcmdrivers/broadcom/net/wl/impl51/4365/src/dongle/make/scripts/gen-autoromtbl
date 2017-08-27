@@ -1,0 +1,2807 @@
+#!/usr/bin/perl
+#
+# This script automatically generates the romtable (romtable_auto.S) for ROM offload builds.
+#
+# It automates the process of determining which symbols (functions/rodata) should be used from ROM,
+# and which ones should be abandoned and used from RAM. It is used instead of the older process
+# of manually tagging changed functions as abandoned in romtable.S for each chip.
+#
+# At build time, an MD5 checksum is calculated for the disassembly of each symbol using the latest
+# source code. This script compares the checksums against the corresponding symbol’s checksum for ROM.
+# If there is a match, the symbol can be used from ROM. If there is a mismatch, then the symbol is
+# abandoned and used from RAM.
+#
+# The checksum comparison is used to dynamically generate the romtable, which contains a list of
+# all ROM symbols and modifiers used to selectively tag changed symbols as abandoned.
+#
+# This script also has algorithms to handle the TCAM (hardware abandons), which have a limited
+# number of abandon entries. The number of abandons is minimized using symbol dependency analysis.
+#
+#
+# Refer to: http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/OpportunisticROM
+#
+# Usage: See 'usage' subroutine below.
+
+use strict;
+use warnings;
+use File::Basename;
+use Getopt::Std;
+use Log;
+
+# Display usage info.
+#
+# Params: None.
+#
+# Returns: Nothing.
+sub usage {
+	print STDERR "\nUsage: gen-autoromtbl [-c <config-file>] [-p <apch-cfg-file>]\n";
+	print STDERR "       [-s <mpch-sect-hdrs>] <romtable.S> <rom-md5sign> <ram-md5sign> \n";
+	print STDERR "       <romtable_auto.S> <rom-objdump> <ram-map> <max-abandons>\n";
+	print STDERR "       <romsym.dep> <CLM incremental>\n";
+	print STDERR "   -c <config-file>:   IN  Auto abandon configuration file.\n";
+	print STDERR "   -p <apch-cfg-file>: IN  Auto patch configuration file.\n";
+	print STDERR "   -s <mpch-sect-hdrs>:IN  Manual patch section headers file.\n";
+	print STDERR "   <romtable.S>:       IN  Romtable input file (lists ROM contents).\n";
+	print STDERR "   <rom-md5sign>:      IN  ROM MD5 signature file.\n";
+	print STDERR "   <ram-md5sign>:      IN  RAM MD5 signature file.\n";
+	print STDERR "   <romtable_auto.S>:  OUT Generated romtable output file.\n";
+	print STDERR "   <rom-objdump>:      IN  ROM symbols (objdump -t).\n";
+	print STDERR "   <ram-map>:          IN  RAM map file (nm -n).\n";
+	print STDERR "   <max-abandons>:     IN  Maximum abandons supported by chip (-1 for unlimited).\n";
+	print STDERR "   <romsym.dep>:       IN  ROM single level symbol dependency file.\n";
+	print STDERR "   <CLM incremental>:  IN  1 if CLM incremental patch data is used, else 0.\n";
+	exit 1;
+}
+
+
+# Set to '1' to enable debug logging.
+use constant LOG_DEBUG_ENABLE   => 1;
+use constant LOG_VERBOSE_ENABLE => 0;
+
+# Set to '1' to enable TCAM reduction algorithm.
+use constant TCAM_REDUCTION_ENABLE => 1;
+
+
+# Set to '1' to dump sorted list of symbols, grouped by state (e.g. MATCH, MISMATCH, etc) and
+# obj file to debug log.
+use constant DUMP_SYM_COMPARISON_INFO => 1;
+use constant DUMP_SYM_COMPARISON_INFO_BY_OBJ => 1;
+
+use constant KB => 1024;
+
+# Constants for symbol comparison states. Indicates if symbol contents match in ROM and RAM.
+# (Only the .text and .rodata sections are compared. Other sections are omitted from the
+# comparison, e.g. reclaimable text sections).
+use constant {
+	# ROM and RAM symbol match.
+	SYMBOL_MATCH                => 0,
+
+	# ROM and RAM symbol do NOT match.
+	SYMBOL_MISMATCH             => 1,
+
+	# ROM symbol does not exist in RAM. The symbol could be missing for the following reasons:
+	#    (1) Different compiler options. (e.g. ROM is compiled with WLTEST).
+	#    (2) The ROM symbol has been deleted in the latest RAM code.
+	#    (3) The ROM symbol has been renamed in the latest RAM code.
+	#    (4) Static ROM symbol has been moved to a different source file in the latest RAM code.
+	#        It will be renamed by the globalizer with a file-specific prefix.
+	#    (5) The ROM symbol has been converted from static to non-static or vs versa.
+	#    (6) The symbol is discarded in RAM by the linker since it is not required based upon
+	#        the target configuration (compiler defines).
+	SYMBOL_UNUSED              => 2,
+
+	# ROM symbol *does* exist in RAM. However, the RAM comparison value (e.g. MD5 checksum) is
+	# missing. It could be missing for the following reasons:
+	#    (1) Public ROM symbol has been moved to a different source file in the latest RAM code.
+	#    (2) Const data symbol is changed to non-const, uninitialized data.
+	SYMBOL_COMPARISON_MISSING   => 3,
+
+	# Must be last.
+	SYMBOL_COMPARE_TYPE_MAX     => 4
+};
+
+my @g_sym_compare_strs = ("MATCH", "MISMATCH", "UNUSED", "COMPARE_MISSING");
+
+
+# Constants indicating whether each ROM symbol should be included, abandoned, or excluded in the
+# generated romtable.
+use constant {
+	ROMTBL_SYMBOL_INCLUDE          => 0,
+
+	# For stats purposes independently track whether symbols included from the generated
+	# romtable are used in the RAM image.
+	#   - Unchanged symbols between ROM and RAM are included.
+	#   - Alternatively, symbols may be included if they are not used by the RAM image for
+	#     the "unlimited abandons" algorithm. (e.g. if the ROM symbol has been deleted in the
+	#     latest RAM code).
+	ROMTBL_SYMBOL_INCLUDE_USED     => 0,
+	ROMTBL_SYMBOL_INCLUDE_NOT_USED => 1,
+
+
+	ROMTBL_SYMBOL_ABANDON          => 2,
+	ROMTBL_SYMBOL_EXCLUDE          => 3,
+
+	# For stats purposes independently track whether symbols excluded from the generated
+	# romtable are used in the RAM image. (Symbols are excluded by the "limited abandons"
+	# algorithm).
+	#   - Excluded symbols may be present in the RAM image if their contents have changed
+	#     from ROM and they are only used by other RAM symbols.
+	#   - Alternatively, symbols may be excluded if they are not used by the RAM image
+	#     (e.g. if the ROM symbol has been deleted in the latest RAM code).
+	ROMTBL_SYMBOL_EXCLUDE_USED     => 3,
+	ROMTBL_SYMBOL_EXCLUDE_NOT_USED => 4,
+
+	# Must be last.
+	ROMTBL_SYMBOL_MAX              => 5
+};
+
+my @g_gen_romtbl_sym_strs = ("INCLUDE_USED",
+                             "INCLUDE_NOT_USED",
+                             "ABANDON",
+                             "EXCLUDE_USED",
+                             "EXCLUDE_NOT_USED");
+
+
+# Symbol types.
+use constant {
+	RODATA          => 0,
+	FUNC            => 1,
+
+	# Must be last.
+	SYMBOL_TYPE_MAX => 2
+};
+
+my @g_sym_type_strs = ("RODATA", "FUNC");
+
+
+# Input filenames.
+my $g_fname_romtable_in;
+my $g_fname_rom_md5sign;
+my $g_fname_ram_md5sign;
+my $g_fname_romtable_out;
+my $g_fname_romsymdep;
+my $g_fname_rom_objdump_syms;
+my $g_fname_ram_objdump_syms;
+my $g_fname_ram_nm_map;
+my $g_fname_config = "nil";
+my $g_fname_patch_config = "nil";
+my $g_fname_manual_patch_syms = "nil";
+
+# TCAM patch count
+my $g_tcam_pcnt = 0;
+
+# Manual TCAM patch configuration file.
+my $g_fname_manual_tcam = "nil";
+
+# Maximum number of symbols that can be abandoned.
+my $g_max_abandons;
+
+# Actual number of symbols abandoned.
+my $g_num_abandons;
+
+# File descriptor for generated romtable_out.S.
+my $g_fd_romtable_out;
+
+# Hash table of symbols from input romtable.S:
+#   - g_romtable_syms:         All ROM symbols.
+#
+#   - g_romtable_syms_noesc:   All "no_esc" symbols. These symbols cannot be abandoned.
+#
+#   - g_romtable_syms_real_to_alias: All symbol "aliases". These are optimized functions that are
+#                                    renamed by the compiler. Ideally, function renames should be
+#                                    avoided by disabling the appropriate compiler optimizations.
+#                                    However, some ROMs have mistakenly been created with
+#                                    optimized/renamed functions, e.g.
+#                                       $g_romtable_syms_real_to_alias{srom_read} = T.144;
+#
+#   - g_romtable_syms_alias_to_real: Reverse mapping of g_romtable_syms_real_to_alias. e.g.
+#                                       $g_romtable_syms_alias_to_real{T.144} = srom_read;
+#
+my %g_romtable_syms;
+my %g_romtable_syms_noesc;
+my %g_romtable_syms_real_to_alias;
+my %g_romtable_syms_alias_to_real;
+
+# Hash table used to store md5 signatures for each ROM symbol.
+my %g_rom_md5signs;
+
+# Hash table used to store md5 signatures for each RAM symbol.
+my %g_ram_md5signs;
+
+# Hash table indicating the symbol comparison state between ROM and RAM for each symbol.
+my %g_sym_compare_states;
+
+# Hash table indicating whether a symbol is used by the target image. This is determined by
+# pre-building a full RAM image which will provide a list of all required symbols. This info
+# can be used to selectively abandon symbols.
+my %g_sym_inuse;
+
+# Hash table indicating symbol type (function, rodata).
+my %g_rom_sym_types;
+
+# Hash table used to store symbols for each file. Each hash entry is a reference to an array of
+# symbols contained in that file.
+my %g_rom_file_syms;
+
+# Hash table used to store the file (hash value) that contains each symbol (hash key).
+my %g_rom_sym_file;
+
+# Hash table indicating whether a ROM symbol should be included, abandoned, or excluded from the
+# generated romtable. It may be necessary to exclude symbols if there a limit on the number
+# of abandons.
+my %g_gen_romtbl_sym_states;
+
+# Multi-dimensional hash table used to store symbol dependencies. The symbol name and symbol
+# type (FUNC, RODATA) are the hash keys and the value is a reference to an array of
+# direct symbol dependencies, i.e. not the entire call chain.
+#
+# e.g. $g_rom_sym_deps{foo}{FUNC} is a reference to an array of functions directly called by foo().
+# e.g. $g_rom_sym_deps_reverse{foo}{FUNC} is a reference to an array of functions that call foo().
+my %g_rom_sym_deps;
+my %g_rom_sym_deps_reverse;
+
+# Hash table used to store the size of each ROM/RAM symbol.
+my %g_rom_sym_sizes;
+my %g_ram_sym_sizes;
+
+# Hash table used to store the address of each ROM symbol.
+my %g_rom_sym_addrs;
+
+# Hash table of all function pointers used by const data. The hash value is set to 1 if the function
+# (hash key) is used by const data.
+my %g_rom_rodata_funcptrs;
+
+# Hash table of symbol comparison overrides. Maps symbols to comparison state (SYMBOL_MATCH,
+# SYMBOL_MISMATCH, SYMBOL_UNUSED). This can be used to explicitly set the comparison state,
+# overriding the actual comparison state. This should only be used for testing or temporary
+# work-arounds.
+my %g_sym_overrides;
+
+# Indicates if CLM incremental patch data is used by the target. If it is, then ignore any
+# differences in base CLM data contained in ROM, since the CLM infrastructure will use its own
+# independent patching mechanism. If incremental patch data is not used, then simply treat CLM data
+# like any other data.
+my $g_use_clm_incremental_data;
+
+# Hash of functions that have been manually patched. (key is function name, value is '1').
+my %g_manual_patch_funcs;
+
+# Hash of ROM functions called by manually patched functions. In general, this should be the same
+# as 'g_manual_patch_funcs', e.g. patch function foo() calls ROM function foo(). However, there
+# may be complex patches where patch function foo() calls ROM function bar().
+# (key is function name, value is '1').
+my %g_manual_patch_rom_ref_funcs;
+
+# Hash table used to store the length of each manual tcam entry address.
+my %g_manual_tcam_addr_lens;
+
+# Log file to store debug info.
+my $g_debug_fd;
+my $g_debug_fname = basename($0) . "-debug.txt";
+
+
+# Regular expression search strings.
+my $g_sym_regexp = '([\w$]+)';
+my $g_addr_regexp = '([0-9a-fA-F]{8})';
+
+# ROM function label suffixes, used by manual patch functions to call ROM functions.
+my $g_romfn_suffix = "__bcmromfn.*";
+
+
+# Parse optional command line options.
+my %g_opts;
+getopts('c:p:s:m:', \%g_opts);
+if ($g_opts{c}) {
+	$g_fname_config = $g_opts{c};
+}
+if ($g_opts{p}) {
+	$g_fname_patch_config = $g_opts{p};
+}
+if ($g_opts{s}) {
+	$g_fname_manual_patch_syms = $g_opts{s};
+}
+if ($g_opts{m}) {
+	$g_fname_manual_tcam = $g_opts{m};
+}
+
+
+# Parse command line arguments.
+usage() if (@ARGV != 11);
+($g_fname_romtable_in = shift @ARGV) || &usage;
+($g_fname_rom_md5sign = shift @ARGV) || &usage;
+($g_fname_ram_md5sign = shift @ARGV) || &usage;
+($g_fname_romtable_out = shift @ARGV) || &usage;
+($g_fname_rom_objdump_syms = shift @ARGV) || &usage;
+($g_fname_ram_objdump_syms = shift @ARGV) || &usage;
+($g_fname_ram_nm_map = shift @ARGV) || &usage;
+($g_max_abandons = shift @ARGV);
+($g_fname_romsymdep = shift @ARGV) || &usage;
+($g_use_clm_incremental_data = shift @ARGV);
+($g_tcam_pcnt = shift @ARGV) || &usage;
+shift @ARGV && &usage;
+
+# Open output romtable for writing.
+open($g_fd_romtable_out, ">$g_fname_romtable_out") or
+	 die "Could not open $g_fname_romtable_out for writing: $!\n";
+
+
+# Utility functions to retrieve strings that correspond to a specified state.
+#
+# Params: state: IN
+#
+# Returns: String.
+sub get_sym_compare_str {
+	my ($state) = @_;
+
+	return ($g_sym_compare_strs[$state]);
+}
+
+sub get_sym_type_str {
+	my ($type) = @_;
+
+	return ($g_sym_type_strs[$type]);
+}
+
+sub get_gen_romtbl_sym_str {
+	my ($state) = @_;
+
+	return ($g_gen_romtbl_sym_strs[$state]);
+}
+
+
+# Return the real symbol name of the specified symbol param. The symbol param may already be the
+# real symbol name, or it may be an "alias" and need to be mapped to the real symbol name.
+#
+# Params:  sym:                IN  Symbol name. Might be aliased name.
+#          syms_alias_to_real: IN  Hash table of symbol aliases.
+#
+# Returns: Real symbol name.
+sub get_sym_name {
+	my ($sym, $syms_alias_to_real) = @_;
+
+	if (defined($syms_alias_to_real) && $syms_alias_to_real->{$sym}) {
+		return ($syms_alias_to_real->{$sym});
+	}
+
+	return ($sym);
+}
+
+
+# Parse ROM symbols from input romtable.
+#
+# Params:  fname:              IN  Input filename.
+#          rom_syms:           OUT Hash table of all symbols in ROM (from input romtable.S).
+#          syms_noesc:         OUT Hash table of "no_esc" symbols. These cannot be abandoned.
+#          syms_alias_to_real: OUT Hash table of optimized functions that are renamed by the compiler.
+#          syms_real_to_alias: OUT Hash table of optimized functions that are renamed by the compiler.
+#
+# Returns: Nothing.
+sub parse_romtable_in_file {
+	my ($fname, $rom_syms, $syms_noesc, $syms_alias_to_real, $syms_real_to_alias) = @_;
+	my ($fd, $line);
+
+	# Open romtable input file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse symbols.
+	foreach $line (<$fd>) {
+
+		# Parse all ROM symbols. The syntax is:
+		#
+		#   .extern bcm_mp_alloc
+		if ($line =~ /^\s*\.extern\s+${g_sym_regexp}\b/) {
+			$rom_syms->{$1} = 1;
+
+			# Debug.
+			log_debug("$1\n");
+		}
+
+		# Parse all "no_esc" ROM symbols. The syntax is:
+		#
+		#   .extern memcpy # .no_esc
+		if ($line =~ /^\s*\.extern\s+${g_sym_regexp}\s+\#\s*\.no_esc\b/) {
+			$syms_noesc->{$1} = 1;
+
+			# Debug.
+			log_debug("no_esc: $1\n");
+		}
+
+		# Parse all "alias" ROM symbols. The syntax is:
+		#
+		# .extern srom_read  # .no_esc # .alias T.144
+		if ($line =~ /^\s*\.extern\s+${g_sym_regexp}.*#\s*\.alias\s+(T.[0-9]+)\b/) {
+			$syms_alias_to_real->{$2} = $1;
+			$syms_real_to_alias->{$1} = $2;
+
+			# Debug.
+			log_debug("alias: $1 $2\n");
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse symbols and md5 checksum values. The format of the input file is:
+#
+# 9f8d58b4e978297a9e35aea79ac0aeb0  bcmstdlib$__atox.bcmstdlib.func.S
+# a4b60292eb72c043734901cfc7abd810  bcmstdlib$hex_lower.bcmstdlib.data.S
+# ...
+#
+# Params:  fname:     IN  Input filename.
+#          md5signs:  OUT Symbol hash table used to store md5 signatures.
+#          debug_str: IN  Debug string.
+#          file_syms: OUT Hash table used to store symbols for each file. Each hash entry is a
+#                         reference to an array of symbols contained in that file. (Optional).
+#          sym_file:  OUT Hash table that maps symbols to their filename.
+#          sym_types: OUT Hash table indicating symbol type (e.g. function, rodata). (Optional).
+#
+# Returns: Nothing.
+sub parse_md5sign_file {
+	my ($fname, $md5signs, $debug_str, $file_syms, $sym_file, $sym_types) = @_;
+	my ($fd, $line, $sign, $sym, $file, $id, $tmp, $type);
+
+	# Open md5 checksum file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse symbols and md5 checksum values.
+	foreach $line (<$fd>) {
+		chop($line);
+
+		# Skip comments.
+		if ($line =~ /^#/) {
+			next;
+		}
+
+		# Syntax of md5 signature and symbols is as follows:
+		#
+		# 9f8d58b4e978297a9e35aea79ac0aeb0  bcmstdlib$__atox.bcmstdlib.func.S
+		($sign, $tmp) = split("  ", $line);
+		($sym, $file, $id) = split(/\./, $tmp);
+
+		# Store md5 signature in symbol hash table.
+		$md5signs->{$sym} = $sign;
+
+		# Store the symbol in the function hash table. Each hash entry is a reference to
+		# an array of symbols defined in that file.
+		if (defined($file_syms)) {
+			push(@{$file_syms->{$file}}, $sym);
+		}
+
+		# Store the filename that contains the symbol.
+		if (defined($sym_file)) {
+			$sym_file->{$sym} = $file;
+		}
+
+		# Create hash indicating the symbol's type (rodata/function).
+		if ($id eq "func") {
+			$type = FUNC;
+		}
+		elsif ($id eq "data") {
+			$type = RODATA;
+		}
+		else {
+			log_error("Unknown symbol type '$id' for '$sym'\n");
+			exit 1;
+		}
+
+		if (defined($sym_types)) {
+			$sym_types->{$sym} = $type;
+		}
+
+
+		# Debug.
+		log_debug("$debug_str: $sym (%s) [$sign]\n", get_sym_type_str($type));
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse symbol dependencies file. The file lists all ROM symbols (functions and rodata), and for
+# each symbol its set of dependencies. (First level dependencies only, not the entire call chain).
+#
+# For functions, dependencies may be:
+#    - Other functions that it calls directly.
+#    - Function pointers referenced by the function.
+#    - Names of rodata accessed by the function.
+#
+# For rodata, dependencies may be:
+#    - Names of functions used as function pointers in rodata.
+#    - Names of other rodata used as data pointers in rodata.
+#
+#
+# The format of the input file is:
+#
+# aes$xor_128bit_block:
+# aes_cmac: aes$xor_128bit_block memset rijndaelKeySetupEnc rijndaelEncrypt memcpy
+# aes_cmac_calc:  aes_cmac_gen_subkeys aes_cmac
+# ...
+#
+# Params:  fname:            IN  Input filename.
+#          sym_types:        IN  Hash table of symbol types (e.g. function, rodata).
+#          rodata_funcptrs:  OUT Hash table of function pointers used by const data. The hash value
+#                                is set to 1 if the function (hash key) is used by const data.
+#          sym_deps:         OUT Multi-dimensional hash table used to store symbol dependencies. The
+#                                symbol name and symbol type (FUNC, RODATA) are the hash keys and
+#                                the value is a reference to an array of direct symbol dependencies,
+#                                i.e. not the entire call chain.
+#          sym_deps_reverse: OUT Multi-dimensional hash table used to store reverse symbol
+#                                dependencies. The symbol name and symbol type (FUNC, RODATA) are
+#                                the hash keys and the value is a reference to an array of direct
+#                                reverse symbol dependencies.
+#
+# Returns: Nothing.
+sub parse_symdeps_file {
+	my ($fname, $sym_types, $rodata_funcptrs, $sym_deps, $sym_deps_reverse) = @_;
+	my ($fd, $line, $sym, $deps_str, @deps, $dep);
+
+	# Open input ROM symbol deps table.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse symbol dependencies.
+	foreach $line (<$fd>) {
+		chomp($line);
+
+		# Skip comments.
+		if ($line =~ /^#/) {
+			next;
+		}
+
+		# Syntax of dependency file is as follows:
+		#
+		# sdpcmdev$sdpcmd_rxfill:   dma64proc hndrte_schedule_work sdpcmdev$_sdpcmd_rxfill
+		($sym, $deps_str) = split(":", $line);
+		@deps = split(" ", $deps_str);
+
+
+		# Store dependencies in symbol hash table. Store functions and rodata dependencies
+		# in separate arrays.
+		$sym_deps->{$sym}{+FUNC}   = [];
+		$sym_deps->{$sym}{+RODATA} = [];
+
+		foreach $dep (@deps) {
+			# Error check.
+			if (!defined($sym_types->{$dep})) {
+				log_error("sym_types not defined for sym($sym) dep($dep)\n");
+				exit 1;
+			}
+
+			# Add dependency to array.
+			push(@{$sym_deps->{$sym}{$sym_types->{$dep}}}, $dep);
+			push(@{$sym_deps_reverse->{$dep}{$sym_types->{$sym}}}, $sym);
+		}
+
+
+		# Create a hash table of all function pointers contained within rodata.
+		if ($sym_types->{$sym} == RODATA) {
+			foreach $dep (@{$sym_deps->{$sym}{+FUNC}}) {
+				$rodata_funcptrs->{$dep} = 1;
+			}
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse the objdump symbols file. The format of the input file is:
+#
+# 00851c79 g  F .text  00000020 wlc_bmac_mctrl
+#
+# Params:  fname:              IN  Input filename.
+#          debug_str:          IN  Debug string.
+#          syms_alias_to_real: IN  Hash table of optimized functions that are renamed by the compiler.
+#          sym_sizes:          OUT Hash table used to store the size of each symbol.
+#          sym_addrs:          OUT Hash table used to store the address of each symbol.
+#
+# Returns: Nothing.
+sub parse_objdump_syms_file {
+	my ($fname, $debug_str, $syms_alias_to_real, $sym_sizes, $sym_addrs) = @_;
+	my ($fd, $line, $sym, $size, $addr);
+	my @words;
+
+	# Open objdump syms file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Iterate the file, and parse symbol sizes.
+	foreach $line (<$fd>) {
+		chop($line);
+
+		# Tokenize the input line into an array of strings (space delimiter).
+		#
+		# Normal format:
+		#    00851c79 g      F .text       00000020 wlc_bmac_mctrl
+		#
+		# Format for functions renamed by compiler.
+		#    008963fd l      F .extra      00000012 T.84
+		@words = split(" ", $line);
+		if ((@words > 0) &&
+		    ($words[0] =~ /$g_addr_regexp/) && ($words[$#words - 1] =~ /$g_addr_regexp/)) {
+			$sym  = get_sym_name($words[$#words], $syms_alias_to_real);
+			$size = hex($words[$#words - 1]);
+			$addr = hex($words[0]);
+
+			# Exclude ROM prefix symbols, e.g. wlc_bmac_mctrl__bcmromfn
+			#
+			# Also exclude compiler generated symbols (e.g. __FUNCTION__.xxx for
+			# function strings, C.xxx.xxx and my_var.xxx for initialized local vars).
+			# These are unneeded and simplify diffs of debug logs.
+			if (($sym !~ /$g_romfn_suffix/) && ($sym !~ /\w+\.\d+/)) {
+
+				# Store symbol size in table.
+				$sym_sizes->{$sym} = $size;
+				# Store symbol address in table.
+				$sym_addrs->{$sym} = $addr if ($sym_addrs);
+			}
+		}
+	}
+
+	# Debug - dump objdump file in sorted order to simplify diffs of debug logs.
+	foreach my $sym (sort keys %{$sym_sizes}) {
+		# Debug.
+		log_debug("$debug_str: Sizeof $sym [$sym_sizes->{$sym}]\n");
+	}
+
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse map file generate by 'nm' utility. The format of the input file is:
+#
+# 00000148 T enable_arm_ints
+# 00000184 T disable_arm_ints
+#
+# Params:  fname:     IN  Input filename.
+#          syms:      OUT Hash table of symbols. The value is set to 1 for each symbol that exists.
+#
+# Returns: Nothing.
+sub parse_nm_map_file {
+	my ($fname, $syms) = @_;
+	my ($fd, $line);
+
+	# Open map file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Iterate the file, and parse symbols.
+	foreach $line (<$fd>) {
+
+		# The format of each line is:
+		#
+		# 00000184 T disable_arm_ints
+		if ($line =~ /${g_addr_regexp} . ${g_sym_regexp}$/) {
+			$syms->{$2} = 1;
+		}
+	}
+
+
+	# Debug - dump map file in sorted order to simplify diffs of debug logs.
+	foreach my $sym (sort keys %{$syms}) {
+		# Debug.
+		log_debug("Found '$sym' in RAM map file.\n");
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse auto abandon configuration file.
+#
+# Currently, the config file supports a list of manual symbol comparison overrides. This is
+# intended for temporary work-arounds and testing purposes. The comparison state will override
+# the actual comparison state obtained through MD5 comparison.
+#
+# The syntax of the file is:
+#
+# memcpy                 MATCH
+# bcmutils$crc32_table   MISMATCH
+#
+# Params:  fname:         IN  Input filename.
+#          sym_overrides: OUT Hash table of symbol comparison overrides. Maps symbols to
+#                             comparison state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED).
+#
+# Returns: Nothing.
+sub parse_config_file {
+	my ($fname, $sym_overrides) = @_;
+	my ($fd, $line);
+
+	# Open map file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Iterate the file, and parse symbol comparison overrides.
+	foreach $line (<$fd>) {
+		# The format of each line is:
+		#
+		# memcpy               MATCH
+		# bcmutils$crc32_table MISMATCH
+		if ($line =~ /^[ \t]*([\w\$]+)[ \t]+(\w+)[ \t]*\n/) {
+			my $sym = $1;
+			my $str = $2;
+
+			if ($str eq "MATCH") {
+				$sym_overrides->{$sym} = SYMBOL_MATCH;
+			}
+			elsif ($str eq "MISMATCH") {
+				$sym_overrides->{$sym} = SYMBOL_MISMATCH;
+			}
+			else {
+				log_error("Unknown compare type '$str' $sym\n");
+				exit 1;
+			}
+
+			# Debug.
+			log_debug("Set override of '$sym' to '$str'.\n");
+		}
+	}
+
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse auto patch configuration file. Set the override comparison state of all IOCTL/IOVAR
+# handlers to MATCH, so that the ROM version will be used. A patch handler will be included in
+# the RAM image.
+#
+# The format of the input file is:
+#
+#  IOCTL  wlc.c     wlc_ioctl    nil
+#  IOVAR  wlc.c     wlc_doiovar  wlc_iovars
+#  ...
+#
+# Params:  fname:         IN  Input config filename.
+#          rom_syms:      IN  Hash table of all symbols in ROM.
+#          sym_overrides: OUT Hash table of symbol comparison overrides. Maps symbols to
+#                             comparison state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED).
+#
+# Returns: Nothing.
+sub parse_auto_patch_config_file {
+	my ($fname, $rom_syms, $sym_overrides) = @_;
+	my ($fd, $line, $handler, $table);
+
+	# Open the config file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse config file. Set comparison state of all IOCTL/IOVAR handlers to MATCH.
+	foreach $line (<$fd>) {
+		chomp($line);
+		if ($line =~ /^(IOCTL|IOVAR)\s+(\w+\.c)\s+$g_sym_regexp\s+$g_sym_regexp\s*$/) {
+			$handler = $3;
+			$table   = $4;
+
+			# IOCTL
+			if ($rom_syms->{$handler} && ($table eq "nil")) {
+				$sym_overrides->{$handler} = SYMBOL_MATCH;
+
+				# Debug.
+				log_debug("Patch: set override of '$handler' to 'MATCH'.\n");
+			}
+			# IOVAR
+			elsif ($rom_syms->{$handler} && $rom_syms->{$table}) {
+				$sym_overrides->{$handler} = SYMBOL_MATCH;
+				$sym_overrides->{$table}   = SYMBOL_MATCH;
+
+				# Debug.
+				log_debug("Patch: set override of '$handler' to 'MATCH'.\n");
+				log_debug("Patch: set override of '$table' to 'MATCH'.\n");
+			}
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse the manual patch symbol table file and extract patched functions.
+#
+# Symbol table format is:
+#    00000000 g     F .text.bcm_mp_stats     00000024 bcm_mp_stats
+#    00000000         *UND*  00000000 bcm_mp_stats__bcmromfn
+#
+# Params:  fname:         IN  Input filename.
+#          rom_syms:      IN  Hash table of all symbols in ROM.
+#          patch_funcs:   OUT Hash of functions that have been manually patched.
+#                             (key is function name, value is '1').
+#          rom_ref_funcs: OUT Hash of ROM functions called by manually patched functions.
+#                             In general, this should be the same as 'patch_funcs', e.g. patch
+#                             function foo() calls ROM function foo(). However, there may be
+#                             complex patches where patch function foo() calls ROM function bar().
+#                             (key is function name, value is '1').
+#
+# Returns: Nothing.
+sub parse_manual_patch_syms_file {
+	my ($fname, $rom_syms, $patch_funcs, $rom_ref_funcs) = @_;
+	my ($fd, $line, $func);
+	my $undefined_section = qr(\*UND\*);
+
+	# Open manual patch symbol table file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse the symbol table, and extract patched functions and references to ROM functions.
+	foreach $line (<$fd>) {
+		my @words = split(/\s+/, $line);
+
+		# Parse references to ROM functions.
+		#    00000000         *UND*  00000000 bcm_mp_stats__bcmromfn
+		$func = $words[3];
+		if ((@words == 4) &&
+		    ($words[1] =~ /$undefined_section/) && ($func =~ /$g_romfn_suffix/)) {
+			$func =~ s/$g_romfn_suffix//;
+			$rom_ref_funcs->{$func} = 1;
+
+			# Debug.
+			log_debug("Patch function calls ROM function: $func\n");
+		}
+		# Parse patch functions.
+		#    00000000 g     F .text.bcm_mp_stats     00000024 bcm_mp_stats
+		elsif ((@words > 4) && ($words[$#words - 2] =~ /^\.text\.$g_sym_regexp/)) {
+			$func = $1;
+			if ($rom_syms->{$func}) {
+				$patch_funcs->{$func} = 1;
+
+				# Debug.
+				log_debug("Manual patch function: $func\n");
+			}
+			else {
+				# Debug.
+				log_debug("Ignore patch function, assuming local helper: $func\n");
+			}
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+# Parse the manual tcam patch file.
+#
+# The format is:
+#    0x1000 8 0x11 0x22 0x33 0x44 0x55 0x66 0x77 0x88
+#
+# Params:  fname:         IN  Input filename.
+#          pcnt:          IN  TCAM patch count.
+#          tcam_addr_len: OUT Hash table used to store the length of each manual tcam entry address.
+#
+# Returns: Nothing.
+sub parse_manual_tcam_patch_file {
+	my ($fname, $pcnt, $tcam_addr_len) = @_;
+	my ($fd, $line, $i, $num);
+
+	# Open the config file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# TCAM patch entry size.
+	my $pentry_size = (1 << $pcnt) * 4;
+	# TCAM patch address mask. Patched addresses are aligned based upon patch entry size.
+	my $addr_mask = ~($pentry_size - 1);
+
+	# Parsing manual patch address and length.
+	$i = 0;
+	foreach $line (<$fd>) {
+		# Skip comments and blank line.
+		if ($line =~ /^\s*#|^\s*$/) {
+			next;
+		}
+		my @data = split(/\s+/, $line);
+
+		# Format is [addr] [len] [data] ...
+		# Array size of data should at least be 3.
+		if (@data < 3) {
+			log_error("ERROR: file $fname, wrong syntx for $line\n");
+			exit(1);
+		}
+
+		my $addr = hex($data[0]);
+		my $len = int($data[1]);
+		my $addr_align = $addr & $addr_mask;
+
+		# Add a new patch symbol if (patch addr + length) exceed the boundary.
+		while (($addr + $len) > ($addr_align + $pentry_size)) {
+			$tcam_addr_len->{$addr} = ($addr_align + $pentry_size) - $addr;
+			$len -= $tcam_addr_len->{$addr};
+			$addr = $addr_align + $pentry_size;
+			$addr_align = $addr & $addr_mask;
+		}
+
+		$tcam_addr_len->{$addr} = $len;
+	}
+
+	# Clean up.
+	close $fd;
+
+	# Check if TCAM overlap in manual tcam patch entry.
+	my @tcam_addr_sorted =
+		sort { $a <=> $b } keys %{$tcam_addr_len};
+
+	$num = keys %{$tcam_addr_len};
+	$i = 0;
+	while ($i < ($num - 1)) {
+		my $addr = $tcam_addr_sorted[$i];
+		my $next_addr = $tcam_addr_sorted[$i+1];
+		my $len = $tcam_addr_len->{$addr};
+
+		if (($addr + $len) > $next_addr) {
+			log_error("TCAM Overlap in manual tcam patch, please check it !!!\n");
+			exit 1;
+		}
+		$i++;
+	}
+
+	log_print("\nManual TCAM patch number: $num\n") if ($num);
+}
+
+
+# Error checking function that validates parsed data.
+#
+# Params:  rom_md5signs:       IN  ROM symbol hash table used to store md5 signatures.
+#          ram_md5signs:       IN  RAM symbol hash table used to store md5 signatures.
+#          file_syms:          IN  Hash table used to store symbols for each file. Each hash entry
+#                                  is a reference to an array of symbols contained in that file.
+#          sym_types:          IN  Hash table of symbol types (e.g. function, rodata).
+#          sym_sizes:          IN  Hash table used to store the size of each symbol.
+#          sym_deps:           IN  Multi-dimensional hash table used to store symbol dependencies.
+#                                  The symbol name and symbol type (FUNC, RODATA) are the hash keys
+#                                  and the value is a reference to an array of direct symbol
+#                                  dependencies, i.e. not the entire call chain.
+#          romtable_syms:      IN  Hash table of all symbols in ROM (from input romtable.S).
+#          sym_overrides:      IN  Hash table of symbol comparison overrides. Maps symbols to
+#                                  comparison state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED).
+#          syms_noesc:         IN  Hash table of "no_esc" symbols. These cannot be abandoned.
+#          syms_real_to_alias: IN  Hash table of optimized functions that are renamed by the compiler.
+#          max_abandons        IN  Maximum number of symbols that can be abandoned.
+#
+# Returns: Nothing.
+sub verify_parsed_data {
+	my $rom_md5signs       = shift;
+	my $ram_md5signs       = shift;
+	my $file_syms          = shift;
+	my $sym_types          = shift;
+	my $sym_sizes          = shift;
+	my $sym_deps           = shift;
+	my $romtable_syms      = shift;
+	my $sym_overrides      = shift;
+	my $syms_noesc         = shift;
+	my $syms_real_to_alias = shift;
+	my $max_abandons       = shift;
+
+	my ($sym, $dep);
+	my $found_error = 0;
+
+	# Verify that there is a function dependency list for every ROM function.
+	foreach $sym (keys %{$rom_md5signs}) {
+		if (!defined($sym_deps->{$sym})) {
+			log_error("'$sym' not found in symdeps!\n");
+			$found_error = 1;
+		}
+
+		# Verify that all dependencies have a ROM MD5 signature.
+		foreach $dep (@{$sym_deps->{$sym}{+FUNC}}) {
+			if (!defined($rom_md5signs->{$sym})) {
+		        	log_error("'$sym' not found in ROM MD5 signature!\n");
+				$found_error = 1;
+		        }
+		}
+
+		foreach $dep (@{$sym_deps->{$sym}{+RODATA}}) {
+			if (!defined($rom_md5signs->{$sym})) {
+		        	log_error("'$sym' not found in ROM MD5 signature!\n");
+				$found_error = 1;
+		        }
+		}
+	}
+
+
+	# Verify that every ROM symbol has a defined size.
+	foreach $sym (keys %{$rom_md5signs}) {
+		if (!defined($sym_sizes->{$sym})) {
+			log_print("Warning: '$sym' not found in sym_sizes.\n");
+			$sym_sizes->{$sym} = 0;
+		}
+	}
+
+	# Verify that the number of symbols from the input romtable.S matches the number of symbols
+	# in the ROM md5 signature file.
+	if (keys %{$romtable_syms} != keys %{$rom_md5signs}) {
+		$found_error = 1;
+
+		log_error("num romtable syms(%d) != num ROM MD5 signatures(%d)\n",
+		          scalar(keys(%{$romtable_syms})), scalar(keys(%{$rom_md5signs})));
+
+		foreach $sym (keys %{$rom_md5signs}) {
+			if (!$romtable_syms->{$sym}) {
+				log_error("Missing romtable sym ($sym)\n");
+			}
+		}
+
+		foreach $sym (keys %{$romtable_syms}) {
+			if (!$rom_md5signs->{$sym}) {
+				log_error("Missing ROM MD5 signature ($sym)\n");
+			}
+		}
+	}
+
+	# Verify that each symbol in the ROM md5 signature file has a symbol type.
+	if (keys %{$sym_types} != keys %{$rom_md5signs}) {
+		$found_error = 1;
+
+		log_error("num sym_types syms(%d) != num ROM MD5 signatures(%d)\n",
+		          scalar(keys(%{$sym_types})), scalar(keys(%{$rom_md5signs})));
+
+		foreach $sym (keys %{$rom_md5signs}) {
+			if (!$sym_types->{$sym}) {
+				log_error("Missing sym_types sym ($sym)\n");
+			}
+		}
+
+		foreach $sym (keys %{$sym_types}) {
+			if (!$rom_md5signs->{$sym}) {
+				log_error("Missing ROM MD5 signature ($sym)\n");
+			}
+		}
+	}
+
+
+	# Verify that all specified symbol overrides exist in ROM.
+	foreach $sym (keys %{$sym_overrides}) {
+		if (!defined($rom_md5signs->{$sym})) {
+			log_error("Override symbol '$sym' not found in ROM!\n");
+			$found_error = 1;
+		}
+	}
+
+
+	# For ROMs that use the TCAM, ensure that no functions are declared "no_esc". The "no_esc"
+	# logic is not applicable to TCAM ROMs. All functions can be abandoned for TCAM ROMs.
+	# (The exception to the rule are "alias" functions that can be declared "no_esc" for TCAM.
+	# This is a special case to handle ROMs that have mistakenly been created with optimized
+	# functions that have been renamed by the compiler).
+	if ($max_abandons != -1) {
+		foreach $sym (keys %{$syms_noesc}) {
+			if (!defined($syms_real_to_alias->{$sym})) {
+				log_error("'$sym' should not be declared 'no_esc' for TCAM!\n");
+				$found_error = 1;
+			}
+		}
+	}
+
+
+	# Detect "no_esc" function pointers in data tables. These are currently not supported
+	# since they do not occur in practice. (Modification of a "no_esc" function pointer would
+	# require the data table to be invalidated, which would require all functions that
+	# reference the data table to be invalidated).
+	foreach $sym (keys %{$romtable_syms}) {
+		if ($sym_types->{$sym} == RODATA) {
+			foreach $dep (@{$sym_deps->{$sym}{+FUNC}}) {
+				if (defined($syms_noesc->{$dep})) {
+					log_error("'no_esc' function pointer '$dep' not " .
+					          "supported for rodata '$sym'\n");
+					$found_error = 1;
+				}
+			}
+		}
+	}
+
+
+	if ($found_error) {
+		# Bail.
+		exit 1;
+	}
+}
+
+
+# Error checking function that validates comparison data.
+#
+# Params:  sym_compare:   IN  Hash table used to store symbol contents comparison state.
+#          patch_funcs:   IN  Hash of functions that have been manually patched.
+#                             (key is function name, value is '1').
+#          rom_ref_funcs: IN Hash of ROM functions called by manually patched functions.
+#                             (key is function name, value is '1').
+#
+# Returns: Nothing.
+sub verify_comparison_data {
+	my ($sym_compare, $patch_funcs, $patch_rom_ref_funcs) = @_;
+	my $found_error = 0;
+
+	# Verify that manually patched functions have actually been invalidated from ROM.
+	foreach my $func (keys %{$patch_funcs}) {
+		if (defined($sym_compare->{$func})) {
+			if ($sym_compare->{$func} == SYMBOL_MATCH) {
+				log_error("Error: Patched function '$func' still valid in ROM!\n");
+				$found_error = 1;
+			}
+		}
+		else {
+			log_error("Error: No comparison state for patched function '$func'!\n");
+			$found_error = 1;
+		}
+	}
+
+	# Verify that ROM functions called by patch functions have a valid comparison state.
+	foreach my $func (keys %{$patch_rom_ref_funcs}) {
+		if (defined($sym_compare->{$func})) {
+			if ($sym_compare->{$func} == SYMBOL_UNUSED) {
+				log_error("Error: ROM function '$func' called by patch function " .
+				          "is unused by target image!\n");
+				$found_error = 1;
+			}
+		}
+		else {
+			log_error("Error: No comparison state for function '$func'!\n");
+			$found_error = 1;
+		}
+	}
+
+	if ($found_error) {
+		# Bail.
+		exit 1;
+	}
+}
+
+
+# Display stats info.
+#
+# Params:  tot_num_sym:  MOD 2 dimensional array that stores the total number of symbols. The first
+#                            dimension is a category (e.g. abandonded symbols). The second dimension
+#                            is symbol type (function, rodata).
+#          tot_size_sym: MOD 2 dimensional array that stores the total size of symbols. The first
+#                            dimension is a category (e.g. abandonded symbols). The second dimension
+#                            is symbol type (function, rodata).
+#          strs:         IN  Array of strings to display per category.
+#
+# Returns: Nothing.
+sub display_stats {
+	my ($tot_num_sym, $tot_size_sym, $strs) = @_;
+	my ($type, $category);
+	my $ncategory = @{$tot_num_sym};
+
+	# Total up the stats.
+	for ($category = 0; $category < $ncategory; $category++) {
+		for ($type = 0; $type < SYMBOL_TYPE_MAX; $type++) {
+
+			${$tot_num_sym}[$category][SYMBOL_TYPE_MAX]  += ${$tot_num_sym}[$category][$type];
+			${$tot_num_sym}[$ncategory][$type]           += ${$tot_num_sym}[$category][$type];
+			${$tot_num_sym}[$ncategory][SYMBOL_TYPE_MAX] += ${$tot_num_sym}[$category][$type];
+
+			${$tot_size_sym}[$category][SYMBOL_TYPE_MAX]  += ${$tot_size_sym}[$category][$type];
+			${$tot_size_sym}[$ncategory][$type]           += ${$tot_size_sym}[$category][$type];
+			${$tot_size_sym}[$ncategory][SYMBOL_TYPE_MAX] += ${$tot_size_sym}[$category][$type];
+		}
+	}
+
+	# Display stats.
+	$strs->[$ncategory] = 'Total syms:';
+	for ($category = 0; $category <= $ncategory; $category++) {
+		log_print("\t%-26s%4d (%6d, %3d kB)\n",        $strs->[$category],
+		                                               ${$tot_num_sym}[$category][SYMBOL_TYPE_MAX],
+		                                               ${$tot_size_sym}[$category][SYMBOL_TYPE_MAX],
+		                                               ${$tot_size_sym}[$category][SYMBOL_TYPE_MAX]/KB);
+		log_print("\t   %-23s%4d (%6d, %3d kB)\n",     "Func:",
+		                                               ${$tot_num_sym}[$category][FUNC],
+		                                               ${$tot_size_sym}[$category][FUNC],
+		                                               ${$tot_size_sym}[$category][FUNC]/KB);
+		log_print("\t   %-23s%4d (%6d, %3d kB)\n\n",   "Rodata:",
+		                                               ${$tot_num_sym}[$category][RODATA],
+		                                               ${$tot_size_sym}[$category][RODATA],
+		                                               ${$tot_size_sym}[$category][RODATA]/KB);
+	}
+}
+
+
+# Special case handler for symbol comparison. This function may override the symbol's
+# comparison state obtained through the generic comparison algorithm (e.g. MD5 comparison).
+#
+# Params:  sym:               IN  Symbol to filter.
+#          sym_type:          IN  Symbol type (rodata, function).
+#          sym_file:          IN  File containing the symbol.
+#          clm_inc:           IN  Indicates if CLM incremental patch data is used.
+#          sym_compare_state: MOD Reference to symbol's current comparison state.
+#
+# Returns: Nothing.
+sub filter_sym_comparison {
+	my ($sym, $sym_type, $sym_file, $clm_inc, $sym_compare_state) = @_;
+
+	# $clm_inc indicates if CLM incremental patch data is used by the target. If it is, then
+	# ignore any differences in base CLM data contained in ROM, since the CLM infrastructure
+	# will use its own independent patching mechanism. If incremental patch data is not used,
+	# then simply treat CLM data like any other data.
+	if ($clm_inc && $sym_type == RODATA) {
+		if ($sym_file eq 'wlc_clm_data') {
+			# CLM data tables should not be abandoned. Explicitly set the comparison
+			# state to MATCH, even if the data contents have changed. CLM has its own
+			# independent data patching mechanism.
+			log_debug("Override CLM comparison state to match ($sym)\n");
+			${$sym_compare_state} = SYMBOL_MATCH;
+		}
+	}
+}
+
+
+# Compare ROM and RAM md5 signatures, and generate a hash table indicating whether the
+# signatures match.
+#
+# Params:  rom_md5signs: IN  ROM symbol hash table used to store md5 signatures.
+#          ram_md5signs: IN  RAM symbol hash table used to store md5 signatures.
+#          sym_types:    IN  Hash table indicating symbol type (e.g. function, rodata).
+#          sym_size:     IN  Hash table used to store the size of each ROM symbol.
+#          sym_file:     IN  Hash table used to store the file containing each symbol.
+#          sym_inuse:    IN  Hash table indicating whether a symbol is used by the target image.
+#          sym_deps:     IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                            symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                            value is a reference to an array of direct symbol dependencies,
+#                            i.e. not the entire call chain.
+#          sym_noesc:    IN  Hash table of "no_esc" symbols. These cannot be abandoned.
+#          sym_overrides:IN  Hash table of symbol comparison overrides. Maps symbols to comparison
+#                            state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED). This can be
+#                            used to explicitly set the comparison state, overriding the actual
+#                            comparison state. This should only be used for testing or temporary
+#                            work-arounds.
+#          clm_inc:      IN  Indicates if CLM incremental patch data is used.
+#          sym_compare:  OUT Hash table used to store symbol contents comparison state.
+#
+# Returns: Nothing.
+sub compare_md5_signatures {
+	my $rom_md5signs  = shift;
+	my $ram_md5signs  = shift;
+	my $sym_types     = shift;
+	my $sym_size      = shift;
+	my $sym_file      = shift;
+	my $sym_inuse     = shift;
+	my $sym_deps      = shift;
+	my $sym_noesc     = shift;
+	my $sym_overrides = shift;
+	my $clm_inc       = shift;
+	my $sym_compare   = shift;
+	my ($sym, $type, $i, $j);
+
+	# Stats.
+	my @tot_num_sym  = ();
+	my @tot_size_sym = ();
+
+	# Init stats.
+	for ($i = 0; $i < SYMBOL_COMPARE_TYPE_MAX; $i++) {
+		for ($j = 0; $j < SYMBOL_TYPE_MAX; $j++) {
+			$tot_num_sym[$i][$j]  = 0;
+			$tot_size_sym[$i][$j] = 0;
+		}
+	}
+
+
+	# For each ROM symbol, determine if MD5 checksum matches.
+	for $sym (keys %{$rom_md5signs}) {
+		if (!$sym_inuse->{$sym}) {
+			# ROM symbol does not exist in RAM. The symbol could be missing for the
+			# following reasons:
+			#    (1) Different compiler options. (e.g. ROM is compiled with WLTEST).
+			#    (2) The ROM symbol has been deleted in the latest RAM code.
+			#    (3) The ROM symbol has been renamed in the latest RAM code.
+			#    (4) Static ROM symbol has been moved to a different source file in the
+			#        latest RAM code. It will be renamed by the globalizer with a
+			#        file-specific prefix.
+			#    (5) ROM symbol has been converted from static to non-static or vs versa.
+			#    (6) The symbol is discarded in RAM by the linker since it is not
+			#        required based upon the target configuration (compiler defines).
+			$sym_compare->{$sym} = SYMBOL_UNUSED;
+		}
+		elsif (($sym_inuse->{$sym}) && (!exists($ram_md5signs->{$sym}))) {
+			# ROM symbol *does* exist in RAM. However, the RAM comparison value
+			# (e.g. MD5 checksum) is missing. It could be missing for the following reasons:
+			#    (1) Public ROM symbol has been moved to a different source file in the
+			#        latest RAM code.
+			#    (2) Const data symbol is changed to non-const, uninitialized data.
+			$sym_compare->{$sym} = SYMBOL_COMPARISON_MISSING;
+		}
+		elsif ($rom_md5signs->{$sym} eq $ram_md5signs->{$sym}) {
+
+			# Symbol contents match.
+			$sym_compare->{$sym} = SYMBOL_MATCH;
+		}
+		else {
+			# Symbol contents do NOT match.
+			$sym_compare->{$sym} = SYMBOL_MISMATCH;
+		}
+
+		# Filter the symbol's comparison state, in case there are any overrides.
+		filter_sym_comparison($sym, $sym_types->{$sym}, $sym_file->{$sym}, $clm_inc,
+		                      \$sym_compare->{$sym});
+	}
+
+
+	# This is a back-door that that allows symbol comparison states to be explicitly set. It
+	# should be avoided! The process for generating the romtable should ideally remain
+	# completely automatic. Manual overrides should be avoided, and only used as temporary
+	# work-arounds, or for testing.
+	process_sym_overrides($sym_overrides, $sym_compare);
+
+
+	# Add the rodata twist into this now.
+	# Assume routine "my_func" depends on rodata "my_data", and "my_data" has changed. Even if
+	# the MD5 checksum for RAM and ROM match for routine "my_func", it still needs to treated
+	# as if the MD5 checksum did not match, so that the RAM version of "my_func" is used.
+	compare_rodata_syms($sym_types, $sym_deps, $sym_overrides, $sym_compare);
+
+
+	# If any "no_esc" functions change, all calling functions must be abandoned.
+	#
+	# This should be invoked after compare_rodata_syms(). e.g.
+	#    - func1() calls func2(), both are unchanged and func2() is "no_esc".
+	#    - func2() uses rodata 'data1', and 'data1' has changed.
+	#    - 'data1' will cause func2() to be marked as changed, which will cause func1() to be
+	#      marked as changed.
+	compare_noesc_syms($sym_types, $sym_deps, $sym_noesc, $sym_overrides, $sym_compare);
+
+	# Stats and debug.
+	for $sym (keys %{$rom_md5signs}) {
+
+		# Stats - track total symbols and total size.
+		$tot_num_sym[$sym_compare->{$sym}][$sym_types->{$sym}]  += 1;
+		$tot_size_sym[$sym_compare->{$sym}][$sym_types->{$sym}] += $sym_size->{$sym};
+
+		# Debug
+		log_debug("MD5 $sym (%s) [%s]\n", get_sym_type_str($sym_types->{$sym}),
+		                                  get_sym_compare_str($sym_compare->{$sym}));
+	}
+
+
+	# Display stats.
+	my @stats_strs = ('Matched syms:',
+	                  'Mismatched syms:',
+	                  'Unused syms:',
+	                  'MD5 missing syms:');
+
+	log_print("\nSymbol comparison stats:\n");
+	display_stats(\@tot_num_sym, \@tot_size_sym, \@stats_strs);
+}
+
+
+# Comparing ROM and RAM functions would be good enough for text only routines, if the text
+# routine didn't depend on any rodata. So even if a function matches, but the dependent rodata
+# changed, this needs to be treated as if the function didn't match.
+#
+# Similarly, if matched rodata1 has a pointer to mismatched rodata2, then rodata1 must be changed
+# to mismatched to force both rodata1 and rodata2 to RAM.
+#
+# Params: sym_types:     IN  Hash table indicating symbol type (e.g. function, rodata).
+#         sym_deps:      IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                            symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                            value is a reference to an array of direct symbol dependencies,
+#                            i.e. not the entire call chain.
+#         sym_overrides: IN  Hash table of symbol comparison overrides. Maps symbols to
+#                            comparison state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED).
+#         sym_compare:   MOD Hash table used to store symbol contents comparison state.
+#
+# Returns: Nothing.
+sub compare_rodata_syms {
+	my ($sym_types, $sym_deps, $sym_overrides, $sym_compare) = @_;
+	my ($sym, $dep);
+
+	for $sym (keys %{$sym_compare}) {
+		# For all symbols that match ROM, check if any dependent rodata symbols
+		# have changed.
+		if ($sym_compare->{$sym} == SYMBOL_MATCH) {
+
+			# Only iterate the rodata dependencies.
+			foreach $dep (@{$sym_deps->{$sym}{+RODATA}}) {
+				my %callchain_checked;
+
+				# Clear hash table.
+				%callchain_checked = ();
+
+				# If the dependent rodata changed, or any or its rodata dependents
+				# changed (i.e. rodata with pointers to other rodata), mark the user
+				# symbol as changed.
+				#
+				# Note that if a public ROM rodata has been moved to a different
+				# source file in the latest RAM code (and was not renamed), its
+				# comparison state will be set to SYMBOL_COMPARISON_MISSING. Since
+				# its unknown whether the rodata has changed, assume that it has
+				# and abandon the user function.
+				if (($sym_compare->{$dep} == SYMBOL_MISMATCH)           ||
+				    ($sym_compare->{$dep} == SYMBOL_COMPARISON_MISSING) ||
+				    (!callchain_check($dep, $sym_deps, $sym_compare,
+					              RODATA, \%callchain_checked))) {
+
+					# User specified comparison state overrides have precedence.
+					if (defined($sym_overrides->{$sym})) {
+						log_debug("Sym match($sym): but not rodata dep ($dep). " .
+						          "IGNORING due to user override.\n");
+					}
+					else {
+						$sym_compare->{$sym} = SYMBOL_MISMATCH;
+						log_debug("Sym match($sym): but not rodata dep ($dep), unset match\n");
+					}
+					last;
+				}
+			}
+		}
+	}
+}
+
+
+# Functions can be configured as "no_esc" as part of the ROM tape-out. This saves ROM space by
+# eliminating the ROM function preamble, and RAM space by eliminating entries from the abandon
+# table (for software-based patching). However, these functions cannot be abandoned from ROM.
+#
+# If any of the "no_esc" functions change, all calling functions must be abandoned.
+#
+# Params: sym_types:     IN  Hash table indicating symbol type (e.g. function, rodata).
+#         sym_deps:      IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                            symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                            value is a reference to an array of direct symbol dependencies,
+#                            i.e. not the entire call chain.
+#         sym_noesc:     IN  Hash table of "no_esc" symbols. These cannot be abandoned.
+#         sym_overrides: IN  Hash table of symbol comparison overrides. Maps symbols to
+#                            comparison state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED).
+#         sym_compare:   MOD Hash table used to store symbol contents comparison state.
+#
+# Returns: Nothing.
+sub compare_noesc_syms {
+	my ($sym_types, $sym_deps, $sym_noesc, $sym_overrides, $sym_compare) = @_;
+	my ($sym, $dep);
+
+	for $sym (keys %{$sym_compare}) {
+		# For all function symbols that match ROM, check if any dependency "no_esc" symbols
+		# have changed.
+		if (($sym_types->{$sym} == FUNC) && ($sym_compare->{$sym} == SYMBOL_MATCH)) {
+
+			# Iterate function dependencies.
+			foreach $dep (@{$sym_deps->{$sym}{+FUNC}}) {
+
+				# If the dependent "no_esc" symbol changed, mark the calling
+				# function as changed.
+				if (($sym_compare->{$dep} == SYMBOL_MISMATCH) &&
+				    ($sym_noesc->{$dep})) {
+					# User specified comparison state overrides have precedence.
+					if (defined($sym_overrides->{$sym})) {
+						log_debug("Sym match($sym): but not no_esc dep ($dep). " .
+						          "IGNORING due to user override.\n");
+
+					}
+					else {
+						$sym_compare->{$sym} = SYMBOL_MISMATCH;
+						log_debug("Sym match($sym): but not no_esc dep ($dep), " .
+						          "unset match\n");
+					}
+					last;
+				}
+			}
+		}
+	}
+}
+
+
+# Determine if any symbol in the specified symbol's callchain has changed. Either the FUNC or
+# RODATA dependencies will be checked.
+#
+# Params: l_sym:              IN  Symbol to check.
+#         sym_deps:           IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                                 symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                                 value is a reference to an array of direct symbol dependencies,
+#                                 i.e. not the entire call chain.
+#         sym_compare:        IN  Hash table used to store symbol contents comparison state.
+#         sym_type:           IN  Symbol type of callchain to check (either FUNC or RODATA).
+#         callchain_checked:  MOD Hash table indicating if a dependents callchains has already
+#                                 been traversed. Use to avoid re-checking the same callchain.
+#
+# Returns: 1 if all dependencies are unchanged. 0 if a dependency has changed.
+sub callchain_check {
+	my ($l_sym, $sym_deps, $sym_compare, $sym_type, $callchain_checked) = @_;
+	my @deps;
+	my $ret_val = 0;
+
+	# Check either rodata or function dependencies.
+	@deps = @{$sym_deps->{$l_sym}{$sym_type}};
+
+	if (@deps == 0) {
+		# Leaf function; therefore, no dependency. Return unchanged.
+		$ret_val = 1;
+	}
+	else {
+		my $dep;
+		foreach $dep (@deps) {
+			if ($sym_compare->{$dep} != SYMBOL_MATCH) {
+				# Symbol contents changed.
+				$ret_val = 0;
+				last;
+			}
+
+			# Skip traversing the dependents callchain if it has already been
+			# checked. This will save a little time. Also, it will avoid
+			# infinite recursion caused by circular dependencies in the callchain.
+			if (!$callchain_checked->{$dep}) {
+				$callchain_checked->{$dep} = 1;
+
+				# Recursively check callchain.
+				$ret_val = &callchain_check($dep, $sym_deps,
+				                            $sym_compare, $sym_type,
+				                            $callchain_checked);
+				if ($ret_val == 0) {
+					# Symbol contents changed.
+					last;
+				}
+			}
+			$ret_val = 1;
+		}
+	}
+	return $ret_val;
+}
+
+
+# Determine which symbols should be abandoned from the generated romtable assuming that
+# there is an unlimited number of abandon entries allowed.
+#
+# Params: sym_compare:      IN  Hash table used to store symbol contents comparison state.
+#         sym_types:        IN  Hash table indicating symbol type (e.g. function, rodata).
+#         gen_romtbl_state: OUT Hash table indicating whether a ROM symbol should be included,
+#                               abandoned, or excluded from the generated romtable.
+#
+# Returns: Number of symbols abandoned.
+sub process_unlimited_abandons {
+	my ($sym_compare, $sym_types, $gen_romtbl_state) = @_;
+	my ($sym, $num_abandons);
+
+	log_print("Running unlimited abandons algorithm\n");
+
+	$num_abandons = 0;
+
+	# Iterate list of symbols and determine if they should be abandoned.
+	foreach $sym (keys %{$sym_compare}) {
+		if ($sym_compare->{$sym} == SYMBOL_MATCH) {
+			# Symbol contents unchanged. Include symbol.
+			$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_INCLUDE;
+		}
+		elsif ($sym_compare->{$sym} == SYMBOL_UNUSED) {
+			# ROM symbol does not exist in RAM. The symbol could be missing for the
+			# following reasons:
+			#    (1) Different compiler options. (e.g. ROM is compiled with WLTEST).
+			#    (2) The ROM symbol has been deleted in the latest RAM code.
+			#    (3) The ROM symbol has been renamed in the latest RAM code.
+			#    (4) Static ROM symbol has been moved to a different source file in the
+			#        latest RAM code. It will be renamed by the globalizer with a
+			#        file-specific prefix.
+			#    (5) ROM symbol has been converted from static to non-static or vs versa.
+			#    (6) The symbol is discarded in RAM by the linker since it is not
+			#        required based upon the target configuration (compiler defines).
+			#
+			# Since the symbol does not exist in RAM, it is harmless to include it in
+			# the generated romtable. (Attempting to abandoning the symbol would result
+			# in link errors since the symbol's RAM address needs to be resolved to fill
+			# in the patch table).
+			$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_INCLUDE;
+		}
+		elsif ($sym_compare->{$sym} == SYMBOL_COMPARISON_MISSING) {
+			# ROM symbol *does* exist in RAM. However, the RAM comparison value
+			# (e.g. MD5 checksum) is missing. It could be missing for the following reasons:
+			#    (1) Public ROM symbol has been moved to a different source file in the
+			#        latest RAM code.
+			#    (2) Const data symbol is changed to non-const, uninitialized data.
+			#
+			# Since the RAM comparison value is missing, assume that the symbol has
+			# changed and abandon it. This handles the situation where a function
+			# has moved source files and it contents have changed.
+			$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_ABANDON;
+
+			# Track number of abandons.
+			$num_abandons += 1;
+		}
+		elsif ($sym_compare->{$sym} == SYMBOL_MISMATCH) {
+			# Symbol contents changed. Abandon symbol.
+			$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_ABANDON;
+
+			# Track number of abandons.
+			$num_abandons += 1;
+		}
+		else {
+			log_error("Error: Unknown sym_compare value($sym_compare->{$sym}) for '$sym'\n");
+			exit 1;
+		}
+
+		# Debug.
+		log_debug("$sym (%s) [%s]\n", get_sym_type_str($sym_types->{$sym}),
+		                              get_gen_romtbl_sym_str($gen_romtbl_state->{$sym}));
+	}
+
+	return ($num_abandons);
+}
+
+# Calculate number of patch entries which will be merged in build-tcam.
+# Total number of TCAM entries is total number of auto TCAM entries +
+# total number of manual TCAM entries - number of merged TCAM entries due to overlap.
+#
+# Params: abandoned_syms:     IN  Hash of abandoned symbols.
+#         sym_addrs:          IN  Hash for ROM address of function symbol.
+#         tcam_pcnt:          IN  TCAM patch count.
+#         man_tcam_addr_lens: IN  Hash table used to store the length of each manual tcam entry address.
+#
+# Returns: Number of merged abandoned.
+sub process_merge_abandons {
+	my ($abandoned_syms, $sym_addrs, $tcam_pcnt, $man_tcam_addr_lens) = @_;
+	my (%abandon_sym_addrs, $pentry_size, $addr_mask, $sym, $index);
+
+	# TCAM patch entry size.
+	$pentry_size = (1 << $tcam_pcnt) * 4;
+	# TCAM patch address mask. Patched addresses are aligned based upon patch entry size.
+	$addr_mask = ~($pentry_size - 1);
+
+	# Store address for auto tcam entries.
+	foreach $sym (keys %{$sym_addrs}) {
+		if ($abandoned_syms->{$sym}) {
+			$abandon_sym_addrs{$sym} = $sym_addrs->{$sym};
+		}
+	}
+
+	$index = 0;
+	# Store address for manual tcam entries.
+	foreach my $addr (keys %{$man_tcam_addr_lens}) {
+		$sym = "m_tcam_entry".$index++;
+		$abandon_sym_addrs{$sym} = $addr;
+	}
+
+	# Create a sorted list (based upon ROM address) of patched TCAM symbols.
+	my @abandon_syms_sorted =
+		sort { $abandon_sym_addrs{$a} <=> $abandon_sym_addrs{$b} } keys %abandon_sym_addrs;
+
+	# Cache first entry for comparison.
+	my $prev_sym;
+	my $cur_sym = $abandon_syms_sorted[0];
+	splice(@abandon_syms_sorted, 0, 1);
+
+	my $num_merge = 0;
+	# Search for adjacent TCAM patches that will be merge.
+	foreach $sym (@abandon_syms_sorted) {
+		$prev_sym = $cur_sym;
+		$cur_sym  = $sym;
+		my $addr_delta = ($abandon_sym_addrs{$sym}      & $addr_mask) -
+		                 ($abandon_sym_addrs{$prev_sym} & $addr_mask);
+
+		if ($addr_delta < $pentry_size) {
+			$num_merge++;
+		}
+	}
+
+	return $num_merge;
+}
+
+# Determine which symbols should be included in the generated romtable assuming that
+# there is a max number of abandon entries allowed due to hardware restrictions.
+#
+# To reduce the number of abandons, only abandon changed functions if they are invoked from
+# other ROM functions. Otherwise, the changed functions can be excluded from the generated
+# romtable.
+#
+# This should minimize the number of abandon entries required and should be sufficient to
+# guarantee that the RAM version of functions will be used for all changed functions.
+# e.g. consider the simple call chain:
+#
+#   A() --> B() --> C()
+#
+# If B() and C() have changed, it is sufficient to include A (unabandoned) and B (abandoned) in
+# the generated romtable. C() can be excluded, and B() and C() will both be executed from RAM.
+#
+# The resulting firmware image will be identical to a firmware image generated with unlimited
+# abandons (software patching mechanism).
+#
+# To implement this algorithm, all unchanged functions will be included in the generated romtable,
+# and all changed first-level dependents of the unchanged functions will be abandoned.
+#
+# Note that this algorithm does NOT guarantee that the number of required abandons will be less
+# than the maximum hardware limit. If the maximum limit is exceeded, a more complicated algorithm
+# will be required.
+#
+# Params: sym_compare:        IN  Hash table used to store symbol contents comparison state.
+#         sym_types:          IN  Hash table of symbol types (e.g. function, rodata).
+#         sym_deps:           IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                                 symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                                 value is a reference to an array of direct symbol dependencies,
+#                                 i.e. not the entire call chain.
+#         sym_addrs:          IN  Hash table used to store symbol address
+#         rodata_funcptrs:    IN  Hash table of function pointers used by const data. The hash value is
+#                                 set to 1 if the function (hash key) is used by const data.
+#         rom_ref_funcs:      IN  Hash of ROM functions called by manually patched functions.
+#                                 (key is function name, value is '1').
+#         log:                IN  Enable debug logging.
+#         gen_romtbl_state:   OUT Hash table indicating whether a ROM symbol should be included,
+#                                 abandoned, or excluded from the generated romtable.
+#         abandon_syms:       OUT Hash of abandoned symbols. (This is essentially a subset of
+#                                 'gen_romtble_state' and is used for optimization reasons).
+#         tcam_pcnt:          IN  TCAM patch count.
+#         man_tcam_addr_lens: IN  Hash table used to store the length of each manual tcam entry address.
+#
+# Returns: Number of symbols abandoned.
+sub process_limited_abandons {
+	my ($sym_compare, $sym_types, $sym_deps, $sym_addrs, $rodata_funcptrs, @more_args) = @_;
+	my ($patch_rom_ref_funcs, $log, $gen_romtbl_state, $abandoned_syms, @more_args2) = @more_args;
+	my ($tcam_pcnt, $man_tcam_addr_lens) = @more_args2;
+	my ($sym, $dep, %gen_romtbl_state_local, %abandoned_syms_local, $merged_num);
+
+	$abandoned_syms   = \%abandoned_syms_local   if (!defined($abandoned_syms));
+	$gen_romtbl_state = \%gen_romtbl_state_local if (!defined($gen_romtbl_state));
+
+	log_print("Running limited abandons algorithm\n") if ($log);
+
+	# By default symbols are excluded from generated romtable.
+	foreach $sym (keys %{$sym_compare}) {
+		$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_EXCLUDE;
+	}
+
+
+	# Iterate list of symbols and determine if they should be included in the generated romtable.
+	foreach $sym (keys %{$sym_compare}) {
+
+		if ($sym_types->{$sym} == FUNC) {
+			# Include unchanged ROM function in generated romtable.
+			if ($sym_compare->{$sym} == SYMBOL_MATCH) {
+				$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_INCLUDE;
+			}
+
+			# Treat patched, MISMATCHed ROM functions the same as MATCHed ROM functions.
+			# e.g. if a patch function calls a ROM function, TCAM entries are required
+			# for functions called by the ROM function that have been invalidated.
+			if (($sym_compare->{$sym} == SYMBOL_MATCH) || $patch_rom_ref_funcs->{$sym}) {
+				# Debug.
+				log_debug("$sym (%s) [%s]\n", get_sym_type_str($sym_types->{$sym}),
+							      get_gen_romtbl_sym_str($gen_romtbl_state->{$sym})) if ($log);
+
+				# For each first-level dependency of the unchanged ROM function,
+				# abandon all functions that have changed. This ensures
+				# that the ROM function will invoke the RAM version of changed
+				# dependency.
+				#
+				# Note that if a public ROM function has been moved to a different
+				# source file in the latest RAM code (and was not renamed), its
+				# comparison state will be set to SYMBOL_COMPARISON_MISSING. Since
+				# its unknown whether the function has changed, assume that it has
+				# and abandon it.
+				foreach $dep (@{$sym_deps->{$sym}{+FUNC}}) {
+					if (defined($sym_compare->{$dep})) {
+						if (($sym_compare->{$dep} == SYMBOL_MISMATCH) ||
+						    ($sym_compare->{$dep} == SYMBOL_COMPARISON_MISSING)) {
+
+							# Abandon symbol in generated romtable.
+							$gen_romtbl_state->{$dep} = ROMTBL_SYMBOL_ABANDON;
+							$abandoned_syms->{$dep} = 1;
+
+							# Debug.
+							log_debug("$dep (%s) [%s]\n",
+							          get_sym_type_str($sym_types->{$dep}),
+							          get_gen_romtbl_sym_str($gen_romtbl_state->{$dep})) if ($log);
+						}
+					}
+				}
+			}
+
+			# Ensure that function pointers contained within const data are abandoned,
+			# instead of simply excluding them from the generated romtable. This ensures
+			# that the RAM version of changed functions used as function pointers are used.
+			if ($sym_compare->{$sym} == SYMBOL_MISMATCH) {
+				if ($rodata_funcptrs->{$sym}) {
+
+					# Abandon symbol in generated romtable.
+					$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_ABANDON;
+					$abandoned_syms->{$sym} = 1;
+
+					# Debug.
+					log_debug("Abandon function pointer $sym (FUNC) [ABANDON]\n") if ($log);
+				}
+			}
+		}
+		else {
+			# Include unchanged ROM data in generated romtable.
+			if ($sym_compare->{$sym} == SYMBOL_MATCH) {
+				$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_INCLUDE;
+			}
+
+			# Debug.
+			log_debug("$sym (%s) [%s]\n",
+				  get_sym_type_str($sym_types->{$sym}),
+				  get_gen_romtbl_sym_str($gen_romtbl_state->{$sym})) if ($log);
+		}
+	}
+
+	# Total number of TCAM entries is total number of auto TCAM entries +
+	# total number of manual TCAM entries - number of merged TCAM entries due to overlap.
+	$merged_num = process_merge_abandons($abandoned_syms, $sym_addrs, $tcam_pcnt, $man_tcam_addr_lens);
+
+	log_print("$merged_num merged abandons\n", ) if ($log && $merged_num);
+
+	return ((keys %{$abandoned_syms}) - $merged_num);
+}
+
+
+# Run the "TCAM reduction" algorithm which will invalidate small ROM functions in order to reduce
+# the number of required TCAM entries until it is within the max hardware limit. The TCAM reduction
+# is obtained at a cost of increased RAM size from the invalidated functions.
+#
+# Params: sym_types:          IN  Hash table of symbol types (e.g. function, rodata).
+#         sym_deps:           IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                                 symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                                 value is a reference to an array of direct symbol dependencies,
+#                                 i.e. not the entire call chain.
+#         sym_deps_reverse:   IN  Multi-dimensional hash table used to store reverse symbol
+#                                 dependencies. The symbol name and symbol type (FUNC, RODATA) are
+#                                 the hash keys and the value is a reference to an array of direct
+#                                 reverse symbol dependencies.
+#         sym_addrs:          IN  Hash table used to store symbol address
+#         rodata_funcptrs:    IN  Hash table of function pointers used by const data. The hash value is
+#                                 set to 1 if the function (hash key) is used by const data.
+#         rom_ref_funcs:      IN  Hash of ROM functions called by manually patched functions.
+#                                (key is function name, value is '1').
+#         sym_sizes:          IN  Hash table used to store the size of each symbol.
+#         syms_noesc:         IN  Hash table of "no_esc" symbols. These cannot be abandoned.
+#         num_tcams:          IN  Current number of TCAM entries used (symbols abandoned).
+#         max_tcams:          IN  Maximum number of TCAM entries supported by hardware.
+#         sym_compare:        MOD Hash table used to store symbol contents comparison state.
+#         gen_romtbl_state:   MOD Hash table indicating whether a ROM symbol should be included,
+#                                 abandoned, or excluded from the generated romtable.
+#         tcam_syms:          MOD Hash of abandoned symbols.
+#         tcam_pcnt:          IN  TCAM patch count.
+#         man_tcam_addr_lens: IN  Hash table used to store the length of each manual tcam entry address.
+#
+# Returns: Number of symbols abandoned.
+sub process_tcam_reduction {
+	my ($sym_types, $sym_deps, $sym_deps_reverse, $sym_addrs, $rodata_funcptrs, @more_args) = @_;
+	my ($patch_rom_ref_funcs, $sym_sizes, $syms_noesc, $num_tcams, @more_args2) = @more_args;
+	my ($max_tcams, $sym_compare, $gen_romtbl_state, $tcam_syms, @more_args3) = @more_args2;
+	my ($tcam_pcnt, $man_tcam_addr_lens) = @more_args3;
+
+	my ($num_saved_tcams, $total_size, $total_size_iter, $num_tcams_orig, $iter);
+	$num_tcams_orig = $num_tcams;
+
+	log_print("Running TCAM reduction algorithm\n");
+
+	# Map array --> hash for reversse symbol dependencies. (Maybe this should have been
+	# a hash to begin with).
+	my %sym_deps_reverse_hash;
+	foreach my $sym (keys %{$sym_deps_reverse}) {
+		foreach my $dep (@{$sym_deps_reverse->{$sym}{+FUNC}}) {
+			$sym_deps_reverse_hash{$sym}{$dep} = 1;
+		}
+	}
+
+
+	# Run the "TCAM reduction" algorithm until the number of required TCAM entries is within
+	# the max hardware limit. Each iteration of the algorithm will force a subset of small
+	# ROM functions to be invalidated in order to reduce the number of required TCAM entries.
+	#
+	# It is important to re-evaluate which ROM functions should be invalidated on each iteration.
+	# For example consider this simple call-chain:
+	#
+	#    a() (MATCH, 8 bytes)
+	#       -> b() (MATCH, 4 bytes)
+	#             -> c() (MISMATCH)
+	#             -> d() (MISMATCH)
+	#             -> e() (MISMATCH)
+	#
+	# On the initial iteration:
+	#    - b() uses 3 TCAM entries
+	#    - b() is forced to be invalidated from ROM.
+	#       - a() will require a TCAM entry for b().
+	#       - Net savings of 2 TCAM entries for 4 bytes increase in RAM.
+	#
+	# This creates a further TCAM savings opportunity for subsequent iterations. e.g. a() could
+	# be forced to be invalidated saving 1 TCAM entry at a cost of 8 bytes of RAM. This
+	# opportunity would be missed if we didn't re-iterate with the updated symbol comparison
+	# states.
+	#
+	# Another example:
+	#    a() (MATCH, 8 bytes)
+	#       -> b() (MATCH, 4 bytes)
+	#             -> c() (MISMATCH)
+	#             -> d() (MISMATCH)
+	#             -> e() (MISMATCH)
+	#       -> f() (MISMATCH)
+	#
+	# On the initial iteration:
+	#    - a() is 8 bytes and uses 1 TCAM entry (for f())
+	#    - b() is 4 bytes and uses 3 TCAM entries (for c(), d(), and e())
+	#    - b() is forced to be invalidated from ROM.
+	#       - a() will require a TCAM entry for b().
+	#       - Net savings of 2 TCAM entries for 4 bytes increase in RAM.
+	#
+	# After the first iteration, the initial data (which indicates that a() only uses 1 TCAM
+	# entry) will be stale.
+	$total_size = 0;
+	$iter = 0;
+	while ($num_tcams > $max_tcams) {
+
+		log_verbose("TCAM reduction iteration #%d\n", $iter++);
+
+		$num_saved_tcams = process_tcam_reduction_iter($sym_types,
+		                                               $sym_deps,
+		                                               \%sym_deps_reverse_hash,
+		                                               $sym_addrs,
+		                                               $rodata_funcptrs,
+		                                               $patch_rom_ref_funcs,
+		                                               $sym_sizes,
+		                                               $syms_noesc,
+		                                               $sym_compare,
+		                                               $tcam_syms,
+		                                               \$total_size_iter,
+		                                               $tcam_pcnt,
+		                                               $man_tcam_addr_lens);
+
+
+		# Bail if the number of TCAM entries cannot be reduced.
+		if ($num_saved_tcams == 0) {
+			last;
+		}
+
+		$num_tcams  -= $num_saved_tcams;
+		$total_size += $total_size_iter;
+	}
+
+
+	# Re-run the limited abandons algorithm with the updated symbol comparison states.
+	%{$gen_romtbl_state} = ();
+	$num_tcams = process_limited_abandons($sym_compare,
+	                                      $sym_types,
+	                                      $sym_deps,
+	                                      $sym_addrs,
+	                                      $rodata_funcptrs,
+	                                      $patch_rom_ref_funcs,
+	                                      0,
+	                                      $gen_romtbl_state,
+	                                      undef,
+	                                      $tcam_pcnt,
+	                                      $man_tcam_addr_lens);
+
+
+	log_print("Reduced %d TCAM entries (increase of %d bytes)\n",
+	          $num_tcams_orig - $num_tcams, $total_size);
+
+	return ($num_tcams);
+}
+
+
+# Run a single iteration of the "TCAM reduction" algorithm which will invalidate small ROM functions
+# in order to reduce the number of required TCAM entries. The TCAM reduction is obtained at a cost
+# of increased RAM size from the invalidated functions.
+#
+# Params: sym_types:          IN  Hash table of symbol types (e.g. function, rodata).
+#         sym_deps:           IN  Multi-dimensional hash table used to store symbol dependencies. The
+#                                 symbol name and symbol type (FUNC, RODATA) are the hash keys and the
+#                                 value is a reference to an array of direct symbol dependencies,
+#                                 i.e. not the entire call chain.
+#         sym_deps_reverse:   IN  Multi-dimensional hash table used to store reverse symbol
+#                                 dependencies. The symbol name and symbol type (FUNC, RODATA) are
+#                                 the hash keys and the value is a reference to an array of direct
+#                                 reverse symbol dependencies.
+#         sym_addrs:          IN  Hash table used to store symbol address
+#         rodata_funcptrs:    IN  Hash table of function pointers used by const data. The hash value is
+#                                 set to 1 if the function (hash key) is used by const data.
+#         rom_ref_funcs:      IN  Hash of ROM functions called by manually patched functions.
+#                                 (key is function name, value is '1').
+#         sym_sizes:          IN  Hash table used to store the size of each symbol.
+#         syms_noesc:         IN  Hash table of "no_esc" symbols. These cannot be abandoned.
+#         sym_compare:        MOD Hash table used to store symbol contents comparison state.
+#         tcam_syms:          MOD Hash of abandoned symbols.
+#         size_increase:      OUT Size increase resulting from TCAM reduction.
+#         tcam_pcnt:          IN  TCAM patch count.
+#         man_tcam_addr_lens: IN  Hash table used to store the length of each manual tcam entry address.
+#
+# Returns: Number of saved TCAM entries.
+sub process_tcam_reduction_iter {
+	my ($sym_types, $sym_deps, $sym_deps_reverse, $sym_addrs, $rodata_funcptrs, @more_args) = @_;
+	my ($patch_rom_ref_funcs, $sym_sizes, $syms_noesc, $sym_compare, @more_args2) = @more_args;
+	my ($tcam_syms, $size_increase, $tcam_pcnt, $man_tcam_addr_lens) = @more_args2;
+
+	my ($num_saved_tcams, $num_old_tcams, $num_new_tcams, $size_per_tcam, $min_size_per_tcam);
+	my ($cur_num_saved_tcams, $cur_tcam_sym, $total_size, $skip_sym);
+	my (%cur_tcam_syms_incr);
+
+	$cur_tcam_sym = "nil";
+	$cur_num_saved_tcams = 0;
+
+	# Iterate the list of TCAM entries. For each one, determine the RAM size increase that
+	# would result from eliminating the TCAM entry and the number of TCAM entries that would
+	# be saved. Determine the TCAM entry that provides the minimum size increase per saved
+	# TCAM.
+	#
+	# A TCAM entry can be eliminated by forcing all callers to be invalidated from ROM.
+	# Therefore, the size increase is the total size of all calling functions that have not
+	# already been invalidated from ROM.
+	#
+	# Invalidating calling functions may introduce additional TCAM entries. Or it may free
+	# additional existing TCAM entries. It is therefore important to consider the net TCAM
+	# savings.
+	#
+	# Determining the TCAM entry that provides the minimum size increase is expensive in
+	# terms of time. Each iteration, the "limited abandons algorithm" needs to be
+	# evaluated for each TCAM entry. Therefore, an "incremental" version of the "limited
+	# abandons algorithm" is used. Only the first-level dependendants (and reverse dependendants)
+	# of the callers of the TCAM symbol are evaluated to determine the net TCAM savings.
+	#
+	# Consider the following simple function call-chains:
+	#
+	# Example #1:
+	#    a() (MATCH, 4 bytes)
+	#       -> b() (MISMATCH)
+	#
+	# If a() is forced to be invalidated, 1 TCAM entry is saved for a cost of 4 bytes.
+	#
+	# Example #2:
+	#    a() (MATCH, 4 bytes)
+	#       -> b() (MATCH, 8 bytes)
+	#          -> c() (MISMATCH)
+	#
+	# If b() is forced to be invalidated, there is no TCAM savings. The TCAM entry for c() is
+	# saved, but a new one is required for a() to call b().
+	#
+	# Example #3:
+	#    a() (MATCH, 4 bytes)
+	#       -> b() (MISMATCH)
+	#       -> c() (MISMATCH)
+	#       -> d() (MISMATCH)
+	#
+	# If a() is forced to be invalidated, 3 TCAM entries are saved for a cost of 4 bytes.
+	#
+	# Example #4:
+	#    a() (MATCH)
+	#       -> b() (MATCH)
+	#          -> c() (MISMATCH)
+	#          -> d() (MISMATCH)
+	#          -> e() (MISMATCH)
+	#
+	#    g() (MATCH)
+	#       -> d() (MISMATCH)
+        #    h() (MATCH)
+	#       -> e() (MISMATCH)
+	#
+	# Attempt to free TCAM entry c():
+	#    - Force b() to be invalidated, which frees TCAM entry for c()
+	#    - New TCAM entry is created for a() to call b()
+	#    - TCAM entry is still required for d() (calling function g())
+	#    - TCAM entry is still required for e() (calling function h())
+	#    - 0 TCAM entries saved.
+	#
+	# Example #5:
+	#    a() (MATCH)
+	#       -> b() (MATCH, 4 bytes)
+	#          -> c() (MISMATCH)
+	#          -> d() (MISMATCH)
+	#          -> e() (MISMATCH)
+	#
+	#    g() (MATCH)
+	#       -> h() (MATCH, 8 bytes)
+	#          -> c() (MISMATCH)
+	#
+	#    i() (MATCH, 12 bytes)
+	#       -> c() (MISMATCH)
+	#       -> j() (MISMATCH)
+	#
+	#    k() (MATCH)
+	#       -> j() (MISMATCH)
+	#
+	# Attempt to free TCAM entry c():
+	#    - Force b(), h(), i() (calling functions of c()) to be invalidated, frees TCAM entry for c()
+	#    - New TCAM entries are required for:
+	#       - a() --> b()
+	#       - g() --> h()
+	#    - TCAM entry for d() is also freed.
+	#    - TCAM entry is still required for j() (calling function k())
+	#    - 1 TCAM entry is saved for a cost of 24 bytes (size of b(), h() and i()).
+	#
+	foreach my $sym (keys %{$tcam_syms}) {
+		my %sym_compare_incr;
+		my %tcam_syms_incr;
+		my %old_tcams;
+		my %matched_calling_funcs;
+
+		# Debug.
+		log_verbose("1. TCAM sym: $sym\n");
+
+		# Iterate the calling functions of the TCAM function. Eliminate the TCAM entry
+		# by invalidating them all from ROM and calculate the RAM size increase that would
+		# result from this invalidation.
+		#
+		# In the example #5 above, invalidate b(), h(), i() (calling functions of c()).
+		$total_size = 0;
+		$skip_sym   = 0;
+		foreach my $calling_func (keys %{$sym_deps_reverse->{$sym}}) {
+			# Handle special case for manually patched functions. The TCAM entry
+			# cannot be eliminated if a calling function is patched. i.e. the calling
+			# function cannot be forced to exclusively run from RAM since the patch
+			# function calls the ROM version of the function.
+			if ($patch_rom_ref_funcs->{$calling_func}) {
+				log_verbose(" Skip '$sym', patched calling func '$calling_func'\n");
+				$skip_sym = 1;
+				last;
+			}
+
+			# Only invalidate calling functions that currently MATCH.
+			next if ($sym_compare->{$calling_func} != SYMBOL_MATCH);
+
+			# Debug.
+			log_verbose(" 2. Calling func: $calling_func (MATCH --> MISMATCH)\n");
+
+			# Handle special case of "no_esc" symbols. (In general, no_esc should not be
+			# use with TCAM ROMs. However, the exception to the rule are "alias"
+			# functions to handle ROMs that have mistakenly been created with optimized
+			# functions that have been renamed by the compiler). Skip these to avoid
+			# the additional complexity of having to invalidate all callers of no_esc
+			# functions.
+			if ($syms_noesc->{$calling_func}) {
+				$skip_sym = 1;
+				last;
+			}
+
+			# Calculate RAM size increase that would result from this invalidation.
+			$total_size += $sym_sizes->{$calling_func};
+			$matched_calling_funcs{$calling_func} = 1;
+
+
+			# Include calling functions of the calling functions in the "incremental"
+			# analysis in order to detect new TCAM entries created by invalidating
+			# the calling functions.
+			#
+			# In the example #5 above, include a() and g() (calling functions of
+			# b(), h(), i()).
+			foreach my $callingx2_func (keys %{$sym_deps_reverse->{$calling_func}}) {
+				# Treat patched, MISMATCHed ROM functions the same as MATCHed ROM
+				# functions. e.g. if a patch function calls a ROM function, TCAM
+				# entries are required for functions called by the ROM function that
+				# have been invalidated.
+				next if (!(($sym_compare->{$callingx2_func} == SYMBOL_MATCH) ||
+				           ($patch_rom_ref_funcs->{$callingx2_func})));
+
+				# Debug.
+				log_verbose("  3. Callingx2 func: $callingx2_func (%s)\n",
+				            get_sym_compare_str($sym_compare->{$callingx2_func}));
+
+				$sym_compare_incr{$callingx2_func} = $sym_compare->{$callingx2_func};
+
+				# Speed optimization to bail out of this loop early if we find
+				# a calling function of the calling function that will create a
+				# new TCAM entry.
+				if (!$sym_deps_reverse->{$sym}{$callingx2_func}) {
+					last;
+				}
+			}
+
+			# Include called functions (that use TCAM entries) of the calling functions
+			# in the "incremental" analysis in order to detect additional existing
+			# TCAM entries that may be freed.
+			#
+			# In the example #5 above, include c(), d(), e(), and j() (called functions
+			# of b(), h(), i()).
+			foreach my $called_func (@{$sym_deps->{$calling_func}{+FUNC}}) {
+				next if ($sym_compare->{$called_func} != SYMBOL_MISMATCH);
+
+				# Debug.
+				log_verbose("   4. Calling_called func: $called_func (MISMATCH)\n");
+
+				$sym_compare_incr{$called_func} = SYMBOL_MISMATCH;
+
+				# Count the number of existing TCAM entries. Used to calculate
+				# the net TCAM savings. (Use a hash to avoid counting duplicates).
+				$old_tcams{$called_func} = 1;
+
+
+				# The for loop below is unnecesary when the called function is the
+				# TCAM symbol being eliminated.
+				if ($called_func eq $sym) {
+					next;
+				}
+
+
+				# Include calling functions of the called functions in the "incremental"
+				# analysis in order to detect required TCAM entries.
+				#
+				# In the example #5 above, include k() (calling functions of
+				# d(), e(), and j()).
+				foreach my $called_calling_func (keys %{$sym_deps_reverse->{$called_func}}) {
+					# Treat patched, MISMATCHed ROM functions the same as
+					# MATCHed ROM functions. e.g. if a patch function calls a
+					# ROM function, TCAM entries are required for functions
+					# called by the ROM function that have been invalidated.
+					next if (!(($sym_compare->{$called_calling_func} == SYMBOL_MATCH) ||
+						   ($patch_rom_ref_funcs->{$called_calling_func})));
+
+					# Debug.
+					log_verbose("    5. Called_calling func: $called_calling_func (%s)\n",
+					            get_sym_compare_str($sym_compare->{$called_calling_func}));
+
+					$sym_compare_incr{$called_calling_func} = $sym_compare->{$called_calling_func};
+
+					# Speed optimization to bail out of this loop early if we
+					# find a calling function of the calling function that
+					# requires a TCAM entry.
+					if (!$sym_deps_reverse->{$sym}{$called_calling_func}) {
+						last;
+					}
+				}
+
+			}
+		}
+
+		if ($skip_sym) {
+			next;
+		}
+
+		# Invalidate MATCHed calling functions. (Do this after the previous for loop to
+		# prevent the updated MISMATCHED state from being overwritten by one of the
+		# internal for loops above).
+		foreach my $calling_func (keys %matched_calling_funcs) {
+			$sym_compare_incr{$calling_func} = SYMBOL_MISMATCH;
+		}
+
+
+		# Determine the number of existing TCAM entries.
+		$num_old_tcams = scalar(keys %old_tcams);
+
+		# Run an "incremental" version of the limited abandons algorithm to deterime
+		# the net TCAM savings.
+		$num_new_tcams = process_limited_abandons(\%sym_compare_incr,
+		                                          $sym_types,
+		                                          $sym_deps,
+		                                          $sym_addrs,
+		                                          $rodata_funcptrs,
+		                                          $patch_rom_ref_funcs,
+		                                          0,
+		                                          undef,
+		                                          \%tcam_syms_incr,
+		                                          $tcam_pcnt,
+		                                          $man_tcam_addr_lens);
+
+		$num_saved_tcams = $num_old_tcams - $num_new_tcams;
+		log_verbose("Saved TCAMs: $num_saved_tcams (%d - %d)\n", $num_old_tcams, $num_new_tcams);
+
+		# Determine the TCAM entry that provides the minimum size increase per saved TCAM.
+		if ($num_saved_tcams > 0) {
+			$size_per_tcam = $total_size / $num_saved_tcams;
+			log_verbose("Average size per TCAM: $size_per_tcam\n");
+			if (($cur_tcam_sym eq "nil") || ($size_per_tcam < $min_size_per_tcam)) {
+				$min_size_per_tcam   = $size_per_tcam;
+				$cur_tcam_sym        = $sym;
+				%cur_tcam_syms_incr  = %tcam_syms_incr;
+				$cur_num_saved_tcams = $num_saved_tcams;
+				${$size_increase}    = $total_size;
+			}
+		}
+	}
+
+
+	# Set the symbol comparison state to MISMTACH for the calling functions of the TCAM
+	# entry that was selected to be freed.
+	log_debug("Invalidate(");
+	foreach my $calling_func (sort keys %{$sym_deps_reverse->{$cur_tcam_sym}}) {
+		if ($sym_compare->{$calling_func} == SYMBOL_MATCH) {
+			log_debug_raw("$calling_func,");
+			$sym_compare->{$calling_func} = SYMBOL_MISMATCH;
+		}
+	}
+	log_debug_raw(") TCAM sym(%s) Saved TCAMs(%d) bytes(%d)\n",
+	              $cur_tcam_sym, $cur_num_saved_tcams, ${$size_increase});
+
+
+	# Remove the TCAM entry that was freed. Add any new ones.
+	delete $tcam_syms->{$cur_tcam_sym};
+	foreach my $sym (keys %cur_tcam_syms_incr) {
+		$tcam_syms->{$sym} = 1;
+	}
+
+
+	# Return number of saved TCAM entries for this iteration.
+	return ($cur_num_saved_tcams);
+}
+
+
+# This is a back-door that that allows symbol comparison states to be explicitly set. It should
+# be avoided! The process for generating the romtable should ideally remain completely automatic.
+# Manual overrides should be avoided, and only used as temporary work-arounds.
+#
+# Params: sym_overrides:     IN  Hash table of symbol comparison overrides. Maps symbols to
+#                                comparison state (SYMBOL_MATCH, SYMBOL_MISMATCH, SYMBOL_UNUSED).
+#         sym_compare_state: MOD Reference to symbol's current comparison state.
+#
+# Returns: Nothing.
+sub process_sym_overrides {
+	my ($sym_overrides, $sym_compare) = @_;
+	my $sym;
+
+	foreach $sym (keys %{$sym_overrides}) {
+		# Ignore the manual override. If the symbol is not used by the build (UNUSED)
+		# it cannot be changed to a MISMATCH. This can lead to link errors if the symbol
+		# is abandoned (and does not exist).
+		#
+		# Also avoid changing UNUSED symbols to MATCH, since this could unnecessarily
+		# cost TCAM entries.
+		if ($sym_compare->{$sym} == SYMBOL_UNUSED) {
+			# Debug.
+			log_debug("Ignore manual override $sym [%s]-->[%s]\n",
+				  get_sym_compare_str($sym_compare->{$sym}),
+				  get_sym_compare_str($sym_overrides->{$sym}));
+
+			next;
+		}
+
+
+		# Debug.
+		log_debug("Manual override $sym [%s]-->[%s]\n",
+			  get_sym_compare_str($sym_compare->{$sym}),
+			  get_sym_compare_str($sym_overrides->{$sym}));
+
+		# Override the symbol comparison state.
+		$sym_compare->{$sym} = $sym_overrides->{$sym};
+	}
+}
+
+
+# Generate the output romtable.
+#
+# Params: fd:                 IN  File descriptor for output romtable.
+#         file_syms:          IN  Hash table used to store symbols for each file. Each hash entry is a
+#                                 reference to an array of symbols contained in that file.
+#         gen_romtbl_state:   IN  Hash table indicating whether a ROM symbol should be included,
+#                                 abandoned, or excluded from the generated romtable.
+#         sym_types:          IN  Hash table indicating symbol type (e.g. function, rodata).
+#         sym_size            IN  Hash table used to store the size of each ROM symbol.
+#         sym_inuse           IN  Hash table indicating whether a symbol is used by the target image.
+#         sym_noesc           IN  Hash table of "no_esc" symbols. These cannot be abandoned.
+#         syms_real_to_alias: IN  Hash table of optimized functions that are renamed by the compiler.
+#
+# Returns: Nothing.
+sub generate_romtable_output {
+	my $fd                 = shift;
+	my $file_syms          = shift;
+	my $gen_romtbl_state   = shift;
+	my $sym_types          = shift;
+	my $sym_size           = shift;
+	my $sym_inuse          = shift;
+        my $sym_noesc          = shift;
+        my $syms_real_to_alias = shift;
+	my ($file, $sym, $type, $i, $j);
+	my (@syms);
+
+	# Stats.
+	my @tot_num_sym;
+	my @tot_size_sym;
+
+	# Init stats.
+	for ($i = 0; $i < ROMTBL_SYMBOL_MAX; $i++) {
+		for ($j = 0; $j < SYMBOL_TYPE_MAX; $j++) {
+			$tot_num_sym[$i][$j]  = 0;
+			$tot_size_sym[$i][$j] = 0;
+		}
+	}
+
+
+	# Output header
+	printf $fd ("# \n");
+	printf $fd ("# Generated File From Script %s\n", basename($0));
+	printf $fd ("# \n");
+	printf $fd ("# \$Copyright (C) Broadcom Corporation \$\n");
+	printf $fd ("# \n");
+	printf $fd ("# \$Id: \$\n");
+	printf $fd ("# \n");
+	printf $fd ("\n");
+
+	# Iterate the list of files.
+	foreach $file (sort keys %{$file_syms}) {
+
+		# Print file header, e.g.
+		#
+		# # wlc_phy_iovar.o
+		printf $fd ("\n\t# $file.o\n");
+
+		# Iterate the symbols for each file, write them to the output file.
+		@syms  = @{${$file_syms}{$file}};
+		foreach $sym (sort @syms) {
+
+			# Check if symbol should be included in generated romtable.
+			if ($gen_romtbl_state->{$sym} == ROMTBL_SYMBOL_INCLUDE) {
+				# Include symbol.
+				if ($sym_types->{$sym} == FUNC) {
+					my $sym_attrib_str;
+
+					# Add ".no_esc" attribute for functions that cannot
+					# be abandoned.
+					if ($sym_noesc->{$sym}) {
+						$sym_attrib_str .= "\t#.no_esc"
+					}
+
+					# Add ".alias" attribute for functions renamed by the compiler.
+					if ($syms_real_to_alias->{$sym}) {
+						$sym_attrib_str .= "\t#.alias $syms_real_to_alias->{$sym}"
+					}
+					$sym_attrib_str .= "\n";
+
+
+					# Include function symbol. (Do not abandon)., e.g.
+					#
+					# .extern snprintf
+					printf $fd ("\t.extern $sym%s", $sym_attrib_str);
+				}
+				else {
+					# Const data symbol, e.g.
+					#
+					#   .extern bcmstdlib$hex_lower   #.rodata
+					#
+					printf $fd ("\t.extern $sym\t# .rodata\n");
+				}
+
+
+				# For stats purposes independently track whether symbols included
+				# from the generated romtable are used in the RAM image.
+				if (!$sym_inuse->{$sym}) {
+					$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_INCLUDE_NOT_USED;
+				}
+				else {
+					$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_INCLUDE_USED;
+				}
+			}
+			elsif ($gen_romtbl_state->{$sym} == ROMTBL_SYMBOL_ABANDON) {
+				if ($sym_types->{$sym} == FUNC) {
+					# Abandon function, e.g.
+					#
+					# .extern printf  	#.abandon
+					printf $fd ("\t.extern $sym\t\t#.abandon\n");
+				}
+				else {
+					# Abandon const data symbol, e.g.
+					#
+					#   .extern bcmstdlib$hex_lower   #.rodata # .abandon
+					#
+					printf $fd ("\t.extern $sym\t# .rodata\t# .abandon\n");
+				}
+			}
+			else {
+				# Symbol excluded, nothing to print to generated romtable.
+
+
+				# For stats purposes independently track whether symbols excluded
+				# from the generated romtable are used in the RAM image.
+				if (!$sym_inuse->{$sym}) {
+					$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_EXCLUDE_NOT_USED;
+				}
+				else {
+					$gen_romtbl_state->{$sym} = ROMTBL_SYMBOL_EXCLUDE_USED;
+				}
+			}
+
+			# Stats - track total symbols and total size.
+			$tot_num_sym[$gen_romtbl_state->{$sym}][$sym_types->{$sym}]  += 1;
+			$tot_size_sym[$gen_romtbl_state->{$sym}][$sym_types->{$sym}] += $sym_size->{$sym};
+
+			# Debug.
+			log_debug("$sym (%s) [%s]\n", get_sym_type_str($sym_types->{$sym}),
+						      get_gen_romtbl_sym_str($gen_romtbl_state->{$sym}));
+		}
+	}
+
+
+	# Display stats.
+	my @stats_strs = ('Included syms (used):',
+	                  'Included syms (not used):',
+	                  'Abandoned syms:',
+	                  'Excluded syms (used):',
+	                  'Excluded syms (not used):');
+
+	log_print("\nGenerated ROM table stats:\n");
+	display_stats(\@tot_num_sym, \@tot_size_sym, \@stats_strs);
+}
+
+
+# Dump sorted list of symbols, grouped by state (e.g. MATCH, MISMATCH, etc) and obj file to debug
+# log file.
+#
+# Params:  states:     IN  Hash table used to store symbol state (e.g. MATCH, MISMATCH, etc).
+#          sym_file:   IN  Hash table used to store the file containing each symbol.
+#          sym_sizes:  IN  Hash table used to store the size of each symbol.
+#          strs:       IN  Array of strings that correspond to state types (e.g. MATCH, MISMATCH, etc).
+#          log_fname:  IN  Log filename.
+#
+# Returns: Nothing.
+sub dump_sym_state_info {
+	my $sym_states  = shift;
+	my $sym_file    = shift;
+	my $sym_sizes   = shift;
+	my $strs        = shift;
+	my $display_str = shift;
+	my $log_fname   = shift;
+	my $sym;
+	my $file;
+	my $state;
+	my $num_states;
+	my %state_sym_sizes;
+	my %file_sizes;
+	my %file_sym_sizes;
+	my $fd;
+	my $fd_orig;
+
+
+	# Open log file.
+	open($fd, ">$log_fname") or
+			die "Could not open $log_fname for writing: $!\n";
+	$fd_orig = log_get_debug_fd();
+	log_set_debug_fd($fd);
+
+	log_debug("%s\n", $display_str);
+	# Dump sorted list of symbols for each comparison state (e.g. MATCH, MISMATCH, etc).
+	$num_states = @{$strs};
+	for ($state = 0; $state < $num_states; $state++) {
+
+		# Clear hash tables.
+		%state_sym_sizes = ();
+		%file_sizes = ();
+		%file_sym_sizes = ();
+
+		# Add up symbols sizes, grouped by object file.
+		for $sym (keys %{$sym_states}) {
+			if ($sym_states->{$sym} == $state) {
+				$state_sym_sizes{$sym} = $sym_sizes->{$sym};
+				$file_sizes{$sym_file->{$sym}} += $sym_sizes->{$sym};
+				$file_sym_sizes{$sym_file->{$sym}}{$sym} = $sym_sizes->{$sym};
+			}
+		}
+
+		# Display comparison state (e.g. MATCH, MISMATCH, etc).
+		log_debug_raw("\n%s\n", $strs->[$state]);
+
+		if (DUMP_SYM_COMPARISON_INFO_BY_OBJ) {
+			# Sort and display symbols, grouped by object file.
+			my @file_sizes_sorted =
+				sort { $file_sizes{$b} <=> $file_sizes{$a} } keys %file_sizes;
+
+			for $file (@file_sizes_sorted) {
+				log_debug_raw("\t%s.o (%d)\n", $file, $file_sizes{$file});
+
+				my @sym_sizes_sorted =
+					sort { $file_sym_sizes{$file}{$b} <=> $file_sym_sizes{$file}{$a} }
+						keys %{$file_sym_sizes{$file}};
+
+				for $sym (@sym_sizes_sorted) {
+					log_debug_raw("\t\t%s (%d)\n", $sym, $sym_sizes->{$sym});
+				}
+			}
+		}
+		else {
+			# Sort and display symbols.
+			my @sym_sizes_sorted = sort { $state_sym_sizes{$b} <=> $state_sym_sizes{$a} }
+					keys %state_sym_sizes;
+
+			for $sym (@sym_sizes_sorted) {
+				log_debug_raw("\t\t%s (%d)\n", $sym, $sym_sizes->{$sym});
+			}
+		}
+	}
+	# Cleaup.
+	close $fd or die "Could not close $fd: $!\n";
+	log_set_debug_fd($fd_orig);
+}
+
+
+##############################################################################
+# Setup logging.
+#
+open($g_debug_fd, ">$g_debug_fname") or
+	die "Could not open $g_debug_fname for writing: $!\n";
+
+log_set_debug_fd($g_debug_fd);
+
+##############################################################################
+# Parse input files.
+#
+
+# Parse configuration file.
+if ($g_fname_config ne "nil") {
+	parse_config_file($g_fname_config, \%g_sym_overrides);
+}
+
+
+# Parse input romtable.S.
+parse_romtable_in_file($g_fname_romtable_in,
+                       \%g_romtable_syms,
+                       \%g_romtable_syms_noesc,
+                       \%g_romtable_syms_alias_to_real,
+                       \%g_romtable_syms_real_to_alias);
+
+# Parse auto patch configuration file.
+if ($g_fname_patch_config ne "nil") {
+	parse_auto_patch_config_file($g_fname_patch_config, \%g_romtable_syms, \%g_sym_overrides);
+}
+
+# Parse the manual patch symbol table file.
+if ($g_fname_manual_patch_syms ne "nil") {
+	parse_manual_patch_syms_file($g_fname_manual_patch_syms,
+	                             \%g_romtable_syms,
+	                             \%g_manual_patch_funcs,
+	                             \%g_manual_patch_rom_ref_funcs);
+}
+
+# Parse ROM md5 signature file.
+parse_md5sign_file($g_fname_rom_md5sign,
+                   \%g_rom_md5signs,
+                   "ROM",
+                   \%g_rom_file_syms,
+                   \%g_rom_sym_file,
+                   \%g_rom_sym_types);
+
+# Parse RAM md5 signature file.
+parse_md5sign_file($g_fname_ram_md5sign, \%g_ram_md5signs, "RAM");
+
+# Parse objdump symbol size file.
+parse_objdump_syms_file($g_fname_rom_objdump_syms, "ROM",
+                        \%g_romtable_syms_alias_to_real, \%g_rom_sym_sizes, \%g_rom_sym_addrs);
+parse_objdump_syms_file($g_fname_ram_objdump_syms, "RAM", undef, \%g_ram_sym_sizes, undef);
+
+# Parse RAM map file.
+parse_nm_map_file($g_fname_ram_nm_map, \%g_sym_inuse);
+
+# Parse function dependency file.
+parse_symdeps_file($g_fname_romsymdep,
+                   \%g_rom_sym_types,
+                   \%g_rom_rodata_funcptrs,
+                   \%g_rom_sym_deps,
+                   \%g_rom_sym_deps_reverse);
+
+# Parse manual tcam patch file.
+if ($g_fname_manual_tcam ne "nil") {
+	parse_manual_tcam_patch_file($g_fname_manual_tcam,
+	                             $g_tcam_pcnt,
+	                             \%g_manual_tcam_addr_lens);
+}
+
+# Error checks
+verify_parsed_data(\%g_rom_md5signs,
+                   \%g_ram_md5signs,
+                   \%g_rom_file_syms,
+                   \%g_rom_sym_types,
+                   \%g_rom_sym_sizes,
+                   \%g_rom_sym_deps,
+                   \%g_romtable_syms,
+                   \%g_sym_overrides,
+                   \%g_romtable_syms_noesc,
+                   \%g_romtable_syms_real_to_alias,
+                   $g_max_abandons);
+
+
+##############################################################################
+# Process parsed data.
+#
+
+# Determine if ROM and RAM md5 checksums match.
+compare_md5_signatures(\%g_rom_md5signs,
+                       \%g_ram_md5signs,
+                       \%g_rom_sym_types,
+                       \%g_rom_sym_sizes,
+                       \%g_rom_sym_file,
+                       \%g_sym_inuse,
+                       \%g_rom_sym_deps,
+                       \%g_romtable_syms_noesc,
+                       \%g_sym_overrides,
+                       $g_use_clm_incremental_data,
+                       \%g_sym_compare_states);
+
+
+# Error checks.
+verify_comparison_data(\%g_sym_compare_states,
+                       \%g_manual_patch_funcs,
+                       \%g_manual_patch_rom_ref_funcs);
+
+# Dump symbol comparison info.
+if (DUMP_SYM_COMPARISON_INFO) {
+	dump_sym_state_info(\%g_sym_compare_states,
+                            \%g_rom_sym_file,
+                            \%g_rom_sym_sizes,
+                            \@g_sym_compare_strs,
+                            "Symbol Comparison",
+                             basename($0) . "-sym-compare.txt");
+}
+
+
+if ($g_max_abandons == -1) {
+	# If there is no limit on the number of abandons, call this function to determine which
+	# symbols should be abandoned.
+	$g_num_abandons = process_unlimited_abandons(\%g_sym_compare_states,
+						     \%g_rom_sym_types,
+						     \%g_gen_romtbl_sym_states);
+}
+else {
+	my %abandoned_syms;
+
+	# There is a maximum limit on the number of abandons allowed due to hardware restrictions.
+	printf("Max abandons ($g_max_abandons)\n");
+
+	# Clear hash table.
+	%g_gen_romtbl_sym_states = ();
+
+	# Attempt to optimize the number of abandons. Instead of abandoning all changed functions,
+	# abandon changed functions that are first-level dependencies of the unchanged functions.
+	# This should result in a firmware image that is equivalent to abandoning all changed
+	# functions. Therefore, try this method first.
+	$g_num_abandons = process_limited_abandons(\%g_sym_compare_states,
+	                                           \%g_rom_sym_types,
+	                                           \%g_rom_sym_deps,
+	                                           \%g_rom_sym_addrs,
+	                                           \%g_rom_rodata_funcptrs,
+	                                           \%g_manual_patch_rom_ref_funcs,
+	                                           1,
+	                                           \%g_gen_romtbl_sym_states,
+	                                           \%abandoned_syms,
+	                                           $g_tcam_pcnt,
+	                                           \%g_manual_tcam_addr_lens);
+
+
+	# Are the number of abandons less than the limit? If not, try TCAM reduction.
+	if (TCAM_REDUCTION_ENABLE && ($g_num_abandons > $g_max_abandons)) {
+		# Run the "TCAM reduction" algorithm. This will attempt the reduce the required
+		# number of TCAM entries in order to bring it below the hardware limit.
+		$g_num_abandons = process_tcam_reduction(\%g_rom_sym_types,
+		                                         \%g_rom_sym_deps,
+		                                         \%g_rom_sym_deps_reverse,
+		                                         \%g_rom_sym_addrs,
+		                                         \%g_rom_rodata_funcptrs,
+		                                         \%g_manual_patch_rom_ref_funcs,
+		                                         \%g_ram_sym_sizes,
+		                                         \%g_romtable_syms_noesc,
+		                                         $g_num_abandons,
+		                                         $g_max_abandons,
+		                                         \%g_sym_compare_states,
+		                                         \%g_gen_romtbl_sym_states,
+		                                         \%abandoned_syms,
+		                                         $g_tcam_pcnt,
+		                                         \%g_manual_tcam_addr_lens);
+	}
+
+
+	# Bail if the number of abandons is still not less than the limit.
+	if ($g_num_abandons > $g_max_abandons) {
+		printf("ERROR: Max abandons ($g_max_abandons) exceeded ($g_num_abandons)!\n");
+		exit 1;
+	}
+}
+
+
+
+##############################################################################
+# Generate output file.
+#
+
+# Generate romtable.
+generate_romtable_output($g_fd_romtable_out,
+                         \%g_rom_file_syms,
+                         \%g_gen_romtbl_sym_states,
+                         \%g_rom_sym_types,
+                         \%g_rom_sym_sizes,
+                         \%g_sym_inuse,
+                         \%g_romtable_syms_noesc,
+                         \%g_romtable_syms_real_to_alias);
+
+
+# Dump romtable symbol info.
+if (DUMP_SYM_COMPARISON_INFO) {
+	dump_sym_state_info(\%g_gen_romtbl_sym_states,
+                            \%g_rom_sym_file,
+                            \%g_rom_sym_sizes,
+                            \@g_gen_romtbl_sym_strs,
+                            "Romtable Symbols",
+			    basename($0) . "-sym-romtable.txt");
+
+}
+
+
+##############################################################################
+# Clean up.
+close $g_fd_romtable_out or
+	die "Could not close $g_fd_romtable_out: $!\n";
+
+close $g_debug_fd or
+	die "Could not close $g_debug_fd: $!\n";
+

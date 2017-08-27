@@ -1,0 +1,29 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 08-scripts
+
+Minor sa2 script fixes.
+---
+ sa2.in |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sa2.in b/sa2.in
+index 325edb4..f0449b1 100644
+--- a/sa2.in
++++ b/sa2.in
+@@ -49,7 +49,7 @@ DFILE=${CURRENTDIR}/${CURRENTFILE}
+ [ -f "$DFILE" ] || exit 0
+ cd ${ENDIR}
+ [ -L ${RPT} ] && rm -f ${RPT}
+-${ENDIR}/sar $* -f ${DFILE} > ${RPT}
++${ENDIR}/sar.sysstat $* -f ${DFILE} > ${RPT}
+ find ${DDIR} \( -name 'sar??' -o -name 'sa??' -o -name 'sar??.gz' -o -name 'sa??.gz' -o -name 'sar??.bz2' -o -name 'sa??.bz2' \) \
+ 	-mtime +"${HISTORY}" -exec rm -f {} \;
+ find ${DDIR} \( -name 'sar??' -o -name 'sa??' \) -type f -mtime +"${COMPRESSAFTER}" \
+@@ -60,4 +60,4 @@ for f in `find ${DDIR} \( -name 'sar??' -o -name 'sa??' \) -type l`; do
+ done
+ cd ${DDIR}
+ rmdir [0-9]????? > /dev/null 2>&1
+-
++exit 0
+-- 

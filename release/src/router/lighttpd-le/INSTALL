@@ -1,0 +1,78 @@
+
+============
+Installation
+============
+
+:author: Jan Kneschke
+:Date: $Date: $
+:Revision: $Revision: $
+
+Installation
+------------
+
+Get the source from
+
+http://www.lighttpd.net/download/
+
+unpack it by ::
+
+  $ gzip -cd lighttpd-1.x.x.tar.gz | tar xf -
+
+compile and install it with ::
+
+  $ cd lighttpd-1.x.x
+  $ ./configure
+  $ make
+  $ su -
+  # make install
+  # exit
+
+take look at the configfile in ./doc/lighttpd.conf,
+make your own copy of that file and modify it for your needs.
+
+
+static build using SCons
+------------------------
+
+  $ scons -j 4 build_static=1 build_dynamic=0 prefix=/custom/inst/path install
+
+build_dynamic is enabled by default in SConstruct and needs to be disabled for
+the static build.  See also the BoolVariable() settings in SConstruct for other
+configurable variables that might be set in a customized build.  build_static=1
+can be replaced with build_fullstatic=1 to perform lighttpd static build with
+modules *and* to link statically against external dependencies.
+
+
+static build using make
+-----------------------
+
+* edit src/Makefile.am and, in the section under 'if LIGHTTPD_STATIC',
+  update lighttpd_SOURCES with each module to be included in the static build
+* create src/plugin-static.h with list of modules as PLUGIN_INIT(mod_foo)
+  for each module 'mod_foo' to be included in the static build
+
+  $ LIGHTTPD_STATIC=yes ./configure -C --enable-static=yes
+  $ make
+  $ sudo make install
+
+build using CMake and Xcode on Mac OS X with MacPorts
+-----------------------------------------------------
+* upgrade to latest Mac OS X
+* install Xcode from Apple Store (requires latest Mac OS X)
+* install MacPorts from https://www.macports.org/install.php
+
+  $ xcodebuild --license
+  $ xcode-select --install
+  $ sudo port selfupdate
+  $ sudo port install autoconf automake cmake libtool m4 pcre pkgconfig zlib bzip2 openssl libxml sqlite3 openldap fcgi p5-cgi libunwind libunwind-headers mysql57 libev gdbm openldap ossp-uuid
+  # Note: some of the above require more fiddling to configure with CMake...
+
+  # cmake and build
+  # (all -DWITH_... flags below are optional)
+  $ cmake -Wno-dev -DWITH_OPENSSL=1 -DWITH_LUA=1 -DWITH_ZLIB=1 -DWITH_BZIP2=1 -DWITH_WEBDAV_PROPS=1 .
+  $ make -j 4
+  $ make test
+
+  # Note: many tests fail if not built with openssl
+  # lighttpd will not start up with tests/lighttpd.conf
+  #   (mod_secdownload fails to configure hmac-sha1 and hmac-sha256)

@@ -1,0 +1,10 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::service charon start 2> /dev/null
+sun::service charon start 2> /dev/null
+moon::sleep 1
+moon::swanctl --load-conns 2> /dev/null
+sun::swanctl --load-conns 2> /dev/null
+moon::swanctl --load-creds 2> /dev/null
+sun::swanctl --load-creds 2> /dev/null
+moon::swanctl --initiate --child net-net 2> /dev/null

@@ -1,0 +1,116 @@
+/* -*- Mode: C; tab-width: 4 -*-
+ *
+ * Copyright (c) 2007 Apple Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <mach/std_types.defs>
+#include <mach/mach_types.defs>
+
+import "helpermsg-types.h";
+
+type v4addr_t  = array [ 4] of uint8_t;
+type ethaddr_t = array [ 6] of uint8_t;
+type v6addr_t  = array [16] of uint8_t;
+type string_t = c_string[*:1024];
+
+subsystem helper 1833193043;
+serverprefix do_;
+userprefix proxy_;
+
+simpleroutine mDNSExit(			port			: mach_port_t;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSRequestBPF(	port			: mach_port_t;
+		ServerAuditToken		token			: audit_token_t);
+
+routine mDNSPowerRequest(		port			: mach_port_t;
+								key				: int;
+								interval		: int;
+		out						err				: int;
+		ServerAuditToken		token			: audit_token_t);
+
+routine mDNSSetLocalAddressCacheEntry(
+								port			: mach_port_t;
+								ifindex			: int;
+								family			: int;
+								ip				: v6addr_t;
+								eth				: ethaddr_t;
+		out						err				: int;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSNotify(		port			: mach_port_t;
+								title			: string_t;
+								msg				: string_t;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSDynamicStoreSetConfig(
+								port			: mach_port_t;
+								key				: int;
+								subkey			: string_t;
+								value			: pointer_t;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSPreferencesSetName(
+								port			: mach_port_t;
+								key				: int;
+								old				: string_t;
+								new				: string_t;
+		ServerAuditToken		token			: audit_token_t);
+
+routine mDNSKeychainGetSecrets( port			: mach_port_t;
+		out						numsecrets		: unsigned;
+		out						secrets			: pointer_t;
+		out						err				: int;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSAutoTunnelInterfaceUpDown(
+								port			: mach_port_t;
+								updown			: int;
+								address			: v6addr_t;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSConfigureServer(
+								port			: mach_port_t;
+								updown			: int;
+								id				: string_t;
+		ServerAuditToken		token			: audit_token_t);
+
+routine mDNSAutoTunnelSetKeys(	port			: mach_port_t;
+								replacedelete	: int;
+								local_inner		: v6addr_t;
+								local_outer		: v6addr_t;
+								local_port		: uint16_t;		/* Port expressed as a numeric integer value */
+								remote_inner	: v6addr_t;
+								remote_outer	: v6addr_t;
+								remote_port		: uint16_t;		/* Port expressed as a numeric integer value */
+								id				: string_t;
+		out						err				: int;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSSendWakeupPacket(
+								port			: mach_port_t;
+								ifid			: unsigned;
+								eth_addr		: string_t;
+								ip_addr			: string_t;
+								iteration		: int;
+		ServerAuditToken		token			: audit_token_t);
+
+simpleroutine mDNSPacketFilterControl(
+								port			: mach_port_t;
+								command			: uint32_t;
+								ifname			: string_t;
+								servicePort		: uint16_t;
+								protocol		: uint16_t;
+		ServerAuditToken		token			: audit_token_t);

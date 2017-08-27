@@ -1,0 +1,111 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  This is a more general example of the execute module.
+#
+#  This one is called "echo".
+#
+#  Attribute-Name = `%{echo:/path/to/program args}`
+#
+#  If you wish to execute an external program in more than
+#  one section (e.g. 'authorize', 'pre_proxy', etc), then it
+#  is probably best to define a different instance of the
+#  'exec' module for every section.
+#
+#  The return value of the program run determines the result
+#  of the exec instance call as follows:
+#  (See doc/configurable_failover for details)
+#
+#  < 0 : fail      the module failed
+#  = 0 : ok        the module succeeded
+#  = 1 : reject    the module rejected the user
+#  = 2 : fail      the module failed
+#  = 3 : ok        the module succeeded
+#  = 4 : handled   the module has done everything to handle the request
+#  = 5 : invalid   the user's configuration entry was invalid
+#  = 6 : userlock  the user was locked out
+#  = 7 : notfound  the user was not found
+#  = 8 : noop      the module did nothing
+#  = 9 : updated   the module updated information in the request
+#  > 9 : fail      the module failed
+#
+exec echo {
+	#
+	#  Wait for the program to finish.
+	#
+	#  If we do NOT wait, then the program is "fire and
+	#  forget", and any output attributes from it are ignored.
+	#
+	#  If we are looking for the program to output
+	#  attributes, and want to add those attributes to the
+	#  request, then we MUST wait for the program to
+	#  finish, and therefore set 'wait=yes'
+	#
+	# allowed values: {no, yes}
+	wait = yes
+
+	#
+	#  The name of the program to execute, and it's
+	#  arguments.  Dynamic translation is done on this
+	#  field, so things like the following example will
+	#  work.
+	#
+	program = "/bin/echo %{User-Name}"
+
+	#
+	#  The attributes which are placed into the
+	#  environment variables for the program.
+	#
+	#  Allowed values are:
+	#
+	#	request		attributes from the request
+	#	config		attributes from the configuration items list
+	#	reply		attributes from the reply
+	#	proxy-request	attributes from the proxy request
+	#	proxy-reply	attributes from the proxy reply
+	#
+	#  Note that some attributes may not exist at some
+	#  stages.  e.g. There may be no proxy-reply
+	#  attributes if this module is used in the
+	#  'authorize' section.
+	#
+	input_pairs = request
+
+	#
+	#  Where to place the output attributes (if any) from
+	#  the executed program.  The values allowed, and the
+	#  restrictions as to availability, are the same as
+	#  for the input_pairs.
+	#
+	output_pairs = reply
+
+	#
+	#  When to execute the program.  If the packet
+	#  type does NOT match what's listed here, then
+	#  the module does NOT execute the program.
+	#
+	#  For a list of allowed packet types, see
+	#  the 'dictionary' file, and look for VALUEs
+	#  of the Packet-Type attribute.
+	#
+	#  By default, the module executes on ANY packet.
+	#  Un-comment out the following line to tell the
+	#  module to execute only if an Access-Accept is
+	#  being sent to the NAS.
+	#
+	#packet_type = Access-Accept
+
+	#
+	#  Should we escape the environment variables?
+	#
+	#  If this is set, all the RADIUS attributes
+	#  are capitalised and dashes replaced with
+	#  underscores. Also, RADIUS values are surrounded
+	#  with double-quotes.
+	#
+	#  That is to say: User-Name=BobUser => USER_NAME="BobUser"
+	shell_escape = yes
+
+}

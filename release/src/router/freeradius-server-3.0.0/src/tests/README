@@ -1,0 +1,10 @@
+  This is a preliminary test harness for the server.
+
+$ make tests
+
+	makes all of the tests
+
+config/*
+
+	virtual server configuration that is used for the tests
+

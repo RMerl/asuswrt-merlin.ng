@@ -1,0 +1,131 @@
+<!-- ##### SECTION Title ##### -->
+GMemoryOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### USER_FUNCTION GReallocFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+@size: 
+@Returns: 
+
+
+<!-- ##### STRUCT GMemoryOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GMemoryOutputStream:data ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMemoryOutputStream:data-size ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMemoryOutputStream:destroy-function ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMemoryOutputStream:realloc-function ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GMemoryOutputStream:size ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_memory_output_stream_new ##### -->
+<para>
+
+</para>
+
+@data: 
+@size: 
+@realloc_function: 
+@destroy_function: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_output_stream_new_resizable ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_output_stream_get_data ##### -->
+<para>
+
+</para>
+
+@ostream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_output_stream_get_size ##### -->
+<para>
+
+</para>
+
+@ostream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_output_stream_get_data_size ##### -->
+<para>
+
+</para>
+
+@ostream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_output_stream_steal_data ##### -->
+<para>
+
+</para>
+
+@ostream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_output_stream_steal_as_bytes ##### -->
+<para>
+
+</para>
+
+@ostream: 
+@Returns: 
+
+

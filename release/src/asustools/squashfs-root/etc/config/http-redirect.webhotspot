@@ -1,0 +1,26 @@
+<% nvram_match("af_enable","1","<!--"); %>
+<fieldset>
+	<legend><% tran("hotspot.http_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("hotspot.http_srv"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="http_redirect_enable" <% nvram_selmatch("http_redirect_enable","1","checked"); %> onclick="show_layer_ext(this, 'idhttpredirect', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="http_redirect_enable" <% nvram_selmatch("http_redirect_enable","0","checked"); %> onclick="show_layer_ext(this, 'idhttpredirect', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idhttpredirect">
+		<div class="setting">
+			<div class="label"><% tran("hotspot.http_ip"); %></div>
+			<input type="hidden" name="http_redirect_destination" value="0.0.0.0"/>
+			<input size="3" maxlength="3" class="num" name="http_redirect_destination_0" onblur="valid_range(this,0,255,hotspot.http_ip)" value="<% get_single_ip("http_redirect_destination","0"); %>" />.<input size="3" maxlength="3" class="num" name="http_redirect_destination_1" onblur="valid_range(this,0,255,hotspot.http_ip)" value="<% get_single_ip("http_redirect_destination","1"); %>" />.<input size="3" maxlength="3" class="num" name="http_redirect_destination_2" onblur="valid_range(this,0,255,hotspot.http_ip)" value="<% get_single_ip("http_redirect_destination","2"); %>" />.<input size="3" maxlength="3" class="num" name="http_redirect_destination_3" onblur="valid_range(this,1,254,hotspot.http_ip)" value="<% get_single_ip("http_redirect_destination","3"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.http_port"); %></div>
+			<input size="5" maxlength="5" class="num" name="http_redirect_port" onblur="valid_range(this,1,65535,hotspot.http_port)" value="<% nvram_get("http_redirect_port"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.http_net"); %></div>
+			<input type="hidden" name="http_source_network" value="0.0.0.0"/>
+			<input size="3" maxlength="3" class="num" name="http_source_network_0" onblur="valid_range(this,0,255,hotspot.http_net)" value="<% get_single_ip("http_source_network","0"); %>" />.<input size="3" maxlength="3" class="num" name="http_source_network_1" onblur="valid_range(this,0,255,hotspot.http_net)" value="<% get_single_ip("http_source_network","1"); %>" />.<input size="3" maxlength="3" class="num" name="http_source_network_2" onblur="valid_range(this,0,255,hotspot.http_net)" value="<% get_single_ip("http_source_network","2"); %>" />.<input size="3" maxlength="3" class="num" name="http_source_network_3" onblur="valid_range(this,0,254,'HTTP Source IP')" value="<% get_single_ip("http_source_network","3"); %>" />
+		</div>
+	</div>
+</fieldset><br/>
+<% nvram_match("af_enable","1","-->"); %>

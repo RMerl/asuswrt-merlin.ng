@@ -1,0 +1,107 @@
+Thermistors and Transistors as Temperature Sensors
+--------------------------------------------------
+Temperature measuring chips that use external sensors
+generally are designed to use either thermistors or
+transistors. Check the driver documentation in doc/chips
+or the actual data sheets to determine which.
+
+Exceptions are the Winbond W83782D and W83783S which can use either.
+These chips default to termistors but can be configured to use
+Pentium II / Celeron diodes or 3904 transistors.
+
+Thermistors are about 10 times more sensitive than
+diodes or transistors at room temperature.
+
+
+Thermistors
+-----------
+(summarized from http://www.thermometrics.com/htmldocs/ntcapp.htm  -
+ most thermistor companies don't have much on their web sites but
+ Thermometrics has a comprehensive guide)
+
+NTC (negative temperature coefficient) thermistors decrease their
+resistance with an increase in temperature.
+They commonly have a parameter B (beta), units are K (kelvin).
+B is the "material constant" of the thermistor and
+is a measure of the change of resistance with respect to temperature.
+It is the slope of the line graphing (ln R) vs. (1/T).
+
+B values for three common termistor materials are
+approximately 3400K, 3900K, and 4300K.
+
+The other measure of thermistors is the temperature coefficient 'a' (alpha).
+This is the percentage change in resistance for a given change
+in temperature. This varies with temperature.
+
+T = temp in Kelvin (C + 273)
+
+A = (dR/dT) / R
+
+A = - B / T**2
+
+So by the last equation, a thermistor with a Beta of 3900 will change
+resistance about 4.4% for 1 degree change at 25C (298K).
+For a beta of 3435 as recommended in the
+Winbond W83782D data sheet the change is 3.8%.
+
+For thermistors, resistance (= voltage for a constant current)
+is exponentially related to temperature.
+
+PTC (positive temperature coefficient) thermistors increase
+in resistance with an increase in temperature. They are not
+commonly used for accurate temperature sensing.
+
+
+Transistors / Diodes
+--------------------
+To use a transistor as a sensor, hook the base of an NPN transistor
+(such as the 3904) to the collector.
+
+This is from Richard Dorf, "Electrical Engineering Handbook".
+
+For a diode, the voltage Vd = Vt ln(Id/Is).
+Vt = kT/q where k = Boltzman's constant 1.38 e-23;
+                q = elementary charge 1.6 e-19;
+                T = temp in kelvin.
+		Is is reverse saturation current.
+
+(more math and greek letters I don't understand completely)
+
+dVd/dT works out to, at room temperature, about 2.1 mV/degree
+or a temperature coefficient of about 0.32%/degree.
+
+For diodes, voltage is linear with temperature.
+
+
+
+Winbond W83782D and W83783S
+---------------------------
+These chips default to thermistors with Beta = 3435.
+Each sensor on the chip can be individually set to be 
+a diode, transistor, or thermistor.
+If the temperature reading changes much less than expected,
+the sensor type probably needs to be changed to a diode.
+See doc/chips/w83781d for details.
+
+
+Summary
+-------
+Thermistors are about 10 times more sensitive than
+diodes or transistors at room temperature.
+
+Thermistors change resistance exponentially with respect to temperature.
+Diodes and transistors change voltage linearly with respect to temperature.
+
+Sensors built into chips (including Pentium II / Celeron processors)
+are always diodes/transistors because that's what's on a chip
+already - transistors.
+
+External, discrete sensors can be either diodes/transistors or
+thermistors. Generally, sensor chips are designed to be connected
+to one or the other and cannot be configured. The Winbond
+W83782D/W83783S chips are exceptions, they can be
+configured for either.
+
+
+------------------
+Copyright (c) 1999, 2001 Mark D. Studebaker <mdsxyz123@yahoo.com>

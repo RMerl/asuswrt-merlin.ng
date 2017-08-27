@@ -1,0 +1,122 @@
+Alban Crequy <alban.crequy@collabora.co.uk>
+Alexander Larsson <alexl@redhat.com>
+Anders Carlsson <andersca@codefactory.se>
+Andre Heinecke <aheinecke@intevation.de>
+Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Aurelien Jarno <aurel32@debian.org>
+Benjamin Reed <rangerrick@befunk.com>
+Brian Cameron <brian.cameron@oracle.com>
+Brian Cameron <brian.cameron@sun.com>
+Chris Mayo <aklhfex gmail com>
+Christian Dywan <christian.dywan@lanedo.com>
+Christian Ehrlicher <Ch.Ehrlicher@gmx.de>
+Christian Persch (GNOME) <chpe@gnome.org>
+Colin Walters <walters@verbum.org>
+Colin Watson <cjwatson@ubuntu.com>
+Cosimo Alfarano <cosimo.alfarano@collabora.co.uk>
+Cristian Rodríguez <cristian.rodriguez@opensuse.org>
+Cyril Brulebois <kibi@debian.org>
+Daniel P. Berrange <dan@berrange.com>
+Daniel Reed <djr@redhat.com>
+David Zeuthen <davidz@redhat.com>
+Dennis Kaarsemaker <dennis@kaarsemaker.net>
+Diego E. 'Flameeyes' Pettenò <flameeyes@gmail.com>
+Eamon Walsh <ewalsh@tycho.nsa.gov>
+Federico Mena Quintero <federico@novell.com>
+Frank Osterfeld <frank@kdab.net>
+Frederic Crozat <fcrozat@mandriva.com>
+Fridrich Štrba <fridrich.strba@bluewin.ch>
+Grzegorz Dąbrowski <gdx@poczta.fm>
+Harald Fernengel <harry@kdevelop.org>
+Harri Porten <porten@kde.org>
+Hasso Tepper <hasso@estpak.ee>
+Havoc Pennington <hp@pobox.com>
+Havoc Pennington <hp@redhat.com>
+Hendrik Buschmeier <hbuschme@TechFak.Uni-Bielefeld.DE>
+James Carter <jwcart2@tycho.nsa.gov>
+James Westby <jw+debian@jameswestby.net>
+James Willcox <jwillcox@gnome.org>
+Jens Granseuer <jensgr@gmx.net>
+Jérémie Dimino <jeremie@dimino.org>
+Jiří Klimeš <jklimes@redhat.com>
+Joe Marcus Clarke <marcus@freedesktop.org>
+Joe Shaw <joeshaw@novell.com>
+Johan Gyllenspetz <johangy@axis.com>
+Johannes Carlsson <johannes.carlsson.x@sonyericsson.com>
+John (J5) Palmieri <johnp@redhat.com>
+Jon Gosting <yukarionsen@gmail.com>
+Jon Trowbridge <trow@ximian.com>
+Kay Sievers <kay.sievers@vrfy.org>
+Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
+Kjartan Maraas <kmaraas@gnome.org>
+Kristian Høgsberg <krh@redhat.com>
+Kristian Rietveld <kris@gtk.org>
+Kurt Miller <kurt@intricatesoftware.com>
+Lawrence R. Steeger <lsteeger@gmail.com>
+Lennart Poettering <lennart@poettering.net>
+Lennart Poettering <mzqohf@0pointer.de>
+Lionel Landwerlin <lionel.landwerlin@openwide.fr>
+Luiz Augusto Von Dentz <luiz.dentz-von@nokia.com>
+Marc Brockschmidt <he@debian.org>
+Marc Mutz <marc@kdab.net>
+Marcus Brinkmann <marcus.brinkmann@ruhr-uni-bochum.de>
+Mark Brand <mabrand@mabrand.nl>
+Mark McLoughlin <mark@skynet.ie>
+Matthias Clasen <mclasen@redhat.com>
+Matt McCutchen <matt@mattmccutchen.net>
+Michael Meeks <michael.meeks@novell.com>
+Michael Meeks <michael@ximian.com>
+Mikael Hallendal <micke@codefactory.se>
+Mikael Hallendal <micke@imendio.com>
+Mike McQuaid <mike@mikemcquaid.com>
+Miloslav Trmac <mitr@volny.cz>
+Murray Cumming <murrayc@murrayc.com>
+Nguyễn Thái Ngọc Duy <pclouds@gmail.com>
+Ole André Vadla Ravnås <ole.andre.ravnas@tandberg.com>
+Olivier Andrieu <oliv__a@users.sourceforge.net>
+Oswald Buddenhagen <ossi@kde.org>
+Owen Fraser-Green <owen@discobabe.net>
+Patrick von Reth <patrick.vonreth@gmail.com>
+Pau Garcia i Quiles <pgquiles@elpauer.org>
+Paul Bolle <pebolle@tiscali.nl>
+Peter Breitenlohner <peb@mppmu.mpg.de>
+Peter Kümmel <syntheticpp@gmx.net>
+Peter McCurdy <pmccurdy@skeptopotamus>
+Philip Blundell <philb@gnu.org>
+Plácido Revilla <unknown@unknown.domain>
+Ralf Habacker <ralf.habacker@freenet.de>
+Ray Strode <rstrode@redhat.com>
+Richard A. Hankins <richard.a.hankins@gmail.com>
+Richard Hughes <richard@hughsie.com>
+Richard Hult <rhult@codefactory.se>
+Richard Hult <richard@imendio.com>
+Robert McQueen <robot101@debian.org>
+Roberto Guido <bob4job@gmail.com>
+Romain Pokrzywka <romain@kdab.com>
+Ross Burton <ross@openedhand.com>
+Ryan Lortie <desrt@desrt.ca>
+Sascha Silbe <sascha-pgp@silbe.org>
+Sascha Silbe <sascha-web-bugs.freedesktop.org@silbe.org>
+Scott James Remnant <scott@netsplit.com>
+Scott James Remnant <scott@ubuntu.com>
+Sebastian Sauer <sebsauer@kdab.net>
+Seth Nickell <seth@gnome.org>
+Simon McVittie <simon.mcvittie@collabora.co.uk>
+Sjoerd Simons <sjoerd@luon.net>
+Sledz <sledz@MOBIL-400-586.intern.dresearch.de>
+Steve Grubb <sgrubb@redhat.com>
+Sven Herzberg <sven@imendio.com>
+Thiago Macieira <thiago@kde.org>
+Tim Dijkstra <tim@famdijkstra.org>
+Tobias Mueller <fdo-bugs@cryptobitch.de>
+Tomas Hoger <thoger@redhat.com>
+Tomas Pelka <tpelka@redhat.com>
+Tom Hughes <tom.hughes@palm.com>
+Tor Lillqvist <tml@iki.fi>
+Waldo Bastian <bastian@kde.org>
+William Lachance <wrlach@gmail.com>
+Will Thompson <will.thompson@collabora.co.uk>
+Wulf C. Krueger <philantrop@exherbo.org>
+Xan Lopez <xan@gnome.org>
+Yaakov Selkowitz <yselkowitz@users.sourceforge.net>
+Zack Rusin <zack@kde.org>

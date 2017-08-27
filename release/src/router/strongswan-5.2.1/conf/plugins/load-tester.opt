@@ -1,0 +1,132 @@
+charon.plugins.load-tester {}
+	Section to configure the load-tester plugin, see LOAD TESTS in
+	**strongswan.conf**(5) for details.
+
+charon.plugins.load-tester.addrs {}
+	Section that contains key/value pairs with address pools (in CIDR notation)
+	to use for a specific network interface e.g. eth0 = 10.10.0.0/16.
+
+charon.plugins.load-tester.addrs_keep = no
+	Whether to keep dynamic addresses even after the associated SA got
+	terminated.
+
+charon.plugins.load-tester.addrs_prefix = 16
+	Network prefix length to use when installing dynamic addresses.
+	If set to -1 the full address is used (i.e. 32 or 128).
+
+charon.plugins.load-tester.ca_dir =
+	Directory to load (intermediate) CA certificates from.
+
+charon.plugins.load-tester.child_rekey = 600
+	Seconds to start CHILD_SA rekeying after setup.
+
+charon.plugins.load-tester.crl
+	URI to a CRL to include as certificate distribution point in generated
+	certificates.
+
+charon.plugins.load-tester.delay = 0
+	Delay between initiatons for each thread.
+
+charon.plugins.load-tester.delete_after_established = no
+	Delete an IKE_SA as soon as it has been established.
+
+charon.plugins.load-tester.digest = sha1
+	Digest algorithm used when issuing certificates.
+
+charon.plugins.load-tester.dpd_delay = 0
+	DPD delay to use in load test.
+
+charon.plugins.load-tester.dynamic_port = 0
+	Base port to be used for requests (each client uses a different port).
+
+charon.plugins.load-tester.eap_password = default-pwd
+	EAP secret to use in load test.
+
+charon.plugins.load-tester.enable = no
+	Enable the load testing plugin. **WARNING**: Never enable this plugin on
+	productive systems. It provides preconfigured credentials and allows an
+	attacker to authenticate as any user.
+
+charon.plugins.load-tester.esp = aes128-sha1
+	CHILD_SA proposal to use for load tests.
+
+charon.plugins.load-tester.fake_kernel = no
+	Fake the kernel interface to allow load-testing against self.
+
+charon.plugins.load-tester.ike_rekey = 0
+	Seconds to start IKE_SA rekeying after setup.
+
+charon.plugins.load-tester.init_limit = 0
+	Global limit of concurrently established SAs during load test.
+
+charon.plugins.load-tester.initiator = 0.0.0.0
+	Address to initiate from.
+
+charon.plugins.load-tester.initiators = 0
+	Number of concurrent initiator threads to use in load test.
+
+charon.plugins.load-tester.initiator_auth = pubkey
+	Authentication method(s) the intiator uses.
+
+charon.plugins.load-tester.initiator_id =
+	Initiator ID used in load test.
+
+charon.plugins.load-tester.initiator_match =
+	Initiator ID to match against as responder.
+
+charon.plugins.load-tester.initiator_tsi =
+	Traffic selector on initiator side, as proposed by initiator.
+
+charon.plugins.load-tester.initiator_tsr =
+	Traffic selector on responder side, as proposed by initiator.
+
+charon.plugins.load-tester.iterations = 1
+	Number of IKE_SAs to initiate by each initiator in load test.
+
+charon.plugins.load-tester.issuer_cert =
+	Path to the issuer certificate (if not configured a hard-coded default value
+	is used).
+
+charon.plugins.load-tester.issuer_key =
+	Path to private key that is used to issue certificates (if not configured a
+	hard-coded default value is used).
+
+charon.plugins.load-tester.mode = tunnel
+	IPsec mode to use, one of _tunnel_, _transport_, or _beet_.
+
+charon.plugins.load-tester.pool =
+	Provide INTERNAL_IPV4_ADDRs from a named pool.
+
+charon.plugins.load-tester.preshared_key = <default-psk>
+	Preshared key to use in load test.
+
+charon.plugins.load-tester.proposal = aes128-sha1-modp768
+	IKE proposal to use in load test.
+
+charon.plugins.load-tester.responder = 127.0.0.1
+	Address to initiation connections to.
+
+charon.plugins.load-tester.responder_auth = pubkey
+	Authentication method(s) the responder uses.
+
+charon.plugins.load-tester.responder_id =
+	Responder ID used in load test.
+
+charon.plugins.load-tester.responder_tsi = initiator_tsi
+	Traffic selector on initiator side, as narrowed by responder.
+
+charon.plugins.load-tester.responder_tsr = initiator_tsr
+	Traffic selector on responder side, as narrowed by responder.
+
+charon.plugins.load-tester.request_virtual_ip = no
+	Request an INTERNAL_IPV4_ADDR from the server.
+
+charon.plugins.load-tester.shutdown_when_complete = no
+	Shutdown the daemon after all IKE_SAs have been established.
+
+charon.plugins.load-tester.socket = unix://${piddir}/charon.ldt
+	Socket provided by the load-tester plugin.
+
+charon.plugins.load-tester.version = 0
+	IKE version to use (0 means use IKEv2 as initiator and accept any version as
+	responder).

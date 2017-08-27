@@ -1,0 +1,8 @@
+
+Answer y if you want to install the isag command.
+isag, the Interactive System Activity Grapher, is a graphical frontend
+to sar. It graphically displays the system activity data stored
+in a binary data file by a previous sar run.
+Although included in the sysstat package (in the contrib directory), isag is
+not necessarily kept in sync with sar. That's why it is not installed by default.
+

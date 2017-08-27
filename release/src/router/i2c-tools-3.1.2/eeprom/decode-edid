@@ -1,0 +1,215 @@
+#!/usr/bin/perl -w
+#
+# Copyright (C) 2003-2008 Jean Delvare <jdelvare@suse.de>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#    MA 02110-1301 USA.
+#
+# EEPROM data decoding for EDID. EDID (Extended Display Identification
+# Data) is a VESA standard which allows storing (on manufacturer's side)
+# and retrieving (on user's side) of configuration information about
+# displays, such as manufacturer, serial number, physical dimensions and
+# allowed horizontal and vertical refresh rates.
+#
+# Using the eeprom kernel driver, you have two possibilities to
+# make use of these data:
+#  1* The ddcmon script.
+#  2* This script.
+# Both solutions will return a different kind of information. The first
+# method will report user-interesting information, such as the model number
+# or the year of manufacturing. The second method will report video-card-
+# interesting information, such as video modes and refresh rates.
+#
+# Note that this script does almost nothing by itself. It simply converts
+# what it finds in /proc to binary data to feed the parse-edid program.
+# The parse-edid program was written by John Fremlin and is available at
+# the following address:
+#   http://john.fremlin.de/programs/linux/read-edid/
+
+use strict;
+use Fcntl qw(:DEFAULT :seek);
+use vars qw($bus $address);
+use constant PROCFS => 1;
+use constant SYSFS  => 2;
+
+# parse-edid will typically be installed in /usr/sbin or /usr/local/sbin
+# even though regular users can run it
+$ENV{PATH} .= ':/usr/local/sbin'
+	if $ENV{PATH} !~ m,(^|:)/usr/local/sbin/?(:|$),
+	&& -x '/usr/local/sbin/parse-edid';
+$ENV{PATH} .= ':/usr/sbin'
+	if $ENV{PATH} !~ m,(^|:)/usr/sbin/?(:|$),
+	&& -x '/usr/sbin/parse-edid';
+
+sub edid_valid_procfs
+{
+	my ($bus, $addr) = @_;
+
+	open EEDATA, "/proc/sys/dev/sensors/eeprom-i2c-$bus-$addr/00";
+	my $line = <EEDATA>;
+	close EEDATA;
+	return 1
+		if $line =~ m/^0 255 255 255 255 255 255 0 /;
+	return 0;
+}
+
+# Only used for sysfs
+sub rawread
+{
+	my ($filename, $length, $offset) = @_;
+	my $bytes = '';
+
+	sysopen(FH, $filename, O_RDONLY)
+		or die "Can't open $filename";
+	if ($offset)
+	{
+		sysseek(FH, $offset, SEEK_SET)
+			or die "Can't seek in $filename";
+	}
+
+	$offset = 0;
+	while ($length)
+	{
+		my $r = sysread(FH, $bytes, $length, $offset);
+		die "Can't read $filename"
+			unless defined($r);
+		die "Unexpected EOF in $filename"
+			unless $r;
+		$offset += $r;
+		$length -= $r;
+	}
+	close(FH);
+
+	return $bytes;
+}
+
+sub edid_valid_sysfs
+{
+	my ($bus, $addr) = @_;
+	my $bytes = rawread("/sys/bus/i2c/devices/$bus-00$addr/eeprom", 8, 0);
+
+	return 1
+		if $bytes eq "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00";
+	return 0;
+}
+
+sub bus_detect
+{
+	my $max = shift;
+
+	for (my $i=0; $i<$max; $i++)
+	{
+		if (-r "/proc/sys/dev/sensors/eeprom-i2c-$i-50/00")
+		{
+			if (edid_valid_procfs($i, '50'))
+			{
+				print STDERR
+					"decode-edid: using bus $i (autodetected)\n";
+				return $i;
+			}
+		}
+		elsif (-r "/sys/bus/i2c/devices/$i-0050/eeprom")
+		{
+			if (edid_valid_sysfs($i, '50'))
+			{
+				print STDERR
+					"decode-edid: using bus $i (autodetected)\n";
+				return $i;
+			}
+		}
+	}
+
+	return; # default
+}
+
+sub edid_decode
+{
+	my ($bus, $addr, $mode) = @_;
+
+	# Make sure it is an EDID EEPROM.
+
+	unless (($mode == PROCFS && edid_valid_procfs ($bus, $addr))
+	     || ($mode == SYSFS  && edid_valid_sysfs  ($bus, $addr)))
+	{
+		print STDERR
+			"decode-edid: not an EDID EEPROM at $bus-$addr\n";
+		return;
+	}
+
+	$SIG{__WARN__} = sub { };
+	open PIPE, "| parse-edid"
+		or die "Can't open parse-edid. Please install read-edid.\n";
+	delete $SIG{__WARN__};
+	binmode PIPE;
+
+	if ($mode == PROCFS)
+	{
+		for (my $i=0; $i<=0x70; $i+=0x10)
+		{
+			my $file = sprintf '%02x', $i;
+			my $output = '';
+			open EEDATA, "/proc/sys/dev/sensors/eeprom-i2c-$bus-$addr/$file"
+				or die "Can't read /proc/sys/dev/sensors/eeprom-i2c-$bus-$addr/$file";
+			while(<EEDATA>)
+			{
+				foreach my $item (split)
+				{
+					$output .= pack "C", $item;
+				}
+			}
+			close EEDATA;
+			print PIPE $output;
+		}
+	}
+	elsif ($mode == SYSFS)
+	{
+		print PIPE rawread("/sys/bus/i2c/devices/$bus-00$address/eeprom", 128, 0);
+	}
+
+	close PIPE;
+}
+
+# Get the address. Default to 0x50 if not given.
+$address = $ARGV[1] || 0x50;
+# Convert to decimal, whatever the value.
+$address = oct $address if $address =~ m/^0/;
+# Convert to an hexadecimal string.
+$address = sprintf '%02x', $address;
+
+# Get the bus. Try to autodetect if not given.
+$bus = $ARGV[0] if defined $ARGV[0];
+$bus = bus_detect(8) unless defined $bus;
+
+if(defined $bus)
+{
+	print STDERR
+		"decode-edid: decode-edid version 1.1\n";
+	if (-r "/proc/sys/dev/sensors/eeprom-i2c-$bus-$address")
+	{
+		edid_decode ($bus, $address, PROCFS);
+		exit 0;
+	}
+	elsif (-r "/sys/bus/i2c/devices/$bus-00$address")
+	{
+		edid_decode ($bus, $address, SYSFS);
+		exit 0;
+	}
+}
+
+print STDERR
+	"EDID EEPROM not found.  Please make sure that the eeprom module is loaded.\n";
+print STDERR
+	"Maybe your EDID EEPROM is on another bus.  Try \"decode-edid ".($bus+1)."\".\n"
+	if defined $bus;

@@ -1,0 +1,16 @@
+$(SUBDIR)libavdevice/alldevices.o: libavdevice/alldevices.c \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavformat/avformat.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavcodec/avcodec.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/common.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/config.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavutil/log.h \
+  /home/chris/Workspace/asuswrt/release/src/router/ffmpeg/libavformat/avio.h \
+  libavdevice/avdevice.h

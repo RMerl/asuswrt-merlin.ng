@@ -1,0 +1,118 @@
+<!-- ##### SECTION Title ##### -->
+GDBusObjectManager
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusObjectManager ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusObjectManager::interface-added ##### -->
+<para>
+
+</para>
+
+@gdbusobjectmanager: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### SIGNAL GDBusObjectManager::interface-removed ##### -->
+<para>
+
+</para>
+
+@gdbusobjectmanager: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### SIGNAL GDBusObjectManager::object-added ##### -->
+<para>
+
+</para>
+
+@gdbusobjectmanager: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GDBusObjectManager::object-removed ##### -->
+<para>
+
+</para>
+
+@gdbusobjectmanager: the object which received the signal.
+@arg1: 
+
+<!-- ##### STRUCT GDBusObjectManagerIface ##### -->
+<para>
+
+</para>
+
+@parent_iface: 
+@get_object_path: 
+@get_objects: 
+@get_object: 
+@get_interface: 
+@object_added: 
+@object_removed: 
+@interface_added: 
+@interface_removed: 
+
+<!-- ##### FUNCTION g_dbus_object_manager_get_object_path ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_get_objects ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_get_object ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object_path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_get_interface ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object_path: 
+@interface_name: 
+@Returns: 
+
+

@@ -1,0 +1,178 @@
+#!/bin/sh
+#
+# messagebus-config, Copyright 2009 Yaakov Selkowitz
+#
+# This file is part of the Cygwin port of dbus.
+
+# ======================================================================
+# Initialization
+# ======================================================================
+PROGNAME=$(basename $0)
+_tdir=$(dirname $0)
+PROGDIR=$(cd $_tdir && pwd)
+
+CSIH_SCRIPT=/usr/share/csih/cygwin-service-installation-helper.sh
+
+# Subdirectory where the new package is being installed
+PREFIX=@prefix@
+
+# Directory where the config files are stored
+SYSCONFDIR=@sysconfdir@/dbus-1
+DEVDIR=/dev
+LOGDIR=/var/log
+RUNDIR=$(dirname @DBUS_SYSTEM_PID_FILE@)
+SOCKDIR=$(dirname @DBUS_SYSTEM_SOCKET@)
+
+source ${CSIH_SCRIPT}
+
+# ======================================================================
+# Routine: install_service
+#   Install messagebus as a service
+# ======================================================================
+install_service() {
+
+  if csih_is_nt
+  then
+
+    # Check if messagebus is installed and remove on user request.
+    if cygrunsrv -Q messagebus > /dev/null 2>&1
+    then
+      csih_warning "The messagebus service is already installed."
+      echo
+      if csih_request "Do you want to reinstall it with different args?"
+      then
+        cygrunsrv -E messagebus
+        cygrunsrv -R messagebus
+      fi
+    fi
+
+    # Install messagebus service if it is not already installed
+    if ! cygrunsrv -Q messagebus > /dev/null 2>&1
+    then
+      echo
+      csih_warning "The following function requires administrator privileges!"
+      if csih_request "Do you want to install messagebus as service?"
+      then
+        if cygrunsrv -I messagebus -d "CYGWIN D-Bus system service" -p @EXPANDED_BINDIR@/dbus-daemon -a "--nofork --system"
+        then
+	  echo
+	  csih_inform "The messagebus service has been installed under the LocalSystem"
+	  csih_inform "account (also known as SYSTEM). To start the service now, call"
+          csih_inform "\`net start messagebus' or \`cygrunsrv -S messagebus'. Otherwise, it"
+          csih_inform "will start automatically after the next reboot."
+	  echo
+	  csih_inform "Check ${SYSCONFDIR}/system.conf first, if it suits your needs."
+        fi
+      fi # user allowed us to install messagebus
+    fi # messagebus already installed
+  fi # csih_is_nt
+} # --- End of install_service --- #
+
+
+# ======================================================================
+# Main Entry Point
+# ======================================================================
+
+
+# Check how the script has been started.  If
+#   (1) it has been started by giving the full path and
+#       that path is /etc/postinstall, OR
+#   (2) Otherwise, if the environment variable
+#       CONFIG_AUTO_ANSWER_NO is set
+# then set auto_answer to "no".  This allows automatic
+# creation of the config files in /etc w/o overwriting
+# them if they already exist.  In both cases, color
+# escape sequences are suppressed, so as to prevent
+# cluttering setup's logfiles.
+if [ "$PROGDIR" = "/etc/postinstall" ]
+then
+  csih_auto_answer="no"
+  csih_disable_color
+fi
+if [ -n "${CONFIG_AUTO_ANSWER_NO}" ]
+then
+  csih_auto_answer="no"
+  csih_disable_color
+fi
+
+
+# ======================================================================
+# Parse options
+# ======================================================================
+while :
+do
+  case $# in
+  0)
+    break
+    ;;
+  esac
+
+  option=$1
+  shift
+
+  case "$option" in
+  -d | --debug )
+    set -x
+    csih_trace_on
+    ;;
+
+  -y | --yes )
+    csih_auto_answer=yes
+    ;;
+
+  -n | --no )
+    csih_auto_answer=no
+    ;;
+
+  *)
+    echo "usage: ${PROGNAME} [OPTION]..."
+    echo
+    echo "This script creates a basic messagebus configuration."
+    echo
+    echo "Options:"
+    echo "    --debug  -d     Enable shell's debug output."
+    echo "    --yes    -y     Answer all questions with \"yes\" automatically."
+    echo "    --no     -n     Answer all questions with \"no\" automatically."
+    echo
+    exit 1
+    ;;
+
+  esac
+done
+
+# ======================================================================
+# Action!
+# ======================================================================
+
+# Check for ${SYSCONFDIR} directory
+csih_make_dir "${SYSCONFDIR}" "Cannot create global configuration files."
+chmod 775 "${SYSCONFDIR}"
+setfacl -m u:system:rwx "${SYSCONFDIR}"
+
+# Check for ${DEVDIR} directory
+csih_make_dir "${DEVDIR}" "Syslogging using messagebus will not work."
+chmod 775 "${DEVDIR}"
+setfacl -m u:system:rwx "${DEVDIR}"
+
+# Check for ${LOGDIR} directory
+csih_make_dir "${LOGDIR}" "Syslogging using messagebus will not work."
+chmod 775 "${LOGDIR}"
+setfacl -m u:system:rwx "${LOGDIR}"
+
+# Check for ${RUNDIR} directory
+csih_make_dir "${RUNDIR}" "PID files of running processes will not be created."
+chmod 775 "${RUNDIR}"
+setfacl -m u:system:rwx "${RUNDIR}"
+
+# Check for ${SOCKDIR} directory
+csih_make_dir "${SOCKDIR}" "SOCKET files of running processes will not be created."
+chmod 775 "${SOCKDIR}"
+setfacl -m u:system:rwx "${SOCKDIR}"
+
+# maybe: csih_auto_answer=no will skip,
+# interactive user will get a chance to override
+install_service
+
+
+echo
+echo "Configuration finished. Have fun!"

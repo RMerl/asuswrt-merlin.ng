@@ -1,0 +1,12 @@
+moon::mv /etc/hosts /etc/hosts.ori
+moon::mv /etc/hosts.stale /etc/hosts
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+carol::ipsec start
+dave::ipsec start
+moon::ipsec start
+carol::sleep 2
+carol::ipsec up moon
+dave::ipsec up moon
+carol::sleep 1

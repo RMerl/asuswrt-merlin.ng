@@ -1,0 +1,86 @@
+#!/usr/bin/make -f
+
+export DH_ALWAYS_EXCLUDE=CVS:.svn
+
+DH_AUTO_OPTIONS := -v -Sautoconf --parallel
+DESTDIR         := $(CURDIR)/debian/tmp
+CFLAGS          := $(shell dpkg-buildflags --get CFLAGS)
+LDFLAGS         := $(shell dpkg-buildflags --get LDFLAGS)
+
+
+build: export MISSING_BUILD_DEPS := $(shell dpkg-checkbuilddeps 2>&1)
+binary binary-arch binary-indep build build-arch build-indep clean:
+	dh ${@}
+
+ifneq ($(shell dh_listpackages),$(shell dh_listpackages -i))  # arch:any packages are built
+override_dh_auto_build:   debian/build-arch.stamp
+
+override_dh_auto_install: install-arch-files
+endif
+
+ifneq ($(shell dh_listpackages),$(shell dh_listpackages -a)) # arch:all packages are built
+  ifneq (,$(MISSING_BUILD_DEPS))
+    $(warning $(MISSING_BUILD_DEPS))
+    $(warning Postponing build of architecture independent files until binary or binary-indep target is called)
+  else
+override_dh_auto_build:   debian/build-indep.stamp
+  endif
+override_dh_auto_install: install-indep-files
+endif
+
+override_dh_auto_configure: debian/configure.stamp
+
+override_dh_auto_clean:
+	rm -f debian/*.stamp config.log
+	[ ! -f Makefile ] || dh_auto_clean $(DH_AUTO_OPTIONS)
+
+override_dh_installchangelogs:
+	dh_installchangelogs -a CHANGES
+	dh_installchangelogs -i
+
+override_dh_installinit:
+	dh_installinit --no-start -- start 20 2 3 4 5 .
+
+override_dh_compress:
+	set -ex; for p in $(shell dh_listpackages) ; do sh debian/fix.sh $$p; done
+	dh_compress
+
+debian/configure.stamp:
+	rm -f .pc/.*unapply # see bug#649521
+	dh_auto_configure $(DH_AUTO_OPTIONS) --         \
+	            --enable-yesterday                  \
+	            --disable-man-group                 \
+	            --disable-compress-manpg            \
+	            sa_lib_dir=/usr/lib/sysstat         \
+	            sa_dir=/var/log/sysstat             \
+	            conf_dir=/etc/sysstat               \
+	            CFLAGS="$(CFLAGS)"                  \
+	            LDFLAGS="$(LDFLAGS)"
+	touch "$@"
+
+debian/build-arch.stamp: debian/configure.stamp
+	dh_auto_build $(DH_AUTO_OPTIONS)
+	touch "$@"
+
+
+debian/build-indep.stamp: debian/configure.stamp
+	dh_auto_build $(DH_AUTO_OPTIONS) -- contrib/isag/isag
+	touch "$@"
+
+install-arch-files: debian/build-arch.stamp
+	dh_auto_install $(DH_AUTO_OPTIONS) --destdir="$(DESTDIR)"
+	
+	mkdir -p -m 755 $(DESTDIR)/usr/lib/sysstat
+	mv $(DESTDIR)/usr/bin/sar $(DESTDIR)/usr/bin/sar.sysstat
+	mv $(DESTDIR)/usr/share/man/man1/sar.1 $(DESTDIR)/usr/share/man/man1/sar.sysstat.1
+	rm -rf $(DESTDIR)/usr/doc
+
+
+install-indep-files: debian/build-indep.stamp
+	$(MAKE) DESTDIR="$(DESTDIR)" install_isag
+
+
+.PHONY: binary binary-arch binary-indep build build-arch build-indep clean \
+	override_dh_auto_build override_dh_auto_install override_dh_auto_clean \
+	override_dh_auto_configure override_dh_installchangelogs override_dh_installinit \
+	override_dh_compress install-arch-files install-indep-files

@@ -1,0 +1,5 @@
+Roadwarrior <b>carol</b> sets up an IKEv1 connection and roadwarrior <b>dave</b>
+an IKEv2 tunnel, respectively, to the gateway <b>moon</b>.
+In order to test the established tunnels, both roadwarriors ping the client <b>alice</b>
+in the subnet behind gateway <b>moon</b>.
+.

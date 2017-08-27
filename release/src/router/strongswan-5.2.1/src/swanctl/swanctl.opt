@@ -1,0 +1,784 @@
+connections { # }
+	Section defining IKE connection configurations.
+
+	Section defining IKE connection configurations.
+
+	The connections section defines IKE connection configurations, each in
+	its own subsections. In the keyword description below, the connection
+	is named _<conn>_, but an arbitrary yet unique connection name can be
+	chosen for each connection subsection.
+
+connections.<conn> { # }
+	Section for an IKE connection named <conn>.
+
+connections.<conn>.version = 0
+	IKE major version to use for connection.
+
+	IKE major version to use for connection. _1_ uses IKEv1 aka ISAKMP, _2_
+	uses IKEv2. A connection using the default of _0_ accepts both IKEv1
+	and IKEv2 as responder, and initiates the connection actively with IKEv2.
+
+connections.<conn>.local_addrs = %any
+	Local address(es) to use for IKE communication, comma separated.
+
+	Local address(es) to use for IKE communication, comma separated. Takes
+	single IPv4/IPv6 addresses, DNS names, CIDR subnets or IP address ranges.
+
+	As initiator, the first non-range/non-subnet is used to initiate the
+	connection from. As responder, the local destination address must match at
+	least to one of the specified addresses, subnets or ranges.
+
+connections.<conn>.remote_addrs = %any
+	Remote address(es) to use for IKE communication, comma separated.
+
+	Remote address(es) to use for IKE communication, comma separated. Takes
+	single IPv4/IPv6 addresses, DNS names, CIDR subnets or IP address ranges.
+
+	As initiator, the first non-range/non-subnet is used to initiate the
+	connection to. As responder, the initiator source address must match at
+	least to one of the specified addresses, subnets or ranges.
+
+	To initiate a connection, at least one specific address or DNS name must
+	be specified.
+
+connections.<conn>.local_port = 500
+	Local UPD port for IKE communication.
+
+	Local UPD port for IKE communication. By default the port of the socket
+	backend is used, which is usually _500_. If port _500_ is used, automatic
+	IKE port floating to port 4500 is used to work around NAT issues.
+
+	Using a non-default local IKE port requires support from the socket backend
+	in use (socket-dynamic).
+
+connections.<conn>.remote_port = 500
+	Remote UDP port for IKE communication.
+
+	Remote UPD port for IKE communication. If the default of port _500_ is used,
+	automatic IKE port floating to port 4500 is used to work around NAT issues.
+
+connections.<conn>.proposals = default
+	Comma separated proposals to accept for IKE.
+
+	A proposal is a set of algorithms. For non-AEAD algorithms, this includes
+	for IKE an encryption algorithm, an integrity algorithm, a pseudo random
+	function and a Diffie-Hellman group. For AEAD algorithms, instead of
+	encryption and integrity algorithms, a combined algorithm is used.
+
+	In IKEv2, multiple algorithms of the same kind can be specified in a single
+	proposal, from which one gets selected. In IKEv1, only one algorithm per
+	kind is allowed per proposal, more algorithms get implicitly stripped. Use
+	multiple proposals to offer different algorithms combinations in IKEv1.
+
+	Algorithm keywords get separated using dashes. Multiple proposals may be
+	separated by commas. The special value _default_ forms a default proposal
+	of supported algorithms considered safe, and is usually a good choice
+	for interoperability.
+
+connections.<conn>.vips =
+	Virtual IPs to request in configuration payload / Mode Config.
+
+	Comma separated list of virtual IPs to request in IKEv2 configuration
+	payloads or IKEv1 Mode Config. The wildcard addresses _0.0.0.0_ and _::_
+	request an arbitrary address, specific addresses may be defined. The
+	responder may return a different address, though, or none at all.
+
+connections.<conn>.aggressive = no
+	Use Aggressive Mode in IKEv1.
+
+	Enables Aggressive Mode instead of Main Mode with Identity Protection.
+	Aggressive Mode is considered less secure, because the ID and HASH
+	payloads are exchanged unprotected. This allows a passive attacker to
+	snoop peer identities, and even worse, start dictionary attacks on the
+	Preshared Key.
+
+connections.<conn>.pull = yes
+	Set the Mode Config mode to use.
+
+	If the default of _yes_ is used, Mode Config works in pull mode, where
+	the initiator actively requests a virtual IP. With _no_, push mode is used,
+	where the responder pushes down a virtual IP to the initiating peer.
+
+	Push mode is currently supported for IKEv1, but not in IKEv2. It is used
+	by a few implementations only, pull mode is recommended.
+
+connections.<conn>.encap = no
+	Enforce UDP encapsulation by faking NAT-D payloads.
+
+	To enforce UDP encapsulation of ESP packets, the IKE daemon can fake the
+	NAT detection payloads. This makes the peer believe that NAT takes
+	place on the path, forcing it to encapsulate ESP packets in UDP.
+
+	Usually this is not required, but it can help to work around connectivity
+	issues with too restrictive intermediary firewalls.
+
+connections.<conn>.mobike = yes
+	Enables MOBIKE on IKEv2 connections.
+
+	Enables MOBIKE on IKEv2 connections. MOBIKE is enabled by default on IKEv2
+	connections, and allows mobility of clients and multi-homing on servers by
+	migrating active IPsec tunnels.
+
+	Usually keeping MOBIKE enabled is unproblematic, as it is not used if the
+	peer does not indicate support for it. However, due to the design of MOBIKE,
+	IKEv2 always floats to port 4500 starting from the second exchange. Some
+	implementations don't like this behavior, hence it can be disabled.
+
+connections.<conn>.dpd_delay = 0s
+	Interval of liveness checks (DPD).
+
+	Interval to check the liveness of a peer actively using IKEv2 INFORMATIONAL
+	exchanges or IKEv1 R_U_THERE messages. Active DPD checking is only enforced
+	if no IKE or ESP/AH packet has been received for the configured DPD delay.
+
+connections.<conn>.dpd_timeout = 0s
+	Timeout for DPD checks (IKEV1 only).
+
+	Charon by default uses the normal retransmission mechanism and timeouts to
+	check the liveness of a peer, as all messages are used for liveness
+	checking. For compatibility reasons, with IKEv1 a custom interval may be
+	specified; this option has no effect on connections using IKE2.
+
+connections.<conn>.fragmentation = no
+	Use IKEv1 UDP packet fragmentation (_yes_, _no_ or _force_).
+
+	The default of _no_ disables IKEv1 fragmentation mechanism, _yes_ enables
+	it if support has been indicated by the peer. _force_ enforces
+	fragmentation if required even before the peer had a chance to indicate
+	support for it.
+
+	IKE fragmentation is currently not supported with IKEv2.
+
+connections.<conn>.send_certreq = yes
+	Send certificate requests payloads (_yes_ or _no_).
+
+	Send certificate request payloads to offer trusted root CA certificates
+	to the peer. Certificate requests help the peer to choose an appropriate
+	certificate/private key for authentication and are enabled by default.
+
+	Disabling certificate requests can be useful if too many trusted root CA
+	certificates are installed, as each certificate request increases the size
+	of the initial IKE packets.
+
+connections.<conn>.send_cert = ifasked
+	Send certificate payloads (_always_, _never_ or _ifasked_).
+
+	Send certificate payloads when using certificate authentication. With the
+	default of _ifasked_ the daemon sends certificate payloads only if
+	certificate requests have been received. _never_ disables sending of
+	certificate payloads altogether, _always_ causes certificate payloads to be
+	sent unconditionally whenever certificate authentication is used.
+
+connections.<conn>.keyingtries = 1
+	Number of retransmission sequences to perform during initial connect.
+
+	Number of retransmission sequences to perform during initial connect.
+	Instead of giving up initiation after the first retransmission sequence with
+	the default value of _1_, additional sequences may be started according to
+	the configured value. A value of _0_ initiates a new sequence until the
+	connection establishes or fails with a permanent error.
+
+connections.<conn>.unique = no
+	Connection uniqueness policy (_never_, _no_, _keep_ or _replace_).
+
+	Connection uniqueness policy to enforce. To avoid multiple connections
+	from the same user, a uniqueness policy can be enforced. The value _never_
+	does never enforce such a policy, even if a peer included INITIAL_CONTACT
+	notification messages, whereas _no_ replaces existing connections for the
+	same identity if a new one has the INITIAL_CONTACT notify. _keep_ rejects
+	new connection attempts if the same user already has an active connection,
+	_replace_ deletes any existing connection if a new one for the same user
+	gets established.
+
+	To compare connections for uniqueness, the remote IKE identity is used. If
+	EAP or XAuth authentication is involved, the EAP-Identity or XAuth username
+	is used to enforce the uniqueness policy instead.
+
+	On initiators this setting specifies whether an INITIAL_CONTACT notify is
+	sent during IKE_AUTH if no existing connection is found with the remote
+	peer (determined by the identities of the first authentication round).
+	Only if set to _keep_ or _replace_ will the client send a notify.
+
+connections.<conn>.reauth_time = 0s
+	Time to schedule IKE reauthentication.
+
+	Time to schedule IKE reauthentication. IKE reauthentication recreates the
+	IKE/ISAKMP SA from scratch and re-evaluates the credentials. In asymmetric
+	configurations (with EAP or configuration payloads) it might not be possible
+	to actively reauthenticate as responder. The IKEv2 reauthentication lifetime
+	negotiation can instruct the client to perform reauthentication.
+
+	Reauthentication is disabled by default. Enabling it usually may lead
+	to small connection interruptions, as strongSwan uses a break-before-make
+	policy with IKEv2 to avoid any conflicts with associated tunnel resources.
+
+connections.<conn>.rekey_time = 4h
+	Time to schedule IKE rekeying.
+
+	IKE rekeying refreshes key material using a Diffie-Hellman exchange, but
+	does not re-check associated credentials. It is supported in IKEv2 only,
+	IKEv1 performs a reauthentication procedure instead.
+
+	With the default value IKE rekeying is scheduled every 4 hours, minus the
+	configured **rand_time**.
+
+connections.<conn>.over_time = 10% of rekey_time/reauth_time
+	Hard IKE_SA lifetime if rekey/reauth does not complete, as time.
+
+	Hard IKE_SA lifetime if rekey/reauth does not complete, as time.
+	To avoid having an IKE/ISAKMP kept alive if IKE reauthentication or rekeying
+	fails perpetually, a maximum hard lifetime may be specified. If the
+	IKE_SA fails to rekey or reauthenticate within the specified time, the
+	IKE_SA gets closed.
+
+	In contrast to CHILD_SA rekeying, **over_time** is relative in time to the
+	**rekey_time** _and_ **reauth_time** values, as it applies to both.
+
+	The default is 10% of the longer of **rekey_time** and **reauth_time**.
+
+connections.<conn>.rand_time = over_time
+	Range of random time to subtract from rekey/reauth times.
+
+	Time range from which to choose a random value to subtract from
+	rekey/reauth times. To avoid having both peers initiating the rekey/reauth
+	procedure simultaneously, a random time gets subtracted from the
+	rekey/reauth times.
+
+	The default is equal to the configured **over_time**.
+
+connections.<conn>.pools =
+	Comma separated list of named IP pools.
+
+	Comma separated list of named IP pools to allocate virtual IP addresses and
+	other configuration attributes from. Each name references a pool by name
+	from either the **pools** section or an external pool.
+
+connections.<conn>.local<suffix> {}
+	Section for a local authentication round.
+
+	Section for a local authentication round. A local authentication round
+	defines the rules how authentication is performed for the local peer.
+	Multiple rounds may be defined to use IKEv2 RFC 4739 Multiple Authentication
+	or IKEv1 XAuth.
+
+	Each round is defined in a section having _local_ as prefix, and an optional
+	unique suffix. To define a single authentication round, the suffix may be
+	omitted.
+
+connections.<conn>.local<suffix>.certs =
+	Comma separated list of certificate candidates to use for authentication.
+
+	Comma separated list of certificate candidates to use for authentication.
+	The certificates may use a relative path from the **swanctl** _x509_
+	directory, or an absolute path.
+
+	The certificate used for authentication is selected based on the received
+	certificate request payloads. If no appropriate CA can be located, the
+	first certificate is used.
+
+connections.<conn>.local<suffix>.auth = pubkey
+	Authentication to perform locally (_pubkey_, _psk_, _xauth[-backend]_ or
+	_eap[-method]_).
+
+	Authentication to perform locally. _pubkey_ uses public key authentication
+	using a private key associated to a usable certificate. _psk_ uses
+	pre-shared key authentication. The IKEv1 specific _xauth_ is used for
+	XAuth or Hybrid authentication, while the IKEv2 specific _eap_ keyword
+	defines EAP authentication.
+
+	For _xauth_, a specific backend name may be appended, separated by a dash.
+	The appropriate _xauth_ backend is selected to perform the XAuth exchange.
+	For traditional XAuth, the _xauth_ method is usually defined in the second
+	authentication round following an initial _pubkey_ (or _psk_) round. Using
+	_xauth_ in the first round performs Hybrid Mode client authentication.
+
+	For _eap_, a specific EAP method name may be appended, separated by a dash.
+	An EAP module implementing the appropriate method is selected to perform
+	the EAP conversation.
+
+connections.<conn>.local<suffix>.id =
+	IKE identity to use for authentication round.
+
+	IKE identity to use for authentication round. When using certificate
+	authentication, the IKE identity must be contained in the certificate,
+	either as subject or as subjectAltName.
+
+connections.<conn>.local<suffix>.eap_id = id
+	Client EAP-Identity to use in EAP-Identity exchange and the EAP method.
+
+connections.<conn>.local<suffix>.aaa_id = remote-id
+	Server side EAP-Identity to expect in the EAP method.
+
+	Server side EAP-Identity to expect in the EAP method. Some EAP methods, such
+	as EAP-TLS, use an identity for the server to perform mutual authentication.
+	This identity may differ from the IKE identity, especially when EAP
+	authentication is delegated from the IKE responder to an AAA backend.
+
+	For EAP-(T)TLS, this defines the identity for which the server must provide
+	a certificate in the TLS exchange.
+
+connections.<conn>.local<suffix>.xauth_id = id
+	Client XAuth username used in the XAuth exchange.
+
+connections.<conn>.remote<suffix> {}
+	Section for a remote authentication round.
+
+	Section for a remote authentication round. A remote authentication round
+	defines the constraints how the peers must authenticate to use this
+	connection. Multiple rounds may be defined to use IKEv2 RFC 4739 Multiple
+	Authentication or IKEv1 XAuth.
+
+	Each round is defined in a section having _remote_ as prefix, and an
+	optional unique suffix. To define a single authentication round, the suffix
+	may be omitted.
+
+connections.<conn>.remote<suffix>.id = %any
+	IKE identity to expect for authentication round.
+
+	IKE identity to expect for authentication round. When using certificate
+	authentication, the IKE identity must be contained in the certificate,
+	either as subject or as subjectAltName.
+
+connections.<conn>.remote<suffix>.groups =
+	Authorization group memberships to require.
+
+	Comma separated authorization group memberships to require. The peer must
+	prove membership to at least one of the specified groups. Group membership
+	can be certified by different means, for example by appropriate Attribute
+	Certificates or by an AAA backend involved in the authentication.
+
+connections.<conn>.remote<suffix>.certs =
+	Comma separated list of certificate to accept for authentication.
+
+	Comma separated list of certificates to accept for authentication.
+	The certificates may use a relative path from the **swanctl** _x509_
+	directory, or an absolute path.
+
+connections.<conn>.remote<suffix>.cacerts =
+	Comma separated list of CA certificates to accept for authentication.
+
+	Comma separated list of CA certificates to accept for authentication.
+	The certificates may use a relative path from the **swanctl** _x509ca_
+	directory, or an absolute path.
+
+connections.<conn>.remote<suffix>.revocation = relaxed
+	Certificate revocation policy, (_strict_, _ifuri_ or _relaxed_).
+
+	Certificate revocation policy for CRL or OCSP revocation.
+
+	A _strict_ revocation policy fails if no revocation information is
+	available, i.e. the certificate is not known to be unrevoked.
+
+	_ifuri_ fails only if a CRL/OCSP URI is available, but certificate
+	revocation checking fails, i.e. there should be revocation information
+	available, but it could not be obtained.
+
+	The default revocation policy _relaxed_ fails only if a certificate
+	is revoked, i.e. it is explicitly known that it is bad.
+
+connections.<conn>.remote<suffix>.auth = pubkey
+	Authentication to expect from remote (_pubkey_, _psk_, _xauth[-backend]_ or
+	_eap[-method]_).
+
+	Authentication to expect from remote. See the **local** sections **auth**
+	keyword description about the details of supported mechanisms.
+
+connections.<conn>.children.<child> {}
+	CHILD_SA configuration sub-section.
+
+	CHILD_SA configuration sub-section. Each connection definition may have
+	one or more sections in its _children_ subsection. The section name
+	defines the name of the CHILD_SA configuration, which must be unique within
+	the connection.
+
+connections.<conn>.children.<child>.ah_proposals =
+	AH proposals to offer for the CHILD_SA.
+
+	AH proposals to offer for the CHILD_SA. A proposal is a set of algorithms.
+	For AH, this includes an integrity algorithm and an optional Diffie-Hellman
+	group. If a DH group is specified, CHILD_SA/Quick Mode rekeying and initial
+	negotiation uses a separate Diffie-Hellman exchange using the specified
+	group.
+
+	In IKEv2, multiple algorithms of the same kind can be specified in a single
+	proposal, from which one gets selected. In IKEv1, only one algorithm per
+	kind is allowed per proposal, more algorithms get implicitly stripped. Use
+	multiple proposals to offer different algorithms combinations in IKEv1.
+
+	Algorithm keywords get separated using dashes. Multiple proposals may be
+	separated by commas. The special value _default_ forms a default proposal
+	of supported algorithms considered safe, and is usually a good choice
+	for interoperability. By default no AH proposals are included, instead ESP
+	is proposed.
+
+connections.<conn>.children.<child>.esp_proposals = default
+	ESP proposals to offer for the CHILD_SA.
+
+	ESP proposals to offer for the CHILD_SA. A proposal is a set of algorithms.
+	For ESP non-AEAD proposals, this includes an integrity algorithm, an
+	encryption algorithm, an optional Diffie-Hellman group and an optional
+	Extended Sequence Number Mode indicator. For AEAD proposals, a combined
+	mode algorithm is used instead of the separate encryption/integrity
+	algorithms.
+
+	If a DH group is specified, CHILD_SA/Quick Mode rekeying and initial (non
+	IKE_AUTH piggybacked) negotiation uses a separate Diffie-Hellman exchange
+	using the specified group. Extended Sequence Number support may be indicated
+	with the _esn_ and _noesn_ values, both may be included to indicate support
+	for both modes. If omitted, _noesn_ is assumed.
+
+	In IKEv2, multiple algorithms of the same kind can be specified in a single
+	proposal, from which one gets selected. In IKEv1, only one algorithm per
+	kind is allowed per proposal, more algorithms get implicitly stripped. Use
+	multiple proposals to offer different algorithms combinations in IKEv1.
+
+	Algorithm keywords get separated using dashes. Multiple proposals may be
+	separated by commas. The special value _default_ forms a default proposal
+	of supported algorithms considered safe, and is usually a good choice
+	for interoperability. If no algorithms are specified for AH nor ESP,
+	the _default_ set of algorithms for ESP is included.
+
+connections.<conn>.children.<child>.local_ts = dynamic
+	Local traffic selectors to include in CHILD_SA.
+
+	Comma separated list of local traffic selectors to include in CHILD_SA.
+	Each selector is a CIDR subnet definition, followed by an optional
+	proto/port selector. The special value _dynamic_ may be used instead of a
+	subnet definition, which gets replaced by the tunnel outer address or the
+	virtual IP, if negotiated. This is the default.
+
+	A protocol/port selector is surrounded by opening and closing square
+	brackets. Between these brackets, a numeric or **getservent**(3) protocol
+	name may be specified. After the optional protocol restriction, an optional
+	port restriction may be specified, separated by a slash. The port
+	restriction may be numeric, a **getservent**(3) service name, or the special
+	value _opaque_ for RFC 4301 OPAQUE selectors. Port ranges may be specified
+	as well, none of the kernel backends currently support port ranges, though.
+
+	Unless the Unity extension is used, IKEv1 supports the first specified
+	selector only. IKEv1 uses very similar traffic selector narrowing as it is
+	supported in the IKEv2 protocol.
+
+connections.<conn>.children.<child>.remote_ts = dynamic
+	Remote selectors to include in CHILD_SA.
+
+	Comma separated list of remote selectors to include in CHILD_SA. See
+	**local_ts** for a description of the selector syntax.
+
+connections.<conn>.children.<child>.rekey_time = 1h
+	Time to schedule CHILD_SA rekeying.
+
+	Time to schedule CHILD_SA rekeying. CHILD_SA rekeying refreshes key
+	material, optionally using a Diffie-Hellman exchange if a group is
+	specified in the proposal.
+
+	To avoid rekey collisions initiated by both ends simultaneously, a value
+	in the range of **rand_time** gets subtracted to form the effective soft
+	lifetime.
+
+	By default CHILD_SA rekeying is scheduled every hour, minus **rand_time**.
+
+connections.<conn>.children.<child>.life_time = rekey_time + 10%
+	Maximum lifetime before CHILD_SA gets closed, as time.
+
+	Maximum lifetime before CHILD_SA gets closed. Usually this hard lifetime
+	is never reached, because the CHILD_SA gets rekeyed before.
+	If that fails for whatever reason, this limit closes the CHILD_SA.
+
+	The default is 10% more than the **rekey_time**.
+
+connections.<conn>.children.<child>.rand_time = life_time - rekey_time
+	Range of random time to subtract from **rekey_time**.
+
+	Time range from which to choose a random value to subtract from
+	**rekey_time**. The default is the difference between **life_time** and
+	**rekey_time**.
+
+connections.<conn>.children.<child>.rekey_bytes = 0
+	Number of bytes processed before initiating CHILD_SA rekeying.
+
+	Number of bytes processed before initiating CHILD_SA rekeying. CHILD_SA
+	rekeying refreshes key material, optionally using a Diffie-Hellman exchange
+	if a group is specified in the proposal.
+
+	To avoid rekey collisions initiated by both ends simultaneously, a value
+	in the range of **rand_bytes** gets subtracted to form the effective soft
+	volume limit.
+
+	Volume based CHILD_SA rekeying is disabled by default.
+
+connections.<conn>.children.<child>.life_bytes = rekey_bytes + 10%
+	Maximum bytes processed before CHILD_SA gets closed.
+
+	Maximum bytes processed before CHILD_SA gets closed. Usually this hard
+	volume limit is never reached, because the CHILD_SA gets rekeyed before.
+	If that fails for whatever reason, this limit closes the CHILD_SA.
+
+	The default is 10% more than **rekey_bytes**.
+
+connections.<conn>.children.<child>.rand_bytes = life_bytes - rekey_bytes
+	Range of random bytes to subtract from **rekey_bytes**.
+
+	Byte range from which to choose a random value to subtract from
+	**rekey_bytes**. The default is the difference between **life_bytes** and
+	**rekey_bytes**.
+
+connections.<conn>.children.<child>.rekey_packets = 0
+	Number of packets processed before initiating CHILD_SA rekeying.
+
+	Number of packets processed before initiating CHILD_SA rekeying. CHILD_SA
+	rekeying refreshes key material, optionally using a Diffie-Hellman exchange
+	if a group is specified in the proposal.
+
+	To avoid rekey collisions initiated by both ends simultaneously, a value
+	in the range of **rand_packets** gets subtracted to form the effective soft
+	packet count limit.
+
+	Packet count based CHILD_SA rekeying is disabled by default.
+
+connections.<conn>.children.<child>.life_packets = rekey_packets + 10%
+	Maximum number of packets processed before CHILD_SA gets closed.
+
+	Maximum number of packets processed before CHILD_SA gets closed. Usually
+	this hard packets limit is never reached, because the CHILD_SA gets rekeyed
+	before. If that fails for whatever reason, this limit closes the CHILD_SA.
+
+	The default is 10% more than **rekey_bytes**.
+
+connections.<conn>.children.<child>.rand_packets = life_packets - rekey_packets
+	Range of random packets to subtract from **packets_bytes**.
+
+	Packet range from which to choose a random value to subtract from
+	**rekey_packets**. The default is the difference between **life_packets**
+	and **rekey_packets**.
+
+connections.<conn>.children.<child>.updown =
+	Updown script to invoke on CHILD_SA up and down events.
+
+connections.<conn>.children.<child>.hostaccess = yes
+	Hostaccess variable to pass to **updown** script.
+
+connections.<conn>.children.<child>.mode = tunnel
+	IPsec Mode to establish (_tunnel_, _transport_, _beet_, _pass_ or _drop_).
+
+	IPsec Mode to establish CHILD_SA with. _tunnel_ negotiates the CHILD_SA
+	in IPsec Tunnel Mode, whereas _transport_ uses IPsec Transport Mode. _beet_
+	is the Bound End to End Tunnel mixture mode, working with fixed inner
+	addresses without the need to include them in each packet.
+
+	Both _transport_ and _beet_ modes are subject to mode negotiation; _tunnel_
+	mode is negotiated if the preferred mode is not available.
+
+	_pass_ and _drop_ are used to install shunt policies, which explicitly
+	bypass the defined traffic from IPsec processing, or drop it, respectively.
+
+connections.<conn>.children.<child>.dpd_action = clear
+	Action to perform on DPD timeout (_clear_, _trap_ or _restart_).
+
+	Action to perform for this CHILD_SA on DPD timeout. The default _clear_
+	closes the CHILD_SA and does not take further action. _trap_ installs
+	a trap policy, which will catch matching traffic and tries to re-negotiate
+	the tunnel on-demand. _restart_ immediately tries to re-negotiate the
+	CHILD_SA under a fresh IKE_SA.
+
+connections.<conn>.children.<child>.ipcomp = no
+	Enable IPComp compression before encryption.
+
+	Enable IPComp compression before encryption. If enabled, IKE tries to
+	negotiate IPComp compression to compress ESP payload data prior to
+	encryption.
+
+connections.<conn>.children.<child>.inactivity = 0s
+	Timeout before closing CHILD_SA after inactivity.
+
+	Timeout before closing CHILD_SA after inactivity. If no traffic has
+	been processed in either direction for the configured timeout, the CHILD_SA
+	gets closed due to inactivity. The default value of _0_ disables inactivity
+	checks.
+
+connections.<conn>.children.<child>.reqid = 0
+	Fixed reqid to use for this CHILD_SA.
+
+	Fixed reqid to use for this CHILD_SA. This might be helpful in some
+	scenarios, but works only if each CHILD_SA configuration is instantiated
+	not more than once. The default of _0_ uses dynamic reqids, allocated
+	incrementally.
+
+connections.<conn>.children.<child>.mark_in = 0/0x00000000
+	Netfilter mark and mask for input traffic.
+
+	Netfilter mark and mask for input traffic. On Linux Netfilter may apply
+	marks to each packet coming from a tunnel having that option set. The
+	mark may then be used by Netfilter to match rules.
+
+	An additional mask may be appended to the mark, separated by _/_. The
+	default mask if omitted is 0xffffffff.
+
+connections.<conn>.children.<child>.mark_out = 0/0x00000000
+	Netfilter mark and mask for output traffic.
+
+	Netfilter mark and mask for output traffic. On Linux Netfilter may require
+	marks on each packet to match a policy having that option set. This allows
+	Netfilter rules to select specific tunnels for outgoing traffic.
+
+	An additional mask may be appended to the mark, separated by _/_. The
+	default mask if omitted is 0xffffffff.
+
+connections.<conn>.children.<child>.tfc_padding = 0
+	Traffic Flow Confidentiality padding.
+
+	Pads ESP packets with additional data to have a consistent ESP packet size
+	for improved Traffic Flow Confidentiality. The padding defines the minimum
+	size of all ESP packets sent.
+
+	The default value of 0 disables TFC padding, the special value _mtu_ adds
+	TFC padding to create a packet size equal to the Path Maximum Transfer Unit.
+
+connections.<conn>.children.<child>.replay_window = 32
+	IPsec replay window to configure for this CHILD_SA.
+
+	IPsec replay window to configure for this CHILD_SA. Larger values than the
+	default of 32 are supported using the Netlink backend only, a value of 0
+	disables IPsec replay protection.
+
+connections.<conn>.children.<child>.start_action = none
+	Action to perform after loading the configuration (_none_, _trap_, _start_).
+
+	Action to perform after loading the configuration. The default of _none_
+	loads the connection only, which then can be manually initiated or used as
+	a responder configuration.
+
+	The value _trap_ installs a trap policy, which triggers the tunnel as soon
+	as matching traffic has been detected. The value _start_ initiates
+	the connection actively.
+
+	When unloading or replacing a CHILD_SA configuration having a
+	**start_action** different from _none_, the inverse action is performed.
+	Configurations with _start_ get closed, while such with _trap_ get
+	uninstalled.
+
+connections.<conn>.children.<child>.close_action = none
+	Action to perform after a CHILD_SA gets closed (_none_, _trap_, _start_).
+
+	Action to perform after a CHILD_SA gets closed by the peer. The default of
+	_none_ does not take any action, _trap_ installs a trap policy for the
+	CHILD_SA. _start_ tries to re-create the CHILD_SA.
+
+	**close_action** does not provide any guarantee that the CHILD_SA is kept
+	alive. It acts on explicit close messages only, but not on negotiation
+	failures. Use trap policies to reliably re-create failed CHILD_SAs.
+
+secrets { # }
+	Section defining secrets for IKE/EAP/XAuth authentication and private
+	key decryption.
+
+	Section defining secrets for IKE/EAP/XAuth authentication and private key
+	decryption. The **secrets** section takes sub-sections having a specific
+	prefix which defines the secret type.
+
+	It is not recommended to define any private key decryption passphrases,
+	as then there is no real security benefit in having encrypted keys. Either
+	store the key unencrypted, or enter the keys manually when loading
+	credentials.
+
+secrets.eap<suffix> { # }
+	EAP secret section for a specific secret.
+
+	EAP secret section for a specific secret. Each EAP secret is defined in
+	a unique section having the _eap_ prefix. EAP secrets are used for XAuth
+	authentication as well.
+
+secrets.xauth<suffix> { # }
+	XAuth secret section for a specific secret.
+
+	XAuth secret section for a specific secret. **xauth** is just an alias
+	for **eap**, secrets under both section prefixes are used for both EAP and
+	XAuth authentication.
+
+secrets.eap<suffix>.secret =
+	Value of the EAP/XAuth secret.
+
+	Value of the EAP/XAuth secret. It may either be an ASCII string, a hex
+	encoded string if it has a _0x_ prefix, or a Base64 encoded string if it
+	has a _0s_ prefix in its value.
+
+secrets.eap<suffix>.id<suffix> =
+	Identity the EAP/XAuth secret belongs to.
+
+	Identity the EAP/XAuth secret belongs to. Multiple unique identities may
+	be specified, each having an _id_ prefix, if a secret is shared between
+	multiple users.
+
+secrets.ike<suffix> { # }
+	IKE preshared secret section for a specific secret.
+
+	IKE preshared secret section for a specific secret. Each IKE PSK is defined
+	in a unique section having the _ike_ prefix.
+
+secrets.ike<suffix>.secret =
+	Value of the IKE preshared secret.
+
+	Value of the IKE preshared secret. It may either be an ASCII string,
+	a hex encoded string if it has a _0x_ prefix, or a Base64 encoded string if
+	it has a _0s_ prefix in its value.
+
+secrets.ike<suffix>.id<suffix> =
+	IKE identity the IKE preshared secret belongs to.
+
+	IKE identity the IKE preshared secret belongs to. Multiple unique identities
+	may be specified, each having an _id_ prefix, if a secret is shared between
+	multiple peers.
+
+secrets.rsa<suffix> { # }
+	Private key decryption passphrase for a key in the _rsa_ folder.
+
+secrets.rsa<suffix>.file =
+	File name in the _rsa_ folder for which this passphrase should be used.
+
+secrets.rsa<suffix>.secret
+	Value of decryption passphrase for RSA key.
+
+secrets.ecdsa<suffix> { # }
+	Private key decryption passphrase for a key in the _ecdsa_ folder.
+
+secrets.ecdsa<suffix>.file =
+	File name in the _ecdsa_ folder for which this passphrase should be used.
+
+secrets.ecdsa<suffix>.secret
+	Value of decryption passphrase for ECDSA key.
+
+secrets.pkcs8<suffix> { # }
+	Private key decryption passphrase for a key in the _pkcs8_ folder.
+
+secrets.pkcs8<suffix>.file =
+	File name in the _pkcs8_ folder for which this passphrase should be used.
+
+secrets.pkcs8<suffix>.secret
+	Value of decryption passphrase for PKCS#8 key.
+
+pools { # }
+	Section defining named pools.
+
+	Section defining named pools. Named pools may be referenced by connections
+	with the **pools** option to assign virtual IPs and other configuration
+	attributes.
+
+pools.<name> { # }
+	Section defining a single pool with a unique name.
+
+pools.<name>.addrs =
+	Subnet defining addresses allocated in pool.
+
+	Subnet defining addresses allocated in pool. Accepts a single CIDR subnet
+	defining the pool to allocate addresses from. Pools must be unique and
+	non-overlapping.
+
+pools.<name>.<attr> =
+	Comma separated list of additional attributes from type <attr>.
+
+	Comma separated list of additional attributes of type **<attr>**. The
+	attribute type may be one of _dns_, _nbns_, _dhcp_, _netmask_, _server_,
+	_subnet_, _split_include_ and _split_exclude_ to define addresses or CIDR
+	subnets for the corresponding attribute types. Alternatively, **<attr>** can
+	be a numerical identifier, for which string attribute values are accepted
+	as well.

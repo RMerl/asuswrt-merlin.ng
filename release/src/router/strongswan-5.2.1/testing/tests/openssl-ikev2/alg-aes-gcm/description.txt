@@ -1,0 +1,16 @@
+The roadwarrior <b>carol</b> and the gateway <b>moon</b> use the <b>openssl</b>
+plugin based on the <b>OpenSSL</b> library for all cryptographical and X.509 certificate
+functions whereas roadwarrior <b>dave</b> uses the default <b>strongSwan</b> cryptographical
+plugins <b>aes des sha1 sha2 md5 gmp hmac gcm</b> and <b>x509</b>.
+<p/>
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the cipher suite
+<b>AES_GCM_16_256</b> both for IKE and ESP by defining <b>ike=aes256gcm16-prfsha512-modp2048</b>
+(or alternatively <b>aes256gcm128</b>) and <b>esp=aes256gcm16-modp2048</b> in ipsec.conf,
+respectively.
+<p/>
+Roadwarrior <b>dave</b> proposes to gateway <b>moon</b> the cipher suite
+<b>AES_GCM_16_128</b> both for IKE and ESP by defining <b>ike=aes128gcm16-prfsha256-modp1536</b>
+(or alternatively <b>aes128gcm128</b>) and <b>esp=aes128gcm16-modp1536</b> in ipsec.conf,
+respectively.
+<p/>
+A ping by <b>carol</b> and <b>dave</b> to <b>alice</b> successfully checks the established tunnels.

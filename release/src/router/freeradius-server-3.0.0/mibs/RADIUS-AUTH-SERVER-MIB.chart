@@ -1,0 +1,43 @@
++-(67) radiusMIB
+  +-(1) radiusAuthentication
+    +-(1) radiusAuthServMIB
+    | +-(1) radiusAuthServMIBObjects
+    |   +-(1) radiusAuthServ
+    |     +-(1) radiusAuthServIdent
+    |     +-(2) radiusAuthServUpTime
+    |     +-(3) radiusAuthServResetTime
+    |     +-(4) radiusAuthServConfigReset 
+    |     +-(5) radiusAuthServTotalAccessRequests
+    |     +-(6) radiusAuthServTotalInvalidRequests
+    |     +-(7) radiusAuthServTotalDupAccessRequests
+    |     +-(8) radiusAuthServTotalAccessAccepts
+    |     +-(9) radiusAuthServTotalAccessRejects
+    |     +-(10) radiusAuthServTotalAccessChallenges
+    |     +-(11) radiusAuthServTotalMalformedAccessRequests
+    |	  +-(12) radiusAuthServTotalBadAuthenticators
+    |     +-(13) radiusAuthServTotalPacketsDropped
+    |     +-(14) radiusAuthServTotalUnknownTypes
+    |     +-(15) radiusAuthClientTable
+    |       +-(1) radiusAuthClientEntry
+    |         +-(1) radiusAuthClientIndex
+    |         +-(2) radiusAuthClientAddress
+    |         +-(3) radiusAuthClientID
+    |         +-(4) radiusAuthServAccessRequests
+    |         +-(5) radiusAuthServDupAccessRequests
+    |         +-(6) radiusAuthServAccessAccepts
+    |         +-(7) radiusAuthServAccessRejects
+    |         +-(8) radiusAuthServAccessChallenges
+    |         +-(9) radiusAuthServMalformedAccessRequests
+    |         +-(10) radiusAuthServBadAuthenticators
+    |         +-(11) radiusAuthServPacketsDropped
+    |         +-(12) radiusAuthServUnknownTypes
+    +-(2) radiusAuthServMIBConformance
+      +-(1) radiusAuthServMIBCompliances
+        +-(1) radiusAuthServMIBCompliance
+      +-(2) radiusAuthServMIBGroups
+        +-(1) radiusAuthServMIBGroup
+
+
+
+
+

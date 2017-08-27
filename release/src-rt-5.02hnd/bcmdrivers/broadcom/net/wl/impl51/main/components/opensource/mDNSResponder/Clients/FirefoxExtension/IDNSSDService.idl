@@ -1,0 +1,50 @@
+/* -*- Mode: C; tab-width: 4 -*-
+ *
+ * Copyright (c) 2009 Apple Computer, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "nsISupports.idl"
+
+interface IDNSSDService;
+
+
+[scriptable, function, uuid(27346495-A1ED-458A-A5BC-587DF9A26B4F)]
+interface IDNSSDBrowseListener : nsISupports
+{
+	void
+	onBrowse( in IDNSSDService service, in boolean add, in long interfaceIndex, in long error, in AString serviceName, in AString regtype, in AString domain );
+};
+
+
+[scriptable, function, uuid(6620E18F-47F3-47C6-941F-126A5FD4FCF7)]
+interface IDNSSDResolveListener : nsISupports
+{
+	void
+	onResolve( in IDNSSDService service, in long interfaceIndex, in long error, in AString fullname, in AString host, in short port, in AString path );
+};
+
+
+[scriptable, uuid(3A3539FF-F8D8-40B4-8D02-5EA73C51FA12)]
+interface IDNSSDService : nsISupports
+{
+	IDNSSDService
+	browse( in long interfaceIndex, in AString regtype, in AString domain, in IDNSSDBrowseListener listener );
+
+	IDNSSDService
+	resolve( in long interfaceIndex, in AString name, in AString regtype, in AString domain, in IDNSSDResolveListener listener );
+
+	void
+	stop();
+};

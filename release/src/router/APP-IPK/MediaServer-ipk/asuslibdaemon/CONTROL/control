@@ -1,0 +1,12 @@
+Package: asuslibdaemon
+Architecture: mipsel
+Priority: optional
+Section: tool
+Version: 0.14
+Maintainer: ASUS
+Source: http://127.0.0.1/
+Description: libdaemon is dependency of avahi.
+Depends: 
+Suggests: 
+Conflicts: 
+Enabled: yes

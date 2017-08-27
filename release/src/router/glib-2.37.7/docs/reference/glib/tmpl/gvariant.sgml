@@ -1,0 +1,1109 @@
+<!-- ##### SECTION Title ##### -->
+GVariant
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GVariant ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_variant_unref ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### FUNCTION g_variant_ref ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_ref_sink ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_is_floating ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_take_ref ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_type ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_type_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_is_of_type ##### -->
+<para>
+
+</para>
+
+@value: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_is_container ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_compare ##### -->
+<para>
+
+</para>
+
+@one: 
+@two: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_classify ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### ENUM GVariantClass ##### -->
+<para>
+
+</para>
+
+@G_VARIANT_CLASS_BOOLEAN: 
+@G_VARIANT_CLASS_BYTE: 
+@G_VARIANT_CLASS_INT16: 
+@G_VARIANT_CLASS_UINT16: 
+@G_VARIANT_CLASS_INT32: 
+@G_VARIANT_CLASS_UINT32: 
+@G_VARIANT_CLASS_INT64: 
+@G_VARIANT_CLASS_UINT64: 
+@G_VARIANT_CLASS_HANDLE: 
+@G_VARIANT_CLASS_DOUBLE: 
+@G_VARIANT_CLASS_STRING: 
+@G_VARIANT_CLASS_OBJECT_PATH: 
+@G_VARIANT_CLASS_SIGNATURE: 
+@G_VARIANT_CLASS_VARIANT: 
+@G_VARIANT_CLASS_MAYBE: 
+@G_VARIANT_CLASS_ARRAY: 
+@G_VARIANT_CLASS_TUPLE: 
+@G_VARIANT_CLASS_DICT_ENTRY: 
+
+<!-- ##### FUNCTION g_variant_check_format_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@format_string: 
+@copy_only: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get ##### -->
+<para>
+
+</para>
+
+@value: 
+@format_string: 
+@...: 
+
+
+<!-- ##### FUNCTION g_variant_get_va ##### -->
+<para>
+
+</para>
+
+@value: 
+@format_string: 
+@endptr: 
+@app: 
+
+
+<!-- ##### FUNCTION g_variant_new ##### -->
+<para>
+
+</para>
+
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_va ##### -->
+<para>
+
+</para>
+
+@format_string: 
+@endptr: 
+@app: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_boolean ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_byte ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_int16 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_uint16 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_int32 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_uint32 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_int64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_uint64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_handle ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_double ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_string ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_take_string ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_printf ##### -->
+<para>
+
+</para>
+
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_object_path ##### -->
+<para>
+
+</para>
+
+@object_path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_is_object_path ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_signature ##### -->
+<para>
+
+</para>
+
+@signature: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_is_signature ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_variant ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_strv ##### -->
+<para>
+
+</para>
+
+@strv: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_objv ##### -->
+<para>
+
+</para>
+
+@strv: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_bytestring ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_bytestring_array ##### -->
+<para>
+
+</para>
+
+@strv: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_boolean ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_byte ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_int16 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_uint16 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_int32 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_uint32 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_int64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_uint64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_handle ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_double ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_dup_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_variant ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_strv ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_dup_strv ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_objv ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_dup_objv ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_bytestring ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_dup_bytestring ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_bytestring_array ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_dup_bytestring_array ##### -->
+<para>
+
+</para>
+
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_maybe ##### -->
+<para>
+
+</para>
+
+@child_type: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_array ##### -->
+<para>
+
+</para>
+
+@child_type: 
+@children: 
+@n_children: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_tuple ##### -->
+<para>
+
+</para>
+
+@children: 
+@n_children: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_dict_entry ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_fixed_array ##### -->
+<para>
+
+</para>
+
+@element_type: 
+@elements: 
+@n_elements: 
+@element_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_maybe ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_n_children ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_child_value ##### -->
+<para>
+
+</para>
+
+@value: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_child ##### -->
+<para>
+
+</para>
+
+@value: 
+@index_: 
+@format_string: 
+@...: 
+
+
+<!-- ##### FUNCTION g_variant_lookup_value ##### -->
+<para>
+
+</para>
+
+@dictionary: 
+@key: 
+@expected_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_lookup ##### -->
+<para>
+
+</para>
+
+@dictionary: 
+@key: 
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_fixed_array ##### -->
+<para>
+
+</para>
+
+@value: 
+@n_elements: 
+@element_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_size ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_data ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_data_as_bytes ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_store ##### -->
+<para>
+
+</para>
+
+@value: 
+@data: 
+
+
+<!-- ##### FUNCTION g_variant_new_from_data ##### -->
+<para>
+
+</para>
+
+@type: 
+@data: 
+@size: 
+@trusted: 
+@notify: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_from_bytes ##### -->
+<para>
+
+</para>
+
+@type: 
+@bytes: 
+@trusted: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_byteswap ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_get_normal_form ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_is_normal_form ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_hash ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_equal ##### -->
+<para>
+
+</para>
+
+@one: 
+@two: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_print ##### -->
+<para>
+
+</para>
+
+@value: 
+@type_annotate: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_print_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@string: 
+@type_annotate: 
+@Returns: 
+
+
+<!-- ##### STRUCT GVariantIter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_variant_iter_copy ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_iter_free ##### -->
+<para>
+
+</para>
+
+@iter: 
+
+
+<!-- ##### FUNCTION g_variant_iter_init ##### -->
+<para>
+
+</para>
+
+@iter: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_iter_n_children ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_iter_new ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_iter_next_value ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_iter_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_iter_loop ##### -->
+<para>
+
+</para>
+
+@iter: 
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### STRUCT GVariantBuilder ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_variant_builder_unref ##### -->
+<para>
+
+</para>
+
+@builder: 
+
+
+<!-- ##### FUNCTION g_variant_builder_ref ##### -->
+<para>
+
+</para>
+
+@builder: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_builder_new ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_builder_init ##### -->
+<para>
+
+</para>
+
+@builder: 
+@type: 
+
+
+<!-- ##### FUNCTION g_variant_builder_clear ##### -->
+<para>
+
+</para>
+
+@builder: 
+
+
+<!-- ##### FUNCTION g_variant_builder_add_value ##### -->
+<para>
+
+</para>
+
+@builder: 
+@value: 
+
+
+<!-- ##### FUNCTION g_variant_builder_add ##### -->
+<para>
+
+</para>
+
+@builder: 
+@format_string: 
+@...: 
+
+
+<!-- ##### FUNCTION g_variant_builder_add_parsed ##### -->
+<para>
+
+</para>
+
+@builder: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_variant_builder_end ##### -->
+<para>
+
+</para>
+
+@builder: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_builder_open ##### -->
+<para>
+
+</para>
+
+@builder: 
+@type: 
+
+
+<!-- ##### FUNCTION g_variant_builder_close ##### -->
+<para>
+
+</para>
+
+@builder: 
+
+
+<!-- ##### ENUM GVariantParseError ##### -->
+<para>
+
+</para>
+
+@G_VARIANT_PARSE_ERROR_FAILED: 
+@G_VARIANT_PARSE_ERROR_BASIC_TYPE_EXPECTED: 
+@G_VARIANT_PARSE_ERROR_CANNOT_INFER_TYPE: 
+@G_VARIANT_PARSE_ERROR_DEFINITE_TYPE_EXPECTED: 
+@G_VARIANT_PARSE_ERROR_INPUT_NOT_AT_END: 
+@G_VARIANT_PARSE_ERROR_INVALID_CHARACTER: 
+@G_VARIANT_PARSE_ERROR_INVALID_FORMAT_STRING: 
+@G_VARIANT_PARSE_ERROR_INVALID_OBJECT_PATH: 
+@G_VARIANT_PARSE_ERROR_INVALID_SIGNATURE: 
+@G_VARIANT_PARSE_ERROR_INVALID_TYPE_STRING: 
+@G_VARIANT_PARSE_ERROR_NO_COMMON_TYPE: 
+@G_VARIANT_PARSE_ERROR_NUMBER_OUT_OF_RANGE: 
+@G_VARIANT_PARSE_ERROR_NUMBER_TOO_BIG: 
+@G_VARIANT_PARSE_ERROR_TYPE_ERROR: 
+@G_VARIANT_PARSE_ERROR_UNEXPECTED_TOKEN: 
+@G_VARIANT_PARSE_ERROR_UNKNOWN_KEYWORD: 
+@G_VARIANT_PARSE_ERROR_UNTERMINATED_STRING_CONSTANT: 
+@G_VARIANT_PARSE_ERROR_VALUE_EXPECTED: 
+
+<!-- ##### MACRO G_VARIANT_PARSE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_variant_parse ##### -->
+<para>
+
+</para>
+
+@type: 
+@text: 
+@limit: 
+@endptr: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_parsed_va ##### -->
+<para>
+
+</para>
+
+@format: 
+@app: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_new_parsed ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+@Returns: 
+
+

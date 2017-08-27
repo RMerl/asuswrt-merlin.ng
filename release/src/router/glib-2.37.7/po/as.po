@@ -1,0 +1,4488 @@
+# translation of as.po to Assamese
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Amitakhya Phukan <amitakhya@svn.gnome.org>, 2007, 2008.
+# Amitakhya Phukan <aphukan@fedoraproject.org>, 2009.
+# Nilamdyuti Goswami <ngoswami@redhat.com>, 2012, 2013.
+msgid ""
+msgstr ""
+"Project-Id-Version: as\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=glib&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2013-07-30 13:13+0000\n"
+"PO-Revision-Date: 2013-07-30 22:40+0530\n"
+"Last-Translator: Nilamdyuti Goswami <ngoswami@redhat.com>\n"
+"Language-Team: Assamese <kde-i18n-doc@kde.org>\n"
+"Language: as\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Lokalize 1.5\n"
+"Plural-Forms: nplurals=2; plural=(n!=1)\n"
+
+#: ../gio/gbufferedinputstream.c:424 ../gio/gbufferedinputstream.c:503
+#: ../gio/ginputstream.c:174 ../gio/ginputstream.c:366
+#: ../gio/ginputstream.c:604 ../gio/ginputstream.c:822
+#: ../gio/goutputstream.c:192 ../gio/goutputstream.c:721
+#: ../gio/gpollableinputstream.c:207 ../gio/gpollableoutputstream.c:208
+#, c-format
+msgid "Too large count value passed to %s"
+msgstr "%s লৈ বহুত ডাঙৰ count মান দিয়া হৈছে"
+
+#: ../gio/gbufferedinputstream.c:896 ../gio/gbufferedoutputstream.c:577
+#: ../gio/gdataoutputstream.c:564
+msgid "Seek not supported on base stream"
+msgstr "ভিত্তি স্ৰোতত Seek সমৰ্থিত নহয়"
+
+#: ../gio/gbufferedinputstream.c:942
+msgid "Cannot truncate GBufferedInputStream"
+msgstr "GBufferedInputStream ক truncate কৰিব নোৱাৰি"
+
+#: ../gio/gbufferedinputstream.c:987 ../gio/ginputstream.c:1012
+#: ../gio/giostream.c:280 ../gio/goutputstream.c:1323
+msgid "Stream is already closed"
+msgstr "স্ৰোত ইতিমধ্যে বন্ধ"
+
+#: ../gio/gbufferedoutputstream.c:614 ../gio/gdataoutputstream.c:594
+msgid "Truncate not supported on base stream"
+msgstr "ভিত্তি স্ৰোতত Truncate ৰ সমৰ্থন নাই"
+
+#: ../gio/gcancellable.c:314 ../gio/gdbusconnection.c:1897
+#: ../gio/gdbusconnection.c:1989 ../gio/gdbusprivate.c:1421
+#: ../gio/glocalfile.c:2177 ../gio/gsimpleasyncresult.c:843
+#: ../gio/gsimpleasyncresult.c:869
+#, c-format
+msgid "Operation was cancelled"
+msgstr "কৰ্ম বাতিল কৰা হৈছে"
+
+#: ../gio/gcharsetconverter.c:262
+msgid "Invalid object, not initialized"
+msgstr "অবৈধ অবজেক্ট, আৰম্ভ কৰা হোৱা নাই"
+
+#: ../gio/gcharsetconverter.c:283 ../gio/gcharsetconverter.c:311
+msgid "Incomplete multibyte sequence in input"
+msgstr "ইনপুটত অবৈধ মাল্টিবাইট ক্ৰম"
+
+#: ../gio/gcharsetconverter.c:317 ../gio/gcharsetconverter.c:326
+msgid "Not enough space in destination"
+msgstr "গন্তব্যত পৰ্যাপ্ত স্থান নাই"
+
+#: ../gio/gcharsetconverter.c:344 ../gio/gdatainputstream.c:849
+#: ../gio/gdatainputstream.c:1259 ../glib/gconvert.c:467
+#: ../glib/gconvert.c:859 ../glib/giochannel.c:1586 ../glib/giochannel.c:1628
+#: ../glib/giochannel.c:2472 ../glib/gutf8.c:833 ../glib/gutf8.c:1284
+msgid "Invalid byte sequence in conversion input"
+msgstr "সলনি কৰাৰ ইনপুটত অৱৈধ byte ক্ৰম"
+
+#: ../gio/gcharsetconverter.c:349 ../glib/gconvert.c:475
+#: ../glib/gconvert.c:784 ../glib/giochannel.c:1593 ../glib/giochannel.c:2484
+#, c-format
+msgid "Error during conversion: %s"
+msgstr "সলনি কৰাৰ সময়ত ত্ৰুটি: %s"
+
+#: ../gio/gcharsetconverter.c:446 ../gio/gsocket.c:990
+msgid "Cancellable initialization not supported"
+msgstr "বাতিল কৰিব পৰা আৰম্ভ সমৰ্থিত নহয়"
+
+#: ../gio/gcharsetconverter.c:457 ../glib/gconvert.c:347
+#: ../glib/giochannel.c:1414
+#, c-format
+msgid "Conversion from character set '%s' to '%s' is not supported"
+msgstr "আখৰৰ সংহতি '%s' ৰ পৰা '%s' লৈ সলনি কৰাৰ সমৰ্থন নাই"
+
+#: ../gio/gcharsetconverter.c:461 ../glib/gconvert.c:351
+#, c-format
+msgid "Could not open converter from '%s' to '%s'"
+msgstr "'%s' ৰ পৰা '%s' লৈ সলনি কৰা পৰিৱৰ্তকক খোলিব নোৱাৰি"
+
+#: ../gio/gcontenttype.c:335
+#, c-format
+msgid "%s type"
+msgstr "%s ধৰণ"
+
+#: ../gio/gcontenttype-win32.c:162
+msgid "Unknown type"
+msgstr "অজ্ঞাত ধৰণ"
+
+#: ../gio/gcontenttype-win32.c:163
+#, c-format
+msgid "%s filetype"
+msgstr "%s ফাইলৰ ধৰণ"
+
+#: ../gio/gcredentials.c:264 ../gio/gcredentials.c:528
+msgid "GCredentials is not implemented on this OS"
+msgstr "GCredentials এই OS ত প্ৰণয়ন কৰা হোৱা নাই"
+
+#: ../gio/gcredentials.c:438
+msgid "There is no GCredentials support for your platform"
+msgstr "আপোনাৰ প্লেটফৰ্মৰ বাবে কোনো GCredentials সমৰ্থন নাই"
+
+#: ../gio/gcredentials.c:480
+msgid "GCredentials does not contain a process ID on this OS"
+msgstr "GCredentials ৰ এই OS ত এটা প্ৰক্ৰিয়া ID নাই"
+
+#: ../gio/gdatainputstream.c:306
+msgid "Unexpected early end-of-stream"
+msgstr "স্ৰোতৰ অপ্ৰত্যাশিত আগতীয়া অন্ত।"
+
+#: ../gio/gdbusaddress.c:150 ../gio/gdbusaddress.c:238
+#: ../gio/gdbusaddress.c:319
+#, c-format
+msgid "Unsupported key '%s' in address entry '%s'"
+msgstr "ঠিকনা প্ৰবিষ্টি '%s' ত অসমৰ্থিত কি '%s'"
+
+#: ../gio/gdbusaddress.c:177
+#, c-format
+msgid ""
+"Address '%s' is invalid (need exactly one of path, tmpdir or abstract keys)"
+msgstr "ঠিকনা '%s' অবৈধ (সঠিক এটা পথৰ প্ৰয়োজন, tmpdir অথবা এবস্ট্ৰেক্ট কিসমূহ)"
+
+#: ../gio/gdbusaddress.c:190
+#, c-format
+msgid "Meaningless key/value pair combination in address entry '%s'"
+msgstr "ঠিকনা প্ৰবিষ্টি '%s' ত মূল্যহিন কি/মান যোৰ সংযুক্তি"
+
+#: ../gio/gdbusaddress.c:253 ../gio/gdbusaddress.c:334
+#, c-format
+msgid "Error in address '%s' - the port attribute is malformed"
+msgstr "ঠিকনা '%s' ত ত্ৰুটি - পৰ্ট বৈশিষ্ট ক্ষতিগ্ৰস্থ"
+
+#: ../gio/gdbusaddress.c:264 ../gio/gdbusaddress.c:345
+#, c-format
+msgid "Error in address '%s' - the family attribute is malformed"
+msgstr "ঠিকনা '%s' ত ত্ৰুটি - পৰিয়াল বৈশিষ্ট ক্ষতিগ্ৰস্থ"
+
+#: ../gio/gdbusaddress.c:454
+#, c-format
+msgid "Address element '%s' does not contain a colon (:)"
+msgstr "ঠিকনা উপাদান '%s' এ এটা কলন (:) অন্তৰ্ভুক্ত নকৰে"
+
+#: ../gio/gdbusaddress.c:475
+#, c-format
+msgid ""
+"Key/Value pair %d, '%s', in address element '%s' does not contain an equal "
+"sign"
+msgstr ""
+"কি/মান যোৰ %d, '%s', ঠিকনা উপাদান '%s' ত এটা ইকুৱেল চিহ্ন অন্তৰ্ভুক্ত নকৰে"
+
+#: ../gio/gdbusaddress.c:489
+#, c-format
+msgid ""
+"Error unescaping key or value in Key/Value pair %d, '%s', in address element "
+"'%s'"
+msgstr ""
+"কি অথবা মান আনএক্সেইপ কৰোতে ত্ৰুটি কি/মান যোৰ %d, %s ত,ঠিকনা উপাদান '%s' ত"
+
+#: ../gio/gdbusaddress.c:567
+#, c-format
+msgid ""
+"Error in address '%s' - the unix transport requires exactly one of the keys "
+"'path' or 'abstract' to be set"
+msgstr ""
+"ঠিকনা '%s' ত ত্ৰুটি - unix পৰিৱহনৰ কেৱল এটা 'পথ' অথবা 'এবস্ট্ৰেক্ট' সংহতি "
+"কৰাৰ "
+"প্ৰয়োজন"
+
+#: ../gio/gdbusaddress.c:603
+#, c-format
+msgid "Error in address '%s' - the host attribute is missing or malformed"
+msgstr "ঠিকনা '%s' ত ত্ৰুটি - হস্ট বৈশিষ্ট সন্ধানহিন অথবা ক্ষতিগ্ৰস্থ"
+
+#: ../gio/gdbusaddress.c:617
+#, c-format
+msgid "Error in address '%s' - the port attribute is missing or malformed"
+msgstr "ঠিকনা '%s' ত ত্ৰুটি - পৰ্ট বৈশিষ্ট সন্ধানহিন অথবা ক্ষতিগ্ৰস্থ"
+
+#: ../gio/gdbusaddress.c:631
+#, c-format
+msgid "Error in address '%s' - the noncefile attribute is missing or malformed"
+msgstr "ঠিকনা '%s' ত ত্ৰুটি - noncefile বৈশিষ্ট সন্ধানহিন অথবা ক্ষতিগ্ৰস্থ"
+
+#: ../gio/gdbusaddress.c:652
+msgid "Error auto-launching: "
+msgstr "স্বচালিত-লঞ্চ কৰোতে ত্ৰুটি: "
+
+#: ../gio/gdbusaddress.c:660
+#, c-format
+msgid "Unknown or unsupported transport '%s' for address '%s'"
+msgstr "ঠিকনা '%s' ৰ বাবে অজ্ঞাত অথবা অসমৰ্থিত পৰিৱহন '%s'"
+
+#: ../gio/gdbusaddress.c:696
+#, c-format
+msgid "Error opening nonce file '%s': %s"
+msgstr "nonce file '%s' খোলোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusaddress.c:714
+#, c-format
+msgid "Error reading from nonce file '%s': %s"
+msgstr "nonce file '%s' ৰ পঢ়োতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusaddress.c:723
+#, c-format
+msgid "Error reading from nonce file '%s', expected 16 bytes, got %d"
+msgstr "nonce file '%s' ৰ পৰা পঢ়োতে ত্ৰুটি, ১৬ বাইট আশা কৰা হৈছিল, %d পোৱা গল"
+
+#: ../gio/gdbusaddress.c:741
+#, c-format
+msgid "Error writing contents of nonce file '%s' to stream:"
+msgstr "nonce file '%s' ৰ সমলসমূহ স্ৰোতলে লিখোতে ত্ৰুটি:"
+
+#: ../gio/gdbusaddress.c:960
+msgid "The given address is empty"
+msgstr "দিয়া ঠিকনা ৰিক্ত"
+
+#: ../gio/gdbusaddress.c:1030
+#, c-format
+msgid "Cannot spawn a message bus when setuid"
+msgstr "setuid অৱস্থাত এটা বাৰ্তা বাচ প্ৰজনন কৰিব নোৱাৰি"
+
+#: ../gio/gdbusaddress.c:1037
+msgid "Cannot spawn a message bus without a machine-id: "
+msgstr "এটা মেচিন-আইডিৰ অৱিহনে এটা বাৰ্তা বাচ সৃজন কৰিব নোৱাৰি: "
+
+#: ../gio/gdbusaddress.c:1079
+#, c-format
+msgid "Error spawning command line '%s': "
+msgstr "কমান্ড শাৰী '%s' সৃজন কৰোতে ত্ৰুটি: "
+
+#: ../gio/gdbusaddress.c:1296
+#, c-format
+msgid "(Type any character to close this window)\n"
+msgstr "(এই উইন্ডো বন্ধ কৰিবলে যিকোনো আখৰ টাইপ কৰক)\n"
+
+#: ../gio/gdbusaddress.c:1421
+#, c-format
+msgid "Session dbus not running, and autolaunch failed"
+msgstr "অধিবেশন dbus চলি থকা নাই, আৰু autolaunch ব্যৰ্থ হল"
+
+#: ../gio/gdbusaddress.c:1442
+#, c-format
+msgid "Cannot determine session bus address (not implemented for this OS)"
+msgstr "অধিবেশন বাচ ঠিকনা নিৰ্ধাৰণ কৰিব নোৱাৰি (এই OS ৰ বাবে প্ৰণয়ন কৰা নহয়)"
+
+#: ../gio/gdbusaddress.c:1541 ../gio/gdbusconnection.c:6908
+#, c-format
+msgid ""
+"Cannot determine bus address from DBUS_STARTER_BUS_TYPE environment variable "
+"- unknown value '%s'"
+msgstr ""
+"DBUS_STARTER_BUS_TYPE পৰিৱেশ চলকৰ পৰা বাচ ঠিকনা নিৰ্ধাৰণ কৰিব নোৱাৰি - অজ্ঞাত "
+"মান '%s'"
+
+#: ../gio/gdbusaddress.c:1550 ../gio/gdbusconnection.c:6917
+msgid ""
+"Cannot determine bus address because the DBUS_STARTER_BUS_TYPE environment "
+"variable is not set"
+msgstr ""
+"বাচ ঠিকনা নিৰ্ধাৰণ কৰিব নোৱাৰি কাৰণ DBUS_STARTER_BUS_TYPE পৰিৱেশ চলক সংহতি "
+"কৰা হোৱা নাই"
+
+#: ../gio/gdbusaddress.c:1560
+#, c-format
+msgid "Unknown bus type %d"
+msgstr "অজ্ঞাত বাচ ধৰণ %d"
+
+#: ../gio/gdbusauth.c:295
+msgid "Unexpected lack of content trying to read a line"
+msgstr "এটা শাৰী পঢ়োতে অপ্ৰত্যাশিত সমল চেষ্টাৰ অভাৱ"
+
+#: ../gio/gdbusauth.c:339
+msgid "Unexpected lack of content trying to (safely) read a line"
+msgstr "এটা শাৰী (সুৰক্ষিতভাৱে) পঢ়াৰ চেষ্টাত অপ্ৰত্যাশিত সমল চেষ্টাৰ অভাৱ"
+
+#: ../gio/gdbusauth.c:510
+#, c-format
+msgid ""
+"Exhausted all available authentication mechanisms (tried: %s) (available: %s)"
+msgstr ""
+"সকলো উপলব্ধ প্ৰমাণীকৰণ পদ্ধতি শেষ হৈছে (চেষ্টা কৰা হৈছে: %s) (উপলব্ধ: %s)"
+
+#: ../gio/gdbusauth.c:1172
+msgid "Cancelled via GDBusAuthObserver::authorize-authenticated-peer"
+msgstr "GDBusAuthObserver::authorize-authenticated-peer ৰে বাতিল কৰা হৈছে"
+
+#: ../gio/gdbusauthmechanismsha1.c:262
+#, c-format
+msgid "Error when getting information for directory '%s': %s"
+msgstr "ডাইৰেকটৰি '%s' ৰ বাবে তথ্য প্ৰাপ্ত কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:274
+#, c-format
+msgid ""
+"Permissions on directory '%s' are malformed. Expected mode 0700, got 0%o"
+msgstr ""
+"ডাইৰেকটৰি '%s' ত অনুমতিসমূহ ক্ষতিগ্ৰস্থ। আশা কৰা অৱস্থা 0700, প্ৰাপ্ত হল 0%o"
+
+#: ../gio/gdbusauthmechanismsha1.c:295
+#, c-format
+msgid "Error creating directory '%s': %s"
+msgstr "ডাইৰেকটৰি '%s' সৃষ্টি কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:378
+#, c-format
+msgid "Error opening keyring '%s' for reading: "
+msgstr "keyring '%s' ক পঢ়াৰ বাবে খোলোতে ত্ৰুটি: "
+
+#: ../gio/gdbusauthmechanismsha1.c:402 ../gio/gdbusauthmechanismsha1.c:715
+#, c-format
+msgid "Line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr "keyring ৰ শাৰী %d ক্ষতিগ্ৰস্থ '%s' ত সমল '%s' ৰ সৈতে"
+
+#: ../gio/gdbusauthmechanismsha1.c:416 ../gio/gdbusauthmechanismsha1.c:729
+#, c-format
+msgid ""
+"First token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr "keyring ৰ %d শাৰীৰ প্ৰথম টকেন ক্ষতিগ্ৰস্থ '%s' ত সমল '%s' ৰ সৈতে"
+
+#: ../gio/gdbusauthmechanismsha1.c:431 ../gio/gdbusauthmechanismsha1.c:743
+#, c-format
+msgid ""
+"Second token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr "keyring ৰ %d শাৰীৰ দ্বিতীয় টকেন ক্ষতিগ্ৰস্থ '%s' ত সমল '%s' ৰ সৈতে"
+
+#: ../gio/gdbusauthmechanismsha1.c:455
+#, c-format
+msgid "Didn't find cookie with id %d in the keyring at '%s'"
+msgstr "আইডি %d ৰ সৈতে কুকি পোৱা নগল '%s' ৰ keyring ত"
+
+#: ../gio/gdbusauthmechanismsha1.c:533
+#, c-format
+msgid "Error deleting stale lock file '%s': %s"
+msgstr "পুৰনি lock file '%s' মচি পেলাওতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:565
+#, c-format
+msgid "Error creating lock file '%s': %s"
+msgstr "lock file '%s' সৃষ্টি কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:595
+#, c-format
+msgid "Error closing (unlinked) lock file '%s': %s"
+msgstr "(অসংযুক্ত) lock file '%s' বন্ধ কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:605
+#, c-format
+msgid "Error unlinking lock file '%s': %s"
+msgstr "lock file '%s' আনসংযোগ কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:682
+#, c-format
+msgid "Error opening keyring '%s' for writing: "
+msgstr "লিখিবৰ বাবে keyring '%s' খোলিবলে ত্ৰুটি: "
+
+#: ../gio/gdbusauthmechanismsha1.c:879
+#, c-format
+msgid "(Additionally, releasing the lock for '%s' also failed: %s) "
+msgstr "(অতিৰিক্তভাৱে, '%s'  ৰ বাবে লক মুক্ত কৰাও ব্যৰ্থ হল: %s) "
+
+#: ../gio/gdbusconnection.c:609 ../gio/gdbusconnection.c:2452
+msgid "The connection is closed"
+msgstr "সংযোগ বন্ধ"
+
+#: ../gio/gdbusconnection.c:1942
+msgid "Timeout was reached"
+msgstr "সময়অন্ত প্ৰাপ্ত কৰা হৈছিল"
+
+#: ../gio/gdbusconnection.c:2574
+msgid ""
+"Unsupported flags encountered when constructing a client-side connection"
+msgstr "এটা ক্লাএন্ট দিশ সংযোগ সৃষ্টি কৰোতে অসমৰ্থিত ফ্লেগসমূহৰ সন্মুখিন হৈছে"
+
+#: ../gio/gdbusconnection.c:4146 ../gio/gdbusconnection.c:4489
+#, c-format
+msgid ""
+"No such interface 'org.freedesktop.DBus.Properties' on object at path %s"
+msgstr ""
+"পথ %s ৰ অবজেক্টত এনে কোনো আন্তঃপৃষ্ঠ 'org.freedesktop.DBus.Properties' নাই"
+
+#: ../gio/gdbusconnection.c:4288
+#, c-format
+msgid "No such property '%s'"
+msgstr "এনে কোনো বৈশিষ্ট  '%s'  নাই"
+
+#: ../gio/gdbusconnection.c:4300
+#, c-format
+msgid "Property '%s' is not readable"
+msgstr "বৈশিষ্ট '%s' পঢ়িব নোৱাৰি"
+
+#: ../gio/gdbusconnection.c:4311
+#, c-format
+msgid "Property '%s' is not writable"
+msgstr "বৈশিষ্ট '%s' লিখিব নোৱাৰি"
+
+#: ../gio/gdbusconnection.c:4331
+#, c-format
+msgid "Error setting property '%s': Expected type '%s' but got '%s'"
+msgstr ""
+"বৈশিষ্ট '%s' সংহতি কৰোতে ত্ৰুটি: আশা কৰা হৈছিল '%s' কিন্তু পোৱা গল '%s'"
+
+#: ../gio/gdbusconnection.c:4432 ../gio/gdbusconnection.c:6351
+#, c-format
+msgid "No such interface '%s'"
+msgstr "এনে কোনো আন্তঃপৃষ্ঠ '%s' নাই"
+
+#: ../gio/gdbusconnection.c:4639
+msgid "No such interface"
+msgstr "এনে কোনো আন্তঃপৃষ্ঠ নাই"
+
+#: ../gio/gdbusconnection.c:4857 ../gio/gdbusconnection.c:6857
+#, c-format
+msgid "No such interface '%s' on object at path %s"
+msgstr "পথ %s ত অবজেক্টত এনে কোনো আন্তঃপৃষ্ঠ '%s' নাই"
+
+#: ../gio/gdbusconnection.c:4954
+#, c-format
+msgid "No such method '%s'"
+msgstr "এনে কোনো পদ্ধতি '%s' নাই"
+
+#: ../gio/gdbusconnection.c:4985
+#, c-format
+msgid "Type of message, '%s', does not match expected type '%s'"
+msgstr "বাৰ্তাৰ ধৰণ, '%s', প্ৰত্যাশিত ধৰণ '%s' ৰ সৈতে মিল নাখায়"
+
+#: ../gio/gdbusconnection.c:5183
+#, c-format
+msgid "An object is already exported for the interface %s at %s"
+msgstr "%s ত আন্তঃপৃষ্ঠ %s ৰ বাবে ইতিমধ্যে এটা অবজেক্ট এক্সপৰ্ট কৰা হৈছে"
+
+#: ../gio/gdbusconnection.c:5381
+#, c-format
+msgid "Method '%s' returned type '%s', but expected '%s'"
+msgstr "পদ্ধতি '%s' এ ধৰণ '%s' ঘুৰাই দিছে, কিন্তু আশা কৰা হৈছিল '%s'"
+
+#: ../gio/gdbusconnection.c:6462
+#, c-format
+msgid "Method '%s' on interface '%s' with signature '%s' does not exist"
+msgstr "আন্তঃপৃষ্ঠ '%s' ত স্বাক্ষৰ '%s' ৰ সৈতে পদ্ধতি '%s' অস্তিত্ববান নহয়"
+
+#: ../gio/gdbusconnection.c:6581
+#, c-format
+msgid "A subtree is already exported for %s"
+msgstr "%s ৰ বাবে এটা চাবট্ৰি ইতিমধ্যে এক্সপৰ্ট কৰা হৈছে"
+
+#: ../gio/gdbusmessage.c:1271
+msgid "type is INVALID"
+msgstr "ধৰণ INVALID"
+
+#: ../gio/gdbusmessage.c:1282
+msgid "METHOD_CALL message: PATH or MEMBER header field is missing"
+msgstr "METHOD_CALL বাৰ্তা: PATH অথবা MEMBER হেডাৰ ক্ষেত্ৰ সন্ধানহিন"
+
+#: ../gio/gdbusmessage.c:1293
+msgid "METHOD_RETURN message: REPLY_SERIAL header field is missing"
+msgstr "METHOD_RETURN বাৰ্তা: REPLY_SERIAL হেডাৰ ক্ষেত্ৰ সন্ধানহিন"
+
+#: ../gio/gdbusmessage.c:1305
+msgid "ERROR message: REPLY_SERIAL or ERROR_NAME header field is missing"
+msgstr "ERROR বাৰ্তা: REPLY_SERIAL অথবা ERROR_NAME হেডাৰ ক্ষেত্ৰ সন্ধানহিন"
+
+#: ../gio/gdbusmessage.c:1318
+msgid "SIGNAL message: PATH, INTERFACE or MEMBER header field is missing"
+msgstr "SIGNAL বাৰ্তা: PATH, INTERFACE অথবা MEMBER হেডাৰ ক্ষেত্ৰ সন্ধানহিন"
+
+#: ../gio/gdbusmessage.c:1326
+msgid ""
+"SIGNAL message: The PATH header field is using the reserved value /org/"
+"freedesktop/DBus/Local"
+msgstr ""
+"SIGNAL বাৰ্তা: PATH হেডাৰ ক্ষেত্ৰয় সংৰক্ষীত মান /org/freedesktop/DBus/Local "
+"ব্যৱহাৰ কৰি আছে"
+
+#: ../gio/gdbusmessage.c:1334
+msgid ""
+"SIGNAL message: The INTERFACE header field is using the reserved value org."
+"freedesktop.DBus.Local"
+msgstr ""
+"SIGNAL বাৰ্তা: INTERFACE হেডাৰ ক্ষেত্ৰয় সংৰক্ষীত মান "
+"org.freedesktop.DBus.Local "
+"ব্যৱহাৰ কৰি আছে"
+
+#: ../gio/gdbusmessage.c:1383
+#, c-format
+msgid "Wanted to read %lu byte but only got %lu"
+msgid_plural "Wanted to read %lu bytes but only got %lu"
+msgstr[0] "%lu বাইট পঢ়িবৰ ইচ্ছা আছিল কিন্তু %lu প্ৰাপ্ত হল"
+msgstr[1] "%lu বাইট পঢ়িবৰ ইচ্ছা আছিল কিন্তু %lu প্ৰাপ্ত হল"
+
+#: ../gio/gdbusmessage.c:1398
+#, c-format
+msgid "Expected NUL byte after the string '%s' but found byte %d"
+msgstr "স্ট্ৰিং '%s' ৰ পিছত NUL বাইট আশা কৰা হৈছিল কিন্তু বাইট %d পোৱা গল"
+
+#: ../gio/gdbusmessage.c:1417
+#, c-format
+msgid ""
+"Expected valid UTF-8 string but found invalid bytes at byte offset %d "
+"(length of string is %d). The valid UTF-8 string up until that point was '%s'"
+msgstr ""
+"বৈধ UTF-8 স্ট্ৰিং আশা কৰা হৈছিল কিন্তু বাইট অফচেট %d ত অবৈধ বাইটসমূহ পোৱা গল "
+"(স্ট্ৰিংৰ দৈৰ্ঘ %d)। সেই বিন্দু লৈকে বৈধ UTF-8 স্ট্ৰিং '%s' আছিল"
+
+#: ../gio/gdbusmessage.c:1619
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus object path"
+msgstr "বিশ্লেষণ কৰা মান '%s' এটা বৈধ D-Bus অবজেক্ট পথ নহয়"
+
+#: ../gio/gdbusmessage.c:1643
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature"
+msgstr "বিশ্লেষণ কৰা মান '%s' এটা বৈধ D-Bus স্বাক্ষৰ নহয়"
+
+#: ../gio/gdbusmessage.c:1698
+#, c-format
+msgid ""
+"Encountered array of length %u byte. Maximum length is 2<<26 bytes (64 MiB)."
+msgid_plural ""
+"Encountered array of length %u bytes. Maximum length is 2<<26 bytes (64 MiB)."
+msgstr[0] ""
+"%u বাইট দৈৰ্ঘৰ এৰে সন্মুখিন হল। সৰ্বাধিক দৈৰ্ঘ হল 2<<26 bytes (64 MiB)।"
+msgstr[1] ""
+"%u বাইটসমূহ দৈৰ্ঘৰ এৰে সন্মুখিন হল। সৰ্বাধিক দৈৰ্ঘ হল 2<<26 bytes (64 MiB)।"
+
+#: ../gio/gdbusmessage.c:1851
+#, c-format
+msgid "Parsed value '%s' for variant is not a valid D-Bus signature"
+msgstr "অপৰৰ বাবে বিশ্লেষণ কৰা মান '%s' এটা বৈধ D-Bus স্বাক্ষৰ নহয়"
+
+#: ../gio/gdbusmessage.c:1875
+#, c-format
+msgid ""
+"Error deserializing GVariant with type string '%s' from the D-Bus wire format"
+msgstr ""
+"D-Bus তাঁৰ বিন্যাসৰ পৰা ধৰণ স্ট্ৰিং '%s' ৰ সৈতে GVariant ডিচিৰিএলাইজ কৰোতে "
+"ত্ৰুটি"
+
+#: ../gio/gdbusmessage.c:2062
+#, c-format
+msgid ""
+"Invalid endianness value. Expected 0x6c ('l') or 0x42 ('B') but found value "
+"0x%02x"
+msgstr ""
+"অবৈধ endianness মান। 0x6c ('l') অথবা 0x42 ('B') আশা কৰা হৈছিল কিন্তু মান 0x"
+"%02x পোৱা গল"
+
+#: ../gio/gdbusmessage.c:2075
+#, c-format
+msgid "Invalid major protocol version. Expected 1 but found %d"
+msgstr "অবৈধ মূখ্য প্ৰটোকল সংস্কৰণ। আশা কৰা হৈছিল 1 কিন্তু পোৱা গল %d"
+
+#: ../gio/gdbusmessage.c:2131
+#, c-format
+msgid "Signature header with signature '%s' found but message body is empty"
+msgstr "স্বাক্ষৰ '%s' ৰ সৈতে স্বাক্ষৰ হেডাৰ পোৱা গল কিন্তু বাৰ্তা অংশ ৰিক্ত"
+
+#: ../gio/gdbusmessage.c:2145
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature (for body)"
+msgstr "বিশ্লেষণ কৰা মান '%s' এটা বৈধ D-Bus স্বাক্ষৰ (দেহৰ বাবে)"
+
+#: ../gio/gdbusmessage.c:2175
+#, c-format
+msgid "No signature header in message but the message body is %u byte"
+msgid_plural "No signature header in message but the message body is %u bytes"
+msgstr[0] "বাৰ্তাত কোনো স্বাক্ষৰ হেডাৰ নাই কিন্তু বাৰ্তা দেহ হল %u বাইট"
+msgstr[1] "বাৰ্তাত কোনো স্বাক্ষৰ হেডাৰ নাই কিন্তু বাৰ্তা দেহ হল %u বাইটসমূহ"
+
+#: ../gio/gdbusmessage.c:2185
+msgid "Cannot deserialize message: "
+msgstr "বাৰ্তা deserialize কৰিব নোৱাৰি: "
+
+#: ../gio/gdbusmessage.c:2506
+#, c-format
+msgid ""
+"Error serializing GVariant with type string '%s' to the D-Bus wire format"
+msgstr ""
+"D-Bus তাঁৰ বিন্যাসৰ লে ধৰণ স্ট্ৰিং '%s' ৰ সৈতে GVariant চিৰিএলাইজ কৰোতে ত্ৰুটি"
+
+#: ../gio/gdbusmessage.c:2643
+#, c-format
+msgid ""
+"Message has %d file descriptors but the header field indicates %d file "
+"descriptors"
+msgstr ""
+"বাৰ্তাৰ %d ফাইল বিৱৰকসমূহ আছে কিন্তু হেডাৰ ক্ষেত্ৰয় %d ফাইল বিৱৰকসমূহৰ সূচনা "
+"দিয়ে"
+
+#: ../gio/gdbusmessage.c:2651
+msgid "Cannot serialize message: "
+msgstr "বাৰ্তা চিৰিয়েলাইজ কৰিব নোৱাৰি: "
+
+#: ../gio/gdbusmessage.c:2695
+#, c-format
+msgid "Message body has signature '%s' but there is no signature header"
+msgstr "বাৰ্তা দেহৰ স্বাক্ষৰ '%s' আছে কিন্তু কোনো স্বাক্ষৰ হেডাৰ নাই"
+
+#: ../gio/gdbusmessage.c:2705
+#, c-format
+msgid ""
+"Message body has type signature '%s' but signature in the header field is "
+"'%s'"
+msgstr "বাৰ্তা দেহৰ ধৰণ স্বাক্ষৰ '%s' আছে কিন্তু হেডাৰ ক্ষেত্ৰত স্বাক্ষৰ '%s'"
+
+#: ../gio/gdbusmessage.c:2721
+#, c-format
+msgid "Message body is empty but signature in the header field is '(%s)'"
+msgstr "বাৰ্তা দেহ ৰিক্ত কিন্তু হেডাৰ ক্ষেত্ৰত স্বাক্ষৰ হল '(%s)'"
+
+#: ../gio/gdbusmessage.c:3271
+#, c-format
+msgid "Error return with body of type '%s'"
+msgstr "'%s'  ধৰণৰ দেহৰ সৈতে ত্ৰুটি ঘুৰাই দিয়া হৈছে"
+
+#: ../gio/gdbusmessage.c:3279
+msgid "Error return with empty body"
+msgstr "ৰিক্ত দেহৰ সৈতে ত্ৰুটি ঘুৰাই দিয়া হৈছে"
+
+#: ../gio/gdbusprivate.c:2069
+#, c-format
+msgid "Unable to get Hardware profile: %s"
+msgstr "হাৰ্ডৱেৰ আলেখ্য প্ৰাপ্ত কৰিবলে অক্ষম: %s"
+
+#: ../gio/gdbusprivate.c:2114
+msgid "Unable to load /var/lib/dbus/machine-id or /etc/machine-id: "
+msgstr "/var/lib/dbus/machine-id অথবা /etc/machine-id ল'ড কৰিবলে অক্ষম: "
+
+#: ../gio/gdbusproxy.c:1638
+#, c-format
+msgid "Error calling StartServiceByName for %s: "
+msgstr "%s ৰ বাবে StartServiceByName কল কৰোতে ত্ৰুটি: "
+
+#: ../gio/gdbusproxy.c:1661
+#, c-format
+msgid "Unexpected reply %d from StartServiceByName(\"%s\") method"
+msgstr "অপ্ৰত্যাশিত উত্তৰ %d StartServiceByName(\"%s\") পদ্ধতিৰ পৰা"
+
+#: ../gio/gdbusproxy.c:2761 ../gio/gdbusproxy.c:2898
+msgid ""
+"Cannot invoke method; proxy is for a well-known name without an owner and "
+"proxy was constructed with the G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START flag"
+msgstr ""
+"পদ্ধতি আৱাহন কৰিব নোৱাৰি; প্ৰক্সি এটা জনপ্ৰিয় কিন্তু গৰাকী নথকা নামৰ বাবে আৰু "
+"প্ৰক্সি "
+"G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START ৰ সৈতে সৃষ্টি কৰা হৈছিল"
+
+#: ../gio/gdbusserver.c:709
+msgid "Abstract name space not supported"
+msgstr "এবস্ট্ৰেক্ট নাম-স্পেইচ সমৰ্থিত নহয়"
+
+#: ../gio/gdbusserver.c:796
+msgid "Cannot specify nonce file when creating a server"
+msgstr "এটা চাৰ্ভাৰ সৃষ্টি কৰোতে nonce file ধাৰ্য্য কৰিব নোৱাৰি"
+
+#: ../gio/gdbusserver.c:874
+#, c-format
+msgid "Error writing nonce file at '%s': %s"
+msgstr "'%s' ত nonce file লিখোতে ত্ৰুটি: %s"
+
+#: ../gio/gdbusserver.c:1043
+#, c-format
+msgid "The string '%s' is not a valid D-Bus GUID"
+msgstr "স্ট্ৰিং '%s' এটা বৈধ D-Bus GUID নহয়"
+
+#: ../gio/gdbusserver.c:1083
+#, c-format
+msgid "Cannot listen on unsupported transport '%s'"
+msgstr "অসমৰ্থিত পৰিৱহন '%s' ত শুনিব নোৱাৰি"
+
+#: ../gio/gdbus-tool.c:92
+msgid "COMMAND"
+msgstr "COMMAND"
+
+#: ../gio/gdbus-tool.c:97
+#, c-format
+msgid ""
+"Commands:\n"
+"  help         Shows this information\n"
+"  introspect   Introspect a remote object\n"
+"  monitor      Monitor a remote object\n"
+"  call         Invoke a method on a remote object\n"
+"  emit         Emit a signal\n"
+"\n"
+"Use \"%s COMMAND --help\" to get help on each command.\n"
+msgstr ""
+"কমান্ডসমূহ:\n"
+"  help         এই তথ্য দেখুৱায়\n"
+"  introspect   এটা দূৰৱৰ্তী অবজেক্ট নিৰীক্ষণ কৰক\n"
+"  monitor      এটা দূৰৱৰ্তী অবজেক্ট মনিটৰ কৰক\n"
+"  call         এটা দূৰৱৰ্তী অবজেক্টত এটা পদ্ধতি আৱাহন কৰক\n"
+"  emit         এটা সংকেত এৰক\n"
+"\n"
+"প্ৰতিটো কমান্ডত সহায়ৰ বাবে \"%s COMMAND --help\"  ব্যৱহাৰ কৰক।\n"
+
+#: ../gio/gdbus-tool.c:166 ../gio/gdbus-tool.c:222 ../gio/gdbus-tool.c:294
+#: ../gio/gdbus-tool.c:318 ../gio/gdbus-tool.c:701 ../gio/gdbus-tool.c:1022
+#: ../gio/gdbus-tool.c:1456
+#, c-format
+msgid "Error: %s\n"
+msgstr "ত্ৰুটি: %s\n"
+
+#: ../gio/gdbus-tool.c:177 ../gio/gdbus-tool.c:235 ../gio/gdbus-tool.c:1472
+#, c-format
+msgid "Error parsing introspection XML: %s\n"
+msgstr "নিৰীক্ষণ XML বিশ্লেষণ কৰোতে ত্ৰুটি: %s\n"
+
+#: ../gio/gdbus-tool.c:352
+msgid "Connect to the system bus"
+msgstr "চিস্টেম বাচৰ সৈতে সংযোগ কৰক"
+
+#: ../gio/gdbus-tool.c:353
+msgid "Connect to the session bus"
+msgstr "অধিবেশন বাচৰ সৈতে সংযোগ কৰক"
+
+#: ../gio/gdbus-tool.c:354
+msgid "Connect to given D-Bus address"
+msgstr "প্ৰদান কৰা D-Bus ঠিকনাৰ সৈতে সংযোগ কৰক"
+
+#: ../gio/gdbus-tool.c:364
+msgid "Connection Endpoint Options:"
+msgstr "সংযোগ অন্তবিন্দু বিকল্পসমূহ:"
+
+#: ../gio/gdbus-tool.c:365
+msgid "Options specifying the connection endpoint"
+msgstr "সংযোগ অন্তবিন্দু ধাৰ্য্য কৰা বিকল্পসমূহ"
+
+#: ../gio/gdbus-tool.c:387
+#, c-format
+msgid "No connection endpoint specified"
+msgstr "কোনো সংযোগ অন্তবিন্দু ধাৰ্য্য কৰা হোৱা নাই"
+
+#: ../gio/gdbus-tool.c:397
+#, c-format
+msgid "Multiple connection endpoints specified"
+msgstr "বহু সংযোগ অন্তবিন্দু ধাৰ্য্য কৰা হৈছে"
+
+#: ../gio/gdbus-tool.c:467
+#, c-format
+msgid ""
+"Warning: According to introspection data, interface '%s' does not exist\n"
+msgstr "সতৰ্কবাৰ্তা: নিৰীক্ষণ তথ্যৰ মতে, আন্তঃপৃষ্ঠ '%s' ৰ অস্তিত্ব নাই\n"
+
+#: ../gio/gdbus-tool.c:476
+#, c-format
+msgid ""
+"Warning: According to introspection data, method '%s' does not exist on "
+"interface '%s'\n"
+msgstr ""
+"সতৰ্কবাৰ্তা: নিৰীক্ষণ তথ্যৰ মতে, আন্তঃপৃষ্ঠ '%s' ত পদ্ধতি '%s' ৰ অস্তিত্ব "
+"নাই\n"
+
+#: ../gio/gdbus-tool.c:538
+msgid "Optional destination for signal (unique name)"
+msgstr "সংকেতৰ বাবে বৈকল্পিক গন্তব্য (অবিকল্প নাম)"
+
+#: ../gio/gdbus-tool.c:539
+msgid "Object path to emit signal on"
+msgstr "সংকেত এৰিবলে অবজেক্ট পথ"
+
+#: ../gio/gdbus-tool.c:540
+msgid "Signal and interface name"
+msgstr "সংকেত আৰু আন্তঃপৃষ্ঠ নাম"
+
+#: ../gio/gdbus-tool.c:572
+msgid "Emit a signal."
+msgstr "এটা সংকেত এৰক।"
+
+#: ../gio/gdbus-tool.c:606 ../gio/gdbus-tool.c:832 ../gio/gdbus-tool.c:1562
+#: ../gio/gdbus-tool.c:1794
+#, c-format
+msgid "Error connecting: %s\n"
+msgstr "সংযোগ কৰোতে ত্ৰুটি: %s\n"
+
+#: ../gio/gdbus-tool.c:618
+#, c-format
+msgid "Error: object path not specified.\n"
+msgstr "ত্ৰুটি: অবজেক্ট পথ ধাৰ্য্য কৰা হোৱা নাই।\n"
+
+#: ../gio/gdbus-tool.c:623 ../gio/gdbus-tool.c:893 ../gio/gdbus-tool.c:1620
+#: ../gio/gdbus-tool.c:1853
+#, c-format
+msgid "Error: %s is not a valid object path\n"
+msgstr "ত্ৰুটি: %s এটা বৈধ অবজেক্ট পথ নহয়\n"
+
+#: ../gio/gdbus-tool.c:629
+#, c-format
+msgid "Error: signal not specified.\n"
+msgstr "ত্ৰুটি: সংকেত ধাৰ্য্য কৰা হোৱা নাই।\n"
+
+#: ../gio/gdbus-tool.c:636
+#, c-format
+msgid "Error: signal must be the fully-qualified name.\n"
+msgstr "ত্ৰুটি: সংকেত সম্পূৰ্ণভাৱে-অৰ্হতাসম্পন্ন নাম হব লাগিব।\n"
+
+#: ../gio/gdbus-tool.c:644
+#, c-format
+msgid "Error: %s is not a valid interface name\n"
+msgstr "ত্ৰুটি: %s এটা বৈধ আন্তঃপৃষ্ঠ নাম নহয়\n"
+
+#: ../gio/gdbus-tool.c:650
+#, c-format
+msgid "Error: %s is not a valid member name\n"
+msgstr "ত্ৰুটি: %s এটা বৈধ সদস্য নাম নহয়\n"
+
+#: ../gio/gdbus-tool.c:656
+#, c-format
+msgid "Error: %s is not a valid unique bus name.\n"
+msgstr "ত্ৰুটি: %s এটা বৈধ অবিকল্প বাচ নাম নহয়।\n"
+
+#: ../gio/gdbus-tool.c:679 ../gio/gdbus-tool.c:992
+#, c-format
+msgid "Error parsing parameter %d: %s\n"
+msgstr "প্ৰাচল %d বিশ্লেষণ কৰোতে ত্ৰুটি: %s\n"
+
+#: ../gio/gdbus-tool.c:708
+#, c-format
+msgid "Error flushing connection: %s\n"
+msgstr "সংযোগ পৰিষ্কাৰ কৰোতে ত্ৰুটি: %s\n"
+
+#: ../gio/gdbus-tool.c:735
+msgid "Destination name to invoke method on"
+msgstr "পদ্ধতি আৱাহন কৰিবলে গন্তব্য নাম"
+
+#: ../gio/gdbus-tool.c:736
+msgid "Object path to invoke method on"
+msgstr "পদ্ধতি আৱাহন কৰিবলে অবজেক্ট পথ"
+
+#: ../gio/gdbus-tool.c:737
+msgid "Method and interface name"
+msgstr "পদ্ধতি আৰু আন্তঃপৃষ্ঠ নাম"
+
+#: ../gio/gdbus-tool.c:738
+msgid "Timeout in seconds"
+msgstr "ছেকেণ্ডসমূহত সময়অন্ত"
+
+#: ../gio/gdbus-tool.c:777
+msgid "Invoke a method on a remote object."
+msgstr "এটা দূৰৱৰ্তী অবজেক্টত এটা পদ্ধতি আৱাহন কৰক।"
+
+#: ../gio/gdbus-tool.c:852 ../gio/gdbus-tool.c:1581 ../gio/gdbus-tool.c:1813
+#, c-format
+msgid "Error: Destination is not specified\n"
+msgstr "ত্ৰুটি: গন্তব্য ধাৰ্য্য কৰা হোৱা নাই\n"
+
+#: ../gio/gdbus-tool.c:873 ../gio/gdbus-tool.c:1600
+#, c-format
+msgid "Error: Object path is not specified\n"
+msgstr "ত্ৰুটি: অবজেক্ট পথ ধাৰ্য্য কৰা হোৱা নাই\n"
+
+#: ../gio/gdbus-tool.c:908
+#, c-format
+msgid "Error: Method name is not specified\n"
+msgstr "ত্ৰুটি: পদ্ধতি নাম ধাৰ্য্য কৰা হোৱা নাই\n"
+
+#: ../gio/gdbus-tool.c:919
+#, c-format
+msgid "Error: Method name '%s' is invalid\n"
+msgstr "ত্ৰুটি: পদ্ধতি নাম '%s' অবৈধ\n"
+
+#: ../gio/gdbus-tool.c:984
+#, c-format
+msgid "Error parsing parameter %d of type '%s': %s\n"
+msgstr "প্ৰাচল %d বিশ্লেষণ কৰোতে ত্ৰুটি ধৰণ '%s': %s\n"
+
+#: ../gio/gdbus-tool.c:1419
+msgid "Destination name to introspect"
+msgstr "নিৰীক্ষণ কৰিবলে গন্তব্য নাম"
+
+#: ../gio/gdbus-tool.c:1420
+msgid "Object path to introspect"
+msgstr "নিৰীক্ষণ কৰিবলে অবজেক্ট পথ"
+
+#: ../gio/gdbus-tool.c:1421
+msgid "Print XML"
+msgstr "XML প্ৰিন্ট কৰক"
+
+#: ../gio/gdbus-tool.c:1422
+msgid "Introspect children"
+msgstr "সন্তান নিৰীক্ষণ কৰক"
+
+#: ../gio/gdbus-tool.c:1423
+msgid "Only print properties"
+msgstr "কেৱল বৈশিষ্টসমূহ প্ৰিন্ট কৰক"
+
+#: ../gio/gdbus-tool.c:1514
+msgid "Introspect a remote object."
+msgstr "এটা দূৰৱৰ্তী অবজেক্ট নিৰীক্ষণ কৰক।"
+
+#: ../gio/gdbus-tool.c:1712
+msgid "Destination name to monitor"
+msgstr "মনিটৰলে গন্তব্য নাম"
+
+#: ../gio/gdbus-tool.c:1713
+msgid "Object path to monitor"
+msgstr "মনিটৰলে অবজেক্ট পথ"
+
+#: ../gio/gdbus-tool.c:1746
+msgid "Monitor a remote object."
+msgstr "এটা দূৰৱৰ্তী অবজেক্ট মনিটৰ কৰক।"
+
+#: ../gio/gdesktopappinfo.c:660 ../gio/gdesktopappinfo.c:3793
+#: ../gio/gwin32appinfo.c:221
+msgid "Unnamed"
+msgstr "নামবিহীন"
+
+#: ../gio/gdesktopappinfo.c:1074
+msgid "Desktop file didn't specify Exec field"
+msgstr "ডেস্কটপ ফাইলত Exec ক্ষেত্ৰ নিৰ্ধাৰিত নহয়"
+
+#: ../gio/gdesktopappinfo.c:1359
+msgid "Unable to find terminal required for application"
+msgstr "এপ্লিকেচনৰ বাবে আৱশ্যক টাৰ্মিনেল পোৱা নাযায়"
+
+#: ../gio/gdesktopappinfo.c:1772
+#, c-format
+msgid "Can't create user application configuration folder %s: %s"
+msgstr "ব্যৱহাৰকাৰী এপ্লিকেচনৰ বিন্যাস ফোল্ডাৰ %s সৃষ্টি কৰিবলৈ ব্যৰ্থ: %s"
+
+#: ../gio/gdesktopappinfo.c:1776
+#, c-format
+msgid "Can't create user MIME configuration folder %s: %s"
+msgstr "ব্যৱহাৰকাৰী MIME বিন্যাস ফোল্ডাৰ %s সৃষ্টি কৰিবলৈ ব্যৰ্থ: %s"
+
+#: ../gio/gdesktopappinfo.c:2016 ../gio/gdesktopappinfo.c:2040
+msgid "Application information lacks an identifier"
+msgstr "এপ্লিকেচন তথ্যৰ এটা পৰিচয়কৰ প্ৰয়োজন"
+
+#: ../gio/gdesktopappinfo.c:2272
+#, c-format
+msgid "Can't create user desktop file %s"
+msgstr "ব্যৱহাৰকাৰী ডেস্কটপ ফাইল %s সৃষ্টি কৰিবলৈ ব্যৰ্থ"
+
+#: ../gio/gdesktopappinfo.c:2396
+#, c-format
+msgid "Custom definition for %s"
+msgstr "%s ৰ বাবে স্বনিৰ্ধাৰত ব্যাখ্যা"
+
+#: ../gio/gdrive.c:394
+msgid "drive doesn't implement eject"
+msgstr "ড্ৰাইভ দ্বাৰা ইজেক্ট কৰ্ম সঞ্চালিত নহয়"
+
+#. Translators: This is an error
+#. * message for drive objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gdrive.c:472
+msgid "drive doesn't implement eject or eject_with_operation"
+msgstr "ড্ৰাইভ দ্বাৰা ইজেক্ট বা eject_with_operation কৰ্ম সঞ্চালিত নহয়"
+
+#: ../gio/gdrive.c:548
+msgid "drive doesn't implement polling for media"
+msgstr "ড্ৰাইভত মিডিয়াৰ বাবে প'ল কৰাৰ কাৰ্যক্ষমতা নাই"
+
+#: ../gio/gdrive.c:753
+msgid "drive doesn't implement start"
+msgstr "ড্ৰাইভ দ্বাৰা আৰম্ভ কৰ্ম সঞ্চালিত নহয়"
+
+#: ../gio/gdrive.c:855
+msgid "drive doesn't implement stop"
+msgstr "ড্ৰাইভ দ্বাৰা বন্ধ কৰ্ম সঞ্চালিত নহয়"
+
+#: ../gio/gdummytlsbackend.c:168 ../gio/gdummytlsbackend.c:288
+#: ../gio/gdummytlsbackend.c:378
+msgid "TLS support is not available"
+msgstr "TLS সমৰ্থন উপলব্ধ নহয়"
+
+#: ../gio/gemblem.c:324
+#, c-format
+msgid "Can't handle version %d of GEmblem encoding"
+msgstr "GEmblem encoding ৰ %d সংস্কৰণ পৰিচালন কৰিব নোৱাৰি"
+
+#: ../gio/gemblem.c:334
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblem encoding"
+msgstr "GEmblem encoding ত ট'কেনৰ ত্ৰুটি সংখ্যা (%d)"
+
+#: ../gio/gemblemedicon.c:364
+#, c-format
+msgid "Can't handle version %d of GEmblemedIcon encoding"
+msgstr "GEmblemedIcon encoding ৰ %d সংস্কৰণ পৰিচালন কৰিব নোৱাৰি"
+
+#: ../gio/gemblemedicon.c:374
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblemedIcon encoding"
+msgstr "GEmblemedIcon encoding ত ট'কেনৰ ত্ৰুটি সংখ্যা (%d)"
+
+#: ../gio/gemblemedicon.c:397
+msgid "Expected a GEmblem for GEmblemedIcon"
+msgstr "GEmblemedIcon ৰ কাৰণে এটা GEmblem প্ৰত্যাশিত"
+
+#: ../gio/gfile.c:938 ../gio/gfile.c:1177 ../gio/gfile.c:1316
+#: ../gio/gfile.c:1556 ../gio/gfile.c:1611 ../gio/gfile.c:1669
+#: ../gio/gfile.c:1753 ../gio/gfile.c:1810 ../gio/gfile.c:1874
+#: ../gio/gfile.c:1929 ../gio/gfile.c:3559 ../gio/gfile.c:3614
+#: ../gio/gfile.c:3822 ../gio/gfile.c:3864 ../gio/gfile.c:4330
+#: ../gio/gfile.c:4742 ../gio/gfile.c:4827 ../gio/gfile.c:4917
+#: ../gio/gfile.c:5014 ../gio/gfile.c:5101 ../gio/gfile.c:5202
+#: ../gio/gfile.c:7381 ../gio/gfile.c:7471 ../gio/gfile.c:7555
+#: ../gio/win32/gwinhttpfile.c:439
+msgid "Operation not supported"
+msgstr "কাৰ্য্য সমৰ্থিত নহয়"
+
+#. Translators: This is an error message when
+#. * trying to find the enclosing (user visible)
+#. * mount of a file, but none exists.
+#.
+#. Translators: This is an error message when trying to
+#. * find the enclosing (user visible) mount of a file, but
+#. * none exists.
+#. Translators: This is an error message when trying to find
+#. * the enclosing (user visible) mount of a file, but none
+#. * exists.
+#: ../gio/gfile.c:1440 ../gio/glocalfile.c:1101 ../gio/glocalfile.c:1112
+#: ../gio/glocalfile.c:1125
+msgid "Containing mount does not exist"
+msgstr "ধাৰণকাৰী মাউন্ট উপস্থিত নাই"
+
+#: ../gio/gfile.c:2495 ../gio/glocalfile.c:2333
+msgid "Can't copy over directory"
+msgstr "ডাইৰেকটৰিৰ ওপৰত কপি কৰা নাযাব"
+
+#: ../gio/gfile.c:2555
+msgid "Can't copy directory over directory"
+msgstr "ডাইৰেকটৰিৰ ওপৰত ডাইৰেকটৰি কপি কৰা নাযায়"
+
+#: ../gio/gfile.c:2563 ../gio/glocalfile.c:2342
+msgid "Target file exists"
+msgstr "লক্ষ্য ফাইল উপস্থিত আছে"
+
+#: ../gio/gfile.c:2582
+msgid "Can't recursively copy directory"
+msgstr "ৰিকাৰ্ছিভ ভাবে ডাইৰেকটৰি কপি কৰা নাযাব"
+
+#: ../gio/gfile.c:2864
+msgid "Splice not supported"
+msgstr "Splice সমৰ্থিত নহয়"
+
+#: ../gio/gfile.c:2868
+#, c-format
+msgid "Error splicing file: %s"
+msgstr "ফাইল splice কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gfile.c:2999
+msgid "Copy (reflink/clone) between mounts is not supported"
+msgstr "মাউন্টসমূহৰ মাজত কপি (ৰিফ্লিঙ্ক/ক্লৌন) সমৰ্থিত নহয়"
+
+#: ../gio/gfile.c:3003
+msgid "Copy (reflink/clone) is not supported or invalid"
+msgstr "কপি (ৰিফ্লিঙ্ক/ক্লৌন) সমৰ্থিত নহয় অথবা অবৈধ"
+
+#: ../gio/gfile.c:3008
+msgid "Copy (reflink/clone) is not supported or didn't work"
+msgstr "কপি (ৰিফ্লিৃঙ্ক/ক্লৌন) সমৰ্থিত নহয় অথবা কাম নকৰিলে"
+
+#: ../gio/gfile.c:3071
+msgid "Can't copy special file"
+msgstr "বিশেষ ফাইল কপি কৰিব নোৱাৰি"
+
+#: ../gio/gfile.c:3812
+msgid "Invalid symlink value given"
+msgstr "অৱৈধ চিমসংযোগ মান উপলব্ধ কৰা হৈছে"
+
+#: ../gio/gfile.c:3974
+msgid "Trash not supported"
+msgstr "আবৰ্জনা সমৰ্থিত নহয়"
+
+#: ../gio/gfile.c:4087
+#, c-format
+msgid "File names cannot contain '%c'"
+msgstr "ফাইলৰ নামত '%c' ব্যৱহাৰ কৰা নাযাব"
+
+#: ../gio/gfile.c:6504 ../gio/gvolume.c:365
+msgid "volume doesn't implement mount"
+msgstr "ভলিউম দ্বাৰা mount প্ৰয়োগ কৰা নহয়"
+
+#: ../gio/gfile.c:6613
+msgid "No application is registered as handling this file"
+msgstr "চিহ্নিত ফাইল ব্যৱস্থাপনাৰ উদ্দেশ্যে কোনো এপ্লিকেচন নিবন্ধিত নহয়"
+
+#: ../gio/gfileenumerator.c:213
+msgid "Enumerator is closed"
+msgstr "Enumerator বন্ধ"
+
+#: ../gio/gfileenumerator.c:220 ../gio/gfileenumerator.c:279
+#: ../gio/gfileenumerator.c:379 ../gio/gfileenumerator.c:479
+msgid "File enumerator has outstanding operation"
+msgstr "ফাইল enumerator ত অসমাপ্ত কৰ্ম উপস্থিত"
+
+#: ../gio/gfileenumerator.c:370 ../gio/gfileenumerator.c:470
+msgid "File enumerator is already closed"
+msgstr "ফাইল enumerator ৰ বন্ধ"
+
+#: ../gio/gfileicon.c:237
+#, c-format
+msgid "Can't handle version %d of GFileIcon encoding"
+msgstr "GFileIcon encoding ৰ %d সংস্কৰণ পৰিচালন কৰিব নোৱাৰি"
+
+#: ../gio/gfileicon.c:247
+msgid "Malformed input data for GFileIcon"
+msgstr "GFileIcon ৰ কাৰণে ত্ৰুটি ইনপুট তথ্য"
+
+#: ../gio/gfileinputstream.c:151 ../gio/gfileinputstream.c:397
+#: ../gio/gfileiostream.c:169 ../gio/gfileoutputstream.c:166
+#: ../gio/gfileoutputstream.c:500
+msgid "Stream doesn't support query_info"
+msgstr "স্ৰোত দ্বাৰা query_info সমৰ্থিত নহয়"
+
+#: ../gio/gfileinputstream.c:328 ../gio/gfileiostream.c:382
+#: ../gio/gfileoutputstream.c:374
+msgid "Seek not supported on stream"
+msgstr "স্ৰোত দ্বাৰা Seek সমৰ্থিত নহয়"
+
+#: ../gio/gfileinputstream.c:372
+msgid "Truncate not allowed on input stream"
+msgstr "ইনপুট স্ৰোতত Truncate ৰ অনুমতি নাই"
+
+#: ../gio/gfileiostream.c:458 ../gio/gfileoutputstream.c:450
+msgid "Truncate not supported on stream"
+msgstr "স্ৰোতত Truncate ৰ সমৰ্থন নাই"
+
+#: ../gio/gicon.c:297
+#, c-format
+msgid "Wrong number of tokens (%d)"
+msgstr "ট'কেনৰ ত্ৰুটি সংখ্যা (%d)"
+
+#: ../gio/gicon.c:317
+#, c-format
+msgid "No type for class name %s"
+msgstr "শ্ৰেণীৰ নাম %s ৰ ধৰণ নাই"
+
+#: ../gio/gicon.c:327
+#, c-format
+msgid "Type %s does not implement the GIcon interface"
+msgstr "%s ধৰনে GIcon আন্তঃপৃষ্ঠ প্ৰণয়ন নকৰে"
+
+#: ../gio/gicon.c:338
+#, c-format
+msgid "Type %s is not classed"
+msgstr "%s ধৰণক class কৰা হোৱা নাই"
+
+#: ../gio/gicon.c:352
+#, c-format
+msgid "Malformed version number: %s"
+msgstr "ত্ৰুটি সংস্কৰণ সংখ্যা: %s"
+
+#: ../gio/gicon.c:366
+#, c-format
+msgid "Type %s does not implement from_tokens() on the GIcon interface"
+msgstr "%s ধৰণে from_tokens() প্ৰণয়ন নকৰে GIcon আন্তঃপৃষ্ঠত"
+
+#: ../gio/gicon.c:468
+msgid "Can't handle the supplied version of the icon encoding"
+msgstr "আইকন এনক'ডিংৰ প্ৰদান কৰা সংস্কৰণ পৰিচালন কৰিব নোৱাৰি"
+
+#: ../gio/ginetaddressmask.c:183
+msgid "No address specified"
+msgstr "কোনো ঠিকনা ধাৰ্য্য কৰা হোৱা নাই"
+
+#: ../gio/ginetaddressmask.c:191
+#, c-format
+msgid "Length %u is too long for address"
+msgstr "দৈৰ্ঘ্য %u ঠিকনাৰ বাবে অতি দীঘল"
+
+#: ../gio/ginetaddressmask.c:224
+msgid "Address has bits set beyond prefix length"
+msgstr "ঠিকনাৰ বিটসমূহ সংহতি উপসৰ্গ দৈৰ্ঘৰ বাহিৰ আছে"
+
+#: ../gio/ginetaddressmask.c:301
+#, c-format
+msgid "Could not parse '%s' as IP address mask"
+msgstr "'%s' ক IP ঠিকনা মাস্ক হিচাপে বিশ্লেষণ কৰিব পৰা নগল"
+
+#: ../gio/ginetsocketaddress.c:197 ../gio/ginetsocketaddress.c:214
+#: ../gio/gunixsocketaddress.c:211
+msgid "Not enough space for socket address"
+msgstr "চকেট ঠিকনাৰ কাৰণে যথেষ্ট স্থান নাই"
+
+#: ../gio/ginetsocketaddress.c:229
+msgid "Unsupported socket address"
+msgstr "অসমৰ্থিত চকেট ঠিকনা"
+
+#: ../gio/ginputstream.c:183
+msgid "Input stream doesn't implement read"
+msgstr "ইনপুট স্ৰোতে পঢ়া কাৰ্য ৰূপায়ন নকৰে"
+
+#. Translators: This is an error you get if there is already an
+#. * operation running against this stream when you try to start
+#. * one
+#. Translators: This is an error you get if there is
+#. * already an operation running against this stream when
+#. * you try to start one
+#: ../gio/ginputstream.c:1022 ../gio/giostream.c:290
+#: ../gio/goutputstream.c:1333
+msgid "Stream has outstanding operation"
+msgstr "স্ৰোতৰ ক্ষেত্ৰত অসমাপ্ত কৰ্ম উপস্থিত আছে"
+
+#: ../gio/glib-compile-resources.c:145 ../gio/glib-compile-schemas.c:1459
+#, c-format
+msgid "Element <%s> not allowed inside <%s>"
+msgstr "উপাদান <%s> <%s> ৰ ভিতৰত অনুমোদিত নহয়"
+
+#: ../gio/glib-compile-resources.c:149
+#, c-format
+msgid "Element <%s> not allowed at toplevel"
+msgstr "উপাদান <%s> ওপৰস্তৰত অনুমোদিত নহয়"
+
+#: ../gio/glib-compile-resources.c:239
+#, c-format
+msgid "File %s appears multiple times in the resource"
+msgstr "ফাইল %s সম্পদত বহুবাৰ দেখা গৈছে"
+
+#: ../gio/glib-compile-resources.c:252
+#, c-format
+msgid "Failed to locate '%s' in any source directory"
+msgstr "কোনো উৎস ডাইৰেকটৰিত '%s' অৱস্থান কৰাত ব্যৰ্থ"
+
+#: ../gio/glib-compile-resources.c:263
+#, c-format
+msgid "Failed to locate '%s' in current directory"
+msgstr "বৰ্তমান ডাইৰেকটৰিত '%s' অৱস্থান কৰাত ব্যৰ্থ"
+
+#: ../gio/glib-compile-resources.c:291
+#, c-format
+msgid "Unknown processing option \"%s\""
+msgstr "অজ্ঞাত প্ৰক্ৰিয়াকৰণ বিকল্প \"%s\""
+
+#: ../gio/glib-compile-resources.c:310 ../gio/glib-compile-resources.c:370
+#, c-format
+msgid "Failed to create temp file: %s"
+msgstr "অস্থায়ী ফাইল সৃষ্টি কৰোতে ব্যৰ্থ: %s"
+
+#: ../gio/glib-compile-resources.c:340
+#, c-format
+msgid ""
+"Error processing input file with xmllint:\n"
+"%s"
+msgstr ""
+"ইনপুট ফাইলক xmllint ৰ সৈতে প্ৰক্ৰিয়াকৰণ কৰোতে ত্ৰুটি:\n"
+"%s"
+
+#: ../gio/glib-compile-resources.c:396
+#, c-format
+msgid ""
+"Error processing input file with to-pixdata:\n"
+"%s"
+msgstr ""
+"to-pixdata ৰ সৈতে ইনপুট ফাইল প্ৰক্ৰিয়াকৰণ কৰোতে ত্ৰুটি:\n"
+"%s"
+
+#: ../gio/glib-compile-resources.c:410
+#, c-format
+msgid "Error reading file %s: %s"
+msgstr "ফাইল %s পঢ়োতে ত্ৰুটি: %s"
+
+#: ../gio/glib-compile-resources.c:430
+#, c-format
+msgid "Error compressing file %s"
+msgstr "ফাইল %s সংকোচন কৰোতে ত্ৰুটি"
+
+#: ../gio/glib-compile-resources.c:494 ../gio/glib-compile-schemas.c:1571
+#, c-format
+msgid "text may not appear inside <%s>"
+msgstr "লিখনী <%s> ৰ ভিতৰত নাহিবও পাৰে"
+
+#: ../gio/glib-compile-resources.c:619
+msgid "name of the output file"
+msgstr "আউটপুট ফাইলৰ নাম"
+
+#: ../gio/glib-compile-resources.c:619 ../gio/glib-compile-resources.c:650
+#: ../gio/gresource-tool.c:482 ../gio/gresource-tool.c:548
+msgid "FILE"
+msgstr "FILE"
+
+#: ../gio/glib-compile-resources.c:620
+msgid ""
+"The directories where files are to be read from (default to current "
+"directory)"
+msgstr "ডাইৰেকটৰিসমূহ যৰ পৰা ফাইলসমূহ পঢ়া হব (বৰ্তমান ডাইৰেকটৰিলে অবিকল্পিত) "
+
+#: ../gio/glib-compile-resources.c:620 ../gio/glib-compile-schemas.c:1999
+#: ../gio/glib-compile-schemas.c:2028
+msgid "DIRECTORY"
+msgstr "DIRECTORY"
+
+#: ../gio/glib-compile-resources.c:621
+msgid ""
+"Generate output in the format selected for by the target filename extension"
+msgstr "লক্ষ্য ফাইল সম্প্ৰসাৰন দ্বাৰা নিৰ্বাচিত বিন্যাসত আউটপুট সৃজন কৰক"
+
+#: ../gio/glib-compile-resources.c:622
+msgid "Generate source header"
+msgstr "উৎস হেডাৰ সৃজন কৰক"
+
+#: ../gio/glib-compile-resources.c:623
+msgid "Generate sourcecode used to link in the resource file into your code"
+msgstr "আপোনাৰ ক'ডত সম্পদ ফাইলৰ সৈতে সংযোগ কৰিবলে ব্যৱহৃত উৎসক'ড সৃজন কৰক"
+
+#: ../gio/glib-compile-resources.c:624
+msgid "Generate dependency list"
+msgstr "নিৰ্ভৰতা তালিকা সৃজন কৰক"
+
+#: ../gio/glib-compile-resources.c:625
+msgid "Don't automatically create and register resource"
+msgstr "সম্পদক স্বচালিতভাৱে সৃষ্টি আৰু ৰেজিস্টাৰ নকৰিব"
+
+#: ../gio/glib-compile-resources.c:626
+msgid "Don't export functions; declare them G_GNUC_INTERNAL"
+msgstr "ফলনসমূহ এক্সপোৰ্ট নকৰিব; সিহতক G_GNUC_INTERNAL ঘোষণা কৰক"
+
+#: ../gio/glib-compile-resources.c:627
+msgid "C identifier name used for the generated source code"
+msgstr "সৃজন কৰা উৎস ক'ডৰ বাবে C identifier নাম ব্যৱহাৰ কৰা হৈছে"
+
+#: ../gio/glib-compile-resources.c:653
+msgid ""
+"Compile a resource specification into a resource file.\n"
+"Resource specification files have the extension .gresource.xml,\n"
+"and the resource file have the extension called .gresource."
+msgstr ""
+"এটা সম্পদ ফাইলত এটা সম্পদ ধাৰ্য্যকৰণ কমপাইল কৰক।\n"
+"সম্পদ ধাৰ্য্যকৰণ ফাইলসমূহৰ প্ৰসাৰণ .gresource.xml থাকে,\n"
+"আৰু সম্পদ ফাইলৰ প্ৰসাৰণ .gresource থাকে।"
+
+#: ../gio/glib-compile-resources.c:669
+#, c-format
+msgid "You should give exactly one file name\n"
+msgstr "আপুনি এটা ফাইল নাম দিব লাগিব\n"
+
+#: ../gio/glib-compile-schemas.c:778
+msgid "empty names are not permitted"
+msgstr "ৰিক্ত নামসমূহৰ অনুমতি নাই"
+
+#: ../gio/glib-compile-schemas.c:788
+#, c-format
+msgid "invalid name '%s': names must begin with a lowercase letter"
+msgstr "অবৈধ নাম '%s': নামসমূহ এটা তলফলা আখৰৰে আৰম্ভ হব লাগিব"
+
+#: ../gio/glib-compile-schemas.c:800
+#, c-format
+msgid ""
+"invalid name '%s': invalid character '%c'; only lowercase letters, numbers "
+"and hyphen ('-') are permitted."
+msgstr ""
+"অবৈধ নাম '%s': অবৈধ আখৰ '%c'; কেৱল তলৰফলা আখৰসমূহ, নম্বৰসমূহ আৰু হাইফেন ('-') "
+"ৰ "
+"অনুমতি আছে।"
+
+#: ../gio/glib-compile-schemas.c:809
+#, c-format
+msgid "invalid name '%s': two successive hyphens ('--') are not permitted."
+msgstr "অবৈধ নাম '%s': দুটা ক্ৰমাগত হাইফেন ('--') ৰ অনুমতি নাই।"
+
+#: ../gio/glib-compile-schemas.c:818
+#, c-format
+msgid "invalid name '%s': the last character may not be a hyphen ('-')."
+msgstr "অবৈধ নাম '%s': শেষ আখৰ এটা হাইফেন ('-') নহবও পাৰে।"
+
+#: ../gio/glib-compile-schemas.c:826
+#, c-format
+msgid "invalid name '%s': maximum length is 1024"
+msgstr "অবৈধ নাম '%s': সৰ্বাধিক দৈৰ্ঘ হল ১০২৪"
+
+#: ../gio/glib-compile-schemas.c:895
+#, c-format
+msgid "<child name='%s'> already specified"
+msgstr "<child name='%s'> ইতিমধ্যে ধাৰ্য্যত"
+
+#: ../gio/glib-compile-schemas.c:921
+msgid "cannot add keys to a 'list-of' schema"
+msgstr "এটা 'list-of' স্কিমালে কিসমূহ যোগ কৰিব নোৱাৰি"
+
+#: ../gio/glib-compile-schemas.c:932
+#, c-format
+msgid "<key name='%s'> already specified"
+msgstr "<key name='%s'> ইতিমধ্যে ধাৰ্য্যত"
+
+#: ../gio/glib-compile-schemas.c:950
+#, c-format
+msgid ""
+"<key name='%s'> shadows <key name='%s'> in <schema id='%s'>; use <override> "
+"to modify value"
+msgstr ""
+"<schema id='%s'> ত <key name='%s'> ছায়াসমূহ <key name='%s'>; মান সলনি কৰিবলে "
+"<override> ব্যৱহাৰ কৰক"
+
+#: ../gio/glib-compile-schemas.c:961
+#, c-format
+msgid ""
+"exactly one of 'type', 'enum' or 'flags' must be specified as an attribute "
+"to <key>"
+msgstr ""
+"এটা 'type', 'enum' অথবা 'flags' এটা বৈশিষ্ট হিচাপে <key> লে ধাৰ্য্য কৰিব লাগিব"
+
+#: ../gio/glib-compile-schemas.c:980
+#, c-format
+msgid "<%s id='%s'> not (yet) defined."
+msgstr "<%s id='%s'> (এতিয়াও) বিৱৰিত নহয়।"
+
+#: ../gio/glib-compile-schemas.c:995
+#, c-format
+msgid "invalid GVariant type string '%s'"
+msgstr "অবৈধ GVariant ধৰণ স্ট্ৰিং '%s'"
+
+#: ../gio/glib-compile-schemas.c:1025
+msgid "<override> given but schema isn't extending anything"
+msgstr "<override> দিয়া হৈছে কিন্তু স্কিমায় একো প্ৰসাৰন কৰা নাই"
+
+#: ../gio/glib-compile-schemas.c:1038
+#, c-format
+msgid "no <key name='%s'> to override"
+msgstr "অভাৰৰাইড কৰিবলে কোনো <key name='%s'> নাই"
+
+#: ../gio/glib-compile-schemas.c:1046
+#, c-format
+msgid "<override name='%s'> already specified"
+msgstr "<override name='%s'> ইতিমধ্যে ধাৰ্য্যত"
+
+#: ../gio/glib-compile-schemas.c:1117
+#, c-format
+msgid "<schema id='%s'> already specified"
+msgstr "<schema id='%s'> ইতিমধ্যে ধাৰ্য্যত"
+
+#: ../gio/glib-compile-schemas.c:1129
+#, c-format
+msgid "<schema id='%s'> extends not yet existing schema '%s'"
+msgstr "<schema id='%s'> এ এতিয়াও অস্তিত্বত নহোৱা স্কিমা '%s' ক প্ৰসাৰন কৰে"
+
+#: ../gio/glib-compile-schemas.c:1145
+#, c-format
+msgid "<schema id='%s'> is list of not yet existing schema '%s'"
+msgstr "<schema id='%s'> এতিয়াও অস্তিত্বত নহোৱা স্কিমা '%s' ৰ তালিকা"
+
+#: ../gio/glib-compile-schemas.c:1153
+#, c-format
+msgid "Can not be a list of a schema with a path"
+msgstr "এটা পথৰ সৈতে এটা স্কিমাৰ এটা তালিকা হব নোৱাৰিব"
+
+#: ../gio/glib-compile-schemas.c:1163
+#, c-format
+msgid "Can not extend a schema with a path"
+msgstr "এটা পথৰ সৈতে এটা স্কিমা প্ৰসাৰন কৰিব নোৱাৰি"
+
+#: ../gio/glib-compile-schemas.c:1173
+#, c-format
+msgid ""
+"<schema id='%s'> is a list, extending <schema id='%s'> which is not a list"
+msgstr ""
+"<schema id='%s'> এটা তালিকা, <schema id='%s'> যি এটা তালিকা নহয় প্ৰসাৰন কৰা "
+"হৈছে"
+
+#: ../gio/glib-compile-schemas.c:1183
+#, c-format
+msgid ""
+"<schema id='%s' list-of='%s'> extends <schema id='%s' list-of='%s'> but '%s' "
+"does not extend '%s'"
+msgstr ""
+"<schema id='%s' list-of='%s'> এ <schema id='%s' list-of='%s'> প্ৰসাৰন কৰে "
+"কিন্তু '%s' এ '%s' প্ৰসাৰন নকৰে"
+
+#: ../gio/glib-compile-schemas.c:1200
+#, c-format
+msgid "a path, if given, must begin and end with a slash"
+msgstr "এটা পথ, যদি দিয়া আছে, এটা স্লেশৰ সৈতে আৰম্ভ আৰু অন্ত হব লাগিব"
+
+#: ../gio/glib-compile-schemas.c:1207
+#, c-format
+msgid "the path of a list must end with ':/'"
+msgstr "এটা তালিকাৰ পথ ':/' ৰ সৈতে শেষ হব লাগিব"
+
+#: ../gio/glib-compile-schemas.c:1239
+#, c-format
+msgid "<%s id='%s'> already specified"
+msgstr "<%s id='%s'> ইতিমধ্যে ধাৰ্য্যত"
+
+#: ../gio/glib-compile-schemas.c:1463
+#, c-format
+msgid "Element <%s> not allowed at the top level"
+msgstr "উপাদান <%s> ওপৰ স্তৰত অনুমোদিত নহয়"
+
+#. Translators: Do not translate "--strict".
+#: ../gio/glib-compile-schemas.c:1757 ../gio/glib-compile-schemas.c:1828
+#: ../gio/glib-compile-schemas.c:1904
+#, c-format
+msgid "--strict was specified; exiting.\n"
+msgstr "--strict ধাৰ্য্য কৰা হৈছিল; প্ৰস্থান কৰা হৈছিল।\n"
+
+#: ../gio/glib-compile-schemas.c:1765
+#, c-format
+msgid "This entire file has been ignored.\n"
+msgstr "এই সম্পূৰ্ণ ফাইল উপেক্ষা কৰা হৈছে।\n"
+
+#: ../gio/glib-compile-schemas.c:1824
+#, c-format
+msgid "Ignoring this file.\n"
+msgstr "এই ফাইল উপেক্ষা কৰা হৈছে।\n"
+
+#: ../gio/glib-compile-schemas.c:1864
+#, c-format
+msgid "No such key '%s' in schema '%s' as specified in override file '%s'"
+msgstr "অভাৰৰাইড ফাইল '%s' ত দেখুৱা দৰে স্কিমা '%s' ত এনে কোনো কি '%s' নাই"
+
+#: ../gio/glib-compile-schemas.c:1870 ../gio/glib-compile-schemas.c:1928
+#: ../gio/glib-compile-schemas.c:1956
+#, c-format
+msgid "; ignoring override for this key.\n"
+msgstr "; এই কিৰ বাবে অভাৰৰাইড উপেক্ষা কৰা হৈছে।\n"
+
+#: ../gio/glib-compile-schemas.c:1874 ../gio/glib-compile-schemas.c:1932
+#: ../gio/glib-compile-schemas.c:1960
+#, c-format
+msgid " and --strict was specified; exiting.\n"
+msgstr " আৰু --strict ধাৰ্য্য কৰা হৈছিল; প্ৰস্থান কৰা হৈছে।\n"
+
+#: ../gio/glib-compile-schemas.c:1890
+#, c-format
+msgid ""
+"error parsing key '%s' in schema '%s' as specified in override file '%s': %s."
+msgstr ""
+"অভাৰৰাইড ফাইল '%s' ত দেখুৱা দৰে স্কিমা '%s' ত কি' '%s' বিশ্লেষণ কৰোতে ত্ৰুটি: "
+"%s।"
+
+#: ../gio/glib-compile-schemas.c:1900
+#, c-format
+msgid "Ignoring override for this key.\n"
+msgstr "এই কিৰ বাবে অভাৰৰাইড উপেক্ষা কৰা হৈছে।\n"
+
+#: ../gio/glib-compile-schemas.c:1918
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is outside the "
+"range given in the schema"
+msgstr ""
+"অভাৰৰাইড ফাইল '%s' ত স্কিমা '%s' ত কি '%s' ৰ বাবে অভাৰৰাইড স্কিমাত দিয়া "
+"বিস্তাৰৰ বাহিৰ"
+
+#: ../gio/glib-compile-schemas.c:1946
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is not in the "
+"list of valid choices"
+msgstr ""
+"অভাৰৰাইড ফাইল '%s' ত স্কিমা '%s' ত কি '%s' ৰ বাবে অভাৰৰাইড বৈধ পছন্দসমূহৰ "
+"তালিকাত নাই"
+
+#: ../gio/glib-compile-schemas.c:1999
+msgid "where to store the gschemas.compiled file"
+msgstr "gschemas.compiled ফাইল ক'ত সংৰক্ষণ কৰা হব"
+
+#: ../gio/glib-compile-schemas.c:2000
+msgid "Abort on any errors in schemas"
+msgstr "স্কিমাসমূহত যিকোনো ত্ৰুটিত বাতিল কৰিব"
+
+#: ../gio/glib-compile-schemas.c:2001
+msgid "Do not write the gschema.compiled file"
+msgstr "gschema.compiled ফাইল নিলিখিব"
+
+#: ../gio/glib-compile-schemas.c:2002
+msgid "Do not enforce key name restrictions"
+msgstr "কি নাম বাধাসমূহ বলৱৎ নকৰিব"
+
+#: ../gio/glib-compile-schemas.c:2031
+msgid ""
+"Compile all GSettings schema files into a schema cache.\n"
+"Schema files are required to have the extension .gschema.xml,\n"
+"and the cache file is called gschemas.compiled."
+msgstr ""
+"সকলো GSettings স্কিমা ফাইলসমূহক এটা স্কিমা ক্যাশত কমপাইল কৰক।\n"
+"স্কিমা ফাইলসমূহৰ সম্প্ৰসাৰন .gschema.xml থাকিব লাগিব,\n"
+"আৰু ক্যাশ ফাইলক gschemas.compiled কোৱা হয়।"
+
+#: ../gio/glib-compile-schemas.c:2047
+#, c-format
+msgid "You should give exactly one directory name\n"
+msgstr "আপুনি এটা ডাইৰেকটৰি নাম দিব লাগিব\n"
+
+#: ../gio/glib-compile-schemas.c:2086
+#, c-format
+msgid "No schema files found: "
+msgstr "কোনো স্কিমা ফাইল পোৱা নগল:"
+
+#: ../gio/glib-compile-schemas.c:2089
+#, c-format
+msgid "doing nothing.\n"
+msgstr "একো কৰা নাই।\n"
+
+#: ../gio/glib-compile-schemas.c:2092
+#, c-format
+msgid "removed existing output file.\n"
+msgstr "অস্তিত্ববান আউটপুট ফাইল আতৰোৱা হল।\n"
+
+#: ../gio/glocaldirectorymonitor.c:252
+msgid "Unable to find default local directory monitor type"
+msgstr "অবিকল্পিত স্থানীয় ডাইৰেকটৰিৰ মনিটৰৰ ধৰণ পোৱা নগল"
+
+#: ../gio/glocalfile.c:602 ../gio/win32/gwinhttpfile.c:422
+#, c-format
+msgid "Invalid filename %s"
+msgstr "ফাইলৰ নাম অৱৈধ: %s"
+
+#: ../gio/glocalfile.c:979
+#, c-format
+msgid "Error getting filesystem info: %s"
+msgstr "ফাইলচিস্টেম তথ্য প্ৰাপ্ত কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:1147
+msgid "Can't rename root directory"
+msgstr "root ডাইৰেকটৰিৰ নাম পৰিবৰ্তন কৰা সম্ভৱ নহয়"
+
+#: ../gio/glocalfile.c:1167 ../gio/glocalfile.c:1193
+#, c-format
+msgid "Error renaming file: %s"
+msgstr "ফাইলৰ নাম পৰিবৰ্তনত সমস্যা: %s"
+
+#: ../gio/glocalfile.c:1176
+msgid "Can't rename file, filename already exists"
+msgstr "ফাইল পুনৰ নামকৰণ কৰিব নোৱাৰি, ফাইলনাম ইতিমধ্যে অস্তিত্ববান"
+
+#: ../gio/glocalfile.c:1189 ../gio/glocalfile.c:2206 ../gio/glocalfile.c:2235
+#: ../gio/glocalfile.c:2395 ../gio/glocalfileoutputstream.c:553
+msgid "Invalid filename"
+msgstr "ফাইলৰ নাম অবৈধ"
+
+#: ../gio/glocalfile.c:1356 ../gio/glocalfile.c:1380
+msgid "Can't open directory"
+msgstr "ডাইৰেকটৰি খোলিবলৈ সমস্যা"
+
+#: ../gio/glocalfile.c:1364
+#, c-format
+msgid "Error opening file: %s"
+msgstr "ফাইল খোলিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:1505
+#, c-format
+msgid "Error removing file: %s"
+msgstr "ফাইল আঁতৰাবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:1885
+#, c-format
+msgid "Error trashing file: %s"
+msgstr "ফাইল আবৰ্জনালৈ স্থানান্তৰ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:1908
+#, c-format
+msgid "Unable to create trash dir %s: %s"
+msgstr "আবৰ্জনাৰ ডাইৰেকটৰি %s সৃষ্টি কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:1929
+msgid "Unable to find toplevel directory for trash"
+msgstr "আবৰ্জনাৰ ঊৰ্ধ্বতন ডাইৰেকটৰি চিনাক্ত কৰিবলৈ ব্যৰ্থ"
+
+#: ../gio/glocalfile.c:2008 ../gio/glocalfile.c:2028
+msgid "Unable to find or create trash directory"
+msgstr "আবৰ্জনাৰ ডাইৰেকটৰি চিনাক্ত বা সৃষ্টি কৰিবলৈ ব্যৰ্থ"
+
+#: ../gio/glocalfile.c:2062
+#, c-format
+msgid "Unable to create trashing info file: %s"
+msgstr "trashing তথ্যৰ ফাইল সৃষ্টি কৰিব নোৱাৰি: %s"
+
+#: ../gio/glocalfile.c:2091 ../gio/glocalfile.c:2096 ../gio/glocalfile.c:2176
+#: ../gio/glocalfile.c:2183
+#, c-format
+msgid "Unable to trash file: %s"
+msgstr "ফাইল বৰ্জন কৰিবলৈ ব্যৰ্থ: %s"
+
+#: ../gio/glocalfile.c:2184 ../glib/gregex.c:280
+msgid "internal error"
+msgstr "অভ্যন্তৰীণ ত্ৰুটি"
+
+#: ../gio/glocalfile.c:2210
+#, c-format
+msgid "Error creating directory: %s"
+msgstr "ডাইৰেকটৰি সৃষ্টি কৰিবলৈ ব্যৰ্থ: %s"
+
+#: ../gio/glocalfile.c:2239
+#, c-format
+msgid "Filesystem does not support symbolic links"
+msgstr "ফাইলচিস্টেময়ে সাংকেতিক সংযোগসমূহ সমৰ্থন নকৰে"
+
+#: ../gio/glocalfile.c:2243
+#, c-format
+msgid "Error making symbolic link: %s"
+msgstr "চিমসংযোগ সৃষ্টি কৰিবলৈ ব্যৰ্থ: %s"
+
+#: ../gio/glocalfile.c:2305 ../gio/glocalfile.c:2399
+#, c-format
+msgid "Error moving file: %s"
+msgstr "ফাইল স্থানান্তৰ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:2328
+msgid "Can't move directory over directory"
+msgstr "ডাইৰেকটৰিৰ ওপৰত ডাইৰেকটৰি স্থানান্তৰ কৰা নাযাব"
+
+#: ../gio/glocalfile.c:2355 ../gio/glocalfileoutputstream.c:929
+#: ../gio/glocalfileoutputstream.c:943 ../gio/glocalfileoutputstream.c:958
+#: ../gio/glocalfileoutputstream.c:974 ../gio/glocalfileoutputstream.c:988
+msgid "Backup file creation failed"
+msgstr "বেক-আপ ফাইল সৃষ্টি কৰিবলৈ ব্যৰ্থ"
+
+#: ../gio/glocalfile.c:2374
+#, c-format
+msgid "Error removing target file: %s"
+msgstr "লক্ষ্য ফাইল আঁতৰাবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfile.c:2388
+msgid "Move between mounts not supported"
+msgstr "মাউন্ট কৰা অৱস্থানত স্থানান্তৰ কৰা সম্ভৱ নহয়"
+
+#: ../gio/glocalfileinfo.c:722
+msgid "Attribute value must be non-NULL"
+msgstr "বৈশিষ্টৰ মান নন-NULL হব লাগিব"
+
+#: ../gio/glocalfileinfo.c:729
+msgid "Invalid attribute type (string expected)"
+msgstr "অবৈধ বৈশিষ্টৰ ধৰণ (স্ট্ৰিং প্ৰত্যাশিত)"
+
+#: ../gio/glocalfileinfo.c:736
+msgid "Invalid extended attribute name"
+msgstr "অবৈধ সম্প্ৰসাৰিত বৈশিষ্টৰ নাম"
+
+#: ../gio/glocalfileinfo.c:776
+#, c-format
+msgid "Error setting extended attribute '%s': %s"
+msgstr "সম্প্ৰসাৰিত বৈশিষ্ট নিৰ্ধাৰণ কৰোঁতে ত্ৰুটি '%s': %s"
+
+#: ../gio/glocalfileinfo.c:1544
+msgid " (invalid encoding)"
+msgstr " (অৱৈধ এনক'ডিং)"
+
+#: ../gio/glocalfileinfo.c:1736 ../gio/glocalfileoutputstream.c:807
+#, c-format
+msgid "Error when getting information for file '%s': %s"
+msgstr "ফাইল '%s' ৰ বাবে তথ্য প্ৰাপ্ত কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/glocalfileinfo.c:1982
+#, c-format
+msgid "Error when getting information for file descriptor: %s"
+msgstr "ফাইল বিৱৰকৰ বাবে তথ্য প্ৰাপ্ত কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/glocalfileinfo.c:2027
+msgid "Invalid attribute type (uint32 expected)"
+msgstr "অবৈধ বৈশিষ্টৰ ধৰণ (প্ৰত্যাশিত uint32)"
+
+#: ../gio/glocalfileinfo.c:2045
+msgid "Invalid attribute type (uint64 expected)"
+msgstr "অবৈধ বৈশিষ্টৰ ধৰণ (প্ৰত্যাশিত uint64)"
+
+#: ../gio/glocalfileinfo.c:2064 ../gio/glocalfileinfo.c:2083
+msgid "Invalid attribute type (byte string expected)"
+msgstr "অবৈধ বৈশিষ্টৰ ধৰণ (প্ৰত্যাশিত byte স্ট্ৰিং)"
+
+#: ../gio/glocalfileinfo.c:2118
+msgid "Cannot set permissions on symlinks"
+msgstr "চিমসংযোগসমূহত সন্মতি নিৰ্ধাৰণ কৰিব নোৱাৰি"
+
+#: ../gio/glocalfileinfo.c:2134
+#, c-format
+msgid "Error setting permissions: %s"
+msgstr "অনুমতি নিৰ্ধাৰণ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileinfo.c:2185
+#, c-format
+msgid "Error setting owner: %s"
+msgstr "গৰাকী নিৰ্ধাৰণ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileinfo.c:2208
+msgid "symlink must be non-NULL"
+msgstr "চিমসংযোগ NULL হ'ব নোৱাৰে"
+
+#: ../gio/glocalfileinfo.c:2218 ../gio/glocalfileinfo.c:2237
+#: ../gio/glocalfileinfo.c:2248
+#, c-format
+msgid "Error setting symlink: %s"
+msgstr "চিমসংযোগ নিৰ্ধাৰণ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileinfo.c:2227
+msgid "Error setting symlink: file is not a symlink"
+msgstr "চিমসংযোগ নিৰ্ধাৰণ কৰিবলৈ ত্ৰুটি: ফাইল চিমসংযোগ নহয়"
+
+#: ../gio/glocalfileinfo.c:2353
+#, c-format
+msgid "Error setting modification or access time: %s"
+msgstr "পৰিবৰ্তন বা অভিগমৰ সময় নিৰ্ধাৰণ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileinfo.c:2376
+msgid "SELinux context must be non-NULL"
+msgstr "SELinux ৰ সন্দৰ্ভ NULL হ'ব নোৱাৰে"
+
+#: ../gio/glocalfileinfo.c:2391
+#, c-format
+msgid "Error setting SELinux context: %s"
+msgstr "SELinux ৰ সন্দৰ্ভ নিৰ্ধাৰণ কৰিবলৈ ব্যৰ্থ: %s"
+
+#: ../gio/glocalfileinfo.c:2398
+msgid "SELinux is not enabled on this system"
+msgstr "এই চিস্টেমত SELinux সক্ৰিয় কৰা নাই"
+
+#: ../gio/glocalfileinfo.c:2490
+#, c-format
+msgid "Setting attribute %s not supported"
+msgstr "%s বৈশিষ্টৰ মান নিৰ্ধাৰণ সমৰ্থিত নহয়"
+
+#: ../gio/glocalfileinputstream.c:172 ../gio/glocalfileoutputstream.c:698
+#, c-format
+msgid "Error reading from file: %s"
+msgstr "ফাইলৰ পৰা পঢ়িবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileinputstream.c:203 ../gio/glocalfileinputstream.c:215
+#: ../gio/glocalfileinputstream.c:322 ../gio/glocalfileoutputstream.c:460
+#: ../gio/glocalfileoutputstream.c:1006
+#, c-format
+msgid "Error seeking in file: %s"
+msgstr "ফাইলত seek কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileinputstream.c:244 ../gio/glocalfileoutputstream.c:250
+#: ../gio/glocalfileoutputstream.c:344
+#, c-format
+msgid "Error closing file: %s"
+msgstr "ফাইল বন্ধ কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfilemonitor.c:176
+msgid "Unable to find default local file monitor type"
+msgstr "অবিকল্পিত স্থানীয় ফাইলৰ মনিটৰৰ ধৰণ পোৱা নগল"
+
+#: ../gio/glocalfileoutputstream.c:198 ../gio/glocalfileoutputstream.c:230
+#: ../gio/glocalfileoutputstream.c:719
+#, c-format
+msgid "Error writing to file: %s"
+msgstr "ফাইললৈ লিখিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileoutputstream.c:277
+#, c-format
+msgid "Error removing old backup link: %s"
+msgstr "পুৰনি বেক-আপ সংযোগ আঁতৰাবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileoutputstream.c:291 ../gio/glocalfileoutputstream.c:304
+#, c-format
+msgid "Error creating backup copy: %s"
+msgstr "বেক-আপ প্ৰতিলিপি সৃষ্টি কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileoutputstream.c:322
+#, c-format
+msgid "Error renaming temporary file: %s"
+msgstr "অস্থায়ী ফাইলৰ নাম পৰিবৰ্তন কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileoutputstream.c:506 ../gio/glocalfileoutputstream.c:1057
+#, c-format
+msgid "Error truncating file: %s"
+msgstr "ফাইল সৰু কৰিবলৈ ত্ৰুটি: %s"
+
+#: ../gio/glocalfileoutputstream.c:559 ../gio/glocalfileoutputstream.c:789
+#: ../gio/glocalfileoutputstream.c:1038
+#, c-format
+msgid "Error opening file '%s': %s"
+msgstr "ফাইল '%s' খোলিবলৈ সমস্যা: %s"
+
+#: ../gio/glocalfileoutputstream.c:820
+msgid "Target file is a directory"
+msgstr "লক্ষ্য ফাইল এটা ডাইৰেকটৰি"
+
+#: ../gio/glocalfileoutputstream.c:825
+msgid "Target file is not a regular file"
+msgstr "লক্ষ্য ফাইল সাধাৰণ ফাইল নহয়"
+
+#: ../gio/glocalfileoutputstream.c:837
+msgid "The file was externally modified"
+msgstr "ফাইল বহিৰ্তমভাৱে পৰিবৰ্তন কৰা হৈছে"
+
+#: ../gio/glocalfileoutputstream.c:1022
+#, c-format
+msgid "Error removing old file: %s"
+msgstr "পুৰনি ফাইল আঁতৰাবলৈ সমস্যা: %s"
+
+#: ../gio/gmemoryinputstream.c:473 ../gio/gmemoryoutputstream.c:736
+msgid "Invalid GSeekType supplied"
+msgstr "অৱৈধ GSeekType উল্লিখিত হৈছে"
+
+#: ../gio/gmemoryinputstream.c:483
+msgid "Invalid seek request"
+msgstr "অৱৈধ seek ৰ অনুৰোধ"
+
+#: ../gio/gmemoryinputstream.c:507
+msgid "Cannot truncate GMemoryInputStream"
+msgstr "GMemoryInputStream ক truncate কৰিব নোৱাৰি"
+
+#: ../gio/gmemoryoutputstream.c:541
+msgid "Memory output stream not resizable"
+msgstr "মেমৰিৰ আউটপুটৰ স্ৰোতক পুনঃ আকাৰ দিব নোৱাৰি"
+
+#: ../gio/gmemoryoutputstream.c:557
+msgid "Failed to resize memory output stream"
+msgstr "মেমৰিৰ আউটপুটৰ স্ৰোতক পুনঃ আকাৰ দিবলৈ ব্যৰ্থ"
+
+#: ../gio/gmemoryoutputstream.c:645
+msgid ""
+"Amount of memory required to process the write is larger than available "
+"address space"
+msgstr ""
+"লিখা প্ৰক্ৰিয়া কৰিবলে প্ৰয়োজনীয় মেমৰিৰ পৰিমাণ উপস্থিত ঠিকনা স্থানতকে অধিক"
+
+#: ../gio/gmemoryoutputstream.c:746
+msgid "Requested seek before the beginning of the stream"
+msgstr "স্ৰোতৰ আৰম্ভণিৰ আগত সন্ধানৰ অনুৰোধ কৰা হৈছে"
+
+#: ../gio/gmemoryoutputstream.c:755
+msgid "Requested seek beyond the end of the stream"
+msgstr "স্ৰোতৰ শেষ পাৰ হৈ সন্ধানৰ অনুৰোধ কৰা হৈছে"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement unmount.
+#: ../gio/gmount.c:395
+msgid "mount doesn't implement \"unmount\""
+msgstr "mount এ \"unmount\" প্ৰণয়ন নকৰে"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement eject.
+#: ../gio/gmount.c:471
+msgid "mount doesn't implement \"eject\""
+msgstr "mount এ  \"eject\" প্ৰণয়ন নকৰে "
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of unmount or unmount_with_operation.
+#: ../gio/gmount.c:549
+msgid "mount doesn't implement \"unmount\" or \"unmount_with_operation\""
+msgstr "mount  এ \"unmount\" অথবা \"unmount_with_operation\" প্ৰণয়ন নকৰে"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gmount.c:634
+msgid "mount doesn't implement \"eject\" or \"eject_with_operation\""
+msgstr "mount এ \"eject\" অথবা \"eject_with_operation\" প্ৰণয়ন নকৰে"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement remount.
+#: ../gio/gmount.c:722
+msgid "mount doesn't implement \"remount\""
+msgstr "mount এ \"remount\" প্ৰণয়ন নকৰে"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:803
+msgid "mount doesn't implement content type guessing"
+msgstr "mount দ্বাৰা সামগ্ৰীৰ ধৰণ অনুমান কৰা সম্ভৱ নহয়"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:889
+msgid "mount doesn't implement synchronous content type guessing"
+msgstr "mount দ্বাৰা সুসংগতভাবে সামগ্ৰীৰ ধৰণ অনুমান কৰা সম্ভৱ নহয়"
+
+#: ../gio/gnetworkaddress.c:353
+#, c-format
+msgid "Hostname '%s' contains '[' but not ']'"
+msgstr "হস্টনাম  '%s' এ  '[' কিন্তু নহয় ']' অন্তৰ্ভুক্ত কৰে"
+
+#: ../gio/gnetworkmonitorbase.c:191 ../gio/gnetworkmonitorbase.c:294
+msgid "Network unreachable"
+msgstr "নেটৱাৰ্ক প্ৰাপ্ত কৰিব নোৱাৰি"
+
+#: ../gio/gnetworkmonitorbase.c:229 ../gio/gnetworkmonitorbase.c:259
+msgid "Host unreachable"
+msgstr "হস্ট প্ৰাপ্ত কৰিব নোৱাৰি"
+
+#: ../gio/gnetworkmonitornetlink.c:97 ../gio/gnetworkmonitornetlink.c:109
+#: ../gio/gnetworkmonitornetlink.c:128
+#, c-format
+msgid "Could not create network monitor: %s"
+msgstr "নেটৱাৰ্ক মনিটৰ সৃষ্টি কৰিব পৰা নগল: %s"
+
+#: ../gio/gnetworkmonitornetlink.c:118
+msgid "Could not create network monitor: "
+msgstr "নেটৱাৰ্ক মনিটৰ সৃষ্টি কৰিব পৰা নগল:"
+
+#: ../gio/gnetworkmonitornetlink.c:176
+msgid "Could not get network status: "
+msgstr "নেটৱাৰ্ক অৱস্থা প্ৰাপ্ত কৰিব নোৱাৰি: "
+
+#: ../gio/goutputstream.c:201 ../gio/goutputstream.c:453
+msgid "Output stream doesn't implement write"
+msgstr "আউটপুটৰ স্ৰোতে লিখা কাৰ্য ৰূপায়ন নকৰে"
+
+#: ../gio/goutputstream.c:414 ../gio/goutputstream.c:939
+msgid "Source stream is already closed"
+msgstr "উৎসৰ স্ৰোত ইতিমধ্যে বন্ধ"
+
+#: ../gio/gresource.c:291 ../gio/gresource.c:539 ../gio/gresource.c:556
+#: ../gio/gresource.c:677 ../gio/gresource.c:746 ../gio/gresource.c:807
+#: ../gio/gresource.c:887 ../gio/gresourcefile.c:454
+#: ../gio/gresourcefile.c:555 ../gio/gresourcefile.c:657
+#, c-format
+msgid "The resource at '%s' does not exist"
+msgstr "'%s' ত সম্পদ অস্তিত্ববান নহয়"
+
+#: ../gio/gresource.c:456
+#, c-format
+msgid "The resource at '%s' failed to decompress"
+msgstr "'%s' ত সম্পদ অসংকোচন হবলে ব্যৰ্থ হল"
+
+#: ../gio/gresourcefile.c:653
+#, c-format
+msgid "The resource at '%s' is not a directory"
+msgstr "'%s' ৰ সম্পদ এটা ডাইৰেকটৰি নহয়"
+
+#: ../gio/gresourcefile.c:861
+msgid "Input stream doesn't implement seek"
+msgstr "ইনপুট স্ট্ৰিমে সন্ধান প্ৰণয়ন নকৰে"
+
+#: ../gio/gresource-tool.c:475 ../gio/gsettings-tool.c:542
+msgid "Print help"
+msgstr "প্ৰিন্ট সহায়"
+
+#: ../gio/gresource-tool.c:476 ../gio/gresource-tool.c:544
+msgid "[COMMAND]"
+msgstr "[COMMAND]"
+
+#: ../gio/gresource-tool.c:481
+msgid "List sections containing resources in an elf FILE"
+msgstr "এটা elf ফাইলত সম্পদসমূহ অন্তৰ্ভুক্ত কৰা অংশসমূহ তালিকাভুক্ত কৰে"
+
+#: ../gio/gresource-tool.c:487
+msgid ""
+"List resources\n"
+"If SECTION is given, only list resources in this section\n"
+"If PATH is given, only list matching resources"
+msgstr ""
+"সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"যদি SECTION দিয়া থাকে, কেৱল এই অংশত সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"যদি PATH দিয়া থাকে, কেৱল মিল খোৱা সম্পদসমূহ তালিকাভুক্ত কৰক"
+
+#: ../gio/gresource-tool.c:490 ../gio/gresource-tool.c:500
+msgid "FILE [PATH]"
+msgstr "FILE [PATH]"
+
+#: ../gio/gresource-tool.c:491 ../gio/gresource-tool.c:501
+#: ../gio/gresource-tool.c:508
+msgid "SECTION"
+msgstr "SECTION"
+
+#: ../gio/gresource-tool.c:496
+msgid ""
+"List resources with details\n"
+"If SECTION is given, only list resources in this section\n"
+"If PATH is given, only list matching resources\n"
+"Details include the section, size and compression"
+msgstr ""
+"বিৱৰণ থকা সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"যদি SECTION দিয়া থাকে, কেৱল এই অংশৰ সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"যদি PATH দিয়া থাকে, কেৱল মিল খোৱা সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"বিৱৰণসমূহে অংশ, আকাৰ আৰু সংকোচন অন্তৰ্ভুক্ত কৰে"
+
+#: ../gio/gresource-tool.c:506
+msgid "Extract a resource file to stdout"
+msgstr "stdout লে এটা সম্পদ ফাইল নিষ্কাষণ কৰক"
+
+#: ../gio/gresource-tool.c:507
+msgid "FILE PATH"
+msgstr "FILE PATH"
+
+#: ../gio/gresource-tool.c:513 ../gio/gsettings-tool.c:628
+#, c-format
+msgid ""
+"Unknown command %s\n"
+"\n"
+msgstr ""
+"অজ্ঞাত কমান্ড %s\n"
+"\n"
+
+#: ../gio/gresource-tool.c:521
+msgid ""
+"Usage:\n"
+"  gresource [--section SECTION] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  sections                  List resource sections\n"
+"  list                      List resources\n"
+"  details                   List resources with details\n"
+"  extract                   Extract a resource\n"
+"\n"
+"Use 'gresource help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"ব্যৱহাৰ:\n"
+"  gresource [--section SECTION] COMMAND [ARGS...]\n"
+"\n"
+"কমান্ডসমূহ:\n"
+"  help                      এই তথ্য দেখুৱাওক\n"
+"  sections                  সম্পদ অংশসমূহ তালিকাভুক্ত কৰক\n"
+"  list                      সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"  details                   বিৱৰণৰ সৈতে সম্পদসমূহ তালিকাভুক্ত কৰক\n"
+"  extract                   এটা সম্পদ নিষ্কাষণ কৰক\n"
+"\n"
+"বিৱৰিত সহায়ৰ বাবে 'gresource help COMMAND' ব্যৱহাৰ কৰক।\n"
+"\n"
+
+#: ../gio/gresource-tool.c:535
+#, c-format
+msgid ""
+"Usage:\n"
+"  gresource %s%s%s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"ব্যৱহাৰ:\n"
+"  gresource %s%s%s %s\n"
+"\n"
+"%s\n"
+"\n"
+
+#: ../gio/gresource-tool.c:538 ../gio/gsettings-tool.c:661
+msgid "Arguments:\n"
+msgstr "তৰ্কসমূহ:\n"
+
+#: ../gio/gresource-tool.c:542
+msgid "  SECTION   An (optional) elf section name\n"
+msgstr "  SECTION   এটা (বৈকল্পিক) elf অংশ নাম\n"
+
+#: ../gio/gresource-tool.c:546 ../gio/gsettings-tool.c:668
+msgid "  COMMAND   The (optional) command to explain\n"
+msgstr "  COMMAND   বিৱৰণ কৰিবলে (বিকল্প) কমান্ড\n"
+
+#: ../gio/gresource-tool.c:552
+msgid "  FILE      An elf file (a binary or a shared library)\n"
+msgstr "  FILE      এটা elf ফাইল (এটা বাইনাৰি অথবা এটা অংশীদাৰী লাইব্ৰেৰী)\n"
+
+#: ../gio/gresource-tool.c:555
+msgid ""
+"  FILE      An elf file (a binary or a shared library)\n"
+"            or a compiled resource file\n"
+msgstr ""
+"  FILE      এটা elf ফাইল (এটা বাইনাৰি অথবা এটা অংশীদাৰী লাইব্ৰেৰী)\n"
+"            অথবা এটা কমপাইল্ড সম্পদ ফাইল\n"
+
+#: ../gio/gresource-tool.c:559
+msgid "[PATH]"
+msgstr "[PATH]"
+
+#: ../gio/gresource-tool.c:561
+msgid "  PATH      An (optional) resource path (may be partial)\n"
+msgstr "  PATH      এটা (বৈকল্পিক) সম্পদ পথ (আংশিক হব পাৰে)\n"
+
+#: ../gio/gresource-tool.c:562
+msgid "PATH"
+msgstr "PATH"
+
+#: ../gio/gresource-tool.c:564
+msgid "  PATH      A resource path\n"
+msgstr "  PATH      এটা সম্পদ পথ\n"
+
+#: ../gio/gsettings-tool.c:57 ../gio/gsettings-tool.c:78
+#, c-format
+msgid "No such schema '%s'\n"
+msgstr "এনে কোনো স্কিমা '%s' নাই\n"
+
+#: ../gio/gsettings-tool.c:63
+#, c-format
+msgid "Schema '%s' is not relocatable (path must not be specified)\n"
+msgstr "স্কিমা '%s' পুনৰঅৱস্থিত কৰিব নোৱাৰি (পথ ধাৰ্য্য কৰা হব নালাগিব)\n"
+
+#: ../gio/gsettings-tool.c:84
+#, c-format
+msgid "Schema '%s' is relocatable (path must be specified)\n"
+msgstr "স্কিমা '%s' পুনৰঅৱস্থিত কৰিব পাৰি (পথ ধাৰ্য্য কৰিব লাগিব)\n"
+
+#: ../gio/gsettings-tool.c:98
+#, c-format
+msgid "Empty path given.\n"
+msgstr "ৰিক্ত পথ দিয়া হৈছে।\n"
+
+#: ../gio/gsettings-tool.c:104
+#, c-format
+msgid "Path must begin with a slash (/)\n"
+msgstr "পথ এটা স্লেশ (/) ৰ সৈতে আৰম্ভ হব লাগিব\n"
+
+#: ../gio/gsettings-tool.c:110
+#, c-format
+msgid "Path must end with a slash (/)\n"
+msgstr "পথ এটা স্লেশ (/) ৰ সৈতে শেষ হব লাগিব\n"
+
+#: ../gio/gsettings-tool.c:116
+#, c-format
+msgid "Path must not contain two adjacent slashes (//)\n"
+msgstr "পথত দুটা কাষৰীয়া স্লেশ থাকিব নালাগিব (//)\n"
+
+#: ../gio/gsettings-tool.c:137
+#, c-format
+msgid "No such key '%s'\n"
+msgstr "এনে কোনো কি '%s' নাই\n"
+
+#: ../gio/gsettings-tool.c:511
+#, c-format
+msgid "The provided value is outside of the valid range\n"
+msgstr "প্ৰদান কৰা মান বৈধ বিস্তাৰৰ বাহিৰ\n"
+
+#: ../gio/gsettings-tool.c:518
+#, c-format
+msgid "The key is not writable\n"
+msgstr "কি' লিখিব পৰা নহয়\n"
+
+#: ../gio/gsettings-tool.c:548
+msgid "Print version information and exit"
+msgstr "সংস্কৰণ তথ্য প্ৰিন্ট কৰক আৰু প্ৰস্থান কৰক"
+
+#: ../gio/gsettings-tool.c:554
+msgid "List the installed (non-relocatable) schemas"
+msgstr "ইনস্টল (অৱস্থিত কৰিব নোৱাৰা) স্কিমাসমূহ তালিকাভুক্ত কৰক"
+
+#: ../gio/gsettings-tool.c:560
+msgid "List the installed relocatable schemas"
+msgstr "ইনস্টল থকা পুনৰ অৱস্থিত কৰিব পৰা স্কিমাসমূহ তালিকাভুক্ত কৰক"
+
+#: ../gio/gsettings-tool.c:566
+msgid "List the keys in SCHEMA"
+msgstr "কিসমূহক SCHEMA ত তালিকাভুক্ত কৰক"
+
+#: ../gio/gsettings-tool.c:567 ../gio/gsettings-tool.c:573
+#: ../gio/gsettings-tool.c:610
+msgid "SCHEMA[:PATH]"
+msgstr "SCHEMA[:PATH]"
+
+#: ../gio/gsettings-tool.c:572
+msgid "List the children of SCHEMA"
+msgstr "SCHEMA সন্তানসমূহ তালিকাভুক্ত কৰক"
+
+#: ../gio/gsettings-tool.c:578
+msgid ""
+"List keys and values, recursively\n"
+"If no SCHEMA is given, list all keys\n"
+msgstr ""
+"কি আৰু মানসমূহ তালিকাভুক্ত কৰক, বাৰংবাৰভাৱে\n"
+"যদি কোনো SCHEMA দিয়া হোৱা নাই, সকলো কি তালিকাভুক্ত কৰক\n"
+
+#: ../gio/gsettings-tool.c:580
+msgid "[SCHEMA[:PATH]]"
+msgstr "[SCHEMA[:PATH]]"
+
+#: ../gio/gsettings-tool.c:585
+msgid "Get the value of KEY"
+msgstr "KEY ৰ মান প্ৰাপ্ত কৰক"
+
+#: ../gio/gsettings-tool.c:586 ../gio/gsettings-tool.c:592
+#: ../gio/gsettings-tool.c:604 ../gio/gsettings-tool.c:616
+msgid "SCHEMA[:PATH] KEY"
+msgstr "SCHEMA[:PATH] KEY"
+
+#: ../gio/gsettings-tool.c:591
+msgid "Query the range of valid values for KEY"
+msgstr "KEY ৰ বাবে বৈধ মানসমূহৰ বিস্তাৰক প্ৰশ্ন কৰক"
+
+#: ../gio/gsettings-tool.c:597
+msgid "Set the value of KEY to VALUE"
+msgstr "KEY ৰ মান VALUE লে সংহতি কৰক"
+
+#: ../gio/gsettings-tool.c:598
+msgid "SCHEMA[:PATH] KEY VALUE"
+msgstr "SCHEMA[:PATH] KEY VALUE"
+
+#: ../gio/gsettings-tool.c:603
+msgid "Reset KEY to its default value"
+msgstr "KEY ক ইয়াৰ অবিকল্পিত মানলে পুনৰসংহতি কৰক"
+
+#: ../gio/gsettings-tool.c:609
+msgid "Reset all keys in SCHEMA to their defaults"
+msgstr "SCHEMA ত থকা সকলো কিক সিহতৰ অবিকল্পিতসমূহলে পুনৰসংহতি কৰক"
+
+#: ../gio/gsettings-tool.c:615
+msgid "Check if KEY is writable"
+msgstr "নিৰীক্ষণ কৰক KEY লিখাযোগ্য হয় নে"
+
+#: ../gio/gsettings-tool.c:621
+msgid ""
+"Monitor KEY for changes.\n"
+"If no KEY is specified, monitor all keys in SCHEMA.\n"
+"Use ^C to stop monitoring.\n"
+msgstr ""
+"KEY ক পৰিবৰ্তনসমূহৰ বাবে মনিটৰ কৰক।\n"
+"যদি কোনো কি ধাৰ্য্য কৰা নহয়, SCHEMA ত থকা সকলো কি মনিটৰ কৰক।\n"
+"মনিটৰিং বন্ধ কৰিবলে ^C ব্যৱহাৰ কৰক।\n"
+
+#: ../gio/gsettings-tool.c:624
+msgid "SCHEMA[:PATH] [KEY]"
+msgstr "SCHEMA[:PATH] [KEY]"
+
+#: ../gio/gsettings-tool.c:636
+msgid ""
+"Usage:\n"
+"  gsettings [--schemadir SCHEMADIR] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  list-schemas              List installed schemas\n"
+"  list-relocatable-schemas  List relocatable schemas\n"
+"  list-keys                 List keys in a schema\n"
+"  list-children             List children of a schema\n"
+"  list-recursively          List keys and values, recursively\n"
+"  range                     Queries the range of a key\n"
+"  get                       Get the value of a key\n"
+"  set                       Set the value of a key\n"
+"  reset                     Reset the value of a key\n"
+"  reset-recursively         Reset all values in a given schema\n"
+"  writable                  Check if a key is writable\n"
+"  monitor                   Watch for changes\n"
+"\n"
+"Use 'gsettings help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"ব্যৱহাৰ:\n"
+"  gsettings [--schemadir SCHEMADIR] COMMAND [ARGS...]\n"
+"\n"
+"কমান্ডসমূহ:\n"
+"  help                      এই তথ্য দেখুৱাওক\n"
+"  list-schemas              ইনস্টল থকা স্কিমাসমূহ তালিকাভুক্ত কৰক\n"
+"  list-relocatable-schemas  পুনৰঅৱস্থিত কৰিব পৰা স্কিমাসমূহ তালিকাভুক্ত কৰক \n"
+"  list-keys                 এটা স্কিমাৰ কিসমূহ তালিকাভুক্ত কৰক\n"
+"  list-children             এটা স্কিমাৰ সন্তান তালিকাভুক্ত কৰক\n"
+"  list-recursively          কি আৰু মানসমূহ তালিকাভুক্ত কৰক, পুনৰাবৃত্তি "
+"কৰাকৈ\n"
+"  range                     এটা কিৰ বিস্তাৰক প্ৰশ্ন কৰে\n"
+"  get                       এটা কিৰ মান প্ৰাপ্ত কৰক\n"
+"  set                       এটা কিৰ মান সংহতি কৰক\n"
+"  reset                     এটা কিৰ মান পুনৰসংহতি কৰক\n"
+"  reset-recursively         এটা স্কিমাত সকলো মান পুনৰসংহতি কৰক\n"
+"  writable                  এটা কি লিখিব পৰা নে নীৰিক্ষণ কৰক\n"
+"  monitor                   পৰিবৰ্তনসমূহ চাওক\n"
+"\n"
+"বিৱৰিত সহায়ৰ বাবে 'gsettings help COMMAND' ব্যৱহাৰ কৰক।\n"
+"\n"
+
+#: ../gio/gsettings-tool.c:658
+#, c-format
+msgid ""
+"Usage:\n"
+"  gsettings [--schemadir SCHEMADIR] %s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"ব্যৱহাৰ:\n"
+"  gsettings [--schemadir SCHEMADIR] %s %s\n"
+"\n"
+"%s\n"
+"\n"
+
+#: ../gio/gsettings-tool.c:664
+msgid "  SCHEMADIR A directory to search for additional schemas\n"
+msgstr "  SCHEMADIR অতিৰিক্ত স্কিমাসমূহ সন্ধান কৰিবলে এটা ডাইৰেকটৰি\n"
+
+#: ../gio/gsettings-tool.c:672
+msgid ""
+"  SCHEMA    The name of the schema\n"
+"  PATH      The path, for relocatable schemas\n"
+msgstr ""
+"  SCHEMA    স্কিমাৰ নাম\n"
+"  PATH      পথ, পুনৰ অৱস্থান কৰিব পৰা স্কিমাসমূহৰ বাবে\n"
+
+#: ../gio/gsettings-tool.c:677
+msgid "  KEY       The (optional) key within the schema\n"
+msgstr "  KEY      স্কিমাৰ ভিতৰত (বিকল্প) কি\n"
+
+#: ../gio/gsettings-tool.c:681
+msgid "  KEY       The key within the schema\n"
+msgstr "  KEY       স্কিমাৰ ভিতৰত কি\n"
+
+#: ../gio/gsettings-tool.c:685
+msgid "  VALUE     The value to set\n"
+msgstr "  VALUE     সংহতি কৰিবলে মান\n"
+
+#: ../gio/gsettings-tool.c:744
+#, c-format
+msgid "Could not load schemas from %s: %s\n"
+msgstr "%s ৰ পৰা স্কিমাসমূহ ল'ড কৰিব পৰা নগল: %s\n"
+
+#: ../gio/gsettings-tool.c:806
+#, c-format
+msgid "Empty schema name given\n"
+msgstr "ৰিক্ত স্কিমা নাম দিয়া হৈছে\n"
+
+#: ../gio/gsocket.c:312
+msgid "Invalid socket, not initialized"
+msgstr "অবৈধ চকেট, আৰম্ভ কৰা হোৱা নাই"
+
+#: ../gio/gsocket.c:319
+#, c-format
+msgid "Invalid socket, initialization failed due to: %s"
+msgstr "অবৈধ চকেট, ইয়াৰ কাৰণে আৰম্ভ কৰিব নোৱাৰি: %s"
+
+#: ../gio/gsocket.c:327
+msgid "Socket is already closed"
+msgstr "চকেট ইতিমধ্যে বন্ধ"
+
+#: ../gio/gsocket.c:335 ../gio/gsocket.c:3510 ../gio/gsocket.c:3565
+msgid "Socket I/O timed out"
+msgstr "চকেট I/O সময়অন্ত হল"
+
+#: ../gio/gsocket.c:482
+#, c-format
+msgid "creating GSocket from fd: %s"
+msgstr "fd ৰ পৰা GSocket সৃষ্টি কৰা হৈছে: %s"
+
+#: ../gio/gsocket.c:510 ../gio/gsocket.c:564 ../gio/gsocket.c:571
+#, c-format
+msgid "Unable to create socket: %s"
+msgstr "চকেট সৃষ্টি কৰিবলৈ সমস্যা: %s"
+
+#: ../gio/gsocket.c:564
+msgid "Unknown family was specified"
+msgstr "অজ্ঞাত পৰিয়াল ধাৰ্য্য কৰা হৈছিল"
+
+#: ../gio/gsocket.c:571
+msgid "Unknown protocol was specified"
+msgstr "অজ্ঞাত প্ৰটোকল ধাৰ্য্য কৰা হৈছিল"
+
+#: ../gio/gsocket.c:1727
+#, c-format
+msgid "could not get local address: %s"
+msgstr "স্থানীয় ঠিকনা পোৱা নাযায়: %s"
+
+#: ../gio/gsocket.c:1770
+#, c-format
+msgid "could not get remote address: %s"
+msgstr "দূৰৰ ঠিকনা পোৱা নাযায়: %s"
+
+#: ../gio/gsocket.c:1831
+#, c-format
+msgid "could not listen: %s"
+msgstr "শুনিব পৰা নগল: %s"
+
+#: ../gio/gsocket.c:1903
+#, c-format
+msgid "Error binding to address: %s"
+msgstr "ঠিকনালৈ বান্ধিবলৈ সমস্যা: %s"
+
+#: ../gio/gsocket.c:1956 ../gio/gsocket.c:1993
+#, c-format
+msgid "Error joining multicast group: %s"
+msgstr "মাল্টিকাস্ট দলত অংশগ্ৰহণ কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:1957 ../gio/gsocket.c:1994
+#, c-format
+msgid "Error leaving multicast group: %s"
+msgstr "মাল্টিকাস্ট দল এৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:1958
+msgid "No support for source-specific multicast"
+msgstr "উৎস-বিশেষ মাল্টিকাস্টৰ বাবে কোনো সমৰ্থন নাই"
+
+#: ../gio/gsocket.c:2177
+#, c-format
+msgid "Error accepting connection: %s"
+msgstr "সংযোগ গ্ৰহণ কৰোঁতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:2298
+msgid "Connection in progress"
+msgstr "সংযোগ চলি আছে"
+
+#: ../gio/gsocket.c:2345
+msgid "Unable to get pending error: "
+msgstr "পেন্ডিং ত্ৰুটি পাবলৈ ব্যৰ্থ:"
+
+#: ../gio/gsocket.c:2511
+#, c-format
+msgid "Error receiving data: %s"
+msgstr "তথ্য পাওঁতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:2689
+#, c-format
+msgid "Error sending data: %s"
+msgstr "তথ্য পঠিয়াবলৈ সমস্যা: %s"
+
+#: ../gio/gsocket.c:2803
+#, c-format
+msgid "Unable to shutdown socket: %s"
+msgstr "চকেট বন্ধ কৰিবলে অক্ষম: %s"
+
+#: ../gio/gsocket.c:2882
+#, c-format
+msgid "Error closing socket: %s"
+msgstr "চকেট বন্ধ কৰোঁতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:3503
+#, c-format
+msgid "Waiting for socket condition: %s"
+msgstr "চকেট অৱস্থাৰ কাৰণে প্ৰতীক্ষা কৰা হৈছে: %s"
+
+#: ../gio/gsocket.c:3781 ../gio/gsocket.c:3862
+#, c-format
+msgid "Error sending message: %s"
+msgstr "সম্বাদ পঠিয়াওঁতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:3806
+msgid "GSocketControlMessage not supported on Windows"
+msgstr "GSocketControlMessage ক Windows ত সমৰ্থিত নহয়"
+
+#: ../gio/gsocket.c:4140 ../gio/gsocket.c:4275
+#, c-format
+msgid "Error receiving message: %s"
+msgstr "সম্বাদ পাওঁতে ত্ৰুটি: %s"
+
+#: ../gio/gsocket.c:4357
+#, c-format
+#| msgid "Unable to create socket: %s"
+msgid "Unable to read socket credentials: %s"
+msgstr "চকেট তথ্যসমূহ পঢ়িবলৈ অক্ষম: %s"
+
+#: ../gio/gsocket.c:4376
+msgid "g_socket_get_credentials not implemented for this OS"
+msgstr "এই OS ৰ বাবে g_socket_get_credentials প্ৰণয়ন কৰা হোৱা নাই"
+
+#: ../gio/gsocketclient.c:177
+#, c-format
+msgid "Could not connect to proxy server %s: "
+msgstr "প্ৰক্সি চাৰ্ভাৰ %s লে সংযোগ কৰিব নোৱাৰি: "
+
+#: ../gio/gsocketclient.c:191
+#, c-format
+msgid "Could not connect to %s: "
+msgstr "%s লে সংযোগ কৰিব নোৱাৰি: "
+
+#: ../gio/gsocketclient.c:193
+msgid "Could not connect: "
+msgstr "সংযোগ কৰিব পৰা নগল: "
+
+#: ../gio/gsocketclient.c:1067 ../gio/gsocketclient.c:1631
+msgid "Unknown error on connect"
+msgstr "সংযোগত অজ্ঞাত ত্ৰুটি"
+
+#: ../gio/gsocketclient.c:1120 ../gio/gsocketclient.c:1569
+msgid "Proxying over a non-TCP connection is not supported."
+msgstr "নন-TCP সংযোগৰ ওপৰত প্ৰক্সি কৰাটো সমৰ্থন কৰা নহয়।"
+
+#: ../gio/gsocketclient.c:1146 ../gio/gsocketclient.c:1590
+#, c-format
+msgid "Proxy protocol '%s' is not supported."
+msgstr "প্ৰক্সি প্ৰটোকল '%s' সমৰ্থিত নহয়।"
+
+#: ../gio/gsocketlistener.c:187
+msgid "Listener is already closed"
+msgstr "স্ৰোত ইতিমধ্যে বন্ধ"
+
+#: ../gio/gsocketlistener.c:228
+msgid "Added socket is closed"
+msgstr "যোগ কৰা চকেট বন্ধ"
+
+#: ../gio/gsocks4aproxy.c:120
+#, c-format
+msgid "SOCKSv4 does not support IPv6 address '%s'"
+msgstr "SOCKSv4 এ IPv6 ঠিকনা '%s' ক সমৰ্থন নকৰে"
+
+#: ../gio/gsocks4aproxy.c:138
+msgid "Username is too long for SOCKSv4 protocol"
+msgstr "ব্যৱহাৰকাৰীনাম SOCKSv4 প্ৰটোকলৰ বাবে অতি দীঘল"
+
+#: ../gio/gsocks4aproxy.c:155
+#, c-format
+msgid "Hostname '%s' is too long for SOCKSv4 protocol"
+msgstr "হস্টনাম '%s' SOCKSv4 প্ৰটোকলৰ বাবে অতি দীঘল"
+
+#: ../gio/gsocks4aproxy.c:181
+msgid "The server is not a SOCKSv4 proxy server."
+msgstr "চাৰ্ভাৰ এটা SOCKSv4 প্ৰক্সি চাৰ্ভাৰ নহয়।"
+
+#: ../gio/gsocks4aproxy.c:188
+msgid "Connection through SOCKSv4 server was rejected"
+msgstr "SOCKSv4 প্ৰক্সি চাৰ্ভাৰৰ সৈতে সংযোগ নাকচ কৰা হৈছিল"
+
+#: ../gio/gsocks5proxy.c:155 ../gio/gsocks5proxy.c:326
+#: ../gio/gsocks5proxy.c:336
+msgid "The server is not a SOCKSv5 proxy server."
+msgstr "চাৰ্ভাৰ এটা SOCKSv5 প্ৰক্সি চাৰ্ভাৰ নহয়।"
+
+#: ../gio/gsocks5proxy.c:169
+msgid "The SOCKSv5 proxy requires authentication."
+msgstr "SOCKSv5 প্ৰক্সি চাৰ্ভাৰৰ প্ৰমাণীকৰণৰ প্ৰয়োজন।"
+
+#: ../gio/gsocks5proxy.c:179
+msgid ""
+"The SOCKSv5 proxy requires an authentication method that is not supported by "
+"GLib."
+msgstr ""
+"SOCKSv5 প্ৰক্সিৰ এটা প্ৰমাণীকৰণ পদ্ধতিৰ প্ৰয়োজন যি GLib দ্বাৰা সমৰ্থিত নহয়।"
+
+#: ../gio/gsocks5proxy.c:208
+msgid "Username or password is too long for SOCKSv5 protocol."
+msgstr "ব্যৱহাৰকাৰীনাম অথবা পাছৱাৰ্ড SOCKSv5 প্ৰটোকলৰ বাবে অতি দীঘল।"
+
+#: ../gio/gsocks5proxy.c:238
+msgid "SOCKSv5 authentication failed due to wrong username or password."
+msgstr ""
+"SOCKSv5 প্ৰমাণীকৰণ ত্ৰুটি ব্যৱহাৰকাৰীনাম অথবা পাছৱাৰ্ডৰ কাৰণে ব্যৰ্থ হল।"
+
+#: ../gio/gsocks5proxy.c:288
+#, c-format
+msgid "Hostname '%s' is too long for SOCKSv5 protocol"
+msgstr "হস্টনাম '%s' SOCKSv5 প্ৰটোকলৰ বাবে অতি দীঘল"
+
+#: ../gio/gsocks5proxy.c:350
+msgid "The SOCKSv5 proxy server uses unknown address type."
+msgstr "SOCKSv5 প্ৰক্সি চাৰ্ভাৰে অজ্ঞাত ঠিকনা ধৰণ ব্যৱহাৰ কৰে।"
+
+#: ../gio/gsocks5proxy.c:357
+msgid "Internal SOCKSv5 proxy server error."
+msgstr "অভ্যন্তৰীক SOCKSv5 প্ৰক্সি চাৰ্ভাৰ ত্ৰুটি।"
+
+#: ../gio/gsocks5proxy.c:363
+msgid "SOCKSv5 connection not allowed by ruleset."
+msgstr "SOCKSv5 সংযোগ নিয়মসংহতি দ্বাৰা অনুমোদিত নহয়। "
+
+#: ../gio/gsocks5proxy.c:370
+msgid "Host unreachable through SOCKSv5 server."
+msgstr "হস্ট SOCKSv5 চাৰ্ভাৰ দ্বাৰা প্ৰাপ্ত নহয়।"
+
+#: ../gio/gsocks5proxy.c:376
+msgid "Network unreachable through SOCKSv5 proxy."
+msgstr "নেটৱাৰ্ক  SOCKSv5 প্ৰক্সি দ্বাৰা প্ৰাপ্ত নহয়।"
+
+#: ../gio/gsocks5proxy.c:382
+msgid "Connection refused through SOCKSv5 proxy."
+msgstr "সংযোগ SOCKSv5 প্ৰক্সি দ্বাৰা নাকচ কৰা হৈছে।"
+
+#: ../gio/gsocks5proxy.c:388
+msgid "SOCKSv5 proxy does not support 'connect' command."
+msgstr "SOCKSv5 প্ৰক্সিয়ে 'connect' কমান্ডৰ সমৰ্থন নকৰে।"
+
+#: ../gio/gsocks5proxy.c:394
+msgid "SOCKSv5 proxy does not support provided address type."
+msgstr "SOCKSv5 প্ৰক্সিয়ে প্ৰদান কৰা ঠিকনা ধৰণ সমৰ্থন নকৰে।"
+
+#: ../gio/gsocks5proxy.c:400
+msgid "Unknown SOCKSv5 proxy error."
+msgstr "অজ্ঞাত SOCKSv5 প্ৰক্সি ত্ৰুটি।"
+
+#: ../gio/gthemedicon.c:498
+#, c-format
+msgid "Can't handle version %d of GThemedIcon encoding"
+msgstr "GThemedIcon encoding ৰ %d সংস্কৰণ পৰিচালন কৰিব নোৱাৰি"
+
+#: ../gio/gthreadedresolver.c:110
+#, c-format
+msgid "Error resolving '%s': %s"
+msgstr "'%s' বিশ্লেষণ কৰোঁতে ত্ৰুটি: %s"
+
+#: ../gio/gthreadedresolver.c:195
+#, c-format
+msgid "Error reverse-resolving '%s': %s"
+msgstr "'%s' ক ওলোটা ভাবে বুজিবলৈ ত্ৰুটি: %s"
+
+#: ../gio/gthreadedresolver.c:533 ../gio/gthreadedresolver.c:614
+#: ../gio/gthreadedresolver.c:715 ../gio/gthreadedresolver.c:766
+#, c-format
+msgid "No DNS record of the requested type for '%s'"
+msgstr "'%s' ৰ বাবে অনুৰোধ কৰা ধৰণৰ কোনো DNS ৰেকৰ্ড নাই"
+
+#: ../gio/gthreadedresolver.c:538 ../gio/gthreadedresolver.c:720
+#, c-format
+msgid "Temporarily unable to resolve '%s'"
+msgstr "'%s' ক অস্থায়ীভাবে বুজিব পৰা নাযায়"
+
+#: ../gio/gthreadedresolver.c:543 ../gio/gthreadedresolver.c:725
+#, c-format
+msgid "Error resolving '%s'"
+msgstr "'%s' বুজিব লওঁতে ত্ৰুটি"
+
+#: ../gio/gtlscertificate.c:248
+msgid "Cannot decrypt PEM-encoded private key"
+msgstr "PEM এনক'ড থকা ব্যক্তিগত কিক ডিক্ৰিপ্ট কৰিব নোৱাৰি"
+
+#: ../gio/gtlscertificate.c:253
+msgid "No PEM-encoded private key found"
+msgstr "কোনো PEM এনকোডেড ব্যক্তিগত কি পোৱা নগল"
+
+#: ../gio/gtlscertificate.c:263
+msgid "Could not parse PEM-encoded private key"
+msgstr "PEM এনকোডেড ব্যক্তিগত কি বিশ্লেষণ কৰিব নোৱাৰি"
+
+#: ../gio/gtlscertificate.c:288
+msgid "No PEM-encoded certificate found"
+msgstr "কোনো PEM এনকোডেড প্ৰমাণপত্ৰ পোৱা নগল"
+
+#: ../gio/gtlscertificate.c:297
+msgid "Could not parse PEM-encoded certificate"
+msgstr "PEM এনকোডেড প্ৰমাণপত্ৰ বিশ্লেষণ কৰিব পৰা নগল"
+
+#: ../gio/gtlspassword.c:113
+msgid ""
+"This is the last chance to enter the password correctly before your access "
+"is locked out."
+msgstr ""
+"আপোনাৰ অভিগম লকআউট হৈ যোৱাৰ আগত পাছৱাৰ্ড সঠিকভাৱে সুমুৱাৰ এয়া শেষ সুযোগ।"
+
+#: ../gio/gtlspassword.c:115
+msgid ""
+"Several password entered have been incorrect, and your access will be locked "
+"out after further failures."
+msgstr ""
+"বহু সুমুৱা পাছৱাৰ্ড ত্ৰুটি হৈছে, আৰু আপোনাৰ অভিগম ততোধিক ব্যৰ্থতাৰ পিছত লক "
+"আউট কৰি "
+"দিয়া হব।"
+
+#: ../gio/gtlspassword.c:117
+msgid "The password entered is incorrect."
+msgstr "সুমুৱা পাছৱাৰ্ড শুদ্ধ নহয়।"
+
+#: ../gio/gunixconnection.c:159 ../gio/gunixconnection.c:554
+#, c-format
+msgid "Expecting 1 control message, got %d"
+msgid_plural "Expecting 1 control message, got %d"
+msgstr[0] "1 নিয়ন্ত্ৰণৰ সম্বাদ প্ৰত্যাশিত, %d প্ৰাপ্ত হল"
+msgstr[1] "1 নিয়ন্ত্ৰণৰ সম্বাদ প্ৰত্যাশিত, %d প্ৰাপ্ত হল"
+
+#: ../gio/gunixconnection.c:175 ../gio/gunixconnection.c:566
+msgid "Unexpected type of ancillary data"
+msgstr "এঞ্চিলাৰি তথ্যৰ অপ্ৰত্যাশিত ধৰণ"
+
+#: ../gio/gunixconnection.c:193
+#, c-format
+msgid "Expecting one fd, but got %d\n"
+msgid_plural "Expecting one fd, but got %d\n"
+msgstr[0] "এটা fd প্ৰত্যাশিত, কিন্তু প্ৰাপ্ত হল %d\n"
+msgstr[1] "এটা fd প্ৰত্যাশিত, কিন্তু প্ৰাপ্ত হল %d\n"
+
+#: ../gio/gunixconnection.c:212
+msgid "Received invalid fd"
+msgstr "অবৈধ fd পোৱা গ'ল"
+
+#: ../gio/gunixconnection.c:348
+msgid "Error sending credentials: "
+msgstr "তথ্য পঠিয়াওতে ত্ৰুটি: "
+
+#: ../gio/gunixconnection.c:496
+#, c-format
+msgid "Error checking if SO_PASSCRED is enabled for socket: %s"
+msgstr "SO_PASSCRED চকেটৰ বাবে সামৰ্থবান আছে নে নিৰীক্ষণ কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gunixconnection.c:511
+#, c-format
+msgid "Error enabling SO_PASSCRED: %s"
+msgstr "SO_PASSCRED সামৰ্থবান কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gunixconnection.c:540
+msgid ""
+"Expecting to read a single byte for receiving credentials but read zero bytes"
+msgstr ""
+"তথ্যসমূহ গ্ৰহন কৰাৰ বাবে এটা বাইট পঢ়িবলে আশা কৰা হৈ আছিল কিন্তু শূণ্য বাইট "
+"পঢ়া হল"
+
+#: ../gio/gunixconnection.c:580
+#, c-format
+msgid "Not expecting control message, but got %d"
+msgstr "নিয়ন্ত্ৰণ বাৰ্তা আশা কৰা হোৱা নাছিল, কিন্তু %d পোৱা গল"
+
+#: ../gio/gunixconnection.c:604
+#, c-format
+msgid "Error while disabling SO_PASSCRED: %s"
+msgstr "SO_PASSCRED অসামৰ্থবান কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gunixinputstream.c:372 ../gio/gunixinputstream.c:393
+#, c-format
+msgid "Error reading from file descriptor: %s"
+msgstr "ফাইল বিৱৰকৰ পৰা পঢ়োতে ত্ৰুটি: %s"
+
+#: ../gio/gunixinputstream.c:426 ../gio/gunixoutputstream.c:412
+#, c-format
+msgid "Error closing file descriptor: %s"
+msgstr "ফাইল বিৱৰক বন্ধ কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gunixmounts.c:1985 ../gio/gunixmounts.c:2038
+msgid "Filesystem root"
+msgstr "ফাইলচিস্টেম root"
+
+#: ../gio/gunixoutputstream.c:358 ../gio/gunixoutputstream.c:379
+#, c-format
+msgid "Error writing to file descriptor: %s"
+msgstr "ফাইল বিৱৰকলে লিখোতে ত্ৰুটি: %s"
+
+#: ../gio/gunixsocketaddress.c:234
+msgid "Abstract UNIX domain socket addresses not supported on this system"
+msgstr "এই চিস্টেমত এবস্ট্ৰেক্ট UNIX ডমেইন চকেট ঠিকনাসমূহ সমৰ্থিত নহয়"
+
+#: ../gio/gvolume.c:439
+msgid "volume doesn't implement eject"
+msgstr "ভলিউম দ্বাৰা ইজেক্ট প্ৰয়োগ কৰা নহয়"
+
+#. Translators: This is an error
+#. * message for volume objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gvolume.c:516
+msgid "volume doesn't implement eject or eject_with_operation"
+msgstr "ভলিউম দ্বাৰা ইজেক্ট বা eject_with_operation প্ৰয়োগ কৰা নহয়"
+
+#: ../gio/gwin32appinfo.c:276
+msgid "Can't find application"
+msgstr "এপ্লিকেচন পোৱা নাযায়"
+
+#: ../gio/gwin32appinfo.c:308
+#, c-format
+msgid "Error launching application: %s"
+msgstr "এপ্লিকেচন আৰম্ভ কৰিবলৈ ত্ৰুটি: %s"
+
+#: ../gio/gwin32appinfo.c:344
+msgid "URIs not supported"
+msgstr "URI সমৰ্থিত নহয়"
+
+#: ../gio/gwin32appinfo.c:366
+msgid "association changes not supported on win32"
+msgstr "win32 ত এপ্লিকেচনৰ সম্বন্ধৰ সলনি সমৰ্থিত নহয়"
+
+#: ../gio/gwin32appinfo.c:378
+msgid "Association creation not supported on win32"
+msgstr "win32 ত এপ্লিকেচনৰ সম্বন্ধৰ সৃষ্টি সমৰ্থিত নহয়"
+
+#: ../gio/gwin32inputstream.c:343
+#, c-format
+msgid "Error reading from handle: %s"
+msgstr "হাতলৰ পৰা পঢ়োতে ত্ৰুটি: %s"
+
+#: ../gio/gwin32inputstream.c:375 ../gio/gwin32outputstream.c:362
+#, c-format
+msgid "Error closing handle: %s"
+msgstr "হাতল বন্ধ কৰোতে ত্ৰুটি: %s"
+
+#: ../gio/gwin32outputstream.c:330
+#, c-format
+msgid "Error writing to handle: %s"
+msgstr "হাতললে লিখোতে ত্ৰুটি: %s"
+
+#: ../gio/gzlibcompressor.c:396 ../gio/gzlibdecompressor.c:349
+msgid "Not enough memory"
+msgstr "পৰ্যাপ্ত মেমৰি নাই"
+
+#: ../gio/gzlibcompressor.c:403 ../gio/gzlibdecompressor.c:356
+#, c-format
+msgid "Internal error: %s"
+msgstr "অভ্যন্তৰীক ত্ৰুটি: %s"
+
+#: ../gio/gzlibcompressor.c:416 ../gio/gzlibdecompressor.c:370
+msgid "Need more input"
+msgstr "অধিক ইনপুটৰ প্ৰয়োজন"
+
+#: ../gio/gzlibdecompressor.c:342
+msgid "Invalid compressed data"
+msgstr "অবৈধ সংকোচিত তথ্য"
+
+#: ../gio/tests/gdbus-daemon.c:18
+msgid "Address to listen on"
+msgstr "শুনিবলে ঠিকনা"
+
+#: ../gio/tests/gdbus-daemon.c:19
+msgid "Ignored, for compat with GTestDbus"
+msgstr "উপেক্ষা কৰা হৈছে, GTestDbus ৰ সৈতে compat ৰ বাবে"
+
+#: ../gio/tests/gdbus-daemon.c:20
+msgid "Print address"
+msgstr "ঠিকনা প্ৰিন্ট কৰক"
+
+#: ../gio/tests/gdbus-daemon.c:21
+msgid "Print address in shell mode"
+msgstr "শ্বেল অৱস্থাত ঠিকনা প্ৰিন্ট কৰক"
+
+#: ../gio/tests/gdbus-daemon.c:28
+msgid "Run a dbus service"
+msgstr "এটা dbus সেৱা চলাওক"
+
+#: ../gio/tests/gdbus-daemon.c:42
+#, c-format
+msgid "Wrong args\n"
+msgstr "ভুল args\n"
+
+#: ../glib/gbookmarkfile.c:760
+#, c-format
+msgid "Unexpected attribute '%s' for element '%s'"
+msgstr "অপ্ৰত্যাশিত বৈশিষ্ট '%s' পদাৰ্থ '%s' ৰ বাবে"
+
+#: ../glib/gbookmarkfile.c:771 ../glib/gbookmarkfile.c:842
+#: ../glib/gbookmarkfile.c:852 ../glib/gbookmarkfile.c:959
+#, c-format
+msgid "Attribute '%s' of element '%s' not found"
+msgstr "'%s' বৈশিষ্ট '%s' পদাৰ্থৰ পোৱা নগল"
+
+#: ../glib/gbookmarkfile.c:1129 ../glib/gbookmarkfile.c:1194
+#: ../glib/gbookmarkfile.c:1258 ../glib/gbookmarkfile.c:1268
+#, c-format
+msgid "Unexpected tag '%s', tag '%s' expected"
+msgstr "অপ্ৰত্যাশিত চিহ্ন '%s', '%s' চিহ্ন আশা কৰা হৈছিল"
+
+#: ../glib/gbookmarkfile.c:1154 ../glib/gbookmarkfile.c:1168
+#: ../glib/gbookmarkfile.c:1236 ../glib/gbookmarkfile.c:1288
+#, c-format
+msgid "Unexpected tag '%s' inside '%s'"
+msgstr "অপ্ৰত্যাশিত চিহ্ন '%s', '%s' ৰ ভিতৰত"
+
+#: ../glib/gbookmarkfile.c:1798
+msgid "No valid bookmark file found in data dirs"
+msgstr "তথ্য ডাইৰেকটৰিত কোনো বৈধ পত্ৰচিহ্নৰ ফাইল পোৱা নগল"
+
+#: ../glib/gbookmarkfile.c:1999
+#, c-format
+msgid "A bookmark for URI '%s' already exists"
+msgstr "URI '%s' ৰ বাবে পত্ৰচিহ্ন ইতিমধ্যে আছে"
+
+#: ../glib/gbookmarkfile.c:2045 ../glib/gbookmarkfile.c:2203
+#: ../glib/gbookmarkfile.c:2288 ../glib/gbookmarkfile.c:2368
+#: ../glib/gbookmarkfile.c:2453 ../glib/gbookmarkfile.c:2536
+#: ../glib/gbookmarkfile.c:2614 ../glib/gbookmarkfile.c:2693
+#: ../glib/gbookmarkfile.c:2735 ../glib/gbookmarkfile.c:2832
+#: ../glib/gbookmarkfile.c:2952 ../glib/gbookmarkfile.c:3142
+#: ../glib/gbookmarkfile.c:3218 ../glib/gbookmarkfile.c:3386
+#: ../glib/gbookmarkfile.c:3475 ../glib/gbookmarkfile.c:3565
+#: ../glib/gbookmarkfile.c:3693
+#, c-format
+msgid "No bookmark found for URI '%s'"
+msgstr "URI '%s' ৰ বাবে পত্ৰচিহ্ন পোৱা নগল"
+
+#: ../glib/gbookmarkfile.c:2377
+#, c-format
+msgid "No MIME type defined in the bookmark for URI '%s'"
+msgstr "URI '%s' ৰ পত্ৰচিহ্নৰ বাবে কোনো MIME ৰ ধৰণ সংজ্ঞা দিয়া হোৱা নাই"
+
+#: ../glib/gbookmarkfile.c:2462
+#, c-format
+msgid "No private flag has been defined in bookmark for URI '%s'"
+msgstr "URI '%s' ৰ পত্ৰচিহ্নত কোনো ব্যক্তিগত চিহ্নৰ সংজ্ঞা দিয়া হোৱা নাই"
+
+#: ../glib/gbookmarkfile.c:2841
+#, c-format
+msgid "No groups set in bookmark for URI '%s'"
+msgstr "URI '%s' ৰ পত্ৰচিহ্নৰ বাবে কোনো দল প্ৰতিষ্ঠা কৰা হোৱা নাই"
+
+#: ../glib/gbookmarkfile.c:3239 ../glib/gbookmarkfile.c:3396
+#, c-format
+msgid "No application with name '%s' registered a bookmark for '%s'"
+msgstr "'%s' নামৰ কোনো এপ্লিকেচনে '%s' ৰ বাবে কোনো পত্ৰচিহ্ন ৰেজিস্টাৰ কৰা নাই"
+
+#: ../glib/gbookmarkfile.c:3419
+#, c-format
+msgid "Failed to expand exec line '%s' with URI '%s'"
+msgstr "exec শাৰী '%s', য'ত URI '%s' আছে, বিস্তৃত কৰাত ব্যৰ্থ"
+
+#: ../glib/gconvert.c:506 ../glib/gutf8.c:829 ../glib/gutf8.c:1039
+#: ../glib/gutf8.c:1176 ../glib/gutf8.c:1280
+msgid "Partial character sequence at end of input"
+msgstr "ইনপুটৰ অন্তত অসম্পূৰ্ণ আখৰৰ ক্ৰম"
+
+#: ../glib/gconvert.c:756
+#, c-format
+msgid "Cannot convert fallback '%s' to codeset '%s'"
+msgstr "fallback '%s' ক codeset '%s' লৈ সলনি কৰিব নোৱাৰি"
+
+#: ../glib/gconvert.c:1574
+#, c-format
+msgid "The URI '%s' is not an absolute URI using the \"file\" scheme"
+msgstr "\"file\" আঁচনি ব্যৱহাৰ কৰা URI '%s' এটা সম্পূৰ্ণ URI নহয়"
+
+#: ../glib/gconvert.c:1584
+#, c-format
+msgid "The local file URI '%s' may not include a '#'"
+msgstr "স্থানিক ফাইলৰ URI '%s' ত এটা '#' থাকিব নোৱাৰে"
+
+#: ../glib/gconvert.c:1601
+#, c-format
+msgid "The URI '%s' is invalid"
+msgstr "URI '%s' অৱৈধ"
+
+#: ../glib/gconvert.c:1613
+#, c-format
+msgid "The hostname of the URI '%s' is invalid"
+msgstr "URI '%s' ৰ হস্টনাম অৱৈধ"
+
+#: ../glib/gconvert.c:1629
+#, c-format
+msgid "The URI '%s' contains invalidly escaped characters"
+msgstr "URI '%s' ত অৱৈধভাবে মুক্তি পোৱা আখৰ আছে"
+
+#: ../glib/gconvert.c:1724
+#, c-format
+msgid "The pathname '%s' is not an absolute path"
+msgstr "'%s' পথৰ নাম এটা সম্পূৰ্ণ পথৰ নাম নহয়"
+
+#: ../glib/gconvert.c:1734
+msgid "Invalid hostname"
+msgstr "অৱৈধ হস্টনাম"
+
+#. Translators: 'before midday' indicator
+#: ../glib/gdatetime.c:205
+msgctxt "GDateTime"
+msgid "AM"
+msgstr "পূৰ্ব্বাহ্ন"
+
+#. Translators: 'after midday' indicator
+#: ../glib/gdatetime.c:207
+msgctxt "GDateTime"
+msgid "PM"
+msgstr "অপৰাহ্ন"
+
+#. Translators: this is the preferred format for expressing the date and the time
+#: ../glib/gdatetime.c:210
+msgctxt "GDateTime"
+msgid "%a %b %e %H:%M:%S %Y"
+msgstr "%a %b %e %H:%M:%S %Y"
+
+#. Translators: this is the preferred format for expressing the date
+#: ../glib/gdatetime.c:213
+msgctxt "GDateTime"
+msgid "%m/%d/%y"
+msgstr "%m/%d/%y"
+
+#. Translators: this is the preferred format for expressing the time
+#: ../glib/gdatetime.c:216
+msgctxt "GDateTime"
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+#. Translators: this is the preferred format for expressing 12 hour time
+#: ../glib/gdatetime.c:219
+msgctxt "GDateTime"
+msgid "%I:%M:%S %p"
+msgstr "%I.%M.%S %p"
+
+#: ../glib/gdatetime.c:232
+msgctxt "full month name"
+msgid "January"
+msgstr "জানুৱাৰী"
+
+#: ../glib/gdatetime.c:234
+msgctxt "full month name"
+msgid "February"
+msgstr "ফেব্ৰুৱাৰী"
+
+#: ../glib/gdatetime.c:236
+msgctxt "full month name"
+msgid "March"
+msgstr "মাৰ্চ"
+
+#: ../glib/gdatetime.c:238
+msgctxt "full month name"
+msgid "April"
+msgstr "এপ্ৰিল"
+
+#: ../glib/gdatetime.c:240
+msgctxt "full month name"
+msgid "May"
+msgstr "মে"
+
+#: ../glib/gdatetime.c:242
+msgctxt "full month name"
+msgid "June"
+msgstr "জুন"
+
+#: ../glib/gdatetime.c:244
+msgctxt "full month name"
+msgid "July"
+msgstr "জুলাই"
+
+#: ../glib/gdatetime.c:246
+msgctxt "full month name"
+msgid "August"
+msgstr "আগষ্ট"
+
+#: ../glib/gdatetime.c:248
+msgctxt "full month name"
+msgid "September"
+msgstr "চেপ্তেম্বৰ"
+
+#: ../glib/gdatetime.c:250
+msgctxt "full month name"
+msgid "October"
+msgstr "অক্টোবৰ"
+
+#: ../glib/gdatetime.c:252
+msgctxt "full month name"
+msgid "November"
+msgstr "নভেম্বৰ"
+
+#: ../glib/gdatetime.c:254
+msgctxt "full month name"
+msgid "December"
+msgstr "ডিচেম্বৰ"
+
+#: ../glib/gdatetime.c:269
+msgctxt "abbreviated month name"
+msgid "Jan"
+msgstr "জান"
+
+#: ../glib/gdatetime.c:271
+msgctxt "abbreviated month name"
+msgid "Feb"
+msgstr "ফেব্ৰু"
+
+#: ../glib/gdatetime.c:273
+msgctxt "abbreviated month name"
+msgid "Mar"
+msgstr "মাৰ্চ"
+
+#: ../glib/gdatetime.c:275
+msgctxt "abbreviated month name"
+msgid "Apr"
+msgstr "এপ্ৰি"
+
+#: ../glib/gdatetime.c:277
+msgctxt "abbreviated month name"
+msgid "May"
+msgstr "মে"
+
+#: ../glib/gdatetime.c:279
+msgctxt "abbreviated month name"
+msgid "Jun"
+msgstr "জুন"
+
+#: ../glib/gdatetime.c:281
+msgctxt "abbreviated month name"
+msgid "Jul"
+msgstr "জুল"
+
+#: ../glib/gdatetime.c:283
+msgctxt "abbreviated month name"
+msgid "Aug"
+msgstr "আগ"
+
+#: ../glib/gdatetime.c:285
+msgctxt "abbreviated month name"
+msgid "Sep"
+msgstr "চেপ"
+
+#: ../glib/gdatetime.c:287
+msgctxt "abbreviated month name"
+msgid "Oct"
+msgstr "অক্ট"
+
+#: ../glib/gdatetime.c:289
+msgctxt "abbreviated month name"
+msgid "Nov"
+msgstr "নভ"
+
+#: ../glib/gdatetime.c:291
+msgctxt "abbreviated month name"
+msgid "Dec"
+msgstr "ডিচ"
+
+#: ../glib/gdatetime.c:306
+msgctxt "full weekday name"
+msgid "Monday"
+msgstr "সোমবাৰ"
+
+#: ../glib/gdatetime.c:308
+msgctxt "full weekday name"
+msgid "Tuesday"
+msgstr "মঙ্গলবাৰ"
+
+#: ../glib/gdatetime.c:310
+msgctxt "full weekday name"
+msgid "Wednesday"
+msgstr "বুধবাৰ"
+
+#: ../glib/gdatetime.c:312
+msgctxt "full weekday name"
+msgid "Thursday"
+msgstr "বৃহষ্পতিবাৰ"
+
+#: ../glib/gdatetime.c:314
+msgctxt "full weekday name"
+msgid "Friday"
+msgstr "শুক্ৰবাৰ"
+
+#: ../glib/gdatetime.c:316
+msgctxt "full weekday name"
+msgid "Saturday"
+msgstr "শনিবাৰ"
+
+#: ../glib/gdatetime.c:318
+msgctxt "full weekday name"
+msgid "Sunday"
+msgstr "দেওবাৰ"
+
+#: ../glib/gdatetime.c:333
+msgctxt "abbreviated weekday name"
+msgid "Mon"
+msgstr "সোম"
+
+#: ../glib/gdatetime.c:335
+msgctxt "abbreviated weekday name"
+msgid "Tue"
+msgstr "মঙ্গল"
+
+#: ../glib/gdatetime.c:337
+msgctxt "abbreviated weekday name"
+msgid "Wed"
+msgstr "বুধ"
+
+#: ../glib/gdatetime.c:339
+msgctxt "abbreviated weekday name"
+msgid "Thu"
+msgstr "বৃহষ্পতি"
+
+#: ../glib/gdatetime.c:341
+msgctxt "abbreviated weekday name"
+msgid "Fri"
+msgstr "শুক্ৰ"
+
+#: ../glib/gdatetime.c:343
+msgctxt "abbreviated weekday name"
+msgid "Sat"
+msgstr "শনি"
+
+#: ../glib/gdatetime.c:345
+msgctxt "abbreviated weekday name"
+msgid "Sun"
+msgstr "দেও"
+
+#: ../glib/gdir.c:120 ../glib/gdir.c:143
+#, c-format
+msgid "Error opening directory '%s': %s"
+msgstr "'%s' ডাইৰেকটৰি খোলোঁতে ত্ৰুটি: %s"
+
+#: ../glib/gfileutils.c:671 ../glib/gfileutils.c:759
+#, c-format
+msgid "Could not allocate %lu byte to read file \"%s\""
+msgid_plural "Could not allocate %lu bytes to read file \"%s\""
+msgstr[0] "ফাইল পঢ়িবলে %lu বাইট আবন্টন কৰিব পৰা নগল \"%s\""
+msgstr[1] "ফাইল পঢ়িবলে %lu বাইট আবন্টন কৰিব পৰা নগল \"%s\""
+
+#: ../glib/gfileutils.c:686
+#, c-format
+msgid "Error reading file '%s': %s"
+msgstr "ফাইল '%s' পঢ়োঁতে ত্ৰুটি: %s"
+
+#: ../glib/gfileutils.c:700
+#, c-format
+msgid "File \"%s\" is too large"
+msgstr "\"%s\" ফাইল বৰ ডাঙৰ"
+
+#: ../glib/gfileutils.c:783
+#, c-format
+msgid "Failed to read from file '%s': %s"
+msgstr "'%s' ফাইলৰ পৰা পঢ়োঁতে ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:834 ../glib/gfileutils.c:921
+#, c-format
+msgid "Failed to open file '%s': %s"
+msgstr "'%s' ফাইল খোলোঁতে ত্ৰুটি: %s"
+
+#: ../glib/gfileutils.c:851
+#, c-format
+msgid "Failed to get attributes of file '%s': fstat() failed: %s"
+msgstr "'%s' ফাইলৰ বৈশিষ্ট পাওঁতে ব্যৰ্থ: fstat() ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:885
+#, c-format
+msgid "Failed to open file '%s': fdopen() failed: %s"
+msgstr "'%s' ফাইল খোলোঁতে ত্ৰুটি: fdopen() ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:993
+#, c-format
+msgid "Failed to rename file '%s' to '%s': g_rename() failed: %s"
+msgstr "'%s' ফাইলক '%s' লৈ পুনঃনামকৰণ কৰোঁতে ব্যৰ্থ: g_rename() ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:1047 ../glib/gfileutils.c:1554
+#, c-format
+msgid "Failed to create file '%s': %s"
+msgstr "'%s' ফাইল সৃষ্টি কৰোঁতে ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:1071
+#, c-format
+msgid "Failed to write file '%s': write() failed: %s"
+msgstr "ফাইল '%s' লিখিবলে ব্যৰ্থ: write() ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:1111
+#, c-format
+msgid "Failed to write file '%s': fsync() failed: %s"
+msgstr "'%s' ফাইল লিখাত ব্যৰ্থ: fsync() ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:1243
+#, c-format
+msgid "Existing file '%s' could not be removed: g_unlink() failed: %s"
+msgstr "বৰ্ত্তমানে থকা ফাইল '%s' আঁতৰাব পৰা নগল: g_unlink() ব্যৰ্থ: %s"
+
+#: ../glib/gfileutils.c:1517
+#, c-format
+msgid "Template '%s' invalid, should not contain a '%s'"
+msgstr "'%s' টেমপ্লেট অৱৈধ, এটা '%s' থাকিব নালাগে"
+
+#: ../glib/gfileutils.c:1530
+#, c-format
+msgid "Template '%s' doesn't contain XXXXXX"
+msgstr "'%s' টেমপ্লেটত XXXXXX নাই"
+
+#: ../glib/gfileutils.c:2058
+#, c-format
+msgid "Failed to read the symbolic link '%s': %s"
+msgstr "চিমসংযোগ পঢ়াত ব্যৰ্থ '%s': %s"
+
+#: ../glib/gfileutils.c:2079
+msgid "Symbolic links not supported"
+msgstr "চিমসংযোগ সমৰ্থিত নহয়"
+
+#: ../glib/giochannel.c:1418
+#, c-format
+msgid "Could not open converter from '%s' to '%s': %s"
+msgstr "'%s' ৰ পৰা '%s' লৈ সলনি কৰা পৰিৱৰ্তক খোলিব পৰা নগল: %s"
+
+#: ../glib/giochannel.c:1763
+msgid "Can't do a raw read in g_io_channel_read_line_string"
+msgstr "g_io_channel_read_line_string ত raw read কৰিব নোৱাৰি"
+
+#: ../glib/giochannel.c:1810 ../glib/giochannel.c:2068
+#: ../glib/giochannel.c:2155
+msgid "Leftover unconverted data in read buffer"
+msgstr "read বাফাৰত অৱশিষ্ট অপৰিবৰ্তিত তথ্য আছে"
+
+#: ../glib/giochannel.c:1891 ../glib/giochannel.c:1968
+msgid "Channel terminates in a partial character"
+msgstr "চেনেল অসম্পূৰ্ণ আখৰত অন্ত হয়"
+
+#: ../glib/giochannel.c:1954
+msgid "Can't do a raw read in g_io_channel_read_to_end"
+msgstr "g_io_channel_read_to_end ত এটা raw read কৰিব নোৱাৰি"
+
+#: ../glib/gkeyfile.c:722
+msgid "Valid key file could not be found in search dirs"
+msgstr "অনুসন্ধানৰ dirs ত বৈধ কি ফাইল পোৱা নাযায়"
+
+#: ../glib/gkeyfile.c:758
+msgid "Not a regular file"
+msgstr "সাধাৰণ ফাইল নহয়"
+
+#: ../glib/gkeyfile.c:1158
+#, c-format
+msgid ""
+"Key file contains line '%s' which is not a key-value pair, group, or comment"
+msgstr "কি ফাইলত '%s' পংক্তি আছে যি কি-মানৰ জোৰা, দল বা মন্তব্য নহয়"
+
+#: ../glib/gkeyfile.c:1215
+#, c-format
+msgid "Invalid group name: %s"
+msgstr "দলৰ নাম অৱৈধ: %s"
+
+#: ../glib/gkeyfile.c:1237
+msgid "Key file does not start with a group"
+msgstr "কি-ফাইলৰ আৰম্ভত কোনো দল উল্লিখিত নাই"
+
+#: ../glib/gkeyfile.c:1263
+#, c-format
+msgid "Invalid key name: %s"
+msgstr "অৱৈধ কিৰ নাম: %s:"
+
+#: ../glib/gkeyfile.c:1290
+#, c-format
+msgid "Key file contains unsupported encoding '%s'"
+msgstr "কি ফাইলত অসমৰ্থিত এনক'ডিং '%s'"
+
+#: ../glib/gkeyfile.c:1533 ../glib/gkeyfile.c:1695 ../glib/gkeyfile.c:3073
+#: ../glib/gkeyfile.c:3139 ../glib/gkeyfile.c:3265 ../glib/gkeyfile.c:3398
+#: ../glib/gkeyfile.c:3540 ../glib/gkeyfile.c:3770 ../glib/gkeyfile.c:3837
+#, c-format
+msgid "Key file does not have group '%s'"
+msgstr "কি ফাইলত কোনো দল অনুপস্থিত '%s'"
+
+#: ../glib/gkeyfile.c:1707
+#, c-format
+msgid "Key file does not have key '%s'"
+msgstr "কি ফাইলত কোনো কি উপস্থিত নাই '%s'"
+
+#: ../glib/gkeyfile.c:1814 ../glib/gkeyfile.c:1930
+#, c-format
+msgid "Key file contains key '%s' with value '%s' which is not UTF-8"
+msgstr "কি ফাইলত '%s' কি আছে '%s' মান সহ যি UTF-8 বিন্যাসত  নাই।"
+
+#: ../glib/gkeyfile.c:1834 ../glib/gkeyfile.c:1950 ../glib/gkeyfile.c:2319
+#, c-format
+msgid ""
+"Key file contains key '%s' which has a value that cannot be interpreted."
+msgstr "কি ফাইলত '%s' কি উপস্থিত আছে যাৰ মান বুজিব পৰা নাযায়।"
+
+#: ../glib/gkeyfile.c:2536 ../glib/gkeyfile.c:2902
+#, c-format
+msgid ""
+"Key file contains key '%s' in group '%s' which has a value that cannot be "
+"interpreted."
+msgstr ""
+"কি ফাইলয় দল '%s' ত কি '%s' অন্তৰ্ভুক্ত কৰে যাৰ এটা অনুবাদ কৰিব নোৱাৰা মান আছে।"
+
+#: ../glib/gkeyfile.c:2614 ../glib/gkeyfile.c:2690
+#, c-format
+msgid "Key '%s' in group '%s' has value '%s' where %s was expected"
+msgstr "দল '%s' ত কি '%s' ৰ মান '%s' আছে যত %s প্ৰত্যাশিত আছিল"
+
+#: ../glib/gkeyfile.c:3088 ../glib/gkeyfile.c:3280 ../glib/gkeyfile.c:3848
+#, c-format
+msgid "Key file does not have key '%s' in group '%s'"
+msgstr "কি ফাইলত '%s' কি '%s' দলত নাই"
+
+#: ../glib/gkeyfile.c:4080
+msgid "Key file contains escape character at end of line"
+msgstr "কি ফাইলত পংক্তিৰ অৱশেষত এস্কেইপ আখৰ উপস্থিত আছে"
+
+#: ../glib/gkeyfile.c:4102
+#, c-format
+msgid "Key file contains invalid escape sequence '%s'"
+msgstr "কি ফাইলত অৱৈধ এস্কেইপ ধাৰা উপস্থিত আছে '%s'"
+
+#: ../glib/gkeyfile.c:4244
+#, c-format
+msgid "Value '%s' cannot be interpreted as a number."
+msgstr "'%s' মান কোনো সংখ্যাৰূপে বুজিব পৰা নাযায়।"
+
+#: ../glib/gkeyfile.c:4258
+#, c-format
+msgid "Integer value '%s' out of range"
+msgstr "'%s' পূৰ্ণসংখ্যা মান সীমা বহিৰ্ভূত"
+
+#: ../glib/gkeyfile.c:4291
+#, c-format
+msgid "Value '%s' cannot be interpreted as a float number."
+msgstr "'%s' মান float সংখ্যা ৰূপে বুজিব পৰা নাযায়।"
+
+#: ../glib/gkeyfile.c:4315
+#, c-format
+msgid "Value '%s' cannot be interpreted as a boolean."
+msgstr "'%s' মান বুলিয়েন ৰূপে বুজিব পৰা নাযায়।"
+
+#: ../glib/gmappedfile.c:130
+#, c-format
+msgid "Failed to get attributes of file '%s%s%s%s': fstat() failed: %s"
+msgstr ""
+"ফাইল '%s%s%s%s' ৰ বৈশিষ্টসমূহ প্ৰাপ্ত কৰিবলে ব্যৰ্থ: fstat() ব্যৰ্থ: %s"
+
+#: ../glib/gmappedfile.c:196
+#, c-format
+msgid "Failed to map %s%s%s%s: mmap() failed: %s"
+msgstr "%s%s%s%s মেপ কৰিবলে ব্যৰ্থ: mmap() ব্যৰ্থ: %s"
+
+#: ../glib/gmappedfile.c:262
+#, c-format
+msgid "Failed to open file '%s': open() failed: %s"
+msgstr "'%s' ফাইল খোলোঁতে ব্যৰ্থ: open() ব্যৰ্থ: %s"
+
+#: ../glib/gmarkup.c:397 ../glib/gmarkup.c:439
+#, c-format
+msgid "Error on line %d char %d: "
+msgstr "%d শাৰীৰ %d আখৰত ত্ৰুটি:"
+
+#: ../glib/gmarkup.c:461 ../glib/gmarkup.c:544
+#, c-format
+msgid "Invalid UTF-8 encoded text in name - not valid '%s'"
+msgstr "নামত অৱৈধ UTF-8 সাঙ্কেতিক লিপি - অৱৈধ '%s'"
+
+#: ../glib/gmarkup.c:472
+#, c-format
+msgid "'%s' is not a valid name"
+msgstr "'%s' এটা বৈধ নাম নহয়"
+
+#: ../glib/gmarkup.c:488
+#, c-format
+msgid "'%s' is not a valid name: '%c'"
+msgstr "'%s' এটা বৈধ নাম নহয়: '%c'"
+
+#: ../glib/gmarkup.c:598
+#, c-format
+msgid "Error on line %d: %s"
+msgstr "%d শাৰীত ত্ৰুটি: %s"
+
+#: ../glib/gmarkup.c:682
+#, c-format
+msgid ""
+"Failed to parse '%-.*s', which should have been a digit inside a character "
+"reference (&#234; for example) - perhaps the digit is too large"
+msgstr ""
+"'%-.*s' বিশ্লেষণ কৰোঁতে ত্ৰুটি, যি কোনো আখৰৰ উল্লেখৰ ভিতৰৰ এটা সংখ্যা হ'ব "
+"লাগিছিল "
+"(&#২৩৪; যেনে) - হয়তো সংখ্যাটো বৰ ডাঙৰ"
+
+#: ../glib/gmarkup.c:694
+msgid ""
+"Character reference did not end with a semicolon; most likely you used an "
+"ampersand character without intending to start an entity - escape ampersand "
+"as &amp;"
+msgstr ""
+"আখৰৰ উল্লেখ এটা ছেমিকলনেৰে অন্ত নহল; খুব সম্ভৱ পদাৰ্থ এটা আৰম্ভ কৰিব "
+"নিবিচাৰিও "
+"আপুনি এটা এম্পাৰছেন্দ আখৰ ব্যৱহাৰ কৰিছে - এম্পাৰছেন্দক &amp; হিচাপে এস্কেইপ "
+"কৰক"
+
+#: ../glib/gmarkup.c:720
+#, c-format
+msgid "Character reference '%-.*s' does not encode a permitted character"
+msgstr ""
+"আখৰৰ উল্লেখ থকা '%-.*s' এ এটা আজ্ঞা থকা আখৰক সাঙ্কেতিক লিপিলৈ পৰিবৰ্তিত নকৰে"
+
+#: ../glib/gmarkup.c:758
+msgid ""
+"Empty entity '&;' seen; valid entities are: &amp; &quot; &lt; &gt; &apos;"
+msgstr ""
+"ৰিক্ত পদাৰ্থ '&;' দেখা গ'ল; বৈধ পদাৰ্থসমূহ হ'ল: &amp; &quot; &lt; &gt; &apos;"
+
+#: ../glib/gmarkup.c:766
+#, c-format
+msgid "Entity name '%-.*s' is not known"
+msgstr "পদাৰ্থৰ নাম '%-.*s' অজ্ঞাত"
+
+#: ../glib/gmarkup.c:771
+msgid ""
+"Entity did not end with a semicolon; most likely you used an ampersand "
+"character without intending to start an entity - escape ampersand as &amp;"
+msgstr ""
+"পদাৰ্থ এটা ছেমিকলনেৰে অন্ত নহল; খুব সম্ভৱ পদাৰ্থ এটা আৰম্ভ কৰিব নিবিচাৰিও "
+"আপুনি এটা "
+"এম্পাৰছেন্দ আখৰ ব্যৱহাৰ কৰিছে - এম্পাৰছেন্দক &amp; হিচাপে এস্কেইপ কৰক"
+
+#: ../glib/gmarkup.c:1119
+msgid "Document must begin with an element (e.g. <book>)"
+msgstr "দস্তাবেজ এটা উপাদানৰ সৈতে আৰম্ভ হ'ব লাগিব (যেনে <book>)"
+
+#: ../glib/gmarkup.c:1159
+#, c-format
+msgid ""
+"'%s' is not a valid character following a '<' character; it may not begin an "
+"element name"
+msgstr ""
+"'%s' এটা বৈধ আখৰ নহয় '<' আখৰৰ পিছত; ইয়াৰ দ্বাৰা পদাৰ্থৰ নাম আৰম্ভ নহবও পাৰে"
+
+#: ../glib/gmarkup.c:1227
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' character to end the empty-element tag "
+"'%s'"
+msgstr ""
+"ত্ৰুটি আখৰ '%s', এটা '>' আখৰ প্ৰত্যাশিত ৰিক্ত পদাৰ্থৰ টেগ '%s' শেষ কৰিবলৈ"
+
+#: ../glib/gmarkup.c:1311
+#, c-format
+msgid ""
+"Odd character '%s', expected a '=' after attribute name '%s' of element '%s'"
+msgstr ""
+"'%s' আখৰ প্ৰত্যাশিত নহয়, এটা '=' চিহ্ন প্ৰত্যাশিত বৈশিষ্টৰ নাম '%s', পদাৰ্থ '%"
+"s' ৰ, "
+"পিছত"
+
+#: ../glib/gmarkup.c:1352
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' or '/' character to end the start tag of "
+"element '%s', or optionally an attribute; perhaps you used an invalid "
+"character in an attribute name"
+msgstr ""
+"'%s' আখৰ প্ৰত্যাশিত নহয়, '%s' পদাৰ্থৰ প্ৰাৰম্ভিক টেগ সমাপ্ত কৰাৰ উদ্দেশ্যে '>"
+"' বা "
+"'/' চিহ্ন বা কোনো বৈশিষ্ট্যৰ উপস্থিতি কাম্য; সম্ভৱতঃ কোনো বৈশিষ্ট্যৰ নামত "
+"অৱৈধ আখৰ "
+"ব্যৱহৃত হৈছে"
+
+#: ../glib/gmarkup.c:1396
+#, c-format
+msgid ""
+"Odd character '%s', expected an open quote mark after the equals sign when "
+"giving value for attribute '%s' of element '%s'"
+msgstr ""
+"'%s' আখৰ অপ্ৰত্যাশিত, '%s' বৈশিষ্টৰ, পদাৰ্থ '%s' ৰ, মান নিৰ্ধাৰণৰ উদ্দেশ্যে "
+"সমান "
+"চিহ্নৰ পিছত এটা উদ্ধৃতি চিহ্নৰ প্ৰাৰম্ভিক অংশ উপস্থিতি প্ৰত্যাশিত"
+
+#: ../glib/gmarkup.c:1529
+#, c-format
+msgid ""
+"'%s' is not a valid character following the characters '</'; '%s' may not "
+"begin an element name"
+msgstr ""
+"'%s' আখৰৰ ব্যৱহাৰ '</' ৰ পিছত বৈধ নহয়; '%s' দ্বাৰা কোনো পদাৰ্থৰ নাম আৰম্ভ কৰা "
+"নাযাব"
+
+#: ../glib/gmarkup.c:1565
+#, c-format
+msgid ""
+"'%s' is not a valid character following the close element name '%s'; the "
+"allowed character is '>'"
+msgstr ""
+"'%s' আখৰৰ ব্যৱহাৰ বৈধ নহয় '%s' বদ্ধ পদাৰ্থৰ নামৰ পিছত; অনুমোদিত আখৰ হ'ল '>'"
+
+#: ../glib/gmarkup.c:1576
+#, c-format
+msgid "Element '%s' was closed, no element is currently open"
+msgstr "'%s' পদাৰ্থ বদ্ধ অৱস্থাত, বৰ্তমানে কোনো পদাৰ্থ খোলা অৱস্থাত নাই"
+
+#: ../glib/gmarkup.c:1585
+#, c-format
+msgid "Element '%s' was closed, but the currently open element is '%s'"
+msgstr "'%s' পদাৰ্থ বদ্ধ অৱস্থাত, বৰ্তমানে '%s' পদাৰ্থ খোলা অৱস্থাত আছে"
+
+#: ../glib/gmarkup.c:1753
+msgid "Document was empty or contained only whitespace"
+msgstr "দস্তাবেজ ৰিক্ত বা অকল ৰিক্ত স্থান আছিলে"
+
+#: ../glib/gmarkup.c:1767
+msgid "Document ended unexpectedly just after an open angle bracket '<'"
+msgstr ""
+"খোলা ব্ৰেকেটৰ প্ৰাৰম্ভিক চিহ্নৰ '<' ঠিক পিছত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত "
+"হৈছে"
+
+#: ../glib/gmarkup.c:1775 ../glib/gmarkup.c:1820
+#, c-format
+msgid ""
+"Document ended unexpectedly with elements still open - '%s' was the last "
+"element opened"
+msgstr ""
+"খোলা পদাৰ্থসহ দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে - '%s' পদাৰ্থ সৰ্বশেষ খোলা "
+"হৈছিল"
+
+#: ../glib/gmarkup.c:1783
+#, c-format
+msgid ""
+"Document ended unexpectedly, expected to see a close angle bracket ending "
+"the tag <%s/>"
+msgstr ""
+"দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে, <%s/> টেগ সমাপ্তিৰ বাবে খোলা ব্ৰেকেট "
+"চিহ্নৰ "
+"অন্তিম অংশৰ উপস্থিতি প্ৰত্যাশিত"
+
+#: ../glib/gmarkup.c:1789
+msgid "Document ended unexpectedly inside an element name"
+msgstr "পদাৰ্থৰ নামত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে"
+
+#: ../glib/gmarkup.c:1795
+msgid "Document ended unexpectedly inside an attribute name"
+msgstr "বৈশিষ্ট্যৰ নামত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে"
+
+#: ../glib/gmarkup.c:1800
+msgid "Document ended unexpectedly inside an element-opening tag."
+msgstr "পদাৰ্থৰ প্ৰাৰম্ভিক টেগত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে"
+
+#: ../glib/gmarkup.c:1806
+msgid ""
+"Document ended unexpectedly after the equals sign following an attribute "
+"name; no attribute value"
+msgstr ""
+"বৈশিষ্ট্যৰ নামৰ পিছত উপস্থিত সমান চিহ্নৰ পিছত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত "
+"হৈছে; "
+"বৈশিষ্ট্যৰ মান অনুপস্থিত"
+
+#: ../glib/gmarkup.c:1813
+msgid "Document ended unexpectedly while inside an attribute value"
+msgstr "বৈশিষ্ট্যৰ মানত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে"
+
+#: ../glib/gmarkup.c:1829
+#, c-format
+msgid "Document ended unexpectedly inside the close tag for element '%s'"
+msgstr "'%s' পদাৰ্থৰ অন্তিম টেগত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে"
+
+#: ../glib/gmarkup.c:1835
+msgid "Document ended unexpectedly inside a comment or processing instruction"
+msgstr ""
+"কোনো মন্তব্য বা প্ৰক্ৰিয়াকৰণৰ নিৰ্দেশত দস্তাবেজ অপ্ৰত্যাশিতৰূপে সমাপ্ত হৈছে"
+
+#: ../glib/goption.c:754
+msgid "Usage:"
+msgstr "ব্যৱহাৰ:"
+
+#: ../glib/goption.c:754
+msgid "[OPTION...]"
+msgstr "[OPTION...]"
+
+#: ../glib/goption.c:870
+msgid "Help Options:"
+msgstr "সহায় বিকল্পসমূহ:"
+
+#: ../glib/goption.c:871
+msgid "Show help options"
+msgstr "সহায় বিকল্পসমূহ দেখুৱাওক"
+
+#: ../glib/goption.c:877
+msgid "Show all help options"
+msgstr "সহায় সমস্ত বিকল্প দেখুৱাওক"
+
+#: ../glib/goption.c:939
+msgid "Application Options:"
+msgstr "এপ্লিকেচন বিকল্পসমূহ:"
+
+#: ../glib/goption.c:1003 ../glib/goption.c:1073
+#, c-format
+msgid "Cannot parse integer value '%s' for %s"
+msgstr "'%s' পূৰ্ণসংখ্যাৰ মান %s ৰ বাবে বিশ্লেষণ কৰিবলৈ ব্যৰ্থ"
+
+#: ../glib/goption.c:1013 ../glib/goption.c:1081
+#, c-format
+msgid "Integer value '%s' for %s out of range"
+msgstr "'%s' পূৰ্ণসংখ্যাৰ মান %s ৰ বাবে সীমাৰ বহিৰ্ভূত"
+
+#: ../glib/goption.c:1038
+#, c-format
+msgid "Cannot parse double value '%s' for %s"
+msgstr "'%s' ৰ দ্বীবৈশিষ্ট মান %s ৰ বাবে বিশ্লেষণ কৰিবলৈ ব্যৰ্থ"
+
+#: ../glib/goption.c:1046
+#, c-format
+msgid "Double value '%s' for %s out of range"
+msgstr "'%s' ৰ দ্বীবৈশিষ্ট মান %s ৰ বাবে সীমা বহিৰ্ভূত"
+
+#: ../glib/goption.c:1309 ../glib/goption.c:1388
+#, c-format
+msgid "Error parsing option %s"
+msgstr "%s বিকল্প বিশ্লেষণ কৰিবলৈ ব্যৰ্থ"
+
+#: ../glib/goption.c:1419 ../glib/goption.c:1532
+#, c-format
+msgid "Missing argument for %s"
+msgstr "%s ৰ তৰ্ক সন্ধানহিন"
+
+#: ../glib/goption.c:1985
+#, c-format
+msgid "Unknown option %s"
+msgstr "অজ্ঞাত বিকল্প %s"
+
+#: ../glib/gregex.c:257
+msgid "corrupted object"
+msgstr "ক্ষতিগ্ৰস্ত অৱজেক্ট"
+
+#: ../glib/gregex.c:259
+msgid "internal error or corrupted object"
+msgstr "অভ্যন্তৰীণ ত্ৰুটি বা ক্ষতিগ্ৰস্ত অৱজেক্ট"
+
+#: ../glib/gregex.c:261
+msgid "out of memory"
+msgstr "মেমৰি অৱশিষ্ট নাই"
+
+#: ../glib/gregex.c:266
+msgid "backtracking limit reached"
+msgstr "backtracking ৰ সুনিৰ্দিষ্ট সীমা পূৰ্ণ"
+
+#: ../glib/gregex.c:278 ../glib/gregex.c:286
+msgid "the pattern contains items not supported for partial matching"
+msgstr ""
+"উল্লিখিত বিন্যাসত অন্তৰ্ভুক্ত সামগ্ৰী, আংশিক মিল অনুসন্ধানত সমৰ্থিত নহয়"
+
+#: ../glib/gregex.c:288
+msgid "back references as conditions are not supported for partial matching"
+msgstr "আংশিক মিল অনুসন্ধানৰ সময় বেক প্ৰসংগ সমৰ্থিত নহয়"
+
+#: ../glib/gregex.c:297
+msgid "recursion limit reached"
+msgstr "পুনৰাবৃত্তিৰ সীমা পূৰ্ণ"
+
+#: ../glib/gregex.c:299
+msgid "invalid combination of newline flags"
+msgstr "নতুন পংক্তি চিহ্নকাৰী ফ্লেগৰ অৱৈধ দল"
+
+#: ../glib/gregex.c:301
+msgid "bad offset"
+msgstr "বেয়া অফচেট"
+
+#: ../glib/gregex.c:303
+msgid "short utf8"
+msgstr "সৰু utf8"
+
+#: ../glib/gregex.c:305
+msgid "recursion loop"
+msgstr "বাৰংবাৰতা লুপ"
+
+#: ../glib/gregex.c:309
+msgid "unknown error"
+msgstr "অজ্ঞাত ত্ৰুটি"
+
+#: ../glib/gregex.c:329
+msgid "\\ at end of pattern"
+msgstr "পংক্তিৰ শেষত \\ উপস্থিত"
+
+#: ../glib/gregex.c:332
+msgid "\\c at end of pattern"
+msgstr "পংক্তিৰ শেষত \\c উপস্থিত"
+
+#: ../glib/gregex.c:335
+msgid "unrecognized character following \\"
+msgstr "\\ ৰ পিছত অজ্ঞাত আখৰ উপস্থিত"
+
+#: ../glib/gregex.c:338
+msgid "numbers out of order in {} quantifier"
+msgstr "{} quantifier ত সংখ্যা ক্ৰমত নাই"
+
+#: ../glib/gregex.c:341
+msgid "number too big in {} quantifier"
+msgstr "{} quantifier ৰ সংখ্যা অত্যাধিক ডাঙৰ"
+
+#: ../glib/gregex.c:344
+msgid "missing terminating ] for character class"
+msgstr "আখৰৰ শ্ৰেণীৰ শেষত ] চিহ্ন অনুপস্থিত"
+
+#: ../glib/gregex.c:347
+msgid "invalid escape sequence in character class"
+msgstr "আখৰৰ শ্ৰেণীত অৱৈধ escape ক্ৰম"
+
+#: ../glib/gregex.c:350
+msgid "range out of order in character class"
+msgstr "আখৰৰ শ্ৰেণীৰ অঞ্চল সীমাৰ বাহিৰত"
+
+#: ../glib/gregex.c:353
+msgid "nothing to repeat"
+msgstr "পুনৰাবৃত্তিৰ বাবে একো উপস্থিত নাই"
+
+#: ../glib/gregex.c:357
+msgid "unexpected repeat"
+msgstr "অপ্ৰত্যাশিত পুনৰাবৃত্তি"
+
+#: ../glib/gregex.c:360
+msgid "unrecognized character after (? or (?-"
+msgstr "(? অথবা (?- ৰ পিছত অপৰিচিত আখৰ"
+
+#: ../glib/gregex.c:363
+msgid "POSIX named classes are supported only within a class"
+msgstr "POSIX নামৰ শ্ৰেণীসমূহ অকল শ্ৰেণীত সমৰ্থিত হ'ব"
+
+#: ../glib/gregex.c:366
+msgid "missing terminating )"
+msgstr "শেষৰ ) অনুপস্থিত"
+
+#: ../glib/gregex.c:369
+msgid "reference to non-existent subpattern"
+msgstr "অনুপস্থিত উপবিন্যাস নিৰ্দেশ কৰা হৈছে"
+
+#: ../glib/gregex.c:372
+msgid "missing ) after comment"
+msgstr "বক্তব্যৰ পিছত ) চিহ্ন অনুপস্থিত"
+
+#: ../glib/gregex.c:375
+msgid "regular expression is too large"
+msgstr "সাধাৰণ অভিব্যক্তি অত্যাধিক ডাঙৰ"
+
+#: ../glib/gregex.c:378
+msgid "failed to get memory"
+msgstr "মেমৰি প্ৰাপ্ত কৰিবলৈ ব্যৰ্থ"
+
+#: ../glib/gregex.c:382
+msgid ") without opening ("
+msgstr "( চিহ্ন নোহোৱাকে ) চিহ্ন প্ৰয়োগ কৰা হৈছে"
+
+#: ../glib/gregex.c:386
+msgid "code overflow"
+msgstr "ক'ড অভাৰফ্লো"
+
+#: ../glib/gregex.c:390
+msgid "unrecognized character after (?<"
+msgstr "(?< চিহ্নৰ পিছত অজ্ঞাত আখৰ উপস্থিত"
+
+#: ../glib/gregex.c:393
+msgid "lookbehind assertion is not fixed length"
+msgstr "lookbehind assertion সীমিত দৈৰ্ঘ্যৰ নহয়"
+
+#: ../glib/gregex.c:396
+msgid "malformed number or name after (?("
+msgstr "(?( ৰ পিছত ত্ৰুটিপূৰ্ণ সংখ্যা বা নাম উপস্থিত আছে"
+
+#: ../glib/gregex.c:399
+msgid "conditional group contains more than two branches"
+msgstr "চৰ্তসাপেক্ষ দলত দুটাতকৈ অধিক শাখা আছে"
+
+#: ../glib/gregex.c:402
+msgid "assertion expected after (?("
+msgstr "(?( ৰ পিছত assertion প্ৰত্যাশিত"
+
+#. translators: '(?R' and '(?[+-]digits' are both meant as (groups of)
+#. * sequences here, '(?-54' would be an example for the second group.
+#.
+#: ../glib/gregex.c:409
+msgid "(?R or (?[+-]digits must be followed by )"
+msgstr "(?R বা (?[+-]সংখ্যা ৰ পিছত ) চিহ্ন ব্যৱহাৰ কৰা আৱশ্যক"
+
+#: ../glib/gregex.c:412
+msgid "unknown POSIX class name"
+msgstr "অজ্ঞাত POSIX শ্ৰেণীৰ নাম"
+
+#: ../glib/gregex.c:415
+msgid "POSIX collating elements are not supported"
+msgstr "POSIX কলেটিং পদাৰ্থ সমৰ্থিত নহয়"
+
+#: ../glib/gregex.c:418
+msgid "character value in \\x{...} sequence is too large"
+msgstr "\\x{...} শাৰীত আখৰৰ মান বৰ ডাঙৰ"
+
+#: ../glib/gregex.c:421
+msgid "invalid condition (?(0)"
+msgstr "অৱৈধ চৰ্ত (?(0)"
+
+#: ../glib/gregex.c:424
+msgid "\\C not allowed in lookbehind assertion"
+msgstr "lookbehind assertion ত \\C ৰ অনুমতি নাই"
+
+#: ../glib/gregex.c:431
+msgid "escapes \\L, \\l, \\N{name}, \\U, and \\u are not supported"
+msgstr "escape \\L, \\l, \\N{name}, \\U, আৰু \\u সমৰ্থিত নহয়"
+
+#: ../glib/gregex.c:434
+msgid "recursive call could loop indefinitely"
+msgstr "ৰিকাৰ্ছিভ কল অনিশ্চিত কাললৈ লুপ কৰিব পাৰে"
+
+#: ../glib/gregex.c:438
+msgid "unrecognized character after (?P"
+msgstr "(?P চিহ্নৰ পিছত অজ্ঞাত আখৰ উপস্থিত"
+
+#: ../glib/gregex.c:441
+msgid "missing terminator in subpattern name"
+msgstr "উপবিন্যাস নামত হেৰুৱা টাৰ্মিনেটৰ"
+
+#: ../glib/gregex.c:444
+msgid "two named subpatterns have the same name"
+msgstr "দুটা নাম দিয়া উপবিন্যাসসমূহ ৰ একে নাম"
+
+#: ../glib/gregex.c:447
+msgid "malformed \\P or \\p sequence"
+msgstr "ত্ৰুটিপূৰ্ণ \\P বা \\p ক্ৰম"
+
+#: ../glib/gregex.c:450
+msgid "unknown property name after \\P or \\p"
+msgstr "\\P বা \\p ৰ পিছত অজ্ঞাত বৈশিষ্টৰ নাম"
+
+#: ../glib/gregex.c:453
+msgid "subpattern name is too long (maximum 32 characters)"
+msgstr "উপবিন্যাস নাম বৰ দীঘল (সৰ্বাধিক ৩২ টা আখৰ)"
+
+#: ../glib/gregex.c:456
+msgid "too many named subpatterns (maximum 10,000)"
+msgstr "বহুত নাম দিয়া উপবিন্যাসসমূহ (সৰ্বাধিক ১০,০০০)"
+
+#: ../glib/gregex.c:459
+msgid "octal value is greater than \\377"
+msgstr "অক্টাল মান \\377 ৰ অধিক"
+
+#: ../glib/gregex.c:463
+msgid "overran compiling workspace"
+msgstr "অভাৰৰেন কমপাইলিং কৰ্মস্থান"
+
+#: ../glib/gregex.c:467
+msgid "previously-checked referenced subpattern not found"
+msgstr "আগতে পৰীক্ষা কৰা সন্দৰ্ভ থকা উপবিন্যাস পোৱা নগল"
+
+#: ../glib/gregex.c:470
+msgid "DEFINE group contains more than one branch"
+msgstr "DEFINE দলত একাধিক ব্ৰাঞ্চ উপস্থিত আছে"
+
+#: ../glib/gregex.c:473
+msgid "inconsistent NEWLINE options"
+msgstr "বিসংগত NEWLINE বিকল্পসমূহ"
+
+#: ../glib/gregex.c:476
+msgid ""
+"\\g is not followed by a braced, angle-bracketed, or quoted name or number, "
+"or by a plain number"
+msgstr ""
+"\\g এটা ব্ৰেইচ, এঙ্ল-ব্ৰেকেট, অথবা কৌট নাম অথবা নম্বৰ, অথবা এটা সাধাৰণ নম্বৰ "
+"দ্বাৰা অনুকৰিত নহয়"
+
+#: ../glib/gregex.c:480
+msgid "a numbered reference must not be zero"
+msgstr "এটা সাংখ্যিক প্ৰসংগ শূন্য হব নোৱাৰিব"
+
+#: ../glib/gregex.c:483
+msgid "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)"
+msgstr "(*ACCEPT), (*FAIL), অথবা (*COMMIT) ৰ বাবে এটা তৰ্কৰ অনুমতি নাই"
+
+#: ../glib/gregex.c:486
+msgid "(*VERB) not recognized"
+msgstr "(*VERB) পৰিচিত নহয়"
+
+#: ../glib/gregex.c:489
+msgid "number is too big"
+msgstr "নম্বৰ অত্যাধিক ডাঙৰ"
+
+#: ../glib/gregex.c:492
+msgid "missing subpattern name after (?&"
+msgstr "(?& পিছৰ উপবিন্যাস নাম সন্ধানহিন"
+
+#: ../glib/gregex.c:495
+msgid "digit expected after (?+"
+msgstr "(?+ ৰ পিছত ডিজিট প্ৰত্যাশিত"
+
+#: ../glib/gregex.c:498
+msgid "] is an invalid data character in JavaScript compatibility mode"
+msgstr "JavaScript সংগতি অৱস্থাত ] এটা অবৈধ তথ্য আখৰ"
+
+#: ../glib/gregex.c:501
+msgid "different names for subpatterns of the same number are not allowed"
+msgstr "একে নম্বৰৰ উপবিন্যাসৰ বাবে ভিন্ন নাম অনুমোদিত নহয়"
+
+#: ../glib/gregex.c:504
+msgid "(*MARK) must have an argument"
+msgstr "(*MARK) ৰ এটা তৰ্ক থাকিব লাগিব"
+
+#: ../glib/gregex.c:507
+msgid "\\c must be followed by an ASCII character"
+msgstr "\\c এটা ASCII আখৰ দ্বাৰা অনুকৰিত হব লাগিব"
+
+#: ../glib/gregex.c:510
+msgid "\\k is not followed by a braced, angle-bracketed, or quoted name"
+msgstr "\\k এটা ব্ৰেইচ, এঙ্ল-ব্ৰেকেট, অথবা কৌট নাম দ্বাৰা অনুকৰিত নহয়"
+
+#: ../glib/gregex.c:513
+msgid "\\N is not supported in a class"
+msgstr "\\N এটা শ্ৰেণীত সমৰ্থিত নহয়"
+
+#: ../glib/gregex.c:516
+msgid "too many forward references"
+msgstr "অত্যাধিক আগবঢ়োৱা প্ৰসংগসমূহ"
+
+#: ../glib/gregex.c:519
+msgid "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)"
+msgstr "(*MARK), (*PRUNE), (*SKIP), অথবা (*THEN) ত নাম অত্যাধিক ডাঙৰ"
+
+#: ../glib/gregex.c:522
+msgid "character value in \\u.... sequence is too large"
+msgstr "\\u.... ক্ৰমত আখৰ মান অতি ডাঙৰ"
+
+#: ../glib/gregex.c:745 ../glib/gregex.c:1914
+#, c-format
+msgid "Error while matching regular expression %s: %s"
+msgstr "সাধাৰণ অভিব্যক্তি %s ৰ মিল অনুসন্ধানত সমস্যা: %s"
+
+#: ../glib/gregex.c:1311
+msgid "PCRE library is compiled without UTF8 support"
+msgstr "PCRE লাইব্ৰেৰি UTF8 সমৰ্থন নোহোৱাকে কমপাইল কৰা হৈছে"
+
+#: ../glib/gregex.c:1315
+msgid "PCRE library is compiled without UTF8 properties support"
+msgstr "PCRE লাইব্ৰেৰি UTF8 বৈশিষ্ট্যৰ সমৰ্থন নোহোৱাকে কমপাইল কৰা হৈছে"
+
+#: ../glib/gregex.c:1323
+msgid "PCRE library is compiled with incompatible options"
+msgstr "PCRE লাইব্ৰেৰী অসংগত বিকল্পসমূহ দ্বাৰা কমপাইল কৰা আছে"
+
+#: ../glib/gregex.c:1382
+#, c-format
+msgid "Error while compiling regular expression %s at char %d: %s"
+msgstr "সাধাৰণ অভিব্যক্তি %s, %d আখৰত কমপাইল কৰিবলৈ সমস্যা: %s"
+
+#: ../glib/gregex.c:1424
+#, c-format
+msgid "Error while optimizing regular expression %s: %s"
+msgstr "সাধাৰণ অভিব্যক্তি %s ৰ সৰ্বোত্তম ব্যৱহাৰত সমস্যা: %s"
+
+#: ../glib/gregex.c:2346
+msgid "hexadecimal digit or '}' expected"
+msgstr "hexadecimal সংখ্যা বা '}' প্ৰত্যাশিত"
+
+#: ../glib/gregex.c:2362
+msgid "hexadecimal digit expected"
+msgstr "hexadecimal সংখ্যা প্ৰত্যাশিত"
+
+#: ../glib/gregex.c:2402
+msgid "missing '<' in symbolic reference"
+msgstr "সাঙ্কেতিক প্ৰসংগত '<' অনুপস্থিত"
+
+#: ../glib/gregex.c:2411
+msgid "unfinished symbolic reference"
+msgstr "সাঙ্কেতিক প্ৰসংগ অসম্পূৰ্ণ"
+
+#: ../glib/gregex.c:2418
+msgid "zero-length symbolic reference"
+msgstr "সাঙ্কেতিক প্ৰসংগত আখৰ সংখ্যা শূণ্য"
+
+#: ../glib/gregex.c:2429
+msgid "digit expected"
+msgstr "সংখ্যা প্ৰত্যাশিত"
+
+#: ../glib/gregex.c:2447
+msgid "illegal symbolic reference"
+msgstr "অৱৈধ সাঙ্কেতিক প্ৰসংগ"
+
+#: ../glib/gregex.c:2509
+msgid "stray final '\\'"
+msgstr "অন্তত অপ্ৰত্যাশিত '\\'"
+
+#: ../glib/gregex.c:2513
+msgid "unknown escape sequence"
+msgstr "অজ্ঞাত এস্কেইপ ক্ৰম"
+
+#: ../glib/gregex.c:2523
+#, c-format
+msgid "Error while parsing replacement text \"%s\" at char %lu: %s"
+msgstr "প্ৰতিস্থাপন লিখনী \"%s\"  আখৰ %lu ত বিশ্লেষণ কৰিবলৈ সমস্যা: %s"
+
+#: ../glib/gshell.c:88
+msgid "Quoted text doesn't begin with a quotation mark"
+msgstr "উদ্ধৃতিৰ অংশ উদ্ধৃতি চিহ্ন দ্বাৰা আৰম্ভ কৰা নহয়"
+
+#: ../glib/gshell.c:178
+msgid "Unmatched quotation mark in command line or other shell-quoted text"
+msgstr "কমান্ড শাৰী বা শ্বেল ৰ উদ্ধৃতিত অসংগত উদ্ধৃতি চিহ্ন"
+
+#: ../glib/gshell.c:574
+#, c-format
+msgid "Text ended just after a '\\' character. (The text was '%s')"
+msgstr "'\\' আখৰৰ পিছত লিখনী সমাপ্ত হৈছে। (লিখনী আছিল '%s')"
+
+#: ../glib/gshell.c:581
+#, c-format
+msgid "Text ended before matching quote was found for %c. (The text was '%s')"
+msgstr "%c ৰ ক্ষেত্ৰত সুসংগত উদ্ধৃতি চিহ্ন পোৱা নাযায়। (লিখনী আছিল '%s')"
+
+#: ../glib/gshell.c:593
+msgid "Text was empty (or contained only whitespace)"
+msgstr "লিখনী ৰিক্ত (বা অকল শূণ্যস্থানসহ)"
+
+#: ../glib/gspawn.c:202
+#, c-format
+msgid "Failed to read data from child process (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়াৰ পৰা তথ্য পঢ়িবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:345
+#, c-format
+msgid "Unexpected error in select() reading data from a child process (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়াৰ পৰা তথ্য পঢ়াৰ সময়ত select() অপ্ৰত্যাশিত ত্ৰুটি (%s)"
+
+#: ../glib/gspawn.c:430
+#, c-format
+msgid "Unexpected error in waitpid() (%s)"
+msgstr "waitpid() ত অপ্ৰত্যাশিত ত্ৰুটি (%s)"
+
+#: ../glib/gspawn.c:849 ../glib/gspawn-win32.c:1233
+#, c-format
+msgid "Child process exited with code %ld"
+msgstr "চাইল্ড প্ৰক্ৰিয়া ক'ড %ld ৰ সৈতে প্ৰস্থান কৰিলে"
+
+#: ../glib/gspawn.c:857
+#, c-format
+msgid "Child process killed by signal %ld"
+msgstr "চাইল্ড প্ৰক্ৰিয়া সংকেত %ld দ্বাৰা kill কৰা হৈছে"
+
+#: ../glib/gspawn.c:864
+#, c-format
+msgid "Child process stopped by signal %ld"
+msgstr "চাইল্ড প্ৰক্ৰিয়া সংকেত %ld দ্বাৰা বন্ধ কৰা হৈছে"
+
+#: ../glib/gspawn.c:871
+#, c-format
+msgid "Child process exited abnormally"
+msgstr "চাইল্ড প্ৰক্ৰিয়া অস্বাভাৱিকভাৱে প্ৰস্থান কৰিলে"
+
+#: ../glib/gspawn.c:1276 ../glib/gspawn-win32.c:339 ../glib/gspawn-win32.c:347
+#, c-format
+msgid "Failed to read from child pipe (%s)"
+msgstr "চাইল্ড পাইপৰ পৰা পঢ়িবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1344
+#, c-format
+msgid "Failed to fork (%s)"
+msgstr "fork কৰিবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1493 ../glib/gspawn-win32.c:370
+#, c-format
+msgid "Failed to change to directory '%s' (%s)"
+msgstr "'%s' ডাইৰেকটৰিলৈ পৰিবৰ্তন কৰিবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1503
+#, c-format
+msgid "Failed to execute child process \"%s\" (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়া \"%s\" চলাওঁতে ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1513
+#, c-format
+msgid "Failed to redirect output or input of child process (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়াৰ আউটপুট বা ইনপুট পুনৰনিৰ্দেশ কৰিবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1522
+#, c-format
+msgid "Failed to fork child process (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়া fork কৰিবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1530
+#, c-format
+msgid "Unknown error executing child process \"%s\""
+msgstr "চাইল্ড প্ৰক্ৰিয়া \"%s\" প্ৰণয়ন কৰিবলৈ অজ্ঞাত ত্ৰুটি"
+
+#: ../glib/gspawn.c:1554
+#, c-format
+msgid "Failed to read enough data from child pid pipe (%s)"
+msgstr "চাইল্ড pid পাইপৰ পৰা পৰ্যাপ্ত তথ্য পঢ়িবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn.c:1627 ../glib/gspawn-win32.c:300
+#, c-format
+msgid "Failed to create pipe for communicating with child process (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়াৰ সৈতে যোগাযোগৰ উদ্দেশ্যে পাইপ সৃষ্টিত ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn-win32.c:283
+msgid "Failed to read data from child process"
+msgstr "চাইল্ড প্ৰক্ৰিয়াৰ পৰা তথ্য পঢ়িবলৈ ব্যৰ্থ"
+
+#: ../glib/gspawn-win32.c:376 ../glib/gspawn-win32.c:495
+#, c-format
+msgid "Failed to execute child process (%s)"
+msgstr "চাইল্ড প্ৰক্ৰিয়া প্ৰণয়ন কৰিবলৈ ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn-win32.c:445
+#, c-format
+msgid "Invalid program name: %s"
+msgstr "অৱৈধ প্ৰগ্ৰামৰ নাম: %s"
+
+#: ../glib/gspawn-win32.c:455 ../glib/gspawn-win32.c:722
+#: ../glib/gspawn-win32.c:1297
+#, c-format
+msgid "Invalid string in argument vector at %d: %s"
+msgstr "%d ত তৰ্ক সদিশত উল্লিখিত পংক্তি বৈধ নহয়: %s"
+
+#: ../glib/gspawn-win32.c:466 ../glib/gspawn-win32.c:737
+#: ../glib/gspawn-win32.c:1330
+#, c-format
+msgid "Invalid string in environment: %s"
+msgstr "পৰিবেশত উল্লিখিত পংক্তি বৈধ নহয়: %s"
+
+#: ../glib/gspawn-win32.c:718 ../glib/gspawn-win32.c:1278
+#, c-format
+msgid "Invalid working directory: %s"
+msgstr "সক্ৰিয় ডাইৰেকটৰি বৈধ নহয়: %s"
+
+#: ../glib/gspawn-win32.c:783
+#, c-format
+msgid "Failed to execute helper program (%s)"
+msgstr "সহায়ক প্ৰগ্ৰাম চলাওঁতে ব্যৰ্থ (%s)"
+
+#: ../glib/gspawn-win32.c:997
+msgid ""
+"Unexpected error in g_io_channel_win32_poll() reading data from a child "
+"process"
+msgstr ""
+"চাইল্ড প্ৰক্ৰিয়াৰ পৰা তথ্য পঢ়াৰ সময়ত g_io_channel_win32_poll() ত অপ্ৰত্যাশিত "
+"ত্ৰুটি"
+
+#: ../glib/gutf8.c:907
+msgid "Character out of range for UTF-8"
+msgstr "আখৰ UTF-8 ৰ আয়ত্বৰ বাহিৰত"
+
+#: ../glib/gutf8.c:1007 ../glib/gutf8.c:1016 ../glib/gutf8.c:1146
+#: ../glib/gutf8.c:1155 ../glib/gutf8.c:1294 ../glib/gutf8.c:1390
+msgid "Invalid sequence in conversion input"
+msgstr "ৰূপান্তৰ কৰাৰ উদ্দেশ্যে প্ৰদত্ত তথ্যত অৱৈধ ধাৰা"
+
+#: ../glib/gutf8.c:1305 ../glib/gutf8.c:1401
+msgid "Character out of range for UTF-16"
+msgstr "আখৰ UTF-16 ৰ আয়ত্বৰ বাহিৰত"
+
+#: ../glib/gutils.c:2183 ../glib/gutils.c:2210 ../glib/gutils.c:2314
+#, c-format
+msgid "%u byte"
+msgid_plural "%u bytes"
+msgstr[0] "%u বাইট"
+msgstr[1] "%u বাইটসমূহ"
+
+#: ../glib/gutils.c:2189
+#, c-format
+msgid "%.1f KiB"
+msgstr "%.1f KiB"
+
+#: ../glib/gutils.c:2191
+#, c-format
+msgid "%.1f MiB"
+msgstr "%.1f MiB"
+
+#: ../glib/gutils.c:2194
+#, c-format
+msgid "%.1f GiB"
+msgstr "%.1f GiB"
+
+#: ../glib/gutils.c:2197
+#, c-format
+msgid "%.1f TiB"
+msgstr "%.1f TiB"
+
+#: ../glib/gutils.c:2200
+#, c-format
+msgid "%.1f PiB"
+msgstr "%.1f PiB"
+
+#: ../glib/gutils.c:2203
+#, c-format
+msgid "%.1f EiB"
+msgstr "%.1f EiB"
+
+#: ../glib/gutils.c:2216
+#, c-format
+msgid "%.1f kB"
+msgstr "%.1f kB"
+
+#: ../glib/gutils.c:2219 ../glib/gutils.c:2332
+#, c-format
+msgid "%.1f MB"
+msgstr "%.1f MB"
+
+#: ../glib/gutils.c:2222 ../glib/gutils.c:2337
+#, c-format
+msgid "%.1f GB"
+msgstr "%.1f GB"
+
+#: ../glib/gutils.c:2224 ../glib/gutils.c:2342
+#, c-format
+msgid "%.1f TB"
+msgstr "%.1f TB"
+
+#: ../glib/gutils.c:2227 ../glib/gutils.c:2347
+#, c-format
+msgid "%.1f PB"
+msgstr "%.1f PB"
+
+#: ../glib/gutils.c:2230 ../glib/gutils.c:2352
+#, c-format
+msgid "%.1f EB"
+msgstr "%.1f EB"
+
+#. Translators: the %s in "%s bytes" will always be replaced by a number.
+#: ../glib/gutils.c:2267
+#, c-format
+msgid "%s byte"
+msgid_plural "%s bytes"
+msgstr[0] "%s বাইট"
+msgstr[1] "%s বাইটসমূহ"
+
+#. Translators: this is from the deprecated function g_format_size_for_display() which uses 'KB' to
+#. * mean 1024 bytes.  I am aware that 'KB' is not correct, but it has been preserved for reasons of
+#. * compatibility.  Users will not see this string unless a program is using this deprecated function.
+#. * Please translate as literally as possible.
+#.
+#: ../glib/gutils.c:2327
+#, c-format
+msgid "%.1f KB"
+msgstr "%.1f KB"
+
+#~ msgid "Unable to get pending error: %s"
+#~ msgstr "পেন্ডিং ত্ৰুটি পাবলৈ ব্যৰ্থ: %s"
+
+#~ msgid "Failed to open file '%s' for writing: fdopen() failed: %s"
+#~ msgstr "'%s' ফাইল লিখিবৰ বাবে খোলাত ব্যৰ্থ: fdopen() ব্যৰ্থ: %s"
+
+#~ msgid "Failed to write file '%s': fflush() failed: %s"
+#~ msgstr "'%s' ফাইল লিখাত ব্যৰ্থ: fflush() ব্যৰ্থ: %s"
+
+#~ msgid "Failed to close file '%s': fclose() failed: %s"
+#~ msgstr "'%s' ফাইল বন্ধ কৰাত ব্যৰ্থ: fclose() ব্যৰ্থ: %s"
+
+#~ msgid "Incomplete data received for '%s'"
+#~ msgstr "'%s' ৰ বাবে অসম্পূৰ্ণ তথ্য প্ৰাপ্ত হৈছে"
+
+#~ msgid ""
+#~ "Unexpected option length while checking if SO_PASSCRED is enabled for "
+#~ "socket. Expected %d bytes, got %d"
+#~ msgstr ""
+#~ "SO_PASSCRED চকেটৰ বাবে সামৰ্থবান আছে নে নিৰীক্ষণ কৰোতে অপ্ৰত্যাশিত বিকল্প "
+#~ "দৈৰ্ঘ্য। আশা কৰা হৈছিল %d বাইটসমূহ, পোৱা গল %d"
+
+#~ msgid "Abnormal program termination spawning command line '%s': %s"
+#~ msgstr "কমান্ড শাৰী '%s' সৃজন কৰোতে অস্বাভাৱিক প্ৰগ্ৰাম অন্ত: %s"
+
+#~ msgid "Command line '%s' exited with non-zero exit status %d: %s"
+#~ msgstr "কমান্ড শাৰী  '%s' অ-শূণ্য প্ৰস্থান অৱস্থা %d সৈতে প্ৰস্থান কৰিছে: %s"
+
+#~ msgid "workspace limit for empty substrings reached"
+#~ msgstr "ৰিক্ত উপস্ট্ৰিং ৰ কৰ্মক্ষেত্ৰৰ সীমা পূৰ্ণ"
+
+#~ msgid "case-changing escapes (\\l, \\L, \\u, \\U) are not allowed here"
+#~ msgstr "ফলা সলনি কৰা escapes (\\l, \\L, \\u, \\U) ৰ ইয়াত অনুমতি নাই"
+
+#~ msgid "repeating a DEFINE group is not allowed"
+#~ msgstr "কোনো DEFINE দলৰ পুনৰাবৃত্তি কৰা নাযাব"
+
+#~ msgid "No service record for '%s'"
+#~ msgstr "'%s' ৰ কাৰণে সেৱাৰ ৰেকৰ্ড নাই"
+
+#~ msgid "File is empty"
+#~ msgstr "ফাইল ৰিক্ত"
+
+#~ msgid ""
+#~ "Key file contains key '%s' which has value that cannot be interpreted."
+#~ msgstr "কি ফাইলত '%s' কি উপস্থিত আছে যাৰ মান বুজিব পৰা নাযায়।"
+
+#~ msgid "Error stating file '%s': %s"
+#~ msgstr "ফাইল '%s' stat কৰিবলৈ ব্যৰ্থ: %s"
+
+#~ msgid "Error connecting: "
+#~ msgstr "সংযোগ কৰিবলৈ ত্ৰুটি:"
+
+#~ msgid "Error connecting: %s"
+#~ msgstr "সংযোগ কৰিবলৈ সমস্যা: %s"
+
+#~ msgid "Error reading from unix: %s"
+#~ msgstr "unix ৰ পৰা পঢ়িবলৈ সমস্যা: %s"
+
+#~ msgid "Error closing unix: %s"
+#~ msgstr "unix বন্ধ কৰিবলৈ সমস্যা: %s"
+
+#~ msgid "Error writing to unix: %s"
+#~ msgstr "unix লৈ লিখিবলৈ সমস্যা: %s"
+
+#, fuzzy
+#~ msgid "Do not give error for empty directory"
+#~ msgstr "ডাইৰেকটৰিৰ ওপৰত ডাইৰেকটৰি স্থানান্তৰ কৰা নাযাব"
+
+#, fuzzy
+#~ msgid "Invalid UTF-8 sequence in input"
+#~ msgstr "ৰূপান্তৰ কৰাৰ উদ্দেশ্যে প্ৰদত্ত তথ্যত অৱৈধ ধাৰা"
+
+#~ msgid "Reached maximum data array limit"
+#~ msgstr "সৰ্বাধিক তথ্য শাৰীৰ সীমা পোৱা গ'ল"
+
+#~ msgid "do not hide entries"
+#~ msgstr "ইনপুট লুকুৱা কৰা নহব"
+
+#~ msgid "use a long listing format"
+#~ msgstr "দীঘল তালিকাৰ আকৃতি ব্যৱহাৰ কৰক"
+
+#~ msgid ""
+#~ "Character '%s' is not valid at the start of an entity name; the & "
+#~ "character begins an entity; if this ampersand isn't supposed to be an "
+#~ "entity, escape it as &amp;"
+#~ msgstr ""
+#~ "'%s' আখৰ পদাৰ্থৰ নামৰ আৰম্ভনিৰ বাবে বৈধ নহয়; & আখৰে এটা পদাৰ্থ আৰম্ভ কৰে; যদি "
+#~ "এই এম্পাৰছেন্দ এটা পদাৰ্থ নহব লাগে, তাক &amp; হিচাপে আউটপুটন কৰক"
+
+#~ msgid "Character '%s' is not valid inside an entity name"
+#~ msgstr "'%s' আখৰ পদাৰ্থৰ নামৰ ভিতৰত বৈধ নহয়"
+
+#~ msgid "Empty character reference; should include a digit such as &#454;"
+#~ msgstr "ৰিক্ত আখৰৰ সঙ্কেত; এটা সংখ্যা থাকিব লাগে যেনে &#৪৫৪;"
+
+#~ msgid "Unfinished entity reference"
+#~ msgstr "অসম্পূৰ্ণ পদাৰ্থৰ উল্লেখ"
+
+#~ msgid "Unfinished character reference"
+#~ msgstr "অসম্পূৰ্ণ আখৰৰ উল্লেখ"
+
+#~ msgid "Invalid UTF-8 encoded text - overlong sequence"
+#~ msgstr "অৱৈধ UTF-8 সাঙ্কেতিক লিপি - overlong ক্ৰম"
+
+#~ msgid "Invalid UTF-8 encoded text - not a start char"
+#~ msgstr "অৱৈধ UTF-8 সাঙ্কেতিক লিপি - এটা আৰম্ভৰ আখৰ নহয়"
+
+#~ msgid "file"
+#~ msgstr "ফাইল"
+
+#~ msgid "The file containing the icon"
+#~ msgstr "আইকন ধাৰণকাৰী ফাইল"
+
+#~ msgid "name"
+#~ msgstr "নাম"
+
+#~ msgid "names"
+#~ msgstr "নাম"
+
+#~ msgid "An array containing the icon names"
+#~ msgstr "আইকনৰ নাম ধাৰণকাৰী এটা শাৰী"
+
+#~ msgid "use default fallbacks"
+#~ msgstr "অবিকল্পিত fallbacks ব্যৱহাৰ কৰক"
+
+#~ msgid ""
+#~ "Whether to use default fallbacks found by shortening the name at '-' "
+#~ "characters. Ignores names after the first if multiple names are given."
+#~ msgstr ""
+#~ "'-' আখৰত নাম সৰু কৰি পোৱা অবিকল্পিত fallbacks ব্যৱহাৰ কৰা হ'ব নে নহয়। বহুত "
+#~ "নাম দিলে প্ৰথম নামৰ পিছৰ নাম আওকাণ কৰা হয়।"
+
+#~ msgid "File descriptor"
+#~ msgstr "ফাইলৰ দেস্ক্ৰিপ্টৰ"
+
+#~ msgid "The file descriptor to read from"
+#~ msgstr "পঢ়িব লগা ফাইলৰ দেস্ক্ৰিপ্টৰ"
+
+#~ msgid "Close file descriptor"
+#~ msgstr "ফাইলৰ দেস্ক্ৰিপ্টৰ নিৰ্ব্বাচন কৰক"
+
+#~ msgid "Whether to close the file descriptor when the stream is closed"
+#~ msgstr "স্ৰোত বন্ধ কৰিলে ফাইলৰ দেস্ক্ৰিপ্টৰ বন্ধ কৰা হ'ব নে নহয়"
+
+#~ msgid "The file descriptor to write to"
+#~ msgstr "ফাইল দেস্ক্ৰিপ্টৰ য'ত লিখিব লাগে"

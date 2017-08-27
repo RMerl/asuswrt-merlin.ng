@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Object Construction</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-gobject.html" title="How to define and implement a new GObject">
+<link rel="prev" href="howto-gobject-code.html" title="Boilerplate code">
+<link rel="next" href="howto-gobject-destruction.html" title="Object Destruction">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-gobject.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-gobject-code.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-gobject-destruction.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-gobject-construction"></a>Object Construction</h2></div></div></div>
+<p>
+      People often get confused when trying to construct their GObjects because of the
+      sheer number of different ways to hook into the objects's construction process: it is
+      difficult to figure which is the <span class="emphasis"><em>correct</em></span>, recommended way.
+    </p>
+<p>
+      <a class="xref" href="chapter-gobject.html#gobject-construction-table" title="Table 4. g_object_new">Table 4, “g_object_new”</a> shows what user-provided functions
+      are invoked during object instantiation and in which order they are invoked.
+      A user looking for the equivalent of the simple C++ constructor function should use
+      the instance_init method. It will be invoked after all the parent's instance_init
+      functions have been invoked. It cannot take arbitrary construction parameters 
+      (as in C++) but if your object needs arbitrary parameters to complete initialization,
+      you can use construction properties.
+    </p>
+<p>
+      Construction properties will be set only after all instance_init functions have run.
+      No object reference will be returned to the client of <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-new" title="g_object_new ()">g_object_new</a></code>
+      until all the construction properties have been set.
+    </p>
+<p>
+      It is important to note that object construction cannot <span class="emphasis"><em>ever</em></span>
+      fail. If you require a fallible GObject construction, you can use the
+      GInitable and GAsyncInitable interfaces provided by the GIO library
+    </p>
+<p>
+      As such, I would recommend writing the following code first:
+</p>
+<pre class="programlisting">
+G_DEFINE_TYPE_WITH_PRIVATE (MamanBar, maman_bar, G_TYPE_OBJECT)
+
+static void
+maman_bar_class_init (MamanBarClass *klass)
+{
+}
+
+static void
+maman_bar_init (MamanBar *self)
+{
+  self-&gt;priv = maman_bar_get_instance_private (self);
+
+  /* initialize all public and private members to reasonable default values. */
+}
+</pre>
+<p>
+    </p>
+<p>
+      If you need special construction properties, install the properties in
+      the <code class="function">class_init()</code> function, override the <code class="function">set_property()</code>
+      and <code class="function">get_property()</code> methods of the GObject class,
+      and implement them as described by <a class="xref" href="gobject-properties.html" title="Object properties">the section called “Object properties”</a>.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">enum</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  PROP_0</span><span class="symbol">,</span>
+
+<span class="normal">  PROP_MAMAN</span><span class="symbol">,</span>
+
+<span class="normal">  N_PROPERTIES</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="comment">/* Keep a pointer to the properties definition */</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GParamSpec</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">obj_properties</span><span class="symbol">[</span><span class="normal">N_PROPERTIES</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">bar_class_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">MamanBarClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObjectClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">gobject_class </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">klass</span><span class="symbol">);</span>
+
+<span class="normal">  gobject_class</span><span class="symbol">-&gt;</span><span class="normal">set_property </span><span class="symbol">=</span><span class="normal"> bar_set_property</span><span class="symbol">;</span>
+<span class="normal">  gobject_class</span><span class="symbol">-&gt;</span><span class="normal">get_property </span><span class="symbol">=</span><span class="normal"> bar_get_property</span><span class="symbol">;</span>
+
+<span class="normal">  obj_properties</span><span class="symbol">[</span><span class="normal">PROP_MAMAN</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-string">g_param_spec_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"maman"</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="string">"Maman construct prop"</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="string">"Set maman's name"</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="string">"no-name-set"</span><span class="normal"> </span><span class="comment">/* default value */</span><span class="symbol">,</span>
+<span class="normal">                         <a href="gobject-GParamSpec.html#G-PARAM-CONSTRUCT-ONLY:CAPS">G_PARAM_CONSTRUCT_ONLY</a> </span><span class="symbol">|</span>
+<span class="normal">                         <a href="gobject-GParamSpec.html#G-PARAM-READWRITE:CAPS">G_PARAM_READWRITE</a> </span><span class="symbol">|</span>
+<span class="normal">                         <a href="gobject-GParamSpec.html#G-PARAM-STATIC-STRINGS:CAPS">G_PARAM_STATIC_STRINGS</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-class-install-properties">g_object_class_install_properties</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">gobject_class</span><span class="symbol">,</span>
+<span class="normal">                                     N_PROPERTIES</span><span class="symbol">,</span>
+<span class="normal">                                     obj_properties</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      If you need this, make sure you can build and run code similar to the
+      code shown above. Also, make sure your construct properties can be set
+      without side effects during construction.
+    </p>
+<p>
+      Some people sometimes need to complete the initialization of a instance
+      of a type only after the properties passed to the constructors have been
+      set. This is possible through the use of the <code class="function">constructor()</code>
+      class method as described in <a class="xref" href="chapter-gobject.html#gobject-instantiation" title="Object instantiation">the section called “Object instantiation”</a> or,
+      more simply, using the <code class="function">constructed()</code> class method
+      available since GLib 2.12. Note that the <code class="function">constructed()</code>
+      virtual function will only be invoked after the properties marked as
+      G_PARAM_CONSTRUCT_ONLY or G_PARAM_CONSTRUCT have been consumed, but
+      before the regular properties passed to <code class="function">g_object_new()</code>
+      have been set.
+    </p>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

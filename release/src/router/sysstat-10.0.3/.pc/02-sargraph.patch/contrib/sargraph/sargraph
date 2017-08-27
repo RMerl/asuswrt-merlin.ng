@@ -1,0 +1,486 @@
+#!/bin/bash
+# sargraph - a simple sketch on how to generate graphs from sadf XML output
+# by Lans.Carstensen@dreamworks.com <Lans Carstensen>
+
+# Our dependencies
+ZENITY="/usr/bin/zenity"
+XSLTPROC="/usr/bin/xsltproc"
+SADF="/usr/local/bin/sadf"
+GNUPLOT="/usr/bin/gnuplot"
+MKTEMP="/bin/mktemp"
+FIND="/usr/bin/find"
+SORT="/bin/sort"
+CUT="/bin/cut"
+
+# sar / sysstat DTD is published here:
+# http://pagesperso-orange.fr/sebastien.godard/sysstat.dtd
+# compare against output of "sadf -x"
+# and pull apart data into gnuplot tabular data files
+
+# Subroutines
+
+# Graph for "sar -u"
+
+cpu_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -u" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./cpu-load/cpu[@number='all']/@user"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./cpu-load/cpu[@number='all']/@nice"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./cpu-load/cpu[@number='all']/@system"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./cpu-load/cpu[@number='all']/@iowait"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./cpu-load/cpu[@number='all']/@steal"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+cpu_gnuplot() {
+    # Create the GNUplot rendering file, largely based on "isag" Tk script from sysstat package
+#set yrange [0:100]
+    cat > $1 <<EOF
+set term x11
+set title "sar -u"
+set ylabel "Percent"
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "%user" with line, "$2" using 1:3 t "%nice" with line, "$2" using 1:4 t "%system" with line, "$2" using 1:5 t "%iowait" with line, "$2" using 1:6 t "%steal" with line
+pause mouse
+EOF
+}
+
+# To output to a file change the gnuplot routines to say something like:
+# set term svg
+# ...
+# set output "/tmp/test.svg"
+# plot ...
+
+# Graph for "sar -q"
+
+rq_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -q" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@runq-sz"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@plist-sz"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@ldavg-1"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@ldavg-5"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@ldavg-15"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+rq_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -q"
+set ylabel ""
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "runq-sz" with line, "$2" using 1:3 t "plist-sz" with line, "$2" using 1:4 t "ldavg-1" with line, "$2" using 1:5 t "ldavg-5" with line, "$2" using 1:6 t "ldavg-15" with line
+pause mouse
+EOF
+}
+
+# Graph for "sar -q", but w/o the process list size
+
+rqnoplistsz_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -q" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@runq-sz"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@ldavg-1"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@ldavg-5"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./queue/@ldavg-15"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+rqnoplistsz_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -q"
+set ylabel ""
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "runq-sz" with line, "$2" using 1:3 t "ldavg-1" with line, "$2" using 1:4 t "ldavg-5" with line, "$2" using 1:5 t "ldavg-15" with line
+pause mouse
+EOF
+}
+
+# Graph for "sar -b"
+
+io_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -b" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./io/tps"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./io/io-reads/@rtps"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./io/io-writes/@wtps"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./io/io-reads/@bread"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./io/io-writes/@bwrtn"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+io_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -b"
+set ylabel "ops/s"
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "rtps" with line, "$2" using 1:3 t "wtps" with line, "$2" using 1:4 t "bread/s" with line,  "$2" using 1:5 t "bwrtn/s" with line
+pause mouse
+EOF
+}
+
+# Graph for "sar -n NFS"
+
+nfsclient_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -n NFS" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./network/net-nfs/@call"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./network/net-nfs/@retrans"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./network/net-nfs/@read"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./network/net-nfs/@write"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./network/net-nfs/@access"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./network/net-nfs/@getatt"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+nfsclient_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -n NFS"
+set ylabel "ops/s"
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "call/s" with line, "$2" using 1:3 t "retrans/s" with line, "$2" using 1:4 t "read/s" with line,  "$2" using 1:5 t "write/s" with line, "$2" using 1:6 t "access/s" with line, "$2" using 1:7 t "getatt/s" with line
+pause mouse
+EOF
+}
+
+# Graph for "sar -B"
+
+paging_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -B" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./paging/@pgpgin"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./paging/@pgpgout"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./paging/@fault"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./paging/@majflt"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+paging_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -B"
+set ylabel "pages/s"
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "pgpgin/s" with line, "$2" using 1:3 t "pgpgout/s" with line, "$2" using 1:4 t "fault/s" with line, "$2" using 1:5 t "majflt/s" with line
+pause mouse
+EOF
+}
+
+# Graph for "sar -r"
+
+memuse_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -r" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/memfree"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/memused"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/buffers"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/cached"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/swpfree"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/swpused"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/swpcad"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+memuse_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -r"
+set ylabel "kB"
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "kbmemfree" with line, "$2" using 1:3 t "kbmemused" with line, "$2" using 1:4 t "kbbuffers" with line, "$2" using 1:5 t "kbcached" with line, "$2" using 1:6 t "swpfree" with line, "$2" using 1:7 t "swpused" with line, "$2" using 1:8 t "swpcad" with line
+pause mouse
+EOF
+}
+
+# Graph for "sar -S"
+
+swapuse_xslt() {
+    # Create the XSLT transform to make a GNUplot data file out of "sar -r" type data
+    # test with "sadf -x | xsltproc <file containing stuff below> -
+    cat > $1 <<EOF
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:strip-space elements="*"/>
+<xsl:template match="/sysstat/host/statistics">
+<xsl:text>&#10;</xsl:text>
+<xsl:for-each select="timestamp">
+<xsl:value-of select="@time"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/swpfree"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/swpused"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="./memory/swpcad"/>
+<xsl:text>&#10;</xsl:text>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+EOF
+}
+
+swapuse_gnuplot() {
+    cat > $1 <<EOF
+set term x11
+set title "sar -S"
+set ylabel "kB"
+set timefmt "%H:%M:%S"
+set xdata time
+set format x "%H:%M"
+plot "$2" using 1:2 t "swpfree" with line, "$2" using 1:3 t "swpused" with line, "$2" using 1:4 t "swpcad" with line
+pause mouse
+EOF
+}
+
+# Main
+
+while /bin/true; do
+
+# Prompt for sar file
+
+SARLIST=`$FIND /var/log/sa -name 'sa[0-9][0-9]' -printf '%T@,%p\n'| $SORT -n -r | $CUT -d, -f2`
+SARFILE=`$ZENITY --list --text "Select data source" --column "sar file" $SARLIST`
+if [ "$SARFILE" == "" ]; then
+    exit
+fi
+
+# Prompt for graph
+
+GRAPH=`$ZENITY --list --text "Select a graph" --column "Graph Type" "CPU" "Run Queue" "Run Queue w/o Process List Size" "IO Transfer Rate" "NFS Client" "Paging Stats" "Memory Utilization" "Memory Utilization (Swap)"`
+
+case "$GRAPH" in
+    "CPU")
+	XSLTFILE=`mktemp`
+	cpu_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -u | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	cpu_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "Run Queue")
+	XSLTFILE=`mktemp`
+	rq_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -q | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	rq_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "Run Queue w/o Process List Size")
+	XSLTFILE=`mktemp`
+	rqnoplistsz_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -q | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	rqnoplistsz_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "IO Transfer Rate")
+	XSLTFILE=`mktemp`
+	io_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -b | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	io_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "NFS Client")
+	XSLTFILE=`mktemp`
+	nfsclient_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -n NFS | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	nfsclient_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "Paging Stats")
+	XSLTFILE=`mktemp`
+	paging_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -B | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	paging_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "Memory Utilization")
+	XSLTFILE=`mktemp`
+	memuse_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -r | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	memuse_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    "Memory Utilization (Swap)")
+	XSLTFILE=`mktemp`
+	swapuse_xslt $XSLTFILE
+	DATAFILE=`mktemp`
+	$SADF -t -x $SARFILE -- -S | $XSLTPROC --novalid $XSLTFILE - > $DATAFILE
+	GNUPLOTFILE=`mktemp`
+	swapuse_gnuplot $GNUPLOTFILE $DATAFILE
+	$GNUPLOT $GNUPLOTFILE
+	rm $GNUPLOTFILE
+	rm $DATAFILE
+	rm $XSLTFILE
+	;;
+    *)
+	# If you click "Cancel", you end up here and exit
+	exit
+	;;
+esac
+
+done
+
+exit
+

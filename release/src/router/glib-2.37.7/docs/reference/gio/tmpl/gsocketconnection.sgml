@@ -1,0 +1,139 @@
+<!-- ##### SECTION Title ##### -->
+GSocketConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocketConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GSocketConnection:socket ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_socket_connection_connect ##### -->
+<para>
+
+</para>
+
+@connection: 
+@address: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_connect_async ##### -->
+<para>
+
+</para>
+
+@connection: 
+@address: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_socket_connection_connect_finish ##### -->
+<para>
+
+</para>
+
+@connection: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_is_connected ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_get_local_address ##### -->
+<para>
+
+</para>
+
+@connection: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_get_remote_address ##### -->
+<para>
+
+</para>
+
+@connection: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_get_socket ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_factory_create_connection ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_factory_lookup_type ##### -->
+<para>
+
+</para>
+
+@family: 
+@type: 
+@protocol_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connection_factory_register_type ##### -->
+<para>
+
+</para>
+
+@g_type: 
+@family: 
+@type: 
+@protocol: 
+
+

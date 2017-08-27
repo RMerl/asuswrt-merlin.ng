@@ -1,0 +1,266 @@
+.TH IP 8 "20 Dec 2011" "iproute2" "Linux"
+.SH NAME
+ip \- show / manipulate routing, devices, policy routing and tunnels
+.SH SYNOPSIS
+
+.ad l
+.in +8
+.ti -8
+.B ip
+.RI "[ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.B ip 
+.RB "[ " -force " ] "
+.BI "-batch " filename
+.sp
+
+.ti -8
+.IR OBJECT " := { "
+.BR link " | " addr " | " addrlabel " | " route " | " rule " | " neigh " | "\
+ ntable " | " tunnel " | " tuntap " | " maddr " | "  mroute " | " mrule " | "\
+ monitor " | " xfrm " | " netns " | "  l2tp " | "  tcp_metrics " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-s\fR[\fItatistics\fR] |
+\fB\-r\fR[\fIesolve\fR] |
+\fB\-f\fR[\fIamily\fR] {
+.BR inet " | " inet6 " | " ipx " | " dnet " | " link " } | "
+\fB\-o\fR[\fIneline\fR] }
+
+
+.SH OPTIONS
+
+.TP
+.BR "\-V" , " -Version"
+Print the version of the
+.B ip
+utility and exit.
+
+.TP
+.BR "\-b", " \-batch " <FILENAME>
+Read commands from provided file or standard input and invoke them.
+First failure will cause termination of ip.
+
+.TP
+.BR "\-force"
+Don't terminate ip on errors in batch mode.
+If there were any errors during execution of the commands, the application return code will be non zero.
+
+.TP
+.BR "\-s" , " \-stats" , " \-statistics"
+Output more information.  If the option
+appears twice or more, the amount of information increases.
+As a rule, the information is statistics or some time values.
+
+.TP
+.BR "\-l" , " \-loops " <COUNT>
+Specify maximum number of loops the 'ip addr flush' logic
+will attempt before giving up.  The default is 10.
+Zero (0) means loop until all addresses are removed.
+
+.TP
+.BR "\-f" , " \-family " <FAMILY>
+Specifies the protocol family to use. The protocol family identifier can be one of
+.BR "inet" , " inet6" , " bridge" , " ipx" , " dnet"
+or
+.BR link .
+If this option is not present,
+the protocol family is guessed from other arguments.  If the rest
+of the command line does not give enough information to guess the
+family,
+.B ip
+falls back to the default one, usually
+.B inet
+or
+.BR "any" .
+.B link
+is a special family identifier meaning that no networking protocol
+is involved.
+
+.TP
+.B \-4
+shortcut for
+.BR "-family inet" .
+
+.TP
+.B \-6
+shortcut for
+.BR "\-family inet6" .
+
+.TP
+.B \-B
+shortcut for
+.BR "\-family bridge" .
+
+.TP
+.B \-D
+shortcut for
+.BR "\-family decnet" .
+
+.TP
+.B \-I
+shortcut for
+.BR "\-family ipx" .
+
+.TP
+.B \-0
+shortcut for
+.BR "\-family link" .
+
+.TP
+.BR "\-o" , " \-oneline"
+output each record on a single line, replacing line feeds
+with the
+.B '\e'
+character. This is convenient when you want to count records
+with
+.BR wc (1)
+or to
+.BR grep (1)
+the output.
+
+.TP
+.BR "\-r" , " \-resolve"
+use the system's name resolver to print DNS names instead of
+host addresses.
+
+.SH IP - COMMAND SYNTAX
+
+.SS
+.I OBJECT
+
+.TP
+.B address
+- protocol (IP or IPv6) address on a device.
+
+.TP
+.B addrlabel
+- label configuration for protocol address selection.
+
+.TP
+.B l2tp
+- tunnel ethernet over IP (L2TPv3).
+
+.TP
+.B link
+- network device.
+
+.TP
+.B maddress
+- multicast address.
+
+.TP
+.B monitor
+- watch for netlink messages.
+
+.TP
+.B mroute
+- multicast routing cache entry.
+
+.TP
+.B mrule
+- rule in multicast routing policy database.
+
+.TP
+.B neighbour
+- manage ARP or NDISC cache entries.
+
+.TP
+.B netns
+- manage network namespaces.
+
+.TP
+.B ntable
+- manage the neighbor cache's operation.
+
+.TP
+.B route
+- routing table entry.
+
+.TP
+.B rule
+- rule in routing policy database.
+
+.TP
+.B tcp_metrics/tcpmetrics
+- manage TCP Metrics
+
+.TP
+.B tunnel
+- tunnel over IP.
+
+.TP
+.B tuntap
+- manage TUN/TAP devices.
+
+.TP
+.B xfrm
+- manage IPSec policies.
+
+.PP
+The names of all objects may be written in full or
+abbreviated form, for exampe
+.B address
+can be abbreviated as
+.B addr
+or just
+.B a.
+
+.SS
+.I COMMAND
+
+Specifies the action to perform on the object.
+The set of possible actions depends on the object type.
+As a rule, it is possible to
+.BR "add" , " delete"
+and
+.B show
+(or
+.B list
+) objects, but some objects do not allow all of these operations
+or have some additional commands.  The
+.B help
+command is available for all objects.  It prints
+out a list of available commands and argument syntax conventions.
+.sp
+If no command is given, some default command is assumed.
+Usually it is
+.B list
+or, if the objects of this class cannot be listed,
+.BR "help" .
+
+.SH HISTORY
+.B ip
+was written by Alexey N. Kuznetsov and added in Linux 2.2.
+.SH SEE ALSO
+.BR ip-address (8),
+.BR ip-addrlabel (8),
+.BR ip-l2tp (8),
+.BR ip-link (8),
+.BR ip-maddress (8),
+.BR ip-monitor (8),
+.BR ip-mroute (8),
+.BR ip-neighbour (8),
+.BR ip-netns (8),
+.BR ip-ntable (8),
+.BR ip-route (8),
+.BR ip-rule (8),
+.BR ip-tcp_metrics (8),
+.BR ip-tunnel (8),
+.BR ip-xfrm (8)
+.br
+.RB "IP Command reference " ip-cref.ps
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Original Manpage by Michail Litvak <mci@owl.openwall.com>

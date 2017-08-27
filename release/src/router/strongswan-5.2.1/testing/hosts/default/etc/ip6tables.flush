@@ -1,0 +1,15 @@
+*filter
+
+-F
+
+-P INPUT ACCEPT
+-P OUTPUT ACCEPT
+-P FORWARD ACCEPT
+
+COMMIT
+
+*mangle
+
+-F
+
+COMMIT

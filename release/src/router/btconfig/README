@@ -1,0 +1,68 @@
+Compilation Instructions
+========================
+
+In order to compile Bluetooth utilities you need following software packages:
+        - Linux Bluetooth protocol stack (BlueZ)
+        - GCC compiler
+        - D-Bus library
+        - GLib library
+        - Lexical Analyzer (flex, lex)
+        - YACC (yacc, bison, byacc)
+
+To install these packages, switch to root previlege.
+
+Fedora Core:
+1] Linux Bluetooth protocol stack (BlueZ):
+	Download latest source code of BlueZ stack from:
+		http://www.bluez.org/download/
+2]GCC Compiler:
+	=>yum install gcc
+
+3]D-Bus library:
+	=>yum install dbus
+
+4]Lexical Analyzer (flex, lex)
+	=>yum install flex
+
+5]YACC (yacc, bison, byacc)
+	=>yum install byacc bison
+
+
+Ubuntu:
+1] Linux Bluetooth protocol stack (BlueZ):
+        Download latest source code of BlueZ stack from:
+                http://www.bluez.org/download/
+
+2]GCC Compiler:
+	=>sudo apt-get install gcc
+
+3]D-Bus library
+	=>sudo apt-get install libdbus-glib-1-dev
+
+4]Lexical Analyzer (flex, lex)
+	=>sudo apt-get install flex
+
+5]YACC (yacc, bison, byacc)
+	=>sudo apt-get install byacc
+
+After downloading these packages please follow README file from bluez source folder to install Bluez stack.
+
+Once BlueZ Stack is installed, go to btconfig folder and give make command to compile btconfig source code:
+	=>make 
+	
+	"btconfig" executable will be genearated
+
+Application usage
+=================
+
+Use following command to get help about the features supported by btconfig:
+	=> btconfig --help
+	=> btconfig
+
+To get the help about syntax and additional parameters of the command:
+	E.g. To get help about Write BD Address (wba) command
+	=> btconfig wba
+	Read PS tag operation
+	=> btconfig rpst
+
+

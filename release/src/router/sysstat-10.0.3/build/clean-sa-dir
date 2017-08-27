@@ -1,0 +1,11 @@
+
+Answer y if you want to remove existing daily data files from
+system activity directory that were created by a previous
+version of sysstat.
+Removing those files may be compulsory if they have been created
+with a format which is no longer compatible with that of current
+sysstat version.
+Default answer is n (files are not deleted).
+You can still remove them by hand afterwards if sar yields the
+following error: "Invalid system activity file".
+

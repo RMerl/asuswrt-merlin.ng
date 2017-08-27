@@ -1,0 +1,23 @@
+#!/bin/sh
+# DD-WRT V22 postinit script by Sebastian Gottschall (BrainSlayer). (some parts are taken from OpenWRT)
+
+# mount jffs2
+if [ "$(nvram get jffs_mounted)" = "1" ]; then
+    mkdir /jffs/tmp
+    mkdir /jffs/tmp/ipkg
+fi
+
+if [ "$(nvram get need_commit)" = "1" ]; then
+    echo "nvram was changed, needs commit, waiting 10 sec."
+    sleep 10
+    nvram set need_commit=0
+    nvram commit
+fi
+
+if [ "$(nvram get need_reboot)" = "1" ]; then
+    echo "critical nvram was changed, needs commit, waiting 10 sec."
+    sleep 5
+    nvram set need_reboot=0
+    nvram commit
+    reboot
+fi

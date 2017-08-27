@@ -1,0 +1,12 @@
+alice::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*6cu1UTVw@medsrv.org.*carol@strongswan.org::YES
+bob::  ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*av9oEPMz@medsrv.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*PH_IP_MOON.*6cu1UTVw@medsrv.org::YES
+carol::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*PH_IP_SUN.*v9oEPMz@medsrv.org::YES
+alice::ipsec status 2> /dev/null::peer.*ESTABLISHED.*alice@strongswan.org.*bob@strongswan.org::YES
+bob::  ipsec status 2> /dev/null::peer.*ESTABLISHED.*bob@strongswan.org.*alice@strongswan.org::YES
+alice::ipsec status 2> /dev/null::peer.*INSTALLED, TUNNEL::YES
+bob::  ipsec status 2> /dev/null::peer.*INSTALLED, TUNNEL::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_req=1::YES
+bob::  ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+moon::tcpdump::IP moon.strongswan.org.* > sun.strongswan.org.*: UDP::YES
+moon::tcpdump::IP sun.strongswan.org.* > moon.strongswan.org.*: UDP::YES

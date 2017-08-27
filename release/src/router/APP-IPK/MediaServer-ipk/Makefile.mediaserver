@@ -1,0 +1,387 @@
+# CURRENT is current dir for install SRCDIR is dir which code in
+# please export PLATFORM=mipsel before complime
+export CURRENT := $(shell pwd)
+export SRCDIR := $(CURRENT)/../../
+BUILD := $(shell (gcc -dumpmachine))
+HOSTCC := gcc
+export IPKG_TOOLS := /opt/trendchip/ipkg-utils-1.7
+
+ifeq ($(PLATFORM),mipsel)
+export CROSS_COMPILE := mipsel-linux-
+CONFIGURE := ./configure --host=mipsel-linux --target=mipsel-linux --build=$(BUILD)
+ARCH := mips
+endif
+
+ifeq ($(PLATFORM),mipsbig)
+export CROSS_COMPILE := mips-linux-uclibc-
+CONFIGURE := ./configure --host=mips-linux --target=mips-linux --build=$(BUILD)
+ARCH := mips
+endif
+
+ifeq ($(PLATFORM),i686)
+export CROSS_COMPILE := i686-cm-linux-
+CONFIGURE := ./configure --host=i686-cm-linux --target=i686-cm-linux --build=$(BUILD)
+ARCH := x86
+endif
+
+MSIPK := y
+export MSIPK
+export CC := $(CROSS_COMPILE)gcc
+export AR := $(CROSS_COMPILE)ar
+export AS := $(CROSS_COMPILE)as
+export LD := $(CROSS_COMPILE)ld
+export NM := $(CROSS_COMPILE)nm
+export RANLIB := $(CROSS_COMPILE)ranlib
+export STRIP := $(CROSS_COMPILE)strip
+export SIZE := $(CROSS_COMPILE)size
+export CXX := $(CROSS_COMPILE)g++
+
+obj-y += mkdir
+obj-y += zlib
+obj-y += libid3tag
+obj-y += libogg
+obj-y += flac
+obj-y += libvorbis
+obj-y += sqlite
+obj-y += jpeg
+obj-y += libexif
+obj-y += ffmpeg
+obj-y += minidlna
+obj-y += media-cgi
+obj-y += lgdbm
+obj-y += avahi-0.6.31
+obj-y += daapd
+#obj-y += dns
+obj-y += avahi-ipk
+obj-y += libdaemon-ipk
+obj-y += mediaserver-ipk
+obj-y += asusffmpeg-ipk
+
+all: $(obj-y)
+
+clean-ipk:
+	#- cd $(CURRENT) && rm *.ipk
+	- cd $(CURRENT)/asusavahi-0.6.31/opt/tmp/bin && rm avahi-daemon
+	- cd $(CURRENT)/asusavahi-0.6.31/opt/lib && rm libavahi-*
+	- cd $(CURRENT)/asusffmpeg_1.0.0.5/opt/lib && rm libav*
+	- cd $(CURRENT)/asuslibdaemon/opt/lib && rm libdaemon*
+	- cd $(CURRENT)/mediaserver/opt/tmp/bin && rm minidlna mt-daapd
+	- cd $(CURRENT)/mediaserver/opt/tmp/include && rm *.h
+	- cd $(CURRENT)/mediaserver/opt/tmp/lib && rm libid3tag*
+	- cd $(CURRENT)/mediaserver/opt/etc/downloadmaster && rm -r *
+	- cd $(CURRENT)/mediaserverui && rm *.cgi
+	- rm -rf $(CURRENT)/opt
+
+clean: clean-ipk
+	-@$(MAKE) -C $(SRCDIR)/zlib clean
+	-@$(MAKE) -C $(SRCDIR)/libgdbm clean
+	-@$(MAKE) -C $(SRCDIR)/libid3tag clean
+	rm -rf $(SRCDIR)/libvorbis/stamp-h2
+	-@$(MAKE) -C $(SRCDIR)/mt-daapd clean
+	-@$(MAKE) -C $(SRCDIR)/mDNSResponder clean
+	-@$(MAKE) -C $(SRCDIR)/libogg clean
+	-@$(MAKE) -C $(SRCDIR)/flac clean
+	-@$(MAKE) -C $(SRCDIR)/libvorbis clean
+	-@$(MAKE) -C $(SRCDIR)/sqlite clean
+	-@$(MAKE) -C $(SRCDIR)/jpeg clean
+	-@$(MAKE) -C $(SRCDIR)/libexif clean
+	-@$(MAKE) -C $(SRCDIR)/ffmpeg-0.5 clean
+	- cd $(SRCDIR)/ffmpeg-0.5 && rm -f stamp-h1 config.h config.mak .depend .vhookdep config.err
+	-@$(MAKE) -C $(SRCDIR)/minidlna MSIPK=$(MSIPK) clean
+	-@$(MAKE) -C $(SRCDIR)/Media_CGI clean
+	-@$(MAKE) -C $(SRCDIR)/expat-2.0.1 clean
+	-@rm -f $(SRCDIR)/expat-2.0.1/stamp-h1
+	-@$(MAKE) -C $(SRCDIR)/libdaemon distclean
+	-@rm -f $(SRCDIR)/libdaemon/stamp-h1
+	-@$(MAKE) -C $(SRCDIR)/avahi-0.6.31 clean
+	-@rm -f $(SRCDIR)/avahi-0.6.31/stamp-h1
+	-@$(MAKE) -C $(SRCDIR)/Media_CGI clean
+
+mkdir:
+	- mkdir -p $(CURRENT)/mediaserver/opt/tmp/lib/
+	- mkdir -p $(CURRENT)/mediaserver/opt/tmp/include/
+	- mkdir -p $(CURRENT)/mediaserver/opt/tmp/bin/
+	mkdir -p $(CURRENT)/mediaserver/opt/tmp/var/minidlna
+	mkdir -p $(CURRENT)/mediaserver/opt/tmp/var/mt-daapd
+	mkdir -p $(CURRENT)/mediaserver/opt/etc/init.d/
+	mkdir -p $(CURRENT)/mediaserver/opt/etc/apps_asus_script
+	mkdir -p $(CURRENT)/mediaserver/opt/etc/downloadmaster/
+
+zlib/stamp-h2: 
+	cd $(SRCDIR)/zlib && \
+		touch stamp-h2;	
+
+zlib: zlib/stamp-h2
+	cd $(SRCDIR)/zlib && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	prefix=$(CURRENT)/opt \
+	./configure --shared
+	@$(MAKE) -C $(SRCDIR)/zlib all
+	cd $(SRCDIR)/zlib && \
+		$(MAKE) install
+
+zlib-clean:
+	-@$(MAKE) -C $(SRCDIR)/zlib clean
+	-rm $(SRCDIR)/zlib/stamp-h2
+
+libid3tag/stamp-h2:
+	cd $(SRCDIR)/libid3tag \
+		touch stamp-h2;	
+	cd $(SRCDIR)/libid3tag && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) SIZE=$(SIZE) CXX=$(CXX) \
+	CPPFLAGS="-O2 -pipe -I$(CURRENT)/opt/include " \
+	LDFLAGS="-L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	$(CONFIGURE) \
+	--prefix=$(CURRENT)/opt \
+	--enable-shared --disable-debugging --disable-profiling --disable-dependency-tracking --disable-nls --enable-static=yes
+	sed -i "215c\lib_LTLIBRARIES = libid3tag_ms.la" $(SRCDIR)/libid3tag/Makefile
+	sed -i "324c\libid3tag_ms.la: \$$(libid3tag_la_OBJECTS) \$$(libid3tag_la_DEPENDENCIES)" $(SRCDIR)/libid3tag/Makefile
+
+libid3tag: libid3tag/stamp-h2 zlib
+	$(MAKE) -C $(SRCDIR)/libid3tag all
+	cd $(SRCDIR)/libid3tag && \
+	$(MAKE) install
+	cp -f $(CURRENT)/opt/lib/libid3tag_ms.so.0.3.0 $(CURRENT)/mediaserver/opt/tmp/lib/libid3tag_ms.so.0.3.0
+	cp -f $(CURRENT)/opt/include/id3tag.h $(CURRENT)/mediaserver/opt/tmp/include/id3tag_ms.h
+
+libogg:
+	cd $(SRCDIR)/libogg && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	$(CONFIGURE) \
+	CPPFLAGS="-O2   -pipe  -I$(CURRENT)/opt/include " \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	--prefix=$(CURRENT)/opt \
+	--disable-nls
+	@$(MAKE) -C $(SRCDIR)/libogg all
+	cd $(SRCDIR)/libogg && \
+	$(MAKE) install
+flac:
+	cd $(SRCDIR)/flac && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	$(CONFIGURE) \
+	CPPFLAGS="-O2   -pipe  -I$(CURRENT)/opt/include " \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	--prefix=$(CURRENT)/opt \
+	--with-ogg=$(CURRENT)/opt \
+	--disable-xmms-plugin --disable-nls
+	@$(MAKE) -C $(SRCDIR)/flac all
+	cd $(SRCDIR)/flac && \
+	$(MAKE) install
+
+libvorbis/stamp-h2:
+	cd libvorbis && \
+		touch stamp-h2;
+
+libvorbis:
+	cd $(SRCDIR)/libvorbis && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	$(CONFIGURE) \
+	CPPFLAGS="-O2   -pipe  -I$(CURRENT)/opt/include " \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	--prefix=$(CURRENT)/opt \
+	--with-ogg=$(CURRENT)/opt \
+	--disable-nls --enable-static=yes
+	@$(MAKE) -C $(SRCDIR)/libvorbis all
+	cd $(SRCDIR)/libvorbis && \
+	$(MAKE) install
+
+sqlite:
+	cd $(SRCDIR)/sqlite && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	$(CONFIGURE) \
+	CPPFLAGS="-O2   -pipe  -I$(CURRENT)/opt/include " \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	--prefix=$(CURRENT)/opt \
+	--enable-shared --enable-static --disable-readline --enable-threadsafe -disable-nls --disable-tcl
+	@$(MAKE) -C $(SRCDIR)/sqlite all
+	cd $(SRCDIR)/sqlite && \
+	$(MAKE) install
+
+jpeg:
+	cd $(SRCDIR)/jpeg && \
+	CPPFLAGS="-O2   -pipe  -I$(CURRENT)/opt/include " \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	$(CONFIGURE) \
+	--prefix=$(CURRENT)/opt \
+	--enable-shared --enable-static
+	@$(MAKE) -C $(SRCDIR)/jpeg all
+	mkdir -p $(CURRENT)/opt/bin
+	mkdir -p $(CURRENT)/opt/man/man1
+	cd $(SRCDIR)/jpeg && \
+	$(MAKE) install
+
+jpeg-clean:
+	@$(MAKE) -C $(SRCDIR)/jpeg clean
+
+libexif:
+	cd $(SRCDIR)/libexif && \
+	CPPFLAGS="-O2   -pipe  -I$(CURRENT)/opt/include " \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	$(CONFIGURE) \
+	--prefix=$(CURRENT)/opt \
+	--disable-nls --enable-static=yes
+	@$(MAKE) -C $(SRCDIR)/libexif all
+	cd $(SRCDIR)/libexif && \
+	$(MAKE) install
+
+ffmpeg-0.5/stamp-h1:
+	cd $(SRCDIR)/ffmpeg-0.5 && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	./configure --enable-cross-compile --arch=$(ARCH) --target_os=linux --cross-prefix=$(CROSS_COMPILE) \
+	--disable-encoders --disable-decoders --enable-shared --disable-static --enable-gpl --disable-postproc --enable-small --disable-encoders --disable-filters --disable-muxers --disable-devices --disable-ffmpeg --disable-ffplay --disable-ffserver --disable-swscale --disable-network --disable-bsfs --disable-mpegaudio-hp --enable-demuxers  --disable-demuxer="amr"  --disable-demuxer="apc"  --disable-demuxer="ape"  --disable-demuxer="ass"  --disable-demuxer="bethsoftvid"  --disable-demuxer="bfi"  --disable-demuxer="c93"  --disable-demuxer="daud"  --disable-demuxer="dnxhd"  --disable-demuxer="dsicin"  --disable-demuxer="dxa"  --disable-demuxer="ffm"  --disable-demuxer="gsm"  --disable-demuxer="gxf"  --disable-demuxer="idcin"  --disable-demuxer="iff"  --disable-demuxer="image2"  --disable-demuxer="image2pipe"  --disable-demuxer="ingenient"  --disable-demuxer="ipmovie"  --disable-demuxer="lmlm4"  --disable-demuxer="mm"  --disable-demuxer="mmf"  --disable-demuxer="msnwc_tcp"  --disable-demuxer="mtv"  --disable-demuxer="mxf"  --disable-demuxer="nsv"  --disable-demuxer="nut"  --disable-demuxer="oma"  --disable-demuxer="pva"  --disable-demuxer="rawvideo"  --disable-demuxer="rl2"  --disable-demuxer="roq"  --disable-demuxer="rpl"  --disable-demuxer="segafilm"  --disable-demuxer="shorten"  --disable-demuxer="siff"  --disable-demuxer="smacker"  --disable-demuxer="sol"  --disable-demuxer="str"  --disable-demuxer="thp"  --disable-demuxer="tiertexseq"  --disable-demuxer="tta"  --disable-demuxer="txd"  --disable-demuxer="vmd"  --disable-demuxer="voc"  --disable-demuxer="wc3"  --disable-demuxer="wsaud"  --disable-demuxer="wsvqa"  --disable-demuxer="xa"  --disable-demuxer="yuv4mpegpipe" --disable-decoders  --enable-decoder="aac"  --enable-decoder="ac3"  --enable-decoder="atrac3"  --enable-decoder="h264"  --enable-decoder="jpegls"  --enable-decoder="mp3"  --enable-decoder="mpeg1video"  --enable-decoder="mpeg2video"  --enable-decoder="mpeg4"  --enable-decoder="mpeg4aac"  --enable-decoder="mpegvideo"  --enable-decoder="png"  --enable-decoder="wmav1"  --enable-decoder="wmav2" --disable-parsers  --enable-parser="aac"  --enable-parser="ac3"  --enable-parser="h264"  --enable-parser="mpeg4video"  --enable-parser="mpegaudio"  --enable-parser="mpegvideo" --disable-protocols  --enable-protocol="file" --extra-cflags="-Os -DLINUX26 -DCONFIG_BCMWL5 -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -DBCMWPA2 -funit-at-a-time -Wno-pointer-sign -DLINUX_KERNEL_VERSION=132630 -ffunction-sections -fdata-sections -fPIC -I$(CURRENT)/opt/include" --extra-ldflags="-ffunction-sections -fdata-sections -Wl,--gc-sections -fPIC" --extra-libs="-L$(CURRENT)/opt/lib -lz" --enable-zlib --disable-debug --prefix=$(CURRENT)/opt
+	sed -i -e 's/-D_ISOC9X_SOURCE//g' $(SRCDIR)/ffmpeg-0.5/common.mak $(SRCDIR)/ffmpeg-0.5/Makefile $(SRCDIR)/ffmpeg-0.5/lib*/Makefile
+	sed -i -e '/^OPTFLAGS/s| -03| pipe  $(OPTLEVEL)|' $(SRCDIR)/ffmpeg-0.5/config.mak
+	touch $(SRCDIR)/ffmpeg-0.5/stamp-h1
+
+ffmpeg: ffmpeg-0.5/stamp-h1
+		@$(MAKE) -C $(SRCDIR)/ffmpeg-0.5 all
+		cd $(SRCDIR)/ffmpeg-0.5 && \
+		$(MAKE) install
+		install -D $(SRCDIR)/ffmpeg-0.5/libavformat/libavformat_asus.so.52 $(CURRENT)/asusffmpeg_1.0.0.5/opt/lib/libavformat_asus.so.52
+		install -D $(SRCDIR)/ffmpeg-0.5/libavcodec/libavcodec_asus.so.52 $(CURRENT)/asusffmpeg_1.0.0.5/opt/lib/libavcodec_asus.so.52
+		install -D $(SRCDIR)/ffmpeg-0.5/libavutil/libavutil_asus.so.50 $(CURRENT)/asusffmpeg_1.0.0.5/opt/lib/libavutil_asus.so.50
+		cd $(CURRENT)/asusffmpeg_1.0.0.5/opt/lib && \
+		ln -sf  libavutil_asus.so.50 libavutil_asus.so && \
+		ln -sf  libavcodec_asus.so.52 libavcodec_asus.so && \
+		ln -sf libavformat_asus.so.52 libavformat_asus.so
+
+		
+ffmpeg-0.5-clean:
+	-@$(MAKE) -C $(SRCDIR)/ffmpeg-0.5 clean
+	@rm -f $(SRCDIR)/ffmpeg-0.5/stamp-h1 $(SRCDIR)/ffmpeg-0.5/config.h $(SRCDIR)/ffmpeg-0.5/config.mak $(SRCDIR)/ffmpeg-0.5/.depend $(SRCDIR)/ffmpeg-0.5/.vhookdep $(SRCDIR)/ffmpeg-0.5/config.err
+
+#minidlna: libexif libvorbis zlib sqlite ffmpeg libogg flac jpeg libid3tag
+minidlna:
+	@cd $(SRCDIR)/minidlna && ./genosver.sh
+	@$(MAKE) -C $(SRCDIR)/minidlna CC=$(CC) \
+	LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+	MSIPK=$(MSIPK) all
+	cp -f $(SRCDIR)/minidlna/minidlna $(CURRENT)/mediaserver/opt/tmp/bin
+
+lgdbm:
+	cd $(SRCDIR)/libgdbm && \
+	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) SIZE=$(SIZE) CXX=$(CXX) \
+		$(CONFIGURE) \
+		--prefix=$(CURRENT)/opt \
+		--disable-nls \
+		--disable-static
+		@$(MAKE) -C $(SRCDIR)/libgdbm all
+		#cd $(CURRENT)/libgdbm && \
+		#$(MAKE) install
+
+daapd: lgdbm
+		@$(SEP)
+		@$(MAKE) -C $(SRCDIR)/mt-daapd CC=$(CC) MSIPK=$(MSIPK) all
+		@$(MAKE) -C $(SRCDIR)/mt-daapd install
+	#	cp -f $(SRCBASE)/opt/sbin/mt-daapd mediaserver/opt/tmp/bin/mt-daapd
+
+expat-2.0.1/stamp-h1:
+		cd $(SRCDIR)/expat-2.0.1 && \
+		$(CONFIGURE) \
+		LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib "\
+		touch stamp-h1;
+
+expat-2.0.1: expat-2.0.1/stamp-h1
+		@$(MAKE) -C $(SRCDIR)/expat-2.0.1
+
+expat-2.0.1-clean:
+		-@$(MAKE) -C $(SRCDIR)/expat-2.0.1 clean
+		@rm -f $(SRCDIR)/expat-2.0.1/stamp-h1
+
+#libdaemon add for avahi
+libdaemon/stamp-h1:
+		cd $(SRCDIR)/libdaemon && \
+		$(CONFIGURE) \
+		ac_cv_func_setpgrp_void=yes \
+		LDFLAGS=" -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " \
+		touch $@
+
+libdaemon: libdaemon/stamp-h1
+		$(MAKE) -C $(SRCDIR)/libdaemon
+
+libdaemon-clean:
+		-@$(MAKE) -C $(SRCDIR)/libdaemon distclean
+		@rm -f $(SRCDIR)/libdaemon/stamp-h1
+
+		
+avahi-0.6.31/stamp-h1:expat-2.0.1 libdaemon
+	cd $(SRCDIR)/avahi-0.6.31 && \
+	$(CONFIGURE) \
+	LDFLAGS="-ldl -lpthread -L$(SRCDIR)/expat-2.0.1/.libs -L$(CURRENT)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(CURRENT)/opt/lib " CFLAGS="-I$(SRCDIR)/expat-2.0.1/lib -DMS_IPK" --with-distro=archlinux --disable-glib --disable-gobject --disable-qt3 --disable-qt4 --disable-gtk --disable-dbus --disable-expat --disable-gdbm --disable-python --disable-pygtk --disable-python-dbus --disable-mono --disable-monodoc --disable-gtk3 --with-xml=none  LIBDAEMON_LIBS="-L$(SRCDIR)/libdaemon/libdaemon/.libs -ldaemon" LIBDAEMON_CFLAGS="-I$(SRCDIR)/libdaemon" --disable-autoipd --with-xml=expat --disable-stack-protector --with-avahi-user="admin" --with-avahi-group="root" \
+	touch $@
+
+avahi-0.6.31: avahi-0.6.31/stamp-h1
+	@$(MAKE) -C $(SRCDIR)/avahi-0.6.31
+
+avahi-0.6.31-clean:libdaemon-clean expat-2.0.1-clean
+	-@$(MAKE) -C $(SRCDIR)/avahi-0.6.31 clean
+	@rm -f $(SRCDIR)/avahi-0.6.31/stamp-h1
+
+media-cgi:
+	@$(MAKE) CC=$(CROSS_COMPILE)gcc -C $(SRCDIR)/Media_CGI clean
+	@$(MAKE) CC=$(CROSS_COMPILE)gcc -C $(SRCDIR)/Media_CGI all
+	$(STRIP) $(SRCDIR)/Media_CGI/*.cgi
+	cp -f $(SRCDIR)/Media_CGI/*.cgi $(CURRENT)/mediaserverui
+
+libdaemon-ipk:
+	sed -i "2c\Architecture: $(PLATFORM)" $(CURRENT)/asuslibdaemon/CONTROL/control
+	install -D $(SRCDIR)/libdaemon/libdaemon/.libs/libdaemon.so.0.5.0 $(CURRENT)/asuslibdaemon/opt/lib/libdaemon.so.0.5.0
+	$(STRIP) $(CURRENT)/asuslibdaemon/opt/lib/*.so.*
+	cd $(CURRENT)/asuslibdaemon/opt/lib && \
+		ln -sf libdaemon.so.0.5.0 libdaemon.so && \
+		ln -sf libdaemon.so.0.5.0 libdaemon.so.0
+	@$(IPKG_TOOLS)/ipkg-build $(CURRENT)/asuslibdaemon $(CURRENT)/
+
+avahi-ipk:
+	sed -i "2c\Architecture: $(PLATFORM)" $(CURRENT)/asusavahi-0.6.31/CONTROL/control
+ifeq ($(PLATFORM),mipsbig)
+	cp $(CURRENT)/asusavahi-tmp/postinst-$(PLATFORM) \
+		$(CURRENT)/asusavahi-0.6.31/CONTROL/postinst
+	cp $(CURRENT)/asusavahi-tmp/preinst-$(PLATFORM) \
+		$(CURRENT)/asusavahi-0.6.31/CONTROL/preinst
+else
+	- rm $(CURRENT)/asusavahi-0.6.31/CONTROL/postinst
+	- rm $(CURRENT)/asusavahi-0.6.31/CONTROL/preinst
+endif
+	install -D $(SRCDIR)/avahi-0.6.31/avahi-daemon/.libs/avahi-daemon $(CURRENT)/asusavahi-0.6.31/opt/tmp/bin/avahi-daemon
+	install -D $(SRCDIR)/avahi-0.6.31/avahi-common/.libs/libavahi-common.so.3.5.3 $(CURRENT)/asusavahi-0.6.31/opt/lib/libavahi-common.so.3.5.3
+	install -D $(SRCDIR)/avahi-0.6.31/avahi-core/.libs/libavahi-core.so.7.0.2 $(CURRENT)/asusavahi-0.6.31/opt/lib/libavahi-core.so.7.0.2
+	$(STRIP) $(CURRENT)/asusavahi-0.6.31/opt/tmp/bin/avahi-daemon
+	$(STRIP) $(CURRENT)/asusavahi-0.6.31/opt/lib/libavahi-common.so.3.5.3
+	$(STRIP) $(CURRENT)/asusavahi-0.6.31/opt/lib/libavahi-core.so.7.0.2
+	cd $(CURRENT)/asusavahi-0.6.31/opt/lib && ln -sf libavahi-common.so.3.5.3 libavahi-common.so.3
+	cd $(CURRENT)/asusavahi-0.6.31/opt/lib && ln -sf libavahi-core.so.7.0.2 libavahi-core.so.7
+	@$(IPKG_TOOLS)/ipkg-build $(CURRENT)/asusavahi-0.6.31 $(CURRENT)/
+
+mediaserver-ipk:
+	cp $(CURRENT)/mediaserver-tmp/CONTROL/control-$(PLATFORM) $(CURRENT)/mediaserver/CONTROL/control
+	cp $(CURRENT)/mediaserver-tmp/CONTROL/postinst-$(PLATFORM) $(CURRENT)/mediaserver/CONTROL/postinst
+	cp $(CURRENT)/mediaserver-tmp/CONTROL/postrm-$(PLATFORM) $(CURRENT)/mediaserver/CONTROL/postrm
+	cp $(CURRENT)/mediaserver-tmp/CONTROL/preinst-$(PLATFORM) $(CURRENT)/mediaserver/CONTROL/preinst
+	cp $(CURRENT)/mediaserver-tmp/opt/etc/init.d/S50mediaserver-$(PLATFORM) \
+		$(CURRENT)/mediaserver/opt/etc/init.d/S50mediaserver
+	cp $(CURRENT)/mediaserver-tmp/opt/etc/apps_asus_script/mes_check_general-$(PLATFORM) \
+		$(CURRENT)/mediaserver/opt/etc/apps_asus_script/mes_check_general
+	cp $(CURRENT)/mediaserver-tmp/opt/etc/apps_asus_script/mes_check-$(PLATFORM) \
+		$(CURRENT)/mediaserver/opt/etc/apps_asus_script/mes_check
+ifeq ($(PLATFORM),i686)
+	cp $(CURRENT)/mediaserver-tmp/opt/etc/minidlna.conf-$(PLATFORM) \
+		$(CURRENT)/mediaserver/opt/etc/minidlna.conf
+else
+	cp $(CURRENT)/mediaserver-tmp/opt/etc/minidlna.conf \
+		$(CURRENT)/mediaserver/opt/etc/minidlna.conf
+endif
+	cp -rf $(CURRENT)/mediaserverui $(CURRENT)/mediaserver/opt/etc/downloadmaster/
+	$(STRIP) $(CURRENT)/mediaserver/opt/tmp/bin/*
+	$(STRIP) $(CURRENT)/mediaserver/opt/tmp/lib/*
+	@$(IPKG_TOOLS)/ipkg-build $(CURRENT)/mediaserver $(CURRENT)
+
+asusffmpeg-ipk:
+	sed -i "2c\Architecture: $(PLATFORM)" $(CURRENT)/asusffmpeg_1.0.0.5/CONTROL/control
+	$(STRIP) $(CURRENT)/asusffmpeg_1.0.0.5/opt/lib/*
+	@$(IPKG_TOOLS)/ipkg-build $(CURRENT)/asusffmpeg_1.0.0.5 $(CURRENT)/
+
+.PHONY: all clean mediaserver-ipk asusffmpeg-ipk avahi-ipk libdaemon-ipk
+.PHONY: libid3tag/stamp-h2 expat-2.0.1/stamp-h1

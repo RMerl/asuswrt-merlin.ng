@@ -1,0 +1,173 @@
+.TH RADCLIENT 1 "2 April 2009" "" "FreeRADIUS Daemon"
+.SH NAME
+radclient - send packets to a RADIUS server, show reply
+.SH SYNOPSIS
+.B radclient
+.RB [ \-4 ]
+.RB [ \-6 ]
+.RB [ \-d
+.IR raddb_directory ]
+.RB [ \-c
+.IR count ]
+.RB [ \-f
+.IR file ]
+.RB [ \-F ]
+.RB [ \-h ]
+.RB [ \-i
+.IR id ]
+.RB [ \-n
+.IR num_requests_per_second ]
+.RB [ \-p
+.IR num_requests_in_parallel ]
+.RB [ \-q ]
+.RB [ \-r
+.IR num_retries ]
+.RB [ \-s ]
+.RB [ \-S
+.IR shared_secret_file ]
+.RB [ \-t
+.IR timeout ]
+.RB [ \-v ]
+.RB [ \-x ]
+\fIserver {acct|auth|status|disconnect|auto} secret\fP
+.SH DESCRIPTION
+\fBradclient\fP is a radius client program. It can send arbitrary radius
+packets to a radius server, then shows the reply. It can be used to
+test changes you made in the configuration of the radius server,
+or it can be used to monitor if a radius server is up.
+.PP
+\fBradclient\fP reads radius attribute/value pairs from it standard
+input, or from a file specified on the command line. It then encodes
+these attribute/value pairs using the dictionary, and sends them
+to the remote server.
+.PP
+The \fIUser-Password\fP and \fICHAP-Password\fP attributes are
+automatically encrypted before the packet is sent to the server.
+
+.SH OPTIONS
+
+.IP \-4
+Use IPv4 (default)
+.IP \-6
+Use IPv6
+.IP \-c\ \fIcount\fP
+Send each packet \fIcount\fP times.
+.IP \-d\ \fIraddb_directory\fP
+The directory that contains the RADIUS dictionary files. Defaults to
+\fI/etc/raddb\fP.
+.IP \-f\ \fIfile\fP
+File to read the attribute/value pairs from. If this is not specified,
+they are read from stdin.  This option can be specified multiple
+times, in which case packets are sent in order by file, and within
+each file, by first packet to last packet.  A blank line separates
+logical packets within a file.
+.IP \-F
+Print the file name, packet number and reply code.
+.IP \-h
+Print usage help information.
+.IP \-i\ \fIid\fP
+Use \fIid\fP as the RADIUS request Id.
+.IP \-n\ \fInum_requests_per_second\fP
+Try to send \fInum_requests_per_second\fP, evenly spaced.  This option
+allows you to slow down the rate at which radclient sends requests.
+When not using -n, the default is to send packets as quickly as
+possible, with no inter-packet delays.
+
+Due to limitations in radclient, this option does not accurately send
+the requested number of packets per second.
+.IP \-p\ \fInum_requests_in_parallel\fP
+Send \fInum_requests_in_parallel\fP, without waiting for a response
+for each one.  By default, radclient sends the first request it has
+read, waits for the response, and once the response is received, sends
+the second request in its list.  This option allows you to send many
+requests at simultaneously.  Once \fInum_requests_in_parallel\fP are
+sent, radclient waits for all of the responses to arrive (or for the
+requests to time out), before sending any more packets.
+
+This option permits you to discover the maximum load accepted by a
+RADIUS server.
+.IP \-q
+Go to quiet mode, and do not print out anything.
+.IP \-r\ \fInum_retries\fP
+Try to send each packet \fInum_retries\fP times, before giving up on
+it.  The default is 10.
+.IP \-s
+Print out some summaries of packets sent and received.
+.IP \-S\ \fIshared_secret_file\fP
+Rather than reading the shared secret from the command-line (where it
+can be seen by others on the local system), read it instead from
+\fIshared_secret_file\fP.
+.IP \-t\ \fItimeout\fP
+Wait \fItimeout\fP seconds before deciding that the NAS has not
+responded to a request, and re-sending the packet.  The default
+timeout is 3.
+.IP \-v
+Print out version information.
+.IP \-x
+Print out debugging information.
+.IP server[:port]
+The hostname or IP address of the remote server. Optionally a UDP port
+can be specified. If no UDP port is specified, it is looked up in
+\fI/etc/services\fP. The service name looked for is \fBradacct\fP for
+accounting packets, and \fBradius\fP for all other requests. If a
+service is not found in \fI/etc/services\fP, 1813 and 1812 are used
+respectively.
+
+The RADIUS attributes read by \fIradclient\fP can contain the special
+attribute \fBPacket-Dst-IP-Address\fP.  If this attribute exists, then
+that IP address is where the packet is sent, and the \fBserver\fP
+specified on the command-line is ignored.
+
+If the RADIUS attribute list always contains the
+\fBPacket-Dst-IP-Address\fP attribute, then the \fBserver\fP parameter
+can be given as \fB-\fP.
+
+The RADIUS attributes read by \fIradclient\fP can contain the special
+attribute \fBPacket-Dst-Port\fP.  If this attribute exists, then that
+UDP port is where the packet is sent, and the \fB:port\fP specified
+on the command-line is ignored.
+
+.IP acct\ |\ auth\ |\ status\ |\ disconnect\ |\ auto
+Use \fBauth\fP to send an authentication packet (Access-Request),
+\fBacct\fP to send an accounting packet (Accounting-Request),
+\fBstatus\fP to send an status packet (Status-Server), or
+\fBdisconnect\fP to send a disconnection request. Instead of these
+values, you can also use a decimal code here. For example, code 12 is
+also \fBStatus-Server\fP.
+
+The RADIUS attributes read by \fIradclient\fP can contain the special
+attribute \fBPacket-Type\fP.  If this attribute exists, then that type
+of packet is sent, and the \fItype\fP specified on the command-line
+is ignored.
+
+If the RADIUS attribute list always contains the
+\fBPacket-Type\fP attribute, then the \fBtype\fP parameter can be
+given as \fBauto\fP.
+
+.IP secret
+The shared secret for this client.  It needs to be defined on the
+radius server side too, for the IP address you are sending the radius
+packets from.
+
+.SH EXAMPLE
+
+A sample session that queries the remote server for
+\fIStatus-Server\fP (not all servers support this, but FreeRADIUS has
+configurable support for it).
+.RS
+.sp
+.nf
+.ne 3
+$ echo "Message-Authenticator = 0x00" | radclient 192.0.2.42 status s3cr3t
+Sending request to server 192.0.2.42, port 1812.
+radrecv: Packet from host 192.0.2.42 code=2, id=140, length=54
+    Reply-Message = "FreeRADIUS up 21 days, 02:05"
+.fi
+.sp
+.RE
+
+.SH SEE ALSO
+radiusd(8),
+.SH AUTHORS
+Miquel van Smoorenburg, miquels@cistron.nl.
+Alan DeKok <aland@freeradius.org>

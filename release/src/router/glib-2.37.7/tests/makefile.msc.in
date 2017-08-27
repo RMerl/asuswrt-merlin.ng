@@ -1,0 +1,105 @@
+## Makefile for building the GLib test programs with Microsoft C
+## Use: nmake -f makefile.msc check
+
+TOP = ..\..
+
+!INCLUDE ..\build\win32\make.msc
+
+################################################################
+
+INCLUDES = -FImsvc_recommended_pragmas.h -I .. -I ..\glib -I ..\gmodule
+DEFINES = -DHAVE_CONFIG_H -DENABLE_REGEX
+
+NONAUTOMATIC_TESTS = \
+	testglib.exe	\
+	testgdate.exe	\
+	testgdateparser.exe \
+	unicode-normalize.exe \
+	unicode-collate.exe
+
+TESTS = \
+	atomic-test.exe \
+	asyncqueue-test.exe \
+	base64-test.exe \
+	bit-test.exe \
+	bookmarkfile-test.exe \
+	child-test.exe \
+	checksum-test.exe \
+	completion-test.exe \
+	convert-test.exe \
+	date-test.exe	\
+	dirname-test.exe \
+	env-test.exe \
+	errorcheck-mutex-test.exe \
+	file-test.exe \
+	gio-test.exe	\
+	iochannel-test.exe \
+	hash-test.exe	\
+	list-test.exe	\
+	mainloop-test.exe \
+	mapping-test.exe \
+#c99	markup-collect.exe \
+	markup-escape-test.exe \
+	markup-test.exe	\
+#main?	memchunks.exe \
+	module-test.exe	\
+	node-test.exe	\
+#c99	onceinit.exe \
+	patterntest.exe \
+	queue-test.exe	\
+	qsort-test.exe \
+	regex-test.exe \
+	relation-test.exe \
+	scannerapi.exe \
+	sequence-test.exe \
+	shell-test.exe	\
+	slice-color.exe \
+#unistd	slice-concurrent.exe\
+	slice-threadinit.exe \
+	slice-test.exe	\
+	slist-test.exe	\
+	spawn-test.exe	\
+	testingbase64.exe \
+	thread-test.exe	\
+	threadpool-test.exe \
+#unistd	timeloop-basic.exe \
+#unistd	timeloop-closure.exe \
+#unistd	timeloop.exe \
+	tree-test.exe	\
+	type-test.exe	\
+	unicode-caseconv.exe \
+	unicode-encoding.exe \
+	utf8-validate.exe \
+	utf8-pointer.exe \
+	uri-test.exe \
+	\
+	gio-ls.exe
+
+DLLS = \
+	libmoduletestplugin_a.dll \
+	libmoduletestplugin_b.dll
+
+all :	$(TESTS) $(NONAUTOMATIC_TESTS) $(DLLS)
+
+.c.exe :
+	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -Fe$@ $< ..\glib\glib-2.0.lib ..\gmodule\gmodule-2.0.lib ..\gthread\gthread-2.0.lib $(LDFLAGS) user32.lib /subsystem:console
+
+gio-ls.exe : gio-ls.obj
+	$(CC) $(CFLAGS) -Fe$@ gio-ls.obj \
+	..\glib\glib-2.0.lib ..\gmodule\gmodule-2.0.lib ..\gthread\gthread-2.0.lib \
+	..\gobject\gobject-2.0.lib ..\gio\gio-2.0.lib \
+	$(LDFLAGS) user32.lib /subsystem:console
+
+slice-test.exe : memchunks.obj slice-test.obj 
+	$(CC) $(CFLAGS) -Fe$@ memchunks.obj slice-test.obj \
+	..\glib\glib-2.0.lib ..\gmodule\gmodule-2.0.lib ..\gthread\gthread-2.0.lib $(LDFLAGS) user32.lib /subsystem:console
+	
+libmoduletestplugin_a.dll : libmoduletestplugin_a.obj
+	$(CC) $(CFLAGS) -LD libmoduletestplugin_a.obj ..\gmodule\gmodule-2.0.lib ..\glib\glib-2.0.lib $(LDFLAGS)
+
+libmoduletestplugin_b.dll : libmoduletestplugin_b.obj
+	$(CC) $(CFLAGS) -LD libmoduletestplugin_b.obj ..\gmodule\gmodule-2.0.lib ..\glib\glib-2.0.lib $(LDFLAGS)
+
+check:	all
+	for %p in ($(TESTS)) do set PATH=..\glib;..\gmodule;..\gobject;..\gthread;%PATH% && %p

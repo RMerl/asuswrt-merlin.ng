@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>udev_monitor</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="libudev Reference Manual">
+<link rel="up" href="ch01.html" title="libudev">
+<link rel="prev" href="libudev-udev-device.html" title="udev_device">
+<link rel="next" href="libudev-udev-enumerate.html" title="udev_enumerate">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="libudev-udev-device.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">libudev Reference Manual</th>
+<td><a accesskey="n" href="libudev-udev-enumerate.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#libudev-udev-monitor.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#libudev-udev-monitor.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="libudev-udev-monitor"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libudev-udev-monitor.top_of_page"></a>udev_monitor</span></h2>
+<p>udev_monitor — device event source</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="libudev-udev-monitor.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">struct              <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor">udev_monitor</a>;
+struct <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor"><span class="returnvalue">udev_monitor</span></a> * <a class="link" href="libudev-udev-monitor.html#udev-monitor-ref" title="udev_monitor_ref ()">udev_monitor_ref</a>                  (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev-monitor.html#udev-monitor-unref" title="udev_monitor_unref ()">udev_monitor_unref</a>                  (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       <a class="link" href="libudev-udev-monitor.html#udev-monitor-get-udev" title="udev_monitor_get_udev ()">udev_monitor_get_udev</a>               (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+struct <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor"><span class="returnvalue">udev_monitor</span></a> * <a class="link" href="libudev-udev-monitor.html#udev-monitor-new-from-netlink" title="udev_monitor_new_from_netlink ()">udev_monitor_new_from_netlink</a>     (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);
+struct <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor"><span class="returnvalue">udev_monitor</span></a> * <a class="link" href="libudev-udev-monitor.html#udev-monitor-new-from-socket" title="udev_monitor_new_from_socket ()">udev_monitor_new_from_socket</a>      (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *socket_path</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-enable-receiving" title="udev_monitor_enable_receiving ()">udev_monitor_enable_receiving</a>       (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-set-receive-buffer-size" title="udev_monitor_set_receive_buffer_size ()">udev_monitor_set_receive_buffer_size</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> size</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-get-fd" title="udev_monitor_get_fd ()">udev_monitor_get_fd</a>                 (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * <a class="link" href="libudev-udev-monitor.html#udev-monitor-receive-device" title="udev_monitor_receive_device ()">udev_monitor_receive_device</a>        (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-filter-add-match-subsystem-devtype" title="udev_monitor_filter_add_match_subsystem_devtype ()">udev_monitor_filter_add_match_subsystem_devtype</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *devtype</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-filter-add-match-tag" title="udev_monitor_filter_add_match_tag ()">udev_monitor_filter_add_match_tag</a>   (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *tag</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-filter-update" title="udev_monitor_filter_update ()">udev_monitor_filter_update</a>          (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-monitor.html#udev-monitor-filter-remove" title="udev_monitor_filter_remove ()">udev_monitor_filter_remove</a>          (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="libudev-udev-monitor.description"></a><h2>Description</h2>
+<p>
+Connects to a device event source.
+</p>
+</div>
+<div class="refsect1">
+<a name="libudev-udev-monitor.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="udev-monitor"></a><h3>struct udev_monitor</h3>
+<pre class="programlisting">struct udev_monitor;</pre>
+<p>
+Opaque object handling an event source.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-ref"></a><h3>udev_monitor_ref ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor"><span class="returnvalue">udev_monitor</span></a> * udev_monitor_ref                  (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Take a reference of a udev monitor.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>udev monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the passed udev monitor</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-unref"></a><h3>udev_monitor_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_monitor_unref                  (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Drop a reference of a udev monitor. If the refcount reaches zero,
+the bound socket will be closed, and the resources of the monitor
+will be released.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>udev monitor</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-get-udev"></a><h3>udev_monitor_get_udev ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       udev_monitor_get_udev               (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Retrieve the udev library context the monitor was created with.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>udev monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the udev library context</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-new-from-netlink"></a><h3>udev_monitor_new_from_netlink ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor"><span class="returnvalue">udev_monitor</span></a> * udev_monitor_new_from_netlink     (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);</pre>
+<p>
+Create new udev monitor and connect to a specified event
+source. Valid sources identifiers are "udev" and "kernel".
+</p>
+<p>
+Applications should usually not connect directly to the
+"kernel" events, because the devices might not be useable
+at that time, before udev has configured them, and created
+device nodes. Accessing devices at the same time as udev,
+might result in unpredictable behavior. The "udev" events
+are sent out after udev has finished its event processing,
+all rules have been processed, and needed device nodes are
+created.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev monitor.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>name of event source</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev monitor, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, in case of an error</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-new-from-socket"></a><h3>udev_monitor_new_from_socket ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-monitor.html#udev-monitor" title="struct udev_monitor"><span class="returnvalue">udev_monitor</span></a> * udev_monitor_new_from_socket      (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *socket_path</code></em>);</pre>
+<p>
+This function should not be used in any new application. The
+kernel's netlink socket multiplexes messages to all interested
+clients. Creating custom sockets from udev to applications
+should be avoided.
+</p>
+<p>
+Create a new udev monitor and connect to a specified socket. The
+path to a socket either points to an existing socket file, or if
+the socket path starts with a '@' character, an abstract namespace
+socket will be used.
+</p>
+<p>
+A socket file will not be created. If it does not already exist,
+it will fall-back and connect to an abstract namespace socket with
+the given path. The permissions adjustment of a socket file, as
+well as the later cleanup, needs to be done by the caller.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev monitor.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>socket_path</code></em> :</span></p></td>
+<td>unix socket path</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev monitor, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, in case of an error</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-enable-receiving"></a><h3>udev_monitor_enable_receiving ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_enable_receiving       (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Binds the <em class="parameter"><code>udev_monitor</code></em> socket to the event source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>the monitor which should receive events</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>0 on success, otherwise a negative error value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-set-receive-buffer-size"></a><h3>udev_monitor_set_receive_buffer_size ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_set_receive_buffer_size
+                                                        (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> size</code></em>);</pre>
+<p>
+Set the size of the kernel socket buffer. This call needs the
+appropriate privileges to succeed.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>the monitor which should receive events</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>size</code></em> :</span></p></td>
+<td>the size in bytes</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>0 on success, otherwise -1 on error.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-get-fd"></a><h3>udev_monitor_get_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_get_fd                 (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Retrieve the socket file descriptor associated with the monitor.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>udev monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the socket file descriptor</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-receive-device"></a><h3>udev_monitor_receive_device ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-device.html#udev-device" title="struct udev_device"><span class="returnvalue">udev_device</span></a> * udev_monitor_receive_device        (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Receive data from the udev monitor socket, allocate a new udev
+device, fill in the received data, and return the device.
+</p>
+<p>
+Only socket connections with uid=0 are accepted.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>udev monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev device, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>, in case of an error</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-filter-add-match-subsystem-devtype"></a><h3>udev_monitor_filter_add_match_subsystem_devtype ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_filter_add_match_subsystem_devtype
+                                                        (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *devtype</code></em>);</pre>
+<p>
+This filter is efficiently executed inside the kernel, and libudev subscribers
+will usually not be woken up for devices which do not match.
+</p>
+<p>
+The filter must be installed before the monitor is switched to listening mode.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>the monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>the subsystem value to match the incoming devices against</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>devtype</code></em> :</span></p></td>
+<td>the devtype value to match the incoming devices against</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>0 on success, otherwise a negative error value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-filter-add-match-tag"></a><h3>udev_monitor_filter_add_match_tag ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_filter_add_match_tag   (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *tag</code></em>);</pre>
+<p>
+This filter is efficiently executed inside the kernel, and libudev subscribers
+will usually not be woken up for devices which do not match.
+</p>
+<p>
+The filter must be installed before the monitor is switched to listening mode.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>the monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>tag</code></em> :</span></p></td>
+<td>the name of a tag</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>0 on success, otherwise a negative error value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-filter-update"></a><h3>udev_monitor_filter_update ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_filter_update          (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Update the installed socket filter. This is only needed,
+if the filter was removed or changed.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>0 on success, otherwise a negative error value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-monitor-filter-remove"></a><h3>udev_monitor_filter_remove ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_monitor_filter_remove          (<em class="parameter"><code><span class="type">struct udev_monitor</span> *udev_monitor</code></em>);</pre>
+<p>
+Remove all filters from monitor.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_monitor</code></em> :</span></p></td>
+<td>monitor</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>0 on success, otherwise a negative error value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

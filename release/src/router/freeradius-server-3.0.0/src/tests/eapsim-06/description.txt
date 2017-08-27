@@ -1,0 +1,25 @@
+This test is identical to eapsim-05, but uses triplets that come from
+the file simtriplets.dat.
+
+To configure this test, add the following to radiusd.conf:
+
+In modules {},
+
+   sim_files {
+	     simtriplets = "/some/file"
+   }
+
+   (The default is to use ${raddbdir}/simtriplets.dat )
+
+In authorized {}, add:
+
+   sim_files 
+
+before eap.
+
+Of course, you'll already have "sim" listed in the eap{} section of
+modules.
+
+
+   
+   

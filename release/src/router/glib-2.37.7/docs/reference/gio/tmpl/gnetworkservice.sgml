@@ -1,0 +1,106 @@
+<!-- ##### SECTION Title ##### -->
+GNetworkService
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GNetworkService ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GNetworkService:domain ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GNetworkService:protocol ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GNetworkService:scheme ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GNetworkService:service ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_network_service_new ##### -->
+<para>
+
+</para>
+
+@service: 
+@protocol: 
+@domain: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_service_get_service ##### -->
+<para>
+
+</para>
+
+@srv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_service_get_protocol ##### -->
+<para>
+
+</para>
+
+@srv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_service_get_domain ##### -->
+<para>
+
+</para>
+
+@srv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_service_get_scheme ##### -->
+<para>
+
+</para>
+
+@srv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_service_set_scheme ##### -->
+<para>
+
+</para>
+
+@srv: 
+@scheme: 
+
+

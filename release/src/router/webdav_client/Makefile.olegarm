@@ -1,0 +1,30 @@
+#CC = mipsel-linux-uclibc-gcc
+#LD = mipsel-linux-ld
+CFLAGS = -I$(SRCBASE)/zlib -I$(SRCBASE)/libxml2/include -I$(SRCBASE)/openssl-ipk/include -I$(SRCBASE)/neon/src -D_FILE_OFFSET_BITS=64
+#CFLAGS += -DDEBUG
+#LDFLAGS = -L.  -L/oleg/optware/staging/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,/oleg/optware/staging/opt/lib, -L/opt/lib  -lneon -lpthread 
+LDFLAGS = -L$(SRCBASE)/openssl-ipk/ -L$(SRCBASE)/zlib -L$(SRCBASE)/libxml2/.libs -L$(SRCBASE)/neon/src/.libs
+LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib
+#LDFLAGS = -L/opt/lib -Wl,-rpath,/opt/lib
+LIBS = -lneon -lpthread -lxml2 -lssl -lz -lcrypto
+#LIBS = -lneon -lpthread
+
+ifeq ($(OLEG_ARM_D),1)
+CFLAGS += -DOLEG_ARM
+endif
+ifeq ($(OLEG_MIPSEL_D),1)
+CFLAGS += -DOLEG_MIPSEL
+endif
+ifeq ($(I686_D),1)
+CFLAGS += -DI686
+endif
+ifeq ($(SMARTSYNCIPK_D),1)
+CFLAGS += -DSMARTSYNCIPK
+endif
+
+all : webdav_client
+webdav_client : webdav.o base.o list.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -g -o $@ $^
+.PHONY : clean
+clean:
+	rm -rf *.o webdav_client

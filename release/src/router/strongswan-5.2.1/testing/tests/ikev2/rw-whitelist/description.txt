@@ -1,0 +1,3 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
+<b>moon</b> uses whitelisting to grant access to <b>carol</b> with ID <b>carol@strongswan.org</b>
+whereas since ID <b>dave@strongswan.org</b> is not listed, <b>dave</b> gets rejected.

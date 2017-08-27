@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#Remove a user from the allowed list
+iptables -t nat -D maccheck -m mac --mac-source $1 -j RETURN

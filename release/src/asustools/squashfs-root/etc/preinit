@@ -1,0 +1,57 @@
+#!/bin/sh
+# DD-WRT V22 Preinit script by Sebastian Gottschall (BrainSlayer). (some parts are taken from OpenWRT)
+
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/jffs/sbin:/jffs/bin:/jffs/usr/sbin:/jffs/usr/bin
+export LD_LIBRARY_PATH=/lib:/usr/lib:/jffs/lib:/jffs/usr/lib
+nvram set expert_mode=1
+
+
+if [ -z "$(nvram get router_version)" ]; then
+    nvram set boardnum=0x0
+    nvram set router_version=211005
+fi
+
+if [ -z "$(nvram get ipv6_enable)" ]; then
+    nvram set ipv6_enable=0
+    nvram set ipv6_enable0=0
+    nvram set need_commit=1
+fi
+if [ -z "$(nvram get ipv6_enable0)" ]; then
+    nvram set ipv6_enable=0
+    nvram set ipv6_enable0=0
+    nvram set need_commit=1
+fi
+
+if [ -z "$(nvram get enable_jffs2)" ]; then
+    nvram set enable_jffs2=0
+    nvram set clean_jffs2=0
+    nvram set sys_enable_jffs2=0
+    nvram set sys_clean_jffs2=0
+    nvram set need_commit=1
+fi
+
+if [ -z "$(nvram get http_enable)" ]; then
+    nvram set http_enable=1
+    nvram set need_commit=1
+fi
+
+
+# validate settings and adjust if needed
+if [ -z "$(nvram get ip_conntrack_max)" ]; then
+    nvram set ip_conntrack_max=4096
+    nvram set ip_conntrack_tcp_timeouts=3600
+    nvram set ip_conntrack_udp_timeouts=120
+    nvram set need_commit=1
+fi
+
+# read setting from nvram
+CONNTRACK_MAX=$(nvram get ip_conntrack_max)
+CONNTRACK_TCP_TIMEOUTS=$(nvram get ip_conntrack_tcp_timeouts)
+CONNTRACK_UDP_TIMEOUTS=$(nvram get ip_conntrack_udp_timeouts)
+
+# adjust conntrack settings
+/bin/echo $CONNTRACK_MAX > /proc/sys/net/ipv4/netfilter/ip_conntrack_max
+/bin/echo $CONNTRACK_TCP_TIMEOUTS > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established
+/bin/echo $CONNTRACK_UDP_TIMEOUTS > /proc/sys/net/ipv4/netfilter/ip_conntrack_udp_timeout
+#/bin/echo 1 > /proc/sys/net/ipv4/tcp_westwood
+

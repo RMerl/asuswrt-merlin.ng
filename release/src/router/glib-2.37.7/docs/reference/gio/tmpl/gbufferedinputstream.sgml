@@ -1,0 +1,150 @@
+<!-- ##### SECTION Title ##### -->
+GBufferedInputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GBufferedInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GBufferedInputStream:buffer-size ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_buffered_input_stream_new ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_new_sized ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_get_buffer_size ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_set_buffer_size ##### -->
+<para>
+
+</para>
+
+@stream: 
+@size: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_get_available ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_peek_buffer ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_peek ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@offset: 
+@count: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_fill ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_fill_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_fill_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_input_stream_read_byte ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

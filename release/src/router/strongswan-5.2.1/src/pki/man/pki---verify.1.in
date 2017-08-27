@@ -1,0 +1,62 @@
+.TH "PKI \-\-VERIFY" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-verify \- Verify a certificate using a CA certificate
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-verify
+.OP \-\-in file
+.OP \-\-cacert file
+.OP \-\-debug level
+.OP \-\-online
+.YS
+.
+.SY pki\ \-\-verify
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-verify"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+verifies a certificate using an optional CA certificate.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+X.509 certificate to verify. If not given it is read from \fISTDIN\fR.
+.TP
+.BI "\-c, \-\-cacert " file
+CA certificate to use for trustchain verification. If not given the certificate
+is assumed to be self\-signed.
+.TP
+.BI "\-o, \-\-online
+Enable online CRL/OCSP revocation checking.
+.
+.SH "EXIT STATUS"
+The exit status is 0 if the certificate was verified successfully, 1 if the
+certificate is untrusted, 2 if the certificate's lifetimes are invalid, and 3
+if the certificate was verified successfully but the online revocation check
+indicated that it has been revoked.
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

@@ -1,0 +1,122 @@
+<!-- ##### SECTION Title ##### -->
+GSocketConnectable
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocketConnectable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GSocketConnectableIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@enumerate: 
+@proxy_enumerate: 
+
+<!-- ##### FUNCTION g_socket_connectable_enumerate ##### -->
+<para>
+
+</para>
+
+@connectable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connectable_proxy_enumerate ##### -->
+<para>
+
+</para>
+
+@connectable: 
+@Returns: 
+
+
+<!-- ##### STRUCT GSocketAddressEnumerator ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_socket_address_enumerator_next ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_address_enumerator_next_async ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_socket_address_enumerator_next_finish ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### STRUCT GProxyAddressEnumerator ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GProxyAddressEnumerator:connectable ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddressEnumerator:default-port ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddressEnumerator:proxy-resolver ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddressEnumerator:uri ##### -->
+<para>
+
+</para>
+

@@ -1,0 +1,7 @@
+
+This is the user the crontab will belong to. Be careful that sysstat may
+need to replace his original crontab (after having saved it in sysstat
+directory) if you use an old version of cron (i.e. if /etc/cron.d directory
+doesn't exist).
+Default user is root here.
+

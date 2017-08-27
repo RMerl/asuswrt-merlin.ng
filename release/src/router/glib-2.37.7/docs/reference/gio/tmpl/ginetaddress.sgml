@@ -1,0 +1,263 @@
+<!-- ##### SECTION Title ##### -->
+GInetAddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GInetAddress ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GInetAddress:bytes ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:family ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-any ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-link-local ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-loopback ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-mc-global ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-mc-link-local ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-mc-node-local ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-mc-org-local ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-mc-site-local ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-multicast ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GInetAddress:is-site-local ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_inet_address_new_from_string ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_new_from_bytes ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@family: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_new_any ##### -->
+<para>
+
+</para>
+
+@family: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_new_loopback ##### -->
+<para>
+
+</para>
+
+@family: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_equal ##### -->
+<para>
+
+</para>
+
+@address: 
+@other_address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_to_bytes ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_native_size ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_to_string ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_family ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_any ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_loopback ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_link_local ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_site_local ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_multicast ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_mc_link_local ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_mc_node_local ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_mc_site_local ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_mc_org_local ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_get_is_mc_global ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+

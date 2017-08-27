@@ -1,0 +1,6 @@
+The roadwarrior <b>carol</b>, possessing a certificate issued by the
+Research CA, tries to set up a tunnel to gateway <b>moon</b>.
+The Research CA's certificate is signed by the Sales CA and
+the Sales CA's certificate in turn is signed by the Research CA.
+This leads to an endless trust path loop but which is aborted by
+<b>moon</b> when the path level reaches a depth of 7 iterations.

@@ -1,0 +1,100 @@
+<!-- ##### SECTION Title ##### -->
+GUnixFDList
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GUnixFDList ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_unix_fd_list_new_from_array ##### -->
+<para>
+
+</para>
+
+@fds: 
+@n_fds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_list_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_list_get_length ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_list_get ##### -->
+<para>
+
+</para>
+
+@list: 
+@index_: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_list_peek_fds ##### -->
+<para>
+
+</para>
+
+@list: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_list_steal_fds ##### -->
+<para>
+
+</para>
+
+@list: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_list_append ##### -->
+<para>
+
+</para>
+
+@list: 
+@fd: 
+@error: 
+@Returns: 
+
+

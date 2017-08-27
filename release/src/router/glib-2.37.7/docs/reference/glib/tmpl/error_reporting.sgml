@@ -1,0 +1,155 @@
+<!-- ##### SECTION Title ##### -->
+Error Reporting
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GError ##### -->
+<para>
+
+</para>
+
+@domain: 
+@code: 
+@message: 
+
+<!-- ##### FUNCTION g_error_new ##### -->
+<para>
+
+</para>
+
+@domain: 
+@code: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_error_new_literal ##### -->
+<para>
+
+</para>
+
+@domain: 
+@code: 
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_error_new_valist ##### -->
+<para>
+
+</para>
+
+@domain: 
+@code: 
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_error_free ##### -->
+<para>
+
+</para>
+
+@error: 
+
+
+<!-- ##### FUNCTION g_error_copy ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_error_matches ##### -->
+<para>
+
+</para>
+
+@error: 
+@domain: 
+@code: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_set_error ##### -->
+<para>
+
+</para>
+
+@err: 
+@domain: 
+@code: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_set_error_literal ##### -->
+<para>
+
+</para>
+
+@err: 
+@domain: 
+@code: 
+@message: 
+
+
+<!-- ##### FUNCTION g_propagate_error ##### -->
+<para>
+
+</para>
+
+@dest: 
+@src: 
+
+
+<!-- ##### FUNCTION g_clear_error ##### -->
+<para>
+
+</para>
+
+@err: 
+
+
+<!-- ##### FUNCTION g_prefix_error ##### -->
+<para>
+
+</para>
+
+@err: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_propagate_prefixed_error ##### -->
+<para>
+
+</para>
+
+@dest: 
+@src: 
+@format: 
+@...: 
+
+

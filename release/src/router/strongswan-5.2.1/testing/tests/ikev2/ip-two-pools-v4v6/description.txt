@@ -1,0 +1,5 @@
+The host <b>carol</b> sets up a tunnel connection to gateway <b>moon</b>. It requests
+both an IPv4 and an IPv6 <b>virtual IP</b> via the IKEv2 configuration payload by using
+<b>leftsourceip=%config4,%config6</b>. Gateway <b>moon</b> assigns virtual IPs addresses
+from two in-memory pools using the <b>rightsourceip</b> option. The established tunnel
+carries both IPv4 and IPv6 in an IPv4 encapsulated tunnel.

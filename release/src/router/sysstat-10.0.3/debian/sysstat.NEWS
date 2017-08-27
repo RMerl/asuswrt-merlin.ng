@@ -1,0 +1,22 @@
+sysstat (8.1.6-1) experimental; urgency=low
+
+    Upstream replaced previous options -I or -d with the new -S, which
+    is used to select activities that should be collected.
+    ** Please make sure to update your /etc/default/sysstat file. **
+
+ -- Robert Luberda <robert@debian.org>  Sat, 01 Nov 2008 16:38:13 +0100
+
+sysstat (6.0.1-4) unstable; urgency=low
+
+    The sysstat 6.0.0 stopped gathering disk statistics data ;(
+    This release brings them back. Now, the data should be be default
+    collected, but this feature can be easily disabled by editing the 
+    /etc/default/sysstat file if you like.
+    
+    Please make sure to *ALLOW DPKG TO OVERWRITE* sysstat's configuration 
+    files for the above change to work.
+  
+    The sa2 script has been changed to generate report for the previous day 
+    instead of the current.
+
+ -- Robert Luberda <robert@debian.org>  Sun, 20 Nov 2005 11:00:58 +0100

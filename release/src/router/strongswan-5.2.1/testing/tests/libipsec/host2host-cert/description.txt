@@ -1,0 +1,10 @@
+A connection between the hosts <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>X.509 certificates</b> and the <b>kernel-libipsec</b>
+plugin is used for userland IPsec ESP encryption. <b>Firewall marks</b> are used to make
+the direct ESP connection possible and still allow IKE traffic to flow freely between
+the two hosts.
+<p/>
+Upon the successful establishment of the IPsec tunnel, an updown script automatically
+inserts iptables-based firewall rules that let pass the traffic tunneled via the
+<b>ipsec0</b> tun interface. In order to test both host-to-host tunnel and firewall,
+<b>moon</b> pings <b>sun</b>.

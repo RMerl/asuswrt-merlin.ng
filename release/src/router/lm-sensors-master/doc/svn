@@ -1,0 +1,31 @@
+Subversion Repository 
+
+Anonymous access to our Subversion repository (SVN) is available. This means
+that users can have direct access to up-to-the-minute code.
+(http://subversion.tigris.org/)
+
+Driver development for kernel version 3 is taking place directly in the kernel
+using GIT. Do not use the drivers from our SVN repository for kernel version
+2.6 or 3, it will not work. The user-space tools will work though.
+
+We presume that you have Subversion installed on your machine. To check out a
+working copy of the code for this project use the following commands:
+
+svn checkout http://lm-sensors.org/svn/i2c/trunk i2c
+svn checkout http://lm-sensors.org/svn/lm-sensors/trunk lm-sensors
+
+To update the code, do a svn update from within the i2c or lm-sensors
+directories. Please read the README and INSTALL files of your working copy
+for how to build the code. Also read the related files in the 'doc' directory
+for info regarding the different bus and chip drivers. Lastly, you can use
+the regular svn commands on the files (like svn log [filename]) to see the
+comments made by the developers as changes were made.
+
+If you're not familiar with the use of Subversion we recommend the excellent
+Subversion book which is a valuable resource.
+(http://svnbook.red-bean.com/)
+
+Commits to the repositories are notified on the lm-sensors-notify
+mailing-list. Feel free to subscribe if you want to be informed of the
+changes made to the i2c and lm-sensors repositories. 
+(http://lists.lm-sensors.org/mailman/listinfo/lm-sensors-notify)

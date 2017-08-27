@@ -1,0 +1,87 @@
+# Vietnamese translation for sysstat.
+# Copyright © 2009 Free Software Foundation, Inc.
+# Clytie Siddall <clytie@riverland.net.au>, 2005-2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 8.1.7-2\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-06 15:54+1030\n"
+"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
+"Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: LocFactoryEditor 1.8\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Gỡ bỏ các tập tin dữ liệu thống kê định dạng cũ ?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Định dạng của tập tin thống kê dữ liệu hằng ngày đã thay đổi trong phiên bản "
+"${s_version} của sysstat, và nó không phải tương thích với định dạng trước."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Bật tùy chọn này thì mọi tập tin dữ liệu đều còn lại trong thư mục « /var/log/"
+"sysstat/ » sẽ bị xoá."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Không thì lệnh sar(1) sẽ không hoạt động đúng đến khi người dùng tự gỡ bỏ "
+"các tập tin đó."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Kích hoạt công việc định kỳ của sysstat ?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Bật tùy chọn này thì gói sysstat sẽ theo dõi các hoạt động của hệ thống và "
+"cất giữ dữ liệu trong tập tin ghi lưu bên trong thư mục « /var/log/sysstat/ »."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Dữ liệu này cho phép lệnh sar(1) hiển thị thống kê hệ thống về toàn bộ ngày."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Không bật tùy chọn này thì lệnh sar(1) sẽ chỉ hiển thị thống kê hiện thời."

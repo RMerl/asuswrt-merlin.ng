@@ -1,0 +1,131 @@
+# This virtual server allows EAP-TLS to reject access requests
+# based on some certificate attributes.
+#
+# Value-pairs that are available for checking include:
+#
+#   TLS-Client-Cert-Subject
+#   TLS-Client-Cert-Issuer
+#   TLS-Client-Cert-Common-Name
+#   TLS-Client-Cert-Subject-Alt-Name-Email
+#
+# To see a full list of attributes, run the server in debug mode
+# with this virtual server configured, and look at the attributes
+# passed in to this virtual server.
+#
+#
+# This virtual server is also useful when using EAP-TLS as it is only called
+# once, just before the final Accept is about to be returned from eap, whereas
+# the outer authorize section is called multiple times for each challenge /
+# response. For this reason, here may be a good location to put authentication
+# logging, and modules that check for further authorization, especially if they
+# hit external services such as sql or ldap.
+
+server check-eap-tls {
+
+
+# Authorize - this is the only section required.
+#
+# To accept the access request, set Auth-Type = Accept, otherwise
+# set it to Reject.
+
+authorize {
+
+	#
+	# By default, we just accept the request:
+	#
+	update config {
+		Auth-Type := Accept
+	}
+
+
+	#
+	# Check the client certificate matches a string, and reject otherwise
+	#
+
+#	if ("%{TLS-Client-Cert-Common-Name}" == "client.example.com") {
+#		update config {
+#			Auth-Type := Accept
+#		}
+#	}
+#	else {
+#		update config {
+#			Auth-Type := Reject
+#		}
+#		update reply {
+#			Reply-Message := "Your certificate is not valid."
+#		}
+#	}
+
+
+	#
+	# Check the client certificate common name against the supplied User-Name
+	#
+#	if ("host/%{TLS-Client-Cert-Common-Name}" == "%{User-Name}") {
+#		update config {
+#			Auth-Type := Accept
+#		}
+#	}
+#	else {
+#		update config {
+#			Auth-Type := Reject
+#		}
+#	}
+
+
+	#
+	# This is a convenient place to call LDAP, for example, when using
+	# EAP-TLS, as it will only be called once, after all certificates as
+	# part of the EAP-TLS challenge process have been verified.
+	#
+	# An example could be to use LDAP to check that the connecting host, as
+	# well as presenting a valid certificate, is also in a group based on
+	# the User-Name (assuming this contains the service principal name).
+	# Settings such as the following could be used in the ldap module
+	# configuration:
+	#
+	# basedn = "dc=example, dc=com"
+	# filter = "(servicePrincipalName=%{User-Name})"
+	# base_filter = "(objectClass=computer)"
+	# groupname_attribute = cn
+	# groupmembership_filter = "(&(objectClass=group)(member=%{control:Ldap-UserDn}))"
+
+#	ldap
+
+	# Now let's test membership of an LDAP group (the ldap bind user will
+	# need permission to read this group membership):
+
+#	if (!(Ldap-Group == "Permitted-Laptops")) {
+#		update config {
+#			Auth-Type := Reject
+#		}
+#	}
+
+	# or, to be more specific, you could use the group's full DN:
+	# if (!(Ldap-Group == "CN=Permitted-Laptops,OU=Groups,DC=example,DC=org")) {
+
+
+	#
+	# This may be a better place to call the files modules when using
+	# EAP-TLS, as it will only be called once, after the challenge-response
+	# iteration has completed.
+	#
+
+#	files
+
+
+	#
+	# Log all request attributes, plus TLS certificate details, to the
+	# detail auth_log. Again, this is just once per connection request, so
+	# may be preferable than in the outer authorize section. It is
+	# suggested that 'auth_log' also be in the outer post-auth and
+	# Post-Auth REJECT sections to log reply packet details, too.
+	#
+
+	auth_log
+
+}
+
+
+
+}
+

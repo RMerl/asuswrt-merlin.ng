@@ -1,0 +1,26 @@
+# Common configuration of romtable.S generation
+#
+# $Copyright Broadcom Corporation$
+#
+# $Id$
+
+# Prevent BCMINTERNAL get defined, which will cause size over limit
+NO_BCMINTERNAL	:= 1
+
+# prevent inlining, same as done with ROM library
+NOINLINE	:= 1
+
+# globalize static symbols, same as done with ROM library
+GLOBALIZE	:= 1
+
+# generating ROM table is now the default
+# (it's the only purpose for this build)
+GENROMTBL	:= 1
+
+# Enable IOCTL/IOVAR patching, same as done with ROM library
+WLC_PATCH_IOCTL := 1
+
+# Tell emacs to use Makefile mode since it does not know from the filename:
+#       Local Variables:
+#       mode: makefile
+#       End:

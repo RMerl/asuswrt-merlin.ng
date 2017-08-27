@@ -1,0 +1,131 @@
+# Makefile for the QUOTA library
+#
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ../..
+my_dir = lib/quota
+INSTALL = @INSTALL@
+
+@MCONFIG@
+
+all::
+
+OBJS=		mkquota.o quotaio.o quotaio_v2.o quotaio_tree.o dict.o
+
+SRCS=		$(srcdir)/mkquota.c \
+		$(srcdir)/quotaio.c \
+		$(srcdir)/quotaio_tree.c \
+		$(srcdir)/quotaio_v2.c \
+		$(srcdir)/../../e2fsck/dict.c
+
+LIBRARY= libquota
+LIBDIR= quota
+
+#ELF_VERSION = 1.0
+#ELF_SO_VERSION = 1
+#ELF_IMAGE = libquota
+#ELF_MYDIR = quota
+#ELF_INSTALL_DIR = $(root_libdir)
+#ELF_OTHER_LIBS = -lext2fs
+
+#BSDLIB_VERSION = 1.0
+#BSDLIB_IMAGE = libquota
+#BSDLIB_MYDIR = quota
+#BSDLIB_INSTALL_DIR = $(root_libdir)
+
+@MAKEFILE_LIBRARY@
+#MAKEFILE_ELF#
+#MAKEFILE_BSDLIB#
+@MAKEFILE_PROFILE@
+
+.c.o:
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+#ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+#BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+
+dict.o:
+	$(E) "	CC $<"
+	$(Q) $(CC) -c $(ALL_CFLAGS) $(top_srcdir)/e2fsck/dict.c -o $@
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/dict.o -c \
+@PROFILE_CMT@	$(top_srcdir)/e2fsck/dict.c
+#ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c \
+#ELF_CMT#	$(top_srcdir)/e2fsck/dict.c
+#BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c \
+#BSDLIB_CMT#	$(top_srcdir)/e2fsck/dict.c
+
+installdirs::
+
+install:: all
+
+uninstall::
+
+clean::
+	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/*
+	$(RM) -f ../libquota.a ../libquota_p.a $(SMANPAGES)
+
+#check:: tst_uuid
+#	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid
+
+mostlyclean:: clean
+distclean:: clean
+	$(RM) -f .depend Makefile \
+		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
+
+#
+# Hack to parallel makes recognize dependencies correctly.
+#
+../../lib/libquota.a: libquota.a
+../../lib/libquota.so: image
+../../lib/libquota.dylib: image
+
+$(OBJS):
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/quotaio.h $(srcdir)/dqblk_v2.h \
+ $(srcdir)/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
+ $(srcdir)/quotaio_v2.h $(srcdir)/common.h
+quotaio.o: $(srcdir)/quotaio.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/dqblk_v2.h $(srcdir)/quotaio_tree.h \
+ $(top_srcdir)/lib/../e2fsck/dict.h
+quotaio_tree.o: $(srcdir)/quotaio_tree.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio_tree.h \
+ $(srcdir)/quotaio.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/dqblk_v2.h $(top_srcdir)/lib/../e2fsck/dict.h
+quotaio_v2.o: $(srcdir)/quotaio_v2.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio_v2.h \
+ $(srcdir)/quotaio.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/dqblk_v2.h $(srcdir)/quotaio_tree.h \
+ $(top_srcdir)/lib/../e2fsck/dict.h
+dict.o: $(srcdir)/../../e2fsck/dict.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/../../e2fsck/dict.h

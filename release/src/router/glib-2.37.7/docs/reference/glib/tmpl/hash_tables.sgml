@@ -1,0 +1,453 @@
+<!-- ##### SECTION Title ##### -->
+Hash Tables
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GHashTable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_hash_table_new ##### -->
+<para>
+
+</para>
+
+@hash_func: 
+@key_equal_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_new_full ##### -->
+<para>
+
+</para>
+
+@hash_func: 
+@key_equal_func: 
+@key_destroy_func: 
+@value_destroy_func: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GHashFunc ##### -->
+<para>
+
+</para>
+
+@key: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GEqualFunc ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_insert ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_hash_table_replace ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_hash_table_add ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+
+
+<!-- ##### FUNCTION g_hash_table_contains ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_size ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_lookup ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_lookup_extended ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@lookup_key: 
+@orig_key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_foreach ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_hash_table_find ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@predicate: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GHFunc ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_hash_table_remove ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_steal ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_foreach_remove ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_foreach_steal ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_remove_all ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+
+
+<!-- ##### FUNCTION g_hash_table_steal_all ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+
+
+<!-- ##### FUNCTION g_hash_table_get_keys ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_get_values ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GHRFunc ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### MACRO g_hash_table_freeze ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+
+
+<!-- ##### MACRO g_hash_table_thaw ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+
+
+<!-- ##### FUNCTION g_hash_table_destroy ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+
+
+<!-- ##### FUNCTION g_hash_table_ref ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_unref ##### -->
+<para>
+
+</para>
+
+@hash_table: 
+
+
+<!-- ##### STRUCT GHashTableIter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_hash_table_iter_init ##### -->
+<para>
+
+</para>
+
+@iter: 
+@hash_table: 
+
+
+<!-- ##### FUNCTION g_hash_table_iter_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_iter_get_hash_table ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hash_table_iter_replace ##### -->
+<para>
+
+</para>
+
+@iter: 
+@value: 
+
+
+<!-- ##### FUNCTION g_hash_table_iter_remove ##### -->
+<para>
+
+</para>
+
+@iter: 
+
+
+<!-- ##### FUNCTION g_hash_table_iter_steal ##### -->
+<para>
+
+</para>
+
+@iter: 
+
+
+<!-- ##### FUNCTION g_direct_equal ##### -->
+<para>
+
+</para>
+
+@v1: 
+@v2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_direct_hash ##### -->
+<para>
+
+</para>
+
+@v: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_int_equal ##### -->
+<para>
+
+</para>
+
+@v1: 
+@v2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_int_hash ##### -->
+<para>
+
+</para>
+
+@v: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_int64_equal ##### -->
+<para>
+
+</para>
+
+@v1: 
+@v2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_int64_hash ##### -->
+<para>
+
+</para>
+
+@v: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_double_equal ##### -->
+<para>
+
+</para>
+
+@v1: 
+@v2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_double_hash ##### -->
+<para>
+
+</para>
+
+@v: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_str_equal ##### -->
+<para>
+
+</para>
+
+@v1: 
+@v2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_str_hash ##### -->
+<para>
+
+</para>
+
+@v: 
+@Returns: 
+
+

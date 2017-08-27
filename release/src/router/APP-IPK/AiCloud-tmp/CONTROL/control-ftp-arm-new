@@ -1,0 +1,13 @@
+Package: ftpclient
+Architecture: arm
+Priority: optional
+Section: net
+Version: 9.1.0.0.3.0.g9de3a23
+Maintainer: ASUS
+Source: http://127.0.0.1/
+URL: http://www.asusnetwork.net/cloud_sync.asp
+Description: Cloud client
+Depends: inotify,libcurl,openssl,libxml2,zlib, libiconv
+Suggests: 
+Conflicts: 
+Enabled: yes

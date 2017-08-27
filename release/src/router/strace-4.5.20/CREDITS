@@ -1,0 +1,49 @@
+The primary authors of strace are:
+
+	Paul Kranenburg <pk@cs.few.eur.nl>
+	Branko Lankester <branko@hacktic.nl>
+	Rick Sladkey <jrs@world.std.com>
+
+Thanks to the follow people for contributing to strace by reporting
+bugs, providing fixes, providing information, providing resources or
+porting to new systems:
+
+	Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+	Arkadiusz Miskiewicz <misiek@pld.org.pl>
+	Marty Leisner <leisner@sdsp.mc.xerox.com>
+	Lupe Christoph <lupe@alanya.isar.muc.de>
+	Thanh Ma <tma@encore.com>
+	Keith Thompson <kst@alsys.com>
+	Roland Borde <bo@uebemc.siemens.de>
+	Matt Day <mday@artisoft.com>
+	Joe Ilacqua <spike@world.std.com>
+	Ju"rgen Fluk <louis@marco.de>
+	Bo Kullmar <bk@kullmar.se>
+	Leonard N. Zubkoff <lnz@dandelion.com>
+	Reuben Sumner <rasumner@undergrad.math.uwaterloo.ca>
+	Juergen Weigert <jnweiger@immd4.informatik.uni-erlangen.de>
+	Linus Torvalds <Linus.Torvalds@cs.Helsinki.FI>
+	Michael E Chastain <mec@duracef.shout.net>
+	Aaron Ucko <UCKO@VAX1.ROCKHURST.EDU>
+	David S. Miller <davem@caip.rutgers.edu>
+	Matthias Pfaller <leo@dachau.marco.de>
+	Thomas Bogendoerfer <tsbogend@bigbug.franken.de>
+	Richard Henderson <richard@twiddle.tamu.edu>
+	Tom Dyas <tdyas@eden.rutgers.edu>
+	Henrik Storner <storner@osiris.ping.dk>
+	David Mosberger-Tang <davidm@hpl.hp.com>
+	Ulrich Drepper <drepper@cygnus.com>
+	Nate Eldredge <nate@cartsys.com>
+	Jakub Jelinek <jj@ultra.linux.cz>
+	John Hughes <john@Calva.COM>
+	Richard Braakman <dark@xs4all.nl>
+	Florian Lohoff <flo@rfc822.org>
+	D.J. Barrow <djbarrow@de.ibm.com>
+	Topi Miettinen <Topi.Miettinen@nic.fi>
+	Gaël Roualland <gael.roualland@iname.com>
+	Richard Hirst <rhirst@linuxcare.com>
+	Ganesan Rajagopal <rganesan@myrealbox.com>
+	Greg Banks <gbanks@pocketpenguins.com>
+	Andi Kleen <ak@suse.de>
+	Michal Ludvig <mludvig@suse.cz>
+	Heiko Carstens <heiko.carstens@de.ibm.com>

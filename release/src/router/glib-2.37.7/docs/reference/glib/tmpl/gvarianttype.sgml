@@ -1,0 +1,491 @@
+<!-- ##### SECTION Title ##### -->
+GVariantType
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GVariantType ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_BOOLEAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_BYTE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_INT16 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_UINT16 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_INT32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_UINT32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_INT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_UINT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_HANDLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_DOUBLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_STRING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_OBJECT_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_SIGNATURE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_VARIANT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_ANY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_BASIC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_MAYBE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_TUPLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_UNIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_DICT_ENTRY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_DICTIONARY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_STRING_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_OBJECT_PATH_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_BYTESTRING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_BYTESTRING_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE_VARDICT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VARIANT_TYPE ##### -->
+<para>
+
+</para>
+
+@type_string: 
+
+
+<!-- ##### FUNCTION g_variant_type_free ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### FUNCTION g_variant_type_copy ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_new ##### -->
+<para>
+
+</para>
+
+@type_string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_string_is_valid ##### -->
+<para>
+
+</para>
+
+@type_string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_string_scan ##### -->
+<para>
+
+</para>
+
+@string: 
+@limit: 
+@endptr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_get_string_length ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_peek_string ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_dup_string ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_definite ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_container ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_basic ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_maybe ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_array ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_tuple ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_dict_entry ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_variant ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_hash ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_equal ##### -->
+<para>
+
+</para>
+
+@type1: 
+@type2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_is_subtype_of ##### -->
+<para>
+
+</para>
+
+@type: 
+@supertype: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_new_maybe ##### -->
+<para>
+
+</para>
+
+@element: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_new_array ##### -->
+<para>
+
+</para>
+
+@element: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_new_tuple ##### -->
+<para>
+
+</para>
+
+@items: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_new_dict_entry ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_element ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_n_items ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_first ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_next ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_key ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_variant_type_value ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+

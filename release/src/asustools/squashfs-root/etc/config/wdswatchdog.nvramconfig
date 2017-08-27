@@ -1,0 +1,3 @@
+"wds_watchdog_enable"  "WDS Watchdog Enable"  "CHOICE"  "2"  "0"  "1"  "FALSE"  "0"
+"wds_watchdog_interval_sec"  "WDS Watchdog Interval Sec" "RANGE" "60" "10000" "FALSE" "0"
+"wds_watchdog_ips"  "WDS Watchdog IPs"  "NULL"  "FALSE" "0"

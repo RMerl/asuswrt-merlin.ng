@@ -1,0 +1,334 @@
+Installation instructions for OpenVPN, a Secure Tunneling Daemon
+
+Copyright (C) 2002-2010 OpenVPN Technologies, Inc. This program is free software;
+you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 2
+as published by the Free Software Foundation.
+
+*************************************************************************
+
+QUICK START:
+
+  Unix:
+    ./configure && make && make-install
+
+  Cross-compile for Windows on Unix
+
+    See INSTALL-win32.txt
+
+*************************************************************************
+
+To download OpenVPN, go to:
+
+    http://openvpn.net/download.html
+
+OpenVPN releases are also available as Debian/RPM packages:
+
+    https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos
+
+To download easy-rsa go to:
+
+    https://github.com/OpenVPN/easy-rsa
+
+To download tap-windows driver source code go to:
+
+    https://github.com/OpenVPN/tap-windows
+
+To get the cross-compilation environment go to:
+
+    https://github.com/OpenVPN/openvpn-build
+
+For step-by-step instructions with real-world examples see:
+
+    http://openvpn.net/howto.html
+    https://community.openvpn.net/openvpn/wiki
+
+For examples see:
+
+    http://openvpn.net/examples.html
+
+Also see the man page for more information, usage examples, and information on
+firewall configuration.
+
+*************************************************************************
+
+SUPPORTED PLATFORMS:
+  (1) Linux (kernel 2.6+)
+  (2) Solaris
+  (3) OpenBSD 5.1+
+  (4) Mac OS X Darwin 10.5+
+  (5) FreeBSD 7.4+
+  (6) NetBSD 5.0+
+  (7) Windows (WinXP and higher)
+
+SUPPORTED PROCESSOR ARCHITECTURES:
+   In general, OpenVPN is word size and endian independent, so
+   most processors should be supported.  Architectures known to
+   work include Intel x86, Alpha, Sparc, Amd64, and ARM.
+
+REQUIRES:
+  (1) TUN and/or TAP driver to allow user-space programs to control
+      a virtual point-to-point IP or Ethernet device.  See
+      TUN/TAP Driver Configuration section below for more info.
+
+OPTIONAL (but recommended):
+  (1) OpenSSL library, necessary for encryption, version 0.9.8 or higher
+      required, available from http://www.openssl.org/
+  (2) PolarSSL library, an alternative for encryption, version 1.1 or higher
+      required, available from https://polarssl.org/
+  (3) LZO real-time compression library, required for link compression,
+      available from http://www.oberhumer.com/opensource/lzo/
+      OpenBSD users can use ports or packages to install lzo, but remember
+      to add CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"
+      directives to "configure", since gcc will not find them otherwise.
+
+OPTIONAL (for developers only):
+  (1) Autoconf 2.59 or higher + Automake 1.9 or higher
+      -- available from http://www.gnu.org/software/software.html
+  (2) Dmalloc library
+      -- available from http://dmalloc.com/
+
+*************************************************************************
+
+CHECK OUT SOURCE FROM SOURCE REPOSITORY:
+
+  Clone the repository:
+
+    git clone https://github.com/OpenVPN/openvpn
+    git clone git://openvpn.git.sourceforge.net/gitroot/openvpn/openvpn
+
+  Check out stable version:
+
+    git checkout -b 2.2 remotes/origin/release/2.2
+
+  Check out master (unstable) branch:
+
+    git checkout master
+
+
+*************************************************************************
+
+BUILD COMMANDS FROM TARBALL:
+
+	./configure
+	make
+	make install
+
+*************************************************************************
+
+BUILD COMMANDS FROM SOURCE REPOSITORY CHECKOUT:
+
+	autoreconf -i -v -f
+	./configure
+	make
+	make install
+
+*************************************************************************
+
+BUILD A TARBALL FROM SOURCE REPOSITORY CHECKOUT:
+
+	autoreconf -i -v -f
+	./configure
+	make dist
+
+*************************************************************************
+
+TESTS (after BUILD):
+
+make check (Run all tests below)
+
+Test Crypto:
+
+./openvpn --genkey --secret key
+./openvpn --test-crypto --secret key
+
+Test SSL/TLS negotiations (runs for 2 minutes):
+
+./openvpn --config sample/sample-config-files/loopback-client (In one window)
+./openvpn --config sample/sample-config-files/loopback-server (Simultaneously in another window)
+
+For more thorough client-server tests you can configure your own, private test
+environment. See tests/t_client.rc-sample for details.
+
+*************************************************************************
+
+OPTIONS for ./configure:
+
+  --disable-lzo           disable LZO compression support [default=yes]
+  --enable-lzo-stub       don't compile LZO compression support but still
+                          allow limited interoperability with LZO-enabled
+                          peers [default=no]
+  --disable-crypto        disable crypto support [default=yes]
+  --disable-ssl           disable SSL support for TLS-based key exchange
+                          [default=yes]
+  --enable-x509-alt-username
+                          enable the --x509-username-field feature
+                          [default=no]
+  --disable-multi         disable client/server support (--mode server +
+                          client mode) [default=yes]
+  --disable-server        disable server support only (but retain client
+                          support) [default=yes]
+  --disable-plugins       disable plug-in support [default=yes]
+  --disable-eurephia      disable support for the eurephia plug-in
+                          [default=yes]
+  --disable-management    disable management server support [default=yes]
+  --enable-pkcs11         enable pkcs11 support [default=no]
+  --disable-socks         disable Socks support [default=yes]
+  --disable-http-proxy    disable HTTP proxy support [default=yes]
+  --disable-fragment      disable internal fragmentation support (--fragment)
+                          [default=yes]
+  --disable-multihome     disable multi-homed UDP server support (--multihome)
+                          [default=yes]
+  --disable-port-share    disable TCP server port-share support (--port-share)
+                          [default=yes]
+  --disable-debug         disable debugging support (disable gremlin and verb
+                          7+ messages) [default=yes]
+  --enable-small          enable smaller executable size (disable OCC, usage
+                          message, and verb 4 parm list) [default=yes]
+  --enable-password-save  allow --askpass and --auth-user-pass passwords to be
+                          read from a file [default=yes]
+  --enable-iproute2       enable support for iproute2 [default=no]
+  --disable-def-auth      disable deferred authentication [default=yes]
+  --disable-pf            disable internal packet filter [default=yes]
+  --enable-strict         enable strict compiler warnings (debugging option)
+                          [default=no]
+  --enable-pedantic       enable pedantic compiler warnings, will not generate
+                          a working executable (debugging option) [default=no]
+  --enable-strict-options enable strict options check between peers (debugging
+                          option) [default=no]
+  --enable-selinux        enable SELinux support [default=no]
+  --enable-systemd        enable systemd suppport [default=no]
+
+ENVIRONMENT for ./configure:
+
+  IFCONFIG    full path to ipconfig utility
+  ROUTE       full path to route utility
+  IPROUTE     full path to ip utility
+  NETSTAT     path to netstat utility
+  MAN2HTML    path to man2html utility
+  GIT         path to git utility
+  TAP_CFLAGS  C compiler flags for tap
+  OPENSSL_CRYPTO_CFLAGS
+              C compiler flags for OPENSSL_CRYPTO, overriding pkg-config
+  OPENSSL_CRYPTO_LIBS
+              linker flags for OPENSSL_CRYPTO, overriding pkg-config
+  OPENSSL_SSL_CFLAGS
+              C compiler flags for OPENSSL_SSL, overriding pkg-config
+  OPENSSL_SSL_LIBS
+              linker flags for OPENSSL_SSL, overriding pkg-config
+  POLARSSL_CFLAGS
+              C compiler flags for polarssl
+  POLARSSL_LIBS
+              linker flags for polarssl
+  LZO_CFLAGS  C compiler flags for lzo
+  LZO_LIBS    linker flags for lzo
+  PKCS11_HELPER_CFLAGS
+              C compiler flags for PKCS11_HELPER, overriding pkg-config
+  PKCS11_HELPER_LIBS
+              linker flags for PKCS11_HELPER, overriding pkg-config
+
+*************************************************************************
+
+BUILDING ON LINUX 2.6+ FROM RPM
+
+You can build a binary RPM directly from the OpenVPN tarball file:
+
+	rpmbuild -tb [tarball]
+
+This command will build a binary RPM file and place it in the system
+RPM directory.  You can then install the RPM with the standard RPM
+install command:
+
+	rpm -ivh [binary-rpm]
+
+When you install the binary RPM, it will install
+sample-scripts/openvpn.init, which can be used to
+automatically start or stop one or more OpenVPN tunnels on system
+startup or shutdown, based on OpenVPN .conf files in /etc/openvpn.
+See the comments in openvpn.init for more information.
+
+Installing the RPM will also configure the TUN/TAP device node
+for linux 2.6.
+
+Note that the current openvpn.spec file, which instructs the rpm tool
+how to build a package, will build OpenVPN with all options enabled,
+including OpenSSL, LZO, and pthread linkage.  Therefore all of
+these packages will need to be present prior to the RPM build, unless
+you edit the openvpn.spec file.
+
+*************************************************************************
+
+TUN/TAP Driver Configuration:
+
+* Linux 2.6 or higher (with integrated TUN/TAP driver):
+
+  (1) load driver:              modprobe tun
+  (2) enable routing:           echo 1 > /proc/sys/net/ipv4/ip_forward
+
+  Note that (1) needs to be done once per reboot.  If you install from RPM (see
+  above) and use the openvpn.init script, these steps are taken care of for you.
+
+* FreeBSD:
+
+  FreeBSD ships with the TUN/TAP driver, and the device nodes for tap0,
+  tap1, tap2, tap3, tun0, tun1, tun2 and tun3 are made by default.
+  However, only the TUN driver is linked into the GENERIC kernel.
+
+  To load the TAP driver, enter: 
+
+	kldload if_tap
+
+  See man rc(8) to find out how you can do this at boot time.
+
+  The easiest way is to install OpenVPN from the FreeBSD ports system,
+  the port includes a sample script to automatically load the TAP driver
+  at boot-up time.
+
+* OpenBSD:
+
+  OpenBSD has dynamically created tun* devices so you only need
+  to create an empty /etc/hostname.tun0 (tun1, tun2 and so on) for each tun
+  you plan to use to create the device(s) at boot.
+
+* Solaris:
+
+  You need a TUN/TAP kernel driver for OpenVPN to work:
+
+    http://www.whiteboard.ne.jp/~admin2/tuntap/
+
+* Windows XP/2003/Vista/7:
+
+  OpenVPN on Windows needs a TUN/TAP kernel driver to work. OpenVPN installers
+  include this driver, so installing it separately is not usually required.
+  The driver source code is available here:
+
+    https://github.com/OpenVPN/tap-windows
+
+*************************************************************************
+
+CAVEATS & BUGS:
+
+* I have noticed cases where TCP sessions tunneled over the Linux
+  TAP driver (kernel 2.4.21 and 2.4.22) stall when lower --mssfix
+  values are used.  The TCP sessions appear to unstall and resume
+  normally when the remote VPN endpoint is pinged.
+
+* If run through a firewall using OpenBSDs packet filter PF and the
+  filter rules include a "scrub" directive, you may get problems talking
+  to Linux hosts over the tunnel, since the scrubbing will kill packets
+  sent from Linux hosts if they are fragmented. This is usually seen as
+  tunnels where small packets and pings get through but large packets
+  and "regular traffic" don't. To circumvent this, add "no-df" to
+  the scrub directive so that the packet filter will let fragments with
+  the "dont fragment"-flag set through anyway.
+
+* Mixing OFB or CFB cipher modes with static key mode is not recommended,
+  and is flagged as an error on OpenVPN versions 1.2.1 and greater.
+  If you use the --cipher option to explicitly select an OFB or CFB
+  cipher AND you are using static key mode, it is possible that there
+  could be an IV collision if the OpenVPN daemons on both sides
+  of the connection are started at exactly the same time, since
+  OpenVPN uses a timestamp combined with a sequence number as the cipher
+  IV for OFB and CFB modes.  This is not an issue if you are
+  using CBC cipher mode (the default), or if you are using OFB or CFB
+  cipher mode with SSL/TLS authentication.

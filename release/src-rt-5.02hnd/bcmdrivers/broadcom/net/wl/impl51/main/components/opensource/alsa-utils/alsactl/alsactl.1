@@ -1,0 +1,118 @@
+.TH ALSACTL 1 "15 May 2001"
+.SH NAME
+alsactl \- advanced controls for ALSA soundcard driver
+
+.SH SYNOPSIS
+
+\fBalsactl\fP [\fIoptions\fP] [\fIstore\fP|\fIrestore\fP|\fIinit\fP] <card # or id or device>
+
+.SH DESCRIPTION
+\fBalsactl\fP is used to control advanced settings for the ALSA
+soundcard drivers. It supports multiple soundcards. If your card has
+features that you can't seem to control from a mixer application,
+you have come to the right place.
+
+.SH COMMANDS
+
+\fIstore\fP saves the current driver state for the selected soundcard
+to the configuration file.
+
+\fIrestore\fP loads driver state for the selected soundcard from the
+configuration file. If restoring fails (eventually partly), the init
+action is called.
+
+\fIinit\fP tries to initialize all devices to a default state. If device
+is not known, error code 99 is returned.
+
+If no soundcards are specified, setup for all cards will be saved or
+loaded.
+
+.SH OPTIONS
+
+.TP
+\fI\-h, \-\-help\fP 
+Help: show available flags and commands.
+
+.TP
+\fI\-d, \-\-debug\fP
+Use debug mode: a bit more verbose.
+
+.TP
+\fI\-v, \-\-version\fP
+Print alsactl version number.
+
+.TP
+\fI\-f, \-\-file\fP
+Select the configuration file to use. The default is /etc/asound.state.
+
+.TP
+\fI\-F, \-\-force\fP
+Used with restore command.  Try to restore the matching control elements
+as much as possible.  This option is set as default now.
+
+.TP
+\fI\-g, \-\-ignore\fP
+Used with store and restore commands. Do not show 'No soundcards found'
+and do not set an error exit code when soundcards are not installed.
+
+.TP
+\fI\-P, \-\-pedantic\fP
+Used with restore command.  Don't restore mismatching control elements.
+This option was the old default behavior.
+
+.TP
+\fI\-I, \-\-no\-init\-fallback\fP
+Don't initialize cards if restore fails.  Since version 1.0.18,
+\fBalsactl\fP tries to initialize the card with the restore operation
+as default.  But this can cause incompatibility with the older version.
+The caller may expect that the state won't be touched if no state file
+exists.  This option takes the restore behavior back to the older
+version by suppressing the initialization.
+
+.TP
+\fI\-r, \-\-runstate\fP
+Save restore and init state to this file. The file will contain only errors.
+Errors are appended with the soundcard id to the end of file.
+
+.TP
+\fI\-R, \-\-remove\fP
+Remove runstate file at first.
+
+.TP
+\fI\-E, \-\-env\fP #=#
+Set environment variable (useful for init action or you may override
+ALSA_CONFIG_PATH to read different or optimized configuration - may be
+useful for "boot" scripts).
+
+.TP
+\fI\-i, \-\-initfile\fP #=#
+The configuration file for init. By default, PREFIX/share/alsa/init/00main
+is used.
+
+.SH FILES
+\fI/etc/asound.state\fP (or whatever file you specify with the
+\fB\-f\fP flag) is used to store current settings for your
+soundcards. The settings include all the usual soundcard mixer
+settings.  More importantly, alsactl is
+capable of controlling other card-specific features that mixer apps
+usually don't know about.
+
+The configuration file is generated automatically by running
+\fBalsactl store\fP. Editing the configuration file by hand may be
+necessary for some soundcard features (e.g. enabling/disabling
+automatic mic gain, digital output, joystick/game ports, some future MIDI
+routing options, etc).
+
+.SH SEE ALSO
+\fB
+amixer(1),
+alsamixer(1),
+aplay(1)
+\fP
+
+.SH BUGS 
+None known.
+
+.SH AUTHOR
+\fBalsactl\fP is by Jaroslav Kysela <perex@perex.cz> and Abramo Bagnara
+<abramo@alsa\-project.org>. This document is by Paul Winkler <zarmzarm@erols.com>.

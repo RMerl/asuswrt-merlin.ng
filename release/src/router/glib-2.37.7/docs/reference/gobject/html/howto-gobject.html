@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: How to define and implement a new GObject</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt02.html" title="Part IV. Tutorial">
+<link rel="prev" href="pt02.html" title="Part IV. Tutorial">
+<link rel="next" href="howto-gobject-code.html" title="Boilerplate code">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="pt02.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-gobject-code.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="howto-gobject"></a>How to define and implement a new GObject</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="sect1"><a href="howto-gobject.html#howto-gobject-header">Boilerplate header code</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-code.html">Boilerplate code</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-construction.html">Object Construction</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-destruction.html">Object Destruction</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-methods.html">Object methods</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#id-1.6.3.7.3">Non-virtual public methods</a></span></dt>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#id-1.6.3.7.4">Virtual public methods</a></span></dt>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#id-1.6.3.7.5">Virtual private Methods</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="howto-gobject-chainup.html">Chaining up</a></span></dt>
+</dl></div>
+<p>
+    Clearly, this is one of the most common questions people ask: they just
+    want to crank code and implement a subclass of a GObject. Sometimes because
+    they want to create their own class hierarchy, sometimes because they want
+    to subclass one of GTK+'s widget. This chapter will focus on the 
+    implementation of a subtype of GObject.
+  </p>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-gobject-header"></a>Boilerplate header code</h2></div></div></div>
+<p>
+      The first step before writing the code for your GObject is to write the
+      type's header which contains the needed type, function and macro
+      definitions. Each of these elements is nothing but a convention which
+      is followed not only by GTK+'s code but also by most users of GObject.
+      If you feel the need not to obey the rules stated below, think about it
+      twice:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>If your users are a bit accustomed to GTK+ code or any
+        GLib code, they will be a bit surprised and getting used to the
+        conventions you decided upon will take time (money) and will make them
+        grumpy (not a good thing)</p></li>
+<li class="listitem"><p>You must assess the fact that these conventions might
+        have been designed by both smart and experienced people: maybe they
+        were at least partly right. Try to put your ego aside.</p></li>
+</ul></div>
+<p>
+      It is, nevertheless, important to note that these rules generally apply
+      to code that is meant to be called by third parties; it is perfectly
+      possible to write a valid, self-contained GObject types without most of
+      the boilerplate used in this tutorial; most of the boilerplate is also
+      not strictly required if you plan to use the GObject types only through
+      language bindings based on introspection.
+    </p>
+<p>
+      Pick a name convention for your headers and source code and stick to it:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>use a dash to separate the prefix from the typename:
+        <code class="filename">maman-bar.h</code> and <code class="filename">maman-bar.c</code>
+        (this is the convention used by Nautilus and most GNOME libraries).</p></li>
+<li class="listitem"><p>use an underscore to separate the prefix from the
+        typename: <code class="filename">maman_bar.h</code> and
+        <code class="filename">maman_bar.c</code>.</p></li>
+<li class="listitem"><p>Do not separate the prefix from the typename:
+        <code class="filename">mamanbar.h</code> and <code class="filename">mamanbar.c</code>.
+        (this is the convention used by GTK+)</p></li>
+</ul></div>
+<p>
+      Some people like the first two solutions better: it makes reading file
+      names easier for those with poor eyesight.
+    </p>
+<p>
+      When you need some private (internal) declarations in several
+      (sub)classes, you can define them in a private header file which
+      is often named by appending the <span class="emphasis"><em>private</em></span> keyword
+      to the public header name. For example, one could use
+      <code class="filename">maman-bar-private.h</code>,
+      <code class="filename">maman_bar_private.h</code> or
+      <code class="filename">mamanbarprivate.h</code>. Typically, such private header
+      files are not installed.
+    </p>
+<p>
+      The basic conventions for any header which exposes a GType are described
+      in <a class="xref" href="gtype-conventions.html" title="Conventions">the section called “Conventions”</a>. Most GObject-based code also
+      obeys one of of the following conventions: pick one and stick to it.
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+<p>
+            If you want to declare a type named bar with prefix maman, name the type instance
+            <code class="function">MamanBar</code> and its class <code class="function">MamanBarClass</code>
+            (name is case-sensitive). It is customary to declare them with code similar to the 
+            following:
+</p>
+<pre class="programlisting">
+/*
+ * Copyright/Licensing information.
+ */
+
+/* inclusion guard */
+#ifndef __MAMAN_BAR_H__
+#define __MAMAN_BAR_H__
+
+#include &lt;glib-object.h&gt;
+/*
+ * Potentially, include other headers on which this header depends.
+ */
+
+/*
+ * Type macros.
+ */
+#define MAMAN_TYPE_BAR                  (maman_bar_get_type ())
+#define MAMAN_BAR(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAMAN_TYPE_BAR, MamanBar))
+#define MAMAN_IS_BAR(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAMAN_TYPE_BAR))
+#define MAMAN_BAR_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), MAMAN_TYPE_BAR, MamanBarClass))
+#define MAMAN_IS_BAR_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), MAMAN_TYPE_BAR))
+#define MAMAN_BAR_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), MAMAN_TYPE_BAR, MamanBarClass))
+
+typedef struct _MamanBar        MamanBar;
+typedef struct _MamanBarClass   MamanBarClass;
+
+struct _MamanBar
+{
+  /* Parent instance structure */
+  GObject parent_instance;
+
+  /* instance members */
+};
+
+struct _MamanBarClass
+{
+  /* Parent class structure */
+  GObjectClass parent_class;
+
+  /* class members */
+};
+
+/* used by MAMAN_TYPE_BAR */
+GType maman_bar_get_type (void);
+
+/*
+ * Method definitions.
+ */
+
+#endif /* __MAMAN_BAR_H__ */
+</pre>
+<p>
+          </p>
+</li>
+<li class="listitem">
+<p>
+            Types that require per-instance private data should use the
+            G_DEFINE_TYPE_WITH_PRIVATE() macro, or use the G_ADD_PRIVATE()
+            macro with the G_DEFINE_TYPE_WITH_CODE() or the G_DEFINE_TYPE_EXTENDED()
+            macros. The private structure is then defined in the .c file,
+            and can be accessed using the <code class="function">get_instance_private()</code>
+            function generated by the G_DEFINE_TYPE_* macros.
+</p>
+<pre class="programlisting">
+struct _MamanBarPrivate
+{
+  int hsize;
+};
+
+G_DEFINE_TYPE_WITH_PRIVATE (MamanBar, maman_bar, G_TYPE_OBJECT)
+
+static void
+maman_bar_class_init (MamanBarClass *klass)
+{
+}
+
+static void
+maman_bar_init (MamanBar *self)
+{
+  /* maman_bar_get_instance_private() is generated by G_DEFINE_TYPE_WITH_PRIVATE()
+   * above, and it's local to the current compilation unit.
+   */
+  MamanBarPrivate *priv = maman_bar_get_instance_private (self);
+
+  priv-&gt;hsize = 42;
+}
+</pre>
+<p>
+          </p>
+</li>
+<li class="listitem">
+<p>
+            Most GNOME libraries use a pointer inside the instance structure
+            for simpler access to the private data structure, as described by
+            Herb Sutter in his Pimpl article (see <a class="ulink" href="http://www.gotw.ca/gotw/024.htm" target="_top">Compilation Firewalls</a>
+            and <a class="ulink" href="http://www.gotw.ca/gotw/028.htm" target="_top">The Fast Pimpl Idiom</a>
+            for reference). If you opt to use this idiom, you can assign the
+            pointer inside the instance initialization function, e.g.:
+</p>
+<pre class="programlisting">
+G_DEFINE_TYPE_WITH_PRIVATE (MamanBar, maman_bar, G_TYPE_OBJECT)
+
+struct _MamanBarPrivate
+{
+  int hsize;
+};
+
+static void
+maman_bar_class_init (MamanBarClass *klass)
+{
+}
+
+static void
+maman_bar_init (MamanBar *self)
+{
+  self-&gt;priv = maman_bar_get_instance_private (self);
+  self-&gt;priv-&gt;hsize = 42;
+}
+</pre>
+<p>
+          </p>
+</li>
+</ul></div>
+<p>
+    </p>
+<p>
+      Finally, there are different header include conventions. Again, pick one
+      and stick to it. I personally use indifferently any of the two, depending
+      on the codebase I work on: the rule, as always, is consistency.
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+            Some people add at the top of their headers a number of #include
+            directives to pull in all the headers needed to compile client
+            code. This allows client code to simply #include "maman-bar.h".
+          </p></li>
+<li class="listitem"><p>
+            Other do not #include anything and expect the client to #include
+            themselves the headers they need before including your header. This
+            speeds up compilation because it minimizes the amount of
+            pre-processor work. This can be used in conjunction with the
+            re-declaration of certain unused types in the client code to
+            minimize compile-time dependencies and thus speed up compilation.
+          </p></li>
+</ul></div>
+<p>
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

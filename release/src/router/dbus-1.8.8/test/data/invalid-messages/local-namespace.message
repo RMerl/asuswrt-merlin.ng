@@ -1,0 +1,21 @@
+## a message that is in the org.freedesktop.Local. namespace and thus
+## invalid
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+
+HEADER_FIELD INTERFACE
+TYPE STRING
+STRING 'org.freedesktop.DBus.Local'
+HEADER_FIELD MEMBER
+TYPE STRING
+STRING 'Disconnected'
+HEADER_FIELD PATH
+TYPE OBJECT_PATH
+OBJECT_PATH '/foo'
+
+ALIGN 8
+END_LENGTH Header
+
+START_LENGTH Body
+END_LENGTH Body

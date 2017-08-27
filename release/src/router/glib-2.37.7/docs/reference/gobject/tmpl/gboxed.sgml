@@ -1,0 +1,254 @@
+<!-- ##### SECTION Title ##### -->
+Boxed Types
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### USER_FUNCTION GBoxedCopyFunc ##### -->
+<para>
+
+</para>
+
+@boxed: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GBoxedFreeFunc ##### -->
+<para>
+
+</para>
+
+@boxed: 
+
+
+<!-- ##### FUNCTION g_boxed_copy ##### -->
+<para>
+
+</para>
+
+@boxed_type: 
+@src_boxed: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_boxed_free ##### -->
+<para>
+
+</para>
+
+@boxed_type: 
+@boxed: 
+
+
+<!-- ##### FUNCTION g_boxed_type_register_static ##### -->
+<para>
+
+</para>
+
+@name: 
+@boxed_copy: 
+@boxed_free: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pointer_type_register_static ##### -->
+<para>
+
+</para>
+
+@name: 
+@Returns: 
+
+
+<!-- ##### MACRO G_TYPE_HASH_TABLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_GSTRING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_STRV ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_REGEX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_MATCH_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_BYTE_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_PTR_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_BYTES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_VARIANT_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DATE_TIME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_TIME_ZONE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_IO_CHANNEL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_IO_CONDITION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_VARIANT_BUILDER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_KEY_FILE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_MAIN_CONTEXT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_MAIN_LOOP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_MARKUP_PARSE_CONTEXT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_SOURCE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_POLLFD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_THREAD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF GStrv ##### -->
+<para>
+
+</para>
+
+

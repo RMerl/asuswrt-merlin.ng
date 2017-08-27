@@ -1,0 +1,109 @@
+OVERVIEW OF THE LM-SENSORS PACKAGE
+==================================
+
+The lm-sensors package, version 3, provides user-space support for the
+hardware monitoring drivers in Linux 2.6.5 and later. For older kernel
+versions, you have to use lm-sensors version 2.
+
+The directories within this package:
+
+* doc
+  Documentation.
+* etc
+  A sample configuration file for libsensors, and a script to convert
+  lm-sensors version 2 configuration files to work with version 3.
+* lib
+  The user-space sensors support library code (libsensors).
+* prog
+  Several supporting programs. The most important ones are:
+  - sensors-detect: A stand-alone program for detecting installed
+    hardware and recommending specific modules to load.
+  - sensors: A console tool to report sensor readings and set new
+    sensor limits.
+  - sensord: A daemon to watch sensor values and log problems. It
+    includes RRD support.
+
+
+INSTALLING LM-SENSORS
+---------------------
+
+See the INSTALL file.
+
+
+HARDWARE SUPPORT
+----------------
+
+To find out what hardware you have, just run 'sensors-detect' as root.
+
+Most modern mainboards incorporate some form of hardware monitoring chips.
+These chips read things like chip temperatures, fan rotation speeds and
+voltage levels. There are quite a few different chips which can be used by
+mainboard builders for approximately the same results.
+
+Laptops, on the other hand, rarely expose any hardware monitoring
+chip. They often have some BIOS and/or ACPI magic to get the CPU
+temperature value, but that's about it. For such laptops, the lm-sensors
+package is of no use (sensors-detect will not find anything), and you have
+to use acpi instead.
+
+This package doesn't contain chip-specific knowledge. It will support all
+the hardware monitoring chips your kernel has drivers for. In other words,
+if you find out that you have unsupported hardware (e.g. sensors-detect
+told you so) then it means that you need a more recent kernel, or you
+even need to wait for a new kernel driver to be written. Updating the
+lm-sensors package itself will not help.
+
+
+LIBSENSORS
+----------
+
+The kernel drivers communicate their information through the /sys
+interface. Because every motherboard is different, the drivers always
+advert the measurements at their pins. This means that the values they
+report are not always immediately relevant to you. They have to be
+labelled properly, and sometimes they must be scaled to correspond to
+real-world values.
+
+libsensors is a (shared or static) library of access functions. It
+offers a simple-to-use interface for applications to access the sensor
+chip readings and configure them as you like. It has a configuration
+file where you can put all the motherboard-specific labels and
+conversion rules. That way, all applications do not need to duplicate
+the effort and can simply link with libsensors and work out of the box.
+
+
+APPLICATIONS
+------------
+
+This package contains an example console program that reports all current
+sensors values. This program is called 'sensors'. You can use it as a
+reference implementation for more intricate programs. It also contains a
+daemon watching for sensor values, logging alarms and feeding an RRD
+database with the sensor measurements.
+
+This package does not contain a nice graphical monitor. See
+http://www.lm-sensors.org/wiki/UsefulLinks for pointers to such programs.
+
+
+OTHER INFORMATION
+-----------------
+
+The developers of this package can be reached through a mailing-list
+(see http://www.lm-sensors.org/wiki/AuthorsAndContributors). Do not hesitate
+to mail us if you have questions, suggestions, problems, want to
+contribute, or just want to report it works for you. But please try to
+read the documentation before you ask any questions! It's all under doc/.
+Also make sure you read the FAQ at http://www.lm-sensors.org/wiki/FAQ.
+
+The latest version of this package can always be found at:
+http://www.lm-sensors.org/wiki/Download. Pre-release versions can be
+retrieved through anonymous SVN; see doc/svn for details.
+
+
+LICENSE
+-------
+
+The library (libsensors) is released under the GNU Lesser General Public
+License (LGPL), as included in the file COPYING.LGPL. The rest of this
+package may be distributed according to the GNU General Public License
+(GPL), as included in the file COPYING.

@@ -1,0 +1,531 @@
+<!-- ##### SECTION Title ##### -->
+Basic Types
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF gboolean ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF gpointer ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF gconstpointer ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF gchar ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF guchar ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF gint ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MININT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXINT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF guint ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXUINT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gshort ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MINSHORT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXSHORT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gushort ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXUSHORT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF glong ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MINLONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXLONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gulong ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXULONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gint8 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MININT8 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXINT8 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF guint8 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXUINT8 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gint16 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MININT16 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXINT16 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT16_MODIFIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT16_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF guint16 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXUINT16 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GUINT16_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gint32 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MININT32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXINT32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT32_MODIFIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT32_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF guint32 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXUINT32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GUINT32_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gint64 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MININT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXINT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT64_MODIFIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT64_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINT64_CONSTANT ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### TYPEDEF guint64 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXUINT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GUINT64_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GUINT64_CONSTANT ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### TYPEDEF gfloat ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MINFLOAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXFLOAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gdouble ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MINDOUBLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXDOUBLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gsize ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MAXSIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GSIZE_MODIFIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GSIZE_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF gssize ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MINSSIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXSSIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GSSIZE_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF goffset ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_MINOFFSET ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MAXOFFSET ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GOFFSET_MODIFIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GOFFSET_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GOFFSET_CONSTANT ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### TYPEDEF gintptr ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_GINTPTR_MODIFIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GINTPTR_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF guintptr ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_GUINTPTR_FORMAT ##### -->
+<para>
+
+</para>
+
+
+

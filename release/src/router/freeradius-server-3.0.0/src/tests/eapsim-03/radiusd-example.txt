@@ -1,0 +1,1506 @@
+##
+## radiusd.conf	-- FreeRADIUS server configuration file.
+##
+##	http://www.freeradius.org/
+##	$Id$
+##
+
+# This is the radiusd.conf file used for testing EAP-SIM stuff.
+#
+#
+
+#  	The location of other config files and
+#  	logfiles are declared in this file
+#
+#  	Also general configuration for modules can be done
+#  	in this file, it is exported through the API to
+#  	modules that ask for it.
+#
+#	The configuration variables defined here are of the form ${foo}
+#	They are local to this file, and do not change from request to
+#	request.
+#
+#	The per-request variables are of the form %{Attribute-Name}, and
+#	are taken from the values of the attribute in the incoming
+#	request.  See 'doc/variables.txt' for more information.
+
+prefix = /elros/mcr/root
+exec_prefix = ${prefix}
+sysconfdir = ${prefix}/etc
+localstatedir = ${prefix}/var
+sbindir = ${exec_prefix}/sbin
+logdir = ${localstatedir}/log/radius
+raddbdir = ${sysconfdir}/raddb
+radacctdir = ${logdir}/radacct
+
+#  Location of config and logfiles.
+confdir = ${raddbdir}
+run_dir = ${localstatedir}/run/radiusd
+
+#
+#  The logging messages for the server are appended to the
+#  tail of this file.
+#
+log_file = ${logdir}/radius.log
+
+#
+# libdir: Where to find the rlm_* modules.
+#
+#   This should be automatically set at configuration time.
+#
+#   If the server builds and installs, but fails at execution time
+#   with an 'undefined symbol' error, then you can use the libdir
+#   directive to work around the problem.
+#
+#   The cause is usually that a library has been installed on your
+#   system in a place where the dynamic linker CANNOT find it.  When
+#   executing as root (or another user), your personal environment MAY
+#   be set up to allow the dynamic linker to find the library.  When
+#   executing as a daemon, FreeRADIUS MAY NOT have the same
+#   personalized configuration.
+#
+#   To work around the problem, find out which library contains that symbol,
+#   and add the directory containing that library to the end of 'libdir',
+#   with a colon separating the directory names.  NO spaces are allowed.
+#
+#   e.g. libdir = /usr/local/lib:/opt/package/lib
+#
+#   You can also try setting the LD_LIBRARY_PATH environment variable
+#   in a script which starts the server.
+#
+#   If that does not work, then you can re-configure and re-build the
+#   server to NOT use shared libraries, via:
+#
+#	./configure --disable-shared
+#	make
+#	make install
+#
+libdir = ${exec_prefix}/lib
+
+#  pidfile: Where to place the PID of the RADIUS server.
+#
+#  The server may be signalled while it's running by using this
+#  file.
+#
+#  This file is written when ONLY running in daemon mode.
+#
+#  e.g.:  kill -HUP `cat /var/run/radiusd/radiusd.pid`
+#
+pidfile = ${run_dir}/radiusd.pid
+
+
+# user/group: The name (or #number) of the user/group to run radiusd as.
+#
+#   If these are commented out, the server will run as the user/group
+#   that started it.  In order to change to a different user/group, you
+#   MUST be root ( or have root privleges ) to start the server.
+#
+#   We STRONGLY recommend that you run the server with as few permissions
+#   as possible.  That is, if you're not using shadow passwords, the
+#   user and group items below should be set to 'nobody'.
+#
+#    On SCO (ODT 3) use "user = nouser" and "group = nogroup".
+#
+#  NOTE that some kernels refuse to setgid(group) when the value of
+#  (unsigned)group is above 60000; don't use group nobody on these systems!
+#
+#  On systems with shadow passwords, you might have to set 'group = shadow'
+#  for the server to be able to read the shadow password file.  If you can
+#  authenticate users while in debug mode, but not in daemon mode, it may be
+#  that the debugging mode server is running as a user that can read the
+#  shadow info, and the user listed below can not.
+#
+#user = nobody
+#group = nobody
+
+#  max_request_time: The maximum time (in seconds) to handle a request.
+#
+#  Requests which take more time than this to process may be killed, and
+#  a REJECT message is returned.
+#
+#  WARNING: If you notice that requests take a long time to be handled,
+#  then this MAY INDICATE a bug in the server, in one of the modules
+#  used to handle a request, OR in your local configuration.
+#
+#  This problem is most often seen when using an SQL database.  If it takes
+#  more than a second or two to receive an answer from the SQL database,
+#  then it probably means that you haven't indexed the database.  See your
+#  SQL server documentation for more information.
+#
+#  Useful range of values: 5 to 120
+#
+max_request_time = 30
+
+#  cleanup_delay: The time to wait (in seconds) before cleaning up
+#  a reply which was sent to the NAS.
+#
+#  The RADIUS request is normally cached internally for a short period
+#  of time, after the reply is sent to the NAS.  The reply packet may be
+#  lost in the network, and the NAS will not see it.  The NAS will then
+#  re-send the request, and the server will respond quickly with the
+#  cached reply.
+#
+#  If this value is set too low, then duplicate requests from the NAS
+#  MAY NOT be detected, and will instead be handled as seperate requests.
+#
+#  If this value is set too high, then the server will cache too many
+#  requests, and some new requests may get blocked.  (See 'max_requests'.)
+#
+#  Useful range of values: 2 to 10
+#
+cleanup_delay = 5
+
+#  max_requests: The maximum number of requests which the server keeps
+#  track of.  This should be 256 multiplied by the number of clients.
+#  e.g. With 4 clients, this number should be 1024.
+#
+#  If this number is too low, then when the server becomes busy,
+#  it will not respond to any new requests, until the 'cleanup_delay'
+#  time has passed, and it has removed the old requests.
+#
+#  If this number is set too high, then the server will use a bit more
+#  memory for no real benefit.
+#
+#  If you aren't sure what it should be set to, it's better to set it
+#  too high than too low.  Setting it to 1000 per client is probably
+#  the highest it should be.
+#
+#  Useful range of values: 256 to infinity
+#
+max_requests = 1024
+
+#  bind_address:  Make the server listen on a particular IP address, and
+#  send replies out from that address.  This directive is most useful
+#  for machines with multiple IP addresses on one interface.
+#
+#  It can either contain "*", or an IP address, or a fully qualified
+#  Internet domain name.  The default is "*"
+#
+bind_address = *
+
+#  port: Allows you to bind FreeRADIUS to a specific port.
+#
+#  The default port that most NAS boxes use is 1645, which is historical.
+#  RFC 2138 defines 1812 to be the new port.  Many new servers and
+#  NAS boxes use 1812, which can create interoperability problems.
+#
+#  The port is defined here to be 0 so that the server will pick up
+#  the machine's local configuration for the radius port, as defined
+#  in /etc/services.
+#
+#  If you want to use the default RADIUS port as defined on your server,
+#  (usually through 'grep radius /etc/services') set this to 0 (zero).
+#
+#  A port given on the command-line via '-p' over-rides this one.
+#
+port = 0
+
+#  hostname_lookups: Log the names of clients or just their IP addresses
+#  e.g., www.freeradius.org (on) or 206.47.27.232 (off).
+#
+#  The default is 'off' because it would be overall better for the net
+#  if people had to knowingly turn this feature on, since enabling it
+#  means that each client request will result in AT LEAST one lookup
+#  request to the nameserver.   Enabling hostname_lookups will also
+#  mean that your server may stop randomly for 30 seconds from time
+#  to time, if the DNS requests take too long.
+#
+#  Turning hostname lookups off also means that the server won't block
+#  for 30 seconds, if it sees an IP address which has no name associated
+#  with it.
+#
+#  allowed values: {no, yes}
+#
+hostname_lookups = no
+
+#  Core dumps are a bad thing.  This should only be set to 'yes'
+#  if you're debugging a problem with the server.
+#
+#  allowed values: {no, yes}
+#
+allow_core_dumps = yes
+
+#  Log the full User-Name attribute, as it was found in the request.
+#
+# allowed values: {no, yes}
+#
+log_stripped_names = no
+
+#  Log authentication requests to the log file.
+#
+#  allowed values: {no, yes}
+#
+log_auth = no
+
+#  Log passwords with the authentication requests.
+#  log_auth_badpass  - logs password if it's rejected
+#  log_auth_goodpass - logs password if it's correct
+#
+#  allowed values: {no, yes}
+#
+log_auth_badpass = no
+log_auth_goodpass = no
+
+# usercollide:  Turn "username collision" code on and off.  See the
+# "doc/duplicate-users" file
+#
+usercollide = no
+
+# lower_user / lower_pass:  
+# Lower case the username/password "before" or "after"
+# attempting to authenticate.  
+#
+#  If "before", the server will first modify the request and then try
+#  to auth the user.  If "after", the server will first auth using the
+#  values provided by the user.  If that fails it will reprocess the
+#  request after modifying it as you specify below.
+#
+#  This is as close as we can get to case insensitivity.  It is the
+#  admin's job to ensure that the username on the auth db side is
+#  *also* lowercase to make this work
+#
+# Default is 'no' (don't lowercase values)
+# Valid values = "before" / "after" / "no"
+#
+lower_user = no
+lower_pass = no
+
+# nospace_user / nospace_pass:
+#
+#  Some users like to enter spaces in their username or password
+#  incorrectly.  To save yourself the tech support call, you can
+#  eliminate those spaces here:
+#
+# Default is 'no' (don't remove spaces)
+# Valid values = "before" / "after" / "no" (explanation above)
+#
+nospace_user = no
+nospace_pass = no
+
+#  The program to execute to do concurrency checks.
+checkrad = ${sbindir}/checkrad
+
+# SECURITY CONFIGURATION
+#
+#  There may be multiple methods of attacking on the server.  This
+#  section holds the configuration items which minimize the impact
+#  of those attacks
+#
+security {
+	#
+	#  max_attributes: The maximum number of attributes
+	#  permitted in a RADIUS packet.  Packets which have MORE
+	#  than this number of attributes in them will be dropped.
+	#
+	#  If this number is set too low, then no RADIUS packets
+	#  will be accepted.
+	#
+	#  If this number is set too high, then an attacker may be
+	#  able to send a small number of packets which will cause
+	#  the server to use all available memory on the machine.
+	#
+	#  Setting this number to 0 means "allow any number of attributes"
+	max_attributes = 200
+
+	#
+	#  reject_delay: When sending an Access-Reject, it can be
+	#  delayed for a few seconds.  This may help slow down a DoS
+	#  attack.  It also helps to slow down people trying to brute-force
+	#  crack a users password.
+	#
+	#  Setting this number to 0 means "send rejects immediately"
+	#
+	#  If this number is set higher than 'cleanup_delay', then the
+	#  rejects will be sent at 'cleanup_delay' time, when the request
+	#  is deleted from the internal cache of requests.
+	#
+	#  Useful ranges: 1 to 5
+	reject_delay = 1
+
+	#
+	#  status_server: Whether or not the server will respond
+	#  to Status-Server requests.
+	#
+	#  Normally this should be set to "no", because they're useless.
+	#  See: http://www.freeradius.org/rfc/rfc2865.html#Keep-Alives
+	#
+	#  However, certain NAS boxes may require them.	
+	#
+	#  When sent a Status-Server message, the server responds with
+	#  and Access-Accept packet, containing a Reply-Message attribute,
+	#  which is a string describing how long the server has been
+	#  running.
+	#
+	status_server = no
+}
+
+# PROXY CONFIGURATION
+#
+#  proxy_requests: Turns proxying of RADIUS requests on or off.
+#
+#  The server has proxying turned on by default.  If your system is NOT
+#  set up to proxy requests to another server, then you can turn proxying
+#  off here.  This will save a small amount of resources on the server.
+#
+#  If you have proxying turned off, and your configuration files say
+#  to proxy a request, then an error message will be logged.
+#
+#  To disable proxying, change the "yes" to "no", and comment the
+#  $INCLUDE line.
+#
+#  allowed values: {no, yes}
+#
+proxy_requests  = yes
+$INCLUDE  ${confdir}/proxy.conf
+
+
+# CLIENTS CONFIGURATION
+#
+#  Client configuration is defined in "clients.conf".  
+#
+
+#  The 'clients.conf' file contains all of the information from the old
+#  'clients' and 'naslist' configuration files.  We recommend that you
+#  do NOT use 'client's or 'naslist', although they are still
+#  supported.
+#
+#  Anything listed in 'clients.conf' will take precedence over the
+#  information from the old-style configuration files.
+#
+$INCLUDE  ${confdir}/clients.conf
+
+
+# SNMP CONFIGURATION
+#
+#  Snmp configuration is only valid if SNMP support was enabled
+#  at compile time.
+#
+#  To enable SNMP querying of the server, set the value of the
+#  'snmp' attribute to 'yes'
+#
+snmp	= no
+$INCLUDE  ${confdir}/snmp.conf
+
+
+# THREAD POOL CONFIGURATION
+#
+#  The thread pool is a long-lived group of threads which
+#  take turns (round-robin) handling any incoming requests.
+#
+#  You probably want to have a few spare threads around,
+#  so that high-load situations can be handled immediately.  If you
+#  don't have any spare threads, then the request handling will
+#  be delayed while a new thread is created, and added to the pool.
+#
+#  You probably don't want too many spare threads around,
+#  otherwise they'll be sitting there taking up resources, and
+#  not doing anything productive.
+#
+#  The numbers given below should be adequate for most situations.
+#
+thread pool {
+	#  Number of servers to start initially --- should be a reasonable
+	#  ballpark figure.
+	start_servers = 5
+
+	#  Limit on the total number of servers running.
+	#
+	#  If this limit is ever reached, clients will be LOCKED OUT, so it
+	#  should NOT BE SET TOO LOW.  It is intended mainly as a brake to
+	#  keep a runaway server from taking the system with it as it spirals
+	#  down...
+	#
+	#  You may find that the server is regularly reaching the
+	#  'max_servers' number of threads, and that increasing
+	#  'max_servers' doesn't seem to make much difference.
+	#
+	#  If this is the case, then the problem is MOST LIKELY that
+	#  your back-end databases are taking too long to respond, and
+	#  are preventing the server from responding in a timely manner.
+	#
+	#  The solution is NOT do keep increasing the 'max_servers'
+	#  value, but instead to fix the underlying cause of the
+	#  problem: slow database, or 'hostname_lookups=yes'.
+	#
+	#  For more information, see 'max_request_time', above.
+	#
+	max_servers = 32
+
+	#  Server-pool size regulation.  Rather than making you guess
+	#  how many servers you need, FreeRADIUS dynamically adapts to
+	#  the load it sees, that is, it tries to maintain enough
+	#  servers to handle the current load, plus a few spare
+	#  servers to handle transient load spikes.
+	#
+	#  It does this by periodically checking how many servers are
+	#  waiting for a request.  If there are fewer than
+	#  min_spare_servers, it creates a new spare.  If there are
+	#  more than max_spare_servers, some of the spares die off.
+	#  The default values are probably OK for most sites.
+	#
+	min_spare_servers = 3
+	max_spare_servers = 10
+
+	#  There may be memory leaks or resource allocation problems with
+	#  the server.  If so, set this value to 300 or so, so that the
+	#  resources will be cleaned up periodically.
+	#
+	#  This should only be necessary if there are serious bugs in the
+	#  server which have not yet been fixed.
+	#
+	#  '0' is a special value meaning 'infinity', or 'the servers never
+	#  exit'
+	max_requests_per_server = 0
+}
+
+# MODULE CONFIGURATION
+#
+#  The names and configuration of each module is located in this section.
+#
+#  After the modules are defined here, they may be referred to by name,
+#  in other sections of this configuration file.
+#
+modules {
+	#
+	#  Each module has a configuration as follows:
+	#
+	#	name [ instance ] {
+	#		config_item = value
+	#		...
+	#	}
+	#
+	#  The 'name' is used to load the 'rlm_name' library
+	#  which implements the functionality of the module.
+	#
+	#  The 'instance' is optional.  To have two different instances
+	#  of a module, it first must be referred to by 'name'.
+	#  The different copies of the module are then created by
+	#  inventing two 'instance' names, e.g. 'instance1' and 'instance2'
+	#
+	#  The instance names can then be used in later configuration
+	#  INSTEAD of the original 'name'.  See the 'radutmp' configuration
+	#  below for an example.
+	#
+
+	# PAP module to authenticate users based on their stored password
+	#
+	#  Supports multiple encryption schemes
+	#  clear: Clear text
+	#  crypt: Unix crypt
+	#    md5: MD5 ecnryption
+	#   sha1: SHA1 encryption.
+	#  DEFAULT: crypt
+	pap {
+		encryption_scheme = crypt
+	}
+
+	# CHAP module
+	#
+	#  To authenticate requests containing a CHAP-Password attribute.
+	#
+	chap {
+		authtype = CHAP
+	}
+
+	# Pluggable Authentication Modules
+	#
+	#  For Linux, see:
+	#	http://www.kernel.org/pub/linux/libs/pam/index.html
+	#
+	pam {
+		#
+		#  The name to use for PAM authentication.
+		#  PAM looks in /etc/pam.d/${pam_auth_name}
+		#  for it's configuration.  See 'redhat/radiusd-pam'
+		#  for a sample PAM configuration file.
+		#
+		#  Note that any Pam-Auth attribute set in the 'authorize'
+		#  section will over-ride this one.
+		#
+		pam_auth = radiusd
+	}
+
+	# Unix /etc/passwd style authentication
+	#
+	unix {
+		#
+		#  Cache /etc/passwd, /etc/shadow, and /etc/group
+		#
+		#  The default is to NOT cache them.
+		#
+		#  For FreeBSD, you do NOT want to enable the cache,
+		#  as it's password lookups are done via a database, so
+		#  set this value to 'no'.
+		#
+		#  Some systems (e.g. RedHat Linux with pam_pwbd) can
+		#  take *seconds* to check a password, from a passwd
+		#  file containing 1000's of entries.  For those systems,
+		#  you should set the cache value to 'yes', and set
+		#  the locations of the 'passwd', 'shadow', and 'group'
+		#  files, below.
+		#
+		# allowed values: {no, yes}
+		cache = no
+
+		# Reload the cache every 600 seconds (10mins). 0 to disable.
+		cache_reload = 600
+
+		#
+		#  Define the locations of the normal passwd, shadow, and
+		#  group files.
+		#
+		#  'shadow' is commented out by default, because not all
+		#  systems have shadow passwords.
+		#
+		#  To force the module to use the system password functions,
+		#  instead of reading the files, leave the following entries
+		#  commented out.
+		#
+		#  This is required for some systems, like FreeBSD,
+		#  and Mac OSX.
+		#
+		#	passwd = /etc/passwd
+		#	shadow = /etc/shadow
+		#	group = /etc/group
+
+
+		#
+		#  Where the 'wtmp' file is located.
+		#  This should be moved to it's own module soon.
+		#
+		#  The only use for 'radlast'.  If you don't use
+		#  'radlast', then you can comment out this item.
+		#
+		radwtmp = ${logdir}/radwtmp
+	}
+
+	#  Extensible Authentication Protocol
+	#
+	#  For all EAP related authentications 
+	eap {
+		#  Invoke the default supported EAP type when
+		#  EAP-Identity response is received.
+		#
+		#  The incoming EAP messages MAY NOT specify which EAP
+		#  type they will be using, so it MUST be set here.
+		#
+		#  For now, only one default EAP type may be used at a time.
+		#
+		default_eap_type = md5
+
+		# Default expiry time to clean the EAP list,
+		# It is maintained to correlate the
+		# EAP-response for each EAP-request sent.
+		timer_expire     = 60
+
+		# Supported EAP-types
+		md5 {
+		}
+
+	        sim {
+	 	}
+
+		# Cisco LEAP
+		#
+		#  Cisco LEAP uses the MS-CHAP algorithm (but not
+		#  the MS-CHAP attributes) to perform it's authentication.
+		#
+		#  As a result, LEAP *requires* access to the plain-text
+		#  User-Password, or the NT-Password attributes.
+		#  'System' authentication is impossible with LEAP.
+		#
+		leap {
+		}
+
+		## EAP-TLS is highly experimental EAP-Type at the moment.  
+		#	Please give feedback on the mailing list.
+		#tls {
+		#	private_key_password = password
+		#	private_key_file = /path/filename
+
+		#	If Private key & Certificate are located in the
+		#	same file, then private_key_file & certificate_file
+		#	must contain the same file name.
+		#	certificate_file = /path/filename
+
+		#	Trusted Root CA list
+			#ca_file = /path/filename
+
+		#	dh_file = /path/filename
+			#random_file = /path/filename
+		#
+		# 	This can never exceed MAX_RADIUS_LEN (4096)
+		#	preferably half the MAX_RADIUS_LEN, to
+		#	accomodate other attributes in RADIUS packet.
+		#	On most APs the MAX packet length is configured
+		#	between 1500 - 1600. In these cases, fragment
+		#	size should be <= 1024.
+		#
+		#		fragment_size = 1024
+
+		#	include_length is a flag which is by default set to yes
+		#	If set to yes, Total Length of the message is included
+		#	in EVERY packet we send.
+		#	If set to no, Total Length of the message is included
+		#	ONLY in the First packet of a fragment series.
+		#
+		#		include_length = yes
+		#}
+	}
+
+	# Microsoft CHAP authentication
+	#
+	#  This module supports MS-CHAP and MS-CHAPv2 authentication.
+	#  It also enforces the SMB-Account-Ctrl attribute.
+	#
+	mschap {
+		#
+		#  As of 0.9, the mschap module does NOT support
+		#  reading from /etc/smbpasswd.
+		#
+		#  If you are using /etc/smbpasswd, see the 'passwd'
+		#  module for an example of how to use /etc/smbpasswd
+
+		# authtype value, if present, will be used
+		# to overwrite (or add) Auth-Type during
+		# authorization. Normally should be MS-CHAP
+		authtype = MS-CHAP
+		
+		# if use_mppe is not set to no mschap will
+		# add MS-CHAP-MPPE-Keys for MS-CHAPv1 and
+		# MS-MPPE-Recv-Key/MS-MPPE-Send-Key for MS-CHAPv2
+		#	use_mppe = no
+
+		# if mppe is enabled require_encryption makes
+		# encryption moderate
+		#	require_encryption = yes
+
+		# require_strong always requires 128 bit key
+		# encryption
+		#	require_strong = yes
+	}
+
+	# Lightweight Directory Access Protocol (LDAP)
+	#
+	#  This module definition allows you to use LDAP for
+	#  authorization and authentication (Auth-Type := LDAP)
+	#
+	#  See doc/rlm_ldap for description of configuration options 
+	#  and sample authorize{} and authenticate{} blocks 
+	ldap {
+		server = "ldap.your.domain"
+		# identity = "cn=admin,o=My Org,c=UA"
+		# password = mypass
+		basedn = "o=My Org,c=UA"
+		filter = "(uid=%{Stripped-User-Name:-%{User-Name}})"
+
+		# set this to 'yes' to use TLS encrypted connections
+		# to the LDAP database by using the StartTLS extended
+		# operation.
+		# The StartTLS operation is supposed to be used with normal
+		# ldap connections instead of using ldaps (port 636) connections
+		start_tls = no
+
+		# default_profile = "cn=radprofile,ou=dialup,o=My Org,c=UA"
+		# profile_attribute = "radiusProfileDn"
+		access_attr = "dialupAccess"
+
+		# Mapping of RADIUS dictionary attributes to LDAP
+		# directory attributes.
+		dictionary_mapping = ${raddbdir}/ldap.attrmap
+
+		ldap_connections_number = 5
+		# password_header = "{clear}"
+		# password_attribute = userPassword
+		# groupname_attribute = cn
+		# groupmembership_filter = "(|(&(objectClass=GroupOfNames)(member=%{Ldap-UserDn}))(&(objectClass=GroupOfUniqueNames)(uniquemember=%{Ldap-UserDn})))"
+		# groupmembership_attribute = radiusGroupName
+		timeout = 4
+		timelimit = 3
+		net_timeout = 1
+		# compare_check_items = yes
+		# access_attr_used_for_allow = yes
+	}
+
+	# passwd module allows to do authorization via any passwd-like
+	# file and to extract any attributes from these modules
+	#
+	# parameters are:
+	#   filename - path to filename
+	#   format - format for filename record. This parameters
+	#            correlates record in the passwd file and RADIUS
+	#            attributes.
+	#
+	#            Field marked as '*' is key field. That is, the parameter
+	#            with this name from the request is used to search for
+	#            the record from passwd file
+	#            Attribute marked as '=' is added to reply_itmes instead
+	#            of default configure_itmes
+	#	     Attribute marked as '~' is added to request_items
+	#
+	#            Field marked as ',' may contain a comma separated list
+	#            of attributes.
+	#   authtype - if record found this Auth-Type is used to authenticate
+	#            user
+	#   hash_size - hashtable size. If 0 or not specified records are not
+	#            stored in memory and file is red on every request.
+	#   allow_multiple_keys - if few records for every key are allowed
+	#   ignore_nislike - ignore NIS-related records
+	#   delimiter - symbol to use as a field separator in passwd file,
+	#            for format ':' symbol is always used. '\0', '\n' are
+        #	     not allowed 
+	#
+
+	#  An example configuration for using /etc/smbpasswd.
+	#
+	#passwd etc_smbpasswd {
+	#	filename = /etc/smbpasswd
+	#	format = "*User-Name::LM-Password:NT-Password:SMB-Account-CTRL-TEXT::"
+	#	authtype = MS-CHAP
+	#	hash_size = 100
+	#	ignore_nislike = no
+	#	allow_multiple_keys = no
+	#}
+
+	#  Similar configuration, for the /etc/group file. Adds a Group-Name
+	#  attribute for every group that the user is member of.
+	#
+	#passwd etc_group {
+	#	filename = /etc/group
+	#	format = "=Group-Name:::*,User-Name"
+	#	hash_size = 50
+	#	ignore_nislike = yes
+	#	allow_multiple_keys = yes
+	#	delimiter = ":"
+	#}
+
+	# Realm module, for proxying.
+	#
+	#  You can have multiple instances of the realm module to
+	#  support multiple realm syntaxs at the same time.  The
+	#  search order is defined the order in the authorize and
+	#  preacct blocks after the module config block.
+	#
+	#  Two config options:
+	#	format     -  must be 'prefix' or 'suffix'
+	#	delimiter  -  must be a single character
+
+	#  'realm/username'
+	#
+	#  Using this entry, IPASS users have their realm set to "IPASS".
+	realm realmslash {
+		format = prefix
+		delimiter = "/"
+	}
+
+	#  'username@realm'
+	#
+	realm suffix {
+		format = suffix
+		delimiter = "@"
+	}
+
+	#  'username%realm'
+	#
+	realm realmpercent {
+		format = suffix
+		delimiter = "%"
+	}
+	
+	# Preprocess the incoming RADIUS request, before handing it off
+	# to other modules.
+	#
+	#  This module processes the 'huntgroups' and 'hints' files.
+	#  In addition, it re-writes some weird attributes created
+	#  by some NASes, and converts the attributes into a form which
+	#  is a little more standard.
+	#
+	preprocess {
+		huntgroups = ${confdir}/huntgroups
+		hints = ${confdir}/hints
+
+		# This hack changes Ascend's wierd port numberings
+		# to standard 0-??? port numbers so that the "+" works
+		# for IP address assignments.
+		with_ascend_hack = no
+		ascend_channels_per_line = 23
+
+		# Windows NT machines often authenticate themselves as
+		# NT_DOMAIN\username
+		#
+		# If this is set to 'yes', then the NT_DOMAIN portion
+		# of the user-name is silently discarded.
+		with_ntdomain_hack = no
+
+		# Specialix Jetstream 8500 24 port access server.
+		#
+		# If the user name is 10 characters or longer, a "/"
+		# and the excess characters after the 10th are
+		# appended to the user name.
+		#
+		# If you're not running that NAS, you don't need
+		# this hack.
+		with_specialix_jetstream_hack = no
+
+		# Cisco sends it's VSA attributes with the attribute
+		# name *again* in the string, like:
+		#
+		#   H323-Attribute = "h323-attribute=value".
+		#
+		# If this configuration item is set to 'yes', then
+		# the redundant data in the the attribute text is stripped
+		# out.  The result is:
+		#
+		#  H323-Attribute = "value"
+		#
+		# If you're not running a Cisco NAS, you don't need
+		# this hack.
+		with_cisco_vsa_hack = no
+	}
+
+	# Livingston-style 'users' file
+	#
+	files {
+		usersfile = ${confdir}/users
+		acctusersfile = ${confdir}/acct_users
+
+		#  If you want to use the old Cistron 'users' file
+		#  with FreeRADIUS, you should change the next line
+		#  to 'compat = cistron'.  You can the copy your 'users'
+		#  file from Cistron.
+		compat = no
+	}
+
+	# Write a detailed log of all accounting records received.
+	#
+	detail {
+		#  Note that we do NOT use NAS-IP-Address here, as
+		#  that attribute MAY BE from the originating NAS, and
+		#  NOT from the proxy which actually sent us the
+		#  request.  The Client-IP-Address attribute is ALWAYS
+		#  the address of the client which sent us the
+		#  request.
+		#
+		#  The following line creates a new detail file for
+		#  every radius client (by IP address or hostname).
+		#  In addition, a new detail file is created every
+		#  day, so that the detail file doesn't have to go
+		#  through a 'log rotation'
+		#
+		#  If your detail files are large, you may also want
+		#  to add a ':%H' (see doc/variables.txt) to the end
+		#  of it, to create a new detail file every hour, e.g.:
+		#
+		#   ..../detail-%Y%m%d:%H
+		#
+		#  This will create a new detail file for every hour.
+		#
+		detailfile = ${radacctdir}/%{Client-IP-Address}/detail-%Y%m%d
+
+		#
+		#  The Unix-style permissions on the 'detail' file.
+		#
+		#  The detail file often contains secret or private
+		#  information about users.  So by keeping the file
+		#  permissions restrictive, we can prevent unwanted
+		#  people from seeing that information.
+		detailperm = 0600
+	}
+
+	#  Include another file that has the SQL-related configuration.
+	#  This is another file only because it tends to be big.
+	#
+	#  The following configuration file is for use with MySQL.
+	#
+	#  For Postgresql, use:		${confdir}/postgresql.conf
+	#  For MS-SQL, use:	 	${confdir}/mssql.conf
+	#  For Oracle, use:	 	${confdir}/oraclesql.conf
+	#
+	$INCLUDE  ${confdir}/sql.conf
+
+	#  Write a 'utmp' style file, of which users are currently
+	#  logged in, and where they've logged in from.
+	#
+	#  This file is used mainly for Simultaneous-Use checking,
+	#  and also 'radwho', to see who's currently logged in.
+	#
+	radutmp {
+		#  Where the file is stored.  It's not a log file,
+		#  so it doesn't need rotating.
+		#
+		filename = ${logdir}/radutmp
+
+		#  The field in the packet to key on for the
+		#  'user' name,  If you have other fields which you want
+		#  to use to key on to control Simultaneous-Use,
+		#  then you can use them here.
+		#
+		#  Note, however, that the size of the field in the
+		#  'utmp' data structure is small, around 32
+		#  characters, so that will limit the possible choices
+		#  of keys.
+		#
+		username = %{User-Name}
+
+		#  Whether or not we want to treat "user" the same
+		#  as "USER", or "User".  Some systems have problems
+		#  with case sensitivity, so this should be set to
+		#  'no' to enable the comparisons of the key attribute
+		#  to be case insensitive.
+		#
+		case_sensitive = yes
+
+		#  Accounting information may be lost, so the user MAY
+		#  have logged off of the NAS, but we haven't noticed.
+		#  If so, we can verify this information with the NAS,
+		#
+		#  If we want to believe the 'utmp' file, then this
+		#  configuration entry can be set to 'no'.
+		#
+		check_with_nas = yes		
+
+		# Set the file permissions, as the contents of this file
+		# are usually private.
+		perm = 0600
+
+		caller_id = "yes"
+	}
+
+	# "Safe" radutmp - does not contain caller ID, so it can be
+	# world-readable, and radwho can work for normal users, without
+	# exposing any information that isn't already exposed by who(1).
+	#
+	# This is another 'instance' of the radutmp module, but it is given
+	# then name "sradutmp" to identify it later in the "accounting"
+	# section.
+	radutmp sradutmp {
+		filename = ${logdir}/sradutmp
+		perm = 0644
+		caller_id = "no"
+	}
+
+	# attr_filter - filters the attributes received in replies from
+	# proxied servers, to make sure we send back to our RADIUS client
+	# only allowed attributes.
+	attr_filter {
+		attrsfile = ${confdir}/attrs
+	}
+
+	#  counter module:
+	#  This module takes an attribute (count_attribute).
+	#  It also takes a key, and creates a counter for each unique
+	#  key.  The count is incremented when accounting packets are
+	#  received by the server.  The value of the increment depends
+	#  on the attribute type.
+	#  If the attribute is Acct-Session-Time or of an integer type we add the
+	#  value of the attribute. If it is anything else we increase the
+	#  counter by one.
+	#
+	#  The 'reset' parameter defines when the counters are all reset to
+	#  zero.  It can be hourly, daily, weekly, monthly or never.
+	#
+	#  hourly: Reset on 00:00 of every hour
+	#  daily: Reset on 00:00:00 every day
+	#  weekly: Reset on 00:00:00 on sunday
+	#  monthly: Reset on 00:00:00 of the first day of each month
+	#
+	#  It can also be user defined. It should be of the form:
+	#  num[hdwm] where:
+	#  h: hours, d: days, w: weeks, m: months
+	#  If the letter is ommited days will be assumed. In example:
+	#  reset = 10h (reset every 10 hours)
+	#  reset = 12  (reset every 12 days)
+	#
+	#
+	#  The check_name attribute defines an attribute which will be
+	#  registered by the counter module and can be used to set the
+	#  maximum allowed value for the counter after which the user
+	#  is rejected.
+	#  Something like:
+	#
+	#  DEFAULT Max-Daily-Session := 36000
+	#          Fall-Through = 1
+	#
+	#  You should add the counter module in the instantiate
+	#  section so that it registers check_name before the files
+	#  module reads the users file.
+	#
+	#  If check_name is set and the user is to be rejected then we
+	#  send back a Reply-Message and we log a Failure-Message in
+	#  the radius.log
+	#  If the count attribute is Acct-Session-Time then on each login
+	#  we send back the remaining online time as a Session-Timeout attribute
+	#
+	#  The counter-name can also be used instead of using the check_name
+	#  like below:
+	#
+	#  DEFAULT  Daily-Session-Time > 3600, Auth-Type = Reject
+	#      Reply-Message = "You've used up more than one hour today"
+	#
+	#  The allowed-servicetype attribute can be used to only take
+	#  into account specific sessions. For example if a user first
+	#  logs in through a login menu and then selects ppp there will
+	#  be two sessions. One for Login-User and one for Framed-User
+	#  service type. We only need to take into account the second one.
+	#
+	#  The module should be added in the instantiate, authorize and
+	#  accounting sections.  Make sure that in the authorize
+	#  section it comes after any module which sets the
+	#  'check_name' attribute.
+	#
+	counter daily {
+		filename = ${raddbdir}/db.daily
+		key = User-Name
+		count_attribute = Acct-Session-Time
+		reset = daily
+		counter_name = Daily-Session-Time
+		check_name = Max-Daily-Session
+		allowed_service_type = Framed-User
+		cache_size = 5000
+	}
+
+	# The "always" module is here for debugging purposes. Each
+	# instance simply returns the same result, always, without
+	# doing anything.
+	always fail {
+		rcode = fail
+	}
+	always reject {
+		rcode = reject
+	}
+	always ok {
+		rcode = ok
+		simulcount = 0
+		mpp = no
+	}
+
+	#
+	#  The 'expression' module currently has no configuration.
+	expr {
+	}
+
+	#
+	#  The 'digest' module currently has no configuration.
+	#
+	#  "Digest" authentication against a Cisco SIP server.
+	#  See 'doc/rfc/draft-sterman-aaa-sip-00.txt' for details
+	#  on performing digest authentication for Cisco SIP servers.
+	#
+	digest {
+	}
+
+	#
+	#  Execute external programs
+	#
+	#  The first example is useful only for 'xlat'.  To use it,
+	#  put 'exec' into the 'instantiate' section.  You can then
+	#  do dynamic translation of attributes like:
+	#
+	#  Attribute-Name = `{%exec:/path/to/program args}`
+	#
+	#  The value of the attribute will be replaced with the output
+	#  of the program which is executed.  Due to RADIUS protocol
+	#  limitations, any output over 253 bytes will be ignored.
+	#
+	#  The RADIUS attributes from the user request will be placed
+	#  into environment variables of the executed program, as
+	#  described in 'doc/variables.txt'
+	#
+	exec {
+		wait = yes
+		input_pairs = request
+	}
+
+	#
+	#  This is a more general example of the execute module.
+	#
+	#  If you wish to execute an external program in more than
+	#  one section (e.g. 'authorize', 'pre_proxy', etc), then it
+	#  is probably best to define a different instance of the
+	#  'exec' module for every section.	
+	#	
+	exec echo {
+		#
+		#  Wait for the program to finish.
+		#
+		#  If we do NOT wait, then the program is "fire and
+		#  forget", and any output attributes from it are ignored.
+		#
+		#  If we are looking for the program to output
+		#  attributes, and want to add those attributes to the
+		#  request, then we MUST wait for the program to
+		#  finish, and therefore set 'wait=yes'
+		#
+		# allowed values: {no, yes}
+		wait = yes
+
+		#
+		#  The name of the program to execute, and it's
+		#  arguments.  Dynamic translation is done on this
+		#  field, so things like the following example will
+		#  work.
+		#
+		program = "/bin/echo %{User-Name}"
+
+		#
+		#  The attributes which are placed into the
+		#  environment variables for the program.
+		#
+		#  Allowed values are:
+		#
+		#	request		attributes from the request
+		#	reply		attributes from the reply
+		#	proxy-request	attributes from the proxy request
+		#	proxy-reply	attributes from the proxy reply
+		#
+		#  Note that some attributes may not exist at some
+		#  stages.  e.g. There may be no proxy-reply
+		#  attributes if this module is used in the
+		#  'authorize' section.
+		#
+		input_pairs = request
+
+		#
+		#  Where to place the output attributes (if any) from
+		#  the executed program.  The values allowed, and the
+		#  restrictions as to availability, are the same as
+		#  for the input_pairs.
+		#
+		output_pairs = reply
+
+		#
+		#  When to execute the program.  If the packet
+		#  type does NOT match what's listed here, then
+		#  the module does NOT execute the program.
+		#
+		#  For a list of allowed packet types, see
+		#  the 'dictionary' file, and look for VALUEs
+		#  of the Packet-Type attribute.
+		#
+		#  By default, the module executes on ANY packet.
+		#  Un-comment out the following line to tell the
+		#  module to execute only if an Access-Accept is
+		#  being sent to the NAS.
+		#
+		#packet_type = Access-Accept
+	}
+
+	#  Do server side ip pool management. Should be added in post-auth and
+	#  accounting sections.
+	#
+	#  The module also requires the existence of the Pool-Name
+	#  attribute. That way the administrator can add the Pool-Name
+	#  attribute in the user profiles and use different pools
+	#  for different users. The Pool-Name attribute is a *check* item not
+	#  a reply item.
+	#
+	# Example:
+	# radiusd.conf: ippool students { [...] }
+	# users file  : DEFAULT Group == students, Pool-Name := "students"
+	#
+	# ********* IF YOU CHANGE THE RANGE PARAMETERS YOU MUST THEN ERASE THE DB FILES *******
+	#
+	ippool main_pool {
+
+		#  range-start,range-stop: The start and end ip
+		#  addresses for the ip pool
+		range-start = 192.0.2.1
+		range-stop = 192.0.2.254
+
+		#  netmask: The network mask used for the ip's
+		netmask = 255.255.255.0
+
+		#  cache_size: The gdbm cache size for the db
+		#  files. Should be equal to the number of ip's
+		#  available in the ip pool
+		cache_size = 800
+
+		# session-db: The main db file used to allocate ip's to clients
+		session-db = ${raddbdir}/db.ippool
+
+		# ip-index: Helper db index file used in multilink
+		ip-index = ${raddbdir}/db.ipindex
+
+		# override: Will this ippool override a Framed-IP-Address already set
+		override = no
+	}
+
+	# ANSI X9.9 token support.  Not included by default.
+	# $INCLUDE  ${confdir}/x99.conf
+
+}
+
+# Instantiation
+#
+#  This section orders the loading of the modules.  Modules
+#  listed here will get loaded BEFORE the later sections like
+#  authorize, authenticate, etc. get examined.
+#
+#  This section is not strictly needed.  When a section like
+#  authorize refers to a module, it's automatically loaded and
+#  initialized.  However, some modules may not be listed in any
+#  of the following sections, so they can be listed here.
+#
+#  Also, listing modules here ensures that you have control over
+#  the order in which they are initalized.  If one module needs
+#  something defined by another module, you can list them in order
+#  here, and ensure that the configuration will be OK.
+#
+instantiate {
+	#
+	#  The expression module doesn't do authorization,
+	#  authentication, or accounting.  It only does dynamic
+	#  translation, of the form:
+	#
+	#	Session-Timeout = `%{expr:2 + 3}`
+	#
+	#  So the module needs to be instantiated, but CANNOT be
+	#  listed in any other section.  See 'doc/rlm_expr' for
+	#  more information.
+	#
+	expr
+
+	#
+	# We add the counter module here so that it registers
+	# the check_name attribute before any module which sets
+	# it
+#	daily
+}
+
+#  Authorization. First preprocess (hints and huntgroups files),
+#  then realms, and finally look in the "users" file.
+#
+#  The order of the realm modules will determine the order that
+#  we try to find a matching realm.
+#
+#  Make *sure* that 'preprocess' comes before any realm if you 
+#  need to setup hints for the remote radius server
+authorize {
+	#
+	#  The preprocess module takes care of sanitizing some bizarre
+	#  attributes in the request, and turning them into attributes
+	#  which are more standard.
+	#
+	#  It takes care of processing the 'raddb/hints' and the
+	#  'raddb/huntgroups' files.
+	#
+	#  It also adds a Client-IP-Address attribute to the request.
+	preprocess
+	
+	#
+	#  The chap module will set 'Auth-Type := CHAP' if we are
+	#  handling a CHAP request and Auth-Type has not already been set
+	chap
+
+#	attr_filter
+
+	#
+	#  This module takes care of EAP-MD5, EAP-TLS, and EAP-LEAP
+	#  authentication.
+	eap
+
+	#
+	#  If you have a Cisco SIP server authenticating against
+	#  FreeRADIUS, uncomment the following line.
+	# digest
+
+	#
+	#  Look for IPASS style 'realm/', and if not found, look for
+	#  '@realm', and decide whether or not to proxy, based on
+	#  that.
+#	realmslash
+	suffix
+
+	#
+	#  Read the 'users' file
+	files
+
+	#
+	#  If you are using /etc/smbpasswd, and are also doing
+	#  mschap authentication, the un-comment this line, and
+	#  configure the 'etc_smbpasswd' module, above.
+#	etc_smbpasswd
+
+	#
+	#  If the users are logging in with an MS-CHAP-Challenge
+	#  attribute for authentication, the mschap module will find
+	#  the MS-CHAP-Challenge attribute, and add 'Auth-Type := MS-CHAP'
+	#  to the request, which will cause the server to then use
+	#  the mschap module for authentication.
+	mschap
+
+
+# The ldap module will set Auth-Type to LDAP if it has not already been set
+#	ldap
+#	daily
+}
+
+
+# Authentication.
+#
+#  This section lists which modules are available for authentication.
+#  Note that it does NOT mean 'try each module in order'.  It means
+#  that you have to have a module from the 'authorize' section add
+#  a configuration attribute 'Auth-Type := FOO'.  That authentication type
+#  is then used to pick the appropriate module from the list below.
+#
+#  The default Auth-Type is Local.  That is, whatever is not included inside
+# an authtype section will be called only if Auth-Type is set to Local.
+#
+# So you should do the following:
+# - Set Auth-Type to an appropriate value in the authorize modules above.
+#   For example, the chap module will set Auth-Type to CHAP, ldap to LDAP, etc.
+# - After that create corresponding authtype sections in the
+#   authenticate section below and call the appropriate modules.
+authenticate {
+	#
+	#  PAP authentication, when a back-end database listed
+	#  in the 'authorize' section supplies a password.  The
+	#  password can be clear-text, or encrypted.
+	Auth-Type PAP {
+		pap
+	}
+
+	#
+	#  Most people want CHAP authentication
+	#  A back-end database listed in the 'authorize' section
+	#  MUST supply a CLEAR TEXT password.  Encrypted passwords
+	#  won't work.
+	Auth-Type CHAP {
+		chap
+	}
+
+	#
+	#  MSCHAP authentication.
+	Auth-Type MS-CHAP {
+		mschap
+	}
+
+	#
+	#  If you have a Cisco SIP server authenticating against
+	#  FreeRADIUS, uncomment the following line.
+	# digest
+
+	#
+	#  Pluggable Authentication Modules.
+#	pam
+
+	#
+	#  See 'man getpwent' for information on how the 'unix'
+	#  module checks the users password.  Note that packets
+	#  containing CHAP-Password attributes CANNOT be authenticated
+	#  against /etc/passwd!  See the FAQ for details.
+	#  
+	unix
+
+	# Uncomment it if you want to use ldap for authentication
+#	Auth-Type LDAP {
+#		ldap
+#	}
+
+
+	#
+	#  Allow EAP authentication.
+	eap
+}
+
+
+#
+#  Pre-accounting.  Decide which accounting type to use.
+#
+preacct {
+	preprocess
+
+	#
+	#  Look for IPASS-style 'realm/', and if not found, look for
+	#  '@realm', and decide whether or not to proxy, based on
+	#  that.
+	#
+	#  Accounting requests are generally proxied to the same
+	#  home server as authentication requests.
+#	realmslash
+	suffix
+
+	#
+	#  Read the 'acct_users' file
+	files
+}
+
+#
+#  Accounting.  Log the accounting data.
+#
+accounting {
+	#
+	#  Ensure that we have a semi-unique identifier for every
+	#  request, and many NAS boxes are broken.
+	acct_unique
+
+	#
+	#  Create a 'detail'ed log of the packets.
+	#  Note that accounting requests which are proxied
+	#  are also logged in the detail file.
+	detail
+#	daily
+
+	unix		# wtmp file
+
+	#
+	#  For Simultaneous-Use tracking.
+	#
+	#  Due to packet losses in the network, the data here
+	#  may be incorrect.  There's little we can do about it.
+	radutmp
+#	sradutmp
+
+	#  Return an address to the IP Pool when we see a stop record.
+#	main_pool
+}
+
+
+#  Session database, used for checking Simultaneous-Use. Either the radutmp 
+#  or rlm_sql module can handle this.
+#  The rlm_sql module is *much* faster
+session {
+	radutmp
+#	sql
+}
+
+
+#  Post-Authentication
+#  Once we KNOW that the user has been authenticated, there are
+#  additional steps we can take.
+post-auth {
+	#  Get an address from the IP Pool.
+#	main_pool
+}
+
+#
+#  When the server decides to proxy a request to a home server,
+#  the proxied request is first passed through the pre-proxy
+#  stage.  This stage can re-write the request, or decide to
+#  cancel the proxy.
+#
+#  Only a few modules currently have this method.
+#
+pre-proxy {
+}
+
+#
+#  When the server receives a reply to a request it proxied
+#  to a home server, the request may be massaged here, in the
+#  post-proxy stage.
+#
+post-proxy {
+	#
+	#  If you are proxing LEAP, you MUST configure the EAP
+	#  module, and you MUST list it here, in the post-proxy
+	#  stage.
+	#
+	#  You MUST also use the 'nostrip' option in the 'realm'
+	#  configuration.  Otherwise, the User-Name attribute
+	#  in the proxied request will not match the user name
+	#  hidden inside of the EAP packet, and the end server will
+	#  reject the EAP request.
+	#
+	eap
+}

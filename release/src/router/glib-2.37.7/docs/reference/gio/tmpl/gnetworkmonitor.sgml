@@ -1,0 +1,114 @@
+<!-- ##### SECTION Title ##### -->
+GNetworkMonitor
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GNetworkMonitor ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GNetworkMonitor::network-changed ##### -->
+<para>
+
+</para>
+
+@gnetworkmonitor: the object which received the signal.
+@arg1: 
+
+<!-- ##### ARG GNetworkMonitor:network-available ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GNetworkMonitorInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@network_changed: 
+@can_reach: 
+@can_reach_async: 
+@can_reach_finish: 
+
+<!-- ##### MACRO G_NETWORK_MONITOR_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_network_monitor_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_monitor_get_network_available ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_monitor_can_reach ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@connectable: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_monitor_can_reach_async ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@connectable: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_network_monitor_can_reach_finish ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@result: 
+@error: 
+@Returns: 
+
+

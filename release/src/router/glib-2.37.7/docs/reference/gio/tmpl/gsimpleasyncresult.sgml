@@ -1,0 +1,299 @@
+<!-- ##### SECTION Title ##### -->
+GSimpleAsyncResult
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSimpleAsyncResult ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION GSimpleAsyncThreadFunc ##### -->
+<para>
+
+</para>
+
+@res: 
+@object: 
+@cancellable: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_new ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@callback: 
+@user_data: 
+@source_tag: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_new_error ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@callback: 
+@user_data: 
+@domain: 
+@code: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_new_from_error ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@callback: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_new_take_error ##### -->
+<para>
+
+</para>
+
+@source_object: 
+@callback: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_check_cancellable ##### -->
+<para>
+
+</para>
+
+@simple: 
+@check_cancellable: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_op_res_gpointer ##### -->
+<para>
+
+</para>
+
+@simple: 
+@op_res: 
+@destroy_op_res: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_get_op_res_gpointer ##### -->
+<para>
+
+</para>
+
+@simple: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_op_res_gssize ##### -->
+<para>
+
+</para>
+
+@simple: 
+@op_res: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_get_op_res_gssize ##### -->
+<para>
+
+</para>
+
+@simple: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_op_res_gboolean ##### -->
+<para>
+
+</para>
+
+@simple: 
+@op_res: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_get_op_res_gboolean ##### -->
+<para>
+
+</para>
+
+@simple: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_get_source_tag ##### -->
+<para>
+
+</para>
+
+@simple: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_is_valid ##### -->
+<para>
+
+</para>
+
+@result: 
+@source: 
+@source_tag: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_handle_cancellation ##### -->
+<para>
+
+</para>
+
+@simple: 
+@handle_cancellation: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_complete ##### -->
+<para>
+
+</para>
+
+@simple: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_complete_in_idle ##### -->
+<para>
+
+</para>
+
+@simple: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_run_in_thread ##### -->
+<para>
+
+</para>
+
+@simple: 
+@func: 
+@io_priority: 
+@cancellable: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_from_error ##### -->
+<para>
+
+</para>
+
+@simple: 
+@error: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_take_error ##### -->
+<para>
+
+</para>
+
+@simple: 
+@error: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_propagate_error ##### -->
+<para>
+
+</para>
+
+@simple: 
+@dest: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_error ##### -->
+<para>
+
+</para>
+
+@simple: 
+@domain: 
+@code: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_simple_async_result_set_error_va ##### -->
+<para>
+
+</para>
+
+@simple: 
+@domain: 
+@code: 
+@format: 
+@args: 
+
+
+<!-- ##### FUNCTION g_simple_async_report_error_in_idle ##### -->
+<para>
+
+</para>
+
+@object: 
+@callback: 
+@user_data: 
+@domain: 
+@code: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_simple_async_report_gerror_in_idle ##### -->
+<para>
+
+</para>
+
+@object: 
+@callback: 
+@user_data: 
+@error: 
+
+
+<!-- ##### FUNCTION g_simple_async_report_take_gerror_in_idle ##### -->
+<para>
+
+</para>
+
+@object: 
+@callback: 
+@user_data: 
+@error: 
+
+

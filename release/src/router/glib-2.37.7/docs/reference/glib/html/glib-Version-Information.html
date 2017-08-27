@@ -1,0 +1,416 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Reference Manual: Version Information</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-fundamentals.html" title="GLib Fundamentals">
+<link rel="prev" href="glib-fundamentals.html" title="GLib Fundamentals">
+<link rel="next" href="glib-Basic-Types.html" title="Basic Types">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#glib-Version-Information.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-fundamentals.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-fundamentals.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Basic-Types.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Version-Information"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Version-Information.top_of_page"></a>Version Information</span></h2>
+<p>Version Information — variables and functions to check the GLib version</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="glib-Version-Information.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;glib.h&gt;
+
+extern const guint  <a class="link" href="glib-Version-Information.html#glib-major-version" title="glib_major_version">glib_major_version</a>;
+extern const guint  <a class="link" href="glib-Version-Information.html#glib-minor-version" title="glib_minor_version">glib_minor_version</a>;
+extern const guint  <a class="link" href="glib-Version-Information.html#glib-micro-version" title="glib_micro_version">glib_micro_version</a>;
+extern const guint  <a class="link" href="glib-Version-Information.html#glib-binary-age" title="glib_binary_age">glib_binary_age</a>;
+extern const guint  <a class="link" href="glib-Version-Information.html#glib-interface-age" title="glib_interface_age">glib_interface_age</a>;
+const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="glib-Version-Information.html#glib-check-version" title="glib_check_version ()">glib_check_version</a>                  (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> required_major</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> required_minor</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> required_micro</code></em>);
+
+#define             <a class="link" href="glib-Version-Information.html#GLIB-MAJOR-VERSION:CAPS" title="GLIB_MAJOR_VERSION">GLIB_MAJOR_VERSION</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-MINOR-VERSION:CAPS" title="GLIB_MINOR_VERSION">GLIB_MINOR_VERSION</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-MICRO-VERSION:CAPS" title="GLIB_MICRO_VERSION">GLIB_MICRO_VERSION</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-CHECK-VERSION:CAPS" title="GLIB_CHECK_VERSION()">GLIB_CHECK_VERSION</a>                  (major,
+                                                         minor,
+                                                         micro)
+
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-26:CAPS" title="GLIB_VERSION_2_26">GLIB_VERSION_2_26</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-28:CAPS" title="GLIB_VERSION_2_28">GLIB_VERSION_2_28</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-30:CAPS" title="GLIB_VERSION_2_30">GLIB_VERSION_2_30</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-32:CAPS" title="GLIB_VERSION_2_32">GLIB_VERSION_2_32</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-34:CAPS" title="GLIB_VERSION_2_34">GLIB_VERSION_2_34</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-36:CAPS" title="GLIB_VERSION_2_36">GLIB_VERSION_2_36</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-MIN-REQUIRED:CAPS" title="GLIB_VERSION_MIN_REQUIRED">GLIB_VERSION_MIN_REQUIRED</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-VERSION-MAX-ALLOWED:CAPS" title="GLIB_VERSION_MAX_ALLOWED">GLIB_VERSION_MAX_ALLOWED</a>
+#define             <a class="link" href="glib-Version-Information.html#GLIB-DISABLE-DEPRECATION-WARNINGS:CAPS" title="GLIB_DISABLE_DEPRECATION_WARNINGS">GLIB_DISABLE_DEPRECATION_WARNINGS</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Version-Information.description"></a><h2>Description</h2>
+<p>
+GLib provides version information, primarily useful in configure
+checks for builds that have a configure script. Applications will
+not typically use the features described here.
+</p>
+<p>
+The GLib headers annotate deprecated APIs in a way that produces
+compiler warnings if these deprecated APIs are used. The warnings
+can be turned off by defining the macro <a class="link" href="glib-Version-Information.html#GLIB-DISABLE-DEPRECATION-WARNINGS:CAPS" title="GLIB_DISABLE_DEPRECATION_WARNINGS"><code class="literal">GLIB_DISABLE_DEPRECATION_WARNINGS</code></a>
+before including the glib.h header.
+</p>
+<p>
+GLib also provides support for building applications against
+defined subsets of deprecated or new GLib APIs. Define the macro
+<a class="link" href="glib-Version-Information.html#GLIB-VERSION-MIN-REQUIRED:CAPS" title="GLIB_VERSION_MIN_REQUIRED"><code class="literal">GLIB_VERSION_MIN_REQUIRED</code></a> to specify up to what version of GLib
+you want to receive warnings about deprecated APIs. Define the
+macro <a class="link" href="glib-Version-Information.html#GLIB-VERSION-MAX-ALLOWED:CAPS" title="GLIB_VERSION_MAX_ALLOWED"><code class="literal">GLIB_VERSION_MAX_ALLOWED</code></a> to specify the newest version of
+GLib whose API you want to use.
+</p>
+</div>
+<div class="refsect1">
+<a name="glib-Version-Information.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="glib-major-version"></a><h3>glib_major_version</h3>
+<pre class="programlisting">extern const guint glib_major_version;
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="glib-minor-version"></a><h3>glib_minor_version</h3>
+<pre class="programlisting">extern const guint glib_minor_version;
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="glib-micro-version"></a><h3>glib_micro_version</h3>
+<pre class="programlisting">extern const guint glib_micro_version;
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="glib-binary-age"></a><h3>glib_binary_age</h3>
+<pre class="programlisting">extern const guint glib_binary_age;
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="glib-interface-age"></a><h3>glib_interface_age</h3>
+<pre class="programlisting">extern const guint glib_interface_age;
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="glib-check-version"></a><h3>glib_check_version ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *       glib_check_version                  (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> required_major</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> required_minor</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> required_micro</code></em>);</pre>
+<p>
+Checks that the GLib library in use is compatible with the
+given version. Generally you would pass in the constants
+<a class="link" href="glib-Version-Information.html#GLIB-MAJOR-VERSION:CAPS" title="GLIB_MAJOR_VERSION"><span class="type">GLIB_MAJOR_VERSION</span></a>, <a class="link" href="glib-Version-Information.html#GLIB-MINOR-VERSION:CAPS" title="GLIB_MINOR_VERSION"><span class="type">GLIB_MINOR_VERSION</span></a>, <a class="link" href="glib-Version-Information.html#GLIB-MICRO-VERSION:CAPS" title="GLIB_MICRO_VERSION"><span class="type">GLIB_MICRO_VERSION</span></a>
+as the three arguments to this function; that produces
+a check that the library in use is compatible with
+the version of GLib the application or module was compiled
+against.
+</p>
+<p>
+Compatibility is defined by two things: first the version
+of the running library is newer than the version
+<em class="parameter"><code>required_major.required_minor</code></em>.<em class="parameter"><code>required_micro</code></em>. Second
+the running library must be binary compatible with the
+version <em class="parameter"><code>required_major.required_minor</code></em>.<em class="parameter"><code>required_micro</code></em>
+(same major version.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>required_major</code></em> :</span></p></td>
+<td>the required major version.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>required_minor</code></em> :</span></p></td>
+<td>the required minor version.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>required_micro</code></em> :</span></p></td>
+<td>the required micro version.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if the GLib library is compatible with the
+given version, or a string describing the version mismatch.
+The returned string is owned by GLib and must not be modified
+or freed.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.6</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-MAJOR-VERSION:CAPS"></a><h3>GLIB_MAJOR_VERSION</h3>
+<pre class="programlisting">#define GLIB_MAJOR_VERSION 2
+</pre>
+<p>
+The major version number of the GLib library.
+</p>
+<p>
+Like <a class="link" href="glib-Version-Information.html#glib-major-version" title="glib_major_version"><span class="type">glib_major_version</span></a>, but from the headers used at
+application compile time, rather than from the library
+linked against at application run time.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-MINOR-VERSION:CAPS"></a><h3>GLIB_MINOR_VERSION</h3>
+<pre class="programlisting">#define GLIB_MINOR_VERSION 37
+</pre>
+<p>
+The minor version number of the GLib library.
+</p>
+<p>
+Like <a href="http://library.gnome.org/devel/gtk3/gtk2-Feature-Test-Macros.html#gtk-minor-version"><span class="type">gtk_minor_version</span></a>, but from the headers used at
+application compile time, rather than from the library
+linked against at application run time.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-MICRO-VERSION:CAPS"></a><h3>GLIB_MICRO_VERSION</h3>
+<pre class="programlisting">#define GLIB_MICRO_VERSION 7
+</pre>
+<p>
+The micro version number of the GLib library.
+</p>
+<p>
+Like <a href="http://library.gnome.org/devel/gtk3/gtk2-Feature-Test-Macros.html#gtk-micro-version"><span class="type">gtk_micro_version</span></a>, but from the headers used at
+application compile time, rather than from the library
+linked against at application run time.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-CHECK-VERSION:CAPS"></a><h3>GLIB_CHECK_VERSION()</h3>
+<pre class="programlisting">#define             GLIB_CHECK_VERSION(major,minor,micro)</pre>
+<p>
+Checks the version of the GLib library that is being compiled
+against.
+</p>
+<p>
+</p>
+<div class="example">
+<a name="id-1.3.2.5.11.5.1"></a><p class="title"><b>Example 1. Checking the version of the GLib library</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="glib-Version-Information.html#GLIB-CHECK-VERSION:CAPS">GLIB_CHECK_VERSION</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">))</span>
+<span class="normal">  </span><span class="function"><a href="glib-Message-Logging.html#g-error">g_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"GLib version 1.2.0 or above is needed"</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+<p>
+See <a class="link" href="glib-Version-Information.html#glib-check-version" title="glib_check_version ()"><code class="function">glib_check_version()</code></a> for a runtime check.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>major</code></em> :</span></p></td>
+<td>the major version to check for</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>minor</code></em> :</span></p></td>
+<td>the minor version to check for</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>micro</code></em> :</span></p></td>
+<td>the micro version to check for</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the version of the GLib header files
+is the same as or newer than the passed-in version.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-2-26:CAPS"></a><h3>GLIB_VERSION_2_26</h3>
+<pre class="programlisting">#define GLIB_VERSION_2_26       (G_ENCODE_VERSION (2, 26))
+</pre>
+<p>
+A macro that evaluates to the 2.26 version of GLib, in a format
+that can be used by the C pre-processor.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-2-28:CAPS"></a><h3>GLIB_VERSION_2_28</h3>
+<pre class="programlisting">#define GLIB_VERSION_2_28       (G_ENCODE_VERSION (2, 28))
+</pre>
+<p>
+A macro that evaluates to the 2.28 version of GLib, in a format
+that can be used by the C pre-processor.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-2-30:CAPS"></a><h3>GLIB_VERSION_2_30</h3>
+<pre class="programlisting">#define GLIB_VERSION_2_30       (G_ENCODE_VERSION (2, 30))
+</pre>
+<p>
+A macro that evaluates to the 2.30 version of GLib, in a format
+that can be used by the C pre-processor.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-2-32:CAPS"></a><h3>GLIB_VERSION_2_32</h3>
+<pre class="programlisting">#define GLIB_VERSION_2_32       (G_ENCODE_VERSION (2, 32))
+</pre>
+<p>
+A macro that evaluates to the 2.32 version of GLib, in a format
+that can be used by the C pre-processor.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-2-34:CAPS"></a><h3>GLIB_VERSION_2_34</h3>
+<pre class="programlisting">#define GLIB_VERSION_2_34       (G_ENCODE_VERSION (2, 34))
+</pre>
+<p>
+A macro that evaluates to the 2.34 version of GLib, in a format
+that can be used by the C pre-processor.
+</p>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-2-36:CAPS"></a><h3>GLIB_VERSION_2_36</h3>
+<pre class="programlisting">#define GLIB_VERSION_2_36       (G_ENCODE_VERSION (2, 36))
+</pre>
+<p>
+A macro that evaluates to the 2.36 version of GLib, in a format
+that can be used by the C pre-processor.
+</p>
+<p class="since">Since 2.36</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-MIN-REQUIRED:CAPS"></a><h3>GLIB_VERSION_MIN_REQUIRED</h3>
+<pre class="programlisting"># define GLIB_VERSION_MIN_REQUIRED      (GLIB_VERSION_CUR_STABLE)
+</pre>
+<p>
+A macro that should be defined by the user prior to including
+the glib.h header.
+The definition should be one of the predefined GLib version
+macros: <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-26:CAPS" title="GLIB_VERSION_2_26"><code class="literal">GLIB_VERSION_2_26</code></a>, <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-28:CAPS" title="GLIB_VERSION_2_28"><code class="literal">GLIB_VERSION_2_28</code></a>,...
+</p>
+<p>
+This macro defines the earliest version of GLib that the package is
+required to be able to compile against.
+</p>
+<p>
+If the compiler is configured to warn about the use of deprecated
+functions, then using functions that were deprecated in version
+<a class="link" href="glib-Version-Information.html#GLIB-VERSION-MIN-REQUIRED:CAPS" title="GLIB_VERSION_MIN_REQUIRED"><code class="literal">GLIB_VERSION_MIN_REQUIRED</code></a> or earlier will cause warnings (but
+using functions deprecated in later releases will not).
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-VERSION-MAX-ALLOWED:CAPS"></a><h3>GLIB_VERSION_MAX_ALLOWED</h3>
+<pre class="programlisting"># define GLIB_VERSION_MAX_ALLOWED      (GLIB_VERSION_CUR_STABLE)
+</pre>
+<p>
+A macro that should be defined by the user prior to including
+the glib.h header.
+The definition should be one of the predefined GLib version
+macros: <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-26:CAPS" title="GLIB_VERSION_2_26"><code class="literal">GLIB_VERSION_2_26</code></a>, <a class="link" href="glib-Version-Information.html#GLIB-VERSION-2-28:CAPS" title="GLIB_VERSION_2_28"><code class="literal">GLIB_VERSION_2_28</code></a>,...
+</p>
+<p>
+This macro defines the latest version of the GLib API that the
+package is allowed to make use of.
+</p>
+<p>
+If the compiler is configured to warn about the use of deprecated
+functions, then using functions added after version
+<a class="link" href="glib-Version-Information.html#GLIB-VERSION-MAX-ALLOWED:CAPS" title="GLIB_VERSION_MAX_ALLOWED"><code class="literal">GLIB_VERSION_MAX_ALLOWED</code></a> will cause warnings.
+</p>
+<p>
+Unless you are using <a class="link" href="glib-Version-Information.html#GLIB-CHECK-VERSION:CAPS" title="GLIB_CHECK_VERSION()"><code class="function">GLIB_CHECK_VERSION()</code></a> or the like to compile
+different code depending on the GLib version, then this should be
+set to the same value as <a class="link" href="glib-Version-Information.html#GLIB-VERSION-MIN-REQUIRED:CAPS" title="GLIB_VERSION_MIN_REQUIRED"><code class="literal">GLIB_VERSION_MIN_REQUIRED</code></a>.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLIB-DISABLE-DEPRECATION-WARNINGS:CAPS"></a><h3>GLIB_DISABLE_DEPRECATION_WARNINGS</h3>
+<pre class="programlisting">#ifdef GLIB_DISABLE_DEPRECATION_WARNINGS
+</pre>
+<p>
+A macro that should be defined before including the glib.h header.
+If it is defined, no compiler warnings will be produced for uses
+of deprecated GLib APIs.
+</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

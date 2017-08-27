@@ -1,0 +1,169 @@
+
++++> About to send encoded packet:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	EAP-Type-Identity = "eapsim"
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	NAS-Port = 0
+	EAP-Sim-Rand1 = 0xabcd1234abcd1234abcd1234abcd1234
+	EAP-Sim-Rand2 = 0xbcd1234abcd1234abcd1234abcd1234a
+	EAP-Sim-Rand3 = 0xcd1234abcd1234abcd1234abcd1234ab
+	EAP-Sim-SRES1 = 0x1234abcd
+	EAP-Sim-SRES2 = 0x234abcd1
+	EAP-Sim-SRES3 = 0x34abcd12
+	EAP-Sim-KC1 = 0x0011223344556677
+	EAP-Sim-KC2 = 0x1021324354657687
+	EAP-Sim-KC3 = 0x30415263748596a7
+Sending Access-Request of id 999 to 127.0.0.1:1812
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	NAS-Port = 0
+	EAP-Message = 0x02XX
+rad_recv: Access-Challenge packet from host 127.0.0.1:1812, id=999, length=78
+	EAP-Message = 0x01XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+<+++ EAP decoded packet:
+	EAP-Message = 0x01XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	EAP-Id = YY
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0a00000f0200020001000011010100
+<+++ EAP-sim decoded packet:
+	EAP-Message = 0x01XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	EAP-Id = YY
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0a00000f0200020001000011010100
+	EAP-Sim-Subtype = Start
+	EAP-Sim-VERSION_LIST = 0x000200010000
+	EAP-Sim-FULLAUTH_ID_REQ = 0x0100
+
++++> About to send encoded packet:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	NAS-Port = 0
+	EAP-Sim-Rand1 = 0xabcd1234abcd1234abcd1234abcd1234
+	EAP-Sim-Rand2 = 0xbcd1234abcd1234abcd1234abcd1234a
+	EAP-Sim-Rand3 = 0xcd1234abcd1234abcd1234abcd1234ab
+	EAP-Sim-SRES1 = 0x1234abcd
+	EAP-Sim-SRES2 = 0x234abcd1
+	EAP-Sim-SRES3 = 0x34abcd12
+	EAP-Sim-KC1 = 0x0011223344556677
+	EAP-Sim-KC2 = 0x1021324354657687
+	EAP-Sim-KC3 = 0x30415263748596a7
+	EAP-Sim-State = 1
+	EAP-Sim-Subtype = Start
+	EAP-Sim-SELECTED_VERSION = 0x0001
+	EAP-Sim-NONCE_MT = 0x000000a3f6b4e832cf46b4d3e0d090623e22
+	EAP-Sim-IDENTITY = 0x000665617073696d
+	EAP-Id = YY
+	EAP-Message = 0x02XX
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+Sending Access-Request of id 999 to 127.0.0.1:1812
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	NAS-Port = 0
+	EAP-Message = 0x02XX
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+rad_recv: Access-Challenge packet from host 127.0.0.1:1812, id=999, length=138
+	EAP-Message = 0x01XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+<+++ EAP decoded packet:
+	EAP-Message = 0x01XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	EAP-Id = YY
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0b0000010d0000abcd1234abcd1234abcd1234abcd1234bcd1234abcd1234abcd1234abcd1234acd1234abcd1234abcd1234abcd1234ab0b050000XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+<+++ EAP-sim decoded packet:
+	EAP-Message = 0x01XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	EAP-Id = YY
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0b0000010d0000abcd1234abcd1234abcd1234abcd1234bcd1234abcd1234abcd1234abcd1234acd1234abcd1234abcd1234abcd1234ab0b050000XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-RAND = 0x0000abcd1234abcd1234abcd1234abcd1234bcd1234abcd1234abcd1234abcd1234acd1234abcd1234abcd1234abcd1234ab
+	EAP-Sim-MAC = 0xYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+Input was: 
+   identity: (len=6)65617073696d
+   nonce_mt: 00a3f6b4e832cf46b4d3e0d090623e22
+   rand0: 00000000000000000000000000000000
+   rand1: 00000000000000000000000000000000
+   rand2: 00000000000000000000000000000000
+   sres0: 1234abcd
+   sres1: 234abcd1
+   sres2: 34abcd12
+   Kc0: 0011223344556677
+   Kc1: 1021324354657687
+   Kc2: 30415263748596a7
+   versionlist[2]: 0001
+   select 00 01
+
+
+Output
+mk:         85153a7d_7dfe0a4f_f3bf72f3_3521ff76_b048dbb2
+K_aut:      72cd7e8c_f2086e24_a98c1780_bc3d745b
+K_encr:     be789668_329769c3_73c0b64b_beffd665
+msk:        9be9fbc9_5415fa9e_f9d52563_bddd9758_65a3fadb
+            47a5815a_7310cf3f_10123d4e_ccaf9d4b_30b13c80
+            4dd130e5_117f35ae_a0e50b43_9a08b80d_dd15922c
+            f7fd9956
+emsk:       5dd5a779_65415b21_69aa1300_09dc6ba4_96433d1e
+            72065983_cbe8bc1d_6d744c99_dc76f16f_24324709
+            cb731af2_fbe69c6a_dd302662_a083d7e2_7c05c7cd
+            279c3f66
+MAC check succeed
+
++++> About to send encoded packet:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	NAS-Port = 0
+	EAP-Sim-Rand1 = 0xabcd1234abcd1234abcd1234abcd1234
+	EAP-Sim-Rand2 = 0xbcd1234abcd1234abcd1234abcd1234a
+	EAP-Sim-Rand3 = 0xcd1234abcd1234abcd1234abcd1234ab
+	EAP-Sim-SRES1 = 0x1234abcd
+	EAP-Sim-SRES2 = 0x234abcd1
+	EAP-Sim-SRES3 = 0x34abcd12
+	EAP-Sim-KC1 = 0x0011223344556677
+	EAP-Sim-KC2 = 0x1021324354657687
+	EAP-Sim-KC3 = 0x30415263748596a7
+	EAP-Sim-State = 1
+	EAP-Sim-Subtype = Challenge
+	EAP-Id = YY
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	EAP-Sim-MAC = 0x1234abcd234abcd134abcd12
+	EAP-Sim-KEY = 0x72cd7e8cf2086e24a98c1780bc3d745b
+	EAP-Message = 0x02XX
+Sending Access-Request of id 999 to 127.0.0.1:1812
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	NAS-Port = 0
+	State = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	EAP-Message = 0x02XX
+rad_recv: Access-Accept packet from host 127.0.0.1:1812, id=999, length=168
+	MS-MPPE-Recv-Key = 0x9be9fbc95415fa9ef9d52563bddd975865a3fadb47a5815a7310cf3f10123d4e
+	MS-MPPE-Send-Key = 0xccaf9d4b30b13c804dd130e5117f35aea0e50b439a08b80ddd15922cf7fd9956
+	EAP-Message = 0x03XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	User-Name = "eapsim"
+<+++ EAP decoded packet:
+	MS-MPPE-Recv-Key = 0x9be9fbc95415fa9ef9d52563bddd975865a3fadb47a5815a7310cf3f10123d4e
+	MS-MPPE-Send-Key = 0xccaf9d4b30b13c804dd130e5117f35aea0e50b439a08b80ddd15922cf7fd9956
+	EAP-Message = 0x03XX
+	Message-Authenticator = 0xABCDABCDABCDABCDABCDABCDABCDABCD
+	User-Name = "eapsim"
+	EAP-Id = YY
+	EAP-Code = Success

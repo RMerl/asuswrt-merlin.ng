@@ -1,0 +1,12 @@
+#!/bin/bash
+LINUX_VERSION=`grep -o "Linux version [0-9A-Za-z_.-]*" /proc/version | grep -o "[0-9A-Za-z_.-]*$"`
+if [ "$1" = "enable" ]
+then
+    insmod /lib/modules/${LINUX_VERSION}/extra/pktrunner.ko
+elif [ "$1" = "disable" ]
+then
+    rmmod pktrunner
+
+else
+    echo "Usage: runner enable; runner disable"
+fi

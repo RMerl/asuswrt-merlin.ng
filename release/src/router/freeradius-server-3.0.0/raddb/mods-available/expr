@@ -1,0 +1,26 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  This module is useful only for 'xlat'.  To use it,
+#  put 'expr' into the 'instantiate' section.  You can then
+#  do dynamic translation of attributes like:
+#
+#  Attribute-Name = `%{expr:2 + 3 + %{exec: uid -u}}`
+#
+#  The value of the attribute will be replaced with the output
+#  of the program which is executed.  Due to RADIUS protocol
+#  limitations, any output over 253 bytes will be ignored.
+#
+#  The module also registers a few paircompare functions, and
+#  many string manipulation functions.
+#
+
+expr {
+	#
+	# Characters that will not be encoded by the %{encode}
+	# xlat function.
+	#
+	safe_characters = "@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_: /"
+}

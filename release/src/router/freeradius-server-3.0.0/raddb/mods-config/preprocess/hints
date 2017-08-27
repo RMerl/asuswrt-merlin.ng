@@ -1,0 +1,77 @@
+# hints
+#
+#	The hints file.   This file is used to match
+#	a request, and then add attributes to it.  This
+#	process allows a user to login as "bob.ppp" (for example),
+#	and receive a PPP connection, even if the NAS doesn't
+#	ask for PPP.  The "hints" file is used to match the
+#	".ppp" portion of the username, and to add a set of
+#	"user requested PPP" attributes to the request.
+#
+#	Matching can take place with the the Prefix and Suffix
+#	attributes, just like in the "users" file.
+#	These attributes operate ONLY on the username, though.
+#
+#	Note that the attributes that are set for each
+#	entry are _NOT_ passed back to the terminal server.
+#	Instead they are added to the information that has
+#	been _SENT_ by the terminal server.
+#
+#	This extra information can be used in the users file to
+#	match on. Usually this is done in the DEFAULT entries,
+#	of which there can be more than one.
+#
+#	In addition a matching entry can transform a username
+#	for authentication purposes if the "Strip-User-Name"
+#	variable is set to Yes in an entry (default is Yes).
+#
+#	A special non-protocol name-value pair called "Hint"
+#	can be set to match on in the "users" file.
+#
+#	The following is how most ISPs want to set this up.
+#
+# Version:	$Id$
+#
+
+
+DEFAULT	Suffix == ".ppp", Strip-User-Name = Yes
+	Hint = "PPP",
+	Service-Type = Framed-User,
+	Framed-Protocol = PPP
+
+DEFAULT	Suffix == ".slip", Strip-User-Name = Yes
+	Hint = "SLIP",
+	Service-Type = Framed-User,
+	Framed-Protocol = SLIP
+
+DEFAULT	Suffix == ".cslip", Strip-User-Name = Yes
+	Hint = "CSLIP",
+	Service-Type = Framed-User,
+	Framed-Protocol = SLIP,
+	Framed-Compression = Van-Jacobson-TCP-IP
+
+######################################################################
+#
+#	These entries are old, and commented out by default.
+#	They confuse too many people when "Peter" logs in, and the
+#	server thinks that the user "eter" is asking for PPP.
+#
+#DEFAULT	Prefix == "U", Strip-User-Name = No
+#	Hint = "UUCP"
+
+#DEFAULT	Prefix == "P", Strip-User-Name = Yes
+#	Hint = "PPP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = PPP
+
+#DEFAULT	Prefix == "S", Strip-User-Name = Yes
+#	Hint = "SLIP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = SLIP
+
+#DEFAULT	Prefix == "C", Strip-User-Name = Yes
+#	Hint = "CSLIP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = SLIP,
+#	Framed-Compression = Van-Jacobson-TCP-IP
+

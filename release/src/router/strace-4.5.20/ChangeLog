@@ -1,0 +1,595 @@
+2010-04-13  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Prepare for 4.5.20 release
+	* NEWS: Update for 4.5.20 release.
+	* configure.ac: Version 4.5.20.
+	* debian/changelog: 4.5.20-1.
+	* strace.spec: 4.5.20-1.
+
+2010-04-13  Frederik Schüler  <fs@debian.org>
+
+	Update debian/* files for the upcoming release
+	* debian/control: update standards-version to 3.8.4.
+	* debian/rules: allow parallel building.
+	* debian/rules: comment out verbose build, only needed for debugging.
+	* debian/rules: clean up clean: target, dh_clean does most of the work
+	  already.
+	* debian/rules: use *-stamp instead of stamp-*, so dh_clean can tidy
+	  up for us.
+
+2010-04-13  Heiko Carstens  <heiko.carstens@de.ibm.com>
+
+	Fix s390 system call table list
+	* linux/s390/syscallent.h: Add the missing entries for preadv and
+	pwritev to the system call table list.
+	* linux/s390x/syscallent.h: Likewise.
+
+2010-04-07  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Update linux/ioctlent.h
+	* linux/ioctlent.sh: Search in asm-generic directory as well.
+	* linux/ioctlent.h: Regenerated.
+
+	Update linux/*/syscallent.h files to match Linux kernel v2.6.33
+	* linux/alpha/syscallent.h: Add 47 hooks.
+	* linux/arm/syscallent.h: Update hooks for pselect6, ppoll,
+	epoll_pwait.  Add 11 hooks.
+	* linux/bfin/syscallent.h: Update hooks for prctl, fallocate,
+	signalfd4, eventfd2, epoll_create1, dup3, pipe2, perf_event_open.
+	Hook up recvmmsg.
+	* linux/hppa/syscallent.h: Update hooks for signalfd4, eventfd2,
+	epoll_create1, dup3, pipe2, perf_event_open.
+	* linux/i386/syscallent.h: Fix syscall name for the kexec_load hook.
+	Add 5 hooks.
+	* linux/ia64/syscallent.h: Fix syscall name for the kexec_load hook.
+	Add 4 hooks.
+	* linux/m68k/syscallent.h: Add 50 hooks.
+	* linux/powerpc/syscallent.h: Fix hook for timerfd_create.  Fix
+	6 syscall names to match the kernel.  Use sys_semop to parse semop.
+	Add 14 hooks.
+	* linux/s390/syscallent.h: Fix syscall name for the kexec_load hook.
+	Add 14 hooks.
+	* linux/s390x/syscallent.h: Likewise.
+	* linux/sh/syscallent.h: Add 13 hooks.
+	* linux/sh64/syscallent.h: Add 15 hooks.
+	* linux/sparc/syscallent.h: Add 22 hooks.
+	* linux/x86_64/syscallent.h: Add 5 hooks.
+
+	Enhance recvmmsg parser
+	* net.c (sys_recvmmsg): Decode mmsghdr structure on exit from the
+	syscall.  Decode timespec structure both on entrance and on exit.
+
+2010-04-07  Andreas Schwab  <schwab@linux-m68k.org>
+
+	Decode recvmmsg syscall
+	* net.c (do_msghr): New function to print struct msghdr.
+	(printmsghdr): Use it.
+	(printmmsghdr, sys_recvmmsg): New.
+	* linux/syscall.h: Declare sys_recvmmsg.
+	(SYS_sub_recvmmsg): Define.
+	(SYS_socket_nsubcalls): Bump.
+	* linux/sparc/syscall.h: Likewise.
+	* linux/arm/syscallent.h: Add sys_recvmmsg.
+	* linux/bfin/syscallent.h: Likewise.
+	* linux/i386/syscallent.h: Likewise.
+	* linux/m68k/syscallent.h: Likewise.
+	* linux/powerpc/syscallent.h: Likewise.
+	* linux/s390/syscallent.h: Likewise.
+	* linux/s390x/syscallent.h: Likewise.
+	* linux/sh/syscallent.h: Likewise.
+	* linux/sh64/syscallent.h: Likewise.
+	* linux/sparc/syscallent.h: Likewise.
+	* linux/ia64/syscallent.h: Adjust.
+
+2010-04-07  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* strace.1: Fix quoting of hyphens and formatting of strace options.
+
+	Split trace_syscall() for better readability
+	* syscall.c (trace_syscall): Split into trace_syscall_exiting() and
+	trace_syscall_entering().
+
+	Implement -C option to combine regular and -c output
+	* defs.h (cflag_t): New enum.
+	* strace.1: Document -C option.
+	* strace.c (cflag): Update type.
+	(main): Handle -C option.
+	(trace): Update use of cflag.
+	* count.c (count_syscall): Move clearing of TCB_INSYSCALL to ...
+	* syscall.c (trace_syscall): ... here.  Update use of cflag.
+	Based on patch by Adrien Kunysz.
+
+	Fix "make dist" regression introduced by commit v4.5.19-12-g5078770
+	* Makefile.am (EXTRA_DIST): Rename linux/syscallent.h to linux/i386/syscallent.h
+
+	* desc.c (sys_epoll_pwait): Fix output formatting bug.
+
+	* desc.c (decode_select): Fix potential stack buffer overflow.
+
+2010-03-31  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Fix msgsnd indirect ipccall decoding
+	This regression was introduced by commit v4.5.18-136-g783f5bc.
+	* ipc.c (tprint_msgsnd): Add and use "flags" argument.
+	(sys_msgsnd): Pass "flags" argument to tprint_msgsnd().
+	Patch by Anton Blanchard.
+
+2010-03-23  Mark Wielaard  <mjw@redhat.com>
+
+	Hook up inotify_init1 open mode flags printer
+	* file.c [LINUX] (sys_inotify_init1): New function.
+	* linux/syscall.h: Declare new sys_inotify_init1 handler.
+	* linux/bfin/syscallent.h: Hook up new handler.
+	* linux/hppa/syscallent.h: Likewise.
+	* linux/i386/syscallent.h: Likewise.
+	* linux/x86_64/syscallent.h: Likewise.
+
+2010-03-09  Andreas Schwab  <schwab@redhat.com>
+
+	Avoid spurious error when checking for linux/netlink.h
+	* configure.ac: Include <asm/types.h> when checking for
+	linux/netlink.h.
+
+2010-02-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	Fix reporting signal mask by sigreturn on powerpc
+	* signal.c (sys_sigreturn) [POWERPC]: Skip dummy stack frame when
+	locating signal context.
+
+2010-02-09  David Daney  <ddaney@caviumnetworks.com>
+
+	Fix MIPS N32/N64 compile error
+	* syscall.c [LINUX_MIPSN32 || LINUX_MIPSN64] (syscall_enter): Pass
+	tcp->pid to ptrace().
+
+2010-02-05  Chris Metcalf  <cmetcalf@tilera.com>
+
+	Add support for the TILE architecture
+	* configure.ac: Add TILE to the list of supported architectures.
+	* defs.h: Define TCB_WAITEXECVE for TILE.
+	* linux/tile/syscallent.h: New file.
+	* Makefile.am (EXTRA_DIST): Add linux/tile/syscallent.h
+	* process.c (change_syscall, struct_user_offsets): Add TILE support.
+	* syscall.c (get_scno, get_error, syscall_enter): Likewise.
+	* mem.c (mmap_flags, print_mmap): Add MAP_CACHE_xxx TILE extensions
+	support.
+	* signal.c (sigact_flags): Add SA_NOPTRACE.
+	(sys_sigreturn): Add TILE support.
+
+2010-02-04  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Remove dead code
+	* defs.h (tv_tv): Remove.
+	* net.c (sys_xsetsockaddr): Remove commented out dead code.
+	* process.c (setarg, sys_execv, sys_execve, struct_user_offsets):
+	Likewise.
+	* signal.c (sys_sigsuspend): Likewise.
+	* strace.c (reaper, trace): Likewise.
+	* stream.c (internal_stream_ioctl): Likewise.
+	* syscall.c (trace_syscall): Likewise.
+	* term.c (term_ioctl): Likewise.
+	* util.c (tv_tv, umoven, uload, getpc, fixvfork, setbpt, clearbpt):
+	Likewise.
+
+	Merge Linux internal_clone() into internal_fork()
+	* defs.h (internal_clone): Remove.
+	* process.c (internal_clone): Merge into internal_fork().
+	(internal_fork) [!LINUX]: Remove dead code.
+	* syscall.c (internal_syscall): Replace internal_clone() with
+	internal_fork().
+
+	* Makefile.am (INCLUDES): Remove redundant search directories.
+
+2010-02-04  Frederik Schüler  <fs@debian.org>
+
+	Update debian/* files
+	* debian/control: add sparc64 to the architectures list.
+	This closes Debian bug #560062
+	* Backport commit f0df31e71a58c6e79ba77c1a9d84b2f38d44bec7 to fix FTBFS.
+	This closes Debian bug #560516
+	* debian/control: Update standards-version to 3.8.3.
+	* debian/control: Lower package priority to optional, matching
+	the archive override.
+	* debian/control: add ${misc:Depends} to Depends: lines where
+	appropriate.
+	* debian/watch: new file, allows automatic tracking of new
+	upstream versions.
+	* debian/source/format: new file, adapt to debian source format "quilt"
+	* debian/rules: indentation cleanups; use dh_testroot and dh_prep
+	in clean target.
+
+2010-01-25  Andreas Schwab  <schwab@redhat.com>
+
+	Fix spurious failure of AC_STAT64 test
+	* acinclude.m4 (AC_STAT64): Include <sys/types.h> first.
+
+2010-01-12  Andreas Schwab  <schwab@redhat.com>
+
+	Don't kill the process when detaching
+	* strace.c (detach): Call clearbpt when TCB_BPTSET is set.
+
+2009-12-25  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Decode fifth argument of mremap syscall
+	* mem.c (sys_mremap): Decode fifth argument.
+	* linux/*/syscallent.h: Update the number of mremap syscall arguments.
+
+2009-12-24  Chris Metcalf  <cmetcalf@tilera.com>
+
+	* mem.c (sys_mbind): Display first argument in hex
+
+	* mem.c (mremap_flags): Add MREMAP_FIXED
+
+2009-11-16  Mike Frysinger  <vapier@gentoo.org>
+
+	Move i386-specific files out of common linux dir
+	* linux/syscallent.h: Moved to ...
+	* linux/i386/syscallent.h: ... here.
+	* linux/ia64/syscallent.h: Update i386 syscallent.h include.
+	* linux/sparc/gen.pl: Likewise.
+	* linux/x86_64/syscallent1.h: Likewise.
+
+2009-11-16  Andreas Schwab  <schwab@redhat.com>
+
+	Remove support for pre-C89
+	* defs.h: Remove references to __STDC__ and P macros.
+	* strace.c: Likewise.
+
+2009-11-13  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Decode more SOL_PACKET socket options
+	* net.c (sockpacketoptions): Add more PACKET_* entries.
+	(sys_getsockopt): Decode PACKET_STATISTICS.
+	(printsockopt): Decode PACKET_RX_RING and PACKET_TX_RING.
+	Patch by Gabor Gombas.
+
+2009-11-11  Andreas Schwab  <schwab@redhat.com>
+
+	Ignore errors if a thread is killed
+	* util.c (clearbpt): Ignore ESRCH error.
+
+2009-11-06  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+
+	Fix handling of Linux systems without struct statfs64
+	* acinclude.m4 (AC_STATFS64): New macro to check for struct statfs64.
+	* configure.ac: Call AC_STATFS64.
+	* file.c (printstatfs64, sys_statfs64, sys_fstatfs64): Compile only
+	  if struct statfs64 is available.
+
+2009-11-06  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Fix getsockopt decoding on architectures where sizeof(long) > sizeof(int)
+	* net.c (sys_getsockopt): Optimize output a bit.
+	Decode integer argument using printnum_int(), patch by Gabor Gombas.
+
+	Check umove() return code
+	* bjm.c (sys_query_module): Print input parameters when entering
+	syscall.  Fix handling of syscall error.  Handle unlikely umove()
+	failures.
+	* ipc.c (tprint_msgrcv): New function.  Move part of msgrcv parser code
+	here, add check umove() return code.
+	(sys_msgsnd): Print msqid parameter as int instead of long.
+	(sys_msgrcv): Likewise.  Use tprint_msgrcv().
+	* process.c (print_affinitylist): Check umove() return code.
+	* sock.c (sock_ioctl): Handle unlikely umove() failure in the
+	SIOCGIFCONF parser.
+
+	Fix check for linux/netlink.h on Linux 2.6.32-rc5+
+	* configure.ac (AC_CHECK_HEADERS): In check for linux/netlink.h, include
+	sys/socket.h instead of linux/socket.h beforehand.
+
+2009-11-04  Andreas Schwab  <schwab@redhat.com>
+
+	Decode fallocate on PowerPC
+	* linux/powerpc/syscallent.h: Decode fallocate.
+
+	Factor out printing of 64bit syscall argument
+	* defs.h (ALIGN64): Remove.
+	(printllval): Declare.
+	* util.c (printllval): Define.
+	* file.c (sys_readahead): Use printllval.
+	(sys_lseek64): Likewise.
+	(sys_truncate64): Likewise.
+	(sys_ftruncate64): Likewise.
+	(sys_fadvise64): Likewise.
+	(sys_fadvise64_64): Likewise.
+	(sys_fallocate): Likewise.
+	* io.c (sys_pread): Likewise.
+	(sys_pwrite): Likewise.
+	(sys_pread64): Likewise.
+	(sys_pwrite64): Likewise.
+	* mem.c (sys_mmap64): Likewise.
+
+2009-11-03  Andreas Schwab  <schwab@redhat.com>
+
+	Correct decoding of readahead and fadvice64(_64) on PowerPC
+	* file.c (sys_readahead): Align 64bit argument.  Handle PowerPC64
+	like other 64bit architectures.
+	(sys_fadvise64): Likewise.
+	(sys_fadvise64_64): Handle PowerPC like ARM.
+	* linux/powerpc/syscallent.h (sys_readahead): Account for 64bit
+	argument alignment on PowerPC32.
+
+2009-10-27  Andreas Schwab  <schwab@redhat.com>
+
+	Maintain separate print column for each process
+	* defs.h (struct tcp): Add curcol.
+	* strace.c: (alloc_tcb): Initialize it.
+	(trace): Use curcol from current process and save it before
+	continuing.
+	(tprintf): Don't modify curcol on output error.
+
+2009-10-21  Roland McGrath  <roland@redhat.com>
+
+	* strace.spec: 4.5.19-1 release.
+
+2009-10-21  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* file.c (printstat64): Cleanup trailing whitespace.
+
+2009-10-16  Andreas Schwab  <schwab@redhat.com>
+
+	Fix decoding of newfstatat syscall on x86-64
+	* file.c (printstat64) [LINUX && X68_64]: If tracing a 64-bit
+	process redirect to printstat.
+	Fixes RH#529316 "Field values shown for "newfstatat" system
+	call are incorrect"
+
+2009-10-12  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* configure.ac (AC_CHECK_HEADERS): Remove asm/reg.h.
+
+2009-10-12  Mike Frysinger  <vapier@gentoo.org>
+
+	sparc/linux: Rewrite to use asm/ptrace.h
+	The current sparc/linux code uses asm/reg.h, but recent Linux kernels
+	dropped that header completely.  So switch over to the ptrace headers
+	as those should stick around indefinitely as part of the ABI.
+
+	* defs.h [LINUXSPARC] (U_REG_G1, U_REG_O0, U_REG_O1): Define.
+	* process.c: Drop asm/regs.h include.
+	[SPARC || SPARC64] (change_syscall): Change struct regs to struct pt_regs.
+	* signal.c: Drop asm/regs.h include.
+	(m_siginfo_t): Unify [SPARC || SPARC64] and [MIPS].
+	[SPARC || SPARC64] (sys_sigreturn): Change struct regs to struct pt_regs.
+	* syscall.c: Drop asm/regs.h include.
+	[SPARC || SPARC64] (internal_syscall, get_scno, get_error, force_result,
+	syscall_enter): Change struct regs to struct pt_regs.
+	* util.c: Drop asm/regs.h include.
+	(_hack_syscall5, _ptrace): Delete.
+	[SPARC || SPARC64] (getpc, printcall, arg_setup_state): Change
+	struct regs to struct pt_regs.
+
+2009-10-11  Roland McGrath  <roland@redhat.com>
+
+	* make-dist: Clean up.
+
+	* configure.ac: Use AC_CONFIG_AUX_DIR([.]).
+
+2009-10-09  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* make-dist: New script for preparing release tarballs.
+
+	* git-set-file-times: Import from rsync.
+
+	* Makefile.am [MAINTAINER_MODE]: Define and export TAR_OPTIONS.
+
+2009-10-08  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Enhance msgsnd() parser
+	* ipc.c (tprint_msgsnd): New function.  Move msgsnd parser code here,
+	add check for umove() return code.
+	(sys_msgsnd): Use tprint_msgsnd().
+
+	* NEWS: Update for 4.5.19 release.
+
+	Enhance semop()/semtimedop() sembuf parser
+	* ipc.c (tprint_sembuf): New function. Move sembuf parser code here,
+	add abbrev() support.
+	(sys_semop, sys_semtimedop): Use tprint_sembuf().
+
+2009-10-08  Jakub Bogusz  <qboosh@pld-linux.org>
+
+	Add pretty printing of sembuf argument to semop() and semtimedop()
+	* ipc.c (semop_flags): New xlat structure.
+	(sys_semop, sys_semtimedop): Add pretty printing of sembuf argument.
+
+2009-10-08  Mike Frysinger  <vapier@gentoo.org>
+
+	Add support for Linux/no-mmu with vfork
+	* configure.ac (AC_CHECK_FUNCS): Add fork.
+	* strace.c (strace_vforked): Define.
+	(startup_child): Do not raise SIGSTOP if vforked.
+	(trace): Skip first exec when starting up after vforked.
+	* syscall.c [BFIN] (get_scno): Drop waitexec checks.
+
+	Avoid malloc(0) in getdents parsers
+	On end of directory, getdents returns 0.  This return value is used to
+	then try and do malloc(0), but on some systems this will always return
+	NULL.  Since the code won't read the pointer in question if len is 0,
+	then don't bother calling malloc(0) and set the pointer to NULL ourself.
+	* file.c (sys_getdents, sys_getdents64): Avoid malloc(0) call.
+
+2009-10-07  Mike Frysinger  <vapier@gentoo.org>
+
+	Add sys_nanosleep() prototype for sparc
+	* linux/sparc/syscall.h (sys_nanosleep): New prototype.
+	Reported by Frederik Schüler.
+
+	Silence compiler warnings about implicit cast from pointer to integer
+	* util.c (do_ptrace): Cast ptrace() 4th arg to long.
+	(ptrace_restart): Drop void* cast on ptrace() 4th arg.
+
+	Ignore .gdb files from FLAT toolchains
+	* .gitignore: Add /*.gdb.
+
+	* configure.ac (AC_CHECK_FUNCS): Sort and expand.
+
+	Blackfin: Update ioctl/syscall lists
+	* linux/bfin/ioctlent.h: Sync list with latest kernel sources.
+	* linux/bfin/syscallent.h: Likewise.
+
+	ioctlsort: Check ppc hosts too
+	* linux/ioctlsort.c: Check for __powerpc__.
+
+2009-10-07  Andreas Schwab  <schwab@redhat.com>
+
+	Fix build on ia64
+	* linux/ia64/syscallent.h: Update for addition of accept4 syscall
+	in ../syscallent.h.
+
+2009-10-07  Roland McGrath  <roland@redhat.com>
+
+	* strace.spec (%doc): Add ChangeLog-CVS.
+
+	* Makefile.am (srpm): New phony target.
+
+	* Makefile.am (EXTRA_DIST): Add ChangeLog.
+	($(srcdir)/ChangeLog): New target, replaces gen-changelog phony target.
+	Put it inside [MAINTAINER_MODE].
+
+2009-10-06  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* NEWS: Update for 4.5.19 release.
+
+2009-10-05  Frederik Schüler  <fs@debian.org>
+
+	Prepare debian/* files for release
+	* debian/rules: Do not ship ChangeLog anymore.
+	* debian/control: Update to Debian standards version 3.8.1, and remove
+	Roland from the Maintainers list.  This closes Debian bug #521458.
+	* debian/changelog: Document changes and prepare for release.
+
+2009-10-05  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* defs.h [HPPA]: Lower MAX_ARGS from 32 to 6.
+
+	* ipc.c [LINUX] (sys_shmat): HPPA does not use an IPC multiplexer.
+	Based on patch from Carlos O'Donell.
+
+2009-10-05  Carlos O'Donell  <carlos@systemhalted.org>
+
+	* linux/hppa/syscallent.h: Update syscalls.
+	Based on work by Kyle McMartin and Helge Deller.
+
+	Fix SA_HANDLER function pointer comparisons for hppa
+	* signal.c (sys_sigaction): Cast SA_HANDLER function pointers to long.
+	(sys_rt_sigaction): Likewise.
+
+2009-10-05  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	CRIS: Correct first argument to upeek()
+	This complements commit ea0e6e80260d2b1b7ad40282012b0e47869bcddf.
+	* syscall.c [CRISV10 || CRISV32] (syscall_fixup, syscall_enter): Pass
+	tcp pointer instead of pid to upeek().
+	* util.c [CRISV10 || CRISV32] (printcall): Likewise.
+
+2009-10-05  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* signal.c (do_signalfd): Fix typo in output format.
+
+2009-09-21  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* Makefile.am (gen_changelog_start_date): Fix date.
+
+2009-09-19  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Prepare for 4.5.19 release
+	* NEWS: Update for 4.5.19 release.
+	* configure.ac: Version 4.5.19.
+	* debian/changelog: 4.5.19-1.
+	* strace.spec: 4.5.19-1.
+
+	Update debian/* to 4.5.18-1
+	* debian/changelog: Update to 4.5.18-1.
+	* debian/compat: Set compatibility level to 7.
+	* debian/control (Build-Depends): Update debhelper requirement.
+	(strace, strace64): Add Section and Priority tags.
+
+2009-09-19  Kirill A. Shutemov  <kirill@shutemov.name>
+
+	Fix fadvise64 decoding on ARM
+	* file.c (sys_fadvise64_64) [ARM]: Fix argument ordering.
+
+2009-09-18  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Fix follow fork/vfork on Linux ARM OABI
+	__NR_SYSCALL_BASE eis 0 for EABI and is 0x900000 for OABI.
+	* process (change_syscall) [LINUX && ARM]: Mask off the high order bits
+	when changing syscall.
+
+	Reviewed-by: Kirill A. Shutemov <kirill@shutemov.name>
+
+2009-09-18  Mike Frysinger  <vapier@gentoo.org>
+
+	Mark shell scripts as executable
+
+	Ignore ioctlsort helper program
+	* .gitignore: Add ioctlsort.
+
+	linux/errno: Add ERFKILL
+	* linux/errnoent.h: Change ERRNO_132 to ERFKILL according to errno 132
+	definition introduced in Linux 2.6.31.
+
+2009-09-01  Paolo Bonzini  <pbonzini@redhat.com>
+
+	Add accept4 socketcall
+	This second patch in the series adds support for accept4 as a socketcall
+	sub-call.  Besides the need to renumber all system calls, this poses
+	no problem.
+	Tested on i686.
+
+	* linux/arm/syscallent.h: Add accept4 socketcall.
+	* linux/m68k/syscallent.h: Likewise.
+	* linux/powerpc/syscallent.h: Likewise.
+	* linux/s390/syscallent.h: Likewise.
+	* linux/s390x/syscallent.h: Likewise.
+	* linux/sh/syscallent.h: Likewise.
+	* linux/sh64/syscallent.h: Likewise.
+	* linux/sparc/syscallent.h: Likewise.
+	* linux/syscallent.h: Likewise.
+
+	* linux/sparc/syscall.h (SYS_sub_accept4): Declare.
+	(SYS_socket_nsubcalls): Update.
+	* linux/syscall.h: Likewise.
+
+	Replace x86-64 paccept with accept4
+	This patch changes the paccept syscall to accept4 for x86-64, since
+	the former was dropped in Linux kernel commit v2.6.27-rc7-14-g2d4c826.
+	At the same time, it adds support for pretty printing its arguments.
+
+	* linux/x86_64/syscallent.h: Replace paccept with accept4,
+	hook in sys_accept4.
+	* net.c (sys_accept): Leave a small stub calling the new...
+	(do_accept): ... function, which also adds a flags_arg argument.
+	(sys_accept4): New.
+
+2009-08-28  Andreas Schwab  <schwab@redhat.com>
+
+	Zero-extend 32-bit addresses when printing argv array.
+	(printargv): Zero-extend 32-bit addresses.
+	Fixes RH#519480 "64-bit strace is lazy on execve of 32-bit
+	process".
+
+2009-08-12  Andreas Schwab  <schwab@redhat.com>
+
+	Add more futex decoding.
+	* process.c (FUTEX_WAIT_REQUEUE_PI, FUTEX_CMP_REQUEUE_PI)
+	(FUTEX_PRIVATE_FLAG, FUTEX_CLOCK_REALTIME): Define.
+	(futexops): Add entries for them.
+	(sys_futex): Decode FUTEX_CMP_REQUEUE_PI and
+	FUTEX_WAIT_REQUEUE_PI.
+
+2009-07-08  Dmitry V. Levin  <ldv@altlinux.org>
+
+	Generate ChangeLog from git log
+	* .gitignore: Add ChangeLog
+	* ChangeLog: Rename to ChangeLog-CVS.
+	* Makefile.am (gen-changelog): New rule.
+	(dist-hook): Depend on it.
+	(EXTRA_DIST): Add ChangeLog-CVS.
+	* README-hacking: Describe changes.
+	* gitlog-to-changelog: Import from gnulib.
+
+
+See ChangeLog-CVS for older changes.

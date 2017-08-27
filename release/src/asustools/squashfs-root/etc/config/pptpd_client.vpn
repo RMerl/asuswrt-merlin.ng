@@ -1,0 +1,115 @@
+#!/bin/sh
+#######################################################################
+# VPN script Created by rcalvert                                      #
+# VPN Script and Related Scripts Modify by Cesar_G AKA Keloke         #
+# Module for DD-WRT created by Cesar_G AKA Keloke                     #
+#######################################################################
+
+RESP=0
+PPTPSERVER=$(nvram get pptpd_client_srvip)
+
+case $1 in
+ "start" )
+  echo "Launching VPN process"
+  $0 go &
+  echo "Process launched"
+;;
+
+ "go"  )
+  echo "Waiting......."
+  sleep 10
+  PIDFILE="/var/run/vpn.pid"
+  if [ -f "${PIDFILE}" ];
+  then
+   PID="`cat ${PIDFILE}`"
+   if egrep vpn "/proc/${PID}/cmdline" 2>&1 > /dev/null;
+   then
+    echo "Already active!"
+    exit 16
+   fi
+   echo "Removing PID file"
+   rm -f "${PIDFILE}"
+  fi
+  echo -n $$ > "${PIDFILE}"
+  echo "PID file created"
+  echo "Attempting initial connect"
+  pptp $PPTPSERVER file /tmp/pptpd_client/options.vpn
+  echo "Initial connection dropped"
+
+  while [ 1 ];
+  do
+   echo "Attempting connect... "
+   killall pptp 2>/dev/null
+   sleep 2
+   killall -9 pptp 2>/dev/null
+   sleep 1
+   pptp $PPTPSERVER file /tmp/pptpd_client/options.vpn
+   echo "Connection dropped... "
+   sleep 2
+  done;
+ ;;
+
+ "debug"  )
+  echo "Waiting......."
+  sleep 10
+  PIDFILE="/var/run/vpn.pid"
+  if [ -f "${PIDFILE}" ];
+  then
+   PID="`cat ${PIDFILE}`"
+   if egrep vpn "/proc/${PID}/cmdline" 2>&1 > /dev/null;
+   then
+    echo "Already active!"
+    exit 16
+   fi
+   echo "Removing PID file"
+   rm -f "${PIDFILE}"
+  fi
+  echo -n $$ > "${PIDFILE}"
+  echo "PID file created"
+  echo "Attempting initial connect"
+  pptp $PPTPSERVER file /tmp/pptpd_client/options.vpn debug nodetach
+  echo "Initial connection dropped"
+
+  while [ 1 ];
+  do
+   echo "Attempting connect... "
+   killall pptp 2>/dev/null
+   sleep 2
+   killall -9 pptp 2>/dev/null
+   sleep 1
+   pptp $PPTPSERVER file /tmp/pptpd_client/options.vpn debug nodetach
+   echo "Connection dropped... "
+   sleep 2
+  done;
+ ;;
+
+"stop"   )
+
+  VPNPID=`cat /var/run/vpn.pid`
+  echo "Killing VPN PID $VPNPID"
+  kill $VPNPID
+  sleep 2
+  kill -9 $VPNPID 2>/dev/null
+
+  PPTPPID=`pidof -s pptp`
+  echo "Killing PPTP PID $PPTPPID"
+  kill $PPTPPID
+  sleep 2
+  kill -9 $PPTPPID
+  sleep 2
+  rm /var/run/vpn.pid
+  echo "VPN Stopped"
+ ;; 
+* ) 
+  echo " "
+  echo "  PTPP VPN CLIENT" 
+  echo "  --------" 
+  echo " " 
+  echo "   start  -  Starts the Client" 
+  echo "   stop   -  Stops the Client" 
+  echo "   go     -  Run the Client interactively (for debugging)" 
+  echo "   debug  -  Run the Client interactively (in full debug mode)" 
+  echo " " 
+ ;; 
+esac
+return $RESP

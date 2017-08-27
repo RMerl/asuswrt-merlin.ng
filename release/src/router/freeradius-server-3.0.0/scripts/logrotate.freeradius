@@ -1,0 +1,16 @@
+#
+#  Sample logrotate file for FreeRADIUS.
+#
+#  It needs to be edited for your local configuration.
+#
+/var/log/radius/radius.log {
+	daily
+	rotate 14
+	compress
+	delaycompress
+	missingok
+	notifempty
+	postrotate
+		kill -HUP `cat /var/run/radiusd.pid` > /dev/null 2>&1
+	endscript
+}

@@ -1,0 +1,3 @@
+contrib/isag/isag   usr/bin
+contrib/isag/isag.1 usr/share/man/man1
+debian/isag.desktop usr/share/applications

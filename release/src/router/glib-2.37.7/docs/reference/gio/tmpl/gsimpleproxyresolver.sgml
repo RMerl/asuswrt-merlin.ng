@@ -1,0 +1,78 @@
+<!-- ##### SECTION Title ##### -->
+GSimpleProxyResolver
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSimpleProxyResolver ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GSimpleProxyResolver:default-proxy ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSimpleProxyResolver:ignore-hosts ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_simple_proxy_resolver_new ##### -->
+<para>
+
+</para>
+
+@default_proxy: 
+@ignore_hosts: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_proxy_resolver_set_default_proxy ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@default_proxy: 
+
+
+<!-- ##### FUNCTION g_simple_proxy_resolver_set_ignore_hosts ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@ignore_hosts: 
+
+
+<!-- ##### FUNCTION g_simple_proxy_resolver_set_uri_proxy ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@uri_scheme: 
+@proxy: 
+
+

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#User allowed to use the internet dont forward
+iptables -t nat -I maccheck -m mac --mac-source $1 -j RETURN

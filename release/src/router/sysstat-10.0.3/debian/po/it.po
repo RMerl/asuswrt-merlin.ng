@@ -1,0 +1,105 @@
+# italian translation for sysstat
+# This file is licenced under the same terms and conditions
+# of sysstat sources.
+# Luca Monducci <luca.mo@tiscali.it>, 2009
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 8.1.7-2 (templates)\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-13 21:46+0100\n"
+"Last-Translator: Luca Monducci <luca.mo@tiscali.it>\n"
+"Language-Team: Italian <debian-l10n-italian@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Eliminare i file con i dati statistici nel vecchio formato?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Il formato dei file con i dati statistici giornalieri è cambiato nella "
+"versione ${s_version} di sysstat e non è compatibile con il precedente."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Se si accetta, tutti i file esistenti nella directory /var/log/sysstat/ "
+"verranno eliminati."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Se non si accetta, il comando sar(1) non funzionerà correttamente fino a "
+"quando i file non saranno rimossi manualmente."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Attivare il cron job per sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Se questa opzione è attiva, il pacchetto sysstat raccoglierà dati sulle "
+"attività del sistema e li memorizzerà in file di log nella directory /var/"
+"log/sysstat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Questi dati permettono al comando sar(1) di mostrare le statistiche del "
+"sistema su base giornaliera."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Se non si attiva questa opzione, il comando sar(1) mostrerà solo le "
+"statistiche attuali."
+
+#~ msgid "Do you want post-installation script to remove these data files?"
+#~ msgstr "Si vuole che lo script post-installation rimuova questi file?"
+
+#~ msgid ""
+#~ "If you don't want to remove them automatically, please remove them by "
+#~ "hand later, in order for the sar command to work properly."
+#~ msgstr ""
+#~ "Se non si vogliono rimuovere automaticamente, è necessario rimuovelri "
+#~ "manualmente in seguito per fare funzionare correttamente il comando sar."
+
+#~ msgid "WARNING: daily data files format has changed!"
+#~ msgstr "AVVISO: il formato dei file con i dati giornalieri è cambiato!"
+
+#~ msgid "Existing data files need to be deleted."
+#~ msgstr "I file con i dati esistenti devono essere rimossi."

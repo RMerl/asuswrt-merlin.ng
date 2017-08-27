@@ -1,0 +1,79 @@
+set term $PLOTTERMINAL
+set timefmt "%Y%m%d%H%M%S"
+set notime
+set autoscale xy
+set size 2,2
+set data style lp
+set xlabel "Time"
+set xdata time
+
+set ylabel "Voltage (V)"
+
+set output "$TEMPPATH/cpu1V.$PLOTFORMAT"
+plot "$DBPATH/cpu1V"         using 1:2 title ''     w lp lw $LINEWIDTH, \
+     2.1                               title 'min'  w lp lw $LINEWIDTH, \
+     2.3                               title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/cpu2V.$PLOTFORMAT"
+plot "$DBPATH/cpu2V"         using 1:2 title ''     w lp lw $LINEWIDTH, \
+     2.1                               title 'min'  w lp lw $LINEWIDTH, \
+     2.3                               title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/ThreeVOLT.$PLOTFORMAT"
+plot "$DBPATH/ThreeVOLT"     using 1:2 title ''     w lp lw $LINEWIDTH, \
+     3.0                               title 'min'  w lp lw $LINEWIDTH, \
+     3.6                               title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/FiveVOLT.$PLOTFORMAT"
+plot "$DBPATH/FiveVOLT"      using 1:2 title ''     w lp lw $LINEWIDTH, \
+     4.85                              title 'min'  w lp lw $LINEWIDTH, \
+     5.15                              title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/TwelveVOLT.$PLOTFORMAT"
+plot "$DBPATH/TwelveVOLT"    using 1:2 title ''     w lp lw $LINEWIDTH, \
+     11.3                              title 'min'  w lp lw $LINEWIDTH, \
+     12.7                              title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/NegTwelveVOLT.$PLOTFORMAT"
+plot "$DBPATH/NegTwelveVOLT" using 1:2 title ''     w lp lw $LINEWIDTH, \
+     -12.7                             title 'min'  w lp lw $LINEWIDTH, \
+     -11.3                             title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/NegFiveVOLT.$PLOTFORMAT"
+plot "$DBPATH/NegFiveVOLT"   using 1:2 title ''     w lp lw $LINEWIDTH, \
+     -5.25                             title 'min'  w lp lw $LINEWIDTH, \
+     -4.75                             title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/voltages.$PLOTFORMAT"
+plot "$DBPATH/cpu1V"         using 1:2 title '1V'   w lp lw $LINEWIDTH,\
+     "$DBPATH/cpu2V"         using 1:2 title '2V'   w lp lw $LINEWIDTH,\
+     "$DBPATH/ThreeVOLT"     using 1:2 title '3V'   w lp lw $LINEWIDTH,\
+     "$DBPATH/FiveVOLT"      using 1:2 title '5V'   w lp lw $LINEWIDTH,\
+     "$DBPATH/TwelveVOLT"    using 1:2 title '12V'  w lp lw $LINEWIDTH,\
+     "$DBPATH/NegTwelveVOLT" using 1:2 title '-12V' w lp lw $LINEWIDTH,\
+     "$DBPATH/NegFiveVOLT"   using 1:2 title '-5V'  w lp lw $LINEWIDTH
+
+set ylabel "Temperature (Degree C)"
+
+set output "$TEMPPATH/mb_temp.$PLOTFORMAT"
+plot "$DBPATH/mb_temp"       using 1:2 title ''     w lp lw $LINEWIDTH, \
+     50                                title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/cpu_temp.$PLOTFORMAT"
+plot "$DBPATH/cpu_temp"      using 1:2 title ''     w lp lw $LINEWIDTH, \
+     50                                title 'max'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/temps.$PLOTFORMAT"
+plot "$DBPATH/mb_temp"       using 1:2 title 'motherboard' w lp lw $LINEWIDTH, \
+     "$DBPATH/cpu_temp"      using 1:2 title 'CPU'  w lp lw $LINEWIDTH
+
+set ylabel "Fan Speed (RPM)"
+
+set output "$TEMPPATH/fanone.$PLOTFORMAT"
+plot "$DBPATH/fanone"        using 1:2 title ''     w lp lw $LINEWIDTH, \
+     3000                              title 'min'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/fantwo.$PLOTFORMAT"
+plot "$DBPATH/fantwo"        using 1:2 title ''     w lp lw $LINEWIDTH, \
+     3000                              title 'min'  w lp lw $LINEWIDTH
+set output "$TEMPPATH/fanthree.$PLOTFORMAT"
+plot "$DBPATH/fanthree"      using 1:2 title ''     w lp lw $LINEWIDTH, \
+     3000                              title 'min'  w lp lw $LINEWIDTH
+
+set ylabel "Load Average"
+
+set output "$TEMPPATH/load.$PLOTFORMAT"
+plot "$DBPATH/load"          using 1:2 title ''     w lp lw $LINEWIDTH
+
+exit
+

@@ -1,0 +1,25 @@
+#!/bin/sh
+nv=/usr/sbin/nvram
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+	id=$($nv get oet${i}_id)
+	if test -e "${i}.pid"
+	then 
+	/usr/sbin/iptables -D FORWARD -i oet${i} -j ACCEPT 2>&1 > /dev/null
+	/usr/sbin/iptables -D FORWARD -o oet${i} -j ACCEPT 2>&1 > /dev/null
+	/usr/sbin/iptables -D INPUT -i oet${i} -j ACCEPT 2>&1 > /dev/null
+	/usr/sbin/iptables -D INPUT -p etherip -s $($nv get oet${i}_rem) -j ACCEPT 2>&1 > /dev/null
+	fi
+	if [ "$($nv get oet${i}_en)" = "1" ]
+	then
+		/usr/sbin/iptables -D INPUT -p etherip -s $($nv get oet${i}_rem) -j ACCEPT 2>&1 > /dev/null
+		/usr/sbin/iptables -I INPUT -p etherip -s $($nv get oet${i}_rem) -j ACCEPT 2>&1 > /dev/null
+		if [ "$($nv get oet${i}_bridged)" != "1" ]
+		then
+
+			/usr/sbin/iptables -I FORWARD -i oet${i} -j ACCEPT 2>&1 > /dev/null
+			/usr/sbin/iptables -I FORWARD -o oet${i} -j ACCEPT 2>&1 > /dev/null
+			/usr/sbin/iptables -I INPUT -i oet${i} -j ACCEPT 2>&1 > /dev/null
+		fi
+	fi
+done

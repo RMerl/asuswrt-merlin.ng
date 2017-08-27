@@ -1,0 +1,5 @@
+charon.plugins.tnc-imc.dlclose = yes
+	Unload IMC after use.
+
+charon.plugins.tnc-imc.preferred_language = en
+	Preferred language for TNC recommendations.

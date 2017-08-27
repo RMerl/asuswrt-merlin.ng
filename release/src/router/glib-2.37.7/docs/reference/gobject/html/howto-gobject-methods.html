@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Object methods</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-gobject.html" title="How to define and implement a new GObject">
+<link rel="prev" href="howto-gobject-destruction.html" title="Object Destruction">
+<link rel="next" href="howto-gobject-chainup.html" title="Chaining up">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-gobject.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-gobject-destruction.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-gobject-chainup.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-gobject-methods"></a>Object methods</h2></div></div></div>
+<p>
+      Just as with C++, there are many different ways to define object
+      methods and extend them: the following list and sections draw on
+      C++ vocabulary. (Readers are expected to know basic C++ concepts.
+      Those who have not had to write C++ code recently can refer to e.g.
+      <a class="ulink" href="http://www.cplusplus.com/doc/tutorial/" target="_top">http://www.cplusplus.com/doc/tutorial/</a> to refresh
+      their memories.)
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+            non-virtual public methods,
+          </p></li>
+<li class="listitem"><p>
+            virtual public methods and
+          </p></li>
+<li class="listitem"><p>
+            virtual private methods
+          </p></li>
+</ul></div>
+<p>
+    </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="id-1.6.3.7.3"></a>Non-virtual public methods</h3></div></div></div>
+<p>
+        These are the simplest: you want to provide a simple method which
+        can act on your object. All you need to do is to provide a function
+        prototype in the header and an implementation of that prototype
+        in the source file.
+</p>
+<pre class="programlisting">
+/* declaration in the header. */
+void maman_bar_do_action (MamanBar *self, /* parameters */);
+
+/* implementation in the source file */
+void
+maman_bar_do_action (MamanBar *self, /* parameters */)
+{
+  g_return_if_fail (MAMAN_IS_BAR (self));
+
+  /* do stuff here. */
+}
+</pre>
+<p>
+      </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="id-1.6.3.7.4"></a>Virtual public methods</h3></div></div></div>
+<p>
+        This is the preferred way to create polymorphic GObjects. All you
+        need to do is to define the common method and its class function in
+        the public header, implement the common method in the source file
+        and re-implement the class function in each object which inherits
+        from you.
+</p>
+<pre class="programlisting">
+/* declaration in maman-bar.h. */
+struct _MamanBarClass
+{
+  GObjectClass parent_class;
+
+  /* stuff */
+  void (*do_action) (MamanBar *self, /* parameters */);
+};
+
+void maman_bar_do_action (MamanBar *self, /* parameters */);
+
+/* implementation in maman-bar.c */
+void
+maman_bar_do_action (MamanBar *self, /* parameters */)
+{
+  g_return_if_fail (MAMAN_IS_BAR (self));
+
+  MAMAN_BAR_GET_CLASS (self)-&gt;do_action (self, /* parameters */);
+}
+</pre>
+<p>
+        The code above simply redirects the do_action call to the relevant
+        class function.
+      </p>
+<p>
+        Please, note that it is possible for you to provide a default
+        implementation for this class method in the object's
+        <code class="function">class_init</code> function: initialize the
+        klass-&gt;do_action field to a pointer to the actual implementation.
+        By default, class method that are not inherited are initialized to
+        NULL, and thus are to be considered "pure virtual".
+</p>
+<pre class="programlisting">
+static void
+maman_bar_real_do_action_two (MamanBar *self, /* parameters */)
+{
+  /* Default implementation for the virtual method. */
+}
+
+static void
+maman_bar_class_init (BarClass *klass)
+{
+  /* this is not necessary, except for demonstration purposes.
+   *
+   * pure virtual method: mandates implementation in children.
+   */
+  klass-&gt;do_action_one = NULL;
+
+  /* merely virtual method. */
+  klass-&gt;do_action_two = maman_bar_real_do_action_two;
+}
+
+void
+maman_bar_do_action_one (MamanBar *self, /* parameters */)
+{
+  g_return_if_fail (MAMAN_IS_BAR (self));
+
+  /* if the method is purely virtual, then it is a good idea to
+   * check that it has been overridden before calling it, and,
+   * depending on the intent of the class, either ignore it silently
+   * or warn the user.
+   /
+  if (MAMAN_BAR_GET_CLASS (self)-&gt;do_action_one != NULL)
+    MAMAN_BAR_GET_CLASS (self)-&gt;do_action_one (self, /* parameters */);
+  else
+    g_warning ("Class '%s' does not override the mandatory "
+               "MamanBarClass.do_action_one() virtual function.",
+               G_OBJECT_TYPE_NAME (self));
+}
+
+void
+maman_bar_do_action_two (MamanBar *self, /* parameters */)
+{
+  g_return_if_fail (MAMAN_IS_BAR (self));
+
+  MAMAN_BAR_GET_CLASS (self)-&gt;do_action_two (self, /* parameters */);
+}
+</pre>
+<p>
+      </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="id-1.6.3.7.5"></a>Virtual private Methods</h3></div></div></div>
+<p>
+        These are very similar to Virtual Public methods. They just don't
+        have a public function to call the function directly. The header
+        file contains only a declaration of the class function:
+</p>
+<pre class="programlisting">
+/* declaration in maman-bar.h. */
+struct _MamanBarClass
+{
+  GObjectClass parent;
+
+  /* stuff */
+  void (* helper_do_specific_action) (MamanBar *self, /* parameters */);
+};
+
+void maman_bar_do_any_action (MamanBar *self, /* parameters */);
+</pre>
+<p>
+        These class functions are often used to delegate part of the job
+        to child classes:
+</p>
+<pre class="programlisting">
+/* this accessor function is static: it is not exported outside of this file. */
+static void 
+maman_bar_do_specific_action (MamanBar *self, /* parameters */)
+{
+  MAMAN_BAR_GET_CLASS (self)-&gt;do_specific_action (self, /* parameters */);
+}
+
+void
+maman_bar_do_any_action (MamanBar *self, /* parameters */)
+{
+  /* random code here */
+
+  /* 
+   * Try to execute the requested action. Maybe the requested action
+   * cannot be implemented here. So, we delegate its implementation
+   * to the child class:
+   */
+  maman_bar_do_specific_action (self, /* parameters */);
+
+  /* other random code here */
+}
+</pre>
+<p>
+      </p>
+<p>
+        Again, it is possible to provide a default implementation for this
+        private virtual class function:
+</p>
+<pre class="programlisting">
+static void
+maman_bar_class_init (MamanBarClass *klass)
+{
+  /* pure virtual method: mandates implementation in children. */
+  klass-&gt;do_specific_action_one = NULL;
+
+  /* merely virtual method. */
+  klass-&gt;do_specific_action_two = maman_bar_real_do_specific_action_two;
+}
+</pre>
+<p>
+      </p>
+<p>
+        Children can then implement the subclass with code such as:
+</p>
+<pre class="programlisting">
+static void
+maman_bar_subtype_class_init (MamanBarSubTypeClass *klass)
+{
+  MamanBarClass *bar_class = MAMAN_BAR_CLASS (klass);
+
+  /* implement pure virtual class function. */
+  bar_class-&gt;do_specific_action_one = maman_bar_subtype_do_specific_action_one;
+}
+</pre>
+<p>
+      </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

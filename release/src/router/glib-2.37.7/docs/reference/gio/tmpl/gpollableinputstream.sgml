@@ -1,0 +1,82 @@
+<!-- ##### SECTION Title ##### -->
+GPollableInputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GPollableInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GPollableInputStreamInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@can_poll: 
+@is_readable: 
+@create_source: 
+@read_nonblocking: 
+
+<!-- ##### FUNCTION g_pollable_input_stream_can_poll ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_input_stream_is_readable ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_input_stream_create_source ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_input_stream_read_nonblocking ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

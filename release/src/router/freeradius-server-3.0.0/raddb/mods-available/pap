@@ -1,0 +1,25 @@
+# -*- text -*-
+#
+#  $Id$
+
+# PAP module to authenticate users based on their stored password
+#
+#  Supports multiple encryption/hash schemes.  See "man rlm_pap"
+#  for details.
+#
+#  For instructions on creating the various types of passwords, see:
+#
+#  http://www.openldap.org/faq/data/cache/347.html
+pap {
+	#  The "auto_header" configuration item can be set to "yes".
+	#  In this case, the module will look inside of the User-Password
+	#  attribute for the headers {crypt}, {clear}, etc., and will
+	#  automatically create the attribute on the right-hand side,
+	#  with the correct value.
+	auto_header = no
+
+	#  By default the server will use heuristics to try and automatically
+	#  handle base64 or hex encoded passwords. This behaviour can be
+	#  stopped by setting the following to "no".
+#	normalise = yes
+}

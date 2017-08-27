@@ -1,0 +1,86 @@
+<!-- ##### SECTION Title ##### -->
+GTlsInteraction
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTlsInteraction ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GTlsInteractionResult ##### -->
+<para>
+
+</para>
+
+@G_TLS_INTERACTION_UNHANDLED: 
+@G_TLS_INTERACTION_HANDLED: 
+@G_TLS_INTERACTION_FAILED: 
+
+<!-- ##### FUNCTION g_tls_interaction_ask_password ##### -->
+<para>
+
+</para>
+
+@interaction: 
+@password: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_interaction_ask_password_async ##### -->
+<para>
+
+</para>
+
+@interaction: 
+@password: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tls_interaction_ask_password_finish ##### -->
+<para>
+
+</para>
+
+@interaction: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_interaction_invoke_ask_password ##### -->
+<para>
+
+</para>
+
+@interaction: 
+@password: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

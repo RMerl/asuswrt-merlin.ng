@@ -1,0 +1,135 @@
+#! /bin/sh
+#
+# radtest	Emulate the user interface of the old
+#		radtest that used to be part of FreeRADIUS.
+#
+# Version:	$Id$
+#
+
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+bindir="@bindir@"
+
+usage() {
+	echo "Usage: radtest [OPTIONS] user passwd radius-server[:port] nas-port-number secret [ppphint] [nasname]" >&2
+	echo "        -d RADIUS_DIR       Set radius directory" >&2
+	echo "        -t <type>           Set authentication method" >&2
+	echo "                            type can be pap, chap, mschap, or eap-md5" >&2
+	echo "        -P protocol         Select udp (default) or tcp" >&2
+	echo "        -x                  Enable debug output" >&2
+	echo "        -4                  Use IPv4 for the NAS address (default)" >&2
+	echo "        -6                  Use IPv6 for the NAS address" >&2
+	exit 1
+}
+
+radclient=$bindir/radclient
+if [ ! -x "$radclient" ] && [ -x ./radclient ]
+then
+	radclient=./radclient
+fi
+
+# radeapclient is used for EAP-MD5.
+radeapclient=$bindir/radeapclient
+
+OPTIONS=
+PASSWORD="User-Password"
+NAS_ADDR_ATTR="NAS-IP-Address"
+
+#  We need at LEAST these many options
+if [ $# -lt 5 ]
+then
+	usage
+fi
+
+# Parse new command-line options
+while [ `echo "$1" | cut -c 1` = "-" ]
+do
+   case "$1" in
+	-4) 
+		OPTIONS="$OPTIONS -4"
+		NAS_ADDR_ATTR="NAS-IP-Address"
+		shift
+		;;
+	-6) 
+		OPTIONS="$OPTIONS -6"
+		NAS_ADDR_ATTR="NAS-IPv6-Address"
+		shift
+		;;
+	-d) 
+		OPTIONS="$OPTIONS -d $2"
+    		shift;shift
+		;;
+	-P) 
+		OPTIONS="$OPTIONS -P $2"
+    		shift;shift
+		;;
+	-x)
+		OPTIONS="$OPTIONS -x"
+		shift
+		;;
+
+	-t)
+		shift;
+		case "$1" in
+			pap)
+				PASSWORD="User-Password"
+				;;
+			chap)
+				PASSWORD="CHAP-Password"
+				;;
+			mschap)
+				PASSWORD="MS-CHAP-Password"
+				;;
+			eap-md5)
+				PASSWORD="User-Password"
+				if [ ! -x "$radeapclient" ]
+				then
+				    echo "radtest: No 'radeapclient' program was found.  Cannot perform EAP-MD5." >&1
+				    exit 1
+				fi
+				radclient="$radeapclient"
+				;;
+			*)
+				usage
+				;;
+		esac
+		shift
+		;;
+
+        *)
+		usage
+		;;
+  esac
+done
+
+# Check that there are enough options left over.
+if [ $# -lt 5 ] || [ $# -gt 7 ]
+then
+	usage
+fi
+
+if [ "$7" ]
+then
+	nas=$7
+else
+	nas=`hostname`
+fi
+
+(
+	echo "User-Name = \"$1\""
+	echo "$PASSWORD = \"$2\""
+	echo "$NAS_ADDR_ATTR = $nas"
+	echo "NAS-Port = $4"
+	echo "Message-Authenticator = 0x00"
+	if [ "$radclient" = "$radeapclient" ]
+	then
+	    echo "EAP-Code = Response"
+	    echo "EAP-Type-Identity = \"$1\""
+	fi
+	if [ "$6" != "" -a "$6" != "0" ]
+	then
+		echo "Framed-Protocol = PPP"
+	fi
+) | $radclient $OPTIONS -x $3 auth "$5"
+
+exit $?

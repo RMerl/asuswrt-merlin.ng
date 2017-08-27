@@ -1,0 +1,74 @@
+%{
+/* stroke keywords
+ * Copyright (C) 2006 Andreas Steffen
+ * Hochschule fuer Technik Rapperswil, Switzerland
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ */
+
+#include <string.h>
+
+#include "stroke_keywords.h"
+
+%}
+struct stroke_token {
+    char *name;
+    stroke_keyword_t kw;
+};
+%%
+add,             STROKE_ADD
+del,             STROKE_DEL
+delete,          STROKE_DELETE
+route,           STROKE_ROUTE
+unroute,         STROKE_UNROUTE
+up,              STROKE_UP
+up-nb,           STROKE_UP_NOBLK
+down,            STROKE_DOWN
+down-nb,         STROKE_DOWN_NOBLK
+down-srcip,      STROKE_DOWN_SRCIP
+rekey,           STROKE_REKEY
+loglevel,        STROKE_LOGLEVEL
+status,          STROKE_STATUS
+statusall,       STROKE_STATUSALL
+statusallnb,     STROKE_STATUSALL_NOBLK
+statusall-nb,    STROKE_STATUSALL_NOBLK
+listpubkeys,     STROKE_LIST_PUBKEYS
+listcerts,       STROKE_LIST_CERTS
+listcacerts,     STROKE_LIST_CACERTS
+listocspcerts,   STROKE_LIST_OCSPCERTS
+listaacerts,     STROKE_LIST_AACERTS
+listacerts,      STROKE_LIST_ACERTS
+listgroups,      STROKE_LIST_GROUPS
+listcainfos,     STROKE_LIST_CAINFOS
+listcrls,        STROKE_LIST_CRLS
+listocsp,        STROKE_LIST_OCSP
+listalgs,        STROKE_LIST_ALGS
+listplugins,     STROKE_LIST_PLUGINS
+listall,         STROKE_LIST_ALL
+rereadsecrets,   STROKE_REREAD_SECRETS
+rereadcacerts,   STROKE_REREAD_CACERTS
+rereadocspcerts, STROKE_REREAD_OCSPCERTS
+rereadaacerts,   STROKE_REREAD_AACERTS
+rereadacerts,    STROKE_REREAD_ACERTS
+rereadcrls,      STROKE_REREAD_CRLS
+rereadall,       STROKE_REREAD_ALL
+purgeocsp,       STROKE_PURGE_OCSP
+purgecrls,       STROKE_PURGE_CRLS
+purgecerts,      STROKE_PURGE_CERTS
+purgeike,        STROKE_PURGE_IKE
+exportx509,      STROKE_EXPORT_X509
+exportconncert,  STROKE_EXPORT_CONN_CERT
+exportconnchain, STROKE_EXPORT_CONN_CHAIN
+leases,          STROKE_LEASES
+memusage,        STROKE_MEMUSAGE
+user-creds,      STROKE_USER_CREDS
+listcounters,    STROKE_COUNTERS
+resetcounters,   STROKE_COUNTERS_RESET

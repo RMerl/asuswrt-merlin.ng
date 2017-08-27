@@ -1,0 +1,105 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  The "linelog" module will log one line of text to a file.
+#  Both the filename and the line of text are dynamically expanded.
+#
+#  We STRONGLY suggest that you do not use data from the
+#  packet as part of the filename.
+#
+linelog {
+	#
+	#  The file where the logs will go.
+	#
+	#  If the filename is "syslog", then the log messages will
+	#  go to syslog.
+	filename = ${logdir}/linelog
+
+	#
+	#  The Unix-style permissions on the log file.
+	#
+	#  Depending on format string, the log file may contain secret or
+	#  private information about users.  Keep the file permissions as
+	#  restrictive as possible.
+	permissions = 0600
+
+	#
+	# The Unix group of the log file.
+	#
+	# The user that freeradius runs as must be in the specified
+	# group, otherwise it will not be possible to set the group.
+	#
+	# group = freerad
+
+	#
+	# If logging via syslog, the facility can be set here. Otherwise
+	# the syslog_facility option in radiusd.conf will be used.
+	#
+	# syslog_facility = daemon
+
+	#
+	#  The default format string.
+	format = "This is a log message for %{User-Name}"
+
+	#
+	#  This next line can be omitted.  If it is omitted, then
+	#  the log message is static, and is always given by "format",
+	#  above.
+	#
+	#  If it is defined, then the string is dynamically expanded,
+	#  and the result is used to find another configuration entry
+	#  here, with the given name.  That name is then used as the
+	#  format string.
+	#
+	#  If the configuration entry cannot be found, then no log
+	#  message is printed.
+	#
+	#  i.e. You can have many log messages in one "linelog" module.
+	#  If this two-step expansion did not exist, you would have
+	#  needed to configure one "linelog" module for each log message.
+
+	#
+	#  Reference the Packet-Type (Access-Request, etc.)  If it doesn't
+	#  exist, reference the "format" entry, above.
+	reference = "%{%{Packet-Type}:-format}"
+
+	#
+	#  Followed by a series of log messages.
+	Access-Request = "Requested access: %{User-Name}"
+	Access-Reject = "Rejected access: %{User-Name}"
+	Access-Challenge = "Sent challenge: %{User-Name}"
+
+	#
+	#  The log messages can be grouped into sections and
+        #  sub-sections, too.  The "reference" item needs to have a "."
+	#  for every section.  e.g. reference = foo.bar will reference
+	#  the "foo" section, "bar" configuration item.
+	#
+
+	#
+	#  Used if:	reference = "foo.bar".
+	foo {
+	    bar = "Example log.  Please ignore"
+	}
+
+	#
+	#  Another example:
+	#      reference = "Accounting-Request.%{%{Acct-Status-Type}:-unknown}"
+	#
+	Accounting-Request {
+		Start = "Connect: [%{User-Name}] (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} ip %{Framed-IP-Address})"
+		Stop = "Disconnect: [%{User-Name}] (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} ip %{Framed-IP-Address}) %{Acct-Session-Time} seconds"
+
+		#  Don't log anything for these packets.
+		Alive = ""
+
+		Accounting-On = "NAS %{Packet-Src-IP-Address} (%{NAS-IP-Address}) just came online"
+		Accounting-Off = "NAS %{Packet-Src-IP-Address} (%{NAS-IP-Address}) just went offline"
+
+		# don't log anything for other Acct-Status-Types.
+		unknown = ""
+	}
+
+}

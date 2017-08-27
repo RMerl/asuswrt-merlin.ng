@@ -1,0 +1,1298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: ExampleAnimal</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch32s05.html" title="Generating code and docs">
+<link rel="prev" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Cat.html" title="org.gtk.GDBus.Example.ObjectManager.Cat">
+<link rel="next" href="ExampleCat.html" title="ExampleCat">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#ExampleAnimal.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#ExampleAnimal.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#ExampleAnimal.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#ExampleAnimal.prerequisites" class="shortcut">Prerequisites</a>
+                   | 
+                  <a href="#ExampleAnimal.implementations" class="shortcut">Known Implementations</a>
+                   | 
+                  <a href="#ExampleAnimal.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#ExampleAnimal.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch32s05.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Cat.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ExampleCat.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="ExampleAnimal"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="ExampleAnimal.top_of_page"></a>ExampleAnimal</span></h2>
+<p>ExampleAnimal — Generated C code for the org.gtk.GDBus.Example.ObjectManager.Animal D-Bus interface</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="ExampleAnimal.synopsis"></a><h2>Synopsis</h2>
+<a name="ExampleAnimalProxy"></a><a name="ExampleAnimalSkeleton"></a><pre class="synopsis">                    <a class="link" href="ExampleAnimal.html#ExampleAnimal-struct" title="ExampleAnimal">ExampleAnimal</a>;
+struct              <a class="link" href="ExampleAnimal.html#ExampleAnimalIface" title="struct ExampleAnimalIface">ExampleAnimalIface</a>;
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> * <a class="link" href="ExampleAnimal.html#example-animal-interface-info" title="example_animal_interface_info ()">example_animal_interface_info</a>      (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="ExampleAnimal.html#example-animal-override-properties" title="example_animal_override_properties ()">example_animal_override_properties</a>  (<em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> *klass</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> property_id_begin</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-call-poke" title="example_animal_call_poke ()">example_animal_call_poke</a>            (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *proxy</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_sad</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_happy</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="ExampleAnimal.html#example-animal-call-poke-finish" title="example_animal_call_poke_finish ()">example_animal_call_poke_finish</a>     (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *proxy</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="ExampleAnimal.html#example-animal-call-poke-sync" title="example_animal_call_poke_sync ()">example_animal_call_poke_sync</a>       (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *proxy</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_sad</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_happy</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-complete-poke" title="example_animal_complete_poke ()">example_animal_complete_poke</a>        (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-emit-jumped" title="example_animal_emit_jumped ()">example_animal_emit_jumped</a>          (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="type">gdouble</span></a> arg_height</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="ExampleAnimal.html#example-animal-get-mood" title="example_animal_get_mood ()">example_animal_get_mood</a>             (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="ExampleAnimal.html#example-animal-get-foo" title="example_animal_get_foo ()">example_animal_get_foo</a>              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="ExampleAnimal.html#example-animal-get-bar" title="example_animal_get_bar ()">example_animal_get_bar</a>              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="ExampleAnimal.html#example-animal-dup-mood" title="example_animal_dup_mood ()">example_animal_dup_mood</a>             (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="ExampleAnimal.html#example-animal-dup-foo" title="example_animal_dup_foo ()">example_animal_dup_foo</a>              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="ExampleAnimal.html#example-animal-dup-bar" title="example_animal_dup_bar ()">example_animal_dup_bar</a>              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-set-mood" title="example_animal_set_mood ()">example_animal_set_mood</a>             (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-set-foo" title="example_animal_set_foo ()">example_animal_set_foo</a>              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-set-bar" title="example_animal_set_bar ()">example_animal_set_bar</a>              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
+struct              <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy-struct" title="struct ExampleAnimalProxy">ExampleAnimalProxy</a>;
+struct              <a class="link" href="ExampleAnimal.html#ExampleAnimalProxyClass" title="struct ExampleAnimalProxyClass">ExampleAnimalProxyClass</a>;
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-proxy-new" title="example_animal_proxy_new ()">example_animal_proxy_new</a>            (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-finish" title="example_animal_proxy_new_finish ()">example_animal_proxy_new_finish</a>     (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-sync" title="example_animal_proxy_new_sync ()">example_animal_proxy_new_sync</a>       (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus" title="example_animal_proxy_new_for_bus ()">example_animal_proxy_new_for_bus</a>    (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus-finish" title="example_animal_proxy_new_for_bus_finish ()">example_animal_proxy_new_for_bus_finish</a>
+                                                        (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus-sync" title="example_animal_proxy_new_for_bus_sync ()">example_animal_proxy_new_for_bus_sync</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+struct              <a class="link" href="ExampleAnimal.html#ExampleAnimalSkeleton-struct" title="struct ExampleAnimalSkeleton">ExampleAnimalSkeleton</a>;
+struct              <a class="link" href="ExampleAnimal.html#ExampleAnimalSkeletonClass" title="struct ExampleAnimalSkeletonClass">ExampleAnimalSkeletonClass</a>;
+<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     <a class="link" href="ExampleAnimal.html#example-animal-skeleton-new" title="example_animal_skeleton_new ()">example_animal_skeleton_new</a>         (<em class="parameter"><code><span class="type">void</span></code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----ExampleAnimal
+</pre>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GDBusProxy.html" title="GDBusProxy">GDBusProxy</a>
+         +----ExampleAnimalProxy
+</pre>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton">GDBusInterfaceSkeleton</a>
+         +----ExampleAnimalSkeleton
+</pre>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+ExampleAnimal requires
+ <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+ExampleAnimalProxy implements
+ <a class="link" href="GDBusInterface.html" title="GDBusInterface">GDBusInterface</a>,  <a class="link" href="GInitable.html" title="GInitable">GInitable</a>,  <a class="link" href="GAsyncInitable.html" title="GAsyncInitable">GAsyncInitable</a> and  <a class="link" href="ExampleAnimal.html" title="ExampleAnimal">ExampleAnimal</a>.</p>
+<p>
+ExampleAnimalSkeleton implements
+ <a class="link" href="GDBusInterface.html" title="GDBusInterface">GDBusInterface</a> and  <a class="link" href="ExampleAnimal.html" title="ExampleAnimal">ExampleAnimal</a>.</p>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.implementations"></a><h2>Known Implementations</h2>
+<p>
+ExampleAnimal is implemented by
+ <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy">ExampleAnimalProxy</a> and  <a class="link" href="ExampleAnimal.html#ExampleAnimalSkeleton">ExampleAnimalSkeleton</a>.</p>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="ExampleAnimal.html#ExampleAnimal--bar" title='The "bar" property'>bar</a>"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
+  "<a class="link" href="ExampleAnimal.html#ExampleAnimal--foo" title='The "foo" property'>foo</a>"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
+  "<a class="link" href="ExampleAnimal.html#ExampleAnimal--mood" title='The "mood" property'>mood</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
+</pre>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="ExampleAnimal.html#ExampleAnimal-handle-poke" title='The "handle-poke" signal'>handle-poke</a>"                                    : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+  "<a class="link" href="ExampleAnimal.html#ExampleAnimal-jumped" title='The "jumped" signal'>jumped</a>"                                         : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.description"></a><h2>Description</h2>
+<p>
+This section contains code for working with the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a> D-Bus interface in C.
+</p>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="ExampleAnimal-struct"></a><h3>ExampleAnimal</h3>
+<pre class="programlisting">typedef struct _ExampleAnimal ExampleAnimal;</pre>
+<p>
+Abstract interface type for the D-Bus interface <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a>.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimalIface"></a><h3>struct ExampleAnimalIface</h3>
+<pre class="programlisting">struct ExampleAnimalIface {
+  GTypeInterface parent_iface;
+
+
+
+  gboolean (*handle_poke) (
+    ExampleAnimal *object,
+    GDBusMethodInvocation *invocation,
+    gboolean arg_make_sad,
+    gboolean arg_make_happy);
+
+  const gchar * (*get_foo) (ExampleAnimal *object);
+
+  const gchar * (*get_mood) (ExampleAnimal *object);
+
+  void (*jumped) (
+    ExampleAnimal *object,
+    gdouble arg_height);
+
+  const gchar * (*get_bar) (ExampleAnimal *object);
+};
+</pre>
+<p>
+Virtual table for the D-Bus interface <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="ExampleAnimalIface.parent-iface"></a>parent_iface</code></em>;</span></p></td>
+<td>The parent interface.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="ExampleAnimalIface.handle-poke"></a>handle_poke</code></em> ()</span></p></td>
+<td>Handler for the <a class="link" href="ExampleAnimal.html#ExampleAnimal-handle-poke" title='The "handle-poke" signal'><span class="type">"handle-poke"</span></a> signal.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="ExampleAnimalIface.get-foo"></a>get_foo</code></em> ()</span></p></td>
+<td>Getter for the <a class="link" href="ExampleAnimal.html#ExampleAnimal--foo" title='The "foo" property'><span class="type">"foo"</span></a> property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="ExampleAnimalIface.get-mood"></a>get_mood</code></em> ()</span></p></td>
+<td>Getter for the <a class="link" href="ExampleAnimal.html#ExampleAnimal--mood" title='The "mood" property'><span class="type">"mood"</span></a> property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="ExampleAnimalIface.jumped"></a>jumped</code></em> ()</span></p></td>
+<td>Handler for the <a class="link" href="ExampleAnimal.html#ExampleAnimal-jumped" title='The "jumped" signal'><span class="type">"jumped"</span></a> signal.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="ExampleAnimalIface.get-bar"></a>get_bar</code></em> ()</span></p></td>
+<td>Getter for the <a class="link" href="ExampleAnimal.html#ExampleAnimal--bar" title='The "bar" property'><span class="type">"bar"</span></a> property.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-interface-info"></a><h3>example_animal_interface_info ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> * example_animal_interface_info      (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Gets a machine-readable description of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a> D-Bus interface.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>. Do not free. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-override-properties"></a><h3>example_animal_override_properties ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               example_animal_override_properties  (<em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> *klass</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> property_id_begin</code></em>);</pre>
+<p>
+Overrides all <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> properties in the <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> interface for a concrete class.
+The properties are overridden in the order they are defined.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>klass</code></em> :</span></p></td>
+<td>The class structure for a <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>-derived class.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>property_id_begin</code></em> :</span></p></td>
+<td>The property id to assign to the first overridden property.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The last property id.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-call-poke"></a><h3>example_animal_call_poke ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_call_poke            (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *proxy</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_sad</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_happy</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Asynchronously invokes the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-method-org-gtk-GDBus-Example-ObjectManager-Animal.Poke" title="The Poke() method"><code class="function">Poke()</code></a> D-Bus method on <em class="parameter"><code>proxy</code></em>.
+When the operation is finished, <em class="parameter"><code>callback</code></em> will be invoked in the <a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main loop</a> of the thread you are calling this method from.
+You can then call <a class="link" href="ExampleAnimal.html#example-animal-call-poke-finish" title="example_animal_call_poke_finish ()"><code class="function">example_animal_call_poke_finish()</code></a> to get the result of the operation.
+</p>
+<p>
+See <a class="link" href="ExampleAnimal.html#example-animal-call-poke-sync" title="example_animal_call_poke_sync ()"><code class="function">example_animal_call_poke_sync()</code></a> for the synchronous, blocking version of this method.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy"><span class="type">ExampleAnimalProxy</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_make_sad</code></em> :</span></p></td>
+<td>Argument to pass with the method invocation.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_make_happy</code></em> :</span></p></td>
+<td>Argument to pass with the method invocation.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>A <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data to pass to <em class="parameter"><code>callback</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-call-poke-finish"></a><h3>example_animal_call_poke_finish ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            example_animal_call_poke_finish     (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *proxy</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Finishes an operation started with <a class="link" href="ExampleAnimal.html#example-animal-call-poke" title="example_animal_call_poke ()"><code class="function">example_animal_call_poke()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy"><span class="type">ExampleAnimalProxy</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>res</code></em> :</span></p></td>
+<td>The <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> obtained from the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> passed to <a class="link" href="ExampleAnimal.html#example-animal-call-poke" title="example_animal_call_poke ()"><code class="function">example_animal_call_poke()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the call succeded, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>error</code></em> is set. <span class="annotation">[<a href="http://foldoc.org/skip"><span class="acronym">skip</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-call-poke-sync"></a><h3>example_animal_call_poke_sync ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            example_animal_call_poke_sync       (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *proxy</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_sad</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> arg_make_happy</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Synchronously invokes the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-method-org-gtk-GDBus-Example-ObjectManager-Animal.Poke" title="The Poke() method"><code class="function">Poke()</code></a> D-Bus method on <em class="parameter"><code>proxy</code></em>. The calling thread is blocked until a reply is received.
+</p>
+<p>
+See <a class="link" href="ExampleAnimal.html#example-animal-call-poke" title="example_animal_call_poke ()"><code class="function">example_animal_call_poke()</code></a> for the asynchronous version of this method.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy"><span class="type">ExampleAnimalProxy</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_make_sad</code></em> :</span></p></td>
+<td>Argument to pass with the method invocation.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_make_happy</code></em> :</span></p></td>
+<td>Argument to pass with the method invocation.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the call succeded, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>error</code></em> is set. <span class="annotation">[<a href="http://foldoc.org/skip"><span class="acronym">skip</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-complete-poke"></a><h3>example_animal_complete_poke ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_complete_poke        (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>
+Helper function used in service implementations to finish handling invocations of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-method-org-gtk-GDBus-Example-ObjectManager-Animal.Poke" title="The Poke() method"><code class="function">Poke()</code></a> D-Bus method. If you instead want to finish handling an invocation by returning an error, use <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> or similar.
+</p>
+<p>
+This method will free <em class="parameter"><code>invocation</code></em>, you cannot use it afterwards.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>invocation</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-emit-jumped"></a><h3>example_animal_emit_jumped ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_emit_jumped          (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="type">gdouble</span></a> arg_height</code></em>);</pre>
+<p>
+Emits the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-signal-org-gtk-GDBus-Example-ObjectManager-Animal.Jumped" title='The "Jumped" signal'>"Jumped"</a> D-Bus signal.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_height</code></em> :</span></p></td>
+<td>Argument to pass with the signal.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-get-mood"></a><h3>example_animal_get_mood ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       example_animal_get_mood             (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);</pre>
+<p>
+Gets the value of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Mood" title='The "Mood" property'>"Mood"</a> D-Bus property.
+</p>
+<p>
+Since this D-Bus property is readable, it is meaningful to use this function on both the client- and service-side.
+</p>
+<p>
+</p>
+<div class="warning">
+<h3 class="title">Warning</h3>The returned value is only valid until the property changes so on the client-side it is only safe to use this function on the thread where <em class="parameter"><code>object</code></em> was constructed. Use <a class="link" href="ExampleAnimal.html#example-animal-dup-mood" title="example_animal_dup_mood ()"><code class="function">example_animal_dup_mood()</code></a> if on another thread.</div>
+<p>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The property value or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the property is not set. Do not free the returned value, it belongs to <em class="parameter"><code>object</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-get-foo"></a><h3>example_animal_get_foo ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       example_animal_get_foo              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);</pre>
+<p>
+Gets the value of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Foo" title='The "Foo" property'>"Foo"</a> D-Bus property.
+</p>
+<p>
+Since this D-Bus property is readable, it is meaningful to use this function on both the client- and service-side.
+</p>
+<p>
+</p>
+<div class="warning">
+<h3 class="title">Warning</h3>The returned value is only valid until the property changes so on the client-side it is only safe to use this function on the thread where <em class="parameter"><code>object</code></em> was constructed. Use <a class="link" href="ExampleAnimal.html#example-animal-dup-foo" title="example_animal_dup_foo ()"><code class="function">example_animal_dup_foo()</code></a> if on another thread.</div>
+<p>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The property value or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the property is not set. Do not free the returned value, it belongs to <em class="parameter"><code>object</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-get-bar"></a><h3>example_animal_get_bar ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       example_animal_get_bar              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);</pre>
+<p>
+Gets the value of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Bar" title='The "Bar" property'>"Bar"</a> D-Bus property.
+</p>
+<p>
+Since this D-Bus property is readable, it is meaningful to use this function on both the client- and service-side.
+</p>
+<p>
+</p>
+<div class="warning">
+<h3 class="title">Warning</h3>The returned value is only valid until the property changes so on the client-side it is only safe to use this function on the thread where <em class="parameter"><code>object</code></em> was constructed. Use <a class="link" href="ExampleAnimal.html#example-animal-dup-bar" title="example_animal_dup_bar ()"><code class="function">example_animal_dup_bar()</code></a> if on another thread.</div>
+<p>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The property value or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the property is not set. Do not free the returned value, it belongs to <em class="parameter"><code>object</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.36</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-dup-mood"></a><h3>example_animal_dup_mood ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             example_animal_dup_mood             (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);</pre>
+<p>
+Gets a copy of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Mood" title='The "Mood" property'>"Mood"</a> D-Bus property.
+</p>
+<p>
+Since this D-Bus property is readable, it is meaningful to use this function on both the client- and service-side.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The property value or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the property is not set. The returned value should be freed with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-dup-foo"></a><h3>example_animal_dup_foo ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             example_animal_dup_foo              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);</pre>
+<p>
+Gets a copy of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Foo" title='The "Foo" property'>"Foo"</a> D-Bus property.
+</p>
+<p>
+Since this D-Bus property is readable, it is meaningful to use this function on both the client- and service-side.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The property value or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the property is not set. The returned value should be freed with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-dup-bar"></a><h3>example_animal_dup_bar ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             example_animal_dup_bar              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>);</pre>
+<p>
+Gets a copy of the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Bar" title='The "Bar" property'>"Bar"</a> D-Bus property.
+</p>
+<p>
+Since this D-Bus property is readable, it is meaningful to use this function on both the client- and service-side.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The property value or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the property is not set. The returned value should be freed with <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.36</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-set-mood"></a><h3>example_animal_set_mood ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_set_mood             (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>
+Sets the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Mood" title='The "Mood" property'>"Mood"</a> D-Bus property to <em class="parameter"><code>value</code></em>.
+</p>
+<p>
+Since this D-Bus property is not writable, it is only meaningful to use this function on the service-side.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>The value to set.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-set-foo"></a><h3>example_animal_set_foo ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_set_foo              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>
+Sets the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Foo" title='The "Foo" property'>"Foo"</a> D-Bus property to <em class="parameter"><code>value</code></em>.
+</p>
+<p>
+Since this D-Bus property is not writable, it is only meaningful to use this function on the service-side.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>The value to set.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-set-bar"></a><h3>example_animal_set_bar ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_set_bar              (<em class="parameter"><code><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>
+Sets the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Bar" title='The "Bar" property'>"Bar"</a> D-Bus property to <em class="parameter"><code>value</code></em>.
+</p>
+<p>
+Since this D-Bus property is not writable, it is only meaningful to use this function on the service-side.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>The value to set.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.36</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimalProxy-struct"></a><h3>struct ExampleAnimalProxy</h3>
+<pre class="programlisting">struct ExampleAnimalProxy;</pre>
+<p>
+The <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy"><span class="type">ExampleAnimalProxy</span></a> structure contains only private data and should only be accessed using the provided API.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimalProxyClass"></a><h3>struct ExampleAnimalProxyClass</h3>
+<pre class="programlisting">struct ExampleAnimalProxyClass {
+  GDBusProxyClass parent_class;
+};
+</pre>
+<p>
+Class structure for <a class="link" href="ExampleAnimal.html#ExampleAnimalProxy"><span class="type">ExampleAnimalProxy</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><a class="link" href="GDBusProxy.html#GDBusProxyClass" title="struct GDBusProxyClass"><span class="type">GDBusProxyClass</span></a> <em class="structfield"><code><a name="ExampleAnimalProxyClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>The parent class.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-proxy-new"></a><h3>example_animal_proxy_new ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_proxy_new            (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Asynchronously creates a proxy for the D-Bus interface <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a>. See <a class="link" href="GDBusProxy.html#g-dbus-proxy-new" title="g_dbus_proxy_new ()"><code class="function">g_dbus_proxy_new()</code></a> for more details.
+</p>
+<p>
+When the operation is finished, <em class="parameter"><code>callback</code></em> will be invoked in the <a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main loop</a> of the thread you are calling this method from.
+You can then call <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-finish" title="example_animal_proxy_new_finish ()"><code class="function">example_animal_proxy_new_finish()</code></a> to get the result of the operation.
+</p>
+<p>
+See <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-sync" title="example_animal_proxy_new_sync ()"><code class="function">example_animal_proxy_new_sync()</code></a> for the synchronous, blocking version of this constructor.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>Flags from the <a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>A bus name (well-known or unique) or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>connection</code></em> is not a message bus connection. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>An object path.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>A <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data to pass to <em class="parameter"><code>callback</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-proxy-new-finish"></a><h3>example_animal_proxy_new_finish ()</h3>
+<pre class="programlisting"><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     example_animal_proxy_new_finish     (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Finishes an operation started with <a class="link" href="ExampleAnimal.html#example-animal-proxy-new" title="example_animal_proxy_new ()"><code class="function">example_animal_proxy_new()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>res</code></em> :</span></p></td>
+<td>The <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> obtained from the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> passed to <a class="link" href="ExampleAnimal.html#example-animal-proxy-new" title="example_animal_proxy_new ()"><code class="function">example_animal_proxy_new()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The constructed proxy object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em> is set. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> ExampleAnimalProxy]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-proxy-new-sync"></a><h3>example_animal_proxy_new_sync ()</h3>
+<pre class="programlisting"><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     example_animal_proxy_new_sync       (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Synchronously creates a proxy for the D-Bus interface <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a>. See <a class="link" href="GDBusProxy.html#g-dbus-proxy-new-sync" title="g_dbus_proxy_new_sync ()"><code class="function">g_dbus_proxy_new_sync()</code></a> for more details.
+</p>
+<p>
+The calling thread is blocked until a reply is received.
+</p>
+<p>
+See <a class="link" href="ExampleAnimal.html#example-animal-proxy-new" title="example_animal_proxy_new ()"><code class="function">example_animal_proxy_new()</code></a> for the asynchronous version of this constructor.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>Flags from the <a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>A bus name (well-known or unique) or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>connection</code></em> is not a message bus connection. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>An object path.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The constructed proxy object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em> is set. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> ExampleAnimalProxy]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-proxy-new-for-bus"></a><h3>example_animal_proxy_new_for_bus ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                example_animal_proxy_new_for_bus    (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Like <a class="link" href="ExampleAnimal.html#example-animal-proxy-new" title="example_animal_proxy_new ()"><code class="function">example_animal_proxy_new()</code></a> but takes a <a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> instead of a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.
+</p>
+<p>
+When the operation is finished, <em class="parameter"><code>callback</code></em> will be invoked in the <a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main loop</a> of the thread you are calling this method from.
+You can then call <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus-finish" title="example_animal_proxy_new_for_bus_finish ()"><code class="function">example_animal_proxy_new_for_bus_finish()</code></a> to get the result of the operation.
+</p>
+<p>
+See <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus-sync" title="example_animal_proxy_new_for_bus_sync ()"><code class="function">example_animal_proxy_new_for_bus_sync()</code></a> for the synchronous, blocking version of this constructor.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_type</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>Flags from the <a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>A bus name (well-known or unique).</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>An object path.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>A <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data to pass to <em class="parameter"><code>callback</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-proxy-new-for-bus-finish"></a><h3>example_animal_proxy_new_for_bus_finish ()</h3>
+<pre class="programlisting"><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     example_animal_proxy_new_for_bus_finish
+                                                        (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Finishes an operation started with <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus" title="example_animal_proxy_new_for_bus ()"><code class="function">example_animal_proxy_new_for_bus()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>res</code></em> :</span></p></td>
+<td>The <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> obtained from the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> passed to <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus" title="example_animal_proxy_new_for_bus ()"><code class="function">example_animal_proxy_new_for_bus()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The constructed proxy object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em> is set. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> ExampleAnimalProxy]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-proxy-new-for-bus-sync"></a><h3>example_animal_proxy_new_for_bus_sync ()</h3>
+<pre class="programlisting"><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     example_animal_proxy_new_for_bus_sync
+                                                        (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Like <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-sync" title="example_animal_proxy_new_sync ()"><code class="function">example_animal_proxy_new_sync()</code></a> but takes a <a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> instead of a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.
+</p>
+<p>
+The calling thread is blocked until a reply is received.
+</p>
+<p>
+See <a class="link" href="ExampleAnimal.html#example-animal-proxy-new-for-bus" title="example_animal_proxy_new_for_bus ()"><code class="function">example_animal_proxy_new_for_bus()</code></a> for the asynchronous version of this constructor.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_type</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>Flags from the <a class="link" href="GDBusProxy.html#GDBusProxyFlags"><span class="type">GDBusProxyFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>A bus name (well-known or unique).</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>An object path.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for error or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The constructed proxy object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em> is set. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> ExampleAnimalProxy]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimalSkeleton-struct"></a><h3>struct ExampleAnimalSkeleton</h3>
+<pre class="programlisting">struct ExampleAnimalSkeleton;</pre>
+<p>
+The <a class="link" href="ExampleAnimal.html#ExampleAnimalSkeleton"><span class="type">ExampleAnimalSkeleton</span></a> structure contains only private data and should only be accessed using the provided API.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimalSkeletonClass"></a><h3>struct ExampleAnimalSkeletonClass</h3>
+<pre class="programlisting">struct ExampleAnimalSkeletonClass {
+  GDBusInterfaceSkeletonClass parent_class;
+};
+</pre>
+<p>
+Class structure for <a class="link" href="ExampleAnimal.html#ExampleAnimalSkeleton"><span class="type">ExampleAnimalSkeleton</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonClass" title="struct GDBusInterfaceSkeletonClass"><span class="type">GDBusInterfaceSkeletonClass</span></a> <em class="structfield"><code><a name="ExampleAnimalSkeletonClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>The parent class.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="example-animal-skeleton-new"></a><h3>example_animal_skeleton_new ()</h3>
+<pre class="programlisting"><a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="returnvalue">ExampleAnimal</span></a> *     example_animal_skeleton_new         (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Creates a skeleton object for the D-Bus interface <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal.top_of_page">org.gtk.GDBus.Example.ObjectManager.Animal</a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The skeleton object. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> ExampleAnimalSkeleton]</span>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="ExampleAnimal--bar"></a><h3>The <code class="literal">"bar"</code> property</h3>
+<pre class="programlisting">  "bar"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
+<p>
+Represents the D-Bus property <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Bar" title='The "Bar" property'>"Bar"</a>.
+</p>
+<p>
+Since the D-Bus property for this <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> property is readable but not writable, it is meaningful to read from it on both the client- and service-side. It is only meaningful, however, to write to it on the service-side.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.36</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimal--foo"></a><h3>The <code class="literal">"foo"</code> property</h3>
+<pre class="programlisting">  "foo"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
+<p>
+Represents the D-Bus property <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Foo" title='The "Foo" property'>"Foo"</a>.
+</p>
+<p>
+Since the D-Bus property for this <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> property is readable but not writable, it is meaningful to read from it on both the client- and service-side. It is only meaningful, however, to write to it on the service-side.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimal--mood"></a><h3>The <code class="literal">"mood"</code> property</h3>
+<pre class="programlisting">  "mood"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
+<p>
+Represents the D-Bus property <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-property-org-gtk-GDBus-Example-ObjectManager-Animal.Mood" title='The "Mood" property'>"Mood"</a>.
+</p>
+<p>
+Since the D-Bus property for this <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> property is readable but not writable, it is meaningful to read from it on both the client- and service-side. It is only meaningful, however, to write to it on the service-side.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="ExampleAnimal.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="ExampleAnimal-handle-poke"></a><h3>The <code class="literal">"handle-poke"</code> signal</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            user_function                      (<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>         *object,
+                                                        <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>               arg_make_sad,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>               arg_make_happy,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>               user_data)           : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Signal emitted when a remote caller is invoking the <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-method-org-gtk-GDBus-Example-ObjectManager-Animal.Poke" title="The Poke() method"><code class="function">Poke()</code></a> D-Bus method.
+</p>
+<p>
+If a signal handler returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, it means the signal handler will handle the invocation (e.g. take a reference to <em class="parameter"><code>invocation</code></em> and eventually call <a class="link" href="ExampleAnimal.html#example-animal-complete-poke" title="example_animal_complete_poke ()"><code class="function">example_animal_complete_poke()</code></a> or e.g. <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> on it) and no order signal handlers will run. If no signal handler handles the invocation, the <a class="link" href="gio-GDBusError.html#G-DBUS-ERROR-UNKNOWN-METHOD:CAPS"><code class="literal">G_DBUS_ERROR_UNKNOWN_METHOD</code></a> error is returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>invocation</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_make_sad</code></em> :</span></p></td>
+<td>Argument passed by remote caller.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_make_happy</code></em> :</span></p></td>
+<td>Argument passed by remote caller.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the invocation was handled, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> to let other signal handlers run.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="ExampleAnimal-jumped"></a><h3>The <code class="literal">"jumped"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a> *object,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gdouble"><span class="type">gdouble</span></a>        arg_height,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>       user_data)       : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+On the client-side, this signal is emitted whenever the D-Bus signal <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-signal-org-gtk-GDBus-Example-ObjectManager-Animal.Jumped" title='The "Jumped" signal'>"Jumped"</a> is received.
+</p>
+<p>
+On the service-side, this signal can be used with e.g. <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-emit-by-name"><code class="function">g_signal_emit_by_name()</code></a> to make the object emit the D-Bus signal.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>A <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>arg_height</code></em> :</span></p></td>
+<td>Argument.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

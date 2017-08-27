@@ -1,0 +1,23 @@
+
+<fieldset>
+	<legend><% tran("hotspot.fon_chilli"); %></legend>
+	<input type="hidden" name="fon_userlist" value="13" />
+	<table class="table center" summary="fon users table">
+		<tr>
+			<th colspan="2"><% tran("hotspot.fon_user"); %></th>
+		</tr>
+		<tr>
+			<th><% tran("share.usrname"); %></th>
+			<th><% tran("share.passwd"); %></th>
+		</tr>
+		<% show_userlist(); %>
+	</table><br />
+	<div class="center">
+		<script type="text/javascript">
+		//<![CDATA[
+			document.write("<input class=\"button\" type=\"button\" value=\"" + sbutton.add + "\" onclick=\"user_add_submit(this.form);\" />");
+			document.write("<input class=\"button\" type=\"button\" value=\"" + sbutton.remove + "\" onclick=\"user_remove_submit(this.form);\" />");
+		//]]>
+		</script>
+	</div>
+</fieldset><br />

@@ -1,0 +1,69 @@
+WHAT IS NLS?
+------------
+NLS stands for National Language Support. It encompasses the features that make
+a program able to support different languages and cultural habits.
+This touches the messages displayed on the screen, but also the format used to
+display the dates or the numbers for example.
+
+
+HOW I ENABLE NLS WITH SYSSTAT?
+------------------------------
+NLS is enabled by default when you configure sysstat (running "./configure").
+But you can disable it if you want: Use the option "--disable-nls" with
+./configure or answer 'y' (for 'yes') to the question:
+"Disable National Language Support (NLS)? (y/n) [--disable-nls]"
+if you use the interactive configuration script (iconfig).
+
+
+OK, BUT HOW DO I USE IT NOW?
+----------------------------
+To see sysstat's messages in your own language, you have to set your LANG
+environment variable to the proper value. For example, in France you may
+want to set it to "fr_FR", although other possibilities exist. If this does
+not work for your language, see below for how to add a new translation.
+
+If you use bash and you want to configure your system for a French environment,
+enter:
+
+$ export LANG=fr_FR
+
+('$' is the prompt).
+If you use the (Tab) C shell, you would have entered:
+
+% setenv LANG fr_FR
+
+('%' is the prompt).
+Here is a complete example with iostat:
+
+$ export LANG=en_US
+$ iostat -V 
+sysstat version 5.1.4
+(C) Sebastien Godard
+Usage: iostat [ options... ] [ <interval> [ <count> ] ]
+Options are:
+[ -c | -d ] [ -k ] [ -m ] [ -t ] [ -V ] [ -x ]
+[ { <device> [ ... ] | ALL } ] [ -p [ { <device> | ALL } ] ]
+
+$ export LANG=fr_FR
+$ iostat -V
+sysstat version 5.1.4
+(C) Sebastien Godard
+Utilisation: iostat [ options... ] [ <intervalle> [ <itérations> ] ]
+Options possibles:
+[ -c | -d ] [ -k ] [ -m ] [ -t ] [ -V ] [ -x ]
+[ { <device> [ ... ] | ALL } ] [ -p [ { <device> | ALL } ] ]
+
+
+HOW CAN I ADD OR UPDATE A TRANSLATION?
+--------------------------------------
+At the present time, sysstat is already translated into several languages.
+If, however, the translation to your language is incomplete or entirely
+missing, you can update it or add a new one by contacting the team for
+your language at the Translation Project -- http://translationproject.org/ .
+There you can get the latest sysstat PO file for your language, or the
+latest blank POT file. When you have made the translation complete, send it
+to your team leader or to the team's mailing list.
+
+--
+Sebastien Godard (sysstat <at> orange.fr)
+

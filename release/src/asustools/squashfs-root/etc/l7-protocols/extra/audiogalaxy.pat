@@ -1,0 +1,2 @@
+audiogalaxy
+^(\x45\x5f\xd0\xd5|\x45\x5f.*0.60(6|8)W)

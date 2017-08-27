@@ -1,0 +1,69 @@
+.TH SA1 8 "SEPTEMBER 2010" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+sa1 \- Collect and store binary data in the system activity daily data file.
+.SH SYNOPSIS
+.B @SA_LIB_DIR@/sa1 [ --boot |
+.I interval
+.I count
+.B ]
+.SH DESCRIPTION
+The
+.B sa1
+command is a shell procedure variant of the
+.B sadc
+command and handles all of the flags and parameters of that command. The
+.B sa1
+command collects and stores binary data in the
+.IR @SA_DIR@/sa dd
+file, where the dd parameter indicates the current day. The
+.I interval
+and
+.I count
+parameters specify that the record should be written
+.I count
+times at
+.I interval
+seconds. If no arguments are given to
+.B sa1
+then a single record is written.
+
+The
+.B sa1
+command is designed to be started automatically by the cron command.
+
+.SH OPTIONS
+.IP --boot
+This option tells
+.B sa1
+that the
+.B sadc
+command should be called without specifying the
+.I interval
+and
+.I count
+parameters in order to insert a dummy record, marking the time when the counters
+restarts from 0.
+
+.SH EXAMPLES
+To create a daily record of
+.B sar
+activities, place the following entry in your root or adm crontab file:
+
+.B 0 8-18 * * 1-5 @SA_LIB_DIR@/sa1 1200 3 &
+
+.SH FILES
+.IR @SA_DIR@/sa dd
+.RS
+Indicate the daily data file, where the
+.B dd
+parameter is a number representing the day of the month.
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sar (1),
+.BR sadc (8),
+.BR sa2 (8),
+.BR sadf (1),
+.BR sysstat (5)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

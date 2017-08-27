@@ -1,0 +1,30 @@
+--- a/src/modules/rlm_eap/types/rlm_eap_sim/rlm_eap_sim.c	2012-11-28 11:03:05.081225276 +0100
++++ b/src/modules/rlm_eap/types/rlm_eap_sim/rlm_eap_sim.c	2012-11-28 11:46:59.746289881 +0100
+@@ -246,14 +246,21 @@
+	newvp->vp_integer = ess->sim_id++;
+	pairreplace(outvps, newvp);
+
++	ess->keys.identitylen = strlen(handler->identity);
++	memcpy(ess->keys.identity, handler->identity, ess->keys.identitylen);
++
+	/* make a copy of the identity */
+	newvp = pairfind(*invps, ATTRIBUTE_EAP_SIM_BASE + PW_EAP_SIM_IDENTITY);
+-	if (newvp) {
+-		ess->keys.identitylen = newvp->length;
+-		memcpy(ess->keys.identity, newvp->vp_octets, newvp->length);
+-	} else {
+-		ess->keys.identitylen = strlen(handler->identity);
+-		memcpy(ess->keys.identity, handler->identity, ess->keys.identitylen);
++	if (newvp && newvp->length > 2) {
++		uint16_t len;
++
++		memcpy(&len, newvp->vp_octets, sizeof(uint16_t));
++		len = ntohs(len);
++		if (len <= newvp->length - 2 && len <= MAX_STRING_LEN) {
++			ess->keys.identitylen = len;
++			memcpy(ess->keys.identity, newvp->vp_octets + 2,
++			       ess->keys.identitylen);
++		}
+	}
+
+	/* all set, calculate keys! */

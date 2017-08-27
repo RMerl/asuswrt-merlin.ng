@@ -1,0 +1,11 @@
+prefix=/home/ham/asuswrt-3004/asuswrt/release/src-rt-5.02hnd/targets/94908HND/fs.build/public
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: expat
+Version: 2.1.0
+Description: expat XML parser
+URL: http://www.libexpat.org
+Libs: -L${libdir} -lexpat
+Cflags: -I${includedir}

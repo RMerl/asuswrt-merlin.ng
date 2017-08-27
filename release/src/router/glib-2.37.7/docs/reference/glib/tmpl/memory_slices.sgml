@@ -1,0 +1,113 @@
+<!-- ##### SECTION Title ##### -->
+Memory Slices
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_slice_alloc ##### -->
+<para>
+
+</para>
+
+@block_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slice_alloc0 ##### -->
+<para>
+
+</para>
+
+@block_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slice_copy ##### -->
+<para>
+
+</para>
+
+@block_size: 
+@mem_block: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slice_free1 ##### -->
+<para>
+
+</para>
+
+@block_size: 
+@mem_block: 
+
+
+<!-- ##### FUNCTION g_slice_free_chain_with_offset ##### -->
+<para>
+
+</para>
+
+@block_size: 
+@mem_chain: 
+@next_offset: 
+
+
+<!-- ##### MACRO g_slice_new ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO g_slice_new0 ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO g_slice_dup ##### -->
+<para>
+
+</para>
+
+@type: 
+@mem: 
+
+
+<!-- ##### MACRO g_slice_free ##### -->
+<para>
+
+</para>
+
+@type: 
+@mem: 
+
+
+<!-- ##### MACRO g_slice_free_chain ##### -->
+<para>
+
+</para>
+
+@type: 
+@mem_chain: 
+@next: 
+
+

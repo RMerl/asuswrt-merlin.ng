@@ -1,0 +1,9 @@
+moon::ipsec stop
+carol::ipsec stop
+dave::ipsec stop
+alice::ipsec stop
+alice::service apache2 stop
+alice::rm /etc/pts/config.db
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush

@@ -1,0 +1,11 @@
+@PACKAGE_INIT@
+
+set_and_check(LibIcal_INCLUDE_DIR    "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set_and_check(LibIcal_LIBRARIES_DIR  "@PACKAGE_LIB_INSTALL_DIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/LibIcalTargets.cmake")
+
+set(LibIcal_LIBRARIES ical icalss icalvcal)
+
+# Temporary, will be removed once issue#87 is fixed
+set(LibIcal_STATIC_LIBRARIES ical-static icalss-static icalvcal-static)

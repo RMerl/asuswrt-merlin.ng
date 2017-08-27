@@ -1,0 +1,4 @@
+By setting <b>strictcrlpolicy=yes</b> a <b>strict CRL policy</b> is enforced on
+both roadwarrior <b>carol</b> and gateway <b>moon</b>. The remote host <b>carol</b>
+initiates the connection and presents a certificate that has been revoked by the
+current CRL causing the IKE negotiation to fail. 

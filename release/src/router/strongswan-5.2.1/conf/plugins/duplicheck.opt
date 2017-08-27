@@ -1,0 +1,5 @@
+charon.plugins.duplicheck.enable = yes
+	Enable duplicheck plugin (if loaded).
+
+charon.plugins.duplicheck.socket = unix://${piddir}/charon.dck
+	Socket provided by the duplicheck plugin.

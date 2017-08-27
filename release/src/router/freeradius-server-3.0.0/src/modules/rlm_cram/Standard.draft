@@ -1,0 +1,247 @@
+						Vladimir Dubrovin
+						vlad@sandy.ru
+
+SANDY RADIUS Attributes for Mail Authorization and Authentication.
+
+Status of this document:
+This document is a draft for corporate standard for SANDY
+http://www.sandy.ru
+
+Permissions to use:
+You can use this document as is. Any attributes are subject to change in
+future untill document status is draft.
+If you have any comments or suggestions feel free to contact
+vlad@sandy.ru
+
+Vendor Code (PEN): 11406 (SANDY)
+
+Attributes            Sandy-Mail-Service,           Sandy-Mail-Authtype,
+Sandy-Mail-Challenge,  Sandy-Mail-Response MAY present in Access-Request
+RADIUS packet. The rest of packets MAY present in SUCCESS response.
+
+Note: Microsoft implemented NTLM authentication for many mail protocols.
+SANDY   doesn't   any   special   attributes   for   NTLM  because  NTLM
+authentication  can  be  done by implementing MS-CHAP authentication via
+RADIUS.  MS-CHAP authentication in RADIUS is covered by RFC 2433 and RFC
+2458.
+
+1. Attribute: Sandy-Mail-Service
+Vendor-Type: 100
+Vendor-Length: 4
+Type: integer.
+
+This  attributes  enumerates possible mail services. This attribute MUST
+present  in  all  requests to RADIUS server from RADIUS client regarding
+mail authentication. Possible values:
+
+   Transfer        1
+   Delivery        2
+   POP             3
+   IMAP            4
+   WEBMAIL         5
+   Control         6
+
+Transfer   -   for   mail  transfer  (SMTP  for  example).  MAY  require
+authentication (either clear text/PAP or CRAM-MD5 or NTLM).
+
+Delivery - for mail delivery, for example mail.local. SHOULD NOT require
+authentication, only authorization required for user.
+
+POP  -  POP2/POP3  access.  MUST  require authentication (cleartext/PAP,
+APOP, CRAM-MD5 or NTLM).
+
+IMAP  -  IMAP2/IMAP4 access. MUST require authentication (cleartext/PAP,
+CRAM-MD5 or NTLM).
+
+WEBMAIL  - access via webmail. MUST require authentication (cleartext or
+NTLM).
+
+Control - account control access (for example Eudora-compatible password
+change or setting of user-defined filters).
+
+2. Attribute: Sandy-Mail-Authtype
+Vendor-Type: 101
+Vendor-Length: 4
+Type: Integer
+
+This  attribute  shows  a  type  of  authentication requested by client.
+It SHOULD be used in all Authentication Request packets from NAS.
+
+Possible values:
+
+   NONE            0
+   PLAIN           1
+   CRAM-MD5        2
+   APOP            3
+   KRB4            4
+   KRB5            5
+   NTLM            6
+   NTLM2           7
+   CRAM-MD4        8
+   CRAM-SHA1       9
+
+NONE  -  client  doesn't do authentication. This is valid in conjunction
+with Transfer and Delivery Sandy-Mail-Service attributes.
+
+PLAIN - authentication via cleartext (PAP).
+
+CRAM-MD5 - RFC2104/RFC2195/RFC2554 CRAM-MD5 authentication
+
+APOP - RFC 1939 APOP authentication
+
+KRB4 - (reserved) Kerberos V4 authentication
+
+KRB5 - (reserved) Kerberos V5 authentication
+
+NTLM  -  Microsoft  NTLM  v1  authentication.  SHOULD  be implemented as
+         MS-CHAP v1 (RFC2433/RFC2458)
+
+NTLM2   -   (reserved)  Microsoft  NTLM  v2  authentication.  SHOULD  be
+        implemented as MS-CHAP v2 (RFC2759/RFC2458)
+
+CRAM-MD4 - MD4 digest authentication
+
+CRAM-SHA1 - SHA1 digest authentication
+
+
+3. Attribute: Sandy-Mail-Challenge
+Vendor-Type: 102
+Vendor-Length: >2
+Type: String
+
+Challenge for challenge-response (APOP, CRAM-MD5) authentication
+
+4. Attribute: Sandy-Mail-Response
+Vendor-Type: 103
+Vendor-Length: >2
+Type: Octets
+
+Response to challenge-response (APOP, CRAM-MD5) authentication
+
+5. Sandy-Mail-Address
+Vendor-Type: 104
+Vendor-Length: >2
+Type: Octets
+
+E-mail  address.  It  MAY  be used to show destination e-mail address on
+Transfer  and  source e-mail address on Delivery request and in reply to
+WEBMAIL request.
+
+6. Sandy-Mail-Spamcontrol
+Vendor-Type: 105
+Vendor-Length: 4
+Type: Integer
+
+bit-masked value to show which spam-control mechanism SHOULD be used for
+user account. It MAY be used in reply to Transfer or Delivery request.
+
+Special values:
+ NONE          0
+ ALL           0xFFFFFFFF
+
+All other values are are obtained by XORing this values:
+ Relaying         1
+ IPResolve        2
+ Helo             4
+ BlackList        6
+ WhiteList        16
+ RBL              32
+ MailFrom         64
+ SrcDomain        128
+ DstDomain        256
+ Content          512
+
+First  16  bits  (values  > 0x0000FFFF) can be used for implementation -
+specific mechanisms.
+
+ NONE - no check. Any kind of relaying allowed
+ Ralaying - (for Transfer) - check unauthorized relaying attempts
+ IPResolv - (for Transfer) - check source IP address to resolve in DNS
+ Helo - (for Transfer) check resolution of name in SMTP HELO command
+ BlackList - check in the BlackList
+ WhiteList - check in WhiteList
+ RBL - (for Transfer) turn on RBL-like checks
+ MailFrom - (for Transfer) check existence of Mail From: address
+ SrcDomain - check existence of source domain
+ DstDinain - check existence of destination domain
+ Content - turn on content filtering
+ ALL - do all possible checks
+
+7. Attribute: Sandy-Mail-Notification
+Vendor-Type: 106
+Vendor-Length: >2
+Type: Octets
+
+This  attribute  can  be  used  to notify user on new mail received (for
+example   via   SMS).   It   MAY   be   used  in  response  to  Delivery
+Sandy-Mail-Service.  Value  of  this  attribute  is fully implementation
+specific and may be divided into subfields.
+
+8. Attribute: Sandy-Mail-Box
+Vendor-Type: 107
+Vendor-Length: >2
+Type: String
+
+This attribute shows location of user's mailbox. It can also be used for
+redirection  of  all messages to another address, program, etc. Value of
+this  attribute  is  implementation  specific,  but  sendmail  syntax is
+recommended though (that is first symbol defines a type of destination -
+'|'  -  program, '>' - file, etc). This attribute MAY be used in replies
+First  16  bits  (values  > 0x0000FFFF) can be used for implementation -
+specific mechanisms. to Delivery request.
+
+9. Attribute: Sandy-Mail-Quota
+Vendor-Type: 108
+Vendor-Length: 4
+Type: Integer
+
+Contains  a  quota  for user's mailbox size in octets. It MAY be used in
+reply to Delivery request.
+
+10. Attribute: Sandy-Mail-Filter
+Vendor-Type: 109
+Vendor-Length: >5
+Type: Octets
+
+This complex attribute contains of 3 parts - Filter-Name, Parameter-Name
+and  Parameter-Value. Each part consists of 1 octet which shows a length
+of  the  part  followed  by  content of the part. It's used to configure
+user-defined    filters    (for   automatic   forwarding,   replies   or
+user-controlled  content  filtering). A single RADIUS packet MAY contain
+multiple Sandy-Mail-Filter attributes.
+
+Example:
+
+This Sandy-Mail-Filter sets DESTINATION parameter for 'forward' filter.
+
+106* 33* 7* forward 11* DESTINATION 13* vlad@sandy.ru
+
+106* - Vendor-Type
+ 33* - Vendor-Length ( 1 + 7 + 1 + 11 + 1 + 13)
+  7* - strlen("forward")
+ 11* - strlen("DESTINATION")
+ 13* - strlen("vlad@sandy.ru")
+
+11. Attribute: Sandy-Mail-Box-Control
+Vendor-Type: 110
+Vendor-Length: 4
+Type: Integer
+
+bit-masked value to show which control mechanism SHOULD be used for user
+account.  It  MAY  be  used  in  reply  to POP, IMAP, WEBMAIL or Control
+request.   First   16  bits  (values  >  0x0000FFFF)  can  be  used  for
+implementation - specific mechanisms.
+
+ Values:
+
+ Delete-Messages   1
+ Keep-Sent         2
+ Read-Only         4
+
+Delete-Messages  -  delete messages immediately after user retrieval (do
+not allow user to store his mail on server).
+
+Keep-Sent - save all sent messages in Sent folder (for Webmail)
+
+Read-Only  -  allow  read  only access to user's account (for example to
+chare account among multiple users).

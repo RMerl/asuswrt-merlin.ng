@@ -1,0 +1,9 @@
+
+The sa2 shell script creates daily reports, saved in /var/log/sa directory
+(default location).
+It also removes daily data files and reports which are older than a number
+of days. This number defaults to 7 (one week of data history).
+Answer here the number of days during which a daily data file or a report
+should be kept.
+Note that this parameter is saved in the /etc/sysconfig/sysstat file.
+

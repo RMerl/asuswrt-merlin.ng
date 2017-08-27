@@ -1,0 +1,46 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  Configuration file for the "rediswho" module.
+#
+#  This module tracks the last set of login sessions for a user.
+#
+rediswho {
+	#  How many sessions to keep track of per user.
+	#  If there are more than this number, older sessions are deleted.
+	trim_count = 15
+
+	#  Expiry time in seconds.  Any sessions which have not received
+	#  an update in this time will be automatically expired.
+	expire_time = 86400
+
+	#
+	#  Each subsection contains insert / trim / expire queries.
+	#  The subsections are named after the contents of the
+	#  Acct-Status-Type attribute.  See dictionary.rfc2866 for names
+	#  of the various Acct-Status-Type values, or look at the output
+	#  of debug mode.
+	#
+	#  This module supports *any* Acct-Status-Type.  Just add a subsection
+	#  of the appropriate name, along with insert / trim / expire queries.
+	#
+	Start {
+		insert = "LPUSH %{User-Name} %l,%{Acct-Session-Id},%{NAS-IP-Address},%{Acct-Session-Time},%{Framed-IP-Address},%{%{Acct-Input-Gigawords}:-0},%{%{Acct-Output-Gigawords}:-0},%{%{Acct-Input-Octets}:-0},%{%{Acct-Output-Octets}:-0}"
+		trim =   "LTRIM %{User-Name} 0 ${..trim_count}"
+		expire = "EXPIRE %{User-Name} ${..expire_time}"
+	}
+
+	Interim-Update {
+		insert = "LPUSH %{User-Name} %l,%{Acct-Session-Id},%{NAS-IP-Address},%{Acct-Session-Time},%{Framed-IP-Address},%{%{Acct-Input-Gigawords}:-0},%{%{Acct-Output-Gigawords}:-0},%{%{Acct-Input-Octets}:-0},%{%{Acct-Output-Octets}:-0}"
+		trim =   "LTRIM %{User-Name} 0 ${..trim_count}"
+		expire = "EXPIRE %{User-Name} ${..expire_time}"
+	}
+
+	Stop {
+		insert = "LPUSH %{User-Name} %l,%{Acct-Session-Id},%{NAS-IP-Address},%{Acct-Session-Time},%{Framed-IP-Address},%{%{Acct-Input-Gigawords}:-0},%{%{Acct-Output-Gigawords}:-0},%{%{Acct-Input-Octets}:-0},%{%{Acct-Output-Octets}:-0}"
+		trim =   "LTRIM %{User-Name} 0 ${..trim_count}"
+		expire = "EXPIRE %{User-Name} ${..expire_time}"
+	}
+}

@@ -1,0 +1,1768 @@
+<!-- ##### SECTION Title ##### -->
+Standard Parameter and Value Types
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_BOOLEAN ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_BOOLEAN ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_BOOLEAN ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_BOOLEAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecBoolean ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_boolean ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_boolean ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_boolean: 
+
+
+<!-- ##### FUNCTION g_value_get_boolean ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_CHAR ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_CHAR ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_CHAR ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_CHAR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecChar ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_char ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_char ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_char: 
+
+
+<!-- ##### FUNCTION g_value_get_char ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_get_schar ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_schar ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_char: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_UCHAR ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_UCHAR ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_UCHAR ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_UCHAR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecUChar ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_uchar ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_uchar ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_uchar: 
+
+
+<!-- ##### FUNCTION g_value_get_uchar ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_INT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_INT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_INT ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_INT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecInt ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_int ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_int ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_int: 
+
+
+<!-- ##### FUNCTION g_value_get_int ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_UINT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_UINT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_UINT ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_UINT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecUInt ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_uint ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_uint ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_uint: 
+
+
+<!-- ##### FUNCTION g_value_get_uint ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_LONG ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_LONG ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_LONG ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_LONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecLong ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_long ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_long ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_long: 
+
+
+<!-- ##### FUNCTION g_value_get_long ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_ULONG ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_ULONG ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_ULONG ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_ULONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecULong ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_ulong ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_ulong ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_ulong: 
+
+
+<!-- ##### FUNCTION g_value_get_ulong ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_INT64 ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_INT64 ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_INT64 ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_INT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecInt64 ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_int64 ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_int64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_int64: 
+
+
+<!-- ##### FUNCTION g_value_get_int64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_UINT64 ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_UINT64 ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_UINT64 ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_UINT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecUInt64 ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_uint64 ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_uint64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_uint64: 
+
+
+<!-- ##### FUNCTION g_value_get_uint64 ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_FLOAT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_FLOAT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_FLOAT ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_FLOAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecFloat ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+@epsilon: 
+
+<!-- ##### FUNCTION g_param_spec_float ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_float ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_float: 
+
+
+<!-- ##### FUNCTION g_value_get_float ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_DOUBLE ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_DOUBLE ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_DOUBLE ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_DOUBLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecDouble ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@minimum: 
+@maximum: 
+@default_value: 
+@epsilon: 
+
+<!-- ##### FUNCTION g_param_spec_double ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@minimum: 
+@maximum: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_double ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_double: 
+
+
+<!-- ##### FUNCTION g_value_get_double ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_ENUM ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_ENUM ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_ENUM ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_ENUM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecEnum ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@enum_class: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_enum ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@enum_type: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_enum ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_enum: 
+
+
+<!-- ##### FUNCTION g_value_get_enum ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_FLAGS ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_FLAGS ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_FLAGS ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecFlags ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@flags_class: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_flags ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@flags_type: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_flags ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_flags: 
+
+
+<!-- ##### FUNCTION g_value_get_flags ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_STRING ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_STRING ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_STRING ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_STRING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecString ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@default_value: 
+@cset_first: 
+@cset_nth: 
+@substitutor: 
+@null_fold_if_empty: 
+@ensure_non_null: 
+
+<!-- ##### TYPEDEF gchararray ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_param_spec_string ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_string: 
+
+
+<!-- ##### FUNCTION g_value_set_static_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_string: 
+
+
+<!-- ##### FUNCTION g_value_take_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_string: 
+
+
+<!-- ##### FUNCTION g_value_set_string_take_ownership ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_string: 
+
+
+<!-- ##### FUNCTION g_value_get_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_dup_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_PARAM ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_PARAM ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_PARAM ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_PARAM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecParam ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+
+<!-- ##### FUNCTION g_param_spec_param ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@param_type: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_param ##### -->
+<para>
+
+</para>
+
+@value: 
+@param: 
+
+
+<!-- ##### FUNCTION g_value_take_param ##### -->
+<para>
+
+</para>
+
+@value: 
+@param: 
+
+
+<!-- ##### FUNCTION g_value_set_param_take_ownership ##### -->
+<para>
+
+</para>
+
+@value: 
+@param: 
+
+
+<!-- ##### FUNCTION g_value_get_param ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_dup_param ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_BOXED ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_BOXED ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_BOXED ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_BOXED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecBoxed ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+
+<!-- ##### FUNCTION g_param_spec_boxed ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@boxed_type: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_boxed ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_boxed: 
+
+
+<!-- ##### FUNCTION g_value_set_static_boxed ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_boxed: 
+
+
+<!-- ##### FUNCTION g_value_take_boxed ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_boxed: 
+
+
+<!-- ##### FUNCTION g_value_set_boxed_take_ownership ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_boxed: 
+
+
+<!-- ##### FUNCTION g_value_get_boxed ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_dup_boxed ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_POINTER ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_POINTER ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_POINTER ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_POINTER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecPointer ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+
+<!-- ##### FUNCTION g_param_spec_pointer ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_pointer ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_pointer: 
+
+
+<!-- ##### FUNCTION g_value_get_pointer ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_OBJECT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_OBJECT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_OBJECT ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_OBJECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecObject ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+
+<!-- ##### FUNCTION g_param_spec_object ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@object_type: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_object ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_object: 
+
+
+<!-- ##### FUNCTION g_value_take_object ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_object: 
+
+
+<!-- ##### FUNCTION g_value_set_object_take_ownership ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_object: 
+
+
+<!-- ##### FUNCTION g_value_get_object ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_dup_object ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_UNICHAR ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_UNICHAR ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_UNICHAR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecUnichar ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_unichar ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_VALUE_ARRAY ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_VALUE_ARRAY ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_VALUE_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecValueArray ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@element_spec: 
+@fixed_n_elements: 
+
+<!-- ##### FUNCTION g_param_spec_value_array ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@element_spec: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_OVERRIDE ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_OVERRIDE ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_OVERRIDE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecOverride ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_param_spec_override ##### -->
+<para>
+
+</para>
+
+@name: 
+@overridden: 
+@Returns: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_GTYPE ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_GTYPE ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_GTYPE ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_GTYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecGType ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@is_a_type: 
+
+<!-- ##### FUNCTION g_param_spec_gtype ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@is_a_type: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_get_gtype ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_gtype ##### -->
+<para>
+
+</para>
+
+@value: 
+@v_gtype: 
+
+
+<!-- ##### MACRO G_IS_PARAM_SPEC_VARIANT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_PARAM_SPEC_VARIANT ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### MACRO G_VALUE_HOLDS_VARIANT ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_PARAM_VARIANT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GParamSpecVariant ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+@type: 
+@default_value: 
+
+<!-- ##### FUNCTION g_param_spec_variant ##### -->
+<para>
+
+</para>
+
+@name: 
+@nick: 
+@blurb: 
+@type: 
+@default_value: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_get_variant ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_dup_variant ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_value_set_variant ##### -->
+<para>
+
+</para>
+
+@value: 
+@variant: 
+
+
+<!-- ##### FUNCTION g_value_take_variant ##### -->
+<para>
+
+</para>
+
+@value: 
+@variant: 
+
+

@@ -1,0 +1,529 @@
+<!-- ##### SECTION Title ##### -->
+date-time
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF GTimeSpan ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_TIME_SPAN_DAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TIME_SPAN_HOUR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TIME_SPAN_MINUTE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TIME_SPAN_SECOND ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TIME_SPAN_MILLISECOND ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GDateTime ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_date_time_unref ##### -->
+<para>
+
+</para>
+
+@datetime: 
+
+
+<!-- ##### FUNCTION g_date_time_ref ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_now ##### -->
+<para>
+
+</para>
+
+@tz: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_now_local ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_now_utc ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_from_unix_local ##### -->
+<para>
+
+</para>
+
+@t: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_from_unix_utc ##### -->
+<para>
+
+</para>
+
+@t: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_from_timeval_local ##### -->
+<para>
+
+</para>
+
+@tv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_from_timeval_utc ##### -->
+<para>
+
+</para>
+
+@tv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new ##### -->
+<para>
+
+</para>
+
+@tz: 
+@year: 
+@month: 
+@day: 
+@hour: 
+@minute: 
+@seconds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_local ##### -->
+<para>
+
+</para>
+
+@year: 
+@month: 
+@day: 
+@hour: 
+@minute: 
+@seconds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_new_utc ##### -->
+<para>
+
+</para>
+
+@year: 
+@month: 
+@day: 
+@hour: 
+@minute: 
+@seconds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@timespan: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_years ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@years: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_months ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@months: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_weeks ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@weeks: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_days ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@days: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_hours ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@hours: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_minutes ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@minutes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_seconds ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@seconds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_add_full ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@years: 
+@months: 
+@days: 
+@hours: 
+@minutes: 
+@seconds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_compare ##### -->
+<para>
+
+</para>
+
+@dt1: 
+@dt2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_difference ##### -->
+<para>
+
+</para>
+
+@end: 
+@begin: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_hash ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_equal ##### -->
+<para>
+
+</para>
+
+@dt1: 
+@dt2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_ymd ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@year: 
+@month: 
+@day: 
+
+
+<!-- ##### FUNCTION g_date_time_get_year ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_month ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_day_of_month ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_week_numbering_year ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_week_of_year ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_day_of_week ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_day_of_year ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_hour ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_minute ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_second ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_microsecond ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_seconds ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_to_unix ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_to_timeval ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@tv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_utc_offset ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_get_timezone_abbreviation ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_is_daylight_savings ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_to_timezone ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@tz: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_to_local ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_to_utc ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_time_format ##### -->
+<para>
+
+</para>
+
+@datetime: 
+@format: 
+@Returns: 
+
+

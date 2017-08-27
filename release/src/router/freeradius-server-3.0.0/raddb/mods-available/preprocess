@@ -1,0 +1,62 @@
+# -*- text -*-
+#
+#  $Id$
+
+# Preprocess the incoming RADIUS request, before handing it off
+# to other modules.
+#
+#  This module processes the 'huntgroups' and 'hints' files.
+#  In addition, it re-writes some weird attributes created
+#  by some NAS, and converts the attributes into a form which
+#  is a little more standard.
+#
+preprocess {
+	# Search for files in a subdirectory of mods-config which
+	# matches this instance of the preprocess module.
+	moddir = ${modconfdir}/${.:instance}
+
+	huntgroups = ${moddir}/huntgroups
+	hints = ${moddir}/hints
+
+	# This hack changes Ascend's weird port numbering
+	# to standard 0-??? port numbers so that the "+" works
+	# for IP address assignments.
+	with_ascend_hack = no
+	ascend_channels_per_line = 23
+
+	# Windows NT machines often authenticate themselves as
+	# NT_DOMAIN\username
+	#
+	# If this is set to 'yes', then the NT_DOMAIN portion
+	# of the user-name is silently discarded.
+	#
+	# This configuration entry SHOULD NOT be used.
+	# See the "realms" module for a better way to handle
+	# NT domains.
+	with_ntdomain_hack = no
+
+	# Specialix Jetstream 8500 24 port access server.
+	#
+	# If the user name is 10 characters or longer, a "/"
+	# and the excess characters after the 10th are
+	# appended to the user name.
+	#
+	# If you're not running that NAS, you don't need
+	# this hack.
+	with_specialix_jetstream_hack = no
+
+	# Cisco (and Quintum in Cisco mode) sends it's VSA attributes
+	# with the attribute name *again* in the string, like:
+	#
+	#   H323-Attribute = "h323-attribute=value".
+	#
+	# If this configuration item is set to 'yes', then
+	# the redundant data in the the attribute text is stripped
+	# out.  The result is:
+	#
+	#  H323-Attribute = "value"
+	#
+	# If you're not running a Cisco or Quintum NAS, you don't
+	# need this hack.
+	with_cisco_vsa_hack = no
+}

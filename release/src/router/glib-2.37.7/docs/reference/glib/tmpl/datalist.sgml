@@ -1,0 +1,223 @@
+<!-- ##### SECTION Title ##### -->
+Keyed Data Lists
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GData ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_datalist_init ##### -->
+<para>
+
+</para>
+
+@datalist: 
+
+
+<!-- ##### MACRO g_datalist_id_set_data ##### -->
+<para>
+
+</para>
+
+@dl: 
+@q: 
+@d: 
+
+
+<!-- ##### FUNCTION g_datalist_id_set_data_full ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@key_id: 
+@data: 
+@destroy_func: 
+
+
+<!-- ##### FUNCTION g_datalist_id_get_data ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@key_id: 
+@Returns: 
+
+
+<!-- ##### MACRO g_datalist_id_remove_data ##### -->
+<para>
+
+</para>
+
+@dl: 
+@q: 
+
+
+<!-- ##### FUNCTION g_datalist_id_remove_no_notify ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@key_id: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GDuplicateFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_datalist_id_dup_data ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@key_id: 
+@dup_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_datalist_id_replace_data ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@key_id: 
+@oldval: 
+@newval: 
+@destroy: 
+@old_destroy: 
+@Returns: 
+
+
+<!-- ##### MACRO g_datalist_set_data ##### -->
+<para>
+
+</para>
+
+@dl: 
+@k: 
+@d: 
+
+
+<!-- ##### MACRO g_datalist_set_data_full ##### -->
+<para>
+
+</para>
+
+@dl: 
+@k: 
+@d: 
+@f: 
+
+
+<!-- ##### FUNCTION g_datalist_get_data ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@key: 
+@Returns: 
+
+
+<!-- ##### MACRO g_datalist_remove_data ##### -->
+<para>
+
+</para>
+
+@dl: 
+@k: 
+
+
+<!-- ##### MACRO g_datalist_remove_no_notify ##### -->
+<para>
+
+</para>
+
+@dl: 
+@k: 
+
+
+<!-- ##### FUNCTION g_datalist_foreach ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_datalist_clear ##### -->
+<para>
+
+</para>
+
+@datalist: 
+
+
+<!-- ##### FUNCTION g_datalist_set_flags ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@flags: 
+
+
+<!-- ##### FUNCTION g_datalist_unset_flags ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@flags: 
+
+
+<!-- ##### FUNCTION g_datalist_get_flags ##### -->
+<para>
+
+</para>
+
+@datalist: 
+@Returns: 
+
+
+<!-- ##### MACRO G_DATALIST_FLAGS_MASK ##### -->
+<para>
+
+</para>
+
+
+

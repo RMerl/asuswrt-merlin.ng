@@ -1,0 +1,8 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+<b>carol</b> uses the <i>Extensible Authentication Protocol</i>
+in association with the <i>Microsoft CHAP version 2</i> protocol
+(<b>EAP-MSCHAPV2</b>) to authenticate against the gateway. This protocol is used
+e.g. by the Windows 7 Agile VPN client.
+In addition to her IKEv2 identity <b>PH_IP_CAROL</b>, roadwarrior <b>carol</b>
+uses the EAP identy <b>carol</b>. Gateway <b>moon</b> additionally uses an <b>RSA signature</b>
+to authenticate itself against <b>carol</b>.

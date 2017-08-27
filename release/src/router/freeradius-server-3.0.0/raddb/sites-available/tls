@@ -1,0 +1,430 @@
+######################################################################
+#
+#  Initial implementation of RADIUS over TLS (radsec)
+#
+######################################################################
+
+listen {
+	ipaddr = *
+	port = 2083
+	type = auth
+
+	# For now, only TCP transport is allowed.
+	proto = tcp
+
+	# Send packets to the default virtual server
+	virtual_server = default
+
+	clients = radsec
+
+	#  This is *exactly* the same configuration as used by the EAP-TLS
+	#  module.  It's OK for testing, but for production use it's a good
+	#  idea to use different server certificates for EAP and for RADIUS
+	#  transport.
+	tls {
+		private_key_password = whatever
+		private_key_file = ${certdir}/server.pem
+
+		#  If Private key & Certificate are located in
+		#  the same file, then private_key_file &
+		#  certificate_file must contain the same file
+		#  name.
+		#
+		#  If ca_file (below) is not used, then the
+		#  certificate_file below MUST include not
+		#  only the server certificate, but ALSO all
+		#  of the CA certificates used to sign the
+		#  server certificate.
+		certificate_file = ${certdir}/server.pem
+
+		#  Trusted Root CA list
+		#
+		#  ALL of the CA's in this list will be trusted
+		#  to issue client certificates for authentication.
+		#
+		#  In general, you should use self-signed
+		#  certificates for 802.1x (EAP) authentication.
+		#  In that case, this CA file should contain
+		#  *one* CA certificate.
+		#
+		#  This parameter is used only for EAP-TLS,
+		#  when you issue client certificates.  If you do
+		#  not use client certificates, and you do not want
+		#  to permit EAP-TLS authentication, then delete
+		#  this configuration item.
+		ca_file = ${cadir}/ca.pem
+
+		#
+		#  For DH cipher suites to work, you have to
+		#  run OpenSSL to create the DH file first:
+		#
+		#  	openssl dhparam -out certs/dh 1024
+		#
+		dh_file = ${certdir}/dh
+
+		#
+		#  If your system doesn't have /dev/urandom,
+		#  you will need to create this file, and
+		#  periodically change its contents.
+		#
+		#  For security reasons, FreeRADIUS doesn't
+		#  write to files in its configuration
+		#  directory.
+		#
+#		random_file = ${certdir}/random
+
+		#
+		#  The default fragment size is 1K.
+		#  However, it's possible to send much more data than
+		#  that over a TCP connection.  The upper limit is 64K.
+		#  Setting the fragment size to more than 1K means that
+		#  there are fewer round trips when setting up a TLS
+		#  connection.  But only if the certificates are large.
+		#
+		fragment_size = 8192
+
+		#  include_length is a flag which is
+		#  by default set to yes If set to
+		#  yes, Total Length of the message is
+		#  included in EVERY packet we send.
+		#  If set to no, Total Length of the
+		#  message is included ONLY in the
+		#  First packet of a fragment series.
+		#
+	#	include_length = yes
+
+		#  Check the Certificate Revocation List
+		#
+		#  1) Copy CA certificates and CRLs to same directory.
+		#  2) Execute 'c_rehash <CA certs&CRLs Directory>'.
+		#    'c_rehash' is OpenSSL's command.
+		#  3) uncomment the line below.
+		#  5) Restart radiusd
+	#	check_crl = yes
+		ca_path = ${cadir}
+
+	       #
+	       #  If check_cert_issuer is set, the value will
+	       #  be checked against the DN of the issuer in
+	       #  the client certificate.  If the values do not
+	       #  match, the certificate verification will fail,
+	       #  rejecting the user.
+	       #
+	       #  In 2.1.10 and later, this check can be done
+	       #  more generally by checking the value of the
+	       #  TLS-Client-Cert-Issuer attribute.  This check
+	       #  can be done via any mechanism you choose.
+	       #
+	#       check_cert_issuer = "/C=GB/ST=Berkshire/L=Newbury/O=My Company Ltd"
+
+	       #
+	       #  If check_cert_cn is set, the value will
+	       #  be xlat'ed and checked against the CN
+	       #  in the client certificate.  If the values
+	       #  do not match, the certificate verification
+	       #  will fail rejecting the user.
+	       #
+	       #  This check is done only if the previous
+	       #  "check_cert_issuer" is not set, or if
+	       #  the check succeeds.
+	       #
+	       #  In 2.1.10 and later, this check can be done
+	       #  more generally by checking the value of the
+	       #  TLS-Client-Cert-CN attribute.  This check
+	       #  can be done via any mechanism you choose.
+	       #
+	#	check_cert_cn = %{User-Name}
+	#
+		# Set this option to specify the allowed
+		# TLS cipher suites.  The format is listed
+		# in "man 1 ciphers".
+		cipher_list = "DEFAULT"
+
+		#
+
+		#  This configuration entry should be deleted
+		#  once the server is running in a normal
+		#  configuration.  It is here ONLY to make
+		#  initial deployments easier.
+		#
+		#
+		#  This is enabled in eap.conf, so we don't need it here.
+		#
+#		make_cert_command = "${certdir}/bootstrap"
+
+		#
+		#  Session resumption / fast reauthentication
+		#  cache.
+		#
+		#  The cache contains the following information:
+		#
+		#  session Id - unique identifier, managed by SSL
+		#  User-Name  - from the Access-Accept
+		#  Stripped-User-Name - from the Access-Request
+		#  Cached-Session-Policy - from the Access-Accept
+		#
+		#  The "Cached-Session-Policy" is the name of a
+		#  policy which should be applied to the cached
+		#  session.  This policy can be used to assign
+		#  VLANs, IP addresses, etc.  It serves as a useful
+		#  way to re-apply the policy from the original
+		#  Access-Accept to the subsequent Access-Accept
+		#  for the cached session.
+		#
+		#  On session resumption, these attributes are
+		#  copied from the cache, and placed into the
+		#  reply list.
+		#
+		#  You probably also want "use_tunneled_reply = yes"
+		#  when using fast session resumption.
+		#
+		cache {
+		      #
+		      #  Enable it.  The default is "no".
+		      #  Deleting the entire "cache" subsection
+		      #  Also disables caching.
+		      #
+		      #  You can disallow resumption for a
+		      #  particular user by adding the following
+		      #  attribute to the control item list:
+		      #
+		      #		Allow-Session-Resumption = No
+		      #
+		      #  If "enable = no" below, you CANNOT
+		      #  enable resumption for just one user
+		      #  by setting the above attribute to "yes".
+		      #
+		      enable = no
+
+		      #
+		      #  Lifetime of the cached entries, in hours.
+		      #  The sessions will be deleted after this
+		      #  time.
+		      #
+		      lifetime = 24 # hours
+
+		      #
+		      #  The maximum number of entries in the
+		      #  cache.  Set to "0" for "infinite".
+		      #
+		      #  This could be set to the number of users
+		      #  who are logged in... which can be a LOT.
+		      #
+		      max_entries = 255
+
+		      #
+		      #  Internal "name" of the session cache.
+		      #  Used to distinguish which TLS context
+		      #  sessions belong to.
+		      #
+		      #  The server will generate a random value
+		      #  if unset. This will change across server
+		      #  restart so you MUST set the "name" if you
+		      #  want to persist sessions (see below).
+		      #
+		      #  If you use IPv6, change the "ipaddr" below
+		      #  to "ipv6addr"
+		      #
+		      #name = "TLS ${..ipaddr} ${..port} ${..proto}"
+
+		      #
+		      #  Simple directory-based storage of sessions.
+		      #  Two files per session will be written, the SSL
+		      #  state and the cached VPs. This will persist session
+		      #  across server restarts.
+		      #
+		      #  The server will need write perms, and the directory
+		      #  should be secured from anyone else. You might want
+		      #  a script to remove old files from here periodically:
+		      #
+		      #    find ${logdir}/tlscache -mtime +2 -exec rm -f {} \;
+		      #
+		      #  This feature REQUIRES "name" option be set above.
+		      #
+		      #persist_dir = "${logdir}/tlscache"
+		}
+
+		#
+		#  Require a client certificate.
+		#
+		require_client_cert = yes
+
+		#
+		#  As of version 2.1.10, client certificates can be
+		#  validated via an external command.  This allows
+		#  dynamic CRLs or OCSP to be used.
+		#
+		#  This configuration is commented out in the
+		#  default configuration.  Uncomment it, and configure
+		#  the correct paths below to enable it.
+		#
+		verify {
+			#  A temporary directory where the client
+			#  certificates are stored.  This directory
+			#  MUST be owned by the UID of the server,
+			#  and MUST not be accessible by any other
+			#  users.  When the server starts, it will do
+			#  "chmod go-rwx" on the directory, for
+			#  security reasons.  The directory MUST
+			#  exist when the server starts.
+			#
+			#  You should also delete all of the files
+			#  in the directory when the server starts.
+	#     		tmpdir = /tmp/radiusd
+
+			#  The command used to verify the client cert.
+			#  We recommend using the OpenSSL command-line
+			#  tool.
+			#
+			#  The ${..ca_path} text is a reference to
+			#  the ca_path variable defined above.
+			#
+			#  The %{TLS-Client-Cert-Filename} is the name
+			#  of the temporary file containing the cert
+			#  in PEM format.  This file is automatically
+			#  deleted by the server when the command
+			#  returns.
+	#    		client = "/path/to/openssl verify -CApath ${..ca_path} %{TLS-Client-Cert-Filename}"
+		}
+	}
+}
+
+clients radsec {
+	client 127.0.0.1 {
+		ipaddr = 127.0.0.1
+		proto = tcp
+		secret = testing123
+	}
+}
+
+listen {
+       ipaddr = 127.0.0.1
+       port = 4000
+       type = auth
+}
+
+home_server tls {
+	ipaddr = 127.0.0.1
+	port = 2083
+	type = auth
+	secret = testing123
+	proto = tcp
+	status_check = none
+
+	tls {
+		private_key_password = whatever
+		private_key_file = ${certdir}/client.pem
+
+		#  If Private key & Certificate are located in
+		#  the same file, then private_key_file &
+		#  certificate_file must contain the same file
+		#  name.
+		#
+		#  If ca_file (below) is not used, then the
+		#  certificate_file below MUST include not
+		#  only the server certificate, but ALSO all
+		#  of the CA certificates used to sign the
+		#  server certificate.
+		certificate_file = ${certdir}/client.pem
+
+		#  Trusted Root CA list
+		#
+		#  ALL of the CA's in this list will be trusted
+		#  to issue client certificates for authentication.
+		#
+		#  In general, you should use self-signed
+		#  certificates for 802.1x (EAP) authentication.
+		#  In that case, this CA file should contain
+		#  *one* CA certificate.
+		#
+		#  This parameter is used only for EAP-TLS,
+		#  when you issue client certificates.  If you do
+		#  not use client certificates, and you do not want
+		#  to permit EAP-TLS authentication, then delete
+		#  this configuration item.
+		ca_file = ${cadir}/ca.pem
+
+		#
+		#  For DH cipher suites to work, you have to
+		#  run OpenSSL to create the DH file first:
+		#
+		#  	openssl dhparam -out certs/dh 1024
+		#
+		dh_file = ${certdir}/dh
+		random_file = ${certdir}/random
+
+		#
+		#  The default fragment size is 1K.
+		#  However, TLS can send 64K of data at once.
+		#  It can be useful to set it higher.
+		#
+		fragment_size = 8192
+
+		#  include_length is a flag which is
+		#  by default set to yes If set to
+		#  yes, Total Length of the message is
+		#  included in EVERY packet we send.
+		#  If set to no, Total Length of the
+		#  message is included ONLY in the
+		#  First packet of a fragment series.
+		#
+	#	include_length = yes
+
+		#  Check the Certificate Revocation List
+		#
+		#  1) Copy CA certificates and CRLs to same directory.
+		#  2) Execute 'c_rehash <CA certs&CRLs Directory>'.
+		#    'c_rehash' is OpenSSL's command.
+		#  3) uncomment the line below.
+		#  5) Restart radiusd
+	#	check_crl = yes
+		ca_path = ${cadir}
+
+	       #
+	       #  If check_cert_issuer is set, the value will
+	       #  be checked against the DN of the issuer in
+	       #  the client certificate.  If the values do not
+	       #  match, the certificate verification will fail,
+	       #  rejecting the user.
+	       #
+	       #  In 2.1.10 and later, this check can be done
+	       #  more generally by checking the value of the
+	       #  TLS-Client-Cert-Issuer attribute.  This check
+	       #  can be done via any mechanism you choose.
+	       #
+	#       check_cert_issuer = "/C=GB/ST=Berkshire/L=Newbury/O=My Company Ltd"
+
+	       #
+	       #  If check_cert_cn is set, the value will
+	       #  be xlat'ed and checked against the CN
+	       #  in the client certificate.  If the values
+	       #  do not match, the certificate verification
+	       #  will fail rejecting the user.
+	       #
+	       #  This check is done only if the previous
+	       #  "check_cert_issuer" is not set, or if
+	       #  the check succeeds.
+	       #
+	       #  In 2.1.10 and later, this check can be done
+	       #  more generally by checking the value of the
+	       #  TLS-Client-Cert-CN attribute.  This check
+	       #  can be done via any mechanism you choose.
+	       #
+	#	check_cert_cn = %{User-Name}
+	#
+		# Set this option to specify the allowed
+		# TLS cipher suites.  The format is listed
+		# in "man 1 ciphers".
+		cipher_list = "DEFAULT"
+	}
+
+}
+
+home_server_pool tls {
+		 type = fail-over
+		 home_server = tls
+}
+
+realm tls {
+      auth_pool = tls
+}

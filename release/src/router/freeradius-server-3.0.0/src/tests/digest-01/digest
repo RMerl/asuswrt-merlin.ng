@@ -1,0 +1,9 @@
+User-Name = "test",
+Digest-Response = "631d6d73147add2f9e437f59bbc3aeb7",
+Digest-Realm = "testrealm",
+Digest-Nonce = "1234abcd",
+Digest-Method = "INVITE",
+Digest-URI = "sip:5555551212@example.com",
+Digest-Algorithm = "MD5",
+Digest-User-Name = "test",
+Message-Authenticator = ""

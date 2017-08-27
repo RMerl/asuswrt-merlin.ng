@@ -1,0 +1,75 @@
+<!-- ##### SECTION Title ##### -->
+GFileOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFileOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_file_output_stream_query_info ##### -->
+<para>
+
+</para>
+
+@stream: 
+@attributes: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_output_stream_query_info_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@attributes: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_file_output_stream_query_info_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_output_stream_get_etag ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+

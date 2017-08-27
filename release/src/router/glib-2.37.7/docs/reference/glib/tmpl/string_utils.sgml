@@ -1,0 +1,757 @@
+<!-- ##### SECTION Title ##### -->
+String Utility Functions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_strdup ##### -->
+<para>
+
+</para>
+
+@str: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strndup ##### -->
+<para>
+
+</para>
+
+@str: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strdupv ##### -->
+<para>
+
+</para>
+
+@str_array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strnfill ##### -->
+<para>
+
+</para>
+
+@length: 
+@fill_char: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_stpcpy ##### -->
+<para>
+
+</para>
+
+@dest: 
+@src: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strstr_len ##### -->
+<para>
+
+</para>
+
+@haystack: 
+@haystack_len: 
+@needle: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strrstr ##### -->
+<para>
+
+</para>
+
+@haystack: 
+@needle: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strrstr_len ##### -->
+<para>
+
+</para>
+
+@haystack: 
+@haystack_len: 
+@needle: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_str_has_prefix ##### -->
+<para>
+
+</para>
+
+@str: 
+@prefix: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_str_has_suffix ##### -->
+<para>
+
+</para>
+
+@str: 
+@suffix: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strcmp0 ##### -->
+<para>
+
+</para>
+
+@str1: 
+@str2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strlcpy ##### -->
+<para>
+
+</para>
+
+@dest: 
+@src: 
+@dest_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strlcat ##### -->
+<para>
+
+</para>
+
+@dest: 
+@src: 
+@dest_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strdup_printf ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strdup_vprintf ##### -->
+<para>
+
+</para>
+
+@format: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_printf ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vprintf ##### -->
+<para>
+
+</para>
+
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_fprintf ##### -->
+<para>
+
+</para>
+
+@file: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfprintf ##### -->
+<para>
+
+</para>
+
+@file: 
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vsprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_snprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@n: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vsnprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@n: 
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vasprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_printf_string_upper_bound ##### -->
+<para>
+
+</para>
+
+@format: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isalnum ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isalpha ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_iscntrl ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isdigit ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isgraph ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_islower ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isprint ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_ispunct ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isspace ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isupper ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_isxdigit ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_digit_value ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_xdigit_value ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_strcasecmp ##### -->
+<para>
+
+</para>
+
+@s1: 
+@s2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_strncasecmp ##### -->
+<para>
+
+</para>
+
+@s1: 
+@s2: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_strup ##### -->
+<para>
+
+</para>
+
+@str: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_strdown ##### -->
+<para>
+
+</para>
+
+@str: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_tolower ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_toupper ##### -->
+<para>
+
+</para>
+
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_ascii_up ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_ascii_down ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strup ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strdown ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strcasecmp ##### -->
+<para>
+
+</para>
+
+@s1: 
+@s2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strncasecmp ##### -->
+<para>
+
+</para>
+
+@s1: 
+@s2: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strreverse ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_strtoll ##### -->
+<para>
+
+</para>
+
+@nptr: 
+@endptr: 
+@base: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_strtoull ##### -->
+<para>
+
+</para>
+
+@nptr: 
+@endptr: 
+@base: 
+@Returns: 
+
+
+<!-- ##### MACRO G_ASCII_DTOSTR_BUF_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_ascii_strtod ##### -->
+<para>
+
+</para>
+
+@nptr: 
+@endptr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_dtostr ##### -->
+<para>
+
+</para>
+
+@buffer: 
+@buf_len: 
+@d: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_ascii_formatd ##### -->
+<para>
+
+</para>
+
+@buffer: 
+@buf_len: 
+@format: 
+@d: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strtod ##### -->
+<para>
+
+</para>
+
+@nptr: 
+@endptr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strchug ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strchomp ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### MACRO g_strstrip ##### -->
+<para>
+
+</para>
+
+@string: 
+
+
+<!-- ##### FUNCTION g_strdelimit ##### -->
+<para>
+
+</para>
+
+@string: 
+@delimiters: 
+@new_delimiter: 
+@Returns: 
+
+
+<!-- ##### MACRO G_STR_DELIMITERS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_strescape ##### -->
+<para>
+
+</para>
+
+@source: 
+@exceptions: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strcompress ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strcanon ##### -->
+<para>
+
+</para>
+
+@string: 
+@valid_chars: 
+@substitutor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strsplit ##### -->
+<para>
+
+</para>
+
+@string: 
+@delimiter: 
+@max_tokens: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strsplit_set ##### -->
+<para>
+
+</para>
+
+@string: 
+@delimiters: 
+@max_tokens: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strfreev ##### -->
+<para>
+
+</para>
+
+@str_array: 
+
+
+<!-- ##### FUNCTION g_strconcat ##### -->
+<para>
+
+</para>
+
+@string1: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strjoin ##### -->
+<para>
+
+</para>
+
+@separator: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strjoinv ##### -->
+<para>
+
+</para>
+
+@separator: 
+@str_array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strv_length ##### -->
+<para>
+
+</para>
+
+@str_array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strerror ##### -->
+<para>
+
+</para>
+
+@errnum: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strsignal ##### -->
+<para>
+
+</para>
+
+@signum: 
+@Returns: 
+
+

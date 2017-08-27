@@ -1,0 +1,1550 @@
+#!/bin/sh
+# the next line restarts using wish and correctly pass the arguments to this\
+exec wish "$0" -- "$@"
+
+
+###############################################################################
+#
+# Copyright (c) 2000, 2001 David Doubrava (linux_monitor(at)volny(dot)cz)
+#
+# Primary-site:	http://www.volny.cz:/linux_monitor/isag
+#
+# This program/module is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public License
+# as published by Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version
+#  
+# This program is distributed in the hope that it will be usefull,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY of FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+###############################################################################
+#
+# 2006/04/14 : Sebastien GODARD
+# isag v1.3
+# Updated to current sysstat version (6.1.2).
+#
+# $Id: isag.m4,v 1.26 2004/03/22 19:39:14 david Exp $
+# $State: Exp $
+#
+# $Log: isag.m4,v $
+# Revision 1.26  2004/03/22 19:39:14  david
+# fully avoided shell script, i hope the temp file issue is fixed
+#
+# Revision 1.25  2004/03/22 19:13:18  david
+# eliminated shell script, security issue
+#
+# Revision 1.24  2004/03/02 20:28:00  david
+# replaced <> by () in mangled e-mails
+#
+# Revision 1.23  2004/02/24 07:40:14  david
+# replaced (at) and (dot) in most e-mail addresses
+#
+# Revision 1.22  2003/02/26 18:19:09  david
+# realized new layout of files
+#
+# Revision 1.21  2003/02/23 21:07:35  david
+# first prototype of sag
+#
+# Revision 1.20  2003/01/26 20:41:48  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.19  2002/03/04 20:23:26  david
+# fixed whole day functionality
+#
+# Revision 1.17  2001/07/30 18:05:41  sarrep
+# fix: bug2001060501; set LC_ALL to sane value; see Debian bug #101545
+#
+# Revision 1.16  2001/04/22 14:19:34  sarrep
+# Added GPL related text
+# remove notes about solving R switch problems
+#
+# Revision 1.15  2001/03/17 17:30:15  sarrep
+# CVSizing, unified headers of each element file
+#
+# Revision 1.14  2001/03/17 16:55:26  sarrep
+# LINUX RESTART zeroes all counters.
+#
+# Revision 1.13  2001/03/11 20:15:19  sarrep
+# First step after CVSizing
+#
+# Revision 1.12  2001/02/20 19:06:10  sarrep
+# added q switch and actialize B switch to version 3.3.6
+#
+# Revision 1.11  2001/02/10 10:42:03  sarrep
+# finally renamed from sarrep to isag
+# added additional commnts in header
+# added patching
+#
+# Revision 1.10  2001/02/03 11:02:17  sarrep
+# removed many same (for family) parts to different files.
+# improved generationg of cmd array.
+#
+# Revision 1.9  2001/01/27 19:28:43  root
+# added secondary Y axes functionality
+# added -c cfg_file cmdln option
+# writting of selected config data to cfg_file
+# renamed chart lines to names used in sar
+# parametrized creating of cmd() array
+# added generic var __M4_TIMELEN__ for proc_line_generic
+#
+# Revision 1.8  2001/01/20 19:02:53  root
+# added version check due to bug.2312200001
+# added secondary Y label
+#
+# Revision 1.7  2000/12/30 18:35:06  root
+# split into few parts. main idea next extensibility for other platforms
+#
+# Revision 1.6  2000/12/30 11:30:20  root
+# command line argument(s) functionality was added
+# preparation for config file was done
+# and few small changes
+#
+# Revision 1.5  2000/12/23 21:22:10  root
+# fixed situation if LINUX RESTART is in data file
+# fixed if no more than one line in data file.
+# try to fix wrong graph size after resizing appl. window
+#
+# Revision 1.4  2000/12/23 20:48:31  root
+# function rescale_graph was renamed to redraw_graph
+# and one menu item was added.
+#
+# Revision 1.3  2000/12/16 13:37:12  root
+# resize window related functions
+#
+# Revision 1.2  2000/12/11 18:54:17  root
+# behavior will be parametrized
+#
+# Revision 1.1  2000/12/11 15:01:07  root
+# Initial revision
+#
+#
+###############################################################################
+
+# specific for sebastien's sar
+
+#
+###############################################################################
+# $Id: version.m4,v 1.4 2002/03/04 20:20:27 david Rel $
+# $State: Rel $
+# $Log: version.m4,v $
+# Revision 1.4  2002/03/04 20:20:27  david
+# make new end line
+#
+# Revision 1.3  2001/03/17 17:43:07  sarrep
+# About dialog modify
+#
+# Revision 1.2  2001/03/17 17:30:26  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+###############################################################################
+
+set ident "/usr/bin/ident"
+set version ""
+# This can be set only if small interactive change in result code was occured
+set patchlevel ""
+if {[catch {set fp [open "| $ident $argv0" "r"]}] == 0} {
+	set n 0
+	while {[gets $fp line] != -1} {
+		if {$n != 0 && -1 != [string first "Id:" $line]} {
+			set version "$version\n[string trim $line]"
+		} else {
+			set n 1
+		}
+	}
+} else {
+	set version "Unknown! $ident is missing"
+}
+if {"" != $patchlevel} {
+	set version "$version\nPatch level: $patchlevel"
+}
+# $Source: /var/CVSROOT/cvs/i-sag/common/version.m4,v $
+##############################################################################
+# Tcl/Tk: version check
+#
+# $Id: ver_check.m4,v 1.6 2003/03/03 20:11:16 david Exp $
+# $State: Exp $
+# $Log: ver_check.m4,v $
+# Revision 1.6  2003/03/03 20:11:16  david
+# fixed tools name
+#
+# Revision 1.5  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.4  2002/03/04 20:20:27  david
+# make new end line
+#
+# Revision 1.3  2001/03/17 17:30:25  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+set needed_version 8.0
+if {$tcl_version < $needed_version} {
+	out_msg "Warning Version check" "sag needs $needed_version, but this is version $tcl_version of Tcl.\nSome features can fail"
+#	exit
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/common/ver_check.m4,v $
+###############################################################################
+# default paths, programs and other variables
+#
+# $Id: variables.m4,v 1.5 2003/01/26 20:41:49 david Rel $
+# $State: Rel $
+# $Log: variables.m4,v $
+# Revision 1.5  2003/01/26 20:41:49  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.4  2002/03/04 20:20:27  david
+# make new end line
+#
+# Revision 1.3  2001/03/17 17:30:24  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+
+set gnuplot	"/usr/bin/gnuplot"
+set grep	"/bin/grep"
+set sh		"/bin/sh"
+set gunzip	"/usr/bin/gunzip"
+set sed		"/bin/sed"
+
+# default placement of config file
+set isag_cfg_file	"$env(HOME)/.isag.cfg"
+set sag_graph_wd	720
+set sag_graph_ht	400
+
+# $Source: /var/CVSROOT/cvs/i-sag/common/variables.m4,v $
+
+###############################################################################
+# Message box functionality
+#
+# $Id: msg_box.m4,v 1.6 2002/03/24 15:18:26 david Exp $
+# $State: Exp $
+# $Log: msg_box.m4,v $
+# Revision 1.6  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.5  2002/03/04 20:21:08  david
+# make new end line
+#
+# Revision 1.4  2001/06/03 19:58:04  sarrep
+# improved behaviour, added grab capability
+# removed (softly) Cancel button
+#
+# Revision 1.3  2001/03/17 17:30:22  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+
+proc msg_box_btn {w} {
+	destroy $w
+}
+
+proc err_msg {title text} {
+	tk_messageBox -icon error -type ok  -message $text -title $title
+}	
+
+proc out_msg {title text} {
+	toplevel .msg_box
+	
+	wm title .msg_box $title
+	label .msg_box.l -text $text -justify left
+	pack .msg_box.l -side top
+	frame .msg_box.b
+	pack .msg_box.b -side top
+
+	button .msg_box.b.ok -text OK -command {msg_box_btn .msg_box}
+	pack .msg_box.b.ok -side left
+
+#	button .msg_box.b.cancel -text cancel -command {msg_box_btn .msg_box}
+#	pack .msg_box.b.cancel -side left
+
+	grab .msg_box
+	tkwait window .msg_box
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/msg_box.m4,v $
+
+# specific paths and programs
+set sar_data_path "@SA_DIR@"
+set sar_data_mask "sa\[0-9\]\[0-9\]"
+set prefix "@prefix@"
+set exec_prefix "@exec_prefix@"
+set sar "@bindir@/sar"
+
+# following check added: Thu Mar 18 21:44:52 GMT+1 2004
+if { 1 != [file executable $sar]} {
+	err_msg "Error" "File: $sar does not exist"
+	exit 
+}
+
+#fix: bug2001060501; set LC_ALL to sane value; see Debian bug #101545 
+set env(LC_ALL) "C"
+
+
+###############################################################################
+# $Id: isag_common_options.m4,v 1.6 2003/01/26 20:41:48 david Rel $
+# $State: Rel $
+# $Log: isag_common_options.m4,v $
+# Revision 1.6  2003/01/26 20:41:48  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.5  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.4  2002/03/04 20:21:51  david
+# make new end line
+#
+# Revision 1.3  2001/03/17 17:30:20  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+proc Usage {} {
+	global sar_data_path sar_data_mask isag_cfg_file sag_graph_wd sag_graph_ht
+
+	out_msg "Usage" \
+"isag \[options\]
+
+Options:
+\t-p data_path (default: $sar_data_path)
+\t-m data_file_mask (default: $sar_data_mask)
+\t-c cfg_file (default: $isag_cfg_file) 
+\t-gwd graph_width (default: $sag_graph_wd)
+\t-ght graph_height (default: $sag_graph_ht) "
+        exit
+}
+
+proc getopt {argv opt} {
+	set rv ""
+	if {-1 != [set t [lsearch -exact $argv "-$opt"]]} {
+        	set rv [lindex $argv [expr $t + 1]]
+	}
+	return $rv
+}
+
+if {-1 != [set t [lsearch -exact $argv "-h"]]} {
+	        Usage
+}
+if {-1 != [set t [lsearch -exact $argv "-?"]]} {
+	        Usage
+}
+if {[set t [getopt $argv c]] != ""} {
+	# check for path
+	if {1 == ([file exist $t] && [file isfile $t])} {
+		set isag_cfg_file $t
+	} else {
+		out_msg "Error" "<$t> is not regular file, using default <$isag_cfg_file>"
+	}
+}
+if {[set t [getopt $argv p]] != ""} {
+	# check for path
+	if {1 == ([file exist $t] && [file isdirectory $t])} {
+		set sar_data_path $t
+	} else {
+		out_msg "Error" "<$t> is not directory, using default <$sar_data_path>"
+	}
+}
+if {[set t [getopt $argv m]] != ""} {
+		set sar_data_mask $t
+}
+if {[set t [getopt $argv ght]] != ""} {
+	if {1 == [string is digit $t]} {
+		set sag_graph_ht $t
+	} else {
+		out_msg "Error" "<$t> is not decimal number, using default <$sag_graph_ht>"
+	}
+}
+if {[set t [getopt $argv gwd]] != ""} {
+	if {1 == [string is digit $t]} {
+		set sag_graph_wd $t
+	} else {
+		out_msg "Error" "<$t> is not decimal number, using default <$sag_graph_wd>"
+	}
+}
+
+unset t
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag_common_options.m4,v $
+
+###############################################################################
+#
+# Variables connected to graphs and their default values
+#
+# selected archive file for sa data, typically saNN
+# this variable is set thru: data Chooser (see: Concept Guide)
+set sag_if_archive ""
+
+# full path to archive file for sa data: either $sar_data_path/sa?? or
+# $fgnr_tmpdir/sa_data (if the former file was compressed)
+set sag_if_archive_uncompressed ""
+
+# last_graph contains last drawing function as letter
+set last_graph ""
+
+
+# path to the newest sa data file. Set by fill_file_menu, used by the main
+# procedure to autoload the file on program's startup
+set sag_latest_file ""
+
+# SGo 2008-07-06: Update options (options -S added).
+# SGo 2008-06-15: Update options (options -c and -w have been merged).
+# sar switches as names for object-instances (final and curent)
+set  prog_swtch [list b B q r R S u v w W]
+
+# maximal and current values for each graph indexed by sar switch i.e. for cpu 
+# is index u not -u
+
+foreach l $prog_swtch {
+	set val_max($l) 0
+	set val_cur($l) 0
+	set has_negative($l) 0
+}
+unset l
+# exceptions
+set val_max(u) 100
+set has_negative(R) 1
+
+set val_max(W) 1
+set val_cur(W) 1
+
+# graph/view names this is shoved in menu-view and as name of the graph
+# and other functional parameters
+#	xlabel - label for x-axis
+#	ylabel - label for y-axis
+#	y2label - label for secondary y-axis
+#	plotstr - string plot for gnuplot, describes a graph
+#
+# SGo 2008-07-06: Add menu option, ylabel and y2label for option -S.
+# SGo 2008-06-15: Update menu functions and ylabel names
+# view_n(ame) array
+set view_n(b) "I/O Transfer Rate"
+set view_n(B) "Paging Statistics"
+set view_n(q) "Run Queue"
+set view_n(r) "Memory Utilization"
+set view_n(R) "Memory Statistics"
+set view_n(S) "Swap Utilization"
+set view_n(u) "CPU Utilization"
+set view_n(v) "Inode Status"
+set view_n(w) "Process Creation and Context Switches"
+set view_n(W) "System Swapping"
+
+# xlabel is not an array - all values are same
+set xlabel "Time"
+
+# ylabel array
+set ylabel(b) "ops/s"
+set ylabel(B) "pages/s"
+set ylabel(q) ""
+set ylabel(r) "kB"
+set ylabel(R) "ops/s"
+set ylabel(S) "kB"
+set ylabel(u) "Percent"
+set ylabel(v) ""
+set ylabel(w) "ops/s"
+set ylabel(W) "swp/s"
+
+set y2label(b) ""
+set y2label(B) ""
+set y2label(q) ""
+set y2label(r) ""
+set y2label(R) ""
+set y2label(S) ""
+set y2label(u) ""
+set y2label(v) ""
+set y2label(w) ""
+set y2label(W) ""
+
+# sag_if_out_tokens describes how is input file covered
+# if no list specified the proc_line_$l() is called
+# Note: first element has index 0 (zero)!
+# SGo 2007-07-06: Add fields for option -S.
+# SGo 2007-10-21: Update fields taken for option -B.
+# SGo 2006-04-14: Update fields taken for options -B, -q, -r, -R, -v.
+# SGo 2008-06-15: Options -c and -w have been merged.
+set sag_if_out_tokens(b) [list 1 2 3 4]
+set sag_if_out_tokens2(b) ""
+set sag_if_out_tokens(B) [list 0 1 2 3 4 5 6 7]
+set sag_if_out_tokens2(B) ""
+set sag_if_out_tokens(q) [list 0 1 2 3 4]
+set sag_if_out_tokens2(q) ""
+set sag_if_out_tokens(r) [list 0 1 3 4 5]
+set sag_if_out_tokens2(r) ""
+set sag_if_out_tokens(R) [list 0 1 2]
+set sag_if_out_tokens2(R) ""
+set sag_if_out_tokens(S) [list 0 1 3]
+set sag_if_out_tokens2(S) ""
+# CPU needs special computation, following list must be empty
+# if no list is entered then following functions must be defined
+# __output_zero_metrics_$l & proc_line_$l (see: proc_line_u())
+set sag_if_out_tokens(u) ""
+set sag_if_out_tokens2(u) ""
+set sag_if_out_tokens(v) [list 0 1 2 3 5 7]
+set sag_if_out_tokens2(v) ""
+set sag_if_out_tokens(w) [list 0 1]
+set sag_if_out_tokens2(w) ""
+set sag_if_out_tokens(W) [list 0 1]
+set sag_if_out_tokens2(W) ""
+
+#
+# The sar_elim() array contains string which have to be eliminated from sar's output
+# SGo 2008-07-06: Add string for option -S.
+#
+set sar_elim(b) "tps"
+set sar_elim(B) "pgpgin"
+set sar_elim(c) "proc"
+set sar_elim(q) "runq-sz"
+set sar_elim(r) "kbmemfree"
+set sar_elim(R) "frmpg"
+set sar_elim(S) "kbswpfree"
+set sar_elim(u) "user"
+set sar_elim(v) "dentunusd"
+set sar_elim(w) "cswch"
+set sar_elim(W) "pswpin"
+
+# Functions which are responsible for data source selection and processing
+# funcs are referred from GUI
+proc fill_file_menu {} {
+	global sar_data_path sar_data_mask sag_latest_file
+
+	set max_timestamp 0
+	set directories [lsort -decreasing [glob -nocomplain -directory $sar_data_path -type d \[0-9\]\[0-9\]\[0-9\]\[0-9\]\[0-9\]\[0-9\]]]
+
+	menu .file.menu.m -tearoff false
+
+	foreach directory [concat $directories $sar_data_path ] {		
+		set files [glob -nocomplain -directory $directory -type f $sar_data_mask ]
+		# add compressed files too
+		set files [concat $files [glob -nocomplain -directory $directory -type f $sar_data_mask.gz ]]
+		set files [concat $files [glob -nocomplain -directory $directory -type f $sar_data_mask.bz2 ]]
+
+		if { 0 == [llength $files] } {
+			continue
+		}
+
+		if { $directory == $sar_data_path } {
+			set menudir ".file.menu.m"
+			
+			# Sort files according to theirs modification times descending
+
+			# i) create temporary list of items in form `timestamp:file'
+			set tmpfiles [list]
+			foreach file $files {
+				# skip symbolic links
+				if { "link" == [ file type $file]} { continue }
+				set timestamp [file mtime $file]
+				set tmpfiles [linsert $tmpfiles end "$timestamp:$file"]
+			}
+			
+			# ii) sort the temporary list 
+			set tmpfiles [lsort -decreasing $tmpfiles]
+			# iii) remove timestamps to get back the file list
+			set files [list]
+			foreach file $tmpfiles {
+				set l [string first ":" $file]
+				set files [linsert $files end [string range $file [expr $l+1] end]]
+			}
+		} else {
+			# sort file list by file name, descending 
+			set files [ lsort -decreasing $files ]
+			set l [string last "/" $directory]
+			set dir [string range  $directory  [expr $l + 1] end]
+
+			# create submenu for the $dir directory
+			set menudir ".file.menu.m.dir$dir"
+			menu $menudir -tearoff 0
+			.file.menu.m add cascade -label $dir -menu $menudir
+		}
+
+
+		# Fill menu with files
+		foreach file $files {
+			set l [string length $sar_data_path]
+			set basefile [string range $file [expr $l + 1] end]
+			set l [string last "/" $basefile]
+			set label [string range  $basefile  [expr $l + 1] end]
+			set label [string map { .gz "" } $label]
+			set label [string map { .bz2 "" } $label]
+
+			$menudir add command -label "$label" -command "set_file $basefile"
+			set timestamp [file mtime $file]
+			# ignore files small then 4kB to avoid "No data found" error
+			if { ($timestamp > $max_timestamp) && ([file size $file] > 4096) } {
+				set sag_latest_file  $basefile
+				set max_timestamp  $timestamp
+			}			
+		}
+	}
+}	
+	
+
+proc set_file {name} {
+	global sar_data_path sag_if_archive sag_if_archive_uncompressed last_graph fngr_tmpdir
+
+	set sag_if_archive $name
+	.file.lbl configure -text "Data Source: $name"
+
+	set l [string last "." $sag_if_archive]
+	if { [string range $sag_if_archive $l end] == ".gz" } {
+		# uncompress file to sa_data located in the temporary dir
+		set sag_if_archive_uncompressed "$fngr_tmpdir/sa_data"
+		exec zcat "$sar_data_path/$sag_if_archive" > $sag_if_archive_uncompressed
+	} else {
+		if { [string range $sag_if_archive $l end] == ".bz2" } {
+			set sag_if_archive_uncompressed "$fngr_tmpdir/sa_data"
+			exec bzcat "$sar_data_path/$sag_if_archive" > $sag_if_archive_uncompressed
+		} else {
+			set sag_if_archive_uncompressed "$sar_data_path/$sag_if_archive"
+		}
+	}		
+
+
+	if {"" != $last_graph} {
+		new_chart $last_graph
+	}
+}
+
+###############################################################################
+# GUI
+#
+# $Id: isag.GUI.m4,v 1.14 2004/03/02 20:28:00 david Exp $
+# $State: Exp $
+# $Log: isag.GUI.m4,v $
+# Revision 1.14  2004/03/02 20:28:00  david
+# replaced <> by () in mangled e-mails
+#
+# Revision 1.13  2004/02/24 07:40:14  david
+# replaced (at) and (dot) in most e-mail addresses
+#
+# Revision 1.12  2003/01/26 20:41:48  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.11  2002/10/31 15:07:21  david
+# fixed bad behaviour with OpenMotif WM
+#
+# Revision 1.10  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.9  2002/03/04 20:23:26  david
+# fixed whole day functionality
+#
+# Revision 1.8  2002/03/04 18:36:37  david
+# grid feature implemented
+#
+# Revision 1.7  2001/03/17 17:43:06  sarrep
+# About dialog modify
+#
+# Revision 1.6  2001/03/17 17:30:11  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+set isag_title "System Activity Grapher"
+wm title . $isag_title
+
+frame .menu -relief raised -borderwidth 2
+pack .menu -side top -fill x
+menubutton .menu.file -text "Program" -menu .menu.file.m -underline 0
+menu .menu.file.m -tearoff false
+.menu.file.m add command -label "Redraw" -underline 0 \
+        -command "set isag_gr_scale_old 0;redraw_graph" -accelerator "F5"
+.menu.file.m add command -label "Save Picture" -underline 0 \
+		-command "sag_save_graph"
+.menu.file.m add separator
+.menu.file.m add command -label "Exit Program" -underline 0 \
+        -command "exit_program" -accelerator "Alt-X"
+
+menubutton .menu.chart -text "Chart" -menu .menu.chart.m -underline 0
+menu .menu.chart.m -tearoff true
+
+# creates for each sar-switch menu item with apropriate command
+foreach l $prog_swtch {
+	.menu.chart.m add command -label $view_n($l) \
+		-command "new_chart $l" -accelerator $l
+	bind all $l "new_chart $l"
+}
+
+menubutton .menu.opt -text "Options" -menu .menu.opt.m -underline 0
+menu .menu.opt.m -tearoff false
+.menu.opt.m add checkbutton -label "Whole Day (00:00-23:59)" -underline 0 \
+        -variable sag_opt_whole_day \
+		-command "set isag_gr_scale_old 0;redraw_graph"
+.menu.opt.m add checkbutton -label "Show Grid" -underline 0 \
+        -variable sag_opt_grid -command "set isag_gr_scale_old 0;redraw_graph"
+		
+menubutton .menu.help -text "Help" -menu .menu.help.m -underline 0
+menu .menu.help.m -tearoff false
+.menu.help.m add command -label "About" -underline 0 \
+        -command {About}
+
+pack .menu.file .menu.chart .menu.opt -side left
+pack .menu.help -side right
+
+frame .file -relief raised
+pack .file -side top -fill x
+label .file.lbl -text "(No File)" -borderwidth 2
+menubutton .file.menu -relief raised -borderwidth 2 -text "-" -menu .file.menu.m
+fill_file_menu
+pack .file.lbl .file.menu -side left
+
+frame .graph
+pack .graph -side top -expand true -fill both
+
+# this var contains a current value
+set sag_gr_scale 0
+scale .graph.scale -orient vertical -length $sag_graph_ht -to 0 -from 1 -variable sag_gr_scale
+
+bind .graph.scale <Leave> "redraw_graph"
+
+canvas .graph.canv -width $sag_graph_wd -height $sag_graph_ht
+pack .graph.scale -side left -fill y
+pack .graph.canv -side right -expand true -fill both
+
+
+#bind all <Enter> "%W configure -highlightbackground blue"
+#bind all <Leave> "%W configure -highlightbackground white"
+
+bind all <Alt-x> "exit_program"
+bind all <F5> "set isag_gr_scale_old 0;redraw_graph"
+
+
+# acction to do when user closes isag with the window managers's close button
+wm protocol . WM_DELETE_WINDOW exit_program
+
+
+###############################################################################
+#
+# this function normalizes max val and sets scale and so on.
+# this part is most common for draw_? functions
+proc set_cur_max {l} {
+	global val_max sag_gr_scale val_cur
+
+	set norm [num_norm $val_max($l)]
+	set val_max($l) [lindex $norm 0]
+	.graph.scale configure -from $val_max($l) -resolution [lindex $norm 1]
+	unset norm
+	
+	set val_cur($l) $sag_gr_scale
+	if {$val_cur($l) == 0} {
+		set val_cur($l) $val_max($l)
+		set sag_gr_scale $val_cur($l)
+	}
+}
+
+###############################################################################
+#
+# this function is called when mouse leaves a graph-scale widget
+#	and here is local variable isag_gr_scale_old
+#
+# this can be also as flag, is set to 0 after resizing
+set isag_gr_scale_old 0
+proc redraw_graph {} {
+	global last_graph sag_gr_scale isag_gr_scale_old sag_if_archive
+
+	if {($last_graph == "") || ($sag_if_archive == "")} {
+		return
+	}
+
+	if {$isag_gr_scale_old != $sag_gr_scale} {
+		set isag_gr_scale_old $sag_gr_scale
+		sag_draw $last_graph
+	}
+}
+###############################################################################
+#
+# this function is called from menu-view and decides which graph will be drawn
+#
+proc new_chart {l} {
+	global last_graph val_cur sag_gr_scale
+
+	if {$last_graph != "$l"} {
+		set m [.graph.scale configure -from]
+		if {$m < $val_cur($l)} {
+			.graph.scale configure -from $val_cur($l)
+		}
+		set sag_gr_scale $val_cur($l)
+		set last_graph "$l"
+		unset m
+	}
+	sag_draw $l
+}
+###############################################################################
+#
+# About message box
+#
+proc About {} {
+	global version
+
+	out_msg About "Sar Grapher\n\nBuild info:$version\n\nhttp://www.volny.cz/linux_monitor/isag/index.html\ne-mail: linux_monitor(at)volny(dot)cz"
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag.GUI.m4,v $
+###############################################################################
+# Resizing graph window
+#
+# $Id: isag.ResizeAll.m4,v 1.7 2003/01/26 20:41:48 david Exp $
+# $State: Exp $
+# $Log:#
+#
+#
+###############################################################################
+
+bind . <Configure> {ResizeAll}
+set isag_enResizing 0
+# first time this function is empty
+proc gnuplot {w} {}
+
+proc ResizeAll {} {
+	global isag_enResizing isag_gr_scale_old
+	
+	set width [winfo width .]
+	set height [winfo height .]
+	
+	set w [expr [winfo width .graph.scale] + [winfo width .graph.canv]]
+	set h [expr [winfo height .menu] + [winfo height .file] + [winfo height .graph.scale]]
+	
+	if {($w >= $width) && ($h == $height)} {
+		incr isag_enResizing
+		return
+	}
+	
+	if {0 == $isag_enResizing} {
+		return
+	}
+
+		set isag_enResizing 0
+	if {$w <= $width} {
+# number two look as magic number
+		.graph.canv configure -width [expr $width - [winfo width .graph.scale] - 2]
+	} 
+
+	if {$h != $height} {
+		set h1 [expr [winfo height .menu] + [.file cget -height]]
+		.graph.canv configure -height [expr $height - $h1]
+		.graph.scale configure -length [expr $height - $h1]
+	}
+#	set isag_gr_scale_old 0
+#	redraw_graph
+## not reliable	WHY?
+	gnuplot .graph.canv 
+	#set isag_enResizing 1
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag.ResizeAll.m4,v $
+###############################################################################
+# Other functions
+#
+# $Id: isag.Other.Funcs.m4,v 1.20 2004/03/22 19:39:14 david Exp $
+# $State: Exp $
+# $Log: isag.Other.Funcs.m4,v $
+# Revision 1.20  2004/03/22 19:39:14  david
+# fully avoided shell script, i hope the temp file issue is fixed
+#
+#
+###############################################################################
+
+##############################################################################
+#
+#
+
+proc strrep {str old new} {
+	set l [string length $old]
+
+	for {set n [string first $old $str]} {$n != -1} {set n [string first $old $str]} {
+		set str "[string range $str 0 [expr $n - 1]]$new[string range $str [expr $n + $l] end]"
+	}
+	return $str
+}
+
+# eof: strrep.m4
+
+
+# normalizes time if HH:MM:SS PM to 00-24 `format' for gnuplot
+proc time_normalize {time} {
+	set n [string first "AM" $time]
+	if {$n > 0} {
+		set time [string trim [string range $time 0 [expr $n - 1]]]
+		set hours [string range $time 0 1]
+# if hour is 12 then time is after midnight
+		if {$hours == 12} {
+			set time "[format %02d [expr $hours - 12]][string range $time 2 end]"
+		} else {
+			return [string trim [string range $time 0 [expr $n - 1]]]
+		}
+		unset hours
+	}
+	set n [string first "PM" $time]
+	if {$n > 0} {
+		set time [string trim [string range $time 0 [expr $n - 1]]]
+		set hours [string range $time 0 1]
+	# if hours string looks like 07, then is evaluated as octal number
+	# in case of 08 and 09 generates an error
+		if {"0" == [string range $hours 0 0]} {
+			set hours [string range $hours 1 1]
+		}
+		if {$hours < 12} {
+			set time "[format %02d [expr $hours + 12]][string range $time 2 end]"
+		}
+		unset hours
+	}
+	unset n
+	return $time
+}
+
+# tokens are divided by one or more space(s)
+proc parse_line {ln} {
+	global needed_version tcl_version
+
+		set res ""
+	if {$tcl_version > $needed_version} {
+	# this is a more effective
+		set rest [string map { \t " " } [string trim $ln]]
+	} else {
+		set rest [strrep [string trim $ln] \t " "]
+	}
+
+	for {} {[string length $rest] > 0} {} {
+		set a [string first " " $rest]
+		if {$a == -1} {
+			lappend res "$rest"
+			set rest ""
+		} else {
+			set token [string trim [string range $rest 0 [expr $a - 1]]]
+			set rest [string trim [string range $rest [expr $a + 1] end]]
+			lappend res "$token"
+		}
+	}
+	unset rest
+		return $res
+}
+
+
+# normalizes number to 2valid digits representation
+# and returns lis of norm number and step for list
+proc num_norm {num} {
+	if {$num < 10.0} {
+		return [list 10 1]
+	}
+	set l [expr int ([expr log10 ($num)])]
+	set n [expr int ([expr pow (10, [expr $l - 1])])]
+	set m [expr int ([expr ($num - 1)  / $n]) + 1]
+
+	set max [expr $m * $n]
+	set step [expr int ([expr pow (10, [expr $l - 2])])]
+	if {$step < 1} {
+		set step 1
+	}
+	unset l n m
+	return [list $max $step]	
+}
+
+##
+## Parameters
+##	gp_term  - gnuplot terminal (currently used: tkcanvas & jpeg)
+##	ext      - out filename extension (related to gp_term)
+##	fn       - file name base for resulting file
+##	title	 - graph title/name
+##	xlabel	 - xlabel text
+##	ylabel   - primary ylabel text
+##	y2label  - secondary ylabel text (scale 0-100%)
+##	yrange   - yrange (y-maximum)
+##	plot_str - gplot command which produces desired output graph
+##	f_grid   - flag if grid should be drawn
+##
+proc create_gnuplot_file {gp_term ext fn title xlabel ylabel y2label yrange plot_str f_grid} {
+	global sag_graph_wd sag_graph_ht
+
+	
+# Y2 percentage
+	set fp [open $fn.gp "w"]
+	
+# not consistent workaround	
+	if { $gp_term == "jpeg" } {
+		puts $fp "set term $gp_term transparent interlace size $sag_graph_wd,$sag_graph_ht"
+	} else {
+		puts $fp "set term $gp_term"
+	}
+#	puts $fp "set title \"$title\""
+#	puts $fp "set xlabel \"$xlabel\""
+	puts $fp "set ylabel \"$ylabel\""
+	if {$y2label != ""} {
+		puts $fp "set y2label \"$y2label\""
+		puts $fp "set y2range \[0:100\]"
+	}
+	puts $fp "set timefmt \"%H:%M:%S\""
+	puts $fp "set xdata time"
+	puts $fp "set format x \"%H:%M\""
+	if {$yrange != ""} {
+		puts $fp "set yrange $yrange"
+	}
+	puts $fp "set output \"$fn.$ext\""
+	if { 0 != $f_grid } {
+		puts $fp "set grid"
+	}
+	puts $fp "plot $plot_str"
+	close $fp
+}
+
+set fngr_tmpdir  [exec mktemp -d "/tmp/isag.XXXXXX"]
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag.Other.Funcs.m4,v $
+
+###############################################################################
+#
+# Remaining graph paramaters
+#
+
+# plotstr array
+# in future - this string will not be fixed but functions will coming
+# SGo 2008-07-06: Added fields for option -S.
+# SGo 2008-06-15: Update fields for option -w (options -c and -w have been merged).
+# SGo 2007-10-21: Update fields for option -B.
+# SGo 2006-04-14: Update fields for options -B, -q, -r, -R, -u, -v.
+# SGo 2007-07-31: Update fields for option -v.
+set plotstr(b) "\"__FNGR__\" using 1:2 t \"rtps\" with line, \"__FNGR__\" using 1:3 t \"wtps\" with line, \"__FNGR__\" using 1:4 t \"bread/s\" with line,  \"__FNGR__\" using 1:5 t \"bwrtn/s\" with line"
+set plotstr(B) "\"__FNGR__\" using 1:2 t \"pgpgin/s\" with line, \"__FNGR__\" using 1:3 t \"pgpgout/s\" with line, \"__FNGR__\" using 1:4 t \"fault/s\" with line, \"__FNGR__\" using 1:5 t \"majflt/s\" with line, \"__FNGR__\" using 1:6 t \"pgfree/s\" with line, \"__FNGR__\" using 1:7 t \"pgscank/s\" with line, \"__FNGR__\" using 1:8 t \"pgscand/s\" with line, \"__FNGR__\" using 1:9 t \"pgsteal/s\" with line"
+set plotstr(n) ""
+set plotstr(q) "\"__FNGR__\" using 1:2 t \"runq-sz\" with line, \"__FNGR__\" using 1:3 t \"plist-sz\" with line, \"__FNGR__\" using 1:4 t \"ldavg-1\" with line, \"__FNGR__\" using 1:5 t \"ldavg-5\" with line, \"__FNGR__\" using 1:6 t \"ldavg-15\" with line"
+set plotstr(r) "\"__FNGR__\" using 1:2 t \"kbmemfree\" with line, \"__FNGR__\" using 1:3 t \"kbmemused\" with line, \"__FNGR__\" using 1:4 t \"kbbuffers\" with line, \"__FNGR__\" using 1:5 t \"kbcached\" with line, \"__FNGR__\" using 1:6 t \"kbcommit\" with line"
+set plotstr(R) "\"__FNGR__\" using 1:2 t \"frmpg/s\" with line, \"__FNGR__\" using 1:3 t \"bufpg/s\" with line, \"__FNGR__\" using 1:4 t \"campg/s\" with line"
+set plotstr(S) "\"__FNGR__\" using 1:2 t \"kbswpfree\" with line, \"__FNGR__\" using 1:3 t \"kbswpused\" with line, \"__FNGR__\" using 1:4 t \"kbswpcad\" with line"
+set plotstr(u) "\"__FNGR__\" using 1:2 t \"%user\" with line, \"__FNGR__\" using 1:3 t \"%nice\" with line, \"__FNGR__\" using 1:4 t \"%system\" with line, \"__FNGR__\" using 1:5 t \"%iowait\" with line, \"__FNGR__\" using 1:6 t \"%steal\" with line"
+set plotstr(v) "\"__FNGR__\" using 1:2 t \"dentunusd\" with line, \"__FNGR__\" using 1:3 t \"file-nr\" with line, \"__FNGR__\" using 1:4 t \"inode-nr\" with line, \"__FNGR__\" using 1:5 t \"pty-nr\" with line"
+set plotstr(w) "\"__FNGR__\" using 1:2 t \"proc/s\" with line, \"__FNGR__\" using 1:3 t \"cswch/s\" with line"
+set plotstr(W) "\"__FNGR__\" using 1:2 t \"pswpin/s\" with line, \"__FNGR__\" using 1:3 t \"pswpout/s\" with line"
+
+###############################################################################
+# Performance data processing
+#
+# $Id: isag.perf_data_procs.m4,v 1.11 2003/01/26 20:41:48 david Exp $
+# $State: Exp $
+# $Log: isag.perf_data_procs.m4,v $
+# Revision 1.11  2003/01/26 20:41:48  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.10  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.9  2002/03/04 20:23:26  david
+# fixed whole day functionality
+#
+# Revision 1.8  2001/03/30 16:42:26  sarrep
+# Fixed bug about _last_time, (mangled graph)
+#
+# Revision 1.7  2001/03/17 17:30:16  sarrep
+# CVSizing, unified headers of each element file
+#
+# Revision 1.6  2001/03/17 16:55:27  sarrep
+# LINUX RESTART zeroes all counters.
+#
+###############################################################################
+
+# CPU measurement specific line processing
+# SGo 2006-04-14: take into account time spent in iowait and steal modes
+proc sag_if_proc_line_u {fp line} {
+	global val_cur val_max sag_if_last_time sag_if_reboot_flag
+
+	set rval 0
+		set a [string first "all" $line]
+	if {$a != -1} {
+				set time [string trim [string range $line 0 [expr $a - 1]]]
+		set time [time_normalize "$time"]
+		set rest [string trim [string range $line [expr $a + 3] end]]
+		if {1 == $sag_if_reboot_flag} {
+# after reboot, set to zero also, all charts are with lines
+						set sag_if_reboot_flag 0
+# NOTE: The func __output_zero_metrics() cannot be used, because 'u' don't have sag_if_out_tokens
+			puts $fp "$time 0 0 0 0 0"
+		}
+
+				set nums [parse_line $rest]
+			# user nice system iowait steal (idle)
+		set user  [lindex $nums 0]
+		set nice  [lindex $nums 1]
+		set syst  [lindex $nums 2]
+		set iow   [lindex $nums 3]
+		set steal [lindex $nums 4]
+
+		set total [expr $user + $nice + $syst + $iow + $steal]
+		if {$total > $val_max(u)} {set val_max(u) $total}
+				puts $fp "$time $total [expr $nice + $syst + $iow + $steal] [expr $syst + $iow + $steal] [expr $iow + $steal] $steal"
+		set rval 1
+		set sag_if_last_time $time
+	} else {if {-1 != [string first "RESTART" $line]} {
+				set sag_if_reboot_flag 1
+# see previous NOTE
+		if {$sag_if_last_time != ""} {
+			puts $fp "$sag_if_last_time 0 0 0 0 0"
+			set rval 1
+		}
+	}}
+	return $rval
+}
+
+proc sag_if__output_zero_metrics_u {time} {
+	return 	"$time 0 0 0 0 0"
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag.perf_data_procs.m4,v $
+###############################################################################
+# Performance Data Processing and Drawing functions
+#	proces line functions
+#
+# $Id: proc_line_generic.m4,v 1.11 2004/03/22 19:39:14 david Exp $
+# $State: Exp $
+# $Log: proc_line_generic.m4,v $
+# Revision 1.11  2004/03/22 19:39:14  david
+# fully avoided shell script, i hope the temp file issue is fixed
+#
+# Revision 1.10  2003/01/26 20:41:49  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.9  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.8  2002/03/04 20:23:26  david
+# fixed whole day functionality
+#
+# Revision 1.7  2001/07/30 18:06:25  sarrep
+# Fixed one debug print. It was on wrong place.
+#
+# Revision 1.6  2001/03/30 16:42:26  sarrep
+# Fixed bug about _last_time, (mangled graph)
+#
+# Revision 1.5  2001/03/17 17:30:23  sarrep
+# CVSizing, unified headers of each element file
+#
+# Revision 1.4  2001/03/17 16:55:28  sarrep
+# LINUX RESTART zeroes all counters.
+#
+#
+###############################################################################
+
+#
+# NOTE: following function is used when
+# graph of whole day is required (see: draw() function)
+#
+proc sag_if__output_zero_metrics {time  l} {
+	global sag_if_out_tokens sag_if_out_tokens2
+
+	set out "$time "
+	foreach N $sag_if_out_tokens($l) {
+		set out "$out 0"
+	}
+	foreach N $sag_if_out_tokens2($l) {
+		set out "$out 0"
+	}
+	return "$out"
+}
+
+#
+# NOTE: `_last_time' related functionality is used when
+# graph of whole day is required (see: draw() function)
+#
+set sag_if_last_time ""
+set sag_if_reboot_flag 0
+
+# generic line processing
+proc sag_if_proc_line_generic {l fp line} {
+	global val_cur val_max sag_if_out_tokens sag_if_out_tokens2 sag_if_last_time sag_if_reboot_flag
+
+		set time [string trim [string range $line 0 12]]
+	# Here was a problem, time string was badly cutten
+		set time [time_normalize "$time"]
+	set rest [string trim [string range $line 12 end]]
+		
+#
+# Sebastien's isag specific
+# check for line: "time LINUX RESTART" and reset counter to next
+# valid time stamp.
+# NOTE: Values must be zeroed also for first valid time after reboot. For
+# explanation you can imagin the chart
+#
+	if {-1 == [string first "RESTART" $rest]} {
+		if {1 == $sag_if_reboot_flag} {
+# after reboot, set to zero also, all charts are with lines
+			set sag_if_reboot_flag 0
+			puts $fp [sag_if__output_zero_metrics $time $l]
+		}
+		set nums [parse_line $rest]
+		set out "$time "
+		foreach N $sag_if_out_tokens($l) {
+			set n [lindex $nums $N]
+			set out "$out $n"
+			if {$n > $val_max($l)} {set val_max($l) $n}
+		}
+
+		foreach N $sag_if_out_tokens2($l) {
+			set n [lindex $nums $N]
+			set out "$out $n"
+		}
+		set sag_if_last_time $time
+		unset nums n N
+	} else {
+# reboot detected, drop all metrics to zero
+		set sag_if_reboot_flag 1
+		if {$sag_if_last_time != ""} {
+			set out [sag_if__output_zero_metrics $sag_if_last_time $l]
+		}
+	}
+
+	catch {
+				puts $fp "$out"
+		unset out
+	}
+	unset rest time
+	return 1
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/common/proc_line_generic.m4,v $
+###############################################################################
+# Performance Data Processing and Drawing functions
+#	generic draw function
+#	parametrical draw func for each kind of graph
+#
+# $Id: draw.m4,v 1.16 2004/03/22 19:39:14 david Exp $
+# $State: Exp $
+# $Log: draw.m4,v $
+# Revision 1.16  2004/03/22 19:39:14  david
+# fully avoided shell script, i hope the temp file issue is fixed
+#
+# Revision 1.15  2004/03/22 19:13:18  david
+# eliminated shell script, security issue
+#
+# Revision 1.14  2004/02/27 19:26:06  david
+# fixed bug: CAN-2004-0108
+#
+# Revision 1.13  2003/02/23 19:48:16  david
+# unified redundant code which generates data file
+#
+# Revision 1.12  2003/01/26 20:41:48  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.11  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.10  2002/03/04 20:23:43  david
+# fixed whole day functionality
+#
+# Revision 1.9  2002/03/04 18:36:37  david
+# grid feature implemented
+#
+# Revision 1.8  2002/03/03 19:45:19  david
+# added parameters to create_gnuplot_file()
+#
+# Revision 1.7  2001/03/30 16:42:26  sarrep
+# Fixed bug about _last_time, (mangled graph)
+#
+# Revision 1.6  2001/03/17 17:30:10  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+
+proc sag_prepare_datafile {l} {
+	global sar sar_data_path sag_if_archive_uncompressed sag_if_out_tokens \
+		sag_opt_whole_day sag_if_last_time sar_elim fngr_tmpdir
+
+		
+	set sag_if_last_time ""
+		set fp [open "|$sar -$l -f $sag_if_archive_uncompressed" "r"]
+
+	set fgrname "$fngr_tmpdir/data.$l"
+
+	set fpgr [open $fgrname w]
+
+	set nlines 0
+	
+# if needed set starting time
+	if { 0 != $sag_opt_whole_day } {
+		set sag_if_last_time "00:00"
+		if {"" != $sag_if_out_tokens($l)} {
+			puts $fpgr [sag_if__output_zero_metrics $sag_if_last_time $l]
+		} else {
+			puts $fpgr [sag_if__output_zero_metrics_$l $sag_if_last_time]
+		}
+	}
+	
+	while {[gets $fp line] != -1} {
+		if {(1 == [string match \[0-9\]* $line]) && (0 == [string match *$sar_elim($l)* $line])} {
+			
+			if {"" != $sag_if_out_tokens($l)} {
+				set n [sag_if_proc_line_generic $l $fpgr "$line"]
+			} else {
+				set n [sag_if_proc_line_$l $fpgr "$line"]
+			}
+			incr nlines $n
+		}
+	
+	}
+	
+## make closing remark if necessary
+# finishing whole day	
+	if { 0 != $sag_opt_whole_day } {
+		if {"" != $sag_if_out_tokens($l)} {
+			puts $fpgr [sag_if__output_zero_metrics $sag_if_last_time $l]
+		} else {
+			puts $fpgr [sag_if__output_zero_metrics_$l $sag_if_last_time]
+		}
+		if {"" != $sag_if_out_tokens($l)} {
+			puts $fpgr [sag_if__output_zero_metrics "23:59" $l]
+		} else {
+			puts $fpgr [sag_if__output_zero_metrics_$l "23:59"]
+		}
+	}
+	
+	catch {close $fp}
+	catch {close $fpgr}
+
+	unset fp fpgr line
+
+	return [list $nlines $fgrname]
+}
+
+#
+# generic draw function
+# Parameter:
+#	l - graph letter other values are parameters
+#
+proc sag_draw {l} {
+	global sag_if_archive isag_title sh sar grep sar_data_path gnuplot \
+		sag_gr_scale val_cur val_max view_n sag_if_cmd xlabel sag_if_out_tokens \
+		ylabel y2label plotstr has_negative \
+		sag_if_last_time sag_opt_grid sag_opt_whole_day fngr_tmpdir last_graph
+
+	if {$sag_if_archive == ""} {
+		err_msg "Error" "No data source selected for: $view_n($l)"
+		return
+	}
+
+	wm title . "$isag_title: $view_n($l)"
+
+	set prepared [sag_prepare_datafile $l]
+	set nlines  [lindex $prepared 0]
+	set fgrname [lindex $prepared 1]
+
+# at least two lines of data
+	if {$nlines > 1} {
+		set_cur_max $l
+
+		if {1 == $has_negative($l)} {
+			set yrange "\[-$val_cur($l):$val_cur($l)\]"
+		} else {
+			set yrange "\[0:$val_cur($l)\]"
+		}
+		set fngr "$fngr_tmpdir/draw.$l"
+		create_gnuplot_file tkcanvas tk $fngr "$view_n($l)" \
+			"$xlabel" \
+			"$ylabel($l)" $y2label($l) \
+			$yrange \
+			[strrep "$plotstr($l)" __FNGR__ $fgrname] $sag_opt_grid
+
+		exec $gnuplot $fngr.gp
+
+		source $fngr.tk
+		gnuplot .graph.canv
+
+		file delete $fngr.gp
+		file delete $fngr.tk
+		file delete $fngr
+	} else {
+		.graph.canv delete all
+		err_msg "Datafile: $sag_if_archive" "No data to show"
+		.graph.canv delete all
+	}
+	file delete $fgrname
+
+	unset nlines 
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/draw.m4,v $
+###############################################################################
+# Performance Data Processing and Drawing functions
+#	proces line functions
+#
+# $Id: sag.save_graph.m4,v 1.3 2003/02/23 21:07:41 david Exp $
+# $State: Exp $
+# $Log: sag.save_graph.m4,v $
+# Revision 1.3  2003/02/23 21:07:41  david
+# first prototype of sag
+#
+# Revision 1.2  2003/02/23 19:48:16  david
+# unified redundant code which generates data file
+#
+# Revision 1.1  2003/01/26 20:41:49  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.9  2002/03/24 15:18:26  david
+# added
+#
+# Revision 1.8  2002/03/04 20:23:26  david
+# fixed whole day functionality
+#
+# Revision 1.7  2001/07/30 18:06:25  sarrep
+# Fixed one debug print. It was on wrong place.
+#
+# Revision 1.6  2001/03/30 16:42:26  sarrep
+# Fixed bug about _last_time, (mangled graph)
+#
+# Revision 1.5  2001/03/17 17:30:23  sarrep
+# CVSizing, unified headers of each element file
+#
+# Revision 1.4  2001/03/17 16:55:28  sarrep
+# LINUX RESTART zeroes all counters.
+#
+#
+###############################################################################
+
+proc sag_save_graph {} {
+	global sag_if_archive isag_title sh sar grep sar_data_path gnuplot \
+		sag_gr_scale val_cur val_max view_n sag_if_cmd xlabel sag_if_out_tokens \
+		ylabel y2label plotstr has_negative \
+		sag_if_last_time sag_opt_grid sag_opt_whole_day last_graph fngr_tmpdir
+
+		
+	set l $last_graph
+
+	if {$sag_if_archive == ""} {
+#		out_msg "Error" "No data source selected for: $view_n($l)"
+		return
+	}
+
+	set prepared [sag_prepare_datafile $l]
+	set nlines  [lindex $prepared 0]
+	set fgrname [lindex $prepared 1]
+
+# at least two lines of data
+	if {$nlines > 1} {
+#		set_cur_max $l
+
+		if {$val_cur($l) != 0} {
+			if {1 == $has_negative($l)} {
+				set yrange "\[-$val_cur($l):$val_cur($l)\]"
+			} else {
+				set yrange "\[0:$val_cur($l)\]"
+			}
+		} else {
+			set yrange ""
+		}
+
+		set fngr "$fngr_tmpdir/jpeg.$l"
+		create_gnuplot_file jpeg jpg $fngr "$view_n($l)" \
+			"$xlabel" \
+			"$ylabel($l)" $y2label($l) \
+			$yrange \
+			[strrep "$plotstr($l)" __FNGR__ $fgrname] $sag_opt_grid
+
+		exec $gnuplot $fngr.gp
+
+		file delete $fngr.gp
+		file delete $fngr
+		set filename [tk_getSaveFile -title "Save Picture" \
+		   		-initialfile [string map { / _ } $sag_if_archive].$l.jpg \
+				-filetypes {{{JPEG Images} {.jpg}} {{All files} *}} ]
+		if { "" != $filename } {
+			file rename -force $fngr.jpg $filename
+		} else {
+			file delete $fngr.jpg
+		}			
+
+	} else {
+		.graph.canv delete all
+		err_msg "Datafile: $sag_if_archive" "No data to show"
+	}
+	file delete "$fgrname"
+
+	unset nlines 
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/common/sag.save_graph.m4,v $
+###############################################################################
+# $Id: isag_cfg_file.m4,v 1.10 2004/03/22 19:39:14 david Exp $
+# $State: Exp $
+#
+# $Log: isag_cfg_file.m4,v $
+# Revision 1.10  2004/03/22 19:39:14  david
+# fully avoided shell script, i hope the temp file issue is fixed
+#
+# Revision 1.9  2004/03/22 19:13:18  david
+# eliminated shell script, security issue
+#
+# Revision 1.8  2004/02/27 19:53:28  david
+# hide temporary files
+#
+# Revision 1.7  2004/02/27 19:26:06  david
+# fixed bug: CAN-2004-0108
+#
+# Revision 1.6  2003/01/26 20:41:48  david
+# partially renamed variables, 1st implementation of "Save Graph"
+#
+# Revision 1.5  2002/03/04 20:21:51  david
+# make new end line
+#
+# Revision 1.4  2002/03/04 18:36:37  david
+# grid feature implemented
+#
+# Revision 1.3  2001/03/17 17:30:19  sarrep
+# CVSizing, unified headers of each element file
+#
+#
+#
+###############################################################################
+if {[file isfile $isag_cfg_file] == 1} {
+	source $isag_cfg_file
+
+	if {"" != $last_graph} {
+				if {$val_max($last_graph) > 0} {
+			.graph.scale configure -to 0 \
+				-from $val_max($last_graph)
+			set sag_gr_scale $val_cur($last_graph)
+					}
+	}
+}
+
+if { "" != $sag_latest_file } {
+	catch { set_file $sag_latest_file }
+}	
+
+#
+# Finishing a program and writting of config file
+#
+proc exit_program {} {
+	global isag_cfg_file prog_swtch val_max val_cur last_graph \
+		sag_opt_whole_day sag_opt_grid \
+		fngr_tmpdir
+
+	
+	set fp [open $isag_cfg_file w]
+	foreach l $prog_swtch {
+						puts $fp "set val_max($l) $val_max($l)"
+		puts $fp "set val_cur($l) $val_cur($l)"
+	}
+	if {$last_graph == ""} {
+		puts $fp "set last_graph \"\""
+	} else {
+		puts $fp "set last_graph $last_graph"
+	}
+	
+	puts $fp "set sag_opt_whole_day $sag_opt_whole_day"
+	puts $fp "set sag_opt_grid $sag_opt_grid"
+	
+	close $fp
+
+	file delete -force -- "$fngr_tmpdir"
+	destroy .
+	exit
+}
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag_cfg_file.m4,v $
+
+# $Source: /var/CVSROOT/cvs/i-sag/isag/isag.m4,v $

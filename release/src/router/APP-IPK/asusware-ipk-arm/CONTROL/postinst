@@ -1,0 +1,585 @@
+#! /bin/sh
+echo "ipkg-opt,postinst start" >>/tmp/tina
+APPS_MOUNTED_PATH=`nvram get apps_mounted_path`
+APPS_INSTALL_FOLDER=`nvram get apps_install_folder`
+APPS_INSTALL_PATH=$APPS_MOUNTED_PATH/$APPS_INSTALL_FOLDER
+
+
+mv -f /opt/tmp/bin/* $APPS_INSTALL_PATH/bin/
+chmod -R 777 $APPS_INSTALL_PATH/bin
+
+mv -f /opt/tmp/lib/ipkg/info/* $APPS_INSTALL_PATH/lib/ipkg/info/
+#mv -f /opt/tmp/lib/ipkg/info $APPS_INSTALL_PATH/lib/ipkg/
+mv -f /opt/tmp/lib/ipkg/lists/* $APPS_INSTALL_PATH/lib/ipkg/lists/
+#mv -f /opt/tmp/lib/ipkg/lists $APPS_INSTALL_PATH/lib/ipkg/
+mv -f /opt/tmp/lib/ipkg/status $APPS_INSTALL_PATH/lib/ipkg/
+#mv -f /opt/tmp/lib/ipkg $APPS_INSTALL_PATH/lib/
+mv -f /opt/tmp/lib/l* $APPS_INSTALL_PATH/lib/
+rm -rf /opt/tmp/lib/ipkg
+chmod -R 777 $APPS_INSTALL_PATH/lib
+
+chmod -R 777 $APPS_INSTALL_PATH
+#chmod 777 $APPS_INSTALL_PATH/etc/init.d/S50asuslighttpd
+
+
+#2016.11.9 tina add{
+
+TEMP_LIST_FILE=/tmp/Packages.gz
+apps_ipkg_old=`nvram get apps_ipkg_old`
+
+APPS_PATH=/opt
+CONF_FILE=$APPS_PATH/etc/ipkg.conf
+ASUS_SERVER=`nvram get apps_ipkg_server`
+wget_timeout=`nvram get apps_wget_timeout`
+#wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
+wget_options="-q -t 2 -T $wget_timeout"
+
+APP_BIN=$APPS_INSTALL_PATH/bin
+APP_LIB=$APPS_INSTALL_PATH/lib
+APP_LINK_DIR=/tmp/opt
+APP_LINK_BIN=$APP_LINK_DIR/bin
+APP_LINK_LIB=$APP_LINK_DIR/lib
+download_file=
+install_log3=$APPS_INSTALL_PATH/ipkg_log3.txt
+
+APPS_DEV=`nvram get apps_dev`
+APPS_MOUNTED_TYPE=`mount |grep "/dev/$APPS_DEV on " |awk '{print $5}'`
+
+f=`nvram get apps_install_folder`
+
+case $f in
+	"asusware.arm")
+		pkg_type=`echo $f|sed -e "s,asusware\.,,"`		
+		third_lib="mbwe-bluering" 
+		;;
+	"asusware.big")
+		pkg_type="mipsbig"
+		third_lib=
+		;;
+	"asusware.mipsbig")
+		pkg_type=`echo $f|sed -e "s,asusware\.,,"`
+		third_lib=
+		;;
+	"asusware")
+		pkg_type="mipsel"
+		third_lib="oleg"
+		;;
+	*)
+		#echo "Unknown apps_install_folder: $f"
+		exit 1
+		;;
+esac
+
+# $1: package name, $2: ipkg server name, $3: force(1/0).
+_get_pkg_file_name_old(){
+	pkg_file_full=`app_get_field.sh $1 Filename 2`
+	old_pkg_file=`echo "$pkg_file_full" |awk 'BEGIN{FS=".ipk"}{print $1}'`
+	pkg_file=`echo "$old_pkg_file" |sed 's/\./-/g'`
+
+	if [ "$3" == "1" ] || [ "$2" != "$ASUS_SERVER" ]; then
+		echo "$pkg_file_full"
+	else
+		echo "$pkg_file.tgz"
+	fi
+}
+echo "ipkg-opt,postinst,54 line" >>/tmp/tina
+# $1: package name.
+_get_pkg_file_name(){
+	pkg_file_full=`app_get_field.sh $1 Filename 2`
+	echo "$pkg_file_full"
+}
+
+# $1: package name, $2: mounted path.
+_download_package(){
+	#if [ "$1" == "uclibc-opt" ] || [ "$1" == "ipkg-opt" ]; then
+	#if [ "$1" == "uclibc-opt" ]; then #2016.11.7 tina modify
+		#return 0
+	#fi
+	echo "ipkg-opt,postinst,264, _download_package $1" >>/tmp/tina
+	pkg_server=
+	pkg_file=
+	installed_ipk_path=
+	need_download=1
+
+
+	if [ "$need_download" == "1" ]; then
+		# Geting the app's file name...
+		server_names=`grep -n '^src.*' $CONF_FILE |sort -r |awk '{print $3}'`
+
+		if [ "$pkg_type" != "arm" ] && [ -n "$apps_ipkg_old" ] && [ "$apps_ipkg_old" == "1" ]; then
+			IS_SUPPORT_SSL=`nvram get rc_support|grep -i HTTPS`
+			if [ -n "$IS_SUPPORT_SSL" ]; then
+				wget_options="$wget_options --no-check-certificate"
+			fi
+		fi
+		echo "server_names=$server_names" >>/tmp/tina
+		for s in $server_names; do
+			if [ "$pkg_type" != "arm" ] && [ -n "$apps_ipkg_old" ] && [ "$apps_ipkg_old" == "1" ]; then
+				pkg_file=`_get_pkg_file_name_old $1 $s 0`
+				echo "ipkg-opt,postinst,285,pkg_file=$pkg_file" >>/tmp/tina
+			else
+				pkg_file=`_get_pkg_file_name $1`
+				echo "ipkg-opt,postinst,288,pkg_file=$pkg_file" >>/tmp/tina
+			fi
+			echo "ipkg-opt,postinst,290,wget --spider $wget_options $s/$pkg_file" >>/tmp/tina
+			wget --spider $wget_options $s/$pkg_file
+			if [ "$?" == "0" ]; then
+				echo "ipkg-opt,postinst,290,wget --spider ok" >>/tmp/tina
+				pkg_server=$s
+				break
+			fi
+			
+		done
+		if [ -z "$pkg_server" ]; then
+			echo "ipkg-opt,postinst,167,nvram set apps_state_error=6" >>/tmp/tina
+			#nvram set apps_state_error=6
+			echo "ipkg-opt,postinst,482,return 1" >>/tmp/tina
+			return 1
+		fi
+
+		# Downloading the app's file name...
+		if [ "$pkg_type" != "arm" ] && [ -n "$apps_ipkg_old" ] && [ "$apps_ipkg_old" == "1" ] && [ "$pkg_server" == "$ASUS_SERVER" ]; then
+			ipk_file_name=`_get_pkg_file_name_old $1 $pkg_server 1`
+		else
+			ipk_file_name=$pkg_file
+		fi
+
+		target=$2/$ipk_file_name
+		nvram set apps_download_file=$ipk_file_name
+		nvram set apps_download_percent=0
+		echo "ipkg-opt,postinst,548,wget -c $wget_options $pkg_server/$pkg_file -O $target" >>/tmp/tina
+		#echo "wget -c $wget_options $pkg_server/$pkg_file -O $target"
+		wget -c $wget_options $pkg_server/$pkg_file -O $target &
+		wget_pid=`pidof wget`
+		if [ -z "$wget_pid" ] || [ $wget_pid -lt 1 ]; then
+			#echo "ipkg-opt,postinst,511,rm -rf $target"
+			rm -rf $target
+			#echo "ipkg-opt,postinst,513"
+			sync
+			echo "ipkg-opt,postinst,192,nvram set apps_state_error=6" >>/tmp/tina
+			#nvram set apps_state_error=6
+			echo "ipkg-opt,postinst,507,return 1" >>/tmp/tina
+			return 1
+		fi
+		i=0
+		while [ $i -lt $wget_timeout ] && [ ! -f "$target" ]; do
+			i=$((i+1))
+			sleep 1
+		done
+
+		wget_pid=`pidof wget`
+		size=`/usr/sbin/app_get_field.sh $1 Size 2`
+		target_size=`ls -l $target |awk '{printf $5}'`
+		percent=$((target_size*100/size))
+		nvram set apps_download_percent=$percent
+		while [ -n "$wget_pid" ] && [ -n "$target_size" ] && [ $target_size -lt $size ]; do
+			sleep 1
+
+			wget_pid=`pidof wget`
+			target_size=`ls -l $target |awk '{printf $5}'`
+			percent=$((target_size*100/size))
+			nvram set apps_download_percent=$percent
+		done
+
+		target_size=`ls -l $target |awk '{printf $5}'`
+		percent=$((target_size*100/size))
+		nvram set apps_download_percent=$percent
+		if [ -z "$percent" ] || [ $percent -ne 100 ]; then
+			#echo "ipkg-opt,postinst,543,rm -rf $target"
+			rm -rf $target
+			#echo "ipkg-opt,postinst,545"
+			sync
+			echo "ipkg-opt,postinst,225,nvram set apps_state_error=6" >>/tmp/tina
+			#nvram set apps_state_error=6
+			echo "ipkg-opt,postinst,540,return 1" >>/tmp/tina
+			return 1
+		fi
+
+		installed_ipk_path=$2"/"$ipk_file_name
+	fi
+
+	download_file=$installed_ipk_path
+
+	return 0
+}
+
+_remove_old_base_lib(){
+	echo "ipkg-opt,239,remove_old_base_lib" >>/tmp/tina
+	list_share=`ls -a $APPS_INSTALL_PATH/share/`
+	for delete_share in $list_share; do
+		if [ "$delete_share" != "ipkg" ]; then
+			rm -rf $APPS_INSTALL_PATH/share/$delete_share
+		fi
+	done
+
+	rm -rf $APPS_INSTALL_PATH/sbin/*
+	rm -rf $APPS_INSTALL_PATH/tmp/*
+	rm -rf $APPS_INSTALL_PATH/usr/lib/*
+	rm -rf $APPS_INSTALL_PATH/lib/ipkg/info/libiconv*
+
+	list_install_path=`ls -a $APPS_INSTALL_PATH`
+	asusware_bin="bin lib share tmp sbin etc usr .asusrouter ipkg_log.txt"
+	#delete asusware bin		
+	delete_bin=
+	for delete_bin in $list_install_path; do
+		if [ "$delete_bin" == "." ] || [ "$delete_bin" == ".." ]; then
+			continue
+		fi
+		leave=0
+		list_file=
+		for list_file in $asusware_bin; do
+			if [ "$delete_bin" == "$list_file" ]; then
+				leave=1
+				continue
+			fi
+		done
+		if [ "$leave" == "0" ]; then
+			rm -rf $APPS_INSTALL_PATH/$delete_bin
+		fi
+	done
+
+	echo "ipkg-opt,273,remove_old_base_lib" >>/tmp/tina
+	rm -rf $APPS_INSTALL_PATH/lib/ld-uClibc-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/libcrypt-0.9.28.so 			
+	rm -rf $APPS_INSTALL_PATH/lib/libuClibc-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/libm-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/libpthread-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/libresolv-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/librt-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/libthread_db-0.9.28.so
+	rm -rf $APPS_INSTALL_PATH/lib/libutil-0.9.28.so
+	#rm -rf $APPS_INSTALL_PATH/lib/libgcc_s.so.1 #tina add 2016.11.15 ntfs不能删
+	echo "ipkg-opt,283,remove_old_base_lib" >>/tmp/tina
+	if [ "$APPS_MOUNTED_TYPE" == "vfat" ] || [ "$APPS_MOUNTED_TYPE" == "tfat" ]; then
+	rm -rf $APP_LINK_LIB/ld-uClibc-0.9.28.so
+	rm -rf $APP_LINK_LIB/libcrypt-0.9.28.so			
+	rm -rf $APP_LINK_LIB/libuClibc-0.9.28.so
+	rm -rf $APP_LINK_LIB/libm-0.9.28.so
+	rm -rf $APP_LINK_LIB/libpthread-0.9.28.so
+	rm -rf $APP_LINK_LIB/libresolv-0.9.28.so
+	rm -rf $APP_LINK_LIB/librt-0.9.28.so
+	rm -rf $APP_LINK_LIB/libthread_db-0.9.28.so
+	rm -rf $APP_LINK_LIB/libutil-0.9.28.so
+	fi
+}
+echo "ipkg-opt,postinst,31" >>/tmp/tina
+_base_link(){
+
+
+
+	APPS_CONTROL="$APPS_INSTALL_PATH/lib/ipkg/info/"
+	if [ -f "$APPS_CONTROL/uclibc-opt.control" ]; then
+		NEW_UCLIBC_VERSION_TMP=`cat "$APPS_CONTROL/uclibc-opt.control" | grep "Version:"`
+		NEW_UCLIBC_VERSION=${NEW_UCLIBC_VERSION_TMP:9:6}
+	fi
+
+	#if [ -f "$APPS_CONTROL/libstdc++.control" ]; then
+		#NEW_STDC_VERSION_TMP=`cat "$APPS_CONTROL/libstdc++.control" | grep "Version:"`
+		#NEW_STDC_VERSION=${NEW_STDC_VERSION_TMP:9:6}
+	#fi
+
+	#if [ -f "$APPS_CONTROL/libnsl.control" ]; then
+		#NEW_NSL_VERSION_TMP=`cat "$APPS_CONTROL/libnsl.control" | grep "Version:"`
+		#NEW_NSL_VERSION=${NEW_NSL_VERSION_TMP:9:6}
+	#fi
+	
+	ln -sf $APP_LIB/ld-uClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/ld-uClibc.so.1
+	ln -sf $APP_LIB/ld-uClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/ld-uClibc.so.0
+	ln -sf $APP_LIB/ld-uClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/ld-uClibc.so
+	ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so.1
+	ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so.0
+	ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so
+	ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so.1
+	ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so.0
+	ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so
+	ln -sf $APP_LIB/libdl-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libdl.so.1
+	#ln -sf $APP_LIB/libgcc_s.so.1 $APP_LINK_LIB/libgcc_s.so
+	ln -sf $APP_LIB/libm-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libm.so.1
+	ln -sf $APP_LIB/libm-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libm.so.0
+	ln -sf $APP_LIB/libm-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libm.so
+	ln -sf $APP_LIB/libpthread-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libpthread.so.1
+	ln -sf $APP_LIB/libpthread-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libpthread.so.0
+	ln -sf $APP_LIB/libpthread-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libpthread.so
+	ln -sf $APP_LIB/libresolv-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libresolv.so.1
+	ln -sf $APP_LIB/libresolv-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libresolv.so.0
+	ln -sf $APP_LIB/libresolv-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libresolv.so	
+	ln -sf $APP_LIB/librt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/librt.so
+	ln -sf $APP_LIB/librt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/librt.so.0
+	ln -sf $APP_LIB/librt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/librt.so.1
+	ln -sf $APP_LIB/libthread_db-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libthread_db.so.1
+	ln -sf $APP_LIB/libthread_db-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libthread_db.so.0
+	ln -sf $APP_LIB/libthread_db-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libthread_db.so
+	ln -sf $APP_LIB/libutil-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libutil.so.1
+	ln -sf $APP_LIB/libutil-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libutil.so.0
+	ln -sf $APP_LIB/libutil-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libutil.so
+	#libnsl
+	#ln -sf $APP_LIB/libnsl-$NEW_NSL_VERSION.so $APP_LINK_LIB/libnsl.so.0
+	#ln -sf $APP_LIB/libnsl-$NEW_NSL_VERSION.so $APP_LINK_LIB/libnsl.so.1
+	#ln -sf $APP_LIB/libnsl-$NEW_NSL_VERSION.so $APP_LINK_LIB/libnsl.so
+	#libstdc++
+	#ln -sf $APP_LIB/libstdc++.so.$NEW_STDC_VERSION $APP_LINK_LIB/libstdc++.so.6
+	#ln -sf $APP_LIB/libstdc++.so.$NEW_STDC_VERSION $APP_LINK_LIB/libstdc++.so	
+	
+}
+
+base_link()
+{
+	echo "ipkg-opt postinst,687 line,base_link start" >>/tmp/tina
+	APP_UCLIBC_VERSION=0.9.28
+	APPS_CONTROL="$APPS_INSTALL_PATH/lib/ipkg/info/"
+
+		echo "ipkg-opt postinst,635" >>/tmp/tina
+		if [ -f "$APPS_CONTROL/uclibc-opt.control" ]; then
+			NEW_UCLIBC_VERSION_TMP=`cat "$APPS_CONTROL/uclibc-opt.control" | grep "Version:"`
+			NEW_UCLIBC_VERSION=${NEW_UCLIBC_VERSION_TMP:9:6}
+		fi
+
+		if [ -f "$APPS_CONTROL/libstdc++.control" ]; then
+			NEW_STDC_VERSION_TMP=`cat "$APPS_CONTROL/libstdc++.control" | grep "Version:"`
+			NEW_STDC_VERSION=${NEW_STDC_VERSION_TMP:9:6}
+		fi
+
+		if [ -f "$APPS_CONTROL/libnsl.control" ]; then
+			NEW_NSL_VERSION_TMP=`cat "$APPS_CONTROL/libnsl.control" | grep "Version:"`
+			NEW_NSL_VERSION=${NEW_NSL_VERSION_TMP:9:6}
+		fi
+
+	echo "ipkg-opt postinst,651" >>/tmp/tina
+	if [ -z "$APPS_MOUNTED_PATH" ]; then
+		echo "ipkg-opt,postinst,382,nvram set apps_state_error=2" >>/tmp/tina
+		#nvram set apps_state_error=2
+		echo "ipkg-opt postinst,654" >>/tmp/tina
+		return 1
+	fi
+
+
+
+	APP_FS_TYPE=`mount | grep $APPS_MOUNTED_PATH | sed -e "s,.*on.* type \([^ ]*\) (.*$,\1,"`
+
+	#APPS_MOUNTED_TYPE=`mount |grep "/dev/$APPS_DEV on " |awk '{print $5}'`
+	echo "ipkg-opt postinst,668" >>/tmp/tina
+	if [ "$APPS_MOUNTED_TYPE" != "vfat" ] && [ "$APPS_MOUNTED_TYPE" != "tfat" ]; then
+		echo "ipkg-opt postinst,670, vfat or tfat" >>/tmp/tina
+		if [ "$APP_FS_TYPE" != "fuseblk" ] ; then
+			chmod -R 777 $APPS_INSTALL_PATH
+		fi
+		echo "ipkg-opt postinst,674, vfat or tfat" >>/tmp/tina
+		user_account=`nvram get http_username`
+		if [ -z "$user_account" ]; then
+			user_account="admin"
+		fi
+		if [ "$APP_FS_TYPE" != "fuseblk" ] ; then
+			chown -R "$user_account":root $APPS_INSTALL_PATH
+		fi
+		rm -rf $APP_LINK_DIR
+		ln -sf $APPS_INSTALL_PATH $APP_LINK_DIR
+		echo "ipkg-opt postinst,686" >>/tmp/tina
+		return 0
+	fi
+	echo "ipkg-opt postinst,688" >>/tmp/tina
+	# Others files or directories
+	objs=`ls -a $APPS_INSTALL_PATH |grep -v ^\.__*`
+	if [ -L "$APP_LINK_DIR" ] || [ ! -d "$APP_LINK_DIR" ]; then
+		rm -rf $APP_LINK_DIR
+		mkdir -p $APP_LINK_DIR
+	fi
+	echo "ipkg-opt postinst,697" >>/tmp/tina
+	for obj in $objs; do
+		if [ "$obj" == "." ] || [ "$obj" == ".." ]; then
+			continue
+		fi
+
+		if [ "$obj" != "bin" ] && [ "$obj" != "lib" ]; then
+			if [ -d "$APP_LINK_DIR/$obj" ]; then
+				rm -rf $APP_LINK_DIR/$obj
+			fi
+			ln -sf $APPS_INSTALL_PATH/$obj $APP_LINK_DIR/$obj
+		fi
+	done
+
+	echo "ipkg-opt postinst,713" >>/tmp/tina
+	# BIN
+	objs=`ls -a $APP_BIN`
+	if [ -L "$APP_LINK_BIN" ] || [ ! -d "$APP_LINK_BIN" ]; then
+		rm -rf $APP_LINK_BIN
+		mkdir -p $APP_LINK_BIN
+	fi
+	echo "ipkg-opt postinst,722" >>/tmp/tina
+	# ipkg-opt
+	ln -sf $APP_BIN/ipkg $APP_LINK_BIN/ipkg-opt
+
+	for obj in $objs; do
+		if [ "$obj" == "." ] || [ "$obj" == ".." ]; then
+			continue
+		fi
+
+		if [ -d "$APP_LINK_BIN/$obj" ]; then
+			rm -rf $APP_LINK_BIN/$obj
+		fi
+		ln -sf $APP_BIN/$obj $APP_LINK_BIN/$obj 
+	done
+
+	echo "ipkg-opt postinst,739" >>/tmp/tina
+	# LIB
+	objs=`ls -a $APP_LIB`
+	if [ -L "$APP_LINK_LIB" ] || [ ! -d "$APP_LINK_LIB" ]; then
+		rm -rf $APP_LINK_LIB
+		mkdir -p $APP_LINK_LIB
+	fi
+	echo "ipkg-opt postinst,748" >>/tmp/tina
+	# first find the other objs and then do uclibc.
+	for obj in $objs; do
+		if [ "$obj" == "." ] || [ "$obj" == ".." ]; then
+			continue
+		fi
+
+		if [ -d "$APP_LINK_LIB/$obj" ]; then
+			rm -rf $APP_LINK_LIB/$obj
+		fi
+		ln -sf $APP_LIB/$obj $APP_LINK_LIB/$obj 
+	done
+	echo "ipkg-opt postinst,762" >>/tmp/tina
+	# ipkg-opt
+	ln -sf $APP_LIB/libipkg.so.0.0.0 $APP_LINK_LIB/libipkg.so.0
+	ln -sf $APP_LIB/libipkg.so.0.0.0 $APP_LINK_LIB/libipkg.so
+		echo "ipkg-opt postinst,315,NEW_UCLIBC_VERSION=$NEW_UCLIBC_VERSION" >>/tmp/tina
+		echo "ipkg-opt postinst,315,NEW_NSL_VERSION=$NEW_NSL_VERSION" >>/tmp/tina
+		echo "ipkg-opt postinst,315,NEW_STDC_VERSION=$NEW_STDC_VERSION" >>/tmp/tina
+		ln -sf $APP_LIB/ld-uClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/ld-uClibc.so.1
+		ln -sf $APP_LIB/ld-uClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/ld-uClibc.so.0
+		ln -sf $APP_LIB/ld-uClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/ld-uClibc.so
+		ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so.1
+		ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so
+		ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so.1
+		ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so
+		ln -sf $APP_LIB/libdl-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libdl.so.1
+		#ln -sf $APP_LIB/libgcc_s.so.1 $APP_LINK_LIB/libgcc_s.so
+		ln -sf $APP_LIB/libm-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libm.so.1
+		ln -sf $APP_LIB/libm-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libm.so
+		ln -sf $APP_LIB/libpthread-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libpthread.so.1
+		ln -sf $APP_LIB/libpthread-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libpthread.so
+		ln -sf $APP_LIB/libresolv-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libresolv.so.1
+		ln -sf $APP_LIB/libresolv-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libresolv.so	
+		ln -sf $APP_LIB/librt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/librt.so
+		ln -sf $APP_LIB/librt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/librt.so.1
+		ln -sf $APP_LIB/libthread_db-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libthread_db.so.1
+		ln -sf $APP_LIB/libthread_db-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libthread_db.so
+		ln -sf $APP_LIB/libutil-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libutil.so.1
+		ln -sf $APP_LIB/libutil-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libutil.so
+		#libnsl
+		#ln -sf $APP_LIB/libnsl-$NEW_NSL_VERSION.so $APP_LINK_LIB/libnsl.so.0
+		#ln -sf $APP_LIB/libnsl-$NEW_NSL_VERSION.so $APP_LINK_LIB/libnsl.so.1
+		#ln -sf $APP_LIB/libnsl-$NEW_NSL_VERSION.so $APP_LINK_LIB/libnsl.so
+		#libstdc++
+		#ln -sf $APP_LIB/libstdc++.so.$NEW_STDC_VERSION $APP_LINK_LIB/libstdc++.so.6
+		#ln -sf $APP_LIB/libstdc++.so.$NEW_STDC_VERSION $APP_LINK_LIB/libstdc++.so
+		
+	echo "ipkg-opt postinst,795" >>/tmp/tina
+}
+
+echo "ipkg-opt,postinst,31" >>/tmp/tina
+_modify_config(){
+	sed -i '2c src/gz optware.mbwe-bluering http://ipkg.nslu2-linux.org/optware-ng/buildroot-armeabi-ng' $CONF_FILE
+	#sed -i '3c src/gz optware.asus http://192.168.1.10/asusware/arm/stable' $CONF_FILE
+}
+echo "ipkg-opt,postinst,94" >>/tmp/tina
+_change_optwareasus(){
+	echo "ipkg-opt,postinst,96,change_optwareasus start" >>/tmp/tina
+	LIST_DIR=$APPS_PATH/lib/ipkg/lists
+	DELETE_LIST="spawn-fcgi libxml2 readline wxbase zlib pcre bzip2 libevent ncurses libsigc++ libpar2 sqlite openssl libcurl"
+	LIST_FILES=`grep -n '^src.*' $CONF_FILE |sort -r |awk '{print "'$LIST_DIR'/"$2}'`
+	echo "ipkg-opt,postinst,100,DELETE_LIST=$DELETE_LIST" >>/tmp/tina
+	echo "ipkg-opt,postinst,101,LIST_FILES=$LIST_FILES" >>/tmp/tina
+	if [ -z "$DELETE_LIST" ]; then
+		exit 1
+	fi
+	echo "ipkg-opt,postinst,105,LIST_FILES=$LIST_FILES" >>/tmp/tina
+	for f in $DELETE_LIST; do
+		for f2 in $LIST_FILES; do
+			if [ ! -f "$f2" ]; then
+				continue
+			fi
+			if [ "$f2" != "$LIST_DIR/optware.asus" ];then
+				continue
+			fi
+
+		
+			line_first=`grep -n "Package: "$f"" $f2 | awk 'BEGIN{FS=":"}{print $1}'`
+			if [ -z "$line_first" ]; then
+				continue
+			fi
+		
+			line_info=`sed -n "$line_first"p $f2`
+			while [ ! -z "$line_info" ]; do
+				if [ ! -z "$line_info" ];then
+					sed -i "$line_first"d  $f2
+				fi
+				line_info=`sed -n "$line_first"p  $f2`
+			done
+		done
+	done
+
+}
+
+_install_rest_lib(){
+	target_file=
+	INSTALL_LIST="libnsl uclibc-opt libstdc++"
+	for install_file in $INSTALL_LIST; do
+		_download_package $install_file $APPS_INSTALL_PATH/tmp	
+		if [ -z "$target_file" ]; then
+			target_file=$download_file
+		else
+			target_file=$target_file" $download_file"
+		fi
+		echo "ipkg-opt,postinst,436,target_file=$target_file" >>/tmp/tina			
+	done
+
+	for file in $target_file; do
+		echo "ipkg-opt,postinst,438,ipkg install $file 1>$install_log3" >>/tmp/tina
+		ipkg install $file 1>$install_log3
+		#ipkg install $file
+		wait
+		rm -rf $file
+	done
+
+	rm -rf $install_log3
+	echo "ipkg-opt,postinst,558" >>/tmp/tina
+}
+echo "ipkg-opt,postinst,354" >>/tmp/tina
+_remove_old_base_lib
+echo "ipkg-opt,postinst,356" >>/tmp/tina
+_base_link
+echo "ipkg-opt,postinst,358" >>/tmp/tina
+_modify_config
+echo "ipkg-opt,postinst,360" >>/tmp/tina
+if [ -f "$TEMP_LIST_FILE" ]; then
+	echo "$TEMP_LIST_FILE exist,rm -rf it!" >>/tmp/tina
+	rm -rf $TEMP_LIST_FILE
+fi
+/usr/sbin/app_update.sh
+
+echo "ipkg-opt,postinst,370" >>/tmp/tina
+_change_optwareasus
+base_link
+echo "ipkg-opt,postinst,372" >>/tmp/tina
+_install_rest_lib
+
+echo "ipkg-opt,postinst,616" >>/tmp/tina
+
+#cp  $APP_LINK_LIB/libgcc_s.so.1 $APP_LIB/
+#ln  $APP_LIB/libgcc_s.so.1 $APP_LINK_LIB/libgcc_s.so
+
+if [ "$APPS_MOUNTED_TYPE" == "vfat" ] || [ "$APPS_MOUNTED_TYPE" == "tfat" ]; then
+	rm -rf $APP_LIB/libgcc_s.so.1
+	/usr/sbin/app_move_to_pool.sh $APPS_DEV
+	if [ "$?" != "0" ]; then
+		# apps_state_error was already set by app_move_to_pool.sh.
+		exit 1
+	fi
+	ln -sf $APP_LIB/libgcc_s.so.1 $APP_LINK_LIB/libgcc_s.so
+fi
+base_link
+
+#end tina}
+echo "ipkg-opt,postinst,363,end" >>/tmp/tina
+

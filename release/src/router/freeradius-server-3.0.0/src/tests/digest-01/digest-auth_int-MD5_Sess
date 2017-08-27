@@ -1,0 +1,24 @@
+#
+#  http://ftp6.us.freebsd.org/pub/rfc/internet-drafts/draft-smith-sipping-auth-examples-01.txt
+##
+#  3.6
+#
+#  In the "users" file: 
+#       bob		User-Password := "zanzibar"
+#  Or	bob	    	Digest-HA1 := "12af60467a33e8518da5c68bbff12b11"
+#
+#
+#	TESTS	1 2
+#
+User-Name = "bob",
+Digest-Response = "91984da2d8663716e91554859c22ca70",
+Digest-Realm = "biloxi.com",
+Digest-Nonce = "dcd98b7102dd2f0e8b11d0f600bfb0c093",
+Digest-Method = "INVITE",
+Digest-URI = "sip:bob@biloxi.com",
+Digest-User-Name = "bob",
+Digest-QOP = "auth-int",
+Digest-Algorithm = "MD5-Sess",
+Digest-Nonce-Count = "00000001",
+Digest-CNonce = "0a4f113b",
+Digest-Body-Digest = "c1ed018b8ec4a3b170c0921f5b564e48",

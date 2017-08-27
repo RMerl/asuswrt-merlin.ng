@@ -1,0 +1,15 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[2]: ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw[{]1}.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw[{]2}.*INSTALLED, TUNNEL::YES
+carol::ping6 -c 1 ip6-alice.strongswan.org::64 bytes from ip6-alice.strongswan.org: icmp_seq=1::YES
+dave:: ping6 -c 1 ip6-alice.strongswan.org::64 bytes from ip6-alice.strongswan.org: icmp_seq=1::YES
+moon::tcpdump::IP6 ip6-carol.strongswan.org > ip6-moon.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-moon.strongswan.org > ip6-carol.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-dave.strongswan.org > ip6-moon.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-moon.strongswan.org > ip6-dave.strongswan.org: ESP::YES
+

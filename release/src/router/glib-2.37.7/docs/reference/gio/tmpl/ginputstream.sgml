@@ -1,0 +1,224 @@
+<!-- ##### SECTION Title ##### -->
+GInputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_input_stream_read ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_read_all ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@bytes_read: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_skip ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_close ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_read_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_input_stream_read_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_skip_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_input_stream_skip_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_close_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_input_stream_close_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_is_closed ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_has_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_set_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_clear_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+
+
+<!-- ##### FUNCTION g_input_stream_read_bytes ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_input_stream_read_bytes_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@count: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_input_stream_read_bytes_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+

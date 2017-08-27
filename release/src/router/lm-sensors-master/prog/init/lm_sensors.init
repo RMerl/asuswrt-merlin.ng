@@ -1,0 +1,138 @@
+#!/bin/sh
+#
+# chkconfig: - 26 74
+# description: sensors is used for monitoring motherboard sensor values.
+# config: /etc/sysconfig/lm_sensors
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#    MA 02110-1301 USA.
+
+# See also the lm_sensors homepage at:
+#     http://www.lm-sensors.org
+
+# It uses a config file /etc/sysconfig/lm_sensors that contains the modules
+# to be loaded/unloaded. That file is sourced into this one.
+
+# The format of this file is a shell script that simply defines variables:
+# HWMON_MODULES for hardware monitoring driver modules, and optionally
+# BUS_MODULES for any required bus driver module (for example for I2C or SPI).
+
+PSENSORS=/usr/local/bin/sensors
+
+if [ ! -x $PSENSORS ]; then
+	PSENSORS=/usr/bin/sensors
+fi
+
+# Source function library.
+. /etc/init.d/functions
+
+RETVAL=0
+prog="lm_sensors"
+
+# This functions checks if sensor support is compiled into the kernel, if
+# sensors are configured, and loads the config file
+check_sensors() {
+	CONFIG=/etc/sysconfig/lm_sensors
+	if ! [ -r "$CONFIG" ] || ! grep '^HWMON_MODULES' $CONFIG >/dev/null 2>&1; then
+		echo -n "$1 $prog: not configured, run sensors-detect"
+		echo_warning
+		echo
+		exit 6
+	fi
+
+	# Load config file
+	. "$CONFIG"
+}
+
+start() {
+	check_sensors "Starting"
+
+	echo -n "Starting $prog: loading module "
+
+	for module in $BUS_MODULES $HWMON_MODULES ; do
+		echo -n "${module} "
+		/sbin/modprobe $module >/dev/null 2>&1
+	done
+	$PSENSORS -s
+
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ] && touch /var/lock/subsys/lm_sensors ; then
+		echo_success
+		echo
+	else
+		echo_failure
+		echo
+	fi
+}
+
+stop() {
+	check_sensors "Stopping"
+
+	echo -n "Stopping $prog: "
+
+	for module in $HWMON_MODULES $BUS_MODULES ; do
+		/sbin/modprobe -r $module >/dev/null 2>&1
+	done
+
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/lm_sensors ; then
+		echo_success
+		echo
+	else
+		echo_failure
+		echo
+	fi
+}
+
+dostatus() {
+	$PSENSORS
+	RETVAL=$?
+	if [ $RETVAL -ne 0 ]; then
+		RETVAL=3
+	fi
+}
+
+restart() {
+	stop
+	start
+}
+
+condrestart() {
+	[ -e /var/lock/subsys/lm_sensors ] && restart || :
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	dostatus
+	;;
+  restart|reload)
+	restart
+	;;
+  condrestart)
+	condrestart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|status|restart|reload|condrestart}"
+	exit 3
+esac
+
+exit $RETVAL

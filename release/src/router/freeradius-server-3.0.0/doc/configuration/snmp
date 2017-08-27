@@ -1,0 +1,58 @@
+INSTALL
+-------
+
+Installing the SNMP patch is straightforward:
+
+$ tar -zxf freeradius-server-2.1.11.tar.gz
+$ cd freeradius-server-2.1.11
+$ patch -p1 < ../snmp.patch
+$ ./configure --args....
+$ make
+$ make install
+
+MIB Installation
+----------------
+
+The traps *REQUIRE* that the files in the "mibs" directory be copied
+to the global mibs directory, usually /usr/share/snmp/mibs/.
+If this is not done, the "snmptrap" program has no idea what information
+to send, and will not work.  The MIB installation is *NOT* done as
+part of the default installation, so that step *MUST* be done manually.
+
+The global MIB directory can be found by running the following command:
+
+	$ snmptranslate -Dinit_mib .1.3 2>&1 | grep MIBDIR | sed "s/' .*//;s/.* '//;s/.*://"
+
+Or maybe just:
+
+	$ snmptranslate -Dinit_mib .1.3 2>&1 | grep MIBDIR
+
+If you have copied the MIBs to that directory, you can test the
+FreeRADIUS MIBs by running the following command:
+
+	$ snmptranslate -m +FREERADIUS-NOTIFICATION-MIB -IR -On  serverStart
+
+It should print out:
+
+	.1.3.6.1.4.1.11344.4.1.1
+
+As always, run the server in debugging mode after enabling the
+traps.  You will see the "snmptrap" command being run, and it will
+print out any errors or issues that it encounters.  Those need to
+be fixed before running the server in daemon mode.
+
+We also suggest running in debugging mode as the "radiusd" user, if
+you have "user/group" set in radiusd.conf.  The "snmptrap" program
+may behave differently when run as "root" or as the "radiusd" user.
+
+You will also need to edit "radiusd.conf", and uncomment the line saying
+
+    # $INCLUDE trigger.conf
+
+That will enable the triggers.
+
+
+More Documentation
+------------------
+
+See raddb/trigger.conf for complete documentation.

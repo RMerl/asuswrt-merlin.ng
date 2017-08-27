@@ -1,0 +1,109 @@
+libsensors API history
+======================
+
+SENSORS_API_VERSION tracks the evolutions made to the libsensors API
+over time. This document summarizes these evolutions so that application
+authors can quickly figure out how to test for the availability of a
+given new feature.
+
+0x440	lm-sensors 3.4.0
+* Defined SENSORS_FEATURE_MAX
+  enum sensors_feature_type SENSORS_FEATURE_MAX
+* Added support for temp min and temp critical min hysteresis
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_MIN_HYST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_LCRIT_HYST
+
+0x432	lm-sensors 3.3.2 to 3.3.5
+* Added support for new sysfs attributes
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_AVERAGE
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_LOWEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_HIGHEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_LOWEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_HIGHEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_AVERAGE
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_LOWEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_HIGHEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_FAN_MAX
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_FAN_MIN_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_FAN_MAX_ALARM
+
+0x431	lm-sensors 3.3.0 to 3.3.1
+* Added support for intrusion detection
+  enum sensors_feature_type SENSORS_FEATURE_INTRUSION
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_INTRUSION_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_INTRUSION_BEEP
+* Added support for various new sysfs attributes
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_LCRIT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_CRIT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_LCRIT_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_IN_CRIT_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_LCRIT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_EMERGENCY
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_EMERGENCY_HYST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_LCRIT_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_TEMP_EMERGENCY_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_CAP
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_CAP_HYST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_MAX
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_CRIT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_CAP_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_MAX_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_CRIT_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_LCRIT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_CRIT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_LCRIT_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_CRIT_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_FAN_PULSES
+* Added support for humidity sensors
+  enum sensors_feature_type SENSORS_FEATURE_HUMIDITY
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_HUMIDITY_INPUT
+
+0x430	lm-sensors 3.2.0
+* License changed from GPL to LGPL
+
+0x421	lm-sensors 3.1.2
+* Added bus type "hid":
+  #define SENSORS_BUS_TYPE_HID
+
+0x420	lm-sensors 3.1.1
+* Added a method to free the memory allocated by sensors_parse_chip_name()
+  void sensors_free_chip_name(sensors_chip_name *chip);
+
+0x410	lm-sensors 3.1.0
+* Added bus type "acpi":
+  #define SENSORS_BUS_TYPE_ACPI
+* Added support for instantaneous power sensors
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_INPUT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_INPUT_HIGHEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_INPUT_LOWEST
+* Added support for current sensors
+  enum sensors_feature_type SENSORS_FEATURE_CURR
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_INPUT
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_MIN
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_MAX
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_MIN_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_MAX_ALARM
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_CURR_BEEP
+* Added error value for excessive recursion depth
+  #define SENSORS_ERR_RECURSION 11
+* Added parse error reporting function including the configuration file
+  name
+  extern void (*sensors_parse_error_wfn) (const char *err,
+  					  const char *filename, int lineno);
+
+0x401	lm-sensors 3.0.2 to 3.0.3
+* Added bus type "virtual":
+  #define SENSORS_BUS_TYPE_VIRTUAL
+* Added support for power and energy sensors
+  enum sensors_feature_type SENSORS_FEATURE_POWER
+  enum sensors_feature_type SENSORS_FEATURE_ENERGY
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_AVERAGE
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_AVERAGE_HIGHEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_AVERAGE_LOWEST
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_POWER_AVERAGE_INTERVAL
+  enum sensors_subfeature_type SENSORS_SUBFEATURE_ENERGY_INPUT
+
+0x400	lm-sensors 3.0.0 to 3.0.1
+* Initial API.

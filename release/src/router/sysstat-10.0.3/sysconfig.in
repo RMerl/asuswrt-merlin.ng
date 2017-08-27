@@ -1,0 +1,13 @@
+/*
+ * sysstat: System performance tools for Linux
+ * (C) 1999-2011 by Sebastien Godard (sysstat <at> orange.fr)
+ */
+
+#ifndef _SYSCONFIG_H
+#define _SYSCONFIG_H
+
+/* sysstat configuration directory */
+#define IOCONF		"@SYSCONFIG_DIR@/sysstat.ioconf"
+#define LOCAL_IOCONF	"./sysstat.ioconf"
+
+#endif  /* _SYSCONFIG_H */

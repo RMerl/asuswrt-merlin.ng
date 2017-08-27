@@ -1,0 +1,477 @@
+/*
+ * CSS styles used in iQoS pages
+ *
+ * Copyright (C) 2016, Broadcom. All Rights Reserved.
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: iqosstyle.css, v 1.0 2015-02-12 15:25:43 $
+ */
+
+header,footer,section,article,nav,hgroup,aside{
+	display:block;
+}
+
+body{
+	background:white;
+	color:black;
+	font-family:arial, sans-serif;
+	font-size: 10pt;
+	text-align:center;
+}
+
+.topbg {
+	background-image: url(repeat_edge_new.gif);
+	line-height:0px;
+}
+
+#main_div{
+	width:99.9%;
+	margin-bottom:20px;
+	text-align:left;
+}
+#headerplaceholder{
+	width:100%;
+	margin:2px auto;
+	text-align:left;
+	display:block;
+}
+#topheader{
+
+}
+#headertext{
+	float:left;
+}
+
+#topnav{
+	margin-top:0
+	width:100%;
+	background:black;
+}
+
+#logoplaceholder{
+	width:100px;
+	height:50px;
+	margin:5px;
+}
+
+#contentarea{
+	min-height:1000px;
+	height:auto;
+	padding-right:2.5%;
+	padding-left:2.5%;
+	background:#FFFFFF;
+}
+.tabheadings{
+	width:100%;
+	margin-bottom:1%
+}
+.tabheadings image{
+	position:relative;
+	width:100%;
+}
+.tabheadings p{
+	position:absolute;
+	top:100px;
+	left:10px;
+	font-size:20px;
+	color:#FFFFFF;
+	font-family:Arial;
+	text-shadow:0px 4px 4px #000;
+}
+
+ul.iqosmenu{
+	list-style:none;
+	padding:0px;
+	font-size:1.1em;
+	font-weight:bold;
+	margin:0px;
+}
+
+ul.iqosmenu:after{
+	content:"";
+	clear:both;
+	display:block;
+}
+
+ul.iqosmenu li{
+	float:left;
+	margin:0 0 0 10px;
+}
+
+ul.iqosmenu li a,ul.iqosmenu a:link{
+	color:#FBEFEF;
+	text-decoration:none;
+	display:block;
+	text-align:center;
+	width:150px;
+}
+
+#rssigraphplaceholder{
+	width:110%;
+	height:400px;
+	margin-left:10px;
+	margin-top:10px;
+}
+
+#aplistplaceholder{
+}
+
+#CongestiongraphPlaceHolder{
+	width:80%;
+	height:400px;
+	margin-left:10px;
+	margin-top:40px;
+}
+
+.aplistfullinfolist{
+	float:left;
+	list-style:none;
+	margin-top:5px;
+	margin-bottom:5px;
+	margin-left:40px;
+	margin-right:100px;
+	padding:10px;
+	width:40%;
+}
+
+.aplistfullinfolist li{
+	padding:5px;
+}
+
+.aplistfullinfolist li h4{
+	float:left;
+	font-family:Arial, Helvetica, sans-serif;
+	}
+
+.aplistfullinfolist li p{
+	float:none;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+
+.aplistfullinfolistrght{
+	list-style:none;
+	float:none;
+	margin:5px;
+	padding:10px;
+}
+.aplistfullinfolistrght li{
+	padding:5px;
+}
+
+.aplistfullinfolistrght li h4{
+	float:left;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.aplistfullinfolistrght li p{
+	float:none;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+#aplistdata{
+	width:90%;
+	margin-left:50px;
+	background:#DCDADA;
+}
+
+#frequencybandselector{
+	margin-bottom:40px;
+	margin-left:3px;
+}
+
+#frequencybandform input{
+	width:50px;
+	padding:5px;
+}
+
+#frequencybandform{
+	width:auto;
+	margin-left:60px;
+	color:black;
+}
+
+#frequencybandform legend{
+	width:100%;
+	margin-bottom:10px;
+	margin-top:5px;
+	color:white;
+}
+
+#frequencybandform fieldset{
+	color:black;
+	font-weight:bold;
+	display:inline;
+
+}
+
+#scanbutton{
+	margin-left:50px;
+	color:white;
+	height:35px;
+	width:150px;
+	font-size:21px;
+	font-weight:bold;
+}
+
+.dspstyle{
+	display:block;
+}
+
+.tooltip{
+	display:none;
+	position:absolute;
+	background-color:#4687A3;
+	color:white;
+	padding:10px;
+	width:150px;
+}
+
+.border{
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 10px;
+}
+
+.fontfamly{
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.cmclr{
+	background-color:#4873A8;
+}
+
+.cmnbrdr{
+	border: 2px solid #4873A8;
+}
+
+.cmtxtclr{
+	color:#005568;
+}
+
+.red{
+	background-color:#F10529;
+}
+
+.grn{
+	background-color:#07FE49;
+}
+
+.blu{
+	background-color:blue;
+}
+
+.brcm{
+	background-color:#990000;
+}
+
+.yllw{
+	background-color:#FEE507;
+}
+
+.wtht1{
+	display:table-cell;
+	height:8px;
+	margin-bottom:2px;
+	margin-left:2px;
+	border:1px solid black;
+}
+
+
+.legend table, .legend > div {
+	height: auto;
+	right: -18%;
+	top: 10px;
+	width: auto;
+}
+
+.legend table {
+	border: 2px solid #4873A8;
+	padding: 1px;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.cmbx{
+	width:80%;
+	height:20px;
+}
+
+.mztp{
+	margin-top:-90px;
+}
+
+.prtbrdr{
+	border-top-left-radius:5px;
+	border-top-right-radius:5px;
+	-moz-border-radius-topleft:5px;
+	-moz-border-radius-topright:5px;
+	-webkit-border-radius-topleft: 5px;
+	-webkit-border-radius-topright: 5px;
+}
+
+
+.dspblk{
+	display:inline-block;
+}
+
+.zerobrdr{
+	border:0;
+}
+
+.invisible{
+	display:none;
+}
+
+
+.blkbrdr{
+	border-top: 2px solid black;
+}
+
+.selectctrl{
+	padding:5px;
+	font-size:1.2em;
+	height:auto;
+	margin:8px;
+}
+
+.selectbandctrl{
+	padding:5px;
+	font-size:1.2em;
+	width:190px;
+	height:auto;
+	margin:8px;
+}
+
+.fght{
+	height:48px;
+}
+
+.ftalign{
+	//padding-top:16px;
+	//padding-bottom:13px;
+	//padding-right:8px;
+}
+
+.errormsg{
+	margin-top:10px;
+	margin-left:60px;
+}
+
+.cmgraphbgcolor{
+	background: #E6EDF0;
+}
+
+.tickLabel{
+	font-size: 12pt;
+	font-weight: bold;
+}
+
+.textheading{
+	font-size: 1.4em;
+	font-weight:bold;
+	text-shadow:0px 0px 0px #000;
+}
+
+#TextHeadingDesc{
+	position:absolute;
+	top:21%;
+	left:20%;
+	width:98%;
+	font-size: 11pt;
+	color:black;
+	font-family: arial, sans-serif;
+	text-align:left;
+	font-weight:normal;
+	text-shadow:0px 0px 0px #000;
+}
+
+.fontonwhite{
+	color:#005568;
+	font-weight:bold;
+	font-size:13pt;
+}
+
+
+.toplogo{
+	border:0;
+	border-collapse:collapse;
+	border-spacing:0px;
+	padding:0;
+	margin:0;
+	width:100%;
+}
+
+.toplogo td{
+	padding:0;
+}
+
+.cmnbtnclass {
+	color:white;
+	background-color: #28539E;
+	border-radius: 20px;
+	font-weight:bold;
+	border:0px;
+	box-shadow:2px 2px 2px #999;
+}
+
+.cmnbtnclass:active {
+	position:relative;
+	top:2px;
+}
+
+.cmnbtnclass:hover {
+	background-color: #04245C;
+}
+
+.cmnheadingclass {
+	padding:0;
+	padding-left:5px;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+	color:white;
+}
+
+.cmnheadingclass td {
+	position:relative;
+	font-size:18px;
+	font-weight:bold;
+	color:white;
+}
+
+.cmnlineclass {
+	padding:0px;
+	box-shadow:2px 2px 2px #999;
+}
+
+.cmnverticalline {
+	width:4px;
+}
+
+.cmnhorizontalline {
+	height:4px;
+}
+.cmnprogressbar {
+	margin-left:35%;
+	margin-right:35%;
+	position:relative;
+	text-align:center;
+	vertical-align:middle;
+}

@@ -1,0 +1,12 @@
+<p>The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+The authentication is based on <b>X.509 certificates</b>. To authorize clients,
+<b>moon</b> expects attribute certificates sent inline in IKEv2 CERT payloads.
+<b>Carol</b> has attribute certificates for both the <i>sales</i> and
+the <i>finance</i> groups. The attribute certificate for <i>finance</i> is not
+valid anymore, hence <b>carol</b> gets access to the <i>sales</i> connection
+only.</p>
+<p>Upon the successful establishment of the IPsec tunnel, <b>leftfirewall=yes</b>
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, <b>carol</b> tries to ping both
+<b>alice</b> and <b>venus</b>, but only the ping for the <i>sales</i> related
+host <b>venus</b> succeeds.</p>

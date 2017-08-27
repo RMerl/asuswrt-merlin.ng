@@ -1,0 +1,4 @@
+"squid_watchdog_enable"  "Squid Watchdog Enable"  "CHOICE"  "2"  "0"  "1"  "FALSE"  "0"
+"squid_watchdog_interval_sec"  "Squid Watchdog Interval Sec" "RANGE" "60" "10000" "FALSE" "0"
+"squid_proxy_server_ip"  "Squid Watchdog IP"  "NULL"  "FALSE" "0"
+"squid_proxy_server_port"  "Squid Proxy Server Port" "RANGE" "0" "10000" "FALSE" "0"

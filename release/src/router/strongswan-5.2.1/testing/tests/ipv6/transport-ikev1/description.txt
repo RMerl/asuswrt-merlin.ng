@@ -1,0 +1,5 @@
+An IPv6 ESP transport connection between the hosts <b>moon</b> and <b>sun</b> is successfully set up.
+The authentication is based on X.509 certificates. Upon the successful establishment of
+the IPsec SA, <b>leftfirewall=yes</b> automatically inserts ip6tables-based firewall
+rules that let pass the protected traffic. In order to test both the transport connection
+and the firewall rules, <b>moon</b> sends an IPv6 ICMP request to <b>sun</b> using the ping6 command.

@@ -1,0 +1,45 @@
+#***********************************************************************
+#
+# Makefile
+#
+#***********************************************************************
+
+CFLAGS = -I$(SRCBASE)/openssl-ipk/include -I$(SRCBASE)/curl-7.21.7/include -I$(SRCBASE)/smartsync_api
+CFLAGS += -I$(LD_DIR) -I$(LD_DIR)/include -I. -I$(SRCBASE)/shared -D_FILE_OFFSET_BITS=64
+CFLAGS += $(if $(QCA),$(EXTRACFLAGS))
+
+LDFLAGS = -L$(SRCBASE)/curl-7.21.7/lib/.libs -L$(SRCBASE)/openssl-ipk  -L$(SRCBASE)/smartsync_api
+LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib
+LIBS = -lpthread -lcrypto -lssl -lcurl -lm -lsmartsync_api
+
+
+ifeq ($(RTCONFIG_QTN),y)
+LDFLAGS += -L$(SRCBASE)/libqcsapi_client
+LIBS += -lqcsapi_client
+endif
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(LD_DIR)/common/include
+endif
+
+ifeq ($(OLEG_ARM_D),1)
+CFLAGS += -DOLEG_ARM
+endif
+ifeq ($(OLEG_MIPSEL_D),1)
+CFLAGS += -DOLEG_MIPSEL
+endif
+ifeq ($(I686_D),1)
+CFLAGS += -DI686
+endif
+ifeq ($(SMARTSYNCIPK_D),1)
+CFLAGS += -DSMARTSYNCIPK
+endif
+
+all: google_client 
+
+google_client:google.o function.o list.o cJSON.o mem_pool.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $^ -o $@
+
+.PHONY:clean
+clean:
+	rm -rf *.o google_client
+

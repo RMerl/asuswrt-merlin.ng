@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Reference Manual: Secure HMAC Digests</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Data-Checksums.html" title="Data Checksums">
+<link rel="next" href="glib-I18N.html" title="Internationalization">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#glib-Data-HMACs.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Data-Checksums.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-I18N.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Data-HMACs"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Data-HMACs.top_of_page"></a>Secure HMAC Digests</span></h2>
+<p>Secure HMAC Digests — computes the HMAC for data</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="glib-Data-HMACs.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;glib.h&gt;
+
+                    <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac">GHmac</a>;
+<a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="returnvalue">GHmac</span></a> *             <a class="link" href="glib-Data-HMACs.html#g-hmac-new" title="g_hmac_new ()">g_hmac_new</a>                          (<em class="parameter"><code><a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> digest_type</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *key</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> key_len</code></em>);
+<a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="returnvalue">GHmac</span></a> *             <a class="link" href="glib-Data-HMACs.html#g-hmac-copy" title="g_hmac_copy ()">g_hmac_copy</a>                         (<em class="parameter"><code>const <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);
+<a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="returnvalue">GHmac</span></a> *             <a class="link" href="glib-Data-HMACs.html#g-hmac-ref" title="g_hmac_ref ()">g_hmac_ref</a>                          (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Data-HMACs.html#g-hmac-unref" title="g_hmac_unref ()">g_hmac_unref</a>                        (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Data-HMACs.html#g-hmac-update" title="g_hmac_update ()">g_hmac_update</a>                       (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *data</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> length</code></em>);
+const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="glib-Data-HMACs.html#g-hmac-get-string" title="g_hmac_get_string ()">g_hmac_get_string</a>                   (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Data-HMACs.html#g-hmac-get-digest" title="g_hmac_get_digest ()">g_hmac_get_digest</a>                   (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="type">guint8</span></a> *buffer</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *digest_len</code></em>);
+
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="glib-Data-HMACs.html#g-compute-hmac-for-data" title="g_compute_hmac_for_data ()">g_compute_hmac_for_data</a>             (<em class="parameter"><code><a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> digest_type</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *key</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> key_len</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *data</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> length</code></em>);
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="glib-Data-HMACs.html#g-compute-hmac-for-string" title="g_compute_hmac_for_string ()">g_compute_hmac_for_string</a>           (<em class="parameter"><code><a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> digest_type</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *key</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> key_len</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> length</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Data-HMACs.description"></a><h2>Description</h2>
+<p>
+HMACs should be used when producing a cookie or hash based on data
+and a key. Simple mechanisms for using SHA1 and other algorithms to
+digest a key and data together are vulnerable to various security
+issues. <a class="ulink" href="http://en.wikipedia.org/wiki/HMAC" target="_top">HMAC</a>
+uses algorithms like SHA1 in a secure way to produce a digest of a
+key and data.
+</p>
+<p>
+Both the key and data are arbitrary byte arrays of bytes or characters.
+</p>
+<p>
+Support for HMAC Digests has been added in GLib 2.30.
+</p>
+</div>
+<div class="refsect1">
+<a name="glib-Data-HMACs.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GHmac"></a><h3>GHmac</h3>
+<pre class="programlisting">typedef struct _GHmac GHmac;</pre>
+<p>
+An opaque structure representing a HMAC operation.
+To create a new GHmac, use <a class="link" href="glib-Data-HMACs.html#g-hmac-new" title="g_hmac_new ()"><code class="function">g_hmac_new()</code></a>. To free
+a GHmac, use <a class="link" href="glib-Data-HMACs.html#g-hmac-unref" title="g_hmac_unref ()"><code class="function">g_hmac_unref()</code></a>.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-new"></a><h3>g_hmac_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="returnvalue">GHmac</span></a> *             g_hmac_new                          (<em class="parameter"><code><a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> digest_type</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *key</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> key_len</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>, using the digest algorithm <em class="parameter"><code>digest_type</code></em>.
+If the <em class="parameter"><code>digest_type</code></em> is not known, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned.
+A <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> can be used to compute the HMAC of a key and an
+arbitrary binary blob, using different hashing algorithms.
+</p>
+<p>
+A <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> works by feeding a binary blob through <a class="link" href="glib-Data-HMACs.html#g-hmac-update" title="g_hmac_update ()"><code class="function">g_hmac_update()</code></a>
+until the data is complete; the digest can then be extracted
+using <a class="link" href="glib-Data-HMACs.html#g-hmac-get-string" title="g_hmac_get_string ()"><code class="function">g_hmac_get_string()</code></a>, which will return the checksum as a
+hexadecimal string; or <a class="link" href="glib-Data-HMACs.html#g-hmac-get-digest" title="g_hmac_get_digest ()"><code class="function">g_hmac_get_digest()</code></a>, which will return a
+array of raw bytes. Once either <a class="link" href="glib-Data-HMACs.html#g-hmac-get-string" title="g_hmac_get_string ()"><code class="function">g_hmac_get_string()</code></a> or
+<a class="link" href="glib-Data-HMACs.html#g-hmac-get-digest" title="g_hmac_get_digest ()"><code class="function">g_hmac_get_digest()</code></a> have been called on a <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>, the HMAC
+will be closed and it won't be possible to call <a class="link" href="glib-Data-HMACs.html#g-hmac-update" title="g_hmac_update ()"><code class="function">g_hmac_update()</code></a>
+on it anymore.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>digest_type</code></em> :</span></p></td>
+<td>the desired type of digest</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>the key for the HMAC. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=key_len]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key_len</code></em> :</span></p></td>
+<td>the length of the keys</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the newly created <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Use <a class="link" href="glib-Data-HMACs.html#g-hmac-unref" title="g_hmac_unref ()"><code class="function">g_hmac_unref()</code></a> to free the memory allocated by it.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-copy"></a><h3>g_hmac_copy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="returnvalue">GHmac</span></a> *             g_hmac_copy                         (<em class="parameter"><code>const <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);</pre>
+<p>
+Copies a <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>. If <em class="parameter"><code>hmac</code></em> has been closed, by calling
+<a class="link" href="glib-Data-HMACs.html#g-hmac-get-string" title="g_hmac_get_string ()"><code class="function">g_hmac_get_string()</code></a> or <a class="link" href="glib-Data-HMACs.html#g-hmac-get-digest" title="g_hmac_get_digest ()"><code class="function">g_hmac_get_digest()</code></a>, the copied
+HMAC will be closed as well.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hmac</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> to copy</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the copy of the passed <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>. Use <a class="link" href="glib-Data-HMACs.html#g-hmac-unref" title="g_hmac_unref ()"><code class="function">g_hmac_unref()</code></a>
+when finished using it.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-ref"></a><h3>g_hmac_ref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="returnvalue">GHmac</span></a> *             g_hmac_ref                          (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);</pre>
+<p>
+Atomically increments the reference count of <em class="parameter"><code>hmac</code></em> by one.
+</p>
+<p>
+This function is MT-safe and may be called from any thread.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hmac</code></em> :</span></p></td>
+<td>a valid <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the passed in <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-unref"></a><h3>g_hmac_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_hmac_unref                        (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);</pre>
+<p>
+Atomically decrements the reference count of <em class="parameter"><code>hmac</code></em> by one.
+</p>
+<p>
+If the reference count drops to 0, all keys and values will be
+destroyed, and all memory allocated by the hash table is released.
+This function is MT-safe and may be called from any thread.
+Frees the memory allocated for <em class="parameter"><code>hmac</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>hmac</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-update"></a><h3>g_hmac_update ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_hmac_update                       (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *data</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> length</code></em>);</pre>
+<p>
+Feeds <em class="parameter"><code>data</code></em> into an existing <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>.
+</p>
+<p>
+The HMAC must still be open, that is <a class="link" href="glib-Data-HMACs.html#g-hmac-get-string" title="g_hmac_get_string ()"><code class="function">g_hmac_get_string()</code></a> or
+<a class="link" href="glib-Data-HMACs.html#g-hmac-get-digest" title="g_hmac_get_digest ()"><code class="function">g_hmac_get_digest()</code></a> must not have been called on <em class="parameter"><code>hmac</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hmac</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>buffer used to compute the checksum. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=length]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>length</code></em> :</span></p></td>
+<td>size of the buffer, or -1 if it is a nul-terminated string</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-get-string"></a><h3>g_hmac_get_string ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *       g_hmac_get_string                   (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>);</pre>
+<p>
+Gets the HMAC as an hexadecimal string.
+</p>
+<p>
+Once this function has been called the <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> can no longer be
+updated with <a class="link" href="glib-Data-HMACs.html#g-hmac-update" title="g_hmac_update ()"><code class="function">g_hmac_update()</code></a>.
+</p>
+<p>
+The hexadecimal characters will be lower case.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hmac</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the hexadecimal representation of the HMAC. The
+returned string is owned by the HMAC and should not be modified
+or freed.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hmac-get-digest"></a><h3>g_hmac_get_digest ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_hmac_get_digest                   (<em class="parameter"><code><a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> *hmac</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="type">guint8</span></a> *buffer</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *digest_len</code></em>);</pre>
+<p>
+Gets the digest from <em class="parameter"><code>checksum</code></em> as a raw binary array and places it
+into <em class="parameter"><code>buffer</code></em>. The size of the digest depends on the type of checksum.
+</p>
+<p>
+Once this function has been called, the <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a> is closed and can
+no longer be updated with <a class="link" href="glib-Data-Checksums.html#g-checksum-update" title="g_checksum_update ()"><code class="function">g_checksum_update()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hmac</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Data-HMACs.html#GHmac" title="GHmac"><span class="type">GHmac</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>buffer</code></em> :</span></p></td>
+<td>output buffer</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>digest_len</code></em> :</span></p></td>
+<td>an inout parameter. The caller initializes it to the
+size of <em class="parameter"><code>buffer</code></em>. After the call it contains the length of the digest</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-compute-hmac-for-data"></a><h3>g_compute_hmac_for_data ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *             g_compute_hmac_for_data             (<em class="parameter"><code><a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> digest_type</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *key</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> key_len</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *data</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> length</code></em>);</pre>
+<p>
+Computes the HMAC for a binary <em class="parameter"><code>data</code></em> of <em class="parameter"><code>length</code></em>. This is a
+convenience wrapper for <a class="link" href="glib-Data-HMACs.html#g-hmac-new" title="g_hmac_new ()"><code class="function">g_hmac_new()</code></a>, <a class="link" href="glib-Data-HMACs.html#g-hmac-get-string" title="g_hmac_get_string ()"><code class="function">g_hmac_get_string()</code></a>
+and <a class="link" href="glib-Data-HMACs.html#g-hmac-unref" title="g_hmac_unref ()"><code class="function">g_hmac_unref()</code></a>.
+</p>
+<p>
+The hexadecimal string returned will be in lower case.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>digest_type</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> to use for the HMAC</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>the key to use in the HMAC. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=key_len]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key_len</code></em> :</span></p></td>
+<td>the length of the key</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>binary blob to compute the HMAC of</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>length</code></em> :</span></p></td>
+<td>length of <em class="parameter"><code>data</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the HMAC of the binary data as a string in hexadecimal.
+The returned string should be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a> when done using it.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-compute-hmac-for-string"></a><h3>g_compute_hmac_for_string ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *             g_compute_hmac_for_string           (<em class="parameter"><code><a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> digest_type</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a> *key</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> key_len</code></em>,
+                                                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> length</code></em>);</pre>
+<p>
+Computes the HMAC for a string.
+</p>
+<p>
+The hexadecimal string returned will be in lower case.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>digest_type</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Data-Checksums.html#GChecksumType" title="enum GChecksumType"><span class="type">GChecksumType</span></a> to use for the HMAC</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key</code></em> :</span></p></td>
+<td>the key to use in the HMAC. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=key_len]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>key_len</code></em> :</span></p></td>
+<td>the length of the key</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>str</code></em> :</span></p></td>
+<td>the string to compute the HMAC for</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>length</code></em> :</span></p></td>
+<td>the length of the string, or -1 if the string is nul-terminated</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the HMAC as a hexadecimal string.
+The returned string should be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>
+when done using it.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

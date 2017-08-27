@@ -1,0 +1,87 @@
+Import('env')
+
+tests = Split('prepare.sh \
+	run-tests.pl \
+	cleanup.sh')
+
+extra_dist = Split('fastcgi-10.conf \
+	fastcgi-auth.conf \
+	fastcgi-responder.conf \
+	fastcgi-13.conf \
+	bug-06.conf \
+	bug-12.conf \
+	core-var-include.t \
+	var-include.conf \
+	var-include-sub.conf \
+	condition.conf \
+	core-condition.t \
+	core-request.t \
+	core-response.t \
+	core-keepalive.t \
+	core.t \
+	mod-access.t \
+	mod-auth.t \
+	mod-cgi.t \
+	mod-compress.t \
+	mod-compress.conf \
+	mod-fastcgi.t \
+	mod-redirect.t \
+	mod-userdir.t \
+	mod-rewrite.t \
+	request.t \
+	mod-ssi.t \
+	LightyTest.pm \
+	mod-setenv.t')
+
+fcgi_auth = None
+fcgi_responder = None
+
+if env['LIBFCGI']:
+	fcgi_auth = env.Program("fcgi-auth", "fcgi-auth.c", LIBS=[env['LIBFCGI'], env['APPEND_LIBS']])
+	fcgi_responder = env.Program("fcgi-responder", "fcgi-responder.c", LIBS=[env['LIBFCGI'], env['APPEND_LIBS']])
+
+def CopyTestBinary(env, binary):
+	return env.Command(target = env['ENV']['top_builddir'] + '/tests/' + binary, source = binary, action = Copy("$TARGET", "$SOURCE"))
+
+def BuildTestEnv(env, build_type):
+	builddir = build_type
+	dependencies = [build_type]
+	if build_type == 'dynamic':
+		builddir = '.'
+		dependencies += ['modules']
+
+	testenv = env.Clone()
+	testenv['ENV']['srcdir']='tests'
+	testenv['ENV']['top_builddir']='sconsbuild/' + builddir
+	prepare = testenv.AlwaysBuild(testenv.Command(build_type + '/prepare', 'prepare.sh', 'tests/prepare.sh'))
+	runtests = testenv.AlwaysBuild(testenv.Command(build_type + '/run-tests', 'run-tests.pl', 'tests/run-tests.pl'))
+	cleanup = testenv.AlwaysBuild(testenv.Command(build_type + '/cleanup', 'cleanup.sh', 'tests/cleanup.sh'))
+	testenv.Depends(runtests, prepare)
+	testenv.Depends(cleanup, runtests)
+	SideEffect('dummy-file-prevent-running-tests-in-parallel', runtests)
+
+	testenv.Depends(runtests, dependencies)
+
+	if env['LIBFCGI']:
+		fcgis = [CopyTestBinary(testenv, 'fcgi-auth'), CopyTestBinary(testenv, 'fcgi-responder')]
+		testenv.Depends(runtests, fcgis)
+
+	return [prepare, runtests, cleanup]
+
+check_dynamic = env.Alias('check_dynamic', BuildTestEnv(env, 'dynamic'))
+env.Depends(check_dynamic, 'modules')
+check_static = env.Alias('check_static', BuildTestEnv(env, 'static'))
+check_fullstatic = env.Alias('check_fullstatic', BuildTestEnv(env, 'fullstatic'))
+
+checks = []
+
+if env['build_dynamic']:
+	checks += check_dynamic
+
+if env['build_static']:
+	checks += check_static
+
+if env['build_fullstatic']:
+	checks += check_fullstatic
+
+env.Alias('check', checks)

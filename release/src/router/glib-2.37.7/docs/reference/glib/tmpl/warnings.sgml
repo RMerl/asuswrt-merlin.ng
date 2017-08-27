@@ -1,0 +1,136 @@
+<!-- ##### SECTION Title ##### -->
+Warnings and Assertions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_print ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_set_print_handler ##### -->
+<para>
+
+</para>
+
+@func: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GPrintFunc ##### -->
+<para>
+
+</para>
+
+@string: 
+
+
+<!-- ##### FUNCTION g_printerr ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_set_printerr_handler ##### -->
+<para>
+
+</para>
+
+@func: 
+@Returns: 
+
+
+<!-- ##### MACRO g_return_if_fail ##### -->
+<para>
+
+</para>
+
+@expr: 
+
+
+<!-- ##### MACRO g_return_val_if_fail ##### -->
+<para>
+
+</para>
+
+@expr: 
+@val: 
+
+
+<!-- ##### MACRO g_return_if_reached ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO g_return_val_if_reached ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO g_warn_if_fail ##### -->
+<para>
+
+</para>
+
+@expr: 
+
+
+<!-- ##### MACRO g_warn_if_reached ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_on_error_query ##### -->
+<para>
+
+</para>
+
+@prg_name: 
+
+
+<!-- ##### FUNCTION g_on_error_stack_trace ##### -->
+<para>
+
+</para>
+
+@prg_name: 
+
+
+<!-- ##### MACRO G_BREAKPOINT ##### -->
+<para>
+
+</para>
+
+
+

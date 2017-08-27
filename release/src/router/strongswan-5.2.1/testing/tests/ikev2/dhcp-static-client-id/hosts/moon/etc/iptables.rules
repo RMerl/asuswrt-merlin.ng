@@ -1,0 +1,39 @@
+*filter
+
+# default policy is DROP
+-P INPUT DROP
+-P OUTPUT DROP
+-P FORWARD DROP
+
+# allow bootpc and bootps
+-A OUTPUT -p udp --sport bootpc --dport bootps -j ACCEPT
+-A INPUT  -p udp --sport bootps --dport bootps -j ACCEPT
+
+# allow broadcasts from eth1
+-A INPUT -i eth1 -d 10.1.255.255 -j ACCEPT
+
+# allow esp
+-A INPUT  -i eth0 -p 50 -j ACCEPT
+-A OUTPUT -o eth0 -p 50 -j ACCEPT
+
+# allow IKE
+-A INPUT  -i eth0 -p udp --sport 500 --dport 500 -j ACCEPT
+-A OUTPUT -o eth0 -p udp --dport 500 --sport 500 -j ACCEPT
+
+# allow MobIKE
+-A INPUT  -i eth0 -p udp --sport 4500 --dport 4500 -j ACCEPT
+-A OUTPUT -o eth0 -p udp --dport 4500 --sport 4500 -j ACCEPT
+
+# allow ssh
+-A INPUT  -p tcp --dport 22 -j ACCEPT
+-A OUTPUT -p tcp --sport 22 -j ACCEPT
+
+# allow crl fetch from winnetou
+-A INPUT  -i eth0 -p tcp --sport 80 -s PH_IP_WINNETOU -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --dport 80 -d PH_IP_WINNETOU -j ACCEPT
+
+# log dropped packets
+-A INPUT  -j LOG --log-prefix " IN: "
+-A OUTPUT -j LOG --log-prefix " OUT: "
+
+COMMIT

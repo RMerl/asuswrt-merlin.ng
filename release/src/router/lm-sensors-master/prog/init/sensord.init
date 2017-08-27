@@ -1,0 +1,157 @@
+#!@BASH@
+#
+# @INITRDDIR@/sensord
+#
+# sensord       This shell script takes care of starting and stopping
+#               sensord, the lm_sensors hardware health monitoring daemon.
+#
+# Here is the sensors service for SysV init, based on lm_sensors-2.5.5-sensors
+# from Mandrake lm_sensors source RPM. It is modified according to recommendations
+# for RedHat initscripts. The drivers starting part is taken from alsasound
+# service. To configure this service one should put appropriate "alias i2c-bus-0
+# xxx" and "alias i2c-sensors-chip-0 xxx" in /etc/modules.conf. The rest should be
+# self explaining.
+#
+# You put it into /etc/rc.d/init.d/, you make a symlink (probably using
+# chkconfig, ntsysv, tksysv or serviceconf program) named S95xxx and K05xxx
+# into /etc/rc#.d (where # is the number of runlevel), and sensors service
+# (which starts lm_sensors modules, runs sensors -s and starts sensord)
+# will be started automatically at startup/reboot and stopped at shutdown.
+# One could also start/stop service manually.
+#
+# This service was tested for RedHat 7.2 only.
+# Jakub Narêbski, Poland
+#
+
+# chkconfig: 2345 05 95
+# processname: sensord
+# config: @SYSCONFDIR@/sensors.conf
+# pidfile: /var/run/sensord.pid
+# description: Sensors is a sensors daemon which can be used to alert you \
+#              in the event of a hardware health monitoring alarm.
+
+# Source function library.
+. @INITRDDIR@/functions
+
+# Set default return value to 0 (success)
+RETVAL=0
+# Add @SBINDIR@ (sensord) and @BINDIR@ (sensors) to PATH if necessary
+echo "$PATH" | grep -q @SBINDIR@ || PATH=$PATH:@SBINDIR@
+echo "$PATH" | grep -q  @BINDIR@ || PATH=$PATH:@BINDIR@
+export PATH
+
+# Modules to load from modules.conf (modules configuration)
+i2c_bus_drivers=´modprobe -c | \
+  awk ´/^[[:space:]]*alias[[:space:]]+i2c-bus-[[:digit:]]/ { print $3 }´´
+i2c_chip_drivers=´modprobe -c | \
+  awk ´/^[[:space:]]*alias[[:space:]]+i2c-sensors-chip-[[:digit:]]/ { print $3
+}´´
+
+# Configuration of sensord
+interval=1m      # interval between scanning for sensor alarms
+log_interval=30m # interval between logging all sensor readings
+
+# Check that we use kernel for which lm_sensors-drivers was installed
+[ ´uname -r´ = @MVERSION@ ] || exit 0
+
+# Check that lm_sensors is installed.
+[ -x @SBINDIR@/sensord ] || exit 0
+[ -x  @BINDIR@/sensors ] || exit 0
+
+echo_status()
+{
+        if [ $1 -eq 0 ]; then
+                echo_success
+        else
+                echo_failure
+        fi
+        echo
+}
+
+start()
+{
+        # Start modules
+        echo "Starting I2C bus (adapter) drivers: "
+        for driver in $i2c_bus_drivers; do
+                echo -n "Starting I2C driver: $driver "
+                /sbin/modprobe ´echo $driver´
+                echo_status $?
+        done
+        echo "Starting I2C chip (sensors) drivers: "
+        for driver in $i2c_chip_drivers; do
+                echo -n "Starting I2C driver: $driver "
+                /sbin/modprobe $(echo $driver)
+                echo_status $?
+        done
+        # Set Alarm
+        echo -n "Configuring sensors: "
+        sensors -s && sleep 2
+        echo_status $?
+        # Start daemons.
+        echo -n $"Starting sensord: "
+        daemon sensord -i $interval -l $log_interval
+        RETVAL=$?
+
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/sensord
+
+        echo
+        return $RETVAL
+}
+
+stop()
+{
+        # Stop daemons.
+        echo -n $"Shutting down sensord: "
+        killproc sensord
+        RETVAL=$?
+
+        echo
+        # Remove modules
+        drivers=´echo "$i2c_chip_drivers $i2c_bus_drivers" | \
+          tr -s "[:space:]\n" " "´
+        echo -n "Removing I2C drivers: $drivers"
+        /sbin/modprobe -r -q $drivers
+        echo_status $?
+
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/sensord
+
+        return $RETVAL
+}
+
+reload()
+{
+        # Reread configuration file
+        sensors -s
+
+        return $?
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status sensord
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  reload)
+        reload
+        ;;
+  condrestart)
+        [ -e /var/lock/subsys/sensord ] && restart || :
+        ;;
+  *)
+        echo "Usage: sensord {start|stop|restart|reload|condrestart|status}"
+        exit 1
+        ;;
+esac
+
+exit $?

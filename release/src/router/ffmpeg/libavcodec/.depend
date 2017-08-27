@@ -1,0 +1,849 @@
+$(SUBDIR)libavcodec/allcodecs.o: libavcodec/allcodecs.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/audioconvert.o: libavcodec/audioconvert.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/bitstream.o: libavcodec/bitstream.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/bitstream_filter.o: libavcodec/bitstream_filter.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/dsputil.o: libavcodec/dsputil.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/simple_idct.h libavcodec/faandct.h \
+  libavcodec/faanidct.h libavcodec/h263.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  libavcodec/msmpeg4.h libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/snow.h
+$(SUBDIR)libavcodec/eval.o: libavcodec/eval.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/eval.h
+$(SUBDIR)libavcodec/faanidct.o: libavcodec/faanidct.c libavcodec/faanidct.h \
+  libavcodec/dsputil.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/imgconvert.o: libavcodec/imgconvert.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/colorspace.h \
+  libavcodec/imgconvert_template.h
+$(SUBDIR)libavcodec/jrevdct.o: libavcodec/jrevdct.c \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  libavcodec/dsputil.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/opt.o: libavcodec/opt.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/opt.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/eval.h
+$(SUBDIR)libavcodec/parser.o: libavcodec/parser.c libavcodec/parser.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/raw.o: libavcodec/raw.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/raw.h
+$(SUBDIR)libavcodec/resample.o: libavcodec/resample.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/resample2.o: libavcodec/resample2.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h
+$(SUBDIR)libavcodec/simple_idct.o: libavcodec/simple_idct.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/simple_idct.h
+$(SUBDIR)libavcodec/utils.o: libavcodec/utils.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/integer.h \
+  libavcodec/opt.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/crc.h \
+  libavcodec/imgconvert.h
+$(SUBDIR)libavcodec/imgresample.o: libavcodec/imgresample.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/swscale.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  libavcodec/dsputil.h
+$(SUBDIR)libavcodec/ac3dec.o: libavcodec/ac3dec.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ac3_parser.h libavcodec/ac3.h libavcodec/ac3tab.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/crc.h \
+  libavcodec/dsputil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/random.h
+$(SUBDIR)libavcodec/ac3tab.o: libavcodec/ac3tab.c libavcodec/ac3tab.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h
+$(SUBDIR)libavcodec/ac3.o: libavcodec/ac3.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ac3.h libavcodec/ac3tab.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/mdct.o: libavcodec/mdct.c libavcodec/dsputil.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/fft.o: libavcodec/fft.c libavcodec/dsputil.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/atrac3.o: libavcodec/atrac3.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/bytestream.h libavcodec/atrac3data.h
+$(SUBDIR)libavcodec/h264.o: libavcodec/h264.c libavcodec/dsputil.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/h264.h libavcodec/cabac.h \
+  libavcodec/h264pred.h libavcodec/h264data.h libavcodec/h264_parser.h \
+  libavcodec/golomb.h libavcodec/rectangle.h libavcodec/svq3.c
+$(SUBDIR)libavcodec/h264idct.o: libavcodec/h264idct.c libavcodec/dsputil.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/h264pred.o: libavcodec/h264pred.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegvideo.h libavcodec/dsputil.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/h264pred.h
+$(SUBDIR)libavcodec/h264_parser.o: libavcodec/h264_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/h264_parser.h libavcodec/h264.h libavcodec/dsputil.h \
+  libavcodec/cabac.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegvideo.h libavcodec/ratecontrol.h libavcodec/eval.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/h264pred.h
+$(SUBDIR)libavcodec/cabac.o: libavcodec/cabac.c \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/cabac.h
+$(SUBDIR)libavcodec/golomb.o: libavcodec/golomb.c \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h
+$(SUBDIR)libavcodec/mpegvideo.o: libavcodec/mpegvideo.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/mpegvideo_common.h libavcodec/mjpegenc.h \
+  libavcodec/msmpeg4.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  libavcodec/faandct.h
+$(SUBDIR)libavcodec/error_resilience.o: libavcodec/error_resilience.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h
+$(SUBDIR)libavcodec/jpeglsdec.o: libavcodec/jpeglsdec.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/golomb.h libavcodec/mjpeg.h libavcodec/mjpegdec.h \
+  libavcodec/dsputil.h libavcodec/jpegls.h libavcodec/jpeglsdec.h
+$(SUBDIR)libavcodec/jpegls.o: libavcodec/jpegls.c libavcodec/jpegls.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/mjpegdec.o: libavcodec/mjpegdec.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mjpeg.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mjpegdec.h libavcodec/jpeglsdec.h
+$(SUBDIR)libavcodec/mjpeg.o: libavcodec/mjpeg.c libavcodec/mjpeg.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/mpegaudiodec.o: libavcodec/mpegaudiodec.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegaudio.h \
+  libavcodec/mpegaudiodecheader.h libavcodec/mathops.h \
+  libavcodec/mpegaudiodata.h libavcodec/mpegaudiodectab.h
+$(SUBDIR)libavcodec/mpegaudiodecheader.o: libavcodec/mpegaudiodecheader.c \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegaudio.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegaudiodata.h
+$(SUBDIR)libavcodec/mpegaudio.o: libavcodec/mpegaudio.c libavcodec/mpegaudio.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h
+$(SUBDIR)libavcodec/mpegaudiodata.o: libavcodec/mpegaudiodata.c libavcodec/mpegaudiodata.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h
+$(SUBDIR)libavcodec/mpeg12.o: libavcodec/mpeg12.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/mpeg12.h libavcodec/mpeg12decdata.h \
+  libavcodec/bytestream.h libavcodec/mdec.c
+$(SUBDIR)libavcodec/mpeg12data.o: libavcodec/mpeg12data.c libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  libavcodec/rl.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/h263dec.o: libavcodec/h263dec.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/h263_parser.h libavcodec/mpeg4video_parser.h \
+  libavcodec/msmpeg4.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h
+$(SUBDIR)libavcodec/h263.o: libavcodec/h263.c libavcodec/dsputil.h libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegvideo.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/parser.h \
+  libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/h263data.h libavcodec/mpeg4data.h
+$(SUBDIR)libavcodec/mpeg4video_parser.o: libavcodec/mpeg4video_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegvideo.h libavcodec/dsputil.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h libavcodec/mpeg4video_parser.h
+$(SUBDIR)libavcodec/wmadec.o: libavcodec/wmadec.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/wma.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h
+$(SUBDIR)libavcodec/wma.o: libavcodec/wma.c libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/wma.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/wmadata.h
+$(SUBDIR)libavcodec/mpeg4audio.o: libavcodec/mpeg4audio.c libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpeg4audio.h
+$(SUBDIR)libavcodec/aac_parser.o: libavcodec/aac_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/aac_ac3_parser.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpeg4audio.h
+$(SUBDIR)libavcodec/aac_ac3_parser.o: libavcodec/aac_ac3_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/aac_ac3_parser.h
+$(SUBDIR)libavcodec/ac3_parser.o: libavcodec/ac3_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ac3_parser.h libavcodec/ac3.h libavcodec/ac3tab.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  libavcodec/aac_ac3_parser.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h
+$(SUBDIR)libavcodec/mpegaudio_parser.o: libavcodec/mpegaudio_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegaudio.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/dsputil.h libavcodec/mpegaudiodecheader.h
+$(SUBDIR)libavcodec/mpegvideo_parser.o: libavcodec/mpegvideo_parser.c libavcodec/parser.h \
+  libavcodec/avcodec.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/avutil.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/config.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/internal.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mem.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/mathematics.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intfloat_readwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/mpegvideo.h libavcodec/dsputil.h libavcodec/bitstream.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/common.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/bswap.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/intreadwrite.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/log.h \
+  libavcodec/ratecontrol.h libavcodec/eval.h libavcodec/mpeg12data.h \
+  /home/magic/asuswrt-router-mtk-AC1200GA1/release/src/router/ffmpeg/libavutil/rational.h \
+  libavcodec/rl.h

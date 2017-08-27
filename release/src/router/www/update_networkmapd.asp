@@ -1,0 +1,1 @@
+﻿fromNetworkmapd = <% get_clientlist(); %>;

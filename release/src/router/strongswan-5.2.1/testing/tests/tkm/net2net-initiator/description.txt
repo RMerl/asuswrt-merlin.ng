@@ -1,0 +1,5 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b>
+is set up. The host <b>moon</b> uses the Trusted Key Manager (TKM) and is the
+initiator of the tunnel connection. The authentication is based on X.509
+certificates. In order to test the tunnel, client <b>alice</b> behind gateway
+<b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b>.

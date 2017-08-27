@@ -1,0 +1,266 @@
+# -*- text -*-
+# Copyright (C) 2011 The FreeRADIUS Server project and contributors
+#
+# Version $Id$
+#
+#	DO NOT EDIT THE FILES IN THIS DIRECTORY
+#
+#	The files in this directory are maintained and updated by
+#	the FreeRADIUS project.  Newer releases of software may update
+#	or change these files.
+#
+#	Use the main dictionary file (usually /etc/raddb/dictionary)
+#	for local system attributes and $INCLUDEs.
+#
+#
+#
+#	This file contains dictionary translations for parsing
+#	requests and generating responses.  All transactions are
+#	composed of Attribute/Value Pairs.  The value of each attribute
+#	is specified as one of a few data types.  Valid data types are:
+#
+#	text       - printable, generally UTF-8 encoded (subset of 'string')
+#	string     - 0-253 octets
+#	ipaddr     - 4 octets in network byte order
+#	ipv4prefix - 1 octet reserved, one octet prefix, 4 octets ipaddr
+#	integer    - 32 bit value in big endian order
+#	integer64  - 64 bit value in big endian order
+#	date       - 32 bit value in big endian order - seconds since
+#		     00:00:00 GMT,  Jan.  1,  1970
+#	ifid       - 8 octets in network byte order
+#	ipv6addr   - 16 octets in network byte order
+#	ipv6prefix - 1 octet reserved, one octet prefix, 16 octets ipv6addr
+#	tlv	   - type-length-value
+#
+#	FreeRADIUS includes data types which are not defined
+#	in the RFC's.  These data types are:
+#
+#	abinary - Ascend's binary filter format.
+#	byte    - 8 bit unsigned integer
+#	ether   - 6 octets of hh:hh:hh:hh:hh:hh
+#		  where 'h' is hex digits, upper or lowercase.
+#	short   - 16-bit unsigned integer in network byte order
+#	signed  - 32-bit signed integer in network byte order
+#	octets  - raw octets, printed and input as hex strings.
+#		  e.g.: 0x123456789abcdef
+#
+# 	FreeRADIUS uses a number of data types which are defined in
+#	RFC 6929.  These data types should NEVER be used in any other
+#	dictionary.  We won't even list them here.
+#
+#
+#	Enumerated values are stored in the user file with dictionary
+#	VALUE translations for easy administration.
+#
+#	Example:
+#
+#	ATTRIBUTE	  VALUE
+#	---------------   -----
+#	Framed-Protocol = PPP
+#	7		= 1	(integer encoding)
+#
+
+#
+#	Include compatibility dictionary for older users file. Move
+#	this directive to the end of this file if you want to see the
+#	old names in the logfiles, instead of the new names.
+#
+$INCLUDE dictionary.compat
+
+#
+#	These dictionaries define attributes in the IETF managed space.
+#	(i.e. 1..255). This is wrong.  We include them here to allow them.
+#	The IETF allocated ones are listed below, which gives them priority.
+#
+#	i.e. don't do this.  Don't use these attributes
+#
+$INCLUDE dictionary.usr.illegal
+$INCLUDE dictionary.ascend.illegal
+
+#
+#	IETF allocated attributes and values.  Split out into
+#	the RFC which defined them.
+#
+#	For a complete list of the standard attributes and values,
+#	see:
+#		http://www.iana.org/assignments/radius-types
+#
+$INCLUDE dictionary.rfc2865
+$INCLUDE dictionary.rfc2866
+$INCLUDE dictionary.rfc2867
+$INCLUDE dictionary.rfc2868
+$INCLUDE dictionary.rfc2869
+$INCLUDE dictionary.rfc3162
+$INCLUDE dictionary.rfc3576
+$INCLUDE dictionary.rfc3580
+$INCLUDE dictionary.rfc4072
+$INCLUDE dictionary.rfc4372
+$INCLUDE dictionary.rfc4603
+$INCLUDE dictionary.rfc4675
+$INCLUDE dictionary.rfc4679
+$INCLUDE dictionary.rfc4818
+$INCLUDE dictionary.rfc4849
+$INCLUDE dictionary.rfc5176
+$INCLUDE dictionary.rfc5447
+$INCLUDE dictionary.rfc5580
+$INCLUDE dictionary.rfc5607
+$INCLUDE dictionary.rfc5904
+$INCLUDE dictionary.rfc6519
+$INCLUDE dictionary.rfc6572
+$INCLUDE dictionary.rfc6677
+$INCLUDE dictionary.rfc6911
+$INCLUDE dictionary.rfc6929
+$INCLUDE dictionary.rfc6930
+
+#
+#	Mostly values which have been allocated by IANA under
+#	"expert review", but which don't have an RFC associated with them.
+#
+$INCLUDE dictionary.iana
+
+#
+#	Vendor dictionaries are listed after the standard ones.
+#
+$INCLUDE dictionary.3com
+$INCLUDE dictionary.3gpp
+$INCLUDE dictionary.3gpp2
+$INCLUDE dictionary.acc
+$INCLUDE dictionary.acme
+$INCLUDE dictionary.airespace
+$INCLUDE dictionary.alcatel
+$INCLUDE dictionary.alcatel.sr
+$INCLUDE dictionary.alteon
+$INCLUDE dictionary.alvarion
+$INCLUDE dictionary.apc
+$INCLUDE dictionary.aruba
+$INCLUDE dictionary.azaire
+$INCLUDE dictionary.ascend
+$INCLUDE dictionary.bay
+$INCLUDE dictionary.bintec
+$INCLUDE dictionary.broadsoft
+$INCLUDE dictionary.bskyb
+$INCLUDE dictionary.bt
+$INCLUDE dictionary.cablelabs
+$INCLUDE dictionary.cabletron
+$INCLUDE dictionary.camiant
+$INCLUDE dictionary.chillispot
+$INCLUDE dictionary.cisco
+#
+#	 The Cisco VPN300 dictionary is the same as the altiga one.
+#	 You shouldn't use both at the same time.
+#
+#$INCLUDE dictionary.cisco.vpn3000
+$INCLUDE dictionary.cisco.vpn5000
+$INCLUDE dictionary.cisco.bbsm
+$INCLUDE dictionary.clavister
+$INCLUDE dictionary.colubris
+$INCLUDE dictionary.cosine
+$INCLUDE dictionary.dante
+$INCLUDE dictionary.dlink
+$INCLUDE dictionary.digium
+$INCLUDE dictionary.eltex
+$INCLUDE dictionary.epygi
+$INCLUDE dictionary.erx
+$INCLUDE dictionary.ericsson
+$INCLUDE dictionary.extreme
+$INCLUDE dictionary.f5
+$INCLUDE dictionary.fdxtended
+$INCLUDE dictionary.freeradius
+$INCLUDE dictionary.freeswitch
+$INCLUDE dictionary.fortinet
+$INCLUDE dictionary.foundry
+$INCLUDE dictionary.gandalf
+$INCLUDE dictionary.gemtek
+$INCLUDE dictionary.h3c
+$INCLUDE dictionary.hp
+$INCLUDE dictionary.huawei
+$INCLUDE dictionary.iea
+$INCLUDE dictionary.infonet
+$INCLUDE dictionary.issanni
+$INCLUDE dictionary.itk
+$INCLUDE dictionary.ipunplugged
+$INCLUDE dictionary.juniper
+$INCLUDE dictionary.karlnet
+$INCLUDE dictionary.kineto
+$INCLUDE dictionary.lancom
+$INCLUDE dictionary.livingston
+$INCLUDE dictionary.localweb
+$INCLUDE dictionary.lucent
+$INCLUDE dictionary.manzara
+$INCLUDE dictionary.merit
+$INCLUDE dictionary.meru
+$INCLUDE dictionary.microsoft
+$INCLUDE dictionary.mikrotik
+$INCLUDE dictionary.motorola
+$INCLUDE dictionary.motorola.wimax
+$INCLUDE dictionary.navini
+$INCLUDE dictionary.netscreen
+$INCLUDE dictionary.networkphysics
+$INCLUDE dictionary.nexans
+$INCLUDE dictionary.ntua
+$INCLUDE dictionary.nokia
+#
+#  Commented out because of attribute conflicts.
+#
+#$INCLUDE dictionary.nokia.conflict
+$INCLUDE dictionary.nomadix
+$INCLUDE dictionary.nortel
+#
+#  Commented out because of attribute conflicts.
+#
+#$INCLUDE dictionary.openser
+$INCLUDE dictionary.packeteer
+$INCLUDE dictionary.paloalto
+$INCLUDE dictionary.patton
+$INCLUDE dictionary.propel
+$INCLUDE dictionary.prosoft
+$INCLUDE dictionary.proxim
+$INCLUDE dictionary.purewave
+$INCLUDE dictionary.quiconnect
+$INCLUDE dictionary.quintum
+$INCLUDE dictionary.redback
+$INCLUDE dictionary.redcreek
+$INCLUDE dictionary.riverstone
+$INCLUDE dictionary.roaringpenguin
+$INCLUDE dictionary.shasta
+$INCLUDE dictionary.sg
+$INCLUDE dictionary.shiva
+$INCLUDE dictionary.siemens
+$INCLUDE dictionary.slipstream
+$INCLUDE dictionary.sonicwall
+$INCLUDE dictionary.springtide
+$INCLUDE dictionary.starent
+$INCLUDE dictionary.symbol
+$INCLUDE dictionary.telebit
+$INCLUDE dictionary.terena
+$INCLUDE dictionary.trapeze
+$INCLUDE dictionary.tropos
+$INCLUDE dictionary.t_systems_nova
+$INCLUDE dictionary.ukerna
+$INCLUDE dictionary.unix
+$INCLUDE dictionary.usr
+$INCLUDE dictionary.utstarcom
+$INCLUDE dictionary.valemount
+$INCLUDE dictionary.versanet
+$INCLUDE dictionary.waverider
+$INCLUDE dictionary.walabi
+$INCLUDE dictionary.wichorus
+$INCLUDE dictionary.wimax
+$INCLUDE dictionary.wispr
+$INCLUDE dictionary.xedia
+$INCLUDE dictionary.xylan
+$INCLUDE dictionary.yubico
+$INCLUDE dictionary.zeus
+$INCLUDE dictionary.zyxel
+
+# 	DHCP dictionary for DHCP functionality and use of dhcp module
+$INCLUDE dictionary.dhcp
+
+# 	VQP dictionary for VMPS functionality and use of vmps module
+$INCLUDE dictionary.vqp
+
+#
+#	And finally the server internal attributes.
+#	These are attributes which NEVER go into a RADIUS packet.
+#
+$INCLUDE dictionary.freeradius.internal

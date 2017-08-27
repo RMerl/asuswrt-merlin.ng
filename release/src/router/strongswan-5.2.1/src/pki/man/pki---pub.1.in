@@ -1,0 +1,77 @@
+.TH "PKI \-\-PUB" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-pub \- Extract a public key from a private key or certificate
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-pub
+.RB [ \-\-in
+.IR file | \fB\-\-keyid\fR
+.IR hex ]
+.OP \-\-type type
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-pub
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-pub"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+extracts public keys from a private keys and certificates.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+Input file. If not given the input is read from \fISTDIN\fR.
+.TP
+.BI "\-t, \-\-type " type
+Type of input. One of \fIrsa\fR (RSA private key), \fIecdsa\fR (ECDSA
+private key), \fIpub\fR (public key),
+\fIpkcs10\fR (PKCS#10 certificate request), or \fIx509\fR (X.509 certificate),
+defaults to \fIrsa\fR.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the extracted public key. One of \fIder\fR (ASN.1 DER), \fIpem\fR
+(Base64 PEM), \fIdnskey\fR (RFC 3110 DNS key), or \fIsshkey\fR (RFC 4253 SSH
+key), defaults to \fIder\fR.
+.
+.SH "EXAMPLES"
+.
+Extract the public key from an RSA private key:
+.PP
+.EX
+  pki --pub --in key.der > pub.der
+.EE
+.PP
+Extract the public key from an X.509 certificate:
+.PP
+.EX
+  pki --pub --in cert.der --type x509 > pub.der
+.EE
+.PP
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

@@ -1,0 +1,231 @@
+#!%%RRDPATH%%/rrdcgi 
+
+<HTML>
+<HEAD>
+<TITLE>One Day Hardware Statistics for %%MACH%%</TITLE>
+</HEAD>
+<BODY>
+<H1>ONE DAY VIEW</H1>
+See also: <br>
+<a href="sens_week.cgi">One Week View</a> <br>
+<a href="summ_week.cgi">One Week Summary View</a>
+
+<H1>TEMPERATURES</H1>
+
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/temp1d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Temperature (degrees C)"
+	-t "Motherboard temperature"
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 1:5
+	DEF:temp=%%RRDDIR%%/sensors.rrd:temp1:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/temp2d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Temperature (degrees C)"
+	-t "CPU 1 temperature"
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 1:5
+	DEF:temp=%%RRDDIR%%/sensors.rrd:temp2:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/temp3d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Temperature (degrees C)"
+	-t "CPU 2 temperature"
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 1:5
+	DEF:temp=%%RRDDIR%%/sensors.rrd:temp3:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<H1>FANS</H1>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/fan1d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Fan speed (RPM)"
+	-t "Fan 1 speed"
+	-u 5000
+	--units-exponent 0
+	--alt-autoscale
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	DEF:temp=%%RRDDIR%%/sensors.rrd:fan1:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/fan2d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Fan speed (RPM)"
+	-t "Fan 2 speed"
+	-u 5000
+	--units-exponent 0
+	--alt-autoscale
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	DEF:temp=%%RRDDIR%%/sensors.rrd:fan2:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/fan3d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Fan speed (RPM)"
+	-t "Fan 3 speed"
+	-u 5000
+	--units-exponent 0
+	--alt-autoscale
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	DEF:temp=%%RRDDIR%%/sensors.rrd:fan3:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<H1>POWER SUPPLIES</H1>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in0d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "Core 1 Voltage"
+	-l 1 -u 3 --rigid
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.2:1
+	DEF:temp=%%RRDDIR%%/sensors.rrd:in0:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in1d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "Core 2 Voltage"
+	-l 1 -u 3 --rigid
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.2:1
+	DEF:temp=%%RRDDIR%%/sensors.rrd:in1:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in2d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "+3.3 Volt Supply"
+	-l 2 -u 4 --rigid
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.2:1
+	DEF:temp=%%RRDDIR%%/sensors.rrd:in2:AVERAGE
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in3d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "+5 Volt Supply"
+	-l 4 -u 6 --rigid
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.2:1
+	DEF:x=%%RRDDIR%%/sensors.rrd:in3:AVERAGE
+	CDEF:temp=1.68,x,*
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in4d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "+12 Volt Supply"
+	-l 10 -u 14
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.5:1
+	DEF:x=%%RRDDIR%%/sensors.rrd:in4:AVERAGE
+	CDEF:temp=3.8,x,*
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in5d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "-12 Volt Supply"
+	-l -14 -u -10
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.5:1
+	DEF:x=%%RRDDIR%%/sensors.rrd:in5:AVERAGE
+	CDEF:temp=-3.48,x,*
+	LINE2:temp#FF00FF>
+</P>
+
+<P><RRD::GRAPH %%APACHDIR%%/pix/in6d.png
+        --imginfo '<IMG SRC=pix/%s WIDTH=%lu HEIGHT=%lu >'
+	-a PNG
+	-h 200 -w 800
+	--lazy
+	-s -1days
+	-v "Volts"
+	-t "-5 Volt Supply"
+	-l -6 -u -4 --rigid
+	-x HOUR:1:HOUR:3:HOUR:3:0:'%b %d %H:00'
+	-y 0.2:1
+	DEF:x=%%RRDDIR%%/sensors.rrd:in6:AVERAGE
+	CDEF:temp=-1.5,x,*
+	LINE2:temp#FF00FF>
+</P>
+
+This page generated with data and scripts from
+<a href="http://www.lm-sensors.org/">the lm_sensors project</a>;
+the data are stored in a Round Robin Database and
+the graphs are generated by
+<a href="http://oss.oetiker.ch/rrdtool/">
+RRD</a>.
+
+</BODY>
+</HTML>
+
+
+
+

@@ -1,0 +1,16 @@
+diff --git a/release/src/router/glib-2.37.7/configure b/release/src/router/glib-2.37.7/configure
+index a353d46..8fb84d1 100755
+--- configure
++++ configure
+@@ -584,6 +584,11 @@ ac_clean_files=
+ ac_config_libobj_dir=.
+ LIBOBJS=
+ cross_compiling=no
++glib_cv_stack_grows=no
++glib_cv_rtldglobal_broken=no
++glib_cv_uscore=no
++ac_cv_func_posix_getpwuid_r=yes
++ac_cv_func_posix_getgrgid_r=yes
+ subdirs=
+ MFLAGS=
+ MAKEFLAGS=

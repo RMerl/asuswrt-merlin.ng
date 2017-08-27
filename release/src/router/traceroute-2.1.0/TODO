@@ -1,0 +1,33 @@
+* It seems that `-l' and `-g' will not work correctly together (IPv6).
+
+  Wait for "flow label" API to be appeared in kernel-headers and
+  think about it immediately after that... :)
+
+
+* The "final hop" issue.
+
+  All methods, usable when firewalls are present in the network path,
+  normally use some particular destination port. Most often it is a port
+  of an already running application.
+
+  It requires that the packet sent should be correct for such an application
+  (for example, for tracing with udp to port 53, it should be correct DNS
+  request), and the application normally should answer something on it.
+  (TCP has no such an issue, as there are just syn to, and ack or reset from).
+
+  In general, we should fill the packet's data depending on the dest port
+  and protocol. It seems not a task for traceroute itself, it could be
+  some cmdline option or even external hook...
+
+
+* Think about SCTP method.
+
+
+* Think about "multicast tracerouting" (mrouted(8) and other).
+  The idea is to increase the room in the mtrace packet step-by-step
+  (as well as we increase ttl). It seems that if there is no more space
+  in the probe's room, the mrouted(8) daemon answers immediately, the same
+  way as if it is a final hop.
+
+  For IPv6 mtrace, there is an RFC draft for this already...
+

@@ -1,0 +1,8 @@
+# help page
+
+PRINT="Available commands (identified by the environment variable CMD):\n\n"
+PRINT="  (not set)     Do a soundcard initialization\n"
+PRINT="  default       Do a default (guess method) initialization\n"
+PRINT="  help          Show this information\n"
+PRINT="  info          Print all available hardware identification\n"
+PRINT="  test          Do alsactl utility parser tests\n"

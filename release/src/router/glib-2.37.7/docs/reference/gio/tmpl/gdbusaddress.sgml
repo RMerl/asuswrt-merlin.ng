@@ -1,0 +1,88 @@
+<!-- ##### SECTION Title ##### -->
+gdbusaddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_dbus_is_address ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_is_supported_address ##### -->
+<para>
+
+</para>
+
+@string: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_address_get_stream ##### -->
+<para>
+
+</para>
+
+@address: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_address_get_stream_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@out_guid: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_address_get_stream_sync ##### -->
+<para>
+
+</para>
+
+@address: 
+@out_guid: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_address_get_for_bus_sync ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

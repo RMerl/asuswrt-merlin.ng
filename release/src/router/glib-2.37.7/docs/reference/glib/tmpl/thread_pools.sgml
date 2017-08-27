@@ -1,0 +1,164 @@
+<!-- ##### SECTION Title ##### -->
+Thread Pools
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GThreadPool ##### -->
+<para>
+
+</para>
+
+@func: 
+@user_data: 
+@exclusive: 
+
+<!-- ##### FUNCTION g_thread_pool_new ##### -->
+<para>
+
+</para>
+
+@func: 
+@user_data: 
+@max_threads: 
+@exclusive: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_push ##### -->
+<para>
+
+</para>
+
+@pool: 
+@data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_set_max_threads ##### -->
+<para>
+
+</para>
+
+@pool: 
+@max_threads: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_get_max_threads ##### -->
+<para>
+
+</para>
+
+@pool: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_get_num_threads ##### -->
+<para>
+
+</para>
+
+@pool: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_unprocessed ##### -->
+<para>
+
+</para>
+
+@pool: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_free ##### -->
+<para>
+
+</para>
+
+@pool: 
+@immediate: 
+@wait_: 
+
+
+<!-- ##### FUNCTION g_thread_pool_set_max_unused_threads ##### -->
+<para>
+
+</para>
+
+@max_threads: 
+
+
+<!-- ##### FUNCTION g_thread_pool_get_max_unused_threads ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_get_num_unused_threads ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_pool_stop_unused_threads ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### FUNCTION g_thread_pool_set_sort_function ##### -->
+<para>
+
+</para>
+
+@pool: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_thread_pool_set_max_idle_time ##### -->
+<para>
+
+</para>
+
+@interval: 
+
+
+<!-- ##### FUNCTION g_thread_pool_get_max_idle_time ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

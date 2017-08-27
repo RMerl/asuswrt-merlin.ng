@@ -1,0 +1,167 @@
+# -*- text -*-
+######################################################################
+#
+#	This is a sample configuration for robust proxy accounting.
+#	accounting packets are proxied, OR logged locally if all
+#	home servers are down.  When the home servers come back up,
+#	the accounting packets are forwarded.
+#
+#	This method enables the server to proxy all packets to the
+#	home servers when they're up, AND to avoid writing to the
+#	detail file in most situations.
+#
+#	In most situations, proxying of accounting messages is done
+#	in a "pass-through" fashion.  If the home server does not
+#	respond, then the proxy server does not respond to the NAS.
+#	That means that the NAS must retransmit packets, sometimes
+#	forever.  This example shows how the proxy server can still
+#	respond to the NAS, even if all home servers are down.
+#
+#	This configuration could be done MUCH more simply if ALL
+#	packets were written to the detail file.  But that would
+#	involve a lot more disk writes, which may not be a good idea.
+#
+#	This file is NOT meant to be used as-is.  It needs to be
+#	edited to match your local configuration.
+#
+#	$Id$
+#
+######################################################################
+
+#  (1) Define two home servers.
+home_server home1.example.com {
+	type = acct
+	ipaddr = 192.0.2.10
+	port = 1813
+	secret = testing123
+
+	#  Mark this home server alive ONLY when it starts being responsive
+	status_check = request
+	username = "test_user_status_check"
+
+	#  Set the response timeout aggressively low.
+	#  You MAY have to increase this, depending on tests with
+	#  your local installation.
+	response_window = 6
+}
+
+home_server home2.example.com {
+	type = acct
+	ipaddr = 192.0.2.20
+	port = 1813
+	secret = testing123
+
+	#  Mark this home server alive ONLY when it starts being responsive
+	status_check = request
+	username = "test_user_status_check"
+
+	#  Set the response timeout aggressively low.
+	#  You MAY have to increase this, depending on tests with
+	#  your local installation.
+	response_window = 6
+}
+
+#  (2) Define a virtual server to be used when both of the
+#  home servers are down.
+home_server acct_detail.example.com {
+	virtual_server = acct_detail.example.com
+}
+
+#  Put all of the servers into a pool.
+home_server_pool acct_pool.example.com {
+	type = load-balance	# other types are OK, too.
+
+	home_server = home1.example.com
+	home_server = home2.example.com
+	# add more home_server's here.
+
+	# If all home servers are down, try a home server that
+	# is a local virtual server.
+	fallback = acct_detail.example.com
+
+	# for pre/post-proxy policies
+	virtual_server = home.example.com
+}
+
+#  (3) Define a realm for these home servers.
+#  It should NOT be used as part of normal proxying decisions!
+realm acct_realm.example.com {
+	acct_pool = acct_pool.example.com
+}
+
+#  (4) Define a detail file writer.
+#   See raddb/modules/detail.example.com
+
+#  (5) Define the virtual server to write the packets to the detail file
+#  This will be called when ALL home servers are down, because of the
+#  "fallback" configuration in the home server pool.
+server acct_detail.example.com {
+	accounting {
+		detail.example.com
+	}
+}
+
+#  (6) Define a virtual server to handle pre/post-proxy re-writing
+server home.example.com {
+	pre-proxy {
+		#  Insert pre-proxy rules here
+	}
+
+	post-proxy {
+		#  Insert post-proxy rules here
+
+		#  This will be called when the CURRENT packet failed
+		#  to be proxied.  This may happen when one home server
+		#  suddenly goes down, even though another home server
+		#  may be alive.
+		#
+		#  i.e. the current request has run out of time, so it
+		#  cannot fail over to another (possibly) alive server.
+		#
+		#  We want to respond to the NAS, so that it can stop
+		#  re-sending the packet.  We write the packet to the
+		#  "detail" file, where it will be read, and sent to
+		#  another home server.
+		#
+		Post-Proxy-Type Fail {
+			detail.example.com
+		}
+	}
+
+
+	#  Read accounting packets from the detail file(s) for
+	#  the home server.
+	#
+	#  Note that you can have only ONE "listen" section reading
+	#  detail files from a particular directory.  That is why the
+	#  destination host name is used as part of the directory name
+	#  below.  Having two "listen" sections reading detail files
+	#  from the same directory WILL cause problems.  The packets
+	#  may be read by one, the other, or both "listen" sections.
+	listen {
+		type = detail
+		filename = "${radacctdir}/detail.example.com/detail-*:*"
+		load_factor = 10
+	}
+
+	#  All packets read from the detail file are proxied back to
+	#  the home servers.
+	#
+	#  The normal pre/post-proxy rules are applied to them, too.
+	#
+	#  If the home servers are STILL down, then the server stops
+	#  reading the detail file, and queues the packets for a later
+	#  retransmission.  The Post-Proxy-Type "Fail" handler is NOT
+	#  called.
+	#
+	#  When the home servers come back up, the packets are forwarded,
+	#  and the detail file processed as normal.
+	accounting {
+		# You may want accounting policies here...
+
+		update control {
+			Proxy-To-Realm := "acct_realm.example.com"
+		}
+	}
+
+}

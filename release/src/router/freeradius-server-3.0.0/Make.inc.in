@@ -1,0 +1,176 @@
+# -*- makefile -*-
+# Make.inc.in
+#
+# Version:	$Id$
+#
+
+# Location of files.
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+sysconfdir	= @sysconfdir@
+localstatedir	= @localstatedir@
+libdir		= @libdir@
+bindir		= @bindir@
+sbindir		= @sbindir@
+docdir		= @docdir@
+mandir		= @mandir@
+datadir		= @datadir@
+dictdir		= $(datadir)/freeradius
+logdir		= @logdir@
+includedir	= @includedir@
+
+#
+#  In some systems, we don't want to over-write ANY configuration.
+#  So we do:
+#
+#	$./configure
+#	$ make
+#	$ make -Draddbdir=/tmp/garbage install
+#
+#  and all of the configuration files go into /tmp/garbage
+#
+ifeq "${raddbdir}" ""
+raddbdir	= @raddbdir@
+endif
+modconfdir	= @modconfdir@
+radacctdir	= @radacctdir@
+top_builddir	= @abs_top_builddir@
+top_build_prefix=@abs_top_builddir@/
+top_srcdir	= @abs_top_srcdir@
+datarootdir	= @datarootdir@
+
+MAKE		= @MAKE@
+
+# Makeflags set within the makefile appear to be additive and override
+# flags set on the command line and the environmental variables
+MAKEFLAGS	= @FR_MAKEFLAGS@
+
+CC		= @CC@
+RANLIB		= @RANLIB@
+IMACROS		= -imacros ${top_srcdir}/src/freeradius-devel/build.h -imacros ${top_srcdir}/src/freeradius-devel/autoconf.h -imacros ${top_srcdir}/src/freeradius-devel/features.h
+INCLUDE		= -I${top_srcdir} -I${top_srcdir}/src
+CFLAGS		= $(IMACROS) $(INCLUDE) -std=c99 -fno-strict-aliasing @CFLAGS@
+CPPFLAGS	= @CPPFLAGS@
+LIBPREFIX	= @LIBPREFIX@
+EXEEXT		= @EXEEXT@
+
+LIBTOOL		= JLIBTOOL
+ACLOCAL		= @ACLOCAL@
+AUTOCONF	= @AUTOCONF@
+AUTOHEADER	= @AUTOHEADER@
+INSTALL		= ${top_builddir}/install-sh -c
+INSTALL_PROGRAM	= ${INSTALL}
+INSTALL_DATA	= ${INSTALL} -m 644
+INSTALL_SCRIPT	= ${INSTALL_PROGRAM}
+INSTALLSTRIP	= @INSTALLSTRIP@
+
+LCRYPT		= @CRYPTLIB@
+LIBS		= @LIBS@
+LDFLAGS		= @LDFLAGS@
+
+LOGDIR		= ${logdir}
+RADDBDIR	= ${raddbdir}
+RUNDIR		= ${localstatedir}/run/radiusd
+SBINDIR		= ${sbindir}
+RADIR		= ${radacctdir}
+LIBRADIUS	= $(top_builddir)/src/lib/$(LIBPREFIX)freeradius-radius.la -l talloc
+
+USE_SHARED_LIBS = @USE_SHARED_LIBS@
+bm_shared_libs  = @USE_SHARED_LIBS@
+USE_STATIC_LIBS = @USE_STATIC_LIBS@
+bm_static_libs  = @USE_STATIC_LIBS@
+
+STATIC_MODULES	= @STATIC_MODULES@
+
+OPENSSL_LIBS	= @OPENSSL_LIBS@
+OPENSSL_INCLUDE = @OPENSSL_INCLUDE@
+CFLAGS		+= $(OPENSSL_INCLUDE)
+
+#
+#  If the system has OpenSSL, use it's version of MD4/MD5/SHA1, instead of
+#  using ours.
+#
+ifneq "$(OPENSSL_LIBS)" ""
+CFLAGS		+=  -DWITH_OPENSSL_MD4 -DWITH_OPENSSL_MD5 $(OPENSSL_INCLUDE)
+LDFLAGS		+= $(OPENSSL_LIBS)
+endif
+
+LIBREADLINE	= @LIBREADLINE@
+
+#
+#  Version to use for packaging and other Make related things
+#
+RADIUSD_VERSION_STRING = @RADIUSD_VERSION_STRING@
+
+#
+#  This allows dlopen to do runtime checks for version mistmatches
+#  between what it was originally linked with, and the library it's
+#  actually loading.
+#
+#LDFLAGS += -release=$(RADIUSD_VERSION_STRING)
+
+MODULES		= @MODULES@
+HOSTINFO	= @HOSTINFO@
+
+ifneq ($(WITH_OPENSSL_MD5),)
+LIBRADIUS_WITH_OPENSSL = 1
+CFLAGS += -DWITH_OPENSSL_MD5
+endif
+
+ifneq ($(WITH_OPENSSL_SHA1),)
+LIBRADIUS_WITH_OPENSSL = 1
+CFLAGS += -DWITH_OPENSSL_SHA1
+endif
+
+ifneq ($(LIBRADIUS_WITH_OPENSSL),)
+ifeq ($(OPENSSL_LIBS),)
+$(error OPENSSL_LIBS must be define in order to use WITH_OPENSSL_*)
+else
+LIBRADIUS += $(OPENSSL_LIBS)
+endif
+endif
+
+#  http://clang.llvm.org/StaticAnalysis.html
+#
+#  $ make SCAN=/path/to/checker/ 
+#
+ifneq ($(SCAN),)
+CC		:= $(SCAN)/scan-build gcc -DFR_SCAN_BUILD
+LIBTOOL		:= 
+endif
+
+#
+#  Portability cruft.  This is for replacing libtroll && libltdl
+#  with gcc and dlopen().
+#
+ifeq "$(USE_SHARED_LIBS)" "yes"
+LINK_MODE.exe	= -export-dynamic
+CFLAGS		+= -fPIC
+else
+LINK_MODE.exe	= -static
+endif
+
+ifneq "$(LIBTOOL)" ""
+COMPILE.c	:= $(LIBTOOL) --quiet --mode=compile $(CC) 
+LINK.lib	:= $(LIBTOOL) --quiet --mode=link $(CC) -rpath $(libdir) -o
+LO		:= lo
+LA		:= la
+else
+COMPILE.c	:= $(CC)
+LO		:= o
+
+ifeq "$(USE_SHARED_LIBS)" "yes"
+LINK.lib	:= $(CC) -shared -o
+LA		:= so
+else
+LINK.lib	:= $(AR) cru
+LA		:= a
+endif
+
+endif
+
+ifeq "$(LA)" "so"
+ifneq "$(findstring Darwin,$(shell uname -a))" ""
+LA		:= dylib
+endif
+endif

@@ -1,0 +1,5 @@
+﻿checkWlcStatus({
+	wlc_state: '<% nvram_get("wlc_state"); %>',
+	wlc_sbstate: '<% nvram_get("wlc_sbstate"); %>',
+	wlc_scan_state: '<% nvram_get("wlc_scan_state"); %>'
+})

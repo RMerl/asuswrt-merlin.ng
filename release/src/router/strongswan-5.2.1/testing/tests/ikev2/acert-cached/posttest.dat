@@ -1,0 +1,11 @@
+moon::ipsec stop
+carol::ipsec stop
+dave::ipsec stop
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+moon::rm /etc/ipsec.d/acerts/carol-sales-finance.pem
+moon::rm /etc/ipsec.d/acerts/dave-sales-expired.pem
+moon::rm /etc/ipsec.d/acerts/dave-marketing.pem
+moon::rm /etc/ipsec.d/private/aa.pem
+moon::rm /etc/ipsec.d/aacerts/aa.pem

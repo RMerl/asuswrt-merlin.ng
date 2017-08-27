@@ -1,0 +1,167 @@
+<!-- ##### SECTION Title ##### -->
+GIOStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GIOStreamSpliceFlags ##### -->
+<para>
+
+</para>
+
+@G_IO_STREAM_SPLICE_NONE: 
+@G_IO_STREAM_SPLICE_CLOSE_STREAM1: 
+@G_IO_STREAM_SPLICE_CLOSE_STREAM2: 
+@G_IO_STREAM_SPLICE_WAIT_FOR_BOTH: 
+
+<!-- ##### STRUCT GIOStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GIOStream:closed ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GIOStream:input-stream ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GIOStream:output-stream ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_io_stream_get_input_stream ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_get_output_stream ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_splice_async ##### -->
+<para>
+
+</para>
+
+@stream1: 
+@stream2: 
+@flags: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_io_stream_splice_finish ##### -->
+<para>
+
+</para>
+
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_close ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_close_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_io_stream_close_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_is_closed ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_has_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_set_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_stream_clear_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+
+

@@ -1,0 +1,229 @@
+opengt
+set com 115200n81
+set senddelay 0.05
+waitquiet 1 0.2
+
+system "nvram set g3state_z=0"
+system "nvram set g3state_q0=0"
+system "nvram set g3state_cd=0"
+system "nvram set g3state_class=0"
+system "nvram set g3state_mode=0"
+system "nvram set g3state_apn=0"
+system "nvram set g3state_dial=0"
+system "nvram set g3state_conn=0"
+
+
+:ready
+system "nvram set g3state_z=1"
+send "ATZ^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto set_parameters
+system "nvram set g3state_z=-1"
+goto error
+
+
+:set_parameters
+system "nvram set g3state_q0=1"
+send "ATQ0 V1 E1 S0=0^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto set_parameters2
+system "nvram set g3state_q0=-1"
+
+
+:set_parameters2
+system "nvram set g3state_cd=1"
+send "AT&C1 &D2^m"
+waitfor 10 "OK","ERR","ERROR","COMMAND NOT SUPPORT"
+if % = -1 goto timeerror
+if % = 0 goto disable_fax
+system "nvram set g3state_cd=-1"
+
+
+:disable_fax
+system "nvram set g3state_class=1"
+send "AT+FCLASS=0^m"
+waitfor 10 "OK","ERR","ERROR","COMMAND NOT SUPPORT"
+if % = -1 goto timeerror
+#if % = 0 goto set_mode
+if % = 0 goto set_apn
+system "nvram set g3state_class=-1"
+
+
+:set_mode
+system "nvram set g3state_mode=1"
+let $m=$rpipe("nvram get modem_mode")
+let l=len($m)
+if l=0 let m1=0
+if l!=0 let m1=val($m)
+let $v=$rpipe("nvram get usb_modem_act_vid")
+let l=len($v)
+if l=0 goto set_apn
+let b=val($v)
+if b=0x12d1 goto mode_huawei_ex
+if b=0x19d2 goto mode_zte
+if b=0x1199 goto mode_sierra
+goto set_apn
+
+
+:mode_huawei_ex
+system "nvram set g3state_mode=2.1"
+send "AT\^SYSCFGEX?^m"
+waitfor 10 "OK","ERR","ERROR","COMMAND NOT SUPPORT"
+if % = -1 goto timeerror
+if % < -1 goto mode_huawei
+if % > 0 goto mode_huawei
+
+send "AT\^SYSCFGEX=\""
+if m1=2 send "01"
+if m1=3 send "02"
+if m1=4 send "03"
+if m1=43 send "0302"
+if m1=0 send "00"
+send "\",3FFFFFFF,1,2,7FFFFFFFFFFFFFFF,,^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto set_apn
+system "nvram set g3state_mode=-2.1"
+goto error
+
+
+:mode_huawei
+system "nvram set g3state_mode=2.2"
+send "AT\^SYSCFG?^m"
+waitfor 10 "OK","ERR","ERROR","COMMAND NOT SUPPORT"
+if % = -1 goto timeerror
+if % < -1 goto error
+if % > 0 goto error
+
+if m1=4 goto error
+send "AT\^SYSCFG="
+if m1=2 send "13"
+if m1=3 send "14"
+if m1=4 goto error
+if m1=43 send "14"
+if m1=0 send "2"
+send ",0,3FFFFFFF,1,2^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto set_apn
+system "nvram set g3state_mode=-2.2"
+goto error
+
+
+:mode_zte
+system "nvram set g3state_mode=3"
+send "AT+ZSNT?^m"
+waitfor 10 "OK","ERR","ERROR","COMMAND NOT SUPPORT"
+if % = -1 goto timeerror
+if % < -1 goto error
+if % > 0 goto error
+
+send "AT+ZSNT="
+if m1=2 send "1"
+if m1=3 send "2"
+if m1=4 send "6"
+if m1=43 send "0"
+if m1=0 send "0"
+send ",0,"
+if m1=2 send "0"
+if m1=3 send "0"
+if m1=4 send "0"
+if m1=43 send "6"
+if m1=0 send "0"
+send "^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto set_apn
+system "nvram set g3state_mode=-3"
+goto error
+
+
+:mode_sierra
+system "nvram set g3state_mode=4"
+send "AT!SELRAT?^m"
+waitfor 10 "OK","ERR","ERROR","COMMAND NOT SUPPORT"
+if % = -1 goto timeerror
+if % < -1 goto error
+if % > 0 goto error
+
+send "AT!SELRAT="
+if m1=2 send "02"
+if m1=3 send "01"
+if m1=4 send "06"
+if m1=43 send "07"
+if m1=0 send "00"
+send "^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto set_apn
+system "nvram set g3state_mode=-4"
+goto error
+
+
+:set_apn
+system "nvram set g3state_apn=1"
+let $x=$rpipe("nvram get modem_apn")
+let l=len($x)
+if l=0 goto apnerror
+if l>32 goto apnerror
+send "AT+CGDCONT=1,\"IP\",\""
+send $x
+send "\"^m"
+waitfor 10 "OK","ERR","ERROR"
+if % = -1 goto apntimeerror
+if % = 0 goto set_dial
+system "nvram set g3state_apn=-1"
+goto apnerror
+
+
+:set_dial
+system "nvram set g3state_dial=1"
+let $x=$rpipe("nvram get modem_dialnum")
+let l=len($x)
+if l=0 goto error
+send "ATD"
+send $x
+send "^m"
+waitfor 10 "CONNECT","ERR","ERROR"
+if % = -1 goto timeerror
+if % = 0 goto done
+system "nvram set g3state_dial=-1"
+goto error
+
+
+:done
+system "nvram set g3state_conn=1"
+print "CONNECTED\n"
+exit 0
+
+
+:apnerror
+system "nvram set g3err_apn=1"
+print "ERROR entering APN\n"
+print \"The COMGTAPN env variable is not set.\n"
+send "ATH^m"
+exit 1
+
+
+:apntimeerror
+system "nvram set g3err_apn=2"
+print \"ERROR entering APN\n"
+print "The device timeout\n"
+send "ATH^m"
+exit 1
+
+
+:error
+system "nvram set g3err_conn=1"
+print "CONNECT ERROR\n"
+send "ATH^m"
+exit 1
+
+
+:timeerror
+system "nvram set g3err_conn=2"
+print "CONNECT TIMEOUT\n"
+send "ATH^m"
+exit 1

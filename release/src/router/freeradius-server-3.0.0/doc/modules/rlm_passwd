@@ -1,0 +1,50 @@
+RADIUS rlm_passwd (passwd-like files authorization module)
+
+FAQ
+
+Q: Can I use rlm_passwd to authenticate user against Linux shadow password
+   file or BSD-style master.passwd?
+A: Yes, but you need RADIUS running as root. Hint: use Crypt-Password
+   attribute.  You probably don't want to use this module with
+   FreeBSD to authenticate against system file, as it already takes care
+   of caching passwd file entries, but it may be helpfull to authenticate
+   against alternate file.
+
+Q: Can I use rlm_passwd to authenticate user against SAMBA smbpasswd?
+A: Yes, you can. Hint: use LM-Password/NT-Password attribute, set
+   authtype = MS-CHAP.
+
+Q: Can I use rlm_password to authenticate user against BLA-BLA-BLApasswd?
+A: Probably you can, if BLA-BLA-BLA stores password in some format supported
+   by RADIUS, for example cleartext, NT/LM hashes, crypt, Netscape MD5 format.
+   You have to set authtype to corresponding type, for example
+    authtype = NS-MTA-MD5
+   for Netscape MD5.
+
+Q: Are where are differences between rlm_passwd and rlm_unix?
+A: rlm_passwd supports passwd files in any format and may be used, for
+   example, to parse FreeBSD's master.passwd or SAMBA smbpasswd files, but
+   it can't perform system authentication (for example to authenticate
+   NIS user, like rlm_unix does). If you need system authentication you
+   need rlm_unix, if you have to authenticate against files only under
+   BSD you need rlm_passwd, if you need to authenticate against files only
+   under Linux, you can choose between rlm_unix and rlm_passwd, probably
+   you will have nearly same results in performance (I hope :) ).
+
+Q: I'm using realms with rlm_passwd. I see rlm_passwd do not strip realm
+   from user name. How to configure rlm_passwd to strip realm?
+
+A: In case you configured realm to strip username, User-Password attribute
+   is not changed. Instead, rlm_realm creates new attribute Stripped-User-Name.
+   All you need is to use Stripped-User-Name  instead of User-Name as a key
+   field for passwd file.
+
+Q: How can I say passwd to add attribute even if it's value is empty?
+
+A: set ignore_empty to "no" in module configuration.
+
+
+5. Acknowlegements:
+
+   ZARAZA, <3APA3A@security.nnov.ru>
+   Michael Chernyakhovsky <mike@mgn.ru> - reply-items support

@@ -1,0 +1,229 @@
+<!-- ##### SECTION Title ##### -->
+Desktop file based GAppInfo
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDesktopAppInfo ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GDesktopAppInfo:filename ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_desktop_app_info_new_from_filename ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_new_from_keyfile ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_new ##### -->
+<para>
+
+</para>
+
+@desktop_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_filename ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_is_hidden ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_nodisplay ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_show_in ##### -->
+<para>
+
+</para>
+
+@info: 
+@desktop_env: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_generic_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_categories ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_keywords ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_startup_wm_class ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_set_desktop_env ##### -->
+<para>
+
+</para>
+
+@desktop_env: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_string ##### -->
+<para>
+
+</para>
+
+@info: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_boolean ##### -->
+<para>
+
+</para>
+
+@info: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_has_key ##### -->
+<para>
+
+</para>
+
+@info: 
+@key: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GDesktopAppLaunchCallback ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@pid: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_launch_uris_as_manager ##### -->
+<para>
+
+</para>
+
+@appinfo: 
+@uris: 
+@launch_context: 
+@spawn_flags: 
+@user_setup: 
+@user_setup_data: 
+@pid_callback: 
+@pid_callback_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_list_actions ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_get_action_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_desktop_app_info_launch_action ##### -->
+<para>
+
+</para>
+
+@info: 
+@action_name: 
+@launch_context: 
+
+

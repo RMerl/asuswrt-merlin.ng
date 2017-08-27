@@ -1,0 +1,99 @@
+#!/bin/sh
+. /lib/svc/share/smf_include.sh
+#
+#
+# radiusd       Start the radius daemon.
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+#
+#    Copyright (C) 2001-2012 The FreeRADIUS Project http://www.freeradius.org
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sbindir=@sbindir@
+localstatedir=@localstatedir@
+logdir=@logdir@
+rundir=${localstatedir}/run/radiusd
+sysconfdir=@sysconfdir@
+
+#
+#  If you have issues with OpenSSL, uncomment these next lines.
+#
+#  Something similar may work for MySQL, and you may also
+#  have to LD_PRELOAD libz.so
+#
+#LD_LIBRARY_PATH= -lcrypto -lssl -lcrypto
+#LD_RUN_PATH= -lcrypto -lssl -lcrypto:
+#LD_PRELOAD= -lcrypto -lssl -lcryptolibcrypto.so
+export LD_LIBRARY_PATH LD_RUN_PATH LD_PRELOAD
+
+RADIUSD=$sbindir/radiusd
+RADDBDIR=@raddbdir@
+DESC="FreeRADIUS"
+
+#
+#  See 'man radiusd' for details on command-line options.
+#
+ARGS=""
+
+test -f $RADIUSD || exit $SMF_EXIT_ERR_CONFIG 
+test -f $RADDBDIR/radiusd.conf || exit $SMF_EXIT_ERR_CONFIG
+
+#if [ ! -d $rundir ] ; then
+#    mkdir $rundir
+#    chown radmin:radius
+#    chmod 775 $rundir
+#fi
+#
+#if [ ! -d $logdir ] ; then
+#    mkdir $logdir
+#    chown radmin:radius $logdir
+#    chmod 770 $logdir
+#    chmod g+s $logdir
+#fi
+#
+#if [ ! -f $logdir/radius.log ]; then
+#        touch $logdir/radius.log
+#fi
+#
+#chown radmin:radius $logdir/radius.log
+#chmod 660 $logdir/radius.log
+
+case "$1" in
+  start)
+        echo -n "Starting $DESC: "
+        $RADIUSD $ARGS
+        echo "radiusd"
+        ;;
+  stop)
+        echo -n "Stopping $DESC: "
+        smf_kill_contract $2 TERM 1
+        [ $? -ne 0 ] && exit 1
+        echo "radiusd."
+        ;;
+  refresh)
+        echo "Reloading $DESC configuration files."
+        [ -f $rundir/radiusd.pid ] && kill -HUP `cat $rundir/radiusd.pid`
+        ;;
+  check)
+        $RADIUSD -CX $ARGS
+        exit $?
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|refresh|check}"
+        exit 1
+esac
+
+exit $SMF_EXIT_OK

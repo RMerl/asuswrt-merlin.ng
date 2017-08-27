@@ -1,0 +1,53 @@
+================================================================
+	ALSA sequencer connectors over network
+		ver.0.1
+	Copyright (C) 1999-2000 Takashi Iwai
+================================================================
+
+* ASEQNET
+
+aseqnet is a sequencer client which sends/receives events over
+network.  Suppose two hosts (hostA and hostB) connected by network.
+You need to run ALSA system on both hosts.  Then, start aseqnet as a
+server on hostA:
+
+	hostA% aseqnet
+	sequencer opened: 128:0
+
+A user client 128 with port 0 was opened. (The client number may
+vary.)  At next, start client on hostB.  The argument is the hostname
+where server is running.
+
+	hostB% aseqnet hostA
+	sequencer opened: 132:0
+
+Now events sent to hostA:128:0 is transferred to hostB:132:0, and vice
+versa.
+
+You can connect these ports arbitrary to other sequencer ports.
+For example, connect hostB:132:0 to a MIDI output device 65:0.  The
+aconnect utility can be used for this:
+
+	hostB% aconnect 132:0 65:0
+
+Events to hostA:128:0 will be delivered indirectly to hostB:65:0.
+You'll hear MIDI sounds as following:
+
+	hostA% pmidi -p 128:0 foo.mid
+
+The multiple clients may exist simultaneously.  If hostC is connected
+as a client to hostA, events from from hostA are sent to all connected
+network clients, hostB and hostC.  However, only one connection is
+allowed from a client to a server.
+
+To disconnect network, stop all clients before server by ctrl-C or
+sending signal to them.  The server will automatically quit.
+
+The available options are:
+
+  -p port : specify the TCP port number or TCP service name.
+            Default value is 40002.
+  -s addr : explicit read-subscription to the given address
+            (client:addr).
+  -d addr : explicit write-subscription to the given address.
+  -v      : verbose mode.

@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GConverterInputstream</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="gio-GWin32OutputStream.html" title="GWin32OutputStream">
+<link rel="next" href="gio-GConverterOutputstream.html" title="GConverterOutputstream">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GConverterInputstream.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#gio-GConverterInputstream.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#gio-GConverterInputstream.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#gio-GConverterInputstream.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GWin32OutputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GConverterOutputstream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GConverterInputstream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GConverterInputstream.top_of_page"></a>GConverterInputstream</span></h2>
+<p>GConverterInputstream — Converter Input Stream</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GConverterInputstream.synopsis"></a><h2>Synopsis</h2>
+<a name="GConverterInputStream"></a><pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="gio-GConverterInputstream.html#GConverterInputStream-struct" title="GConverterInputStream">GConverterInputStream</a>;
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      <a class="link" href="gio-GConverterInputstream.html#g-converter-input-stream-new" title="g_converter_input_stream_new ()">g_converter_input_stream_new</a>        (<em class="parameter"><code><a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> *base_stream</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> *converter</code></em>);
+<a class="link" href="GConverter.html" title="GConverter"><span class="returnvalue">GConverter</span></a> *        <a class="link" href="gio-GConverterInputstream.html#g-converter-input-stream-get-converter" title="g_converter_input_stream_get_converter ()">g_converter_input_stream_get_converter</a>
+                                                        (<em class="parameter"><code><a class="link" href="gio-GConverterInputstream.html#GConverterInputStream"><span class="type">GConverterInputStream</span></a> *converter_stream</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GInputStream.html" title="GInputStream">GInputStream</a>
+         +----<a class="link" href="GFilterInputStream.html" title="GFilterInputStream">GFilterInputStream</a>
+               +----GConverterInputStream
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GConverterInputStream implements
+ <a class="link" href="GPollableInputStream.html" title="GPollableInputStream">GPollableInputStream</a>.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="gio-GConverterInputstream.html#GConverterInputStream--converter" title='The "converter" property'>converter</a>"                <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a>*           : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.description"></a><h2>Description</h2>
+<p>
+Converter input stream implements <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> and allows
+conversion of data of various types during reading.
+</p>
+<p>
+As of GLib 2.34, <a class="link" href="gio-GConverterInputstream.html#GConverterInputStream"><span class="type">GConverterInputStream</span></a> implements
+<a class="link" href="GPollableInputStream.html" title="GPollableInputStream"><span class="type">GPollableInputStream</span></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GConverterInputStream-struct"></a><h3>GConverterInputStream</h3>
+<pre class="programlisting">typedef struct _GConverterInputStream GConverterInputStream;</pre>
+<p>
+An implementation of <a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a> that allows data
+conversion.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-converter-input-stream-new"></a><h3>g_converter_input_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      g_converter_input_stream_new        (<em class="parameter"><code><a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> *base_stream</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> *converter</code></em>);</pre>
+<p>
+Creates a new converter input stream for the <em class="parameter"><code>base_stream</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>base_stream</code></em> :</span></p></td>
+<td>a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>converter</code></em> :</span></p></td>
+<td>a <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-converter-input-stream-get-converter"></a><h3>g_converter_input_stream_get_converter ()</h3>
+<pre class="programlisting"><a class="link" href="GConverter.html" title="GConverter"><span class="returnvalue">GConverter</span></a> *        g_converter_input_stream_get_converter
+                                                        (<em class="parameter"><code><a class="link" href="gio-GConverterInputstream.html#GConverterInputStream"><span class="type">GConverterInputStream</span></a> *converter_stream</code></em>);</pre>
+<p>
+Gets the <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> that is used by <em class="parameter"><code>converter_stream</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>converter_stream</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GConverterInputstream.html#GConverterInputStream"><span class="type">GConverterInputStream</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the converter of the converter input stream. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.24</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GConverterInputStream--converter"></a><h3>The <code class="literal">"converter"</code> property</h3>
+<pre class="programlisting">  "converter"                <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a>*           : Read / Write / Construct Only</pre>
+<p>The converter object.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GConverterInputstream.see-also"></a><h2>See Also</h2>
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>, <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

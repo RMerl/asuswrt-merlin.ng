@@ -1,0 +1,5 @@
+moon::ipsec stop
+carol::ipsec stop
+alice::killall radiusd
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush

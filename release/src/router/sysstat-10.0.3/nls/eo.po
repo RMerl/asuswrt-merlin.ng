@@ -1,0 +1,441 @@
+# Esperanto translation
+# Copyright (C) 2011 Free Software Foundation, Inc.
+# This file is distributed under the same license as the sysstat package.
+# Felipe Castro <fefcas@gmail.com>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 10.0.2\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2011-08-16 14:17+0200\n"
+"PO-Revision-Date: 2011-08-31 21:49-0300\n"
+"Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
+"Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
+"Language: eo\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cifsiostat.c:69 iostat.c:80 mpstat.c:86 nfsiostat.c:68 pidstat.c:78
+#: sar.c:90
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ]\n"
+msgstr "Uzado: %s [ elektebloj ] [ <intervalo> [ <nombro> ] ]\n"
+
+#: cifsiostat.c:73 nfsiostat.c:72
+#, c-format
+msgid ""
+"Options are:\n"
+"[ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+
+#: cifsiostat.c:76 nfsiostat.c:75
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat versio %s\n"
+
+#: ioconf.c:490 rd_stats.c:68 rd_stats.c:2120 sa_common.c:1061 sadc.c:623
+#: sadc.c:632 sadc.c:692
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Ni ne povas malfermi %s: %s\n"
+
+#: iostat.c:83
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ] [ --debuginfo ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <aparato> [...] | ALL ] [ -p [ <aparato> [,...] | ALL ] ] [ --debuginfo ]\n"
+
+#: iostat.c:87
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <aparato> [...] | ALL ] [ -p [ <aparato> [,...] | ALL ] ]\n"
+
+#: iostat.c:313
+#, c-format
+msgid "Cannot find disk data\n"
+msgstr "Ni ne povas trovi disk-datumaron\n"
+
+#: mpstat.c:89
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ]\n"
+"[ -P { <cpu> [,...] | ON | ALL } ] [ -V ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ]\n"
+"[ -P { <cpu> [,...] | ON | ALL } ] [ -V ]\n"
+
+#: mpstat.c:582 pidstat.c:1823 sar.c:381
+msgid "Average:"
+msgstr "Meznombro:"
+
+#: mpstat.c:929
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Ne ekzistas tiom da procesoroj!\n"
+
+#: pidstat.c:81
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <command> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -s ]\n"
+"[ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -C <komando> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -s ]\n"
+"[ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:199 sar.c:1013
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "Petitaj aktivaĵoj ne disponeblas\n"
+
+#: pr_stats.c:2319 pr_stats.c:2332
+msgid "Summary"
+msgstr "Resumo"
+
+#: pr_stats.c:2370
+msgid "Other devices not listed here"
+msgstr "Aliaj aparatoj ne listataj ĉi tie"
+
+#: rd_stats.c:2166
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Ni ne povas trakti tiom da procesoroj!\n"
+
+#: sa_common.c:870
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Eraro dum legado de sistem-aktivaĵa dosiero: %s\n"
+
+#: sa_common.c:880
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Ne atendata fino de sistem-aktivaĵa dosiero\n"
+
+#: sa_common.c:898
+#, c-format
+msgid "File created using sar/sadc from sysstat version %d.%d.%d"
+msgstr "Dosiero kreita uzante sar/sadc el sysstat versio %d.%d.%d"
+
+#: sa_common.c:929
+#, c-format
+msgid "Invalid system activity file: %s\n"
+msgstr "Malvalida sistem-aktivaĵa dosiero: %s\n"
+
+#: sa_common.c:936
+#, c-format
+msgid "Current sysstat version can no longer read the format of this file (%#x)\n"
+msgstr "La nuna versio de sysstat ne plu povas legi la formon de tiu ĉi dosiero(%#x)\n"
+
+#: sa_common.c:1168
+#, c-format
+msgid "Requested activities not available in file %s\n"
+msgstr "Petitaj aktivaĵoj ne disponeblas en la dosiero %s\n"
+
+#: sadc.c:81
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+msgstr "Uzado: %s [ elektebloj ] [ <intervalo> [ <nombro> ] ] [ <eligdosiero> ]\n"
+
+#: sadc.c:84
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <comment> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -C <komento> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+
+#: sadc.c:223
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Ni ne povas skribi datumaron al sistem-aktivaĵa dosiero: %s\n"
+
+#: sadc.c:510
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Ni ne povas skribi kapon de sistem-aktivaĵa dosiero: %s\n"
+
+#: sadc.c:791
+#, c-format
+msgid "Cannot append data to that file (%s)\n"
+msgstr "Ni ne povas postaldoni datumaron al tiu dosiero (%s)\n"
+
+#: sadf.c:88
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+msgstr "Uzado: %s [ elektebloj ] [ <intervalo> [ <nombro> ] ] [ <datumdosiero> ]\n"
+
+#: sadf.c:91
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -d | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options> ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -d | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <elektebloj_sar> ]\n"
+
+#: sadf_misc.c:379
+#, c-format
+msgid "System activity data file: %s (%#x)\n"
+msgstr "Sistem-aktivaĵa datumara dosiero: %s (%#x)\n"
+
+#: sadf_misc.c:388
+#, c-format
+msgid "Host: "
+msgstr "Gastiganto: "
+
+#: sadf_misc.c:394
+#, c-format
+msgid "Size of a long int: %d\n"
+msgstr "Grando de long int: %d\n"
+
+#: sadf_misc.c:396
+#, c-format
+msgid "List of activities:\n"
+msgstr "Listo de aktivaĵoj:\n"
+
+#: sadf_misc.c:409
+#, c-format
+msgid "\t[Unknown activity format]"
+msgstr "\t[Nekonata aktivaĵ-formo]"
+
+#: sar.c:105
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -p ] [ -q ] [ -r ]\n"
+"[ -R ] [ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -m { <keyword> [,...] | ALL } ] [ -n { <keyword> [,...] | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Elektebloj estas:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -p ] [ -q ] [ -r ]\n"
+"[ -R ] [ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -m { <ŝlosilvorto> [,...] | ALL } ] [ -n { <ŝlosilvorto> [,...] | ALL } ]\n"
+"[ -o [ <dosiernomo> ] | -f [ <dosiernomo> ] ]\n"
+"[ -i <intervalo> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:126
+#, c-format
+msgid "Main options and reports:\n"
+msgstr "Ĉefaj elektebloj kaj raportoj:\n"
+
+#: sar.c:127
+#, c-format
+msgid "\t-b\tI/O and transfer rate statistics\n"
+msgstr "\t-b\tStatistikoj pri En/Eligo kaj pri transig-rapido\n"
+
+#: sar.c:128
+#, c-format
+msgid "\t-B\tPaging statistics\n"
+msgstr "\t-B\tStatistikoj pri paĝigo\n"
+
+#: sar.c:129
+#, c-format
+msgid "\t-d\tBlock device statistics\n"
+msgstr "\t-d\tStatistikoj pri blok-aparatoj\n"
+
+#: sar.c:130
+#, c-format
+msgid "\t-H\tHugepages utilization statistics\n"
+msgstr "\t-H\tStatistikoj pri uzado de paĝegoj\n"
+
+#: sar.c:131
+#, c-format
+msgid ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tInterrupts statistics\n"
+msgstr ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tStatistikoj pri interrompoj\n"
+
+#: sar.c:133
+#, c-format
+msgid ""
+"\t-m { <keyword> [,...] | ALL }\n"
+"\t\tPower management statistics\n"
+"\t\tKeywords are:\n"
+"\t\tCPU\tCPU instantaneous clock frequency\n"
+"\t\tFAN\tFans speed\n"
+"\t\tFREQ\tCPU average clock frequency\n"
+"\t\tIN\tVoltage inputs\n"
+"\t\tTEMP\tDevices temperature\n"
+"\t\tUSB\tUSB devices plugged into the system\n"
+msgstr ""
+"\t-m { <ŝlosilvorto> [,...] | ALL }\n"
+"\t\tStatistikoj pri energi-administrado\n"
+"\t\tŜlosilvortoj estas:\n"
+"\t\tCPU\tMomenta horloĝ-frekvenco de CPU\n"
+"\t\tFAN\tRapideco de ventoliloj\n"
+"\t\tFREQ\tMeznombra horloĝ-frekvenco de CPU\n"
+"\t\tIN\tTensiaj enigoj\n"
+"\t\tTEMP\tTemperaturo de aparatoj\n"
+"\t\tUSB\tAparatoj USB konektataj al la sistemo\n"
+
+#: sar.c:142
+#, c-format
+msgid ""
+"\t-n { <keyword> [,...] | ALL }\n"
+"\t\tNetwork statistics\n"
+"\t\tKeywords are:\n"
+"\t\tDEV\tNetwork interfaces\n"
+"\t\tEDEV\tNetwork interfaces (errors)\n"
+"\t\tNFS\tNFS client\n"
+"\t\tNFSD\tNFS server\n"
+"\t\tSOCK\tSockets\t(v4)\n"
+"\t\tIP\tIP traffic\t(v4)\n"
+"\t\tEIP\tIP traffic\t(v4) (errors)\n"
+"\t\tICMP\tICMP traffic\t(v4)\n"
+"\t\tEICMP\tICMP traffic\t(v4) (errors)\n"
+"\t\tTCP\tTCP traffic\t(v4)\n"
+"\t\tETCP\tTCP traffic\t(v4) (errors)\n"
+"\t\tUDP\tUDP traffic\t(v4)\n"
+"\t\tSOCK6\tSockets\t(v6)\n"
+"\t\tIP6\tIP traffic\t(v6)\n"
+"\t\tEIP6\tIP traffic\t(v6) (errors)\n"
+"\t\tICMP6\tICMP traffic\t(v6)\n"
+"\t\tEICMP6\tICMP traffic\t(v6) (errors)\n"
+"\t\tUDP6\tUDP traffic\t(v6)\n"
+msgstr ""
+"\t-n { <ŝlosilvorto> [,...] | ALL }\n"
+"\t\tStatistikoj pri reto\n"
+"\t\tŜlosilvortoj estas:\n"
+"\t\tDEV\tRetaj interfacoj\n"
+"\t\tEDEV\tRetaj interfacoj (eraroj)\n"
+"\t\tNFS\tkliento NFS\n"
+"\t\tNFSD\tservilo NFS\n"
+"\t\tSOCK\tIngoj\t(v4)\n"
+"\t\tIP\tIP-trafiko\t(v4)\n"
+"\t\tEIP\tIP-trafiko\t(v4) (eraroj)\n"
+"\t\tICMP\tICMP-trafiko\t(v4)\n"
+"\t\tEICMP\tICMP-trafiko\t(v4) (eraroj)\n"
+"\t\tTCP\tTCP-trafiko\t(v4)\n"
+"\t\tETCP\tTCP-trafiko\t(v4) (eraroj)\n"
+"\t\tUDP\tUDP-trafiko\t(v4)\n"
+"\t\tSOCK6\tIngoj\t(v6)\n"
+"\t\tIP6\tIP-trafiko\t(v6)\n"
+"\t\tEIP6\tIP-trafiko\t(v6) (eraroj)\n"
+"\t\tICMP6\tICMP-trafiko\t(v6)\n"
+"\t\tEICMP6\tICMP-trafiko\t(v6) (eraroj)\n"
+"\t\tUDP6\tUDP-trafiko\t(v6)\n"
+
+#: sar.c:163
+#, c-format
+msgid "\t-q\tQueue length and load average statistics\n"
+msgstr "\t-q\tStatistikoj pri longeco de vico kaj pri meznombra ŝarĝado\n"
+
+#: sar.c:164
+#, c-format
+msgid "\t-r\tMemory utilization statistics\n"
+msgstr "\t-r\tStatistikoj pri memor-uzado\n"
+
+#: sar.c:165
+#, c-format
+msgid "\t-R\tMemory statistics\n"
+msgstr "\t-R\tStatistikoj pri memoro\n"
+
+#: sar.c:166
+#, c-format
+msgid "\t-S\tSwap space utilization statistics\n"
+msgstr "\t-S\tStatistikoj pri uzado de permuto-spaco\n"
+
+#: sar.c:167
+#, c-format
+msgid ""
+"\t-u [ ALL ]\n"
+"\t\tCPU utilization statistics\n"
+msgstr ""
+"\t-u [ ALL ]\n"
+"\t\tStatistikoj pri uzado de CPU\n"
+
+#: sar.c:169
+#, c-format
+msgid "\t-v\tKernel table statistics\n"
+msgstr "\t-v\tStatistikoj pri kerno-tabelo\n"
+
+#: sar.c:170
+#, c-format
+msgid "\t-w\tTask creation and system switching statistics\n"
+msgstr "\t-w\tStatistikoj pri tasko-kreado kaj pri sistem-ŝaltado\n"
+
+#: sar.c:171
+#, c-format
+msgid "\t-W\tSwapping statistics\n"
+msgstr "\t-W\tStatistikoj pri permutado\n"
+
+#: sar.c:172
+#, c-format
+msgid "\t-y\tTTY device statistics\n"
+msgstr "\t-y\tStatistikoj pri TTY-aparato\n"
+
+#: sar.c:215
+#, c-format
+msgid "End of data collecting unexpected\n"
+msgstr "Ne atendita fino de datumar-kolektado\n"
+
+#: sar.c:802
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Malvalida datumar-formo\n"
+
+#: sar.c:806
+#, c-format
+msgid "Using a wrong data collector from a different sysstat version\n"
+msgstr "Uzo de malĝusta datumar-kolektilo el alia versio de sysstat\n"
+
+#: sar.c:830
+#, c-format
+msgid "Inconsistent input data\n"
+msgstr "Nekongrua enig-datumaro\n"
+
+#: sar.c:1260
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "Elektebloj -f kaj -o ne povas aperi kune\n"
+
+#: sar.c:1266
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Ni ne legas el sistem-aktivaĵa dosiero (uzu elekteblon -f)\n"
+
+#: sar.c:1393
+#, c-format
+msgid "Cannot find the data collector (%s)\n"
+msgstr "Ni ne povas trovi la datumar-kolektilon (%s)\n"

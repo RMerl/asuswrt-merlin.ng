@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GFilenameCompleter</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="utils.html" title="File-related Utilities">
+<link rel="prev" href="utils.html" title="File-related Utilities">
+<link rel="next" href="async.html" title="Asynchronous I/O">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GFilenameCompleter.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GFilenameCompleter.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GFilenameCompleter.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="utils.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="utils.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="async.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GFilenameCompleter"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GFilenameCompleter.top_of_page"></a>GFilenameCompleter</span></h2>
+<p>GFilenameCompleter — Filename Completer</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GFilenameCompleter.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GFilenameCompleter.html#GFilenameCompleter-struct" title="GFilenameCompleter">GFilenameCompleter</a>;
+<a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="returnvalue">GFilenameCompleter</span></a> * <a class="link" href="GFilenameCompleter.html#g-filename-completer-new" title="g_filename_completer_new ()">g_filename_completer_new</a>           (<em class="parameter"><code><span class="type">void</span></code></em>);
+<span class="returnvalue">char</span> *              <a class="link" href="GFilenameCompleter.html#g-filename-completer-get-completion-suffix" title="g_filename_completer_get_completion_suffix ()">g_filename_completer_get_completion_suffix</a>
+                                                        (<em class="parameter"><code><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *completer</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *initial_text</code></em>);
+<span class="returnvalue">char</span> **             <a class="link" href="GFilenameCompleter.html#g-filename-completer-get-completions" title="g_filename_completer_get_completions ()">g_filename_completer_get_completions</a>
+                                                        (<em class="parameter"><code><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *completer</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *initial_text</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GFilenameCompleter.html#g-filename-completer-set-dirs-only" title="g_filename_completer_set_dirs_only ()">g_filename_completer_set_dirs_only</a>  (<em class="parameter"><code><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *completer</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> dirs_only</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFilenameCompleter.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GFilenameCompleter
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFilenameCompleter.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GFilenameCompleter.html#GFilenameCompleter-got-completion-data" title='The "got-completion-data" signal'>got-completion-data</a>"                            : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFilenameCompleter.description"></a><h2>Description</h2>
+<p>
+Completes partial file and directory names given a partial string by
+looking in the file system for clues. Can return a list of possible 
+completion strings for widget implementations.
+</p>
+</div>
+<div class="refsect1">
+<a name="GFilenameCompleter.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GFilenameCompleter-struct"></a><h3>GFilenameCompleter</h3>
+<pre class="programlisting">typedef struct _GFilenameCompleter GFilenameCompleter;</pre>
+<p>
+Completes filenames based on files that exist within the file system.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-completer-new"></a><h3>g_filename_completer_new ()</h3>
+<pre class="programlisting"><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="returnvalue">GFilenameCompleter</span></a> * g_filename_completer_new           (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Creates a new filename completer.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a>.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-completer-get-completion-suffix"></a><h3>g_filename_completer_get_completion_suffix ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *              g_filename_completer_get_completion_suffix
+                                                        (<em class="parameter"><code><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *completer</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *initial_text</code></em>);</pre>
+<p>
+Obtains a completion for <em class="parameter"><code>initial_text</code></em> from <em class="parameter"><code>completer</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>completer</code></em> :</span></p></td>
+<td>the filename completer.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>initial_text</code></em> :</span></p></td>
+<td>text to be completed.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a completed string, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no completion exists.
+This string is not owned by GIO, so remember to <a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a> it
+when finished.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-completer-get-completions"></a><h3>g_filename_completer_get_completions ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> **             g_filename_completer_get_completions
+                                                        (<em class="parameter"><code><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *completer</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *initial_text</code></em>);</pre>
+<p>
+Gets an array of completion strings for a given initial text.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>completer</code></em> :</span></p></td>
+<td>the filename completer.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>initial_text</code></em> :</span></p></td>
+<td>text to be completed.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>array of strings with possible completions for <em class="parameter"><code>initial_text</code></em>.
+This array must be freed by <a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strfreev"><code class="function">g_strfreev()</code></a> when finished. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-completer-set-dirs-only"></a><h3>g_filename_completer_set_dirs_only ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_filename_completer_set_dirs_only  (<em class="parameter"><code><a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *completer</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> dirs_only</code></em>);</pre>
+<p>
+If <em class="parameter"><code>dirs_only</code></em> is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, <em class="parameter"><code>completer</code></em> will only 
+complete directory names, and not file names.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>completer</code></em> :</span></p></td>
+<td>the filename completer.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>dirs_only</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFilenameCompleter.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GFilenameCompleter-got-completion-data"></a><h3>The <code class="literal">"got-completion-data"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter"><span class="type">GFilenameCompleter</span></a> *arg0,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Emitted when the file name completion information comes available.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to gateway <b>moon</b>. The authentication is based on <b>raw RSA public keys</b>
+with <b>ID_RFC822_ADDR</b> and <b>ID_FQDN</b> identities for the roadwarriors and
+gateway, respectively.
+Upon the successful establishment of the IPsec tunnels, automatically inserted
+iptables-based firewall rules let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

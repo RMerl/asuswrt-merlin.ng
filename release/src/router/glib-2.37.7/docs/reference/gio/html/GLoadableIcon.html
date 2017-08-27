@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GLoadableIcon</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="icons.html" title="Icons">
+<link rel="prev" href="gio-GBytesIcon.html" title="GBytesIcon">
+<link rel="next" href="GThemedIcon.html" title="GThemedIcon">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GLoadableIcon.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GLoadableIcon.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GLoadableIcon.prerequisites" class="shortcut">Prerequisites</a>
+                   | 
+                  <a href="#GLoadableIcon.implementations" class="shortcut">Known Implementations</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="icons.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GBytesIcon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GThemedIcon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GLoadableIcon"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GLoadableIcon.top_of_page"></a>GLoadableIcon</span></h2>
+<p>GLoadableIcon — Loadable Icons</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GLoadableIcon.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GLoadableIcon.html#GLoadableIcon-struct" title="GLoadableIcon">GLoadableIcon</a>;
+struct              <a class="link" href="GLoadableIcon.html#GLoadableIconIface" title="struct GLoadableIconIface">GLoadableIconIface</a>;
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      <a class="link" href="GLoadableIcon.html#g-loadable-icon-load" title="g_loadable_icon_load ()">g_loadable_icon_load</a>                (<em class="parameter"><code><a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> size</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> **type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GLoadableIcon.html#g-loadable-icon-load-async" title="g_loadable_icon_load_async ()">g_loadable_icon_load_async</a>          (<em class="parameter"><code><a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> size</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      <a class="link" href="GLoadableIcon.html#g-loadable-icon-load-finish" title="g_loadable_icon_load_finish ()">g_loadable_icon_load_finish</a>         (<em class="parameter"><code><a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> **type</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GLoadableIcon.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----GLoadableIcon
+</pre>
+</div>
+<div class="refsect1">
+<a name="GLoadableIcon.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GLoadableIcon requires
+ <a class="link" href="GIcon.html" title="GIcon">GIcon</a> and  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GLoadableIcon.implementations"></a><h2>Known Implementations</h2>
+<p>
+GLoadableIcon is implemented by
+ <a class="link" href="GFileIcon.html" title="GFileIcon">GFileIcon</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GLoadableIcon.description"></a><h2>Description</h2>
+<p>
+Extends the <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> interface and adds the ability to 
+load icons from streams.
+</p>
+</div>
+<div class="refsect1">
+<a name="GLoadableIcon.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GLoadableIcon-struct"></a><h3>GLoadableIcon</h3>
+<pre class="programlisting">typedef struct _GLoadableIcon GLoadableIcon;</pre>
+<p>
+Generic type for all kinds of icons that can be loaded
+as a stream.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLoadableIconIface"></a><h3>struct GLoadableIconIface</h3>
+<pre class="programlisting">struct GLoadableIconIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  GInputStream * (* load)        (GLoadableIcon       *icon,
+                                  int                  size,
+                                  char               **type,
+                                  GCancellable        *cancellable,
+                                  GError             **error);
+  void           (* load_async)  (GLoadableIcon       *icon,
+                                  int                  size,
+                                  GCancellable        *cancellable,
+                                  GAsyncReadyCallback  callback,
+                                  gpointer             user_data);
+  GInputStream * (* load_finish) (GLoadableIcon       *icon,
+                                  GAsyncResult        *res,
+                                  char               **type,
+                                  GError             **error);
+};
+</pre>
+<p>
+Interface for icons that can be loaded as a stream.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GLoadableIconIface.g-iface"></a>g_iface</code></em>;</span></p></td>
+<td>The parent interface.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GLoadableIconIface.load"></a>load</code></em> ()</span></p></td>
+<td>Loads an icon.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GLoadableIconIface.load-async"></a>load_async</code></em> ()</span></p></td>
+<td>Loads an icon asynchronously.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GLoadableIconIface.load-finish"></a>load_finish</code></em> ()</span></p></td>
+<td>Finishes an asynchronous icon load.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-loadable-icon-load"></a><h3>g_loadable_icon_load ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      g_loadable_icon_load                (<em class="parameter"><code><a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> size</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> **type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Loads a loadable icon. For the asynchronous version of this function, 
+see <a class="link" href="GLoadableIcon.html#g-loadable-icon-load-async" title="g_loadable_icon_load_async ()"><code class="function">g_loadable_icon_load_async()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>a <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>size</code></em> :</span></p></td>
+<td>an integer.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>type</code></em> :</span></p></td>
+<td>a location to store the type of the
+loaded icon, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> to read the icon from. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-loadable-icon-load-async"></a><h3>g_loadable_icon_load_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_loadable_icon_load_async          (<em class="parameter"><code><a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> size</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Loads an icon asynchronously. To finish this function, see 
+<a class="link" href="GLoadableIcon.html#g-loadable-icon-load-finish" title="g_loadable_icon_load_finish ()"><code class="function">g_loadable_icon_load_finish()</code></a>. For the synchronous, blocking 
+version of this function, see <a class="link" href="GLoadableIcon.html#g-loadable-icon-load" title="g_loadable_icon_load ()"><code class="function">g_loadable_icon_load()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>a <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>size</code></em> :</span></p></td>
+<td>an integer.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the
+request is satisfied. <span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the data to pass to callback function. <span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-loadable-icon-load-finish"></a><h3>g_loadable_icon_load_finish ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *      g_loadable_icon_load_finish         (<em class="parameter"><code><a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> **type</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Finishes an asynchronous icon load started in <a class="link" href="GLoadableIcon.html#g-loadable-icon-load-async" title="g_loadable_icon_load_async ()"><code class="function">g_loadable_icon_load_async()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>a <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>res</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>type</code></em> :</span></p></td>
+<td>a location to store the type of the
+loaded icon, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> to read the icon from. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GLoadableIcon.see-also"></a><h2>See Also</h2>
+<a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

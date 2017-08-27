@@ -1,0 +1,68 @@
+.TH RADZAP 1 "8 April 2005" "" "FreeRadius Daemon"
+.SH NAME
+radzap - remove rogue entries from the active sessions database
+.SH SYNOPSIS
+.B radzap
+.RB [ \-d
+.IR raddb_directory ]
+.RB [ \-h ]
+.RB [ \-N
+.IR nas_ip_address ]
+.RB [ \-P
+.IR nas_port ]
+.RB [ \-u
+.IR user ]
+.RB [ \-U
+.IR user ]
+.RB [ \-x ]
+\fIserver[:port] secret\fP
+.SH DESCRIPTION
+The FreeRadius server can be configured to maintain an active session
+database in a file called \fIradutmp\fP. Commands like \fBradwho\fP(1)
+use this database. Sometimes that database can get out of sync, and
+then it might contain rogue entries. \fBradzap\fP can clean up this
+database.
+
+As of FreeRADIUS 1.1.0, \fBradzap\fP is a simple shell-script wrapper
+around \fBradwho\fP(1) and \fBradclient\fP(1).
+
+The sessions are "zapped" by sending an Accounting-Request packet
+which contains the information necessary for the server to delete the
+session record.  \fBradzap\fP sends a packet to the server, rather
+than writing to \fIradutmp\fP directly, because session records may
+also be maintained in SQL.
+.SH OPTIONS
+.IP \-d\ \fIraddb_directory\fP
+The directory that contains the RADIUS configuration files.
+\fBradzap\fP reads \fIradiusd.conf\fP to determine the location of the
+\fIradutmp\fP file.
+.IP \-h
+Print usage help information.
+.IP \-N\ \fInas_ip_address\fP
+Zap the entries which match the given NAS IP address.
+.IP \-P\ \fInas_port\fP
+Zap the entries which match the given NAS port.
+.IP \-u\ \fIuser\fP
+Zap the entries which match the given username (case insensitive).
+.IP \-U\ \fIuser\fP
+Zap the entries which match the given username (case sensitive).
+.IP \-x
+Enable debugging output.
+.IP server[:port]
+The hostname or IP address of the remote server. Optionally a UDP port
+can be specified. If no UDP port is specified, it is looked up in
+\fI/etc/services\fP. The service name looked for is \fBradacct\fP for
+accounting packets, and \fBradius\fP for all other requests. If a
+service is not found in \fI/etc/services\fP, 1813 and 1812 are used
+respectively.
+.IP secret
+The shared secret for this client.  It needs to be defined on the
+radius server side too, for the IP address you are sending the radius
+packets from.
+.SH SEE ALSO
+radwho(1),
+radclient(1),
+radiusd(8),
+radiusd.conf(5).
+.SH AUTHOR
+Alan DeKok <aland@ox.org>

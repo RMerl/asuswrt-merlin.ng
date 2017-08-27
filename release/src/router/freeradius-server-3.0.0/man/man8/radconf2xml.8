@@ -1,0 +1,35 @@
+.TH RADCONF2XML 8
+.SH NAME
+radconf2xml - converts radiusd.conf to XML
+.SH SYNOPSIS
+.B radconf2xml
+.RB [ \-d
+.IR raddb_dir ]
+.RB [ \-h ]
+.RB [ \-n
+.IR name ]
+.RB [ \-o
+.IR out_file ]
+
+.SH DESCRIPTION
+\fBradconf2xml\fP reads the radiusd configuration file specified by
+\fIraddb_dir\fP/\fIname\fP.conf and converts it to XML format.
+The result is written to \fIout_file\fP which by default is stdout.
+
+.SH OPTIONS
+
+.IP \-d\ \fIraddb_dir\fP
+The radius configuration directory (typically /etc/raddb).
+.IP \-d\ \fIname\fP
+The name of the configuration file without the .conf extension.
+Defaults to radiusd.
+.IP \-h
+Print usage help information.
+.IP \-d\ \fIout_file\fP
+The output file the XML formatted file will be written to.
+Defaults to stdout.
+
+.SH SEE ALSO
+radiusd(8),
+.SH AUTHORS
+Alan DeKok <aland@deployingradius.com>

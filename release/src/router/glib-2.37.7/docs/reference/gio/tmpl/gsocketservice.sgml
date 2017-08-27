@@ -1,0 +1,74 @@
+<!-- ##### SECTION Title ##### -->
+GSocketService
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocketService ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GSocketService::incoming ##### -->
+<para>
+
+</para>
+
+@gsocketservice: the object which received the signal.
+@arg1: 
+@arg2: 
+@Returns: 
+
+<!-- ##### FUNCTION g_socket_service_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_service_start ##### -->
+<para>
+
+</para>
+
+@service: 
+
+
+<!-- ##### FUNCTION g_socket_service_stop ##### -->
+<para>
+
+</para>
+
+@service: 
+
+
+<!-- ##### FUNCTION g_socket_service_is_active ##### -->
+<para>
+
+</para>
+
+@service: 
+@Returns: 
+
+

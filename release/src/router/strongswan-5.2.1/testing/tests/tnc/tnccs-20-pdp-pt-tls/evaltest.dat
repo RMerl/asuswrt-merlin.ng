@@ -1,0 +1,19 @@
+dave:: cat /var/log/auth.log::sending TLS CertificateVerify handshake::YES
+dave:: cat /var/log/auth.log::collected ... SWID tags::YES
+carol::cat /var/log/auth.log::received SASL Success result::YES
+carol::cat /var/log/auth.log::collected ... SWID tag IDs::YES
+carol::cat /var/log/auth.log::collected 1 SWID tag::YES
+alice::cat /var/log/daemon.log::accepting PT-TLS stream from PH_IP_DAVE::YES
+alice::cat /var/log/daemon.log::checking certificate status of.*C=CH, O=Linux strongSwan, OU=Accounting, CN=dave@strongswan.org::YES
+alice::cat /var/log/daemon.log::certificate status is good::YES
+alice::cat /var/log/daemon.log::skipping SASL, client already authenticated by TLS certificate::YES
+alice::cat /var/log/daemon.log::user AR identity.*C=CH, O=Linux strongSwan, OU=Accounting, CN=dave@strongswan.org.*authenticated by certificate::YES
+alice::cat /var/log/daemon.log::received SWID tag inventory with ... items for request 3 at eid 1 of epoch::YES
+alice::cat /var/log/daemon.log::accepting PT-TLS stream from PH_IP_CAROL::YES
+alice::cat /var/log/daemon.log::SASL PLAIN authentication successful::YES
+alice::cat /var/log/daemon.log::SASL client identity is.*carol::YES
+alice::cat /var/log/daemon.log::user AR identity.*carol.*authenticated by password::YES
+alice::cat /var/log/daemon.log::received SWID tag ID inventory with ... items for request 9 at eid 1 of epoch::YES
+alice::cat /var/log/daemon.log::1 SWID tag target::YES
+alice::cat /var/log/daemon.log::received SWID tag inventory with 1 item for request 9 at eid 1 of epoch::YES
+alice::cat /var/log/daemon.log::regid.2004-03.org.strongswan_strongSwan-::YES

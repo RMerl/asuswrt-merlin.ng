@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>udev_queue</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="libudev Reference Manual">
+<link rel="up" href="ch01.html" title="libudev">
+<link rel="prev" href="libudev-udev-enumerate.html" title="udev_enumerate">
+<link rel="next" href="api-index-full.html" title="API Index">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="libudev-udev-enumerate.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">libudev Reference Manual</th>
+<td><a accesskey="n" href="api-index-full.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#libudev-udev-queue.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#libudev-udev-queue.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="libudev-udev-queue"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libudev-udev-queue.top_of_page"></a>udev_queue</span></h2>
+<p>udev_queue — access to currently active events</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="libudev-udev-queue.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">struct              <a class="link" href="libudev-udev-queue.html#udev-queue" title="struct udev_queue">udev_queue</a>;
+struct <a class="link" href="libudev-udev-queue.html#udev-queue" title="struct udev_queue"><span class="returnvalue">udev_queue</span></a> * <a class="link" href="libudev-udev-queue.html#udev-queue-ref" title="udev_queue_ref ()">udev_queue_ref</a>                      (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev-queue.html#udev-queue-unref" title="udev_queue_unref ()">udev_queue_unref</a>                    (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       <a class="link" href="libudev-udev-queue.html#udev-queue-get-udev" title="udev_queue_get_udev ()">udev_queue_get_udev</a>                 (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+struct <a class="link" href="libudev-udev-queue.html#udev-queue" title="struct udev_queue"><span class="returnvalue">udev_queue</span></a> * <a class="link" href="libudev-udev-queue.html#udev-queue-new" title="udev_queue_new ()">udev_queue_new</a>                      (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-queue.html#udev-queue-get-udev-is-active" title="udev_queue_get_udev_is_active ()">udev_queue_get_udev_is_active</a>       (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-queue.html#udev-queue-get-queue-is-empty" title="udev_queue_get_queue_is_empty ()">udev_queue_get_queue_is_empty</a>       (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-queue.html#udev-queue-get-seqnum-is-finished" title="udev_queue_get_seqnum_is_finished ()">udev_queue_get_seqnum_is_finished</a>   (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>,
+                                                         <em class="parameter"><code>unsigned long long <span class="type">int</span> seqnum</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev-queue.html#udev-queue-get-seqnum-sequence-is-finished" title="udev_queue_get_seqnum_sequence_is_finished ()">udev_queue_get_seqnum_sequence_is_finished</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>,
+                                                         <em class="parameter"><code>unsigned long long <span class="type">int</span> start</code></em>,
+                                                         <em class="parameter"><code>unsigned long long <span class="type">int</span> end</code></em>);
+struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * <a class="link" href="libudev-udev-queue.html#udev-queue-get-queued-list-entry" title="udev_queue_get_queued_list_entry ()">udev_queue_get_queued_list_entry</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * <a class="link" href="libudev-udev-queue.html#udev-queue-get-failed-list-entry" title="udev_queue_get_failed_list_entry ()">udev_queue_get_failed_list_entry</a>
+                                                        (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+unsigned long long <span class="returnvalue">int</span>  <a class="link" href="libudev-udev-queue.html#udev-queue-get-kernel-seqnum" title="udev_queue_get_kernel_seqnum ()">udev_queue_get_kernel_seqnum</a>    (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+unsigned long long <span class="returnvalue">int</span>  <a class="link" href="libudev-udev-queue.html#udev-queue-get-udev-seqnum" title="udev_queue_get_udev_seqnum ()">udev_queue_get_udev_seqnum</a>      (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="libudev-udev-queue.description"></a><h2>Description</h2>
+<p>
+The udev daemon processes events asynchronously. All events which do not have
+interdependencies run in parallel. This exports the current state of the
+event processing queue, and the current event sequence numbers from the kernel
+and the udev daemon.
+</p>
+</div>
+<div class="refsect1">
+<a name="libudev-udev-queue.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="udev-queue"></a><h3>struct udev_queue</h3>
+<pre class="programlisting">struct udev_queue;</pre>
+<p>
+Opaque object representing the current event queue in the udev daemon.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-ref"></a><h3>udev_queue_ref ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-queue.html#udev-queue" title="struct udev_queue"><span class="returnvalue">udev_queue</span></a> * udev_queue_ref                      (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<p>
+Take a reference of a udev queue context.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the same udev queue context.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-unref"></a><h3>udev_queue_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_queue_unref                    (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<p>
+Drop a reference of a udev queue context. If the refcount reaches zero,
+the resources of the queue context will be released.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-udev"></a><h3>udev_queue_get_udev ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       udev_queue_get_udev                 (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<p>
+Retrieve the udev library context the queue context was created with.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the udev library context.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-new"></a><h3>udev_queue_new ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-queue.html#udev-queue" title="struct udev_queue"><span class="returnvalue">udev_queue</span></a> * udev_queue_new                      (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev queue context.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the udev queue context, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> on error.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-udev-is-active"></a><h3>udev_queue_get_udev_is_active ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_queue_get_udev_is_active       (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a flag indicating if udev is active.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-queue-is-empty"></a><h3>udev_queue_get_queue_is_empty ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_queue_get_queue_is_empty       (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a flag indicating if udev is currently handling events.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-seqnum-is-finished"></a><h3>udev_queue_get_seqnum_is_finished ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_queue_get_seqnum_is_finished   (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>,
+                                                         <em class="parameter"><code>unsigned long long <span class="type">int</span> seqnum</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>seqnum</code></em> :</span></p></td>
+<td>sequence number</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a flag indicating if the given sequence number is currently active.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-seqnum-sequence-is-finished"></a><h3>udev_queue_get_seqnum_sequence_is_finished ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_queue_get_seqnum_sequence_is_finished
+                                                        (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>,
+                                                         <em class="parameter"><code>unsigned long long <span class="type">int</span> start</code></em>,
+                                                         <em class="parameter"><code>unsigned long long <span class="type">int</span> end</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>start</code></em> :</span></p></td>
+<td>first event sequence number</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>end</code></em> :</span></p></td>
+<td>last event sequence number</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a flag indicating if any of the sequence numbers in the given range is currently active.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-queued-list-entry"></a><h3>udev_queue_get_queued_list_entry ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * udev_queue_get_queued_list_entry
+                                                        (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first entry of the list of queued events.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-failed-list-entry"></a><h3>udev_queue_get_failed_list_entry ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev-list.html#udev-list-entry" title="struct udev_list_entry"><span class="returnvalue">udev_list_entry</span></a> * udev_queue_get_failed_list_entry
+                                                        (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first entry of the list of recorded failed events.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-kernel-seqnum"></a><h3>udev_queue_get_kernel_seqnum ()</h3>
+<pre class="programlisting">unsigned long long <span class="returnvalue">int</span>  udev_queue_get_kernel_seqnum    (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the current kernel event sequence number.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-queue-get-udev-seqnum"></a><h3>udev_queue_get_udev_seqnum ()</h3>
+<pre class="programlisting">unsigned long long <span class="returnvalue">int</span>  udev_queue_get_udev_seqnum      (<em class="parameter"><code><span class="type">struct udev_queue</span> *udev_queue</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev_queue</code></em> :</span></p></td>
+<td>udev queue context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the last known udev event sequence number.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

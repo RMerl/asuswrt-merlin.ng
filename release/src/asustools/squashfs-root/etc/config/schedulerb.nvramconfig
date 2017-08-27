@@ -1,0 +1,7 @@
+"schedule_enable"  "Schedule Enable"  "CHOICE"  "2"  "0"  "1"  "FALSE"  "0"
+"schedule_time"  "Schedule Time"  "RANGE" "60" "999999"  "FALSE" "0"
+"schedule_hour_time"  "Schedule Hour Time"  "CHOICE"  "2"  "1" "2"  "FALSE" "0"
+"schedule_minutes"  "Schedule minutes"  "RANGE"  "0"  "59"  "FALSE" "0"
+"schedule_hours"  "Schedule Hours"  "RANGE"  "0"  "23"  "FALSE" "0"
+"schedule_weekdays"  "Schedule Weekdays"  "CHOICE"  "8" "*" "00" "01" "02" "03" "04" "05" "06" "FALSE"  "0"
+

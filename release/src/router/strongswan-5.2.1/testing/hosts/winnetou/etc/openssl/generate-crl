@@ -1,0 +1,47 @@
+#! /bin/sh
+# generate a certificate revocation list (CRL) for the strongswan CA.
+#
+# Copyright (C) 2004  Andreas Steffen
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+export COMMON_NAME=strongSwan
+
+ROOT=/var/www
+
+cd /etc/openssl
+openssl ca -gencrl -crldays 30 -config /etc/openssl/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan.crl
+cp strongswan.crl     ${ROOT}
+cp strongswanCert.pem ${ROOT}
+cp index.html         ${ROOT}
+cd /etc/openssl/research
+openssl ca -gencrl -crldays 15 -config /etc/openssl/research/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out research.crl
+cp research.crl       ${ROOT}
+cd /etc/openssl/sales
+openssl ca -gencrl -crldays 15 -config /etc/openssl/sales/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out sales.crl
+cp sales.crl         ${ROOT}
+cd /etc/openssl/ecdsa
+openssl ca -gencrl -crldays 15 -config /etc/openssl/ecdsa/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan_ec.crl
+cp strongswan_ec.crl ${ROOT}
+cd /etc/openssl/monster
+openssl ca -gencrl -crldays 15 -config /etc/openssl/monster/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan-monster.crl
+cp strongswan-monster.crl ${ROOT}
+cd /etc/openssl/rfc3779
+openssl ca -gencrl -crldays 15 -config /etc/openssl/rfc3779/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan_rfc3779.crl
+cp strongswan_rfc3779.crl ${ROOT}
+

@@ -1,0 +1,9 @@
+
+Answer y if you want to automate sar reporting. In this case, a crontab will
+be created to periodically start the data collector. System activity daily
+data files will then be created in the /var/log/sa directory.
+You can find various crontab templates in sysstat directory. By default
+sysstat will try to use sysstat.crond template and install it in the
+/etc/cron.d directory.
+Default answer is n here.
+

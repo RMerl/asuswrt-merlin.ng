@@ -1,0 +1,416 @@
+<!-- ##### SECTION Title ##### -->
+Hook Functions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GHookList ##### -->
+<para>
+
+</para>
+
+@seq_id: 
+@hook_size: 
+@is_setup: 
+@hooks: 
+@dummy3: 
+@finalize_hook: 
+@dummy: 
+
+<!-- ##### USER_FUNCTION GHookFinalizeFunc ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+
+
+<!-- ##### STRUCT GHook ##### -->
+<para>
+
+</para>
+
+@data: 
+@next: 
+@prev: 
+@ref_count: 
+@hook_id: 
+@flags: 
+@func: 
+@destroy: 
+
+<!-- ##### USER_FUNCTION GHookFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+
+
+<!-- ##### USER_FUNCTION GHookCheckFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_list_init ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook_size: 
+
+
+<!-- ##### FUNCTION g_hook_list_invoke ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@may_recurse: 
+
+
+<!-- ##### FUNCTION g_hook_list_invoke_check ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@may_recurse: 
+
+
+<!-- ##### FUNCTION g_hook_list_marshal ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@may_recurse: 
+@marshaller: 
+@marshal_data: 
+
+
+<!-- ##### USER_FUNCTION GHookMarshaller ##### -->
+<para>
+
+</para>
+
+@hook: 
+@marshal_data: 
+
+
+<!-- ##### FUNCTION g_hook_list_marshal_check ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@may_recurse: 
+@marshaller: 
+@marshal_data: 
+
+
+<!-- ##### USER_FUNCTION GHookCheckMarshaller ##### -->
+<para>
+
+</para>
+
+@hook: 
+@marshal_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_list_clear ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+
+
+<!-- ##### FUNCTION g_hook_alloc ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@Returns: 
+
+
+<!-- ##### MACRO g_hook_append ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+
+
+<!-- ##### FUNCTION g_hook_prepend ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+
+
+<!-- ##### FUNCTION g_hook_insert_before ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@sibling: 
+@hook: 
+
+
+<!-- ##### FUNCTION g_hook_insert_sorted ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+@func: 
+
+
+<!-- ##### USER_FUNCTION GHookCompareFunc ##### -->
+<para>
+
+</para>
+
+@new_hook: 
+@sibling: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_compare_ids ##### -->
+<para>
+
+</para>
+
+@new_hook: 
+@sibling: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_get ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_find ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@need_valids: 
+@func: 
+@data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GHookFindFunc ##### -->
+<para>
+
+</para>
+
+@hook: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_find_data ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@need_valids: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_find_func ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@need_valids: 
+@func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_find_func_data ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@need_valids: 
+@func: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_first_valid ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@may_be_in_call: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_next_valid ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+@may_be_in_call: 
+@Returns: 
+
+
+<!-- ##### ENUM GHookFlagMask ##### -->
+<para>
+
+</para>
+
+@G_HOOK_FLAG_ACTIVE: 
+@G_HOOK_FLAG_IN_CALL: 
+@G_HOOK_FLAG_MASK: 
+
+<!-- ##### MACRO G_HOOK_FLAGS ##### -->
+<para>
+
+</para>
+
+@hook: 
+
+
+<!-- ##### MACRO G_HOOK_FLAG_USER_SHIFT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_HOOK ##### -->
+<para>
+
+</para>
+
+@hook: 
+
+
+<!-- ##### MACRO G_HOOK_IS_VALID ##### -->
+<para>
+
+</para>
+
+@hook: 
+
+
+<!-- ##### MACRO G_HOOK_ACTIVE ##### -->
+<para>
+
+</para>
+
+@hook: 
+
+
+<!-- ##### MACRO G_HOOK_IN_CALL ##### -->
+<para>
+
+</para>
+
+@hook: 
+
+
+<!-- ##### MACRO G_HOOK_IS_UNLINKED ##### -->
+<para>
+
+</para>
+
+@hook: 
+
+
+<!-- ##### FUNCTION g_hook_ref ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_unref ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+
+
+<!-- ##### FUNCTION g_hook_free ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+
+
+<!-- ##### FUNCTION g_hook_destroy ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hook_destroy_link ##### -->
+<para>
+
+</para>
+
+@hook_list: 
+@hook: 
+
+

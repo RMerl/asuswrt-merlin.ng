@@ -1,0 +1,129 @@
+<!-- ##### SECTION Title ##### -->
+gdbusnameowning
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### USER_FUNCTION GBusAcquiredCallback ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GBusNameAcquiredCallback ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GBusNameLostCallback ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@user_data: 
+
+
+<!-- ##### ENUM GBusNameOwnerFlags ##### -->
+<para>
+
+</para>
+
+@G_BUS_NAME_OWNER_FLAGS_NONE: 
+@G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT: 
+@G_BUS_NAME_OWNER_FLAGS_REPLACE: 
+
+<!-- ##### FUNCTION g_bus_own_name ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@name: 
+@flags: 
+@bus_acquired_handler: 
+@name_acquired_handler: 
+@name_lost_handler: 
+@user_data: 
+@user_data_free_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bus_own_name_on_connection ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@flags: 
+@name_acquired_handler: 
+@name_lost_handler: 
+@user_data: 
+@user_data_free_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bus_unown_name ##### -->
+<para>
+
+</para>
+
+@owner_id: 
+
+
+<!-- ##### FUNCTION g_bus_own_name_with_closures ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@name: 
+@flags: 
+@bus_acquired_closure: 
+@name_acquired_closure: 
+@name_lost_closure: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bus_own_name_on_connection_with_closures ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@flags: 
+@name_acquired_closure: 
+@name_lost_closure: 
+@Returns: 
+
+

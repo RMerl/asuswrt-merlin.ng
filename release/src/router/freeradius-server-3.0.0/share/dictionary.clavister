@@ -1,0 +1,20 @@
+# -*- text -*-
+# Copyright (C) 2011 The FreeRADIUS Server project and contributors
+##############################################################################
+#
+#	Clavister VSAs
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Clavister			5089
+
+#
+# User group attribute
+#
+BEGIN-VENDOR	Clavister
+
+ATTRIBUTE	Clavister-User-Group			1	string
+
+END-VENDOR	Clavister

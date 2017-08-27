@@ -1,0 +1,143 @@
+<!-- ##### SECTION Title ##### -->
+GTypeModule
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTypeModule ##### -->
+<para>
+
+</para>
+
+@name: 
+
+<!-- ##### STRUCT GTypeModuleClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+@load: 
+@unload: 
+
+<!-- ##### FUNCTION g_type_module_use ##### -->
+<para>
+
+</para>
+
+@module: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_module_unuse ##### -->
+<para>
+
+</para>
+
+@module: 
+
+
+<!-- ##### FUNCTION g_type_module_set_name ##### -->
+<para>
+
+</para>
+
+@module: 
+@name: 
+
+
+<!-- ##### FUNCTION g_type_module_register_type ##### -->
+<para>
+
+</para>
+
+@module: 
+@parent_type: 
+@type_name: 
+@type_info: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_module_add_interface ##### -->
+<para>
+
+</para>
+
+@module: 
+@instance_type: 
+@interface_type: 
+@interface_info: 
+
+
+<!-- ##### FUNCTION g_type_module_register_enum ##### -->
+<para>
+
+</para>
+
+@module: 
+@name: 
+@const_static_values: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_module_register_flags ##### -->
+<para>
+
+</para>
+
+@module: 
+@name: 
+@const_static_values: 
+@Returns: 
+
+
+<!-- ##### MACRO G_DEFINE_DYNAMIC_TYPE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+
+
+<!-- ##### MACRO G_DEFINE_DYNAMIC_TYPE_EXTENDED ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@type_name: 
+@TYPE_PARENT: 
+@flags: 
+@CODE: 
+
+
+<!-- ##### MACRO G_IMPLEMENT_INTERFACE_DYNAMIC ##### -->
+<para>
+
+</para>
+
+@TYPE_IFACE: 
+@iface_init: 
+
+

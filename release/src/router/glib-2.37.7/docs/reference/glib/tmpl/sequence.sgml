@@ -1,0 +1,409 @@
+<!-- ##### SECTION Title ##### -->
+Sequences
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSequence ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF GSequenceIter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION GSequenceIterCompareFunc ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_new ##### -->
+<para>
+
+</para>
+
+@data_destroy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_free ##### -->
+<para>
+
+</para>
+
+@seq: 
+
+
+<!-- ##### FUNCTION g_sequence_get_length ##### -->
+<para>
+
+</para>
+
+@seq: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_foreach ##### -->
+<para>
+
+</para>
+
+@seq: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_sequence_foreach_range ##### -->
+<para>
+
+</para>
+
+@begin: 
+@end: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_sequence_sort ##### -->
+<para>
+
+</para>
+
+@seq: 
+@cmp_func: 
+@cmp_data: 
+
+
+<!-- ##### FUNCTION g_sequence_sort_iter ##### -->
+<para>
+
+</para>
+
+@seq: 
+@cmp_func: 
+@cmp_data: 
+
+
+<!-- ##### FUNCTION g_sequence_get_begin_iter ##### -->
+<para>
+
+</para>
+
+@seq: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_get_end_iter ##### -->
+<para>
+
+</para>
+
+@seq: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_get_iter_at_pos ##### -->
+<para>
+
+</para>
+
+@seq: 
+@pos: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_append ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_prepend ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_insert_before ##### -->
+<para>
+
+</para>
+
+@iter: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_move ##### -->
+<para>
+
+</para>
+
+@src: 
+@dest: 
+
+
+<!-- ##### FUNCTION g_sequence_swap ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+
+
+<!-- ##### FUNCTION g_sequence_insert_sorted ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@cmp_func: 
+@cmp_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_insert_sorted_iter ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@iter_cmp: 
+@cmp_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_sort_changed ##### -->
+<para>
+
+</para>
+
+@iter: 
+@cmp_func: 
+@cmp_data: 
+
+
+<!-- ##### FUNCTION g_sequence_sort_changed_iter ##### -->
+<para>
+
+</para>
+
+@iter: 
+@iter_cmp: 
+@cmp_data: 
+
+
+<!-- ##### FUNCTION g_sequence_remove ##### -->
+<para>
+
+</para>
+
+@iter: 
+
+
+<!-- ##### FUNCTION g_sequence_remove_range ##### -->
+<para>
+
+</para>
+
+@begin: 
+@end: 
+
+
+<!-- ##### FUNCTION g_sequence_move_range ##### -->
+<para>
+
+</para>
+
+@dest: 
+@begin: 
+@end: 
+
+
+<!-- ##### FUNCTION g_sequence_search ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@cmp_func: 
+@cmp_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_search_iter ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@iter_cmp: 
+@cmp_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_lookup ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@cmp_func: 
+@cmp_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_lookup_iter ##### -->
+<para>
+
+</para>
+
+@seq: 
+@data: 
+@iter_cmp: 
+@cmp_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_get ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_set ##### -->
+<para>
+
+</para>
+
+@iter: 
+@data: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_is_begin ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_is_end ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_prev ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_get_position ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_move ##### -->
+<para>
+
+</para>
+
+@iter: 
+@delta: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_get_sequence ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_iter_compare ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_sequence_range_get_midpoint ##### -->
+<para>
+
+</para>
+
+@begin: 
+@end: 
+@Returns: 
+
+

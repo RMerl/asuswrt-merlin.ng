@@ -1,0 +1,63 @@
+SHA1buffer was: 65617073_696d0011_22334455_66771021_32435465_
+                76873041_52637485_96a74d6c_40de483a_dd995090_
+                2c4024ce_765e0002_00010001
+Input was: 
+   identity: (len=6)65617073696d
+   nonce_mt: 4d6c40de483add9950902c4024ce765e
+   rand0: 89abcdef89abcdef89abcdef89abcdef
+   rand1: 9abcdef89abcdef89abcdef89abcdef8
+   rand2: abcdef89abcdef89abcdef89abcdef89
+   sres0: 1234abcd
+   sres1: 1234abcd
+   sres2: 234abcd1
+   Kc0: 0011223344556677
+   Kc1: 1021324354657687
+   Kc2: 30415263748596a7
+   versionlist[4]: 00020001
+   select 00 01
+
+
+Output
+mk:         d1cdd6d3_574ef82e_c1e83879_559e89f8_de8e6e90
+K_aut:      54323970_481b5159_48d00a34_422bbe3c
+K_encr:     72469fd8_bb6c2a4a_93ac42e5_b4668acb
+msk:        0a572a3f_2baeea10_640598c9_41901995_f842097a
+            cbb13272_bc949b66_8fb4f5a3_deefed09_3947fe64
+            c88f7df8_dadcab5f_8d003913_8e9bcff7_1a810316
+            11eeb959
+emsk:       207256b3_9ada49ef_c1850c12_30461921_d700f9f7
+            83a0f5a9_cff155bd_6c8f1aa5_072b7530_af44f515
+            3cb983b0_8343effa_2eb161e2_7d3543bc_5bd6db22
+            993af27b
+SHA1buffer was: 31323434_30373031_30303030_30303031_40656170_
+                73696d2e_666f6fa0_a1a2a3a4_a5a6a7b0_b1b2b3b4_
+                b5b6b7c0_c1c2c3c4_c5c6c701_23456789_abcdeffe_
+                dcba9876_54321000_010001
+Input was: 
+   identity: (len=27)313234343037303130303030303030314065617073696d2e666f6f
+   nonce_mt: 0123456789abcdeffedcba9876543210
+   rand0: 101112131415161718191a1b1c1d1e1f
+   rand1: 202122232425262728292a2b2c2d2e2f
+   rand2: 303132333435363738393a3b3c3d3e3f
+   sres0: d1d2d3d4
+   sres1: e1e2e3e4
+   sres2: f1f2f3f4
+   Kc0: a0a1a2a3a4a5a6a7
+   Kc1: b0b1b2b3b4b5b6b7
+   Kc2: c0c1c2c3c4c5c6c7
+   versionlist[2]: 0001
+   select 00 01
+
+
+Output
+mk:         e576d5ca_332e9930_018bf1ba_ee2763c7_95b3c712
+K_aut:      25af1942_efcbf4bc_72b39434_21f2a974
+K_encr:     536e5ebc_4465582a_a6a8ec99_86ebb620
+msk:        39d45aea_f4e30601_983e972b_6cfd46d1_c3637733
+            65690d09_cd44976b_525f47d3_a60a985e_955c53b0
+            90b2e4b7_3719196a_40254296_8fd14a88_8f46b9a7
+            886e4488
+emsk:       5949eab0_fff69d52_315c6c63_4fd14a7f_0d52023d
+            56f79698_fa6596ab_eed4f93f_bb48eb53_4d985414
+            ceed0d9a_8ed33c38_7c9dfdab_92ffbdf2_40fcecf6
+            5a2c93b9

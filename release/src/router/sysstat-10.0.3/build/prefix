@@ -1,0 +1,7 @@
+
+This is the base directory used for installation.
+System administrators would rather install softwares that are added to
+an already existing system into /usr/local, since /usr is sometimes
+mounted read-only.
+/usr/local is the default answer here.
+

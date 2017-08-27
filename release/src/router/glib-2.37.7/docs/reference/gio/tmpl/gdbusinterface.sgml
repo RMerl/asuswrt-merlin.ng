@@ -1,0 +1,77 @@
+<!-- ##### SECTION Title ##### -->
+GDBusInterface
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusInterface ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GDBusInterfaceIface ##### -->
+<para>
+
+</para>
+
+@parent_iface: 
+@get_info: 
+@get_object: 
+@set_object: 
+@dup_object: 
+
+<!-- ##### FUNCTION g_dbus_interface_get_info ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_get_object ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_dup_object ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_set_object ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@object: 
+
+

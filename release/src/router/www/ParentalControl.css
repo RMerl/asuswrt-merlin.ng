@@ -1,0 +1,33 @@
+﻿.input_3_table{
+	width:28px;
+}
+
+.PC_table{
+	border: 1px solid #999;
+	border-collapse: collapse;
+	background-color:#FFFFFF;
+	text-align:center;
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+}
+.PC_table th{
+	background-color:#7aa3bd;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	font-size:12px;
+}
+.PC_table thead td{
+	color: #F4F4F4;
+	font-size:12px;
+	background-color:#4e6d95;
+	text-align:left;
+	font-weight:normal;
+}
+
+.PC_table thead th{
+	color: #000000;
+	font-size:12px;	
+	background-color:#7aa3bd;
+	text-align: center;
+	font-weight:normal;
+}

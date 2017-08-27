@@ -1,0 +1,299 @@
+<!-- ##### SECTION Title ##### -->
+Memory Allocation
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO g_new ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@n_structs: 
+
+
+<!-- ##### MACRO g_new0 ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@n_structs: 
+
+
+<!-- ##### MACRO g_renew ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@mem: 
+@n_structs: 
+
+
+<!-- ##### MACRO g_try_new ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@n_structs: 
+
+
+<!-- ##### MACRO g_try_new0 ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@n_structs: 
+
+
+<!-- ##### MACRO g_try_renew ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@mem: 
+@n_structs: 
+
+
+<!-- ##### FUNCTION g_malloc ##### -->
+<para>
+
+</para>
+
+@n_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_malloc0 ##### -->
+<para>
+
+</para>
+
+@n_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_realloc ##### -->
+<para>
+
+</para>
+
+@mem: 
+@n_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_try_malloc ##### -->
+<para>
+
+</para>
+
+@n_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_try_malloc0 ##### -->
+<para>
+
+</para>
+
+@n_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_try_realloc ##### -->
+<para>
+
+</para>
+
+@mem: 
+@n_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_malloc_n ##### -->
+<para>
+
+</para>
+
+@n_blocks: 
+@n_block_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_malloc0_n ##### -->
+<para>
+
+</para>
+
+@n_blocks: 
+@n_block_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_realloc_n ##### -->
+<para>
+
+</para>
+
+@mem: 
+@n_blocks: 
+@n_block_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_try_malloc_n ##### -->
+<para>
+
+</para>
+
+@n_blocks: 
+@n_block_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_try_malloc0_n ##### -->
+<para>
+
+</para>
+
+@n_blocks: 
+@n_block_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_try_realloc_n ##### -->
+<para>
+
+</para>
+
+@mem: 
+@n_blocks: 
+@n_block_bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_free ##### -->
+<para>
+
+</para>
+
+@mem: 
+
+
+<!-- ##### FUNCTION g_clear_pointer ##### -->
+<para>
+
+</para>
+
+@pp: 
+@destroy: 
+
+
+<!-- ##### VARIABLE g_mem_gc_friendly ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO g_alloca ##### -->
+<para>
+
+</para>
+
+@size: 
+
+
+<!-- ##### MACRO g_newa ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@n_structs: 
+
+
+<!-- ##### MACRO g_memmove ##### -->
+<para>
+
+</para>
+
+@dest: 
+@src: 
+@len: 
+
+
+<!-- ##### FUNCTION g_memdup ##### -->
+<para>
+
+</para>
+
+@mem: 
+@byte_size: 
+@Returns: 
+
+
+<!-- ##### STRUCT GMemVTable ##### -->
+<para>
+
+</para>
+
+@malloc: 
+@realloc: 
+@free: 
+@calloc: 
+@try_malloc: 
+@try_realloc: 
+
+<!-- ##### FUNCTION g_mem_set_vtable ##### -->
+<para>
+
+</para>
+
+@vtable: 
+
+
+<!-- ##### FUNCTION g_mem_is_system_malloc ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### VARIABLE glib_mem_profiler_table ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_mem_profile ##### -->
+<para>
+
+</para>
+
+@void: 
+
+

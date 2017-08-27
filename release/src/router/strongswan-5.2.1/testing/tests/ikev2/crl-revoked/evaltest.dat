@@ -1,0 +1,4 @@
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED::NO
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED::NO
+moon:: cat /var/log/daemon.log::certificate was revoked::YES
+carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES

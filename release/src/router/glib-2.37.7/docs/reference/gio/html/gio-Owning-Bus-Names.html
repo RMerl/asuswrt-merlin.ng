@@ -1,0 +1,727 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: Owning Bus Names</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="Highlevel D-Bus Support">
+<link rel="prev" href="gdbus-convenience.html" title="Highlevel D-Bus Support">
+<link rel="next" href="gio-Watching-Bus-Names.html" title="Watching Bus Names">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-Owning-Bus-Names.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gdbus-convenience.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-Watching-Bus-Names.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-Owning-Bus-Names"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-Owning-Bus-Names.top_of_page"></a>Owning Bus Names</span></h2>
+<p>Owning Bus Names — Simple API for owning bus names</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-Owning-Bus-Names.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+<span class="returnvalue">void</span>                (<a class="link" href="gio-Owning-Bus-Names.html#GBusAcquiredCallback" title="GBusAcquiredCallback ()">*GBusAcquiredCallback</a>)             (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<span class="returnvalue">void</span>                (<a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()">*GBusNameAcquiredCallback</a>)         (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<span class="returnvalue">void</span>                (<a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()">*GBusNameLostCallback</a>)             (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+enum                <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags">GBusNameOwnerFlags</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()">g_bus_own_name</a>                      (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusAcquiredCallback" title="GBusAcquiredCallback ()"><span class="type">GBusAcquiredCallback</span></a> bus_acquired_handler</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()"><span class="type">GBusNameAcquiredCallback</span></a> name_acquired_handler</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()"><span class="type">GBusNameLostCallback</span></a> name_lost_handler</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()">g_bus_own_name_on_connection</a>        (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()"><span class="type">GBusNameAcquiredCallback</span></a> name_acquired_handler</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()"><span class="type">GBusNameLostCallback</span></a> name_lost_handler</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()">g_bus_unown_name</a>                    (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> owner_id</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-with-closures" title="g_bus_own_name_with_closures ()">g_bus_own_name_with_closures</a>        (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *bus_acquired_closure</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_acquired_closure</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_lost_closure</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection-with-closures" title="g_bus_own_name_on_connection_with_closures ()">g_bus_own_name_on_connection_with_closures</a>
+                                                        (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_acquired_closure</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_lost_closure</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.description"></a><h2>Description</h2>
+<p>
+Convenience API for owning bus names.
+</p>
+<p>
+</p>
+<div class="example">
+<a name="gdbus-owning-names"></a><p class="title"><b>Example 12. Simple application owning a name</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gio/gio.h&gt;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_bus_acquired</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* This is where we'd export some objects on the bus */</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_name_acquired</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Acquired the name %s on the session bus</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_name_lost</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Lost the name %s on the session bus</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">guint</span><span class="normal"> owner_id</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GMainLoop</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">loop</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GBusNameOwnerFlags</span><span class="normal"> flags</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> opt_replace</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> opt_allow_replacement</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">opt_name</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GOptionContext</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">opt_context</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GError</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">error</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GOptionEntry</span><span class="normal"> opt_entries</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"replace"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'r'</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#G-OPTION-ARG-NONE:CAPS">G_OPTION_ARG_NONE</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">opt_replace</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Replace existing name if possible"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"allow-replacement"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'a'</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#G-OPTION-ARG-NONE:CAPS">G_OPTION_ARG_NONE</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">opt_allow_replacement</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Allow replacement"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"name"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'n'</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#G-OPTION-ARG-STRING:CAPS">G_OPTION_ARG_STRING</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">opt_name</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Name to acquire"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="normal">  error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  opt_name </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  opt_replace </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+<span class="normal">  opt_allow_replacement </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+<span class="normal">  opt_context </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#g-option-context-new">g_option_context_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"g_bus_own_name() example"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#g-option-context-add-main-entries">g_option_context_add_main_entries</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_context</span><span class="symbol">,</span><span class="normal"> opt_entries</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#g-option-context-parse">g_option_context_parse</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_context</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">argc</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">argv</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error parsing options: %s"</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">return</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_name </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Incorrect usage, try --help.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">return</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  flags </span><span class="symbol">=</span><span class="normal"> <a href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-NONE:CAPS">G_BUS_NAME_OWNER_FLAGS_NONE</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_replace</span><span class="symbol">)</span>
+<span class="normal">    flags </span><span class="symbol">|=</span><span class="normal"> <a href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-REPLACE:CAPS">G_BUS_NAME_OWNER_FLAGS_REPLACE</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_allow_replacement</span><span class="symbol">)</span>
+<span class="normal">    flags </span><span class="symbol">|=</span><span class="normal"> <a href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS">G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</a></span><span class="symbol">;</span>
+
+<span class="normal">  owner_id </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-Owning-Bus-Names.html#g-bus-own-name">g_bus_own_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="GDBusConnection.html#G-BUS-TYPE-SESSION:CAPS">G_BUS_TYPE_SESSION</a></span><span class="symbol">,</span>
+<span class="normal">                             opt_name</span><span class="symbol">,</span>
+<span class="normal">                             flags</span><span class="symbol">,</span>
+<span class="normal">                             on_bus_acquired</span><span class="symbol">,</span>
+<span class="normal">                             on_name_acquired</span><span class="symbol">,</span>
+<span class="normal">                             on_name_lost</span><span class="symbol">,</span>
+<span class="normal">                             <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">                             <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  loop </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-new">g_main_loop_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-run">g_main_loop_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gio-Owning-Bus-Names.html#g-bus-unown-name">g_bus_unown_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">owner_id</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GBusAcquiredCallback"></a><h3>GBusAcquiredCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                (*GBusAcquiredCallback)             (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Invoked when a connection to a message bus has been obtained.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> to a message bus.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The name that is requested to be owned.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data passed to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBusNameAcquiredCallback"></a><h3>GBusNameAcquiredCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                (*GBusNameAcquiredCallback)         (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Invoked when the name is acquired.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> on which to acquired the name.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The name being owned.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data passed to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> or <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()"><code class="function">g_bus_own_name_on_connection()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBusNameLostCallback"></a><h3>GBusNameLostCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                (*GBusNameLostCallback)             (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Invoked when the name is lost or <em class="parameter"><code>connection</code></em> has been closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> on which to acquire the name or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+the connection was disconnected.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The name being owned.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data passed to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> or <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()"><code class="function">g_bus_own_name_on_connection()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBusNameOwnerFlags"></a><h3>enum GBusNameOwnerFlags</h3>
+<pre class="programlisting">typedef enum {
+  G_BUS_NAME_OWNER_FLAGS_NONE = 0,                    /*&lt; nick=none &gt;*/
+  G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT = (1&lt;&lt;0),  /*&lt; nick=allow-replacement &gt;*/
+  G_BUS_NAME_OWNER_FLAGS_REPLACE = (1&lt;&lt;1)            /*&lt; nick=replace &gt;*/
+} GBusNameOwnerFlags;
+</pre>
+<p>
+Flags used in <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="G-BUS-NAME-OWNER-FLAGS-NONE:CAPS"></a><span class="term"><code class="literal">G_BUS_NAME_OWNER_FLAGS_NONE</code></span></p></td>
+<td>No flags set.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS"></a><span class="term"><code class="literal">G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</code></span></p></td>
+<td>Allow another message bus connection to claim the name.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-BUS-NAME-OWNER-FLAGS-REPLACE:CAPS"></a><span class="term"><code class="literal">G_BUS_NAME_OWNER_FLAGS_REPLACE</code></span></p></td>
+<td>If another message bus connection owns the name and have
+specified <a class="link" href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS"><span class="type">G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</span></a>, then take the name from the other connection.
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name"></a><h3>g_bus_own_name ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               g_bus_own_name                      (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusAcquiredCallback" title="GBusAcquiredCallback ()"><span class="type">GBusAcquiredCallback</span></a> bus_acquired_handler</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()"><span class="type">GBusNameAcquiredCallback</span></a> name_acquired_handler</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()"><span class="type">GBusNameLostCallback</span></a> name_lost_handler</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);</pre>
+<p>
+Starts acquiring <em class="parameter"><code>name</code></em> on the bus specified by <em class="parameter"><code>bus_type</code></em> and calls
+<em class="parameter"><code>name_acquired_handler</code></em> and <em class="parameter"><code>name_lost_handler</code></em> when the name is
+acquired respectively lost. Callbacks will be invoked in the <GTKDOCLINK HREF="g-main-context-push-thread-default">thread-default main
+loop</GTKDOCLINK> of the thread you are calling this function from.
+</p>
+<p>
+You are guaranteed that one of the <em class="parameter"><code>name_acquired_handler</code></em> and <em class="parameter"><code>name_lost_handler</code></em>
+callbacks will be invoked after calling this function - there are three
+possible cases:
+</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+    <em class="parameter"><code>name_lost_handler</code></em> with a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> connection (if a connection to the bus can't be made).
+  </p></li>
+<li class="listitem"><p>
+    <em class="parameter"><code>bus_acquired_handler</code></em> then <em class="parameter"><code>name_lost_handler</code></em> (if the name can't be obtained)
+  </p></li>
+<li class="listitem"><p>
+    <em class="parameter"><code>bus_acquired_handler</code></em> then <em class="parameter"><code>name_acquired_handler</code></em> (if the name was obtained).
+  </p></li>
+</ul></div>
+<p>
+When you are done owning the name, just call <a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a>
+with the owner id this function returns.
+</p>
+<p>
+If the name is acquired or lost (for example another application
+could acquire the name if you allow replacement or the application
+currently owning the name exits), the handlers are also invoked. If the
+<a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> that is used for attempting to own the name
+closes, then <em class="parameter"><code>name_lost_handler</code></em> is invoked since it is no
+longer possible for other processes to access the process.
+</p>
+<p>
+You cannot use <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> several times for the same name (unless
+interleaved with calls to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a>) - only the first call
+will work.
+</p>
+<p>
+Another guarantee is that invocations of <em class="parameter"><code>name_acquired_handler</code></em>
+and <em class="parameter"><code>name_lost_handler</code></em> are guaranteed to alternate; that
+is, if <em class="parameter"><code>name_acquired_handler</code></em> is invoked then you are
+guaranteed that the next time one of the handlers is invoked, it
+will be <em class="parameter"><code>name_lost_handler</code></em>. The reverse is also true.
+</p>
+<p>
+If you plan on exporting objects (using e.g.
+<a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a>), note that it is generally too late
+to export the objects in <em class="parameter"><code>name_acquired_handler</code></em>. Instead, you can do this
+in <em class="parameter"><code>bus_acquired_handler</code></em> since you are guaranteed that this will run
+before <em class="parameter"><code>name</code></em> is requested from the bus.
+</p>
+<p>
+This behavior makes it very simple to write applications that wants
+to own names and export objects, see <a class="xref" href="gio-Owning-Bus-Names.html#gdbus-owning-names" title="Example 12. Simple application owning a name">Example 12, “Simple application owning a name”</a>.
+Simply register objects to be exported in <em class="parameter"><code>bus_acquired_handler</code></em> and
+unregister the objects (if any) in <em class="parameter"><code>name_lost_handler</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_type</code></em> :</span></p></td>
+<td>The type of bus to own a name on.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The well-known name to own.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>A set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_acquired_handler</code></em> :</span></p></td>
+<td>Handler to invoke when connected to the bus of type <em class="parameter"><code>bus_type</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_acquired_handler</code></em> :</span></p></td>
+<td>Handler to invoke when <em class="parameter"><code>name</code></em> is acquired or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_lost_handler</code></em> :</span></p></td>
+<td>Handler to invoke when <em class="parameter"><code>name</code></em> is lost or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data to pass to handlers.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data_free_func</code></em> :</span></p></td>
+<td>Function for freeing <em class="parameter"><code>user_data</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>An identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name-on-connection"></a><h3>g_bus_own_name_on_connection ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               g_bus_own_name_on_connection        (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()"><span class="type">GBusNameAcquiredCallback</span></a> name_acquired_handler</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()"><span class="type">GBusNameLostCallback</span></a> name_lost_handler</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);</pre>
+<p>
+Like <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> but takes a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> instead of a
+<a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The well-known name to own.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>A set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_acquired_handler</code></em> :</span></p></td>
+<td>Handler to invoke when <em class="parameter"><code>name</code></em> is acquired or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_lost_handler</code></em> :</span></p></td>
+<td>Handler to invoke when <em class="parameter"><code>name</code></em> is lost or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>User data to pass to handlers.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data_free_func</code></em> :</span></p></td>
+<td>Function for freeing <em class="parameter"><code>user_data</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>An identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-unown-name"></a><h3>g_bus_unown_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_bus_unown_name                    (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> owner_id</code></em>);</pre>
+<p>
+Stops owning a name.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>owner_id</code></em> :</span></p></td>
+<td>An identifier obtained from <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name-with-closures"></a><h3>g_bus_own_name_with_closures ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               g_bus_own_name_with_closures        (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *bus_acquired_closure</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_acquired_closure</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_lost_closure</code></em>);</pre>
+<p>
+Version of <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> using closures instead of callbacks for
+easier binding in other languages.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_type</code></em> :</span></p></td>
+<td>The type of bus to own a name on.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The well-known name to own.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>A set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_acquired_closure</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when connected to
+the bus of type <em class="parameter"><code>bus_type</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_acquired_closure</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em> is
+acquired or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_lost_closure</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em> is lost or
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>An identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.
+Rename to: g_bus_own_name</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name-on-connection-with-closures"></a><h3>g_bus_own_name_on_connection_with_closures ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               g_bus_own_name_on_connection_with_closures
+                                                        (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_acquired_closure</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_lost_closure</code></em>);</pre>
+<p>
+Version of <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()"><code class="function">g_bus_own_name_on_connection()</code></a> using closures instead of callbacks for
+easier binding in other languages.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The well-known name to own.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>A set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_acquired_closure</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em> is
+acquired or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name_lost_closure</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em> is lost or
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>An identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.
+Rename to: g_bus_own_name_on_connection</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

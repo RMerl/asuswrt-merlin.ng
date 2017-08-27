@@ -1,0 +1,381 @@
+<!-- ##### SECTION Title ##### -->
+Commandline option parser
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GOptionError ##### -->
+<para>
+
+</para>
+
+@G_OPTION_ERROR_UNKNOWN_OPTION: 
+@G_OPTION_ERROR_BAD_VALUE: 
+@G_OPTION_ERROR_FAILED: 
+
+<!-- ##### MACRO G_OPTION_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### USER_FUNCTION GOptionArgFunc ##### -->
+<para>
+
+</para>
+
+@option_name: 
+@value: 
+@data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### STRUCT GOptionContext ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_option_context_new ##### -->
+<para>
+
+</para>
+
+@parameter_string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_context_set_summary ##### -->
+<para>
+
+</para>
+
+@context: 
+@summary: 
+
+
+<!-- ##### FUNCTION g_option_context_get_summary ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_context_set_description ##### -->
+<para>
+
+</para>
+
+@context: 
+@description: 
+
+
+<!-- ##### FUNCTION g_option_context_get_description ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GTranslateFunc ##### -->
+<para>
+
+</para>
+
+@str: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_context_set_translate_func ##### -->
+<para>
+
+</para>
+
+@context: 
+@func: 
+@data: 
+@destroy_notify: 
+
+
+<!-- ##### FUNCTION g_option_context_set_translation_domain ##### -->
+<para>
+
+</para>
+
+@context: 
+@domain: 
+
+
+<!-- ##### FUNCTION g_option_context_free ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_option_context_parse ##### -->
+<para>
+
+</para>
+
+@context: 
+@argc: 
+@argv: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_context_set_help_enabled ##### -->
+<para>
+
+</para>
+
+@context: 
+@help_enabled: 
+
+
+<!-- ##### FUNCTION g_option_context_get_help_enabled ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_context_set_ignore_unknown_options ##### -->
+<para>
+
+</para>
+
+@context: 
+@ignore_unknown: 
+
+
+<!-- ##### FUNCTION g_option_context_get_ignore_unknown_options ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_context_get_help ##### -->
+<para>
+
+</para>
+
+@context: 
+@main_help: 
+@group: 
+@Returns: 
+
+
+<!-- ##### ENUM GOptionArg ##### -->
+<para>
+
+</para>
+
+@G_OPTION_ARG_NONE: 
+@G_OPTION_ARG_STRING: 
+@G_OPTION_ARG_INT: 
+@G_OPTION_ARG_CALLBACK: 
+@G_OPTION_ARG_FILENAME: 
+@G_OPTION_ARG_STRING_ARRAY: 
+@G_OPTION_ARG_FILENAME_ARRAY: 
+@G_OPTION_ARG_DOUBLE: 
+@G_OPTION_ARG_INT64: 
+
+<!-- ##### ENUM GOptionFlags ##### -->
+<para>
+
+</para>
+
+@G_OPTION_FLAG_HIDDEN: 
+@G_OPTION_FLAG_IN_MAIN: 
+@G_OPTION_FLAG_REVERSE: 
+@G_OPTION_FLAG_NO_ARG: 
+@G_OPTION_FLAG_FILENAME: 
+@G_OPTION_FLAG_OPTIONAL_ARG: 
+@G_OPTION_FLAG_NOALIAS: 
+
+<!-- ##### MACRO G_OPTION_REMAINING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GOptionEntry ##### -->
+<para>
+
+</para>
+
+@long_name: 
+@short_name: 
+@flags: 
+@arg: 
+@arg_data: 
+@description: 
+@arg_description: 
+
+<!-- ##### FUNCTION g_option_context_add_main_entries ##### -->
+<para>
+
+</para>
+
+@context: 
+@entries: 
+@translation_domain: 
+
+
+<!-- ##### STRUCT GOptionGroup ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_option_context_add_group ##### -->
+<para>
+
+</para>
+
+@context: 
+@group: 
+
+
+<!-- ##### FUNCTION g_option_context_set_main_group ##### -->
+<para>
+
+</para>
+
+@context: 
+@group: 
+
+
+<!-- ##### FUNCTION g_option_context_get_main_group ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_group_new ##### -->
+<para>
+
+</para>
+
+@name: 
+@description: 
+@help_description: 
+@user_data: 
+@destroy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_group_free ##### -->
+<para>
+
+</para>
+
+@group: 
+
+
+<!-- ##### FUNCTION g_option_group_add_entries ##### -->
+<para>
+
+</para>
+
+@group: 
+@entries: 
+
+
+<!-- ##### USER_FUNCTION GOptionParseFunc ##### -->
+<para>
+
+</para>
+
+@context: 
+@group: 
+@data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_option_group_set_parse_hooks ##### -->
+<para>
+
+</para>
+
+@group: 
+@pre_parse_func: 
+@post_parse_func: 
+
+
+<!-- ##### USER_FUNCTION GOptionErrorFunc ##### -->
+<para>
+
+</para>
+
+@context: 
+@group: 
+@data: 
+@error: 
+
+
+<!-- ##### FUNCTION g_option_group_set_error_hook ##### -->
+<para>
+
+</para>
+
+@group: 
+@error_func: 
+
+
+<!-- ##### FUNCTION g_option_group_set_translate_func ##### -->
+<para>
+
+</para>
+
+@group: 
+@func: 
+@data: 
+@destroy_notify: 
+
+
+<!-- ##### FUNCTION g_option_group_set_translation_domain ##### -->
+<para>
+
+</para>
+
+@group: 
+@domain: 
+
+

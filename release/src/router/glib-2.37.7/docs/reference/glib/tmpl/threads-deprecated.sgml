@@ -1,0 +1,419 @@
+<!-- ##### SECTION Title ##### -->
+Deprecated Thread APIs
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_THREADS_IMPL_POSIX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_THREADS_IMPL_WIN32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_thread_init ##### -->
+<para>
+
+</para>
+
+@vtable: 
+
+
+<!-- ##### FUNCTION g_thread_supported ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_get_initialized ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_create ##### -->
+<para>
+
+</para>
+
+@func: 
+@data: 
+@joinable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_thread_create_full ##### -->
+<para>
+
+</para>
+
+@func: 
+@data: 
+@stack_size: 
+@joinable: 
+@bound: 
+@priority: 
+@error: 
+@Returns: 
+
+
+<!-- ##### ENUM GThreadPriority ##### -->
+<para>
+
+</para>
+
+@G_THREAD_PRIORITY_LOW: 
+@G_THREAD_PRIORITY_NORMAL: 
+@G_THREAD_PRIORITY_HIGH: 
+@G_THREAD_PRIORITY_URGENT: 
+
+<!-- ##### FUNCTION g_thread_set_priority ##### -->
+<para>
+
+</para>
+
+@thread: 
+@priority: 
+
+
+<!-- ##### FUNCTION g_thread_foreach ##### -->
+<para>
+
+</para>
+
+@thread_func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mutex_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mutex_free ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_cond_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION g_cond_free ##### -->
+<para>
+
+</para>
+
+@cond: 
+
+
+<!-- ##### FUNCTION g_private_new ##### -->
+<para>
+
+</para>
+
+@notify: 
+@Returns: 
+
+
+<!-- ##### STRUCT GStaticMutex ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_STATIC_MUTEX_INIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_static_mutex_init ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_static_mutex_lock ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_static_mutex_trylock ##### -->
+<para>
+
+</para>
+
+@mutex: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_mutex_unlock ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_static_mutex_get_mutex ##### -->
+<para>
+
+</para>
+
+@mutex: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_mutex_free ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### STRUCT GStaticRecMutex ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_STATIC_REC_MUTEX_INIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_init ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_lock ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_trylock ##### -->
+<para>
+
+</para>
+
+@mutex: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_unlock ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_lock_full ##### -->
+<para>
+
+</para>
+
+@mutex: 
+@depth: 
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_unlock_full ##### -->
+<para>
+
+</para>
+
+@mutex: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_rec_mutex_free ##### -->
+<para>
+
+</para>
+
+@mutex: 
+
+
+<!-- ##### STRUCT GStaticRWLock ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_STATIC_RW_LOCK_INIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_static_rw_lock_init ##### -->
+<para>
+
+</para>
+
+@lock: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_reader_lock ##### -->
+<para>
+
+</para>
+
+@lock: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_reader_trylock ##### -->
+<para>
+
+</para>
+
+@lock: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_reader_unlock ##### -->
+<para>
+
+</para>
+
+@lock: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_writer_lock ##### -->
+<para>
+
+</para>
+
+@lock: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_writer_trylock ##### -->
+<para>
+
+</para>
+
+@lock: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_writer_unlock ##### -->
+<para>
+
+</para>
+
+@lock: 
+
+
+<!-- ##### FUNCTION g_static_rw_lock_free ##### -->
+<para>
+
+</para>
+
+@lock: 
+
+
+<!-- ##### STRUCT GStaticPrivate ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_STATIC_PRIVATE_INIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_static_private_init ##### -->
+<para>
+
+</para>
+
+@private_key: 
+
+
+<!-- ##### FUNCTION g_static_private_get ##### -->
+<para>
+
+</para>
+
+@private_key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_private_set ##### -->
+<para>
+
+</para>
+
+@private_key: 
+@data: 
+@notify: 
+
+
+<!-- ##### FUNCTION g_static_private_free ##### -->
+<para>
+
+</para>
+
+@private_key: 
+
+

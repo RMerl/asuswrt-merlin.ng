@@ -1,0 +1,6 @@
+# Run system activity accounting tool every @CRON_INTERVAL@ minutes
+*/@CRON_INTERVAL@ * * * * @CRON_OWNER@ @SA_LIB_DIR@/sa1 1 1
+# 0 * * * * @CRON_OWNER@ @SA_LIB_DIR@/sa1 @CRON_INTERVAL_SEC@ @CRON_COUNT@ &
+# Generate a daily summary of process accounting at 23:53
+53 23 * * * @CRON_OWNER@ @SA_LIB_DIR@/sa2 -A
+

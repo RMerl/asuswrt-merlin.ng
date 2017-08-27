@@ -1,0 +1,17 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  Kerberos.  See doc/rlm_krb5 for minimal docs.
+#
+krb5 {
+	keytab = /path/to/keytab
+	service_principal = name_of_principle
+
+	#
+	#  The kerberos replay cache isn't needed for password verification
+	#  operations, and may cause an unnecessary performance bottleneck.
+	#
+	cache = no
+}

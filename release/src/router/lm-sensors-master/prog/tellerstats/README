@@ -1,0 +1,44 @@
+This is tellerstats Version 1.9.2
+
+
+Author: Phil Edelbrock <phil@netroedge.com>
+with Changes by 
+   Mark D. Studebaker <mdsxyz123@yahoo.com> and
+   Hans Ecke <hans@ecke.ws>
+
+
+Required Utilities and Packages:
+
+	apache or other web server
+
+	'convert' from ImageMagick or X11
+		http://www.imagemagick.org
+
+	'bc' command line calculator
+
+	gnuplot
+		http://www.gnuplot.org
+
+	lm_sensors
+
+	perl
+
+
+Follow those steps to install tellerstats:
+
+
+* Put the following line into your /etc/crontab file
+
+       */5 * * * * root /usr/local/install/tellerstats/gather.sh
+       
+  (change the directory to reflect where you installed gather.sh)     
+
+* Link tellerstats.sh to /etc/cron.hourly/tellerstats.sh
+
+* move index.shtml into a directory accessible with a webbrowser
+  and configure your webserver for SSI (server side includes)
+ 
+* move tellerstats.conf to /etc and edit it to reflect correct directories
+
+
+

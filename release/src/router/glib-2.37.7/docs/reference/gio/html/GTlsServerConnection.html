@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GTlsServerConnection</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="GTlsClientConnection.html" title="GTlsClientConnection">
+<link rel="next" href="GTlsBackend.html" title="GTlsBackend">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GTlsServerConnection.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GTlsServerConnection.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GTlsServerConnection.prerequisites" class="shortcut">Prerequisites</a>
+                   | 
+                  <a href="#GTlsServerConnection.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GTlsClientConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsBackend.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTlsServerConnection"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTlsServerConnection.top_of_page"></a>GTlsServerConnection</span></h2>
+<p>GTlsServerConnection — TLS server-side connection</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GTlsServerConnection.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GTlsServerConnection.html#GTlsServerConnection-struct" title="GTlsServerConnection">GTlsServerConnection</a>;
+struct              <a class="link" href="GTlsServerConnection.html#GTlsServerConnectionInterface" title="struct GTlsServerConnectionInterface">GTlsServerConnectionInterface</a>;
+<a class="link" href="GIOStream.html" title="GIOStream"><span class="returnvalue">GIOStream</span></a> *         <a class="link" href="GTlsServerConnection.html#g-tls-server-connection-new" title="g_tls_server_connection_new ()">g_tls_server_connection_new</a>         (<em class="parameter"><code><a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> *base_io_stream</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *certificate</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsServerConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----GTlsServerConnection
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsServerConnection.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GTlsServerConnection requires
+ <a class="link" href="GTlsConnection.html" title="GTlsConnection">GTlsConnection</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTlsServerConnection.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GTlsServerConnection.html#GTlsServerConnection--authentication-mode" title='The "authentication-mode" property'>authentication-mode</a>"      <a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode"><span class="type">GTlsAuthenticationMode</span></a>  : Read / Write
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsServerConnection.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> is the server-side subclass of <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a>,
+representing a server-side TLS connection.
+</p>
+</div>
+<div class="refsect1">
+<a name="GTlsServerConnection.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GTlsServerConnection-struct"></a><h3>GTlsServerConnection</h3>
+<pre class="programlisting">typedef struct _GTlsServerConnection GTlsServerConnection;</pre>
+<p>
+TLS server-side connection. This is the server-side implementation
+of a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a>.
+</p>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsServerConnectionInterface"></a><h3>struct GTlsServerConnectionInterface</h3>
+<pre class="programlisting">struct GTlsServerConnectionInterface {
+  GTypeInterface g_iface;
+};
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-server-connection-new"></a><h3>g_tls_server_connection_new ()</h3>
+<pre class="programlisting"><a class="link" href="GIOStream.html" title="GIOStream"><span class="returnvalue">GIOStream</span></a> *         g_tls_server_connection_new         (<em class="parameter"><code><a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> *base_io_stream</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *certificate</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> wrapping <em class="parameter"><code>base_io_stream</code></em> (which
+must have pollable input and output streams).
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>base_io_stream</code></em> :</span></p></td>
+<td>the <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> to wrap</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>certificate</code></em> :</span></p></td>
+<td>the default server certificate, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new
+<a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GTlsServerConnection]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsServerConnection.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GTlsServerConnection--authentication-mode"></a><h3>The <code class="literal">"authentication-mode"</code> property</h3>
+<pre class="programlisting">  "authentication-mode"      <a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode"><span class="type">GTlsAuthenticationMode</span></a>  : Read / Write</pre>
+<p>
+The <a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode"><span class="type">GTlsAuthenticationMode</span></a> for the server. This can be changed
+before calling <a class="link" href="GTlsConnection.html#g-tls-connection-handshake" title="g_tls_connection_handshake ()"><code class="function">g_tls_connection_handshake()</code></a> if you want to
+rehandshake with a different mode from the initial handshake.
+</p>
+<p>Default value: G_TLS_AUTHENTICATION_NONE</p>
+<p class="since">Since 2.28</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

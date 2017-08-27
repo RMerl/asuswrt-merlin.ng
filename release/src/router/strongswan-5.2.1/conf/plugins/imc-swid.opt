@@ -1,0 +1,11 @@
+libimcv.plugins.imc-swid.swid_directory = ${prefix}/share
+	Directory where SWID tags are located.
+
+libimcv.plugins.imc-swid.swid_generator = /usr/local/bin/swid_generator
+	SWID generator command to be executed.
+
+libimcv.plugins.imc-swid.swid_pretty = FALSE
+	Generate XML-encoded SWID tags with pretty indentation.
+
+libimcv.plugins.imc-swid.swid_full = FALSE
+	Include file information in the XML-encoded SWID tags.

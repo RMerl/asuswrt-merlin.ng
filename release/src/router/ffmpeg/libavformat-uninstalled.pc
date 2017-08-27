@@ -1,0 +1,12 @@
+prefix=
+exec_prefix=
+libdir=${pcfiledir}/libavformat
+includedir=${pcfiledir}
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 52.13.0
+Requires:  libavcodec = 51.54.0
+Conflicts:
+Libs: ${libdir}/libavformat.a  -L/home/magic/asuswrt-router-mtk-AC1200GA1-complie/release/src-ra-4300/router/zlib -lz  -lm -ldl
+Cflags: -I${includedir}

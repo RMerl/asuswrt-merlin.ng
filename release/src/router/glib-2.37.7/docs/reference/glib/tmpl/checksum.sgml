@@ -1,0 +1,142 @@
+<!-- ##### SECTION Title ##### -->
+Data Checksums
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GChecksumType ##### -->
+<para>
+
+</para>
+
+@G_CHECKSUM_MD5: 
+@G_CHECKSUM_SHA1: 
+@G_CHECKSUM_SHA256: 
+@G_CHECKSUM_SHA512: 
+
+<!-- ##### FUNCTION g_checksum_type_get_length ##### -->
+<para>
+
+</para>
+
+@checksum_type: 
+@Returns: 
+
+
+<!-- ##### STRUCT GChecksum ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_checksum_new ##### -->
+<para>
+
+</para>
+
+@checksum_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_checksum_copy ##### -->
+<para>
+
+</para>
+
+@checksum: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_checksum_free ##### -->
+<para>
+
+</para>
+
+@checksum: 
+
+
+<!-- ##### FUNCTION g_checksum_reset ##### -->
+<para>
+
+</para>
+
+@checksum: 
+
+
+<!-- ##### FUNCTION g_checksum_update ##### -->
+<para>
+
+</para>
+
+@checksum: 
+@data: 
+@length: 
+
+
+<!-- ##### FUNCTION g_checksum_get_string ##### -->
+<para>
+
+</para>
+
+@checksum: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_checksum_get_digest ##### -->
+<para>
+
+</para>
+
+@checksum: 
+@buffer: 
+@digest_len: 
+
+
+<!-- ##### FUNCTION g_compute_checksum_for_data ##### -->
+<para>
+
+</para>
+
+@checksum_type: 
+@data: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_compute_checksum_for_string ##### -->
+<para>
+
+</para>
+
+@checksum_type: 
+@str: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_compute_checksum_for_bytes ##### -->
+<para>
+
+</para>
+
+@checksum_type: 
+@data: 
+@Returns: 
+
+

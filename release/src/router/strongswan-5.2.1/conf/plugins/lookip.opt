@@ -1,0 +1,2 @@
+charon.plugins.lookip.socket = unix://${piddir}/charon.lkp
+	Socket provided by the lookip plugin.

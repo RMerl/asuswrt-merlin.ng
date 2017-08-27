@@ -1,0 +1,400 @@
+<!-- ##### SECTION Title ##### -->
+Lexical Scanner
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GScanner ##### -->
+<para>
+
+</para>
+
+@user_data: 
+@max_parse_errors: 
+@parse_errors: 
+@input_name: 
+@qdata: 
+@config: 
+@token: 
+@value: 
+@line: 
+@position: 
+@next_token: 
+@next_value: 
+@next_line: 
+@next_position: 
+@msg_handler: 
+
+<!-- ##### STRUCT GScannerConfig ##### -->
+<para>
+
+</para>
+
+@cset_skip_characters: 
+@cset_identifier_first: 
+@cset_identifier_nth: 
+@cpair_comment_single: 
+@case_sensitive: 
+@skip_comment_multi: 
+@skip_comment_single: 
+@scan_comment_multi: 
+@scan_identifier: 
+@scan_identifier_1char: 
+@scan_identifier_NULL: 
+@scan_symbols: 
+@scan_binary: 
+@scan_octal: 
+@scan_float: 
+@scan_hex: 
+@scan_hex_dollar: 
+@scan_string_sq: 
+@scan_string_dq: 
+@numbers_2_int: 
+@int_2_float: 
+@identifier_2_string: 
+@char_2_token: 
+@symbol_2_token: 
+@scope_0_fallback: 
+@store_int64: 
+
+<!-- ##### FUNCTION g_scanner_new ##### -->
+<para>
+
+</para>
+
+@config_templ: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_destroy ##### -->
+<para>
+
+</para>
+
+@scanner: 
+
+
+<!-- ##### FUNCTION g_scanner_input_file ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@input_fd: 
+
+
+<!-- ##### FUNCTION g_scanner_sync_file_offset ##### -->
+<para>
+
+</para>
+
+@scanner: 
+
+
+<!-- ##### FUNCTION g_scanner_input_text ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@text: 
+@text_len: 
+
+
+<!-- ##### FUNCTION g_scanner_peek_next_token ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_get_next_token ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_eof ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_cur_line ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_cur_position ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_cur_token ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_cur_value ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_set_scope ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@scope_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_scope_add_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@scope_id: 
+@symbol: 
+@value: 
+
+
+<!-- ##### FUNCTION g_scanner_scope_foreach_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@scope_id: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_scanner_scope_lookup_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@scope_id: 
+@symbol: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_scope_remove_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@scope_id: 
+@symbol: 
+
+
+<!-- ##### MACRO g_scanner_add_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@symbol: 
+@value: 
+
+
+<!-- ##### MACRO g_scanner_remove_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@symbol: 
+
+
+<!-- ##### MACRO g_scanner_foreach_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@func: 
+@data: 
+
+
+<!-- ##### MACRO g_scanner_freeze_symbol_table ##### -->
+<para>
+
+</para>
+
+@scanner: 
+
+
+<!-- ##### MACRO g_scanner_thaw_symbol_table ##### -->
+<para>
+
+</para>
+
+@scanner: 
+
+
+<!-- ##### FUNCTION g_scanner_lookup_symbol ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@symbol: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_scanner_warn ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_scanner_error ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_scanner_unexp_token ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@expected_token: 
+@identifier_spec: 
+@symbol_spec: 
+@symbol_name: 
+@message: 
+@is_error: 
+
+
+<!-- ##### USER_FUNCTION GScannerMsgFunc ##### -->
+<para>
+
+</para>
+
+@scanner: 
+@message: 
+@error: 
+
+
+<!-- ##### MACRO G_CSET_a_2_z ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_CSET_A_2_Z ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_CSET_DIGITS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_CSET_LATINC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_CSET_LATINS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GTokenType ##### -->
+<para>
+
+</para>
+
+@G_TOKEN_EOF: 
+@G_TOKEN_LEFT_PAREN: 
+@G_TOKEN_RIGHT_PAREN: 
+@G_TOKEN_LEFT_CURLY: 
+@G_TOKEN_RIGHT_CURLY: 
+
+<!-- ##### UNION GTokenValue ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GErrorType ##### -->
+<para>
+
+</para>
+
+@G_ERR_UNKNOWN: 
+@G_ERR_UNEXP_EOF: 
+@G_ERR_UNEXP_EOF_IN_STRING: 
+@G_ERR_UNEXP_EOF_IN_COMMENT: 
+@G_ERR_NON_DIGIT_IN_CONST: 
+@G_ERR_DIGIT_RADIX: 
+@G_ERR_FLOAT_RADIX: 
+@G_ERR_FLOAT_MALFORMED: 
+

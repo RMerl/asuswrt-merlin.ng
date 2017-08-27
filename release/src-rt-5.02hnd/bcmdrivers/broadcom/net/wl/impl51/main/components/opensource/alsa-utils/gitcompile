@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if test -d ../alsa-lib/utils && ! test -r `aclocal --print-ac-dir`/alsa.m4; then
+  alsa_m4_flags="-I ../alsa-lib/utils"
+fi
+aclocal $alsa_m4_flags $ACLOCAL_FLAGS
+# save original files to avoid stupid modifications by gettextize
+cp Makefile.am Makefile.am.ok
+cp configure.in configure.in.ok
+gettextize -c -f --no-changelog
+echo "EXTRA_DIST = gettext.m4" > m4/Makefile.am
+cp Makefile.am.ok Makefile.am
+cp configure.in.ok configure.in
+autoheader
+automake --foreign --copy --add-missing
+touch depcomp		# for older automake
+autoconf
+export CFLAGS='-O2 -Wall -pipe -g'
+echo "CFLAGS=$CFLAGS"
+echo "./configure $@"
+./configure $@ || exit 1
+unset CFLAGS
+if [ -z "$GITCOMPILE_NO_MAKE" ]; then
+  make
+fi

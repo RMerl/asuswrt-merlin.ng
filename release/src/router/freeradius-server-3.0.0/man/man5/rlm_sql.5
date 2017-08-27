@@ -1,0 +1,152 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_sql 5 "5 February 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_sql \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_sql\fP module provides an SQL interface to retrieve
+authorization information and store accounting information.  It can be
+used in conjunction with, or in lieu of the files and detail modules.
+The SQL module has drivers to support the following SQL databases:
+.PP
+.DS
+.br
+     db2
+.br
+     iodbc
+.br
+     mysql
+.br
+     oracle
+.br
+     postgresql
+.br
+     sybase
+.br
+     unixodbc
+.br
+.DE
+.PP
+Due to the size of the configuration variables, the sql module is
+usually configured in a separate file, which is included in the main
+radiusd.conf via an include directive.
+.PP
+The main configuration items to be aware of are:
+.IP driver
+This variable specifies the driver to be loaded.
+.IP server
+.IP login
+.IP password
+These specify the servername, username, and password the module will
+use to connect to the database.
+.IP radius_db
+The name of the database where the radius tables are stored.
+.IP acct_table1
+.IP acct_table2
+These specify the tables names for accounting records.  acct_table1
+specifies the table where Start records are stored.  acct_table2
+specifies the table where Stop records are stored.  In most cases,
+this should be the same table.
+.IP postauth_table
+The name of the table to store post-authentication data.
+.IP authcheck_table
+.IP authreply_table
+The tables where individual Check-Items and Reply-Items are stored.
+.IP groupcheck_table
+.IP groupreply_table
+The tables where group Check-Items and Reply-Items are stored.
+.IP usergroup_table
+The table where username to group relationships are stored.
+.IP deletestatlesessions
+This option is set to 'yes' or 'no'.  If you are doing
+Simultaneous-Use checking, and this is set to yes, stale sessions (
+defined as sessions for which a Stop record was not received ) will be
+cleared.
+.IP logfile
+This option is useful for debugging sql problems.  If logfile is set
+then all sql queries for the containing section are written to the
+file specified.  This is useful for debugging and bulk inserts.
+.IP num_sql_socks
+The number of sql connections to make to the database.
+.IP connect_failure_retry_delay
+The number of seconds to wait before attempting to reconnect to a
+failed database connection.
+.IP sql_user_name
+This is the definition of the SQL-User-Name attribute.  This is set
+once, so that you can use %{SQL-User-Name} in the SQL queries, rather
+than the nested username substitution.  This ensures that Username is
+parsed consistently for all SQL queries executed.
+.IP default_user_profile
+This is the default profile name that will be applied to all users if
+set.  This is not set by default.
+.IP query_on_not_found
+This option is set to 'yes' or 'no'.  If set to yes, then the default
+user profile is returned if no specific match was found for the user.
+.IP authorize_check_query
+.IP authorize_reply_query
+These queries are run during the authorization stage to extract the
+user authorization information from the ${authcheck_table} and
+${authreply_table}.
+.IP authorize_group_check_query
+.IP authorize_group_reply_query
+These queries are run during the authorization stage to extract the
+group authorization information from the ${groupcheck_table} and
+${groupreply_table}.
+.IP accounting_onoff_query
+The query to be run when receiving an Accounting On or Accounting Off
+packet.
+.IP accounting_update_query
+.IP accounting_update_query_alt
+The query to be run when receiving an Accounting Update packet.  If the
+primary query fails, the alt query is run.
+.IP accounting_start_query
+.IP accounting_start_query_alt
+The query to be run when receiving an Accounting Start packet.  If the
+primary query fails, the alt query is run.
+.IP accounting_stop_query
+.IP accounting_stop_query_alt
+The query to be run when receiving an Accounting Stop packet.  If the
+primary query fails, the alt query is run.
+.IP simul_count_query
+The query to be run to return the number simultaneous sessions for the
+purposes of limiting Simultaneous Use.
+.IP simul_verify_query
+The query to return the detail information needed to confirm that all
+suspected connected sessions are valid, and are not stale sessions.
+.IP group_membership_query
+The query to run to check user group membership.
+.IP postauth_query
+The query to run during the post-authentication stage.
+.SH CONFIGURATION
+.PP
+Due to the size of the configuration for this module, it is not
+included in this manual page.  Please review the supplied
+configuration files for example queries and configuration details.
+.SH SECTIONS
+.BR authorization,
+.BR accounting,
+.BR checksimul,
+.BR post-authentication
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf,
+.I /etc/raddb/sql.conf,
+.I /etc/raddb/sql/<DB>/dialup.conf,
+.I /etc/raddb/sql/<DB>/schema.sql,
+.BR
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5),
+.SH AUTHORS
+Chris Parker, cparker@segv.org

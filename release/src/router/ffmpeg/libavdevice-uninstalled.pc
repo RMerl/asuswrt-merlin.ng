@@ -1,0 +1,12 @@
+prefix=
+exec_prefix=
+libdir=${pcfiledir}/libavdevice
+includedir=${pcfiledir}
+
+Name: libavdevice
+Description: FFmpeg device handling library
+Version: 52.0.0
+Requires:  libavformat = 52.13.0
+Conflicts:
+Libs: ${libdir}/libavdevice.a  -L/home/magic/asuswrt-router-mtk-AC1200GA1-complie/release/src-ra-4300/router/zlib -lz  -lm -ldl
+Cflags: -I${includedir}

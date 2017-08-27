@@ -1,0 +1,23 @@
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:gnome="http://api.gnome.org/doap-extensions#"
+         xmlns="http://usefulinc.com/ns/doap#">
+
+  <name xml:lang="en">libsoup</name>
+  <shortdesc xml:lang="en">HTTP client/server library for GNOME</shortdesc>
+  <description>libsoup is an HTTP client/server library for GNOME. It uses GObjects and the glib main loop, to integrate well with GNOME applications.</description>
+
+  <homepage rdf:resource="http://live.gnome.org/LibSoup" />
+  <download-page rdf:resource="http://download.gnome.org/sources/libsoup/"/>
+  <bug-database rdf:resource="http://bugzilla.gnome.org/browse.cgi?product=libsoup"/>
+  <mailing-list rdf:resource="http://mail.gnome.org/mailman/listinfo/libsoup-list"/>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Dan Winship</foaf:name>
+      <foaf:mbox rdf:resource="mailto:danw@gnome.org" />
+      <gnome:userid>danw</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+</Project>

@@ -1,0 +1,18 @@
+# -*- text -*-
+# Copyright (C) 2011 The FreeRADIUS Server project and contributors
+#
+#	NetworkPhysics dictionary
+#	$Id$
+#
+VENDOR		NetworkPhysics			7119
+
+BEGIN-VENDOR	NetworkPhysics
+
+ATTRIBUTE	NetSensory-Privilege			33	string
+
+#VALUE		NetSensory-Privilege		InsightsOnly	'insight'
+#VALUE		NetSensory-Privilege		Restricted	'npread'
+#VALUE		NetSensory-Privilege		Standard	'npuser'
+#VALUE		NetSensory-Privilege		Administrative	'npadmin'
+
+END-VENDOR	NetworkPhysics

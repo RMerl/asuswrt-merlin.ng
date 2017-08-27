@@ -1,0 +1,193 @@
+#
+#   Copyright (c) 2000, 2001, 2007	Dmitry Butskoy
+#					<buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#   Default a target`s Makefile. Useful for any things...
+#   For some changes, copy it to a dir where needed and edit that copy.
+#
+
+
+ifndef srcdir
+rul := Make.rules
+path := $(word 1, $(wildcard ../$(rul) ../../$(rul)))
+ifeq ($(path),../$(rul))
+srcdir = $(dir $(CURDIR))
+endif
+ifeq ($(path),../../$(rul))
+srcdir = $(dir $(patsubst %/,%,$(dir $(CURDIR))))
+TARGET = .MODULE
+endif
+ifeq ($(srcdir),)
+$(error Cannot find srcdir (where $(rul) exists))
+endif
+endif
+
+ifndef TARGET
+TARGET = $(notdir $(CURDIR))
+endif
+
+include $(srcdir)/Make.rules
+
+
+#
+#	LIBDIRS	    DEFAULTS
+#
+ifeq ($(filter $(TARGET),$(LIBDIRS)),$(TARGET))
+
+ifeq ($(shared),yes)
+
+all: $(TARGET).so
+
+$(TARGET).so: $(OBJS)
+	$(CC) -shared -o $@ -Wl,-soname -Wl,$@ $(OBJS)
+
+else
+
+all: $(TARGET).a
+
+$(TARGET).a: $(OBJS)
+	rm -f $@
+	$(AR) -rc $@ $(OBJS)
+	$(RANLIB) $@
+
+endif
+
+install_what = $(wildcard $(TARGET).so $(TARGET).a)
+install_dir = $(libdir)
+install_includes = $(wildcard *.h)
+
+cross_stamp_file = $(wildcard .cross:*)
+ifeq ($(cross_stamp_file),)
+cross_stamp = .cross:
+else
+cross_stamp = $(cross_stamp_file)
+endif
+new_stamp = .cross:$(subst $(empty) ,:,$(CROSS))
+ifneq ($(cross_stamp),$(new_stamp))
+
+$(OBJS): force
+
+force:
+	rm -f $(cross_stamp) > $(new_stamp)
+	@rm -f *.o *.a *.lo *.so
+
+endif
+
+endif
+
+
+#
+#	MODDIRS	    DEFAULTS
+#
+ifeq ($(filter $(TARGET),$(MODDIRS)),$(TARGET))
+
+modules = $(filter-out $(SKIPDIRS), $(patsubst %/,%,$(wildcard */)))
+
+.PHONY: $(modules)
+
+what = all
+depend: what = depend
+clean: what = clean
+
+all depend clean: $(modules)
+
+$(modules): mkfile = $(if $(wildcard $@/Makefile),,-f $(srcdir)/default.rules)
+
+$(modules): force
+	@$(MAKE) $(mkfile) -C $@ $(what) TARGET=.MODULE MODULE=$@
+
+force:
+
+install_what = $(wildcard *.so)
+install_dir = $(libexecdir)
+
+endif
+
+
+#
+#	MODDIRS` subdirectories (i.e., modules) defaults
+#
+ifeq ($(TARGET),.MODULE)
+
+ifndef MODULE
+MODULE = $(notdir $(CURDIR))
+endif
+
+ifeq ($(shared),yes)
+
+all: ../$(MODULE).so
+
+../$(MODULE).so: $(OBJS) $(LIBDEPS)
+	$(CC) -shared -o $@ $(OBJS) $(LIBS)
+
+else
+
+all: ../$(MODULE).o
+
+../$(MODULE).o: $(OBJS)
+	$(LD) -r -o $@ $(OBJS)
+
+endif
+
+endif
+
+
+#
+#	EXEDIRS	    DEFAULTS	(for usual executables)
+#
+ifeq ($(filter $(TARGET),$(EXEDIRS)),$(TARGET))
+
+ifeq ($(filter $(TARGET),$(MODUSERS)),$(TARGET))
+MOD_OBJS = $(wildcard $(foreach dir,$(MODDIRS),$(srcdir)/$(dir)/*.o))
+ifeq ($(shared),yes)
+override LDFLAGS := -rdynamic $(LDFLAGS)
+endif
+install_includes= $(wildcard $(foreach dir,$(INCLUDEDIRS),$(srcdir)/$(dir)/*.h))
+install_includes:= $(filter-out $(srcdir)/include/version.h,$(install_includes))
+else
+MOD_OBJS =
+endif
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS) $(MOD_OBJS) $(LIBDEPS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(MOD_OBJS) $(LIBS)
+
+install_what = $(wildcard $(TARGET))
+install_dir = $(if $(filter $(TARGET),$(SBINUSERS)),$(sbindir),$(bindir))
+
+endif
+
+
+#
+#	Install  stuff
+#
+
+install_manuals = $(wildcard *.[0-9] *.[0-9]?)
+
+
+install:
+ifneq ($(install_dir),)
+	@mkdir -p $(DESTDIR)$(install_dir)
+endif
+ifneq ($(install_what),)
+	$(INSTALL) $(install_what) $(DESTDIR)$(install_dir)
+endif
+ifneq ($(install_includes),)
+	@mkdir -p $(DESTDIR)$(includedir)
+	$(INSTALL) $(install_includes) $(DESTDIR)$(includedir)
+endif
+	@true
+ifneq ($(install_manuals),)
+	$(foreach man,$(install_manuals),$(call inst_man,$(man)))
+define inst_man
+@mkdir -p $(DESTDIR)$(mandir)/man$(patsubst .%,%,$(suffix $(1)))
+	cp -f $(1) $(DESTDIR)$(mandir)/man$(patsubst .%,%,$(suffix $(1)))
+	
+endef
+endif

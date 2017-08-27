@@ -1,0 +1,4 @@
+#!/bin/sh
+for i in /etc/init.d/S*; do
+  $i start 2>&1
+done | logger -s -p 6 -t '' &

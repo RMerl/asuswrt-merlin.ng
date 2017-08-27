@@ -1,0 +1,195 @@
+# NLS support for the sysstat package.
+# Copyright (C) 1999 Free Software Foundation, Inc.
+# Sébastien GODARD <sysstat [at] orange.fr>, 1999.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 1.1\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2007-12-19 14:02+0100\n"
+"PO-Revision-Date: 1999-05-28 20:27\n"
+"Last-Translator: Frederic L. W. Meunier <linux@olympiquedemarseille.org>\n"
+"Language-Team: Brazilian portuguese <lie-br@conectiva.com.br>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat versão %s\n"
+
+#: common.c:160 common.c:385 ioconf.c:459 mpstat.c:265 sa_common.c:601
+#: sadc.c:476 sadc.c:485 sadc.c:530 sadc.c:620
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Impossível abrir %s: %s\n"
+
+#: common.c:199
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Não posso usar tantos processadores!\n"
+
+#: iostat.c:74
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+msgstr ""
+"Utilização: %s [ opções... ] [ <intervalo> [ <número_de_vezes> ] ]\n"
+"Opções são:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+
+#: iostat.c:1119
+#, c-format
+msgid "Time: %s\n"
+msgstr "Hora: %s\n"
+
+#: iostat.c:1435
+#, c-format
+msgid "-x and -p options are mutually exclusive\n"
+msgstr "As opções -x e -p não podem ser utilizadas juntas\n"
+
+#: mpstat.c:66
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -P { <cpu> | ALL } ] [ -V ]\n"
+msgstr ""
+"Utilização: %s [ opções... ] [ <intervalo> [ <número_de_vezes> ] ]\n"
+"Opções são:\n"
+"[ -P { <cpu> | ALL } ] [ -V ]\n"
+
+# sar.c:
+#: mpstat.c:226 pidstat.c:1148 sar.c:740
+msgid "Average:"
+msgstr "Média:"
+
+#: mpstat.c:563 sar.c:157
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Não tantos processadores!\n"
+
+#: pidstat.c:72
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -C <comm> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Utilização: %s [ opções... ] [ <intervalo> [ <número_de_vezes> ] ]\n"
+"Opções são:\n"
+"[ -C <comm> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:166 sar.c:1419
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "Atividades pedidas não estão disponíveis\n"
+
+#: sa_common.c:572
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Erro durante a leitura do arquivo de atividade do sistema: %s\n"
+
+#: sa_common.c:581
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Fim do arquivo de atividade do sistema inesperado\n"
+
+#: sa_common.c:608 sadc.c:549
+#, c-format
+msgid "Invalid system activity file: %s (%#x)\n"
+msgstr "Arquivo de atividade do sistema inválido: %s (%#x)\n"
+
+#: sa_common.c:632
+#, c-format
+msgid "Requested activities not available in file\n"
+msgstr "Atividades pedidas não foram gravadas no arquivo\n"
+
+#: sadc.c:83
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+"Options are:\n"
+"[ -C <comment> ] [ -d ] [ -F ] [ -I ] [ -V ]\n"
+msgstr ""
+"Utilização: %s [ opções... ] [ <intervalo> [ <número_de_vezes> ] ] [ <arquivo> ]\n"
+"Opções são:\n"
+"[ -C <comment> ] [ -d ] [ -F ] [ -I ] [ -V ]\n"
+
+#: sadc.c:110
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Impossível escrever os dados no arquivo de atividade do sistema: %s\n"
+
+#: sadc.c:361
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Impossível escrever cabeçalho do arquivo de atividade do sistema: %s\n"
+
+#: sadc.c:568
+#, c-format
+msgid "Cannot append data to that file\n"
+msgstr "Não posso adicionar dados neste arquivo\n"
+
+#: sadf.c:78
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+"Options are:\n"
+"[ -d | -D | -H | -p | -x ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options...> ]\n"
+msgstr ""
+"Utilização: %s [ opções... ] [ <intervalo> [ <número_de_vezes> ] ] [ <arquivo> ]\n"
+"Opções são:\n"
+"[ -d | -D | -H | -p | -x ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_opções...> ]\n"
+
+#: sar.c:76
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -c ] [ -C ] [ -d ] [ -i <interval> ] [ -p ] [ -q ]\n"
+"[ -r ] [ -R ] [ -t ] [ -u ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <irq> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Utilização: %s [ opções... ] [ <intervalo> [ <número_de_vezes> ] ]\n"
+"Possíveis opções:\n"
+"[ -A ] [ -b ] [ -B ] [ -c ] [ -C ] [ -d ] [ -i <intervalo> ] [ -p ] [ -q ]\n"
+"[ -r ] [ -R ] [ -t ] [ -u ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <irq> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <arquivo> ] | -f [ <arquivo> ] ]\n"
+"[ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:149
+#, c-format
+msgid "Not an SMP machine...\n"
+msgstr "Não é uma máquina multiprocessadora...\n"
+
+#: sar.c:1261
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Formato de dados inválido\n"
+
+#: sar.c:1633
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "As opções -f e -o não podem ser utilizadas juntas\n"
+
+#: sar.c:1639
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Não lendo de um arquivo de atividade do sistema (utilize a opção -f)\n"

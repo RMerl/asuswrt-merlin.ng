@@ -1,0 +1,15 @@
+.TH _UPDOWN_ESPMARK 8 "7 Apr 2005"
+.SH NAME
+ipsec _updown_espmark \- manages routes and firewall rules
+.SH SYNOPSIS
+.I _updown_espmark
+is invoked by pluto when it has brought up a new connection. This script
+is used to insert the appropriate routing and iptables firewall entries for
+IPsec operation. The incoming ESP traffic must be marked by a static rule
+in the mangle table. The default value for the mark is 50.
+The interface to the script is documented in the pluto man page.
+.SH "SEE ALSO"
+ipsec(8), ipsec_pluto(8).
+.SH HISTORY
+Man page written for the Linux strongSwan project <http://www.strongswan.org/>
+by Andreas Steffen. Original program written by Henry Spencer.

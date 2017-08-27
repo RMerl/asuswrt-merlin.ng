@@ -1,0 +1,104 @@
+<!-- ##### SECTION Title ##### -->
+Numerical Definitions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_IEEE754_FLOAT_BIAS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_IEEE754_DOUBLE_BIAS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### UNION GFloatIEEE754 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### UNION GDoubleIEEE754 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_E ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_LN2 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_LN10 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PI ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PI_2 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PI_4 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_SQRT2 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_LOG_2_BASE_10 ##### -->
+<para>
+
+</para>
+
+
+

@@ -1,0 +1,17 @@
+$(SUBDIR)libpostproc/postprocess.o: libpostproc/postprocess.c \
+  /root/oleg/optware/builds/ffmpeg/config.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/avutil.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/common.h \
+  /root/oleg/optware/builds/ffmpeg/config.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/internal.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/intreadwrite.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/bswap.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/mem.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/mathematics.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/rational.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/intfloat_readwrite.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/log.h \
+  libpostproc/postprocess.h \
+  /root/oleg/optware/builds/ffmpeg/libavutil/avutil.h \
+  libpostproc/postprocess_internal.h libpostproc/postprocess_template.c \
+  /root/oleg/optware/builds/ffmpeg/libavutil/x86_cpu.h

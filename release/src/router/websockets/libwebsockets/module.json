@@ -1,0 +1,21 @@
+{
+  "name": "websockets",
+  "version": "1.5.0",
+  "description": "Libwebsockets",
+  "keywords": [
+    "lws",
+    "libwebsockets",
+    "websockets",
+    "ws"
+  ],
+  "author": "Andy Green <andy@warmcat.com>",
+  "homepage": "https://libwebsockets.org",
+  "license": "LGPL2.1-SLE",
+  
+  "extraIncludes": [ "build/frdm-k64f-gcc/generated/include" ],
+  "dependencies": {
+    "mbed-drivers": "^0.11.1",
+    "sal-stack-lwip": "^1.0.4",
+    "sockets": "^1.0.0"
+  }
+}

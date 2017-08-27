@@ -1,0 +1,88 @@
+
+                 ------------------------------
+                  strongSwan Integration Tests
+                 ------------------------------
+
+
+Contents
+--------
+
+   1. Building the testing environment
+   2. Starting up the testing environment
+   3. Running the automated tests
+   4. Manual testing
+
+
+1. Building the testing environment
+   --------------------------------
+
+The testing environment can be built with the "make-testing" script after
+adjusting the variables in the testing.conf file.  By default everything is
+built when executing the script.  Setting any of the ENABLE_BUILD_* variables
+in the configuration file to "no" will not build those parts.
+
+
+2. Starting up the testing environment
+   -----------------------------------
+
+When the strongSwan testing environment has been put into place by running
+the "make-testing" script you are ready to start up the KVM instances by
+executing the "start-testing" script.
+
+
+3. Running the automated tests
+   ---------------------------
+
+The script
+
+    ./do-tests <testnames>
+
+runs the automated tests.  If the <testnames> argument is omitted all tests
+are executed, otherwise only the tests listed will be run as shown in the
+example below:
+
+    ./do-tests ikev2/net2net-psk ikev2/net2net-cert
+
+Each test is divided into the following phases:
+
+    * Load the test-specific guest configuration if any is provided.
+
+    * Next the "pretest.dat" script found in each test directory is executed.
+      Among other commands, strongSwan is started on the IPsec hosts.
+
+    * The "evaltest.dat" script evaluates if the test has been successful.
+
+    * The "posttest.dat" script terminates the test e.g. by stopping
+      strongSwan on the IPsec hosts.  It is also responsible to cleaning up
+      things (e.g. firewall rules) set up in "pretest.dat".
+
+    * Restore the default configuration on every host (new files have to be
+      deleted manually in "posttest.dat").
+
+The test results and configuration files for all tests are stored in a
+folder labeled with the current date and time in the $TESTRESULTSDIR directory.
+
+The same results are also automatically transferred to the Apache server
+running on guest "winnetou" and can be accessed via the URL
+
+    http://192.168.0.150/testresults/
+
+
+4. Manual testing
+   --------------
+
+Instead of running tests automatically with "do-tests" it is possible to
+preload a test scenario with the script:
+
+    scripts/load-testconfig <testname>
+
+Individual configuration files can be changed and any command can be executed by
+logging into a guest host directly (via SSH or a console window).  No password
+is required to login as root.  The sources for every software built during
+"make-testing" are mounted at /root/shared/, which allows you to change and
+recompile these components.
+
+After you have finished testing, the default configuration can be restored
+with the following command (newly created files have to be deleted manually)
+
+    scripts/restore-defaults

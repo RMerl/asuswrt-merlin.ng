@@ -1,0 +1,8 @@
+DUMM Ruby Extension
+===================
+
+Build and Install
+
+  $ ruby extconf.rb
+  $ make
+  # make install

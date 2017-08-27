@@ -1,0 +1,71 @@
+#!/bin/bash
+# Load test specific host configurations
+#
+# Copyright (C) 2004  Eric Marchionni, Patrik Rayo
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+SSHCONF="-F $DIR/../ssh_config"
+
+##########################################################################
+# load-testconfig requires a testname as an argument
+#
+
+testname=$1
+
+TESTSDIR=$BUILDDIR/tests
+
+[ -d $TESTSDIR ] || die "Directory '$TESTSDIR' not found"
+[ -d $TESTSDIR/$testname ] || die "Test '$testname' not found"
+[ -f $TESTSDIR/$testname/test.conf ] || die "File 'test.conf' is missing"
+
+source $TESTSDIR/$testname/test.conf
+
+##########################################################################
+# copy test specific configurations to uml hosts
+#
+
+if [ -d $TESTSDIR/$testname/hosts ]
+then
+    for host in `ls $TESTSDIR/$testname/hosts`
+    do
+	eval HOSTLOGIN="root@`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+	scp $SSHCONF -r $TESTSDIR/$testname/hosts/$host/etc $HOSTLOGIN:/ > /dev/null 2>&1
+    done
+fi
+
+
+##########################################################################
+# clear auth.log and daemon.log where IKE messages are logged
+#
+
+for host in $IPSECHOSTS
+do
+    eval HOSTLOGIN="root@`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+    ssh $SSHCONF $HOSTLOGIN 'rm -f /var/log/auth.log /var/log/daemon.log; \
+		    kill -SIGHUP `cat /var/run/rsyslogd.pid`' > /dev/null 2>&1
+done
+
+
+##########################################################################
+# clear daemon.log and radius.log on FreeRadius servers
+#
+
+for host in $RADIUSHOSTS
+do
+    eval HOSTLOGIN="root@`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+    ssh $SSHCONF $HOSTLOGIN 'rm -f /var/log/daemon.log /var/log/freeradius/radius.log; \
+		    kill -SIGHUP `cat /var/run/rsyslogd.pid`' > /dev/null 2>&1
+done

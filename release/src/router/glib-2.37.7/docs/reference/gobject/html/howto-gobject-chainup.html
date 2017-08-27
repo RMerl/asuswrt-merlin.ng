@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Chaining up</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-gobject.html" title="How to define and implement a new GObject">
+<link rel="prev" href="howto-gobject-methods.html" title="Object methods">
+<link rel="next" href="howto-interface.html" title="How to define and implement interfaces">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-gobject.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-gobject-methods.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-interface.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-gobject-chainup"></a>Chaining up</h2></div></div></div>
+<p>Chaining up is often loosely defined by the following set of
+    conditions:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>Parent class A defines a public virtual method named <code class="function">foo</code> and 
+        provides a default implementation.</p></li>
+<li class="listitem"><p>Child class B re-implements method <code class="function">foo</code>.</p></li>
+<li class="listitem"><p>In the method B::foo, the child class B calls its parent class method A::foo.</p></li>
+</ul></div>
+<p>
+      There are various uses to this idiom:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>You need to extend the behaviour of a class without modifying its code. You create
+          a subclass to inherit its implementation, re-implement a public virtual method to modify the behaviour
+          and chain up to ensure that the previous behaviour is not really modified, just extended.
+          </p></li>
+<li class="listitem"><p>You need to implement the Chain Of Responsibility pattern: each object of the inheritance
+          tree chains up to its parent (typically, at the beginning or the end of the method) to ensure that
+          they each handler is run in turn.</p></li>
+</ul></div>
+<p>
+    </p>
+<p>
+      To explicitly chain up to the implementation of the virtual method in the parent class, 
+      you first need a handle to the original parent class structure. This pointer can then be used to 
+      access the original class function pointer and invoke it directly.
+      <a href="#ftn.id-1.6.3.8.3.1" class="footnote" name="id-1.6.3.8.3.1"><sup class="footnote">[11]</sup></a>
+    </p>
+<p>The function <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-class-peek-parent" title="g_type_class_peek_parent ()">g_type_class_peek_parent</a></code>
+    is used to access the original parent class structure. Its input is a
+    pointer to the class of the derived object and it returns a pointer to
+    the original parent class structure. Instead of using this function
+    directly, though, you should use the <code class="function">parent_class</code>
+    pointer created and initialized for us by the G_DEFINE_TYPE_* family of
+    macros, for instance:
+</p>
+<pre class="programlisting">
+static void
+b_method_to_call (B *obj, int a)
+{
+  /* do stuff before chain up */
+
+  /* call the method_to_call() virtual function on the
+   * parent of BClass, AClass.
+   *
+   * remember the explicit cast to AClass*
+   */
+  A_CLASS (b_parent_class)-&gt;method_to_call (obj, a);
+
+  /* do stuff after chain up */
+}
+</pre>
+<p>
+  </p>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.6.3.8.3.1" class="footnote"><p><a href="#id-1.6.3.8.3.1" class="para"><sup class="para">[11] </sup></a>
+          The <span class="emphasis"><em>original</em></span> adjective used in this sentence is not innocuous. To fully 
+          understand its meaning, you need to recall how class structures are initialized: for each object type,
+          the class structure associated to this object is created by first copying the class structure of its 
+          parent type (a simple <code class="function">memcpy</code>) and then by invoking the class_init callback on 
+          the resulting class structure. Since the class_init callback is responsible for overwriting the class structure
+          with the user re-implementations of the class methods, we cannot merely use the modified copy of the parent class
+          structure stored in our derived instance. We want to get a copy of the class structure of an instance of the parent 
+          class.
+        </p></div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

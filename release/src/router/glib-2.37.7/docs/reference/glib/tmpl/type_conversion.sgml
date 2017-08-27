@@ -1,0 +1,70 @@
+<!-- ##### SECTION Title ##### -->
+Type Conversion Macros
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO GINT_TO_POINTER ##### -->
+<para>
+
+</para>
+
+@i: 
+
+
+<!-- ##### MACRO GPOINTER_TO_INT ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO GUINT_TO_POINTER ##### -->
+<para>
+
+</para>
+
+@u: 
+
+
+<!-- ##### MACRO GPOINTER_TO_UINT ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO GSIZE_TO_POINTER ##### -->
+<para>
+
+</para>
+
+@s: 
+
+
+<!-- ##### MACRO GPOINTER_TO_SIZE ##### -->
+<para>
+
+</para>
+
+@p: 
+
+

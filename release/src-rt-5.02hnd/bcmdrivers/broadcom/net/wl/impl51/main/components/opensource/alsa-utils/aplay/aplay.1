@@ -1,0 +1,237 @@
+.TH APLAY 1 "1 January 2010"
+.SH NAME
+arecord, aplay \- command-line sound recorder and player for ALSA 
+soundcard driver
+.SH SYNOPSIS
+\fBarecord\fP [\fIflags\fP] [filename]
+.br
+\fBaplay\fP [\fIflags\fP] [filename [filename]] ...
+
+.SH DESCRIPTION
+\fBarecord\fP is a command-line soundfile recorder for the ALSA soundcard
+driver. It supports several file formats and multiple soundcards with
+multiple devices. If recording with interleaved mode samples the file is
+automatically split before the 2GB filesize.
+
+\fBaplay\fP is much the same, only it plays instead of recording. For
+supported soundfile formats, the sampling rate, bit depth, and so
+forth can be automatically determined from the soundfile header.
+
+If filename is not specified, the standard output or input is used. The \fBaplay\fP utility accepts multiple filenames.
+
+.SH OPTIONS
+.TP
+\fI\-h, \-\-help\fP
+Help: show syntax.
+.TP
+\fI\-\-version\fP
+Print current version.
+.TP
+\fI\-l, \-\-list\-devices\fP
+List all soundcards and digital audio devices
+.TP
+\fI\-L, \-\-list\-pcms\fP
+List all PCMs defined
+.TP
+\fI\-D, \-\-device=NAME\fP
+Select PCM by name
+.TP
+\fI\-q \-\-quiet\fP
+Quiet mode. Suppress messages (not sound :))
+.TP
+\fI\-t, \-\-file\-type TYPE\fP
+File type (voc, wav, raw or au).
+If this parameter is omitted the WAVE format is used.
+.TP
+\fI\-c, \-\-channels=#\fP
+The number of channels.
+The default is one channel.
+Valid values are 1 through 32.
+.TP
+\fI\-f \-\-format=FORMAT\fP
+Sample format
+.br
+Recognized sample formats are: S8 U8 S16_LE S16_BE U16_LE U16_BE S24_LE
+S24_BE U24_LE U24_BE S32_LE S32_BE U32_LE U32_BE FLOAT_LE FLOAT_BE
+FLOAT64_LE FLOAT64_BE IEC958_SUBFRAME_LE IEC958_SUBFRAME_BE MU_LAW
+A_LAW IMA_ADPCM MPEG GSM SPECIAL S24_3LE S24_3BE U24_3LE U24_3BE S20_3LE
+S20_3BE U20_3LE U20_3BE S18_3LE S18_3BE U18_3LE
+.br
+Some of these may not be available on selected hardware
+.br
+The available format shortcuts are:
+.nf
+\-f cd (16 bit little endian, 44100, stereo) [\-f S16_LE \-c2 \-r44100]
+\-f cdr (16 bit big endian, 44100, stereo) [\-f S16_BE \-c2 \-f44100]
+\-f dat (16 bit little endian, 48000, stereo) [\-f S16_LE \-c2 \-r48000]
+.fi
+If no format is given U8 is used.
+.TP
+\fI\-r, \-\-rate=#<Hz>\fP
+Sampling rate in Hertz. The default rate is 8000 Hertz.
+If the value specified is less than 300, it is taken as the rate in kilohertz.
+Valid values are 2000 through 192000 Hertz.
+.TP
+\fI\-d, \-\-duration=#\fP
+Interrupt after # seconds.
+A value of zero means infinity.
+The default is zero, so if this option is omitted then the arecord process will run until it is killed.
+.TP
+\fI\-s, \-\-sleep\-min=#\fP
+Min ticks to sleep. The default is not to sleep.
+.TP
+\fI\-M, \-\-mmap\fP            
+Use memory-mapped (mmap) I/O mode for the audio stream.
+If this option is not set, the read/write I/O mode will be used.
+.TP
+\fI\-N, \-\-nonblock\fP          
+Open the audio device in non-blocking mode. If the device is busy the program will exit immediately.
+If this option is not set the program will block until the audio device is available again.
+.TP
+\fI\-F, \-\-period\-time=#\fP     
+Distance between interrupts is # microseconds.
+If no period time and no period size is given then a quarter of the buffer time is set.
+.TP
+\fI\-B, \-\-buffer\-time=#\fP     
+Buffer duration is # microseconds
+If no buffer time and no buffer size is given then the maximal allowed buffer time but not more than 500ms is set.
+.TP
+\fI\-\-period\-size=#\fP     
+Distance between interrupts is # frames
+If no period size and no period time is given then a quarter of the buffer size is set.
+.TP
+\fI\-\-buffer\-size=#\fP     
+Buffer duration is # frames
+If no buffer time and no buffer size is given then the maximal allowed buffer time but not more than 500ms is set.
+.TP
+\fI\-A, \-\-avail\-min=#\fP       
+Min available space for wakeup is # microseconds
+.TP
+\fI\-R, \-\-start\-delay=#\fP     
+Delay for automatic PCM start is # microseconds 
+(relative to buffer size if <= 0)
+.TP
+\fI\-T, \-\-stop\-delay=#\fP      
+Delay for automatic PCM stop is # microseconds from xrun
+.TP
+\fI\-v, \-\-verbose\fP           
+Show PCM structure and setup.
+This option is accumulative.  The VU meter is displayed when this
+is given twice or three times.
+.TP
+\fI\-V, \-\-vumeter=TYPE\fP
+Specifies the VU-meter type, either \fIstereo\fP or \fImono\fP.
+The stereo VU-meter is available only for 2-channel stereo samples
+with interleaved format.
+.TP
+\fI\-I, \-\-separate\-channels\fP 
+One file for each channel.  This option disables max\-file\-time
+and use\-strftime, and ignores SIGUSR1.  The stereo VU meter is
+not available with separate channels.
+.TP
+\fI\-P\fP
+Playback.  This is the default if the program is invoked
+by typing aplay.
+.TP
+\fI\-C\fP
+Record.  This is the default if the program is invoked
+by typing arecord.
+.TP
+\fI\-\-disable\-resample\fP
+Disable automatic rate resample.
+.TP
+\fI\-\-disable\-channels\fP
+Disable automatic channel conversions.
+.TP
+\fI\-\-disable\-format\fP
+Disable automatic format conversions.
+.TP
+\fI\-\-disable\-softvol\fP
+Disable software volume control (softvol).
+.TP
+\fI\-\-test\-position\fP
+Test ring buffer position.
+.TP
+\fI\-\-test\-coef=<coef>\fP
+Test coefficient for ring buffer position; default is 8.
+Expression for validation is: coef * (buffer_size / 2).
+Minimum value is 1.
+.TP
+\fI\-\-test\-nowait\fP
+Do not wait for the ring buffer--eats the whole CPU.
+.TP
+\fI\-\-max\-file\-time\fP
+While recording, when the output file has been accumulating
+sound for this long,
+close it and open a new output file.  Default is the maximum
+size supported by the file format: 2 GiB for WAV files.
+This option has no effect if  \-\-separate\-channels is
+specified.
+.TP
+\fI\-\-process\-id\-file <file name>\fP
+aplay writes its process ID here, so other programs can
+send signals to it.
+.TP
+\fI\-\-use\-strftime\fP
+When recording, interpret %-codes in the file name parameter using
+the strftime facility whenever the output file is opened.  The
+important strftime codes are: %Y is the year, %m month, %d day of
+the month, %H hour, %M minute and %S second.  In addition, %v is
+the file number, starting at 1.  When this option is specified,
+intermediate directories for the output file are created automatically.
+This option has no effect if \-\-separate\-channels is specified.
+
+.SH SIGNALS
+When recording, SIGINT, SIGTERM and SIGABRT will close the output 
+file and exit.  SIGUSR1 will close the output file, open a new one,
+and continue recording.  However, SIGUSR1 does not work with
+\-\-separate\-channels.
+
+.SH EXAMPLES
+
+.TP
+\fBaplay \-c 1 \-t raw \-r 22050 \-f mu_law foobar\fR
+will play the raw file "foobar" as a
+22050-Hz, mono, 8-bit, Mu-Law .au file. 
+
+.TP
+\fBarecord \-d 10 \-f cd \-t wav \-D copy foobar.wav\fP
+will record foobar.wav as a 10-second, CD-quality wave file, using the
+PCM "copy" (which might be defined in the user's .asoundrc file as:
+.nf
+pcm.copy {
+  type plug
+  slave {
+    pcm hw
+  }
+  route_policy copy
+}
+.fi
+
+.TP
+\fBarecord \-t wav \-max-file_time 30 mon.wav\fP
+Record from the default audio source in monaural, 8,000 samples
+per second, 8 bits per sample.  Start a new file every
+30 seconds.  File names are mon-nn.wav, where nn increases
+from 01.  The file after mon-99.wav is mon-100.wav.
+
+.TP
+\fBarecord \-f cd \-t wav \-max-file-time 3600 --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav\fP
+Record in stereo from the default audio source.  Create a new file
+every hour.  The files are placed in directories based on their start dates
+and have names which include their start times and file numbers.
+
+.SH SEE ALSO
+\fB
+alsamixer(1),
+amixer(1)
+\fP
+
+.SH BUGS 
+Note that .aiff files are not currently supported.
+
+.SH AUTHOR
+\fBarecord\fP and \fBaplay\fP are by Jaroslav Kysela <perex@perex.cz>
+This document is by Paul Winkler <zarmzarm@erols.com>.
+Updated for Alsa 0.9 by James Tappin <james@xena.uklinux.net>
+

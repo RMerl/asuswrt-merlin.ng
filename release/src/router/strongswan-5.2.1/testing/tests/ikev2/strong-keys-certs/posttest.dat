@@ -1,0 +1,13 @@
+moon::ipsec stop
+carol::ipsec stop
+dave::ipsec stop
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+moon::rm /etc/ipsec.d/private/*
+carol::rm /etc/ipsec.d/private/*
+dave::rm /etc/ipsec.d/private/*
+moon::rm /etc/ipsec.d/certs/*
+carol::rm /etc/ipsec.d/certs/*
+dave::rm /etc/ipsec.d/certs/*
+

@@ -1,0 +1,44 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 05-defaultfile_message
+
+If sar cannot open a data file, print a message indicating that sysstat
+might not be enabled (closes: #511418).
+---
+ sa_common.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/sa_common.c b/sa_common.c
+index 4297087..de51499 100644
+--- a/sa_common.c
++++ b/sa_common.c
+@@ -43,6 +43,7 @@
+ #define _(string) (string)
+ #endif
+ 
++static char defaultFileUsed = 0; /* Debian: fix for bug#511418 */
+ extern struct act_bitmap cpu_bitmap;
+ 
+ /*
+@@ -312,6 +313,7 @@ void set_default_file(struct tm *rectime, char *datafile)
+ 	snprintf(datafile, MAX_FILE_LEN,
+ 		 "%s/sa%02d", SA_DIR, rectime->tm_mday);
+ 	datafile[MAX_FILE_LEN - 1] = '\0';
++	defaultFileUsed = 1; /* Debian: fix for bug#511418 */
+ }
+ 
+ /*
+@@ -1058,7 +1060,12 @@ void check_file_actlst(int *ifd, char *dfile, struct activity *act[],
+ 
+ 	/* Open sa data file */
+ 	if ((*ifd = open(dfile, O_RDONLY)) < 0) {
++		const int saved_errno=errno; /* Debian: fix for bug#511418 */
+ 		fprintf(stderr, _("Cannot open %s: %s\n"), dfile, strerror(errno));
++		if (saved_errno == ENOENT && defaultFileUsed) /* Debian: fix for bug#511418 */
++		{
++			fprintf(stderr, "Please check if data collecting is enabled in /etc/default/sysstat\n");
++		}
+ 		exit(2);
+ 	}
+ 
+-- 

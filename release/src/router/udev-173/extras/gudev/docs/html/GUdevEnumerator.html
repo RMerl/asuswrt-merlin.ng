@@ -1,0 +1,457 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GUdevEnumerator</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="GUDev Reference Manual">
+<link rel="up" href="ref-API.html" title="API Reference">
+<link rel="prev" href="GUdevDevice.html" title="GUdevDevice">
+<link rel="next" href="gudev-hierarchy.html" title="Object Hierarchy">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="GUdevDevice.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ref-API.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">GUDev Reference Manual</th>
+<td><a accesskey="n" href="gudev-hierarchy.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#GUdevEnumerator.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#GUdevEnumerator.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GUdevEnumerator.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GUdevEnumerator.properties" class="shortcut">Properties</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="GUdevEnumerator"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GUdevEnumerator.top_of_page"></a>GUdevEnumerator</span></h2>
+<p>GUdevEnumerator — Lookup and sort devices</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GUdevEnumerator.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GUdevEnumerator.html#GUdevEnumerator-struct" title="GUdevEnumerator">GUdevEnumerator</a>;
+struct              <a class="link" href="GUdevEnumerator.html#GUdevEnumeratorClass" title="struct GUdevEnumeratorClass">GUdevEnumeratorClass</a>;
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-new" title="g_udev_enumerator_new ()">g_udev_enumerator_new</a>               (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-match-subsystem" title="g_udev_enumerator_add_match_subsystem ()">g_udev_enumerator_add_match_subsystem</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-nomatch-subsystem" title="g_udev_enumerator_add_nomatch_subsystem ()">g_udev_enumerator_add_nomatch_subsystem</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-match-sysfs-attr" title="g_udev_enumerator_add_match_sysfs_attr ()">g_udev_enumerator_add_match_sysfs_attr</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-nomatch-sysfs-attr" title="g_udev_enumerator_add_nomatch_sysfs_attr ()">g_udev_enumerator_add_nomatch_sysfs_attr</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-match-property" title="g_udev_enumerator_add_match_property ()">g_udev_enumerator_add_match_property</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-match-name" title="g_udev_enumerator_add_match_name ()">g_udev_enumerator_add_match_name</a>    (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-match-tag" title="g_udev_enumerator_add_match_tag ()">g_udev_enumerator_add_match_tag</a>     (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *tag</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-match-is-initialized" title="g_udev_enumerator_add_match_is_initialized ()">g_udev_enumerator_add_match_is_initialized</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>);
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-add-sysfs-path" title="g_udev_enumerator_add_sysfs_path ()">g_udev_enumerator_add_sysfs_path</a>    (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *sysfs_path</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             <a class="link" href="GUdevEnumerator.html#g-udev-enumerator-execute" title="g_udev_enumerator_execute ()">g_udev_enumerator_execute</a>           (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevEnumerator.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GUdevEnumerator
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevEnumerator.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GUdevEnumerator.html#GUdevEnumerator--client" title='The "client" property'>client</a>"                   <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>*          : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevEnumerator.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> is used to lookup and sort devices.
+</p>
+</div>
+<div class="refsect1">
+<a name="GUdevEnumerator.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GUdevEnumerator-struct"></a><h3>GUdevEnumerator</h3>
+<pre class="programlisting">typedef struct _GUdevEnumerator GUdevEnumerator;</pre>
+<p>
+The <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> struct is opaque and should not be accessed directly.
+</p>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUdevEnumeratorClass"></a><h3>struct GUdevEnumeratorClass</h3>
+<pre class="programlisting">struct GUdevEnumeratorClass {
+  GObjectClass   parent_class;
+};
+</pre>
+<p>
+Class structure for <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> <em class="structfield"><code><a name="GUdevEnumeratorClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>Parent class.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-new"></a><h3>g_udev_enumerator_new ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_new               (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>);</pre>
+<p>
+Constructs a <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> object that can be used to enumerate
+and sort devices. Use the add_match_*() and add_nomatch_*() methods
+and execute the query to get a list of devices with
+<a class="link" href="GUdevEnumerator.html#g-udev-enumerator-execute" title="g_udev_enumerator_execute ()"><code class="function">g_udev_enumerator_execute()</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> to enumerate devices from.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A new <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> object. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-match-subsystem"></a><h3>g_udev_enumerator_add_match_subsystem ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_match_subsystem
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>);</pre>
+<p>
+All returned devices will match the given <em class="parameter"><code>subsystem</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>Wildcard for subsystem name e.g. 'scsi' or 'a*'.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-nomatch-subsystem"></a><h3>g_udev_enumerator_add_nomatch_subsystem ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_nomatch_subsystem
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>);</pre>
+<p>
+All returned devices will not match the given <em class="parameter"><code>subsystem</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>Wildcard for subsystem name e.g. 'scsi' or 'a*'.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-match-sysfs-attr"></a><h3>g_udev_enumerator_add_match_sysfs_attr ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_match_sysfs_attr
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>
+All returned devices will have a sysfs attribute matching the given <em class="parameter"><code>name</code></em> and <em class="parameter"><code>value</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Wildcard filter for sysfs attribute key.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>Wildcard filter for sysfs attribute value.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-nomatch-sysfs-attr"></a><h3>g_udev_enumerator_add_nomatch_sysfs_attr ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_nomatch_sysfs_attr
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>
+All returned devices will not have a sysfs attribute matching the given <em class="parameter"><code>name</code></em> and <em class="parameter"><code>value</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Wildcard filter for sysfs attribute key.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>Wildcard filter for sysfs attribute value.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-match-property"></a><h3>g_udev_enumerator_add_match_property ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_match_property
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>
+All returned devices will have a property matching the given <em class="parameter"><code>name</code></em> and <em class="parameter"><code>value</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Wildcard filter for property name.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>Wildcard filter for property value.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-match-name"></a><h3>g_udev_enumerator_add_match_name ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_match_name    (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+All returned devices will match the given <em class="parameter"><code>name</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>Wildcard filter for kernel name e.g. "sda*".</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-match-tag"></a><h3>g_udev_enumerator_add_match_tag ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_match_tag     (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *tag</code></em>);</pre>
+<p>
+All returned devices will match the given <em class="parameter"><code>tag</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>tag</code></em> :</span></p></td>
+<td>A udev tag e.g. "udev-acl".</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-match-is-initialized"></a><h3>g_udev_enumerator_add_match_is_initialized ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_match_is_initialized
+                                                        (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>);</pre>
+<p>
+All returned devices will be initialized.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-add-sysfs-path"></a><h3>g_udev_enumerator_add_sysfs_path ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="returnvalue">GUdevEnumerator</span></a> *   g_udev_enumerator_add_sysfs_path    (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *sysfs_path</code></em>);</pre>
+<p>
+Add a device to the list of devices, to retrieve it back sorted in dependency order.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sysfs_path</code></em> :</span></p></td>
+<td>A sysfs path, e.g. "/sys/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda"</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The passed in <em class="parameter"><code>enumerator</code></em>. <span class="annotation">[<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-enumerator-execute"></a><h3>g_udev_enumerator_execute ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             g_udev_enumerator_execute           (<em class="parameter"><code><a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> *enumerator</code></em>);</pre>
+<p>
+Executes the query in <em class="parameter"><code>enumerator</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A list of <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> objects. The caller should free the result by using <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> on each element in the list and then <a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a> on the list. <span class="annotation">[<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> GUdevDevice][<a href="http://foldoc.org/transfer%20full"><span class="acronym">transfer full</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 165</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUdevEnumerator.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GUdevEnumerator--client"></a><h3>The <code class="literal">"client"</code> property</h3>
+<pre class="programlisting">  "client"                   <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>*          : Read / Write / Construct Only</pre>
+<p>
+The <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> to enumerate devices from.
+</p>
+<p class="since">Since 165</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the ESP cipher suite
+<b>AES_CCM_12_128</b> by defining <b>esp=aes128ccm12-modp2048</b> or alternatively
+<b>esp=aes128ccm96-modp2048</b> in ipsec.conf.
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

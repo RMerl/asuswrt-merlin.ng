@@ -1,0 +1,24 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 06-exec
+
+Merge the following change from Ubuntu:
+    - remove call to execvp() as it's not needed and has potential
+      security problems.
+---
+ sar.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/sar.c b/sar.c
+index d09f959..28cb082 100644
+--- a/sar.c
++++ b/sar.c
+@@ -1385,7 +1385,6 @@ int main(int argc, char **argv)
+ 
+ 		/* Call now the data collector */
+ 		execv(SADC_PATH, args);
+-		execvp(SADC, args);
+ 		/*
+ 		 * Note: Don't use execl/execlp since we don't have a fixed number of
+ 		 * args to give to sadc.
+-- 

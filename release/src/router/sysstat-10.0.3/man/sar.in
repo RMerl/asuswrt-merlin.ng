@@ -1,0 +1,2064 @@
+.TH SAR 1 "MAY 2011" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+sar \- Collect, report, or save system activity information.
+.SH SYNOPSIS
+.B sar [ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -i
+.I interval
+.B ] [ -p ] [ -q ] [ -r ] [ -R ] [ -S ] [ -t ] [ -u [ ALL ] ]
+[ -v ] [ -V ] [ -w ] [ -W ] [ -y ]
+.B [ -m {
+.I keyword
+.B [,...] | ALL } ]
+.B [ -n {
+.I keyword
+.B [,...] | ALL } ]
+.B [ -I {
+.I int
+.B [,...] | SUM | ALL | XALL } ] [ -P {
+.I cpu
+.B [,...] | ALL } ] [ -o [
+.I filename
+.B ] | -f [
+.I filename
+.B ] ] [ -s [
+.I hh:mm:ss
+.B ] ] [ -e [
+.I hh:mm:ss
+.B ] ] [
+.I interval
+.B [
+.I count
+.B ] ]
+.SH DESCRIPTION
+The
+.B sar
+command writes to standard output the contents of selected
+cumulative activity counters in the operating system. The accounting
+system, based on the values in the
+.I count
+and
+.I interval
+parameters, writes information the specified number of times spaced
+at the specified intervals in seconds.
+If the
+.I interval
+parameter is set to zero, the
+.B sar
+command displays the average statistics for the time
+since the system was started. If the
+.I interval
+parameter is specified without the
+.I count
+parameter, then reports are generated continuously.
+The collected data can also
+be saved in the file specified by the
+.B -o
+.I filename
+flag, in addition to being displayed onto the screen. If
+.I filename
+is omitted, sar uses the standard system activity daily data file,
+the
+.IR @SA_DIR@/sa dd
+file, where the dd parameter indicates the current day.
+By default all the data available from the kernel are saved in the
+data file.
+
+The
+.B sar
+command extracts and writes to standard output records previously
+saved in a file. This file can be either the one specified by the
+.B -f
+flag or, by default, the standard system activity daily data file.
+
+Without the
+.B -P
+flag, the
+.B sar
+command reports system-wide (global among all processors) statistics,
+which are calculated as averages for values expressed as percentages,
+and as sums otherwise. If the
+.B -P
+flag is given, the
+.B sar
+command reports activity which relates to the specified processor or
+processors. If
+.B -P ALL
+is given, the
+.B sar
+command reports statistics for each individual processor and global
+statistics among all processors.
+
+You can select information about specific system activities using
+flags. Not specifying any flags selects only CPU activity.
+Specifying the
+.B -A
+flag selects all possible activities.
+
+The default version of the
+.B sar
+command (CPU utilization report) might be one of the first facilities
+the user runs to begin system activity investigation, because it
+monitors major system resources. If CPU utilization is near 100 percent
+(user + nice + system), the workload sampled is CPU-bound.
+
+If multiple samples and multiple reports are desired, it is convenient
+to specify an output file for the
+.B sar
+command. 
+Run the
+.B sar
+command as a background process. The syntax for this is:
+
+.B sar -o datafile interval count >/dev/null 2>&1 &
+
+All data are captured in binary form and saved to a file (datafile).
+The data can then be selectively displayed with the
+.B sar
+command using the
+.B -f
+option. Set the
+.I interval
+and
+.I count
+parameters to select
+.I count
+records at
+.I interval
+second intervals. If the
+.I count
+parameter is not set, all the records saved in the
+file will be selected.
+Collection of data in this manner is useful to characterize
+system usage over a period of time and determine peak usage hours.
+
+Note:	The
+.B sar
+command only reports on local activities.
+
+.SH OPTIONS
+.IP -A
+This is equivalent to specifying
+.BR "-bBdHqrRSuvwWy -I SUM -I XALL -m ALL -n ALL -u ALL -P ALL".
+.IP -b
+Report I/O and transfer rate statistics.
+The following values are displayed:
+
+.B tps
+.RS
+.RS
+Total number of transfers per second that were issued to physical devices.
+A transfer is an I/O request to a physical device. Multiple logical
+requests can be combined into a single I/O request to the device.
+A transfer is of indeterminate size.
+.RE
+
+.B rtps
+.RS
+Total number of read requests per second issued to physical devices.
+.RE
+
+.B wtps
+.RS
+Total number of write requests per second issued to physical devices.
+.RE
+
+.B bread/s
+.RS
+Total amount of data read from the devices in blocks per second.
+Blocks are equivalent to sectors
+and therefore have a size of 512 bytes.
+.RE
+
+.B bwrtn/s
+.RS
+Total amount of data written to devices in blocks per second.
+.RE
+.RE
+.IP -B
+Report paging statistics.
+The following values are displayed:
+
+.B pgpgin/s
+.RS
+.RS
+Total number of kilobytes the system paged in from disk per second.
+.RE
+
+.B pgpgout/s
+.RS
+Total number of kilobytes the system paged out to disk per second.
+.RE
+
+.B fault/s
+.RS
+Number of page faults (major + minor) made by the system per second.
+This is not a count of page faults that generate I/O, because some page
+faults can be resolved without I/O.
+.RE
+
+.B majflt/s
+.RS
+Number of major faults the system has made per second, those which
+have required loading a memory page from disk.
+.RE
+
+.B pgfree/s
+.RS
+Number of pages placed on the free list by the system per second.
+.RE
+
+.B pgscank/s
+.RS
+Number of pages scanned by the kswapd daemon per second.
+.RE
+
+.B pgscand/s
+.RS
+Number of pages scanned directly per second.
+.RE
+
+.B pgsteal/s
+.RS
+Number of pages the system has reclaimed from cache (pagecache and
+swapcache) per second to satisfy its memory demands.
+.RE
+
+.B %vmeff
+.RS
+Calculated as pgsteal / pgscan, this is a metric of the efficiency of
+page reclaim. If it is near 100% then almost every page coming off the
+tail of the inactive list is being reaped. If it gets too low (e.g. less
+than 30%) then the virtual memory is having some difficulty.
+This field is displayed as zero if no pages have been scanned during the
+interval of time.
+.RE
+.RE
+.IP -C
+When reading data from a file, tell
+.B sar
+to display comments that have been inserted by
+.BR sadc .
+.IP -d
+Report activity for each block device.
+When data are displayed, the device specification
+.I dev m-n
+is generally used (
+.B DEV
+column).
+.B m
+is the major number of the device and
+.B n
+its minor number.
+Device names may also be pretty-printed if option -p
+is used (see below).
+Note that disk activity depends on sadc options "-S DISK" and "-S XDISK"
+to be collected. The following values are displayed:
+
+.B tps
+.RS
+.RS
+Indicate the number of transfers per second that were issued to the device.
+Multiple logical requests can be combined into a single I/O request to the
+device. A transfer is of indeterminate size.
+.RE
+
+.B rd_sec/s
+.RS
+Number of sectors read from the device. The size of a sector is 512 bytes.
+.RE
+
+.B wr_sec/s
+.RS
+Number of sectors written to the device. The size of a sector is 512 bytes.
+.RE
+
+.B avgrq-sz
+.RS
+The average size (in sectors) of the requests that were issued to the device.
+.RE
+
+.B avgqu-sz
+.RS
+The average queue length of the requests that were issued to the device.
+.RE
+
+.B await
+.RS
+The average time (in milliseconds) for I/O requests issued to the device
+to be served. This includes the time spent by the requests in queue and
+the time spent servicing them.
+.RE
+
+.B svctm
+.RS
+The average service time (in milliseconds) for I/O requests that were issued
+to the device. Warning! Do not trust this field any more. This field will be
+removed in a future sysstat version.
+.RE
+
+.B %util
+.RS
+Percentage of CPU time during which I/O requests were issued to the device
+(bandwidth utilization for the device). Device saturation occurs when this
+value is close to 100%.
+.RE
+.RE
+.IP "-e [ hh:mm:ss ]"
+Set the ending time of the report. The default ending time is
+18:00:00. Hours must be given in 24-hour format.
+This option can be used when data are read from
+or written to a file (options
+.B -f
+or
+.B -o
+).
+.IP "-f [ filename ]"
+Extract records from
+.I filename
+(created by the
+.B -o filename
+flag). The default value of the
+.B filename
+parameter is the current daily data file, the
+.IR @SA_DIR@/sa dd
+file. The -f option is exclusive of the -o option.
+.IP -h
+Display a short help message then exit.
+.IP -H
+Report hugepages utilization statistics.
+The following values are displayed:
+
+.B kbhugfree
+.RS
+.RS
+Amount of hugepages memory in kilobytes that is not yet allocated.
+.RE
+
+.B kbhugused
+.RS
+Amount of hugepages memory in kilobytes that has been allocated.
+.RE
+
+.B %hugused
+.RS
+Percentage of total hugepages memory that has been allocated.
+.RE
+.RE
+.IP "-i interval"
+Select data records at seconds as close as possible to the number specified
+by the
+.I interval
+parameter.
+.IP "-I { int [,...] | SUM | ALL | XALL }"
+Report statistics for a given interrupt.
+.B int
+is the interrupt number. Specifying multiple
+.B -I int
+parameters on the command line will look at multiple independent interrupts.
+The
+.B SUM
+keyword indicates that the total number of interrupts received per second
+is to be displayed. The
+.B ALL
+keyword indicates that statistics from
+the first 16 interrupts are to be reported, whereas the
+.B XALL
+keyword indicates that statistics from all interrupts, including potential
+APIC interrupt sources, are to be reported.
+Note that interrupt statistics depend on sadc option "-S INT" to be collected.
+.IP "-m { keyword [,...] | ALL }"
+Report power management statistics.
+Note that these statistics depend on sadc option "-S POWER" to be collected.
+
+Possible keywords are
+.BR CPU ,
+.BR FAN ,
+.BR FREQ ,
+.BR IN ,
+.BR TEMP
+and
+.BR USB .
+
+With the
+.B CPU
+keyword, statistics about CPU are reported.
+The following value is displayed:
+
+.B MHz
+.RS
+.RS
+Instantaneous CPU clock frequency in MHz.
+.RE
+
+With the
+.B FAN
+keyword, statistics about fans speed are reported.
+The following values are displayed:
+
+.B rpm
+.RS
+Fan speed expressed in revolutions per minute.
+.RE
+
+.B drpm
+.RS
+This field is calculated as the difference between current fan speed (rpm)
+and its low limit (fan_min).
+.RE
+
+.B DEVICE
+.RS
+Sensor device name.
+.RE
+
+With the
+.B FREQ
+keyword, statistics about CPU clock frequency are reported.
+The following value is displayed:
+
+.B wghMHz
+.RS
+Weighted average CPU clock frequency in MHz.
+Note that the cpufreq-stats driver must be compiled in the
+kernel for this option to work.
+.RE
+
+With the
+.B IN
+keyword, statistics about voltage inputs are reported.
+The following values are displayed:
+
+.B inV
+.RS
+Voltage input expressed in Volts.
+.RE
+
+.B %in
+.RS
+Relative input value. A value of 100% means that
+voltage input has reached its high limit (in_max) whereas
+a value of 0% means that it has reached its low limit (in_min).
+.RE
+
+.B DEVICE
+.RS
+Sensor device name.
+.RE
+
+With the
+.B TEMP
+keyword, statistics about devices temperature are reported.
+The following values are displayed:
+
+.B degC
+.RS
+Device temperature expressed in degrees Celsius.
+.RE
+
+.B %temp
+.RS
+Relative device temperature. A value of 100% means that
+temperature has reached its high limit (temp_max).
+.RE
+
+.B DEVICE
+.RS
+Sensor device name.
+.RE
+
+With the
+.B USB
+keyword, the
+.B sar
+command takes a snapshot of all the USB devices currently plugged into
+the system. At the end of the report,
+.B sar
+will display a summary of all those USB devices.
+The following values are displayed:
+
+.B BUS
+.RS
+Root hub number of the USB device.
+.RE
+
+.B idvendor
+.RS
+Vendor ID number (assigned by USB organization).
+.RE
+
+.B idprod
+.RS
+Product ID number (assigned by Manufacturer).
+.RE
+
+.B maxpower
+.RS
+Maximum power consumption of the device (expressed in mA).
+.RE
+
+.B manufact
+.RS
+Manufacturer name.
+.RE
+
+.B product
+.RS
+Product name.
+.RE
+.RE
+.IP "-n { keyword [,...] | ALL }"
+Report network statistics.
+
+Possible keywords are
+.BR DEV ,
+.BR EDEV ,
+.BR NFS ,
+.BR NFSD ,
+.BR SOCK ,
+.BR IP ,
+.BR EIP ,
+.BR ICMP ,
+.BR EICMP ,
+.BR TCP ,
+.BR ETCP ,
+.BR UDP ,
+.BR SOCK6 ,
+.BR IP6 ,
+.BR EIP6 ,
+.BR ICMP6 ,
+.BR EICMP6
+and
+.BR UDP6 .
+
+With the
+.B DEV
+keyword, statistics from the network devices are reported.
+The following values are displayed:
+
+.B IFACE
+.RS
+.RS
+Name of the network interface for which statistics are reported.
+.RE
+
+.B rxpck/s
+.RS
+Total number of packets received per second.
+.RE
+
+.B txpck/s
+.RS
+Total number of packets transmitted per second.
+.RE
+
+.B rxkB/s
+.RS
+Total number of kilobytes received per second.
+.RE
+
+.B txkB/s
+.RS
+Total number of kilobytes transmitted per second.
+.RE
+
+.B rxcmp/s
+.RS
+Number of compressed packets received per second (for cslip etc.).
+.RE
+
+.B txcmp/s
+.RS
+Number of compressed packets transmitted per second.
+.RE
+
+.B rxmcst/s
+.RS
+Number of multicast packets received per second.
+.RE
+
+With the
+.B EDEV
+keyword, statistics on failures (errors) from the network devices are reported.
+The following values are displayed:
+
+.B IFACE
+.RS
+Name of the network interface for which statistics are reported.
+.RE
+
+.B rxerr/s
+.RS
+Total number of bad packets received per second.
+.RE
+
+.B txerr/s
+.RS
+Total number of errors that happened per second while transmitting packets.
+.RE
+
+.B coll/s
+.RS
+Number of collisions that happened per second while transmitting packets.
+.RE
+
+.B rxdrop/s
+.RS
+Number of received packets dropped per second because of a lack of space in linux buffers.
+.RE
+
+.B txdrop/s
+.RS
+Number of transmitted packets dropped per second because of a lack of space in linux buffers.
+.RE
+
+.B txcarr/s
+.RS
+Number of carrier-errors that happened per second while transmitting packets.
+.RE
+
+.B rxfram/s
+.RS
+Number of frame alignment errors that happened per second on received packets.
+.RE
+
+.B rxfifo/s
+.RS
+Number of FIFO overrun errors that happened per second on received packets.
+.RE
+
+.B txfifo/s
+.RS
+Number of FIFO overrun errors that happened per second on transmitted packets.
+.RE
+
+With the
+.B NFS
+keyword, statistics about NFS client activity are reported.
+The following values are displayed:
+
+.B call/s
+.RS
+Number of RPC requests made per second.
+.RE
+
+.B retrans/s
+.RS
+Number of RPC requests per second, those which needed to be retransmitted (for
+example because of a server timeout).
+.RE
+
+.B read/s
+.RS
+Number of 'read' RPC calls made per second.
+.RE
+
+.B write/s
+.RS
+Number of 'write' RPC calls made per second.
+.RE
+
+.B access/s
+.RS
+Number of 'access' RPC calls made per second.
+.RE
+
+.B getatt/s
+.RS
+Number of 'getattr' RPC calls made per second.
+.RE
+
+With the
+.B NFSD
+keyword, statistics about NFS server activity are reported.
+The following values are displayed:
+
+.B scall/s
+.RS
+Number of RPC requests received per second.
+.RE
+
+.B badcall/s
+.RS
+Number of bad RPC requests received per second, those whose
+processing generated an error.
+.RE
+
+.B packet/s
+.RS
+Number of network packets received per second.
+.RE
+
+.B udp/s
+.RS
+Number of UDP packets received per second.
+.RE
+
+.B tcp/s
+.RS
+Number of TCP packets received per second.
+.RE
+
+.B hit/s
+.RS
+Number of reply cache hits per second.
+.RE
+
+.B miss/s
+.RS
+Number of reply cache misses per second.
+.RE
+
+.B sread/s
+.RS
+Number of 'read' RPC calls received per second.
+.RE
+
+.B swrite/s
+.RS
+Number of 'write' RPC calls received per second.
+.RE
+
+.B saccess/s
+.RS
+Number of 'access' RPC calls received per second.
+.RE
+
+.B sgetatt/s
+.RS
+Number of 'getattr' RPC calls received per second.
+.RE
+
+With the
+.B SOCK
+keyword, statistics on sockets in use are reported
+(IPv4).
+The following values are displayed:
+
+.B totsck
+.RS
+Total number of sockets used by the system.
+.RE
+
+.B tcpsck
+.RS
+Number of TCP sockets currently in use.
+.RE
+
+.B udpsck
+.RS
+Number of UDP sockets currently in use.
+.RE
+
+.B rawsck
+.RS
+Number of RAW sockets currently in use.
+.RE
+
+.B ip-frag
+.RS
+Number of IP fragments currently in queue.
+.RE
+
+.B tcp-tw
+.RS
+Number of TCP sockets in TIME_WAIT state.
+.RE
+
+With the
+.B IP
+keyword, statistics about IPv4 network traffic are reported.
+Note that IPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B irec/s
+.RS
+The total number of input datagrams received from interfaces
+per second, including those received in error [ipInReceives].
+.RE
+
+.B fwddgm/s
+.RS
+The number of input datagrams per second, for which this entity was not
+their final IP destination, as a result of which an attempt
+was made to find a route to forward them to that final
+destination [ipForwDatagrams].
+.RE
+
+.B idel/s
+.RS
+The total number of input datagrams successfully delivered per second
+to IP user-protocols (including ICMP) [ipInDelivers].
+.RE
+
+.B orq/s
+.RS
+The total number of IP datagrams which local IP user-protocols (including ICMP)
+supplied per second to IP in requests for transmission [ipOutRequests].
+Note that this counter does not include any datagrams counted in fwddgm/s.
+.RE
+
+.B asmrq/s
+.RS
+The number of IP fragments received per second which needed to be
+reassembled at this entity [ipReasmReqds].
+.RE
+
+.B asmok/s
+.RS
+The number of IP datagrams successfully re-assembled per second [ipReasmOKs].
+.RE
+
+.B fragok/s
+.RS
+The number of IP datagrams that have been successfully
+fragmented at this entity per second [ipFragOKs].
+.RE
+
+.B fragcrt/s
+.RS
+The number of IP datagram fragments that have been
+generated per second as a result of fragmentation at this entity [ipFragCreates].
+.RE
+
+With the
+.B EIP
+keyword, statistics about IPv4 network errors are reported.
+Note that IPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B ihdrerr/s
+.RS
+The number of input datagrams discarded per second due to errors in
+their IP headers, including bad checksums, version number
+mismatch, other format errors, time-to-live exceeded, errors
+discovered in processing their IP options, etc. [ipInHdrErrors]
+.RE
+
+.B iadrerr/s
+.RS
+The number of input datagrams discarded per second because the IP
+address in their IP header's destination field was not a
+valid address to be received at this entity. This count
+includes invalid addresses (e.g., 0.0.0.0) and addresses of
+unsupported Classes (e.g., Class E). For entities which are
+not IP routers and therefore do not forward datagrams, this
+counter includes datagrams discarded because the destination
+address was not a local address [ipInAddrErrors].
+.RE
+
+.B iukwnpr/s
+.RS
+The number of locally-addressed datagrams received
+successfully but discarded per second because of an unknown or
+unsupported protocol [ipInUnknownProtos].
+.RE
+
+.B idisc/s
+.RS
+The number of input IP datagrams per second for which no problems were
+encountered to prevent their continued processing, but which
+were discarded (e.g., for lack of buffer space) [ipInDiscards].
+Note that this counter does not include any datagrams discarded while
+awaiting re-assembly.
+.RE
+
+.B odisc/s
+.RS
+The number of output IP datagrams per second for which no problem was
+encountered to prevent their transmission to their
+destination, but which were discarded (e.g., for lack of
+buffer space) [ipOutDiscards].
+Note that this counter would include
+datagrams counted in fwddgm/s if any such packets met
+this (discretionary) discard criterion.
+.RE
+
+.B onort/s
+.RS
+The number of IP datagrams discarded per second because no route could
+be found to transmit them to their destination [ipOutNoRoutes].
+Note that this counter includes any packets counted in fwddgm/s
+which meet this 'no-route' criterion.
+Note that this includes any datagrams which a host cannot route because all
+of its default routers are down.
+.RE
+
+.B asmf/s
+.RS
+The number of failures detected per second by the IP re-assembly
+algorithm (for whatever reason: timed out, errors, etc) [ipReasmFails].
+Note that this is not necessarily a count of discarded IP
+fragments since some algorithms can lose track of the number of
+fragments by combining them as they are received.
+.RE
+
+.B fragf/s
+.RS
+The number of IP datagrams that have been discarded per second because
+they needed to be fragmented at this entity but could not
+be, e.g., because their Don't Fragment flag was set [ipFragFails].
+.RE
+
+With the
+.B ICMP
+keyword, statistics about ICMPv4 network traffic are reported.
+Note that ICMPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B imsg/s
+.RS
+The total number of ICMP messages which the entity
+received per second [icmpInMsgs].
+Note that this counter includes all those counted by ierr/s.
+.RE
+
+.B omsg/s
+.RS
+The total number of ICMP messages which this entity
+attempted to send per second [icmpOutMsgs].
+Note that this counter includes all those counted by oerr/s.
+.RE
+
+.B iech/s
+.RS
+The number of ICMP Echo (request) messages received per second [icmpInEchos].
+.RE
+
+.B iechr/s
+.RS
+The number of ICMP Echo Reply messages received per second [icmpInEchoReps].
+.RE
+
+.B oech/s
+.RS
+The number of ICMP Echo (request) messages sent per second [icmpOutEchos].
+.RE
+
+.B oechr/s
+.RS
+The number of ICMP Echo Reply messages sent per second [icmpOutEchoReps].
+.RE
+
+.B itm/s
+.RS
+The number of ICMP Timestamp (request) messages received per second [icmpInTimestamps].
+.RE
+
+.B itmr/s
+.RS
+The number of ICMP Timestamp Reply messages received per second [icmpInTimestampReps].
+.RE
+
+.B otm/s
+.RS
+The number of ICMP Timestamp (request) messages sent per second [icmpOutTimestamps].
+.RE
+
+.B otmr/s
+.RS
+The number of ICMP Timestamp Reply messages sent per second [icmpOutTimestampReps].
+.RE
+
+.B iadrmk/s
+.RS
+The number of ICMP Address Mask Request messages received per second [icmpInAddrMasks].
+.RE
+
+.B iadrmkr/s
+.RS
+The number of ICMP Address Mask Reply messages received per second [icmpInAddrMaskReps].
+.RE
+
+.B oadrmk/s
+.RS
+The number of ICMP Address Mask Request messages sent per second [icmpOutAddrMasks].
+.RE
+
+.B oadrmkr/s
+.RS
+The number of ICMP Address Mask Reply messages sent per second [icmpOutAddrMaskReps].
+.RE
+
+With the
+.B EICMP
+keyword, statistics about ICMPv4 error messages are reported.
+Note that ICMPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B ierr/s
+.RS
+The number of ICMP messages per second which the entity received but
+determined as having ICMP-specific errors (bad ICMP
+checksums, bad length, etc.) [icmpInErrors].
+.RE
+
+.B oerr/s
+.RS
+The number of ICMP messages per second which this entity did not send
+due to problems discovered within ICMP such as a lack of buffers [icmpOutErrors].
+.RE
+
+.B idstunr/s
+.RS
+The number of ICMP Destination Unreachable messages
+received per second [icmpInDestUnreachs].
+.RE
+
+.B odstunr/s
+.RS
+The number of ICMP Destination Unreachable messages sent per second [icmpOutDestUnreachs].
+.RE
+
+.B itmex/s
+.RS
+The number of ICMP Time Exceeded messages received per second [icmpInTimeExcds].
+.RE
+
+.B otmex/s
+.RS
+The number of ICMP Time Exceeded messages sent per second [icmpOutTimeExcds].
+.RE
+
+.B iparmpb/s
+.RS
+The number of ICMP Parameter Problem messages received per second [icmpInParmProbs].
+.RE
+
+.B oparmpb/s
+.RS
+The number of ICMP Parameter Problem messages sent per second [icmpOutParmProbs].
+.RE
+
+.B isrcq/s
+.RS
+The number of ICMP Source Quench messages received per second [icmpInSrcQuenchs].
+.RE
+
+.B osrcq/s
+.RS
+The number of ICMP Source Quench messages sent per second [icmpOutSrcQuenchs].
+.RE
+
+.B iredir/s
+.RS
+The number of ICMP Redirect messages received per second [icmpInRedirects].
+.RE
+
+.B oredir/s
+.RS
+The number of ICMP Redirect messages sent per second [icmpOutRedirects].
+.RE
+
+With the
+.B TCP
+keyword, statistics about TCPv4 network traffic are reported.
+Note that TCPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B active/s
+.RS
+The number of times TCP connections have made a direct
+transition to the SYN-SENT state from the CLOSED state per second [tcpActiveOpens].
+.RE
+
+.B passive/s
+.RS
+The number of times TCP connections have made a direct
+transition to the SYN-RCVD state from the LISTEN state per second [tcpPassiveOpens].
+.RE
+
+.B iseg/s
+.RS
+The total number of segments received per second, including those
+received in error [tcpInSegs].  This count includes segments received on
+currently established connections.
+.RE
+
+.B oseg/s
+.RS
+The total number of segments sent per second, including those on
+current connections but excluding those containing only
+retransmitted octets [tcpOutSegs].
+.RE
+
+With the
+.B ETCP
+keyword, statistics about TCPv4 network errors are reported.
+Note that TCPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B atmptf/s
+.RS
+The number of times per second TCP connections have made a direct
+transition to the CLOSED state from either the SYN-SENT
+state or the SYN-RCVD state, plus the number of times per second TCP
+connections have made a direct transition to the LISTEN
+state from the SYN-RCVD state [tcpAttemptFails].
+.RE
+
+.B estres/s
+.RS
+The number of times per second TCP connections have made a direct
+transition to the CLOSED state from either the ESTABLISHED
+state or the CLOSE-WAIT state [tcpEstabResets].
+.RE
+
+.B retrans/s
+.RS
+The total number of segments retransmitted per second - that is, the
+number of TCP segments transmitted containing one or more
+previously transmitted octets [tcpRetransSegs].
+.RE
+
+.B isegerr/s
+.RS
+The total number of segments received in error (e.g., bad
+TCP checksums) per second [tcpInErrs].
+.RE
+
+.B orsts/s
+.RS
+The number of TCP segments sent per second containing the RST flag [tcpOutRsts].
+.RE
+
+With the
+.B UDP
+keyword, statistics about UDPv4 network traffic are reported.
+Note that UDPv4 statistics depend on sadc option "-S SNMP" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B idgm/s
+.RS
+The total number of UDP datagrams delivered per second to UDP users [udpInDatagrams].
+.RE
+
+.B odgm/s
+.RS
+The total number of UDP datagrams sent per second from this entity [udpOutDatagrams].
+.RE
+
+.B noport/s
+.RS
+The total number of received UDP datagrams per second for which there
+was no application at the destination port [udpNoPorts].
+.RE
+
+.B idgmerr/s
+.RS
+The number of received UDP datagrams per second that could not be
+delivered for reasons other than the lack of an application
+at the destination port [udpInErrors].
+.RE
+
+With the
+.B SOCK6
+keyword, statistics on sockets in use are reported (IPv6).
+Note that IPv6 statistics depend on sadc option "-S IPV6" to be
+collected.
+The following values are displayed:
+
+.B tcp6sck
+.RS
+Number of TCPv6 sockets currently in use.
+.RE
+
+.B udp6sck
+.RS
+Number of UDPv6 sockets currently in use.
+.RE
+
+.B raw6sck
+.RS
+Number of RAWv6 sockets currently in use.
+.RE
+
+.B ip6-frag
+.RS
+Number of IPv6 fragments currently in use.
+.RE
+
+With the
+.B IP6
+keyword, statistics about IPv6 network traffic are reported.
+Note that IPv6 statistics depend on sadc option "-S IPV6" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B irec6/s
+.RS
+The total number of input datagrams received from
+interfaces per second, including those received in error
+[ipv6IfStatsInReceives].
+.RE
+
+.B fwddgm6/s
+.RS
+The number of output datagrams per second which this
+entity received and forwarded to their final
+destinations [ipv6IfStatsOutForwDatagrams].
+.RE
+
+.B idel6/s
+.RS
+The total number of datagrams successfully
+delivered per second to IPv6 user-protocols (including ICMP)
+[ipv6IfStatsInDelivers].
+.RE
+
+.B orq6/s
+.RS
+The total number of IPv6 datagrams which local IPv6
+user-protocols (including ICMP) supplied per second to IPv6 in
+requests for transmission [ipv6IfStatsOutRequests].
+Note that this counter
+does not include any datagrams counted in fwddgm6/s.
+.RE
+
+.B asmrq6/s
+.RS
+The number of IPv6 fragments received per second which needed
+to be reassembled at this interface [ipv6IfStatsReasmReqds].
+.RE
+
+.B asmok6/s
+.RS
+The number of IPv6 datagrams successfully
+reassembled per second [ipv6IfStatsReasmOKs].
+.RE
+
+.B imcpck6/s
+.RS
+The number of multicast packets received per second
+by the interface [ipv6IfStatsInMcastPkts].
+.RE
+
+.B omcpck6/s
+.RS
+The number of multicast packets transmitted per second
+by the interface [ipv6IfStatsOutMcastPkts].
+.RE
+
+.B fragok6/s
+.RS
+The number of IPv6 datagrams that have been
+successfully fragmented at this output interface per second
+[ipv6IfStatsOutFragOKs].
+.RE
+
+.B fragcr6/s
+.RS
+The number of output datagram fragments that have
+been generated per second as a result of fragmentation at
+this output interface [ipv6IfStatsOutFragCreates].
+.RE
+
+With the
+.B EIP6
+keyword, statistics about IPv6 network errors are reported.
+Note that IPv6 statistics depend on sadc option "-S IPV6" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B ihdrer6/s
+.RS
+The number of input datagrams discarded per second due to
+errors in their IPv6 headers, including version
+number mismatch, other format errors, hop count
+exceeded, errors discovered in processing their
+IPv6 options, etc. [ipv6IfStatsInHdrErrors]
+.RE
+
+.B iadrer6/s
+.RS
+The number of input datagrams discarded per second because
+the IPv6 address in their IPv6 header's destination
+field was not a valid address to be received at
+this entity. This count includes invalid
+addresses (e.g., ::0) and unsupported addresses
+(e.g., addresses with unallocated prefixes). For
+entities which are not IPv6 routers and therefore
+do not forward datagrams, this counter includes
+datagrams discarded because the destination address
+was not a local address [ipv6IfStatsInAddrErrors].
+.RE
+
+.B iukwnp6/s
+.RS
+The number of locally-addressed datagrams
+received successfully but discarded per second because of an
+unknown or unsupported protocol [ipv6IfStatsInUnknownProtos].
+.RE
+
+.B i2big6/s
+.RS
+The number of input datagrams that could not be
+forwarded per second because their size exceeded the link MTU
+of outgoing interface [ipv6IfStatsInTooBigErrors].
+.RE
+
+.B idisc6/s
+.RS
+The number of input IPv6 datagrams per second for which no
+problems were encountered to prevent their
+continued processing, but which were discarded
+(e.g., for lack of buffer space)
+[ipv6IfStatsInDiscards]. Note that this
+counter does not include any datagrams discarded
+while awaiting re-assembly.
+.RE
+
+.B odisc6/s
+.RS
+The number of output IPv6 datagrams per second for which no
+problem was encountered to prevent their
+transmission to their destination, but which were
+discarded (e.g., for lack of buffer space)
+[ipv6IfStatsOutDiscards]. Note
+that this counter would include datagrams counted
+in fwddgm6/s if any such packets
+met this (discretionary) discard criterion.
+.RE
+
+.B inort6/s
+.RS
+The number of input datagrams discarded per second because no
+route could be found to transmit them to their
+destination [ipv6IfStatsInNoRoutes].
+.RE
+
+.B onort6/s
+.RS
+The number of locally generated IP datagrams discarded per second
+because no route could be found to transmit them to their
+destination [unknown formal SNMP name].
+.RE
+
+.B asmf6/s
+.RS
+The number of failures detected per second by the IPv6
+re-assembly algorithm (for whatever reason: timed
+out, errors, etc.) [ipv6IfStatsReasmFails].
+Note that this is not
+necessarily a count of discarded IPv6 fragments
+since some algorithms
+can lose track of the number of fragments
+by combining them as they are received.
+.RE
+
+.B fragf6/s
+.RS
+The number of IPv6 datagrams that have been
+discarded per second because they needed to be fragmented
+at this output interface but could not be
+[ipv6IfStatsOutFragFails].
+.RE
+
+.B itrpck6/s
+.RS
+The number of input datagrams discarded per second because
+datagram frame didn't carry enough data
+[ipv6IfStatsInTruncatedPkts].
+.RE
+
+With the
+.B ICMP6
+keyword, statistics about ICMPv6 network traffic are reported.
+Note that ICMPv6 statistics depend on sadc option "-S IPV6" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B imsg6/s
+.RS
+The total number of ICMP messages received
+by the interface per second which includes all those
+counted by ierr6/s [ipv6IfIcmpInMsgs].
+.RE
+
+.B omsg6/s
+.RS
+The total number of ICMP messages which this
+interface attempted to send per second [ipv6IfIcmpOutMsgs].
+.RE
+
+.B iech6/s
+.RS
+The number of ICMP Echo (request) messages
+received by the interface per second [ipv6IfIcmpInEchos].
+.RE
+
+.B iechr6/s
+.RS
+The number of ICMP Echo Reply messages received
+by the interface per second [ipv6IfIcmpInEchoReplies].
+.RE
+
+.B oechr6/s
+.RS
+The number of ICMP Echo Reply messages sent
+by the interface per second [ipv6IfIcmpOutEchoReplies].
+.RE
+
+.B igmbq6/s
+.RS
+The number of ICMPv6 Group Membership Query
+messages received by the interface per second
+[ipv6IfIcmpInGroupMembQueries].
+.RE
+
+.B igmbr6/s
+.RS
+The number of ICMPv6 Group Membership Response messages
+received by the interface per second
+[ipv6IfIcmpInGroupMembResponses].
+.RE
+
+.B ogmbr6/s
+.RS
+The number of ICMPv6 Group Membership Response
+messages sent per second
+[ipv6IfIcmpOutGroupMembResponses].
+.RE
+
+.B igmbrd6/s
+.RS
+The number of ICMPv6 Group Membership Reduction messages
+received by the interface per second
+[ipv6IfIcmpInGroupMembReductions].
+.RE
+
+.B ogmbrd6/s
+.RS
+The number of ICMPv6 Group Membership Reduction
+messages sent per second
+[ipv6IfIcmpOutGroupMembReductions].
+.RE
+
+.B irtsol6/s
+.RS
+The number of ICMP Router Solicit messages
+received by the interface per second
+[ipv6IfIcmpInRouterSolicits].
+.RE
+
+.B ortsol6/s
+.RS
+The number of ICMP Router Solicitation messages
+sent by the interface per second
+[ipv6IfIcmpOutRouterSolicits].
+.RE
+
+.B irtad6/s
+.RS
+The number of ICMP Router Advertisement messages
+received by the interface per second
+[ipv6IfIcmpInRouterAdvertisements].
+.RE
+
+.B inbsol6/s
+.RS
+The number of ICMP Neighbor Solicit messages
+received by the interface per second
+[ipv6IfIcmpInNeighborSolicits].
+.RE
+
+.B onbsol6/s
+.RS
+The number of ICMP Neighbor Solicitation
+messages sent by the interface per second
+[ipv6IfIcmpOutNeighborSolicits].
+.RE
+
+.B inbad6/s
+.RS
+The number of ICMP Neighbor Advertisement
+messages received by the interface per second
+[ipv6IfIcmpInNeighborAdvertisements].
+.RE
+
+.B onbad6/s
+.RS
+The number of ICMP Neighbor Advertisement
+messages sent by the interface per second
+[ipv6IfIcmpOutNeighborAdvertisements].
+.RE
+
+With the
+.B EICMP6
+keyword, statistics about ICMPv6 error messages are reported.
+Note that ICMPv6 statistics depend on sadc option "-S IPV6" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B ierr6/s
+.RS
+The number of ICMP messages per second which the interface
+received but determined as having ICMP-specific
+errors (bad ICMP checksums, bad length, etc.)
+[ipv6IfIcmpInErrors]
+.RE
+
+.B idtunr6/s
+.RS
+The number of ICMP Destination Unreachable
+messages received by the interface per second
+[ipv6IfIcmpInDestUnreachs].
+.RE
+
+.B odtunr6/s
+.RS
+The number of ICMP Destination Unreachable
+messages sent by the interface per second
+[ipv6IfIcmpOutDestUnreachs].
+.RE
+
+.B itmex6/s
+.RS
+The number of ICMP Time Exceeded messages
+received by the interface per second
+[ipv6IfIcmpInTimeExcds].
+.RE
+
+.B otmex6/s
+.RS
+The number of ICMP Time Exceeded messages sent
+by the interface per second
+[ipv6IfIcmpOutTimeExcds].
+.RE
+
+.B iprmpb6/s
+.RS
+The number of ICMP Parameter Problem messages
+received by the interface per second
+[ipv6IfIcmpInParmProblems].
+.RE
+
+.B oprmpb6/s
+.RS
+The number of ICMP Parameter Problem messages
+sent by the interface per second
+[ipv6IfIcmpOutParmProblems].
+.RE
+
+.B iredir6/s
+.RS
+The number of Redirect messages received
+by the interface per second
+[ipv6IfIcmpInRedirects].
+.RE
+
+.B oredir6/s
+.RS
+The number of Redirect messages sent by
+the interface by second
+[ipv6IfIcmpOutRedirects].
+.RE
+
+.B ipck2b6/s
+.RS
+The number of ICMP Packet Too Big messages
+received by the interface per second
+[ipv6IfIcmpInPktTooBigs].
+.RE
+
+.B opck2b6/s
+.RS
+The number of ICMP Packet Too Big messages sent
+by the interface per second
+[ipv6IfIcmpOutPktTooBigs].
+.RE
+
+With the
+.B UDP6
+keyword, statistics about UDPv6 network traffic are reported.
+Note that UDPv6 statistics depend on sadc option "-S IPV6" to be
+collected.
+The following values are displayed (formal SNMP names between
+square brackets):
+
+.B idgm6/s
+.RS
+The total number of UDP datagrams delivered per second to UDP users
+[udpInDatagrams].
+.RE
+
+.B odgm6/s
+.RS
+The total number of UDP datagrams sent per second from this
+entity [udpOutDatagrams].
+.RE
+
+.B noport6/s
+.RS
+The total number of received UDP datagrams per second for which there
+was no application at the destination port [udpNoPorts].
+.RE
+
+.B idgmer6/s
+.RS
+The number of received UDP datagrams per second that could not be
+delivered for reasons other than the lack of an application
+at the destination port [udpInErrors].
+.RE
+
+The
+.B ALL
+keyword is equivalent to specifying all the keywords above and therefore all the network
+activities are reported.
+.RE
+.RE
+.IP "-o [ filename ]"
+Save the readings in the file in binary form. Each reading
+is in a separate record. The default value of the
+.B filename
+parameter is the current daily data file, the
+.IR @SA_DIR@/sa dd
+file. The -o option is exclusive of the -f option.
+All the data available from the kernel are saved in the file (in fact,
+.B sar
+calls its data collector
+.B sadc
+with the option "-S ALL". See sadc(8) manual page).
+.IP "-P { cpu [,...] | ALL }"
+Report per-processor statistics for the specified processor or processors.
+Specifying the
+.B ALL
+keyword reports statistics for each individual processor, and globally for
+all processors.
+Note that processor 0 is the first processor.
+.IP -p
+Pretty-print device names. Use this option in conjunction with option -d.
+By default names are printed as
+.B dev m-n
+where m and n are the major and minor numbers for the device.
+Use of this option displays the names of the devices as they (should) appear
+in /dev. Name mappings are controlled by
+.B @SYSCONFIG_DIR@/sysstat.ioconf.
+.IP -q
+Report queue length and load averages. The following values are displayed:
+
+.B runq-sz
+.RS
+.RS
+Run queue length (number of tasks waiting for run time). 
+.RE
+
+.B plist-sz
+.RS
+Number of tasks in the task list.
+.RE
+
+.B ldavg-1
+.RS
+System load average for the last minute.
+The load average is calculated as the average number of runnable or
+running tasks (R state), and the number of tasks in uninterruptible
+sleep (D state) over the specified interval.
+.RE
+
+.B ldavg-5
+.RS
+System load average for the past 5 minutes.
+.RE
+
+.B ldavg-15
+.RS
+System load average for the past 15 minutes.
+.RE
+
+.B blocked
+.RS
+Number of tasks currently blocked, waiting for I/O to complete.
+.RE
+.RE
+.IP -r
+Report memory utilization statistics.
+The following values are displayed:
+
+.B kbmemfree
+.RS
+.RS
+Amount of free memory available in kilobytes.
+.RE
+
+.B kbmemused
+.RS
+Amount of used memory in kilobytes. This does not take into account memory
+used by the kernel itself.
+.RE
+
+.B %memused
+.RS
+Percentage of used memory.
+.RE
+
+.B kbbuffers
+.RS
+Amount of memory used as buffers by the kernel in kilobytes.
+.RE
+
+.B kbcached
+.RS
+Amount of memory used to cache data by the kernel in kilobytes.
+.RE
+
+.B kbcommit
+.RS
+Amount of memory in kilobytes needed for current workload. This is an estimate of how much
+RAM/swap is needed to guarantee that there never is out of memory.
+.RE
+
+.B %commit
+.RS
+Percentage of memory needed for current workload in relation to the total amount of memory (RAM+swap).
+This number may be greater than 100% because the kernel usually overcommits memory.
+.RE
+
+.B kbactive
+.RS
+Amount of active memory in kilobytes (memory that has been used more recently
+and usually not reclaimed unless absolutely necessary).
+.RE
+
+.B kbinact
+.RS
+Amount of inactive memory in kilobytes (memory which has been less recently
+used. It is more eligible to be reclaimed for other purposes).
+.RE
+.RE
+.IP -R
+Report memory statistics. The following values are displayed:
+
+.B frmpg/s
+.RS
+.RS
+Number of memory pages freed by the system per second.
+A negative value represents a number of pages allocated by the system.
+Note that a page has a size of 4 kB or 8 kB according to the machine architecture.
+.RE
+
+.B bufpg/s
+.RS
+Number of additional memory pages used as buffers by the system per second.
+A negative value means fewer pages used as buffers by the system.
+.RE
+
+.B campg/s
+.RS
+Number of additional memory pages cached by the system per second.
+A negative value means fewer pages in the cache.
+.RE
+.RE
+.IP "-s [ hh:mm:ss ]"
+Set the starting time of the data, causing the
+.B sar
+command to extract records time-tagged at, or following, the time
+specified. The default starting time is 08:00:00.
+Hours must be given in 24-hour format. This option can be
+used only when data are read from a file (option
+.B -f
+).
+.IP -S
+Report swap space utilization statistics.
+The following values are displayed:
+
+.B kbswpfree
+.RS
+.RS
+Amount of free swap space in kilobytes.
+.RE
+
+.B kbswpused
+.RS
+Amount of used swap space in kilobytes.
+.RE
+
+.B %swpused
+.RS
+Percentage of used swap space.
+.RE
+
+.B kbswpcad
+.RS
+Amount of cached swap memory in kilobytes.
+This is memory that once was swapped out, is swapped back in
+but still also is in the swap area (if memory is needed it doesn't need
+to be swapped out again because it is already in the swap area. This
+saves I/O).
+.RE
+
+.B %swpcad
+.RS
+Percentage of cached swap memory in relation to the amount of used swap space.
+.RE
+.RE
+.IP -t
+When reading data from a daily data file, indicate that
+.B sar
+should display the timestamps in the original locale time of
+the data file creator. Without this option, the
+.B sar
+command displays the timestamps in the user's locale time.
+.IP "-u [ ALL ]"
+Report CPU utilization. The
+.B ALL
+keyword indicates that all the CPU fields should be displayed.
+The report may show the following fields:
+
+.B %user
+.RS
+.RS
+Percentage of CPU utilization that occurred while executing at the user
+level (application). Note that this field includes time spent running
+virtual processors.
+.RE
+
+.B %usr
+.RS
+Percentage of CPU utilization that occurred while executing at the user
+level (application). Note that this field does NOT include time spent
+running virtual processors.
+.RE
+
+.B %nice
+.RS
+Percentage of CPU utilization that occurred while executing at the user
+level with nice priority.
+.RE
+
+.B %system
+.RS
+Percentage of CPU utilization that occurred while executing at the system
+level (kernel). Note that this field includes time spent servicing
+hardware and software interrupts.
+.RE
+
+.B %sys
+.RS
+Percentage of CPU utilization that occurred while executing at the system
+level (kernel). Note that this field does NOT include time spent servicing
+hardware or software interrupts.
+.RE
+
+.B %iowait
+.RS
+Percentage of time that the CPU or CPUs were idle during which
+the system had an outstanding disk I/O request.
+.RE
+
+.B %steal
+.RS
+Percentage of time spent in involuntary wait by the virtual CPU
+or CPUs while the hypervisor was servicing another virtual processor.
+.RE
+
+.B %irq
+.RS
+Percentage of time spent by the CPU or CPUs to service hardware interrupts.
+.RE
+
+.B %soft
+.RS
+Percentage of time spent by the CPU or CPUs to service software interrupts.
+.RE
+
+.B %guest
+.RS
+Percentage of time spent by the CPU or CPUs to run a virtual processor.
+.RE
+
+.B %idle
+.RS
+Percentage of time that the CPU or CPUs were idle and the system
+did not have an outstanding disk I/O request.
+.RE
+
+Note: On SMP machines a processor that does not have any activity at all
+(0.00 for every field) is a disabled (offline) processor.
+.RE
+.IP -v
+Report status of inode, file and other kernel tables.
+The following values are displayed:
+
+.B dentunusd
+.RS
+.RS
+Number of unused cache entries in the directory cache.
+.RE
+
+.B file-nr
+.RS
+Number of file handles used by the system.
+.RE
+
+.B inode-nr
+.RS
+Number of inode handlers used by the system.
+.RE
+
+.B pty-nr
+.RS
+Number of pseudo-terminals used by the system.
+.RE
+.RE
+.IP -V
+Print version number then exit.
+.IP -w
+Report task creation and system switching activity.
+
+.B proc/s
+.RS
+.RS
+Total number of tasks created per second.
+.RE
+
+.B cswch/s
+.RS
+Total number of context switches per second.
+.RE
+.RE
+.IP -W
+Report swapping statistics. The following values are displayed:
+
+.B pswpin/s
+.RS
+.RS
+Total number of swap pages the system brought in per second.
+.RE
+
+.B pswpout/s
+.RS
+Total number of swap pages the system brought out per second.
+.RE
+.RE
+.IP -y
+Report TTY device activity. The following values are displayed:
+
+.B rcvin/s
+.RS
+.RS
+Number of receive interrupts per second for current serial line. Serial line number
+is given in the TTY column.
+.RE
+
+.B xmtin/s
+.RS
+Number of transmit interrupts per second for current serial line.
+.RE
+
+.B framerr/s
+.RS
+Number of frame errors per second for current serial line.
+.RE
+
+.B prtyerr/s
+.RS
+Number of parity errors per second for current serial line.
+.RE
+
+.B brk/s
+.RS
+Number of breaks per second for current serial line.
+.RE
+
+.B ovrun/s
+.RS
+Number of overrun errors per second for current serial line.
+.RE
+.RE
+
+.SH ENVIRONMENT
+The
+.B sar
+command takes into account the following environment variables:
+
+.IP S_TIME_FORMAT
+If this variable exists and its value is
+.BR ISO
+then the current locale will be ignored when printing the date in the report header.
+The
+.B sar
+command will use the ISO 8601 format (YYYY-MM-DD) instead.
+
+.IP S_TIME_DEF_TIME
+If this variable exists and its value is
+.BR UTC
+then
+.B sar
+will save its data in UTC time (data will still be displayed in local time).
+.B sar
+will also use UTC time instead of local time to determine the current daily
+data file located in the
+.IR @SA_DIR@
+directory. This variable may be useful for servers with users located across
+several timezones.
+.SH EXAMPLES
+.B sar -u 2 5
+.RS
+Report CPU utilization for each 2 seconds. 5 lines are displayed.
+.RE
+
+.B sar -I 14 -o int14.file 2 10
+.RS
+Report statistics on IRQ 14 for each 2 seconds. 10 lines are displayed.
+Data are stored in a file called
+.IR int14.file .
+.RE
+
+.B sar -r -n DEV -f @SA_DIR@/sa16
+.RS
+Display memory and network statistics saved in daily data file 'sa16'.
+.RE
+
+.B sar -A
+.RS
+Display all the statistics saved in current daily data file.
+.SH BUGS
+.I /proc
+filesystem must be mounted for the
+.B sar
+command to work.
+
+All the statistics are not necessarily available, depending on the kernel version used.
+.B sar
+assumes that you are using at least a 2.6 kernel.
+.SH FILES
+.IR @SA_DIR@/sa dd
+.RS
+Indicate the daily data file, where the
+.B dd
+parameter is a number representing the day of the month.
+
+.RE
+.IR /proc
+contains various files with system statistics.
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sadc (8),
+.BR sa1 (8),
+.BR sa2 (8),
+.BR sadf (1),
+.BR pidstat (1),
+.BR mpstat (1),
+.BR iostat (1),
+.BR vmstat (8)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

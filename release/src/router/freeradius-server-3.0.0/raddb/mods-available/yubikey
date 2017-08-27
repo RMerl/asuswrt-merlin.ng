@@ -1,0 +1,132 @@
+#
+#  This module decrypts and validates Yubikey static and dynamic
+#  OTP tokens.
+#
+yubikey {
+	#
+	#  The length (number of ASCII bytes) of the Public-ID portion
+	#  of the OTP string.
+	#
+	#  Yubikey defaults to a 6 byte ID (2 * 6 = 12)
+#	id_length = 12
+
+	#
+	#  Decrypt mode - Tokens will be decrypted and processed locally
+	#
+	#  The module itself does not provide persistent storage as this
+	#  would be duplicative of functionality already in the server.
+	#
+	#  Yubikey authentication needs two control attributes
+	#  retrieved from persistent storage:
+	#    * Yubikey-Key     - The AES key used to decrypt the OTP data.
+	#                        The Yubikey-Public-Id and/or User-Name
+	#                        attributes may be used to retrieve the key.
+	#    * Yubikey-Counter - This is compared with the counter in the OTP
+	#                        data and used to prevent replay attacks.
+	#                        This attribute will also be available in
+	#                        the request list after successful
+	#                        decryption.
+	#
+	#  Yubikey-Counter isn't strictly required, but the server will
+	#  generate warnings if it's not present when yubikey.authenticate
+	#  is called.
+	#
+	#  These attributes are available after authorization:
+	#    * Yubikey-Public-ID  - The public portion of the OTP string
+	#
+	#  These attributes are available after authentication (if successful):
+	#    * Yubikey-Private-ID - The encrypted ID included in OTP data,
+	#                           must be verified if tokens share keys.
+	#    * Yubikey-Counter    - The last counter value (should be recorded).
+	#    * Yubikey-Timestamp  - Token's internal clock (mainly useful for debugging).
+	#    * Yubikey-Random     - Randomly generated value from the token.
+	#
+	decrypt = no
+
+	#
+	#  Validation mode - Tokens will be validated against a Yubicloud server
+	#
+	validate = no
+
+	#
+	#  Settings for validation mode.
+	#
+	validation {
+		#
+		#  URL of validation server, multiple URL config items may be used
+		#  to list multiple servers.
+		#
+		# - %d is a placeholder for public ID of the token
+		# - %s is a placeholder for the token string itself
+		#
+		#  If no URLs are listed, will default to the default URLs in the
+		#  ykclient library, which point to the yubico validation servers.
+		servers {
+#			uri = 'http://api.yubico.com/wsapi/2.0/verify?id=%d&otp=%s'
+#			uri = 'http://api2.yubico.com/wsapi/2.0/verify?id=%d&otp=%s'
+		}
+
+		#
+		#  API Client ID
+		#
+		#  Must be set to your client id for the validation server.
+		#
+#		client_id = 00000
+
+		#
+		#  API Secret key (Base64 encoded)
+		#
+		#  Must be set to your API key for the validation server.
+		#
+#		api_key = '000000000000000000000000'
+
+		#
+		#  Connection pool parameters
+		#
+		pool {
+			# Number of connections to start
+			start = 5
+
+			# Minimum number of connections to keep open
+			min = 4
+
+			# Maximum number of connections
+			#
+			# If these connections are all in use and a new one
+			# is requested, the request will NOT get a connection.
+			max = 10
+
+			# Spare connections to be left idle
+			#
+			# NOTE: Idle connections WILL be closed if "idle_timeout"
+			# is set.
+			spare = 3
+
+			# Number of uses before the connection is closed
+			#
+			# 0 means "infinite"
+			uses = 0
+
+			# The lifetime (in seconds) of the connection
+			lifetime = 0
+
+			# idle timeout (in seconds).  A connection which is
+			# unused for this length of time will be closed.
+			idle_timeout = 60
+
+			# Cycle over all connections in a pool instead of concentrating
+			# connection use on a few connections.
+			spread = yes
+
+			# NOTE: All configuration settings are enforced.  If a
+			# connection is closed because of "idle_timeout",
+			# "uses", or "lifetime", then the total number of
+			# connections MAY fall below "min".  When that
+			# happens, it will open a new connection.  It will
+			# also log a WARNING message.
+			#
+			# The solution is to either lower the "min" connections,
+			# or increase lifetime/idle_timeout.
+		}
+	}
+}

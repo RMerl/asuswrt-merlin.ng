@@ -1,0 +1,931 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: Generating code and docs</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch32.html" title="Migrating to GDBus">
+<link rel="prev" href="ch32s04.html" title="Creating proxies for well-known names">
+<link rel="next" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html" title="org.gtk.GDBus.Example.ObjectManager.Animal">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch32.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch32s04.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.5.6"></a>Generating code and docs</h2></div></div></div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gdbus-example-gdbus-codegen"></a>Using gdbus-codegen</h3></div></div></div>
+<p>
+      dbus-glib comes with <span class="command"><strong>dbus-binding-tool</strong></span>, which
+      can produce somewhat nice client- and server-side wrappers for a D-Bus interface.
+      With GDBus, <span class="command"><strong><a href="gdbus-codegen.html">gdbus-codegen</a></strong></span> is used and like
+      its counterpart, it also takes D-Bus Introspection XML as input:
+    </p>
+<div class="example">
+<a name="gdbus-example-codegen-input"></a><p class="title"><b>Example 29. Example D-Bus Introspection XML</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="symbol">&lt;</span><span class="normal">node</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;!--</span><span class="normal"> org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal">Animal</span><span class="symbol">:</span>
+<span class="normal">       @short_description</span><span class="symbol">:</span><span class="normal"> Example docs generated </span><span class="usertype">by</span><span class="normal"> <a href="gdbus.html">gdbus</a></span><span class="symbol">-</span><span class="normal">codegen</span>
+<span class="normal">       @since</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2.30</span>
+
+<span class="normal">       </span><span class="usertype">This</span><span class="normal"> D</span><span class="symbol">-</span><span class="normal">Bus interface is used to describe a </span><span class="usertype">simple</span><span class="normal"> animal</span><span class="symbol">.</span>
+<span class="normal">    </span><span class="symbol">--&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;</span><span class="usertype">interface</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"org.gtk.GDBus.Example.ObjectManager.Animal"</span><span class="symbol">&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;!--</span><span class="normal"> Mood</span><span class="symbol">:</span><span class="normal"> The mood of </span><span class="usertype">the</span><span class="normal"> animal</span><span class="symbol">.</span>
+<span class="normal">         @since</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2.30</span>
+
+<span class="normal">         Known values </span><span class="keyword">for</span><span class="normal"> this property include</span>
+<span class="normal">         </span><span class="symbol">&lt;</span><span class="normal">literal</span><span class="symbol">&gt;</span><span class="usertype">Happy&lt;/literal&gt;</span><span class="normal"> and </span><span class="symbol">&lt;</span><span class="normal">literal</span><span class="symbol">&gt;</span><span class="normal">Sad</span><span class="symbol">&lt;/</span><span class="normal">literal</span><span class="symbol">&gt;.</span><span class="normal"> Use the</span>
+<span class="normal">         org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal">Animal</span><span class="symbol">.</span><span class="function">Poke</span><span class="symbol">()</span><span class="normal"> method to</span>
+<span class="normal">         change </span><span class="usertype">this</span><span class="normal"> property</span><span class="symbol">.</span>
+
+<span class="normal">         This property influences how often the animal jumps up and</span>
+<span class="normal">         down</span><span class="symbol">,</span><span class="normal"> see the</span>
+<span class="preproc">         #org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal">Animal</span><span class="symbol">::</span><span class="normal">Jumped signal</span>
+<span class="normal">         </span><span class="keyword">for</span><span class="normal"> </span><span class="usertype">more</span><span class="normal"> details</span><span class="symbol">.</span>
+<span class="normal">    </span><span class="symbol">--&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">property</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"Mood"</span><span class="normal"> type</span><span class="symbol">=</span><span class="string">"s"</span><span class="normal"> access</span><span class="symbol">=</span><span class="string">"read"</span><span class="symbol">/&gt;</span>
+
+<span class="normal">    </span><span class="symbol">&lt;!--</span>
+<span class="label">        Poke:</span>
+<span class="normal">        @make_sad</span><span class="symbol">:</span><span class="normal"> Whether to make the </span><span class="usertype">animal</span><span class="normal"> sad</span><span class="symbol">.</span>
+<span class="normal">        @make_happy</span><span class="symbol">:</span><span class="normal"> Whether to make the </span><span class="usertype">animal</span><span class="normal"> happy</span><span class="symbol">.</span>
+<span class="normal">        @since</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2.30</span>
+
+<span class="normal">        Method used to changing the mood of </span><span class="usertype">the</span><span class="normal"> animal</span><span class="symbol">.</span><span class="normal"> See also the</span>
+<span class="preproc">        #org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal">Animal</span><span class="symbol">:</span><span class="usertype">Mood</span><span class="normal"> property</span><span class="symbol">.</span>
+<span class="normal">      </span><span class="symbol">--&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">method</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"Poke"</span><span class="symbol">&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">arg</span><span class="normal"> direction</span><span class="symbol">=</span><span class="string">"in"</span><span class="normal"> type</span><span class="symbol">=</span><span class="string">"b"</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"make_sad"</span><span class="symbol">/&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">arg</span><span class="normal"> direction</span><span class="symbol">=</span><span class="string">"in"</span><span class="normal"> type</span><span class="symbol">=</span><span class="string">"b"</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"make_happy"</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;/</span><span class="normal">method</span><span class="symbol">&gt;</span>
+
+<span class="normal">    </span><span class="symbol">&lt;!--</span>
+<span class="label">        Jumped:</span>
+<span class="normal">        @height</span><span class="symbol">:</span><span class="normal"> Height</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">in</span><span class="normal"> meters</span><span class="symbol">,</span><span class="normal"> that the </span><span class="usertype">animal</span><span class="normal"> jumped</span><span class="symbol">.</span>
+<span class="normal">        @since</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2.30</span>
+
+<span class="normal">        Emitted when the animal decides </span><span class="usertype">to</span><span class="normal"> jump</span><span class="symbol">.</span>
+<span class="normal">      </span><span class="symbol">--&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">signal</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"Jumped"</span><span class="symbol">&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">arg</span><span class="normal"> type</span><span class="symbol">=</span><span class="string">"d"</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"height"</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;/</span><span class="normal">signal</span><span class="symbol">&gt;</span>
+
+<span class="normal">    </span><span class="symbol">&lt;!--</span>
+<span class="label">        Foo:</span>
+<span class="normal">        Property </span><span class="usertype">with</span><span class="normal"> no </span><span class="symbol">&lt;</span><span class="normal">quote</span><span class="symbol">&gt;</span><span class="usertype">since&lt;/quote&gt;</span><span class="normal"> </span><span class="function">annotation</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">should inherit the </span><span class="number">2.30</span><span class="normal"> from its </span><span class="usertype">containing</span><span class="normal"> interface</span><span class="symbol">).</span>
+<span class="normal">      </span><span class="symbol">--&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">property</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"Foo"</span><span class="normal"> type</span><span class="symbol">=</span><span class="string">"s"</span><span class="normal"> access</span><span class="symbol">=</span><span class="string">"read"</span><span class="symbol">/&gt;</span>
+
+<span class="normal">    </span><span class="symbol">&lt;!--</span>
+<span class="label">        Bar:</span>
+<span class="normal">        @since</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2.36</span>
+<span class="normal">        Property with </span><span class="usertype">a</span><span class="normal"> later </span><span class="symbol">&lt;</span><span class="normal">quote</span><span class="symbol">&gt;</span><span class="usertype">since&lt;/quote&gt;</span><span class="normal"> annotation</span><span class="symbol">.</span>
+<span class="normal">      </span><span class="symbol">--&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">property</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"Bar"</span><span class="normal"> type</span><span class="symbol">=</span><span class="string">"s"</span><span class="normal"> access</span><span class="symbol">=</span><span class="string">"read"</span><span class="symbol">/&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;/</span><span class="normal">interface</span><span class="symbol">&gt;</span>
+
+<span class="normal">  </span><span class="symbol">&lt;!--</span><span class="normal"> org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal">Cat</span><span class="symbol">:</span>
+<span class="normal">       @short_description</span><span class="symbol">:</span><span class="normal"> More example docs generated </span><span class="usertype">by</span><span class="normal"> <a href="gdbus.html">gdbus</a></span><span class="symbol">-</span><span class="normal">codegen</span>
+
+<span class="normal">       </span><span class="usertype">This</span><span class="normal"> D</span><span class="symbol">-</span><span class="normal">Bus interface is used to describe </span><span class="usertype">a</span><span class="normal"> cat</span><span class="symbol">.</span><span class="normal"> Right now there</span>
+<span class="normal">       are </span><span class="usertype">no</span><span class="normal"> properties</span><span class="symbol">,</span><span class="normal"> methods or signals associated with this</span>
+<span class="normal">       interface so it is </span><span class="usertype">essentially</span><span class="normal"> a </span><span class="symbol">&lt;</span><span class="normal">ulink</span>
+<span class="normal">       url</span><span class="symbol">=</span><span class="string">"http://en.wikipedia.org/wiki/Marker_interface_pattern"</span><span class="symbol">&gt;</span><span class="normal">Marker</span>
+<span class="normal">       Interface</span><span class="symbol">&lt;/</span><span class="normal">ulink</span><span class="symbol">&gt;.</span>
+
+<span class="normal">       Note </span><span class="usertype">that</span><span class="normal"> D</span><span class="symbol">-</span><span class="normal">Bus objects implementing this interface also</span>
+<span class="normal">       </span><span class="usertype">implement</span><span class="normal"> the #org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal">Animal</span>
+<span class="normal">       interface</span><span class="symbol">.</span>
+<span class="normal">    </span><span class="symbol">--&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;</span><span class="usertype">interface</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">"org.gtk.GDBus.Example.ObjectManager.Cat"</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;/</span><span class="normal">interface</span><span class="symbol">&gt;</span>
+<span class="symbol">&lt;/</span><span class="normal">node</span><span class="symbol">&gt;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<br class="example-break"><p>
+      If this XML is processed like this
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="gdbus.html">gdbus</a></span><span class="symbol">-</span><span class="normal">codegen </span><span class="symbol">--</span><span class="normal">interface</span><span class="symbol">-</span><span class="usertype">prefix</span><span class="normal"> org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Example</span><span class="symbol">.</span><span class="normal">ObjectManager</span><span class="symbol">.</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">              </span><span class="symbol">--</span><span class="normal">generate</span><span class="symbol">-</span><span class="normal">c</span><span class="symbol">-</span><span class="usertype">code</span><span class="normal"> generated</span><span class="symbol">-</span><span class="normal">code                        </span><span class="symbol">\</span>
+<span class="normal">              </span><span class="symbol">--</span><span class="normal">c</span><span class="symbol">-</span><span class="usertype">namespace</span><span class="normal"> Example                       </span><span class="symbol">\</span>
+<span class="normal">              </span><span class="symbol">--</span><span class="normal">c</span><span class="symbol">-</span><span class="normal">generate</span><span class="symbol">-</span><span class="normal">object</span><span class="symbol">-</span><span class="normal">manager                 </span><span class="symbol">\</span>
+<span class="normal">              </span><span class="symbol">--</span><span class="normal">generate</span><span class="symbol">-</span><span class="usertype">docbook</span><span class="normal"> generated</span><span class="symbol">-</span><span class="normal">docs                       </span><span class="symbol">\</span>
+<span class="normal">              <a href="gdbus.html">gdbus</a></span><span class="symbol">-</span><span class="normal">example</span><span class="symbol">-</span><span class="normal">objectmanager</span><span class="symbol">.</span><span class="normal">xml</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      then two files <code class="filename">generated-code.h</code> and
+      <code class="filename">generated-code.c</code> are
+      generated. Additionally, two XML files
+      <code class="filename">generated-docs-org.gtk.GDBus.Example.ObjectManager.Animal</code> and
+      <code class="filename">generated-docs-org.gtk.GDBus.Example.ObjectManager.Cat</code>
+      with Docbook XML are generated. For an example of what the docs look
+      like see <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Animal.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Animal" title="Description">the Animal D-Bus interface documentation</a>.
+      and
+      <a class="link" href="gdbus-org.gtk.GDBus.Example.ObjectManager.Cat.html#gdbus-interface-org-gtk-GDBus-Example-ObjectManager-Cat" title="Description">the Cat D-Bus interface documentation</a>.
+    </p>
+<p>
+      While the contents of <code class="filename">generated-code.h</code> and
+      <code class="filename">generated-code.c</code> are best described by the
+      <span class="command"><strong><a href="gdbus-codegen.html">gdbus-codegen</a></strong></span> manual
+      page, brief examples of how this generated code can be used can be found in
+      <a class="xref" href="ch32s05.html#gdbus-example-codegen-server" title="Example 30. Server-side application using generated code">Example 30, “Server-side application using generated code”</a>
+      and <a class="xref" href="ch32s05.html#gdbus-example-codegen-client" title="Example 31. Client-side application using generated code">Example 31, “Client-side application using generated code”</a>. Additionally, since
+      the generated code has 100% gtk-doc coverage, see
+      <a class="link" href="ExampleAnimal.html" title="ExampleAnimal"><span class="type">ExampleAnimal</span></a>, <a class="link" href="ExampleCat.html" title="ExampleCat"><span class="type">ExampleCat</span></a>, <a class="link" href="ExampleObject.html" title="ExampleObject"><span class="type">ExampleObject</span></a> and
+      <a class="link" href="ExampleObjectManagerClient.html" title="ExampleObjectManagerClient"><span class="type">ExampleObjectManagerClient</span></a> pages for documentation.
+    </p>
+<div class="example">
+<a name="gdbus-example-codegen-server"></a><p class="title"><b>Example 30. Server-side application using generated code</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">"gdbus-object-manager-example/gdbus-example-objectmanager-generated.h"</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GDBusObjectManagerServer</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">on_animal_poke</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ExampleAnimal</span><span class="normal">          </span><span class="symbol">*</span><span class="normal">animal</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">GDBusMethodInvocation</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">gboolean</span><span class="normal">                make_sad</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">gboolean</span><span class="normal">                make_happy</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">gpointer</span><span class="normal">                user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">make_sad </span><span class="symbol">&amp;&amp;</span><span class="normal"> make_happy</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">make_sad </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">make_happy</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-dbus-error">g_dbus_method_invocation_return_dbus_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                                                  </span><span class="string">"org.gtk.GDBus.Examples.ObjectManager.Error.Failed"</span><span class="symbol">,</span>
+<span class="normal">                                                  </span><span class="string">"Exactly one of make_sad or make_happy must be TRUE"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">make_sad</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strcmp0">g_strcmp0</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="ExampleAnimal.html#example-animal-get-mood">example_animal_get_mood</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"Sad"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="function"><a href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-dbus-error">g_dbus_method_invocation_return_dbus_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                                                      </span><span class="string">"org.gtk.GDBus.Examples.ObjectManager.Error.SadAnimalIsSad"</span><span class="symbol">,</span>
+<span class="normal">                                                      </span><span class="string">"Sad animal is already sad"</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">      </span><span class="function"><a href="ExampleAnimal.html#example-animal-set-mood">example_animal_set_mood</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Sad"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="ExampleAnimal.html#example-animal-complete-poke">example_animal_complete_poke</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">,</span><span class="normal"> invocation</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">make_happy</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strcmp0">g_strcmp0</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="ExampleAnimal.html#example-animal-get-mood">example_animal_get_mood</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"Happy"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="function"><a href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-dbus-error">g_dbus_method_invocation_return_dbus_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                                                      </span><span class="string">"org.gtk.GDBus.Examples.ObjectManager.Error.HappyAnimalIsHappy"</span><span class="symbol">,</span>
+<span class="normal">                                                      </span><span class="string">"Happy animal is already happy"</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">      </span><span class="function"><a href="ExampleAnimal.html#example-animal-set-mood">example_animal_set_mood</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Happy"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="ExampleAnimal.html#example-animal-complete-poke">example_animal_complete_poke</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">,</span><span class="normal"> invocation</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-assert-not-reached">g_assert_not_reached</a></span><span class="normal"> </span><span class="symbol">();</span>
+
+<span class="label"> out:</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">;</span><span class="normal"> </span><span class="comment">/* to indicate that the method was handled */</span>
+<span class="cbracket">}</span>
+
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_bus_acquired</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ExampleObjectSkeleton</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">object</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">guint</span><span class="normal"> n</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Acquired a message bus connection</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Create a new org.freedesktop.DBus.ObjectManager rooted at /example/Animals */</span>
+<span class="normal">  manager </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManagerServer.html#g-dbus-object-manager-server-new">g_dbus_object_manager_server_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/example/Animals"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> n </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">10</span><span class="symbol">;</span><span class="normal"> n</span><span class="symbol">++)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">s</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">ExampleAnimal</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">animal</span><span class="symbol">;</span>
+
+<span class="normal">      </span><span class="comment">/* Create a new D-Bus object at the path /example/Animals/N where N is 000..009 */</span>
+<span class="normal">      s </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strdup-printf">g_strdup_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/example/Animals/%03d"</span><span class="symbol">,</span><span class="normal"> n</span><span class="symbol">);</span>
+<span class="normal">      object </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="ExampleObject.html#example-object-skeleton-new">example_object_skeleton_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="comment">/* Make the newly created object export the interface</span>
+<span class="comment">       * org.gtk.GDBus.Example.ObjectManager.Animal (note</span>
+<span class="comment">       * that @object takes its own reference to @animal).</span>
+<span class="comment">       */</span>
+<span class="normal">      animal </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="ExampleAnimal.html#example-animal-skeleton-new">example_animal_skeleton_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">      </span><span class="function"><a href="ExampleAnimal.html#example-animal-set-mood">example_animal_set_mood</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Happy"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="ExampleObject.html#example-object-skeleton-set-animal">example_object_skeleton_set_animal</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">,</span><span class="normal"> animal</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="comment">/* Cats are odd animals - so some of our objects implement the</span>
+<span class="comment">       * org.gtk.GDBus.Example.ObjectManager.Cat interface in addition</span>
+<span class="comment">       * to the .Animal interface</span>
+<span class="comment">       */</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">%</span><span class="normal"> </span><span class="number">2</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="usertype">ExampleCat</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">cat</span><span class="symbol">;</span>
+<span class="normal">          cat </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="ExampleCat.html#example-cat-skeleton-new">example_cat_skeleton_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">          </span><span class="function"><a href="ExampleObject.html#example-object-skeleton-set-cat">example_object_skeleton_set_cat</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">,</span><span class="normal"> cat</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cat</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">      </span><span class="comment">/* Handle Poke() D-Bus method invocations on the .Animal interface */</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">animal</span><span class="symbol">,</span>
+<span class="normal">                        </span><span class="string">"handle-poke"</span><span class="symbol">,</span>
+<span class="normal">                        </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_animal_poke</span><span class="symbol">),</span>
+<span class="normal">                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span><span class="normal"> </span><span class="comment">/* user_data */</span>
+
+<span class="normal">      </span><span class="comment">/* Export the object (@manager takes its own reference to @object) */</span>
+<span class="normal">      </span><span class="function"><a href="GDBusObjectManagerServer.html#g-dbus-object-manager-server-export">g_dbus_object_manager_server_export</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">,</span><span class="normal"> </span><span class="function">G_DBUS_OBJECT_SKELETON</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">));</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="comment">/* Export all objects */</span>
+<span class="normal">  </span><span class="function"><a href="GDBusObjectManagerServer.html#g-dbus-object-manager-server-set-connection">g_dbus_object_manager_server_set_connection</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">,</span><span class="normal"> connection</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_name_acquired</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Acquired the name %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_name_lost</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Lost the name %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+
+<span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint">gint</a></span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gint</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GMainLoop</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">loop</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">guint</span><span class="normal"> id</span><span class="symbol">;</span>
+
+<span class="normal">  loop </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-new">g_main_loop_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">);</span>
+
+<span class="normal">  id </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-Owning-Bus-Names.html#g-bus-own-name">g_bus_own_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="GDBusConnection.html#G-BUS-TYPE-SESSION:CAPS">G_BUS_TYPE_SESSION</a></span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="string">"org.gtk.GDBus.Examples.ObjectManager"</span><span class="symbol">,</span>
+<span class="normal">                       <a href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS">G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</a> </span><span class="symbol">|</span>
+<span class="normal">                       <a href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-REPLACE:CAPS">G_BUS_NAME_OWNER_FLAGS_REPLACE</a></span><span class="symbol">,</span>
+<span class="normal">                       on_bus_acquired</span><span class="symbol">,</span>
+<span class="normal">                       on_name_acquired</span><span class="symbol">,</span>
+<span class="normal">                       on_name_lost</span><span class="symbol">,</span>
+<span class="normal">                       loop</span><span class="symbol">,</span>
+<span class="normal">                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-run">g_main_loop_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gio-Owning-Bus-Names.html#g-bus-unown-name">g_bus_unown_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">id</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-unref">g_main_loop_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<br class="example-break"><div class="example">
+<a name="gdbus-example-codegen-client"></a><p class="title"><b>Example 31. Client-side application using generated code</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">"gdbus-object-manager-example/gdbus-example-objectmanager-generated.h"</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">print_objects</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusObjectManager</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GList</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">objects</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GList</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">l</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Object manager at %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManager.html#g-dbus-object-manager-get-object-path">g_dbus_object_manager_get_object_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">));</span>
+<span class="normal">  objects </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManager.html#g-dbus-object-manager-get-objects">g_dbus_object_manager_get_objects</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">l </span><span class="symbol">=</span><span class="normal"> objects</span><span class="symbol">;</span><span class="normal"> l </span><span class="symbol">!=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span><span class="normal"> l </span><span class="symbol">=</span><span class="normal"> l</span><span class="symbol">-&gt;</span><span class="normal">next</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">ExampleObject</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">object </span><span class="symbol">=</span><span class="normal"> </span><span class="function">EXAMPLE_OBJECT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">-&gt;</span><span class="normal">data</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="usertype">GList</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">interfaces</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">GList</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">ll</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">" - Object at %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusObject.html#g-dbus-object-get-object-path">g_dbus_object_get_object_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_DBUS_OBJECT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">)));</span>
+
+<span class="normal">      interfaces </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObject.html#g-dbus-object-get-interfaces">g_dbus_object_get_interfaces</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_DBUS_OBJECT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">));</span>
+<span class="normal">      </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ll </span><span class="symbol">=</span><span class="normal"> interfaces</span><span class="symbol">;</span><span class="normal"> ll </span><span class="symbol">!=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span><span class="normal"> ll </span><span class="symbol">=</span><span class="normal"> ll</span><span class="symbol">-&gt;</span><span class="normal">next</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="usertype">GDBusInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">interface </span><span class="symbol">=</span><span class="normal"> </span><span class="function">G_DBUS_INTERFACE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ll</span><span class="symbol">-&gt;</span><span class="normal">data</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"   - Interface %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusInterface.html#g-dbus-interface-get-info">g_dbus_interface_get_info</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">interface</span><span class="symbol">)-&gt;</span><span class="normal">name</span><span class="symbol">);</span>
+
+<span class="normal">          </span><span class="comment">/* Note that @interface is really a GDBusProxy instance - and additionally also</span>
+<span class="comment">           * an ExampleAnimal or ExampleCat instance - either of these can be used to</span>
+<span class="comment">           * invoke methods on the remote object. For example, the generated function</span>
+<span class="comment">           *</span>
+<span class="comment">           *  void example_animal_call_poke_sync (ExampleAnimal  *proxy,</span>
+<span class="comment">           *                                      gboolean        make_sad,</span>
+<span class="comment">           *                                      gboolean        make_happy,</span>
+<span class="comment">           *                                      GCancellable   *cancellable,</span>
+<span class="comment">           *                                      GError        **error);</span>
+<span class="comment">           *</span>
+<span class="comment">           * can be used to call the Poke() D-Bus method on the .Animal interface.</span>
+<span class="comment">           * Additionally, the generated function</span>
+<span class="comment">           *</span>
+<span class="comment">           *  const gchar *example_animal_get_mood (ExampleAnimal *object);</span>
+<span class="comment">           *</span>
+<span class="comment">           * can be used to get the value of the :Mood property.</span>
+<span class="comment">           */</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free-full">g_list_free_full</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">interfaces</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free-full">g_list_free_full</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">objects</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_object_added</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusObjectManager</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GDBusObject</span><span class="normal">        </span><span class="symbol">*</span><span class="normal">object</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">gpointer</span><span class="normal">            user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">owner</span><span class="symbol">;</span>
+<span class="normal">  owner </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManagerClient.html#g-dbus-object-manager-client-get-name-owner">g_dbus_object_manager_client_get_name_owner</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_DBUS_OBJECT_MANAGER_CLIENT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Added object at %s (owner %s)</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusObject.html#g-dbus-object-get-object-path">g_dbus_object_get_object_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">),</span><span class="normal"> owner</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">owner</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_object_removed</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusObjectManager</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                   </span><span class="usertype">GDBusObject</span><span class="normal">        </span><span class="symbol">*</span><span class="normal">object</span><span class="symbol">,</span>
+<span class="normal">                   </span><span class="usertype">gpointer</span><span class="normal">            user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">owner</span><span class="symbol">;</span>
+<span class="normal">  owner </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManagerClient.html#g-dbus-object-manager-client-get-name-owner">g_dbus_object_manager_client_get_name_owner</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_DBUS_OBJECT_MANAGER_CLIENT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Removed object at %s (owner %s)</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusObject.html#g-dbus-object-get-object-path">g_dbus_object_get_object_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">),</span><span class="normal"> owner</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">owner</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_notify_name_owner</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GObject</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">object</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">GParamSpec</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">pspec</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">gpointer</span><span class="normal">    user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GDBusObjectManagerClient</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager </span><span class="symbol">=</span><span class="normal"> </span><span class="function">G_DBUS_OBJECT_MANAGER_CLIENT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name_owner</span><span class="symbol">;</span>
+
+<span class="normal">  name_owner </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManagerClient.html#g-dbus-object-manager-client-get-name-owner">g_dbus_object_manager_client_get_name_owner</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"name-owner: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name_owner</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">name_owner</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_interface_proxy_properties_changed</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusObjectManagerClient</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="usertype">GDBusObjectProxy</span><span class="normal">         </span><span class="symbol">*</span><span class="normal">object_proxy</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="usertype">GDBusProxy</span><span class="normal">               </span><span class="symbol">*</span><span class="normal">interface_proxy</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="usertype">GVariant</span><span class="normal">                 </span><span class="symbol">*</span><span class="normal">changed_properties</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="keyword">const</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">invalidated_properties</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="usertype">gpointer</span><span class="normal">                  user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GVariantIter</span><span class="normal"> iter</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">key</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GVariant</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">value</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">s</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Properties Changed on %s:</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusObject.html#g-dbus-object-get-object-path">g_dbus_object_get_object_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_DBUS_OBJECT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object_proxy</span><span class="symbol">)));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-iter-init">g_variant_iter_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> changed_properties</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-iter-next">g_variant_iter_next</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"{&amp;sv}"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">key</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">value</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      s </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-print">g_variant_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"  %s -&gt; %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> s</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref">g_variant_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint">gint</a></span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gint</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GDBusObjectManager</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GMainLoop</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">loop</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GError</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">error</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name_owner</span><span class="symbol">;</span>
+
+<span class="normal">  manager </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  loop </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  loop </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-new">g_main_loop_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">);</span>
+
+<span class="normal">  error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  manager </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="ExampleObjectManagerClient.html#example-object-manager-client-new-for-bus-sync">example_object_manager_client_new_for_bus_sync</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="GDBusConnection.html#G-BUS-TYPE-SESSION:CAPS">G_BUS_TYPE_SESSION</a></span><span class="symbol">,</span>
+<span class="normal">                                                            <a href="GDBusObjectManagerClient.html#G-DBUS-OBJECT-MANAGER-CLIENT-FLAGS-NONE:CAPS">G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE</a></span><span class="symbol">,</span>
+<span class="normal">                                                            </span><span class="string">"org.gtk.GDBus.Examples.ObjectManager"</span><span class="symbol">,</span>
+<span class="normal">                                                            </span><span class="string">"/example/Animals"</span><span class="symbol">,</span>
+<span class="normal">                                                            <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* GCancellable */</span>
+<span class="normal">                                                            </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error getting object manager client: %s"</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  name_owner </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManagerClient.html#g-dbus-object-manager-client-get-name-owner">g_dbus_object_manager_client_get_name_owner</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_DBUS_OBJECT_MANAGER_CLIENT</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"name-owner: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name_owner</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">name_owner</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function">print_objects</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="string">"notify::name-owner"</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_notify_name_owner</span><span class="symbol">),</span>
+<span class="normal">                    <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="string">"object-added"</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_object_added</span><span class="symbol">),</span>
+<span class="normal">                    <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="string">"object-removed"</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_object_removed</span><span class="symbol">),</span>
+<span class="normal">                    <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="string">"interface-proxy-properties-changed"</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_interface_proxy_properties_changed</span><span class="symbol">),</span>
+<span class="normal">                    <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-run">g_main_loop_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="label"> out:</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager </span><span class="symbol">!=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">manager</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop </span><span class="symbol">!=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-unref">g_main_loop_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<br class="example-break">
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

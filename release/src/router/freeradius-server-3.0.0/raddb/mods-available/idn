@@ -1,0 +1,28 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+# Internationalised domain names.
+#
+
+#  The expansion string: %{idn: example.com} results in an ASCII
+#  punycode version of the domain name.  That version can then be used
+#  for name comparisons.  Using an i18n version of the name is NOT
+#  RECOMMENDED, as that version is not canonical.
+#
+#  i.e. the "same" domain name can be represented in many, many,
+#  different ways.  Only the idn version has *one* representation.
+#
+idn {
+	#
+	#  Allow use of unassigned Unicode code points.
+	#
+   	allow_unassigned = no
+
+	#
+	#  Prohibit underscores and other invalid characters in domain
+	#  names.
+	use_std3_ascii_rules = yes
+
+}

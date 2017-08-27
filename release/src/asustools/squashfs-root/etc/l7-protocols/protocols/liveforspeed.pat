@@ -1,0 +1,2 @@
+liveforspeed
+^..\x05\x58\x0a\x1d\x03

@@ -1,0 +1,150 @@
+<!-- ##### SECTION Title ##### -->
+GFileEnumerator
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFileEnumerator ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GFileEnumerator:container ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_file_enumerator_next_file ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_close ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_next_files_async ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@num_files: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_next_files_finish ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_close_async ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_close_finish ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_is_closed ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_has_pending ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_set_pending ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@pending: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_get_container ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_enumerator_get_child ##### -->
+<para>
+
+</para>
+
+@enumerator: 
+@info: 
+@Returns: 
+
+

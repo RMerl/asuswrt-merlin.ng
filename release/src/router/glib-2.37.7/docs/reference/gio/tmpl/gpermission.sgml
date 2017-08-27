@@ -1,0 +1,149 @@
+<!-- ##### SECTION Title ##### -->
+gpermission
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GPermission ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GPermission:allowed ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GPermission:can-acquire ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GPermission:can-release ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_permission_get_allowed ##### -->
+<para>
+
+</para>
+
+@permission: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_get_can_acquire ##### -->
+<para>
+
+</para>
+
+@permission: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_get_can_release ##### -->
+<para>
+
+</para>
+
+@permission: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_acquire ##### -->
+<para>
+
+</para>
+
+@permission: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_acquire_async ##### -->
+<para>
+
+</para>
+
+@permission: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_permission_acquire_finish ##### -->
+<para>
+
+</para>
+
+@permission: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_release ##### -->
+<para>
+
+</para>
+
+@permission: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_release_async ##### -->
+<para>
+
+</para>
+
+@permission: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_permission_release_finish ##### -->
+<para>
+
+</para>
+
+@permission: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_permission_impl_update ##### -->
+<para>
+
+</para>
+
+@permission: 
+@allowed: 
+@can_acquire: 
+@can_release: 
+
+

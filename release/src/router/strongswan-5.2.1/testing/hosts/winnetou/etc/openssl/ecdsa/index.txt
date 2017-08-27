@@ -1,0 +1,13 @@
+R	130621144307Z	130627211828Z,superseded	01	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 521 bit/CN=moon.strongswan.org
+R	130621161252Z	080622162459Z,keyCompromise	02	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=carol@strongswan.org
+R	130621161359Z	130627211849Z,superseded	03	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 384 bit/CN=dave@strongswan.org
+R	130621162918Z	130627211852Z,superseded	04	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=carol@strongswan.org
+V	140611160633Z		05	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=moon.strongswan.org
+V	140611160706Z		06	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 384 bit/CN=moon.strongswan.org
+V	180602071743Z		07	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=moon.strongswan.org
+V	180602072050Z		08	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 384 bit/CN=moon.strongswan.org
+V	180602072738Z		09	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=carol@strongswan.org
+V	180602073154Z		0A	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 384 bit/CN=carol@strongswan.org
+V	180602073328Z		0B	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=dave@strongswan.org
+V	180602073519Z		0C	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 384 bit/CN=dave@strongswan.org
+V	180602100216Z		0D	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 521 bit/CN=moon.strongswan.org

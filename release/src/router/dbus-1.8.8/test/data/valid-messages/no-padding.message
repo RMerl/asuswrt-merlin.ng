@@ -1,0 +1,22 @@
+## Message with no header padding
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+
+REQUIRED_FIELDS
+
+## this byte array is filled with zeros to the natural length 
+## of the header
+HEADER_FIELD UNKNOWN
+TYPE ARRAY
+TYPE BYTE
+ALIGN 4
+LENGTH ThisByteArray
+START_LENGTH ThisByteArray
+BYTE 1
+ALIGN 8 1
+END_LENGTH ThisByteArray
+
+END_LENGTH Header
+START_LENGTH Body
+END_LENGTH Body

@@ -1,0 +1,157 @@
+<!-- ##### SECTION Title ##### -->
+Version Information
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### VARIABLE glib_major_version ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### VARIABLE glib_minor_version ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### VARIABLE glib_micro_version ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### VARIABLE glib_binary_age ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### VARIABLE glib_interface_age ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION glib_check_version ##### -->
+<para>
+
+</para>
+
+@required_major: 
+@required_minor: 
+@required_micro: 
+@Returns: 
+
+
+<!-- ##### MACRO GLIB_MAJOR_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_MINOR_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_MICRO_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_CHECK_VERSION ##### -->
+<para>
+
+</para>
+
+@major: 
+@minor: 
+@micro: 
+
+
+<!-- ##### MACRO GLIB_VERSION_2_26 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_2_28 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_2_30 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_2_32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_2_34 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_2_36 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_MIN_REQUIRED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_VERSION_MAX_ALLOWED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO GLIB_DISABLE_DEPRECATION_WARNINGS ##### -->
+<para>
+
+</para>
+
+
+

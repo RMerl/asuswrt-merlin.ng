@@ -1,0 +1,45 @@
+.TH RADCRYPT 8
+.SH NAME
+radcrypt - generate password hash for use with radius, or validates a password hash
+.SH SYNOPSIS
+.B radcrypt
+.RB [ \-d | --des ]
+.RB [ \-m | --md5 ]
+.RB [ \-c | --check ]
+\fIplaintext_password\fP [\fIhashed_password\fP]
+.SH DESCRIPTION
+\fBradcrypt\fP generates a hashed digest of a plaintext password, or can
+validate if a password hash matches a plaintext password. DES and MD5
+hashes are currently supported. When generating a password hash a random
+salt is generated and applied.
+.PP
+A hashed password can be validated by specifying \fI-c\fP or \fI--check\fP and
+passing \fIhashed_password\fP after \fIplaintext_password\fP on the command line.
+In this case \fIhashed_password\fP will be checked to see if it matches
+\fIplaintext_password\fP. If so "Password OK" will be printed and the exit
+status will be 1, otherwise "Password BAD" will be printed and exit status
+will be 0 (Note this is the opposite of a normal successful shell status).
+
+.SH OPTIONS
+
+.IP "-d --des"
+Use a DES (Data Encryption Standard) hash (default).
+Ignored if performing a password check.
+.IP "-m --md5"
+Use a MD5 (Message Digest 5) hash.
+Ignored if performing a password check.
+.IP "-c --check"
+Perform a validation check on a password hash to verify if it matches
+the plantext password.
+
+.SH EXAMPLES
+.nf
+$ radcrypt foobar
+HaX0xn7Qy650Q
+$ radcrypt -c foobar HaX0xn7Qy650Q
+Password OK
+.fi
+.SH SEE ALSO
+radiusd(8), crypt(3)
+.SH AUTHORS
+Miquel van Smoorenburg <miquels@cistron-office.nl>

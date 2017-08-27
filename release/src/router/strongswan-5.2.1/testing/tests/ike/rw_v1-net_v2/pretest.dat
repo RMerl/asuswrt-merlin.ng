@@ -1,0 +1,7 @@
+moon::ipsec start
+sun::ipsec start
+carol::ipsec start
+moon::sleep 1 
+moon::ipsec up net-net
+carol::ipsec up home
+moon::sleep 1

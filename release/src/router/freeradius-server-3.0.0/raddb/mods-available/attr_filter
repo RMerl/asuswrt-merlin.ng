@@ -1,0 +1,48 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  This file defines a number of instances of the "attr_filter" module.
+#
+
+# attr_filter - filters the attributes received in replies from
+# proxied servers, to make sure we send back to our RADIUS client
+# only allowed attributes.
+attr_filter attr_filter.post-proxy {
+	filename = ${modconfdir}/${.:name}/post-proxy
+}
+
+# attr_filter - filters the attributes in the packets we send to
+# the RADIUS home servers.
+attr_filter attr_filter.pre-proxy {
+	filename = ${modconfdir}/${.:name}/pre-proxy
+}
+
+# Enforce RFC requirements on the contents of Access-Reject
+# packets.  See the comments at the top of the file for
+# more details.
+#
+attr_filter attr_filter.access_reject {
+	key = %{User-Name}
+	filename = ${modconfdir}/${.:name}/access_reject
+}
+
+# Enforce RFC requirements on the contents of Access-Challenge
+# packets.  See the comments at the top of the file for
+# more details.
+#
+attr_filter attr_filter.access_challenge {
+	key = %{User-Name}
+	filename = ${modconfdir}/${.:name}/access_challenge
+}
+
+
+#  Enforce RFC requirements on the contents of the
+#  Accounting-Response packets.  See the comments at the
+#  top of the file for more details.
+#
+attr_filter attr_filter.accounting_response {
+	key = %{User-Name}
+	filename = ${modconfdir}/${.:name}/accounting_response
+}

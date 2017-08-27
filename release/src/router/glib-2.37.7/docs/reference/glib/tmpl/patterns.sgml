@@ -1,0 +1,87 @@
+<!-- ##### SECTION Title ##### -->
+Glob-style pattern matching
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GPatternSpec ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_pattern_spec_new ##### -->
+<para>
+
+</para>
+
+@pattern: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pattern_spec_free ##### -->
+<para>
+
+</para>
+
+@pspec: 
+
+
+<!-- ##### FUNCTION g_pattern_spec_equal ##### -->
+<para>
+
+</para>
+
+@pspec1: 
+@pspec2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pattern_match ##### -->
+<para>
+
+</para>
+
+@pspec: 
+@string_length: 
+@string: 
+@string_reversed: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pattern_match_string ##### -->
+<para>
+
+</para>
+
+@pspec: 
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pattern_match_simple ##### -->
+<para>
+
+</para>
+
+@pattern: 
+@string: 
+@Returns: 
+
+

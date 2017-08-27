@@ -1,0 +1,21 @@
+Since 2.1.99-test5, pciutils should also be compilable on Windows. Thanks
+to Alexander Stock for contributing the port.
+
+Updated after version 2.2.6 to compile again, and with MinGW, even (only?)
+cross-compiling. (Hopefully it works with MSVC too.)
+
+To use this port, you need to install WinIO.dll first. You can get it
+from http://www.internals.com/.
+
+However, you need to use win32/config.{h,mk} instead of the automatically
+generated lib/config.{h,mk} as lib/configure does not run on Windows.
+
+================================================================================
+BEWARE: The current implementation pokes I/O ports to access the PCI devices
+directly. This leads to several problems: some devices are invisible, extended
+PCIe configuration space is not available, and there are many potential race
+conditions. Instead, libpci should use the proper Windows drivers.
+
+Unfortunately, the Windows port currently lacks a maintainer. If you are willing
+to step up and fix the issues, please let me know.  -- Martin Mares
+================================================================================

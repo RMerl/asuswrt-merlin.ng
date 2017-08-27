@@ -1,0 +1,66 @@
+CODE STYLE
+----------
+
+Please use the style used by the rest of the code. Among other things,
+this means:
+
+    * Tabs, not spaces, for indentation
+
+    * Put spaces:
+        * around binary operators
+	* between if/while/for/switch and "("
+	* between function name and "("
+     	* between ")" and "{"
+	* after ","
+
+    * if/for/while bodies:
+
+        * Single-line bodies should (a) be on their own line, and (b)
+          not have braces around them
+
+        * Multi-line bodies should have braces around them, even if
+          the body is only a single statement and the braces are not
+          syntactically necessary.
+
+	* Eg:
+
+		for (i = 0; i < len; i++) {
+			if (find (i, something))
+				break;
+			else {
+				function_with_big_name (i, something,
+							something_else);
+			}
+		}
+
+    * C89, not C99. (In particular, don't declare variables in the
+      middle of blocks.)
+
+    * Do not use gint, gchar, glong, and gshort. (Other g-types, such
+      as gpointer and the unsigned types are fine.)
+
+CORRECTNESS
+-----------
+
+    * libsoup builds with lots of -W options by default, and should
+      not print any warnings while compiling (unless they're caused by
+      #included files from other projects, eg, proxy.h). You can use
+      "make > /dev/null" to do a full compile showing only the
+      warnings/errors, to make sure your patch does not introduce any
+      more.
+
+    * There are a number of regression tests in the tests/ directory.
+      Running "make check" will run all of them (or at least, all of
+      the ones that it can run based on what software you have
+      installed. Eg, some tests require apache to be installed.) You
+      should run "make check" before submitting a patch that could
+      potentially change libsoup's behavior. ("make check" will warn
+      you if it was not able to run all of the tests. If you are
+      making extensive changes, or changing very low-level functions,
+      you may want to install all of the optional pieces so you can
+      run all of the regression tests.)
+
+    * libsoup ought to build correctly from outside its source tree,
+      so if you make large changes to the Makefiles, try a "make
+      distcheck" to verify that an out-of-source-tree build still
+      works.

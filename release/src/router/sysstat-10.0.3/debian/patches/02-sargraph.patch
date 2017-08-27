@@ -1,0 +1,39 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 02-sargraph
+
+Fix paths in sargraph script
+---
+ contrib/sargraph/sargraph |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/contrib/sargraph/sargraph b/contrib/sargraph/sargraph
+index 2f3e717..9829a64 100755
+--- a/contrib/sargraph/sargraph
++++ b/contrib/sargraph/sargraph
+@@ -5,12 +5,12 @@
+ # Our dependencies
+ ZENITY="/usr/bin/zenity"
+ XSLTPROC="/usr/bin/xsltproc"
+-SADF="/usr/local/bin/sadf"
++SADF="/usr/bin/sadf"
+ GNUPLOT="/usr/bin/gnuplot"
+ MKTEMP="/bin/mktemp"
+ FIND="/usr/bin/find"
+-SORT="/bin/sort"
+-CUT="/bin/cut"
++SORT="/usr/bin/sort"
++CUT="/usr/bin/cut"
+ 
+ # sar / sysstat DTD is published here:
+ # http://pagesperso-orange.fr/sebastien.godard/sysstat.dtd
+@@ -367,7 +367,7 @@ while /bin/true; do
+ 
+ # Prompt for sar file
+ 
+-SARLIST=`$FIND /var/log/sa -name 'sa[0-9][0-9]' -printf '%T@,%p\n'| $SORT -n -r | $CUT -d, -f2`
++SARLIST=`$FIND /var/log/sysstat -name 'sa[0-9][0-9]' -printf '%T@,%p\n'| $SORT -n -r | $CUT -d, -f2`
+ SARFILE=`$ZENITY --list --text "Select data source" --column "sar file" $SARLIST`
+ if [ "$SARFILE" == "" ]; then
+     exit
+-- 

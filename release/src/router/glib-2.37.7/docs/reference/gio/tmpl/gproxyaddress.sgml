@@ -1,0 +1,150 @@
+<!-- ##### SECTION Title ##### -->
+GProxyAddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GProxyAddress ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GProxyAddress:destination-hostname ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddress:destination-port ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddress:destination-protocol ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddress:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddress:protocol ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddress:uri ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GProxyAddress:username ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GProxyAddressClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION g_proxy_address_get_destination_protocol ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_get_destination_hostname ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_get_destination_port ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_get_password ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_get_protocol ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_get_username ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_get_uri ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_address_new ##### -->
+<para>
+
+</para>
+
+@inetaddr: 
+@port: 
+@protocol: 
+@dest_hostname: 
+@dest_port: 
+@username: 
+@password: 
+@Returns: 
+
+

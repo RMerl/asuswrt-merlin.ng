@@ -1,0 +1,361 @@
+<!-- ##### SECTION Title ##### -->
+gmenu
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GMenu ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_menu_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_freeze ##### -->
+<para>
+
+</para>
+
+@menu: 
+
+
+<!-- ##### FUNCTION g_menu_insert ##### -->
+<para>
+
+</para>
+
+@menu: 
+@position: 
+@label: 
+@detailed_action: 
+
+
+<!-- ##### FUNCTION g_menu_prepend ##### -->
+<para>
+
+</para>
+
+@menu: 
+@label: 
+@detailed_action: 
+
+
+<!-- ##### FUNCTION g_menu_append ##### -->
+<para>
+
+</para>
+
+@menu: 
+@label: 
+@detailed_action: 
+
+
+<!-- ##### FUNCTION g_menu_insert_item ##### -->
+<para>
+
+</para>
+
+@menu: 
+@position: 
+@item: 
+
+
+<!-- ##### FUNCTION g_menu_append_item ##### -->
+<para>
+
+</para>
+
+@menu: 
+@item: 
+
+
+<!-- ##### FUNCTION g_menu_prepend_item ##### -->
+<para>
+
+</para>
+
+@menu: 
+@item: 
+
+
+<!-- ##### FUNCTION g_menu_insert_section ##### -->
+<para>
+
+</para>
+
+@menu: 
+@position: 
+@label: 
+@section: 
+
+
+<!-- ##### FUNCTION g_menu_prepend_section ##### -->
+<para>
+
+</para>
+
+@menu: 
+@label: 
+@section: 
+
+
+<!-- ##### FUNCTION g_menu_append_section ##### -->
+<para>
+
+</para>
+
+@menu: 
+@label: 
+@section: 
+
+
+<!-- ##### FUNCTION g_menu_append_submenu ##### -->
+<para>
+
+</para>
+
+@menu: 
+@label: 
+@submenu: 
+
+
+<!-- ##### FUNCTION g_menu_insert_submenu ##### -->
+<para>
+
+</para>
+
+@menu: 
+@position: 
+@label: 
+@submenu: 
+
+
+<!-- ##### FUNCTION g_menu_prepend_submenu ##### -->
+<para>
+
+</para>
+
+@menu: 
+@label: 
+@submenu: 
+
+
+<!-- ##### FUNCTION g_menu_remove ##### -->
+<para>
+
+</para>
+
+@menu: 
+@position: 
+
+
+<!-- ##### FUNCTION g_menu_remove_all ##### -->
+<para>
+
+</para>
+
+@menu: 
+
+
+<!-- ##### STRUCT GMenuItem ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_menu_item_new ##### -->
+<para>
+
+</para>
+
+@label: 
+@detailed_action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_new_section ##### -->
+<para>
+
+</para>
+
+@label: 
+@section: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_new_submenu ##### -->
+<para>
+
+</para>
+
+@label: 
+@submenu: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_new_from_model ##### -->
+<para>
+
+</para>
+
+@model: 
+@item_index: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_label ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@label: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_icon ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@icon: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_action_and_target_value ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@action: 
+@target_value: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_action_and_target ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@action: 
+@format_string: 
+@...: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_detailed_action ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@detailed_action: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_section ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@section: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_submenu ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@submenu: 
+
+
+<!-- ##### FUNCTION g_menu_item_get_attribute_value ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@attribute: 
+@expected_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_get_attribute ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@attribute: 
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_get_link ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@link: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_attribute_value ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@attribute: 
+@value: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_attribute ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@attribute: 
+@format_string: 
+@...: 
+
+
+<!-- ##### FUNCTION g_menu_item_set_link ##### -->
+<para>
+
+</para>
+
+@menu_item: 
+@link: 
+@model: 
+
+

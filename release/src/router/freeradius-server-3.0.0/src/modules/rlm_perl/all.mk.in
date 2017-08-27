@@ -1,0 +1,20 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= rlm_perl.c
+
+SRC_CFLAGS	:= @mod_cflags@
+TGT_LDLIBS	:= @mod_ldflags@
+
+install: $(R)$(modconfdir)/perl/example.pl
+
+$(R)$(modconfdir)/perl: | $(R)$(modconfdir)
+	@echo INSTALL $(patsubst $(R)$(raddbdir)%,raddb%,$@)
+	@$(INSTALL) -d -m 750 $@
+
+$(R)$(modconfdir)/perl/example.pl: src/modules/rlm_perl/example.pl | $(R)$(modconfdir)/perl
+	@$(ECHO) INSTALL $(notdir $<)
+	@$(INSTALL) -m 755 $< $(R)$(modconfdir)/perl

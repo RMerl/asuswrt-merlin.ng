@@ -1,0 +1,34 @@
+1244070100000001@eapsim.foo	Auth-Type := EAP, Autz-Type:= EAP, EAP-Type := SIM
+	EAP-Sim-Rand1 = 0x101112131415161718191a1b1c1d1e1f,
+	EAP-Sim-SRES1 = 0xd1d2d3d4,
+	EAP-Sim-Rand2 = 0x202122232425262728292a2b2c2d2e2f,
+	EAP-Sim-SRES2 = 0xe1e2e3e4,
+	EAP-Sim-Rand3 = 0x303132333435363738393a3b3c3d3e3f,
+	EAP-Sim-SRES3 = 0xf1f2f3f4,
+	EAP-Sim-KC1 = 0xa0a1a2a3a4a5a6a7,
+	EAP-Sim-KC2 = 0xb0b1b2b3b4b5b6b7,
+	EAP-Sim-KC3 = 0xc0c1c2c3c4c5c6c7,
+
+1232420100000015        Auth-Type := EAP, Autz-Type:=EAP, EAP-Type := SIM
+        EAP-Sim-Rand1 = 0x30000000000000000000000000000000,
+        EAP-Sim-SRES1 = 0x30112233,
+        EAP-Sim-KC1 = 0x445566778899AABB,
+        EAP-Sim-Rand2 = 0x31000000000000000000000000000000,
+        EAP-Sim-SRES2 = 0x31112233,
+        EAP-Sim-KC2 = 0x445566778899AABB,
+        EAP-Sim-Rand3 = 0x32000000000000000000000000000000,
+        EAP-Sim-SRES3 = 0x32112233,
+        EAP-Sim-KC3 = 0x445566778899AABB,
+
+eapsim         Auth-Type := EAP, Autz-Type:=EAP, EAP-Type := SIM
+        EAP-Sim-Rand1 = 0xabcd1234abcd1234abcd1234abcd1234,
+        EAP-Sim-SRES1 = 0x1234abcd,
+        EAP-Sim-KC1 = 0x0011223344556677,
+        EAP-Sim-Rand2 = 0xbcd1234abcd1234abcd1234abcd1234a,
+        EAP-Sim-SRES2 = 0x234abcd1,
+        EAP-Sim-KC2 = 0x1021324354657687,
+        EAP-Sim-Rand3 = 0xcd1234abcd1234abcd1234abcd1234ab,
+        EAP-Sim-SRES3 = 0x34abcd12,
+        EAP-Sim-KC3 = 0x30415263748596a7
+
+

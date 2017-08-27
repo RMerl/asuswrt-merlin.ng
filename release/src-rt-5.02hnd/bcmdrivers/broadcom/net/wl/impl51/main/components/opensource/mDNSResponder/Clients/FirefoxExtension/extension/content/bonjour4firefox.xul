@@ -1,0 +1,222 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://browser/content/places/places.css"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://browser/skin/places/places.css"?>
+<?xml-stylesheet href="browseList.css"?>
+<!DOCTYPE page SYSTEM "chrome://bonjour4firefox/locale/bonjour4firefox.dtd">
+	<page
+		orient="vertical"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        style="background-color: transparent !important; -moz-appearance: none !important;"
+		onload="BonjourBrowser.init()"
+		onunload="BonjourBrowser.cleanup()">
+		
+
+	<menupopup id="targetmenu">
+        <menuitem label="&bonjour4firefoxSidebarOpenDefault.label;" value="current"/>
+        <menuitem label="&bonjour4firefoxSidebarOpenTab.label;" value="tab"/>
+        <menuitem label="&bonjour4firefoxSidebarOpenWindow.label;" value="window"/>
+	</menupopup>
+
+	<tree id="treeBrowseList" flex="1" class="sidebar-placesTree" hidecolumnpicker="true">
+		<treecols hide="true">
+			<treecol id="title" flex="1" primary="true" hideheader="true"/>
+        </treecols>
+
+        <treechildren class="sidebar-placesTreechildren" context="targetmenu" flex="1" id="treeChildrenBrowseList">
+			<treeitem>
+				<treerow>
+					<treecell src="chrome://bonjour4firefox/content/bonjour4firefox.png" label="About Bonjour"/>
+				</treerow>
+			</treeitem>
+		</treechildren>
+	</tree>
+
+	<script><![CDATA[
+
+		var BonjourBrowser =
+		{
+			Service: null,
+			Browse: null,
+			BrowseListener: null,
+			Resolve: null,
+			ResolveListener: null,
+
+			init: function()
+			{
+				document.getElementById("treeChildrenBrowseList").addEventListener( "click", this.listListener, false );
+
+				try
+				{
+        			netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+					const cid = "@apple.com/DNSSDService;1";
+        			Service = Components.classes[cid].createInstance();
+					Service = Service.QueryInterface(Components.interfaces.IDNSSDService);
+				}
+				catch (err)
+				{
+        			alert(err);
+        			return;
+    			}
+
+				BrowseListener = this.browseListener;
+				ResolveListener = this.resolveListener;
+
+				try
+				{
+					Browse = Service.browse(0, "_http._tcp", "", BrowseListener );
+				}
+				catch ( err )
+				{
+					alert( err );
+					return;
+				}
+			},
+
+			cleanup: function()
+			{
+				if ( Browse != null )
+				{
+					Browse.stop();
+					Browse = null;
+				}
+			},
+
+
+			browseListener: function( service, add, interfaceIndex, error, serviceName, regtype, domain )
+			{
+				if ( error == 0 )
+				{
+					// First see if we can look this guy up
+
+					var treeView = document.getElementById( 'treeChildrenBrowseList' );
+					var treeItem = null;
+
+					for ( i = 1; i < treeView.childNodes.length; i++ )
+					{
+						var ti = treeView.childNodes[ i ];
+						var tr = ti.childNodes[ 0 ];
+						var tc = tr.childNodes[ 0 ];
+
+						if ( tc.getAttribute( 'label' ) == serviceName )
+						{
+							treeItem = ti;
+							break;
+						}
+					}
+	
+					if ( add )
+					{
+						// If we've already seen this guy, then bump up his reference count
+
+						if ( treeItem )
+						{
+							var refcnt = treeItem.getUserData( 'refcnt' );
+							refcnt++;
+						}
+						else
+						{
+							var newTreeItem = document.createElement('treeitem');
+							var newTreeRow = document.createElement('treerow');
+							newTreeRow.setAttribute( 'properties', 'bonjourRow' );
+							var newTreeCell = document.createElement('treecell');
+                			newTreeCell.setAttribute( 'label', serviceName );
+							newTreeCell.setAttribute( 'src', 'chrome://bonjour4firefox/content/bonjour4firefox.png' );
+				
+							newTreeItem.appendChild( newTreeRow );
+							newTreeRow.appendChild( newTreeCell );
+							newTreeItem.setUserData( 'interfaceIndex', interfaceIndex, null );
+                			newTreeItem.setUserData( 'serviceName', serviceName, null );
+							newTreeItem.setUserData( 'regtype', regtype, null );
+							newTreeItem.setUserData( 'domain', domain, null );
+							newTreeItem.setUserData( 'refcnt', 1, null );
+
+							// Insert in alphabetical order
+
+							var insertBefore = null;
+
+							for ( i = 1; i < treeView.childNodes.length; i++ )
+							{
+								var ti = treeView.childNodes[ i ];
+								var tr = ti.childNodes[ 0 ];
+								var tc = tr.childNodes[ 0 ];
+		
+								if ( serviceName.toLowerCase() < tc.getAttribute( 'label' ).toLowerCase() )
+								{
+									insertBefore = ti;
+									break;
+								}
+        					}
+	
+							if ( insertBefore != null )
+							{
+								treeView.insertBefore( newTreeItem, insertBefore );
+							}
+							else
+							{
+								treeView.appendChild( newTreeItem );
+							}
+						}
+					}
+					else if ( treeItem )
+					{
+						var refcnt = treeItem.getUserData( 'refcnt' );
+						
+						if ( --refcnt == 0 )
+						{
+							treeView.removeChild( treeItem );
+						}
+					}
+				}
+				else
+				{
+					alert( 'There was an error browsing for websites: ' + error );
+				}
+			},
+
+			listListener: function( event )
+			{
+				var treeBrowseList = document.getElementById( 'treeBrowseList' );
+
+				if ( treeBrowseList.currentIndex == 0 )
+				{
+					window._content.location="http://www.apple.com/macosx/features/bonjour";
+				}
+				else
+				{
+ 					var item = treeBrowseList.view.getItemAtIndex(treeBrowseList.currentIndex);
+
+					var interfaceIndex = item.getUserData("interfaceIndex");
+					var serviceName = item.getUserData("serviceName");
+					var regtype = item.getUserData("regtype");
+					var domain = item.getUserData("domain");
+
+					try
+					{
+						Resolve = Service.resolve( interfaceIndex, serviceName, regtype, domain, ResolveListener );
+					}
+					catch ( err )
+					{
+						alert( err );
+						return;
+					}
+				}
+			},
+
+			resolveListener: function( service, interfaceIndex, error, fullname, host, port, path )
+			{
+				if ( error == 0 )
+				{
+					window._content.location='http://' + host + ':' + port + path;
+				}
+				else
+				{
+					alert( 'There was an error resolving ' + fullname );
+				}
+
+				Resolve.stop();
+			},
+		};
+
+	]]></script>
+</page>

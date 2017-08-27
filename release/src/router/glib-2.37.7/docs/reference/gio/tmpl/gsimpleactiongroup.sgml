@@ -1,0 +1,78 @@
+<!-- ##### SECTION Title ##### -->
+GSimpleActionGroup
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSimpleActionGroup ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_simple_action_group_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_action_group_lookup ##### -->
+<para>
+
+</para>
+
+@simple: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_simple_action_group_insert ##### -->
+<para>
+
+</para>
+
+@simple: 
+@action: 
+
+
+<!-- ##### FUNCTION g_simple_action_group_remove ##### -->
+<para>
+
+</para>
+
+@simple: 
+@action_name: 
+
+
+<!-- ##### FUNCTION g_simple_action_group_add_entries ##### -->
+<para>
+
+</para>
+
+@simple: 
+@entries: 
+@n_entries: 
+@user_data: 
+
+

@@ -1,0 +1,209 @@
+.TH SADC 8 "SEPTEMBER 2010" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+sadc \- System activity data collector.
+.SH SYNOPSIS
+.B @SA_LIB_DIR@/sadc [ -C
+.I comment
+.B ] [ -S { INT | DISK | SNMP | IPV6 | POWER | XDISK | ALL | XALL } ] [ -F ] [ -L ] [ -V ] [
+.I interval
+.B [
+.I count
+.B ] ] [
+.I outfile
+.B ]
+.SH DESCRIPTION
+The
+.B sadc
+command samples system data a specified number of times
+(\fIcount\fR) at a specified interval measured in seconds
+(\fIinterval\fR). It writes in binary format to the specified
+.I outfile
+or to standard output. If
+.I outfile
+is set to -, then
+.B sadc
+uses the standard system activity daily data file, the
+.IR @SA_DIR@/sa dd
+file, where the dd parameter indicates the current day.
+By default
+.B sadc
+collects all the data available from the kernel.
+Exceptions are interrupts and disk data, for which the
+relevant options must be explicitly passed to
+.B sadc
+(see options below).
+
+When the
+.I count
+parameter is not specified,
+.B sadc
+writes its data endlessly.
+When both
+.I interval
+and
+.I count
+are not specified, and option -C is not used,
+a dummy record, which is used at system startup to mark
+the time when the counter restarts from 0, will be written.
+For example, one of the system startup script may write the restart mark to
+the daily data file by the command entry:
+
+.B "@SA_LIB_DIR@/sadc -"
+
+The
+.B sadc
+command is intended to be used as a backend to the
+.B sar
+command.
+
+Note: The
+.B sadc
+command only reports on local activities.
+
+.SH OPTIONS
+.IP "-C comment"
+When neither the
+.I interval
+nor the
+.I count
+parameters are specified, this option tells
+.B sadc
+to write a dummy record containing the specified
+.I comment
+string.
+This comment can then be displayed with option -C of
+.BR sar .
+.IP -F
+The creation of
+.I outfile
+will be forced. If the file already exists and has a format unknown to
+.B sadc
+then it will be truncated. This may be useful for daily data files
+created by an older version of
+.B sadc
+and whose format is no longer compatible with current one.
+.IP -L
+.B sadc
+will try to get an exclusive lock on the
+.I outfile
+before writing to it or truncating it. Failure to get the lock is fatal,
+except in the case of trying to write a normal (i.e. not a dummy and not
+a header) record to an existing file, in which case
+.B sadc
+will try again at the next interval. Usually, the only reason a lock
+would fail would be if another
+.B sadc
+process were also writing to the file. This can happen when cron is used
+to launch
+.BR sadc .
+If the system is under heavy load, an old
+.B sadc
+might still be running when cron starts a new one. Without locking,
+this situation can result in a corrupted system activity file.
+.IP "-S { INT | DISK | SNMP | IPV6 | POWER | XDISK | ALL | XALL }"
+Specify which optional activities should be collected by
+.BR sadc .
+Some activities are optional to prevent data files from growing too large.
+The
+.B INT
+keyword indicates that
+.B sadc
+should collect data for system interrupts.
+The
+.B DISK
+keyword indicates that
+.B sadc
+should collect data for block devices.
+The
+.B SNMP
+and
+.B IPV6
+keywords indicate respectively that SNMP and IPv6 statistics should be
+collected by
+.BR sadc .
+The
+.B POWER
+keyword indicates that
+.B sadc
+should collect power management statistics.
+The
+.B ALL
+keyword is equivalent to specifying all the keywords above and therefore
+all previous activities are collected.
+
+The
+.B XDISK
+keyword is an extension to the
+.B DISK
+one and indicates that partition statistics should be collected by
+.B sadc
+in addition to disk statistics. This option works only with kernels 2.6.25
+and later.
+The
+.B XALL
+keyword is equivalent to specifying all the keywords above (including
+keyword extensions) and therefore all possible activities are collected.
+
+Important note: The activities (including optional ones) saved in an existing
+data file prevail over those selected with option -S.
+As a consequence, appending data to an existing data file will result in
+option -S being ignored.
+.IP -V
+Print version number then exit.
+
+.SH ENVIRONMENT
+The
+.B sadc
+command takes into account the following environment variable:
+
+.IP S_TIME_DEF_TIME
+If this variable exists and its value is
+.BR UTC
+then
+.B sadc
+will save its data in UTC time.
+.B sadc
+will also use UTC time instead of local time to determine the current
+daily data file located in the
+.IR @SA_DIR@
+directory.
+.SH EXAMPLES
+.B @SA_LIB_DIR@/sadc 1 10 /tmp/datafile
+.RS
+Write 10 records of one second intervals to the /tmp/datafile binary file.
+.RE
+
+.B @SA_LIB_DIR@/sadc -C Backup_Start /tmp/datafile
+.RS
+Insert the comment Backup_Start into the file /tmp/datafile.
+.RE
+.SH BUGS
+The
+.I /proc
+filesystem must be mounted for the
+.B sadc
+command to work.
+
+All the statistics are not necessarily available, depending on the kernel version used.
+.B sadc
+assumes that you are using at least a 2.6 kernel.
+.SH FILES
+.IR @SA_DIR@/sa dd
+.RS
+Indicate the daily data file, where the
+.B dd
+parameter is a number representing the day of the month.
+
+.RE
+.IR /proc
+contains various files with system statistics.
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sar (1),
+.BR sa1 (8),
+.BR sa2 (8),
+.BR sadf (1),
+.BR sysstat (5)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

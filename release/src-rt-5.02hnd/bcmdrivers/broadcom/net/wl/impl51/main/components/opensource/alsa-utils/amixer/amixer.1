@@ -1,0 +1,141 @@
+.TH AMIXER 1 "11 Aug 2000"
+.SH NAME
+amixer \- command-line mixer for ALSA soundcard driver
+.SH SYNOPSIS
+\fBamixer\fP [\fI\-option\fP] [\fIcmd\fP]
+.SH DESCRIPTION
+\fBamixer\fP allows command-line control of the mixer for the ALSA
+soundcard driver.
+\fBamixer\fP supports multiple soundcards.
+
+\fBamixer\fR with no arguments will display the current mixer settings
+for the default soundcard and device. This is a good way to see a list
+of the simple mixer controls you can use.
+
+.SH COMMANDS
+
+.TP
+\fIhelp\fP
+Shows syntax.
+
+.TP
+\fIinfo\fP
+Shows the information about a mixer device.
+
+.TP
+\fIscontrols\fP
+Shows a complete list of simple mixer controls.
+
+.TP
+\fIscontents\fP
+Shows a complete list of simple mixer controls with their contents.
+
+.TP
+\fIset\fP or \fIsset\fP <\fISCONTROL\fP> <\fIPARAMETER\fP> ...
+Sets the simple mixer control contents. The parameter can be the volume
+either as a percentage from 0% to 100% with \fI%\fP suffix,
+a dB gain with \fIdB\fP suffix (like -12.5dB), or an exact hardware value.
+The dB gain can be used only for the mixer elements with available
+dB information.
+When plus(+) or minus(\-) letter is appended after
+volume value, the volume is incremented or decremented from the current
+value, respectively.
+
+The parameters \fIcap, nocap, mute, unmute, toggle\fP are used to
+change capture (recording) and muting for the group specified.
+
+The optional modifiers can be put as extra parameters to specify
+the stream direction or channels to apply.
+The modifiers \fIplayback\fP and \fIcapture\fP specify the stream,
+and the modifiers \fIfront, rear, center, woofer\fP are used to specify
+channels to be changed. 
+
+A simple mixer control must be specified. Only one device can be controlled
+at a time.
+
+.TP
+\fIget\fP or \fIsget\fP <\fISCONTROL\fP>
+Shows the simple mixer control contents.
+
+A simple mixer control must be specified. Only one device can be controlled
+at a time.
+
+.TP
+\fIcontrols\fP
+Shows a complete list of card controls.
+
+.TP
+\fIcontents\fP
+Shows a complete list of card controls with their contents.
+
+.TP
+\fIcset\fP <\fICONTROL\fP> <\fIPARAMETER\fP> ...
+Sets the card control contents. The identifier has these components: iface,
+name, index, device, subdevice, numid. The next argument specifies the value
+of control.
+
+.TP
+\fIcget\fP <\fICONTROL\fP>
+Shows the card control contents. The identifier has same syntax as for
+the \fIcset\fP command.
+
+.SH OPTIONS
+
+.TP
+\fI\-c\fP card
+
+Select the card number to control. The device name created from this
+parameter has syntax 'hw:N' where N is specified card number.
+
+.TP
+\fI\-D\fP device
+
+Select the device name to control. The default control name is 'default'.
+
+.TP
+\fI\-s\fP | \fI\-\-stdin\fP
+
+Read from stdin and execute the command on each line sequentially.
+When this option is given, the command in command-line arguments is ignored.
+
+Only sset and cset are accepted.  Other commands are ignored.
+The commands to unmatched ids are ignored without errors too.
+
+.TP
+\fI\-h\fP 
+Help: show syntax.
+.TP
+\fI\-q\fP
+Quiet mode. Do not show results of changes.
+
+.SH EXAMPLES
+
+.TP
+\fBamixer \-c 1 sset Line,0 80%,40% unmute cap\fR
+will set the second soundcard's left line input volume to 80% and
+right line input to 40%, unmute it, and select it as a source for
+capture (recording).\fR
+
+.TP
+\fBamixer \-c 1 \-\- sset Master playback -20dB\fR
+will set the master volume of the second card to -20dB.  If the master
+has multiple channels, all channels are set to the same value.
+
+.TP
+\fBamixer \-c 1 set PCM 2dB+\fR
+will increase the PCM volume of the second card with 2dB.  When both
+playback and capture volumes exist, this is applied to both volumes.
+
+.TP
+\fBamixer \-c 2 cset iface=MIXER,name='Line Playback Volume",index=1 40%\fR
+will set the third soundcard's second line playback volume(s) to 40%
+
+.TP
+\fBamixer \-c 2 cset numid=34 40%\fR
+will set the 34th soundcard element to 40%
+
+.SH BUGS 
+None known.
+.SH AUTHOR
+\fBamixer\fP is by Jaroslav Kysela <perex@perex.cz>.
+This document is by Paul Winkler <zarmzarm@erols.com> and Jaroslav Kysela <perex@perex.cz>.

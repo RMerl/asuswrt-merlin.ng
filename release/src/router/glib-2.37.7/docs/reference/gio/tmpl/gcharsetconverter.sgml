@@ -1,0 +1,83 @@
+<!-- ##### SECTION Title ##### -->
+GCharsetConverter
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GCharsetConverter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GCharsetConverter:from-charset ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GCharsetConverter:to-charset ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GCharsetConverter:use-fallback ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_charset_converter_new ##### -->
+<para>
+
+</para>
+
+@to_charset: 
+@from_charset: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_charset_converter_set_use_fallback ##### -->
+<para>
+
+</para>
+
+@converter: 
+@use_fallback: 
+
+
+<!-- ##### FUNCTION g_charset_converter_get_use_fallback ##### -->
+<para>
+
+</para>
+
+@converter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_charset_converter_get_num_fallbacks ##### -->
+<para>
+
+</para>
+
+@converter: 
+@Returns: 
+
+

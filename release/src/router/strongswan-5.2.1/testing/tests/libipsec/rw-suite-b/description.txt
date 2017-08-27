@@ -1,0 +1,10 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
+The authentication is based on Suite B with <b>128 bit</b> security based on <b>X.509 ECDSA</b>
+certificates, <b>ECP Diffie-Hellman</b> groups and <b>AES-GCM</b> authenticated encryption.
+The <b>kernel-libipsec</b> plugin is used for userland IPsec AES-GCM authenticated ESP
+encryption.
+<p/>
+Upon the successful establishment of the IPsec tunnel, an updown script automatically
+inserts iptables-based firewall rules that let pass the traffic tunneled via the <b>ipsec0</b>
+tun interface. In order to test both tunnel and firewall, <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

@@ -1,0 +1,227 @@
+<!-- ##### SECTION Title ##### -->
+GActionGroup
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GActionGroup ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GActionGroup::action-added ##### -->
+<para>
+
+</para>
+
+@gactiongroup: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GActionGroup::action-enabled-changed ##### -->
+<para>
+
+</para>
+
+@gactiongroup: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### SIGNAL GActionGroup::action-removed ##### -->
+<para>
+
+</para>
+
+@gactiongroup: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GActionGroup::action-state-changed ##### -->
+<para>
+
+</para>
+
+@gactiongroup: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### STRUCT GActionGroupInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@has_action: 
+@list_actions: 
+@get_action_enabled: 
+@get_action_parameter_type: 
+@get_action_state_type: 
+@get_action_state_hint: 
+@get_action_state: 
+@change_action_state: 
+@activate_action: 
+@action_added: 
+@action_removed: 
+@action_enabled_changed: 
+@action_state_changed: 
+@query_action: 
+
+<!-- ##### FUNCTION g_action_group_list_actions ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_query_action ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@enabled: 
+@parameter_type: 
+@state_type: 
+@state_hint: 
+@state: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_has_action ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_get_action_enabled ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_get_action_parameter_type ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_get_action_state_type ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_get_action_state_hint ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_get_action_state ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_group_change_action_state ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@value: 
+
+
+<!-- ##### FUNCTION g_action_group_activate_action ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@parameter: 
+
+
+<!-- ##### FUNCTION g_action_group_action_added ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+
+
+<!-- ##### FUNCTION g_action_group_action_removed ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+
+
+<!-- ##### FUNCTION g_action_group_action_enabled_changed ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@enabled: 
+
+
+<!-- ##### FUNCTION g_action_group_action_state_changed ##### -->
+<para>
+
+</para>
+
+@action_group: 
+@action_name: 
+@state: 
+
+

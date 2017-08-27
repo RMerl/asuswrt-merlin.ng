@@ -1,0 +1,53 @@
+<PUBLISH>
+--- targets/96318GW/96318GW	2014-03-27 08:24:57.926686612 -0400
++++ targets/96318GW_NODSL/96318GW_NODSL	2014-03-31 10:34:32.397916298 -0400
+@@ -127,4 +127,4 @@
+-BRCM_DRIVER_ADSL=m
+-BUILD_DSL=y
+-BUILD_XDSLCTL=dynamic
+-BUILD_DSLDIAGD=y
++
++
++
++
+@@ -132,7 +132,7 @@
+-# BRCM_PHY_LOOPBACK is not set
+-# BUILD_DSL_SELT_TEST is not set
+-BRCM_DRIVER_XTM=m
+-BUILD_XTMCTL=dynamic
+-BUILD_ATMWAN=y
+-BUILD_PTMWAN=y
+-BUILD_ATMLOOPBACK=y
+-BRCM_DSL_TX_RX_IUDMA=y
++
++
++
++
++
++
++
+@@ -447,0 +448,23 @@
++
++
++
++
++
++
++
++
++
++
++
++
++
++# BRCM_DRIVER_ADSL is not set
++# BUILD_DSL is not set
++# BUILD_XDSLCTL is not set
++# BUILD_DSLDIAGD is not set
++# BRCM_DRIVER_XTM is not set
++# BUILD_XTMCTL is not set
++# BUILD_ATMWAN is not set
++# BUILD_PTMWAN is not set
++# BUILD_ATMLOOPBACK is not set
++# BUILD_QUICKSETUP is not set
+\ No newline at end of file

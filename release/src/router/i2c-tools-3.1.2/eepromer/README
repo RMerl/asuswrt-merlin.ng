@@ -1,0 +1,31 @@
+These programs are used to read and write eeproms.
+
+Use eeprom for small eeproms with one-byte addresses:
+	24C01, 24C01A, 24C02, 24C04, 24C08, and 24C16
+	It works only on true i2c bus adapters.
+	See README.eeprom for details.
+
+Use eepromer for large eeproms with two-byte addresses:
+	24C32, 24C64, 24C128, 24C256, and 24C512
+	It works only on true i2c bus adapters.
+	See README.eepromer for details.
+
+Use eeprog for either small or large eeproms.
+	Use the -16 switch for large eeproms.
+	It works on both i2c and smbus bus adapters.
+	See README.eeprog for details.
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!                                                                           !
+!!! These programs should only be used on external busses such as i2c-pport   !
+!!! unless you REALLY know what you are doing.                                !
+!!!                                                                           !
+!!! Your computer probably contains eeproms for saving data vital to its      !
+!!! operation. If you are not careful you might overwrite this data with      !
+!!! this program and your computer may no longer boot!                        !
+!!!                                                                           !
+!!! An example are the EEPROMS on your SDRAM DIMMs, your computer may no      !
+!!! longer detect the RAM module rendering it essentially USELESS!            !
+!!!                                                                           !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

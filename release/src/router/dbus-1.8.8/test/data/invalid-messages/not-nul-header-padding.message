@@ -1,0 +1,25 @@
+## has one non-nul byte in header padding
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+
+HEADER_FIELD INTERFACE
+TYPE STRING
+STRING 'org.freedesktop.Foo'
+HEADER_FIELD MEMBER
+TYPE STRING
+STRING 'Bar'
+HEADER_FIELD PATH
+TYPE OBJECT_PATH
+OBJECT_PATH '/foo'
+
+HEADER_FIELD UNKNOWN
+TYPE STRING
+STRING 'a'
+ALIGN 8
+## kill a padding byte and replace it
+CHOP 1
+BYTE 'q'
+END_LENGTH Header
+START_LENGTH Body
+END_LENGTH Body

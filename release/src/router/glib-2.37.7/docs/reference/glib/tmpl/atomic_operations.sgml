@@ -1,0 +1,194 @@
+<!-- ##### SECTION Title ##### -->
+Atomic Operations
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_ATOMIC_LOCK_FREE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_atomic_int_get ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_set ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@newval: 
+
+
+<!-- ##### FUNCTION g_atomic_int_inc ##### -->
+<para>
+
+</para>
+
+@atomic: 
+
+
+<!-- ##### FUNCTION g_atomic_int_dec_and_test ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_compare_and_exchange ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@oldval: 
+@newval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_add ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_and ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_or ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_xor ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_get ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_set ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@newval: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_compare_and_exchange ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@oldval: 
+@newval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_add ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_and ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_or ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_pointer_xor ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atomic_int_exchange_and_add ##### -->
+<para>
+
+</para>
+
+@atomic: 
+@val: 
+@Returns: 
+
+

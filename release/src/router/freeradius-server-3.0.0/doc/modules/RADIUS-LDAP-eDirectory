@@ -1,0 +1,18 @@
+"Integrating Novell eDirectory with FreeRADIUS"
+
+Overview
+You can integrate Novell® eDirectoryTM 8.7.1 or later with FreeRADIUS
+1.0.2 onwards to allow wireless authentication for eDirectory users.
+By integrating eDirectory with FreeRADIUS, you can do the following:
+* Use universal password for RADIUS authentication.
+  Universal password provides single login and authentication for
+  eDirectory users. Therefore, the users need not have a separate
+  password for RADIUS and eDirectory authentication.
+* Enforce eDirectory account policies for users.
+  The existing eDirectory policies on the user accounts can still be
+  applied even after integrating with RADIUS. Also, you can make use
+  of the intruder lockout facility of eDirectory by logging the
+  failed logins into eDirectory.
+
+For configuration information please refer to the Novell documentation
+      http://www.novell.com/documentation/edir_radius/index.html

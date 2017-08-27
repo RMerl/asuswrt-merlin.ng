@@ -1,0 +1,232 @@
+<!-- ##### SECTION Title ##### -->
+GResolver
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GResolver ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GResolver::reload ##### -->
+<para>
+
+</para>
+
+@gresolver: the object which received the signal.
+
+<!-- ##### FUNCTION g_resolver_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_set_default ##### -->
+<para>
+
+</para>
+
+@resolver: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_by_name ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@hostname: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_by_name_async ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@hostname: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_by_name_finish ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_free_addresses ##### -->
+<para>
+
+</para>
+
+@addresses: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_by_address ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@address: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_by_address_async ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@address: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_by_address_finish ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_service ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@service: 
+@protocol: 
+@domain: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_service_async ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@service: 
+@protocol: 
+@domain: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_service_finish ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_free_targets ##### -->
+<para>
+
+</para>
+
+@targets: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_records ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@rrname: 
+@record_type: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_records_async ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@rrname: 
+@record_type: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_resolver_lookup_records_finish ##### -->
+<para>
+
+</para>
+
+@resolver: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### MACRO G_RESOLVER_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GResolverError ##### -->
+<para>
+
+</para>
+
+@G_RESOLVER_ERROR_NOT_FOUND: 
+@G_RESOLVER_ERROR_TEMPORARY_FAILURE: 
+@G_RESOLVER_ERROR_INTERNAL: 
+

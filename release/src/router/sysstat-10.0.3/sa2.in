@@ -1,0 +1,63 @@
+#!/bin/sh
+# @SA_LIB_DIR@/sa2
+# (C) 1999-2011 Sebastien Godard (sysstat <at> orange.fr)
+#
+#@(#) @PACKAGE_NAME@-@PACKAGE_VERSION@
+#@(#) sa2: Write a daily report
+#
+S_TIME_FORMAT=ISO ; export S_TIME_FORMAT
+umask 0022
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+# Add a trailing slash so that 'find' can go through this directory if it's a symlink
+DDIR=@SA_DIR@/
+SYSCONFIG_DIR=@SYSCONFIG_DIR@
+YESTERDAY=@YESTERDAY@
+DATE=`date ${YESTERDAY} +%d`
+CURRENTFILE=sa${DATE}
+CURRENTRPT=sar${DATE}
+HISTORY=@HISTORY@
+COMPRESSAFTER=@COMPRESSAFTER@
+ZIP="@ZIP@"
+[ -r ${SYSCONFIG_DIR}/sysstat ] && . ${SYSCONFIG_DIR}/sysstat
+if [ ${HISTORY} -gt 28 ]
+then
+	CURRENTDIR=`date ${YESTERDAY} +%Y%m`
+	cd ${DDIR} || exit 1
+	[ -d ${CURRENTDIR} ] || mkdir -p ${CURRENTDIR}
+	# Check if ${CURRENTFILE} is the correct file created at ${DATE}
+	# Note: using `-ge' instead of `=' since the file could have
+	# the next day time stamp because of the file rotating feature of sadc
+	[ -f ${CURRENTFILE} ] &&
+		[ "`date +%Y%m%d -r ${CURRENTFILE}`" -ge "${CURRENTDIR}${DATE}" ] || exit 0
+	# If the file is a regular file, then move it to ${CURRENTDIR}
+	[ ! -L ${CURRENTFILE} ] &&
+		mv -f ${CURRENTFILE} ${CURRENTDIR}/${CURRENTFILE} &&
+			ln -s ${CURRENTDIR}/${CURRENTFILE} ${CURRENTFILE}
+	touch ${CURRENTDIR}/${CURRENTRPT}
+	# Remove the "compatibility" link and recreate it to point to
+	# the (new) current file
+	rm -f ${CURRENTRPT}
+	ln -s ${CURRENTDIR}/${CURRENTRPT} ${CURRENTRPT}
+	CURRENTDIR=${DDIR}/${CURRENTDIR}
+else
+	CURRENTDIR=${DDIR}
+fi
+RPT=${CURRENTDIR}/${CURRENTRPT}
+ENDIR=@bindir@
+DFILE=${CURRENTDIR}/${CURRENTFILE}
+[ -f "$DFILE" ] || exit 0
+cd ${ENDIR}
+[ -L ${RPT} ] && rm -f ${RPT}
+${ENDIR}/sar.sysstat $* -f ${DFILE} > ${RPT}
+find ${DDIR} \( -name 'sar??' -o -name 'sa??' -o -name 'sar??.gz' -o -name 'sa??.gz' -o -name 'sar??.bz2' -o -name 'sa??.bz2' \) \
+	-mtime +"${HISTORY}" -exec rm -f {} \;
+find ${DDIR} \( -name 'sar??' -o -name 'sa??' \) -type f -mtime +"${COMPRESSAFTER}" \
+	-exec ${ZIP} {} \; > /dev/null 2>&1
+# Remove broken links
+for f in `find ${DDIR} \( -name 'sar??' -o -name 'sa??' \) -type l`; do
+	[ -e $f ] || rm -f $f
+done
+cd ${DDIR}
+rmdir [0-9]????? > /dev/null 2>&1
+exit 0

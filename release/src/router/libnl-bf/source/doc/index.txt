@@ -1,0 +1,22 @@
+Documentation Overview - libnl Suite
+====================================
+
+== Libraries
+
+image:library_overview.png["Library Hierarchy"]
+
+link:core.html[Netlink Library] (libnl)::
+Socket handling, sending and receiving, message construction and parsing, ...
+
+link:route.html[Routing Family Library] (libnl-route)::
+Adresses, links, neighbours, routing, traffic control, neighbour tables, ...
+
+Netfilter Library (libnl-nf)::
+Connection tracking, logging, queueing
+
+Generic Netlink Library (libnl-genl)::
+Controller API, family and command registration
+
+== Python Packages
+ - netlink.core
+ - netlink.route.link

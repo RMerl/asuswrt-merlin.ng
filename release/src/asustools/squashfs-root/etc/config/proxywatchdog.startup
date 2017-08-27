@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ -z "$(nvram get squid_watchdog_enable)" ]; then
+    nvram set squid_watchdog_enable=0
+    nvram set squid_watchdog_interval_sec=120
+    nvram set squid_proxy_server_port=3128
+    nvram set need_commit=1
+fi
+killall -9 proxywatchdog.sh
+nvram unset transparent_proxy    
+if [ "$(nvram get squid_watchdog_enable)" = "1" ]; then
+    /etc/config/proxywatchdog.sh&
+fi

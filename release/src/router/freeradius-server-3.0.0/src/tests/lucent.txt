@@ -1,0 +1,11 @@
+encode Lucent-Max-Shared-Users = 1
+data 1a 0d 00 00 12 ee 00 02 07 00 00 00 01
+
+decode -
+data Lucent-Max-Shared-Users = 1
+
+decode 1a 0d 00 00 12 ee ff 02 07 00 00 00 01
+data Attr-26.4846.65282 = 0x00000001
+
+encode -
+data 1a 0d 00 00 12 ee ff 02 07 00 00 00 01

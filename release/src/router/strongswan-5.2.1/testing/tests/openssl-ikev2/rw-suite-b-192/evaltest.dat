@@ -1,0 +1,11 @@
+dave:: cat /var/log/daemon.log::establishing IKE_SA failed, peer not responding::YES
+carol::cat /var/log/daemon.log::openssl FIPS mode(2) - enabled::YES
+moon:: cat /var/log/daemon.log::openssl FIPS mode(2) - enabled::YES
+moon:: cat /var/log/daemon.log::authentication of.*carol@strongswan.org.*with ECDSA-384 signature successful::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw[{]1}.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES

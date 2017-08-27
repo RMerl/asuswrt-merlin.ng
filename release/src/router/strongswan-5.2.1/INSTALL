@@ -1,0 +1,148 @@
+                 ---------------------------
+                  strongSwan - Installation
+                 ---------------------------
+
+
+Contents
+--------
+
+   1.   Overview
+   2.   Required packages
+   3.   Optional packages
+   3.1   HTTP fetcher
+   3.2   LDAP
+   3.3   Other pluggable modules
+   4.   Kernel configuration
+
+1.  Overview
+    --------
+
+    Since version 4.x strongSwan uses the GNU build system (Autotools).
+    This simplifies the build process and package maintenance. First, check for
+    the availability of required packages on your system (section 2.). You may
+    want to include support for additional features, which require other
+    packages to be installed (section 3.).
+
+    To compile an extracted tarball, run the ./configure script first:
+
+      ./configure
+
+    You may want to specify some arguments listed in section 3., or see the
+    available options of the script using "./configure --help".
+
+    After a successful run of the script, run
+
+      make
+
+    followed by
+
+      make install
+
+    in the usual manner.
+
+    To check if your kernel fulfills the requirements, see section 4.
+
+    Next add your connections to "/etc/ipsec.conf" and your secrets to
+    "/etc/ipsec.secrets".
+
+    At last start strongSwan with
+
+      ipsec start
+
+
+2.  Required packages
+    -----------------
+
+    In order to be able to build strongSwan you'll need one of the following
+    cryptographic libraries:
+
+      * The GNU Multiprecision Arithmetic Library (GMP, libgmp)
+        http://www.gmplib.org
+      * The OpenSSL cryptographic library (libcrypto)
+        http://www.openssl.org
+      * The GNU cryptographic library (libgcrypt)
+        http://www.gnupg.org
+
+    If no other options are specified during ./configure libgmp will be used.
+
+    The libraries and the corresponding header files are usually included in
+    the form of one or two packages in the major Linux distributions (for GMP on
+    Debian: libgmp3 and libgmp3-dev).
+
+
+3.  Optional packages
+    -----------------
+
+3.1 HTTP Fetcher
+    ------------
+
+    If you intend to dynamically fetch Certificate Revocation Lists (CRLs)
+    from an HTTP server or as an alternative want to use the Online
+    Certificate Status Protocol (OCSP) then you will need the either of the
+    following libraries:
+
+      * The cURL library (libcurl)
+        http://curl.haxx.se/libcurl/
+      * The LibSoup library (libsoup)
+        https://live.gnome.org/LibSoup
+
+    In order to activate the use of either of these libraries in strongSwan you
+    must enable the appropriate ./configure switch.
+
+
+3.2 LDAP
+    ----
+
+    If you intend to dynamically fetch Certificate Revocation Lists (CRLs)
+    from an LDAP server then you will need the libldap library available
+    from http://www.openldap.org/.
+
+    OpenLDAP is usually included  with your Linux distribution. You will need
+    both the run-time and development environments (SuSE: openldap2,
+    openldap2-devel).
+
+    In order to activate the use of the libldap library in strongSwan you must
+    enable the ./configure switch:
+
+       ./configure [...] --enable-ldap
+
+    LDAP Protocol version 2 is not supported anymore, --enable-ldap uses always
+    version 3 of the LDAP protocol
+
+
+3.3 Other pluggable modules
+    -----------------------
+
+    There are many other optional plugins that, for instance, provide support
+    for PKCS#11 or SQL databases.
+    For a more detailed description of these refer to our wiki:
+
+      * http://wiki.strongswan.org
+
+
+4.  Kernel configuration
+    --------------------
+
+    Since version 4.x strongSwan only supports 2.6.x and 3.x kernels and its
+    native NETKEY IPsec stack. Please make sure that the following IPsec kernel
+    modules are available:
+
+      * af_key
+      * ah4
+      * esp4
+      * ipcomp
+      * xfrm_user
+      * xfrm4_tunnel
+
+    These may be built into the kernel or as modules. Modules get loaded
+    automatically at strongSwan startup.
+
+    Also the built-in kernel Cryptoapi modules with selected encryption and
+    hash algorithms should be available.
+
+    Support for multiple routing tables is also recommended.
+
+    For a more up-to-date list of recommended modules refer to:
+
+     * http://wiki.strongswan.org/projects/strongswan/wiki/KernelModules
+

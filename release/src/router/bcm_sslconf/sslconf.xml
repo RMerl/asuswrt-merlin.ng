@@ -1,0 +1,14 @@
+<sslconfig>
+  <httpd>
+    <CipherString>TLSv1.2,TLSv1,SSLv3</CipherString>
+    <Protocol>TLSv1.2,TLSv1.1,TLSv1,SSLv3</Protocol>
+    <Curves>P-256:P-384</Curves>
+    <Options>-SessionTicket</Options>
+  </httpd>
+  <tr69c>
+    <CipherString>TLSv1.2,TLSv1</CipherString>
+    <Protocol>ALL,-SSLv3</Protocol>
+    <Curves>P-256:P-384</Curves>
+    <Options>-SessionTicket</Options>
+  </tr69c>
+</sslconfig>

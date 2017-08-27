@@ -1,0 +1,25 @@
+# -*- text -*-
+#
+#  $Id$
+
+######################################################################
+#
+#  This next section is a sample configuration for the "passwd"
+#  module, that reads flat-text files.
+#
+#  The file is in the format <mac>,<ip>
+#
+#	00:01:02:03:04:05,192.0.2.100
+#	01:01:02:03:04:05,192.0.2.101
+#	02:01:02:03:04:05,192.0.2.102
+#
+#  This lets you perform simple static IP assignments from a flat-text
+#  file.  You will have to define lease times yourself.
+#
+######################################################################
+
+passwd mac2ip {
+	filename = ${modconfdir}/${.:name}/${.:instance}
+	format = "*DHCP-Client-Hardware-Address:=DHCP-Your-IP-Address"
+	delimiter = ","
+}

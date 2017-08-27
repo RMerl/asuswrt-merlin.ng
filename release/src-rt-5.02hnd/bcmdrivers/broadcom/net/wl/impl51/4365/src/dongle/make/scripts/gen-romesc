@@ -1,0 +1,295 @@
+#!/usr/bin/perl
+
+# Usage:
+#	gen-romesc romtable.S <file.S> <romctl> <romesc>
+#
+# Reprocesses <file.S> which contains assembly text (gcc compiler output).
+# Incrementally generates romesc.txt
+#
+# Patch candidates are located in the input file.
+# These are functions residing in any of the sections:
+#	text.*, .textrom.*, or .textinit1.*.
+# which are also in romtable.S.
+#
+# A patch index is assigned to each function processed.
+# Each function name along with its index is added to romesc.txt.
+#
+# If a function has already been processed, such as if a C file is changed and
+# the make restarted, this script will detect that and re-use the existing
+# function indexes in romesc.txt if it is safe to do so.  If it is not safe to
+# do so (functions have moved around), it will generate a fatal error and ask
+# the user to make clean (clear out romesc.txt).
+
+use strict;
+use warnings;
+
+sub usage {
+    print STDERR "Usage: gen-romesc [-t] <romtbl> <file>\n";
+    exit 1;
+}
+
+my $fname_esc;
+my $fname_ctl;
+my $esctab_base ;
+my $idre = '([\w$]+)';
+my $fnre = '([\w.-]+)';
+my $fname;
+my $fnromtbl;
+my $fnromtbl_min;
+my $tcammode = 0;
+
+if ($ARGV[0] eq '-t') {
+    $tcammode = 1;
+    shift @ARGV;
+}
+
+($fnromtbl = shift @ARGV) || &usage;
+($fnromtbl_min = shift @ARGV) || &usage;
+($fname = shift @ARGV) || &usage;
+($fname_ctl = shift @ARGV) || &usage;
+($fname_esc = shift @ARGV) || &usage;
+($esctab_base = shift @ARGV) || &usage;
+shift @ARGV && &usage;
+
+die "Input is not a .S file\n" if $fname !~ /\.S$/;
+
+
+my $fnromesc_min = "min_" . "$fname_esc" ;
+my $fnromesc_hash = "hash_" . "$fname_esc";
+
+
+# Create a hash of functions that are in ROM
+open(my $fh, $fnromtbl) or
+    die "Could not open $fnromtbl for reading: $!\n";
+my %rommed = ();
+while (<$fh>) {
+    next if /\.rodata/;
+    next if !/^\s*\.extern\s+${idre}\b/;
+    $rommed{$1} = 1;
+}
+close $fh;
+
+# Read hash of 'no_esc' symbols from ROM control file
+open($fh, $fname_ctl) or
+    die "Could not open $fname_ctl for reading: $!\n";
+my %no_esc = ();
+map { $no_esc{$1} = 1 if /^${idre}\s.*\bno_esc\b/; } <$fh>;
+close $fh;
+
+# Read the entire input file
+open($fh, $fname) or
+    die "Could not open $fname for reading: $!\n";
+my @asm_in = <$fh>;
+close $fh;
+
+# Load existing contents of romesc.txt, if any.
+# Format of each line in romesc.txt is: <index><WHITESPACE><fname><WHITESPACE><symbol>
+my @romesc = ();
+if (!$tcammode) {
+    if (open($fh, "$fname_esc")) {
+	@romesc = <$fh>;
+	close $fh;
+    }
+}
+
+# if min_romesc.txt exists load the contents into the array
+my @romesc_min;
+my $esctab_idx_min  = 0;
+
+if(!$tcammode) {
+	if (-e "$fnromesc_min") {
+		open ( $fh, "$fnromesc_min") || die "Could not open $fnromesc_min file!! $!\n";
+		@romesc_min = <$fh>;
+		close $fh;
+		$esctab_idx_min = scalar @romesc_min
+	}
+}
+
+# Load existing contents of hash_romesc.txt, if any.
+my @romesc_min_hash = ();
+my %romesc_min_hash = ();
+if (!$tcammode) {
+	if (-e "$fnromesc_hash") {
+		open($fh, "$fnromesc_hash") || die "couldnot open $fnromesc_hash file $!\n";
+		@romesc_min_hash = <$fh>;
+		chomp (@romesc_min_hash);
+		close $fh;
+		map {$romesc_min_hash{$1} = 1 if /${idre}/} @romesc_min_hash;
+    	} else {
+		# Create a hash of functions that are in MIN ROM
+		open($fh, $fnromtbl_min) or
+    			die "Could not open $fnromtbl_min for reading: $!\n";
+		while (<$fh>) {
+    			next if /\.rodata/;
+			next if /\.no_esc/;
+    			next if !/^\s*\.extern\s+${idre}\b/;
+    			$romesc_min_hash{$1} = 1;
+		}
+		close $fh;
+		my @keys = keys %romesc_min_hash;
+		open($fh, ">", "$fnromesc_hash") || die "Could not open $fnromesc_hash !! $! \n";
+		foreach (@keys) {
+			print $fh "$_\n";
+		}
+		close $fh;
+    	}
+}
+
+
+# Keep an array of entries that romesc.txt already contains for this input file.
+# May be empty if this input file is not already represented in romesc.txt.
+my @romesc_mine = grep(/\s\Q${fname}\E\s/, @romesc);
+
+# Keep an array of entries that romesc.txt already contains for OTHER files.
+my @romesc_notmine = grep(!/s\Q${fname}\E\s/, @romesc);
+
+# Keep a hash of @romesc_notmine for fast lookup.
+my %romesc_notmine = ();	# key = symbol, value = def/undef
+map { $romesc_notmine{$1} = 1 if !/\s${idre}$/ } @romesc_notmine;
+#map { $romesc_notmine{$1} = 1 if /[0-9]+\s+${idre}\s+\Q${idre}\E$/ } @romesc_notmine;
+
+# Determine patch index for first function in this file.
+# Use existing index if already assigned; otherwise, use the next available.
+my $esctab_idx;
+my $esctab_idx_full;
+if (@romesc_mine == 0) {
+    $esctab_idx_full = scalar @romesc + scalar @romesc_min + scalar keys %romesc_min_hash;
+} else {
+    die "Corrupt $fname_esc\n" if $romesc_mine[0] !~ /^(\d+)\s/;
+    $esctab_idx_full = $1;
+}
+
+sub romfn_label {
+    my $fn = shift;
+    return (sprintf ("\t.global\t${fn}__bcmromfn\n") .
+	    sprintf ("\t.type\t${fn}__bcmromfn, %%function\n") .
+	    sprintf ("${fn}__bcmromfn:\n"));
+}
+
+# Array for romesc.txt entries that are generated by processing this input file
+# (regardless of whether romesc.txt already contains entries for this input file).
+my @romesc_new = ();
+my @romesc_new_min = ();
+my @asm_out = ();
+
+# Copy from input to output, processing ROMmable functions
+my $asm_line = 0;
+while ($asm_line < @asm_in) {
+    $_ = $asm_in[$asm_line++];
+    die "$fname: file has already been processed!\n" if /ROMESC PREAMBLE/;
+    push @asm_out, $_;
+
+    # BCMATTACHFN functions (.textini2.*) are not processed
+    if (/^\t\.section\t\.(text|textrom|textini1)\.${idre},/) {
+	my $fn = $2;
+	my $found = 0;
+	my $type_func = 0;
+#	my $esctab_addr = hex($esctab_base) + $esctab_idx * 4;
+	while ($asm_line < @asm_in) {
+	    $_ = $asm_in[$asm_line++];
+	    $found = 1 if /^\Q${fn}\E:$/;
+	    $type_func = 1 if /^\t\.type\t\Q${fn}\E,/;
+	    if ($found && $tcammode) {
+		    # For Tcam mode, ROM functions must be 4 byte alligned ( to avoid using mutiple TCAM
+		    # entries for a single function ). Align the ROM function by inserting an ".align 2"
+		    # # directive prior to each ROM function.
+		    push @asm_out, sprintf ("\t.align 2\n");
+	    }
+	    push @asm_out, $_;
+	    last if $found;
+	}
+	$found or
+	    die "$fname: Function label \"${fn}:\" not found\n";
+	$type_func or
+	    die "$fname: Text section symbol \"${fn}\" not a function?\n";
+	# In TCAM mode, 
+	# used to add nop preamble for every function, uptill 4350C1
+	# since auto abandon has been the norm to patch things and there is an alternate way
+	# to even manually patch the routines with out the 'nops',
+	# don't need the 'nop' premables any more.
+	# refer to JIRA: SWWLAN-36247, on how to do the manual patching with this change in place 
+	if ($tcammode) {
+	    #push @asm_out, sprintf ("\tnop\n\tnop\n");
+	    # Insert a label with _rom suffix so programs can reference the original ROM function
+	    push @asm_out, &romfn_label($fn);
+	    next;
+	}
+	# Don't instrument functions that aren't going to be in ROM
+	next if !$rommed{$fn};
+	# Don't instrument functions that are marked "no_esc" in romctl.txt
+	next if $no_esc{$fn};
+	# Insert the patch code
+	if (defined $romesc_min_hash{$fn}) {
+		$esctab_idx = $esctab_idx_min;
+	}else {
+		$esctab_idx = $esctab_idx_full;
+	}
+
+	my $esctab_addr = hex($esctab_base) + $esctab_idx * 4;
+	
+	push @asm_out, sprintf ("\tldr.w\tip, =#0x%08x\t@ ROMESC PREAMBLE (index %d at 0x%x)\n",
+				($esctab_addr & 0xffff00), $esctab_idx, $esctab_addr);
+	push @asm_out, sprintf ("\tldr.w\tpc, [ip, #0x%x]\t@ ROMESC PREAMBLE\n",
+				$esctab_addr & 0x00ff);
+	push @asm_out, sprintf("\t.ltorg\n");
+	# Insert a label with _rom suffix so programs can reference the original ROM function
+	push @asm_out, &romfn_label($fn);
+	# Add the new function to the escape table
+	defined $romesc_notmine{$fn} and
+	    die "$fname: Function $fn name collides with another file!\n";
+	if (defined $romesc_min_hash{$fn}){
+		push @romesc_new_min, sprintf("%-08d%-24s%s\n",
+				  ${esctab_idx}, ${fname}, ${fn});
+	} else {
+	push @romesc_new, sprintf("%-08d%-24s%s\n",
+				  ${esctab_idx}, ${fname}, ${fn});
+	}
+	if (defined $romesc_min_hash{$fn}) {
+		$esctab_idx_min++;
+		delete $romesc_min_hash{$fn};
+	}else {
+		$esctab_idx_full++;
+	}
+#	$esctab_idx++;
+    }
+}
+
+# Overwrite the input file with the output
+open($fh, ">$fname") or
+    die "Could not open $fname for writing: $!\n";
+print $fh @asm_out;
+close $fh;
+
+# If this file was not already represented in romesc.txt, append the new index information
+# and write out romesc.txt.  Otherwise, just verify there has been no change.
+if (@romesc_mine == 0) {
+    if (!$tcammode) {
+	open($fh, ">$fname_esc") or
+	    die "Could not open $fname_esc for writing: $!\n";
+	print $fh @romesc;
+	print $fh @romesc_new;
+	close $fh;
+    }
+} elsif (scalar @romesc_new != scalar @romesc_mine) {
+#    die "$fname: It appears function(s) have been added/deleted; please make clean\n";
+} else {
+    for (my $i = 0; $i < scalar @romesc_new; $i++) {
+	if ($romesc_new[$i] ne $romesc_mine[$i]) {
+		#die "$fname: It appears function(s) have moved; please make clean\n";
+	}
+	}
+    }
+
+open($fh,">>", "$fnromesc_min") or 
+	die "couldnot open $fnromesc_min file $!\n ";
+print $fh @romesc_new_min;
+close $fh;
+
+my @keys = keys %romesc_min_hash;
+open($fh, ">", "$fnromesc_hash") || die "Could not open $fnromesc_hash !! $!\n";
+
+foreach (@keys) {
+	print $fh "$_\n";
+}
+close $fh;
+

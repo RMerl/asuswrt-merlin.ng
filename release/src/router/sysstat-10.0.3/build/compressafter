@@ -1,0 +1,8 @@
+
+To prevent sar daily datafiles from taking to much space on disk, you can
+ask the sa2 shell script to compress them (using gzip or bzip2) after a
+certain amount of time.
+Answer here the number of days after which datafiles are to be compressed
+(default value is 10 days).
+Note that this parameter is saved in the /etc/sysconfig/sysstat file.
+

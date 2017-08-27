@@ -1,0 +1,1118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GMenuModel</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GDBusActionGroup.html" title="GDBusActionGroup">
+<link rel="next" href="GMenu.html" title="GMenu">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GMenuModel.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GMenuModel.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GMenuModel.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusActionGroup.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GMenu.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GMenuModel"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GMenuModel.top_of_page"></a>GMenuModel</span></h2>
+<p>GMenuModel — An abstract class representing the contents of a menu</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GMenuModel.synopsis"></a><h2>Synopsis</h2>
+<a name="GMenuAttributeIter"></a><a name="GMenuLinkIter"></a><pre class="synopsis">                    <a class="link" href="GMenuModel.html#GMenuModel-struct" title="GMenuModel">GMenuModel</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GMenuModel.html#g-menu-model-is-mutable" title="g_menu_model_is_mutable ()">g_menu_model_is_mutable</a>             (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                <a class="link" href="GMenuModel.html#g-menu-model-get-n-items" title="g_menu_model_get_n_items ()">g_menu_model_get_n_items</a>            (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>);
+
+#define             <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ACTION:CAPS" title="G_MENU_ATTRIBUTE_ACTION">G_MENU_ATTRIBUTE_ACTION</a>
+#define             <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-TARGET:CAPS" title="G_MENU_ATTRIBUTE_TARGET">G_MENU_ATTRIBUTE_TARGET</a>
+#define             <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-LABEL:CAPS" title="G_MENU_ATTRIBUTE_LABEL">G_MENU_ATTRIBUTE_LABEL</a>
+#define             <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ICON:CAPS" title="G_MENU_ATTRIBUTE_ICON">G_MENU_ATTRIBUTE_ICON</a>
+#define             <a class="link" href="GMenuModel.html#G-MENU-LINK-SECTION:CAPS" title="G_MENU_LINK_SECTION">G_MENU_LINK_SECTION</a>
+#define             <a class="link" href="GMenuModel.html#G-MENU-LINK-SUBMENU:CAPS" title="G_MENU_LINK_SUBMENU">G_MENU_LINK_SUBMENU</a>
+
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          <a class="link" href="GMenuModel.html#g-menu-model-get-item-attribute-value" title="g_menu_model_get_item_attribute_value ()">g_menu_model_get_item_attribute_value</a>
+                                                        (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *expected_type</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GMenuModel.html#g-menu-model-get-item-attribute" title="g_menu_model_get_item_attribute ()">g_menu_model_get_item_attribute</a>     (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format_string</code></em>,
+                                                         <em class="parameter"><code>...</code></em>);
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="returnvalue">GMenuModel</span></a> *        <a class="link" href="GMenuModel.html#g-menu-model-get-item-link" title="g_menu_model_get_item_link ()">g_menu_model_get_item_link</a>          (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *link</code></em>);
+<a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="returnvalue">GMenuAttributeIter</span></a> * <a class="link" href="GMenuModel.html#g-menu-model-iterate-item-attributes" title="g_menu_model_iterate_item_attributes ()">g_menu_model_iterate_item_attributes</a>
+                                                        (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>);
+<a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="returnvalue">GMenuLinkIter</span></a> *     <a class="link" href="GMenuModel.html#g-menu-model-iterate-item-links" title="g_menu_model_iterate_item_links ()">g_menu_model_iterate_item_links</a>     (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="GMenuModel.html#g-menu-model-items-changed" title="g_menu_model_items_changed ()">g_menu_model_items_changed</a>          (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> removed</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> added</code></em>);
+
+struct              <a class="link" href="GMenuModel.html#GMenuAttributeIter-struct" title="struct GMenuAttributeIter">GMenuAttributeIter</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-next" title="g_menu_attribute_iter_get_next ()">g_menu_attribute_iter_get_next</a>      (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **out_name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> **value</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-name" title="g_menu_attribute_iter_get_name ()">g_menu_attribute_iter_get_name</a>      (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          <a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-value" title="g_menu_attribute_iter_get_value ()">g_menu_attribute_iter_get_value</a>     (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GMenuModel.html#g-menu-attribute-iter-next" title="g_menu_attribute_iter_next ()">g_menu_attribute_iter_next</a>          (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>);
+
+struct              <a class="link" href="GMenuModel.html#GMenuLinkIter-struct" title="struct GMenuLinkIter">GMenuLinkIter</a>;
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GMenuModel.html#g-menu-link-iter-get-name" title="g_menu_link_iter_get_name ()">g_menu_link_iter_get_name</a>           (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GMenuModel.html#g-menu-link-iter-get-next" title="g_menu_link_iter_get_next ()">g_menu_link_iter_get_next</a>           (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **out_link</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> **value</code></em>);
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="returnvalue">GMenuModel</span></a> *        <a class="link" href="GMenuModel.html#g-menu-link-iter-get-value" title="g_menu_link_iter_get_value ()">g_menu_link_iter_get_value</a>          (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GMenuModel.html#g-menu-link-iter-next" title="g_menu_link_iter_next ()">g_menu_link_iter_next</a>               (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMenuModel.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GMenuModel
+         +----<a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel">GDBusMenuModel</a>
+         +----<a class="link" href="GMenu.html" title="GMenu">GMenu</a>
+</pre>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GMenuAttributeIter
+</pre>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GMenuLinkIter
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMenuModel.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GMenuModel.html#GMenuModel-items-changed" title='The "items-changed" signal'>items-changed</a>"                                  : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMenuModel.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> represents the contents of a menu -- an ordered list of
+menu items. The items are associated with actions, which can be
+activated through them. Items can be grouped in sections, and may
+have submenus associated with them. Both items and sections usually
+have some representation data, such as labels or icons. The type of
+the associated action (ie whether it is stateful, and what kind of
+state it has) can influence the representation of the item.
+</p>
+<p>
+The conceptual model of menus in <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> is hierarchical:
+sections and submenus are again represented by <a href="GMenuModel.html"><span class="type">GMenuModels</span></a>.
+Menus themselves do not define their own roles. Rather, the role
+of a particular <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> is defined by the item that references
+it (or, in the case of the 'root' menu, is defined by the context
+in which it is used).
+</p>
+<p>
+As an example, consider the visible portions of the menu in
+<a class="xref" href="GMenuModel.html#menu-example" title="Figure 2. An example menu">Figure 2, “An example menu”</a>.
+</p>
+<p>
+</p>
+<div class="figure">
+<a name="menu-example"></a><p class="title"><b>Figure 2. An example menu</b></p>
+<div class="figure-contents"><div><img src="menu-example.png" alt="An example menu"></div></div>
+</div>
+<p><br class="figure-break">
+</p>
+<p>
+There are 8 "menus" visible in the screenshot: one menubar, two
+submenus and 5 sections:
+</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">the toplevel menubar (containing 4 items)</li>
+<li class="listitem">the View submenu (containing 3 sections)</li>
+<li class="listitem">the first section of the View submenu (containing 2 items)</li>
+<li class="listitem">the second section of the View submenu (containing 1 item)</li>
+<li class="listitem">the final section of the View submenu (containing 1 item)</li>
+<li class="listitem">the Highlight Mode submenu (containing 2 sections)</li>
+<li class="listitem">the Sources section (containing 2 items)</li>
+<li class="listitem">the Markup section (containing 2 items)</li>
+</ul></div>
+<p>
+</p>
+<p>
+<a class="xref" href="GMenuModel.html#menu-model" title="Figure 3. A menu model">Figure 3, “A menu model”</a> illustrates the conceptual connection between
+these 8 menus. Each large block in the figure represents a menu and the
+smaller blocks within the large block represent items in that menu. Some
+items contain references to other menus.
+</p>
+<p>
+</p>
+<div class="figure">
+<a name="menu-model"></a><p class="title"><b>Figure 3. A menu model</b></p>
+<div class="figure-contents"><div><img src="menu-model.png" alt="A menu model"></div></div>
+</div>
+<p><br class="figure-break">
+</p>
+<p>
+Notice that the separators visible in <a class="xref" href="GMenuModel.html#menu-example" title="Figure 2. An example menu">Figure 2, “An example menu”</a>
+appear nowhere in <a class="xref" href="GMenuModel.html#menu-model" title="Figure 3. A menu model">Figure 3, “A menu model”</a>. This is because
+separators are not explicitly represented in the menu model. Instead,
+a separator is inserted between any two non-empty sections of a menu.
+Section items can have labels just like any other item. In that case,
+a display system may show a section header instead of a separator.
+</p>
+<p>
+The motivation for this abstract model of application controls is
+that modern user interfaces tend to make these controls available
+outside the application. Examples include global menus, jumplists,
+dash boards, etc. To support such uses, it is necessary to 'export'
+information about actions and their representation in menus, which
+is exactly what the
+<a class="link" href="gio-GActionGroup-exporter.html" title="GActionGroup exporter">GActionGroup exporter</a>
+and the
+<a class="link" href="gio-GMenuModel-exporter.html" title="GMenuModel exporter">GMenuModel exporter</a>
+do for <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> and <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>. The client-side counterparts
+to make use of the exported information are <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a> and
+<a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a>.
+</p>
+<p>
+The API of <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> is very generic, with iterators for the
+attributes and links of an item, see <a class="link" href="GMenuModel.html#g-menu-model-iterate-item-attributes" title="g_menu_model_iterate_item_attributes ()"><code class="function">g_menu_model_iterate_item_attributes()</code></a>
+and <a class="link" href="GMenuModel.html#g-menu-model-iterate-item-links" title="g_menu_model_iterate_item_links ()"><code class="function">g_menu_model_iterate_item_links()</code></a>. The 'standard' attributes and
+link types have predefined names: <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-LABEL:CAPS" title="G_MENU_ATTRIBUTE_LABEL"><code class="literal">G_MENU_ATTRIBUTE_LABEL</code></a>,
+<a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ACTION:CAPS" title="G_MENU_ATTRIBUTE_ACTION"><code class="literal">G_MENU_ATTRIBUTE_ACTION</code></a>, <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-TARGET:CAPS" title="G_MENU_ATTRIBUTE_TARGET"><code class="literal">G_MENU_ATTRIBUTE_TARGET</code></a>, <a class="link" href="GMenuModel.html#G-MENU-LINK-SECTION:CAPS" title="G_MENU_LINK_SECTION"><code class="literal">G_MENU_LINK_SECTION</code></a>
+and <a class="link" href="GMenuModel.html#G-MENU-LINK-SUBMENU:CAPS" title="G_MENU_LINK_SUBMENU"><code class="literal">G_MENU_LINK_SUBMENU</code></a>.
+</p>
+<p>
+Items in a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> represent active controls if they refer to
+an action that can get activated when the user interacts with the
+menu item. The reference to the action is encoded by the string id
+in the <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ACTION:CAPS" title="G_MENU_ATTRIBUTE_ACTION"><code class="literal">G_MENU_ATTRIBUTE_ACTION</code></a> attribute. An action id uniquely
+identifies an action in an action group. Which action group(s) provide
+actions depends on the context in which the menu model is used.
+E.g. when the model is exported as the application menu of a
+<a href="http://developer.gnome.org/gtk2/GtkApplication.html"><span class="type">GtkApplication</span></a>, actions can be application-wide or window-specific
+(and thus come from two different action groups). By convention, the
+application-wide actions have names that start with "app.", while the
+names of window-specific actions start with "win.".
+</p>
+<p>
+While a wide variety of stateful actions is possible, the following
+is the minimum that is expected to be supported by all users of exported
+menu information:
+</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">an action with no parameter type and no state</li>
+<li class="listitem">an action with no parameter type and boolean state</li>
+<li class="listitem">an action with string parameter type and string state</li>
+</ul></div>
+<p>
+</p>
+<p>
+</p>
+<p><b>Stateless. </b>
+A stateless action typically corresponds to an ordinary menu item.
+
+Selecting such a menu item will activate the action (with no parameter).
+</p>
+<p>
+</p>
+<p>
+</p>
+<p><b>Boolean State. </b>
+An action with a boolean state will most typically be used with a "toggle"
+or "switch" menu item. The state can be set directly, but activating the
+action (with no parameter) results in the state being toggled.
+
+Selecting a toggle menu item will activate the action. The menu item should
+be rendered as "checked" when the state is true.
+</p>
+<p>
+</p>
+<p>
+</p>
+<p><b>String Parameter and State. </b>
+Actions with string parameters and state will most typically be used to
+represent an enumerated choice over the items available for a group of
+radio menu items. Activating the action with a string parameter is
+equivalent to setting that parameter as the state.
+
+Radio menu items, in addition to being associated with the action, will
+have a target value. Selecting that menu item will result in activation
+of the action with the target value as the parameter. The menu item should
+be rendered as "selected" when the state of the action is equal to the
+target value of the menu item.
+</p>
+<p>
+</p>
+</div>
+<div class="refsect1">
+<a name="GMenuModel.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GMenuModel-struct"></a><h3>GMenuModel</h3>
+<pre class="programlisting">typedef struct _GMenuModel GMenuModel;</pre>
+<p>
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> is an opaque structure type.  You must access it using the
+functions below.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-is-mutable"></a><h3>g_menu_model_is_mutable ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_menu_model_is_mutable             (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>);</pre>
+<p>
+Queries if <em class="parameter"><code>model</code></em> is mutable.
+</p>
+<p>
+An immutable <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> will never emit the <a class="link" href="GMenuModel.html#GMenuModel-items-changed" title='The "items-changed" signal'><span class="type">"items-changed"</span></a>
+signal. Consumers of the model may make optimisations accordingly.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the model is mutable (ie: "items-changed" may be
+emitted).</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-get-n-items"></a><h3>g_menu_model_get_n_items ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                g_menu_model_get_n_items            (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>);</pre>
+<p>
+Query the number of items in <em class="parameter"><code>model</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the number of items</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MENU-ATTRIBUTE-ACTION:CAPS"></a><h3>G_MENU_ATTRIBUTE_ACTION</h3>
+<pre class="programlisting">#define G_MENU_ATTRIBUTE_ACTION "action"
+</pre>
+<p>
+The menu item attribute which holds the action name of the item.  Action
+names are namespaced with an identifier for the action group in which the
+action resides. For example, "win." for window-specific actions and "app."
+for application-wide actions.
+</p>
+<p>
+See also <a class="link" href="GMenuModel.html#g-menu-model-get-item-attribute" title="g_menu_model_get_item_attribute ()"><code class="function">g_menu_model_get_item_attribute()</code></a> and <a class="link" href="GMenu.html#g-menu-item-set-attribute" title="g_menu_item_set_attribute ()"><code class="function">g_menu_item_set_attribute()</code></a>.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MENU-ATTRIBUTE-TARGET:CAPS"></a><h3>G_MENU_ATTRIBUTE_TARGET</h3>
+<pre class="programlisting">#define G_MENU_ATTRIBUTE_TARGET "target"
+</pre>
+<p>
+The menu item attribute which holds the target with which the item's action
+will be activated.
+</p>
+<p>
+See also <a class="link" href="GMenu.html#g-menu-item-set-action-and-target" title="g_menu_item_set_action_and_target ()"><code class="function">g_menu_item_set_action_and_target()</code></a>
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MENU-ATTRIBUTE-LABEL:CAPS"></a><h3>G_MENU_ATTRIBUTE_LABEL</h3>
+<pre class="programlisting">#define G_MENU_ATTRIBUTE_LABEL "label"
+</pre>
+<p>
+The menu item attribute which holds the label of the item.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MENU-ATTRIBUTE-ICON:CAPS"></a><h3>G_MENU_ATTRIBUTE_ICON</h3>
+<pre class="programlisting">#define G_MENU_ATTRIBUTE_ICON "icon"
+</pre>
+<p>
+The menu item attribute which holds the icon of the item.
+</p>
+<p>
+The icon is stored in the format returned by <a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()"><code class="function">g_icon_serialize()</code></a>.
+</p>
+<p>
+This attribute is intended only to represent 'noun' icons such as
+favicons for a webpage, or application icons.  It should not be used
+for 'verbs' (ie: stock icons).
+</p>
+<p class="since">Since 2.38</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MENU-LINK-SECTION:CAPS"></a><h3>G_MENU_LINK_SECTION</h3>
+<pre class="programlisting">#define G_MENU_LINK_SECTION "section"
+</pre>
+<p>
+The name of the link that associates a menu item with a section.  The linked
+menu will usually be shown in place of the menu item, using the item's label
+as a header.
+</p>
+<p>
+See also <a class="link" href="GMenu.html#g-menu-item-set-link" title="g_menu_item_set_link ()"><code class="function">g_menu_item_set_link()</code></a>.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MENU-LINK-SUBMENU:CAPS"></a><h3>G_MENU_LINK_SUBMENU</h3>
+<pre class="programlisting">#define G_MENU_LINK_SUBMENU "submenu"
+</pre>
+<p>
+The name of the link that associates a menu item with a submenu.
+</p>
+<p>
+See also <a class="link" href="GMenu.html#g-menu-item-set-link" title="g_menu_item_set_link ()"><code class="function">g_menu_item_set_link()</code></a>.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-get-item-attribute-value"></a><h3>g_menu_model_get_item_attribute_value ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          g_menu_model_get_item_attribute_value
+                                                        (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *expected_type</code></em>);</pre>
+<p>
+Queries the item at position <em class="parameter"><code>item_index</code></em> in <em class="parameter"><code>model</code></em> for the attribute
+specified by <em class="parameter"><code>attribute</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>expected_type</code></em> is non-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then it specifies the expected type of
+the attribute.  If it is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then any type will be accepted.
+</p>
+<p>
+If the attribute exists and matches <em class="parameter"><code>expected_type</code></em> (or if the
+expected type is unspecified) then the value is returned.
+</p>
+<p>
+If the attribute does not exist, or does not match the expected type
+then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item_index</code></em> :</span></p></td>
+<td>the index of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>attribute</code></em> :</span></p></td>
+<td>the attribute to query</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>expected_type</code></em> :</span></p></td>
+<td>the expected type of the attribute, or
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of the attribute. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-get-item-attribute"></a><h3>g_menu_model_get_item_attribute ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_menu_model_get_item_attribute     (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format_string</code></em>,
+                                                         <em class="parameter"><code>...</code></em>);</pre>
+<p>
+Queries item at position <em class="parameter"><code>item_index</code></em> in <em class="parameter"><code>model</code></em> for the attribute
+specified by <em class="parameter"><code>attribute</code></em>.
+</p>
+<p>
+If the attribute exists and matches the <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> corresponding
+to <em class="parameter"><code>format_string</code></em> then <em class="parameter"><code>format_string</code></em> is used to deconstruct the
+value into the positional parameters and <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned.
+</p>
+<p>
+If the attribute does not exist, or it does exist but has the wrong
+type, then the positional parameters are ignored and <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is
+returned.
+</p>
+<p>
+This function is a mix of <a class="link" href="GMenuModel.html#g-menu-model-get-item-attribute-value" title="g_menu_model_get_item_attribute_value ()"><code class="function">g_menu_model_get_item_attribute_value()</code></a> and
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-get"><code class="function">g_variant_get()</code></a>, followed by a <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a>.  As such,
+<em class="parameter"><code>format_string</code></em> must make a complete copy of the data (since the
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> may go away after the call to <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a>).  In
+particular, no '&amp;' characters are allowed in <em class="parameter"><code>format_string</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item_index</code></em> :</span></p></td>
+<td>the index of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>attribute</code></em> :</span></p></td>
+<td>the attribute to query</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>format_string</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> format string</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>...</code></em> :</span></p></td>
+<td>positional parameters, as per <em class="parameter"><code>format_string</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the named attribute was found with the expected
+type</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-get-item-link"></a><h3>g_menu_model_get_item_link ()</h3>
+<pre class="programlisting"><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="returnvalue">GMenuModel</span></a> *        g_menu_model_get_item_link          (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *link</code></em>);</pre>
+<p>
+Queries the item at position <em class="parameter"><code>item_index</code></em> in <em class="parameter"><code>model</code></em> for the link
+specified by <em class="parameter"><code>link</code></em>.
+</p>
+<p>
+If the link exists, the linked <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> is returned.  If the link
+does not exist, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item_index</code></em> :</span></p></td>
+<td>the index of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>link</code></em> :</span></p></td>
+<td>the link to query</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the linked <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-iterate-item-attributes"></a><h3>g_menu_model_iterate_item_attributes ()</h3>
+<pre class="programlisting"><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="returnvalue">GMenuAttributeIter</span></a> * g_menu_model_iterate_item_attributes
+                                                        (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>);</pre>
+<p>
+Creates a <a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> to iterate over the attributes of
+the item at position <em class="parameter"><code>item_index</code></em> in <em class="parameter"><code>model</code></em>.
+</p>
+<p>
+You must free the iterator with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> when you are done.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item_index</code></em> :</span></p></td>
+<td>the index of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-iterate-item-links"></a><h3>g_menu_model_iterate_item_links ()</h3>
+<pre class="programlisting"><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="returnvalue">GMenuLinkIter</span></a> *     g_menu_model_iterate_item_links     (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>);</pre>
+<p>
+Creates a <a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> to iterate over the links of the item at
+position <em class="parameter"><code>item_index</code></em> in <em class="parameter"><code>model</code></em>.
+</p>
+<p>
+You must free the iterator with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> when you are done.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item_index</code></em> :</span></p></td>
+<td>the index of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-model-items-changed"></a><h3>g_menu_model_items_changed ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_menu_model_items_changed          (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> removed</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> added</code></em>);</pre>
+<p>
+Requests emission of the <a class="link" href="GMenuModel.html#GMenuModel-items-changed" title='The "items-changed" signal'><span class="type">"items-changed"</span></a> signal on <em class="parameter"><code>model</code></em>.
+</p>
+<p>
+This function should never be called except by <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+subclasses.  Any other calls to this function will very likely lead
+to a violation of the interface of the model.
+</p>
+<p>
+The implementation should update its internal representation of the
+menu before emitting the signal.  The implementation should further
+expect to receive queries about the new state of the menu (and
+particularly added menu items) while signal handlers are running.
+</p>
+<p>
+The implementation must dispatch this call directly from a mainloop
+entry and not in response to calls -- particularly those from the
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> API.  Said another way: the menu must not change while
+user code is running without returning to the mainloop.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position of the change</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>removed</code></em> :</span></p></td>
+<td>the number of items removed</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>added</code></em> :</span></p></td>
+<td>the number of items added</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMenuAttributeIter-struct"></a><h3>struct GMenuAttributeIter</h3>
+<pre class="programlisting">struct GMenuAttributeIter;</pre>
+<p>
+<a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> is an opaque structure type.  You must access it
+using the functions below.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-attribute-iter-get-next"></a><h3>g_menu_attribute_iter_get_next ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_menu_attribute_iter_get_next      (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **out_name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> **value</code></em>);</pre>
+<p>
+This function combines <a class="link" href="GMenuModel.html#g-menu-attribute-iter-next" title="g_menu_attribute_iter_next ()"><code class="function">g_menu_attribute_iter_next()</code></a> with
+<a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-name" title="g_menu_attribute_iter_get_name ()"><code class="function">g_menu_attribute_iter_get_name()</code></a> and <a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-value" title="g_menu_attribute_iter_get_value ()"><code class="function">g_menu_attribute_iter_get_value()</code></a>.
+</p>
+<p>
+First the iterator is advanced to the next (possibly first) attribute.
+If that fails, then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned and there are no other
+effects.
+</p>
+<p>
+If successful, <em class="parameter"><code>name</code></em> and <em class="parameter"><code>value</code></em> are set to the name and value of the
+attribute that has just been advanced to.  At this point,
+<a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-name" title="g_menu_attribute_iter_get_name ()"><code class="function">g_menu_attribute_iter_get_name()</code></a> and <a class="link" href="GMenuModel.html#g-menu-attribute-iter-get-value" title="g_menu_attribute_iter_get_value ()"><code class="function">g_menu_attribute_iter_get_value()</code></a> will
+return the same values again.
+</p>
+<p>
+The value returned in <em class="parameter"><code>name</code></em> remains valid for as long as the iterator
+remains at the current position.  The value returned in <em class="parameter"><code>value</code></em> must
+be unreffed using <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a> when it is no longer in use.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out_name</code></em> :</span></p></td>
+<td>the type of the attribute. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>the attribute value. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if there is no additional
+attribute</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-attribute-iter-get-name"></a><h3>g_menu_attribute_iter_get_name ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_menu_attribute_iter_get_name      (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>);</pre>
+<p>
+Gets the name of the attribute at the current iterator position, as
+a string.
+</p>
+<p>
+The iterator is not advanced.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the name of the attribute</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-attribute-iter-get-value"></a><h3>g_menu_attribute_iter_get_value ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          g_menu_attribute_iter_get_value     (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>);</pre>
+<p>
+Gets the value of the attribute at the current iterator position.
+</p>
+<p>
+The iterator is not advanced.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of the current attribute. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-attribute-iter-next"></a><h3>g_menu_attribute_iter_next ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_menu_attribute_iter_next          (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a> *iter</code></em>);</pre>
+<p>
+Attempts to advance the iterator to the next (possibly first)
+attribute.
+</p>
+<p>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned on success, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if there are no more
+attributes.
+</p>
+<p>
+You must call this function when you first acquire the iterator
+to advance it to the first attribute (and determine if the first
+attribute exists at all).
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuAttributeIter"><span class="type">GMenuAttributeIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> when there are no more attributes</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMenuLinkIter-struct"></a><h3>struct GMenuLinkIter</h3>
+<pre class="programlisting">struct GMenuLinkIter;</pre>
+<p>
+<a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> is an opaque structure type.  You must access it using
+the functions below.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-link-iter-get-name"></a><h3>g_menu_link_iter_get_name ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_menu_link_iter_get_name           (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>);</pre>
+<p>
+Gets the name of the link at the current iterator position.
+</p>
+<p>
+The iterator is not advanced.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the type of the link</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-link-iter-get-next"></a><h3>g_menu_link_iter_get_next ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_menu_link_iter_get_next           (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **out_link</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> **value</code></em>);</pre>
+<p>
+This function combines <a class="link" href="GMenuModel.html#g-menu-link-iter-next" title="g_menu_link_iter_next ()"><code class="function">g_menu_link_iter_next()</code></a> with
+<a class="link" href="GMenuModel.html#g-menu-link-iter-get-name" title="g_menu_link_iter_get_name ()"><code class="function">g_menu_link_iter_get_name()</code></a> and <a class="link" href="GMenuModel.html#g-menu-link-iter-get-value" title="g_menu_link_iter_get_value ()"><code class="function">g_menu_link_iter_get_value()</code></a>.
+</p>
+<p>
+First the iterator is advanced to the next (possibly first) link.
+If that fails, then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned and there are no other effects.
+</p>
+<p>
+If successful, <em class="parameter"><code>out_link</code></em> and <em class="parameter"><code>value</code></em> are set to the name and <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>
+of the link that has just been advanced to.  At this point,
+<a class="link" href="GMenuModel.html#g-menu-link-iter-get-name" title="g_menu_link_iter_get_name ()"><code class="function">g_menu_link_iter_get_name()</code></a> and <a class="link" href="GMenuModel.html#g-menu-link-iter-get-value" title="g_menu_link_iter_get_value ()"><code class="function">g_menu_link_iter_get_value()</code></a> will return the
+same values again.
+</p>
+<p>
+The value returned in <em class="parameter"><code>out_link</code></em> remains valid for as long as the iterator
+remains at the current position.  The value returned in <em class="parameter"><code>value</code></em> must
+be unreffed using <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> when it is no longer in use.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>out_link</code></em> :</span></p></td>
+<td>the name of the link. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>the linked <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if there is no additional link</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-link-iter-get-value"></a><h3>g_menu_link_iter_get_value ()</h3>
+<pre class="programlisting"><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="returnvalue">GMenuModel</span></a> *        g_menu_link_iter_get_value          (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>);</pre>
+<p>
+Gets the linked <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> at the current iterator position.
+</p>
+<p>
+The iterator is not advanced.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> that is linked to. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-link-iter-next"></a><h3>g_menu_link_iter_next ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_menu_link_iter_next               (<em class="parameter"><code><a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a> *iter</code></em>);</pre>
+<p>
+Attempts to advance the iterator to the next (possibly first)
+link.
+</p>
+<p>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned on success, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if there are no more links.
+</p>
+<p>
+You must call this function when you first acquire the iterator to
+advance it to the first link (and determine if the first link exists
+at all).
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iter</code></em> :</span></p></td>
+<td>a <a class="link" href="GMenuModel.html#GMenuLinkIter"><span class="type">GMenuLinkIter</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> when there are no more links</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GMenuModel.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GMenuModel-items-changed"></a><h3>The <code class="literal">"items-changed"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>        position,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>        removed,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>        added,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>    user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Emitted when a change has occured to the menu.
+</p>
+<p>
+The only changes that can occur to a menu is that items are removed
+or added.  Items may not change (except by being removed and added
+back in the same location).  This signal is capable of describing
+both of those changes (at the same time).
+</p>
+<p>
+The signal means that starting at the index <em class="parameter"><code>position</code></em>, <em class="parameter"><code>removed</code></em>
+items were removed and <em class="parameter"><code>added</code></em> items were added in their place.  If
+<em class="parameter"><code>removed</code></em> is zero then only items were added.  If <em class="parameter"><code>added</code></em> is zero
+then only items were removed.
+</p>
+<p>
+As an example, if the menu contains items a, b, c, d (in that
+order) and the signal (2, 1, 3) occurs then the new composition of
+the menu will be a, b, _, _, _, d (with each _ representing some
+new item).
+</p>
+<p>
+Signal handlers may query the model (particularly the added items)
+and expect to see the results of the modification that is being
+reported.  The signal is emitted after the modification.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>model</code></em> :</span></p></td>
+<td>the <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> that is changing</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position of the change</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>removed</code></em> :</span></p></td>
+<td>the number of items removed</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>added</code></em> :</span></p></td>
+<td>the number of items added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GMenuModel.see-also"></a><h2>See Also</h2>
+<a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,2770 @@
+strongswan-5.2.1
+----------------
+
+- The new charon-systemd IKE daemon implements an IKE daemon tailored for use
+  with systemd. It avoids the dependency on ipsec starter and uses swanctl
+  as configuration backend, building a simple and lightweight solution. It
+  supports native systemd journal logging.
+
+- Support for IKEv2 fragmentation as per RFC 7383 has been added.  Like IKEv1
+  fragmentation it can be enabled by setting fragmentation=yes in ipsec.conf.
+
+- Support of the TCG TNC IF-M Attribute Segmentation specification proposal.
+  All attributes can be segmented. Additionally TCG/SWID Tag, TCG/SWID Tag ID
+  and IETF/Installed Packages attributes can be processed incrementally on a
+  per segment basis.
+
+- The new ext-auth plugin calls an external script to implement custom IKE_SA
+  authorization logic, courtesy of Vyronas Tsingaras.
+
+- For the vici plugin a ruby gem has been added to allow ruby applications
+  to control or monitor the IKE daemon. The vici documentation has been updated
+  to include a description of the available operations and some simple examples
+  using both the libvici C interface and the ruby gem.
+
+
+strongswan-5.2.0
+----------------
+
+- strongSwan has been ported to the Windows platform. Using a MinGW toolchain,
+  many parts of the strongSwan codebase run natively on Windows 7 / 2008 R2
+  and newer releases. charon-svc implements a Windows IKE service based on
+  libcharon, the kernel-iph and kernel-wfp plugins act as networking and IPsec
+  backend on the Windows platform. socket-win provides a native IKE socket
+  implementation, while winhttp fetches CRL and OCSP information using the
+  WinHTTP API.
+
+- The new vici plugin provides a Versatile IKE Configuration Interface for
+  charon. Using the stable IPC interface, external applications can configure,
+  control and monitor the IKE daemon. Instead of scripting the ipsec tool
+  and generating ipsec.conf, third party applications can use the new interface
+  for more control and better reliability.
+
+- Built upon the libvici client library, swanctl implements the first user of
+  the VICI interface. Together with a swanctl.conf configuration file,
+  connections can be defined, loaded and managed. swanctl provides a portable,
+  complete IKE configuration and control interface for the command line.
+  The first six swanctl example scenarios have been added.
+
+- The SWID IMV implements a JSON-based REST API which allows the exchange
+  of SWID tags and Software IDs with the strongTNC policy manager.
+
+- The SWID IMC can extract all installed packages from the dpkg (Debian,
+  Ubuntu, Linux Mint etc.), rpm (Fedora, RedHat, OpenSUSE, etc.), or
+  pacman (Arch Linux, Manjaro, etc.) package managers, respectively, using the
+  swidGenerator (https://github.com/strongswan/swidGenerator) which generates
+  SWID tags according to the new ISO/IEC 19770-2:2014 standard.
+
+- All IMVs now share the access requestor ID, device ID and product info
+  of an access requestor via a common imv_session object.
+
+- The Attestation IMC/IMV pair supports the IMA-NG measurement format
+  introduced with the Linux 3.13 kernel.
+
+- The aikgen tool generates an Attestation Identity Key bound to a TPM.
+
+- Implemented the PT-EAP transport protocol (RFC 7171) for Trusted Network
+  Connect.
+
+- The ipsec.conf replay_window option defines connection specific IPsec replay
+  windows. Original patch courtesy of Zheng Zhong and Christophe Gouault from
+  6Wind.
+
+
+strongswan-5.1.3
+----------------
+
+- Fixed an authentication bypass vulnerability triggered by rekeying an
+  unestablished IKEv2 SA while it gets actively initiated.  This allowed an
+  attacker to trick a peer's IKE_SA state to established, without the need to
+  provide any valid authentication credentials.  The vulnerability has been
+  registered as CVE-2014-2338.
+
+- The acert plugin evaluates X.509 Attribute Certificates. Group membership
+  information encoded as strings can be used to fulfill authorization checks
+  defined with the rightgroups option. Attribute Certificates can be loaded
+  locally or get exchanged in IKEv2 certificate payloads.
+
+- The pki command gained support to generate X.509 Attribute Certificates
+  using the --acert subcommand, while the --print command supports the ac type.
+  The openac utility has been removed in favor of the new pki functionality.
+
+- The libtls TLS 1.2 implementation as used by EAP-(T)TLS and other protocols
+  has been extended by AEAD mode support, currently limited to AES-GCM.
+
+
+strongswan-5.1.2
+----------------
+
+- A new default configuration file layout is introduced.  The new default
+  strongswan.conf file mainly includes config snippets from the strongswan.d
+  and strongswan.d/charon directories (the latter containing snippets for all
+  plugins).  The snippets, with commented defaults, are automatically
+  generated and installed, if they don't exist yet.  They are also installed
+  in $prefix/share/strongswan/templates so existing files can be compared to
+  the current defaults.
+
+- As an alternative to the non-extensible charon.load setting, the plugins
+  to load in charon (and optionally other applications) can now be determined
+  via the charon.plugins.<name>.load setting for each plugin (enabled in the
+  new default strongswan.conf file via the charon.load_modular option).
+  The load setting optionally takes a numeric priority value that allows
+  reordering the plugins (otherwise the default plugin order is preserved).
+
+- All strongswan.conf settings that were formerly defined in library specific
+  "global" sections are now application specific (e.g. settings for plugins in
+  libstrongswan.plugins can now be set only for charon in charon.plugins).
+  The old options are still supported, which now allows to define defaults for
+  all applications in the libstrongswan section.
+
+- The ntru libstrongswan plugin supports NTRUEncrypt as a post-quantum
+  computer IKE key exchange mechanism. The implementation is based on the
+  ntru-crypto library from the NTRUOpenSourceProject. The supported security
+  strengths are ntru112, ntru128, ntru192, and ntru256. Since the private DH
+  group IDs 1030..1033 have been assigned, the strongSwan Vendor ID must be
+  sent (charon.send_vendor_id = yes) in order to use NTRU.
+
+- Defined a TPMRA remote attestation workitem and added support for it to the
+  Attestation IMV.
+
+- Compatibility issues between IPComp (compress=yes) and leftfirewall=yes as
+  well as multiple subnets in left|rightsubnet have been fixed.
+
+- When enabling its "session" strongswan.conf option, the xauth-pam plugin opens
+  and closes a PAM session for each established IKE_SA. Patch courtesy of
+  Andrea Bonomi.
+
+- The strongSwan unit testing framework has been rewritten without the "check"
+  dependency for improved flexibility and portability. It now properly supports
+  multi-threaded and memory leak testing and brings a bunch of new test cases.
+
+
+strongswan-5.1.1
+----------------
+
+- Fixed a denial-of-service vulnerability and potential authorization bypass
+  triggered by a crafted ID_DER_ASN1_DN ID payload. The cause is an insufficient
+  length check when comparing such identities. The vulnerability has been
+  registered as CVE-2013-6075.
+
+- Fixed a denial-of-service vulnerability triggered by a crafted IKEv1
+  fragmentation payload. The cause is a NULL pointer dereference. The
+  vulnerability has been registered as CVE-2013-6076.
+
+- The lean stand-alone pt-tls-client can set up a RFC 6876 PT-TLS session
+  with a strongSwan policy enforcement point which uses the tnc-pdp charon
+  plugin.
+
+- The new TCG TNC SWID IMC/IMV pair supports targeted SWID requests for either
+  full SWID Tag or concise SWID Tag ID inventories.
+
+- The XAuth backend in eap-radius now supports multiple XAuth exchanges for
+  different credential types and display messages. All user input gets
+  concatenated and verified with a single User-Password RADIUS attribute on
+  the AAA. With an AAA supporting it, one for example can implement
+  Password+Token authentication with proper dialogs on iOS and OS X clients.
+
+- charon supports IKEv1 Mode Config exchange in push mode. The ipsec.conf
+  modeconfig=push option enables it for both client and server, the same way
+  as pluto used it.
+
+- Using the "ah" ipsec.conf keyword on both IKEv1 and IKEv2 connections,
+  charon can negotiate and install Security Associations integrity-protected by
+  the Authentication Header protocol. Supported are plain AH(+IPComp) SAs only,
+  but not the deprecated RFC2401 style ESP+AH bundles.
+
+- The generation of initialization vectors for IKE and ESP (when using libipsec)
+  is now modularized and IVs for e.g. AES-GCM are now correctly allocated
+  sequentially, while other algorithms like AES-CBC still use random IVs.
+
+- The left and right options in ipsec.conf can take multiple address ranges
+  and subnets. This allows connection matching against a larger set of
+  addresses, for example to use a different connection for clients connecting
+  from a internal network.
+
+- For all those who have a queasy feeling about the NIST elliptic curve set,
+  the Brainpool curves introduced for use with IKE by RFC 6932 might be a
+  more trustworthy alternative.
+
+- The kernel-libipsec userland IPsec backend now supports usage statistics,
+  volume based rekeying and accepts ESPv3 style TFC padded packets.
+
+- With two new strongswan.conf options fwmarks can be used to implement
+  host-to-host tunnels with kernel-libipsec.
+
+- load-tester supports transport mode connections and more complex traffic
+  selectors, including such using unique ports for each tunnel.
+
+- The new dnscert plugin provides support for authentication via CERT RRs that
+  are protected via DNSSEC.  The plugin was created by Ruslan N. Marchenko.
+
+- The eap-radius plugin supports forwarding of several Cisco Unity specific
+  RADIUS attributes in corresponding configuration payloads.
+
+- Database transactions are now abstracted and implemented by the two backends.
+  If you use MySQL make sure all tables use the InnoDB engine.
+
+- libstrongswan now can provide an experimental custom implementation of the
+  printf family functions based on klibc if neither Vstr nor glibc style printf
+  hooks are available. This can avoid the Vstr dependency on some systems at
+  the cost of slower and less complete printf functions.
+
+
+strongswan-5.1.0
+----------------
+
+- Fixed a denial-of-service vulnerability triggered by specific XAuth usernames
+  and EAP identities (since 5.0.3), and PEM files (since 4.1.11).  The crash
+  was caused by insufficient error handling in the is_asn1() function.
+  The vulnerability has been registered as CVE-2013-5018.
+
+- The new charon-cmd command line IKE client can establish road warrior
+  connections using IKEv1 or IKEv2 with different authentication profiles.
+  It does not depend on any configuration files and can be configured using a
+  few simple command line options.
+
+- The kernel-pfroute networking backend has been greatly improved. It now
+  can install virtual IPs on TUN devices on OS X and FreeBSD, allowing these
+  systems to act as a client in common road warrior scenarios.
+
+- The new kernel-libipsec plugin uses TUN devices and libipsec to provide IPsec
+  processing in userland on Linux, FreeBSD and Mac OS X.
+
+- The eap-radius plugin can now serve as an XAuth backend called xauth-radius,
+  directly verifying XAuth credentials using RADIUS User-Name/User-Password
+  attributes. This is more efficient than the existing xauth-eap+eap-radius
+  combination, and allows RADIUS servers without EAP support to act as AAA
+  backend for IKEv1.
+
+- The new osx-attr plugin installs configuration attributes (currently DNS
+  servers) via SystemConfiguration on Mac OS X. The keychain plugin provides
+  certificates from the OS X keychain service.
+
+- The sshkey plugin parses SSH public keys, which, together with the --agent
+  option for charon-cmd, allows the use of ssh-agent for authentication.
+  To configure SSH keys in ipsec.conf the left|rightrsasigkey options are
+  replaced with left|rightsigkey, which now take public keys in one of three
+  formats: SSH (RFC 4253, ssh: prefix), DNSKEY (RFC 3110, dns: prefix), and
+  PKCS#1 (the default, no prefix).
+
+- Extraction of certificates and private keys from PKCS#12 files is now provided
+  by the new pkcs12 plugin or the openssl plugin.  charon-cmd (--p12) as well
+  as charon (via P12 token in ipsec.secrets) can make use of this.
+
+- IKEv2 can now negotiate transport mode and IPComp in NAT situations.
+
+- IKEv2 exchange initiators now properly close an established IKE or CHILD_SA
+  on error conditions using an additional exchange, keeping state in sync
+  between peers.
+
+- Using a SQL database interface a Trusted Network Connect (TNC) Policy Manager
+  can  generate specific measurement workitems for an arbitrary number of
+  Integrity Measurement Verifiers (IMVs) based on the history of the VPN user
+  and/or device.
+
+- Several core classes in libstrongswan are now tested with unit tests.  These
+  can be enabled with --enable-unit-tests and run with 'make check'.  Coverage
+  reports can be generated with --enable-coverage and 'make coverage' (this
+  disables any optimization, so it should not be enabled when building
+  production releases).
+
+- The leak-detective developer tool has been greatly improved. It works much
+  faster/stabler with multiple threads, does not use deprecated malloc hooks
+  anymore and has been ported to OS X.
+
+- chunk_hash() is now based on SipHash-2-4 with a random key.  This provides
+  better distribution and prevents hash flooding attacks when used with
+  hashtables.
+
+- All default plugins implement the get_features() method to define features
+  and their dependencies.  The plugin loader has been improved, so that plugins
+  in a custom load statement can be ordered freely or to express preferences
+  without being affected by dependencies between plugin features.
+
+- A centralized thread can take care for watching multiple file descriptors
+  concurrently. This removes the need for a dedicated listener threads in
+  various plugins. The number of "reserved" threads for such tasks has been
+  reduced to about five, depending on the plugin configuration.
+
+- Plugins that can be controlled by a UNIX socket IPC mechanism gained network
+  transparency. Third party applications querying these plugins now can use
+  TCP connections from a different host.
+
+- libipsec now supports AES-GCM.
+
+
+strongswan-5.0.4
+----------------
+
+- Fixed a security vulnerability in the openssl plugin which was reported by
+  Kevin Wojtysiak. The vulnerability has been registered as CVE-2013-2944.
+  Before the fix, if the openssl plugin's ECDSA signature verification was used,
+  due to a misinterpretation of the error code returned by the OpenSSL
+  ECDSA_verify() function, an empty or zeroed signature was accepted as a
+  legitimate one.
+
+- The handling of a couple of other non-security relevant openssl return codes
+  was fixed as well.
+
+- The tnc_ifmap plugin now publishes virtual IPv4 and IPv6 addresses via its
+  TCG TNC IF-MAP 2.1 interface.
+
+- The charon.initiator_only option causes charon to ignore IKE initiation
+  requests.
+
+- The openssl plugin can now use the openssl-fips library.
+
+
+strongswan-5.0.3
+----------------
+
+- The new ipseckey plugin enables authentication based on trustworthy public
+  keys stored as IPSECKEY resource records in the DNS and protected by DNSSEC.
+  To do so it uses a DNSSEC enabled resolver, like the one provided by the new
+  unbound plugin, which is based on libldns and libunbound.  Both plugins were
+  created by Reto Guadagnini.
+
+- Implemented the TCG TNC IF-IMV 1.4 draft making access requestor identities
+  available to an IMV. The OS IMV stores the AR identity together with the
+  device ID in the attest database.
+
+- The openssl plugin now uses the AES-NI accelerated version of AES-GCM
+  if the hardware supports it.
+
+- The eap-radius plugin can now assign virtual IPs to IKE clients using the
+  Framed-IP-Address attribute by using the "%radius" named pool in the
+  rightsourceip ipsec.conf option. Cisco Banner attributes are forwarded to
+  Unity-capable IKEv1 clients during mode config. charon now sends Interim
+  Accounting updates if requested by the RADIUS server, reports
+  sent/received packets in Accounting messages, and adds a Terminate-Cause
+  to Accounting-Stops.
+
+- The recently introduced "ipsec listcounters" command can report connection
+  specific counters by passing a connection name, and global or connection
+  counters can be reset by the "ipsec resetcounters" command.
+
+- The strongSwan libpttls library provides an experimental implementation of
+  PT-TLS (RFC 6876), a Posture Transport Protocol over TLS.
+
+- The charon systime-fix plugin can disable certificate lifetime checks on
+  embedded systems if the system time is obviously out of sync after bootup.
+  Certificates lifetimes get checked once the system time gets sane, closing
+  or reauthenticating connections using expired certificates.
+
+- The "ikedscp" ipsec.conf option can set DiffServ code points on outgoing
+  IKE packets.
+
+- The new xauth-noauth plugin allows to use basic RSA or PSK authentication with
+  clients that cannot be configured without XAuth authentication.  The plugin
+  simply concludes the XAuth exchange successfully without actually performing
+  any authentication.  Therefore, to use this backend it has to be selected
+  explicitly with rightauth2=xauth-noauth.
+
+- The new charon-tkm IKEv2 daemon delegates security critical operations to a
+  separate process. This has the benefit that the network facing daemon has no
+  knowledge of keying material used to protect child SAs. Thus subverting
+  charon-tkm does not result in the compromise of cryptographic keys.
+  The extracted functionality has been implemented from scratch in a minimal TCB
+  (trusted computing base) in the Ada programming language. Further information
+  can be found at http://www.codelabs.ch/tkm/.
+
+strongswan-5.0.2
+----------------
+
+- Implemented all IETF Standard PA-TNC attributes and an OS IMC/IMV
+  pair using them to transfer operating system information.
+
+- The new "ipsec listcounters" command prints a list of global counter values
+  about received and sent IKE messages and rekeyings.
+
+- A new lookip plugin can perform fast lookup of tunnel information using a
+  clients virtual IP and can send notifications about established or deleted
+  tunnels. The "ipsec lookip" command can be used to query such information
+  or receive notifications.
+
+- The new error-notify plugin catches some common error conditions and allows
+  an external application to receive notifications for them over a UNIX socket.
+
+- IKE proposals can now use a PRF algorithm different to that defined for
+  integrity protection. If an algorithm with a "prf" prefix is defined
+  explicitly (such as prfsha1 or prfsha256), no implicit PRF algorithm based on
+  the integrity algorithm is added to the proposal.
+
+- The pkcs11 plugin can now load leftcert certificates from a smartcard for a
+  specific ipsec.conf conn section and cacert CA certificates for a specific ca
+  section.
+
+- The load-tester plugin gained additional options for certificate generation
+  and can load keys and multiple CA certificates from external files. It can
+  install a dedicated outer IP address for each tunnel and tunnel initiation
+  batches can be triggered and monitored externally using the
+  "ipsec load-tester" tool.
+
+- PKCS#7 container parsing has been modularized, and the openssl plugin
+  gained an alternative implementation to decrypt and verify such files.
+  In contrast to our own DER parser, OpenSSL can handle BER files, which is
+  required for interoperability of our scepclient with EJBCA.
+
+- Support for the proprietary IKEv1 fragmentation extension has been added.
+  Fragments are always handled on receipt but only sent if supported by the peer
+  and if enabled with the new fragmentation ipsec.conf option.
+
+- IKEv1 in charon can now parse certificates received in PKCS#7 containers and
+  supports NAT traversal as used by Windows clients. Patches courtesy of
+  Volker Rümelin.
+
+- The new rdrand plugin provides a high quality / high performance random
+  source using the Intel rdrand instruction found on Ivy Bridge processors.
+
+- The integration test environment was updated and now uses KVM and reproducible
+  guest images based on Debian.
+
+
+strongswan-5.0.1
+----------------
+
+- Introduced the sending of the standard IETF Assessment Result
+  PA-TNC attribute by all strongSwan Integrity Measurement Verifiers.
+
+- Extended PTS Attestation IMC/IMV pair to provide full evidence of
+  the Linux IMA measurement process. All pertinent file information
+  of a Linux OS can be collected and stored in an SQL database.
+
+- The PA-TNC and PB-TNC protocols can now process huge data payloads
+  >64 kB by distributing PA-TNC attributes over multiple PA-TNC messages
+  and these messages over several PB-TNC batches. As long as no
+  consolidated recommandation from all IMVs can be obtained, the TNC
+  server requests more client data by sending an empty SDATA batch.
+
+- The rightgroups2 ipsec.conf option can require group membership during
+  a second authentication round, for example during XAuth authentication
+  against a RADIUS server.
+
+- The xauth-pam backend can authenticate IKEv1 XAuth and Hybrid authenticated
+  clients against any PAM service. The IKEv2 eap-gtc plugin does not use
+  PAM directly anymore, but can use any XAuth backend to verify credentials,
+  including xauth-pam.
+
+- The new unity plugin brings support for some parts of the IKEv1 Cisco Unity
+  Extension. As client, charon narrows traffic selectors to the received
+  Split-Include attributes and automatically installs IPsec bypass policies
+  for received Local-LAN attributes. As server, charon sends Split-Include
+  attributes for leftsubnet definitions containing multiple subnets to Unity-
+  aware clients.
+
+- An EAP-Nak payload is returned by clients if the gateway requests an EAP
+  method that the client does not support.  Clients can also request a specific
+  EAP method by configuring that method with leftauth.
+
+- The eap-dynamic plugin handles EAP-Nak payloads returned by clients and uses
+  these to select a different EAP method supported/requested by the client.
+  The plugin initially requests the first registered method or the first method
+  configured with charon.plugins.eap-dynamic.preferred.
+
+- The new left/rightdns options specify connection specific DNS servers to
+  request/respond in IKEv2 configuration payloads or IKEv2 mode config. leftdns
+  can be any (comma separated) combination of %config4 and %config6 to request
+  multiple servers, both for IPv4 and IPv6. rightdns takes a list of DNS server
+  IP addresses to return.
+
+- The left/rightsourceip options now accept multiple addresses or pools.
+  leftsourceip can be any (comma separated) combination of %config4, %config6
+  or fixed IP addresses to request. rightsourceip accepts multiple explicitly
+  specified or referenced named pools.
+
+- Multiple connections can now share a single address pool when they use the
+  same definition in one of the rightsourceip pools.
+
+- The options charon.interfaces_ignore and charon.interfaces_use allow one to
+  configure the network interfaces used by the daemon.
+
+- The kernel-netlink plugin supports the charon.install_virtual_ip_on option,
+  which specifies the interface on which virtual IP addresses will be installed.
+  If it is not specified the current behavior of using the outbound interface
+  is preserved.
+
+- The kernel-netlink plugin tries to keep the current source address when
+  looking for valid routes to reach other hosts.
+
+- The autotools build has been migrated to use a config.h header. strongSwan
+  development headers will get installed during "make install" if
+  --with-dev-headers has been passed to ./configure.
+
+- All crypto primitives gained return values for most operations, allowing
+  crypto backends to fail, for example when using hardware accelerators.
+
+
+strongswan-5.0.0
+----------------
+
+- The charon IKE daemon gained experimental support for the IKEv1 protocol.
+  Pluto has been removed from the 5.x series, and unless strongSwan is
+  configured with --disable-ikev1 or --disable-ikev2, charon handles both
+  keying protocols. The feature-set of IKEv1 in charon is almost on par with
+  pluto, but currently does not support AH or bundled AH+ESP SAs. Beside
+  RSA/ECDSA, PSK and XAuth, charon also supports the Hybrid authentication
+  mode. Informations for interoperability and migration is available at
+  http://wiki.strongswan.org/projects/strongswan/wiki/CharonPlutoIKEv1.
+
+- Charon's bus_t has been refactored so that loggers and other listeners are
+  now handled separately.  The single lock was previously cause for deadlocks
+  if extensive listeners, such as the one provided by the updown plugin, wanted
+  to acquire locks that were held by other threads which in turn tried to log
+  messages, and thus were waiting to acquire the same lock currently held by
+  the thread calling the listener.
+  The implemented changes also allow the use of a read/write-lock for the
+  loggers which increases performance if multiple loggers are registered.
+  Besides several interface changes this last bit also changes the semantics
+  for loggers as these may now be called by multiple threads at the same time.
+
+- Source routes are reinstalled if interfaces are reactivated or IP addresses
+  reappear.
+
+- The thread pool (processor_t) now has more control over the lifecycle of
+  a job (see job.h for details).  In particular, it now controls the destruction
+  of jobs after execution and the cancellation of jobs during shutdown.  Due to
+  these changes the requeueing feature, previously available to callback_job_t
+  only, is now available to all jobs (in addition to a new rescheduling
+  feature).
+
+- In addition to trustchain key strength definitions for different public key
+  systems, the rightauth option now takes a list of signature hash algorithms
+  considered save for trustchain validation. For example, the setting
+  rightauth=rsa-2048-ecdsa-256-sha256-sha384-sha512 requires a trustchain
+  that uses at least RSA-2048 or ECDSA-256 keys and certificate signatures
+  using SHA-256 or better.
+
+
+strongswan-4.6.4
+----------------
+
+- Fixed a security vulnerability in the gmp plugin.  If this plugin was used
+  for RSA signature verification an empty or zeroed signature was handled as
+  a legitimate one.
+
+- Fixed several issues with reauthentication and address updates.
+
+
+strongswan-4.6.3
+----------------
+
+- The tnc-pdp plugin implements a RADIUS server interface allowing
+  a strongSwan TNC server to act as a Policy Decision Point.
+
+- The eap-radius authentication backend enforces Session-Timeout attributes
+  using RFC4478 repeated authentication and acts upon RADIUS Dynamic
+  Authorization extensions, RFC 5176. Currently supported are disconnect
+  requests and CoA messages containing a Session-Timeout.
+
+- The eap-radius plugin can forward arbitrary RADIUS attributes from and to
+  clients using custom IKEv2 notify payloads. The new radattr plugin reads
+  attributes to include from files and prints received attributes to the
+  console.
+
+- Added support for untruncated MD5 and SHA1 HMACs in ESP as used in
+  RFC 4595.
+
+- The cmac plugin implements the AES-CMAC-96 and AES-CMAC-PRF-128 algorithms
+  as defined in RFC 4494 and RFC 4615, respectively.
+
+- The resolve plugin automatically installs nameservers via resolvconf(8),
+  if it is installed, instead of modifying /etc/resolv.conf directly.
+
+- The IKEv2 charon daemon supports now raw RSA public keys in RFC 3110
+  DNSKEY and PKCS#1 file format.
+
+
+strongswan-4.6.2
+----------------
+
+- Upgraded the TCG IF-IMC and IF-IMV C API to the upcoming version 1.3
+  which supports IF-TNCCS 2.0 long message types, the exclusive flags
+  and multiple IMC/IMV IDs. Both the TNC Client and Server as well as
+  the "Test", "Scanner", and "Attestation" IMC/IMV pairs were updated.
+
+- Fully implemented the "TCG Attestation PTS Protocol: Binding to IF-M"
+  standard (TLV-based messages only). TPM-based remote attestation of
+  Linux IMA (Integrity Measurement Architecture) possible. Measurement
+  reference values are automatically stored in an SQLite database.
+
+- The EAP-RADIUS authentication backend supports RADIUS accounting. It sends
+  start/stop messages containing Username, Framed-IP and Input/Output-Octets
+  attributes and has been tested against FreeRADIUS and Microsoft NPS.
+
+- Added support for PKCS#8 encoded private keys via the libstrongswan
+  pkcs8 plugin.  This is the default format used by some OpenSSL tools since
+  version 1.0.0 (e.g. openssl req with -keyout).
+
+- Added session resumption support to the strongSwan TLS stack.
+
+
+strongswan-4.6.1
+----------------
+
+- Because of changing checksums before and after installation which caused
+  the integrity tests to fail we avoided directly linking libsimaka, libtls and
+  libtnccs to those libcharon plugins which make use of these dynamic libraries.
+  Instead we linked the libraries to the charon daemon. Unfortunately Ubuntu
+  11.10 activated the --as-needed ld option which discards explicit links
+  to dynamic libraries that are not actually used by the charon daemon itself,
+  thus causing failures during the loading of the plugins which depend on these
+  libraries for resolving external symbols.
+
+-  Therefore our approach of computing  integrity checksums for plugins had to be
+   changed radically by moving the hash generation from the compilation to the
+   post-installation phase.
+
+
+strongswan-4.6.0
+----------------
+
+- The new libstrongswan certexpire plugin collects expiration information of
+  all used certificates and exports them to CSV files. It either directly
+  exports them or uses cron style scheduling for batch exports.
+
+- starter passes unresolved hostnames to charon, allowing it to do name
+  resolution not before the connection attempt. This is especially useful with
+  connections between hosts using dynamic IP addresses. Thanks to Mirko Parthey
+  for the initial patch.
+
+- The android plugin can now be used without the Android frontend patch and
+  provides DNS server registration and logging to logcat.
+
+- Pluto and starter (plus stroke and whack) have been ported to Android.
+
+- Support for ECDSA private and public key operations has been added to the
+  pkcs11 plugin.  The plugin now also provides DH and ECDH via PKCS#11 and can
+  use tokens as random number generators (RNG).  By default only private key
+  operations are enabled, more advanced features have to be enabled by their
+  option in strongswan.conf.  This also applies to public key operations (even
+  for keys not stored on the token) which were enabled by default before.
+
+- The libstrongswan plugin system now supports detailed plugin dependencies.
+  Many plugins have been extended to export its capabilities and requirements.
+  This allows the plugin loader to resolve plugin loading order automatically,
+  and in future releases, to dynamically load the required features on demand.
+  Existing third party plugins are source (but not binary) compatible if they
+  properly initialize the new get_features() plugin function to NULL.
+
+- The tnc-ifmap plugin implements a TNC IF-MAP 2.0 client which can deliver
+  metadata about IKE_SAs via a SOAP interface to a MAP server. The tnc-ifmap
+  plugin requires the Apache Axis2/C library.
+
+
+strongswan-4.5.3
+----------------
+
+- Our private libraries (e.g. libstrongswan) are not installed directly in
+  prefix/lib anymore.  Instead a subdirectory is used (prefix/lib/ipsec/ by
+  default).  The plugins directory is also moved from libexec/ipsec/ to that
+  directory.
+
+- The dynamic IMC/IMV libraries were moved from the plugins directory to
+  a new imcvs directory in the prefix/lib/ipsec/ subdirectory.
+
+- Job priorities were introduced to prevent thread starvation caused by too
+  many threads handling blocking operations (such as CRL fetching).  Refer to
+  strongswan.conf(5) for details.
+
+- Two new strongswan.conf options allow to fine-tune performance on IKEv2
+  gateways by dropping IKE_SA_INIT requests on high load.
+
+- IKEv2 charon daemon supports start PASS and DROP shunt policies
+  preventing traffic to go through IPsec connections. Installation of the
+  shunt policies either via the XFRM netfilter or PFKEYv2 IPsec kernel
+  interfaces.
+
+- The history of policies installed in the kernel is now tracked so that e.g.
+  trap policies are correctly updated when reauthenticated SAs are terminated.
+
+- IMC/IMV Scanner pair implementing the RFC 5792 PA-TNC (IF-M) protocol.
+  Using "netstat -l" the IMC scans open listening ports on the TNC client
+  and sends a port list to the IMV which based on a port policy decides if
+  the client is admitted to the network.
+  (--enable-imc-scanner/--enable-imv-scanner).
+
+- IMC/IMV Test pair implementing the RFC 5792 PA-TNC (IF-M) protocol.
+  (--enable-imc-test/--enable-imv-test).
+
+- The IKEv2 close action does not use the same value as the ipsec.conf dpdaction
+  setting, but the value defined by its own closeaction keyword. The action
+  is triggered if the remote peer closes a CHILD_SA unexpectedly.
+
+
+strongswan-4.5.2
+----------------
+
+- The whitelist plugin for the IKEv2 daemon maintains an in-memory identity
+  whitelist. Any connection attempt of peers not whitelisted will get rejected.
+  The 'ipsec whitelist' utility provides a simple command line frontend for
+  whitelist administration.
+
+- The duplicheck plugin provides a specialized form of duplicate checking,
+  doing a liveness check on the old SA and optionally notify a third party
+  application about detected duplicates.
+
+- The coupling plugin permanently couples two or more devices by limiting
+  authentication to previously used certificates.
+
+- In the case that the peer config and child config don't have the same name
+  (usually in SQL database defined connections), ipsec up|route <peer config>
+  starts|routes all associated child configs and ipsec up|route <child config>
+  only starts|routes the specific child config.
+
+- fixed the encoding and parsing of X.509 certificate policy statements (CPS).
+
+- Duncan Salerno contributed the eap-sim-pcsc plugin implementing a
+  pcsc-lite based SIM card backend.
+
+- The eap-peap plugin implements the EAP PEAP protocol. Interoperates
+  successfully with a FreeRADIUS server and Windows 7 Agile VPN clients.
+
+- The IKEv2 daemon charon rereads strongswan.conf on SIGHUP and instructs
+  all plugins to reload. Currently only the eap-radius and the attr plugins
+  support configuration reloading.
+
+- Added userland support to the IKEv2 daemon for Extended Sequence Numbers
+  support coming with Linux 2.6.39. To enable ESN on a connection, add
+  the 'esn' keyword to the proposal. The default proposal uses 32-bit sequence
+  numbers only ('noesn'), and the same value is used if no ESN mode is
+  specified. To negotiate ESN support with the peer, include both, e.g.
+  esp=aes128-sha1-esn-noesn.
+
+- In addition to ESN, Linux 2.6.39 gained support for replay windows larger
+  than 32 packets. The new global strongswan.conf option 'charon.replay_window'
+  configures the size of the replay window, in packets.
+
+
+strongswan-4.5.1
+----------------
+
+- Sansar Choinyambuu implemented the RFC 5793 Posture Broker Protocol (BP)
+  compatible with Trusted Network Connect (TNC). The TNCCS 2.0 protocol
+  requires the tnccs_20, tnc_imc and tnc_imv plugins but does not depend
+  on the libtnc library. Any available IMV/IMC pairs conforming to the
+  Trusted Computing Group's TNC-IF-IMV/IMC 1.2 interface specification
+  can be loaded via /etc/tnc_config.
+
+- Re-implemented the TNCCS 1.1 protocol by using the tnc_imc and tnc_imv
+  in place of the external libtnc library.
+
+- The tnccs_dynamic plugin loaded on a TNC server in addition to the
+  tnccs_11 and tnccs_20 plugins, dynamically detects the IF-TNCCS
+  protocol version used by a TNC client and invokes an instance of
+  the corresponding protocol stack.
+
+- IKE and ESP proposals can now be stored in an SQL database using a
+  new proposals table. The start_action field in the child_configs
+  tables allows the automatic starting or routing of connections stored
+  in an SQL database.
+
+- The new certificate_authorities and certificate_distribution_points
+  tables make it possible to store CRL and OCSP Certificate Distribution
+  points in an SQL database.
+
+- The new 'include' statement allows to recursively include other files in
+  strongswan.conf.  Existing sections and values are thereby extended and
+  replaced, respectively.
+
+- Due to the changes in the parser for strongswan.conf, the configuration
+  syntax for the attr plugin has changed.  Previously, it was possible to
+  specify multiple values of a specific attribute type by adding multiple
+  key/value pairs with the same key (e.g. dns) to the plugins.attr section.
+  Because values with the same key now replace previously defined values
+  this is not possible anymore.  As an alternative, multiple values can be
+  specified by separating them with a comma (e.g. dns = 1.2.3.4, 2.3.4.5).
+
+- ipsec listalgs now appends (set in square brackets) to each crypto
+  algorithm listed the plugin that registered the function.
+
+- Traffic Flow Confidentiality padding supported with Linux 2.6.38 can be used
+  by the IKEv2 daemon. The ipsec.conf 'tfc' keyword pads all packets to a given
+  boundary, the special value '%mtu' pads all packets to the path MTU.
+
+- The new af-alg plugin can use various crypto primitives of the Linux Crypto
+  API using the AF_ALG interface introduced with 2.6.38. This removes the need
+  for additional userland implementations of symmetric cipher, hash, hmac and
+  xcbc algorithms.
+
+- The IKEv2 daemon supports the INITIAL_CONTACT notify as initiator and
+  responder. The notify is sent when initiating configurations with a unique
+  policy, set in ipsec.conf via the global 'uniqueids' option.
+
+- The conftest conformance testing framework enables the IKEv2 stack to perform
+  many tests using a distinct tool and configuration frontend. Various hooks
+  can alter reserved bits, flags, add custom notifies and proposals, reorder
+  or drop messages and much more. It is enabled using the --enable-conftest
+  ./configure switch.
+
+- The new libstrongswan constraints plugin provides advanced X.509 constraint
+  checking. In addition to X.509 pathLen constraints, the plugin checks for
+  nameConstraints and certificatePolicies, including policyMappings and
+  policyConstraints. The x509 certificate plugin and the pki tool have been
+  enhanced to support these extensions. The new left/rightcertpolicy ipsec.conf
+  connection keywords take OIDs a peer certificate must have.
+
+- The left/rightauth ipsec.conf keywords accept values with a minimum strength
+  for trustchain public keys in bits, such as rsa-2048 or ecdsa-256.
+
+- The revocation and x509 libstrongswan plugins and the pki tool gained basic
+  support for delta CRLs.
+
+
+strongswan-4.5.0
+----------------
+
+- IMPORTANT: the default keyexchange mode 'ike' is changing with release 4.5
+  from 'ikev1' to 'ikev2', thus commemorating the five year anniversary of the
+  IKEv2 RFC 4306 and its mature successor RFC 5996. The time has definitively
+  come for IKEv1 to go into retirement and to cede its place to the much more
+  robust, powerful and versatile IKEv2 protocol!
+
+- Added new ctr, ccm and gcm plugins providing Counter, Counter with CBC-MAC
+  and Galois/Counter Modes based on existing CBC implementations. These
+  new plugins bring support for AES and Camellia Counter and CCM algorithms
+  and the AES GCM algorithms for use in IKEv2.
+
+- The new pkcs11 plugin brings full Smartcard support to the IKEv2 daemon and
+  the pki utility using one or more PKCS#11 libraries. It currently supports
+  RSA private and public key operations and loads X.509 certificates from
+  tokens.
+
+- Implemented a general purpose TLS stack based on crypto and credential
+  primitives of libstrongswan. libtls supports TLS versions 1.0, 1.1 and 1.2,
+  ECDHE-ECDSA/RSA, DHE-RSA and RSA key exchange algorithms and RSA/ECDSA based
+  client authentication.
+
+- Based on libtls, the eap-tls plugin brings certificate based EAP
+  authentication for client and server. It is compatible to Windows 7 IKEv2
+  Smartcard authentication and the OpenSSL based FreeRADIUS EAP-TLS backend.
+
+- Implemented the TNCCS 1.1 Trusted Network Connect protocol using the
+  libtnc library on the strongSwan client and server side via the tnccs_11
+  plugin and optionally connecting to a TNC@FHH-enhanced FreeRADIUS AAA server.
+  Depending on the resulting TNC Recommendation, strongSwan clients are granted
+  access to a network behind a strongSwan gateway (allow), are put into a
+  remediation zone (isolate) or are blocked (none), respectively. Any number
+  of Integrity Measurement Collector/Verifier pairs can be attached
+  via the tnc-imc and tnc-imv charon plugins.
+
+- The IKEv1 daemon pluto now uses the same kernel interfaces as the IKEv2
+  daemon charon. As a result of this, pluto now supports xfrm marks which
+  were introduced in charon with 4.4.1.
+
+- Applets for Maemo 5 (Nokia) allow to easily configure and control IKEv2
+  based VPN connections with EAP authentication on supported devices.
+
+- The RADIUS plugin eap-radius now supports multiple RADIUS servers for
+  redundant setups. Servers are selected by a defined priority, server load and
+  availability.
+
+- The simple led plugin controls hardware LEDs through the Linux LED subsystem.
+  It currently shows activity of the IKE daemon and is a good example how to
+  implement a simple event listener.
+
+- Improved MOBIKE behavior in several corner cases, for instance, if the
+  initial responder moves to a different address.
+
+- Fixed left-/rightnexthop option, which was broken since 4.4.0.
+
+- Fixed a bug not releasing a virtual IP address to a pool if the XAUTH
+  identity was different from the IKE identity.
+
+- Fixed the alignment of ModeConfig messages on 4-byte boundaries in the
+  case where the attributes are not a multiple of 4 bytes (e.g. Cisco's
+  UNITY_BANNER).
+
+- Fixed the interoperability of the socket_raw and socket_default
+  charon plugins.
+
+- Added man page for strongswan.conf
+
+
+strongswan-4.4.1
+----------------
+
+- Support of xfrm marks in IPsec SAs and IPsec policies introduced
+  with the Linux 2.6.34 kernel. For details see the example scenarios
+  ikev2/nat-two-rw-mark, ikev2/rw-nat-mark-in-out and ikev2/net2net-psk-dscp.
+
+- The PLUTO_MARK_IN and PLUTO_ESP_ENC environment variables can be used
+  in a user-specific updown script to set marks on inbound ESP or
+  ESP_IN_UDP packets.
+
+- The openssl plugin now supports X.509 certificate and CRL functions.
+
+- OCSP/CRL checking in IKEv2 has been moved to the revocation plugin, enabled
+  by default. Plase update manual load directives in strongswan.conf.
+
+- RFC3779 ipAddrBlock constraint checking has been moved to the addrblock
+  plugin, disabled by default. Enable it and update manual load directives
+  in strongswan.conf, if required.
+
+- The pki utility supports CRL generation using the --signcrl command.
+
+- The ipsec pki --self, --issue and --req commands now support output in
+  PEM format using the --outform pem option.
+
+- The major refactoring of the IKEv1 Mode Config functionality now allows
+  the transport and handling of any Mode Config attribute.
+
+- The RADIUS proxy plugin eap-radius now supports multiple servers. Configured
+  servers are chosen randomly, with the option to prefer a specific server.
+  Non-responding servers are degraded by the selection process.
+
+- The ipsec pool tool manages arbitrary configuration attributes stored
+  in an SQL database. ipsec pool --help gives the details.
+
+- The new eap-simaka-sql plugin acts as a backend for EAP-SIM and EAP-AKA,
+  reading triplets/quintuplets from an SQL database.
+
+- The High Availability plugin now supports a HA enabled in-memory address
+  pool and Node reintegration without IKE_SA rekeying. The latter allows
+  clients without IKE_SA rekeying support to keep connected during
+  reintegration. Additionally, many other issues have been fixed in the ha
+  plugin.
+
+- Fixed a potential remote code execution vulnerability resulting from
+  the misuse of snprintf(). The vulnerability is exploitable by
+  unauthenticated users.
+
+
+strongswan-4.4.0
+----------------
+
+- The IKEv2 High Availability plugin has been integrated. It provides
+  load sharing and failover capabilities in a cluster of currently two nodes,
+  based on an extend ClusterIP kernel module. More information is available at
+  http://wiki.strongswan.org/projects/strongswan/wiki/HighAvailability.
+  The development of the High Availability functionality was sponsored by
+  secunet Security Networks AG.
+
+- Added IKEv1 and IKEv2 configuration support for the AES-GMAC
+  authentication-only ESP cipher. Our aes_gmac kernel patch or a Linux
+  2.6.34 kernel is required to make AES-GMAC available via the XFRM
+  kernel interface.
+
+- Added support for Diffie-Hellman groups 22, 23 and 24 to the gmp, gcrypt
+  and openssl plugins, usable by both pluto and charon. The new proposal
+  keywords are modp1024s160, modp2048s224 and modp2048s256. Thanks to Joy Latten
+  from IBM for his contribution.
+
+- The IKEv1 pluto daemon supports RAM-based virtual IP pools using
+  the rightsourceip directive with a subnet from which addresses
+  are allocated.
+
+- The ipsec pki --gen and --pub commands now allow the output of
+  private and public keys in PEM format using the --outform pem
+  command line option.
+
+- The new DHCP plugin queries virtual IP addresses for clients from a DHCP
+  server using broadcasts, or a defined server using the
+  charon.plugins.dhcp.server strongswan.conf option. DNS/WINS server information
+  is additionally served to clients if the DHCP server provides such
+  information. The plugin is used in ipsec.conf configurations having
+  rightsourceip set to %dhcp.
+
+- A new plugin called farp fakes ARP responses for virtual IP addresses
+  handed out to clients from the IKEv2 daemon charon. The plugin lets a
+  road-warrior act as a client on the local LAN if it uses a virtual IP
+  from the responders subnet, e.g. acquired using the DHCP plugin.
+
+- The existing IKEv2 socket implementations have been migrated to the
+  socket-default and the socket-raw plugins. The new socket-dynamic plugin
+  binds sockets dynamically to ports configured via the left-/rightikeport
+  ipsec.conf connection parameters.
+
+- The android charon plugin stores received DNS server information as "net.dns"
+  system properties, as used by the Android platform.
+
+
+strongswan-4.3.6
+----------------
+
+- The IKEv2 daemon supports RFC 3779 IP address block constraints
+  carried as a critical X.509v3 extension in the peer certificate.
+
+- The ipsec pool --add|del dns|nbns command manages DNS and NBNS name
+  server entries that are sent via the IKEv1 Mode Config or IKEv2
+  Configuration Payload to remote clients.
+
+- The Camellia cipher can be used as an IKEv1 encryption algorithm.
+
+- The IKEv1 and IKEV2 daemons now check certificate path length constraints.
+
+- The new ipsec.conf conn option "inactivity" closes a CHILD_SA if no traffic
+  was sent or received within the given interval. To close the complete IKE_SA
+  if its only CHILD_SA was inactive, set the global strongswan.conf option
+  "charon.inactivity_close_ike" to yes.
+
+- More detailed IKEv2 EAP payload information in debug output
+
+- IKEv2 EAP-SIM and EAP-AKA share joint libsimaka library
+
+- Added required userland changes for proper SHA256 and SHA384/512 in ESP that
+  will be introduced with Linux 2.6.33. The "sha256"/"sha2_256" keyword now
+  configures the kernel with 128 bit truncation, not the non-standard 96
+  bit truncation used by previous releases. To use the old 96 bit truncation
+  scheme, the new "sha256_96" proposal keyword has been introduced.
+
+- Fixed IPComp in tunnel mode, stripping out the duplicated outer header. This
+  change makes IPcomp tunnel mode connections incompatible with previous
+  releases; disable compression on such tunnels.
+
+- Fixed BEET mode connections on recent kernels by installing SAs with
+  appropriate traffic selectors, based on a patch by Michael Rossberg.
+
+- Using extensions (such as BEET mode) and crypto algorithms (such as twofish,
+  serpent, sha256_96) allocated in the private use space now require that we
+  know its meaning, i.e. we are talking to strongSwan. Use the new
+  "charon.send_vendor_id" option in strongswan.conf to let the remote peer know
+  this is the case.
+
+- Experimental support for draft-eronen-ipsec-ikev2-eap-auth, where the
+  responder omits public key authentication in favor of a mutual authentication
+  method. To enable EAP-only authentication, set rightauth=eap on the responder
+  to rely only on the MSK constructed AUTH payload. This not-yet standardized
+  extension requires the strongSwan vendor ID introduced above.
+
+- The IKEv1 daemon ignores the Juniper SRX notification type 40001, thus
+  allowing interoperability.
+
+
+strongswan-4.3.5
+----------------
+
+- The IKEv1 pluto daemon can now use SQL-based address pools to deal out
+  virtual IP addresses as a Mode Config server. The pool capability has been
+  migrated from charon's sql plugin to a new attr-sql plugin which is loaded
+  by libstrongswan and which can be used by both daemons either with a SQLite
+  or MySQL database and the corresponding plugin.
+
+- Plugin names have been streamlined: EAP plugins now have a dash after eap
+  (e.g. eap-sim), as it is used with the --enable-eap-sim ./configure option.
+  Plugin configuration sections in strongswan.conf now use the same name as the
+  plugin itself (i.e. with a dash). Make sure to update "load" directives and
+  the affected plugin sections in existing strongswan.conf files.
+
+- The private/public key parsing and encoding has been split up into
+  separate pkcs1, pgp, pem and dnskey plugins. The public key implementation
+  plugins gmp, gcrypt and openssl can all make use of them.
+
+- The EAP-AKA plugin can use different backends for USIM/quintuplet
+  calculations, very similar to the EAP-SIM plugin. The existing 3GPP2 software
+  implementation has been migrated to a separate plugin.
+
+- The IKEv2 daemon charon gained basic PGP support. It can use locally installed
+  peer certificates and can issue signatures based on RSA private keys.
+
+- The new 'ipsec pki' tool provides a set of commands to maintain a public
+  key infrastructure. It currently supports operations to create RSA and ECDSA
+  private/public keys, calculate fingerprints and issue or verify certificates.
+
+- Charon uses a monotonic time source for statistics and job queueing, behaving
+  correctly if the system time changes (e.g. when using NTP).
+
+- In addition to time based rekeying, charon supports IPsec SA lifetimes based
+  on processed volume or number of packets. They new ipsec.conf paramaters
+  'lifetime' (an alias to 'keylife'), 'lifebytes' and 'lifepackets' handle
+  SA timeouts, while the parameters 'margintime' (an alias to rekeymargin),
+  'marginbytes' and 'marginpackets' trigger the rekeying before a SA expires.
+  The existing parameter 'rekeyfuzz' affects all margins.
+
+- If no CA/Gateway certificate is specified in the NetworkManager plugin,
+  charon uses a set of trusted root certificates preinstalled by distributions.
+  The directory containing CA certificates can be specified using the
+  --with-nm-ca-dir=path configure option.
+
+- Fixed the encoding of the Email relative distinguished name in left|rightid
+  statements.
+
+- Fixed the broken parsing of PKCS#7 wrapped certificates by the pluto daemon.
+
+- Fixed smartcard-based authentication in the pluto daemon which was broken by
+  the ECDSA support introduced with the 4.3.2 release.
+
+- A patch contributed by Heiko Hund fixes mixed IPv6 in IPv4 and vice versa
+  tunnels established with the IKEv1 pluto daemon.
+
+- The pluto daemon now uses the libstrongswan x509 plugin for certificates and
+  CRls and the struct id type was replaced by identification_t used by charon
+  and the libstrongswan library.
+
+
+strongswan-4.3.4
+----------------
+
+- IKEv2 charon daemon ported to FreeBSD and Mac OS X. Installation details can
+  be found on wiki.strongswan.org.
+
+- ipsec statusall shows the number of bytes transmitted and received over
+  ESP connections configured by the IKEv2 charon daemon.
+
+- The IKEv2 charon daemon supports include files in ipsec.secrets.
+
+
+strongswan-4.3.3
+----------------
+
+- The configuration option --enable-integrity-test plus the strongswan.conf
+  option libstrongswan.integrity_test = yes activate integrity tests
+  of the IKE daemons charon and pluto, libstrongswan and all loaded
+  plugins. Thus dynamic library misconfigurations and non-malicious file
+  manipulations can be reliably detected.
+
+- The new default setting libstrongswan.ecp_x_coordinate_only=yes allows
+  IKEv1 interoperability with MS Windows using the ECP DH groups 19 and 20.
+
+- The IKEv1 pluto daemon now supports the AES-CCM and AES-GCM ESP
+  authenticated encryption algorithms.
+
+- The IKEv1 pluto daemon now supports V4 OpenPGP keys.
+
+- The RDN parser vulnerability discovered by Orange Labs research team
+  was not completely fixed in version 4.3.2. Some more modifications
+  had to be applied to the asn1_length() function to make it robust.
+
+
+strongswan-4.3.2
+----------------
+
+- The new gcrypt plugin provides symmetric cipher, hasher, RNG, Diffie-Hellman
+  and RSA crypto primitives using the LGPL licensed GNU gcrypt library.
+
+- libstrongswan features an integrated crypto selftest framework for registered
+  algorithms. The test-vector plugin provides a first set of test vectors and
+  allows pluto and charon to rely on tested crypto algorithms.
+
+- pluto can now use all libstrongswan plugins with the exception of x509 and xcbc.
+  Thanks to the openssl plugin, the ECP Diffie-Hellman groups 19, 20, 21, 25, and
+  26 as well as ECDSA-256, ECDSA-384, and ECDSA-521 authentication can be used
+  with IKEv1.
+
+- Applying their fuzzing tool, the Orange Labs vulnerability research team found
+  another two DoS vulnerabilities, one in the rather old ASN.1 parser of Relative
+  Distinguished Names (RDNs) and a second one in the conversion of ASN.1 UTCTIME
+  and GENERALIZEDTIME strings to a time_t value.
+
+
+strongswan-4.3.1
+----------------
+
+- The nm plugin now passes DNS/NBNS server information to NetworkManager,
+  allowing a gateway administrator to set DNS/NBNS configuration on clients
+  dynamically.
+
+- The nm plugin also accepts CA certificates for gateway authentication. If
+  a CA certificate is configured, strongSwan uses the entered gateway address
+  as its idenitity, requiring the gateways certificate to contain the same as
+  subjectAltName. This allows a gateway administrator to deploy the same
+  certificates to Windows 7 and NetworkManager clients.
+
+- The command ipsec purgeike deletes IKEv2 SAs that don't have a CHILD SA.
+  The command ipsec down <conn>{n} deletes CHILD SA instance n of connection
+  <conn> whereas ipsec down <conn>{*} deletes all CHILD SA instances.
+  The command ipsec down <conn>[n] deletes IKE SA instance n of connection
+  <conn> plus dependent CHILD SAs whereas ipsec down <conn>[*] deletes all
+  IKE SA instances of connection <conn>.
+
+- Fixed a regression introduced in 4.3.0 where EAP authentication calculated
+  the AUTH payload incorrectly. Further, the EAP-MSCHAPv2 MSK key derivation
+  has been updated to be compatible with the Windows 7 Release Candidate.
+
+- Refactored installation of triggering policies. Routed policies are handled
+  outside of IKE_SAs to keep them installed in any case. A tunnel gets
+  established only once, even if initiation is delayed due network outages.
+
+- Improved the handling of multiple acquire signals triggered by the kernel.
+
+- Fixed two DoS vulnerabilities in the charon daemon that were discovered by
+  fuzzing techniques: 1) Sending a malformed IKE_SA_INIT request leaved an
+  incomplete state which caused a null pointer dereference if a subsequent
+  CREATE_CHILD_SA request was sent. 2) Sending an IKE_AUTH request with either
+  a missing TSi or TSr payload caused a null pointer derefence because the
+  checks for TSi and TSr were interchanged. The IKEv2 fuzzer used was
+  developed by the Orange Labs vulnerability research team. The tool was
+  initially written by Gabriel Campana and is now maintained by Laurent Butti.
+
+- Added support for AES counter mode in ESP in IKEv2 using the proposal
+  keywords aes128ctr, aes192ctr and aes256ctr.
+
+- Further progress in refactoring pluto: Use of the curl and ldap plugins
+  for fetching crls and OCSP. Use of the random plugin to get keying material
+  from /dev/random or /dev/urandom. Use of the openssl plugin as an alternative
+  to the aes, des, sha1, sha2, and md5 plugins. The blowfish, twofish, and
+  serpent encryption plugins are now optional and are not enabled by default.
+
+
+strongswan-4.3.0
+----------------
+
+- Support for the IKEv2 Multiple Authentication Exchanges extension (RFC4739).
+  Initiators and responders can use several authentication rounds (e.g. RSA
+  followed by EAP) to authenticate. The new ipsec.conf leftauth/rightauth and
+  leftauth2/rightauth2 parameters define own authentication rounds or setup
+  constraints for the remote peer. See the ipsec.conf man page for more detials.
+
+- If glibc printf hooks (register_printf_function) are not available,
+  strongSwan can use the vstr string library to run on non-glibc systems.
+
+- The IKEv2 charon daemon can now configure the ESP CAMELLIA-CBC cipher
+  (esp=camellia128|192|256).
+
+- Refactored the pluto and scepclient code to use basic functions (memory
+  allocation, leak detective, chunk handling, printf_hooks, strongswan.conf
+  attributes, ASN.1 parser, etc.) from the libstrongswan library.
+
+- Up to two DNS and WINS servers to be sent via IKEv1 ModeConfig can be
+  configured in the pluto section of strongswan.conf.
+
+
+strongswan-4.2.14
+-----------------
+
+- The new server-side EAP RADIUS plugin (--enable-eap-radius)
+  relays EAP messages to and from a RADIUS server. Successfully
+  tested with with a freeradius server using EAP-MD5 and EAP-SIM.
+
+- A vulnerability in the Dead Peer Detection (RFC 3706) code was found by
+  Gerd v. Egidy <gerd.von.egidy@intra2net.com> of Intra2net AG affecting
+  all Openswan and strongSwan releases. A malicious (or expired ISAKMP)
+  R_U_THERE or R_U_THERE_ACK Dead Peer Detection packet can cause the
+  pluto IKE daemon to crash and restart. No authentication or encryption
+  is required to trigger this bug. One spoofed UDP packet can cause the
+  pluto IKE daemon to restart and be unresponsive for a few seconds while
+  restarting. This DPD null state vulnerability has been officially
+  registered as CVE-2009-0790 and is fixed by this release.
+
+- ASN.1 to time_t conversion caused a time wrap-around for
+  dates after Jan 18 03:14:07 UTC 2038 on 32-bit platforms.
+  As a workaround such dates are set to the maximum representable
+  time, i.e. Jan 19 03:14:07 UTC 2038.
+
+- Distinguished Names containing wildcards (*) are not sent in the
+  IDr payload anymore.
+
+
+strongswan-4.2.13
+-----------------
+
+- Fixed a use-after-free bug in the DPD timeout section of the
+  IKEv1 pluto daemon which sporadically caused a segfault.
+
+- Fixed a crash in the IKEv2 charon daemon occurring with
+  mixed RAM-based and SQL-based virtual IP address pools.
+
+- Fixed ASN.1 parsing of algorithmIdentifier objects where the
+  parameters field is optional.
+
+- Ported nm plugin to NetworkManager 7.1.
+
+
+strongswan-4.2.12
+-----------------
+
+- Support of the EAP-MSCHAPv2 protocol enabled by the option
+  --enable-eap-mschapv2. Requires the MD4 hash algorithm enabled
+  either by --enable-md4 or --enable-openssl.
+
+- Assignment of up to two DNS and up to two WINS servers to peers via
+  the IKEv2 Configuration Payload (CP). The IPv4 or IPv6 nameserver
+  addresses are defined in strongswan.conf.
+
+- The strongSwan applet for the Gnome NetworkManager is now built and
+  distributed as a separate tarball under the name NetworkManager-strongswan.
+
+
+strongswan-4.2.11
+-----------------
+
+- Fixed ESP NULL encryption broken by the refactoring of keymat.c.
+  Also introduced proper initialization and disposal of keying material.
+
+- Fixed the missing listing of connection definitions in ipsec statusall
+  broken by an unfortunate local variable overload.
+
+
+strongswan-4.2.10
+-----------------
+
+- Several performance improvements to handle thousands of tunnels with almost
+  linear upscaling. All relevant data structures have been replaced by faster
+  counterparts with better lookup times.
+
+- Better parallelization to run charon on multiple cores. Due to improved
+  ressource locking and other optimizations the daemon can take full
+  advantage of 16 or even more cores.
+
+- The load-tester plugin can use a NULL Diffie-Hellman group and simulate
+  unique identities and certificates by signing peer certificates using a CA
+  on the fly.
+
+- The redesigned stroke in-memory IP pool handles leases. The "ipsec leases"
+  command queries assigned leases.
+
+- Added support for smartcards in charon by using the ENGINE API provided by
+  OpenSSL, based on patches by Michael Roßberg.
+
+- The Padlock plugin supports the hardware RNG found on VIA CPUs to provide a
+  reliable source of randomness.
+
+strongswan-4.2.9
+----------------
+
+- Flexible configuration of logging subsystem allowing to log to multiple
+  syslog facilities or to files using fine-grained log levels for each target.
+
+- Load testing plugin to do stress testing of the IKEv2 daemon against self
+  or another host. Found and fixed issues during tests in the multi-threaded
+  use of the OpenSSL plugin.
+
+- Added profiling code to synchronization primitives to find bottlenecks if
+  running on multiple cores. Found and fixed an issue where parts of the
+  Diffie-Hellman calculation acquired an exclusive lock. This greatly improves
+  parallelization to multiple cores.
+
+- updown script invocation has been separated into a plugin of its own to
+  further slim down the daemon core.
+
+- Separated IKE_SA/CHILD_SA key derivation process into a closed system,
+  allowing future implementations to use a secured environment in e.g. kernel
+  memory or hardware.
+
+- The kernel interface of charon has been modularized. XFRM NETLINK (default)
+  and PFKEY (--enable-kernel-pfkey) interface plugins for the native IPsec
+  stack of the Linux 2.6 kernel as well as a PFKEY interface for the KLIPS
+  IPsec stack (--enable-kernel-klips) are provided.
+
+- Basic Mobile IPv6 support has been introduced, securing Binding Update
+  messages as well as tunneled traffic between Mobile Node and Home Agent.
+  The installpolicy=no option allows peaceful cooperation with a dominant
+  mip6d daemon and the new type=transport_proxy implements the special MIPv6
+  IPsec transport proxy mode where the IKEv2 daemon uses the Care-of-Address
+  but the IPsec SA is set up for the Home Address.
+
+- Implemented migration of Mobile IPv6 connections using the KMADDRESS
+  field contained in XFRM_MSG_MIGRATE messages sent by the mip6d daemon
+  via the Linux 2.6.28 (or appropriately patched) kernel.
+
+
+strongswan-4.2.8
+----------------
+
+- IKEv2 charon daemon supports authentication based on raw public keys
+  stored in the SQL database backend. The ipsec listpubkeys command
+  lists the available raw public keys via the stroke interface.
+
+- Several MOBIKE improvements: Detect changes in NAT mappings in DPD exchanges,
+  handle events if kernel detects NAT mapping changes in UDP-encapsulated
+  ESP packets (requires kernel patch), reuse old addesses in MOBIKE updates as
+  long as possible and other fixes.
+
+- Fixed a bug in addr_in_subnet() which caused insertion of wrong source
+  routes for destination subnets having netwmasks not being a multiple of 8 bits.
+  Thanks go to Wolfgang Steudel, TU Ilmenau for reporting this bug.
+
+
+strongswan-4.2.7
+----------------
+
+- Fixed a Denial-of-Service vulnerability where an IKE_SA_INIT message with
+  a KE payload containing zeroes only can cause a crash of the IKEv2 charon
+  daemon due to a NULL pointer returned by the mpz_export() function of the
+  GNU Multiprecision Library (GMP). Thanks go to Mu Dynamics Research Labs
+  for making us aware of this problem.
+
+- The new agent plugin provides a private key implementation on top of an
+  ssh-agent.
+
+- The NetworkManager plugin has been extended to support certificate client
+  authentication using RSA keys loaded from a file or using ssh-agent.
+
+- Daemon capability dropping has been ported to libcap and must be enabled
+  explicitly --with-capabilities=libcap. Future version will support the
+  newer libcap2 library.
+
+- ipsec listalgs lists the IKEv2 cryptografic algorithms registered with the
+  charon keying daemon.
+
+
+strongswan-4.2.6
+----------------
+
+- A NetworkManager plugin allows GUI-based configuration of road-warrior
+  clients in a simple way. It features X509 based gateway authentication
+  and EAP client authentication, tunnel setup/teardown and storing passwords
+  in the Gnome Keyring.
+
+- A new EAP-GTC plugin implements draft-sheffer-ikev2-gtc-00.txt and allows
+  username/password authentication against any PAM service on the gateway.
+  The new EAP method interacts nicely with the NetworkManager plugin and allows
+  client authentication against e.g. LDAP.
+
+- Improved support for the EAP-Identity method. The new ipsec.conf eap_identity
+  parameter defines an additional identity to pass to the server in EAP
+  authentication.
+
+- The "ipsec statusall" command now lists CA restrictions, EAP
+  authentication types and EAP identities.
+
+- Fixed two multithreading deadlocks occurring when starting up
+  several hundred tunnels concurrently.
+
+- Fixed the --enable-integrity-test configure option which
+  computes a SHA-1 checksum over the libstrongswan library.
+
+
+strongswan-4.2.5
+----------------
+
+- Consistent logging of IKE and CHILD SAs at the audit (AUD) level.
+
+- Improved the performance of the SQL-based virtual IP address pool
+  by introducing an additional addresses table. The leases table
+  storing only history information has become optional and can be
+  disabled by setting charon.plugins.sql.lease_history = no in
+  strongswan.conf.
+
+- The XFRM_STATE_AF_UNSPEC flag added to xfrm.h allows IPv4-over-IPv6
+  and IPv6-over-IPv4 tunnels with the 2.6.26 and later Linux kernels.
+
+- management of different virtual IP pools for different
+  network interfaces have become possible.
+
+- fixed a bug which prevented the assignment of more than 256
+  virtual IP addresses from a pool managed by an sql database.
+
+- fixed a bug which did not delete own IPCOMP SAs in the kernel.
+
+
+strongswan-4.2.4
+----------------
+
+- Added statistics functions to ipsec pool --status and ipsec pool --leases
+  and input validation checks to various ipsec pool commands.
+
+- ipsec statusall now lists all loaded charon plugins and displays
+  the negotiated IKEv2 cipher suite proposals.
+
+- The openssl plugin supports the elliptic curve Diffie-Hellman groups
+  19, 20, 21, 25, and 26.
+
+- The openssl plugin supports ECDSA authentication using elliptic curve
+  X.509 certificates.
+
+- Fixed a bug in stroke which caused multiple charon threads to close
+  the file descriptors during packet transfers over the stroke socket.
+
+- ESP sequence numbers are now migrated in IPsec SA updates handled by
+  MOBIKE. Works only with Linux kernels >= 2.6.17.
+
+
+strongswan-4.2.3
+----------------
+
+- Fixed the strongswan.conf path configuration problem that occurred when
+  --sysconfig was not set explicitly in ./configure.
+
+- Fixed a number of minor bugs that where discovered during the 4th
+  IKEv2 interoperability workshop in San Antonio, TX.
+
+
+strongswan-4.2.2
+----------------
+
+- Plugins for libstrongswan and charon can optionally be loaded according
+  to a configuration in strongswan.conf. Most components provide a
+  "load = " option followed by a space separated list of plugins to load.
+  This allows e.g. the fallback from a hardware crypto accelerator to
+  to software-based crypto plugins.
+
+- Charons SQL plugin has been extended by a virtual IP address pool.
+  Configurations with a rightsourceip=%poolname setting query a SQLite or
+  MySQL database for leases. The "ipsec pool" command helps in administrating
+  the pool database. See ipsec pool --help for the available options
+
+- The Authenticated Encryption Algorithms AES-CCM-8/12/16 and AES-GCM-8/12/16
+  for ESP are now supported starting with the Linux 2.6.25 kernel. The
+  syntax is e.g. esp=aes128ccm12 or esp=aes256gcm16.
+
+
+strongswan-4.2.1
+----------------
+
+- Support for "Hash and URL" encoded certificate payloads has been implemented
+  in the IKEv2 daemon charon. Using the "certuribase" option of a CA section
+  allows to assign a base URL to all certificates issued by the specified CA.
+  The final URL is then built by concatenating that base and the hex encoded
+  SHA1 hash of the DER encoded certificate. Note that this feature is disabled
+  by default and must be enabled using the option "charon.hash_and_url".
+
+- The IKEv2 daemon charon now supports the "uniqueids" option to close multiple
+  IKE_SAs with the same peer. The option value "keep" prefers existing
+  connection setups over new ones, where the value "replace" replaces existing
+  connections.
+
+- The crypto factory in libstrongswan additionally supports random number
+  generators, plugins may provide other sources of randomness. The default
+  plugin reads raw random data from /dev/(u)random.
+
+- Extended the credential framework by a caching option to allow plugins
+  persistent caching of fetched credentials. The "cachecrl" option has been
+  re-implemented.
+
+- The new trustchain verification introduced in 4.2.0 has been parallelized.
+  Threads fetching CRL or OCSP information no longer block other threads.
+
+- A new IKEv2 configuration attribute framework has been introduced allowing
+  plugins to provide virtual IP addresses, and in the future, other
+  configuration attribute services (e.g. DNS/WINS servers).
+
+- The stroke plugin has been extended to provide virtual IP addresses from
+  a pool defined in ipsec.conf. The "rightsourceip" parameter now accepts
+  address pools in CIDR notation (e.g. 10.1.1.0/24). The parameter also accepts
+  the value "%poolname", where "poolname" identifies a pool provided by a
+  separate plugin.
+
+- Fixed compilation on uClibc and a couple of other minor bugs.
+
+- Set DPD defaults in ipsec starter to dpd_delay=30s and dpd_timeout=150s.
+
+- The IKEv1 pluto daemon now supports the ESP encryption algorithm CAMELLIA
+  with key lengths of 128, 192, and 256 bits, as well as the authentication
+  algorithm AES_XCBC_MAC. Configuration example: esp=camellia192-aesxcbc.
+
+
+strongswan-4.2.0
+----------------
+
+- libstrongswan has been modularized to attach crypto algorithms,
+  credential implementations (keys, certificates) and fetchers dynamically
+  through plugins. Existing code has been ported to plugins:
+    - RSA/Diffie-Hellman implementation using the GNU Multi Precision library
+    - X509 certificate system supporting CRLs, OCSP and attribute certificates
+    - Multiple plugins providing crypto algorithms in software
+    - CURL and OpenLDAP fetcher
+
+- libstrongswan gained a relational database API which uses pluggable database
+  providers. Plugins for MySQL and SQLite are available.
+
+- The IKEv2 keying daemon charon is more extensible. Generic plugins may provide
+  connection configuration, credentials and EAP methods or control the daemon.
+  Existing code has been ported to plugins:
+    - EAP-AKA, EAP-SIM, EAP-MD5 and EAP-Identity
+    - stroke configuration, credential and control (compatible to pluto)
+    - XML bases management protocol to control and query the daemon
+  The following new plugins are available:
+    - An experimental SQL configuration, credential and logging plugin on
+      top of either MySQL or SQLite
+    - A unit testing plugin to run tests at daemon startup
+
+- The authentication and credential framework in charon has been heavily
+  refactored to support modular credential providers, proper
+  CERTREQ/CERT payload exchanges and extensible authorization rules.
+
+- The framework of strongSwan Manager has envolved to the web application
+  framework libfast (FastCGI Application Server w/ Templates) and is usable
+  by other applications.
+
+
+strongswan-4.1.11
+-----------------
+
+- IKE rekeying in NAT situations did not inherit the NAT conditions
+  to the rekeyed IKE_SA so that the UDP encapsulation was lost with
+  the next CHILD_SA rekeying.
+
+- Wrong type definition of the next_payload variable in id_payload.c
+  caused an INVALID_SYNTAX error on PowerPC platforms.
+
+- Implemented IKEv2 EAP-SIM server and client test modules that use
+  triplets stored in a file. For details on the configuration see
+  the scenario 'ikev2/rw-eap-sim-rsa'.
+
+
+strongswan-4.1.10
+-----------------
+
+- Fixed error in the ordering of the certinfo_t records in the ocsp cache that
+  caused multiple entries of the same serial number to be created.
+
+- Implementation of a simple EAP-MD5 module which provides CHAP
+  authentication. This may be interesting in conjunction with certificate
+  based server authentication, as weak passwords can't be brute forced
+  (in contradiction to traditional IKEv2 PSK).
+
+- A complete software based implementation of EAP-AKA, using algorithms
+  specified in 3GPP2 (S.S0055). This implementation does not use an USIM,
+  but reads the secrets from ipsec.secrets. Make sure to read eap_aka.h
+  before using it.
+
+- Support for vendor specific EAP methods using Expanded EAP types. The
+  interface to EAP modules has been slightly changed, so make sure to
+  check the changes if you're already rolling your own modules.
+
+
+strongswan-4.1.9
+----------------
+
+- The default _updown script now dynamically inserts and removes ip6tables
+  firewall rules if leftfirewall=yes is set in IPv6 connections. New IPv6
+  net-net and roadwarrior (PSK/RSA) scenarios for both IKEv1 and IKEV2 were
+  added.
+
+- Implemented RFC4478 repeated authentication to force EAP/Virtual-IP clients
+  to reestablish an IKE_SA within a given timeframe.
+
+- strongSwan Manager supports configuration listing, initiation and termination
+  of IKE and CHILD_SAs.
+
+- Fixes and improvements to multithreading code.
+
+- IKEv2 plugins have been renamed to libcharon-* to avoid naming conflicts.
+  Make sure to remove the old plugins in $libexecdir/ipsec, otherwise they get
+  loaded twice.
+
+
+strongswan-4.1.8
+----------------
+
+- Removed recursive pthread mutexes since uClibc doesn't support them.
+
+
+strongswan-4.1.7
+----------------
+
+- In NAT traversal situations and multiple queued Quick Modes,
+  those pending connections inserted by auto=start after the
+  port floating from 500 to 4500 were erronously deleted.
+
+- Added a "forceencaps" connection parameter to enforce UDP encapsulation
+  to surmount restrictive firewalls. NAT detection payloads are faked to
+  simulate a NAT situation and trick the other peer into NAT mode (IKEv2 only).
+
+- Preview of strongSwan Manager, a web based configuration and monitoring
+  application. It uses a new XML control interface to query the IKEv2 daemon
+  (see http://wiki.strongswan.org/wiki/Manager).
+
+- Experimental SQLite configuration backend which will provide the configuration
+  interface for strongSwan Manager in future releases.
+
+- Further improvements to MOBIKE support.
+
+
+strongswan-4.1.6
+----------------
+
+- Since some third party IKEv2 implementations run into
+  problems with strongSwan announcing MOBIKE capability per
+  default, MOBIKE can be disabled on a per-connection-basis
+  using the mobike=no option. Whereas mobike=no disables the
+  sending of the MOBIKE_SUPPORTED notification and the floating
+  to UDP port 4500 with the IKE_AUTH request even if no NAT
+  situation has been detected, strongSwan will still support
+  MOBIKE acting as a responder.
+
+- the default ipsec routing table plus its corresponding priority
+  used for inserting source routes has been changed from 100 to 220.
+  It can be configured using the --with-ipsec-routing-table and
+  --with-ipsec-routing-table-prio options.
+
+- the --enable-integrity-test configure option tests the
+  integrity of the libstrongswan crypto code during the charon
+  startup.
+
+- the --disable-xauth-vid configure option disables the sending
+  of the XAUTH vendor ID. This can be used as a workaround when
+  interoperating with some Windows VPN clients that get into
+  trouble upon reception of an XAUTH VID without eXtended
+  AUTHentication having been configured.
+
+- ipsec stroke now supports the rereadsecrets, rereadaacerts,
+  rereadacerts, and listacerts options.
+
+
+strongswan-4.1.5
+----------------
+
+- If a DNS lookup failure occurs when resolving right=%<FQDN>
+  or right=<FQDN> combined with rightallowany=yes then the
+  connection is not updated by ipsec starter thus preventing
+  the disruption of an active IPsec connection. Only if the DNS
+  lookup successfully returns with a changed IP address the
+  corresponding connection definition is updated.
+
+- Routes installed by the keying daemons are now in a separate
+  routing table with the ID 100 to avoid conflicts with the main
+  table. Route lookup for IKEv2 traffic is done in userspace to ignore
+  routes installed for IPsec, as IKE traffic shouldn't get encapsulated.
+
+
+strongswan-4.1.4
+----------------
+
+- The pluto IKEv1 daemon now exhibits the same behaviour as its
+  IKEv2 companion charon by inserting an explicit route via the
+  _updown script only if a sourceip exists. This is admissible
+  since routing through the IPsec tunnel is handled automatically
+  by NETKEY's IPsec policies. As a consequence the left|rightnexthop
+  parameter is not required any more.
+
+- The new IKEv1 parameter right|leftallowany parameters helps to handle
+  the case where both peers possess dynamic IP addresses that are
+  usually resolved using DynDNS or a similar service. The configuration
+
+    right=peer.foo.bar
+    rightallowany=yes
+
+  can be used by the initiator to start up a connection to a peer
+  by resolving peer.foo.bar into the currently allocated IP address.
+  Thanks to the rightallowany flag the connection behaves later on
+  as
+
+   right=%any
+
+  so that the peer can rekey the connection as an initiator when his
+  IP address changes. An alternative notation is
+
+    right=%peer.foo.bar
+
+  which will implicitly set rightallowany=yes.
+
+- ipsec starter now fails more gracefully in the presence of parsing
+  errors. Flawed ca and conn section are discarded and pluto is started
+  if non-fatal errors only were encountered. If right=%peer.foo.bar
+  cannot be resolved by DNS then right=%any will be used so that passive
+  connections as a responder are still possible.
+
+- The new pkcs11initargs parameter that can be placed in the
+  setup config section of /etc/ipsec.conf allows the definition
+  of an argument string that is used with the PKCS#11 C_Initialize()
+  function. This non-standard feature is required by the NSS softoken
+  library. This patch was contributed by Robert Varga.
+
+- Fixed a bug in ipsec starter introduced by strongswan-2.8.5
+  which caused a segmentation fault in the presence of unknown
+  or misspelt keywords in ipsec.conf. This bug fix was contributed
+  by Robert Varga.
+
+- Partial support for MOBIKE in IKEv2. The initiator acts on interface/
+  address configuration changes and updates IKE and IPsec SAs dynamically.
+
+
+strongswan-4.1.3
+----------------
+
+- IKEv2 peer configuration selection now can be based on a given
+  certification authority using the rightca= statement.
+
+- IKEv2 authentication based on RSA signatures now can handle multiple
+  certificates issued for a given peer ID. This allows a smooth transition
+  in the case of a peer certificate renewal.
+
+- IKEv2: Support for requesting a specific virtual IP using leftsourceip on the
+  client and returning requested virtual IPs using rightsourceip=%config
+  on the server. If the server does not support configuration payloads, the
+  client enforces its leftsourceip parameter.
+
+- The ./configure options --with-uid/--with-gid allow pluto and charon
+  to drop their privileges to a minimum and change to an other UID/GID. This
+  improves the systems security, as a possible intruder may only get the
+  CAP_NET_ADMIN capability.
+
+- Further modularization of charon: Pluggable control interface and
+  configuration backend modules provide extensibility. The control interface
+  for stroke is included, and further interfaces using DBUS (NetworkManager)
+  or XML are on the way. A backend for storing configurations in the daemon
+  is provided and more advanced backends (using e.g. a database) are trivial
+  to implement.
+
+ - Fixed a compilation failure in libfreeswan occurring with Linux kernel
+   headers > 2.6.17.
+
+
+strongswan-4.1.2
+----------------
+
+- Support for an additional Diffie-Hellman exchange when creating/rekeying
+  a CHILD_SA in IKEv2 (PFS). PFS is enabled when the proposal contains a
+  DH group (e.g. "esp=aes128-sha1-modp1536"). Further, DH group negotiation
+  is implemented properly for rekeying.
+
+- Support for the AES-XCBC-96 MAC algorithm for IPsec SAs when using IKEv2
+  (requires linux >= 2.6.20). It is enabled using e.g. "esp=aes256-aesxcbc".
+
+- Working IPv4-in-IPv6 and IPv6-in-IPv4 tunnels for linux >= 2.6.21.
+
+- Added support for EAP modules which do not establish an MSK.
+
+- Removed the dependencies from the /usr/include/linux/ headers by
+  including xfrm.h, ipsec.h, and pfkeyv2.h in the distribution.
+
+- crlNumber is now listed by ipsec listcrls
+
+- The xauth_modules.verify_secret() function now passes the
+  connection name.
+
+
+strongswan-4.1.1
+----------------
+
+- Server side cookie support. If to may IKE_SAs are in CONNECTING state,
+  cookies are enabled and protect against DoS attacks with faked source
+  addresses. Number of IKE_SAs in CONNECTING state is also limited per
+  peer address to avoid resource exhaustion. IKE_SA_INIT messages are
+  compared to properly detect retransmissions and incoming retransmits are
+  detected even if the IKE_SA is blocked (e.g. doing OCSP fetches).
+
+- The IKEv2 daemon charon now supports dynamic http- and ldap-based CRL
+  fetching enabled by crlcheckinterval > 0 and caching fetched CRLs
+  enabled by cachecrls=yes.
+
+- Added the configuration options --enable-nat-transport which enables
+  the potentially insecure NAT traversal for IPsec transport mode and
+  --disable-vendor-id which disables the sending of the strongSwan
+  vendor ID.
+
+- Fixed a long-standing bug in the pluto IKEv1 daemon which caused
+  a segmentation fault if a malformed payload was detected in the
+  IKE MR2 message and pluto tried to send an encrypted notification
+  message.
+
+- Added the NATT_IETF_02_N Vendor ID in order to support IKEv1 connections
+  with Windows 2003 Server which uses a wrong VID hash.
+
+
+strongswan-4.1.0
+----------------
+
+- Support of SHA2_384 hash function for protecting IKEv1
+  negotiations and support of SHA2 signatures in X.509 certificates.
+
+- Fixed a serious bug in the computation of the SHA2-512 HMAC
+  function. Introduced automatic self-test of all IKEv1 hash
+  and hmac functions during pluto startup. Failure of a self-test
+  currently issues a warning only but does not exit pluto [yet].
+
+- Support for SHA2-256/384/512 PRF and HMAC functions in IKEv2.
+
+- Full support of CA information sections. ipsec listcainfos
+  now shows all collected crlDistributionPoints and OCSP
+  accessLocations.
+
+- Support of the Online Certificate Status Protocol (OCSP) for IKEv2.
+  This feature requires the HTTP fetching capabilities of the libcurl
+  library which must be enabled by setting the --enable-http configure
+  option.
+
+- Refactored core of the IKEv2 message processing code, allowing better
+  code reuse and separation.
+
+- Virtual IP support in IKEv2 using INTERNAL_IP4/6_ADDRESS configuration
+  payload. Additionally, the INTERNAL_IP4/6_DNS attribute is interpreted
+  by the requestor and installed in a resolv.conf file.
+
+- The IKEv2 daemon charon installs a route for each IPsec policy to use
+  the correct source address even if an application does not explicitly
+  specify it.
+
+- Integrated the EAP framework into charon which loads pluggable EAP library
+  modules. The ipsec.conf parameter authby=eap initiates EAP authentication
+  on the client side, while the "eap" parameter on the server side defines
+  the EAP method to use for client authentication.
+  A generic client side EAP-Identity module and an EAP-SIM authentication
+  module using a third party card reader implementation are included.
+
+- Added client side support for cookies.
+
+- Integrated the fixes done at the IKEv2 interoperability bakeoff, including
+  strict payload order, correct INVALID_KE_PAYLOAD rejection and other minor
+  fixes to enhance interoperability with other implementations.
+
+
+strongswan-4.0.7
+----------------
+
+- strongSwan now interoperates with the NCP Secure Entry Client,
+  the Shrew Soft VPN Client, and the Cisco VPN client, doing both
+  XAUTH and Mode Config.
+
+- UNITY attributes are now recognized and UNITY_BANNER is set
+  to a default string.
+
+
+strongswan-4.0.6
+----------------
+
+- IKEv1: Support for extended authentication (XAUTH) in combination
+  with ISAKMP Main Mode RSA or PSK authentication. Both client and
+  server side were implemented. Handling of user credentials can
+  be done by a run-time loadable XAUTH module. By default user
+  credentials are stored in ipsec.secrets.
+
+- IKEv2: Support for reauthentication when rekeying
+
+- IKEv2: Support for transport mode
+
+- fixed a lot of bugs related to byte order
+
+- various other bugfixes
+
+
+strongswan-4.0.5
+----------------
+
+- IKEv1: Implementation of ModeConfig push mode via the new connection
+  keyword modeconfig=push allows interoperability with Cisco VPN gateways.
+
+- IKEv1: The command ipsec statusall now shows "DPD active" for all
+  ISAKMP SAs that are under active Dead Peer Detection control.
+
+- IKEv2: Charon's logging and debugging framework has been completely rewritten.
+  Instead of logger, special printf() functions are used to directly
+  print objects like hosts (%H) identifications (%D), certificates (%Q),
+  etc. The number of debugging levels have been reduced to:
+
+    0 (audit), 1 (control), 2 (controlmore),  3 (raw), 4 (private)
+
+  The debugging levels can either be specified statically in ipsec.conf as
+
+    config setup
+           charondebug="lib 1, cfg 3, net 2"
+
+  or changed at runtime via stroke as
+
+    ipsec stroke loglevel cfg 2
+
+
+strongswan-4.0.4
+----------------
+
+- Implemented full support for IPv6-in-IPv6 tunnels.
+
+- Added configuration options for dead peer detection in IKEv2. dpd_action
+  types "clear", "hold" and "restart" are supported. The dpd_timeout
+  value is not used, as the normal retransmission policy applies to
+  detect dead peers. The dpd_delay parameter enables sending of empty
+  informational message to detect dead peers in case of inactivity.
+
+- Added support for preshared keys in IKEv2. PSK keys configured in
+  ipsec.secrets are loaded. The authby parameter specifies the authentication
+  method to authentificate ourself, the other peer may use PSK or RSA.
+
+- Changed retransmission policy to respect the keyingtries parameter.
+
+- Added private key decryption. PEM keys encrypted with AES-128/192/256
+  or 3DES are supported.
+
+- Implemented DES/3DES algorithms in libstrongswan. 3DES can be used to
+  encrypt IKE traffic.
+
+- Implemented SHA-256/384/512 in libstrongswan, allows usage of certificates
+  signed with such a hash algorithm.
+
+- Added initial support for updown scripts. The actions up-host/client and
+  down-host/client are executed. The leftfirewall=yes parameter
+  uses the default updown script to insert dynamic firewall rules, a custom
+  updown script may be specified with the leftupdown parameter.
+
+
+strongswan-4.0.3
+----------------
+
+- Added support for the auto=route ipsec.conf parameter and the
+  ipsec route/unroute commands for IKEv2. This allows to set up IKE_SAs and
+  CHILD_SAs dynamically on demand when traffic is detected by the
+  kernel.
+
+- Added support for rekeying IKE_SAs in IKEv2 using the ikelifetime parameter.
+  As specified in IKEv2, no reauthentication is done (unlike in IKEv1), only
+  new keys are generated using perfect forward secrecy. An optional flag
+  which enforces reauthentication will be implemented later.
+
+- "sha" and "sha1" are now treated as synonyms in the ike= and esp=
+  algorithm configuration statements.
+
+
+strongswan-4.0.2
+----------------
+
+- Full X.509 certificate trust chain verification has been implemented.
+  End entity certificates can be exchanged via CERT payloads. The current
+  default is leftsendcert=always, since CERTREQ payloads are not supported
+  yet. Optional CRLs must be imported locally into /etc/ipsec.d/crls.
+
+- Added support for leftprotoport/rightprotoport parameters in IKEv2. IKEv2
+  would offer more possibilities for traffic selection, but the Linux kernel
+  currently does not support it. That's why we stick with these simple
+  ipsec.conf rules for now.
+
+- Added Dead Peer Detection (DPD) which checks liveliness of remote peer if no
+  IKE or ESP traffic is received. DPD is currently hardcoded (dpdaction=clear,
+  dpddelay=60s).
+
+- Initial NAT traversal support in IKEv2. Charon includes NAT detection
+  notify payloads to detect NAT routers between the peers. It switches
+  to port 4500, uses UDP encapsulated ESP packets, handles peer address
+  changes gracefully and sends keep alive message periodically.
+
+- Reimplemented IKE_SA state machine for charon, which allows simultaneous
+  rekeying, more shared code, cleaner design, proper retransmission
+  and a more extensible code base.
+
+- The mixed PSK/RSA roadwarrior detection capability introduced by the
+  strongswan-2.7.0 release necessitated the pre-parsing of the IKE proposal
+  payloads by the responder right before any defined IKE Main Mode state had
+  been established. Although any form of bad proposal syntax was being correctly
+  detected by the payload parser, the subsequent error handler didn't check
+  the state pointer before logging current state information, causing an
+  immediate crash of the pluto keying daemon due to a NULL pointer.
+
+
+strongswan-4.0.1
+----------------
+
+- Added algorithm selection to charon: New default algorithms for
+  ike=aes128-sha-modp2048, as both daemons support it. The default
+  for IPsec SAs is now esp=aes128-sha,3des-md5. charon handles
+  the ike/esp parameter the same way as pluto. As this syntax does
+  not allow specification of a pseudo random function, the same
+  algorithm as for integrity is used (currently sha/md5). Supported
+  algorithms for IKE:
+    Encryption: aes128, aes192, aes256
+    Integrity/PRF: md5, sha (using hmac)
+    DH-Groups: modp768, 1024, 1536, 2048, 4096, 8192
+  and for ESP:
+    Encryption: aes128, aes192, aes256, 3des, blowfish128,
+                blowfish192, blowfish256
+    Integrity: md5, sha1
+  More IKE encryption algorithms will come after porting libcrypto into
+  libstrongswan.
+
+- initial support for rekeying CHILD_SAs using IKEv2. Currently no
+  perfect forward secrecy is used. The rekeying parameters rekey,
+  rekeymargin, rekeyfuzz and keylife from ipsec.conf are now supported
+  when using IKEv2. WARNING: charon currently is unable to handle
+  simultaneous rekeying. To avoid such a situation, use a large
+  rekeyfuzz, or even better, set rekey=no on one peer.
+
+- support for host2host, net2net, host2net (roadwarrior) tunnels
+  using predefined RSA certificates (see uml scenarios for
+  configuration examples).
+
+- new build environment featuring autotools. Features such
+  as HTTP, LDAP and smartcard support may be enabled using
+  the ./configure script. Changing install directories
+  is possible, too. See ./configure --help for more details.
+
+- better integration of charon with ipsec starter, which allows
+  (almost) transparent operation with both daemons. charon
+  handles ipsec commands up, down, status, statusall, listall,
+  listcerts and allows proper load, reload and delete of connections
+  via ipsec starter.
+
+
+strongswan-4.0.0
+----------------
+
+- initial support of the IKEv2 protocol. Connections in
+  ipsec.conf designated by keyexchange=ikev2 are negotiated
+  by the new IKEv2 charon keying daemon whereas those marked
+  by keyexchange=ikev1 or the default keyexchange=ike are
+  handled thy the IKEv1 pluto keying daemon. Currently only
+  a limited subset of functions are available with IKEv2
+  (Default AES encryption, authentication based on locally
+  imported X.509 certificates, unencrypted private RSA keys
+  in PKCS#1 file format, limited functionality of the ipsec
+  status command).
+
+
+strongswan-2.7.0
+----------------
+
+- the dynamic iptables rules from the _updown_x509 template
+  for KLIPS and the _updown_policy template for NETKEY have
+  been merged into the default _updown script. The existing
+  left|rightfirewall keyword causes the automatic insertion
+  and deletion of ACCEPT rules for tunneled traffic upon
+  the successful setup and teardown of an IPsec SA, respectively.
+  left|rightfirwall can be used with KLIPS under any Linux 2.4
+  kernel or with NETKEY under a Linux kernel version >= 2.6.16
+  in conjunction with iptables >= 1.3.5. For NETKEY under a Linux
+  kernel version < 2.6.16 which does not support IPsec policy
+  matching yet, please continue to use a copy of the _updown_espmark
+  template loaded via the left|rightupdown keyword.
+
+- a new left|righthostaccess keyword has been introduced which
+  can be used in conjunction with left|rightfirewall and the
+  default _updown script. By default leftfirewall=yes inserts
+  a bi-directional iptables FORWARD rule for a local client network
+  with a netmask different from 255.255.255.255 (single host).
+  This does not allow to access the VPN gateway host via its
+  internal network interface which is part of the client subnet
+  because an iptables INPUT and OUTPUT rule would be required.
+  lefthostaccess=yes will cause this additional ACCEPT rules to
+  be inserted.
+
+- mixed PSK|RSA roadwarriors are now supported. The ISAKMP proposal
+  payload is preparsed in order to find out whether the roadwarrior
+  requests PSK or RSA so that a matching connection candidate can
+  be found.
+
+
+strongswan-2.6.4
+----------------
+
+- the new _updown_policy template allows ipsec policy based
+  iptables firewall rules. Required are iptables version
+  >= 1.3.5 and linux kernel >= 2.6.16. This script obsoletes
+  the _updown_espmark template, so that no INPUT mangle rules
+  are required any more.
+
+- added support of DPD restart mode
+
+- ipsec starter now allows the use of wildcards in include
+  statements as e.g. in "include /etc/my_ipsec/*.conf".
+  Patch courtesy of Matthias Haas.
+
+- the Netscape OID 'employeeNumber' is now recognized and can be
+  used as a Relative Distinguished Name in certificates.
+
+
+strongswan-2.6.3
+----------------
+
+- /etc/init.d/ipsec or /etc/rc.d/ipsec is now a copy of the ipsec
+  command and not of ipsec setup any more.
+
+- ipsec starter now supports AH authentication in conjunction with
+  ESP encryption. AH authentication is configured in ipsec.conf
+  via the auth=ah parameter.
+
+- The command ipsec scencrypt|scdecrypt <args> is now an alias for
+  ipsec whack --scencrypt|scdecrypt <args>.
+
+- get_sa_info() now determines for the native netkey IPsec stack
+  the exact time of the last use of an active eroute. This information
+  is used by the Dead Peer Detection algorithm and is also displayed by
+  the ipsec status command.
+
+
+strongswan-2.6.2
+----------------
+
+- running under the native Linux 2.6 IPsec stack, the function
+  get_sa_info() is called by ipsec auto --status to display the current
+  number of transmitted bytes per IPsec SA.
+
+- get_sa_info() is also used  by the Dead Peer Detection process to detect
+  recent ESP activity. If ESP traffic was received from the peer within
+  the last dpd_delay interval then no R_Y_THERE notification must be sent.
+
+- strongSwan now supports the Relative Distinguished Name "unstructuredName"
+  in ID_DER_ASN1_DN identities. The following notations are possible:
+
+    rightid="unstructuredName=John Doe"
+    rightid="UN=John Doe"
+
+- fixed a long-standing bug which caused PSK-based roadwarrior connections
+  to segfault in the function id.c:same_id() called by keys.c:get_secret()
+  if an FQDN, USER_FQDN, or Key ID was defined, as in the following example.
+
+  conn rw
+       right=%any
+       rightid=@foo.bar
+       authby=secret
+
+- the ipsec command now supports most ipsec auto commands (e.g. ipsec listall).
+
+- ipsec starter didn't set host_addr and client.addr ports in whack msg.
+
+- in order to guarantee backwards-compatibility with the script-based
+  auto function (e.g. auto --replace), the ipsec starter scripts stores
+  the defaultroute information in the temporary file /var/run/ipsec.info.
+
+- The compile-time option USE_XAUTH_VID enables the sending of the XAUTH
+  Vendor ID which is expected by Cisco PIX 7 boxes that act as IKE Mode Config
+  servers.
+
+- the ipsec starter now also recognizes the parameters authby=never and
+  type=passthrough|pass|drop|reject.
+
+
+strongswan-2.6.1
+----------------
+
+- ipsec starter now supports the also parameter which allows
+  a modular structure of the connection definitions. Thus
+  "ipsec start" is now ready to replace "ipsec setup".
+
+
+strongswan-2.6.0
+----------------
+
+- Mathieu Lafon's popular ipsec starter tool has been added to the
+  strongSwan distribution. Many thanks go to Stephan Scholz from astaro
+  for his integration work. ipsec starter is a C program which is going
+  to replace the various shell and awk starter scripts (setup, _plutoload,
+  _plutostart, _realsetup, _startklips, _confread, and auto). Since
+  ipsec.conf is now parsed only once, the starting of multiple tunnels is
+  accelerated tremedously.
+
+- Added support of %defaultroute to the ipsec starter. If the IP address
+  changes, a HUP signal to the ipsec starter will automatically
+  reload pluto's connections.
+
+- moved most compile time configurations from pluto/Makefile to
+  Makefile.inc by defining the options USE_LIBCURL, USE_LDAP,
+  USE_SMARTCARD, and USE_NAT_TRAVERSAL_TRANSPORT_MODE.
+
+- removed the ipsec verify and ipsec newhostkey commands
+
+- fixed some 64-bit issues in formatted print statements
+
+- The scepclient functionality implementing the Simple Certificate
+  Enrollment Protocol (SCEP) is nearly complete but hasn't been
+  documented yet.
+
+
+strongswan-2.5.7
+----------------
+
+- CA certicates are now automatically loaded from a smartcard
+  or USB crypto token and appear in the ipsec auto --listcacerts
+  listing.
+
+
+strongswan-2.5.6
+----------------
+
+- when using "ipsec whack --scencrypt <data>" with  a PKCS#11
+  library that does not support the C_Encrypt() Cryptoki
+  function (e.g. OpenSC), the RSA encryption is done in
+  software using the public key fetched from the smartcard.
+
+- The scepclient function now allows to define the
+  validity of a self-signed certificate using the --days,
+  --startdate, and --enddate options. The default validity
+  has been changed from one year to five years.
+
+
+strongswan-2.5.5
+----------------
+
+- the config setup parameter pkcs11proxy=yes opens pluto's PKCS#11
+  interface to other applications for RSA encryption and decryption
+  via the whack interface. Notation:
+
+  ipsec whack --scencrypt <data>
+             [--inbase  16|hex|64|base64|256|text|ascii]
+             [--outbase 16|hex|64|base64|256|text|ascii]
+             [--keyid <keyid>]
+
+  ipsec whack --scdecrypt <data>
+             [--inbase  16|hex|64|base64|256|text|ascii]
+             [--outbase 16|hex|64|base64|256|text|ascii]
+             [--keyid <keyid>]
+
+  The default setting for inbase and outbase is hex.
+
+  The new proxy interface can be used for securing symmetric
+  encryption keys required by the cryptoloop or dm-crypt
+  disk encryption schemes, especially in the case when
+  pkcs11keepstate=yes causes pluto to lock the pkcs11 slot
+  permanently.
+
+- if the file /etc/ipsec.secrets is lacking during the startup of
+  pluto then the root-readable file /etc/ipsec.d/private/myKey.der
+  containing a 2048 bit RSA private key and a matching self-signed
+  certificate stored in the file /etc/ipsec.d/certs/selfCert.der
+  is automatically generated by calling the function
+
+  ipsec scepclient --out pkcs1 --out cert-self
+
+  scepclient was written by Jan Hutter and Martin Willi, students
+  at the University of Applied Sciences in Rapperswil, Switzerland.
+
+
+strongswan-2.5.4
+----------------
+
+- the current extension of the PKCS#7 framework introduced
+  a parsing error in PKCS#7 wrapped X.509 certificates that are
+  e.g. transmitted by Windows XP when multi-level CAs are used.
+  the parsing syntax has been fixed.
+
+- added a patch by Gerald Richter which tolerates multiple occurrences
+  of the ipsec0 interface when using KLIPS.
+
+
+strongswan-2.5.3
+----------------
+
+- with gawk-3.1.4 the word "default2 has become a protected
+  keyword for use in switch statements and cannot be used any
+  more in the strongSwan scripts. This problem has been
+  solved by renaming "default" to "defaults" and "setdefault"
+  in the scripts _confread and auto, respectively.
+
+- introduced the parameter leftsendcert with the values
+
+  always|yes (the default, always send a cert)
+  ifasked    (send the cert only upon a cert request)
+  never|no   (never send a cert, used for raw RSA keys and
+              self-signed certs)
+
+- fixed the initialization of the ESP key length to a default of
+  128 bits in the case that the peer does not send a key length
+   attribute for AES encryption.
+
+- applied Herbert Xu's uniqueIDs patch
+
+- applied Herbert Xu's CLOEXEC patches
+
+
+strongswan-2.5.2
+----------------
+
+- CRLs can now be cached also in the case when the issuer's
+  certificate does not contain a subjectKeyIdentifier field.
+  In that case the subjectKeyIdentifier is computed by pluto as the
+  160 bit SHA-1 hash of the issuer's public key in compliance
+  with section 4.2.1.2 of RFC 3280.
+
+- Fixed a bug introduced by strongswan-2.5.1 which eliminated
+  not only multiple Quick Modes of a given connection but also
+  multiple connections between two security gateways.
+
+
+strongswan-2.5.1
+----------------
+
+- Under the native IPsec of the Linux 2.6 kernel, a %trap eroute
+  installed either by setting auto=route in ipsec.conf or by
+  a connection put into hold, generates an XFRM_AQUIRE event
+  for each packet that wants to use the not-yet exisiting
+  tunnel. Up to now each XFRM_AQUIRE event led to an entry in
+  the Quick Mode queue, causing multiple IPsec SA to be
+  established in rapid succession. Starting with strongswan-2.5.1
+  only a single IPsec SA is established per host-pair connection.
+
+- Right after loading the PKCS#11 module, all smartcard slots are
+  searched for certificates. The result can be viewed using
+  the command
+
+    ipsec auto --listcards
+
+  The certificate objects found in the slots are numbered
+  starting with #1, #2, etc. This position number can be used to address
+  certificates (leftcert=%smartcard) and keys (: PIN %smartcard)
+  in ipsec.conf and ipsec.secrets, respectively:
+
+    %smartcard      (selects object #1)
+    %smartcard#1    (selects object #1)
+    %smartcard#3    (selects object #3)
+
+  As an alternative the existing retrieval scheme can be used:
+
+    %smartcard:45   (selects object with id=45)
+    %smartcard0     (selects first object in slot 0)
+    %smartcard4:45  (selects object in slot 4 with id=45)
+
+- Depending on the settings of CKA_SIGN and CKA_DECRYPT
+  private key flags either C_Sign() or C_Decrypt() is used
+  to generate a signature.
+
+- The output buffer length parameter siglen in C_Sign()
+  is now initialized to the actual size of the output
+  buffer prior to the function call. This fixes the
+  CKR_BUFFER_TOO_SMALL error that could occur when using
+  the OpenSC PKCS#11 module.
+
+- Changed the initialization of the PKCS#11 CK_MECHANISM in
+  C_SignInit() to mech  = { CKM_RSA_PKCS, NULL_PTR, 0 }.
+
+- Refactored the RSA public/private key code and transferred it
+  from keys.c to the new pkcs1.c file as a preparatory step
+  towards the release of the SCEP client.
+
+
+strongswan-2.5.0
+----------------
+
+- The loading of a PKCS#11 smartcard library module during
+  runtime does not require OpenSC library functions any more
+  because the corresponding code has been integrated into
+  smartcard.c. Also the RSAREF pkcs11 header files have been
+  included in a newly created pluto/rsaref directory so that
+  no external include path has to be defined any longer.
+
+- A long-awaited feature has been implemented at last:
+  The local caching of CRLs fetched via HTTP or LDAP, activated
+  by the parameter cachecrls=yes in the config setup section
+  of ipsec.conf. The dynamically fetched CRLs are stored under
+  a unique file name containing the issuer's subjectKeyID
+  in /etc/ipsec.d/crls.
+
+- Applied a one-line patch courtesy of Michael Richardson
+  from the Openswan project which fixes the kernel-oops
+  in KLIPS when an snmp daemon is running on the same box.
+
+
+strongswan-2.4.4
+----------------
+
+- Eliminated null length CRL distribution point strings.
+
+- Fixed a trust path evaluation bug introduced with 2.4.3
+
+
+strongswan-2.4.3
+----------------
+
+- Improved the joint OCSP / CRL revocation policy.
+  OCSP responses have precedence over CRL entries.
+
+- Introduced support of CRLv2 reason codes.
+
+- Fixed a bug with key-pad equipped readers which caused
+  pluto to prompt for the pin via the console when the first
+  occasion to enter the pin via the key-pad was missed.
+
+- When pluto is built with LDAP_V3 enabled, the library
+  liblber required by newer versions of openldap is now
+  included.
+
+
+strongswan-2.4.2
+----------------
+
+- Added the _updown_espmark template which requires all
+  incoming ESP traffic to be marked with a default mark
+  value of 50.
+
+- Introduced the pkcs11keepstate parameter in the config setup
+  section of ipsec.conf. With pkcs11keepstate=yes the PKCS#11
+  session and login states are kept as long as possible during
+  the lifetime of pluto. This means that a PIN entry via a key
+  pad has to be done only once.
+
+- Introduced the pkcs11module parameter in the config setup
+  section of ipsec.conf which specifies the PKCS#11 module
+  to be used with smart cards. Example:
+
+    pkcs11module=/usr/lib/pkcs11/opensc-pkcs11.lo
+
+- Added support of smartcard readers equipped with a PIN pad.
+
+- Added patch by Jay Pfeifer which detects when netkey
+  modules have been statically built into the Linux 2.6 kernel.
+
+- Added two patches by Herbert Xu. The first uses ip xfrm
+  instead of setkey to flush the IPsec policy database. The
+  second sets the optional flag in inbound IPComp SAs only.
+
+- Applied Ulrich Weber's patch which fixes an interoperability
+  problem between native IPsec and KLIPS systems caused by
+  setting the replay window to 32 instead of 0 for ipcomp.
+
+
+strongswan-2.4.1
+----------------
+
+- Fixed a bug which caused an unwanted Mode Config request
+  to be initiated in the case where "right" was used to denote
+  the local side in ipsec.conf and "left" the remote side,
+  contrary to the recommendation that "right" be remote and
+  "left" be"local".
+
+
+strongswan-2.4.0a
+-----------------
+
+- updated Vendor ID to strongSwan-2.4.0
+
+- updated copyright statement to include David Buechi and
+  Michael Meier
+
+
+strongswan-2.4.0
+----------------
+
+- strongSwan now communicates with attached smartcards and
+  USB crypto tokens via the standardized PKCS #11 interface.
+  By default the OpenSC library from www.opensc.org is used
+  but any other PKCS#11 library could be dynamically linked.
+  strongSwan's PKCS#11 API was implemented by David Buechi
+  and Michael Meier, both graduates of the Zurich University
+  of Applied Sciences in Winterthur, Switzerland.
+
+- When a %trap eroute is triggered by an outgoing IP packet
+  then the native IPsec stack of the Linux 2.6 kernel [often/
+  always?] returns an XFRM_ACQUIRE message with an undefined
+  protocol family field and the connection setup fails.
+  As a workaround IPv4 (AF_INET) is now assumed.
+
+- the results of the UML test scenarios are now enhanced
+  with block diagrams of the virtual network topology used
+  in a particular test.
+
+
+strongswan-2.3.2
+----------------
+
+- fixed IV used to decrypt informational messages.
+  This bug was introduced with Mode Config functionality.
+
+- fixed NCP Vendor ID.
+
+- undid one of Ulrich Weber's maximum udp size patches
+  because it caused a segmentation fault with NAT-ed
+  Delete SA messages.
+
+- added UML scenarios wildcards and attr-cert which
+  demonstrate the implementation of IPsec policies based
+  on wildcard parameters contained in Distinguished Names and
+  on X.509 attribute certificates, respectively.
+
+
+strongswan-2.3.1
+----------------
+
+- Added basic Mode Config functionality
+
+- Added Mathieu Lafon's patch which upgrades the status of
+  the NAT-Traversal implementation to RFC 3947.
+
+- The _startklips script now also loads the xfrm4_tunnel
+  module.
+
+- Added Ulrich Weber's netlink replay window size and
+  maximum udp size patches.
+
+- UML testing now uses the Linux 2.6.10 UML kernel by default.
+
+
+strongswan-2.3.0
+----------------
+
+- Eric Marchionni and Patrik Rayo, both recent graduates from
+  the Zuercher Hochschule Winterthur in Switzerland, created a
+  User-Mode-Linux test setup for strongSwan. For more details
+  please read the INSTALL and README documents in the testing
+  subdirectory.
+
+- Full support of group attributes based on X.509 attribute
+  certificates. Attribute certificates can be generated
+  using the openac facility. For more details see
+
+  man ipsec_openac.
+
+  The group attributes can be used in connection definitions
+  in order to give IPsec access to specific user groups.
+  This is done with the new parameter left|rightgroups as in
+
+  rightgroups="Research, Sales"
+
+  giving access to users possessing the group attributes
+  Research or Sales, only.
+
+- In Quick Mode clients with subnet mask /32 are now
+  coded as IP_V4_ADDRESS or IP_V6_ADDRESS. This should
+  fix rekeying problems with the SafeNet/SoftRemote and NCP
+  Secure Entry Clients.
+
+- Changed the defaults of the ikelifetime and keylife parameters
+  to 3h and 1h, respectively. The maximum allowable values are
+  now both set to 24 h.
+
+- Suppressed notification wars between two IPsec peers that
+  could e.g. be triggered by incorrect ISAKMP encryption.
+
+- Public RSA keys can now have identical IDs if either the
+  issuing CA or the serial number is different. The serial
+  number of a certificate is now shown by the command
+
+  ipsec auto --listpubkeys
+
+
+strongswan-2.2.2
+----------------
+
+- Added Tuomo Soini's sourceip feature which allows a strongSwan
+  roadwarrior to use a fixed Virtual IP (see README section 2.6)
+  and reduces the well-known four tunnel case on VPN gateways to
+  a single tunnel definition (see README section 2.4).
+
+- Fixed a bug occurring with NAT-Traversal enabled when the responder
+  suddenly turns initiator and the initiator cannot find a matching
+  connection because of the floated IKE port 4500.
+
+- Removed misleading ipsec verify command from barf.
+
+- Running under the native IP stack, ipsec --version now shows
+  the Linux kernel version (courtesy to the Openswan project).
+
+
+strongswan-2.2.1
+----------------
+
+- Introduced the ipsec auto --listalgs monitoring command which lists
+  all currently registered IKE and ESP algorithms.
+
+- Fixed a bug in the ESP algorithm selection occurring when the strict flag
+  is set and the first proposed transform does not match.
+
+- Fixed another deadlock in the use of the lock_certs_and_keys() mutex,
+  occurring when a smartcard is present.
+
+- Prevented that a superseded Phase1 state can trigger a DPD_TIMEOUT event.
+
+- Fixed the printing of the notification names (null)
+
+- Applied another of Herbert Xu's Netlink patches.
+
+
+strongswan-2.2.0
+----------------
+
+- Support of Dead Peer Detection. The connection parameter
+
+    dpdaction=clear|hold
+
+  activates DPD for the given connection.
+
+- The default Opportunistic Encryption (OE) policy groups are not
+  automatically included anymore. Those wishing to activate OE can include
+  the policy group with the following statement in ipsec.conf:
+
+    include /etc/ipsec.d/examples/oe.conf
+
+  The default for [right|left]rsasigkey is now set to %cert.
+
+- strongSwan now has a Vendor ID of its own which can be activated
+  using the compile option VENDORID
+
+- Applied Herbert Xu's patch which sets the compression algorithm correctly.
+
+- Applied Herbert Xu's patch fixing an ESPINUDP problem
+
+- Applied Herbert Xu's patch setting source/destination port numbers.
+
+- Reapplied one of Herbert Xu's NAT-Traversal patches which got
+  lost during the migration from SuperFreeS/WAN.
+
+- Fixed a deadlock in the use of the lock_certs_and_keys() mutex.
+
+- Fixed the unsharing of alg parameters when instantiating group
+  connection.
+
+
+strongswan-2.1.5
+----------------
+
+- Thomas Walpuski made me aware of a potential DoS attack via
+  a PKCS#7-wrapped certificate bundle which could overwrite valid CA
+  certificates in Pluto's authority certificate store. This vulnerability
+  was fixed by establishing trust in CA candidate certificates up to a
+  trusted root CA prior to insertion into Pluto's chained list.
+
+- replaced the --assign option by the -v option in the auto awk script
+  in order to make it run with mawk under debian/woody.
+
+
+strongswan-2.1.4
+----------------
+
+- Split of the status information between ipsec auto  --status (concise)
+  and ipsec auto --statusall (verbose). Both commands can be used with
+  an optional connection selector:
+
+    ipsec auto --status[all] <connection_name>
+
+- Added the description of X.509 related features to the ipsec_auto(8)
+  man page.
+
+- Hardened the ASN.1 parser in debug mode, especially the printing
+  of malformed distinguished names.
+
+- The size of an RSA public key received in a certificate is now restricted to
+
+    512 bits <= modulus length <= 8192 bits.
+
+- Fixed the debug mode enumeration.
+
+
+strongswan-2.1.3
+----------------
+
+- Fixed another PKCS#7 vulnerability which could lead to an
+  endless loop while following the X.509 trust chain.
+
+
+strongswan-2.1.2
+----------------
+
+- Fixed the PKCS#7 vulnerability discovered by Thomas Walpuski
+  that accepted end certificates having identical issuer and subject
+  distinguished names in a multi-tier X.509 trust chain.
+
+
+strongswan-2.1.1
+----------------
+
+- Removed all remaining references to ipsec_netlink.h in KLIPS.
+
+
+strongswan-2.1.0
+----------------
+
+- The new "ca" section allows to define the following parameters:
+
+  ca kool
+     cacert=koolCA.pem                   # cacert of kool CA
+     ocspuri=http://ocsp.kool.net:8001   # ocsp server
+     ldapserver=ldap.kool.net            # default ldap server
+     crluri=http://www.kool.net/kool.crl # crl distribution point
+     crluri2="ldap:///O=Kool, C= .."     # crl distribution point #2
+     auto=add                            # add, ignore
+
+  The ca definitions can be monitored via the command
+
+     ipsec auto --listcainfos
+
+- Fixed cosmetic corruption of /proc filesystem by integrating
+  D. Hugh Redelmeier's freeswan-2.06 kernel fixes.
+
+
+strongswan-2.0.2
+----------------
+
+- Added support for the 818043 NAT-Traversal update of Microsoft's
+  Windows 2000/XP IPsec client which sends an ID_FQDN during Quick Mode.
+
+- A symbolic link to libcrypto is now added in the kernel sources
+  during kernel compilation
+
+- Fixed a couple of 64 bit issues (mostly casts to int).
+  Thanks to Ken Bantoft who checked my sources on a 64 bit platform.
+
+- Replaced s[n]printf() statements in the kernel by ipsec_snprintf().
+  Credits go to D. Hugh Redelmeier, Michael Richardson, and Sam Sgro
+  of the FreeS/WAN team who solved this problem with the 2.4.25 kernel.
+
+
+strongswan-2.0.1
+----------------
+
+- an empty ASN.1 SEQUENCE OF or SET OF object (e.g. a subjectAltName
+  certificate extension which contains no generalName item)  can cause
+  a pluto crash. This bug has been fixed. Additionally the ASN.1 parser has
+  been hardened to make it more robust against malformed ASN.1 objects.
+
+- applied Herbert Xu's NAT-T patches which fixes NAT-T under the native
+  Linux 2.6 IPsec stack.
+
+
+strongswan-2.0.0
+----------------
+
+- based on freeswan-2.04, x509-1.5.3, nat-0.6c, alg-0.8.1rc12

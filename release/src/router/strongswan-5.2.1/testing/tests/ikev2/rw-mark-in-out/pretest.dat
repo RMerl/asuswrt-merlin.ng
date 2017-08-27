@@ -1,0 +1,17 @@
+alice::iptables-restore < /etc/iptables.rules
+venus::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to PH_IP_MOON 
+sun::ip route add 10.1.0.0/16 via PH_IP_MOON 
+sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 10 -j SNAT --to PH_IP_CAROL10
+sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 20 -j SNAT --to PH_IP_DAVE10
+sun::iptables -t mangle -A PREROUTING -d PH_IP_CAROL10 -j MARK --set-mark 11
+sun::iptables -t mangle -A PREROUTING -d PH_IP_DAVE10 -j MARK --set-mark 21
+alice::ipsec start
+venus::ipsec start
+sun::ipsec start
+alice::sleep 2 
+alice::ipsec up home 
+venus::sleep 2 
+venus::ipsec up home
+venus::sleep 2

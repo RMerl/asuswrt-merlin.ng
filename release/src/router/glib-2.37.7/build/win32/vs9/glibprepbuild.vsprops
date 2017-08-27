@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="glibprepbuildprops"
+	>
+	<Tool
+		Name="VCPreBuildEventTool"
+		CommandLine="
+if exist ..\..\..\config.h goto DONE_CONFIG_H&#x0D;&#x0A;
+copy ..\..\..\config.h.win32 ..\..\..\config.h&#x0D;&#x0A;
+:DONE_CONFIG_H&#x0D;&#x0A;
+
+if exist ..\..\..\glib\glibconfig.h goto DONE_GLIBCONFIG_H&#x0D;&#x0A;
+copy ..\..\..\glib\glibconfig.h.win32 ..\..\..\glib\glibconfig.h&#x0D;&#x0A;
+:DONE_GLIBCONFIG_H&#x0D;&#x0A;
+
+if exist ..\..\..\gmodule\gmoduleconf.h goto DONE_GMODULECONF_H&#x0D;&#x0A;
+copy ..\..\..\gmodule\gmoduleconf.h.win32 ..\..\..\gmodule\gmoduleconf.h&#x0D;&#x0A;
+:DONE_GMODULECONF_H&#x0D;&#x0A;
+
+if exist ..\..\..\gio\gnetworking.h goto DONE_GNETWORKING_H&#x0D;&#x0A;
+copy ..\..\..\gio\gnetworking.h.win32 ..\..\..\gio\gnetworking.h&#x0D;&#x0A;
+:DONE_GNETWORKING_H&#x0D;&#x0A;
+"
+	/>
+</VisualStudioPropertySheet>

@@ -1,0 +1,30 @@
+##  Configuration for DHCP to use SQL IP Pools.
+##
+##  See sqlippool.conf for common configuration explanation
+##
+##  $Id$
+
+sqlippool dhcp_sqlippool {
+	sql_instance_name = "sql"
+
+	ippool_table = "radippool"
+
+	lease_duration = 7200
+
+	# Client's MAC address is mapped to Calling-Station-Id in policy.conf
+	pool_key = "%{Calling-Station-Id}"
+
+	# For now, it only works with MySQL.
+	$INCLUDE ${modconfdir}/sql/ippool-dhcp/mysql/queries.conf
+
+	sqlippool_log_exists = "DHCP: Existing IP: %{reply:Framed-IP-Address} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+
+	sqlippool_log_success = "DHCP: Allocated IP: %{reply:Framed-IP-Address} from %{control:Pool-Name} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+
+	sqlippool_log_clear = "DHCP: Released IP %{Framed-IP-Address} (did %{Called-Station-Id} cli %{Calling-Station-Id} user %{User-Name})"
+
+	sqlippool_log_failed = "DHCP: IP Allocation FAILED from %{control:Pool-Name} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+
+	sqlippool_log_nopool = "DHCP: No Pool-Name defined (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+
+}

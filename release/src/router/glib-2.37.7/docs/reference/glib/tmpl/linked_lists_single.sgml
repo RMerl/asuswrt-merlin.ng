@@ -1,0 +1,333 @@
+<!-- ##### SECTION Title ##### -->
+Singly-Linked Lists
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSList ##### -->
+<para>
+
+</para>
+
+@data: 
+@next: 
+
+<!-- ##### FUNCTION g_slist_alloc ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_append ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_prepend ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_insert ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@position: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_insert_before ##### -->
+<para>
+
+</para>
+
+@slist: 
+@sibling: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_insert_sorted ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_remove ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_remove_link ##### -->
+<para>
+
+</para>
+
+@list: 
+@link_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_delete_link ##### -->
+<para>
+
+</para>
+
+@list: 
+@link_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_remove_all ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_free ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### FUNCTION g_slist_free_full ##### -->
+<para>
+
+</para>
+
+@list: 
+@free_func: 
+
+
+<!-- ##### FUNCTION g_slist_free_1 ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### MACRO g_slist_free1 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_slist_length ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_copy ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_copy_deep ##### -->
+<para>
+
+</para>
+
+@list: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_reverse ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_insert_sorted_with_data ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_sort ##### -->
+<para>
+
+</para>
+
+@list: 
+@compare_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_sort_with_data ##### -->
+<para>
+
+</para>
+
+@list: 
+@compare_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_concat ##### -->
+<para>
+
+</para>
+
+@list1: 
+@list2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_foreach ##### -->
+<para>
+
+</para>
+
+@list: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_slist_last ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### MACRO g_slist_next ##### -->
+<para>
+
+</para>
+
+@slist: 
+
+
+<!-- ##### FUNCTION g_slist_nth ##### -->
+<para>
+
+</para>
+
+@list: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_nth_data ##### -->
+<para>
+
+</para>
+
+@list: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_find ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_find_custom ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_position ##### -->
+<para>
+
+</para>
+
+@list: 
+@llink: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_slist_index ##### -->
+<para>
+
+</para>
+
+@list: 
+@data: 
+@Returns: 
+
+

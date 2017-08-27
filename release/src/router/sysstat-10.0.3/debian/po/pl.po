@@ -1,0 +1,98 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: systat 8.1.8-2\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-22 10:58+0100\n"
+"Last-Translator: Robert Luberda <robert@debian.org>\n"
+"Language-Team: Polish <debian-l10n-polish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Usun±æ pliki ze statystykami w starym formacie?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Format plików zawieraj±cych dzienne statystyki zosta³ zmieniony w wersji "
+"${s_version} programu sysstat i nie jest kompatybilny z poprzednimi wersjami "
+"programu."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Wybranie tej opcji spowoduje usuniêcie istniej±cych plików z dziennymi "
+"statystykami z katalogu /var/log/sysstat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Je¿eli opcja ta nie bêdzie wybrana, polecenie sar(1) nie bêdzie dzia³aæ "
+"poprawnie dopóki pliki ze statystykami nie zostan± usuniête."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Aktywowaæ zadanie crona pakietu sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Je¿eli ta opcja zostanie w³±czona, to pakiet sysstat bêdzie zbiera³ dane "
+"dotycz±ce aktywno¶ci systemu i zapisywa³ je w plikach logów w katalogu /var/"
+"lib/sysstat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Dane te umo¿liwiaj± poleceniu sar(1) wy¶wietlanie statystyk systemowych "
+"dotycz±cych ca³ego dnia."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Niew³±czenie tej opcji spowoduje, ¿e polecenie sar(1) bêdzie wy¶wietlaæ "
+"tylko bie¿±ce statystyki."

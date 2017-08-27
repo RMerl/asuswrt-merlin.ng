@@ -1,0 +1,6 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to gateway <b>moon</b>. The authentication is based on <b>X.509 certificates</b>.
+Both <b>carol</b> and <b>dave</b> request a <b>virtual IP</b> via the IKEv2 configuration
+payload. The gateway moon assigns virtual IP addresses from two disjoint pools named
+<b>pool0</b> comprising the single address <b>10.3.0.1</b> and <b>pool1</b> comprising the
+single address <b>10.3.1.1</b> predefined in the SQL database. 

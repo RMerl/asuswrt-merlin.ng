@@ -1,0 +1,20 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= $(TARGETNAME).c
+
+SRC_CFLAGS	:= @mod_cflags@
+TGT_LDLIBS	:= @mod_ldflags@
+
+install: $(R)$(modconfdir)/ruby/example.rb
+
+$(R)$(modconfdir)/ruby: | $(R)$(modconfdir)
+	@echo INSTALL $(patsubst $(R)$(raddbdir)%,raddb%,$@)
+	@$(INSTALL) -d -m 750 $@
+
+$(R)$(modconfdir)/ruby/example.rb: src/modules/rlm_ruby/example.rb | $(R)$(modconfdir)/ruby
+	@$(ECHO) INSTALL $(notdir $<)
+	@$(INSTALL) -m 755 $< $(R)$(modconfdir)/ruby

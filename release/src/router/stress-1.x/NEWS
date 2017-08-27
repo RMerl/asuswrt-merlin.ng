@@ -1,0 +1,114 @@
+`stress' NEWS -- history of user-visible changes.
+Copyright (C) 2001-2010 Amos Waterland.
+See the end for copying conditions.
+
+Please send `stress' bug reports, questions, and suggestions to
+<apw@rossby.metr.ou.edu>.
+
+2010-02-17  Version 1.0.3
+
+ * Fix manpage problem reported by Mark Lumsden.  Remove --no-clean
+   option.
+
+2009-12-02  Version 1.0.2
+
+ * Fix AIX compile.  Apply patch from Wilken Gottwalt to make tee
+   behave properly.
+
+2009-08-11  Version 1.0.1
+
+ * Minor automake cleanups.  Apply patch from Dileepa Prabhakar to
+   randomize slow writing. 
+
+2007-12-16  Version 1.0.0
+
+ * Try to detect memory corruption.
+
+2005-06-30  Version 0.18.8
+
+ * Apply patch from Richard Norton to fix problem in date calculation.
+
+2005-06-30  Version 0.18.6
+
+ * Apply modified patch from Bob Paulsen to stride through memory in
+   increments other than unity, and to hang after allocating memory in
+   an time other than infinity.
+
+2005-04-08  Version 0.18.4
+
+ * A bug has been fixed in which timeout under extremely heavy load
+   could wrap to a negative value.  There are some usage statement
+   fixes and improved Debian packaging.
+
+2004-11-18  Version 0.18.2
+
+ * Rewrite the usage statement so as to be explicit about disk and memory
+   stress.  Improve the Debian packaging.
+
+2003-08-04  Version 0.18.1
+
+ * The parent now reaps workers immediately and exits with an error if
+   any of the workers encounter a problem.  This allows the tool to be
+   used as an automated stress test.
+
+2003-06-27  Version 0.17.2
+
+ * Minor portability changes: now runs on OpenBSD.
+
+2003-05-25  Version 0.17
+
+ * This release is identical to 0.17pre20, and is a complete rewrite
+   relative to the 0.16 release.
+
+2003-05-08  Version 0.17pre20 
+
+ * Strict error checking on options, and an updated Texinfo manual.
+
+2003-05-08  Version 0.17pre19
+
+ * Major internal code cleanup. Uses round-robin dispatch of worker
+   processes.
+
+2003-05-06  Version 0.17pre18
+
+ * This release adds rewritten timeout logic, fixes bugs which caused
+   some errors to not be correctly propagated up the call stack, slightly
+   simplifies the interface, and adds a configure option to produce a
+   statically-linked binary.
+
+2003-01-07  Version 0.17pre14
+
+ * Many small bugfixes and usability enhancements.
+
+2002-12-10  Version 0.17pre10
+
+ * New --backoff, --no-retry, and --timeout switches, a texinfo manual,
+   regression tests, and many minor bugfixes.
+
+2002-12-08  Version 0.17pre8
+
+ * This version fixes minor bugs, adds a texinfo manual, and adds tests
+   for `make check'.
+
+2002-12-06  Version 0.17pre7
+
+ * A complete rewrite.  Each option is now handled by a fork, so
+   multiple hogs may be specifed on the same command line.  Load average
+   may be brought up to arbitrary value, and all available memory and
+   disk space may be consumed.  The GNU autotools are used, and testing
+   has been done on Solaris and GNU/Linux.
+
+----------------------------------------------------------------------
+Copyright information:
+
+Copyright (C) 2001-2010 Amos Waterland
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.

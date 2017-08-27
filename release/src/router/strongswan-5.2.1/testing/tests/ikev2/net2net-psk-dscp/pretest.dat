@@ -1,0 +1,17 @@
+moon::rm /etc/ipsec.d/cacerts/*
+sun::rm /etc/ipsec.d/cacerts/*
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+alice::iptables -t mangle -A OUTPUT -p icmp -j DSCP --set-dscp-class BE
+venus::iptables -t mangle -A OUTPUT -p icmp -j DSCP --set-dscp-class EF
+moon::iptables -t mangle -A PREROUTING -m dscp --dscp-class BE -j MARK --set-mark 10
+moon::iptables -t mangle -A PREROUTING -m dscp --dscp-class EF -j MARK --set-mark 20
+bob::iptables -t mangle -A OUTPUT -d PH_IP_ALICE -p icmp -j DSCP --set-dscp-class BE
+bob::iptables -t mangle -A OUTPUT -d PH_IP_VENUS -p icmp -j DSCP --set-dscp-class EF
+sun::iptables -t mangle -A PREROUTING -m dscp --dscp-class BE -j MARK --set-mark 10
+sun::iptables -t mangle -A PREROUTING -m dscp --dscp-class EF -j MARK --set-mark 20 
+moon::ipsec start
+sun::ipsec start
+moon::sleep 1
+moon::ipsec up dscp-be
+moon::ipsec up dscp-ef

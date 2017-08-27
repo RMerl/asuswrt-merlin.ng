@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: Object Hierarchy</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="index.html" title="GIO Reference Manual">
+<link rel="prev" href="ExampleObjectManagerClient.html" title="ExampleObjectManagerClient">
+<link rel="next" href="api-index-full.html" title="Index">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
+<td><a accesskey="p" href="ExampleObjectManagerClient.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="api-index-full.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h1 class="title">
+<a name="gio-hierarchy"></a>Object Hierarchy</h1></div></div></div>
+<pre class="screen">
+    <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+        <a class="link" href="GSimpleAction.html" title="GSimpleAction">GSimpleAction</a>
+        <a class="link" href="GSimpleActionGroup.html" title="GSimpleActionGroup">GSimpleActionGroup</a>
+        <a class="link" href="GAppInfo.html#GAppLaunchContext">GAppLaunchContext</a>
+        <a class="link" href="GApplication.html" title="GApplication">GApplication</a>
+        <a class="link" href="GInputStream.html" title="GInputStream">GInputStream</a>
+            <a class="link" href="GFilterInputStream.html" title="GFilterInputStream">GFilterInputStream</a>
+                <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream">GBufferedInputStream</a>
+                    <a class="link" href="GDataInputStream.html" title="GDataInputStream">GDataInputStream</a>
+                <a class="link" href="gio-GConverterInputstream.html#GConverterInputStream">GConverterInputStream</a>
+            <a class="link" href="GFileInputStream.html" title="GFileInputStream">GFileInputStream</a>
+            <a class="link" href="GMemoryInputStream.html" title="GMemoryInputStream">GMemoryInputStream</a>
+            <a class="link" href="GUnixInputStream.html" title="GUnixInputStream">GUnixInputStream</a>
+        <a class="link" href="GOutputStream.html" title="GOutputStream">GOutputStream</a>
+            <a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream">GFilterOutputStream</a>
+                <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream">GBufferedOutputStream</a>
+                <a class="link" href="gio-GConverterOutputstream.html#GConverterOutputStream">GConverterOutputStream</a>
+                <a class="link" href="GDataOutputStream.html" title="GDataOutputStream">GDataOutputStream</a>
+            <a class="link" href="GFileOutputStream.html" title="GFileOutputStream">GFileOutputStream</a>
+            <a class="link" href="GMemoryOutputStream.html" title="GMemoryOutputStream">GMemoryOutputStream</a>
+            <a class="link" href="GUnixOutputStream.html" title="GUnixOutputStream">GUnixOutputStream</a>
+        <a class="link" href="GCancellable.html" title="GCancellable">GCancellable</a>
+        <a class="link" href="GCharsetConverter.html" title="GCharsetConverter">GCharsetConverter</a>
+        <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup">GDBusActionGroup</a>
+        <a class="link" href="GMenuModel.html" title="GMenuModel">GMenuModel</a>
+            <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel">GDBusMenuModel</a>
+            <a class="link" href="GMenu.html" title="GMenu">GMenu</a>
+        <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo">GDesktopAppInfo</a>
+        <a class="link" href="GEmblem.html" title="GEmblem">GEmblem</a>
+        <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon">GEmblemedIcon</a>
+        <a class="link" href="GFileEnumerator.html" title="GFileEnumerator">GFileEnumerator</a>
+        <a class="link" href="GFileIcon.html" title="GFileIcon">GFileIcon</a>
+        <a class="link" href="GFileInfo.html" title="GFileInfo">GFileInfo</a>
+        <a class="link" href="GIOStream.html" title="GIOStream">GIOStream</a>
+            <a class="link" href="GFileIOStream.html" title="GFileIOStream">GFileIOStream</a>
+            <a class="link" href="GSocketConnection.html" title="GSocketConnection">GSocketConnection</a>
+                <a class="link" href="GTcpConnection.html" title="GTcpConnection">GTcpConnection</a>
+                    <a class="link" href="GTcpWrapperConnection.html" title="GTcpWrapperConnection">GTcpWrapperConnection</a>
+                <a class="link" href="GUnixConnection.html" title="GUnixConnection">GUnixConnection</a>
+            <a class="link" href="GTlsConnection.html" title="GTlsConnection">GTlsConnection</a>
+        <a class="link" href="GFileMonitor.html" title="GFileMonitor">GFileMonitor</a>
+        <a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter">GFilenameCompleter</a>
+        <a class="link" href="GInetAddress.html" title="GInetAddress">GInetAddress</a>
+        <a class="link" href="GSocketAddress.html" title="GSocketAddress">GSocketAddress</a>
+            <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress">GInetSocketAddress</a>
+                <a class="link" href="GProxyAddress.html" title="GProxyAddress">GProxyAddress</a>
+            <a class="link" href="GUnixSocketAddress.html" title="GUnixSocketAddress">GUnixSocketAddress</a>
+        <a href="http://library.gnome.org/devel/gobject/unstable/GTypeModule.html">GTypeModule</a>
+            <a class="link" href="GIOModule.html" title="GIOModule">GIOModule</a>
+        <a class="link" href="GMenuModel.html#GMenuAttributeIter">GMenuAttributeIter</a>
+        <a class="link" href="GMenuModel.html#GMenuLinkIter">GMenuLinkIter</a>
+        <a class="link" href="GMountOperation.html" title="GMountOperation">GMountOperation</a>
+        <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor">GVolumeMonitor</a>
+        <a class="link" href="GNetworkAddress.html" title="GNetworkAddress">GNetworkAddress</a>
+        <a class="link" href="GNetworkService.html" title="GNetworkService">GNetworkService</a>
+        <a class="link" href="GPermission.html" title="GPermission">GPermission</a>
+            <a class="link" href="GSimplePermission.html" title="GSimplePermission">GSimplePermission</a>
+        <a class="link" href="GSocketConnectable.html#GSocketAddressEnumerator">GSocketAddressEnumerator</a>
+            <a class="link" href="GSocketConnectable.html#GProxyAddressEnumerator">GProxyAddressEnumerator</a>
+        <a class="link" href="GResolver.html" title="GResolver">GResolver</a>
+        <a class="link" href="GSettings.html" title="GSettings">GSettings</a>
+        <a class="link" href="GSettingsBackend.html" title="GSettingsBackend">GSettingsBackend</a>
+        <a class="link" href="GSimpleAsyncResult.html" title="GSimpleAsyncResult">GSimpleAsyncResult</a>
+        <a class="link" href="GSocketClient.html" title="GSocketClient">GSocketClient</a>
+        <a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage">GSocketControlMessage</a>
+            <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage">GUnixFDMessage</a>
+            <a class="link" href="GUnixCredentialsMessage.html" title="GUnixCredentialsMessage">GUnixCredentialsMessage</a>
+        <a class="link" href="GSocket.html" title="GSocket">GSocket</a>
+        <a class="link" href="GSocketListener.html" title="GSocketListener">GSocketListener</a>
+            <a class="link" href="GSocketService.html" title="GSocketService">GSocketService</a>
+                <a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService">GThreadedSocketService</a>
+        <a class="link" href="GThemedIcon.html" title="GThemedIcon">GThemedIcon</a>
+        <a class="link" href="GTlsCertificate.html" title="GTlsCertificate">GTlsCertificate</a>
+        <a class="link" href="GTlsDatabase.html" title="GTlsDatabase">GTlsDatabase</a>
+        <a class="link" href="GTlsPassword.html" title="GTlsPassword">GTlsPassword</a>
+        <a class="link" href="GUnixFDList.html" title="GUnixFDList">GUnixFDList</a>
+        <a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor">GUnixMountMonitor</a>
+        <a class="link" href="GVfs.html" title="GVfs">GVfs</a>
+        <a class="link" href="GZlibCompressor.html" title="GZlibCompressor">GZlibCompressor</a>
+        <a class="link" href="GZlibDecompressor.html" title="GZlibDecompressor">GZlibDecompressor</a>
+        <a class="link" href="GDBusMessage.html" title="GDBusMessage">GDBusMessage</a>
+        <a class="link" href="GDBusConnection.html" title="GDBusConnection">GDBusConnection</a>
+        <a class="link" href="GDBusProxy.html" title="GDBusProxy">GDBusProxy</a>
+        <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation">GDBusMethodInvocation</a>
+        <a class="link" href="GDBusServer.html" title="GDBusServer">GDBusServer</a>
+        <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver">GDBusAuthObserver</a>
+        <a class="link" href="GCredentials.html" title="GCredentials">GCredentials</a>
+        <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton">GDBusInterfaceSkeleton</a>
+        <a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton">GDBusObjectSkeleton</a>
+        <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy">GDBusObjectProxy</a>
+        <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient">GDBusObjectManagerClient</a>
+        <a class="link" href="GDBusObjectManagerServer.html" title="GDBusObjectManagerServer">GDBusObjectManagerServer</a>
+        <a class="link" href="GMenu.html#GMenuItem">GMenuItem</a>
+        <a class="link" href="GTestDBus.html" title="GTestDBus">GTestDBus</a>
+        <a class="link" href="GTask.html" title="GTask">GTask</a>
+        <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver">GSimpleProxyResolver</a>
+        <a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine">GApplicationCommandLine</a>
+        <a class="link" href="GTlsInteraction.html" title="GTlsInteraction">GTlsInteraction</a>
+    GInterface
+        <a class="link" href="GAction.html" title="GAction">GAction</a>
+        <a class="link" href="GActionGroup.html" title="GActionGroup">GActionGroup</a>
+        <a class="link" href="GActionMap.html" title="GActionMap">GActionMap</a>
+        <a class="link" href="GAppInfo.html" title="GAppInfo">GAppInfo</a>
+        <a class="link" href="GAsyncInitable.html" title="GAsyncInitable">GAsyncInitable</a>
+        <a class="link" href="GAsyncResult.html" title="GAsyncResult">GAsyncResult</a>
+        <a class="link" href="GSeekable.html" title="GSeekable">GSeekable</a>
+        <a class="link" href="GConverter.html" title="GConverter">GConverter</a>
+        <a class="link" href="GInitable.html" title="GInitable">GInitable</a>
+        <a class="link" href="GPollableInputStream.html" title="GPollableInputStream">GPollableInputStream</a>
+        <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream">GPollableOutputStream</a>
+        <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup">GRemoteActionGroup</a>
+        <a class="link" href="GDrive.html" title="GDrive">GDrive</a>
+        <a class="link" href="GIcon.html" title="GIcon">GIcon</a>
+        <a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased">GFileDescriptorBased</a>
+        <a class="link" href="GFile.html" title="GFile">GFile</a>
+        <a class="link" href="GLoadableIcon.html" title="GLoadableIcon">GLoadableIcon</a>
+        <a class="link" href="GSocketConnectable.html" title="GSocketConnectable">GSocketConnectable</a>
+        <a class="link" href="GMount.html" title="GMount">GMount</a>
+        <a class="link" href="GNetworkMonitor.html" title="GNetworkMonitor">GNetworkMonitor</a>
+        <a class="link" href="GProxy.html" title="GProxy">GProxy</a>
+        <a class="link" href="GProxyResolver.html" title="GProxyResolver">GProxyResolver</a>
+        <a class="link" href="GTlsBackend.html" title="GTlsBackend">GTlsBackend</a>
+        <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection">GTlsClientConnection</a>
+        <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase">GTlsFileDatabase</a>
+        <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection">GTlsServerConnection</a>
+        <a class="link" href="GVolume.html" title="GVolume">GVolume</a>
+        <a class="link" href="GDBusInterface.html" title="GDBusInterface">GDBusInterface</a>
+        <a class="link" href="GDBusObject.html" title="GDBusObject">GDBusObject</a>
+        <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager">GDBusObjectManager</a>
+    GBoxed
+        <a class="link" href="GFileInfo.html#GFileAttributeMatcher">GFileAttributeMatcher</a>
+        <a class="link" href="GSrvTarget.html" title="GSrvTarget">GSrvTarget</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo">GDBusAnnotationInfo</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo">GDBusArgInfo</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo">GDBusPropertyInfo</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo">GDBusSignalInfo</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo">GDBusMethodInfo</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo">GDBusInterfaceInfo</a>
+        <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo">GDBusNodeInfo</a>
+        <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema">GSettingsSchema</a>
+    GFlags
+        <a class="link" href="GTestDBus.html#GTestDBusFlags">GTestDBusFlags</a>
+        <a class="link" href="GApplication.html#GApplicationFlags">GApplicationFlags</a>
+        <a class="link" href="GFile.html#GFileMonitorFlags">GFileMonitorFlags</a>
+        <a class="link" href="GMountOperation.html#GAskPasswordFlags">GAskPasswordFlags</a>
+        <a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags">GTlsCertificateFlags</a>
+        <a class="link" href="GTlsPassword.html#GTlsPasswordFlags">GTlsPasswordFlags</a>
+        <a class="link" href="GDBusConnection.html#GDBusConnectionFlags">GDBusConnectionFlags</a>
+        <a class="link" href="GDBusConnection.html#GDBusCapabilityFlags">GDBusCapabilityFlags</a>
+        <a class="link" href="GDBusProxy.html#GDBusProxyFlags">GDBusProxyFlags</a>
+        <a class="link" href="GDBusServer.html#GDBusServerFlags">GDBusServerFlags</a>
+        <a class="link" href="GDBusInterfaceSkeleton.html#GDBusInterfaceSkeletonFlags">GDBusInterfaceSkeletonFlags</a>
+        <a class="link" href="GDBusObjectManagerClient.html#GDBusObjectManagerClientFlags">GDBusObjectManagerClientFlags</a>
+</pre>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the clients by sending an IKEv2
+<b>RSA signature</b> accompanied by a certificate.
+<b>carol</b> and <b>dave</b> then set up an <b>EAP-TTLS</b> tunnel each via <b>moon</b> to the
+<a href="http://trust.inform.fh-hannover.de/joomla/index.php/projects/tncfhh" target="popup">
+<b>TNC@FHH</b></a>-enhanced FreeRADIUS server <b>alice</b> authenticated by an X.509 AAA certificate.
+The strong EAP-TTLS tunnel protects the ensuing weak client authentication based on <b>EAP-MD5</b>.
+In a next step the EAP-TNC protocol is used within the EAP-TTLS tunnel to determine the
+health of <b>carol</b> and <b>dave</b> via the <b>IF-TNCCS 1.1</b> client-server interface.
+The IMC and IMV communicate are using the <b>IF-M</b> protocol defined by <b>RFC 5792 PA-TNC</b>.
+<p>
+<b>carol</b> passes the health test and <b>dave</b> fails. Based on these measurements <b>carol</b>
+is authenticated successfully and is granted access to the subnet behind <b>moon</b> whereas 
+<b>dave</b> fails the layered EAP authentication and is rejected.

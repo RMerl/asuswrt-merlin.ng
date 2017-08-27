@@ -1,0 +1,24 @@
+# <<Broadcom-WL-IPTag/Proprietary:>>
+
+SRCDIR = ../../../../src
+IDIR = -I$(SRCDIR)/common/include/ -I$(SRCDIR)/include/ -I ../include/ \
+		-I$(SRCDIR)/../components/opensource/jsonc/ \
+		-I$(SRCDIR)/../components/opensource/libxml2/include/ \
+		-I$(SRCDIR)/../components/opensource/sqlite3/
+
+CC=/projects/hnd/tools/linux/hndtools-mipsel-linux-uclibc-4.2.3/bin/mipsel-linux-uclibc-gcc
+LIBS=-lsqlite3 -lpthread -lxml2 -ljson-c
+CFLAGS=$(IDIR) -D _DEBUG_ -g -Wall -Werror
+LIBPATH=-L../libs/mips
+VISSHARED=../shared
+OBJFILES=$(VISSHARED)/vis_xmlshared.o $(VISSHARED)/vis_sock_util.o \
+			$(VISSHARED)/vis_shared_util.o vis_synchdb.o \
+			vis_utility.o database.o vis_xmlutility.o vis_jsonutility.o \
+			vis_sockserver.o vis_dcon_main.o
+
+vis-dcon: $(OBJFILES)
+	$(CC) $(LIBPATH) -o vis-dcon $(OBJFILES) $(CFLAGS) $(LIBS)
+
+clean:
+	rm *.o
+	rm $(VISSHARED)/*.o

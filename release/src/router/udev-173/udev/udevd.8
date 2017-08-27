@@ -1,0 +1,118 @@
+'\" t
+.\"     Title: udevd
+.\"    Author: [see the "Author" section]
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 07/30/2011
+.\"    Manual: udevd
+.\"    Source: udev
+.\"  Language: English
+.\"
+.TH "UDEVD" "8" "07/30/2011" "udev" "udevd"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+udevd \- event managing daemon
+.SH "SYNOPSIS"
+.HP \w'\fBudevd\fR\ 'u
+\fBudevd\fR [\fB\-\-daemon\fR] [\fB\-\-debug\fR] [\fB\-\-children\-max=\fR] [\fB\-\-exec\-delay=\fR] [\fB\-\-resolve\-names=early|late|never\fR] [\fB\-\-version\fR] [\fB\-\-help\fR]
+.SH "DESCRIPTION"
+.PP
+udevd listens to kernel uevents\&. For every event, udevd executes matching instructions specified in udev rules\&. See
+\fBudev\fR(7)\&.
+.PP
+On startup the content of the directory
+/lib/udev/devices
+is copied to
+/dev\&. If kernel modules specify static device nodes, these nodes are created even without a corresponding kernel device, to allow on\-demand loading of kernel modules\&. Matching permissions specified in udev rules are applied to these static device nodes\&.
+.PP
+The behavior of the running daemon can be changed with
+\fBudevadm control\fR\&.
+.SH "OPTIONS"
+.PP
+\fB\-\-daemon\fR
+.RS 4
+Detach and run in the background\&.
+.RE
+.PP
+\fB\-\-debug\fR
+.RS 4
+Print debug messages to stderr\&.
+.RE
+.PP
+\fB\-\-children\-max=\fR
+.RS 4
+Limit the number of parallel executed events\&.
+.RE
+.PP
+\fB\-\-exec\-delay=\fR
+.RS 4
+Number of seconds to delay the execution of RUN instructions\&. This might be useful when debugging system crashes during coldplug cause by loading non\-working kernel modules\&.
+.RE
+.PP
+\fB\-\-resolve\-names=\fR
+.RS 4
+Specify when udevd should resolve names of users and groups\&. When set to
+\fBearly\fR
+(the default) names will be resolved when the rules are parsed\&. When set to
+\fBlate\fR
+names will be resolved for every event\&. When set to
+\fBnever\fR
+names will never be resolved and all devices will be owned by root\&.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Print version number\&.
+.RE
+.PP
+\fB\-\-help\fR
+.RS 4
+Print help text\&.
+.RE
+.SH "ENVIRONMENT"
+.PP
+\fIUDEV_LOG=\fR
+.RS 4
+Set the logging priority\&.
+.RE
+.SH "KERNEL COMMAND LINE"
+.PP
+\fIudev\&.log\-priority=\fR
+.RS 4
+Set the logging priority\&.
+.RE
+.PP
+\fIudev\&.children\-max=\fR
+.RS 4
+Limit the number of parallel executed events\&.
+.RE
+.PP
+\fIudev\&.exec\-delay=\fR
+.RS 4
+Number of seconds to delay the execution of RUN instructions\&. This might be useful when debugging system crashes during coldplug cause by loading non\-working kernel modules\&.
+.RE
+.SH "AUTHOR"
+.PP
+Written by Kay Sievers
+kay\&.sievers@vrfy\&.org\&.
+.SH "SEE ALSO"
+.PP
+\fBudev\fR(7),
+\fBudevadm\fR(8)

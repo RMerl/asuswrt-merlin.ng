@@ -1,0 +1,14 @@
+# @PACKAGE_NAME@-@PACKAGE_VERSION@ configuration file.
+
+# How long to keep log files (in days).
+# If value is greater than 28, then log files are kept in
+# multiple directories, one for each month.
+HISTORY=@HISTORY@
+
+# Compress (using gzip or bzip2) sa and sar files older than (in days):
+COMPRESSAFTER=@COMPRESSAFTER@
+
+# Parameters for the system activity data collector (see sadc manual page)
+# which are used for the generation of log files.
+SADC_OPTIONS=""
+

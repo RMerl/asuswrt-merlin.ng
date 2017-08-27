@@ -1,0 +1,86 @@
+<!-- ##### SECTION Title ##### -->
+GDBusObject
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusObject ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusObject::interface-added ##### -->
+<para>
+
+</para>
+
+@gdbusobject: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GDBusObject::interface-removed ##### -->
+<para>
+
+</para>
+
+@gdbusobject: the object which received the signal.
+@arg1: 
+
+<!-- ##### STRUCT GDBusObjectIface ##### -->
+<para>
+
+</para>
+
+@parent_iface: 
+@get_object_path: 
+@get_interfaces: 
+@get_interface: 
+@interface_added: 
+@interface_removed: 
+
+<!-- ##### FUNCTION g_dbus_object_get_object_path ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_get_interfaces ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_get_interface ##### -->
+<para>
+
+</para>
+
+@object: 
+@interface_name: 
+@Returns: 
+
+

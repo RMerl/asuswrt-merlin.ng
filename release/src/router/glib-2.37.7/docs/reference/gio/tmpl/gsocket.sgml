@@ -1,0 +1,717 @@
+<!-- ##### SECTION Title ##### -->
+GSocket
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocket ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GSocket:blocking ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:broadcast ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:family ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:fd ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:keepalive ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:listen-backlog ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:local-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:multicast-loopback ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:multicast-ttl ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:protocol ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:remote-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:timeout ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:ttl ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSocket:type ##### -->
+<para>
+
+</para>
+
+<!-- ##### USER_FUNCTION GSocketSourceFunc ##### -->
+<para>
+
+</para>
+
+@socket: 
+@condition: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### ENUM GSocketType ##### -->
+<para>
+
+</para>
+
+@G_SOCKET_TYPE_INVALID: 
+@G_SOCKET_TYPE_STREAM: 
+@G_SOCKET_TYPE_DATAGRAM: 
+@G_SOCKET_TYPE_SEQPACKET: 
+
+<!-- ##### ENUM GSocketProtocol ##### -->
+<para>
+
+</para>
+
+@G_SOCKET_PROTOCOL_UNKNOWN: 
+@G_SOCKET_PROTOCOL_DEFAULT: 
+@G_SOCKET_PROTOCOL_TCP: 
+@G_SOCKET_PROTOCOL_UDP: 
+@G_SOCKET_PROTOCOL_SCTP: 
+
+<!-- ##### ENUM GSocketMsgFlags ##### -->
+<para>
+
+</para>
+
+@G_SOCKET_MSG_NONE: 
+@G_SOCKET_MSG_OOB: 
+@G_SOCKET_MSG_PEEK: 
+@G_SOCKET_MSG_DONTROUTE: 
+
+<!-- ##### STRUCT GInputVector ##### -->
+<para>
+
+</para>
+
+@buffer: 
+@size: 
+
+<!-- ##### STRUCT GOutputVector ##### -->
+<para>
+
+</para>
+
+@buffer: 
+@size: 
+
+<!-- ##### FUNCTION g_socket_new ##### -->
+<para>
+
+</para>
+
+@family: 
+@type: 
+@protocol: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_new_from_fd ##### -->
+<para>
+
+</para>
+
+@fd: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_bind ##### -->
+<para>
+
+</para>
+
+@socket: 
+@address: 
+@allow_reuse: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listen ##### -->
+<para>
+
+</para>
+
+@socket: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_accept ##### -->
+<para>
+
+</para>
+
+@socket: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_connect ##### -->
+<para>
+
+</para>
+
+@socket: 
+@address: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_check_connect_result ##### -->
+<para>
+
+</para>
+
+@socket: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_receive ##### -->
+<para>
+
+</para>
+
+@socket: 
+@buffer: 
+@size: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_receive_from ##### -->
+<para>
+
+</para>
+
+@socket: 
+@address: 
+@buffer: 
+@size: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_receive_message ##### -->
+<para>
+
+</para>
+
+@socket: 
+@address: 
+@vectors: 
+@num_vectors: 
+@messages: 
+@num_messages: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_receive_with_blocking ##### -->
+<para>
+
+</para>
+
+@socket: 
+@buffer: 
+@size: 
+@blocking: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_send ##### -->
+<para>
+
+</para>
+
+@socket: 
+@buffer: 
+@size: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_send_to ##### -->
+<para>
+
+</para>
+
+@socket: 
+@address: 
+@buffer: 
+@size: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_send_message ##### -->
+<para>
+
+</para>
+
+@socket: 
+@address: 
+@vectors: 
+@num_vectors: 
+@messages: 
+@num_messages: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_send_with_blocking ##### -->
+<para>
+
+</para>
+
+@socket: 
+@buffer: 
+@size: 
+@blocking: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_close ##### -->
+<para>
+
+</para>
+
+@socket: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_is_closed ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_shutdown ##### -->
+<para>
+
+</para>
+
+@socket: 
+@shutdown_read: 
+@shutdown_write: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_is_connected ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_create_source ##### -->
+<para>
+
+</para>
+
+@socket: 
+@condition: 
+@cancellable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_condition_check ##### -->
+<para>
+
+</para>
+
+@socket: 
+@condition: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_condition_wait ##### -->
+<para>
+
+</para>
+
+@socket: 
+@condition: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_condition_timed_wait ##### -->
+<para>
+
+</para>
+
+@socket: 
+@condition: 
+@timeout: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_available_bytes ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_listen_backlog ##### -->
+<para>
+
+</para>
+
+@socket: 
+@backlog: 
+
+
+<!-- ##### FUNCTION g_socket_get_listen_backlog ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_blocking ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_blocking ##### -->
+<para>
+
+</para>
+
+@socket: 
+@blocking: 
+
+
+<!-- ##### FUNCTION g_socket_get_keepalive ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_keepalive ##### -->
+<para>
+
+</para>
+
+@socket: 
+@keepalive: 
+
+
+<!-- ##### FUNCTION g_socket_get_timeout ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_timeout ##### -->
+<para>
+
+</para>
+
+@socket: 
+@timeout: 
+
+
+<!-- ##### FUNCTION g_socket_set_ttl ##### -->
+<para>
+
+</para>
+
+@socket: 
+@ttl: 
+
+
+<!-- ##### FUNCTION g_socket_get_ttl ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_broadcast ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_broadcast ##### -->
+<para>
+
+</para>
+
+@socket: 
+@broadcast: 
+
+
+<!-- ##### FUNCTION g_socket_get_option ##### -->
+<para>
+
+</para>
+
+@socket: 
+@level: 
+@optname: 
+@value: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_option ##### -->
+<para>
+
+</para>
+
+@socket: 
+@level: 
+@optname: 
+@value: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_family ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_fd ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_local_address ##### -->
+<para>
+
+</para>
+
+@socket: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_protocol ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_remote_address ##### -->
+<para>
+
+</para>
+
+@socket: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_socket_type ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_speaks_ipv4 ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_credentials ##### -->
+<para>
+
+</para>
+
+@socket: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_join_multicast_group ##### -->
+<para>
+
+</para>
+
+@socket: 
+@group: 
+@source_specific: 
+@iface: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_leave_multicast_group ##### -->
+<para>
+
+</para>
+
+@socket: 
+@group: 
+@source_specific: 
+@iface: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_get_multicast_loopback ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_multicast_loopback ##### -->
+<para>
+
+</para>
+
+@socket: 
+@loopback: 
+
+
+<!-- ##### FUNCTION g_socket_get_multicast_ttl ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_set_multicast_ttl ##### -->
+<para>
+
+</para>
+
+@socket: 
+@ttl: 
+
+

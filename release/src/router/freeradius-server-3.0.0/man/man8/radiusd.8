@@ -1,0 +1,228 @@
+.TH RADIUSD 8 "26 Apr 2012" "" "FreeRADIUS Daemon"
+.SH NAME
+radiusd - Authentication, Authorization and Accounting server
+.SH SYNOPSIS
+.B radiusd
+.RB [ \-C ]
+.RB [ \-d
+.IR config_directory ]
+.RB [ \-f ]
+.RB [ \-h ]
+.RB [ \-i
+.IR ip-address ]
+.RB [ \-l
+.IR log_file ]
+.RB [ \-m ]
+.RB [ \-n
+.IR name ]
+.RB [ \-p
+.IR port ]
+.RB [ \-s ]
+.RB [ \-t ]
+.RB [ \-v ]
+.RB [ \-x ]
+.RB [ \-X ]
+.SH DESCRIPTION
+FreeRADIUS is a high-performance and highly configurable RADIUS
+server.  It supports many database back-ends such as flat-text files,
+SQL, LDAP, Perl, Python, etc.  It also supports many authentication
+protocols such as PAP, CHAP, MS-CHAP(v2), HTTP Digest, and EAP
+(EAP-MD5, EAP-TLS, PEAP, EAP-TTLS, EAP-SIM, etc.).
+
+It also has fullsupport for Cisco's VLAN Query Protocol (VMPS) and
+DHCP.
+
+Please read the DEBUGGING section below.  It contains instructions
+for quickly configuring the server for your local system.
+.SH OPTIONS
+The following command-line options are accepted by the server:
+.IP \-C
+Check the configuration and exit immediately.  If there is a problem
+reading the configuration, then the server will exit with a non-zero
+status code.  If the configuration appears to be acceptable, then the
+server will exit with a zero status code.
+
+Note that there are limitations to this check.  Due to the
+complexities involved in \fIalmost\fP starting a RADIUS server, these
+checks are necessarily incomplete.  The server can return a zero
+status code when run with -C, but may still exit with an error when
+run normally.
+
+See the output of 
+.B "radiusd -XC"
+for an informative list of which modules are checked for correct
+configuration, and which modules are skipped, and therefore not checked.
+.IP "\-d \fIconfig directory\fP"
+Defaults to \fI/etc/raddb\fP. \fBRadiusd\fP looks here for its configuration
+files such as the \fIdictionary\fP and the \fIusers\fP files.
+.IP \-f
+Do not fork, stay running as a foreground process.
+.IP \-h
+Print usage help information.
+.IP "\-i \fIip-address\fP"
+Defines which IP address that the server uses for sending and
+receiving packets.
+
+If this command-line option is given, then the "bind_address" and all
+"listen{}" entries in \fIradiusd.conf\fP are ignored.
+
+This option MUST be used in conjunction with "-p".
+.IP "\-l \fIlog_file\fP"
+Defaults to \fI${logdir}/radius.log\fP. \fBRadiusd\fP writes it's logging
+information to this file. If log_file is the string "stdout" logging will
+be written to stdout.
+.IP \-m
+On SIGINT or SIGQUIT exit cleanly instead of immediately.
+This is most useful for when running the server with "valgrind".
+.IP "\-n \fIname\fP"
+Read \fIraddb/name.conf\fP instead of \fIraddb/radiusd.conf\fP.
+.IP "\-p \fIport\fP"
+Defines which port is used for receiving authentication packets.
+Accounting packets are received on "port + 1".
+
+When this command-line option is given, all "listen" sections in
+\fIradiusd.conf\fP are ignored.
+
+This option MUST be used in conjunction with "-i".
+.IP \-s
+Run in "single server" mode.  The server normally runs with multiple
+threads and/or processes, which can lower its response time to
+requests.  Some systems have issues with threading, however, so
+running in "single server" mode may help to address those issues.  In
+single server mode, the server will also not "daemonize"
+(auto-background) itself.
+.IP \-t
+Do not spawn threads.
+.IP \-v
+Print server version information and exit.
+.IP \-X
+Debugging mode.  Equivalent to "-sfxx -l stdout".  When trying to
+understand how the server works, ALWAYS run it with "radiusd -X".
+For production servers, use "raddebug"
+.IP \-x
+Finer-grained debug mode. In this mode the server will print details
+of every request on it's \fBstdout\fP output. You can specify this
+option multiple times (-x -x or -xx) to get more detailed output.
+.SH DEBUGGING
+The default configuration is set to work in the widest possible
+circumstances.  It requires minimal changes for your system.
+
+However, your needs may be complex, and may require significant
+changes to the server configuration.  Making random changes is a
+guaranteed method of failure.  Instead, we STRONGLY RECOMMEND
+proceeding via the following steps:
+.PP
+1) Always run the server in debugging mode (
+.B radiusd -X
+) after making a configuration change.  We cannot emphasize this
+enough.  If you are not running the server in debugging mode, you
+\fIwill not\fP be able to see what is doing, and you \fIwill not\fP be
+able to correct any problems.
+
+If you ask questions on the mailing list, the first response will be
+to tell you "run the server in debugging mode".  Please, follow these
+instructions.
+.PP
+2) Change as little as possible in the default configuration files.
+The server contains a decade of experience with protocols, databases,
+and different systems.  Its default configuration is designed to work
+almost everywhere, and to do almost everything you need.
+.PP
+3) When you make a small change, testing it before changing anything
+else.  If the change works, save a copy of the configuration, and make
+another change.  If the change doesn't work, debug it, and try to
+understand why it doesn't work.
+.PP
+If you begin by making large changes to the server configuration, it
+will never work, and you will never be able to debug the problem.
+.PP
+4) If you need to add a connection to a database FOO (e.g. LDAP or
+SQL), then:
+.PP
+.in +0.3i
+a) Edit raddb/modules/foo
+.br
+This file contains the default configuration for the module.  It
+contains comments describing what can be configured, and what those
+configuration entries mean.
+.br
+.br
+b) Edit raddb/sites-available/default
+.br
+This file contains the default policy for the server.  e.g. "enable
+CHAP, MS-CHAP, and EAP authentication".  Look in this file for all
+references to your module "foo".  Read the comments, and remove the
+leading hash '#' from the lines referencing the module.  This enables
+the module.
+.br
+.br
+c) Edit raddb/sites-available/inner-tunnel
+.br
+This file contains the default policy for the "tunneled" portion of
+certain EAP methods.  Perform the same kind of edits as above, for the
+"default" file..  If you are not using EAP (802.1X), then this step
+can be skipped.
+.br
+.br
+d) Start the server in debugging mode (
+.B radiusd -X
+), and start testing.
+.in -0.3i
+.PP
+5) Ask questions on the mailing list
+(freeradius-users@lists.freeradius.org).  When asking questions,
+include the output from debugging mode (
+.B radiusd -X
+).  This information will allow people to help you.  If you do not
+include it, the first response to your message will be "post the
+output of debug mode".
+.PP
+Ask questions earlier, rather than later.  If you cannot solve a
+problem in a day, ask a question on the mailing list.  Most questions
+have been seen before, and can be answered quickly.
+.SH BACKGROUND
+\fBRADIUS\fP is a protocol spoken between an access server, typically
+a device connected to several modems or ISDN lines, and a \fBradius\fP
+server. When a user connects to the access server, (s)he is asked for
+a loginname and a password. This information is then sent to the \fBradius\fP
+server. The server replies with "access denied", or "access OK". In the
+latter case login information is sent along, such as the IP address in
+the case of a PPP connection.
+.PP
+The access server also sends login and logout records to the \fBradius\fP
+server so accounting can be done. These records are kept for each terminal
+server seperately in a file called \fBdetail\fP, and in the \fIwtmp\fP
+compatible logfile \fB/var/log/radwtmp\fP.
+.SH CONFIGURATION
+\fBRadiusd\fP uses a number of configuration files. Each file has it's
+own manpage describing the format of the file. These files are:
+.IP radiusd.conf
+The main configuration file, which sets the administrator-controlled
+items.
+.IP dictionary
+This file is usually static. It defines all the possible RADIUS attributes
+used in the other configuration files.  You don't have to modify it.
+It includes other dictionary files in the same directory.
+.IP hints
+Defines certain hints to the radius server based on the users's loginname
+or other attributes sent by the access server. It also provides for
+mapping user names (such as Pusername -> username). This provides the
+functionality that the \fILivingston 2.0\fP server has as "Prefix" and
+"Suffix" support in the \fIusers\fP file, but is more general. Ofcourse
+the Livingston way of doing things is also supported, and you can even use
+both at the same time (within certain limits).
+.IP huntgroups
+Defines the huntgroups that you have, and makes it possible to restrict
+access to certain huntgroups to certain (groups of) users.
+.IP users
+Here the users are defined. On a typical setup, this file mainly contains
+DEFAULT entries to process the different types of logins, based on hints
+from the hints file. Authentication is then based on the contents of
+the UNIX \fI/etc/passwd\fP file. However it is also possible to define all
+users, and their passwords, in this file.
+.SH SEE ALSO
+rradiusd.conf(5), users(5), huntgroups(5), hints(5),
+dictionary(5), raddebug(8)
+.SH AUTHOR
+The FreeRADIUS Server Project (http://www.freeradius.org)
+

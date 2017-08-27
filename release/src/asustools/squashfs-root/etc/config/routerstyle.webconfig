@@ -1,0 +1,36 @@
+<script type="text/javascript">
+//<![CDATA[
+function previewStyle(val) {
+	var linkTags = document.getElementsByTagName("link");
+	for(var i = 0; i < linkTags.length; i++) {
+		var t = linkTags[i];
+		if(t.getAttribute("rel") != "stylesheet") continue;
+		if(t.getAttribute("href").indexOf("style/pwc/") != -1) continue;
+		if(t.getAttribute("href").indexOf("default") != -1) continue;
+		if(t.getAttribute("href").indexOf("/" + val + "/") != -1) return false;
+		var newStyle = t.getAttribute("href").replace(/\?[a-z]*/,"");
+		newStyle = newStyle.replace(/style\/\w+\//, "style/" + val + "/") + "?" + val;
+		t.removeAttribute("href");
+		t.setAttribute("href", newStyle);
+	}
+	return true;
+}
+document.forms[0].onreset = function() { 
+	previewStyle("<% nvram_get("router_style"); %>"); 
+}
+//]]>
+</script>
+<fieldset>
+	<legend><% tran("management.gui_style"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("share.styl"); %></div>
+		<select name="router_style">
+		    <% show_styles(); %>
+		</select>&nbsp;
+		<script type="text/javascript">
+		//<![CDATA[
+		document.write("<input class=\"button\" type=\"button\" name=\"preview_button\" value=\"" + sbutton.preview + "\" onclick=\"previewStyle(this.form.router_style.value)\" />");
+		//]]>
+		</script>
+	</div>
+</fieldset><br />

@@ -1,0 +1,108 @@
+<!-- ##### SECTION Title ##### -->
+GInetAddressMask
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GInetAddressMask ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+
+<!-- ##### FUNCTION g_inet_address_mask_new ##### -->
+<para>
+
+</para>
+
+@addr: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_new_from_string ##### -->
+<para>
+
+</para>
+
+@mask_string: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_to_string ##### -->
+<para>
+
+</para>
+
+@mask: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_get_family ##### -->
+<para>
+
+</para>
+
+@mask: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_get_address ##### -->
+<para>
+
+</para>
+
+@mask: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_get_length ##### -->
+<para>
+
+</para>
+
+@mask: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_matches ##### -->
+<para>
+
+</para>
+
+@mask: 
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_inet_address_mask_equal ##### -->
+<para>
+
+</para>
+
+@mask: 
+@mask2: 
+@Returns: 
+
+

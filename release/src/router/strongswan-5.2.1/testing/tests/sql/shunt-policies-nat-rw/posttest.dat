@@ -1,0 +1,8 @@
+sun::ipsec stop
+alice::ipsec stop
+venus::ipsec stop
+sun::iptables-restore < /etc/iptables.flush
+alice::rm /etc/ipsec.d/ipsec.*
+venus::rm /etc/ipsec.d/ipsec.*
+sun::rm /etc/ipsec.d/ipsec.*
+moon::iptables -t nat -F

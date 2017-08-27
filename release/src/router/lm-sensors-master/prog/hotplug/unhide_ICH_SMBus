@@ -1,0 +1,72 @@
+#!/bin/bash
+# (C) Rudolf Marek <r.marek@assembler.cz>,
+# Copyright (C) 2007-2011 Jean Delvare <jdelvare@suse.de>
+#
+#    Thanks Jean Delvare and Oliver Dreier <oliver@dinux.de> for testing.
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License version 2
+#    as published by the Free Software Foundation
+#
+# Supports the following Intel ICH chipsets:
+#              PCI ID
+#   ICH       8086:2410
+#   ICH2      8086:2440
+#   ICH2-M    8086:244C
+#   ICH3      8086:2480
+#   ICH3-M    8086:248C
+#   ICH4      8086:24C0
+#   ICH4-M    8086:24CC
+#   ICH5      8086:24D0
+
+pcibus="/sys/bus/pci/slots"
+device="00:1f"
+
+if [ "$UID" -ne 0 ] ; then
+	echo "You need to be root to run this script!"
+	exit 252
+fi
+
+smbus=`lspci -n -s $device.3 | grep -i '0c05: *8086'`
+if [ -n "$smbus" ] ; then
+	echo "ICH SMBus is already there!"
+	lspci -s $device.3
+	exit
+fi
+
+intel=`lspci -n -s $device.0 | grep -i '8086:24[148CD][0C]'`
+if [ -z "$intel" ] ; then
+	echo "Not for your chipset - Intel (ICH) only"
+	echo "Supported: ICH, ICH2, ICH2-M, ICH3, ICH3-M, ICH4, ICH4-M, ICH5"
+	exit 255;
+fi
+modprobe fakephp &> /dev/null
+
+if [ ! -d "$pcibus" ] ; then
+	echo "You need the fake PCI hotplug driver! (fakephp.ko, kernel 2.6.5 or later)"
+	exit 255;
+fi
+
+echo "Enabling SMBus PCI device ..."
+
+newval=$( printf '%x' $((0x$(setpci -s $device.0 f2.w) & 0xfff7))) 
+setpci -s $device.0 f2.w=$newval
+
+echo "Rescanning the bus ..."
+echo 1 > $pcibus/0000:$device.0/power 2>/dev/null
+if [ ! -d "$pcibus/0000:$device.3" ] ; then
+	echo "Failed to enable the SMBUS"
+	exit 253;
+fi
+
+if [ ! -d "/sys/bus/pci/drivers/i801_smbus" ] ; then
+	echo "Loading i2c-i801 ..."
+	modprobe i2c-i801
+	if [ $? -ne 0 ] ; then
+		exit 251
+	fi
+fi
+
+lspci -s $device.3
+echo "Done!"
+echo "Remember: system suspend/resume is no longer safe to use."

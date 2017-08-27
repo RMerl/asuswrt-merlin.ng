@@ -1,0 +1,41 @@
+<!-- ##### SECTION Title ##### -->
+GPropertyAction
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GPropertyAction ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_property_action_new ##### -->
+<para>
+
+</para>
+
+@name: 
+@object: 
+@property_name: 
+@Returns: 
+
+

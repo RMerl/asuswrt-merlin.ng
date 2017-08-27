@@ -1,0 +1,509 @@
+﻿/* CSS Document */
+body{
+color:#FFFFFF;
+font-family:Arial, Helvetica, sans-serif;
+font-size:13px;
+color:#FFFFFF;
+}
+a:link {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+a:visited {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+a:hover {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+a:active {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+p{margin-top:   0;margin-bottom:   0}
+
+.lefttabhead {
+	background-image:url(images/New_ui/lefttabhead.png);
+	background-repeat:no-repeat;
+	font-size:18px;
+	height:44px;
+	display:table;
+	padding-left:35px;
+}
+.lefttabhead div {
+	display:table-cell;
+	vertical-align:middle;
+	width:202px;
+}
+.lefttabmid {
+	background-image:url(images/New_ui/lefttabmid_n.png);
+	background-repeat:no-repeat;
+	height:61px;
+	display:table;
+	padding-left:5px;
+}
+.lefttabmid div {
+	display:table-cell;
+	vertical-align:middle;
+	width:130px;
+}
+.lefttabmid:hover{
+	background-image:url(images/New_ui/lefttabmid_o.png);
+}
+.lefttabmidfocus {
+	background-image:url(images/New_ui/lefttabmid_f.png);
+	background-repeat:no-repeat;
+	height:61px;
+	display:table;
+	padding-left:5px;
+}
+.lefttabmidfocus div {
+	display:table-cell;
+	vertical-align:middle;
+
+	width:140px;
+}
+.lefttabdown {
+	background-image:url(images/New_ui/lefttabdown_n.png);
+	background-repeat:no-repeat;
+	height:63px;
+	display:table;
+	padding-left:5px;
+}
+.lefttabdown div {
+	display:table-cell;
+	vertical-align:middle;
+	width:130px;
+}
+.lefttabdown:hover {
+	background-image:url(images/New_ui/lefttabdown_o.png)
+}
+.lefttabdownfocus {
+	background-image:url(images/New_ui/lefttabdown_f.png);
+	background-repeat:no-repeat;
+	height:63px;
+	display:table;
+	padding-left:5px;
+}
+.lefttabdownfocus div {
+	display:table-cell;
+	vertical-align:middle;
+	width:140px;
+}
+
+/*  Move to index_style.css By Viz , aidisk still use this*/
+.titlebtn {	
+      background: transparent url(images/New_ui/btn.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 34px;
+      padding-right: 10px;      
+      margin-right: 10px;
+      text-decoration: none;
+	  width:136px;
+    }
+.titlebtn span {
+      background: transparent url(images/New_ui/btnspan.png) no-repeat;
+      display: block;
+      padding: 5px 1px 5px 11px;
+      line-height: 24px;  
+    }
+.titlebtn:hover {
+      background-position: right -34px;
+    }
+.titlebtn:hover span {
+      background-position: left -34px;
+    }
+.titlebtn:active {
+      background-position: right -68px;
+	  outline: none;
+    }
+.titlebtn:active span {
+      background-position: left -68px;
+	}
+
+	
+
+.titledropdownbtn {
+	background-image:url(images/New_ui/dropdown_bt.png);
+	font-size:12px;
+	color:#FFFFFF;
+	text-decoration:none;
+	width:147px;
+	height:33px;
+	line-height:33px;	
+}
+
+.titledropdownbtn:hover{
+background-image:url(images/New_ui/dropdown_btover.png);
+}
+
+.titledown{
+font:Arial, Helvetica, sans-serif;
+color:#FFFFFF;
+font-size:12px;
+}
+.titledown a:link{
+color:#FFFFFF;
+} 
+.titledown:hover{
+color:#FFFFFF;
+}
+
+.titledownbt{
+font:Arial, Helvetica, sans-serif;
+padding-left:2px;
+margin-left:2px;
+color:#FFFFFF;
+font-size:12px;
+/*text-decoration:underline;*/
+}
+
+.tab {	
+      background: transparent url(/images/New_ui/hightaba.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 56px;
+      padding-right: 8px;      
+      margin-right:2px;
+      text-decoration: none;
+      text-align:center;
+	 max-width:130px;
+    }
+.tab span {
+      background: transparent url(/images/New_ui/hightabspan.png) no-repeat;																
+      display: block;
+      padding: 5px 4px 5px 12px;
+      line-height: 46px;	  
+      font-family: Arial, Helvetica, sans-serif;
+			font-size: 13px;
+}
+.tab:hover{
+	background-position:right -56px;
+	
+}	
+.tab:hover span{
+	background-position:left -56px;
+	
+} 
+
+.tabclick {	   
+      background: transparent url(/images/New_ui/hightabclicka.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 56px;
+      padding-right: 8px;      
+      margin-right:2px;
+      text-align:center;
+      text-decoration: none;
+		  max-width:130px;
+  }
+.tabclick span {
+	  	background: transparent url(/images/New_ui/hightabclickspan.png) no-repeat;
+      display: block;
+      padding: 5px 4px 5px 12px;
+      line-height: 46px;	
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 13px; 
+}	
+
+div.tabclick {
+height: 56px !important;
+}
+
+.tab_NW {	
+      background: transparent url(images/New_ui/taba.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 28px;
+      padding-right: 8px;      
+      margin-right:2px;
+      text-decoration: none;
+      text-align:center;
+	 max-width:130px;
+    }
+.tab_NW span {
+      background: transparent url(images/New_ui/tabspan.png) no-repeat;
+
+      display: block;
+      padding: 5px 4px 5px 12px;
+      line-height: 20px;	  
+      font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px;
+}
+.tab_NW:hover{
+	background-position:right -28px;
+	
+}	
+.tab_NW:hover span{
+	background-position:left -28px;
+	
+} 
+
+.tabclick_NW {	   
+      background: transparent url(images/New_ui/tabclicka.png) no-repeat scroll right top;
+	
+      color: White;
+      display: block;
+      float: left;
+      height: 28px;
+      padding-right: 8px;      
+      margin-right:2px;
+      text-align:center;
+      text-decoration: none;
+	 max-width:130px;
+
+	  
+    }
+.tabclick_NW span {
+	  background: transparent url(images/New_ui/tabclickspan.png) no-repeat;
+	 
+      display: block;
+      padding: 5px 4px 5px 12px;
+      line-height: 20px;	
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px; 
+  
+}	
+
+.radioleft {	
+      background: transparent url(images/New_ui/radioleft.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 34px;
+      padding-right: 10px;      
+      margin-right: 0px;
+      text-decoration: none;
+	  width:100px;
+    }
+.radioleft span {
+      background: transparent url(images/New_ui/radioleftspan.png) no-repeat;
+      display: block;
+      padding: 5px 1px 5px 11px;
+      line-height: 24px;	  
+}
+.radioleft:hover{
+	background-position:right -34px;
+}
+   
+.radioleft:hover span{
+	background-position:left -34px;
+} 
+
+
+.radiomiddle {	
+      background: transparent url(images/New_ui/radiomiddle.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 34px;
+      padding-right: 10px;      
+      margin-right: 0px;
+      text-decoration: none;
+	  width:100px;
+    }
+.radiomiddle span {
+      background: transparent url(images/New_ui/radiomiddlespan.png) no-repeat;
+      display: block;
+      padding: 5px 1px 5px 11px;
+      line-height: 24px;	  
+}
+.radiomiddle:hover{
+	background-position:right -34px;
+}
+   
+.radiomiddle:hover span{
+	background-position:left -34px;
+} 
+
+
+.radioright {	
+      background: transparent url(images/New_ui/radioright.png) no-repeat scroll right top;
+      color: White;
+      display: block;
+      float: left;
+      height: 34px;
+      padding-right: 10px;      
+      margin-right: 0px;
+      text-decoration: none;
+	  width:100px;
+    }
+.radioright span {
+      background: transparent url(images/New_ui/radiorightspan.png) no-repeat;
+      display: block;
+      padding: 5px 1px 5px 11px;
+      line-height: 24px;	  
+}
+.radioright:hover{
+	background-position:right -34px;
+}
+   
+.radioright:hover span{
+	background-position:left -34px;
+} 
+
+
+
+
+
+.flowfont{
+font:Arial, Helvetica, sans-serif;
+color:#FFFFFF;
+font-size:12px;
+}
+
+
+.flowfontbt{
+font:Arial, Helvetica, sans-serif;
+background-image:url(images/New_ui/networkmap/flowbt_normal.png);
+color:#FFFFFF;
+font-size:12px;
+}
+.flowfontbt:link{
+font:Arial, Helvetica, sans-serif;
+background-image:url(images/New_ui/networkmap/flowbt_normal.png);
+color:#FFFFFF;
+font-size:12px;
+}
+.flowfontbt:hover{
+background-image:url(images/New_ui/networkmap/flowbt_over.png);
+
+}
+
+.fromdropdownbt{
+font:Arial, Helvetica, sans-serif;
+background-image:url(images/New_ui/networkmap/formdropdown.png);
+color:#FFFFFF;
+font-size:12px;
+}
+.fromdropdownbt:link{
+font:Arial, Helvetica, sans-serif;
+background-image:url(images/New_ui/networkmap/formdropdown.png);
+color:#FFFFFF;
+font-size:12px;
+}
+.fromdropdownbt:hover{
+background-image:url(images/New_ui/networkmap/formdropdown_over.png);
+
+}
+
+.formfont{
+font:Arial, Helvetica, sans-serif;
+font-size:16px;
+color:#FFFFFF;
+padding-left:10px;
+padding-top:1px;
+margin-top:5px;
+}
+
+.formfonttitle{
+font:Arial, Helvetica, sans-serif;
+font-size:14px;
+color:#FFFFFF;
+margin-left:5px;
+margin-bottom:10px;
+}
+
+.formfontcontent{
+font:Arial, Helvetica, sans-serif;
+font-size:12px;
+color:#FFFFFF;
+padding-top:1px;
+}
+
+.formfontdesc{
+font:Arial, Helvetica, sans-serif;
+font-size:11px;
+color:#FFFFFF;
+margin-left:5px;
+margin-bottom:10px;
+}
+
+.formlinkfont{
+font:Arial, Helvetica, sans-serif;
+font-size:12px;
+color:#FFFFFF;
+text-decoration:underline;
+}
+
+/*input[type=text]
+{
+height:23px;
+width:236px;
+background-image:url(/images/New_ui/inputbg.png);
+border:0px;
+color:#000000;
+}*/
+
+/*input[type=radio]
+{
+height:13px;
+width:100px;
+background-image:url(/images/New_ui/inputbg.png);
+border:0px;
+}*/
+
+.input_2{
+height:23px;
+width:104px;
+background-image:url(images/New_ui/inputbg_2.png);
+border:0px;
+}
+
+.contentbt{
+font:Arial, Helvetica, sans-serif;
+background-image:url(images/New_ui/contentbt_normal.png);
+color:#FFFFFF;
+font-size:12px;
+}
+.contentbt:link{
+font:Arial, Helvetica, sans-serif;
+background-image:url(images/New_ui/contentbt_normal.png);
+color:#FFFFFF;
+font-size:12px;
+}
+.contentbt:hover{
+background-image:url(images/New_ui/contentbt_over.png);
+
+}
+
+.conncetstatuson{
+	background-image:url(images/New_ui/contectstatus.png);
+	height:30px;
+	width:30px;
+}
+.conncetstatusoff{
+	background-image:url(images/New_ui/contectstatus.png);
+	height:30px;
+	width:30px;
+	background-position:0px -30px;
+}
+.printstatuson{
+	background-image:url(images/New_ui/printstatus.png);
+	height:30px;
+	width:30px;
+}
+.printstatusoff{
+	background-image:url(images/New_ui/printstatus.png);
+	height:30px;
+	width:30px;
+	background-position:0px -30px;
+}
+.usbstatuson{
+	background-image:url(images/New_ui/usbstatus.png);
+	height:30px;
+	width:30px;
+}
+.usbstatusoff{
+	background-image:url(images/New_ui/usbstatus.png);
+	height:30px;
+	width:30px;
+	background-position:0px -30px;
+}

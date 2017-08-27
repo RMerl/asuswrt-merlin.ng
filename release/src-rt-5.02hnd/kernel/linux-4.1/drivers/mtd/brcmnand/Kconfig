@@ -1,0 +1,74 @@
+#
+# linux/drivers/mtd/brcmnand/Kconfig
+#
+
+config MTD_BRCMNAND
+	tristate "Broadcom NAND controller support"
+	depends on BCM_KF_MTD_BCMNAND
+	select BRCMNAND_MTD_EXTENSION
+	default n
+	help
+	  Say Y to enable the onchip NAND controller.
+
+config BRCMNAND_MTD_EXTENSION
+	bool "Enable Broadcom NAND controller extension"
+	depends on BCM_KF_MTD_BCMNAND
+	depends on MTD_BRCMNAND
+	default y
+	help
+	  Say Y to enable Broadcom NAND extension in order to support
+	  27Byte Spare Area and 8KB page NAND flashes.
+
+config MTD_BRCMNAND_VERIFY_WRITE
+	bool "Verify Broadcom NAND page writes"
+	default n
+	depends on BCM_KF_MTD_BCMNAND
+	depends on MTD_BRCMNAND
+	help
+	  This adds an extra check when data is written to the flash. The
+	  Broadcom NAND flash device internally checks only bits transitioning
+	  from 1 to 0. There is a rare possibility that even though the
+	  device thinks the write was successful, a bit could have been
+	  flipped accidentally due to device wear or something else.
+
+config MTD_BRCMNAND_CORRECTABLE_ERR_HANDLING
+	bool "Refresh a block on a one bit correctable ECC error"
+	default n
+	depends on BCM_KF_MTD_BCMNAND
+	depends on MTD_BRCMNAND
+	help
+	  If there is a 1-bit correctable error detected during NAND flash
+	  read, the Broadcom NAND flash driver can refresh the corresponding
+	  NAND flash block.  Refreshing implies a sequence of
+	  read->erase->write. Refreshing the block drastically reduces the
+	  probability of occurance of a similar (correctable) error.
+
+	  Default is N because this is normally handled by UBI.
+
+config MTD_BRCMNAND_EDU
+	bool "Enable Broadcom NAND DMA (EDU)"
+	default y
+	select MTD_BRCMNAND_USE_ISR
+	select MTD_BRCMNAND_ISR_QUEUE
+	depends on BCM_KF_MTD_BCMNAND
+	depends on MTD_BRCMNAND && BRCM_HAS_EDU
+	help
+	  Say Y to enable the EBI DMA unit for NAND flash transfers.
+	  Say N to use PIO transfers.
+
+config BRCMNAND_MAJOR_VERS
+	int "Broadcom NAND Major Version"
+    default 2
+	depends on BCM_KF_MTD_BCMNAND
+	depends on MTD_BRCMNAND
+	help
+      NAND controller major version.
+
+config BRCMNAND_MINOR_VERS
+	int "Broadcom NAND Minor Version"
+    default 1
+	depends on BCM_KF_MTD_BCMNAND
+	depends on MTD_BRCMNAND
+	help
+      NAND controller minor version.
+

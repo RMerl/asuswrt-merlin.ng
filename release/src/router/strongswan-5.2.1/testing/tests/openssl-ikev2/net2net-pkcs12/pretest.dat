@@ -1,0 +1,10 @@
+moon::rm /etc/ipsec.d/private/moonKey.pem
+moon::rm /etc/ipsec.d/cacerts/strongswanCert.pem
+sun::rm /etc/ipsec.d/private/sunKey.pem
+sun::rm /etc/ipsec.d/cacerts/strongswanCert.pem
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+sun::ipsec start
+moon::sleep 1 
+moon::ipsec up net-net

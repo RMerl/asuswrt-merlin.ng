@@ -1,0 +1,619 @@
+
+
+
+
+
+
+Internet Engineering Task Force (IETF)                       R. Maglione
+Request for Comments: 6519                                Telecom Italia
+Category: Standards Track                                      A. Durand
+ISSN: 2070-1721                                         Juniper Networks
+                                                           February 2012
+
+
+                 RADIUS Extensions for Dual-Stack Lite
+
+Abstract
+
+   Dual-Stack Lite is a solution to offer both IPv4 and IPv6
+   connectivity to customers that are addressed only with an IPv6
+   prefix.  Dual-Stack Lite requires pre-configuration of the Dual-Stack
+   Lite Address Family Transition Router (AFTR) tunnel information on
+   the Basic Bridging BroadBand (B4) element.  In many networks, the
+   customer profile information may be stored in Authentication,
+   Authorization, and Accounting (AAA) servers, while client
+   configurations are mainly provided through the Dynamic Host
+   Configuration Protocol (DHCP).  This document specifies a new Remote
+   Authentication Dial-In User Service (RADIUS) attribute to carry the
+   Dual-Stack Lite AFTR tunnel name; the RADIUS attribute is defined
+   based on the equivalent DHCPv6 OPTION_AFTR_NAME option.  This RADIUS
+   attribute is meant to be used between the RADIUS server and the
+   Network Access Server (NAS); it is not intended to be used directly
+   between the B4 element and the RADIUS server.
+
+Status of This Memo
+
+   This is an Internet Standards Track document.
+
+   This document is a product of the Internet Engineering Task Force
+   (IETF).  It represents the consensus of the IETF community.  It has
+   received public review and has been approved for publication by the
+   Internet Engineering Steering Group (IESG).  Further information on
+   Internet Standards is available in Section 2 of RFC 5741.
+
+   Information about the current status of this document, any errata,
+   and how to provide feedback on it may be obtained at
+   http://www.rfc-editor.org/info/rfc6519.
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 1]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+Copyright Notice
+
+   Copyright (c) 2012 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+   This document may contain material from IETF Documents or IETF
+   Contributions published or made publicly available before November
+   10, 2008.  The person(s) controlling the copyright in some of this
+   material may not have granted the IETF Trust the right to allow
+   modifications of such material outside the IETF Standards Process.
+   Without obtaining an adequate license from the person(s) controlling
+   the copyright in such materials, this document may not be modified
+   outside the IETF Standards Process, and derivative works of it may
+   not be created outside the IETF Standards Process, except to format
+   it for publication as an RFC or to translate it into languages other
+   than English.
+
+Table of Contents
+
+   1. Introduction ....................................................3
+   2. Terminology .....................................................4
+   3. DS-Lite Configuration with RADIUS and DHCPv6 ....................4
+   4. RADIUS Attribute ................................................7
+      4.1. DS-Lite-Tunnel-Name ........................................7
+   5. Table of Attributes .............................................9
+   6. Security Considerations .........................................9
+   7. IANA Considerations .............................................9
+   8. References .....................................................10
+      8.1. Normative References ......................................10
+      8.2. Informative References ....................................10
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 2]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+1.  Introduction
+
+   Dual-Stack Lite [RFC6333] is a solution to offer both IPv4 and IPv6
+   connectivity to customers that are addressed only with an IPv6 prefix
+   (no IPv4 address is assigned to the attachment device).  One of its
+   key components is an IPv4-over-IPv6 tunnel, but a Dual-Stack-Lite
+   Basic Bridging BroadBand (B4) element will not know if the network to
+   which it is attached offers Dual-Stack Lite support.  Even if the B4
+   did know, it would not know the remote end of the tunnel to which it
+   could establish a connection.
+
+   To inform the B4 element of the location of the Address Family
+   Transition Router (AFTR), a Fully Qualified Domain Name (FQDN) may be
+   used.  Once this information is conveyed, the presence of the
+   configuration indicating the AFTR's location also informs a host to
+   initiate Dual-Stack Lite (DS-Lite) service and become a Softwire
+   Initiator.
+
+   [RFC6334] specifies a DHCPv6 option that is meant to be used by a
+   DS-Lite client (B4 element) to discover its AFTR name.  In order to
+   be able to populate such an option, the DHCPv6 server must be
+   pre-provisioned with the AFTR name.
+
+   In broadband environments, a customer profile may be managed by
+   Authentication, Authorization, and Accounting (AAA) servers, together
+   with AAA for users.  The Remote Authentication Dial-In User Service
+   (RADIUS) protocol [RFC2865] is usually used by AAA servers to
+   communicate with network elements.  [RADIUS-IPv6] describes a typical
+   broadband network scenario in which the Network Access Server (NAS)
+   acts as the access gateway for the users (hosts or Customer Premises
+   Equipment (CPE) devices) and also embeds a DHCPv6 server function
+   that allows it to locally handle any DHCPv6 requests issued by the
+   clients.
+
+   Since the DS-Lite AFTR information can be stored in AAA servers and
+   the client configuration is mainly provided through DHCP running
+   between the NAS and the requesting clients, a new RADIUS attribute is
+   needed to send AFTR information from the AAA server to the NAS.
+
+   This document defines a new RADIUS attribute to be used for carrying
+   the DS-Lite Tunnel Name, based on the equivalent DHCPv6 option
+   already specified in [RFC6334].
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 3]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+2.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in [RFC2119].
+
+   The terms DS-Lite Basic Bridging BroadBand element (B4) and the
+   DS-Lite Address Family Transition Router element (AFTR) are defined
+   in [RFC6333].
+
+3.  DS-Lite Configuration with RADIUS and DHCPv6
+
+   Figure 1 illustrates how the RADIUS protocol and DHCPv6 work together
+   to accomplish DS-Lite configuration on the B4 element when a PPP
+   session is used to provide connectivity to the user.
+
+   The NAS operates as a client of RADIUS and as a DHCP Server.  The NAS
+   initially sends a RADIUS Access-Request message to the RADIUS server,
+   requesting authentication.  Once the RADIUS server receives the
+   request, it validates the sending client, and if the request is
+   approved, the AAA server replies with an Access-Accept message
+   including a list of attribute-value pairs that describe the
+   parameters to be used for this session.  This list MAY also contain
+   the AFTR tunnel name.  When the NAS receives a DHCPv6 client request
+   containing the DS-Lite tunnel option, the NAS SHALL use the name
+   returned in the RADIUS DS-Lite-Tunnel-Name attribute to populate the
+   DHCPv6 OPTION_AFTR_NAME option in the DHCPv6 reply message.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 4]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+       B4                                NAS                     AAA
+       |                                  |                     Server
+       |                                  |                        |
+       |----PPP LCP Config-Request------> |                        |
+       |                                  |                        |
+       |                                  |----Access-Request ---->|
+       |                                  |                        |
+       |                                  |<---- Access-Accept-----|
+       |                                  | (DS-Lite-Tunnel-Name)  |
+       |<-----PPP LCP Config-ACK  ------- |                        |
+       |                                  |                        |
+       |                                  |                        |
+       |--- PPP IPv6CP Config-Request --->|                        |
+       |                                  |                        |
+       |<----- PPP IPv6CP Config-ACK -----|                        |
+       |                                  |                        |
+       |-------  DHCPv6 Solicit  -------->|                        |
+       |                                  |                        |
+       |<-------DHCPv6 Advertisement -----|                        |
+       |      (DHCPv6 OPTION_AFTR_NAME)   |                        |
+       |                                  |                        |
+       |-------  DHCPv6 Request  -------->|                        |
+       |                                  |                        |
+       |<-------- DHCPv6 Reply ---------- |                        |
+       |      (DHCPv6 OPTION_AFTR_NAME)   |                        |
+
+                   DHCPv6                         RADIUS
+
+        Figure 1: RADIUS and DHCPv6 Message Flow for a PPP Session
+
+   Figure 2 illustrates how the RADIUS protocol and DHCPv6 work together
+   to accomplish DS-Lite configuration on the B4 element when an IP
+   session is used to provide connectivity to the user.
+
+   The only difference between this message flow and the previous one is
+   that in this scenario, the interaction between the NAS and the AAA/
+   RADIUS server is triggered by the DHCPv6 Solicit message received by
+   the NAS from the B4 acting as a DHCPv6 client, while in the case of a
+   PPP session, the trigger is the PPP Link Control Protocol (LCP)
+   Config-Request message received by the NAS.
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 5]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+       B4                                NAS                      AAA
+       |                                  |                      Server
+       |------ DHCPv6 Solicit --------->  |                        |
+       |                                  |                        |
+       |                                  |----Access-Request ---->|
+       |                                  |                        |
+       |                                  |<---Access-Accept-------|
+       |                                  | (DS-Lite-Tunnel-Name)  |
+       |                                  |                        |
+       |<-------DHCPv6 Advertisement------|                        |
+       |     (DHCPv6 OPTION_AFTR_NAME)    |                        |
+       |                                  |                        |
+       |-------  DHCPv6 Request  -------->|                        |
+       |                                  |                        |
+       |                                  |                        |
+       |<----- DHCPv6 Reply ------------- |                        |
+       |     (DHCPv6 OPTION_AFTR_NAME)    |                        |
+
+                   DHCPv6                         RADIUS
+
+        Figure 2: RADIUS and DHCPv6 Message Flow for an IP Session
+
+   In the scenario depicted in Figure 2, the Access-Request packet
+   contains a Service-Type attribute with the value Authorize Only (17);
+   thus, according to [RFC5080], the Access-Request packet MUST contain
+   a State attribute.
+
+   After receiving the DS-Lite-Tunnel-Name attribute in the initial
+   Access-Accept packet, the NAS MUST store the received AFTR tunnel
+   name locally.  When the B4 sends a DHCPv6 Renew message to request an
+   extension of the lifetimes for the assigned address or prefix, the
+   NAS does not have to initiate a new Access-Request packet towards the
+   AAA server to request the AFTR tunnel name.  The NAS retrieves the
+   previously stored AFTR tunnel name and uses it in its reply.
+
+   According to [RFC3315], if the DHCPv6 server to which the DHCPv6
+   Renew message was sent at time T1 has not responded, the DHCPv6
+   client initiates a Rebind/Reply message exchange with any available
+   server.  In this scenario, the NAS receiving the DHCPv6 Rebind
+   message MUST initiate a new Access-Request message towards the AAA
+   server.  The NAS MAY include the DS-Lite-Tunnel-Name attribute in its
+   Access-Request message.
+
+   If the NAS does not receive the DS-Lite-Tunnel-Name attribute in the
+   Access-Accept message, it MAY fall back to a pre-configured default
+   tunnel name, if any.  If the NAS does not have any pre-configured
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 6]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+   default tunnel name or if the NAS receives an Access-Reject message,
+   the IPv4-over-IPv6 tunnel cannot be established; thus, the B4 element
+   has only IPv6 connectivity.
+
+4.  RADIUS Attribute
+
+   This section specifies the format of the new RADIUS attribute.
+
+4.1.  DS-Lite-Tunnel-Name
+
+   The DS-Lite-Tunnel-Name RADIUS attribute contains an FQDN that refers
+   to the AFTR to which the client is requested to establish a
+   connection.  The NAS SHALL use the name returned in the RADIUS
+   DS-Lite-Tunnel-Name attribute to populate the DHCPv6 OPTION_AFTR_NAME
+   option [RFC6334].
+
+   This attribute MAY be used in Access-Request packets as a hint to the
+   RADIUS server; for example, if the NAS is pre-configured with a
+   default tunnel name, this name MAY be inserted in the attribute.  The
+   RADIUS server MAY ignore the hint sent by the NAS, and it MAY assign
+   a different AFTR tunnel name.
+
+   If the NAS includes the DS-Lite-Tunnel-Name attribute, but the AAA
+   server does not recognize it, this attribute MUST be ignored by the
+   AAA server.
+
+   If the NAS does not receive the DS-Lite-Tunnel-Name attribute in the
+   Access-Accept message, it MAY fall back to a pre-configured default
+   tunnel name, if any.  If the NAS does not have any pre-configured
+   default tunnel name, the tunnel cannot be established.
+
+   If the NAS is pre-provisioned with a default AFTR tunnel name and the
+   AFTR tunnel name received in the Access-Accept message is different
+   from the configured default, then the AFTR tunnel name received in
+   the Access-Accept message MUST be used for the session.
+
+   If the NAS cannot support the received AFTR tunnel name for any
+   reason, the tunnel SHOULD NOT be established.
+
+   When the Access-Request message is triggered by a DHCPv6 Rebind
+   message, if the AFTR tunnel name received in the Access-Accept
+   message is different from the currently used one for that session,
+   the NAS MUST force the B4 to re-establish the tunnel using the new
+   AFTR name received in the Access-Accept message.
+
+   If an implementation includes Change-of-Authorization (CoA) messages
+   [RFC5176], they could be used to modify the current established
+   DS-Lite tunnel.  When the NAS receives a CoA Request message
+
+
+
+Maglione & Durand            Standards Track                    [Page 7]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+   containing the DS-Lite-Tunnel-Name attribute, the NAS MUST send a
+   Reconfigure message to a B4 to inform the B4 that the NAS has new or
+   updated configuration parameters and that the B4 is to initiate a
+   Renew/Reply or Information-Request/Reply transaction with the NAS in
+   order to receive the updated information.
+
+   Upon receiving an AFTR tunnel name different from the currently used
+   one, the B4 MUST terminate the current DS-Lite tunnel, and the B4
+   MUST establish a new DS-Lite tunnel with the specified AFTR.
+
+   The DS-Lite-Tunnel-Name RADIUS attribute MAY be present in
+   Accounting-Request records where the Acct-Status-Type is set to
+   Start, Stop, or Interim-Update.  The DS-Lite-Tunnel-Name RADIUS
+   attribute MUST NOT appear more than once in a message.
+
+   A summary of the DS-Lite-Tunnel-Name RADIUS attribute format is shown
+   below.  The fields are transmitted from left to right.
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |     Type      |    Length     |  DS-Lite-Tunnel-Name (FQDN)...
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Type:
+
+        144 for DS-Lite-Tunnel-Name.
+
+   Length:
+
+        This field indicates the total length in octets of this
+        attribute including the Type and Length fields, and the length
+        in octets of the DS-Lite-Tunnel-Name field.
+
+   DS-Lite-Tunnel-Name:
+
+        This field contains a single FQDN of the remote tunnel endpoint,
+        located at the DS-Lite AFTR.
+
+   As the DS-Lite-Tunnel-Name attribute is used to populate the DHCPv6
+   OPTION_AFTR_NAME option, the DS-Lite-Tunnel-Name field is formatted
+   as required in DHCPv6 (Section 8 of [RFC3315] -- "Representation and
+   Use of Domain Names").  Briefly, the format described is using a
+   single octet noting the length of one DNS label (limited to at most
+   63 octets), followed by the label contents.  This repeats until all
+   labels in the FQDN are exhausted, including a terminating zero-length
+   label.  Any updates to Section 8 of [RFC3315] also apply to the
+   encoding of this field.
+
+
+
+Maglione & Durand            Standards Track                    [Page 8]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+   The data type of the DS-Lite-Tunnel-Name RADIUS attribute is a string
+   with opaque encapsulation, according to Section 5 of [RFC2865].
+
+5.  Table of Attributes
+
+   The following tables provide a guide to which attributes may be found
+   in which kinds of packets, and in what quantity.
+
+   Access- Access- Access-  Challenge Accounting #   Attribute
+   Request Accept  Reject             Request
+   0-1     0-1     0        0         0-1        144 DS-Lite-Tunnel-Name
+
+   CoA-Request CoA-ACK CoA-NACK #   Attribute
+   0-1         0       0        144 DS-Lite-Tunnel-Name
+
+   The following table defines the meaning of the above table entries.
+
+   0   This attribute MUST NOT be present in the packet.
+   0+  Zero or more instances of this attribute MAY be present in the
+       packet.
+   0-1 Zero or one instance of this attribute MAY be present in the
+       packet.
+
+6.  Security Considerations
+
+   This document has no additional security considerations beyond those
+   already identified in [RFC2865] for the RADIUS protocol and in
+   [RFC5176] for CoA messages.
+
+   [RFC6333] discusses security issues related to Dual-Stack Lite.
+
+7.  IANA Considerations
+
+   Per this document, IANA has allocated a new RADIUS attribute type
+   from the IANA registry "Radius Attribute Types" located at
+   http://www.iana.org/assignments/radius-types.
+
+      DS-Lite-Tunnel-Name - 144
+
+
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                    [Page 9]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+8.  References
+
+8.1.  Normative References
+
+   [RFC2119]      Bradner, S., "Key words for use in RFCs to Indicate
+                  Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [RFC2865]      Rigney, C., Willens, S., Rubens, A., and W. Simpson,
+                  "Remote Authentication Dial In User Service (RADIUS)",
+                  RFC 2865, June 2000.
+
+   [RFC3315]      Droms, R., Ed., Bound, J., Volz, B., Lemon, T.,
+                  Perkins, C., and M. Carney, "Dynamic Host
+                  Configuration Protocol for IPv6 (DHCPv6)", RFC 3315,
+                  July 2003.
+
+   [RFC5080]      Nelson, D. and A. DeKok, "Common Remote Authentication
+                  Dial In User Service (RADIUS) Implementation Issues
+                  and Suggested Fixes", RFC 5080, December 2007.
+
+   [RFC6333]      Durand, A., Droms, R., Woodyatt, J., and Y. Lee,
+                  "Dual-Stack Lite Broadband Deployments Following IPv4
+                  Exhaustion", RFC 6333, August 2011.
+
+   [RFC6334]      Hankins, D. and T. Mrugalski, "Dynamic Host
+                  Configuration Protocol for IPv6 (DHCPv6) Option for
+                  Dual-Stack Lite", RFC 6334, August 2011.
+
+8.2.  Informative References
+
+   [RADIUS-IPv6]  Lourdelet, B., Dec, W., Ed., Sarikaya, B., Zorn, G.,
+                  and D. Miles, "RADIUS attributes for IPv6 Access
+                  Networks", Work in Progress, November 2011.
+
+   [RFC5176]      Chiba, M., Dommety, G., Eklund, M., Mitton, D., and B.
+                  Aboba, "Dynamic Authorization Extensions to Remote
+                  Authentication Dial In User Service (RADIUS)",
+                  RFC 5176, January 2008.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                   [Page 10]
+
+RFC 6519                DS-Lite RADIUS Extensions          February 2012
+
+
+Authors' Addresses
+
+   Roberta Maglione
+   Telecom Italia
+   Via Reiss Romoli 274
+   Torino  10148
+   Italy
+
+   EMail: roberta.maglione@telecomitalia.it
+
+
+   Alain Durand
+   Juniper Networks
+   1194 North Mathilda Avenue
+   Sunnyvale, CA  94089-1206
+   USA
+
+   EMail: adurand@juniper.net
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Maglione & Durand            Standards Track                   [Page 11]
+

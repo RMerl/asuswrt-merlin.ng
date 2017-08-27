@@ -1,0 +1,162 @@
+<!-- ##### SECTION Title ##### -->
+GSettingsBackend
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSettingsBackend ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GSettingsBackendClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+@read: 
+@get_writable: 
+@write: 
+@write_tree: 
+@reset: 
+@subscribe: 
+@unsubscribe: 
+@sync: 
+@get_permission: 
+@padding: 
+
+<!-- ##### MACRO G_SETTINGS_BACKEND_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_settings_backend_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_backend_changed ##### -->
+<para>
+
+</para>
+
+@backend: 
+@key: 
+@origin_tag: 
+
+
+<!-- ##### FUNCTION g_settings_backend_path_changed ##### -->
+<para>
+
+</para>
+
+@backend: 
+@path: 
+@origin_tag: 
+
+
+<!-- ##### FUNCTION g_settings_backend_keys_changed ##### -->
+<para>
+
+</para>
+
+@backend: 
+@path: 
+@items: 
+@origin_tag: 
+
+
+<!-- ##### FUNCTION g_settings_backend_path_writable_changed ##### -->
+<para>
+
+</para>
+
+@backend: 
+@path: 
+
+
+<!-- ##### FUNCTION g_settings_backend_writable_changed ##### -->
+<para>
+
+</para>
+
+@backend: 
+@key: 
+
+
+<!-- ##### FUNCTION g_settings_backend_changed_tree ##### -->
+<para>
+
+</para>
+
+@backend: 
+@tree: 
+@origin_tag: 
+
+
+<!-- ##### FUNCTION g_settings_backend_flatten_tree ##### -->
+<para>
+
+</para>
+
+@tree: 
+@path: 
+@keys: 
+@values: 
+
+
+<!-- ##### FUNCTION g_keyfile_settings_backend_new ##### -->
+<para>
+
+</para>
+
+@filename: 
+@root_path: 
+@root_group: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_settings_backend_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_null_settings_backend_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

@@ -1,0 +1,12 @@
+#
+#  If you want the server to pretend that it is dead,
+#  then use the "do_not_respond" policy.
+#
+do_not_respond {
+	update control {
+		Response-Packet-Type := Do-Not-Respond
+	}
+
+	handled
+}
+

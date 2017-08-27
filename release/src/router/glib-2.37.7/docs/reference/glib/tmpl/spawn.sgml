@@ -1,0 +1,173 @@
+<!-- ##### SECTION Title ##### -->
+Spawning Processes
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GSpawnError ##### -->
+<para>
+
+</para>
+
+@G_SPAWN_ERROR_FORK: 
+@G_SPAWN_ERROR_READ: 
+@G_SPAWN_ERROR_CHDIR: 
+@G_SPAWN_ERROR_ACCES: 
+@G_SPAWN_ERROR_PERM: 
+@G_SPAWN_ERROR_TOO_BIG: 
+@G_SPAWN_ERROR_2BIG: 
+@G_SPAWN_ERROR_NOEXEC: 
+@G_SPAWN_ERROR_NAMETOOLONG: 
+@G_SPAWN_ERROR_NOENT: 
+@G_SPAWN_ERROR_NOMEM: 
+@G_SPAWN_ERROR_NOTDIR: 
+@G_SPAWN_ERROR_LOOP: 
+@G_SPAWN_ERROR_TXTBUSY: 
+@G_SPAWN_ERROR_IO: 
+@G_SPAWN_ERROR_NFILE: 
+@G_SPAWN_ERROR_MFILE: 
+@G_SPAWN_ERROR_INVAL: 
+@G_SPAWN_ERROR_ISDIR: 
+@G_SPAWN_ERROR_LIBBAD: 
+@G_SPAWN_ERROR_FAILED: 
+
+<!-- ##### MACRO G_SPAWN_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GSpawnFlags ##### -->
+<para>
+
+</para>
+
+@G_SPAWN_DEFAULT: 
+@G_SPAWN_LEAVE_DESCRIPTORS_OPEN: 
+@G_SPAWN_DO_NOT_REAP_CHILD: 
+@G_SPAWN_SEARCH_PATH: 
+@G_SPAWN_STDOUT_TO_DEV_NULL: 
+@G_SPAWN_STDERR_TO_DEV_NULL: 
+@G_SPAWN_CHILD_INHERITS_STDIN: 
+@G_SPAWN_FILE_AND_ARGV_ZERO: 
+@G_SPAWN_SEARCH_PATH_FROM_ENVP: 
+
+<!-- ##### USER_FUNCTION GSpawnChildSetupFunc ##### -->
+<para>
+
+</para>
+
+@user_data: 
+
+
+<!-- ##### FUNCTION g_spawn_async_with_pipes ##### -->
+<para>
+
+</para>
+
+@working_directory: 
+@argv: 
+@envp: 
+@flags: 
+@child_setup: 
+@user_data: 
+@child_pid: 
+@standard_input: 
+@standard_output: 
+@standard_error: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spawn_async ##### -->
+<para>
+
+</para>
+
+@working_directory: 
+@argv: 
+@envp: 
+@flags: 
+@child_setup: 
+@user_data: 
+@child_pid: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spawn_sync ##### -->
+<para>
+
+</para>
+
+@working_directory: 
+@argv: 
+@envp: 
+@flags: 
+@child_setup: 
+@user_data: 
+@standard_output: 
+@standard_error: 
+@exit_status: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spawn_check_exit_status ##### -->
+<para>
+
+</para>
+
+@exit_status: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spawn_command_line_async ##### -->
+<para>
+
+</para>
+
+@command_line: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spawn_command_line_sync ##### -->
+<para>
+
+</para>
+
+@command_line: 
+@standard_output: 
+@standard_error: 
+@exit_status: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spawn_close_pid ##### -->
+<para>
+
+</para>
+
+@pid: 
+
+

@@ -1,0 +1,55 @@
+.TH PWMCONFIG 8 "September 28, 2008" "lm-sensors 3"
+.SH NAME
+pwmconfig \- tests the PWM outputs of sensors and configures fancontrol
+
+.SH SYNOPSIS
+.B pwmconfig
+
+.SH WARNING
+\fBpwmconfig\fR will attempt to stop your fans, one at a time, for
+approximately 5 seconds each. This may cause your processor
+temperature to rise. Verify that all fans are running at normal speed
+after this program has exited.
+\fBpwmconfig\fR does its best to check that the fans are spinning when
+they are supposed to, but due to the diversity of available
+motherboards and fans, it shouldn't be blindly trusted. Always verify
+by yourself.
+
+It is strongly recommended to run \fBpwmconfig\fR at a time when there
+is no significant system load, to minimize the risk of overheating.
+
+.SH DESCRIPTION
+.B pwmconfig
+searches your sensors for pulse width modulation (PWM)
+controls, and tests each one to see if it controls a fan on
+your motherboard. Note that many motherboards do not have PWM
+circuitry installed, even if your sensor chip supports PWM.
+
+When a connection is established between a PWM control and a fan,
+\fBpwmconfig\fR can generate a detailed correlation, to show how a
+given fan is responding to various PWM duty cycles.
+
+Lastly, \fBpwmconfig\fR will enter in \fBfancontrol\fR configuration
+mode (unless you decide to skip that part.) In this mode, you are
+invited to enter several parameters which will determine how the
+\fBfancontrol\fR daemon regulates the speed of one or more fans in
+your system based on temperature measurements. In particular, you will
+have the opportunity to establish mappings between fans and
+temperature inputs, define the temperature range over which the speed
+of the fan should be adjusted dynamically, the minimum speed at which
+the fan should spin, etc. See fancontrol(8) for additional
+information.
+
+.SH BUGS
+The term "PWM" is used because most fan control systems in computers
+are based on pulse width modulation. Some motherboards however use DC
+variation instead. So, the term "PWM" should be seen as a generic term
+for "fan speed control", regardless of the actual method used.
+
+.SH SEE ALSO
+fancontrol(8), sensors(1).
+
+.SH AUTHORS
+.PP
+Marius Reiner <marius.reiner@hdev.de>,
+Jean Delvare <jdelvare@suse.de>

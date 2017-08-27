@@ -1,0 +1,282 @@
+DBus support must be enabled at compile-time and run-time. Ensure 
+that src/config.h contains the line
+
+#define HAVE_DBUS.
+
+and that /etc/dnsmasq.conf contains the line
+
+enable-dbus
+
+Because dnsmasq can operate stand-alone from the DBus, and may need to provide
+service before the dbus daemon is available, it will continue to run
+if the DBus connection is not available at startup. The DBus will be polled 
+every 250ms until a connection is established. Start of polling and final
+connection establishment are both logged. When dnsmasq establishes a
+connection to the dbus, it sends the signal "Up". Anything controlling
+the server settings in dnsmasq should re-invoke the SetServers method
+(q.v.) when it sees this signal. This allows dnsmasq to be restarted
+and avoids startup races with the provider of nameserver information.
+
+
+Dnsmasq provides one service on the DBus: uk.org.thekelleys.dnsmasq
+and a single object: /uk/org/thekelleys/dnsmasq 
+The name of the service may be changed by giving an argument to --enable-dbus.
+
+1. METHODS
+----------
+
+Methods are of the form
+
+uk.org.thekelleys.<method>
+
+Available methods are:
+
+GetVersion
+----------
+Returns a string containing the version of dnsmasq running.
+
+ClearCache
+----------
+Returns nothing. Clears the domain name cache and re-reads
+/etc/hosts. The same as sending dnsmasq a HUP signal.
+
+SetFilterWin2KOption
+--------------------
+Takes boolean, sets or resets the --filterwin2k option.
+
+SetBogusPrivOption
+------------------
+Takes boolean, sets or resets the --bogus-priv option.
+
+SetServers
+----------
+Returns nothing. Takes a set of arguments representing the new
+upstream DNS servers to be used by dnsmasq. IPv4 addresses are
+represented as a UINT32 (in network byte order) and IPv6 addresses
+are represented as sixteen BYTEs (since there is no UINT128 type).
+Each server address may be followed by one or more STRINGS, which are
+the domains for which the preceding server should be used.
+
+Examples.
+
+UINT32: <address1>
+UNIT32: <address2>
+
+is equivalent to
+
+--server=<address1> --server=<address2>
+
+
+UINT32 <address1>
+UINT32 <address2>
+STRING "somedomain.com"
+
+is equivalent to
+
+--server=<address1> --server=/somedomain.com/<address2> 
+
+UINT32 <address1>
+UINT32 <address2>
+STRING "somedomain.com"
+UINT32 <address3>
+STRING "anotherdomain.com"
+STRING "thirddomain.com"
+
+is equivalent to
+
+--server=<address1> 
+--server=/somedomain.com/<address2> 
+--server=/anotherdomain.com/thirddomain.com/<address3>
+
+Am IPv4 address of 0.0.0.0 is interpreted as "no address, local only",
+so
+
+UINT32: <0.0.0.0>
+STRING  "local.domain"
+
+is equivalent to
+
+--local=/local.domain/
+
+
+Each call to SetServers completely replaces the set of servers
+specified by via the DBus, but it leaves any servers specified via the
+command line or /etc/dnsmasq.conf or /etc/resolv.conf alone.
+
+SetServersEx
+------------
+
+This function is more flexible and the SetServers function, in that it can
+handle address scoping, port numbers, and is easier for clients to use.
+
+Returns nothing. Takes a set of arguments representing the new
+upstream DNS servers to be used by dnsmasq. All addresses (both IPv4 and IPv6)
+are represented as STRINGS.  Each server address may be followed by one or more
+STRINGS, which are the domains for which the preceding server should be used.
+
+This function takes an array of STRING arrays, where each inner array represents
+a set of DNS servers and domains for which those servers may be used.  Each
+string represents a list of upstream DNS servers first, and domains second.
+Mixing of domains and servers within a the string array is not allowed.
+
+Examples.
+
+[
+  ["1.2.3.4", "foobar.com"],
+  ["1003:1234:abcd::1%eth0", "eng.mycorp.com", "lab.mycorp.com"]
+]
+
+is equivalent to
+
+--server=/foobar.com/1.2.3.4 \
+  --server=/eng.mycorp.com/lab.mycorp.com/1003:1234:abcd::1%eth0
+
+An IPv4 address of 0.0.0.0 is interpreted as "no address, local only",
+so
+
+[ ["0.0.0.0", "local.domain"] ]
+
+is equivalent to
+
+--local=/local.domain/
+
+
+Each call to SetServersEx completely replaces the set of servers
+specified by via the DBus, but it leaves any servers specified via the
+command line or /etc/dnsmasq.conf or /etc/resolv.conf alone.
+
+
+SetDomainServers
+----------------
+
+Yes another variation for setting DNS servers, with the capability of
+SetServersEx, but without using arrays of arrays, which are not
+sendable with dbus-send. The arguments are an array of strings which
+are identical to the equivalent arguments --server, so the example
+for SetServersEx is represented as
+
+[
+  "/foobar.com/1.2.3.4"
+  "/eng.mycorp.com/lab.mycorp.com/1003:1234:abcd::1%eth0"
+]
+
+GetLoopServers
+--------------
+
+(Only available if dnsmasq compiled with HAVE_LOOP)
+
+Return an array of strings, each string is the IP address of an upstream
+server which has been found to loop queries back to this dnsmasq instance, and 
+it therefore not being used.
+
+AddDhcpLease
+------------
+
+Returns nothing. Adds or updates a DHCP or DHCPv6 lease to the internal lease
+database, as if a client requested and obtained a lease.
+
+If a lease for the IPv4 or IPv6 address already exist, it is overwritten.
+
+Note that this function will trigger the DhcpLeaseAdded or DhcpLeaseUpdated
+D-Bus signal and will run the configured DHCP lease script accordingly.
+
+This function takes many arguments which are the lease parameters:
+- A string with the textual representation of the IPv4 or IPv6 address of the
+  client.
+
+  Examples:
+  "192.168.1.115"
+  "1003:1234:abcd::1%eth0"
+  "2001:db8:abcd::1"
+
+- A string representing the hardware address of the client, using the same
+  format as the one used in the lease database.
+
+  Examples:
+
+  "00:23:45:67:89:ab"
+  "06-00:20:e0:3b:13:af" (token ring)
+
+- The hostname of the client, as an array of bytes (so there is no problem
+  with non-ASCII character encoding). May be empty.
+
+  Example (for "hostname.or.fqdn"):
+  [104, 111, 115, 116, 110, 97, 109, 101, 46, 111, 114, 46, 102, 113, 100, 110]
+
+- The client identifier (IPv4) or DUID (IPv6) as an array of bytes. May be
+  empty.
+
+  Examples:
+
+  DHCPv6 DUID:
+  [0, 3, 0, 1, 0, 35, 69, 103, 137, 171]
+  DHCPv4 client identifier:
+  [255, 12, 34, 56, 78, 0, 1, 0, 1, 29, 9, 99, 190, 35, 69, 103, 137, 171]
+
+- The duration of the lease, in seconds. If the lease is updated, then
+  the duration replaces the previous duration.
+
+  Example:
+
+  7200
+
+- The IAID (Identity association identifier) of the DHCPv6 lease, as a network
+  byte-order unsigned integer. For DHCPv4 leases, this must be set to 0.
+
+  Example (for IPv6):
+
+  203569230
+
+- A boolean which, if true, indicates that the DHCPv6 lease is for a temporary
+  address (IA_TA). If false, the DHCPv6 lease is for a non-temporary address
+  (IA_NA). For DHCPv4 leases, this must be set to false.
+
+RemoveDhcpLease
+---------------
+
+Returns nothing. Removes a DHCP or DHCPv6 lease to the internal lease
+database, as if a client sent a release message to abandon a lease.
+
+This function takes only one parameter: the text representation of the
+IPv4 or IPv6 address of the lease to remove.
+
+Note that this function will trigger the DhcpLeaseRemoved signal and the
+configured DHCP lease script will be run with the "del" action.
+
+
+
+2. SIGNALS
+----------
+
+If dnsmasq's DHCP server is active, it will send signals over DBUS whenever
+the DHCP lease database changes. Think of these signals as transactions on
+a database with the IP address acting as the primary key.
+
+Signals are of the form:
+
+uk.org.thekelleys.<signal>
+
+and their parameters are:
+
+STRING "192.168.1.115"
+STRING "01:23:45:67:89:ab"
+STRING "hostname.or.fqdn"
+
+
+Available signals are:
+
+DhcpLeaseAdded
+---------------
+
+This signal is emitted when a DHCP lease for a given IP address is created.
+
+DhcpLeaseDeleted
+----------------
+
+This signal is emitted when a DHCP lease for a given IP address is deleted.
+
+DhcpLeaseUpdated
+----------------
+
+This signal is emitted when a DHCP lease for a given IP address is updated.
+ 

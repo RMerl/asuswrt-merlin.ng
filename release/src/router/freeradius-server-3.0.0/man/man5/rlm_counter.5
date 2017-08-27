@@ -1,0 +1,89 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_counter 5 "13 March 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_counter \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_counter\fP module provides a general framework to
+allow access based on accumulated usage of a resource, such as
+total time online in a given period, total data transferred in
+a given period, etc.  This is very useful in a 'Prepaid Service'
+situation, where a user has paid for a finite amount of usage
+and should not be allowed to use more than that service.  Collection,
+monitoring, and replenishment of prepaid services are beyond the
+scope of this module.
+.PP
+The main configuration items to be aware of are:
+.IP filename
+The filename where the usage data is stored.
+.IP key
+An attribute which will be present in the Access-Request to be used as
+the 'index' value for the counter. A counter entry is tracked for
+each unique key.  The most likely key you will want to use is User-Name.
+.IP count_attribute
+An attribute which will be used to increment the counter value.  If this
+attribute is Acct-Session-Time or an integer value the counter data is
+incremented by the Attribute value.  For all other attribute types the 
+counter is incremented by one.
+.IP reset
+How frequently the counter data should be set back to 0.  Valid values for
+this variable are:
+.BR hourly,
+.BR daily,
+.BR weekly,
+.BR monthly,
+.BR or never
+Alternatively, it can be user defined, in the form: num[hdwm].  num is
+a numeric value, followed by one or none of the following letters.  h: hours,
+d: days, w: weeks, m: months.
+.IP check_name
+This defines an attribute name which will be registered by the counter module 
+and can be used to set the maximum allowed value for the counter after which 
+the user is rejected.  If Daily-Session-Time is set, you can use the following
+syntax in the Users file to set a cap of 3600 seconds ( 8 hours ):
+.PP
+.DS
+DEFAULT Max-Daily-Session := 3600
+.DE
+.PP
+.IP reply_name
+This is the name of the attribute which will contain the remaining value for
+the counter in the reply packet when the user is successfully authorized. The
+default attribute name is "Session-Timeout".
+.IP allowed_service_type
+This can be used to only apply the limitations to specific service types of
+sessions.  For example, setting this to Framed-User will only apply the counter
+module to Framed sessions, excluding other types such as Telnet or Rlogin.
+.IP cache_size
+The maximum size of the cache to be used by the module.  The default is 1000.
+.SH NOTES
+This module registers an attribute, so it should be added to the
+instantiate section, to be called on server startup.  When used
+in the authorize section, it must come after any modules which
+set the 'check_name' attribute.
+.PP
+.SH SECTIONS
+.BR instantiate,
+.BR authorize,
+.BR accounting
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.BR rlm_sqlcounter (5)
+.SH AUTHOR
+Chris Parker, cparker@segv.org
+

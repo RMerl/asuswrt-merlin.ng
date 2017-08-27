@@ -1,0 +1,9 @@
+*.o
+conf
+lex.zconf.c
+lkc_defs.h
+mconf
+zconf.tab.c
+zconf.tab.h
+.tmpconfig.h
+Config.tmp.0

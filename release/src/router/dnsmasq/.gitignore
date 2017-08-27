@@ -1,0 +1,15 @@
+src/*.o
+src/*.mo
+src/dnsmasq.pot
+src/dnsmasq
+src/dnsmasq_baseline
+src/.configured
+src/.copts*
+contrib/wrt/dhcp_lease_time
+contrib/wrt/dhcp_release
+debian/base/
+debian/daemon/
+debian/files
+debian/substvars
+debian/utils-substvars
+debian/utils/

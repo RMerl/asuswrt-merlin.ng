@@ -1,0 +1,16 @@
+*.o
+*.la
+*.lo
+.deps
+.libs
+config.h
+config.log
+config.status
+Makefile
+doc/Doxyfile
+doc/Doxyfile-internals
+libexif-uninstalled.pc
+libexif.pc
+libtool
+po/POTFILES
+po/Makefile.in

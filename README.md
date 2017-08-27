@@ -1,0 +1,1 @@
+Initial Asuswrt-Merlin 382.xx development repository.  Currently targeting only the Broadcom HND platform.

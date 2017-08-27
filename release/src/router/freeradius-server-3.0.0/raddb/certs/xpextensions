@@ -1,0 +1,24 @@
+#
+#  File containing the OIDs required for Windows.
+#
+#  http://support.microsoft.com/kb/814394/en-us
+#
+[ xpclient_ext]
+extendedKeyUsage = 1.3.6.1.5.5.7.3.2
+crlDistributionPoints = URI:http://www.example.com/example_ca.crl
+
+[ xpserver_ext]
+extendedKeyUsage = 1.3.6.1.5.5.7.3.1
+crlDistributionPoints = URI:http://www.example.com/example_ca.crl
+
+#
+#  Add this to the PKCS#7 keybag attributes holding the client's private key
+#  for machine authentication.
+#
+#  the presence of this OID tells Windows XP that the cert is intended
+#  for use by the computer itself, and not by an end-user.
+#
+#  The other solution is to use Microsoft's web certificate server
+#  to generate these certs.
+#
+# 1.3.6.1.4.1.311.17.2

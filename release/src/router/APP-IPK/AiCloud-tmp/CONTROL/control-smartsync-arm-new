@@ -1,0 +1,14 @@
+Package: smartsync
+Architecture: arm
+Priority: optional
+Section: net
+Version: 9.1.0.0.15.0.g0bb531f
+OptionalUtility:
+Maintainer: ASUS
+Source: http://nw-dlcdnet.asus.com/asusware/arm/stable
+URL: http://www.asusnetwork.net/cloud_sync.asp
+Description: Cloud client
+Depends: 
+Suggests: 
+Conflicts: 
+Enabled: yes

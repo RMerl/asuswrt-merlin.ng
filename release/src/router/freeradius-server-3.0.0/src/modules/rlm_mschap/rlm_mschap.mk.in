@@ -1,0 +1,10 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= $(TARGETNAME).c smbdes.c mschap.c @mschap_sources@
+
+SRC_CFLAGS	:= @mod_cflags@
+TGT_LDLIBS	:= @mod_ldflags@

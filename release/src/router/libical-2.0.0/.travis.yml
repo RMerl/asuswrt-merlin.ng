@@ -1,0 +1,25 @@
+env:
+  global:
+  - secure: "NlWO/NTPlOU6cowOMuPOvjAprXVwIjmpHHf9CoMR71E2c/eBFFKIHj10kXuyFwz2KihHAIExmo9OlGtGniNWobvIrVrabO3dsOSb6UGbPAQkzQiyQLKsDNQAZx3nMuWEKBtMsVRee6rd7/2uGTY4WB5Ot3VhrUYcN1FoRgQQ9gk="
+
+os:
+- linux
+- osx
+
+before_install: ./scripts/setup-travis.sh
+
+language: c
+compiler:
+- gcc
+- clang
+script: mkdir build && cd build && cmake -DWITH_BDB=true -DCMAKE_BUILD_TYPE=Release .. && make && make test
+
+addons:
+  coverity_scan:
+    project:
+      name: libical/libical
+      description: "Libical is an Open Source implementation of the iCalendar protocols and protocol data units."
+    notification_email: allen.winter@kdab.com
+    build_command_prepend: cd build && cmake ..
+    build_command: make
+    branch_pattern: coverity_scan

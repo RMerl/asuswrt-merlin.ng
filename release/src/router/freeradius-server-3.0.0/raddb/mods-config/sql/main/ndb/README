@@ -1,0 +1,5 @@
+  The SQL schema and 'create admin user" scripts are here in order to
+simplify the process of using MySQL cluster.
+
+  The queries are NOT located here, because the database driver for
+MySQL cluster is just "mysql", and not "ndb".

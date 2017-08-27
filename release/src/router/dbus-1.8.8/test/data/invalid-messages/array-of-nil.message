@@ -1,0 +1,31 @@
+# Message with an array of NIL (not allowed)
+
+VALID_HEADER method_call
+
+HEADER_FIELD INTERFACE
+TYPE STRING
+STRING 'org.freedesktop.Foo'
+HEADER_FIELD MEMBER
+TYPE STRING
+STRING 'Bar'
+HEADER_FIELD PATH
+TYPE OBJECT_PATH 
+OBJECT_PATH '/foo'
+
+ALIGN 8
+END_LENGTH Header
+
+START_LENGTH Body
+TYPE ARRAY
+TYPE NIL
+UINT32 5
+
+## we want it to fail because of type nil, not because the length is no good
+## so pad out the message with 5 bytes
+BYTE 1
+BYTE 2
+BYTE 3
+BYTE 4
+BYTE 5
+
+END_LENGTH Body

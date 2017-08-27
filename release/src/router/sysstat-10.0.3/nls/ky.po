@@ -1,0 +1,196 @@
+# Translation of 'sysstat' messages to Kirghiz.
+# Copyright (C) 1999 Free Software Foundation, Inc.
+# Ilyas Bakirov <just_ilyas@yahoo.com>, 2007.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 8.0.4\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2007-12-19 14:02+0100\n"
+"PO-Revision-Date: 2007-12-21 16:53+0600\n"
+"Last-Translator: Ilyas Bakirov <just_ilyas@yahoo.com>\n"
+"Language-Team: Kirghiz <i18n-team-ky-kyrgyz@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Kyrgyz\n"
+"X-Poedit-Country: KYRGYZSTAN\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat версиясы %s\n"
+
+#: common.c:160 common.c:385 ioconf.c:459 mpstat.c:265 sa_common.c:601
+#: sadc.c:476 sadc.c:485 sadc.c:530 sadc.c:620
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Cannot open %s: %s\n"
+
+#: common.c:199
+#, fuzzy, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Мынча көп процессор аткыраалынбайт!\n"
+
+#: iostat.c:74
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+msgstr ""
+"Колдонуу: %s [ опциялар... ] [ <интервал> [ <эсептегич> ] ]\n"
+"Опциялар төмөнкүдөй:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <жабдык> [ ... ] | ALL ] [ -p [ <жабдык> | ALL ] ]\n"
+
+#: iostat.c:1119
+#, c-format
+msgid "Time: %s\n"
+msgstr "Убакыт: %s\n"
+
+#: iostat.c:1435
+#, fuzzy, c-format
+msgid "-x and -p options are mutually exclusive\n"
+msgstr "-x and -p options are mutually exclusive\n"
+
+#: mpstat.c:66
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -P { <cpu> | ALL } ] [ -V ]\n"
+msgstr ""
+"Колдонуу: %s [ опциялар... ] [ <интервал> [ <эсептегич> ] ]\n"
+"Опциялар төмөнкүдөй:\n"
+"[ -P { <cpu> | ALL } ] [ -V ]\n"
+
+#: mpstat.c:226 pidstat.c:1148 sar.c:740
+msgid "Average:"
+msgstr "Орточо:"
+
+#: mpstat.c:563 sar.c:157
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Мынча көп процессор эмес!\n"
+
+#: pidstat.c:72
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -C <comm> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Колдонуу: %s [ опциялар... ] [ <интервал> [ <эсептегич> ] ]\n"
+"Опциялар төмөнкүдөй:\n"
+"[ -C <comm> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:166 sar.c:1419
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "Талап кылынган активдүүлүктөр жок\n"
+
+#: sa_common.c:572
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Системдик активдүүлүктү окууда ката чыкты: %s\n"
+
+#: sa_common.c:581
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Системдик активдүүлүк файлдын күтүлбөгөн соңу\n"
+
+#: sa_common.c:608 sadc.c:549
+#, c-format
+msgid "Invalid system activity file: %s (%#x)\n"
+msgstr "Системдик активдүүлүк файлы туура эмес: %s (%#x)\n"
+
+#: sa_common.c:632
+#, c-format
+msgid "Requested activities not available in file\n"
+msgstr "Талап кылынган активдүүлүктөр жок\n"
+
+#: sadc.c:83
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+"Options are:\n"
+"[ -C <comment> ] [ -d ] [ -F ] [ -I ] [ -V ]\n"
+msgstr ""
+"Колдонуу: %s [ опциялар... ] [ <интервал> [ <эсептегич> ] ] [ <чыгыш_файлы> ]\n"
+"Опциялар төмөнкүдөй:\n"
+"[ -C <комментарий> ] [ -d ] [ -F ] [ -I ] [ -V ]\n"
+
+#: sadc.c:110
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Берилиштер  системдик активдүүлүк файлга жазаалынган жок: %s\n"
+
+#: sadc.c:361
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Системдик активдүүлүктүн башат файлы жазаалынган жок: %s\n"
+
+#: sadc.c:568
+#, c-format
+msgid "Cannot append data to that file\n"
+msgstr "Берилиштер тиги файлга кошоалынган жок\n"
+
+#: sadf.c:78
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+"Options are:\n"
+"[ -d | -D | -H | -p | -x ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options...> ]\n"
+msgstr ""
+"Колдонуу: %s [ опциялар... ] [ <интервал> [ <эсептегич> ] ] [ <файл_аты> ]\n"
+"Опциялар төмөнкүдөй:\n"
+"[ -d | -D | -H | -p | -x ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_опциялар...> ]\n"
+
+#: sar.c:76
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -c ] [ -C ] [ -d ] [ -i <interval> ] [ -p ] [ -q ]\n"
+"[ -r ] [ -R ] [ -t ] [ -u ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <irq> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Колдонуу: %s [ опциялар... ] [ <интервал> [ <эсептегич> ] ]\n"
+"Опциялар төмөнкүдөй:\n"
+"[ -A ] [ -b ] [ -B ] [ -c ] [ -C ] [ -d ] [ -i <интервал> ] [ -p ] [ -q ]\n"
+"[ -r ] [ -R ] [ -t ] [ -u ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <irq> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <файл_аты> ] | -f [ <файл_аты> ] ]\n"
+"[ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:149
+#, c-format
+msgid "Not an SMP machine...\n"
+msgstr "Көп процессорлуу машина эмес...\n"
+
+#: sar.c:1261
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Берилиштердин форматы туура эмес\n"
+
+#: sar.c:1633
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "-f жана -o опциялар бир бирин жойюшат\n"
+
+#: sar.c:1639
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Системдик активдүүлүктөн окуубай жатабыз (-f опциясын колдонуңуз)\n"

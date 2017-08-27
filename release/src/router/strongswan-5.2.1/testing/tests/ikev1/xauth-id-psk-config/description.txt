@@ -1,0 +1,11 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
+The authentication is based on Pre-Shared Keys (<b>PSK</b>)
+followed by extended authentication (<b>XAUTH</b>) of <b>carol</b> and <b>dave</b>
+based on user names and passwords. Next <b>carol</b> and <b>dave</b> request a
+<b>virtual IP</b> via the IKE Mode Config protocol by using the <b>leftsourceip=%config</b>
+parameter. The virtual IP addresses are registered under the users' XAUTH identity. 
+<p>
+Upon the successful establishment of the IPsec tunnel, leftfirewall=yes automatically
+inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, <b>carol</b> and <b>dave</b> ping the client
+<b>alice</b> behind the gateway <b>moon</b>.

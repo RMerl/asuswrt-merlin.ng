@@ -1,0 +1,101 @@
+OVERVIEW
+--------
+This directory contains shell and cgi scripts which maintain a
+database of sensor data and generate web pages containing
+graphs of sensor data.
+
+The RRD (Round Robin Database) package is REQUIRED.
+Get this package from
+         http://oss.oetiker.ch/rrdtool/
+
+A web server with CGI support is required.
+
+We have provided these scripts because the RRD package,
+while simple to build and install, is rather difficult
+to configure to store and display data.
+
+RRD, together with lm_sensors and these scripts, provide the
+following advantages:
+	- True round-robin (constant-size) database
+	- On-the-fly graph generation with CGI scripts
+	- Multiple data views using single database
+	- Automatic time stamping, interpolation of missing data,
+	  large data dropouts (during machine downtime) correctly
+	  shown on graphs
+
+If you are looking for something a little simpler,
+that does not require RRD, try ../tellerstats.
+
+The RRD scripts read /sys entries and do not use libsensors.
+Therefore the scale factors in /etc/sensors.conf are not used,
+and you may have to change the scale factors in the cgi scripts.
+
+
+WARNING!
+--------
+The 'make install' script tries to make it easy for you but
+makes a lot of assumptions about your cron and web setup.
+If you have any concerns, do NOT run make install, and
+install the items by hand instead.
+
+
+INSTALLATION INSTRUCTIONS
+-------------------------
+
+	- Make and install lm_sensors. Get it working (run 'sensors')
+	  before you try this!
+	- Get RRD, make and install it
+	- Edit the top of the Makefile. Do NOT skip this step.
+	  The defaults will probably not work for you.
+	  Here are the defaults:
+		Cron user
+			USER=httpd
+		Path to rrdtool and rrdcgi
+			RRDPATH=/usr/bin
+		Place to install sens_update_rrd script
+			BINPATH=/usr/local/bin
+		Place to store the database
+			RRDDIR=/var/lib/sensors-rrd
+		Place to put the cgi script and the graphs
+			APACHE=/usr/local/apache/htdocs
+			APACHDIR=$(APACHE)/senspix
+		The sensor device in your system
+		(isa recommended over i2c if both are available)
+			SENSDEV=hwmon0           (look in /sys/class/hwmon)
+	- make
+	- (as root) make install, which does the following.
+	  If you don't want it to do this, install by hand!!!
+		Creates a database
+		Installs the data gathering script
+		Installs the CGI script in your web server
+	- Manually add the following line to the crontab for
+	  the user specified above, which will call the data gathering
+	  script every 5 minutes (adjust paths as necessary)
+		*/5 * * * *	/usr/local/bin/sens_update_rrd /var/lib/sensors-rrd/sensors.rrd hwmon0
+	- Load http://localhost/senspix/sens_day.cgi in your web browser
+		to test
+
+
+TROUBLESHOOTING
+---------------
+	RRD problems: See the RRD documentation
+
+	Cron problems: check the cron logs, maybe your cron format
+		is different or you need to signal the cron daemon?
+
+	Unused sensors: remove appropriate sections from sens_*.cgi.in
+		and remake and install.
+
+	Sensor scaling factors incorrect (in3-in6): Edit lines in
+		sens_*.cgi.in that start
+		'CDEF:' to change the scale factor.
+
+	CGI problems: Check the apache logs. If CGI is not enabled for
+		the directory add a .htaccess file to the directory
+		including the line
+			Options ExecCGI 
+
+	Removing the "RRDTOOL / TOBI OETIKER" tag in RRD graphs:
+		Comment out the line 
+			gator(gif, (int) im->xgif-5, 5);
+		in src/rrd_graph.c in the RRD package.

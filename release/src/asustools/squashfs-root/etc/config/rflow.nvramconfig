@@ -1,0 +1,8 @@
+ "rflow_enable"   "RFLOW Enable"   "CHOICE" "2" "0" "1"  "FALSE" "0"
+ "rflow_ip"  "RFLOW IP" "MERGEIPADDRS" "FALSE" "0"
+ "rflow_port"  "RFLOW PORT"  "NULL"  "FALSE" "0"
+ "rflow_if" "RFLOW IF" "NULL" "FALSE" "0" 
+ "macupd_enable"   "MAC Update Enable"   "CHOICE" "2" "0" "1"  "FALSE" "0"
+ "macupd_ip"  "MAC Update IP"  "MERGEIPADDRS"   "FALSE" "0"
+ "macupd_port"  "MAC update PORT"  "NULL"   "FALSE" "0"
+ "macupd_interval"  "MAC Update Interval"  "NULL"  "FALSE" "0"

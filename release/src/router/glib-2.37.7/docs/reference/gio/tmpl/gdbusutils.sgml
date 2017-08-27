@@ -1,0 +1,97 @@
+<!-- ##### SECTION Title ##### -->
+gdbusutils
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_dbus_generate_guid ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_is_guid ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_is_name ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_is_unique_name ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_is_member_name ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_is_interface_name ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_gvalue_to_gvariant ##### -->
+<para>
+
+</para>
+
+@gvalue: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_gvariant_to_gvalue ##### -->
+<para>
+
+</para>
+
+@value: 
+@out_gvalue: 
+
+

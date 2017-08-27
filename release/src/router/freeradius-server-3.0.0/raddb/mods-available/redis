@@ -1,0 +1,54 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  Configuration file for the "redis" module.  This module does nothing
+#  Other than provide connections to a redis database, and a %{redis: ...}
+#  expansion.
+#
+redis {
+	#  Host where the redis server is located.
+	#  We recommend using ONLY 127.0.0.1 !
+	server = 127.0.0.1
+
+	#  The default port.
+	port = 6379
+
+	#  The password used to authenticate to the server.
+	#  We recommend using a strong password.
+#	password = thisisreallysecretandhardtoguess
+
+	#
+	#  Information for the connection pool.  The configuration items
+	#  below are the same for all modules which use the new
+	#  connection pool.
+	#
+	pool {
+		# start this many connections
+		start = 1
+
+		# Keep at least "min" connections open
+		min = 1
+
+		# No more than "max" connections at any one time
+		max = 10
+
+		# try to keep "spare" connections
+		spare = 0
+
+		# If we have spare connections for "cleanup_delay" seconds,
+		# start deleting them
+		cleanup_delay = 300
+
+		# connections last no more than "lifetime" seconds.
+		lifetime = 86400
+
+		# close idle connections are "idle_timeout" seconds
+		idle_timeout = 600
+
+		# allow no more than "uses" queries through a connection.
+		# after that, close it and open a new one.
+		uses = 0
+	}
+}

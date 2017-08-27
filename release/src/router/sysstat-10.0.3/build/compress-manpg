@@ -1,0 +1,5 @@
+
+Answer y if you want sysstat manual pages to be compressed (using bzip2 or
+gzip) when they are installed.
+Default answer is n here.
+

@@ -1,0 +1,13 @@
+[Unit]
+Description=Initialize hardware monitoring sensors
+
+[Service]
+EnvironmentFile=/etc/sysconfig/lm_sensors
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=-/sbin/modprobe -qab $BUS_MODULES $HWMON_MODULES
+ExecStart=/usr/bin/sensors -s
+ExecStop=-/sbin/modprobe -qabr $BUS_MODULES $HWMON_MODULES
+
+[Install]
+WantedBy=multi-user.target

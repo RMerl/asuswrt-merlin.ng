@@ -1,0 +1,134 @@
+<!-- ##### SECTION Title ##### -->
+GSettingsSchema, GSettingsSchemaSource
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSettingsSchemaSource ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_TYPE_SETTINGS_SCHEMA_SOURCE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_settings_schema_source_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_schema_source_ref ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_schema_source_unref ##### -->
+<para>
+
+</para>
+
+@source: 
+
+
+<!-- ##### FUNCTION g_settings_schema_source_new_from_directory ##### -->
+<para>
+
+</para>
+
+@directory: 
+@parent: 
+@trusted: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_schema_source_lookup ##### -->
+<para>
+
+</para>
+
+@source: 
+@schema_id: 
+@recursive: 
+@Returns: 
+
+
+<!-- ##### STRUCT GSettingsSchema ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_TYPE_SETTINGS_SCHEMA ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_settings_schema_ref ##### -->
+<para>
+
+</para>
+
+@schema: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_schema_unref ##### -->
+<para>
+
+</para>
+
+@schema: 
+
+
+<!-- ##### FUNCTION g_settings_schema_get_id ##### -->
+<para>
+
+</para>
+
+@schema: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_schema_get_path ##### -->
+<para>
+
+</para>
+
+@schema: 
+@Returns: 
+
+

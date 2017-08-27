@@ -1,0 +1,35 @@
+#***********************************************************************
+#
+# Makefile
+#
+#***********************************************************************
+
+CFLAGS = -I$(SRCBASE)/openssl-ipk/include -I$(SRCBASE)/curl-7.21.7/include
+CFLAGS += -I$(LD_DIR) -I$(LD_DIR)/include -I. 
+CFLAGS += $(if $(QCA),$(EXTRACFLAGS))
+
+LDFLAGS = -L$(SRCBASE)/curl-7.21.7/lib/.libs -L$(SRCBASE)/openssl-ipk 
+LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib  -Wl,-dynamic-linker=/opt/lib/ld-uClibc.so.1
+LIBS = -lpthread   -lcrypto -lssl -lcurl -lm
+
+ifeq ($(OLEG_ARM_D),1)
+CFLAGS += -DOLEG_ARM
+endif
+ifeq ($(OLEG_MIPSEL_D),1)
+CFLAGS += -DOLEG_MIPSEL
+endif
+ifeq ($(I686_D),1)
+CFLAGS += -DI686
+endif
+ifeq ($(SMARTSYNCIPK_D),1)
+CFLAGS += -DSMARTSYNCIPK
+endif
+
+all: dropbox_client
+
+dropbox_client:dropbox.o function.o list.o cJSON.o mem_pool.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $^ -o $@
+.PHONY:clean
+clean:
+	rm -rf *.o dropbox_client
+

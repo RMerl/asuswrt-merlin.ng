@@ -1,0 +1,129 @@
+#
+#	Configuration file for the rlm_attr_filter module.
+#	Please see rlm_attr_filter(5) manpage for more information.
+#
+#	$Id$
+#
+#	This file contains security and configuration information
+#	for each realm. The first field is the realm name and
+#	can be up to 253 characters in length. This is followed (on
+#	the next line) with the list of filter rules to be used to
+#	decide what attributes and/or values we allow proxy servers
+#	to pass to the NAS for this realm.
+#
+#	When a proxy-reply packet is received from a home server,
+#	these attributes and values are tested. Only the first match
+#	is used unless the "Fall-Through" variable is set to "Yes".
+#	In that case the rules defined in the DEFAULT case are
+#	processed as well.
+#
+#	A special realm named "DEFAULT" matches on all realm names.
+#	You can have only one DEFAULT entry. All entries are processed
+#	in the order they appear in this file. The first entry that
+#	matches the login-request will stop processing unless you use
+#	the Fall-Through variable.
+#
+#	Indented (with the tab character) lines following the first
+#	line indicate the filter rules.
+#
+#	You can include another `attrs' file with `$INCLUDE attrs.other'
+#
+
+#
+# This is a complete entry for realm "fisp". Note that there is no
+# Fall-Through entry so that no DEFAULT entry will be used, and the
+# server will NOT allow any other a/v pairs other than the ones
+# listed here.
+#
+# These rules allow:
+#     o  Only Framed-User Service-Types ( no telnet, rlogin, tcp-clear )
+#     o  PPP sessions ( no SLIP, CSLIP, etc. )
+#     o  dynamic ip assignment ( can't assign a static ip )
+#     o  an idle timeout value set to 600 seconds (10 min) or less
+#     o  a max session time set to 28800 seconds (8 hours) or less
+#
+#fisp
+#	Service-Type == Framed-User,
+#	Framed-Protocol == PPP,
+#	Framed-IP-Address == 255.255.255.254,
+#	Idle-Timeout <= 600,
+#	Session-Timeout <= 28800
+
+#
+# This is a complete entry for realm "tisp". Note that there is no
+# Fall-Through entry so that no DEFAULT entry will be used, and the
+# server will NOT allow any other a/v pairs other than the ones
+# listed here.
+#
+# These rules allow:
+#       o Only Login-User Service-Type ( no framed/ppp sessions )
+#       o Telnet sessions only ( no rlogin, tcp-clear )
+#       o Login hosts of either 192.0.2.1 or 192.0.2.2
+#
+#tisp
+#	Service-Type == Login-User,
+#	Login-Service == Telnet,
+#	Login-TCP-Port == 23,
+#	Login-IP-Host == 192.0.2.1,
+#	Login-IP-Host == 192.0.2.2
+
+#
+# The following example can be used for a home server which is only
+# allowed to supply a Reply-Message, a Session-Timeout attribute of
+# maximum 86400, a Idle-Timeout attribute of maximum 600 and a
+# Acct-Interim-Interval attribute between 300 and 3600.
+# All other attributes sent back will be filtered out.
+#
+#strictrealm
+#	Reply-Message =* ANY,
+#	Session-Timeout <= 86400,
+#	Idle-Timeout <= 600,
+#	Acct-Interim-Interval >= 300,
+#	Acct-Interim-Interval <= 3600
+
+#
+# This is a complete entry for realm "spamrealm". Fall-Through is used,
+# so that the DEFAULT filter rules are used in addition to these.
+#
+# These rules allow:
+#       o Force the application of Filter-ID attribute to be returned
+#         in the proxy reply, whether the proxy sent it or not.
+#       o The standard DEFAULT rules as defined below
+#
+#spamrealm
+#	Framed-Filter-Id := "nosmtp.in",
+#	Fall-Through = Yes
+
+#
+# The rest of this file contains the DEFAULT entry.
+# DEFAULT matches with all realm names. (except if the realm previously
+# matched an entry with no Fall-Through)
+#
+
+DEFAULT
+	Service-Type == Framed-User,
+	Service-Type == Login-User,
+	Login-Service == Telnet,
+	Login-Service == Rlogin,
+	Login-Service == TCP-Clear,
+	Login-TCP-Port <= 65536,
+	Framed-IP-Address == 255.255.255.254,
+	Framed-IP-Netmask == 255.255.255.255,
+	Framed-Protocol == PPP,
+	Framed-Protocol == SLIP,
+	Framed-Compression == Van-Jacobson-TCP-IP,
+	Framed-MTU >= 576,
+	Framed-Filter-ID =* ANY,
+	Reply-Message =* ANY,
+	Proxy-State =* ANY,
+	EAP-Message =* ANY,
+	Message-Authenticator =* ANY,
+	MS-MPPE-Recv-Key =* ANY,
+	MS-MPPE-Send-Key =* ANY,
+	MS-CHAP-MPPE-Keys =* ANY,
+	State =* ANY,
+	Session-Timeout <= 28800,
+	Idle-Timeout <= 600,
+	Calling-Station-Id =* ANY,
+	Operator-Name =* ANY,
+	Port-Limit <= 2

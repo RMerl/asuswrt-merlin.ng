@@ -1,0 +1,91 @@
+#
+#	Split User-Name in NAI format (RFC 4282) into components
+#
+#  This policy writes the Username and Domain portions of the
+#  NAI into the Stripped-User-Name and Stripped-User-Domain
+#  attributes.
+#
+#  The regular expression to do this is not strictly compliant
+#  with the standard, but it is not possible to write a
+#  compliant regexp without perl style regular expressions (or
+#  at least not a legible one).
+#
+nai_regexp = "^([^@]*)(@([-[:alnum:]]+\\.[-[:alnum:].]+))?$"
+
+split_username_nai {
+	if(User-Name =~ /${policy.nai_regexp}/){
+		update request {
+			Stripped-User-Name := "%{1}"
+			Stripped-User-Domain = "%{3}"
+		}
+
+		# If any of the expansions result in a null
+		# string, the update section may return
+		# something other than updated...
+		updated
+	}
+	else {
+		noop
+	}
+}
+
+#
+#  If called in post-proxy we modify the proxy-reply message
+#
+split_username_nai.post-proxy {
+	if(proxy-reply:User-Name =~ /${policy.nai_regexp}/){
+		update proxy-reply {
+			Stripped-User-Name := "%{1}"
+			Stripped-User-Domain = "%{3}"
+		}
+		updated
+	}
+	else {
+		noop
+	}
+}
+
+#
+#  Normalize the MAC Addresses in the Calling/Called-Station-Id
+#
+mac-addr-regexp = ([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})[^0-9a-f]?([0-9a-f]{2})
+
+#
+#  Add "rewrite_called_station_id" in the "authorize" and
+#  "preacct" sections.
+#
+rewrite_called_station_id {
+	if(Called-Station-Id =~ /^${policy.mac-addr-regexp}(:(.+))?$/i) {
+		update request {
+			Called-Station-Id := "%{tolower:%{1}-%{2}-%{3}-%{4}-%{5}-%{6}}"
+		}
+
+		# SSID component?
+		if ("%{8}") {
+			update request {
+				Called-Station-SSID := "%{8}"
+			}
+		}
+		updated
+	}
+	else {
+		noop
+	}
+}
+
+#
+#  Add "rewrite_calling_station_id" in the "authorize" and
+#  "preacct" sections.
+#
+rewrite_calling_station_id {
+	if(Calling-Station-Id =~ /^${policy.mac-addr-regexp}$/i) {
+		update request {
+			Calling-Station-Id := "%{tolower:%{1}-%{2}-%{3}-%{4}-%{5}-%{6}}"
+		}
+		updated
+	}
+	else {
+		noop
+	}
+}
+

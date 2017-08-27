@@ -1,0 +1,18 @@
+#!/bin/sh
+REMOTESUB=$(/usr/sbin/nvram get pptpd_client_srvsub)
+REMOTENET=$(/usr/sbin/nvram get pptpd_client_srvsubmsk)
+case "$6" in
+ kelokepptpd)
+  /sbin/route del -net $REMOTESUB netmask $REMOTENET dev $1
+  /usr/sbin/iptables -D OUTPUT --source 0.0.0.0/0.0.0.0 --destination $REMOTESUB/$REMOTENET --jump ACCEPT --out-interface $1
+  /usr/sbin/iptables -D INPUT --source $REMOTESUB/$REMOTENET --destination 0.0.0.0/0.0.0.0 --jump ACCEPT --in-interface $1
+  /usr/sbin/iptables -D FORWARD --source 0.0.0.0/0.0.0.0 --destination $REMOTESUB/$REMOTENET --jump ACCEPT --out-interface $1
+  /usr/sbin/iptables -D FORWARD --source $REMOTESUB/$REMOTENET --destination 0.0.0.0/0.0.0.0 --jump ACCEPT --in-interface $1
+  /usr/sbin/iptables -D FORWARD --protocol tcp --tcp-flags SYN,RST SYN --jump TCPMSS --clamp-mss-to-pmtu
+  if [ "$(/usr/sbin/nvram get pptpd_client_nat)" = "1" ]; then
+      /usr/sbin/iptables --table nat -D POSTROUTING --out-interface $1 --jump MASQUERADE
+  fi
+  ;;
+ *)
+esac   
+exit 0 

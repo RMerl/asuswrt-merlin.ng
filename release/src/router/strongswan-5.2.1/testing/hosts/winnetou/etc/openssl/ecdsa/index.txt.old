@@ -1,0 +1,5 @@
+V	130621144307Z		01	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 521 bit/CN=moon.strongswan.org
+R	130621161252Z	080622162459Z	02	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=carol@strongswan.org
+V	130621161359Z		03	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 384 bit/CN=dave@strongswan.org
+V	130621162918Z		04	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=carol@strongswan.org
+V	140611160633Z		05	unknown	/C=CH/O=Linux strongSwan/OU=ECDSA 256 bit/CN=moon.strongswan.org

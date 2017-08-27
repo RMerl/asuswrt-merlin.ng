@@ -1,0 +1,133 @@
+# sysstat po-debconf translation to Spanish
+# Copyright (C) 2004, 2009 Software in the Public Interest
+# This file is distributed under the same license as the sysstat package.
+#
+# Changes:
+#   - Initial translation
+#       Carlos Alberto Martín Edo <carlos@dat.etsit.upm.es>, 2004
+#
+#   - Updates
+#       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2009
+#
+# Traductores, si no conocen el formato PO, merece la pena leer la
+# documentación de gettext, especialmente las secciones dedicadas a este
+# formato, por ejemplo ejecutando:
+#       info -n '(gettext)PO Files'
+#       info -n '(gettext)Header Entry'
+#
+# Equipo de traducción al español, por favor lean antes de traducir
+# los siguientes documentos:
+#
+#   - El proyecto de traducción de Debian al español
+#     http://www.debian.org/intl/spanish/
+#     especialmente las notas de traducción en
+#     http://www.debian.org/intl/spanish/notas
+#
+#   - La guía de traducción de po's de debconf:
+#     /usr/share/doc/po-debconf/README-trans
+#     o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 8.1.7-2\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-06 11:29+0100\n"
+"Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
+"Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr ""
+"¿Desea eliminar los archivos de los datos de estadísticos con formato "
+"antiguo?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"El formato de los archivos de los datos estadísticos diarios ha cambiado en "
+"la versión ${s_version} de sysstat y no es compatible con la versión "
+"anterior."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Si escoge esta opción, se borrarán todos los archivos de datos que existan "
+"en el directorio «/var/log/sysstat/»."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Si no escoge esta opción, el programa sar(1) mostrará no funcionará "
+"adecuadamente hasta que borre manualmente los archivos."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "¿Desea activar la tarea de sysstat en cron?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Si se habilita esta opción, el paquete sysstat monitorizará las actividades "
+"del sistema y almacenará los datos en los archivos de registro del "
+"directorio «/var/log/sysstat/»."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Estos datos permiten al programa sar(1) mostrar las estadísticas del sistema "
+"para un día entero."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Si no habilita esta opción, el programa sar(1) sólo mostrará las "
+"estadísticas actuales."
+
+#~ msgid "Do you want post-installation script to remove these data files?"
+#~ msgstr ""
+#~ "¿Quiere que el script de post-instalación borre estos ficheros de datos?"
+
+#~ msgid ""
+#~ "If you don't want to remove them automatically, please remove them by "
+#~ "hand later, in order for the sar command to work properly."
+#~ msgstr ""
+#~ "Si no quiere que se borren automáticamente, por favor, bórrelos a mano "
+#~ "más tarde con el fin de que el programa sar funcione adecuadamente."
+
+#~ msgid "WARNING: daily data files format has changed!"
+#~ msgstr "AVISO: ¡El formato de los ficheros de datos diarios ha cambiado!"
+
+#~ msgid "Existing data files need to be deleted."
+#~ msgstr "Se necesita borrar los ficheros de datos existentes."

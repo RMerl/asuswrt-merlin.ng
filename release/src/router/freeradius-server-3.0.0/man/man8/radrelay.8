@@ -1,0 +1,49 @@
+.TH RADRELAY 8 "23 October 2007" "" "FreeRADIUS Daemon"
+.SH NAME
+radrelay -- Deprecated command.
+.SH DESCRIPTION
+The functions of \fIradrelay\fP have been added to \fIradiusd\fP.  One
+benefit is that one instance of \fIradiusd\fP can read multiple detail
+files, among others.
+.PP
+The \fIrlm_sql_log\fP module does something similar, but for SQL
+queries.  See it's man page for details.
+.SH "REPLICATION FOR BACKUPS"
+Many sites run multiple radius servers; at least one primary and one
+backup server. When the primary goes down, most NASes detect that and
+switch to the backup server.
+
+That will cause your accounting packets to go the the backup server -
+and some NASes don't even switch back to the primary server when it
+comes back up.
+
+The result is that accounting records are missed, and/or the
+administrator must jump through hoops in order to combine the
+different detail files from multiple servers. It also means that the
+session database ("radutmp", used for radwho and simultaneous use
+detection) gets out of sync.
+
+We solve this issue by "relaying" packets from one server to
+another, so they both have the same set of accounting data.
+
+See raddb/sites-available/buffered-sql for more information.
+.SH "BUFFERING FOR HIGH-LOAD SERVERS"
+If the RADIUS server suddenly receives a many accounting packets,
+there may be insufficient CPU power to process them all in a timely
+manner.  This problem is especially noticable when the accounting
+packets are going to a back-end database.
+
+Similarly, you may have one database that tracks "live" sessions, and
+another that tracks historical accounting data.  In that case,
+accessing the first database is fast, as it is small.  Accessing the
+second database many be slower, as it may contain multiple gigabytes
+of data.  In addition, writing to the first database in a timely
+manner is important, while data may be written to the second database
+with a few minutes delay, without any harm being done.
+
+See raddb/sites-available/copy-to-home-server for more information.
+.SH SEE ALSO
+.BR radiusd(8),
+.BR rlm_sql_log(5)
+.SH AUTHOR
+The FreeRADIUS Server Project

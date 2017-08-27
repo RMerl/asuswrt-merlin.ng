@@ -1,0 +1,104 @@
+<!-- ##### SECTION Title ##### -->
+GNetworkAddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GNetworkAddress ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GNetworkAddress:hostname ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GNetworkAddress:port ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GNetworkAddress:scheme ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_network_address_new ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@port: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_address_get_hostname ##### -->
+<para>
+
+</para>
+
+@addr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_address_get_port ##### -->
+<para>
+
+</para>
+
+@addr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_address_get_scheme ##### -->
+<para>
+
+</para>
+
+@addr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_address_parse ##### -->
+<para>
+
+</para>
+
+@host_and_port: 
+@default_port: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_network_address_parse_uri ##### -->
+<para>
+
+</para>
+
+@uri: 
+@default_port: 
+@error: 
+@Returns: 
+
+

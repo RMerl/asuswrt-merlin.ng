@@ -1,0 +1,53 @@
+<!-- ##### SECTION Title ##### -->
+GTcpConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTcpConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GTcpConnection:graceful-disconnect ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_tcp_connection_set_graceful_disconnect ##### -->
+<para>
+
+</para>
+
+@connection: 
+@graceful_disconnect: 
+
+
+<!-- ##### FUNCTION g_tcp_connection_get_graceful_disconnect ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+

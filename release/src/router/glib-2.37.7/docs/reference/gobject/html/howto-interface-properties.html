@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Interface properties</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-interface.html" title="How to define and implement interfaces">
+<link rel="prev" href="howto-interface-prerequisite.html" title="Interface definition prerequisites">
+<link rel="next" href="howto-interface-override.html" title="Overriding interface methods">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-interface.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface-prerequisite.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-interface-override.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-properties"></a>Interface properties</h2></div></div></div>
+<p>
+      GObject interfaces can also have
+      properties. Declaration of the interface properties is similar to
+      declaring the properties of ordinary GObject types as explained in
+      <a class="xref" href="gobject-properties.html" title="Object properties">the section called “Object properties”</a>, except that
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-interface-install-property" title="g_object_interface_install_property ()">g_object_interface_install_property</a></code>
+      is used to declare the properties instead of
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-class-install-property" title="g_object_class_install_property ()">g_object_class_install_property</a></code>.
+    </p>
+<p>
+      To include a property named 'name' of type <span class="type">string</span> in the 
+      <span class="type">maman_ibaz</span> interface example code above, we only need to
+      add one 
+      <a href="#ftn.id-1.6.4.5.3.3" class="footnote" name="id-1.6.4.5.3.3"><sup class="footnote">[12]</sup></a>  
+      line in the <code class="function">maman_ibaz_default_init</code> as shown below:
+</p>
+<pre class="programlisting">
+static void
+maman_ibaz_default_init (gpointer g_iface)
+{
+  g_object_interface_install_property (g_iface,
+                                       g_param_spec_string ("name",
+                                                            "Name",
+                                                            "Name of the MamanIbaz",
+                                                            "maman",
+                                                            G_PARAM_READWRITE));
+}
+</pre>
+<p>
+    </p>
+<p>
+      One point worth noting is that the declared property wasn't assigned an 
+      integer ID. The reason being that integer IDs of properties are used
+      only inside the get and set methods and since interfaces do not
+      implement properties, there is no need to assign integer IDs to
+      interface properties.
+    </p>
+<p>
+      An implementation declares and defines it's properties in the usual
+      way as explained in <a class="xref" href="gobject-properties.html" title="Object properties">the section called “Object properties”</a>, except for one
+      small change: it can declare the properties of the interface it
+      implements using <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-class-override-property" title="g_object_class_override_property ()">g_object_class_override_property</a></code>
+      instead of <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-class-install-property" title="g_object_class_install_property ()">g_object_class_install_property</a></code>.
+      The following code snippet shows the modifications needed in the
+      <span class="type">MamanBaz</span> declaration and implementation above:
+</p>
+<pre class="programlisting">
+
+struct _MamanBaz
+{
+  GObject parent_instance;
+
+  gint instance_member;
+  gchar *name;
+};
+
+enum
+{
+  PROP_0,
+  PROP_NAME
+};
+
+static void
+maman_baz_set_property (GObject      *object,
+                        guint         prop_id,
+                        const GValue *value,
+                        GParamSpec   *pspec)
+{
+  MamanBaz *baz = MAMAN_BAZ (object);
+
+  switch (prop_id)
+    {
+    case PROP_NAME:
+      g_free (baz-&gt;name);
+      baz-&gt;name = g_value_dup_string (value);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+maman_baz_get_property (GObject    *object,
+                        guint       prop_id,
+                        GValue     *value,
+                        GParamSpec *pspec)
+{
+  MamanBaz *baz = MAMAN_BAZ (object);
+
+  switch (prop_id)
+    {
+    case PROP_NAME:
+      g_value_set_string (value, baz-&gt;name);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+maman_baz_class_init (MamanBazClass *klass)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+  gobject_class-&gt;set_property = maman_baz_set_property;
+  gobject_class-&gt;get_property = maman_baz_get_property;
+
+  g_object_class_override_property (gobject_class, PROP_NAME, "name");
+}
+
+</pre>
+<p>
+    </p>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.6.4.5.3.3" class="footnote"><p><a href="#id-1.6.4.5.3.3" class="para"><sup class="para">[12] </sup></a>
+          That really is one line extended to six for the sake of clarity
+        </p></div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

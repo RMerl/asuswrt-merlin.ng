@@ -1,0 +1,140 @@
+<!-- ##### SECTION Title ##### -->
+GIOModule
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GIOModule ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GIOModuleScope ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GIOModuleScopeFlags ##### -->
+<para>
+
+</para>
+
+@G_IO_MODULE_SCOPE_NONE: 
+@G_IO_MODULE_SCOPE_BLOCK_DUPLICATES: 
+
+<!-- ##### FUNCTION g_io_module_new ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_module_scope_block ##### -->
+<para>
+
+</para>
+
+@scope: 
+@basename: 
+
+
+<!-- ##### FUNCTION g_io_module_scope_free ##### -->
+<para>
+
+</para>
+
+@scope: 
+
+
+<!-- ##### FUNCTION g_io_module_scope_new ##### -->
+<para>
+
+</para>
+
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_modules_load_all_in_directory ##### -->
+<para>
+
+</para>
+
+@dirname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_modules_load_all_in_directory_with_scope ##### -->
+<para>
+
+</para>
+
+@dirname: 
+@scope: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_modules_scan_all_in_directory ##### -->
+<para>
+
+</para>
+
+@dirname: 
+
+
+<!-- ##### FUNCTION g_io_modules_scan_all_in_directory_with_scope ##### -->
+<para>
+
+</para>
+
+@dirname: 
+@scope: 
+
+
+<!-- ##### FUNCTION g_io_module_load ##### -->
+<para>
+
+</para>
+
+@module: 
+
+
+<!-- ##### FUNCTION g_io_module_unload ##### -->
+<para>
+
+</para>
+
+@module: 
+
+
+<!-- ##### FUNCTION g_io_module_query ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

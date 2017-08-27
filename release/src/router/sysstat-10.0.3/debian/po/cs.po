@@ -1,0 +1,110 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-07 16:57+0100\n"
+"Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
+"Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Odstranit statistická data uložená ve starém formátu?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Formát denních statistických souborů se v sysstatu verze ${s_version} změnil "
+"a není kompatibilní s předchozími verzemi."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Odpovíte-li kladně, stávající datové soubory v adresáři /var/log/sysstat/ "
+"budou smazány."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Pokud tuto možnost nepovolíte, příkaz sar(1) nebude fungovat správně do "
+"doby, než soubory odstraníte ručně."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Aktivovat cronovou úlohu programu sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Je-li tato možnost povolená, bude balík sysstat sledovat aktivitu v systému "
+"a bude ji zaznamenávat ukládat v souborech v adresáři /var/log/sysstat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr "Z posbíraných dat může příkaz sar(1) zobrazovat denní statistiky."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Pokud tuto možnost nepovolíte, příkaz sar(1) bude zobrazovat pouze aktuální "
+"statistiku."
+
+#~ msgid "Do you want post-installation script to remove these data files?"
+#~ msgstr "Chcete, aby poinstalační skript tyto datové soubory smazal?"
+
+#~ msgid ""
+#~ "If you don't want to remove them automatically, please remove them by "
+#~ "hand later, in order for the sar command to work properly."
+#~ msgstr ""
+#~ "Nechcete-li je odstranit automaticky, odstraňte je později ručně, protože "
+#~ "jinak by příkaz sar nemohl pracovat správně."
+
+#~ msgid "WARNING: daily data files format has changed!"
+#~ msgstr "VAROVÁNÍ: formát souborů s denními daty se změnil!"
+
+#~ msgid "Existing data files need to be deleted."
+#~ msgstr "Stávající datové soubory musí být smazány."

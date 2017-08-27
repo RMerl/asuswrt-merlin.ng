@@ -1,0 +1,480 @@
+<!-- ##### SECTION Title ##### -->
+File Utilities
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GFileError ##### -->
+<para>
+
+</para>
+
+@G_FILE_ERROR_EXIST: 
+@G_FILE_ERROR_ISDIR: 
+@G_FILE_ERROR_ACCES: 
+@G_FILE_ERROR_NAMETOOLONG: 
+@G_FILE_ERROR_NOENT: 
+@G_FILE_ERROR_NOTDIR: 
+@G_FILE_ERROR_NXIO: 
+@G_FILE_ERROR_NODEV: 
+@G_FILE_ERROR_ROFS: 
+@G_FILE_ERROR_TXTBSY: 
+@G_FILE_ERROR_FAULT: 
+@G_FILE_ERROR_LOOP: 
+@G_FILE_ERROR_NOSPC: 
+@G_FILE_ERROR_NOMEM: 
+@G_FILE_ERROR_MFILE: 
+@G_FILE_ERROR_NFILE: 
+@G_FILE_ERROR_BADF: 
+@G_FILE_ERROR_INVAL: 
+@G_FILE_ERROR_PIPE: 
+@G_FILE_ERROR_AGAIN: 
+@G_FILE_ERROR_INTR: 
+@G_FILE_ERROR_IO: 
+@G_FILE_ERROR_PERM: 
+@G_FILE_ERROR_NOSYS: 
+@G_FILE_ERROR_FAILED: 
+
+<!-- ##### MACRO G_FILE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GFileTest ##### -->
+<para>
+
+</para>
+
+@G_FILE_TEST_IS_REGULAR: 
+@G_FILE_TEST_IS_SYMLINK: 
+@G_FILE_TEST_IS_DIR: 
+@G_FILE_TEST_IS_EXECUTABLE: 
+@G_FILE_TEST_EXISTS: 
+
+<!-- ##### FUNCTION g_file_error_from_errno ##### -->
+<para>
+
+</para>
+
+@err_no: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_get_contents ##### -->
+<para>
+
+</para>
+
+@filename: 
+@contents: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_set_contents ##### -->
+<para>
+
+</para>
+
+@filename: 
+@contents: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_test ##### -->
+<para>
+
+</para>
+
+@filename: 
+@test: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mkstemp ##### -->
+<para>
+
+</para>
+
+@tmpl: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mkstemp_full ##### -->
+<para>
+
+</para>
+
+@tmpl: 
+@flags: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_open_tmp ##### -->
+<para>
+
+</para>
+
+@tmpl: 
+@name_used: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_read_link ##### -->
+<para>
+
+</para>
+
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mkdir_with_parents ##### -->
+<para>
+
+</para>
+
+@pathname: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mkdtemp ##### -->
+<para>
+
+</para>
+
+@tmpl: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mkdtemp_full ##### -->
+<para>
+
+</para>
+
+@tmpl: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dir_make_tmp ##### -->
+<para>
+
+</para>
+
+@tmpl: 
+@error: 
+@Returns: 
+
+
+<!-- ##### STRUCT GDir ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_dir_open ##### -->
+<para>
+
+</para>
+
+@path: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dir_read_name ##### -->
+<para>
+
+</para>
+
+@dir: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dir_rewind ##### -->
+<para>
+
+</para>
+
+@dir: 
+
+
+<!-- ##### FUNCTION g_dir_close ##### -->
+<para>
+
+</para>
+
+@dir: 
+
+
+<!-- ##### STRUCT GMappedFile ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_mapped_file_new ##### -->
+<para>
+
+</para>
+
+@filename: 
+@writable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mapped_file_new_from_fd ##### -->
+<para>
+
+</para>
+
+@fd: 
+@writable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mapped_file_ref ##### -->
+<para>
+
+</para>
+
+@file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mapped_file_unref ##### -->
+<para>
+
+</para>
+
+@file: 
+
+
+<!-- ##### FUNCTION g_mapped_file_free ##### -->
+<para>
+
+</para>
+
+@file: 
+
+
+<!-- ##### FUNCTION g_mapped_file_get_length ##### -->
+<para>
+
+</para>
+
+@file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mapped_file_get_contents ##### -->
+<para>
+
+</para>
+
+@file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mapped_file_get_bytes ##### -->
+<para>
+
+</para>
+
+@file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_open ##### -->
+<para>
+
+</para>
+
+@filename: 
+@flags: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rename ##### -->
+<para>
+
+</para>
+
+@oldfilename: 
+@newfilename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mkdir ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### TYPEDEF GStatBuf ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_stat ##### -->
+<para>
+
+</para>
+
+@filename: 
+@buf: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_lstat ##### -->
+<para>
+
+</para>
+
+@filename: 
+@buf: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unlink ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_remove ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_rmdir ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_fopen ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_freopen ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_chmod ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_access ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_creat ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_chdir ##### -->
+<para>
+
+</para>
+
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_utime ##### -->
+<para>
+
+</para>
+
+@filename: 
+@utb: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_close ##### -->
+<para>
+
+</para>
+
+@fd: 
+@error: 
+@Returns: 
+
+

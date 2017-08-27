@@ -1,0 +1,11 @@
+#!/bin/sh
+
+search=$1
+shift
+
+if grep "^\#[[:space:]]*define[[:space:]]*$search" config.h >/dev/null 2>&1 || \
+   grep $search >/dev/null 2>&1; then
+  exec $*
+fi
+
+

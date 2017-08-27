@@ -1,0 +1,54 @@
+# OCSP Server
+
+Listen 8880
+
+AddHandler cgi-script .cgi
+
+<VirtualHost *:8880>
+    ServerAdmin  root@strongswan.org
+    DocumentRoot /etc/openssl/ocsp
+    ServerName   ocsp.strongswan.org
+    ServerAlias	 192.168.0.150
+    DirectoryIndex ocsp.cgi
+    <Directory "/etc/openssl/ocsp">
+       Options  +ExecCGI
+       Order allow,deny
+       Allow from all
+   </Directory>
+   ErrorLog     /var/log/apache2/ocsp/error_log
+   CustomLog    /var/log/apache2/ocsp/access_log combined
+</VirtualHost>
+
+Listen 8881
+
+<VirtualHost *:8881>
+    ServerAdmin  root@research.strongswan.org
+    DocumentRoot /etc/openssl/research/ocsp
+    ServerName   ocsp.research.strongswan.org
+    ServerAlias	 ocsp.strongswan.org 192.168.0.150
+    DirectoryIndex ocsp.cgi
+    <Directory "/etc/openssl/research/ocsp">
+       Options +ExecCGI
+       Order allow,deny
+       Allow from all
+   </Directory>
+   ErrorLog     /var/log/apache2/ocsp/error_log
+   CustomLog    /var/log/apache2/ocsp/access_log combined
+</VirtualHost>
+
+Listen 8882
+
+<VirtualHost *:8882>
+    ServerAdmin  root@sales.strongswan.org
+    DocumentRoot /etc/openssl/sales/ocsp
+    ServerName   ocsp.sales.strongswan.org
+    ServerAlias	 ocsp.strongswan.org 192.168.0.150
+    DirectoryIndex ocsp.cgi
+    <Directory "/etc/openssl/sales/ocsp">
+       Options +ExecCGI
+       Order allow,deny
+       Allow from all
+   </Directory>
+   ErrorLog     /var/log/apache2/ocsp/error_log
+   CustomLog    /var/log/apache2/ocsp/access_log combined
+</VirtualHost>

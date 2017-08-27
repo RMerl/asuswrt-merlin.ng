@@ -1,0 +1,9 @@
+The hosts <b>alice</b> and <b>carol</b> set up a tunnel connection each to gateway <b>moon</b>.
+Both hosts request a <b>virtual IP</b> via the IKEv2 configuration payload by using the
+<b>leftsourceip=%config</b> parameter. Gateway <b>moon</b> assigns virtual IP
+addresses from a simple pool defined by <b>rightsourceip=10.3.0.0/28</b> to hosts connecting
+to the <b>eth0</b> (PH_IP_MOON) interface and virtual IP addresses from an SQLite-based pool
+named <b>intpool</b> [10.4.0.1..10.4.1.244] to hosts connecting to the <b>eth1</b> (PH_IP_MOON1) interface.
+<p>
+Thus <b>carol</b> is assigned <b>PH_IP_CAROL1</b> whereas <b>alice</b> gets <b>10.4.0.1</b> and 
+both ping the gateway <b>moon</b>.

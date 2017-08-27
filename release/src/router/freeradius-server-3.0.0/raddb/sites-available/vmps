@@ -1,0 +1,98 @@
+# -*- text -*-
+######################################################################
+#
+#	As of version 2.0.0, the server also supports the VMPS
+#	protocol.
+#
+#	$Id$
+#
+######################################################################
+
+server vmps {
+	listen {
+		# VMPS sockets only support IPv4 addresses.
+		ipaddr = *
+
+		#  Port on which to listen.
+		#  Allowed values are:
+		#	integer port number
+		#	1589 is the default VMPS port.
+		port = 1589
+
+		#  Type of packets to listen for.  Here, it is VMPS.
+		type = vmps
+
+		#  Some systems support binding to an interface, in addition
+		#  to the IP address.  This feature isn't strictly necessary,
+		#  but for sites with many IP addresses on one interface,
+		#  it's useful to say "listen on all addresses for
+		#  eth0".
+		#
+		#  If your system does not support this feature, you will
+		#  get an error if you try to use it.
+		#
+		#	interface = eth0
+	}
+
+	#  If you have switches that are allowed to send VMPS, but NOT
+	#  RADIUS packets, then list them here as "client" sections.
+	#
+	#  Note that for compatibility with RADIUS, you still have to
+	#  list a "secret" for each client, though that secret will not
+	#  be used for anything.
+
+
+	#  And the REAL contents.  This section is just like the
+	#  "post-auth" section of radiusd.conf.  In fact, it calls the
+	#  "post-auth" component of the modules that are listed here.
+	#  But it's called "vmps" to highlight that it's for VMPS.
+	#
+	vmps {
+		#
+		#  Some requests may not have a MAC address.  Try to
+		#  create one using other attributes.
+		if (!VMPS-Mac) {
+			if (VMPS-Ethernet-Frame =~ /0x.{12}(..)(..)(..)(..)(..)(..).*/) {
+				update request {
+					VMPS-Mac = "%{1}:%{2}:%{3}:%{4}:%{5}:%{6}"
+				}
+			}
+			else {
+				update request {
+					VMPS-Mac = "%{VMPS-Cookie}"
+				}
+			}
+		}
+
+		#  Do a simple mapping of MAC to VLAN.
+		#
+		#  See radiusd.conf for the definition of the "mac2vlan"
+		#  module.
+		#
+		#mac2vlan
+
+		# required VMPS reply attributes
+		update reply {
+			VMPS-Packet-Type = VMPS-Join-Response
+			VMPS-Cookie = "%{VMPS-Mac}"
+
+			VMPS-VLAN-Name = "please_use_real_vlan_here"
+
+			#
+			#  If you have VLAN's in a database, you can select
+			#  the VLAN name based on the MAC address.
+			#
+			#VMPS-VLAN-Name = "%{sql:select ... where mac='%{VMPS-Mac}'}"
+		}
+
+		# correct reply packet type for reconfirmation requests
+		#
+		if (VMPS-Packet-Type == VMPS-Reconfirm-Request){
+			update reply {
+				VMPS-Packet-Type := VMPS-Reconfirm-Response
+			}
+		}
+	}
+
+	# Proxying of VMPS requests is NOT supported.
+}

@@ -1,0 +1,15 @@
+
+SKU_2G_FCC  = "20160620_SingleSKU_2.4G_FCC.dat"
+SKU_5G_FCC  = 
+SKU_2G_IC   = "20160620_SingleSKU_2.4G_IC.dat"
+SKU_5G_IC   = 
+SKU_2G_CN   = "20160316_SingleSKU_2.4G_SRRC.dat"
+SKU_5G_CN   = 
+SKU_2G_CE   = "20160517_SingleSKU_2.4G_CE.dat"
+SKU_5G_CE   = 
+SKU_2G_SG   = 
+SKU_5G_SG   = 
+SKU_2G_AU   =
+SKU_5G_AU   = 
+SKU_2G_NCC  = "20160620_SingleSKU_2.4G_NCC.dat"
+SKU_5G_NCC  = 

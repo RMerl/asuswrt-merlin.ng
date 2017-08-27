@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GThreadedSocketService</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="highlevel-socket.html" title="High-level network functionallity">
+<link rel="prev" href="GSocketService.html" title="GSocketService">
+<link rel="next" href="GNetworkMonitor.html" title="GNetworkMonitor">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GThreadedSocketService.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GThreadedSocketService.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GThreadedSocketService.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#GThreadedSocketService.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="highlevel-socket.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSocketService.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GNetworkMonitor.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GThreadedSocketService"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GThreadedSocketService.top_of_page"></a>GThreadedSocketService</span></h2>
+<p>GThreadedSocketService — A threaded GSocketService</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GThreadedSocketService.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GThreadedSocketService.html#GThreadedSocketService-struct" title="GThreadedSocketService">GThreadedSocketService</a>;
+<a class="link" href="GSocketService.html" title="GSocketService"><span class="returnvalue">GSocketService</span></a> *    <a class="link" href="GThreadedSocketService.html#g-threaded-socket-service-new" title="g_threaded_socket_service_new ()">g_threaded_socket_service_new</a>       (<em class="parameter"><code><span class="type">int</span> max_threads</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GSocketListener.html" title="GSocketListener">GSocketListener</a>
+         +----<a class="link" href="GSocketService.html" title="GSocketService">GSocketService</a>
+               +----GThreadedSocketService
+</pre>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GThreadedSocketService.html#GThreadedSocketService--max-threads" title='The "max-threads" property'>max-threads</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>                  : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GThreadedSocketService.html#GThreadedSocketService-run" title='The "run" signal'>run</a>"                                            : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService"><span class="type">GThreadedSocketService</span></a> is a simple subclass of <a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a>
+that handles incoming connections by creating a worker thread and
+dispatching the connection to it by emitting the
+<a class="link" href="GThreadedSocketService.html#GThreadedSocketService-run" title='The "run" signal'><span class="type">"run"</span></a> signal in the new thread.
+</p>
+<p>
+The signal handler may perform blocking IO and need not return
+until the connection is closed.
+</p>
+<p>
+The service is implemented using a thread pool, so there is a
+limited amount of threads available to serve incoming requests.
+The service automatically stops the <a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a> from accepting
+new connections when all threads are busy.
+</p>
+<p>
+As with <a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a>, you may connect to <a class="link" href="GThreadedSocketService.html#GThreadedSocketService-run" title='The "run" signal'><span class="type">"run"</span></a>,
+or subclass and override the default handler.
+</p>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GThreadedSocketService-struct"></a><h3>GThreadedSocketService</h3>
+<pre class="programlisting">typedef struct _GThreadedSocketService GThreadedSocketService;</pre>
+<p>
+A helper class for handling accepting incoming connections in the
+glib mainloop and handling them in a thread.
+</p>
+<p class="since">Since 2.22</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-threaded-socket-service-new"></a><h3>g_threaded_socket_service_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketService.html" title="GSocketService"><span class="returnvalue">GSocketService</span></a> *    g_threaded_socket_service_new       (<em class="parameter"><code><span class="type">int</span> max_threads</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService"><span class="type">GThreadedSocketService</span></a> with no listeners. Listeners
+must be added with one of the <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> "add" methods.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>max_threads</code></em> :</span></p></td>
+<td>the maximal number of threads to execute concurrently
+handling incoming clients, -1 means no limit</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.22</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GThreadedSocketService--max-threads"></a><h3>The <code class="literal">"max-threads"</code> property</h3>
+<pre class="programlisting">  "max-threads"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>                  : Read / Write / Construct Only</pre>
+<p>The max number of threads handling clients for this service.</p>
+<p>Allowed values: &gt;= -1</p>
+<p>Default value: 10</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GThreadedSocketService-run"></a><h3>The <code class="literal">"run"</code> signal</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            user_function                      (<a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService"><span class="type">GThreadedSocketService</span></a> *service,
+                                                        <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a>      *connection,
+                                                        <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>                *source_object,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>                user_data)          : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+The ::run signal is emitted in a worker thread in response to an
+incoming connection. This thread is dedicated to handling
+<em class="parameter"><code>connection</code></em> and may perform blocking IO. The signal handler need
+not return until the connection is closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>service</code></em> :</span></p></td>
+<td>the <a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService"><span class="type">GThreadedSocketService</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>a new <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> object.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_object</code></em> :</span></p></td>
+<td>the source_object passed to <a class="link" href="GSocketListener.html#g-socket-listener-add-address" title="g_socket_listener_add_address ()"><code class="function">g_socket_listener_add_address()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to stop further signal handlers from being called</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GThreadedSocketService.see-also"></a><h2>See Also</h2>
+<a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a>.
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+[ ca ]
+default_ca		= CA_default
+
+[ CA_default ]
+dir			= ./
+certs			= $dir
+crl_dir			= $dir/crl
+database		= $dir/index.txt
+new_certs_dir		= $dir
+certificate		= $dir/ca.pem
+serial			= $dir/serial
+crl			= $dir/crl.pem
+private_key		= $dir/ca.key
+RANDFILE		= $dir/.rand
+name_opt		= ca_default
+cert_opt		= ca_default
+default_days		= 60
+default_crl_days	= 30
+default_md		= sha1
+preserve		= no
+policy			= policy_match
+crlDistributionPoints	= URI:http://www.example.com/example_ca.crl
+
+[ policy_match ]
+countryName		= match
+stateOrProvinceName	= match
+organizationName	= match
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+[ policy_anything ]
+countryName		= optional
+stateOrProvinceName	= optional
+localityName		= optional
+organizationName	= optional
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+[ req ]
+prompt			= no
+distinguished_name	= certificate_authority
+default_bits		= 2048
+input_password		= whatever
+output_password		= whatever
+x509_extensions		= v3_ca
+
+[certificate_authority]
+countryName		= FR
+stateOrProvinceName	= Radius
+localityName		= Somewhere
+organizationName	= Example Inc.
+emailAddress		= admin@example.com
+commonName		= "Example Certificate Authority"
+
+[v3_ca]
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid:always,issuer:always
+basicConstraints	= CA:true
+crlDistributionPoints	= URI:http://www.example.com/example_ca.crl
+

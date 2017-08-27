@@ -1,0 +1,234 @@
+<!-- ##### SECTION Title ##### -->
+GResource
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GResource ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GResourceFlags ##### -->
+<para>
+
+</para>
+
+@G_RESOURCE_FLAGS_NONE: 
+@G_RESOURCE_FLAGS_COMPRESSED: 
+
+<!-- ##### ENUM GResourceLookupFlags ##### -->
+<para>
+
+</para>
+
+@G_RESOURCE_LOOKUP_FLAGS_NONE: 
+
+<!-- ##### FUNCTION g_resource_load ##### -->
+<para>
+
+</para>
+
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resource_new_from_data ##### -->
+<para>
+
+</para>
+
+@data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resource_ref ##### -->
+<para>
+
+</para>
+
+@resource: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resource_unref ##### -->
+<para>
+
+</para>
+
+@resource: 
+
+
+<!-- ##### FUNCTION g_resource_lookup_data ##### -->
+<para>
+
+</para>
+
+@resource: 
+@path: 
+@lookup_flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resource_open_stream ##### -->
+<para>
+
+</para>
+
+@resource: 
+@path: 
+@lookup_flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resource_enumerate_children ##### -->
+<para>
+
+</para>
+
+@resource: 
+@path: 
+@lookup_flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resource_get_info ##### -->
+<para>
+
+</para>
+
+@resource: 
+@path: 
+@lookup_flags: 
+@size: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_static_resource_init ##### -->
+<para>
+
+</para>
+
+@static_resource: 
+
+
+<!-- ##### FUNCTION g_static_resource_fini ##### -->
+<para>
+
+</para>
+
+@static_resource: 
+
+
+<!-- ##### FUNCTION g_static_resource_get_resource ##### -->
+<para>
+
+</para>
+
+@static_resource: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resources_register ##### -->
+<para>
+
+</para>
+
+@resource: 
+
+
+<!-- ##### FUNCTION g_resources_unregister ##### -->
+<para>
+
+</para>
+
+@resource: 
+
+
+<!-- ##### FUNCTION g_resources_lookup_data ##### -->
+<para>
+
+</para>
+
+@path: 
+@lookup_flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resources_open_stream ##### -->
+<para>
+
+</para>
+
+@path: 
+@lookup_flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resources_enumerate_children ##### -->
+<para>
+
+</para>
+
+@path: 
+@lookup_flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_resources_get_info ##### -->
+<para>
+
+</para>
+
+@path: 
+@lookup_flags: 
+@size: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### MACRO G_RESOURCE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GResourceError ##### -->
+<para>
+
+</para>
+
+@G_RESOURCE_ERROR_NOT_FOUND: 
+@G_RESOURCE_ERROR_INTERNAL: 
+

@@ -1,0 +1,126 @@
+#!/bin/sh
+##
+# 
+# throttle.fw: Set the bandwidth policy, based on FWMARK
+#
+# Set your limits in the defines at the top.  Someday this will be
+# integrated into the nocat.conf...
+#
+##
+
+export PATH=/tmp/sbin:/tmp/bin:/bin:/usr/bin:/sbin:/usr/sbin
+
+TOTAL_DOWN=3mbit
+TOTAL_UP=384kbit
+
+OWNER_DOWN=3mbit	# fw mark 1
+OWNER_UP=384kbit
+OWNER_OPTIONS=""
+
+COOP_DOWN=1mbit		# fw mark 2
+COOP_UP=256kbit
+COOP_OPTIONS=""
+
+PUBLIC_DOWN=128kbit	# fw mark 3
+PUBLIC_UP=128kbit
+PUBLIC_OPTIONS="bounded"
+
+OPTIONS="allot 1514 maxburst 20 avpkt 1000 prio 1"
+METHOD="sfq quantum 1514b perturb 15"
+
+##
+# Now, the rules
+##
+
+#
+# First, flush any existing root queues
+#
+tc qdisc del dev $InternalDevice root handle 10:
+tc qdisc del dev $ExternalDevice root handle 20:
+
+#
+# Specify the queue discipline for both interfaces
+#
+tc qdisc add dev $InternalDevice root handle 10: cbq bandwidth 10Mbit avpkt 1000
+tc qdisc add dev $ExternalDevice root handle 20: cbq bandwidth 10Mbit avpkt 1000
+
+#
+# Specify the root class (filling all bandwidth.)
+# All other classes descend from these.
+#
+tc class add dev $InternalDevice \
+   parent 10:0 classid 10:1 cbq bandwidth 10Mbit rate $TOTAL_DOWN $OPTIONS
+
+tc class add dev $ExternalDevice \
+   parent 20:0 classid 20:1 cbq bandwidth 10Mbit rate $TOTAL_UP $OPTIONS
+
+
+##
+# Define the user classes
+##
+
+#
+# Owner class
+#
+tc class add dev $InternalDevice \
+   parent 10:1 classid 10:100 cbq bandwidth 10Mbit rate $OWNER_DOWN $OPTIONS $OWNER_OPTIONS
+
+tc class add dev $ExternalDevice \
+   parent 20:1 classid 20:100 cbq bandwidth 10Mbit rate $OWNER_UP $OPTIONS $OWNER_OPTIONS
+
+#
+# Coop class
+#
+
+tc class add dev $InternalDevice \
+   parent 10:1 classid 10:200 cbq bandwidth 10Mbit rate $COOP_DOWN $OPTIONS $COOP_OPTIONS
+
+tc class add dev $ExternalDevice \
+   parent 20:1 classid 20:200 cbq bandwidth 10Mbit rate $COOP_UP $OPTIONS $COOP_OPTIONS
+
+#
+# Public class
+#
+
+tc class add dev $InternalDevice \
+   parent 10:1 classid 10:300 cbq bandwidth 10Mbit rate $PUBLIC_DOWN $OPTIONS $PUBLIC_OPTIONS
+
+tc class add dev $ExternalDevice \
+   parent 20:1 classid 20:300 cbq bandwidth 10Mbit rate $PUBLIC_UP $OPTIONS $PUBLIC_OPTIONS
+
+##
+# Add the queue management rules
+##
+tc qdisc add dev $InternalDevice parent 10:100 $METHOD
+tc qdisc add dev $InternalDevice parent 10:200 $METHOD
+tc qdisc add dev $InternalDevice parent 10:300 $METHOD
+
+tc qdisc add dev $ExternalDevice parent 20:100 $METHOD
+tc qdisc add dev $ExternalDevice parent 20:200 $METHOD
+tc qdisc add dev $ExternalDevice parent 20:300 $METHOD
+
+##
+# Finally, filter each fwmark to the above defined classes
+##
+
+tc filter add dev $InternalDevice protocol ip parent 10: prio 1 handle 1 fw classid 10:100
+tc filter add dev $InternalDevice protocol ip parent 10: prio 1 handle 2 fw classid 10:200
+tc filter add dev $InternalDevice protocol ip parent 10: prio 1 handle 3 fw classid 10:300
+
+tc filter add dev $ExternalDevice protocol ip parent 20: prio 1 handle 1 fw classid 20:100
+tc filter add dev $ExternalDevice protocol ip parent 20: prio 1 handle 2 fw classid 20:200
+tc filter add dev $ExternalDevice protocol ip parent 20: prio 1 handle 3 fw classid 20:300
+
+
+###
+## Now, the iptables rules
+###
+
+iptables -A OUTPUT -t mangle -p tcp --dport 22 -j TOS --set-tos Minimize-Delay
+iptables -A OUTPUT -t mangle -p tcp --dport 80 -j TOS --set-tos Maximize-Throughput
+iptables -A OUTPUT -t mangle -p tcp --dport 443 -j TOS --set-tos Maximize-Throughput
+
+#
+# Ende
+#
+

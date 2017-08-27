@@ -1,0 +1,13 @@
+moon::iptables-restore < /etc/iptables.drop
+carol::iptables-restore < /etc/iptables.drop
+moon::ip6tables-restore < /etc/ip6tables.rules
+carol::ip6tables-restore < /etc/ip6tables.rules
+# enable Path MTU Discovery
+moon::ip6tables -I OUTPUT 1 -o eth1 -p icmpv6 --icmpv6-type 2 -j ACCEPT
+alice::"ip route add fec0:\:/16 via fec1:\:1"
+carol::"ip route add fec1:\:/16 via fec0:\:1"
+moon::ipsec start
+carol::ipsec start
+moon::expect-connection rw
+carol::expect-connection home
+carol::ipsec up home

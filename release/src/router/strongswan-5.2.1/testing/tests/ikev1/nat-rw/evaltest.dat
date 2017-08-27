@@ -1,0 +1,18 @@
+alice::ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*alice@strongswan.org.*sun.strongswan.org::YES
+venus::ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*venus.strongswan.org.*sun.strongswan.org::YES
+sun::  ipsec status 2> /dev/null::nat-t\[1]: ESTABLISHED.*sun.strongswan.org.*alice@strongswan.org::YES
+sun::  ipsec status 2> /dev/null::nat-t\[2]: ESTABLISHED.*sun.strongswan.org.*venus.strongswan.org::YES
+alice::ipsec status 2> /dev/null::nat-t.*INSTALLED, TUNNEL, ESP in UDP::YES
+venus::ipsec status 2> /dev/null::nat-t.*INSTALLED, TUNNEL, ESP in UDP::YES
+sun::  ipsec status 2> /dev/null::nat-t[{]1}.*INSTALLED, TUNNEL, ESP in UDP::YES
+sun::  ipsec status 2> /dev/null::nat-t[{]2}.*INSTALLED, TUNNEL, ESP in UDP::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_req=1::YES
+venus::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_req=1::YES
+moon:: sleep 6::no output expected::NO
+bob::  ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+bob::  ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_req=1::YES
+moon::tcpdump::IP moon.strongswan.org.* > sun.strongswan.org.4500: UDP-encap: ESP::YES
+moon::tcpdump::IP sun.strongswan.org.4500 > moon.strongswan.org.*: UDP-encap: ESP::YES
+moon::tcpdump::IP moon.strongswan.org.* > sun.strongswan.org.4500: isakmp-nat-keep-alive::YES
+alice::cat /var/log/daemon.log::sending keep alive::YES
+venus::cat /var/log/daemon.log::sending keep alive::YES

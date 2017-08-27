@@ -1,0 +1,59 @@
+"#Name ","C icalparameter_kind Enum","C Type","Enumeration Values"
+"ALTREP","2","const char*",
+"CHARSET","3","const char*",
+"CN","4","const char*",
+"CUTYPE","5","icalparameter_cutype","X=20100;INDIVIDUAL;GROUP;RESOURCE;ROOM;UNKNOWN;NONE=20199"
+"DELEGATED-FROM","6","const char*",
+"DELEGATED-TO","7","const char*",
+"DIR","8","const char*",
+"ENCODING","10","icalparameter_encoding","X=20300;8BIT;BASE64;NONE=20399"
+"FBTYPE","11","icalparameter_fbtype","X=20400;FREE;BUSY;BUSY-UNAVAILABLE;BUSY-TENTATIVE;NONE=20499"
+"FMTTYPE","12","const char*",
+"LANGUAGE","14","const char*",
+"MEMBER","18","const char*",
+"#PARTSTAT:FAILED from draft-apthorp-ical-tasks",,,
+"PARTSTAT","20","icalparameter_partstat","X=20600;NEEDS-ACTION;ACCEPTED;DECLINED;TENTATIVE;DELEGATED;COMPLETED;INPROCESS;FAILED;NONE=20699"
+"RANGE","21","icalparameter_range","X=20700;THISANDPRIOR;THISANDFUTURE;NONE=20799"
+"RELATED","22","icalparameter_related","X=20800;START;END;NONE=20899"
+"RELTYPE","23","icalparameter_reltype","X=20900;PARENT;CHILD;SIBLING;POLL;NONE=20999"
+"ROLE","24","icalparameter_role","X=21100;CHAIR;REQ-PARTICIPANT;OPT-PARTICIPANT;NON-PARTICIPANT;NONE=21199"
+"RSVP","25","icalparameter_rsvp","X=21200;TRUE;FALSE;NONE=21299"
+"SENT-BY","26","const char*",
+"TZID","27","const char*",
+"VALUE","28","icalparameter_value","X=21600;BINARY;BOOLEAN;DATE;DURATION;FLOAT;INTEGER;PERIOD;RECUR;TEXT;URI;ERROR;DATE-TIME;UTC-OFFSET;CAL-ADDRESS;NONE=21699"
+"X","29","const char*",
+"X-LIC-ERRORTYPE","31","icalparameter_xlicerrortype","X=21800;COMPONENT-PARSE-ERROR;PROPERTY-PARSE-ERROR;PARAMETER-NAME-PARSE-ERROR;PARAMETER-VALUE-PARSE-ERROR;VALUE-PARSE-ERROR;INVALID-ITIP;UNKNOWN-VCAL-PROP-ERROR;MIME-PARSE-ERROR;VCAL-PROP-PARSE-ERROR;NONE=21899"
+"X-LIC-COMPARETYPE","30","icalparameter_xliccomparetype","X=21700;EQUAL;NOTEQUAL;LESS;GREATER;LESSEQUAL;GREATEREQUAL;REGEX;ISNULL;ISNOTNULL;NONE=21799"
+"#Parameters from Scheduling Extensions to CalDAV (RFC 6638)"
+"SCHEDULE-AGENT","34","icalparameter_scheduleagent","X=21300;SERVER;CLIENT;NONE=21399"
+"SCHEDULE-FORCE-SEND","35","icalparameter_scheduleforcesend","X=21400;REQUEST;REPLY;NONE=21499"
+"SCHEDULE-STATUS","36","const char*",
+"#CAP Parameters","Draft 8",
+"#this parameter should really be called ACTION, but this conflicts with the ACTION property"
+"ACTIONPARAM","1","icalparameter_action","X=20000;ASK;ABORT;NONE=20099"
+"ID","13","const char*",
+"ENABLE","9","icalparameter_enable","X=20200;TRUE;FALSE;NONE=20299"
+"LATENCY","15","const char*",
+"LOCAL","16","icalparameter_local","X=20500;TRUE;FALSE;NONE=20599"
+"LOCALIZE","17","const char*",
+"OPTIONS","19","const char*",
+"NO","32",,
+"#In practice any unknown paramater that is not an xparam is treated as an ianaparam"
+"IANA","33","const char*",
+"ANY","0",,
+"#VPOLL Parameters","draft-york-vpoll","PUBLIC-COMMENT and RESPONSE are deprecated"
+"PUBLIC-COMMENT","37","const char*",
+"RESPONSE","38","int",
+"REQUIRED","43","icalparameter_required","X=21000;TRUE;FALSE;NONE=21099"
+"STAY-INFORMED","39","icalparameter_stayinformed","X=21500;TRUE;FALSE;NONE=21599"
+"#CalDAV Managed Attachment Parameters","draft-daboo-caldav-attachments"
+"MANAGED-ID","40","const char*",
+"SIZE","41","const char*",
+"FILENAME","42","const char*",
+"#Task Extension Parameters","draft-apthorp-ical-tasks"
+"REASON","43","const char*",
+"MODIFIED","44","const char*",
+"SUBSTATE","45","icalparameter_substate",X=21900;OK;ERROR;SUSPENDED;NONE=21999",
+"#NOTE for updaters.  Preserve the icalparameter_kind Enum values to aid forward compatibility"
+"# New Enum values for an existing icalparameter_kind should be inserted before the corresponding NONE value"
+"# New icalparamter_kind types should start their Enum value after the highest NONE value (currently 21999)"

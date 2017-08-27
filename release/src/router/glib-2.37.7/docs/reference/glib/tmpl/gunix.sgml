@@ -1,0 +1,131 @@
+<!-- ##### SECTION Title ##### -->
+UNIX-specific utilities and integration
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_UNIX_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_unix_open_pipe ##### -->
+<para>
+
+</para>
+
+@fds: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_set_fd_nonblocking ##### -->
+<para>
+
+</para>
+
+@fd: 
+@nonblock: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_signal_add ##### -->
+<para>
+
+</para>
+
+@signum: 
+@handler: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_signal_add_full ##### -->
+<para>
+
+</para>
+
+@priority: 
+@signum: 
+@handler: 
+@user_data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_signal_source_new ##### -->
+<para>
+
+</para>
+
+@signum: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GUnixFDSourceFunc ##### -->
+<para>
+
+</para>
+
+@fd: 
+@condition: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_add ##### -->
+<para>
+
+</para>
+
+@fd: 
+@condition: 
+@function: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_add_full ##### -->
+<para>
+
+</para>
+
+@priority: 
+@fd: 
+@condition: 
+@function: 
+@user_data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_source_new ##### -->
+<para>
+
+</para>
+
+@fd: 
+@condition: 
+@Returns: 
+
+

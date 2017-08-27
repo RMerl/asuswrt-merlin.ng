@@ -1,0 +1,10 @@
+## simplest possible valid message
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+REQUIRED_FIELDS
+
+ALIGN 8
+END_LENGTH Header
+START_LENGTH Body
+END_LENGTH Body

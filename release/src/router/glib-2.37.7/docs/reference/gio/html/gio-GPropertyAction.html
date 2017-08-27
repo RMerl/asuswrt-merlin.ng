@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GPropertyAction</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GSimpleAction.html" title="GSimpleAction">
+<link rel="next" href="GRemoteActionGroup.html" title="GRemoteActionGroup">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GPropertyAction.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSimpleAction.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GRemoteActionGroup.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GPropertyAction"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GPropertyAction.top_of_page"></a>GPropertyAction</span></h2>
+<p>GPropertyAction — A GAction reflecting a GObject property</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GPropertyAction.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="gio-GPropertyAction.html#GPropertyAction" title="GPropertyAction">GPropertyAction</a>;
+
+<a class="link" href="gio-GPropertyAction.html#GPropertyAction" title="GPropertyAction"><span class="returnvalue">GPropertyAction</span></a> *   <a class="link" href="gio-GPropertyAction.html#g-property-action-new" title="g_property_action_new ()">g_property_action_new</a>               (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *property_name</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GPropertyAction.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="gio-GPropertyAction.html#GPropertyAction" title="GPropertyAction"><span class="type">GPropertyAction</span></a> is a way to get a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> with a state value
+reflecting and controlling the value of a <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> property.
+</p>
+<p>
+The state of the action will correspond to the value of the property.
+Changing it will change the property (assuming the requested value
+matches the requirements as specified in the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-GParamSpec.html#GParamSpec"><span class="type">GParamSpec</span></a>).
+</p>
+<p>
+Only the most common types are presently supported.  Booleans are
+mapped to booleans, strings to strings, signed/unsigned integers to
+int32/uint32 and floats and doubles to doubles.
+</p>
+<p>
+If the property is an enum then the state will be string-typed and
+conversion will automatically be performed between the enum value and
+"nick" string as per the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Enumeration-and-Flag-Types.html#GEnumValue"><span class="type">GEnumValue</span></a> table.
+</p>
+<p>
+Flags types are not currently supported.
+</p>
+<p>
+Properties of object types, boxed types and pointer types are not
+supported and probably never will be.
+</p>
+<p>
+Properties of <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> types are not currently supported.
+</p>
+<p>
+If the property is boolean-valued then the action will have a NULL
+parameter type, and activating the action (with no parameter) will
+toggle the value of the property.
+</p>
+<p>
+In all other cases, the parameter type will correspond to the type of
+the property.
+</p>
+<p>
+The general idea here is to reduce the number of locations where a
+particular piece of state is kept (and therefore has to be
+synchronised between).  <a class="link" href="gio-GPropertyAction.html#GPropertyAction" title="GPropertyAction"><span class="type">GPropertyAction</span></a> does not have a separate
+state that is kept in sync with the property value -- its state
+<span style="color: red">&lt;em&gt;is&lt;/em&gt;</span> the property value.
+</p>
+<p>
+For example, it might be useful to create a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> corresponding to
+the "visible-child-name" property of a <a href="http://developer.gnome.org/gtk2/GtkStack.html"><span class="type">GtkStack</span></a> so that the current
+page can be switched from a menu.  The active radio indication in the
+menu is then directly determined from the active page of the
+<a href="http://developer.gnome.org/gtk2/GtkStack.html"><span class="type">GtkStack</span></a>.
+</p>
+<p>
+An anti-example would be binding the "active-id" property on a
+<a href="http://developer.gnome.org/gtk2/GtkComboBox.html"><span class="type">GtkComboBox</span></a>.  This is because the state of the combobox itself is
+probably uninteresting and is actually being used to control
+something else.
+</p>
+<p>
+Another anti-example would be to bind to the "visible-child-name"
+property of a <a href="http://developer.gnome.org/gtk2/GtkStack.html"><span class="type">GtkStack</span></a> if this value is actually stored in
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.  In that case, the real source of the value is
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.  If you want a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> to control a setting stored in
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>, see <a class="link" href="GSettings.html#g-settings-create-action" title="g_settings_create_action ()"><code class="function">g_settings_create_action()</code></a> instead, and possibly
+combine its use with <a class="link" href="GSettings.html#g-settings-bind" title="g_settings_bind ()"><code class="function">g_settings_bind()</code></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GPropertyAction.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GPropertyAction"></a><h3>GPropertyAction</h3>
+<pre class="programlisting">typedef struct _GPropertyAction GPropertyAction;</pre>
+<p>
+This type is opaque.
+</p>
+<p class="since">Since 2.38</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-property-action-new"></a><h3>g_property_action_new ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GPropertyAction.html#GPropertyAction" title="GPropertyAction"><span class="returnvalue">GPropertyAction</span></a> *   g_property_action_new               (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> object</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *property_name</code></em>);</pre>
+<p>
+Creates a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> corresponding to the value of property
+<em class="parameter"><code>property_name</code></em> on <em class="parameter"><code>object</code></em>.
+</p>
+<p>
+The property must be existent and readable and writable (and not
+construct-only).
+</p>
+<p>
+This function takes a reference on <em class="parameter"><code>object</code></em> and doesn't release it
+until the action is destroyed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>the name of the action to create</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object</code></em> :</span></p></td>
+<td>the object that has the property to wrap</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>property_name</code></em> :</span></p></td>
+<td>the name of the property</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="gio-GPropertyAction.html#GPropertyAction" title="GPropertyAction"><span class="type">GPropertyAction</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.38</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

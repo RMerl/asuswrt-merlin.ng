@@ -1,0 +1,53 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  Write a 'utmp' style file, of which users are currently
+#  logged in, and where they've logged in from.
+#
+#  This file is used mainly for Simultaneous-Use checking,
+#  and also 'radwho', to see who's currently logged in.
+#
+radutmp {
+	#  Where the file is stored.  It's not a log file,
+	#  so it doesn't need rotating.
+	#
+	filename = ${logdir}/radutmp
+
+	#  The field in the packet to key on for the
+	#  'user' name,  If you have other fields which you want
+	#  to use to key on to control Simultaneous-Use,
+	#  then you can use them here.
+	#
+	#  Note, however, that the size of the field in the
+	#  'utmp' data structure is small, around 32
+	#  characters, so that will limit the possible choices
+	#  of keys.
+	#
+	#  You may want instead: %{Stripped-User-Name:-%{User-Name}}
+	username = %{User-Name}
+
+
+	#  Whether or not we want to treat "user" the same
+	#  as "USER", or "User".  Some systems have problems
+	#  with case sensitivity, so this should be set to
+	#  'no' to enable the comparisons of the key attribute
+	#  to be case insensitive.
+	#
+	case_sensitive = yes
+
+	#  Accounting information may be lost, so the user MAY
+	#  have logged off of the NAS, but we haven't noticed.
+	#  If so, we can verify this information with the NAS,
+	#
+	#  If we want to believe the 'utmp' file, then this
+	#  configuration entry can be set to 'no'.
+	#
+	check_with_nas = yes
+
+	# Set the file permissions, as the contents of this file
+	# are usually private.
+	permissions = 0600
+
+	caller_id = "yes"
+}

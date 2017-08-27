@@ -1,0 +1,433 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+# Lightweight Directory Access Protocol (LDAP)
+#
+ldap {
+	#
+	#  Note that this needs to match the name in the LDAP
+	#  server certificate, if you're using ldaps.
+	#
+	#  The ldap client libraries can do fail-over from one
+	#  server to another.  Enable this by specifying
+	#  multiple host names, separated by commas.
+	#
+	#	e.g. server = "ldap1.example.org,ldap2.example.org"
+	#
+	#  Otherwise, it will use just one server.
+	server = "ldap.example.org"
+
+	#  Port to connect on, defaults to 389. Setting this to
+	#  636 will enable LDAPS if start_tls (see below) is not
+	#  able to be used.
+#	port = 389
+
+	# Administrator account for searching and possibly modifying.
+#	identity = "cn=admin,dc=example,dc=org"
+#	password = mypass
+
+	#  Unless overridden in another section, the dn from which all
+	#  searches will start from.
+#	base_dn = "dc=example,dc=org"
+
+	#
+	#  Mapping of LDAP directory attributes to RADIUS dictionary attributes.
+	#
+	#  WARNING: Although this format is almost identical to the unlang
+	#  update section format, it does *NOT* mean that you can use other
+	#  unlang constructs in module configuration files.
+	#
+	#  Configuration items are in the format:
+	# 	<radius attr> <op> <ldap attr>
+	#
+	#  Where:
+	#  	<radius attr>:	Is the destination RADIUS attribute
+	# 			with any valid list and request qualifiers.
+	#  	<op>: 		Is any assignment attribute (=, :=, +=, -=).
+	#  	<ldap attr>:	Is the attribute associated with user or
+	#			profile objects in the LDAP directory.
+	# 			If the attribute name is wrapped in double
+	# 			quotes it will be xlat expanded.
+	#
+	#  Request and list qualifiers may also be placed after the 'update'
+	#  section name to set defaults destination requests/lists
+	#  for unqualified RADIUS attributes.
+	#
+	#  Note: LDAP attribute names should be single quoted unless you want
+	#  the name value to be derived from an xlat expansion, or an
+	#  attribute ref.
+	#
+	update {
+#		control:NT-Password		:= 'ntPassword'
+#		reply:Reply-Message		:= 'radiusReplyMessage'
+#		reply:Tunnel-Type		:= 'radiusTunnelType'
+#		reply:Tunnel-Medium-Type	:= 'radiusTunnelMediumType'
+#		reply:Tunnel-Private-Group-ID	:= 'radiusTunnelPrivategroupId'
+	}
+
+	#
+	#  Generic valuepair attribute
+	#  If set, this will attribute will be retrieved in addition to any
+	#  mapped attributes.
+	#
+	#  Values should be in the format:
+	#  	<radius attr> <op> <value>
+	#
+	#  Where:
+	#  	<radius attr>:	Is the attribute you wish to create
+	# 			with any valid list and request qualifiers.
+	#  	<op>: 		Is any assignment attribute (=, :=, +=, -=).
+	#  	<value>:	Is the value to parse into the new valuepair.
+	# 			If the attribute name is wrapped in double
+	# 			quotes it will be xlat expanded.
+	#
+#	valuepair_attribute = "radiusValuePair"
+
+	# Set to yes if you have eDirectory and want to use the universal
+	# password mechanism.
+#	edir = no
+
+	# Set to yes if you want to bind as the user after retrieving the
+	# Cleartext-Password. This will consume the login grace, and
+	# verify user authorization.
+#	edir_autz = no
+
+	#
+	#  User object identification.
+	#
+	user {
+		#   Where to start searching in the tree for users
+		base_dn = "${..base_dn}"
+
+		#  Filter for user objects, should be specific enough
+		#  to identify a single user object.
+		filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+
+		# Search scope, may be 'base', 'one', sub' or 'children'
+#		scope = 'sub'
+
+		#  If this is undefined, anyone is authorised.
+		#  If it is defined, the contents of this attribute
+		#  determine whether or not the user is authorised
+#		access_attribute = "dialupAccess"
+
+		#  Control whether or not "access_attribute" is used to
+		#  determine authorization.  If set to "yes", then
+		#  "access_attribute" existing means "allow access".
+		#  "access_attribute" not existing means "deny access"
+		#
+		#   If set to "no", then
+		#  "access_attribute" existing means "deny access".
+		#  "access_attribute" not existing means "allow access"
+#		access_positive = yes
+	}
+
+	#
+	#  User membership checking.
+	#
+	group {
+		#   Where to start searching in the tree for groups
+		base_dn = "${..base_dn}"
+
+		#  Filter for group objects, should match all available
+		#  group objects a user might be a member of.
+		filter = "(objectClass=posixGroup)"
+
+		# Search scope, may be 'base', 'one', sub' or 'children'
+#		scope = 'sub'
+
+		#  Attribute that uniquely identifies a group.
+		#  Is used when converting group DNs to group
+		#  names.
+#		name_attribute = cn
+
+		#  Filter to find group objects a user is a member of.
+		#  That is, group objects with attributes that
+		#  identify members (the inverse of membership_attribute).
+#		membership_filter = "(|(member=%{control:Ldap-UserDn})(memberUid=%{%{Stripped-User-Name}:-%{User-Name}}))"
+
+		#  The attribute in user objects which contain the names
+		#  or DNs of groups a user is a member of.
+		#
+		#  Unless a conversion between group name and group DN is
+		#  needed, there's no requirement for the group objects
+		#  referenced to actually exist.
+		membership_attribute = "memberOf"
+
+		#  If cacheable_name or cacheable_dn are enabled,
+		#  all group information for the user will be
+		#  retrieved from the directory and written to LDAP-Group
+		#  attributes appropriate for the instance of rlm_ldap.
+		#
+		#  For group comparisons these attributes will be checked
+		#  instead of querying the LDAP directory directly.
+		#
+		#  This feature is intended to be used with rlm_cache.
+		#
+		#  If you with to use this feature, you should enable
+		#  the type that matches the format of your check items
+		#  i.e. if your groups are specified as DNs then enable
+		#  cacheable_dn else enable cacheable_name.
+#		cacheable_name = "no"
+#		cacheable_dn = "no"
+	}
+
+	#
+	#  User profiles. RADIUS profile objects contain sets of attributes
+	#  to insert into the request. These attributes are mapped using
+	#  the same mapping scheme applied to user objects.
+	#
+	profile {
+		#  Filter for RADIUS profile objects
+#		filter = "(objectclass=radiusprofile)"
+
+		#  The default profile applied to all users.
+#		default = "cn=radprofile,dc=example,dc=org"
+
+		#  The list of profiles which are applied (after the default)
+		#  to all users.
+		#  The "User-Profile" attribute in the control list
+		#  will override this setting at run-time.
+#		attribute = "radiusProfileDn"
+	}
+
+	#
+	#  Bulk load clients from the directory
+	#
+	client {
+		#   Where to start searching in the tree for clients
+		base_dn = "${..base_dn}"
+
+		#
+		#  Filter to match client objects
+		#
+		filter = '(objectClass=frClient)'
+
+		# Search scope, may be 'base', 'one', 'sub' or 'children'
+#		scope = 'sub'
+
+		#
+		#  Client attribute mappings are in the format:
+		#      <client attribute> = <ldap attribute>
+		#
+		#  Arbitrary attributes (accessible by %{client:<attr>}) are not yet supported.
+		#
+		#  The following attributes are required:
+		#    * identifier - IPv4 address, or IPv4 address with prefix, or hostname)
+		#    * secret - RADIUS shared secret
+		#
+		#  The following attributes are optional:
+		#    * shortname - Friendly name associated with the client
+		#    * nas_type - NAS Type
+		#    * virtual_server - Virtual server to associate the client with
+		#    * require_message_authenticator - Whether we require the Message-Authenticator
+		#      attribute to be present in requests from the client.
+		#
+		#  Schemas are available in doc/schemas/ldap for openldap and eDirectory
+		#
+		attribute {
+			identifier = 'radiusClientIdentifier'
+			secret = 'radiusClientSecret'
+#			shortname = 'radiusClientShortname'
+#			nas_type = 'radiusClientType'
+#			virtual_server = 'radiusClientVirtualServer'
+#			require_message_authenticator = 'radiusClientRequireMa'
+		}
+	}
+
+	#
+	#  Load clients on startup
+	#
+#	read_clients = no
+
+	#
+	#  Modify user object on receiving Accounting-Request
+	#
+	#  Useful for recording things like the last time the user logged
+	#  in, or the Acct-Session-ID for CoA/DM.
+	#
+	#  LDAP modification items are in the format:
+	# 	<ldap attr> <op> <value>
+	#
+	#  Where:
+	#  	<ldap attr>:	The LDAP attribute to add modify or delete.
+	#  	<op>: 		One of the assignment operators:
+	#			(:=, +=, -=, ++).
+	#			Note: '=' is *not* supported.
+	#  	<value>:	The value to add modify or delete.
+	#
+	#  WARNING: If using the ':=' operator with a multi-valued LDAP
+	#  attribute, all instances of the attribute will be removed and
+	#  replaced with a single attribute.
+	#
+	accounting {
+		reference = "%{tolower:type.%{Acct-Status-Type}}"
+
+		type {
+			start {
+				update {
+					description := "Online at %S"
+				}
+			}
+
+			interim-update {
+				update {
+					description := "Last seen at %S"
+				}
+			}
+
+			stop {
+				update {
+					description := "Offline at %S"
+				}
+			}
+		}
+	}
+
+	#
+	#  Post-Auth can modify LDAP objects too
+	#
+	post-auth {
+		update {
+			description := "Authenticated at %S"
+		}
+	}
+
+	#  LDAP connection-specific options.
+	#
+	#  These options set timeouts, keep-alives, etc. for the connections.
+	#
+	options {
+		#
+		#  The following two configuration items are for Active Directory
+		#  compatibility.  If you set these to "no", then searches
+		#  will likely return "operations error", instead of a
+		#  useful result.
+		#
+		chase_referrals = yes
+		rebind = yes
+
+		# seconds to wait for LDAP query to finish. default: 20
+		timeout = 10
+
+		#  seconds LDAP server has to process the query (server-side
+		#  time limit). default: 20
+		#
+		#  LDAP_OPT_TIMELIMIT is set to this value.
+		timelimit = 3
+
+		#
+		#  seconds to wait for response of the server. (network
+		#   failures) default: 10
+		#
+		#  LDAP_OPT_NETWORK_TIMEOUT is set to this value.
+		net_timeout = 1
+
+		# LDAP_OPT_X_KEEPALIVE_IDLE
+		idle = 60
+
+		# LDAP_OPT_X_KEEPALIVE_PROBES
+		probes = 3
+
+		# LDAP_OPT_X_KEEPALIVE_INTERVAL
+		interval = 3
+
+		#  ldap_debug: debug flag for LDAP SDK
+		#  (see OpenLDAP documentation).  Set this to enable
+		#  huge amounts of LDAP debugging on the screen.
+		#  You should only use this if you are an LDAP expert.
+		#
+		#	default: 0x0000 (no debugging messages)
+		#	Example:(LDAP_DEBUG_FILTER+LDAP_DEBUG_CONNS)
+		ldap_debug = 0x0028
+	}
+
+	#
+	#  This subsection configures the tls related items
+	#  that control how FreeRADIUS connects to an LDAP
+	#  server.  It contains all of the "tls_*" configuration
+	#  entries used in older versions of FreeRADIUS.  Those
+	#  configuration entries can still be used, but we recommend
+	#  using these.
+	#
+	tls {
+		# Set this to 'yes' to use TLS encrypted connections
+		# to the LDAP database by using the StartTLS extended
+		# operation.
+		#
+		# The StartTLS operation is supposed to be
+		# used with normal ldap connections instead of
+		# using ldaps (port 636) connections
+#		start_tls = yes
+
+#		ca_file	= ${certdir}/cacert.pem
+
+#		ca_path	= ${certdir}
+#		certificate_file = /path/to/radius.crt
+#		private_key_file = /path/to/radius.key
+#		random_file = ${certdir}/random
+
+		#  Certificate Verification requirements.  Can be:
+		#    "never" (don't even bother trying)
+		#    "allow" (try, but don't fail if the certificate
+		#		can't be verified)
+		#    "demand" (fail if the certificate doesn't verify.)
+		#
+		#  The default is "allow"
+#		require_cert	= "demand"
+	}
+
+
+	#  As of version 3.0, the "pool" section has replaced the
+	#  following configuration items:
+	#
+	#  ldap_connections_number
+
+	#  The connection pool is new for 3.0, and will be used in many
+	#  modules, for all kinds of connection-related activity.
+	#
+	pool {
+		# Number of connections to start
+		start = 5
+
+		# Minimum number of connections to keep open
+		min = 4
+
+		# Maximum number of connections
+		#
+		# If these connections are all in use and a new one
+		# is requested, the request will NOT get a connection.
+		max = 10
+
+		# Spare connections to be left idle
+		#
+		# NOTE: Idle connections WILL be closed if "idle_timeout"
+		# is set.
+		spare = 3
+
+		# Number of uses before the connection is closed
+		#
+		# 0 means "infinite"
+		uses = 0
+
+		# The lifetime (in seconds) of the connection
+		lifetime = 0
+
+		# idle timeout (in seconds).  A connection which is
+		# unused for this length of time will be closed.
+		idle_timeout = 60
+
+		# NOTE: All configuration settings are enforced.  If a
+		# connection is closed because of "idle_timeout",
+		# "uses", or "lifetime", then the total number of
+		# connections MAY fall below "min".  When that
+		# happens, it will open a new connection.  It will
+		# also log a WARNING message.
+		#
+		# The solution is to either lower the "min" connections,
+		# or increase lifetime/idle_timeout.
+	}
+
+}

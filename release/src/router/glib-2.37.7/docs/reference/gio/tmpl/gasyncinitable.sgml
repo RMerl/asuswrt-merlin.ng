@@ -1,0 +1,115 @@
+<!-- ##### SECTION Title ##### -->
+GAsyncInitable
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GAsyncInitable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GAsyncInitableIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@init_async: 
+@init_finish: 
+
+<!-- ##### FUNCTION g_async_initable_init_async ##### -->
+<para>
+
+</para>
+
+@initable: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_async_initable_init_finish ##### -->
+<para>
+
+</para>
+
+@initable: 
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_async_initable_new_async ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+@first_property_name: 
+@...: 
+
+
+<!-- ##### FUNCTION g_async_initable_new_finish ##### -->
+<para>
+
+</para>
+
+@initable: 
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_async_initable_new_valist_async ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@first_property_name: 
+@var_args: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_async_initable_newv_async ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@n_parameters: 
+@parameters: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+

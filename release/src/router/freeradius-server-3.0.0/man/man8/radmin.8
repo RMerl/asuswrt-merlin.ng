@@ -1,0 +1,189 @@
+.TH RADMIN 8 "14 Mar 2011" "" "FreeRADIUS Server Administration Tool"
+.SH NAME
+radmin - FreeRADIUS Administration tool
+.SH SYNOPSIS
+.B radmin
+.RB [ \-d
+.IR config_directory ]
+.RB [ \-e
+.IR command ]
+.RB [ \-E ]
+.RB [ \-f
+.IR socket_file ]
+.RB [ \-h ]
+.RB [ \-i
+.IR input_file ]
+.RB [ \-n
+.IR name ]
+.RB [ \-o
+.IR output_file ]
+.RB [ \-q ]
+.SH DESCRIPTION
+FreeRADIUS Server administration tool that connects to the control
+socket of a running server, and gives a command-line interface to it.
+
+At this time, only a few commands are supported.  Please type "help"
+at the command prompt for detailed information about the supported
+commands.
+.SH WARNING
+The security protections offered by this command are limited to the
+permissions on the Unix domain socket, and the server
+configuration.  If someone can connect to the Unix domain socket, they
+have a substantial amount of control over the server.
+.SH OPTIONS
+The following command-line options are accepted by the program.
+.IP "\-d \fIconfig directory\fP"
+Defaults to \fI/etc/raddb\fP. \fBradmin\fP looks here for the server
+configuration files to find the "listen" section that defines the
+control socket filename.
+.IP "\-e \fIcommand\fP"
+Run \fIcommand\fP and exit.
+.IP \-E
+Echo commands as they are being executed.
+.IP "\-f \fIsocket_file\fP"
+Specify the socket filename directly.  The radiusd.conf file is not read.
+.IP \-h
+Print usage help information.
+.IP "\-i \fIinput_file\fP"
+Reads input from the specified file.  If not specified, stdin is used.
+This also sets "-q".
+.IP "\-n \fImname\fP"
+Read \fIraddb/name.conf\fP instead of \fIraddb/radiusd.conf\fP.
+.IP "\-o \fIoutput_file\fP"
+Write output to the specified file.  If not specified, stdout is used.
+This also sets "-q".
+.IP \-q
+Quiet mode.
+.SH COMMANDS
+The commands implemented by the command-line interface are almost
+completely controlled by the server.  There are a few commands
+interpreted locally by radmin:
+.IP reconnect
+Reconnect to the server.
+.IP quit
+Exit from radmin.
+.IP exit
+Exit from radmin.
+.PP
+The other commands are implemented by the server.  Type "help" at the
+prompt for more information.
+.SH EXAMPLES
+.IP debug\ file\ /var/log/radius/bob.log
+Set debug logs to /var/log/radius/bob.log.  There is very little
+checking of this filename.  Rogue administrators may be able use this
+command to over-write almost any file on the system.  If those
+administrators have write access to "radius.conf", they can do the
+same thing without radmin, too.
+.IP debug\ condition\ '(User-Name\ ==\ "bob")'
+Enable debugging output for all requests that match the condition.
+Any "unlang" condition is valid here.  The condition is parsed as a
+string, so it must be enclosed in single or double quotes.  Strings
+enclosed in double-quotes must have back-slashes and the quotation
+marks escaped inside of the string.
+
+Only one debug condition can be active at a time.
+.IP debug\ condition\ '((User-Name\ ==\ "bob")\ ||\ (Packet-Src-IP-Address\ ==\ 192.0.2.22))'
+A more complex condition that enables debugging output for requests
+containing User-Name "bob", or requests that originate from source IP
+address 192.0.2.22.
+.IP debug\ condition
+Disable debug conditionals.
+.SH FULL LIST OF COMMANDS
+.IP add\ <command>
+do sub-command of add
+.IP add\ client\ <command>
+Add client configuration commands
+.IP add\ client\ file\ <filename>
+Add new client definition from <filename>
+.IP debug\ <command>
+debugging commands
+.IP debug\ condition\ [condition]
+Enable debugging for requests matching [condition]
+.IP debug\ level\ <number>
+Set debug level to <number>.  Higher is more debugging.
+.IP debug\ file\ [filename]
+Send all debugging output to [filename]
+.IP del\ <command>
+do sub-command of del
+.IP del\ client\ <command>
+Delete client configuration commands
+.IP del\ client\ ipaddr\ <ipaddr>
+Delete a dynamically created client
+.IP hup\ [module]
+sends a HUP signal to the server, or optionally to one module
+.IP inject\ <command>
+commands to inject packets into a running server
+.IP inject\ to\ <ipaddr>\ <port>
+Inject packets to the destination IP and port.
+.IP inject\ from\ <ipaddr>
+Inject packets as if they came from <ipaddr>
+.IP inject\ file\ <input-file>\ <output-file>
+Inject packet from input-file>, with results sent to <output-file>
+.IP reconnect
+reconnect to a running server
+.IP terminate
+terminates the server, and cause it to exit
+.IP set\ <command>
+do sub-command of set
+.IP set\ module\ <command>
+set module commands
+.IP set\ module\ config\ <module>\ variable\ value
+set configuration for <module>
+.IP set\ module\ status\ [alive|dead]
+set the module to be alive or dead (always return "fail")
+.IP set\ home_server\ <command>
+set home server commands
+.IP set\ home_server\ state\ <ipaddr>\ <port>\ [alive|dead]
+set state for given home server
+.IP show\ <command>
+do sub-command of show
+.IP show\ client\ <command>
+do sub-command of client
+.IP show\ client\ config\ <ipaddr>
+show configuration for given client
+.IP show\ client\ list
+shows list of global clients
+.IP show\ debug\ <command>
+show debug properties
+.IP show\ debug\ condition
+Shows current debugging condition.
+.IP show\ debug\ level
+Shows current debugging level.
+.IP show\ debug\ file
+Shows current debugging file.
+.IP show\ home_server\ <command>
+do sub-command of home_server
+.IP show\ home_server\ config\ <ipaddr>\ <port>
+show configuration for given home server
+.IP show\ home_server\ list
+shows list of home servers
+.IP show\ home_server\ state\ <ipaddr>\ <port>
+shows state of given home server
+.IP show\ module\ <command>
+do sub-command of module
+.IP show\ module\ config\ <module>
+show configuration for given module
+.IP show\ module\ flags\ <module>
+show other module properties
+.IP show\ module\ list
+shows list of loaded modules
+.IP show\ module\ methods\ <module>
+show sections where <module> may be used
+.IP show\ uptime
+shows time at which server started
+.IP show\ version
+Prints version of the running server
+.IP show\ xml\ <reference>
+Prints out configuration as XML
+.IP stats\ <command>
+do sub-command of stats
+.IP stats\ client\ [auth/acct]\ <ipaddr>
+show statistics for given client, or for all clients (auth or acct)
+.IP stats\ home_server\ [<ipaddr>/auth/acct]\ <port>
+show statistics for given home server (ipaddr and port), or for all home servers (auth or acct)
+.IP stats\ detail\ <filename>
+show statistics for the given detail file
+.SH SEE ALSO
+unlang(5), radiusd.conf(5), raddb/sites-available/control-socket
+.SH AUTHOR
+Alan DeKok <aland@freeradius.org>

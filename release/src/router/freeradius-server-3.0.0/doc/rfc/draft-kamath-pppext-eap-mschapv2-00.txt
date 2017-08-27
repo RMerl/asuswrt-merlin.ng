@@ -1,0 +1,1440 @@
+
+
+
+
+
+
+PPPEXT Working Group                                        Vivek Kamath
+INTERNET-DRAFT                                            Ashwin Palekar
+Category: Informational                                        Microsoft
+<draft-kamath-pppext-eap-mschapv2-00.txt>
+2 September 2002
+
+
+                     Microsoft EAP CHAP Extensions
+
+This document is an Internet-Draft and is in full conformance with all
+provisions of Section 10 of RFC 2026.
+
+Internet-Drafts are working documents of the Internet Engineering Task
+Force (IETF), its areas, and its working groups.  Note that other groups
+may also distribute working documents as Internet- Drafts.
+
+Internet-Drafts are draft documents valid for a maximum of six months
+and may be updated, replaced, or obsoleted by other documents at any
+time.  It is inappropriate to use Internet-Drafts as reference material
+or to cite them other than as "work in progress."
+
+The list of current Internet-Drafts can be accessed at
+http://www.ietf.org/ietf/1id-abstracts.txt
+
+The list of Internet-Draft Shadow Directories can be accessed at
+http://www.ietf.org/shadow.html.
+
+Copyright Notice
+
+Copyright (C) The Internet Society (2002).  All Rights Reserved.
+
+Abstract
+
+This document defines the Microsoft EAP CHAP Extensions Protocol,
+Version 2, which encapsulates the MS-CHAP-v2 protocol, defined in
+[RFC2759], within EAP.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kamath & Palekar              Informational                     [Page 1]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+Table of Contents
+
+1.     Introduction ..........................................    3
+   1.1       Requirements language ...........................    3
+   1.2       Terminology .....................................    3
+2.     EAP MS-CHAP-v2 Packet Format ..........................    4
+   2.1.      Challenge packet ................................    5
+   2.2.      Response packet .................................    7
+   2.3.      Success Request packet ..........................    9
+   2.4.      Success Response packet .........................   11
+   2.5.      Failure Request packet ..........................   12
+   2.6.      Failure Response packet .........................   14
+   2.7.      Change-Password packet ..........................   15
+   2.8.      Alternative failure behavior ....................   17
+   2.9.      Known bugs ......................................   17
+3.  Normative references .....................................   18
+4.  Informative references ...................................   19
+Appendix A - Examples ........................................   20
+Acknowledgments ..............................................   23
+Author Addresses .............................................   23
+Full copyright statement .....................................   23
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kamath & Palekar              Informational                     [Page 2]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+1.  Introduction
+
+The Extensible Authentication Protocol (EAP), described in [RFC2284],
+provides a standard mechanism for support of multiple authentication
+methods.  Through the use of EAP, support for a number of authentication
+schemes may be added, including smart cards, Kerberos, Public Key, One
+Time Passwords, and others.
+
+This document defines the Microsoft EAP CHAP Extensions Protocol,
+Version 2, which encapsulates the MS-CHAP-v2 protocol, defined in
+[RFC2759], within EAP.  As with MS-CHAP-v2,  EAP-MSCHAPv2 supports
+mutual authentication and key derivation.  The way EAP-MSCHAPv2 derived
+keys are used with the Microsoft Point to Point Encryption (MPPE) cipher
+is described in [RFC3079].
+
+EAP MS-CHAP-V2 provides mutual authentication between peers by
+piggybacking a peer challenge on the Response packet and an
+authenticator response on the Success packet.
+
+1.1.  Requirements language
+
+In this document, several words are used to signify the requirements of
+the specification.  These words are often capitalized.  The key words
+"MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD
+NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be
+interpreted as described in [RFC2119].
+
+1.2.  Terminology
+
+This document frequently uses the following terms:
+
+Authenticator
+     The end of the link requiring the authentication.
+
+Peer The other end of the point-to-point link; the end which is being
+     authenticated by the authenticator.
+
+silently discard
+     This means the implementation discards the packet without further
+     processing.  The implementation SHOULD provide the capability of
+     logging the error, including the contents of the silently discarded
+     packet, and SHOULD record the event in a statistics counter.
+
+
+
+
+
+
+
+
+
+Kamath & Palekar              Informational                     [Page 3]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+2.  EAP MS-CHAP-v2 Packet Format
+
+A summary of the EAP MS-CHAP-V2 packet format is shown below.  The
+fields are transmitted from left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |  MS-CHAPv2-ID |  MS-Length...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   MS-Length   |     Data...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   1 - Request
+   2 - Response
+
+Identifier
+
+   The Identifier field is one octet and aids in matching responses with
+   requests.
+
+Length
+
+   The Length field is two octets and indicates the length of the EAP
+   packet including the Code, Identifier, Length, Type, OpCode, MS-
+   CHAPv2-ID, MS-Length and Data fields.  Octets outside the range of
+   the Length field should be treated as Data Link Layer padding and
+   should be ignored on reception.
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   The OpCode field is one octet and identifies the type of EAP MS-CHAP-
+   v2 packet.  OpCodes are assigned as follows:
+
+   1       Challenge
+   2       Response
+   3       Success
+   4       Failure
+   7       Change-Password
+
+
+
+
+Kamath & Palekar              Informational                     [Page 4]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+MS-CHAPv2-ID
+
+   The MS-CHAPv2-ID field is one octet and aids in matching MSCHAP-v2
+   responses with requests. Typically, the MS-CHAPv2-ID field is the
+   same as the Identifier field.
+
+MS-Length
+
+   The MS-Length field is two octets and MUST be set to the value of the
+   Length field minus 5.
+
+Data
+
+   The format of the Data field is determined by the OpCode field.
+
+2.1.  Challenge packet
+
+The Challenge packet is used to begin the EAP MS-CHAP-V2 protocol.  The
+authenticator MUST transmit an EAP Request packet with Type=26, and the
+OpCode field set to 1 (Challenge).  The format of the EAP MS-CHAP-v2
+Challenge packet is shown below.  The fields are transmitted from left
+to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |  MS-CHAPv2-ID |  MS-Length...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   MS-Length   |  Value-Size   |  Challenge...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Challenge...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Name...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   1 - Request
+
+Identifier
+
+   The Identifier field is one octet.  The Identifier field MUST be the
+   same if a Request packet is retransmitted due to a timeout while
+   waiting for a Response.  Any new (non-retransmission) Requests MUST
+   modify the Identifier field.  If a peer receives a duplicate Request
+   for which it has already sent a Response, it MUST resend it's
+
+
+
+Kamath & Palekar              Informational                     [Page 5]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   Response.  If a peer receives a duplicate Request before it has sent
+   a Response to the initial Request (i.e. it's waiting for user input),
+   it MUST silently discard the duplicate Request.
+
+Length
+
+   The Length field is two octets and indicates the length of the EAP
+   packet including the Code, Identifier, Length, Type, OpCode, MS-
+   CHAPv2-ID, MS-Length, Value-Size, Challenge, and Name fields.  Octets
+   outside the range of the Length field should be treated as Data Link
+   Layer padding and should be ignored on reception.
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   1 - Challenge
+
+MS-CHAPv2-ID
+
+   The MS-CHAPv2-ID field is one octet and aids in matching MSCHAP-v2
+   responses with requests. Typically, the MS-CHAPv2-ID field is the
+   same as the Identifier field.
+
+MS-Length
+
+   The MS-Length field is two octets and MUST be set to the value of the
+   Length field minus 5.
+
+Value-Size
+
+   This field is one octet and indicates the length of the Challenge
+   field.  Since EAP MS-CHAPv2 utilizes a 16 octet Challenge field, it
+   is set to 0x10 (16 decimal).
+
+Challenge
+
+   The Challenge field is 16 octets.  The most significant octet is
+   transmitted first.  The Challenge MUST be changed each time a
+   Challenge is sent.
+
+Name
+
+   The Name field is one or more octets representing the identification
+   of the system transmitting the packet.  There are no limitations on
+   the content of this field.  The Name should not be NUL or CR/LF
+
+
+
+Kamath & Palekar              Informational                     [Page 6]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   terminated.  The size of the Name field is equal to Length - Value-
+   Size - 10.
+
+2.2.  Response packet
+
+The format of the EAP MS-CHAP-v2 Response packet is shown below.  The
+fields are transmitted from left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |  MS-CHAPv2-ID |  MS-Length...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   MS-Length   |  Value-Size   |    Response...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Response...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Name...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   2 - Response
+
+Identifier
+
+   The Identifier field is one octet and contains the value included in
+   the EAP Request to which it responds.
+
+Length
+
+   The Length field is two octets and indicates the length of the EAP
+   packet including the Code, Identifier, Length, Type, OpCode, MS-
+   CHAPv2-ID, MS-Length, Value-Size, Response, and Name fields.  Octets
+   outside the range of the Length field should be treated as Data Link
+   Layer padding and should be ignored on reception.
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   2 - Response
+
+
+
+
+
+Kamath & Palekar              Informational                     [Page 7]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+MS-CHAPv2-ID
+
+   The MS-CHAPv2-ID field is one octet and aids in matching MSCHAP-v2
+   responses with requests. Typically, the MS-CHAPv2-ID field is the
+   same as the Identifier field.
+
+MS-Length
+
+   The MS-Length field is two octets and MUST be set to the value of the
+   Length field minus 5.
+
+Value-Size
+
+   This field is one octet and indicates the length of the Response
+   field.  It is set to 0x31 (Decimal 49).
+
+Response
+
+   The Response field is 49 octets.  The most significant octet is
+   transmitted first.  It is sub-formatted as follows:
+
+                  16 octets: Peer-Challenge
+                  8 octets: Reserved, must be zero
+                  24 octets: NT-Response
+                  1 octet : Flags
+
+   The Peer-Challenge field is a 16-octet random number.  As the name
+   implies, it is generated by the peer and is used in the calculation
+   of the NT-Response field, below.  Peers need not duplicate
+   Microsoft's algorithm for selecting the 16-octet value, but the
+   standard guidelines on randomness [RFC1750] SHOULD be observed.
+
+   The NT-Response field is an encoded function of the password, the
+   Name field of the Response packet, the contents of the Peer-Challenge
+   field and the received Challenge as output by the routine
+   GenerateNTResponse() defined in  [RFC2759], Section 8.1.
+
+   The Windows NT password is a string of 0 to (theoretically) 256 case-
+   sensitive Unicode [UNICODE] characters.  Current versions of Windows
+   NT limit passwords to 14 characters, mainly for compatibility
+   reasons; this may change in the future.  When computing the NT-
+   Response field contents, only the user name is used, without any
+   associated Windows NT domain name.  This is true regardless of
+   whether a Windows NT domain name is present in the Name field (see
+   below).
+
+   The Flag field is reserved for future use and MUST be zero.
+
+
+
+
+Kamath & Palekar              Informational                     [Page 8]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   Whenever a Response packet is received, the authenticator compares
+   the Response Value with its own calculation of the expected value. If
+   the values match, then the authenticator MUST send a Success-Request
+   packet, as described in Section 2.3.  If the values do not match, and
+   if the error is retryable, then a Failure-Request packet MUST be sent
+   as described in Section 2.5. If the values do not match, and the
+   error is not retryable, then  a Failure-Request packet (described in
+   Section 2.5) SHOULD be sent, or alternatively, the authentication MAY
+   be  terminated (as described in Section 2.8) such as by sending an
+   EAP Failure.
+
+Name
+
+   The Name field is a string of 0 to (theoretically) 256 case-sensitive
+   ASCII characters which identifies the peer's user account name.  The
+   Windows NT domain name may prefix the user's account name (e.g.
+   BIGCO\johndoe where BIGCO is a Windows NT domain containing the user
+   account johndoe).  If a domain is not provided, the backslash should
+   also be omitted, (e.g. johndoe).  The Name SHOULD NOT be NUL or CR/LF
+   terminated.  The size of the Name field is determined from the Length
+   - Value-Size - 10.
+
+2.3.  Success Request packet
+
+If the value received in the Response field of the EAP MS-CHAP-V2
+Response packet is equal to the expected value, then the implementation
+MUST transmit an EAP MS-CHAP-V2 Request packet with the OpCode field set
+to 3 (Success).
+
+The format of the EAP MS-CHAP-v2 Success Request packet is shown below.
+The fields are transmitted from left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |  MS-CHAPv2-ID |  MS-Length...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   MS-Length   |                    Message...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   1 - Request
+
+
+
+
+
+
+Kamath & Palekar              Informational                     [Page 9]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+Identifier
+
+   The Identifier field is one octet.  The Identifier field MUST be the
+   same if a Request packet is retransmitted due to a timeout while
+   waiting for a Response.  Any new (non-retransmission) Requests MUST
+   modify the Identifier field.  If a peer receives a duplicate Request
+   for which it has already sent a Response, it MUST resend it's
+   Response.  If a peer receives a duplicate Request before it has sent
+   a Response to the initial Request (i.e. it's waiting for user input),
+   it MUST silently discard the duplicate Request.
+
+Length
+
+   The Length field is two octets and indicates the length of the EAP
+   packet including the Code, Identifier, Length, Type, OpCode, MS-
+   CHAPv2-ID, MS-Length, and Message fields.  Octets outside the range
+   of the Length field should be treated as Data Link Layer padding and
+   should be ignored on reception.
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   3 - Success
+
+MS-CHAPv2-ID
+
+   The MS-CHAPv2-ID field is one octet and aids in matching MSCHAP-v2
+   responses with requests.  Typically, the MS-CHAPv2-ID field is the
+   same as the Identifier field.
+
+MS-Length
+
+   The MS-Length field is two octets and MUST be set to the value of the
+   Length field minus 5.
+
+Message
+
+   The Message field contains a 42-octet authenticator response string
+   and a printable message.  The format of the message field is
+   illustrated below.
+
+      "S=<auth_string> M=<message>"
+
+   The <auth_string> quantity is a 20 octet number encoded in ASCII as
+   40 hexadecimal digits.  The hexadecimal digits A-F (if present) MUST
+
+
+
+Kamath & Palekar              Informational                    [Page 10]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   be uppercase.  This number is derived from the challenge from the
+   Challenge packet, the Peer-Challenge and NT-Response fields from the
+   Response packet, and the peer password as output by the routine
+   GenerateAuthenticatorResponse() defined in [RFC2759], Section 8.7.
+   The authenticating peer MUST verify the authenticator response when a
+   Success packet is received.  The method for verifying the
+   authenticator is described in [RFC2759], section 8.8.  If the
+   authenticator response is either missing or incorrect, the peer MUST
+   end the session without sending a response.
+
+   The <message> quantity is human-readable text in the appropriate
+   charset and language [RFC2484].
+
+2.4.  Success Response packet
+
+In the peer successfully validates the EAP MS-CHAP-V2 Success Request
+packet sent by the authenticator, then it MUST respond with an EAP MS-
+CHAP-V2 Success Response packet with the OpCode field set to 3
+(Success).
+
+The format of the EAP MS-CHAP-v2 Success Response packet is shown below.
+The fields are transmitted from left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   2 - Response
+
+Identifier
+
+   The Identifier field is one octet and contains the value included in
+   the EAP Request to which it responds.
+
+Length
+
+   6
+
+
+
+
+
+
+
+
+Kamath & Palekar              Informational                    [Page 11]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   3 - Success
+
+2.5.  Failure Request packet
+
+If the Value received in a Response is not equal to the expected value,
+and the error is retryable, then  the implementation MUST transmit an
+EAP MS-CHAP-v2 Request packet with the OpCode field set to 4 (Failure).
+If the error is not retryable, then the implementation SHOULD transmit
+an EAP MS-CHAP-v2 Failure Request packet, or it MAY terminate the
+authentication (e.g. send an EAP Failure packet). The former approach is
+preferable, since this enables the cause of the error to be
+communicated.
+
+The format of the EAP MS-CHAP-v2 Failure Request packet is shown below.
+The fields are transmitted from left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |  MS-CHAPv2-ID |  MS-Length...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   MS-Length   |                    Message...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   1 - Request
+
+Identifier
+
+   The Identifier field is one octet.  The Identifier field MUST be the
+   same if a Request packet is retransmitted due to a timeout while
+   waiting for a Response.  Any new (non-retransmission) Requests MUST
+   modify the Identifier field.  If a peer receives a duplicate Request
+   for which it has already sent a Response, it MUST resend it's
+   Response.  If a peer receives a duplicate Request before it has sent
+   a Response to the initial Request (i.e. it's waiting for user input),
+   it MUST silently discard the duplicate Request.
+
+
+
+
+
+Kamath & Palekar              Informational                    [Page 12]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+Length
+
+   The Length field is two octets and indicates the length of the EAP
+   packet including the Code, Identifier, Length, Type, OpCode, MS-
+   CHAPv2-ID, MS-Length, and Message fields.  Octets outside the range
+   of the Length field should be treated as Data Link Layer padding and
+   should be ignored on reception.
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   4 - Failure
+
+MS-CHAPv2-ID
+
+   The MS-CHAPv2-ID field is one octet and aids in matching MSCHAP-v2
+   responses with requests. Typically, the MS-CHAPv2-ID field is the
+   same as the Identifier field.
+
+MS-Length
+
+   The MS-Length field is two octets and MUST be set to the value of the
+   Length field minus 5.
+
+Message
+
+   The Message field format is:
+
+     "E=eeeeeeeeee R=r C=cccccccccccccccccccccccccccccccc V=vvvvvvvvvv M=<msg>"
+
+   where
+
+   The "eeeeeeeeee" is the ASCII representation of a decimal error code
+   corresponding to one of those listed below, though implementations
+   should deal with codes not on this list gracefully. The error code
+   need not be 10 digits long.
+
+        646 ERROR_RESTRICTED_LOGON_HOURS
+        647 ERROR_ACCT_DISABLED
+        648 ERROR_PASSWD_EXPIRED
+        649 ERROR_NO_DIALIN_PERMISSION
+        691 ERROR_AUTHENTICATION_FAILURE
+        709 ERROR_CHANGING_PASSWORD
+
+   The "r" is a single character ASCII flag set to '1' if a retry is
+
+
+
+Kamath & Palekar              Informational                    [Page 13]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   allowed, and '0' if not.  Typically, errors 646, 647, and 649 are
+   non-retryable (R=0). When the authenticator sets this flag to '1' it
+   disables short timeouts, expecting the peer to prompt the user for
+   new credentials and resubmit the response. The
+   "cccccccccccccccccccccccccccccccc" is the ASCII representation of a
+   hexadecimal challenge value.  This field MUST be exactly 32 octets
+   long and MUST be present.
+
+   The "vvvvvvvvvv" is the ASCII representation of a decimal version
+   code (need not be 10 digits) indicating the password changing
+   protocol version supported on the server.  For EAP MS-CHAP-V2, this
+   value MUSTalways be 3.
+
+   <msg> is human-readable text in the appropriate charset and language
+   [RFC2484].
+
+2.6.  Failure Response packet
+
+When the peer receives a Failure Request packet that is retryable (R=1),
+the authentication MAY be retried. For example, a new Response packet,
+or Change Password packet MAY be sent. In these cases a Failure Response
+packet is not sent.
+
+However, if the EAP MS-CHAPv2 Failure Request is non-retryable (R=0),
+then the peer SHOULD transmit an EAP MS-CHAP-v2 Response packet with the
+OpCode field set to 4 (Failure). The format of the EAP MS-CHAP-v2
+Failure Response packet is shown below. The fields are transmitted from
+left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   2 - Response
+
+Identifier
+
+   The Identifier field is one octet and contains the value included in
+   the EAP Request to which it responds.
+
+
+
+
+
+
+Kamath & Palekar              Informational                    [Page 14]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+Length
+
+   6
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   4 - Failure
+
+2.7.  Change-Password packet
+
+The Change-Password packet does not appear in either standard CHAP or
+MS-CHAP-V1.  It allows the peer to change the password on the account
+specified in the preceding Response packet.  The Change-Password packet
+should be sent only if the authenticator reports ERROR_PASSWD_EXPIRED
+(E=648) in the Message field of the Failure packet.
+
+The format of the EAP MS-CHAP-v2 Change Password packet is shown below.
+The fields are transmitted from left to right.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Code      |   Identifier  |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |   OpCode      |  MS-CHAPv2-ID |  MS-Length...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   MS-Length   |                    Data...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Code
+
+   2 - Response
+
+Identifier
+
+   The Identifier field is one octet and aids in matching responses with
+   requests.  The value is the Identifier of the received Failure packet
+   to which this packet responds.
+
+Length
+
+   The Length field is two octets and indicates the length of the EAP
+   packet including the Code, Identifier, Length, Type, OpCode, MS-
+   CHAPv2-ID, MS-Length and Data  fields.  Octets outside the range of
+
+
+
+Kamath & Palekar              Informational                    [Page 15]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   the Length field should be treated as Data Link Layer padding and
+   should be ignored on reception. For the Change Password packet, the
+   length = 591.
+
+Type
+
+   26 - EAP MS-CHAP-V2
+
+OpCode
+
+   7 - Change Password
+
+MS-CHAPv2-ID
+
+   The MS-CHAPv2-ID field is one octet and aids in matching MSCHAP-v2
+   responses with requests.  Typically, the MS-CHAPv2-ID field is the
+   same as the Identifier field.
+
+MS-Length
+
+   The MS-Length field is two octets and MUST be set to the value of the
+   Length field minus 5.
+
+Data
+
+   The Data field is 582 octets in length, and is subdivided as follows:
+
+        516 octets : Encrypted-Password
+         16 octets : Encrypted-Hash
+         16 octets : Peer-Challenge
+          8 octets : Reserved
+         24 octets : NT-Response
+          2-octet  : Flags
+
+Encrypted-Password
+
+   The Encrypted-Password field is 516 octets in length, and contains
+   the PWBLOCK form of the new Windows NT password encrypted with the
+   old Windows NT password hash, as output by the
+   NewPasswordEncryptedWithOldNtPasswordHash() routine defined in
+   [RFC2759], Section 8.9.
+
+Encrypted-Hash
+
+   The Encrypted-Hash field is 16 octets in length and contains the old
+   Windows NT password hash encrypted with the new Windows NT password
+   hash, as output by the
+   OldNtPasswordHashEncryptedWithNewNtPasswordHash() routine, defined in
+
+
+
+Kamath & Palekar              Informational                    [Page 16]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+   [RFC2759], Section 8.12.
+
+Peer-Challenge
+
+   The Peer-Challenge field is 16 octets in length, and contains a
+   16-octet random quantity, as described in the Response packet
+   description.
+
+Reserved
+
+   8 octets, must be zero.
+
+NT-Response
+
+   The NT-Response field is 24 octets in length and is as described in
+   the Response packet description. However it is calculated on the new
+   password and the challenge received in the Failure packet.
+
+Flags
+
+   The Flags field is two octets in length.  It is a bit field of option
+   flags where 0 is the least significant bit of the 16-bit quantity.
+   The format of this field is illustrated in the following diagram:
+
+                  1
+        5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+       Bits 0-15
+       Reserved, always clear (0).
+
+2.8.  Alternative failure behavior
+
+Rather than sending a Failure Request as described in Section 2.5, if
+the error is non-retryable (e.g. R=0), or if the maximum number of
+retries has been exhausted, then the Authenticator MAY terminate the
+authentication conversation. Where EAP MS-CHAP-V2 is running standalone
+(e.g. without PEAP), this will result in transmission of an EAP Failure
+message to the authenticator. Since EAP Failure packets do not carry
+additional data, no error message may be transmitted to the peer.
+
+2.9.  Known bugs
+
+In Windows XP SP1, Failure Request packets are only sent where the error
+is retryable (R=1). Rather than sending a Failure Request with a non-
+retryable error (R=0), a Windows XP SP1 authenticator will terminate
+
+
+
+Kamath & Palekar              Informational                    [Page 17]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+authentication.  This is undesirable, because it prevents non-retryable
+error messages from being received by the peer. A Windows XP SP1 host,
+on receiving a Failure Request packet with a non-retryable error (R=0),
+will silently discard the packet.
+
+Since a Windows XP SP1 peer will respond to a retryable (R=1) Failure
+Request by retrying authentication (such as by sending a Response or
+Change-Password packet), and non-retryable (R=0) Failure Requests are
+silently discarded, Windows XP SP1 peers do not send Failure Response
+packets. If a Windows XP SP1 authenticator receives a Failure Response
+packet, it will be silently discarded.
+
+3.  Normative references
+
+[RFC1320] Rivest, R., "MD4 Message Digest Algorithm", RFC 1320, April
+          1992.
+
+[RFC1994] Simpson, W., "PPP Challenge Handshake Authentication Protocol
+          (CHAP)", RFC 1994, August 1996.
+
+[RFC1750] Eastlake, D., Crocker, S. and J. Schiller, "Randomness
+          Recommendations for Security", RFC 1750, December 1994.
+
+[RFC2119] Bradner, S., "Key words for use in RFCs to Indicate
+          Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+[RFC2284] Blunk, L., Vollbrecht, J., "PPP Extensible Authentication
+          Protocol (EAP)", RFC 2284, March 1998.
+
+[RFC2433] Zorn, G. and Cobb, S., "Microsoft PPP CHAP Extensions", RFC
+          2433, October 1998.
+
+[RFC2484] Zorn, G., "PPP LCP Internationalization Configuration Option",
+          RFC 2484, January 1999.
+
+[RFC2759] Zorn, G., "Microsoft PPP CHAP Extensions, Version 2", RFC
+          2759, January 2000.
+
+[RC4]     RC4 is a proprietary encryption algorithm available under
+          license from RSA Data Security Inc.  For licensing
+          information, contact:
+                            RSA Data Security, Inc.
+                            100 Marine Parkway
+                            Redwood City, CA 94065-1031
+
+[IEEE8021X]
+          IEEE Standards for Local and Metropolitan Area Networks: Port
+          Based Network Access Control, IEEE Std 802.1X-2001, June 2001.
+
+
+
+Kamath & Palekar              Informational                    [Page 18]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+[SHA1]    "Secure Hash Standard", Federal Information Processing
+          Standards Publication 180-1, National Institute of Standards
+          and Technology, April 1995.
+
+[UNICODE] "The Unicode Standard, Version 2.0", The Unicode Consortium,
+          Addison-Wesley, 1996. ISBN 0-201-48345-9.
+
+4.  Informative references
+
+[RFC1570] Simpson, W., Editor, "PPP LCP Extensions", RFC 1570, January
+          1994.
+
+[RFC1661] Simpson, W., "The Point-to-Point Protocol (PPP)", STD 51, RFC
+          1661, July 1994.
+
+[DES]     "Data Encryption Standard (DES)", Federal Information
+          Processing Standard Publication 46-2, National Institute of
+          Standards and Technology, December 1993.
+
+[DESMODES]
+          "DES Modes of Operation", Federal Information Processing
+          Standards Publication 81, National Institute of Standards and
+          Technology, December 1980.
+
+[RFC3079] Zorn, G., "Deriving Keys for use with Microsoft Point-to-Point
+          Encryption (MPPE)", RFC 3079, March 2001.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kamath & Palekar              Informational                    [Page 19]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+Appendix A - Examples
+
+In the case where the EAP-MS-CHAP-V2 authentication is successful, the
+conversation will appear as follows:
+
+Peer                   Authenticator
+----                   -------------
+                       <- EAP-Request/Identity
+EAP-Response/
+Identity (MyID) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Challenge)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Request/
+                          EAP-Type=EAP-MS-CHAP-V2
+                          (Success)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Success) ->
+                       <- EAP-Success
+
+In the case where the EAP MS-CHAP-V2 authentication is unsuccessful, due
+to a retryable error, the conversation will appear as follows (assuming
+a maximum of two retries):
+
+Peer                   Authenticator
+----                   -------------
+                       <- EAP-Request/Identity
+EAP-Response/
+Identity (MyID) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Challenge)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Request/
+                          EAP-Type=EAP-MS-CHAP-V2
+                         (Failure, R=1)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP-MS-CHAP-V2
+                         (Failure, R=1)
+
+
+
+Kamath & Palekar              Informational                    [Page 20]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response) ->
+
+                       <- EAP-Failure
+
+In the case where the EAP MS-CHAP-V2 authentication is unsuccessful, due
+to a non-retryable error, the conversation will appear as follows
+(Windows XP SP1):
+
+Peer                   Authenticator
+----                   -------------
+                       <- EAP-Request/Identity
+EAP-Response/
+Identity (MyID) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Challenge)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Failure
+
+In the case where the EAP MS-CHAP-V2 authentication is unsuccessful, due
+to a non-retryable error, and a Failure Request packet is sent, the
+conversation will appear as follows (behavior not exhibited by Windows
+XP SP1):
+
+Peer                   Authenticator
+----                   -------------
+                       <- EAP-Request/Identity
+EAP-Response/
+Identity (MyID) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Challenge)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Failure, R=0)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Failure)->
+                       <- EAP-Failure
+
+In the case where the EAP MS-CHAP-V2 authentication is initially
+
+
+
+Kamath & Palekar              Informational                    [Page 21]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+unsuccessful due to password expiration, but the subsequent Change
+Password operation succeeds, the conversation will appear as follows:
+
+Peer                   Authenticator
+----                   -------------
+                       <- EAP-Request/Identity
+EAP-Response/
+Identity (MyID) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Challenge)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Request/
+                          EAP-Type=MS-CHAP-V2
+                          (Failure, R=1,
+                           Message=ERROR_PASSWD_EXPIRED (E=648))
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Change-Password) ->
+                       <- EAP-Request/
+                          EAP-Type=MS-CHAP-V2
+                          (Success)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Success) ->
+                        <- EAP-Success
+
+In the case where the EAP MS-CHAP-V2 authentication is unnsuccessful due
+to password failure and a successful retry occurs, the conversation
+appears as follows:
+
+Peer                   Authenticator
+----                   -------------
+                       <- EAP-Request/Identity
+EAP-Response/
+Identity (MyID) ->
+                       <- EAP-Request/
+                          EAP-Type=EAP MS-CHAP-V2
+                          (Challenge)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Request/
+                          EAP-Type=MS-CHAP-V2
+                         (Failure, R=1,
+                          Message=ERROR_AUTHENTICATION_FAILURE (E=691)
+
+
+
+Kamath & Palekar              Informational                    [Page 22]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Response)->
+                       <- EAP-Request/
+                          EAP-Type=MS-CHAP-V2
+                          (Success)
+EAP-Response/
+EAP-Type=EAP-MS-CHAP-V2
+(Success) ->
+                       <- EAP-Success
+
+Acknowledgments
+
+Thanks to Mark Wodrich and Narendra Gidwani of Microsoft for discussions
+relating to this document.
+
+Authors' Addresses
+
+Vivek Kamath
+Ashwin Palekar
+Microsoft Corporation
+One Microsoft Way
+Redmond, WA 98052
+
+EMail: {vivek, ashwinp}@microsoft.com
+Phone: +1 425 882 8080
+Fax:   +1 425 936 7329
+
+Full Copyright Statement
+
+Copyright (C) The Internet Society (2002).  All Rights Reserved.
+This document and translations of it may be copied and furnished to
+others, and derivative works that comment on or otherwise explain it or
+assist in its implementation may be prepared, copied, published and
+distributed, in whole or in part, without restriction of any kind,
+provided that the above copyright notice and this paragraph are included
+on all such copies and derivative works.  However, this document itself
+may not be modified in any way, such as by removing the copyright notice
+or references to the Internet Society or other Internet organizations,
+except as needed for the purpose of developing Internet standards in
+which case the procedures for copyrights defined in the Internet
+Standards process must be followed, or as required to translate it into
+languages other than English.  The limited permissions granted above are
+perpetual and will not be revoked by the Internet Society or its
+successors or assigns.  This document and the information contained
+herein is provided on an "AS IS" basis and THE INTERNET SOCIETY AND THE
+INTERNET ENGINEERING TASK FORCE DISCLAIMS ALL WARRANTIES, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+
+
+
+Kamath & Palekar              Informational                    [Page 23]
+
+
+
+
+
+INTERNET-DRAFT                EAP MS-CHAPv2             2 September 2002
+
+
+INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE."
+
+Expiration Date
+
+This memo is filed as <draft-kamath-pppext-eap-mschapv2-00.txt>,  and
+expires March 19, 2003.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kamath & Palekar              Informational                    [Page 24]
+
+

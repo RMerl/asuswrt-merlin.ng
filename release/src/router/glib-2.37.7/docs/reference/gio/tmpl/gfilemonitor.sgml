@@ -1,0 +1,102 @@
+<!-- ##### SECTION Title ##### -->
+GFileMonitor
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GFileMonitorEvent ##### -->
+<para>
+
+</para>
+
+@G_FILE_MONITOR_EVENT_CHANGED: 
+@G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT: 
+@G_FILE_MONITOR_EVENT_DELETED: 
+@G_FILE_MONITOR_EVENT_CREATED: 
+@G_FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED: 
+@G_FILE_MONITOR_EVENT_PRE_UNMOUNT: 
+@G_FILE_MONITOR_EVENT_UNMOUNTED: 
+@G_FILE_MONITOR_EVENT_MOVED: 
+
+<!-- ##### STRUCT GFileMonitor ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GFileMonitor::changed ##### -->
+<para>
+
+</para>
+
+@gfilemonitor: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+
+<!-- ##### ARG GFileMonitor:cancelled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GFileMonitor:rate-limit ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_file_monitor_cancel ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_monitor_is_cancelled ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_monitor_set_rate_limit ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@limit_msecs: 
+
+
+<!-- ##### FUNCTION g_file_monitor_emit_event ##### -->
+<para>
+
+</para>
+
+@monitor: 
+@child: 
+@other_file: 
+@event_type: 
+
+

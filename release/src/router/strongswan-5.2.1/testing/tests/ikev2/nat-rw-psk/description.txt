@@ -1,0 +1,6 @@
+The roadwarriors <b>alice</b> and <b>venus</b> sitting behind the NAT router <b>moon</b> set up
+tunnels to gateway <b>sun</b>. UDP encapsulation is used to traverse the NAT router.
+Both roadwarriors share the same Pre-Shared Key (PSK) with the gateway <b>sun</b>.
+<b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules that let pass
+the tunneled traffic. In order to test the tunnel, the NAT-ed hosts <b>alice</b> and <b>venus</b>
+ping the client <b>bob</b> behind the gateway <b>sun</b>.

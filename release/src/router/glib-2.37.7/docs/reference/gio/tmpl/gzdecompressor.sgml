@@ -1,0 +1,58 @@
+<!-- ##### SECTION Title ##### -->
+GZlibDecompressor
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GZlibDecompressor ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GZlibDecompressor:file-info ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GZlibDecompressor:format ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_zlib_decompressor_new ##### -->
+<para>
+
+</para>
+
+@format: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_zlib_decompressor_get_file_info ##### -->
+<para>
+
+</para>
+
+@decompressor: 
+@Returns: 
+
+

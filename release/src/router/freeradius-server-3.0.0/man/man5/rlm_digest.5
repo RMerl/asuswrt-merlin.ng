@@ -1,0 +1,79 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_digest 5 "31 March 2005" "" "FreeRADIUS Module"
+.SH NAME
+rlm_digest \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_digest\fP module authenticates RADIUS Access-Request
+packets that contain Cisco SIP digest authentication attributes.  The
+module should be listed in the \fIauthorize\fP and \fIauthenticate\fP
+sections of \fIradiusd.conf\fP.
+.SH CONFIGURATION
+The digest module requires no additional configuration items.  When it
+is being used to authenticate requests, however, it does require
+access to the clear-text password for the user.  Hashed passwords are
+not acceptable, and will not work.
+.SH EXAMPLES
+Add the following lines to the top of your 'raddb/users' file:
+.PP
+.DS
+#---
+.br
+test	Auth-Type := Digest, User-Password = "test"
+.br
+	Reply-Message = "Hello, test with digest"
+.br
+#---
+.DE
+
+Once the server has been started (debugging mode is recommended),
+use '\fIradclient\fP to send the following packet to the server:
+.PP
+.DS
+$  radclient -f digest localhost auth testing123
+.DE
+
+Where 'digest' is a file containing:
+.PP
+.DS
+  User-Name = "test",
+.br
+  Digest-Response = "631d6d73147add2f9e437f59bbc3aeb7",
+.br
+  Digest-Realm = "testrealm",
+.br
+  Digest-Nonce = "1234abcd",
+.br
+  Digest-Method = "INVITE",
+.br
+  Digest-URI = "sip:5555551212@example.com",
+.br
+  Digest-Algorithm = "MD5",
+.br
+  Digest-User-Name = "test",
+.br
+  Message-Authenticator = ""
+.DE
+
+You should see the authentication succeed.
+
+.SH SECTIONS
+.BR authorize,
+.BR authenticate
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf,
+.I draft-sterman-aaa-sip-00.txt
+.PP
+.SH AUTHOR
+Alan DeKok <aland@ox.org>

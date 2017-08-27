@@ -1,0 +1,4 @@
+"apd_enable"  "apd Enable"  "CHOICE"  "2"  "0"  "1"  "FALSE"  "0"
+"sputnik_mjid_type" "mjid type" "MJIDTYPE" "3" "0" "1" "2" "FALSE" "0"
+"sputnik_mjid" "mjid" "NULL" "TRUE" "0"
+"sputnik_mode" "sputnik mode" "NULL" "TRUE" "0"

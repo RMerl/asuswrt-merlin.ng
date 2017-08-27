@@ -1,0 +1,413 @@
+<!-- ##### SECTION Title ##### -->
+Double-ended Queues
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GQueue ##### -->
+<para>
+
+</para>
+
+@head: 
+@tail: 
+@length: 
+
+<!-- ##### FUNCTION g_queue_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_free ##### -->
+<para>
+
+</para>
+
+@queue: 
+
+
+<!-- ##### FUNCTION g_queue_free_full ##### -->
+<para>
+
+</para>
+
+@queue: 
+@free_func: 
+
+
+<!-- ##### MACRO G_QUEUE_INIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_queue_init ##### -->
+<para>
+
+</para>
+
+@queue: 
+
+
+<!-- ##### FUNCTION g_queue_clear ##### -->
+<para>
+
+</para>
+
+@queue: 
+
+
+<!-- ##### FUNCTION g_queue_is_empty ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_get_length ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_reverse ##### -->
+<para>
+
+</para>
+
+@queue: 
+
+
+<!-- ##### FUNCTION g_queue_copy ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_foreach ##### -->
+<para>
+
+</para>
+
+@queue: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_queue_find ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_find_custom ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_sort ##### -->
+<para>
+
+</para>
+
+@queue: 
+@compare_func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_queue_push_head ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+
+
+<!-- ##### FUNCTION g_queue_push_tail ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+
+
+<!-- ##### FUNCTION g_queue_push_nth ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@n: 
+
+
+<!-- ##### FUNCTION g_queue_pop_head ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_pop_tail ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_pop_nth ##### -->
+<para>
+
+</para>
+
+@queue: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_peek_head ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_peek_tail ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_peek_nth ##### -->
+<para>
+
+</para>
+
+@queue: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_index ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_remove ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_remove_all ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_insert_before ##### -->
+<para>
+
+</para>
+
+@queue: 
+@sibling: 
+@data: 
+
+
+<!-- ##### FUNCTION g_queue_insert_after ##### -->
+<para>
+
+</para>
+
+@queue: 
+@sibling: 
+@data: 
+
+
+<!-- ##### FUNCTION g_queue_insert_sorted ##### -->
+<para>
+
+</para>
+
+@queue: 
+@data: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_queue_push_head_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@link_: 
+
+
+<!-- ##### FUNCTION g_queue_push_tail_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@link_: 
+
+
+<!-- ##### FUNCTION g_queue_push_nth_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@n: 
+@link_: 
+
+
+<!-- ##### FUNCTION g_queue_pop_head_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_pop_tail_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_pop_nth_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_peek_head_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_peek_tail_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_peek_nth_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_link_index ##### -->
+<para>
+
+</para>
+
+@queue: 
+@link_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_queue_unlink ##### -->
+<para>
+
+</para>
+
+@queue: 
+@link_: 
+
+
+<!-- ##### FUNCTION g_queue_delete_link ##### -->
+<para>
+
+</para>
+
+@queue: 
+@link_: 
+
+

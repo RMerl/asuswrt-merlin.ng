@@ -1,0 +1,19 @@
+#!/bin/sh
+# vim:ts=4:et
+# $Id: sysstat.postrm 1524 2011-06-15 05:30:00Z robert $
+
+PACKAGE="sysstat"
+DEFAULT="/etc/default/$PACKAGE"
+
+set -e
+# remove logfiles and default file when package is purged
+if [ "$1" =  "purge" ] ; then
+    rm -rf /var/log/sysstat
+    rm -f "$DEFAULT"
+    which ucf >/dev/null && ucf --purge "$DEFAULT"
+    which ucfr >/dev/null && ucfr --purge "$PACKAGE" "$DEFAULT"
+fi
+
+#DEBHELPER#
+
+exit 0

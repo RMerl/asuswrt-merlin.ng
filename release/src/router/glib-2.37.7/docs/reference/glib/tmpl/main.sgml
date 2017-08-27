@@ -1,0 +1,1032 @@
+<!-- ##### SECTION Title ##### -->
+The Main Event Loop
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GMainLoop ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_main_loop_new ##### -->
+<para>
+
+</para>
+
+@context: 
+@is_running: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_loop_ref ##### -->
+<para>
+
+</para>
+
+@loop: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_loop_unref ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### FUNCTION g_main_loop_run ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### FUNCTION g_main_loop_quit ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### FUNCTION g_main_loop_is_running ##### -->
+<para>
+
+</para>
+
+@loop: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_loop_get_context ##### -->
+<para>
+
+</para>
+
+@loop: 
+@Returns: 
+
+
+<!-- ##### MACRO g_main_new ##### -->
+<para>
+
+</para>
+
+@is_running: 
+
+
+<!-- ##### MACRO g_main_destroy ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### MACRO g_main_run ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### MACRO g_main_quit ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### MACRO g_main_is_running ##### -->
+<para>
+
+</para>
+
+@loop: 
+
+
+<!-- ##### MACRO G_PRIORITY_HIGH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PRIORITY_DEFAULT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PRIORITY_HIGH_IDLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PRIORITY_DEFAULT_IDLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PRIORITY_LOW ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_SOURCE_CONTINUE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_SOURCE_REMOVE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GMainContext ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_main_context_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_ref ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_unref ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_main_context_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_iteration ##### -->
+<para>
+
+</para>
+
+@context: 
+@may_block: 
+@Returns: 
+
+
+<!-- ##### MACRO g_main_iteration ##### -->
+<para>
+
+</para>
+
+@may_block: 
+
+
+<!-- ##### FUNCTION g_main_context_pending ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### MACRO g_main_pending ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_main_context_find_source_by_id ##### -->
+<para>
+
+</para>
+
+@context: 
+@source_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_find_source_by_user_data ##### -->
+<para>
+
+</para>
+
+@context: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_find_source_by_funcs_user_data ##### -->
+<para>
+
+</para>
+
+@context: 
+@funcs: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_wakeup ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_main_context_acquire ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_release ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_main_context_is_owner ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_wait ##### -->
+<para>
+
+</para>
+
+@context: 
+@cond: 
+@mutex: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_prepare ##### -->
+<para>
+
+</para>
+
+@context: 
+@priority: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_query ##### -->
+<para>
+
+</para>
+
+@context: 
+@max_priority: 
+@timeout_: 
+@fds: 
+@n_fds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_check ##### -->
+<para>
+
+</para>
+
+@context: 
+@max_priority: 
+@fds: 
+@n_fds: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_dispatch ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_main_context_set_poll_func ##### -->
+<para>
+
+</para>
+
+@context: 
+@func: 
+
+
+<!-- ##### FUNCTION g_main_context_get_poll_func ##### -->
+<para>
+
+</para>
+
+@context: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GPollFunc ##### -->
+<para>
+
+</para>
+
+@ufds: 
+@nfsd: 
+@timeout_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_add_poll ##### -->
+<para>
+
+</para>
+
+@context: 
+@fd: 
+@priority: 
+
+
+<!-- ##### FUNCTION g_main_context_remove_poll ##### -->
+<para>
+
+</para>
+
+@context: 
+@fd: 
+
+
+<!-- ##### FUNCTION g_main_depth ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_current_source ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO g_main_set_poll_func ##### -->
+<para>
+
+</para>
+
+@func: 
+
+
+<!-- ##### FUNCTION g_main_context_invoke ##### -->
+<para>
+
+</para>
+
+@context: 
+@function: 
+@data: 
+
+
+<!-- ##### FUNCTION g_main_context_invoke_full ##### -->
+<para>
+
+</para>
+
+@context: 
+@priority: 
+@function: 
+@data: 
+@notify: 
+
+
+<!-- ##### FUNCTION g_main_context_get_thread_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_ref_thread_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_main_context_push_thread_default ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_main_context_pop_thread_default ##### -->
+<para>
+
+</para>
+
+@context: 
+
+
+<!-- ##### FUNCTION g_timeout_source_new ##### -->
+<para>
+
+</para>
+
+@interval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timeout_source_new_seconds ##### -->
+<para>
+
+</para>
+
+@interval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timeout_add ##### -->
+<para>
+
+</para>
+
+@interval: 
+@function: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timeout_add_full ##### -->
+<para>
+
+</para>
+
+@priority: 
+@interval: 
+@function: 
+@data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timeout_add_seconds ##### -->
+<para>
+
+</para>
+
+@interval: 
+@function: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_timeout_add_seconds_full ##### -->
+<para>
+
+</para>
+
+@priority: 
+@interval: 
+@function: 
+@data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_idle_source_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_idle_add ##### -->
+<para>
+
+</para>
+
+@function: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_idle_add_full ##### -->
+<para>
+
+</para>
+
+@priority: 
+@function: 
+@data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_idle_remove_by_data ##### -->
+<para>
+
+</para>
+
+@data: 
+@Returns: 
+
+
+<!-- ##### TYPEDEF GPid ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION GChildWatchFunc ##### -->
+<para>
+
+</para>
+
+@pid: 
+@status: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_child_watch_source_new ##### -->
+<para>
+
+</para>
+
+@pid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_child_watch_add ##### -->
+<para>
+
+</para>
+
+@pid: 
+@function: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_child_watch_add_full ##### -->
+<para>
+
+</para>
+
+@priority: 
+@pid: 
+@function: 
+@data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### STRUCT GPollFD ##### -->
+<para>
+
+</para>
+
+@fd: 
+@fd: 
+@events: 
+@revents: 
+
+<!-- ##### FUNCTION g_poll ##### -->
+<para>
+
+</para>
+
+@fds: 
+@nfds: 
+@timeout: 
+@Returns: 
+
+
+<!-- ##### MACRO G_POLLFD_FORMAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GSource ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION GSourceDummyMarshal ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### STRUCT GSourceFuncs ##### -->
+<para>
+
+</para>
+
+@prepare: 
+@check: 
+@dispatch: 
+@finalize: 
+
+<!-- ##### STRUCT GSourceCallbackFuncs ##### -->
+<para>
+
+</para>
+
+@ref: 
+@unref: 
+@get: 
+
+<!-- ##### FUNCTION g_source_new ##### -->
+<para>
+
+</para>
+
+@source_funcs: 
+@struct_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_ref ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_unref ##### -->
+<para>
+
+</para>
+
+@source: 
+
+
+<!-- ##### FUNCTION g_source_set_funcs ##### -->
+<para>
+
+</para>
+
+@source: 
+@funcs: 
+
+
+<!-- ##### FUNCTION g_source_attach ##### -->
+<para>
+
+</para>
+
+@source: 
+@context: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_destroy ##### -->
+<para>
+
+</para>
+
+@source: 
+
+
+<!-- ##### FUNCTION g_source_is_destroyed ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_set_priority ##### -->
+<para>
+
+</para>
+
+@source: 
+@priority: 
+
+
+<!-- ##### FUNCTION g_source_get_priority ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_set_can_recurse ##### -->
+<para>
+
+</para>
+
+@source: 
+@can_recurse: 
+
+
+<!-- ##### FUNCTION g_source_get_can_recurse ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_get_id ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_get_name ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_set_name ##### -->
+<para>
+
+</para>
+
+@source: 
+@name: 
+
+
+<!-- ##### FUNCTION g_source_set_name_by_id ##### -->
+<para>
+
+</para>
+
+@tag: 
+@name: 
+
+
+<!-- ##### FUNCTION g_source_get_context ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_set_callback ##### -->
+<para>
+
+</para>
+
+@source: 
+@func: 
+@data: 
+@notify: 
+
+
+<!-- ##### USER_FUNCTION GSourceFunc ##### -->
+<para>
+
+</para>
+
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_set_callback_indirect ##### -->
+<para>
+
+</para>
+
+@source: 
+@callback_data: 
+@callback_funcs: 
+
+
+<!-- ##### FUNCTION g_source_set_ready_time ##### -->
+<para>
+
+</para>
+
+@source: 
+@ready_time: 
+
+
+<!-- ##### FUNCTION g_source_get_ready_time ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_add_unix_fd ##### -->
+<para>
+
+</para>
+
+@source: 
+@fd: 
+@events: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_remove_unix_fd ##### -->
+<para>
+
+</para>
+
+@source: 
+@tag: 
+
+
+<!-- ##### FUNCTION g_source_modify_unix_fd ##### -->
+<para>
+
+</para>
+
+@source: 
+@tag: 
+@new_events: 
+
+
+<!-- ##### FUNCTION g_source_query_unix_fd ##### -->
+<para>
+
+</para>
+
+@source: 
+@tag: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_add_poll ##### -->
+<para>
+
+</para>
+
+@source: 
+@fd: 
+
+
+<!-- ##### FUNCTION g_source_remove_poll ##### -->
+<para>
+
+</para>
+
+@source: 
+@fd: 
+
+
+<!-- ##### FUNCTION g_source_add_child_source ##### -->
+<para>
+
+</para>
+
+@source: 
+@child_source: 
+
+
+<!-- ##### FUNCTION g_source_remove_child_source ##### -->
+<para>
+
+</para>
+
+@source: 
+@child_source: 
+
+
+<!-- ##### FUNCTION g_source_get_time ##### -->
+<para>
+
+</para>
+
+@source: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_get_current_time ##### -->
+<para>
+
+</para>
+
+@source: 
+@timeval: 
+
+
+<!-- ##### FUNCTION g_source_remove ##### -->
+<para>
+
+</para>
+
+@tag: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_remove_by_funcs_user_data ##### -->
+<para>
+
+</para>
+
+@funcs: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_source_remove_by_user_data ##### -->
+<para>
+
+</para>
+
+@user_data: 
+@Returns: 
+
+

@@ -1,0 +1,83 @@
+#!@PERL@
+#
+# cryptpasswd	Generate or check md5 and DES hashed passwords.
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+#
+#    Copyright (C) 2001 The FreeRADIUS Project   http://www.freeradius.org
+#
+#    Written by Miquel van Smoorenburg <miquels@cistron-office.nl>
+#
+#    $Id$
+#
+
+use Getopt::Long;
+
+sub check_des {
+	return (crypt("fnord", "aa") =~ m/^aa/);
+}
+
+sub check_md5 {
+	return (crypt("fnord", "\$1\$aa") =~ m/^\$1\$/);
+}
+
+sub usage {
+	$name = $0;
+	$name =~ s,.*/,,;
+
+	die "Usage: $name [--des|--md5|--check] plaintext_password [crypted_password]\n";
+}
+
+@saltc = ( '.', '/', '0'..'9', 'A'..'Z', 'a'..'z' );
+
+#
+#	MAIN
+#
+sub main {
+
+	Getopt::Long::Configure("no_ignore_case", "bundling");
+	my @options = (	"des|d+", "md5|m+", "check|c+" );
+	usage() unless (eval { Getopt::Long::GetOptions(@options) } );
+
+	if ($opt_check) {
+		usage unless ($#ARGV == 1);
+		if (crypt($ARGV[0], $ARGV[1]) ne $ARGV[1]) {
+			print "Password BAD\n";
+			return 0;
+		} else {
+			print "Password OK\n";
+			return 1;
+		}
+	}
+
+	$opt_des = 1 unless ($opt_des || $opt_md5);
+	usage() unless ($#ARGV == 0);
+
+	die "DES password hashing not available\n"
+		if ($opt_des && !check_des());
+	die "MD5 password hashing not available\n"
+		if ($opt_md5 && !check_md5());
+
+	$salt = ($opt_md5 ? '$1$' : '');
+	for ($i = 0; $i < ($opt_md5 ? 8 : 2); $i++) {
+		$salt .= $saltc[rand 64];
+	}
+	$salt .= '$' if ($opt_md5);
+	print crypt($ARGV[0], $salt), "\n";
+
+	1;
+}
+
+exit !main();

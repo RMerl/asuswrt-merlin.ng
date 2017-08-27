@@ -1,0 +1,73 @@
+# -*- text -*-
+######################################################################
+#
+#	Control socket interface.
+#
+#	In the future, we will add username/password checking for
+#	connections to the control socket.  We will also add
+#	command authorization, where the commands entered by the
+#	administrator are run through a virtual server before
+#	they are executed.
+#
+#	For now, anyone who has permission to connect to the socket
+#	has nearly complete control over the server.  Be warned!
+#
+#	This functionality is NOT enabled by default.
+#
+#	See also the "radmin" program, which is used to communicate
+#	with the server over the control socket.
+#
+#	$Id$
+#
+######################################################################
+listen {
+	#
+	#  Listen on the control socket.
+	#
+	type = control
+
+	#
+	#  Socket location.
+	#
+	#  This file is created with the server's uid and gid.
+	#  It's permissions are r/w for that user and group, and
+	#  no permissions for "other" users.  These permissions form
+	#  minimal security, and should not be relied on.
+	#
+	socket = ${run_dir}/${name}.sock
+
+	#
+	#  The following two parameters perform authentication and
+	#  authorization of connections to the control socket.
+	#
+	#  If not set, then ANYONE can connect to the control socket,
+	#  and have complete control over the server.  This is likely
+	#  not what you want.
+	#
+	#  One, or both, of "uid" and "gid" should be set.  If set, the
+	#  corresponding value is checked.  Unauthorized users result
+	#  in an error message in the log file, and the connection is
+	#  closed.
+	#
+
+	#
+	#  Name of user that is allowed to connect to the control socket.
+	#
+#	uid = radius
+
+	#
+	#  Name of group that is allowed to connect to the control socket.
+	#
+#	gid = radius
+
+	#
+	#  Access mode.
+	#
+	#  This can be used to give *some* administrators access to
+	#  monitor the system, but not to change it.
+	#
+	#	ro = read only access (default)
+	#	rw = read/write access.
+	#
+#	mode = rw
+}

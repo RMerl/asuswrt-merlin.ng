@@ -1,0 +1,21 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+carol::echo 0 > /proc/sys/net/ipv4/ip_forward
+dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
+moon::sed -i "s/NOW/`date +%s`/g" /etc/pts/data1.sql
+moon::sed -i "s:DEBIAN_VERSION:\`cat /etc/debian_version\`:" /etc/pts/data1.sql
+moon::cd /usr/local/share/strongswan/templates/database/imv; cat tables.sql data.sql /etc/pts/data1.sql | sqlite3 /etc/pts/config.db
+moon::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+dave::cat /etc/tnc_config
+moon::ipsec start
+carol::ipsec start
+dave::ipsec start
+carol::sleep 1
+carol::ipsec up home
+dave::ipsec up home
+dave::sleep 1
+moon::ipsec attest --packages --product 'Debian 7.4 x86_64'
+moon::ipsec attest --sessions
+moon::ipsec attest --devices

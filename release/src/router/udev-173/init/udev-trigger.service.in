@@ -1,0 +1,10 @@
+[Unit]
+Description=udev Coldplug all Devices
+Wants=udev.service
+After=udev-kernel.socket udev-control.socket
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=@sbindir@/udevadm trigger --type=subsystems --action=add ; @sbindir@/udevadm trigger --type=devices --action=add

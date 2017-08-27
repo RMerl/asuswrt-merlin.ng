@@ -1,0 +1,82 @@
+<!-- ##### SECTION Title ##### -->
+GPollableOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GPollableOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GPollableOutputStreamInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@can_poll: 
+@is_writable: 
+@create_source: 
+@write_nonblocking: 
+
+<!-- ##### FUNCTION g_pollable_output_stream_can_poll ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_output_stream_is_writable ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_output_stream_create_source ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_pollable_output_stream_write_nonblocking ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

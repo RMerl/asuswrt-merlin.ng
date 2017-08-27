@@ -1,0 +1,9 @@
+00-Makefile.patch
+01-isag.patch
+02-sargraph.patch
+03-manpages.patch
+04-configs.patch
+05-defaultfile_message.patch
+06-exec.patch
+08-scripts.patch
+09-format-warning.patch

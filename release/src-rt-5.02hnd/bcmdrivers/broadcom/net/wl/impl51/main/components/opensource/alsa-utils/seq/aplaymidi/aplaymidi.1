@@ -1,0 +1,55 @@
+.TH APLAYMIDI 1 "15 Feb 2004"
+
+.SH NAME
+aplaymidi \- play Standard MIDI Files
+
+.SH SYNOPSIS
+.B aplaymidi
+\-p client:port[,...] [\-d delay] midifile ...
+
+.SH DESCRIPTION
+.B aplaymidi
+is a command-line utility that plays the specified MIDI file(s) to one
+or more ALSA sequencer ports.
+
+.SH OPTIONS
+
+.TP
+.I \-h, \-\-help
+Prints a list of options.
+
+.TP
+.I \-V, \-\-version
+Prints the current version.
+
+.TP
+.I \-l, \-\-list
+Prints a list of possible output ports.
+
+.TP
+.I \-p, \-\-port=client:port,...
+Sets the sequencer port(s) to which the events in the MIDI file(s) are
+sent.
+
+A client can be specified by its number, its name, or a prefix of its
+name. A port is specified by its number; for port 0 of a client, the
+":0" part of the port specification can be omitted.
+
+For compatibility with
+.B pmidi(1),
+the port specification is taken from the
+.I ALSA_OUTPUT_PORTS
+environment variable if none is given on the command line.
+
+.TP
+.I \-d, \-\-delay=seconds
+Specifies how long to wait after the end of each MIDI file,
+to allow the last notes to die away.
+
+.SH SEE ALSO
+pmidi(1)
+.br
+playmidi(1)
+
+.SH AUTHOR
+Clemens Ladisch <clemens@ladisch.de>

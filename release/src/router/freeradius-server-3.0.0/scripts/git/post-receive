@@ -1,0 +1,140 @@
+#!/bin/sh
+# git Post-receive configuration update script
+#
+# To install:
+# * Enable r/w control socket for the user you're pushing with
+# * cd <config-dir>/raddb git config receive.denyCurrentBranch ignore
+# * cp ./post-receive <config-dir>/raddb/.git/hooks/
+# * # Edit the capitalized variables below to match your environment.
+#
+# Copyright 2012  Arran Cudbard-Bell <a.cudbard-bell@freeradius.org>
+
+# Tag to update when we successfully manage to start the server with a new configuration
+: ${STABLE_TAG='stable'}
+
+# Descriptive name of daemon
+: ${DAEMON_DESC='FreeRADIUS'}
+
+# Command used to restart the RADIUS daemon
+: ${DAEMON_REST='radmin -e hup'}
+
+# Command used to verify the new configuration
+: ${DAEMON_CONF='radiusd -Cxl stdout'}
+
+# Command used to execute git functions
+: ${GIT_EXEC='env -i git'}
+
+# Abort if there are local untracked files
+: ${ABORT_UNTRACKED=true}
+
+# Push changes to any remotes we have configured
+: ${PUSH_TO_REMOTES=false}
+
+while read oldrev newrev refname
+do
+:
+done
+
+status () {
+	if [ $1 -ne 0 ]; then
+		echo "failed"
+	else
+		echo "ok"
+	fi
+}
+
+conf_rollback () {
+	# Use stable tag if it exists...
+	if $GIT_EXEC show-ref $STABLE_TAG > /dev/null 2>&1; then
+		echo -n "Attempting to roll config back to tag: \"$STABLE_TAG\"... "
+		$GIT_EXEC reset --hard $STABLE_TAG; ret=$?
+	else
+		echo -n "Attempting to roll config back to commit: \"$oldrev\"... "
+		$GIT_EXEC reset --hard $oldrev; ret=$?
+	fi
+
+	status $ret
+	return $ret
+}
+
+conf_check () {
+	echo -n "Checking new configuration... "
+	$DAEMON_CONF; ret=$?
+
+	status $ret
+	return $ret
+}
+
+daemon_restart () {
+	echo -n "Restarting server... "
+	
+	$DAEMON_REST > /dev/null 2>&1; ret=$?
+
+	status $ret
+	return $ret 
+}
+
+# Reset the current working directory state
+cd ..
+
+# Friendly update of working copy to head state
+$GIT_EXEC checkout -f
+if $ABORT_UNTRACKED && [ `$GIT_EXEC status --porcelain | wc -l` -gt 0 ]; then
+	echo "WARNING: Untracked changes have been made to this git repository,"
+	echo "changes have been committed but untracked files should be removed,"
+	echo "committed or added to .gitignore and $DAEMON_DESC restarted manually."
+	$GIT_EXEC status --short
+
+	if ! conf_check
+		then exit 64
+	fi
+
+	echo "WARNING: $DAEMON_DESC found errors in the configuration,"
+	echo "these errors should be corrected before updating working copy."
+	exit 65
+fi
+
+# Clean out all untracked files and directories (if there are local files you
+# wish to keep, they should be add to .gitignore)
+if ! $GIT_EXEC clean -d -f
+	then exit $?
+fi
+
+# Reset all tracked files to the HEAD state
+if ! $GIT_EXEC reset --hard
+	then exit $?
+fi
+
+# Check if the server finds any errors in the new config
+if ! conf_check then
+	echo "WARNING: $DAEMON_DESC found errors in the configuration,"
+	echo "please fix the errors and push the corrected configuration."
+
+	conf_rollback
+	exit 64
+else
+	if ! daemon_restart; then
+		if ! conf_rollback; then
+			echo "WARNING: Manually verify $DAEMON_DESC status immediately!"
+			exit 64
+		fi
+
+		if ! daemon_restart; then
+			echo "WARNING: Manually verify $DAEMON_DESC status immediately!"
+			exit 64	
+		fi
+
+		exit 64
+	fi
+	
+	$GIT_EXEC tag -f $STABLE_TAG $newrev
+fi
+
+if $PUSH_TO_REMOTES; then
+        echo "Pushing to remote repositories"
+        for remote in `$GIT_EXEC remote`; do
+                $GIT_EXEC push "$remote"
+        done
+fi
+
+exit 0

@@ -1,0 +1,274 @@
+#
+#  Tests for parsing conditional expressions.
+#
+#  $Id$
+#
+
+condition a == b
+data a == b
+
+condition a == b || c == d
+data a == b || c == d
+
+#
+#  A bunch of errors, in the order that the error strings
+#  appear in parser.c
+#
+condition ("foo\
+data ERROR offset 6 End of string after escape
+
+condition ("foo
+data ERROR offset 2 Unterminated string
+
+condition ()
+data ERROR offset 1 Empty string is invalid
+
+condition (!)
+data ERROR offset 2 Empty string is invalid
+
+condition (foo == bar
+data ERROR offset 11 No closing brace at end of string
+
+condition (|| b)
+data ERROR offset 1 Empty string is invalid
+
+condition ((a || b) foo)
+data ERROR offset 10 Unexpected text after condition
+
+# escapes in names are illegal
+condition (a\ foo || b)
+data ERROR offset 2 Unexpected escape
+
+condition (a FOO b)
+data ERROR offset 3 Invalid text. Expected comparison operator
+
+condition (a !x b)
+data ERROR offset 3 Invalid operator
+
+condition (a =x b)
+data ERROR offset 3 Invalid operator
+
+condition (a =~ b)
+data ERROR offset 6 Expected regular expression
+
+condition (a == /b/)
+data ERROR offset 6 Unexpected regular expression
+
+condition (a == b"foo")
+data ERROR offset 7 Unexpected start of string
+
+# And now we have a bunch of VALID conditions we want to parse.
+
+# sillyness is OK
+condition ((((((a))))))
+data a
+
+condition (a == b)
+data a == b
+
+condition (!a)
+data !a
+
+condition !(a)
+data !a
+
+condition !!a
+data ERROR offset 1 Double negation is invalid
+
+condition !(!a)
+data a
+
+#
+#  These next two are identical after normalization
+#
+condition (a == b || c == d)
+data a == b || c == d
+
+condition ((a == b) || (c == d))
+data a == b || c == d
+
+condition (!(a == b) || (c == d))
+data !a == b || c == d
+
+#  different from the previous ones.
+condition (!((a == b) || (c == d)))
+data !(a == b || c == d)
+
+condition (!(a == b) || (c == d))
+data !a == b || c == d
+
+condition ((a == b) || (c == d)))
+data ERROR offset 22 Unexpected closing brace
+
+condition (handled && (Response-Packet-Type == Access-Challenge))
+data handled && &Response-Packet-Type == Access-Challenge
+
+# This is OK, without the braces
+condition handled && &Response-Packet-Type == Access-Challenge
+data handled && &Response-Packet-Type == Access-Challenge
+
+# and this, though it's not a good idea.
+condition handled &&&Response-Packet-Type == Access-Challenge
+data handled && &Response-Packet-Type == Access-Challenge
+
+condition (!(!foo))
+data foo
+
+condition /foo/ =~ bar
+data ERROR offset 0 Conditional check cannot begin with a regular expression
+
+condition reply == request
+data ERROR offset 0 Cannot use list references in condition
+
+condition reply == "hello"
+data ERROR offset 0 Cannot use list references in condition
+
+condition "hello" == reply
+data ERROR offset 0 Cannot use list references in condition
+
+condition request:User-Name == reply:User-Name
+data &User-Name == &reply:User-Name
+
+#
+#  Convert !~ to !(COND) for regex
+#
+condition foo =~ /bar/
+data foo =~ /bar/
+
+condition foo !~ /bar/
+data !foo =~ /bar/
+
+condition !foo !~ /bar/
+data foo =~ /bar/
+
+#
+#  Convert != to !(COND) for normal checks
+#
+condition foo == "bar"
+data foo == "bar"
+
+condition foo != "bar"
+data !foo == "bar"
+
+condition !foo != "bar"
+data foo == "bar"
+
+condition <ipv6addr>foo
+data ERROR offset 0 Cannot do cast for existence check
+
+condition <ipaddr>Filter-Id == &Framed-IP-Address
+data <ipaddr>&Filter-Id == &Framed-IP-Address
+
+condition <ipaddr>Filter-Id == <ipaddr>&Framed-IP-Address
+data ERROR offset 21 Unexpected cast
+
+condition <ipaddr>Filter-Id == "127.0.0.1"
+data <ipaddr>&Filter-Id == "127.0.0.1"
+
+condition <ipaddr>127.0.0.1 < &Framed-IP-Address
+data <ipaddr>127.0.0.1 < &Framed-IP-Address
+
+# =* and !* are only for attrs / lists
+condition "foo" !* bar
+data ERROR offset 6 Cannot use !* on a string
+
+condition "foo" =* bar
+data ERROR offset 6 Cannot use =* on a string
+
+# existence checks don't need the RHS
+condition User-Name =* bar
+data &User-Name
+
+condition User-Name !* bar
+data !&User-Name
+
+condition !User-Name =* bar
+data !&User-Name
+
+condition !User-Name !* bar
+data &User-Name
+
+# redundant casts get squashed
+condition <ipaddr>Framed-IP-Address == 127.0.0.1
+data &Framed-IP-Address == 127.0.0.1
+
+condition <cidr>Framed-IP-Address <= 192.168/16
+data <ipv4prefix>&Framed-IP-Address <= 192.168/16
+
+# string attributes must be string
+condition User-Name == "bob"
+data &User-Name == "bob"
+
+condition User-Name == `bob`
+data &User-Name == `bob`
+
+condition User-Name == 'bob'
+data &User-Name == "bob"
+
+condition User-Name == bob
+data ERROR offset 13 Must have string as value for attribute
+
+# Integer (etc.) types must be "bare"
+condition Session-Timeout == 10
+data &Session-Timeout == 10
+
+condition Session-Timeout == '10'
+data ERROR offset 19 Value must be an unquoted string
+
+# Except for dates, which can be humanly readable!
+# This one MIGHT be an expansion, so it's left as-is.
+condition Event-Timestamp == "January 1, 2012"
+data &Event-Timestamp == "January 1, 2012"
+
+# This one is NOT an expansion, so it's parsed into normal form
+condition Event-Timestamp == 'January 1, 2012'
+data &Event-Timestamp == "Jan  1 2012 00:00:00 EST"
+
+# literals are parsed when the conditions are parsed
+condition <integer>X == 1
+data ERROR offset 9 Failed to parse data
+
+condition NAS-Port == X
+data ERROR offset 12 Failed to parse data
+
+condition <ipaddr>127.0.0.1 == "127.0.0.1"
+data <ipaddr>127.0.0.1 == "127.0.0.1"
+
+condition <ether> 00:11:22:33:44:55 == "00:11:22:33:44:55"
+data <ether>00:11:22:33:44:55 == "00:11:22:33:44:55"
+
+condition <ether> 00:XX:22:33:44:55 == 00:11:22:33:44:55
+data ERROR offset 8 Failed to parse data
+
+#
+#  Tests for boolean data types.
+#
+condition true
+data true
+
+condition 1
+data true
+
+condition false
+data false
+
+condition 0
+data false
+
+condition true && (User-Name == "bob")
+data &User-Name == "bob"
+
+condition false && (User-Name == "bob")
+data false
+
+condition false || (User-Name == "bob")
+data &User-Name == "bob"
+
+condition true || (User-Name == "bob")
+data true
+
+#
+#  Both sides literals: evaluate at parse time.
+#
+condition <integer>20 < 100
+data true

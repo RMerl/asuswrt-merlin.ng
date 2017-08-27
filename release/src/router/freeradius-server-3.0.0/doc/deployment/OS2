@@ -1,0 +1,22 @@
+Compiling FreeRADIUS under OS/2
+
+To compile FreeRADIUS unde OS/2 you must have a full EMX environment with GNU
+utilities (like make,sh)
+
+The EMX can be get from http://hobbes.nmsu.edu
+
+To work with CVS repository you must install cvs110.zip from hobbes also
+
+before entering in sh.exe you must do
+SET SHELL=sh.exe
+
+before running ./configure you must set the shell the variables :
+export CC=gcc
+export MAKE=fullpathofyourmake.exe
+export PERL=fullpathofyourperl.exe
+
+
+The OS/2 version of FreeRADIUS can't directly execute checkrad.pl then the
+program will execute a checkrad.cmd
+
+

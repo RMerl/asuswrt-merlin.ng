@@ -1,0 +1,103 @@
+<!-- ##### SECTION Title ##### -->
+GVfs
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GVfs ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_VFS_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_vfs_get_file_for_path ##### -->
+<para>
+
+</para>
+
+@vfs: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfs_get_file_for_uri ##### -->
+<para>
+
+</para>
+
+@vfs: 
+@uri: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfs_parse_name ##### -->
+<para>
+
+</para>
+
+@vfs: 
+@parse_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfs_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfs_get_local ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfs_is_active ##### -->
+<para>
+
+</para>
+
+@vfs: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_vfs_get_supported_uri_schemes ##### -->
+<para>
+
+</para>
+
+@vfs: 
+@Returns: 
+
+

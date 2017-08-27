@@ -1,0 +1,217 @@
+<!-- ##### SECTION Title ##### -->
+Balanced Binary Trees
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTree ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_tree_new ##### -->
+<para>
+
+</para>
+
+@key_compare_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_ref ##### -->
+<para>
+
+</para>
+
+@tree: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_unref ##### -->
+<para>
+
+</para>
+
+@tree: 
+
+
+<!-- ##### FUNCTION g_tree_new_with_data ##### -->
+<para>
+
+</para>
+
+@key_compare_func: 
+@key_compare_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_new_full ##### -->
+<para>
+
+</para>
+
+@key_compare_func: 
+@key_compare_data: 
+@key_destroy_func: 
+@value_destroy_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_insert ##### -->
+<para>
+
+</para>
+
+@tree: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_tree_replace ##### -->
+<para>
+
+</para>
+
+@tree: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_tree_nnodes ##### -->
+<para>
+
+</para>
+
+@tree: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_height ##### -->
+<para>
+
+</para>
+
+@tree: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_lookup ##### -->
+<para>
+
+</para>
+
+@tree: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_lookup_extended ##### -->
+<para>
+
+</para>
+
+@tree: 
+@lookup_key: 
+@orig_key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_foreach ##### -->
+<para>
+
+</para>
+
+@tree: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tree_traverse ##### -->
+<para>
+
+</para>
+
+@tree: 
+@traverse_func: 
+@traverse_type: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GTraverseFunc ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+@data: 
+@Returns: 
+
+
+<!-- ##### ENUM GTraverseType ##### -->
+<para>
+
+</para>
+
+@G_IN_ORDER: 
+@G_PRE_ORDER: 
+@G_POST_ORDER: 
+@G_LEVEL_ORDER: 
+
+<!-- ##### FUNCTION g_tree_search ##### -->
+<para>
+
+</para>
+
+@tree: 
+@search_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_remove ##### -->
+<para>
+
+</para>
+
+@tree: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_steal ##### -->
+<para>
+
+</para>
+
+@tree: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tree_destroy ##### -->
+<para>
+
+</para>
+
+@tree: 
+
+

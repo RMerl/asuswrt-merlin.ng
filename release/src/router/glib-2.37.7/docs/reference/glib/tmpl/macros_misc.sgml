@@ -1,0 +1,323 @@
+<!-- ##### SECTION Title ##### -->
+Miscellaneous Macros
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_INLINE_FUNC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_STMT_START ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_STMT_END ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_BEGIN_DECLS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_END_DECLS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VA_COPY ##### -->
+<para>
+
+</para>
+
+@ap1: 
+@ap2: 
+
+
+<!-- ##### MACRO G_STRINGIFY ##### -->
+<para>
+
+</para>
+
+@macro_or_string: 
+
+
+<!-- ##### MACRO G_PASTE ##### -->
+<para>
+
+</para>
+
+@identifier1: 
+@identifier2: 
+
+
+<!-- ##### MACRO G_STATIC_ASSERT ##### -->
+<para>
+
+</para>
+
+@expr: 
+
+
+<!-- ##### MACRO G_STATIC_ASSERT_EXPR ##### -->
+<para>
+
+</para>
+
+@expr: 
+
+
+<!-- ##### MACRO G_GNUC_EXTENSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_CONST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_PURE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_MALLOC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_ALLOC_SIZE ##### -->
+<para>
+
+</para>
+
+@x: 
+
+
+<!-- ##### MACRO G_GNUC_ALLOC_SIZE2 ##### -->
+<para>
+
+</para>
+
+@x: 
+@y: 
+
+
+<!-- ##### MACRO G_GNUC_DEPRECATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_DEPRECATED_FOR ##### -->
+<para>
+
+</para>
+
+@f: 
+
+
+<!-- ##### MACRO G_GNUC_BEGIN_IGNORE_DEPRECATIONS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_END_IGNORE_DEPRECATIONS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_NORETURN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_UNUSED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_PRINTF ##### -->
+<para>
+
+</para>
+
+@format_idx: 
+@arg_idx: 
+
+
+<!-- ##### MACRO G_GNUC_SCANF ##### -->
+<para>
+
+</para>
+
+@format_idx: 
+@arg_idx: 
+
+
+<!-- ##### MACRO G_GNUC_FORMAT ##### -->
+<para>
+
+</para>
+
+@arg_idx: 
+
+
+<!-- ##### MACRO G_GNUC_NULL_TERMINATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_WARN_UNUSED_RESULT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_FUNCTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_PRETTY_FUNCTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_NO_INSTRUMENT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_HAVE_GNUC_VISIBILITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_INTERNAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_GNUC_MAY_ALIAS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_DEPRECATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_DEPRECATED_FOR ##### -->
+<para>
+
+</para>
+
+@f: 
+
+
+<!-- ##### MACRO G_UNAVAILABLE ##### -->
+<para>
+
+</para>
+
+@maj: 
+@min: 
+
+
+<!-- ##### MACRO G_LIKELY ##### -->
+<para>
+
+</para>
+
+@expr: 
+
+
+<!-- ##### MACRO G_UNLIKELY ##### -->
+<para>
+
+</para>
+
+@expr: 
+
+
+<!-- ##### MACRO G_STRLOC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_STRFUNC ##### -->
+<para>
+
+</para>
+
+
+

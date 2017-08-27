@@ -1,0 +1,280 @@
+#!/usr/bin/perl
+
+# Usage:
+#	check-value-structs <roml.exe>
+#
+# Add support for automatic generation of sanity checks for structures and enums
+# shared between romlib and romoffload. For more information see
+# http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/CheckValueStructs
+#
+# Retrieves the list of structures and enums present in debug information of
+# roml.exe. It is extracted using arm-none-eabi-gdb from TOOLSVER 2011.09 currently.
+#
+# For each structure/enum, the last member is determined using before
+# mentioned arm-none-eabi-gdb. The structure/enum and last member information
+# is used to create a gdb test string to check for offset/value changes.
+# All resulting gdb test strings are sent to STDOUT.
+#
+# The intention is that Makerules can use a possible 'roml.chk' file
+# to perform additional sanity checks for structures/enums shared between
+# romlib and romoffload using gdb.
+#
+# Example gdb test string:
+#		p/x &((struct wl_info *)0)->wlfc_info
+#
+
+use File::Basename;
+use strict;		# Forces each variable to be declared before use
+use warnings;		# Enables warnings
+
+my $GDB = "/projects/hnd/tools/linux/hndtools-armeabi-2011.09/bin/arm-none-eabi-gdb";
+my $prog = basename($0);
+my $romfilename;
+my $romfiledir;
+my @rom_types_list;
+
+my %anonymous_structs;
+my %check_value_structs;
+my %check_value_enums;
+my @check_value_struct;
+
+# List of structs to exclude from ROM/RAM offset validation.
+my %struct_exclude_list = (
+  # There are multiple definitions of the 'dnlg_bus' and 'drv_t' based on the type of
+  # interface (usb, sdio) so it makes no sense to check it plus it leads
+  # false errors in check-rammap errors.
+  dngl_bus => 1,
+  drv_t    => 1,
+  # wlc_pwrstats_mem_t and wnm_bsstrans_sta_info_mem_t struct is only used in (de)attach routines for memory allocation.
+  # Since (de)attach routines are always present in RAM, member offset check is not
+  # required for this struct.
+  wlc_pwrstats_mem_t => 1,
+  wnm_bsstrans_sta_info_mem_t => 1
+);
+
+# List of enums to exclude from ROM/RAM validation.
+my %enum_exclude_list = (
+  # Exclude CLM generated enums
+  range_20m        => 1,
+  range_40m        => 1,
+  range_80m        => 1,
+  range_160m	   => 1,
+  range_10m	       => 1,
+  range_5m	       => 1,
+  range_2_5m	   => 1,
+  restricted_set   => 1,
+  channel_set      => 1,
+  rate_set_20m     => 1,
+  rate_set_40m     => 1,
+  rate_set_80m     => 1,
+  rate_set_2g_20m  => 1,
+  rate_set_5g_20m  => 1,
+  rate_set_2g_40m  => 1,
+  rate_set_5g_40m  => 1,
+  rate_set_5g_80m  => 1,
+  rate_set_5g_160m => 1,
+  locale_2g_idx    => 1,
+  locale_5g_ht_idx => 1,
+  locale_5g_idx    => 1,
+  locale_2g_ht_idx => 1,
+  sub_chan_rule    => 1,
+  ccrevs           => 1
+);
+
+select(STDERR);
+
+# Called if check-value-structs is not called with roml.exe parameter.
+sub usage {
+    print "$prog: Error: usage: perl check-value-structs <roml.exe>\n\n";
+    exit 1;
+}
+
+# get first argument
+($romfilename = shift @ARGV) || &usage;
+die "$prog: Error: First argument is not roml.exe\n" if $romfilename !~ /roml\.exe$/;
+
+shift @ARGV && &usage;
+
+die "$prog: Error: Romdir file $romfilename not found! Make sure target has been built.\n"
+  if (! -e "$romfilename");
+
+$romfiledir = dirname($romfilename);
+print "$prog: Extract ROM structs from roml.exe\n";
+@rom_types_list = `$GDB -cd $romfiledir --batch -nx -nw -ex 'info types' roml.exe`;
+
+
+die "$prog: Error: Needs valid debug info in roml.exe.\n"
+  if (scalar(@rom_types_list) eq 0);
+
+
+# Parse GDB types information. Extract struct/enum names.
+my $find_anonymous_struct = 0;
+foreach my $line (@rom_types_list) {
+  # Search for the END of anonymous typedef'ed structs. e.g.
+  #
+  # typedef struct {
+  #    int bar;
+  # } foo_t;
+  if ($find_anonymous_struct) {
+    if ($line =~ /^}\s+(.*);\s*$/) {
+      $find_anonymous_struct = 0;
+      if (!$struct_exclude_list{$1}) {
+        $check_value_structs{$1} = 1;
+        $anonymous_structs{$1} = 1;
+      }
+    }
+  }
+  # Search for 'regular' structs, e.g.
+  #    struct osl_info;
+  elsif ($line =~ /^struct\W*(.*)\b/) {
+    if (!$struct_exclude_list{$1}) {
+      $check_value_structs{$1} = 1;
+    }
+  }
+  # Search for the START of anonymous typedef'ed structs. e.g.
+  #
+  # typedef struct {
+  #    int bar;
+  # } foo_t;
+  elsif ($line =~ /^\s*typedef\s+struct\s+{\s*$/) {
+    $find_anonymous_struct = 1;
+  }
+  # Search for enums, e.g.
+  #    enum txd_range;
+  #
+  # Note that this will only find *named* enums. Anonymous enums are not listed by the
+  # gdb 'info types' command, e.g. this will not be verified:
+  #    enum {
+  #       DL_TYPE_UCODE = 1,
+  #       DL_TYPE_CLM = 2
+  #    };
+  #
+  elsif ($line =~ /^enum\s+(\w+);/) {
+    if (!$enum_exclude_list{$1}) {
+      $check_value_enums{$1} = 1;
+    }
+  }
+}
+
+
+my $currentstruct;
+my $lastmember;
+my $prev_lastmember;
+my $output;
+
+print "$prog: Create gdb test strings.\n";
+
+# Generate list of structs to verify.
+foreach (sort keys %check_value_structs) {
+  $currentstruct = $_;
+
+  if ($anonymous_structs{$currentstruct}) {
+    @check_value_struct = `$GDB -cd $romfiledir --batch -nx -nw -ex \'ptype $_\' roml.exe`;
+  }
+  else {
+    @check_value_struct = `$GDB -cd $romfiledir --batch -nx -nw -ex \'ptype struct $_\' roml.exe`;
+  }
+  $lastmember = "nil";
+  foreach (@check_value_struct) {
+    last if /^}$/;
+    $prev_lastmember = $lastmember;
+    $lastmember = $_;
+  }
+
+  # Some structures may have padxx[yy]; as the last member, e.g. 'uint32 pad43[3];'. The xx number
+  # is based upon the line number and therefore causes mismatches between ROM and RAM. It comes from
+  # this construct used in many header files:
+  #
+  #   #ifndef PAD
+  #   #define	_PADLINE(line)	pad ## line
+  #   #define	_XSTR(line)	_PADLINE(line)
+  #   #define	PAD		_XSTR(__LINE__)
+  #   #endif	/* PAD */
+  #
+  # If padxx[yy] is the last struct member, then use the previous member instead.
+  #
+  # Independent of the line number issue, checking for a pad offset should be avoided.
+  # Developers may change (parts of) the pad field into another more useful field, and the
+  # ROM should not be dependent on the pad field itself anyway.
+  #
+  # Also use the previous struct member when the last member is of the form:
+  #    uint32 pad[4];
+  #    uint32 pad;
+  #
+  if ($lastmember =~ /\s+pad(([0-9]+)?\[[0-9]+\])?;/i) {
+    $lastmember = $prev_lastmember;
+  }
+
+  if ($lastmember eq "nil") {
+    next;
+  }
+
+
+  # Strip bit-field suffix. e.g. 'uint32 reserved2 : 24;' --> 'uint32 reserved2;'
+  $lastmember =~ s/(\s+:\s+[0-9]+)//;
+
+  # Get last member name (e.g member[0]; becomes member)
+  if ($lastmember =~ /(\w+)(\S*);$/) {
+    # If member name does not contain ')' as this is likely to be a function pointer.
+    # e.g. (fnptr *) (UINT32);
+    if ($2 !~ /\)/) {
+      if ($anonymous_structs{$currentstruct}) {
+        $output = "p/x &(($currentstruct *)0)->$1\n";
+      }
+      else {
+        $output = "p/x &((struct $currentstruct *)0)->$1\n";
+      }
+      print STDOUT $output;
+    }
+  }
+}
+
+
+# Generate list of enums to verify.
+foreach my $enum (sort keys %check_value_enums) {
+
+  my $enum_declaration = `$GDB -cd $romfiledir --batch -nx -nw -ex \'ptype enum $enum\' roml.exe`;
+
+  $prev_lastmember = "nil";
+
+  # Parse the *next-to-last* enum member. The last enum member is often used to indicate the
+  # number of elements in the enum, and it is valid to insert new enum members just prior to the
+  # last one, e.g.
+  #    enum states {
+  #       STATE_A,
+  #       STATE_B,
+  #       NUM_STATES
+  #    };
+  #
+  # Validating the next-to-last enum member adds an undetected corner case when a new enum is
+  # added in the next-to-last slot for an enum that does not use the last enum member to indicate
+  # the number of elements. But it's a reasonable compromise. It avoids the need for
+  # special case lists in ROM scripts/config-files that explicitly list which enums should validate
+  # the last member vs the next-to-last member.
+  #
+  # Strip explicitly assigned enum values, e.g.
+  #    type = enum states {STATE_A = 0, STATE_B = 1, NUM_STATES = 2}
+  $enum_declaration =~ s/\s+=\s+-?\d+//g;
+
+  # The syntax of the gdb output to parse for a *single enum member*. In this case, just validate
+  # the one and only enum member.
+  #    type = enum states {STATE_A}
+  if (($enum_declaration =~ /.*\{(\w+)\}/) ||
+      # Syntax for two of more enum members:
+      #    type = enum states {STATE_A, STATE_B}
+      #    type = enum states {STATE_A, STATE_B, NUM_STATES}
+      ($enum_declaration =~ /.*(?:,\s+|\{)(\w+),/)) {
+
+    $prev_lastmember = $1;
+  }
+
+  if ($prev_lastmember eq "nil") {
+    print "$prog: Error: Unknown syntax for '$enum': '$enum_declaration'\n";
+    exit 1;
+  }
+
+  print STDOUT "enum $enum $prev_lastmember\n";
+}
+
+
+exit(0);

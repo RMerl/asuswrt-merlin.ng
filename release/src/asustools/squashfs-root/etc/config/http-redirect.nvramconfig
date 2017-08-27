@@ -1,0 +1,4 @@
+"http_redirect_enable"  "Any HTTP feature"  "CHOICE"  "2" "0" "1"  "TRUE" "0"  
+"http_redirect_destination"  "http destination server"  "MERGEIPADDRS" "FALSE" "0"  
+"http_source_network"  "http source network"  "MERGEIPADDRS" "FALSE" "0"
+"http_redirect_port"  "http destination port"  "NULL" "FALSE" "0"

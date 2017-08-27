@@ -1,0 +1,152 @@
+#! /bin/sh
+# NAT updown script
+#
+# Copyright (C) 2010 Andreas Steffen <andreas.steffen@strongswan.org>
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# things that this script gets (from ipsec_pluto(8) man page)
+#
+#      PLUTO_VERSION
+#              indicates  what  version of this interface is being
+#              used.  This document describes version  1.1.   This
+#              is upwardly compatible with version 1.0.
+#
+#       PLUTO_VERB
+#              specifies the name of the operation to be performed
+#              (prepare-host, prepare-client, up-host, up-client,
+#              down-host, or down-client).  If the address family
+#              for security gateway to security gateway communica-
+#              tions is IPv6, then a suffix of -v6 is added to the
+#              verb.
+#
+#       PLUTO_CONNECTION
+#              is the name of the  connection  for  which  we  are
+#              routing.
+#
+#       PLUTO_NEXT_HOP
+#              is the next hop to which packets bound for the peer
+#              must be sent.
+#
+#       PLUTO_INTERFACE
+#              is the name of the ipsec interface to be used.
+#
+#       PLUTO_REQID
+#              is the requid of the ESP policy
+#
+#       PLUTO_ME
+#              is the IP address of our host.
+#
+#       PLUTO_MY_ID
+#              is the ID of our host.
+#
+#       PLUTO_MY_CLIENT
+#              is the IP address / count of our client subnet.  If
+#              the  client  is  just  the  host,  this will be the
+#              host's own IP address / max (where max  is  32  for
+#              IPv4 and 128 for IPv6).
+#
+#       PLUTO_MY_CLIENT_NET
+#              is the IP address of our client net.  If the client
+#              is just the host, this will be the  host's  own  IP
+#              address.
+#
+#       PLUTO_MY_CLIENT_MASK
+#              is  the  mask for our client net.  If the client is
+#              just the host, this will be 255.255.255.255.
+#
+#       PLUTO_MY_SOURCEIP
+#              if non-empty, then the source address for the route will be
+#              set to this IP address.
+#
+#       PLUTO_MY_PROTOCOL
+#              is the IP protocol that will be transported.
+#
+#       PLUTO_MY_PORT
+#              is  the  UDP/TCP  port  to  which  the IPsec SA  is
+#              restricted on our side.
+#
+#       PLUTO_PEER
+#              is the IP address of our peer.
+#
+#       PLUTO_PEER_ID
+#              is the ID of our peer.
+#
+#       PLUTO_PEER_CA
+#              is the CA which issued the cert of our peer.
+#
+#       PLUTO_PEER_CLIENT
+#              is the IP address / count of the peer's client sub-
+#              net.   If the client is just the peer, this will be
+#              the peer's own IP address / max (where  max  is  32
+#              for IPv4 and 128 for IPv6).
+#
+#       PLUTO_PEER_CLIENT_NET
+#              is the IP address of the peer's client net.  If the
+#              client is just the peer, this will  be  the  peer's
+#              own IP address.
+#
+#       PLUTO_PEER_CLIENT_MASK
+#              is  the  mask  for  the  peer's client net.  If the
+#              client   is   just   the   peer,   this   will   be
+#              255.255.255.255.
+#
+#       PLUTO_PEER_PROTOCOL
+#              is the IP protocol that will be transported.
+#
+#       PLUTO_PEER_PORT
+#              is  the  UDP/TCP  port  to  which  the IPsec SA  is
+#              restricted on the peer side.
+#
+
+# define a minimum PATH environment in case it is not set
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin"
+export PATH
+
+# resolve octal escape sequences
+PLUTO_MY_ID=`printf "$PLUTO_MY_ID"`
+PLUTO_PEER_ID=`printf "$PLUTO_PEER_ID"`
+
+case "$PLUTO_VERB:$1" in
+up-host:)
+	# connection to me coming up
+	# If you are doing a custom version, firewall commands go here.
+	;;
+down-host:)
+	# connection to me going down
+	# If you are doing a custom version, firewall commands go here.
+	;;
+up-client:)
+	# connection to my client subnet coming up
+	# If you are doing a custom version, firewall commands go here.
+	iptables -A FORWARD -i eth1 -o $PLUTO_INTERFACE -s PH_IP_ALICE \
+	    -d $PLUTO_PEER_CLIENT -j ACCEPT
+        iptables -A FORWARD -o eth1 -i $PLUTO_INTERFACE -d PH_IP_ALICE \
+            -s $PLUTO_PEER_CLIENT -j ACCEPT
+	iptables -t nat -A POSTROUTING -o $PLUTO_INTERFACE -s PH_IP_ALICE \
+	    -d $PLUTO_PEER_CLIENT -j SNAT --to-source $PLUTO_MY_SOURCEIP
+	echo "inserted NAT rule mapping PH_IP_ALICE to virtual IP $PLUTO_MY_SOURCEIP" >&2 
+	;;
+down-client:)
+	# connection to my client subnet going down
+	# If you are doing a custom version, firewall commands go here.
+        iptables -D FORWARD -i eth1 -o $PLUTO_INTERFACE -s PH_IP_ALICE \
+            -d $PLUTO_PEER_CLIENT -j ACCEPT
+        iptables -D FORWARD -o eth1 -i $PLUTO_INTERFACE -d PH_IP_ALICE \
+            -s $PLUTO_PEER_CLIENT -j ACCEPT
+         iptables -t nat -D POSTROUTING -o $PLUTO_INTERFACE -s PH_IP_ALICE \
+            -d $PLUTO_PEER_CLIENT -j SNAT --to-source $PLUTO_MY_SOURCEIP
+        echo "deleted NAT rule mapping PH_IP_ALICE to virtual IP $PLUTO_MY_SOURCEIP" >&2    
+	;;
+*)	echo "$0: unknown verb \`$PLUTO_VERB' or parameter \`$1'" >&2
+	exit 1
+	;;
+esac

@@ -1,0 +1,441 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GUdevClient</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="GUDev Reference Manual">
+<link rel="up" href="ref-API.html" title="API Reference">
+<link rel="prev" href="ref-API.html" title="API Reference">
+<link rel="next" href="GUdevDevice.html" title="GUdevDevice">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="ref-API.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ref-API.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">GUDev Reference Manual</th>
+<td><a accesskey="n" href="GUdevDevice.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#GUdevClient.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#GUdevClient.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GUdevClient.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GUdevClient.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#GUdevClient.signals" class="shortcut">Signals</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="GUdevClient"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GUdevClient.top_of_page"></a>GUdevClient</span></h2>
+<p>GUdevClient — Query devices and listen to uevents</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GUdevClient.synopsis"></a><h2>Synopsis</h2>
+<a name="GUdevDeviceType"></a><pre class="synopsis">                    <a class="link" href="GUdevClient.html#GUdevClient-struct" title="GUdevClient">GUdevClient</a>;
+struct              <a class="link" href="GUdevClient.html#GUdevClientClass" title="struct GUdevClientClass">GUdevClientClass</a>;
+enum                <a class="link" href="GUdevClient.html#GUdevDeviceType">GUdevDeviceType</a>;
+typedef             <a class="link" href="GUdevClient.html#GUdevDeviceNumber" title="GUdevDeviceNumber">GUdevDeviceNumber</a>;
+<a class="link" href="GUdevClient.html" title="GUdevClient"><span class="returnvalue">GUdevClient</span></a> *       <a class="link" href="GUdevClient.html#g-udev-client-new" title="g_udev_client_new ()">g_udev_client_new</a>                   (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> * const *subsystems</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             <a class="link" href="GUdevClient.html#g-udev-client-query-by-subsystem" title="g_udev_client_query_by_subsystem ()">g_udev_client_query_by_subsystem</a>    (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>);
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       <a class="link" href="GUdevClient.html#g-udev-client-query-by-device-number" title="g_udev_client_query_by_device_number ()">g_udev_client_query_by_device_number</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GUdevClient.html#GUdevDeviceType"><span class="type">GUdevDeviceType</span></a> type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GUdevClient.html#GUdevDeviceNumber" title="GUdevDeviceNumber"><span class="type">GUdevDeviceNumber</span></a> number</code></em>);
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       <a class="link" href="GUdevClient.html#g-udev-client-query-by-device-file" title="g_udev_client_query_by_device_file ()">g_udev_client_query_by_device_file</a>  (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *device_file</code></em>);
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       <a class="link" href="GUdevClient.html#g-udev-client-query-by-sysfs-path" title="g_udev_client_query_by_sysfs_path ()">g_udev_client_query_by_sysfs_path</a>   (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *sysfs_path</code></em>);
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       <a class="link" href="GUdevClient.html#g-udev-client-query-by-subsystem-and-name" title="g_udev_client_query_by_subsystem_and_name ()">g_udev_client_query_by_subsystem_and_name</a>
+                                                        (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GUdevClient
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----GUdevDeviceType
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GUdevClient.html#GUdevClient--subsystems" title='The "subsystems" property'>subsystems</a>"               <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Boxed-Types.html#GStrv"><span class="type">GStrv</span></a>                 : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GUdevClient.html#GUdevClient-uevent" title='The "uevent" signal'>uevent</a>"                                         : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> is used to query information about devices on a Linux
+system from the Linux kernel and the udev device
+manager.
+</p>
+<p>
+Device information is retrieved from the kernel (through the
+<code class="literal">sysfs</code> filesystem) and the udev daemon (through a
+<code class="literal">tmpfs</code> filesystem) and presented through
+<a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> objects. This means that no blocking IO ever happens
+(in both cases, we are essentially just reading data from kernel
+memory) and as such there are no asynchronous versions of the
+provided methods.
+</p>
+<p>
+To get <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> objects, use
+<a class="link" href="GUdevClient.html#g-udev-client-query-by-subsystem" title="g_udev_client_query_by_subsystem ()"><code class="function">g_udev_client_query_by_subsystem()</code></a>,
+<a class="link" href="GUdevClient.html#g-udev-client-query-by-device-number" title="g_udev_client_query_by_device_number ()"><code class="function">g_udev_client_query_by_device_number()</code></a>,
+<a class="link" href="GUdevClient.html#g-udev-client-query-by-device-file" title="g_udev_client_query_by_device_file ()"><code class="function">g_udev_client_query_by_device_file()</code></a>,
+<a class="link" href="GUdevClient.html#g-udev-client-query-by-sysfs-path" title="g_udev_client_query_by_sysfs_path ()"><code class="function">g_udev_client_query_by_sysfs_path()</code></a>,
+<a class="link" href="GUdevClient.html#g-udev-client-query-by-subsystem-and-name" title="g_udev_client_query_by_subsystem_and_name ()"><code class="function">g_udev_client_query_by_subsystem_and_name()</code></a>
+or the <a class="link" href="GUdevEnumerator.html" title="GUdevEnumerator"><span class="type">GUdevEnumerator</span></a> type.
+</p>
+<p>
+To listen to uevents, connect to the <a class="link" href="GUdevClient.html#GUdevClient-uevent" title='The "uevent" signal'><span class="type">"uevent"</span></a> signal.
+</p>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GUdevClient-struct"></a><h3>GUdevClient</h3>
+<pre class="programlisting">typedef struct _GUdevClient GUdevClient;</pre>
+<p>
+The <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> struct is opaque and should not be accessed directly.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUdevClientClass"></a><h3>struct GUdevClientClass</h3>
+<pre class="programlisting">struct GUdevClientClass {
+  GObjectClass   parent_class;
+
+  /* signals */
+  void (*uevent) (GUdevClient  *client,
+                  const gchar  *action,
+                  GUdevDevice  *device);
+};
+</pre>
+<p>
+Class structure for <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> <em class="structfield"><code><a name="GUdevClientClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>Parent class.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GUdevClientClass.uevent"></a>uevent</code></em> ()</span></p></td>
+<td>Signal class handler for the <a class="link" href="GUdevClient.html#GUdevClient-uevent" title='The "uevent" signal'><span class="type">"uevent"</span></a> signal.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUdevDeviceType"></a><h3>enum GUdevDeviceType</h3>
+<pre class="programlisting">typedef enum
+{
+  G_UDEV_DEVICE_TYPE_NONE = 0,
+  G_UDEV_DEVICE_TYPE_BLOCK = 'b',
+  G_UDEV_DEVICE_TYPE_CHAR = 'c',
+} GUdevDeviceType;
+</pre>
+<p>
+Enumeration used to specify a the type of a device.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="G-UDEV-DEVICE-TYPE-NONE:CAPS"></a><span class="term"><code class="literal">G_UDEV_DEVICE_TYPE_NONE</code></span></p></td>
+<td>Device does not have a device file.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-UDEV-DEVICE-TYPE-BLOCK:CAPS"></a><span class="term"><code class="literal">G_UDEV_DEVICE_TYPE_BLOCK</code></span></p></td>
+<td>Device is a block device.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-UDEV-DEVICE-TYPE-CHAR:CAPS"></a><span class="term"><code class="literal">G_UDEV_DEVICE_TYPE_CHAR</code></span></p></td>
+<td>Device is a character device.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUdevDeviceNumber"></a><h3>GUdevDeviceNumber</h3>
+<pre class="programlisting">typedef guint64 GUdevDeviceNumber; /* __UQUAD_TYPE */
+</pre>
+<p>
+Corresponds to the standard <span class="type">dev_t</span> type as defined by POSIX (Until
+bug 584517 is resolved this work-around is needed).
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-client-new"></a><h3>g_udev_client_new ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="returnvalue">GUdevClient</span></a> *       g_udev_client_new                   (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> * const *subsystems</code></em>);</pre>
+<p>
+Constructs a <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> object that can be used to query
+information about devices. Connect to the <a class="link" href="GUdevClient.html#GUdevClient-uevent" title='The "uevent" signal'><span class="type">"uevent"</span></a>
+signal to listen for uevents. Note that signals are emitted in the
+<a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main loop</a>
+of the thread that you call this constructor from.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystems</code></em> :</span></p></td>
+<td>A <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> terminated string array of subsystems to listen for uevents on, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to not listen on uevents at all, or an empty array to listen to uevents on all subsystems. See the documentation for the <a class="link" href="GUdevClient.html#GUdevClient--subsystems" title='The "subsystems" property'><span class="type">"subsystems"</span></a> property for details on this parameter. <span class="annotation">[<a href="http://foldoc.org/array"><span class="acronym">array</span></a> zero-terminated=1][<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> utf8][<a href="http://foldoc.org/transfer%20none"><span class="acronym">transfer none</span></a>][<a href="http://foldoc.org/allow-none"><span class="acronym">allow-none</span></a>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A new <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> object. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-client-query-by-subsystem"></a><h3>g_udev_client_query_by_subsystem ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             g_udev_client_query_by_subsystem    (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>);</pre>
+<p>
+Gets all devices belonging to <em class="parameter"><code>subsystem</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>The subsystem to get devices for or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to get all devices. <span class="annotation">[<a href="http://foldoc.org/allow-none"><span class="acronym">allow-none</span></a>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A list of <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> objects. The caller should free the result by using <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> on each element in the list and then <a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a> on the list. <span class="annotation">[<a href="http://foldoc.org/element-type"><span class="acronym">element-type</span></a> GUdevDevice][<a href="http://foldoc.org/transfer%20full"><span class="acronym">transfer full</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-client-query-by-device-number"></a><h3>g_udev_client_query_by_device_number ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       g_udev_client_query_by_device_number
+                                                        (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GUdevClient.html#GUdevDeviceType"><span class="type">GUdevDeviceType</span></a> type</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GUdevClient.html#GUdevDeviceNumber" title="GUdevDeviceNumber"><span class="type">GUdevDeviceNumber</span></a> number</code></em>);</pre>
+<p>
+Looks up a device for a type and device number.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>type</code></em> :</span></p></td>
+<td>A value from the <a class="link" href="GUdevClient.html#GUdevDeviceType"><span class="type">GUdevDeviceType</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>number</code></em> :</span></p></td>
+<td>A device number.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the device was not found. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<a href="http://foldoc.org/transfer%20full"><span class="acronym">transfer full</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-client-query-by-device-file"></a><h3>g_udev_client_query_by_device_file ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       g_udev_client_query_by_device_file  (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *device_file</code></em>);</pre>
+<p>
+Looks up a device for a device file.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device_file</code></em> :</span></p></td>
+<td>A device file.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the device was not found. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<a href="http://foldoc.org/transfer%20full"><span class="acronym">transfer full</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-client-query-by-sysfs-path"></a><h3>g_udev_client_query_by_sysfs_path ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       g_udev_client_query_by_sysfs_path   (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *sysfs_path</code></em>);</pre>
+<p>
+Looks up a device for a sysfs path.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sysfs_path</code></em> :</span></p></td>
+<td>A sysfs path.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the device was not found. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<a href="http://foldoc.org/transfer%20full"><span class="acronym">transfer full</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-udev-client-query-by-subsystem-and-name"></a><h3>g_udev_client_query_by_subsystem_and_name ()</h3>
+<pre class="programlisting"><a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="returnvalue">GUdevDevice</span></a> *       g_udev_client_query_by_subsystem_and_name
+                                                        (<em class="parameter"><code><a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subsystem</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>
+Looks up a device for a subsystem and name.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>A <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>subsystem</code></em> :</span></p></td>
+<td>A subsystem name.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>name</code></em> :</span></p></td>
+<td>The name of the device.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> object or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the device was not found. Free with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<a href="http://foldoc.org/transfer%20full"><span class="acronym">transfer full</span></a>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GUdevClient--subsystems"></a><h3>The <code class="literal">"subsystems"</code> property</h3>
+<pre class="programlisting">  "subsystems"               <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Boxed-Types.html#GStrv"><span class="type">GStrv</span></a>                 : Read / Write / Construct Only</pre>
+<p>
+The subsystems to listen for uevents on.
+</p>
+<p>
+To listen for only a specific DEVTYPE for a given SUBSYSTEM, use
+"subsystem/devtype". For example, to only listen for uevents
+where SUBSYSTEM is usb and DEVTYPE is usb_interface, use
+"usb/usb_interface".
+</p>
+<p>
+If this property is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then no events will be reported. If
+it's the empty array, events from all subsystems will be
+reported.
+</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUdevClient.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GUdevClient-uevent"></a><h3>The <code class="literal">"uevent"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> *client,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>       *action,
+                                                        <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> *device,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>     user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Emitted when <em class="parameter"><code>client</code></em> receives an uevent.
+</p>
+<p>
+This signal is emitted in the
+<a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main loop</a>
+of the thread that <em class="parameter"><code>client</code></em> was created in.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>The <a class="link" href="GUdevClient.html" title="GUdevClient"><span class="type">GUdevClient</span></a> receiving the event.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>action</code></em> :</span></p></td>
+<td>The action for the uevent e.g. "add", "remove", "change", "move", etc.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>Details about the <a class="link" href="GUdevDevice.html" title="GUdevDevice"><span class="type">GUdevDevice</span></a> the event is for.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

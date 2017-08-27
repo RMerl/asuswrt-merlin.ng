@@ -1,0 +1,66 @@
+<!-- ##### SECTION Title ##### -->
+GDBusObjectProxy
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusObjectProxy ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GDBusObjectProxy:g-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectProxy:g-object-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GDBusObjectProxyClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION g_dbus_object_proxy_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@object_path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_proxy_get_connection ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+

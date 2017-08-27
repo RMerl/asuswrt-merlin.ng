@@ -1,0 +1,185 @@
+#!/bin/sh
+#@(#) Configuration script for sysstat
+# (C) 2000-2010 Sebastien GODARD (sysstat <at> orange.fr)
+
+ASK="sh build/Ask.sh"
+
+echo ; echo
+echo Welcome to sysstat\'s  Interactive Configuration script!
+echo
+echo This script enables you to set the parameters value used by ./configure.
+echo Please enter the value for the parameters listed below.
+echo Press Return to tell ./configure to use the default value or to try to guess the proper one.
+echo "Defaut value for yes/no questions is no (parameter is NOT set)."
+echo You can enter a ? to display a help message at any time...
+echo
+
+# Syntax: Ask <QUESTION> <PARM> <TEXT_FILE>
+
+# Installation directory
+PREFIX=`${ASK} 'Installation directory:' "--prefix" "prefix"`
+if [ "${PREFIX}" != "" ]; then
+	PREFIX="--prefix=${PREFIX} "
+fi
+
+# sadc directory
+SA_LIB_DIR=`${ASK} 'sadc directory:' "sa_lib_dir" "sa_lib_dir"`
+if [ "${SA_LIB_DIR}" != "" ]; then
+	SA_LIB_DIR="sa_lib_dir=${SA_LIB_DIR} "
+fi
+
+# System Activity directory
+SA_DIR=`${ASK} 'System activity directory:' "sa_dir" "sa_dir"`
+if [ "${SA_DIR}" != "" ]; then
+	SA_DIR="sa_dir=${SA_DIR} "
+fi
+
+# sysstat configuration directory
+SYSCONFIG_DIR=`${ASK} 'sysstat configuration directory:' "conf_dir" "conf_dir"`
+if [ "${SYSCONFIG_DIR}" != "" ]; then
+	SYSCONFIG_DIR="conf_dir=${SYSCONFIG_DIR} "
+fi
+
+# Clean sa directory
+CLEAN_SA_DIR=`${ASK} 'Clean system activity directory? (y/n)' "--enable-clean-sa-dir" "clean-sa-dir"`
+if [ "${CLEAN_SA_DIR}" = "y" ]; then
+	CLEAN_SA_DIR="--enable-clean-sa-dir "
+else
+	CLEAN_SA_DIR=""
+	echo "Parameter --enable-clean-sa-dir is NOT set"
+fi
+
+# National Language Support
+NLS=`${ASK} 'Disable National Language Support (NLS)? (y/n)' "--disable-nls" "nls"`
+if [ "${NLS}" = "y" ]; then
+	NLS="--disable-nls "
+else
+	NLS=""
+	echo "Parameter --disable-nls is NOT set"
+fi
+
+# Sensors support
+SENSORS=`${ASK} 'Disable sensors support? (y/n)' "--disable-sensors" "sensors"`
+if [ "${SENSORS}" = "y" ]; then
+	SENSORS="--disable-sensors "
+else
+	SENSORS=""
+	echo "Parameter --disable-sensors is NOT set"
+fi
+
+# sa2 processes data file of the day before
+YESTERDAY=`${ASK} 'sa2 uses daily data file of the day before? (y/n)' "--enable-yesterday" "yesterday"`
+if [ "${YESTERDAY}" = "y" ]; then
+	YESTERDAY="--enable-yesterday "
+else
+	YESTERDAY=""
+	echo "Parameter --enable-yesterday is NOT set"
+fi
+
+# Data history to keep by sa2
+HISTORY=`${ASK} 'Number of daily data files to keep:' "history" "history"`
+if [ "${HISTORY}" != "" ]; then
+	HISTORY="history=${HISTORY} "
+fi
+
+# Delay after which datafiles are to be compressed
+COMPRESSAFTER=`${ASK} 'Number of days after which sar datafiles must be compressed:' "compressafter" "compressafter"`
+if [ "${COMPRESSAFTER}" != "" ]; then
+	COMPRESSAFTER="compressafter=${COMPRESSAFTER} "
+fi
+
+# Manual page group
+MAN=`${ASK} 'Group for manual pages:' "man_group" "man_group"`
+if [ "${MAN}" != "" ]; then
+	MAN="man_group=${MAN} "
+fi
+
+# Ignore man_group variable
+IGNORE_MAN=`${ASK} 'Ignore contents of man_group variable? (y/n)' "--disable-man-group" "ignore-man-group"`
+if [ "${IGNORE_MAN}" = "y" ]; then
+	IGNORE_MAN="--disable-man-group "
+else
+	IGNORE_MAN=""
+	echo "Parameter --disable-man-group is NOT set"
+fi
+
+# Crontab
+CRON=`${ASK} 'Set crontab to start sar automatically? (y/n)' "--enable-install-cron" "install-cron"`
+if [ "${CRON}" = "y" ]; then
+	CRON="--enable-install-cron "
+else
+	CRON=""
+	echo "Parameter --enable-install-cron is NOT set"
+fi
+
+if [ "${CRON}" != "" ];
+then
+	CRON_OWNER=`${ASK} 'Crontab owner:' "cron_owner" "cron_owner"`
+	if [ "${CRON_OWNER}" != "" ]; then
+		CRON="${CRON}cron_owner=${CRON_OWNER} "
+	fi
+fi
+
+if [ "${CRON}" != "" ];
+then
+	CRON_INTERVAL=`${ASK} 'Crontab sampling interval (in minutes):' "cron_interval" "cron_interval"`
+	if [ "${CRON_INTERVAL}" != "" ]; then
+		CRON="${CRON}cron_interval=${CRON_INTERVAL} "
+	fi
+fi
+
+if [ "${CRON}" != "" ];
+then
+	# rc directory
+	RCDIR=`${ASK} 'rc directory:' "rcdir" "rcdir"`
+	if [ "${RCDIR}" != "" ]; then
+	        RCDIR="rcdir=${RCDIR} "
+	fi
+fi
+
+# Compress manual pages
+COMPRESSMANPG=`${ASK} 'Compress manual pages? (y/n)' "--enable-compress-manpg" "compress-manpg"`
+if [ "${COMPRESSMANPG}" = "y" ]; then
+	COMPRESSMANPG="--enable-compress-manpg "
+else
+	COMPRESSMANPG=""
+	echo "Parameter --enable-compress-manpg is NOT set"
+fi
+
+# Install documentation
+INSTALL_DOC=`${ASK} 'Skip documentation installation? (y/n)' "--disable-documentation" "install-doc"`
+if [ "${INSTALL_DOC}" = "y" ]; then
+	INSTALL_DOC="--disable-documentation "
+else
+	INSTALL_DOC=""
+	echo "Parameter --disable-documentation is NOT set"
+fi
+
+# Debug mode
+DEBUGINFO=`${ASK} 'Debug mode support? (y/n)' "--enable-debuginfo" "debuginfo"`
+if [ "${DEBUGINFO}" = "y" ]; then
+	DEBUGINFO="--enable-debuginfo "
+else
+	DEBUGINFO=""
+	echo "Parameter --enable-debuginfo is NOT set"
+fi
+
+# Install isag script
+INSTALL_ISAG=`${ASK} 'Install isag script? (y/n)' "--enable-install-isag" "install-isag"`
+if [ "${INSTALL_ISAG}" = "y" ]; then
+	INSTALL_ISAG="--enable-install-isag "
+else
+	INSTALL_ISAG=""
+	echo "Parameter --enable-install-isag is NOT set"
+fi
+
+echo
+echo "./configure ${PREFIX}${SA_LIB_DIR}${SA_DIR}${SYSCONFIG_DIR}${CLEAN_SA_DIR}${NLS} \
+${YESTERDAY}${HISTORY}${COMPRESSAFTER}${MAN}${IGNORE_MAN}${CRON}${RCDIR} \
+${COMPRESSMANPG}${INSTALL_DOC}${DEBUGINFO}${INSTALL_ISAG}${SENSORS}"
+echo
+
+./configure ${PREFIX}${SA_LIB_DIR}${SA_DIR}${SYSCONFIG_DIR}${CLEAN_SA_DIR}${NLS} \
+${YESTERDAY}${HISTORY}${COMPRESSAFTER}${MAN}${IGNORE_MAN}${CRON}${RCDIR} \
+${COMPRESSMANPG}${INSTALL_DOC}${DEBUGINFO}${INSTALL_ISAG}${SENSORS}
+

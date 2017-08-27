@@ -1,0 +1,116 @@
+<!-- ##### SECTION Title ##### -->
+Caches
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GCache ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_cache_new ##### -->
+<para>
+
+</para>
+
+@value_new_func: 
+@value_destroy_func: 
+@key_dup_func: 
+@key_destroy_func: 
+@hash_key_func: 
+@hash_value_func: 
+@key_equal_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_cache_insert ##### -->
+<para>
+
+</para>
+
+@cache: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_cache_remove ##### -->
+<para>
+
+</para>
+
+@cache: 
+@value: 
+
+
+<!-- ##### FUNCTION g_cache_destroy ##### -->
+<para>
+
+</para>
+
+@cache: 
+
+
+<!-- ##### FUNCTION g_cache_key_foreach ##### -->
+<para>
+
+</para>
+
+@cache: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_cache_value_foreach ##### -->
+<para>
+
+</para>
+
+@cache: 
+@func: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GCacheDestroyFunc ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### USER_FUNCTION GCacheDupFunc ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GCacheNewFunc ##### -->
+<para>
+
+</para>
+
+@key: 
+@Returns: 
+
+

@@ -1,0 +1,130 @@
+Libical v1.0 and above uses the CMake buildsystem.
+The autoconf build system has been removed and is no longer supported.
+
+Please see the comments at the top of CMakeLists.txt for
+the available configuration options you can pass to cmake.
+
+The installation directory defaults to /usr/local on UNIX
+and c:/Program Files on Windows.  You can change this by
+passing -DCMAKE_INSTALL_PREFIX=/install/path to cmake.
+
+To build a debug version pass -DCMAKE_BUILD_TYPE=Debug to cmake.
+
+To build libical you will need:
+ - CMake version 2.8.9 or higher
+ - Perl
+ - libicu (not required but strongly recommended)
+ - a C compiler (let us know if the build fails with your C compiler)
+
+Building on Unix with gcc or clang:
+% mkdir build
+% cd build
+% cmake ..
+% make
+% make install
+
+Building on Windows with MicroSoft Visual Studio:
+% mkdir build
+% cd build
+% cmake -G "NMake Makefiles" ..
+% nmake
+% nmake install
+
+NOTE: Some MSVC 32bit compilers (like MSVC2005) use a 64bit version of time_t.
+In these cases you must pass -DUSE_32BIT_TIME_T=true to cmake to make sure
+the 32bit version of time_t is used instead.
+
+Building on Windows with mingw:
+% mkdir build
+% cd build
+% cmake -G "MinGW Makefiles" ..
+% mingw32-make
+% mingw32-make install
+
+Building on Windows under Cygwin:
+% mkdir build
+% cd build
+% cmake ..
+% make
+% make install
+
+Building on MSYS with mingw:
+% mkdir build
+% cd build
+% cmake -G "MSYS Makefiles" ..
+% nmake
+% nmake install
+
+To run the test suite, from inside the build directory
+run 'make test' (or 'nmake test' or 'mingw32-make test')
+
+To run the test suite in verbose mode, pass ARGS="-V" to the make command
+For example: nmake test ARGS="-V"
+
+By default, the buildsystem creates shared(dynamic) and static versions
+of the libraries, but that behavior can be modified at CMake time:
+ - To build the static libraries only, pass -DSTATIC_ONLY=True to CMake.
+ - To build the shared libraries only, pass -DSHARED_ONLY=True to CMake.
+
+== Building with Different Compilers ==
+For example, say you want to use Clang to build on Linux.
+Then you can set the C and C++ compilers at CMake time, like so:
+% CC=clang CXX=clang++ cmake ..
+
+== Optional Dependencies ==
+* libicu "International Components for Unicode" development libraries.
+  Highly recommended for RSCALE support.
+  libicu can be found at http://www.icu-project.org
+
+  If CMake doesn't locate your libicu installation try setting the
+  ICU_BASE environment variable to the top folder where its installed
+  and run cmake again.
+
+* Berkeley DB storage.  If want to use (try) the Berkeley Database storage
+  you can pass the -DWITH_BDB=True option to CMake.  You'll need to have
+  the Berkeley DB toolkit development package installed beforehand.
+  This is very old code that disappeared in the 1.x series but
+  has been resurrected it in the 2.x series.
+
+  ** This code path has not been fully tested.
+  ** Don't be surprised if there are bugs.
+  ** Do NOT use for production code.
+
+* GObject Introspection.  To generate GObject introspection "typelib"
+  files pass the -DGOBJECT_INTROSPECTION=True option to CMake.  You'll
+  need to have the GObject Introspection development package v0.6.7 or higher
+  installed beforehand.
+
+== Language Bindings ==
+This C library can be built with bindings for these other languages:
+* C++. By default the buildsystem will create and install the C++ bindings API.
+  Turn this off by passing -DWITH_CXX_BINDINGS=False option to CMake.
+
+* There are Java, Perl, PHP and Python bindings but they are old and haven't
+  been tested in a very long time.  Volunteers wanted.
+
+== Tweaking the Library Behavior ==
+Use these CMake options to adjust the library behavior as follows:
+ * ICAL_ERRORS_ARE_FATALL=[true|false]
+   Set to make icalerror_* calls abort instead of internally signaling an error.
+   Default=false
+
+ * NO_WARN_DEPRECATED=[true|false]
+   Set if you DO NOT WANT to see deprecated messages.
+   Default=true
+
+ * ICAL_ALLOW_EMPTY_PROPERTIES=[true|false]
+   Set to prevent empty properties from being replaced with X-LIC-ERROR properties.
+   Default=false
+
+ * USE_BUILTIN_TZDATA=[true|false]
+   Set to build using our own (instead of the system's) timezone data.
+   Default=false (use the system timezone data on non-Windows systems)
+   ALWAYS true on Windows systems
+
+ * USE_INTEROPERABLE_VTIMEZONES=[true|false]
+   Set to use inter-operable rather than exact VTIMEZONEs.
+   Default=false (build exact VTIMEZONEs)
+   Notes:
+     Change the behavior at runtime using the icaltzutil_set_exact_vtimezones_support() function.
+     Query the behavior at runtime using the icaltzutil_get_exact_vtimezones_support() function.

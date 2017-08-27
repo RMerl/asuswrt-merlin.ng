@@ -1,0 +1,19 @@
+#
+#	Configuration file for the rlm_attr_filter module.
+#	Please see rlm_attr_filter(5) manpage for more information.
+#
+#	$Id$
+#
+#	This configuration file is used to remove almost all of the
+#	attributes From an Access-Challenge message.  The RFCs say
+#	that an Access-Challenge packet can contain only a few
+#	attributes.  We enforce that here.
+#
+DEFAULT
+	EAP-Message =* ANY,
+	State =* ANY,
+	Message-Authenticator =* ANY,
+	Reply-Message =* ANY,
+	Proxy-State =* ANY,
+	Session-Timeout =* ANY,
+	Idle-Timeout =* ANY

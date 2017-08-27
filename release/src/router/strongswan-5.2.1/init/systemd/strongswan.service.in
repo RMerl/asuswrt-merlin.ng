@@ -1,0 +1,10 @@
+[Unit]
+Description=strongSwan IPsec IKEv1/IKEv2 daemon using ipsec.conf
+After=syslog.target
+
+[Service]
+ExecStart=@SBINDIR@/@IPSEC_SCRIPT@ start --nofork
+StandardOutput=syslog
+
+[Install]
+WantedBy=multi-user.target

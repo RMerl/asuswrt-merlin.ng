@@ -1,0 +1,12 @@
+carol::cat /var/log/daemon.log::sending issuer cert.*CN=Research CA::YES
+dave:: cat /var/log/daemon.log::sending issuer cert.*CN=Sales CA::YES
+moon:: cat /var/log/daemon.log::fetching crl from.*http.*research.crl::YES
+moon:: cat /var/log/daemon.log::crl correctly signed by.*Research CA::YES
+moon:: cat /var/log/daemon.log::fetching crl from.*http.*sales.crl::YES
+moon:: cat /var/log/daemon.log::crl correctly signed by.*Sales CA::YES
+moon:: cat /var/log/daemon.log::fetching crl from.*http.*strongswan.crl::YES
+moon:: cat /var/log/daemon.log::crl correctly signed by.*strongSwan Root CA::YES
+carol::ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::YES

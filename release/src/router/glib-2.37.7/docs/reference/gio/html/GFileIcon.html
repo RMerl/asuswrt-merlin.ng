@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GFileIcon</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="icons.html" title="Icons">
+<link rel="prev" href="GIcon.html" title="GIcon">
+<link rel="next" href="gio-GBytesIcon.html" title="GBytesIcon">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GFileIcon.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GFileIcon.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GFileIcon.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GFileIcon.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="icons.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GIcon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GBytesIcon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GFileIcon"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GFileIcon.top_of_page"></a>GFileIcon</span></h2>
+<p>GFileIcon — Icons pointing to an image file</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GFileIcon.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GFileIcon.html#GFileIcon-struct" title="GFileIcon">GFileIcon</a>;
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             <a class="link" href="GFileIcon.html#g-file-icon-new" title="g_file_icon_new ()">g_file_icon_new</a>                     (<em class="parameter"><code><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> *file</code></em>);
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             <a class="link" href="GFileIcon.html#g-file-icon-get-file" title="g_file_icon_get_file ()">g_file_icon_get_file</a>                (<em class="parameter"><code><a class="link" href="GFileIcon.html" title="GFileIcon"><span class="type">GFileIcon</span></a> *icon</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GFileIcon
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GFileIcon implements
+ <a class="link" href="GIcon.html" title="GIcon">GIcon</a> and  <a class="link" href="GLoadableIcon.html" title="GLoadableIcon">GLoadableIcon</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GFileIcon.html#GFileIcon--file" title='The "file" property'>file</a>"                     <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>*                : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GFileIcon.html" title="GFileIcon"><span class="type">GFileIcon</span></a> specifies an icon by pointing to an image file
+to be used as icon.
+</p>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GFileIcon-struct"></a><h3>GFileIcon</h3>
+<pre class="programlisting">typedef struct _GFileIcon GFileIcon;</pre>
+<p>
+Gets an icon for a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>. Implements <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-icon-new"></a><h3>g_file_icon_new ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             g_file_icon_new                     (<em class="parameter"><code><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> *file</code></em>);</pre>
+<p>
+Creates a new icon for a file.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>file</code></em> :</span></p></td>
+<td>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for the given
+<em class="parameter"><code>file</code></em>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GFileIcon]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-icon-get-file"></a><h3>g_file_icon_get_file ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             g_file_icon_get_file                (<em class="parameter"><code><a class="link" href="GFileIcon.html" title="GFileIcon"><span class="type">GFileIcon</span></a> *icon</code></em>);</pre>
+<p>
+Gets the <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> associated with the given <em class="parameter"><code>icon</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GFileIcon--file"></a><h3>The <code class="literal">"file"</code> property</h3>
+<pre class="programlisting">  "file"                     <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>*                : Read / Write / Construct Only</pre>
+<p>
+The file containing the icon.
+</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileIcon.see-also"></a><h2>See Also</h2>
+<a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,2297 @@
+<HTML>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on February, 8  2011 by texi2html 1.64 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HEAD>
+<TITLE>GNU History Library: </TITLE>
+
+<META NAME="description" CONTENT="GNU History Library: ">
+<META NAME="keywords" CONTENT="GNU History Library: ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.64">
+
+</HEAD>
+
+<BODY LANG="" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC_Top"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>GNU History Library</H1></P><P>
+
+This document describes the GNU History library, a programming tool that
+provides a consistent user interface for recalling lines of previously
+typed input.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC1">1. Using History Interactively</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">GNU History User's Manual.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC6">2. Programming with GNU History</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">GNU History Programmer's Manual.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC19">A. GNU Free Documentation License</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">License for copying this manual.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC21">B. Concept Index</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Index of concepts described in this manual.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC22">C. Function and Variable Index</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Index of externally visible functions
+				  and variables.</TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<HR SIZE=1>
+<A NAME="SEC1"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC2"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<A NAME="Using History Interactively"></A>
+<H1> 1. Using History Interactively </H1>
+<!--docid::SEC1::-->
+<P>
+
+This chapter describes how to use the GNU History Library interactively,
+from a user's standpoint.  It should be considered a user's guide.  For
+information on using the GNU History Library in your own programs,
+see section <A HREF="history.html#SEC6">2. Programming with GNU History</A>.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC2">1.1 History Expansion</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">What it feels like using History as a user.</TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="History Interaction"></A>
+<HR SIZE="6">
+<A NAME="SEC2"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC1"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC3"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC1"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 1.1 History Expansion </H2>
+<!--docid::SEC2::-->
+<P>
+
+The History library provides a history expansion feature that is similar
+to the history expansion provided by <CODE>csh</CODE>.  This section
+describes the syntax used to manipulate the history information.
+</P><P>
+
+History expansions introduce words from the history list into
+the input stream, making it easy to repeat commands, insert the
+arguments to a previous command into the current input line, or
+fix errors in previous commands quickly.
+</P><P>
+
+History expansion takes place in two parts.  The first is to determine
+which line from the history list should be used during substitution.
+The second is to select portions of that line for inclusion into the
+current one.  The line selected from the history is called the
+<EM>event</EM>, and the portions of that line that are acted upon are
+called <EM>words</EM>.  Various <EM>modifiers</EM> are available to manipulate
+the selected words.  The line is broken into words in the same fashion
+that Bash does, so that several words
+surrounded by quotes are considered one word.
+History expansions are introduced by the appearance of the
+history expansion character, which is <SAMP>`!'</SAMP> by default.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC3">1.1.1 Event Designators</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">How to specify which history line to use.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC4">1.1.2 Word Designators</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Specifying which words are of interest.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC5">1.1.3 Modifiers</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Modifying the results of substitution.</TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="Event Designators"></A>
+<HR SIZE="6">
+<A NAME="SEC3"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC2"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC4"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.1.1 Event Designators </H3>
+<!--docid::SEC3::-->
+<P>
+
+An event designator is a reference to a command line entry in the
+history list.
+Unless the reference is absolute, events are relative to the current
+position in the history list.
+<A NAME="IDX1"></A>
+</P><P>
+
+<DL COMPACT>
+
+<DT><CODE>!</CODE>
+<DD>Start a history substitution, except when followed by a space, tab,
+the end of the line, or <SAMP>`='</SAMP>.
+<P>
+
+<DT><CODE>!<VAR>n</VAR></CODE>
+<DD>Refer to command line <VAR>n</VAR>.
+<P>
+
+<DT><CODE>!-<VAR>n</VAR></CODE>
+<DD>Refer to the command <VAR>n</VAR> lines back.
+<P>
+
+<DT><CODE>!!</CODE>
+<DD>Refer to the previous command.  This is a synonym for <SAMP>`!-1'</SAMP>.
+<P>
+
+<DT><CODE>!<VAR>string</VAR></CODE>
+<DD>Refer to the most recent command
+preceding the current position in the history list
+starting with <VAR>string</VAR>.
+<P>
+
+<DT><CODE>!?<VAR>string</VAR>[?]</CODE>
+<DD>Refer to the most recent command
+preceding the current position in the history list
+containing <VAR>string</VAR>.
+The trailing
+<SAMP>`?'</SAMP> may be omitted if the <VAR>string</VAR> is followed immediately by
+a newline.
+<P>
+
+<DT><CODE>^<VAR>string1</VAR>^<VAR>string2</VAR>^</CODE>
+<DD>Quick Substitution.  Repeat the last command, replacing <VAR>string1</VAR>
+with <VAR>string2</VAR>.  Equivalent to
+<CODE>!!:s/<VAR>string1</VAR>/<VAR>string2</VAR>/</CODE>.
+<P>
+
+<DT><CODE>!#</CODE>
+<DD>The entire command line typed so far.
+<P>
+
+</DL>
+<P>
+
+<A NAME="Word Designators"></A>
+<HR SIZE="6">
+<A NAME="SEC4"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC3"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC5"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC5"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.1.2 Word Designators </H3>
+<!--docid::SEC4::-->
+<P>
+
+Word designators are used to select desired words from the event.
+A <SAMP>`:'</SAMP> separates the event specification from the word designator.  It
+may be omitted if the word designator begins with a <SAMP>`^'</SAMP>, <SAMP>`$'</SAMP>,
+<SAMP>`*'</SAMP>, <SAMP>`-'</SAMP>, or <SAMP>`%'</SAMP>.  Words are numbered from the beginning
+of the line, with the first word being denoted by 0 (zero).  Words are
+inserted into the current line separated by single spaces.
+</P><P>
+
+For example,
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>!!</CODE>
+<DD>designates the preceding command.  When you type this, the preceding
+command is repeated in toto.
+<P>
+
+<DT><CODE>!!:$</CODE>
+<DD>designates the last argument of the preceding command.  This may be
+shortened to <CODE>!$</CODE>.
+<P>
+
+<DT><CODE>!fi:2</CODE>
+<DD>designates the second argument of the most recent command starting with
+the letters <CODE>fi</CODE>.
+</DL>
+<P>
+
+Here are the word designators:
+ 
+<DL COMPACT>
+
+<DT><CODE>0 (zero)</CODE>
+<DD>The <CODE>0</CODE>th word.  For many applications, this is the command word.
+<P>
+
+<DT><CODE><VAR>n</VAR></CODE>
+<DD>The <VAR>n</VAR>th word.
+<P>
+
+<DT><CODE>^</CODE>
+<DD>The first argument; that is, word 1.
+<P>
+
+<DT><CODE>$</CODE>
+<DD>The last argument.
+<P>
+
+<DT><CODE>%</CODE>
+<DD>The word matched by the most recent <SAMP>`?<VAR>string</VAR>?'</SAMP> search.
+<P>
+
+<DT><CODE><VAR>x</VAR>-<VAR>y</VAR></CODE>
+<DD>A range of words; <SAMP>`-<VAR>y</VAR>'</SAMP> abbreviates <SAMP>`0-<VAR>y</VAR>'</SAMP>.
+<P>
+
+<DT><CODE>*</CODE>
+<DD>All of the words, except the <CODE>0</CODE>th.  This is a synonym for <SAMP>`1-$'</SAMP>.
+It is not an error to use <SAMP>`*'</SAMP> if there is just one word in the event;
+the empty string is returned in that case.
+<P>
+
+<DT><CODE><VAR>x</VAR>*</CODE>
+<DD>Abbreviates <SAMP>`<VAR>x</VAR>-$'</SAMP>
+<P>
+
+<DT><CODE><VAR>x</VAR>-</CODE>
+<DD>Abbreviates <SAMP>`<VAR>x</VAR>-$'</SAMP> like <SAMP>`<VAR>x</VAR>*'</SAMP>, but omits the last word.
+<P>
+
+</DL>
+<P>
+
+If a word designator is supplied without an event specification, the
+previous command is used as the event.
+</P><P>
+
+<A NAME="Modifiers"></A>
+<HR SIZE="6">
+<A NAME="SEC5"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC4"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.1.3 Modifiers </H3>
+<!--docid::SEC5::-->
+<P>
+
+After the optional word designator, you can add a sequence of one or more
+of the following modifiers, each preceded by a <SAMP>`:'</SAMP>.
+</P><P>
+
+<DL COMPACT>
+
+<DT><CODE>h</CODE>
+<DD>Remove a trailing pathname component, leaving only the head.
+<P>
+
+<DT><CODE>t</CODE>
+<DD>Remove all leading pathname components, leaving the tail.
+<P>
+
+<DT><CODE>r</CODE>
+<DD>Remove a trailing suffix of the form <SAMP>`.<VAR>suffix</VAR>'</SAMP>, leaving
+the basename.
+<P>
+
+<DT><CODE>e</CODE>
+<DD>Remove all but the trailing suffix.
+<P>
+
+<DT><CODE>p</CODE>
+<DD>Print the new command but do not execute it.
+<P>
+
+<DT><CODE>s/<VAR>old</VAR>/<VAR>new</VAR>/</CODE>
+<DD>Substitute <VAR>new</VAR> for the first occurrence of <VAR>old</VAR> in the
+event line.  Any delimiter may be used in place of <SAMP>`/'</SAMP>.
+The delimiter may be quoted in <VAR>old</VAR> and <VAR>new</VAR>
+with a single backslash.  If <SAMP>`&#38;'</SAMP> appears in <VAR>new</VAR>,
+it is replaced by <VAR>old</VAR>.  A single backslash will quote
+the <SAMP>`&#38;'</SAMP>.  The final delimiter is optional if it is the last
+character on the input line.
+<P>
+
+<DT><CODE>&#38;</CODE>
+<DD>Repeat the previous substitution.
+<P>
+
+<DT><CODE>g</CODE>
+<DD><DT><CODE>a</CODE>
+<DD>Cause changes to be applied over the entire event line.  Used in
+conjunction with <SAMP>`s'</SAMP>, as in <CODE>gs/<VAR>old</VAR>/<VAR>new</VAR>/</CODE>,
+or with <SAMP>`&#38;'</SAMP>.
+<P>
+
+<DT><CODE>G</CODE>
+<DD>Apply the following <SAMP>`s'</SAMP> modifier once to each word in the event.
+<P>
+
+</DL>
+<P>
+
+<A NAME="Programming with GNU History"></A>
+<HR SIZE="6">
+<A NAME="SEC6"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC5"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC7"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 2. Programming with GNU History </H1>
+<!--docid::SEC6::-->
+<P>
+
+This chapter describes how to interface programs that you write
+with the GNU History Library.
+It should be considered a technical guide.
+For information on the interactive use of GNU History, see section <A HREF="history.html#SEC1">1. Using History Interactively</A>.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC7">2.1 Introduction to History</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">What is the GNU History library for?</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC8">2.2 History Storage</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">How information is stored.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC9">2.3 History Functions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions that you can use.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC17">2.4 History Variables</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Variables that control behaviour.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC18">2.5 History Programming Example</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Example of using the GNU History Library.</TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="Introduction to History"></A>
+<HR SIZE="6">
+<A NAME="SEC7"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC8"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.1 Introduction to History </H2>
+<!--docid::SEC7::-->
+<P>
+
+Many programs read input from the user a line at a time.  The GNU
+History library is able to keep track of those lines, associate arbitrary
+data with each line, and utilize information from previous lines in
+composing new ones. 
+</P><P>
+
+The programmer using the History library has available functions
+for remembering lines on a history list, associating arbitrary data
+with a line, removing lines from the list, searching through the list
+for a line containing an arbitrary text string, and referencing any line
+in the list directly.  In addition, a history <EM>expansion</EM> function
+is available which provides for a consistent user interface across
+different programs.
+</P><P>
+
+The user using programs written with the History library has the
+benefit of a consistent user interface with a set of well-known
+commands for manipulating the text of previous lines and using that text
+in new commands.  The basic history manipulation commands are similar to
+the history substitution provided by <CODE>csh</CODE>.
+</P><P>
+
+If the programmer desires, he can use the Readline library, which
+includes some history manipulation by default, and has the added
+advantage of command line editing.
+</P><P>
+
+Before declaring any functions using any functionality the History
+library provides in other code, an application writer should include
+the file <CODE>&#60;readline/history.h&#62;</CODE> in any file that uses the
+History library's features.  It supplies extern declarations for all
+of the library's public functions and variables, and declares all of
+the public data structures.
+</P><P>
+
+<A NAME="History Storage"></A>
+<HR SIZE="6">
+<A NAME="SEC8"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC7"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.2 History Storage </H2>
+<!--docid::SEC8::-->
+<P>
+
+The history list is an array of history entries.  A history entry is
+declared as follows:
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>typedef void *histdata_t;
+
+typedef struct _hist_entry {
+  char *line;
+  char *timestamp;
+  histdata_t data;
+} HIST_ENTRY;
+</pre></td></tr></table></P><P>
+
+The history list itself might therefore be declared as
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>HIST_ENTRY **the_history_list;
+</pre></td></tr></table></P><P>
+
+The state of the History library is encapsulated into a single structure:
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>/*
+ * A structure used to pass around the current state of the history.
+ */
+typedef struct _hist_state {
+  HIST_ENTRY **entries; /* Pointer to the entries themselves. */
+  int offset;           /* The location pointer within this array. */
+  int length;           /* Number of elements within this array. */
+  int size;             /* Number of slots allocated to this array. */
+  int flags;
+} HISTORY_STATE;
+</pre></td></tr></table></P><P>
+
+If the flags member includes <CODE>HS_STIFLED</CODE>, the history has been
+stifled.
+</P><P>
+
+<A NAME="History Functions"></A>
+<HR SIZE="6">
+<A NAME="SEC9"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC8"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC10"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.3 History Functions </H2>
+<!--docid::SEC9::-->
+<P>
+
+This section describes the calling sequence for the various functions
+exported by the GNU History library.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC10">2.3.1 Initializing History and State Management</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions to call when you
+						want to use history in a
+						program.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions used to manage the list
+					of history entries.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions returning information about
+					the history list.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC13">2.3.4 Moving Around the History List</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions used to change the position
+					in the history list.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC14">2.3.5 Searching the History List</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions to search the history list
+					for entries containing a string.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC15">2.3.6 Managing the History File</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions that read and write a file
+					containing the history list.</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="history.html#SEC16">2.3.7 History Expansion</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">Functions to perform csh-like history
+					expansion.</TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="Initializing History and State Management"></A>
+<HR SIZE="6">
+<A NAME="SEC10"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC11"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.1 Initializing History and State Management </H3>
+<!--docid::SEC10::-->
+<P>
+
+This section describes functions used to initialize and manage
+the state of the History library when you want to use the history
+functions in your program.
+</P><P>
+
+<A NAME="IDX2"></A>
+<DL>
+<DT><U>Function:</U> void <B>using_history</B> <I>(void)</I>
+<DD>Begin a session in which the history functions might be used.  This
+initializes the interactive variables.
+</DL>
+</P><P>
+
+<A NAME="IDX3"></A>
+<DL>
+<DT><U>Function:</U> HISTORY_STATE * <B>history_get_history_state</B> <I>(void)</I>
+<DD>Return a structure describing the current state of the input history.
+</DL>
+</P><P>
+
+<A NAME="IDX4"></A>
+<DL>
+<DT><U>Function:</U> void <B>history_set_history_state</B> <I>(HISTORY_STATE *state)</I>
+<DD>Set the state of the history list according to <VAR>state</VAR>.
+</DL>
+</P><P>
+
+<A NAME="History List Management"></A>
+<HR SIZE="6">
+<A NAME="SEC11"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC10"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC12"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC12"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.2 History List Management </H3>
+<!--docid::SEC11::-->
+<P>
+
+These functions manage individual entries on the history list, or set
+parameters managing the list itself.
+</P><P>
+
+<A NAME="IDX5"></A>
+<DL>
+<DT><U>Function:</U> void <B>add_history</B> <I>(const char *string)</I>
+<DD>Place <VAR>string</VAR> at the end of the history list.  The associated data
+field (if any) is set to <CODE>NULL</CODE>.
+</DL>
+</P><P>
+
+<A NAME="IDX6"></A>
+<DL>
+<DT><U>Function:</U> void <B>add_history_time</B> <I>(const char *string)</I>
+<DD>Change the time stamp associated with the most recent history entry to
+<VAR>string</VAR>.
+</DL>
+</P><P>
+
+<A NAME="IDX7"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY * <B>remove_history</B> <I>(int which)</I>
+<DD>Remove history entry at offset <VAR>which</VAR> from the history.  The
+removed element is returned so you can free the line, data,
+and containing structure.
+</DL>
+</P><P>
+
+<A NAME="IDX8"></A>
+<DL>
+<DT><U>Function:</U> histdata_t <B>free_history_entry</B> <I>(HIST_ENTRY *histent)</I>
+<DD>Free the history entry <VAR>histent</VAR> and any history library private
+data associated with it.  Returns the application-specific data
+so the caller can dispose of it.
+</DL>
+</P><P>
+
+<A NAME="IDX9"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY * <B>replace_history_entry</B> <I>(int which, const char *line, histdata_t data)</I>
+<DD>Make the history entry at offset <VAR>which</VAR> have <VAR>line</VAR> and <VAR>data</VAR>.
+This returns the old entry so the caller can dispose of any
+application-specific data.  In the case
+of an invalid <VAR>which</VAR>, a <CODE>NULL</CODE> pointer is returned.
+</DL>
+</P><P>
+
+<A NAME="IDX10"></A>
+<DL>
+<DT><U>Function:</U> void <B>clear_history</B> <I>(void)</I>
+<DD>Clear the history list by deleting all the entries.
+</DL>
+</P><P>
+
+<A NAME="IDX11"></A>
+<DL>
+<DT><U>Function:</U> void <B>stifle_history</B> <I>(int max)</I>
+<DD>Stifle the history list, remembering only the last <VAR>max</VAR> entries.
+</DL>
+</P><P>
+
+<A NAME="IDX12"></A>
+<DL>
+<DT><U>Function:</U> int <B>unstifle_history</B> <I>(void)</I>
+<DD>Stop stifling the history.  This returns the previously-set
+maximum number of history entries (as set by <CODE>stifle_history()</CODE>).
+The value is positive if the history was
+stifled, negative if it wasn't.
+</DL>
+</P><P>
+
+<A NAME="IDX13"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_is_stifled</B> <I>(void)</I>
+<DD>Returns non-zero if the history is stifled, zero if it is not.
+</DL>
+</P><P>
+
+<A NAME="Information About the History List"></A>
+<HR SIZE="6">
+<A NAME="SEC12"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC11"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC13"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC13"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.3 Information About the History List </H3>
+<!--docid::SEC12::-->
+<P>
+
+These functions return information about the entire history list or
+individual list entries.
+</P><P>
+
+<A NAME="IDX14"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY ** <B>history_list</B> <I>(void)</I>
+<DD>Return a <CODE>NULL</CODE> terminated array of <CODE>HIST_ENTRY *</CODE> which is the
+current input history.  Element 0 of this list is the beginning of time.
+If there is no history, return <CODE>NULL</CODE>.
+</DL>
+</P><P>
+
+<A NAME="IDX15"></A>
+<DL>
+<DT><U>Function:</U> int <B>where_history</B> <I>(void)</I>
+<DD>Returns the offset of the current history element.
+</DL>
+</P><P>
+
+<A NAME="IDX16"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY * <B>current_history</B> <I>(void)</I>
+<DD>Return the history entry at the current position, as determined by
+<CODE>where_history()</CODE>.  If there is no entry there, return a <CODE>NULL</CODE>
+pointer.
+</DL>
+</P><P>
+
+<A NAME="IDX17"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY * <B>history_get</B> <I>(int offset)</I>
+<DD>Return the history entry at position <VAR>offset</VAR>, starting from
+<CODE>history_base</CODE> (see section <A HREF="history.html#SEC17">2.4 History Variables</A>).
+If there is no entry there, or if <VAR>offset</VAR>
+is greater than the history length, return a <CODE>NULL</CODE> pointer.
+</DL>
+</P><P>
+
+<A NAME="IDX18"></A>
+<DL>
+<DT><U>Function:</U> time_t <B>history_get_time</B> <I>(HIST_ENTRY *entry)</I>
+<DD>Return the time stamp associated with the history entry <VAR>entry</VAR>.
+</DL>
+</P><P>
+
+<A NAME="IDX19"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_total_bytes</B> <I>(void)</I>
+<DD>Return the number of bytes that the primary history entries are using.
+This function returns the sum of the lengths of all the lines in the
+history.
+</DL>
+</P><P>
+
+<A NAME="Moving Around the History List"></A>
+<HR SIZE="6">
+<A NAME="SEC13"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC12"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC14"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC14"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.4 Moving Around the History List </H3>
+<!--docid::SEC13::-->
+<P>
+
+These functions allow the current index into the history list to be
+set or changed.
+</P><P>
+
+<A NAME="IDX20"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_set_pos</B> <I>(int pos)</I>
+<DD>Set the current history offset to <VAR>pos</VAR>, an absolute index
+into the list.
+Returns 1 on success, 0 if <VAR>pos</VAR> is less than zero or greater
+than the number of history entries.
+</DL>
+</P><P>
+
+<A NAME="IDX21"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY * <B>previous_history</B> <I>(void)</I>
+<DD>Back up the current history offset to the previous history entry, and
+return a pointer to that entry.  If there is no previous entry, return
+a <CODE>NULL</CODE> pointer.
+</DL>
+</P><P>
+
+<A NAME="IDX22"></A>
+<DL>
+<DT><U>Function:</U> HIST_ENTRY * <B>next_history</B> <I>(void)</I>
+<DD>Move the current history offset forward to the next history entry, and
+return the a pointer to that entry.  If there is no next entry, return
+a <CODE>NULL</CODE> pointer.
+</DL>
+</P><P>
+
+<A NAME="Searching the History List"></A>
+<HR SIZE="6">
+<A NAME="SEC14"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC13"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC15"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC15"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.5 Searching the History List </H3>
+<!--docid::SEC14::-->
+<P>
+
+These functions allow searching of the history list for entries containing
+a specific string.  Searching may be performed both forward and backward
+from the current history position.  The search may be <EM>anchored</EM>,
+meaning that the string must match at the beginning of the history entry.
+<A NAME="IDX23"></A>
+</P><P>
+
+<A NAME="IDX24"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_search</B> <I>(const char *string, int direction)</I>
+<DD>Search the history for <VAR>string</VAR>, starting at the current history offset.
+If <VAR>direction</VAR> is less than 0, then the search is through
+previous entries, otherwise through subsequent entries.
+If <VAR>string</VAR> is found, then
+the current history index is set to that history entry, and the value
+returned is the offset in the line of the entry where
+<VAR>string</VAR> was found.  Otherwise, nothing is changed, and a -1 is
+returned.
+</DL>
+</P><P>
+
+<A NAME="IDX25"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_search_prefix</B> <I>(const char *string, int direction)</I>
+<DD>Search the history for <VAR>string</VAR>, starting at the current history
+offset.  The search is anchored: matching lines must begin with
+<VAR>string</VAR>.  If <VAR>direction</VAR> is less than 0, then the search is
+through previous entries, otherwise through subsequent entries.
+If <VAR>string</VAR> is found, then the
+current history index is set to that entry, and the return value is 0. 
+Otherwise, nothing is changed, and a -1 is returned. 
+</DL>
+</P><P>
+
+<A NAME="IDX26"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_search_pos</B> <I>(const char *string, int direction, int pos)</I>
+<DD>Search for <VAR>string</VAR> in the history list, starting at <VAR>pos</VAR>, an
+absolute index into the list.  If <VAR>direction</VAR> is negative, the search
+proceeds backward from <VAR>pos</VAR>, otherwise forward.  Returns the absolute
+index of the history element where <VAR>string</VAR> was found, or -1 otherwise.
+</DL>
+</P><P>
+
+<A NAME="Managing the History File"></A>
+<HR SIZE="6">
+<A NAME="SEC15"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC14"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC16"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC16"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.6 Managing the History File </H3>
+<!--docid::SEC15::-->
+<P>
+
+The History library can read the history from and write it to a file.
+This section documents the functions for managing a history file.
+</P><P>
+
+<A NAME="IDX27"></A>
+<DL>
+<DT><U>Function:</U> int <B>read_history</B> <I>(const char *filename)</I>
+<DD>Add the contents of <VAR>filename</VAR> to the history list, a line at a time.
+If <VAR>filename</VAR> is <CODE>NULL</CODE>, then read from <TT>`~/.history'</TT>.
+Returns 0 if successful, or <CODE>errno</CODE> if not.
+</DL>
+</P><P>
+
+<A NAME="IDX28"></A>
+<DL>
+<DT><U>Function:</U> int <B>read_history_range</B> <I>(const char *filename, int from, int to)</I>
+<DD>Read a range of lines from <VAR>filename</VAR>, adding them to the history list.
+Start reading at line <VAR>from</VAR> and end at <VAR>to</VAR>.
+If <VAR>from</VAR> is zero, start at the beginning.  If <VAR>to</VAR> is less than
+<VAR>from</VAR>, then read until the end of the file.  If <VAR>filename</VAR> is
+<CODE>NULL</CODE>, then read from <TT>`~/.history'</TT>.  Returns 0 if successful,
+or <CODE>errno</CODE> if not.
+</DL>
+</P><P>
+
+<A NAME="IDX29"></A>
+<DL>
+<DT><U>Function:</U> int <B>write_history</B> <I>(const char *filename)</I>
+<DD>Write the current history to <VAR>filename</VAR>, overwriting <VAR>filename</VAR>
+if necessary.
+If <VAR>filename</VAR> is <CODE>NULL</CODE>, then write the history list to
+<TT>`~/.history'</TT>.
+Returns 0 on success, or <CODE>errno</CODE> on a read or write error.
+</DL>
+</P><P>
+
+<A NAME="IDX30"></A>
+<DL>
+<DT><U>Function:</U> int <B>append_history</B> <I>(int nelements, const char *filename)</I>
+<DD>Append the last <VAR>nelements</VAR> of the history list to <VAR>filename</VAR>.
+If <VAR>filename</VAR> is <CODE>NULL</CODE>, then append to <TT>`~/.history'</TT>.
+Returns 0 on success, or <CODE>errno</CODE> on a read or write error.
+</DL>
+</P><P>
+
+<A NAME="IDX31"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_truncate_file</B> <I>(const char *filename, int nlines)</I>
+<DD>Truncate the history file <VAR>filename</VAR>, leaving only the last
+<VAR>nlines</VAR> lines.
+If <VAR>filename</VAR> is <CODE>NULL</CODE>, then <TT>`~/.history'</TT> is truncated.
+Returns 0 on success, or <CODE>errno</CODE> on failure.
+</DL>
+</P><P>
+
+<A NAME="History Expansion"></A>
+<HR SIZE="6">
+<A NAME="SEC16"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC15"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC9"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 2.3.7 History Expansion </H3>
+<!--docid::SEC16::-->
+<P>
+
+These functions implement history expansion.
+</P><P>
+
+<A NAME="IDX32"></A>
+<DL>
+<DT><U>Function:</U> int <B>history_expand</B> <I>(char *string, char **output)</I>
+<DD>Expand <VAR>string</VAR>, placing the result into <VAR>output</VAR>, a pointer
+to a string (see section <A HREF="history.html#SEC2">1.1 History Expansion</A>).  Returns:
+<DL COMPACT>
+<DT><CODE>0</CODE>
+<DD>If no expansions took place (or, if the only change in
+the text was the removal of escape characters preceding the history expansion
+character);
+<DT><CODE>1</CODE>
+<DD>if expansions did take place;
+<DT><CODE>-1</CODE>
+<DD>if there was an error in expansion;
+<DT><CODE>2</CODE>
+<DD>if the returned line should be displayed, but not executed,
+as with the <CODE>:p</CODE> modifier (see section <A HREF="history.html#SEC5">1.1.3 Modifiers</A>).
+</DL>
+<P>
+
+If an error ocurred in expansion, then <VAR>output</VAR> contains a descriptive
+error message.
+</DL>
+</P><P>
+
+<A NAME="IDX33"></A>
+<DL>
+<DT><U>Function:</U> char * <B>get_history_event</B> <I>(const char *string, int *cindex, int qchar)</I>
+<DD>Returns the text of the history event beginning at <VAR>string</VAR> +
+<VAR>*cindex</VAR>.  <VAR>*cindex</VAR> is modified to point to after the event
+specifier.  At function entry, <VAR>cindex</VAR> points to the index into
+<VAR>string</VAR> where the history event specification begins.  <VAR>qchar</VAR>
+is a character that is allowed to end the event specification in addition
+to the "normal" terminating characters.
+</DL>
+</P><P>
+
+<A NAME="IDX34"></A>
+<DL>
+<DT><U>Function:</U> char ** <B>history_tokenize</B> <I>(const char *string)</I>
+<DD>Return an array of tokens parsed out of <VAR>string</VAR>, much as the
+shell might.  The tokens are split on the characters in the
+<VAR>history_word_delimiters</VAR> variable,
+and shell quoting conventions are obeyed.
+</DL>
+</P><P>
+
+<A NAME="IDX35"></A>
+<DL>
+<DT><U>Function:</U> char * <B>history_arg_extract</B> <I>(int first, int last, const char *string)</I>
+<DD>Extract a string segment consisting of the <VAR>first</VAR> through <VAR>last</VAR>
+arguments present in <VAR>string</VAR>.  Arguments are split using
+<CODE>history_tokenize</CODE>.
+</DL>
+</P><P>
+
+<A NAME="History Variables"></A>
+<HR SIZE="6">
+<A NAME="SEC17"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC16"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC18"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC18"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.4 History Variables </H2>
+<!--docid::SEC17::-->
+<P>
+
+This section describes the externally-visible variables exported by
+the GNU History Library.
+</P><P>
+
+<A NAME="IDX36"></A>
+<DL>
+<DT><U>Variable:</U> int <B>history_base</B>
+<DD>The logical offset of the first entry in the history list.
+</DL>
+</P><P>
+
+<A NAME="IDX37"></A>
+<DL>
+<DT><U>Variable:</U> int <B>history_length</B>
+<DD>The number of entries currently stored in the history list.
+</DL>
+</P><P>
+
+<A NAME="IDX38"></A>
+<DL>
+<DT><U>Variable:</U> int <B>history_max_entries</B>
+<DD>The maximum number of history entries.  This must be changed using
+<CODE>stifle_history()</CODE>.
+</DL>
+</P><P>
+
+<A NAME="IDX39"></A>
+<DL>
+<DT><U>Variable:</U> int <B>history_write_timestamps</B>
+<DD>If non-zero, timestamps are written to the history file, so they can be
+preserved between sessions.  The default value is 0, meaning that
+timestamps are not saved.
+</P><P>
+
+The current timestamp format uses the value of <VAR>history_comment_char</VAR>
+to delimit timestamp entries in the history file.  If that variable does
+not have a value (the default), timestamps will not be written.
+</DL>
+</P><P>
+
+<A NAME="IDX40"></A>
+<DL>
+<DT><U>Variable:</U> char <B>history_expansion_char</B>
+<DD>The character that introduces a history event.  The default is <SAMP>`!'</SAMP>.
+Setting this to 0 inhibits history expansion.
+</DL>
+</P><P>
+
+<A NAME="IDX41"></A>
+<DL>
+<DT><U>Variable:</U> char <B>history_subst_char</B>
+<DD>The character that invokes word substitution if found at the start of
+a line.  The default is <SAMP>`^'</SAMP>.
+</DL>
+</P><P>
+
+<A NAME="IDX42"></A>
+<DL>
+<DT><U>Variable:</U> char <B>history_comment_char</B>
+<DD>During tokenization, if this character is seen as the first character
+of a word, then it and all subsequent characters up to a newline are
+ignored, suppressing history expansion for the remainder of the line.
+This is disabled by default.
+</DL>
+</P><P>
+
+<A NAME="IDX43"></A>
+<DL>
+<DT><U>Variable:</U> char * <B>history_word_delimiters</B>
+<DD>The characters that separate tokens for <CODE>history_tokenize()</CODE>.
+The default value is <CODE>" \t\n()<>;&|"</CODE>.
+</DL>
+</P><P>
+
+<A NAME="IDX44"></A>
+<DL>
+<DT><U>Variable:</U> char * <B>history_search_delimiter_chars</B>
+<DD>The list of additional characters which can delimit a history search
+string, in addition to space, TAB, <SAMP>`:'</SAMP> and <SAMP>`?'</SAMP> in the case of
+a substring search.  The default is empty.
+</DL>
+</P><P>
+
+<A NAME="IDX45"></A>
+<DL>
+<DT><U>Variable:</U> char * <B>history_no_expand_chars</B>
+<DD>The list of characters which inhibit history expansion if found immediately
+following <VAR>history_expansion_char</VAR>.  The default is space, tab, newline,
+carriage return, and <SAMP>`='</SAMP>.
+</DL>
+</P><P>
+
+<A NAME="IDX46"></A>
+<DL>
+<DT><U>Variable:</U> int <B>history_quotes_inhibit_expansion</B>
+<DD>If non-zero, single-quoted words are not scanned for the history expansion
+character.  The default value is 0.
+</DL>
+</P><P>
+
+<A NAME="IDX47"></A>
+<DL>
+<DT><U>Variable:</U> rl_linebuf_func_t * <B>history_inhibit_expansion_function</B>
+<DD>This should be set to the address of a function that takes two arguments:
+a <CODE>char *</CODE> (<VAR>string</VAR>)
+and an <CODE>int</CODE> index into that string (<VAR>i</VAR>).
+It should return a non-zero value if the history expansion starting at
+<VAR>string[i]</VAR> should not be performed; zero if the expansion should
+be done.
+It is intended for use by applications like Bash that use the history
+expansion character for additional purposes.
+By default, this variable is set to <CODE>NULL</CODE>.
+</DL>
+</P><P>
+
+<A NAME="History Programming Example"></A>
+<HR SIZE="6">
+<A NAME="SEC18"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC17"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.5 History Programming Example </H2>
+<!--docid::SEC18::-->
+<P>
+
+The following program demonstrates simple use of the GNU History Library.
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>#include &#60;stdio.h&#62;
+#include &#60;readline/history.h&#62;
+
+main (argc, argv)
+     int argc;
+     char **argv;
+{
+  char line[1024], *t;
+  int len, done = 0;
+
+  line[0] = 0;
+
+  using_history ();
+  while (!done)
+    {
+      printf ("history$ ");
+      fflush (stdout);
+      t = fgets (line, sizeof (line) - 1, stdin);
+      if (t &#38;&#38; *t)
+        {
+          len = strlen (t);
+          if (t[len - 1] == '\n')
+            t[len - 1] = '\0';
+        }
+
+      if (!t)
+        strcpy (line, "quit");
+
+      if (line[0])
+        {
+          char *expansion;
+          int result;
+
+          result = history_expand (line, &#38;expansion);
+          if (result)
+            fprintf (stderr, "%s\n", expansion);
+
+          if (result &#60; 0 || result == 2)
+            {
+              free (expansion);
+              continue;
+            }
+
+          add_history (expansion);
+          strncpy (line, expansion, sizeof (line) - 1);
+          free (expansion);
+        }
+
+      if (strcmp (line, "quit") == 0)
+        done = 1;
+      else if (strcmp (line, "save") == 0)
+        write_history ("history_file");
+      else if (strcmp (line, "read") == 0)
+        read_history ("history_file");
+      else if (strcmp (line, "list") == 0)
+        {
+          register HIST_ENTRY **the_list;
+          register int i;
+
+          the_list = history_list ();
+          if (the_list)
+            for (i = 0; the_list[i]; i++)
+              printf ("%d: %s\n", i + history_base, the_list[i]-&#62;line);
+        }
+      else if (strncmp (line, "delete", 6) == 0)
+        {
+          int which;
+          if ((sscanf (line + 6, "%d", &#38;which)) == 1)
+            {
+              HIST_ENTRY *entry = remove_history (which);
+              if (!entry)
+                fprintf (stderr, "No such entry %d\n", which);
+              else
+                {
+                  free (entry-&#62;line);
+                  free (entry);
+                }
+            }
+          else
+            {
+              fprintf (stderr, "non-numeric arg given to `delete'\n");
+            }
+        }
+    }
+}
+</FONT></pre></td></tr></table></P><P>
+
+<A NAME="GNU Free Documentation License"></A>
+<HR SIZE="6">
+<A NAME="SEC19"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC18"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC6"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> A. GNU Free Documentation License </H1>
+<!--docid::SEC19::-->
+<P>
+
+<center>
+ Version 1.3, 3 November 2008
+</center>
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=display><pre style="font-family: serif">Copyright (C) 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
+<A HREF="http://fsf.org/">http://fsf.org/</A>
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+</pre></td></tr></table></P><P>
+
+<OL>
+<LI>
+PREAMBLE
+<P>
+
+The purpose of this License is to make a manual, textbook, or other
+functional and useful document <EM>free</EM> in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it,
+with or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible
+for modifications made by others.
+</P><P>
+
+This License is a kind of "copyleft", which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.
+</P><P>
+
+We have designed this License in order to use it for manuals for free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.
+</P><P>
+
+<LI>
+APPLICABILITY AND DEFINITIONS
+<P>
+
+This License applies to any manual or other work, in any medium, that
+contains a notice placed by the copyright holder saying it can be
+distributed under the terms of this License.  Such a notice grants a
+world-wide, royalty-free license, unlimited in duration, to use that
+work under the conditions stated herein.  The "Document", below,
+refers to any such manual or work.  Any member of the public is a
+licensee, and is addressed as "you".  You accept the license if you
+copy, modify or distribute the work in a way requiring permission
+under copyright law.
+</P><P>
+
+A "Modified Version" of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.
+</P><P>
+
+A "Secondary Section" is a named appendix or a front-matter section
+of the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document's overall
+subject (or to related matters) and contains nothing that could fall
+directly within that overall subject.  (Thus, if the Document is in
+part a textbook of mathematics, a Secondary Section may not explain
+any mathematics.)  The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.
+</P><P>
+
+The "Invariant Sections" are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License.  If a
+section does not fit the above definition of Secondary then it is not
+allowed to be designated as Invariant.  The Document may contain zero
+Invariant Sections.  If the Document does not identify any Invariant
+Sections then there are none.
+</P><P>
+
+The "Cover Texts" are certain short passages of text that are listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License.  A Front-Cover Text may
+be at most 5 words, and a Back-Cover Text may be at most 25 words.
+</P><P>
+
+A "Transparent" copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, that is suitable for revising the document
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters.  A copy made in an otherwise Transparent file
+format whose markup, or absence of markup, has been arranged to thwart
+or discourage subsequent modification by readers is not Transparent.
+An image format is not Transparent if used for any substantial amount
+of text.  A copy that is not "Transparent" is called "Opaque".
+</P><P>
+
+Examples of suitable formats for Transparent copies include plain
+ASCII without markup, Texinfo input format, LaTeX input
+format, <FONT SIZE="-1">SGML</FONT> or <FONT SIZE="-1">XML</FONT> using a publicly available
+<FONT SIZE="-1">DTD</FONT>, and standard-conforming simple <FONT SIZE="-1">HTML</FONT>,
+PostScript or <FONT SIZE="-1">PDF</FONT> designed for human modification.  Examples
+of transparent image formats include <FONT SIZE="-1">PNG</FONT>, <FONT SIZE="-1">XCF</FONT> and
+<FONT SIZE="-1">JPG</FONT>.  Opaque formats include proprietary formats that can be
+read and edited only by proprietary word processors, <FONT SIZE="-1">SGML</FONT> or
+<FONT SIZE="-1">XML</FONT> for which the <FONT SIZE="-1">DTD</FONT> and/or processing tools are
+not generally available, and the machine-generated <FONT SIZE="-1">HTML</FONT>,
+PostScript or <FONT SIZE="-1">PDF</FONT> produced by some word processors for
+output purposes only.
+</P><P>
+
+The "Title Page" means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page.  For works in
+formats which do not have any title page as such, "Title Page" means
+the text near the most prominent appearance of the work's title,
+preceding the beginning of the body of the text.
+</P><P>
+
+The "publisher" means any person or entity that distributes copies
+of the Document to the public.
+</P><P>
+
+A section "Entitled XYZ" means a named subunit of the Document whose
+title either is precisely XYZ or contains XYZ in parentheses following
+text that translates XYZ in another language.  (Here XYZ stands for a
+specific section name mentioned below, such as "Acknowledgements",
+"Dedications", "Endorsements", or "History".)  To "Preserve the Title"
+of such a section when you modify the Document means that it remains a
+section "Entitled XYZ" according to this definition.
+</P><P>
+
+The Document may include Warranty Disclaimers next to the notice which
+states that this License applies to the Document.  These Warranty
+Disclaimers are considered to be included by reference in this
+License, but only as regards disclaiming warranties: any other
+implication that these Warranty Disclaimers may have is void and has
+no effect on the meaning of this License.
+</P><P>
+
+<LI>
+VERBATIM COPYING
+<P>
+
+You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+</P><P>
+
+You may also lend copies, under the same conditions stated above, and
+you may publicly display copies.
+</P><P>
+
+<LI>
+COPYING IN QUANTITY
+<P>
+
+If you publish printed copies (or copies in media that commonly have
+printed covers) of the Document, numbering more than 100, and the
+Document's license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover.  Both covers must also clearly and legibly identify
+you as the publisher of these copies.  The front cover must present
+the full title with all words of the title equally prominent and
+visible.  You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.
+</P><P>
+
+If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.
+</P><P>
+
+If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a computer-network location from which the general network-using
+public has access to download using public-standard network protocols
+a complete Transparent copy of the Document, free of added material.
+If you use the latter option, you must take reasonably prudent steps,
+when you begin distribution of Opaque copies in quantity, to ensure
+that this Transparent copy will remain thus accessible at the stated
+location until at least one year after the last time you distribute an
+Opaque copy (directly or through your agents or retailers) of that
+edition to the public.
+</P><P>
+
+It is requested, but not required, that you contact the authors of the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.
+</P><P>
+
+<LI>
+MODIFICATIONS
+<P>
+
+You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it.  In addition, you must do these things in the Modified Version:
+</P><P>
+
+<OL>
+<LI>
+Use in the Title Page (and on the covers, if any) a title distinct
+from that of the Document, and from those of previous versions
+(which should, if there were any, be listed in the History section
+of the Document).  You may use the same title as a previous version
+if the original publisher of that version gives permission.
+<P>
+
+<LI>
+List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified
+Version, together with at least five of the principal authors of the
+Document (all of its principal authors, if it has fewer than five),
+unless they release you from this requirement.
+<P>
+
+<LI>
+State on the Title page the name of the publisher of the
+Modified Version, as the publisher.
+<P>
+
+<LI>
+Preserve all the copyright notices of the Document.
+<P>
+
+<LI>
+Add an appropriate copyright notice for your modifications
+adjacent to the other copyright notices.
+<P>
+
+<LI>
+Include, immediately after the copyright notices, a license notice
+giving the public permission to use the Modified Version under the
+terms of this License, in the form shown in the Addendum below.
+<P>
+
+<LI>
+Preserve in that license notice the full lists of Invariant Sections
+and required Cover Texts given in the Document's license notice.
+<P>
+
+<LI>
+Include an unaltered copy of this License.
+<P>
+
+<LI>
+Preserve the section Entitled "History", Preserve its Title, and add
+to it an item stating at least the title, year, new authors, and
+publisher of the Modified Version as given on the Title Page.  If
+there is no section Entitled "History" in the Document, create one
+stating the title, year, authors, and publisher of the Document as
+given on its Title Page, then add an item describing the Modified
+Version as stated in the previous sentence.
+<P>
+
+<LI>
+Preserve the network location, if any, given in the Document for
+public access to a Transparent copy of the Document, and likewise
+the network locations given in the Document for previous versions
+it was based on.  These may be placed in the "History" section.
+You may omit a network location for a work that was published at
+least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.
+<P>
+
+<LI>
+For any section Entitled "Acknowledgements" or "Dedications", Preserve
+the Title of the section, and preserve in the section all the
+substance and tone of each of the contributor acknowledgements and/or
+dedications given therein.
+<P>
+
+<LI>
+Preserve all the Invariant Sections of the Document,
+unaltered in their text and in their titles.  Section numbers
+or the equivalent are not considered part of the section titles.
+<P>
+
+<LI>
+Delete any section Entitled "Endorsements".  Such a section
+may not be included in the Modified Version.
+<P>
+
+<LI>
+Do not retitle any existing section to be Entitled "Endorsements" or
+to conflict in title with any Invariant Section.
+<P>
+
+<LI>
+Preserve any Warranty Disclaimers.
+</OL>
+<P>
+
+If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.
+</P><P>
+
+You may add a section Entitled "Endorsements", provided it contains
+nothing but endorsements of your Modified Version by various
+parties--for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.
+</P><P>
+
+You may add a passage of up to five words as a Front-Cover Text, and a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity.  If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.
+</P><P>
+
+The author(s) and publisher(s) of the Document do not by this License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.
+</P><P>
+
+<LI>
+COMBINING DOCUMENTS
+<P>
+
+You may combine the Document with other documents released under this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice, and that you preserve all their Warranty Disclaimers.
+</P><P>
+
+The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.
+</P><P>
+
+In the combination, you must combine any sections Entitled "History"
+in the various original documents, forming one section Entitled
+"History"; likewise combine any sections Entitled "Acknowledgements",
+and any sections Entitled "Dedications".  You must delete all
+sections Entitled "Endorsements."
+</P><P>
+
+<LI>
+COLLECTIONS OF DOCUMENTS
+<P>
+
+You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.
+</P><P>
+
+You may extract a single document from such a collection, and distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.
+</P><P>
+
+<LI>
+AGGREGATION WITH INDEPENDENT WORKS
+<P>
+
+A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, is called an "aggregate" if the copyright
+resulting from the compilation is not used to limit the legal rights
+of the compilation's users beyond what the individual works permit.
+When the Document is included in an aggregate, this License does not
+apply to the other works in the aggregate which are not themselves
+derivative works of the Document.
+</P><P>
+
+If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document's Cover Texts may be placed on
+covers that bracket the Document within the aggregate, or the
+electronic equivalent of covers if the Document is in electronic form.
+Otherwise they must appear on printed covers that bracket the whole
+aggregate.
+</P><P>
+
+<LI>
+TRANSLATION
+<P>
+
+Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers.  In case of a disagreement between
+the translation and the original version of this License or a notice
+or disclaimer, the original version will prevail.
+</P><P>
+
+If a section in the Document is Entitled "Acknowledgements",
+"Dedications", or "History", the requirement (section 4) to Preserve
+its Title (section 1) will typically require changing the actual
+title.
+</P><P>
+
+<LI>
+TERMINATION
+<P>
+
+You may not copy, modify, sublicense, or distribute the Document
+except as expressly provided under this License.  Any attempt
+otherwise to copy, modify, sublicense, or distribute it is void, and
+will automatically terminate your rights under this License.
+</P><P>
+
+However, if you cease all violation of this License, then your license
+from a particular copyright holder is reinstated (a) provisionally,
+unless and until the copyright holder explicitly and finally
+terminates your license, and (b) permanently, if the copyright holder
+fails to notify you of the violation by some reasonable means prior to
+60 days after the cessation.
+</P><P>
+
+Moreover, your license from a particular copyright holder is
+reinstated permanently if the copyright holder notifies you of the
+violation by some reasonable means, this is the first time you have
+received notice of violation of this License (for any work) from that
+copyright holder, and you cure the violation prior to 30 days after
+your receipt of the notice.
+</P><P>
+
+Termination of your rights under this section does not terminate the
+licenses of parties who have received copies or rights from you under
+this License.  If your rights have been terminated and not permanently
+reinstated, receipt of a copy of some or all of the same material does
+not give you any rights to use it.
+</P><P>
+
+<LI>
+FUTURE REVISIONS OF THIS LICENSE
+<P>
+
+The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time.  Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.  See
+<A HREF="http://www.gnu.org/copyleft/">http://www.gnu.org/copyleft/</A>.
+</P><P>
+
+Each version of the License is given a distinguishing version number.
+If the Document specifies that a particular numbered version of this
+License "or any later version" applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.  If the Document
+specifies that a proxy can decide which future versions of this
+License can be used, that proxy's public statement of acceptance of a
+version permanently authorizes you to choose that version for the
+Document.
+</P><P>
+
+<LI>
+RELICENSING
+<P>
+
+"Massive Multiauthor Collaboration Site" (or "MMC Site") means any
+World Wide Web server that publishes copyrightable works and also
+provides prominent facilities for anybody to edit those works.  A
+public wiki that anybody can edit is an example of such a server.  A
+"Massive Multiauthor Collaboration" (or "MMC") contained in the
+site means any set of copyrightable works thus published on the MMC
+site.
+</P><P>
+
+"CC-BY-SA" means the Creative Commons Attribution-Share Alike 3.0
+license published by Creative Commons Corporation, a not-for-profit
+corporation with a principal place of business in San Francisco,
+California, as well as future copyleft versions of that license
+published by that same organization.
+</P><P>
+
+"Incorporate" means to publish or republish a Document, in whole or
+in part, as part of another Document.
+</P><P>
+
+An MMC is "eligible for relicensing" if it is licensed under this
+License, and if all works that were first published under this License
+somewhere other than this MMC, and subsequently incorporated in whole
+or in part into the MMC, (1) had no cover texts or invariant sections,
+and (2) were thus incorporated prior to November 1, 2008.
+</P><P>
+
+The operator of an MMC Site may republish an MMC contained in the site
+under CC-BY-SA on the same site at any time before August 1, 2009,
+provided the MMC is eligible for relicensing.
+</P><P>
+
+</OL>
+<P>
+
+<A NAME="SEC20"></A>
+<H2> ADDENDUM: How to use this License for your documents </H2>
+<!--docid::SEC20::-->
+<P>
+
+To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and
+license notices just after the title page:
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>  Copyright (C)  <VAR>year</VAR>  <VAR>your name</VAR>.
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.3
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.  A copy of the license is included in the section entitled ``GNU
+  Free Documentation License''.
+</FONT></pre></td></tr></table></P><P>
+
+If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
+replace the "with<small>...</small>Texts." line with this:
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>    with the Invariant Sections being <VAR>list their titles</VAR>, with
+    the Front-Cover Texts being <VAR>list</VAR>, and with the Back-Cover Texts
+    being <VAR>list</VAR>.
+</FONT></pre></td></tr></table></P><P>
+
+If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
+</P><P>
+
+If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License,
+to permit their use in free software.
+</P><P>
+
+<A NAME="Concept Index"></A>
+<HR SIZE="6">
+<A NAME="SEC21"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC19"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC22"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC22"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC22"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> B. Concept Index </H1>
+<!--docid::SEC21::-->
+<table><tr><th valign=top>Jump to: &nbsp; </th><td><A HREF="history.html#cp_A" style="text-decoration:none"><b>A</b></A>
+ &nbsp; 
+<A HREF="history.html#cp_E" style="text-decoration:none"><b>E</b></A>
+ &nbsp; 
+<A HREF="history.html#cp_H" style="text-decoration:none"><b>H</b></A>
+ &nbsp; 
+</td></tr></table><br><P></P>
+<TABLE border=0>
+<TR><TD></TD><TH ALIGN=LEFT>Index Entry</TH><TH ALIGN=LEFT> Section</TH></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="cp_A"></A>A</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX23">anchored search</A></TD><TD valign=top><A HREF="history.html#SEC14">2.3.5 Searching the History List</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="cp_E"></A>E</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#SEC3">event designators</A></TD><TD valign=top><A HREF="history.html#SEC3">1.1.1 Event Designators</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="cp_H"></A>H</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX1">history events</A></TD><TD valign=top><A HREF="history.html#SEC3">1.1.1 Event Designators</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#SEC2">history expansion</A></TD><TD valign=top><A HREF="history.html#SEC2">1.1 History Expansion</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#SEC14">History Searching</A></TD><TD valign=top><A HREF="history.html#SEC14">2.3.5 Searching the History List</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+</TABLE><P></P><table><tr><th valign=top>Jump to: &nbsp; </th><td><A HREF="history.html#cp_A" style="text-decoration:none"><b>A</b></A>
+ &nbsp; 
+<A HREF="history.html#cp_E" style="text-decoration:none"><b>E</b></A>
+ &nbsp; 
+<A HREF="history.html#cp_H" style="text-decoration:none"><b>H</b></A>
+ &nbsp; 
+</td></tr></table><br><P>
+
+<A NAME="Function and Variable Index"></A>
+<HR SIZE="6">
+<A NAME="SEC22"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> C. Function and Variable Index </H1>
+<!--docid::SEC22::-->
+<table><tr><th valign=top>Jump to: &nbsp; </th><td><A HREF="history.html#vr_A" style="text-decoration:none"><b>A</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_C" style="text-decoration:none"><b>C</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_F" style="text-decoration:none"><b>F</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_G" style="text-decoration:none"><b>G</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_H" style="text-decoration:none"><b>H</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_N" style="text-decoration:none"><b>N</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_P" style="text-decoration:none"><b>P</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_R" style="text-decoration:none"><b>R</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_S" style="text-decoration:none"><b>S</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_U" style="text-decoration:none"><b>U</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_W" style="text-decoration:none"><b>W</b></A>
+ &nbsp; 
+</td></tr></table><br><P></P>
+<TABLE border=0>
+<TR><TD></TD><TH ALIGN=LEFT>Index Entry</TH><TH ALIGN=LEFT> Section</TH></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_A"></A>A</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX5"><CODE>add_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX6"><CODE>add_history_time</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX30"><CODE>append_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC15">2.3.6 Managing the History File</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_C"></A>C</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX10"><CODE>clear_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX16"><CODE>current_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_F"></A>F</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX8"><CODE>free_history_entry</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_G"></A>G</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX33"><CODE>get_history_event</CODE></A></TD><TD valign=top><A HREF="history.html#SEC16">2.3.7 History Expansion</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_H"></A>H</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX35"><CODE>history_arg_extract</CODE></A></TD><TD valign=top><A HREF="history.html#SEC16">2.3.7 History Expansion</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX36"><CODE>history_base</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX42"><CODE>history_comment_char</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX32"><CODE>history_expand</CODE></A></TD><TD valign=top><A HREF="history.html#SEC16">2.3.7 History Expansion</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX40"><CODE>history_expansion_char</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX17"><CODE>history_get</CODE></A></TD><TD valign=top><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX3"><CODE>history_get_history_state</CODE></A></TD><TD valign=top><A HREF="history.html#SEC10">2.3.1 Initializing History and State Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX18"><CODE>history_get_time</CODE></A></TD><TD valign=top><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX47"><CODE>history_inhibit_expansion_function</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX13"><CODE>history_is_stifled</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX37"><CODE>history_length</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX14"><CODE>history_list</CODE></A></TD><TD valign=top><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX38"><CODE>history_max_entries</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX45"><CODE>history_no_expand_chars</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX46"><CODE>history_quotes_inhibit_expansion</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX24"><CODE>history_search</CODE></A></TD><TD valign=top><A HREF="history.html#SEC14">2.3.5 Searching the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX44"><CODE>history_search_delimiter_chars</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX26"><CODE>history_search_pos</CODE></A></TD><TD valign=top><A HREF="history.html#SEC14">2.3.5 Searching the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX25"><CODE>history_search_prefix</CODE></A></TD><TD valign=top><A HREF="history.html#SEC14">2.3.5 Searching the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX4"><CODE>history_set_history_state</CODE></A></TD><TD valign=top><A HREF="history.html#SEC10">2.3.1 Initializing History and State Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX20"><CODE>history_set_pos</CODE></A></TD><TD valign=top><A HREF="history.html#SEC13">2.3.4 Moving Around the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX41"><CODE>history_subst_char</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX34"><CODE>history_tokenize</CODE></A></TD><TD valign=top><A HREF="history.html#SEC16">2.3.7 History Expansion</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX19"><CODE>history_total_bytes</CODE></A></TD><TD valign=top><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX31"><CODE>history_truncate_file</CODE></A></TD><TD valign=top><A HREF="history.html#SEC15">2.3.6 Managing the History File</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX43"><CODE>history_word_delimiters</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX39"><CODE>history_write_timestamps</CODE></A></TD><TD valign=top><A HREF="history.html#SEC17">2.4 History Variables</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_N"></A>N</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX22"><CODE>next_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC13">2.3.4 Moving Around the History List</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_P"></A>P</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX21"><CODE>previous_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC13">2.3.4 Moving Around the History List</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_R"></A>R</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX27"><CODE>read_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC15">2.3.6 Managing the History File</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX28"><CODE>read_history_range</CODE></A></TD><TD valign=top><A HREF="history.html#SEC15">2.3.6 Managing the History File</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX7"><CODE>remove_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX9"><CODE>replace_history_entry</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_S"></A>S</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX11"><CODE>stifle_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_U"></A>U</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX12"><CODE>unstifle_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC11">2.3.2 History List Management</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX2"><CODE>using_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC10">2.3.1 Initializing History and State Management</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+<TR><TH><A NAME="vr_W"></A>W</TH><TD></TD><TD></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX15"><CODE>where_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC12">2.3.3 Information About the History List</A></TD></TR>
+<TR><TD></TD><TD valign=top><A HREF="history.html#IDX29"><CODE>write_history</CODE></A></TD><TD valign=top><A HREF="history.html#SEC15">2.3.6 Managing the History File</A></TD></TR>
+<TR><TD COLSPAN=3> <HR></TD></TR>
+</TABLE><P></P><table><tr><th valign=top>Jump to: &nbsp; </th><td><A HREF="history.html#vr_A" style="text-decoration:none"><b>A</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_C" style="text-decoration:none"><b>C</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_F" style="text-decoration:none"><b>F</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_G" style="text-decoration:none"><b>G</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_H" style="text-decoration:none"><b>H</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_N" style="text-decoration:none"><b>N</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_P" style="text-decoration:none"><b>P</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_R" style="text-decoration:none"><b>R</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_S" style="text-decoration:none"><b>S</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_U" style="text-decoration:none"><b>U</b></A>
+ &nbsp; 
+<A HREF="history.html#vr_W" style="text-decoration:none"><b>W</b></A>
+ &nbsp; 
+</td></tr></table><br><P>
+
+<HR SIZE="6">
+<A NAME="SEC_Contents"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>Table of Contents</H1>
+<UL>
+<A NAME="TOC1" HREF="history.html#SEC1">1. Using History Interactively</A>
+<BR>
+<UL>
+<A NAME="TOC2" HREF="history.html#SEC2">1.1 History Expansion</A>
+<BR>
+<UL>
+<A NAME="TOC3" HREF="history.html#SEC3">1.1.1 Event Designators</A>
+<BR>
+<A NAME="TOC4" HREF="history.html#SEC4">1.1.2 Word Designators</A>
+<BR>
+<A NAME="TOC5" HREF="history.html#SEC5">1.1.3 Modifiers</A>
+<BR>
+</UL>
+</UL>
+<A NAME="TOC6" HREF="history.html#SEC6">2. Programming with GNU History</A>
+<BR>
+<UL>
+<A NAME="TOC7" HREF="history.html#SEC7">2.1 Introduction to History</A>
+<BR>
+<A NAME="TOC8" HREF="history.html#SEC8">2.2 History Storage</A>
+<BR>
+<A NAME="TOC9" HREF="history.html#SEC9">2.3 History Functions</A>
+<BR>
+<UL>
+<A NAME="TOC10" HREF="history.html#SEC10">2.3.1 Initializing History and State Management</A>
+<BR>
+<A NAME="TOC11" HREF="history.html#SEC11">2.3.2 History List Management</A>
+<BR>
+<A NAME="TOC12" HREF="history.html#SEC12">2.3.3 Information About the History List</A>
+<BR>
+<A NAME="TOC13" HREF="history.html#SEC13">2.3.4 Moving Around the History List</A>
+<BR>
+<A NAME="TOC14" HREF="history.html#SEC14">2.3.5 Searching the History List</A>
+<BR>
+<A NAME="TOC15" HREF="history.html#SEC15">2.3.6 Managing the History File</A>
+<BR>
+<A NAME="TOC16" HREF="history.html#SEC16">2.3.7 History Expansion</A>
+<BR>
+</UL>
+<A NAME="TOC17" HREF="history.html#SEC17">2.4 History Variables</A>
+<BR>
+<A NAME="TOC18" HREF="history.html#SEC18">2.5 History Programming Example</A>
+<BR>
+</UL>
+<A NAME="TOC19" HREF="history.html#SEC19">A. GNU Free Documentation License</A>
+<BR>
+<A NAME="TOC21" HREF="history.html#SEC21">B. Concept Index</A>
+<BR>
+<A NAME="TOC22" HREF="history.html#SEC22">C. Function and Variable Index</A>
+<BR>
+</UL>
+<HR SIZE=1>
+<A NAME="SEC_OVERVIEW"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>Short Table of Contents</H1>
+<BLOCKQUOTE>
+<A NAME="TOC1" HREF="history.html#SEC1">1. Using History Interactively</A>
+<BR>
+<A NAME="TOC6" HREF="history.html#SEC6">2. Programming with GNU History</A>
+<BR>
+<A NAME="TOC19" HREF="history.html#SEC19">A. GNU Free Documentation License</A>
+<BR>
+<A NAME="TOC21" HREF="history.html#SEC21">B. Concept Index</A>
+<BR>
+<A NAME="TOC22" HREF="history.html#SEC22">C. Function and Variable Index</A>
+<BR>
+
+</BLOCKQUOTE>
+<HR SIZE=1>
+<A NAME="SEC_About"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC21">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="history.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>About this document</H1>
+This document was generated by <I>Chet Ramey</I> on <I>February, 8  2011</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+<P></P>  
+The buttons in the navigation panels have the following meaning:
+<P></P>
+<table border = "1">
+<TR>
+<TH> Button </TH>
+<TH> Name </TH>
+<TH> Go to </TH>
+<TH> From 1.2.3 go to</TH>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &lt; ] </TD>
+<TD ALIGN="CENTER">
+Back
+</TD>
+<TD>
+previous section in reading order
+</TD>
+<TD>
+1.2.2
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &gt; ] </TD>
+<TD ALIGN="CENTER">
+Forward
+</TD>
+<TD>
+next section in reading order
+</TD>
+<TD>
+1.2.4
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &lt;&lt; ] </TD>
+<TD ALIGN="CENTER">
+FastBack
+</TD>
+<TD>
+previous or up-and-previous section 
+</TD>
+<TD>
+1.1
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ Up ] </TD>
+<TD ALIGN="CENTER">
+Up
+</TD>
+<TD>
+up section
+</TD>
+<TD>
+1.2
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &gt;&gt; ] </TD>
+<TD ALIGN="CENTER">
+FastForward
+</TD>
+<TD>
+next or up-and-next section
+</TD>
+<TD>
+1.3
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [Top] </TD>
+<TD ALIGN="CENTER">
+Top
+</TD>
+<TD>
+cover (top) of document
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [Contents] </TD>
+<TD ALIGN="CENTER">
+Contents
+</TD>
+<TD>
+table of contents
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [Index] </TD>
+<TD ALIGN="CENTER">
+Index
+</TD>
+<TD>
+concept index
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ ? ] </TD>
+<TD ALIGN="CENTER">
+About
+</TD>
+<TD>
+this page
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+</TABLE>
+<P></P>
+where the <STRONG> Example </STRONG> assumes that the current position 
+is at <STRONG> Subsubsection One-Two-Three </STRONG> of a document of 
+the following structure:
+<UL>
+<LI> 1. Section One  </LI>
+<UL>
+<LI>1.1 Subsection One-One</LI>
+<UL>
+<LI> ... </LI>
+</UL>
+<LI>1.2 Subsection One-Two</LI>
+<UL>
+<LI>1.2.1 Subsubsection One-Two-One
+</LI><LI>1.2.2 Subsubsection One-Two-Two
+</LI><LI>1.2.3 Subsubsection One-Two-Three &nbsp; &nbsp; <STRONG>
+&lt;== Current Position </STRONG>
+</LI><LI>1.2.4 Subsubsection One-Two-Four
+</LI></UL>
+<LI>1.3 Subsection One-Three</LI>
+<UL>
+<LI> ... </LI>
+</UL>
+<LI>1.4 Subsection One-Four</LI>
+</UL>
+</UL>
+
+<HR SIZE=1>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Chet Ramey</I> on <I>February, 8  2011</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

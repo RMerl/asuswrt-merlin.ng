@@ -1,0 +1,22 @@
+.TH SMBENCRYPT 1
+.SH NAME
+smbencrypt - produce LM & NT password hashes from cleartext passwords
+.SH SYNOPSIS
+.B smbencrypt \fIpassword\fP [\fIpassword ...\fP]
+
+.SH DESCRIPTION
+\fBsmbencrypt\fP For each cleartext password passed on the command line
+emit the LM-Password and NT-Password hashes for that password.
+
+.SH EXAMPLE
+.nf
+$ smbencrypt foo bar
+LM Hash                         	NT Hash
+--------------------------------	--------------------------------
+5BFAFBEBFB6A0942AAD3B435B51404EE	AC8E657F83DF82BEEA5D43BDAF7800CC
+A6428F2551EDEE1BAAD3B435B51404EE	86C156FC198B358CCCF6278D8BD49B6A
+.fi
+
+.SH SEE ALSO
+radiusd(8)
+.SH AUTHORS

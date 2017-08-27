@@ -1,0 +1,133 @@
+<!-- ##### SECTION Title ##### -->
+timezone
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTimeZone ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_time_zone_unref ##### -->
+<para>
+
+</para>
+
+@tz: 
+
+
+<!-- ##### FUNCTION g_time_zone_ref ##### -->
+<para>
+
+</para>
+
+@tz: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_new ##### -->
+<para>
+
+</para>
+
+@identifier: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_new_local ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_new_utc ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### ENUM GTimeType ##### -->
+<para>
+
+</para>
+
+@G_TIME_TYPE_STANDARD: 
+@G_TIME_TYPE_DAYLIGHT: 
+@G_TIME_TYPE_UNIVERSAL: 
+
+<!-- ##### FUNCTION g_time_zone_find_interval ##### -->
+<para>
+
+</para>
+
+@tz: 
+@type: 
+@time_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_adjust_time ##### -->
+<para>
+
+</para>
+
+@tz: 
+@type: 
+@time_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_get_abbreviation ##### -->
+<para>
+
+</para>
+
+@tz: 
+@interval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_get_offset ##### -->
+<para>
+
+</para>
+
+@tz: 
+@interval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_zone_is_dst ##### -->
+<para>
+
+</para>
+
+@tz: 
+@interval: 
+@Returns: 
+
+

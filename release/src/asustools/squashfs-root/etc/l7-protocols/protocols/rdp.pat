@@ -1,0 +1,2 @@
+rdp
+rdpdr.*cliprdr.*rdpsnd

@@ -1,0 +1,1288 @@
+<!-- ##### SECTION Title ##### -->
+Type Information
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF GType ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_TYPE_FUNDAMENTAL ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_FUNDAMENTAL_MAX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_MAKE_FUNDAMENTAL ##### -->
+<para>
+
+</para>
+
+@x: 
+
+
+<!-- ##### MACRO G_TYPE_IS_ABSTRACT ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_DERIVED ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_FUNDAMENTAL ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_VALUE_TYPE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_HAS_VALUE_TABLE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_CLASSED ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_INSTANTIATABLE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_DERIVABLE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_DEEP_DERIVABLE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_TYPE_IS_INTERFACE ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### STRUCT GTypeInterface ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GTypeInstance ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GTypeClass ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GTypeInfo ##### -->
+<para>
+
+</para>
+
+@class_size: 
+@base_init: 
+@base_finalize: 
+@class_init: 
+@class_finalize: 
+@class_data: 
+@instance_size: 
+@n_preallocs: 
+@instance_init: 
+@value_table: 
+
+<!-- ##### STRUCT GTypeFundamentalInfo ##### -->
+<para>
+
+</para>
+
+@type_flags: 
+
+<!-- ##### STRUCT GInterfaceInfo ##### -->
+<para>
+
+</para>
+
+@interface_init: 
+@interface_finalize: 
+@interface_data: 
+
+<!-- ##### STRUCT GTypeValueTable ##### -->
+<para>
+
+</para>
+
+@value_init: 
+@value_free: 
+@value_copy: 
+@value_peek_pointer: 
+@collect_format: 
+@collect_value: 
+@lcopy_format: 
+@lcopy_value: 
+
+<!-- ##### MACRO G_TYPE_FROM_INSTANCE ##### -->
+<para>
+
+</para>
+
+@instance: 
+
+
+<!-- ##### MACRO G_TYPE_FROM_CLASS ##### -->
+<para>
+
+</para>
+
+@g_class: 
+
+
+<!-- ##### MACRO G_TYPE_FROM_INTERFACE ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+
+
+<!-- ##### MACRO G_TYPE_INSTANCE_GET_CLASS ##### -->
+<para>
+
+</para>
+
+@instance: 
+@g_type: 
+@c_type: 
+
+
+<!-- ##### MACRO G_TYPE_INSTANCE_GET_INTERFACE ##### -->
+<para>
+
+</para>
+
+@instance: 
+@g_type: 
+@c_type: 
+
+
+<!-- ##### MACRO G_TYPE_INSTANCE_GET_PRIVATE ##### -->
+<para>
+
+</para>
+
+@instance: 
+@g_type: 
+@c_type: 
+
+
+<!-- ##### MACRO G_TYPE_CLASS_GET_PRIVATE ##### -->
+<para>
+
+</para>
+
+@klass: 
+@g_type: 
+@c_type: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_INSTANCE ##### -->
+<para>
+
+</para>
+
+@instance: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_INSTANCE_CAST ##### -->
+<para>
+
+</para>
+
+@instance: 
+@g_type: 
+@c_type: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_INSTANCE_TYPE ##### -->
+<para>
+
+</para>
+
+@instance: 
+@g_type: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_CLASS_CAST ##### -->
+<para>
+
+</para>
+
+@g_class: 
+@g_type: 
+@c_type: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_CLASS_TYPE ##### -->
+<para>
+
+</para>
+
+@g_class: 
+@g_type: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_VALUE ##### -->
+<para>
+
+</para>
+
+@value: 
+
+
+<!-- ##### MACRO G_TYPE_CHECK_VALUE_TYPE ##### -->
+<para>
+
+</para>
+
+@value: 
+@g_type: 
+
+
+<!-- ##### MACRO G_TYPE_FLAG_RESERVED_ID_BIT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_type_init ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### ENUM GTypeDebugFlags ##### -->
+<para>
+
+</para>
+
+@G_TYPE_DEBUG_NONE: 
+@G_TYPE_DEBUG_OBJECTS: 
+@G_TYPE_DEBUG_SIGNALS: 
+@G_TYPE_DEBUG_MASK: 
+
+<!-- ##### FUNCTION g_type_init_with_debug_flags ##### -->
+<para>
+
+</para>
+
+@debug_flags: 
+
+
+<!-- ##### FUNCTION g_type_name ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_qname ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_from_name ##### -->
+<para>
+
+</para>
+
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_parent ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_depth ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_next_base ##### -->
+<para>
+
+</para>
+
+@leaf_type: 
+@root_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_is_a ##### -->
+<para>
+
+</para>
+
+@type: 
+@is_a_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_class_ref ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_class_peek ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_class_peek_static ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_class_unref ##### -->
+<para>
+
+</para>
+
+@g_class: 
+
+
+<!-- ##### FUNCTION g_type_class_peek_parent ##### -->
+<para>
+
+</para>
+
+@g_class: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_class_add_private ##### -->
+<para>
+
+</para>
+
+@g_class: 
+@private_size: 
+
+
+<!-- ##### FUNCTION g_type_add_class_private ##### -->
+<para>
+
+</para>
+
+@class_type: 
+@private_size: 
+
+
+<!-- ##### FUNCTION g_type_interface_peek ##### -->
+<para>
+
+</para>
+
+@instance_class: 
+@iface_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_interface_peek_parent ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_default_interface_ref ##### -->
+<para>
+
+</para>
+
+@g_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_default_interface_peek ##### -->
+<para>
+
+</para>
+
+@g_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_default_interface_unref ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+
+
+<!-- ##### FUNCTION g_type_children ##### -->
+<para>
+
+</para>
+
+@type: 
+@n_children: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_interfaces ##### -->
+<para>
+
+</para>
+
+@type: 
+@n_interfaces: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_interface_prerequisites ##### -->
+<para>
+
+</para>
+
+@interface_type: 
+@n_prerequisites: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_set_qdata ##### -->
+<para>
+
+</para>
+
+@type: 
+@quark: 
+@data: 
+
+
+<!-- ##### FUNCTION g_type_get_qdata ##### -->
+<para>
+
+</para>
+
+@type: 
+@quark: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_query ##### -->
+<para>
+
+</para>
+
+@type: 
+@query: 
+
+
+<!-- ##### STRUCT GTypeQuery ##### -->
+<para>
+
+</para>
+
+@type: 
+@type_name: 
+@class_size: 
+@instance_size: 
+
+<!-- ##### USER_FUNCTION GBaseInitFunc ##### -->
+<para>
+
+</para>
+
+@g_class: 
+
+
+<!-- ##### USER_FUNCTION GBaseFinalizeFunc ##### -->
+<para>
+
+</para>
+
+@g_class: 
+
+
+<!-- ##### USER_FUNCTION GClassInitFunc ##### -->
+<para>
+
+</para>
+
+@g_class: 
+@class_data: 
+
+
+<!-- ##### USER_FUNCTION GClassFinalizeFunc ##### -->
+<para>
+
+</para>
+
+@g_class: 
+@class_data: 
+
+
+<!-- ##### USER_FUNCTION GInstanceInitFunc ##### -->
+<para>
+
+</para>
+
+@instance: 
+@g_class: 
+
+
+<!-- ##### USER_FUNCTION GInterfaceInitFunc ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@iface_data: 
+
+
+<!-- ##### USER_FUNCTION GInterfaceFinalizeFunc ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@iface_data: 
+
+
+<!-- ##### USER_FUNCTION GTypeClassCacheFunc ##### -->
+<para>
+
+</para>
+
+@cache_data: 
+@g_class: 
+@Returns: 
+
+
+<!-- ##### ENUM GTypeFlags ##### -->
+<para>
+
+</para>
+
+@G_TYPE_FLAG_ABSTRACT: 
+@G_TYPE_FLAG_VALUE_ABSTRACT: 
+
+<!-- ##### ENUM GTypeFundamentalFlags ##### -->
+<para>
+
+</para>
+
+@G_TYPE_FLAG_CLASSED: 
+@G_TYPE_FLAG_INSTANTIATABLE: 
+@G_TYPE_FLAG_DERIVABLE: 
+@G_TYPE_FLAG_DEEP_DERIVABLE: 
+
+<!-- ##### FUNCTION g_type_register_static ##### -->
+<para>
+
+</para>
+
+@parent_type: 
+@type_name: 
+@info: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_register_static_simple ##### -->
+<para>
+
+</para>
+
+@parent_type: 
+@type_name: 
+@class_size: 
+@class_init: 
+@instance_size: 
+@instance_init: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_register_dynamic ##### -->
+<para>
+
+</para>
+
+@parent_type: 
+@type_name: 
+@plugin: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_register_fundamental ##### -->
+<para>
+
+</para>
+
+@type_id: 
+@type_name: 
+@info: 
+@finfo: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_add_interface_static ##### -->
+<para>
+
+</para>
+
+@instance_type: 
+@interface_type: 
+@info: 
+
+
+<!-- ##### FUNCTION g_type_add_interface_dynamic ##### -->
+<para>
+
+</para>
+
+@instance_type: 
+@interface_type: 
+@plugin: 
+
+
+<!-- ##### FUNCTION g_type_interface_add_prerequisite ##### -->
+<para>
+
+</para>
+
+@interface_type: 
+@prerequisite_type: 
+
+
+<!-- ##### FUNCTION g_type_get_plugin ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_interface_get_plugin ##### -->
+<para>
+
+</para>
+
+@instance_type: 
+@interface_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_fundamental_next ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_fundamental ##### -->
+<para>
+
+</para>
+
+@type_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_create_instance ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_free_instance ##### -->
+<para>
+
+</para>
+
+@instance: 
+
+
+<!-- ##### FUNCTION g_type_add_class_cache_func ##### -->
+<para>
+
+</para>
+
+@cache_data: 
+@cache_func: 
+
+
+<!-- ##### FUNCTION g_type_remove_class_cache_func ##### -->
+<para>
+
+</para>
+
+@cache_data: 
+@cache_func: 
+
+
+<!-- ##### FUNCTION g_type_class_unref_uncached ##### -->
+<para>
+
+</para>
+
+@g_class: 
+
+
+<!-- ##### FUNCTION g_type_add_interface_check ##### -->
+<para>
+
+</para>
+
+@check_data: 
+@check_func: 
+
+
+<!-- ##### FUNCTION g_type_remove_interface_check ##### -->
+<para>
+
+</para>
+
+@check_data: 
+@check_func: 
+
+
+<!-- ##### USER_FUNCTION GTypeInterfaceCheckFunc ##### -->
+<para>
+
+</para>
+
+@check_data: 
+@g_iface: 
+
+
+<!-- ##### FUNCTION g_type_value_table_peek ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_type_ensure ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### FUNCTION g_type_get_type_registration_serial ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO G_DEFINE_TYPE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+
+
+<!-- ##### MACRO G_DEFINE_TYPE_WITH_PRIVATE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+
+
+<!-- ##### MACRO G_DEFINE_TYPE_WITH_CODE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+@_C_: 
+
+
+<!-- ##### MACRO G_DEFINE_ABSTRACT_TYPE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+
+
+<!-- ##### MACRO G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+
+
+<!-- ##### MACRO G_DEFINE_ABSTRACT_TYPE_WITH_CODE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+@_C_: 
+
+
+<!-- ##### MACRO G_ADD_PRIVATE ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+
+
+<!-- ##### MACRO G_PRIVATE_OFFSET ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@field: 
+
+
+<!-- ##### MACRO G_PRIVATE_FIELD ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@inst: 
+@field_type: 
+@field_name: 
+
+
+<!-- ##### MACRO G_PRIVATE_FIELD_P ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@inst: 
+@field_name: 
+
+
+<!-- ##### MACRO G_DEFINE_INTERFACE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+
+
+<!-- ##### MACRO G_DEFINE_INTERFACE_WITH_CODE ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+@_C_: 
+
+
+<!-- ##### MACRO G_IMPLEMENT_INTERFACE ##### -->
+<para>
+
+</para>
+
+@TYPE_IFACE: 
+@iface_init: 
+
+
+<!-- ##### MACRO G_DEFINE_TYPE_EXTENDED ##### -->
+<para>
+
+</para>
+
+@TN: 
+@t_n: 
+@T_P: 
+@_f_: 
+@_C_: 
+
+
+<!-- ##### MACRO G_DEFINE_BOXED_TYPE ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@type_name: 
+@copy_func: 
+@free_func: 
+
+
+<!-- ##### MACRO G_DEFINE_BOXED_TYPE_WITH_CODE ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@type_name: 
+@copy_func: 
+@free_func: 
+@_C_: 
+
+
+<!-- ##### MACRO G_DEFINE_POINTER_TYPE ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@type_name: 
+
+
+<!-- ##### MACRO G_DEFINE_POINTER_TYPE_WITH_CODE ##### -->
+<para>
+
+</para>
+
+@TypeName: 
+@type_name: 
+@_C_: 
+
+
+<!-- ##### MACRO G_TYPE_INVALID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_NONE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_INTERFACE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_CHAR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_UCHAR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_BOOLEAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_INT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_UINT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_LONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_ULONG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_INT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_UINT64 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_ENUM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_FLOAT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DOUBLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_STRING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_POINTER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_BOXED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_PARAM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_OBJECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_GTYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_VARIANT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_CHECKSUM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_RESERVED_GLIB_FIRST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_RESERVED_GLIB_LAST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_RESERVED_BSE_FIRST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_RESERVED_BSE_LAST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_RESERVED_USER_FIRST ##### -->
+<para>
+
+</para>
+
+
+

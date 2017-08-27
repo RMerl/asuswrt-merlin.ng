@@ -1,0 +1,91 @@
+<!-- ##### SECTION Title ##### -->
+Base64 Encoding
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_base64_encode_step ##### -->
+<para>
+
+</para>
+
+@in: 
+@len: 
+@break_lines: 
+@out: 
+@state: 
+@save: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_base64_encode_close ##### -->
+<para>
+
+</para>
+
+@break_lines: 
+@out: 
+@state: 
+@save: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_base64_encode ##### -->
+<para>
+
+</para>
+
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_base64_decode_step ##### -->
+<para>
+
+</para>
+
+@in: 
+@len: 
+@out: 
+@state: 
+@save: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_base64_decode ##### -->
+<para>
+
+</para>
+
+@text: 
+@out_len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_base64_decode_inplace ##### -->
+<para>
+
+</para>
+
+@text: 
+@out_len: 
+@Returns: 
+
+

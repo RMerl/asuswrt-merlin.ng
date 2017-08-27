@@ -1,0 +1,114 @@
+#
+#  Test vectors for WiMAX attributes.
+#
+encode WiMAX-Release = "1.0"
+data 1a 0e 00 00 60 b5 01 08 00 01 05 31 2e 30
+
+decode -
+data WiMAX-Release = "1.0"
+
+encode WiMAX-Accounting-Capabilities = 1
+data 1a 0c 00 00 60 b5 01 06 00 02 03 01
+
+decode -
+data WiMAX-Accounting-Capabilities = IP-Session-Based
+
+encode WiMAX-Release = "1.0", WiMAX-Accounting-Capabilities = 1
+data 1a 11 00 00 60 b5 01 0b 00 01 05 31 2e 30 02 03 01
+
+decode -
+data WiMAX-Release = "1.0", WiMAX-Accounting-Capabilities = IP-Session-Based
+
+encode -
+data 1a 11 00 00 60 b5 01 0b 00 01 05 31 2e 30 02 03 01
+
+encode WiMAX-PFDv2-Classifier-Direction = 1
+data 1a 0e 00 00 60 b5 54 08 00 09 05 04 03 01
+
+encode WiMAX-PFDv2-Classifier-Direction = 1, WiMAX-PFDv2-Src-Port = 6809
+data 1a 14 00 00 60 b5 54 0e 00 09 0b 04 03 01 05 06 04 04 1a 99
+
+decode -
+data WiMAX-PFDv2-Classifier-Direction = 1, WiMAX-PFDv2-Src-Port = 6809
+
+# 26.24757.89.9.4 has the correct length.
+# 26.24757.89.9.5 has the correct length.
+# 26.24757.89.9.5.4 has the wrong length.
+decode 1a 14 00 00 60 b5 54 0e 00 09 0b 04 03 01 05 06 04 05 1a 99
+data WiMAX-PFDv2-Classifier-Direction = 1, Attr-26.24757.84.9.5 = 0x04051a99
+
+# The 26.24757.1 has the wrong length
+decode 1a 11 00 00 60 b5 01 0a 00 01 05 31 2e 30 02 03 01
+data Attr-26 = 0x000060b5010a000105312e30020301
+
+encode -
+data 1a 11 00 00 60 b5 01 0a 00 01 05 31 2e 30 02 03 01
+
+decode 1a 11 00 00 60 b5 01 0c 00 01 05 31 2e 30 02 03 01
+data Attr-26 = 0x000060b5010c000105312e30020301
+
+encode -
+data 1a 11 00 00 60 b5 01 0c 00 01 05 31 2e 30 02 03 01
+
+# 26.24757.1.1 has the wrong length
+decode 1a 11 00 00 60 b5 01 0b 00 01 04 31 2e 30 02 03 01
+data Attr-26.24757.1 = 0x0104312e30020301
+
+decode 1a 11 00 00 60 b5 01 0b 00 01 06 31 2e 30 02 03 01
+data Attr-26.24757.1 = 0x0106312e30020301
+
+encode -
+data 1a 11 00 00 60 b5 01 0b 00 01 06 31 2e 30 02 03 01
+
+# 26.24757.1.2 has the wrong length
+decode 1a 11 00 00 60 b5 01 0b 00 01 05 31 2e 30 02 02 01
+data Attr-26.24757.1 = 0x0105312e30020201
+
+encode -
+data 1a 11 00 00 60 b5 01 0b 00 01 05 31 2e 30 02 02 01
+
+# 26.24757.1.1 has the correct length
+# 26.24757.1.2 has the wrong length
+# This means that 26.24757.1 is invalid, and we create a raw attribute.
+decode 1a 11 00 00 60 b5 01 0b 00 01 05 31 2e 30 02 04 01
+data Attr-26.24757.1 = 0x0105312e30020401
+
+encode -
+data 1a 11 00 00 60 b5 01 0b 00 01 05 31 2e 30 02 04 01
+
+encode WiMAX-PFDv2-Eth-Priority-Range-Low = 55
+data 1a 12 00 00 60 b5 54 0c 00 09 09 09 07 03 05 01 03 37
+
+encode WiMAX-PFDv2-Eth-Priority-Range-Low = 55, WiMAX-PFDv2-Eth-Priority-Range-High = 84
+data 1a 15 00 00 60 b5 54 0f 00 09 0c 09 0a 03 08 01 03 37 02 03 54
+
+decode -
+data WiMAX-PFDv2-Eth-Priority-Range-Low = 55, WiMAX-PFDv2-Eth-Priority-Range-High = 84
+
+#  A less efficient encoding of the above data
+decode 1a 17 00 00 60 b5 54 11 00 09 0e 09 0c 03 05 01 03 37 03 05 02 03 54
+data WiMAX-PFDv2-Eth-Priority-Range-Low = 55, WiMAX-PFDv2-Eth-Priority-Range-High = 84
+
+# 26.24757.84.9.9.3.1 has the wrong length
+decode 1a 15 00 00 60 b5 54 0f 00 09 0c 09 0a 03 08 01 04 37 02 03 54
+data Attr-26.24757.84.9.9.3 = 0x010437020354
+
+# 26.24757.84.9.9.3.2 has the wrong length
+decode 1a 15 00 00 60 b5 54 0f 00 09 0c 09 0a 03 08 01 03 37 02 04 54
+data Attr-26.24757.84.9.9.3 = 0x010337020454
+
+# 26.24757.84.9.9.3.2 has the wrong length
+# This means that the SECOND 26.24757.84.9.9.3 is invalid.
+decode 1a 17 00 00 60 b5 54 11 00 09 0e 09 0c 03 05 01 03 37 03 05 02 04 54
+data WiMAX-PFDv2-Eth-Priority-Range-Low = 55, Attr-26.24757.84.9.9.3 = 0x020454
+
+# 26.24757.84.9.9.3.1 has the wrong length
+# This means that 26.24757.84.9.9.3 is invalid.
+decode 1a 17 00 00 60 b5 54 11 00 09 0e 09 0c 03 05 01 02 37 03 05 02 03 54
+data Attr-26.24757.84.9.9.3 = 0x010237, WiMAX-PFDv2-Eth-Priority-Range-High = 84
+
+#
+#  Simple test for continued attributes
+#
+decode 1a 0e 00 00 60 b5 01 08 80 01 05 31 2e 30 1a 0c 00 00 60 b5 01 06 00 02 03 00
+data WiMAX-Release = "1.0", WiMAX-Accounting-Capabilities = No-Accounting

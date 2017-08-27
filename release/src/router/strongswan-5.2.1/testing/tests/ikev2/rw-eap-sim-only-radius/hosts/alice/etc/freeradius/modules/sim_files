@@ -1,0 +1,3 @@
+sim_files {
+	simtriplets = "/etc/freeradius/triplets.dat"
+}

@@ -1,0 +1,21 @@
+#bonjour4firefox-hello
+{
+  color: black ! important;
+}
+#bonjour4firefox-toolbar-button
+{
+  list-style-image: url("chrome://bonjour4firefox/skin/toolbar-button.png");
+  -moz-image-region: rect(0px 24px 24px 0px);
+}
+#bonjour4firefox-toolbar-button:hover
+{
+  -moz-image-region: rect(24px 24px 48px  0px);
+}
+[iconsize="small"] #bonjour4firefox-toolbar-button
+{
+  -moz-image-region: rect( 0px 40px 16px 24px);
+}
+[iconsize="small"] #bonjour4firefox-toolbar-button:hover
+{
+  -moz-image-region: rect(24px 40px 40px 24px);
+}

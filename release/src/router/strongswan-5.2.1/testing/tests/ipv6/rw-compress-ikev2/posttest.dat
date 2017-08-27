@@ -1,0 +1,8 @@
+moon::ipsec stop
+carol::ipsec stop
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+moon::ip6tables-restore < /etc/ip6tables.flush
+carol::ip6tables-restore < /etc/ip6tables.flush
+alice::"ip route del fec0:\:/16 via fec1:\:1"
+carol::"ip route del fec1:\:/16 via fec0:\:1"

@@ -1,0 +1,7 @@
+
+This is the directory where sysstat's startup scripts and links
+will be installed. The usual location is /etc/rc.d.
+Note that if this directory doesn't exist, startup scripts and
+links won't be installed.
+Just press Enter to let configure guess the proper value.
+

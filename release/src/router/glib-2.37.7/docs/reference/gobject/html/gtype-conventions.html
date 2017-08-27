@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Conventions</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gtype.html" title="The GLib Dynamic Type System">
+<link rel="prev" href="chapter-gtype.html" title="The GLib Dynamic Type System">
+<link rel="next" href="gtype-non-instantiable.html" title="Non-instantiable non-classed fundamental types">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gtype.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="chapter-gtype.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gtype-non-instantiable.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gtype-conventions"></a>Conventions</h2></div></div></div>
+<p>
+        There are a number of conventions users are expected to follow when creating new types
+        which are to be exported in a header file:
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+            Use the <code class="function">object_method</code> pattern for function names: to invoke
+            the method named foo on an instance of object type bar, call 
+            <code class="function">bar_foo</code>.
+          </p></li>
+<li class="listitem"><p>Use prefixing to avoid namespace conflicts with other projects.
+            If your library (or application) is named <span class="emphasis"><em>Maman</em></span>,
+            <a href="#ftn.id-1.3.3.7.2.1.2.1.2" class="footnote" name="id-1.3.3.7.2.1.2.1.2"><sup class="footnote">[3]</sup></a>
+            
+            prefix all your function names with <span class="emphasis"><em>maman_</em></span>.
+            For example: <code class="function">maman_object_method</code>.
+          </p></li>
+<li class="listitem"><p>Create a macro named <code class="function">PREFIX_TYPE_OBJECT</code> which always 
+            returns the GType for the associated object type. For an object of type 
+            <span class="emphasis"><em>Bar</em></span> in a library prefixed by <span class="emphasis"><em>maman</em></span>, 
+            use: <code class="function">MAMAN_TYPE_BAR</code>.
+            It is common although not a convention to implement this macro using either a global 
+            static variable or a function named <code class="function">prefix_object_get_type</code>.
+            We will follow the function pattern wherever possible in this document.
+          </p></li>
+<li class="listitem"><p>Create a macro named <code class="function">PREFIX_OBJECT (obj)</code> which 
+            returns a pointer of type <span class="type">PrefixObject</span>. This macro is used to enforce
+            static type safety by doing explicit casts wherever needed. It also enforces
+            dynamic type safety by doing runtime checks. It is possible to disable the dynamic
+            type checks in production builds (see <a href="http://library.gnome.org/devel/glib/unstable/glib-building.html">building glib</a>).
+            For example, we would create 
+            <code class="function">MAMAN_BAR (obj)</code> to keep the previous example.
+          </p></li>
+<li class="listitem"><p>If the type is classed, create a macro named 
+            <code class="function">PREFIX_OBJECT_CLASS (klass)</code>. This macro
+            is strictly equivalent to the previous casting macro: it does static casting with
+            dynamic type checking of class structures. It is expected to return a pointer
+            to a class structure of type <span class="type">PrefixObjectClass</span>. Again, an example is:
+            <code class="function">MAMAN_BAR_CLASS</code>.
+          </p></li>
+<li class="listitem"><p>Create a macro named <code class="function">PREFIX_IS_BAR (obj)</code>: this macro is expected
+            to return a <span class="type">gboolean</span> which indicates whether or not the input
+            object instance pointer of type BAR.
+          </p></li>
+<li class="listitem"><p>If the type is classed, create a macro named
+            <code class="function">PREFIX_IS_OBJECT_CLASS (klass)</code> which, as above, returns a boolean
+            if the input class pointer is a pointer to a class of type OBJECT.
+          </p></li>
+<li class="listitem"><p>If the type is classed, create a macro named 
+            <code class="function">PREFIX_OBJECT_GET_CLASS (obj)</code>
+            which returns the class pointer associated to an instance of a given type. This macro
+            is used for static and dynamic type safety purposes (just like the previous casting
+            macros).
+          </p></li>
+</ul></div>
+<p>
+        The implementation of these macros is pretty straightforward: a number of simple-to-use 
+        macros are provided in <code class="filename">gtype.h</code>. For the example we used above, we would 
+        write the following trivial code to declare the macros:
+</p>
+<pre class="programlisting">
+#define MAMAN_TYPE_BAR                  (maman_bar_get_type ())
+#define MAMAN_BAR(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAMAN_TYPE_BAR, MamanBar))
+#define MAMAN_BAR_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), MAMAN_TYPE_BAR, MamanBarClass))
+#define MAMAN_IS_BAR(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAMAN_TYPE_BAR))
+#define MAMAN_IS_BAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MAMAN_TYPE_BAR))
+#define MAMAN_BAR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MAMAN_TYPE_BAR, MamanBarClass))
+</pre>
+<p>
+        </p>
+<div class="note">
+<h3 class="title">Note</h3>
+<p>Stick to the naming <code class="varname">klass</code> as <code class="varname">class</code> is a registered c++ keyword.</p>
+</div>
+<p>
+      </p>
+<p>
+        The following code shows how to implement the <code class="function">maman_bar_get_type</code>
+        function:
+</p>
+<pre class="programlisting">
+GType maman_bar_get_type (void)
+{
+  static GType type = 0;
+  if (type == 0) {
+    const GTypeInfo info = {
+      /* You fill this structure. */
+    };
+    type = g_type_register_static (G_TYPE_OBJECT,
+                                   "MamanBarType",
+                                   &amp;info, 0);
+  }
+  return type;
+}
+</pre>
+<p>
+      </p>
+<p>
+        If you have no special requirements you can use the
+        <code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-TYPE:CAPS" title="G_DEFINE_TYPE()">G_DEFINE_TYPE</a></code>
+	macro to define a class:
+</p>
+<pre class="programlisting">
+G_DEFINE_TYPE (MamanBar, maman_bar, G_TYPE_OBJECT)
+</pre>
+<p>
+      </p>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.3.3.7.2.1.2.1.2" class="footnote"><p><a href="#id-1.3.3.7.2.1.2.1.2" class="para"><sup class="para">[3] </sup></a>
+                <span class="emphasis"><em>Maman</em></span> is the French word for <span class="emphasis"><em>mum</em></span>
+                or <span class="emphasis"><em>mother</em></span> - nothing more and nothing less.
+              </p></div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+#!/bin/sh
+#
+#  $Id$
+#
+#  Sample script to add Attribute/Value pairs in the reply sent to
+#  the NAS.
+#
+#  Before version 2.0 of FreeRADIUS, the script could be run from the
+#  deprecated attributes 'Exec-Program' and 'Exec-Program-Wait'.
+#  However, these attributes are no longer supported and you have to
+#  use the module 'rlm_exec' instead.
+#
+#  An entry for the module 'rlm_exec' must be added to the file
+#  'radiusd.conf' with the path of the script.
+#
+#modules {
+#	exec {
+#		program = "/path/to/program/exec-program-wait"
+#		wait = yes
+#		input_pairs = request
+#		output_pairs = reply
+#	}
+#	...
+#}
+#
+#authorize {
+#	...
+#	exec
+#	...
+#}
+#
+#  Each of the attributes in the request will be available in an
+#  environment variable.  The name of the variable depends on the
+#  name of the attribute.  All letters are converted to upper case,
+#  and all hyphens '-' to underlines.
+#
+#  For example, the User-Name attribute will be in the $USER_NAME
+#  environment variable.  If you want to see the list of all of
+#  the variables, try adding a line 'printenv > /tmp/exec-program-wait'
+#  to the script.  Then look in the file for a complete list of
+#  variables.
+#
+#  The return value of the program run determines the result
+#  of the exec instance call as follows:
+#  (See doc/configurable_failover for details)
+#  < 0 : fail      the module failed
+#  = 0 : okthe module succeeded
+#  = 1 : reject    the module rejected the user
+#  = 2 : fail      the module failed
+#  = 3 : okthe module succeeded
+#  = 4 : handled   the module has done everything to handle the request
+#  = 5 : invalid   the user's configuration entry was invalid
+#  = 6 : userlock  the user was locked out
+#  = 7 : notfound  the user was not found
+#  = 8 : noop      the module did nothing
+#  = 9 : updated   the module updated information in the request
+#  > 9 : fail      the module failed
+#
+echo "Reply-Message += \"Hello, %u\","
+echo "Reply-Message += \"PATH=$PATH\","
+echo Framed-IP-Address = 255.255.255.255
+exit 0

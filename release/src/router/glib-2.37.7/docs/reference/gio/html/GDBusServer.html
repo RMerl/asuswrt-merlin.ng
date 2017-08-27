@@ -1,0 +1,1133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GDBusServer</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Lowlevel D-Bus Support">
+<link rel="prev" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation">
+<link rel="next" href="GDBusAuthObserver.html" title="GDBusAuthObserver">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GDBusServer.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GDBusServer.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GDBusServer.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GDBusServer.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#GDBusServer.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusMethodInvocation.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusAuthObserver.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusServer"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusServer.top_of_page"></a>GDBusServer</span></h2>
+<p>GDBusServer — Helper for accepting connections</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GDBusServer.synopsis"></a><h2>Synopsis</h2>
+<a name="GDBusServerFlags"></a><pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GDBusServer.html#GDBusServer-struct" title="GDBusServer">GDBusServer</a>;
+enum                <a class="link" href="GDBusServer.html#GDBusServerFlags-enum" title="enum GDBusServerFlags">GDBusServerFlags</a>;
+<a class="link" href="GDBusServer.html" title="GDBusServer"><span class="returnvalue">GDBusServer</span></a> *       <a class="link" href="GDBusServer.html#g-dbus-server-new-sync" title="g_dbus_server_new_sync ()">g_dbus_server_new_sync</a>              (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *address</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *guid</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GDBusServer.html#g-dbus-server-start" title="g_dbus_server_start ()">g_dbus_server_start</a>                 (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GDBusServer.html#g-dbus-server-stop" title="g_dbus_server_stop ()">g_dbus_server_stop</a>                  (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GDBusServer.html#g-dbus-server-is-active" title="g_dbus_server_is_active ()">g_dbus_server_is_active</a>             (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GDBusServer.html#g-dbus-server-get-guid" title="g_dbus_server_get_guid ()">g_dbus_server_get_guid</a>              (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);
+<a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="returnvalue">GDBusServerFlags</span></a>    <a class="link" href="GDBusServer.html#g-dbus-server-get-flags" title="g_dbus_server_get_flags ()">g_dbus_server_get_flags</a>             (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GDBusServer.html#g-dbus-server-get-client-address" title="g_dbus_server_get_client_address ()">g_dbus_server_get_client_address</a>    (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GDBusServer
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----GDBusServerFlags
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDBusServer implements
+ <a class="link" href="GInitable.html" title="GInitable">GInitable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GDBusServer.html#GDBusServer--active" title='The "active" property'>active</a>"                   <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read
+  "<a class="link" href="GDBusServer.html#GDBusServer--address" title='The "address" property'>address</a>"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+  "<a class="link" href="GDBusServer.html#GDBusServer--authentication-observer" title='The "authentication-observer" property'>authentication-observer</a>"  <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a>*    : Read / Write / Construct Only
+  "<a class="link" href="GDBusServer.html#GDBusServer--client-address" title='The "client-address" property'>client-address</a>"           <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read
+  "<a class="link" href="GDBusServer.html#GDBusServer--flags" title='The "flags" property'>flags</a>"                    <a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a>      : Read / Write / Construct Only
+  "<a class="link" href="GDBusServer.html#GDBusServer--guid" title='The "guid" property'>guid</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GDBusServer.html#GDBusServer-new-connection" title='The "new-connection" signal'>new-connection</a>"                                 : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> is a helper for listening to and accepting D-Bus
+connections. This can be used to create a new D-Bus server, allowing two
+peers to use the D-Bus protocol for their own specialized communication.
+A server instance provided in this way will not perform message routing or
+implement the org.freedesktop.DBus interface.
+</p>
+<p>
+To just export an object on a well-known name on a message bus, such as the
+session or system bus, you should instead use <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>.
+</p>
+<p>
+</p>
+<div class="example">
+<a name="gdbus-peer-to-peer"></a><p class="title"><b>Example 10. D-Bus peer-to-peer example</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*</span>
+
+<span class="comment">Usage examples (modulo addresses / credentials).</span>
+
+<span class="comment">UNIX domain socket transport:</span>
+
+<span class="comment"> Server:</span>
+<span class="comment">   $ ./gdbus-example-peer --server --address unix:abstract=myaddr</span>
+<span class="comment">   Server is listening at: unix:abstract=myaddr</span>
+<span class="comment">   Client connected.</span>
+<span class="comment">   Peer credentials: GCredentials:unix-user=500,unix-group=500,unix-process=13378</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=1</span>
+<span class="comment">   Client said: Hey, it's 1273093080 already!</span>
+
+<span class="comment"> Client:</span>
+<span class="comment">   $ ./gdbus-example-peer --address unix:abstract=myaddr</span>
+<span class="comment">   Connected.</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=1</span>
+<span class="comment">   Server said: You said 'Hey, it's 1273093080 already!'. KTHXBYE!</span>
+
+<span class="comment">Nonce-secured TCP transport on the same host:</span>
+
+<span class="comment"> Server:</span>
+<span class="comment">   $ ./gdbus-example-peer --server --address nonce-tcp:</span>
+<span class="comment">   Server is listening at: nonce-tcp:host=localhost,port=43077,noncefile=/tmp/gdbus-nonce-file-X1ZNCV</span>
+<span class="comment">   Client connected.</span>
+<span class="comment">   Peer credentials: (no credentials received)</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=0</span>
+<span class="comment">   Client said: Hey, it's 1273093206 already!</span>
+
+<span class="comment"> Client:</span>
+<span class="comment">   $ ./gdbus-example-peer -address nonce-tcp:host=localhost,port=43077,noncefile=/tmp/gdbus-nonce-file-X1ZNCV</span>
+<span class="comment">   Connected.</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=0</span>
+<span class="comment">   Server said: You said 'Hey, it's 1273093206 already!'. KTHXBYE!</span>
+
+<span class="comment">TCP transport on two different hosts with a shared home directory:</span>
+
+<span class="comment"> Server:</span>
+<span class="comment">   host1 $ ./gdbus-example-peer --server --address tcp:host=0.0.0.0</span>
+<span class="comment">   Server is listening at: tcp:host=0.0.0.0,port=46314</span>
+<span class="comment">   Client connected.</span>
+<span class="comment">   Peer credentials: (no credentials received)</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=0</span>
+<span class="comment">   Client said: Hey, it's 1273093337 already!</span>
+
+<span class="comment"> Client:</span>
+<span class="comment">   host2 $ ./gdbus-example-peer -a tcp:host=host1,port=46314</span>
+<span class="comment">   Connected.</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=0</span>
+<span class="comment">   Server said: You said 'Hey, it's 1273093337 already!'. KTHXBYE!</span>
+
+<span class="comment">TCP transport on two different hosts without authentication:</span>
+
+<span class="comment"> Server:</span>
+<span class="comment">   host1 $ ./gdbus-example-peer --server --address tcp:host=0.0.0.0 --allow-anonymous</span>
+<span class="comment">   Server is listening at: tcp:host=0.0.0.0,port=59556</span>
+<span class="comment">   Client connected.</span>
+<span class="comment">   Peer credentials: (no credentials received)</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=0</span>
+<span class="comment">   Client said: Hey, it's 1273093652 already!</span>
+
+<span class="comment"> Client:</span>
+<span class="comment">   host2 $ ./gdbus-example-peer -a tcp:host=host1,port=59556</span>
+<span class="comment">   Connected.</span>
+<span class="comment">   Negotiated capabilities: unix-fd-passing=0</span>
+<span class="comment">   Server said: You said 'Hey, it's 1273093652 already!'. KTHXBYE!</span>
+
+<span class="comment"> */</span>
+
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gio/gio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GDBusNodeInfo</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">introspection_data </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="comment">/* Introspection data for the service we are exporting */</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> introspection_xml</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">  </span><span class="string">"&lt;node&gt;"</span>
+<span class="normal">  </span><span class="string">"  &lt;interface name='org.gtk.GDBus.TestPeerInterface'&gt;"</span>
+<span class="normal">  </span><span class="string">"    &lt;method name='HelloWorld'&gt;"</span>
+<span class="normal">  </span><span class="string">"      &lt;arg type='s' name='greeting' direction='in'/&gt;"</span>
+<span class="normal">  </span><span class="string">"      &lt;arg type='s' name='response' direction='out'/&gt;"</span>
+<span class="normal">  </span><span class="string">"    &lt;/method&gt;"</span>
+<span class="normal">  </span><span class="string">"  &lt;/interface&gt;"</span>
+<span class="normal">  </span><span class="string">"&lt;/node&gt;"</span><span class="symbol">;</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">handle_method_call</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">           </span><span class="symbol">*</span><span class="normal">sender</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">           </span><span class="symbol">*</span><span class="normal">object_path</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">           </span><span class="symbol">*</span><span class="normal">interface_name</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">           </span><span class="symbol">*</span><span class="normal">method_name</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="usertype">GVariant</span><span class="normal">              </span><span class="symbol">*</span><span class="normal">parameters</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="usertype">GDBusMethodInvocation</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="usertype">gpointer</span><span class="normal">               user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strcmp0">g_strcmp0</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">method_name</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"HelloWorld"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">greeting</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">response</span><span class="symbol">;</span>
+
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-get">g_variant_get</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">parameters</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"(&amp;s)"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">greeting</span><span class="symbol">);</span>
+<span class="normal">      response </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strdup-printf">g_strdup_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"You said '%s'. KTHXBYE!"</span><span class="symbol">,</span><span class="normal"> greeting</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-value">g_dbus_method_invocation_return_value</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                                             </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-new">g_variant_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"(s)"</span><span class="symbol">,</span><span class="normal"> response</span><span class="symbol">));</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">response</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Client said: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> greeting</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GDBusInterfaceVTable</span><span class="normal"> interface_vtable </span><span class="symbol">=</span>
+<span class="cbracket">{</span>
+<span class="normal">  handle_method_call</span><span class="symbol">,</span>
+<span class="normal">  <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">  <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="keyword">static</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">on_new_connection</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusServer</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">server</span><span class="symbol">,</span>
+<span class="normal">                   </span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                   </span><span class="usertype">gpointer</span><span class="normal"> user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">guint</span><span class="normal"> registration_id</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GCredentials</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">credentials</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">s</span><span class="symbol">;</span>
+
+<span class="normal">  credentials </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusConnection.html#g-dbus-connection-get-peer-credentials">g_dbus_connection_get_peer_credentials</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">credentials </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    s </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strdup">g_strdup</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"(no credentials received)"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">else</span>
+<span class="normal">    s </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GCredentials.html#g-credentials-to-string">g_credentials_to_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">credentials</span><span class="symbol">);</span>
+
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Client connected.</span><span class="specialchar">\n</span><span class="string">"</span>
+<span class="normal">           </span><span class="string">"Peer credentials: %s</span><span class="specialchar">\n</span><span class="string">"</span>
+<span class="normal">           </span><span class="string">"Negotiated capabilities: unix-fd-passing=%d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span>
+<span class="normal">           s</span><span class="symbol">,</span>
+<span class="normal">           </span><span class="function"><a href="GDBusConnection.html#g-dbus-connection-get-capabilities">g_dbus_connection_get_capabilities</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal"> <a href="GDBusConnection.html#G-DBUS-CAPABILITY-FLAGS-UNIX-FD-PASSING:CAPS">G_DBUS_CAPABILITY_FLAGS_UNIX_FD_PASSING</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-ref">g_object_ref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">);</span>
+<span class="normal">  registration_id </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusConnection.html#g-dbus-connection-register-object">g_dbus_connection_register_object</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                                                       </span><span class="string">"/org/gtk/GDBus/TestObject"</span><span class="symbol">,</span>
+<span class="normal">                                                       introspection_data</span><span class="symbol">-&gt;</span><span class="normal">interfaces</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span>
+<span class="normal">                                                       </span><span class="symbol">&amp;</span><span class="normal">interface_vtable</span><span class="symbol">,</span>
+<span class="normal">                                                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">  </span><span class="comment">/* user_data */</span>
+<span class="normal">                                                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">  </span><span class="comment">/* user_data_free_func */</span>
+<span class="normal">                                                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span><span class="normal"> </span><span class="comment">/* GError** */</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-assert">g_assert</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">registration_id </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gint</span><span class="normal"> ret</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> opt_server</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">opt_address</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GOptionContext</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">opt_context</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> opt_allow_anonymous</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GError</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">error</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GOptionEntry</span><span class="normal"> opt_entries</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"server"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'s'</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#G-OPTION-ARG-NONE:CAPS">G_OPTION_ARG_NONE</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">opt_server</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Start a server instead of a client"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"address"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'a'</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#G-OPTION-ARG-STRING:CAPS">G_OPTION_ARG_STRING</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">opt_address</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"D-Bus address to use"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"allow-anonymous"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'n'</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#G-OPTION-ARG-NONE:CAPS">G_OPTION_ARG_NONE</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">opt_allow_anonymous</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Allow anonymous authentication"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="cbracket">{</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="normal">  ret </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+
+<span class="normal">  opt_address </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  opt_server </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+<span class="normal">  opt_allow_anonymous </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+
+<span class="normal">  opt_context </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#g-option-context-new">g_option_context_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"peer-to-peer example"</span><span class="symbol">);</span>
+<span class="normal">  error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#g-option-context-add-main-entries">g_option_context_add_main_entries</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_context</span><span class="symbol">,</span><span class="normal"> opt_entries</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#g-option-context-parse">g_option_context_parse</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_context</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">argc</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">argv</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error parsing options: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_address </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Incorrect usage, try --help.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">opt_server </span><span class="symbol">&amp;&amp;</span><span class="normal"> opt_allow_anonymous</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"The --allow-anonymous option only makes sense when used with --server.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="comment">/* We are lazy here - we don't want to manually provide</span>
+<span class="comment">   * the introspection data structures - so we just build</span>
+<span class="comment">   * them from XML.</span>
+<span class="comment">   */</span>
+<span class="normal">  introspection_data </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-new-for-xml">g_dbus_node_info_new_for_xml</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">introspection_xml</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-assert">g_assert</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">introspection_data </span><span class="symbol">!=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_server</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">GDBusServer</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">server</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">guid</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">GMainLoop</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">loop</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">GDBusServerFlags</span><span class="normal"> server_flags</span><span class="symbol">;</span>
+
+<span class="normal">      guid </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-D-Bus-Utilities.html#g-dbus-generate-guid">g_dbus_generate_guid</a></span><span class="normal"> </span><span class="symbol">();</span>
+
+<span class="normal">      server_flags </span><span class="symbol">=</span><span class="normal"> <a href="GDBusServer.html#G-DBUS-SERVER-FLAGS-NONE:CAPS">G_DBUS_SERVER_FLAGS_NONE</a></span><span class="symbol">;</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_allow_anonymous</span><span class="symbol">)</span>
+<span class="normal">        server_flags </span><span class="symbol">|=</span><span class="normal"> <a href="GDBusServer.html#G-DBUS-SERVER-FLAGS-AUTHENTICATION-ALLOW-ANONYMOUS:CAPS">G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS</a></span><span class="symbol">;</span>
+
+<span class="normal">      error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">      server </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusServer.html#g-dbus-server-new-sync">g_dbus_server_new_sync</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_address</span><span class="symbol">,</span>
+<span class="normal">                                       server_flags</span><span class="symbol">,</span>
+<span class="normal">                                       guid</span><span class="symbol">,</span>
+<span class="normal">                                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* GDBusAuthObserver */</span>
+<span class="normal">                                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* GCancellable */</span>
+<span class="normal">                                       </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="GDBusServer.html#g-dbus-server-start">g_dbus_server_start</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">server</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">guid</span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">server </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error creating server at address %s: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> opt_address</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Server is listening at: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GDBusServer.html#g-dbus-server-get-client-address">g_dbus_server_get_client_address</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">server</span><span class="symbol">));</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">server</span><span class="symbol">,</span>
+<span class="normal">                        </span><span class="string">"new-connection"</span><span class="symbol">,</span>
+<span class="normal">                        </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_new_connection</span><span class="symbol">),</span>
+<span class="normal">                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">      loop </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-new">g_main_loop_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-run">g_main_loop_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">server</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#g-main-loop-unref">g_main_loop_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">else</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">greeting_response</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">GVariant</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">value</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">greeting</span><span class="symbol">;</span>
+
+<span class="normal">      error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">      connection </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusConnection.html#g-dbus-connection-new-for-address-sync">g_dbus_connection_new_for_address_sync</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">opt_address</span><span class="symbol">,</span>
+<span class="normal">                                                           <a href="GDBusConnection.html#G-DBUS-CONNECTION-FLAGS-AUTHENTICATION-CLIENT:CAPS">G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT</a></span><span class="symbol">,</span>
+<span class="normal">                                                           <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* GDBusAuthObserver */</span>
+<span class="normal">                                                           <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* GCancellable */</span>
+<span class="normal">                                                           </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error connecting to D-Bus address %s: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> opt_address</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Connected.</span><span class="specialchar">\n</span><span class="string">"</span>
+<span class="normal">               </span><span class="string">"Negotiated capabilities: unix-fd-passing=%d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span>
+<span class="normal">               </span><span class="function"><a href="GDBusConnection.html#g-dbus-connection-get-capabilities">g_dbus_connection_get_capabilities</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal"> <a href="GDBusConnection.html#G-DBUS-CAPABILITY-FLAGS-UNIX-FD-PASSING:CAPS">G_DBUS_CAPABILITY_FLAGS_UNIX_FD_PASSING</a></span><span class="symbol">);</span>
+
+<span class="normal">      greeting </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-String-Utility-Functions.html#g-strdup-printf">g_strdup_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Hey, it's %"</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#G-GUINT64-FORMAT:CAPS">G_GUINT64_FORMAT</a> </span><span class="string">" already!"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint64">guint64</a></span><span class="symbol">)</span><span class="normal"> </span><span class="function">time</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">));</span>
+<span class="normal">      value </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusConnection.html#g-dbus-connection-call-sync">g_dbus_connection_call_sync</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                                           <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* bus_name */</span>
+<span class="normal">                                           </span><span class="string">"/org/gtk/GDBus/TestObject"</span><span class="symbol">,</span>
+<span class="normal">                                           </span><span class="string">"org.gtk.GDBus.TestPeerInterface"</span><span class="symbol">,</span>
+<span class="normal">                                           </span><span class="string">"HelloWorld"</span><span class="symbol">,</span>
+<span class="normal">                                           </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-new">g_variant_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"(s)"</span><span class="symbol">,</span><span class="normal"> greeting</span><span class="symbol">),</span>
+<span class="normal">                                           </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariantType.html#G-VARIANT-TYPE:CAPS">G_VARIANT_TYPE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"(s)"</span><span class="symbol">),</span>
+<span class="normal">                                           <a href="GDBusConnection.html#G-DBUS-CALL-FLAGS-NONE:CAPS">G_DBUS_CALL_FLAGS_NONE</a></span><span class="symbol">,</span>
+<span class="normal">                                           </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">,</span>
+<span class="normal">                                           <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">                                           </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-printerr">g_printerr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error invoking HelloWorld(): %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">          </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-get">g_variant_get</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"(&amp;s)"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">greeting_response</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Server said: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> greeting_response</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref">g_variant_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="function"><a href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-unref">g_dbus_node_info_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">introspection_data</span><span class="symbol">);</span>
+
+<span class="normal">  ret </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="label"> out:</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> ret</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GDBusServer-struct"></a><h3>GDBusServer</h3>
+<pre class="programlisting">typedef struct _GDBusServer GDBusServer;</pre>
+<p>
+The <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> structure contains only private data and
+should only be accessed using the provided API.
+</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServerFlags-enum"></a><h3>enum GDBusServerFlags</h3>
+<pre class="programlisting">typedef enum {
+  G_DBUS_SERVER_FLAGS_NONE = 0,
+  G_DBUS_SERVER_FLAGS_RUN_IN_THREAD = (1&lt;&lt;0),
+  G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS = (1&lt;&lt;1)
+} GDBusServerFlags;
+</pre>
+<p>
+Flags used when creating a <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="G-DBUS-SERVER-FLAGS-NONE:CAPS"></a><span class="term"><code class="literal">G_DBUS_SERVER_FLAGS_NONE</code></span></p></td>
+<td>No flags set.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-DBUS-SERVER-FLAGS-RUN-IN-THREAD:CAPS"></a><span class="term"><code class="literal">G_DBUS_SERVER_FLAGS_RUN_IN_THREAD</code></span></p></td>
+<td>All <a class="link" href="GDBusServer.html#GDBusServer-new-connection" title='The "new-connection" signal'><span class="type">"new-connection"</span></a>
+signals will run in separated dedicated threads (see signal for
+details).
+</td>
+</tr>
+<tr>
+<td><p><a name="G-DBUS-SERVER-FLAGS-AUTHENTICATION-ALLOW-ANONYMOUS:CAPS"></a><span class="term"><code class="literal">G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS</code></span></p></td>
+<td>Allow the anonymous
+authentication method.
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-new-sync"></a><h3>g_dbus_server_new_sync ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="returnvalue">GDBusServer</span></a> *       g_dbus_server_new_sync              (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *address</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *guid</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Creates a new D-Bus server that listens on the first address in
+<em class="parameter"><code>address</code></em> that works.
+</p>
+<p>
+Once constructed, you can use <a class="link" href="GDBusServer.html#g-dbus-server-get-client-address" title="g_dbus_server_get_client_address ()"><code class="function">g_dbus_server_get_client_address()</code></a> to
+get a D-Bus address string that clients can use to connect.
+</p>
+<p>
+Connect to the <a class="link" href="GDBusServer.html#GDBusServer-new-connection" title='The "new-connection" signal'><span class="type">"new-connection"</span></a> signal to handle
+incoming connections.
+</p>
+<p>
+The returned <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> isn't active - you have to start it with
+<a class="link" href="GDBusServer.html#g-dbus-server-start" title="g_dbus_server_start ()"><code class="function">g_dbus_server_start()</code></a>.
+</p>
+<p>
+See <a class="xref" href="GDBusServer.html#gdbus-peer-to-peer" title="Example 10. D-Bus peer-to-peer example">Example 10, “D-Bus peer-to-peer example”</a> for how <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> can
+be used.
+</p>
+<p>
+This is a synchronous failable constructor. See
+<code class="function">g_dbus_server_new()</code> for the asynchronous version.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>A D-Bus address.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>Flags from the <a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> enumeration.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>guid</code></em> :</span></p></td>
+<td>A D-Bus GUID.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>observer</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>Return location for server or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em> is set. Free with
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-start"></a><h3>g_dbus_server_start ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_dbus_server_start                 (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>
+Starts <em class="parameter"><code>server</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-stop"></a><h3>g_dbus_server_stop ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_dbus_server_stop                  (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>
+Stops <em class="parameter"><code>server</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-is-active"></a><h3>g_dbus_server_is_active ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_dbus_server_is_active             (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>
+Gets whether <em class="parameter"><code>server</code></em> is active.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if server is active, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-get-guid"></a><h3>g_dbus_server_get_guid ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_dbus_server_get_guid              (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>
+Gets the GUID for <em class="parameter"><code>server</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A D-Bus GUID. Do not free this string, it is owned by <em class="parameter"><code>server</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-get-flags"></a><h3>g_dbus_server_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="returnvalue">GDBusServerFlags</span></a>    g_dbus_server_get_flags             (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>
+Gets the flags for <em class="parameter"><code>server</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A set of flags from the <a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> enumeration.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-get-client-address"></a><h3>g_dbus_server_get_client_address ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_dbus_server_get_client_address    (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>
+Gets a D-Bus address string that can be used by clients to connect
+to <em class="parameter"><code>server</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A D-Bus address string. Do not free, the string is owned
+by <em class="parameter"><code>server</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDBusServer--active"></a><h3>The <code class="literal">"active"</code> property</h3>
+<pre class="programlisting">  "active"                   <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
+<p>
+Whether the server is currently active.
+</p>
+<p>Default value: FALSE</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--address"></a><h3>The <code class="literal">"address"</code> property</h3>
+<pre class="programlisting">  "address"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>
+The D-Bus address to listen on.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--authentication-observer"></a><h3>The <code class="literal">"authentication-observer"</code> property</h3>
+<pre class="programlisting">  "authentication-observer"  <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a>*    : Read / Write / Construct Only</pre>
+<p>
+A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> object to assist in the authentication process or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--client-address"></a><h3>The <code class="literal">"client-address"</code> property</h3>
+<pre class="programlisting">  "client-address"           <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read</pre>
+<p>
+The D-Bus address that clients can use.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--flags"></a><h3>The <code class="literal">"flags"</code> property</h3>
+<pre class="programlisting">  "flags"                    <a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a>      : Read / Write / Construct Only</pre>
+<p>
+Flags from the <a class="link" href="GDBusServer.html#GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> enumeration.
+</p>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--guid"></a><h3>The <code class="literal">"guid"</code> property</h3>
+<pre class="programlisting">  "guid"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>
+The guid of the server.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GDBusServer-new-connection"></a><h3>The <code class="literal">"new-connection"</code> signal</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            user_function                      (<a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>     *server,
+                                                        <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)       : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Emitted when a new authenticated connection has been made. Use
+<a class="link" href="GDBusConnection.html#g-dbus-connection-get-peer-credentials" title="g_dbus_connection_get_peer_credentials ()"><code class="function">g_dbus_connection_get_peer_credentials()</code></a> to figure out what
+identity (if any), was authenticated.
+</p>
+<p>
+If you want to accept the connection, take a reference to the
+<em class="parameter"><code>connection</code></em> object and return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>. When you are done with the
+connection call <a class="link" href="GDBusConnection.html#g-dbus-connection-close" title="g_dbus_connection_close ()"><code class="function">g_dbus_connection_close()</code></a> and give up your
+reference. Note that the other peer may disconnect at any time -
+a typical thing to do when accepting a connection is to listen to
+the <a class="link" href="GDBusConnection.html#GDBusConnection-closed" title='The "closed" signal'><span class="type">"closed"</span></a> signal.
+</p>
+<p>
+If <a class="link" href="GDBusServer.html#GDBusServer--flags" title='The "flags" property'><span class="type">"flags"</span></a> contains <a class="link" href="GDBusServer.html#G-DBUS-SERVER-FLAGS-RUN-IN-THREAD:CAPS"><code class="literal">G_DBUS_SERVER_FLAGS_RUN_IN_THREAD</code></a>
+then the signal is emitted in a new thread dedicated to the
+connection. Otherwise the signal is emitted in the <GTKDOCLINK HREF="g-main-context-push-thread-default">thread-default main
+loop</GTKDOCLINK> of the thread that <em class="parameter"><code>server</code></em> was constructed in.
+</p>
+<p>
+You are guaranteed that signal handlers for this signal runs
+before incoming messages on <em class="parameter"><code>connection</code></em> are processed. This means
+that it's suitable to call <a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a> or
+similar from the signal handler.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>server</code></em> :</span></p></td>
+<td>The <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> emitting the signal.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> for the new connection.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to claim <em class="parameter"><code>connection</code></em>, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> to let other handlers
+run.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

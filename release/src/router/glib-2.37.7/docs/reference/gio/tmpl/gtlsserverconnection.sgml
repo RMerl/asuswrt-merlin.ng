@@ -1,0 +1,53 @@
+<!-- ##### SECTION Title ##### -->
+GTlsServerConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTlsServerConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GTlsServerConnection:authentication-mode ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GTlsServerConnectionInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+
+<!-- ##### FUNCTION g_tls_server_connection_new ##### -->
+<para>
+
+</para>
+
+@base_io_stream: 
+@certificate: 
+@error: 
+@Returns: 
+
+

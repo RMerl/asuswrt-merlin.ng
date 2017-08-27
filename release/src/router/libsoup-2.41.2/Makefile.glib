@@ -1,0 +1,302 @@
+# -*- Mode: makefile -*-
+#
+# To use:
+#
+# In configure.ac:
+#   add -Wno-portability to AM_INIT_AUTOMAKE
+#   add GLIB_CONFIG([min-version[, required-modules]])
+#   (remove AM_PATH_GLIB_2_0 and GLIB_GSETTINGS)
+#
+# Add to Makefile.am where your library/program is built:
+#   include $(GLIB_MAKEFILE)
+#
+#   BUILT_SOURCES = $(GLIB_GENERATED)
+#
+# Add *.stamp to .gitignore
+#
+# Add a GLIB_GENERATED variable with the files you want to generate,
+# as described below. (The examples below use filenames with hyphens,
+# eg foo-marshal.h, but you can omit the hyphens if that matches your
+# file naming scheme better.)
+#
+# You do not need to modify CLEANFILES or EXTRA_DIST for any of these
+# macros.
+
+
+# glib-genmarshal
+#
+# To generate signal marshallers, add files with names ending in
+# "marshal.h" and "marshal.c" to GLIB_GENERATED:
+#
+#    GLIB_GENERATED += foo-marshal.h foo-marshal.c
+#    foo_marshal_sources = aaa.c bbb.c ccc.c ddd.c
+#
+# Makefile.glib will then generate a foo-marshal.list file containing
+# all _foo_marshal_* functions referenced by $(foo_marshal_sources),
+# and will rebuild foo-marshal.c/foo-marshal.h whenever the list
+# changes.
+#
+# For your convenience, any .h files or $(GLIB_GENERATED) files in
+# $(foo_marshal_sources) will be ignored. This means you can usually just
+# set foo_marshal_sources to the value of your library/program's
+# _SOURCES variable, even if that variable contains foo-marshal.c.
+#
+# You can set GLIB_GENMARSHAL_H_FLAGS and GLIB_GENMARSHAL_C_FLAGS (or
+# an appropriate file-specific variable, eg
+# foo_marshal_GENMARSHAL_H_FLAGS) to set/override glib-genmarshal
+# options.
+
+
+# glib-mkenums
+#
+# To generate enum type registrations, add files with names ending
+# in "-enum-types.[ch]" or "enumtypes.[ch]" to GLIB_GENERATED:
+#
+#    GLIB_GENERATED += foo-enum-types.h foo-enum-types.c
+#    foo_enum_types_sources = aaa.h bbb.h ccc.h ddd.h
+#
+# Makefile.glib will create a list all of the enum/flags types
+# declared in $(foo_enum_type_sources), and will rebuild
+# foo-enum-types.c/foo-enum-types.h whenever that list changes. (No
+# template files are required.)
+#
+# For your convenience, any .c files or $(GLIB_GENERATED) files in
+# $(foo_enum_types_sources) will be ignored. This means you can
+# usually set foo_enum_types_sources to the value of your
+# library/program's _HEADERS and/or _SOURCES variables, even if that
+# contains foo-enum-types.h.
+#
+# You can set GLIB_MKENUMS_H_FLAGS and GLIB_MKENUMS_C_FLAGS (or an
+# appropriate file-specific variable, eg
+# foo_enum_types_MKENUMS_H_FLAGS) to set/override glib-mkenums
+# options. In particular, you can do:
+#
+#     GLIB_MKENUMS_C_FLAGS = --fhead "\#define FOO_I_KNOW_THIS_IS_UNSTABLE"
+#
+# (The backslash is necessary to keep make from thinking the "#" is
+# the start of a comment.)
+
+
+# glib-compile-schemas
+#
+# Any foo.gschemas.xml files listed in gsettingsschema_DATA will be
+# validated before installation, and (if --disable-schemas-compile was
+# not passed) compiled after installation.
+#
+# To build an enums file, add it to GLIB_GENERATED (in addition to
+# gsettingsschema_DATA):
+#
+#     GLIB_GENERATED += org.gnome.foo.enums.xml
+#     org_gnome_foo_enums_xml_sources = aaa.h bbb.h ccc.h ddd.h
+#
+# All enums files will be built before any schema files are validated.
+
+
+########
+
+# Notes on Makefile.glib hacking:
+#
+#   - The exact rules that automake generates for a Makefile vary
+#     depending on what sorts of things were done in the Makefile.am,
+#     so we have to be careful with what rules we assume are there.
+#     In particular, (a) the glue to handle BUILT_SOURCES and the
+#     various hooks won't be output unless those things were
+#     referenced in the Makefile.am, and (b) a Makefile.am with
+#     SUBDIRS will get different rules than one without.
+#
+#   - Build rules should always refer to their dependencies via $^,
+#     not by reusing a variable that is listed in the rule's
+#     dependencies. This is needed to make srcdir!=builddir builds
+#     work. You can use $(filter)/$(filter-out) if $^ has things
+#     you don't want in it.
+#
+#   - When using a filename as something other than a filename,
+#     consider whether you need to wrap it in $(notdir) to get the
+#     right result when that file is being pulled out of a
+#     subdirectory.
+#
+#   - All private variables should be prefixed with _glib or _GLIB
+#
+#   - "make -qp > makefile.out" will give you a copy of the
+#     Makefile after all macros are expanded.
+#
+# The genmarshal code is commented; the mkenums and schema code is
+# generally similar.
+
+_GLIB_CLEANFILES =
+_GLIB_DISTCLEANFILES =
+
+_GLIB_V_GEN = $(_glib_v_gen_$(V))
+_glib_v_gen_ = $(_glib_v_gen_$(AM_DEFAULT_VERBOSITY))
+_glib_v_gen_0 = @echo "  GEN   " $(subst .stamp,,$@);
+
+
+### glib-genmarshal
+
+# _GLIB_MARSHAL_GENERATED contains the basenames (eg, "foo-marshal")
+# of all the marshal-related files to be generated.
+_GLIB_MARSHAL_GENERATED = $(subst .h,,$(filter %marshal.h,$(GLIB_GENERATED)))
+
+# These are used as macros (with the value of $(1) inherited from the "caller")
+#   _glib_marshal_prefix("foo-marshal") = "foo" (used in the C marshal names)
+#   _glib_marshal_sources_var("foo-marshal") = "foo_marshal_sources"
+#   _glib_marshal_sources = the filtered value of $(foo_marshal_sources)
+_glib_marshal_prefix = $(subst marshal,,$(subst _marshal,,$(subst -,_,$(notdir $(1)))))_marshal
+_glib_marshal_sources_var = $(subst -,_,$(notdir $(1)))_sources
+_glib_marshal_sources = $(filter-out %.h,$(filter-out $(GLIB_GENERATED),$($(_glib_marshal_sources_var))))
+
+# This is a multi-line macro (ending with the "endef" below) that
+# outputs a set of rules for a single .h/.c pair (whose basename is
+# $(1)). The initial $(if) line makes make error out if
+# foo_marshal_sources wasn't set. Note that single-$ variables are
+# expanded when the macro is called, and double-$ variables are
+# expanded when the rule is invoked.
+define _glib_make_genmarshal_rules
+$(if $(_glib_marshal_sources),,$(error Need to define $(_glib_marshal_sources_var) for $(1).[ch]))
+
+$(1).list.stamp: $(_glib_marshal_sources)
+	$$(_GLIB_V_GEN) LC_ALL=C sed -ne 's/.*_$(_glib_marshal_prefix)_\([_A-Z0-9]*\).*/\1/p' $$^ | sort -u | sed -e 's/__/:/' -e 's/_/,/g' > $(1).list.tmp && \
+	(cmp -s $(1).list.tmp $(1).list || cp $(1).list.tmp $(1).list) && \
+	rm -f $(1).list.tmp && \
+	echo timestamp > $$@
+
+$(1).list: $(1).list.stamp
+	@true
+
+$(1).h: $(1).list
+	$$(_GLIB_V_GEN) $$(GLIB_GENMARSHAL) \
+		--prefix=_$(_glib_marshal_prefix) --header \
+		$$(GLIB_GENMARSHAL_H_FLAGS) \
+		$$($(_glib_marshal_prefix)_GENMARSHAL_H_FLAGS) \
+		$$< > $$@.tmp && \
+	mv $$@.tmp $$@
+
+$(1).c: $(1).list
+	$$(_GLIB_V_GEN) (echo "#include \"$$(subst .c,.h,$$(@F))\""; $$(GLIB_GENMARSHAL) \
+		--prefix=_$(_glib_marshal_prefix) --body \
+		$$(GLIB_GENMARSHAL_C_FLAGS) \
+		$$($(_glib_marshal_prefix)_GENMARSHAL_C_FLAGS) \
+		$$< ) > $$@.tmp && \
+	mv $$@.tmp $$@
+
+_GLIB_CLEANFILES += $(1).list.stamp $(1).list
+_GLIB_DISTCLEANFILES += $(1).h $(1).c
+endef
+
+# Run _glib_make_genmarshal_rules for each set of generated files
+$(foreach f,$(_GLIB_MARSHAL_GENERATED),$(eval $(call _glib_make_genmarshal_rules,$f)))
+
+
+### glib-mkenums
+
+_GLIB_ENUM_TYPES_GENERATED = $(subst .h,,$(filter %enum-types.h %enumtypes.h,$(GLIB_GENERATED)))
+
+_glib_enum_types_prefix = $(subst -,_,$(notdir $(1)))
+_glib_enum_types_guard = __$(shell LC_ALL=C echo $(_glib_enum_types_prefix) | tr 'a-z' 'A-Z')_H__
+_glib_enum_types_sources_var = $(_glib_enum_types_prefix)_sources
+_glib_enum_types_sources = $(filter-out $(GLIB_GENERATED),$($(_glib_enum_types_sources_var)))
+_glib_enum_types_h_sources = $(filter %.h,$(_glib_enum_types_sources))
+
+define _glib_make_mkenums_rules
+$(if $(_glib_enum_types_sources),,$(error Need to define $(_glib_enum_types_sources_var) for $(1).[ch]))
+
+$(1).h.stamp: $(_glib_enum_types_h_sources)
+	$$(_GLIB_V_GEN) $$(GLIB_MKENUMS) \
+		--fhead "/* Generated by glib-mkenums. Do not edit */\n\n#ifndef $(_glib_enum_types_guard)\n#define $(_glib_enum_types_guard)\n\n" \
+		$$(GLIB_MKENUMS_H_FLAGS) \
+		$$($(_glib_enum_types_prefix)_MKENUMS_H_FLAGS) \
+		--fhead "#include <glib-object.h>\n\nG_BEGIN_DECLS\n" \
+		--vhead "GType @enum_name@_get_type (void) G_GNUC_CONST;\n#define @ENUMPREFIX@_TYPE_@ENUMSHORT@ (@enum_name@_get_type ())\n" \
+		--ftail "G_END_DECLS\n\n#endif /* $(_glib_enum_types_guard) */" \
+		$$^ > $(1).h.tmp && \
+	(cmp -s $(1).h.tmp $(1).h || cp $(1).h.tmp $(1).h) && \
+	rm -f $(1).h.tmp && \
+	echo timestamp > $$@
+
+$(1).h: $(1).h.stamp
+	@true
+
+$(1).c.stamp: $(_glib_enum_types_h_sources)
+	$$(_GLIB_V_GEN) $$(GLIB_MKENUMS) \
+		--fhead "/* Generated by glib-mkenums. Do not edit */\n\n#include \"$(notdir $(1)).h\"\n" \
+		$$(GLIB_MKENUMS_C_FLAGS) \
+		$$($(_glib_enum_types_prefix)_MKENUMS_C_FLAGS) \
+		--fhead "$$(foreach f,$$(^F),\n#include \"$$(f)\")\n\n" \
+		--vhead "GType\n@enum_name@_get_type (void)\n{\n  static volatile gsize g_define_type_id__volatile = 0;\n\n  if (g_once_init_enter (&g_define_type_id__volatile))\n    {\n      static const G@Type@Value values[] = {\n" \
+		--vprod "        { @VALUENAME@, \"@VALUENAME@\", \"@valuenick@\" },\n" \
+		--vtail "        { 0, NULL, NULL }\n      };\n      GType g_define_type_id =\n        g_@type@_register_static (g_intern_static_string (\"@EnumName@\"), values);\n      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);\n    }\n\n  return g_define_type_id__volatile;\n}\n" \
+		$$^ > $(1).c.tmp && \
+	(cmp -s $(1).c.tmp $(1).c || cp $(1).c.tmp $(1).c) && \
+	rm -f $(1).c.tmp && \
+	echo timestamp > $$@
+
+$(1).c: $(1).c.stamp
+	@true
+
+_GLIB_CLEANFILES += $(1).h.stamp $(1).c.stamp
+_GLIB_DISTCLEANFILES += $(1).h $(1).c $(1).h.stamp $(1).c.stamp
+endef
+
+$(foreach f,$(_GLIB_ENUM_TYPES_GENERATED),$(eval $(call _glib_make_mkenums_rules,$f)))
+
+
+### glib-compile-schemas
+
+_GLIB_ENUMS_XML_GENERATED = $(filter %.enums.xml,$(GLIB_GENERATED))
+_GLIB_GSETTINGS_SCHEMA_FILES = $(filter %.gschema.xml,$(gsettingsschema_DATA))
+_GLIB_GSETTINGS_VALID_FILES = $(subst .xml,.valid,$(_GLIB_GSETTINGS_SCHEMA_FILES))
+
+_glib_enums_xml_prefix = $(subst .,_,$(notdir $(1)))
+_glib_enums_xml_sources_var = $(_glib_enums_xml_prefix)_sources
+_glib_enums_xml_sources = $(filter-out $(GLIB_GENERATED),$($(_glib_enums_xml_sources_var)))
+_glib_enums_xml_namespace = $(subst .enums.xml,,$(notdir $(1)))
+
+define _glib_make_enums_xml_rule
+$(if $(_glib_enums_xml_sources),,$(error Need to define $(_glib_enums_xml_sources_var) for $(1)))
+
+$(1): $(_glib_enums_xml_sources)
+	$$(_GLIB_V_GEN) $$(GLIB_MKENUMS) --comments '<!-- @comment@ -->' --fhead "<schemalist>" --vhead "  <@type@ id='$(_glib_enums_xml_namespace).@EnumName@'>" --vprod "    <value nick='@valuenick@' value='@valuenum@'/>" --vtail "  </@type@>" --ftail "</schemalist>" $$^ > $$@.tmp && mv $$@.tmp $$@
+endef
+
+_GLIB_V_CHECK = $(_glib_v_check_$(V))
+_glib_v_check_ = $(_glib_v_check_$(AM_DEFAULT_VERBOSITY))
+_glib_v_check_0 = @echo "  CHECK " $(subst .valid,.xml,$@);
+
+define _glib_make_schema_validate_rule
+$(subst .xml,.valid,$(1)): $(_GLIB_ENUMS_XML_GENERATED) $(1)
+	$$(_GLIB_V_CHECK) $$(GLIB_COMPILE_SCHEMAS) --strict --dry-run $$(addprefix --schema-file=,$$^) && touch $$@
+endef
+
+define _glib_make_schema_rules
+all-am: $(_GLIB_GSETTINGS_VALID_FILES)
+
+install-data-am: glib-install-schemas-hook
+
+glib-install-schemas-hook: install-gsettingsschemaDATA
+	@test -n "$(GSETTINGS_DISABLE_SCHEMAS_COMPILE)$(DESTDIR)" || (echo $(GLIB_COMPILE_SCHEMAS) $(gsettingsschemadir); $(GLIB_COMPILE_SCHEMAS) $(gsettingsschemadir))
+
+uninstall-am: glib-uninstall-schemas-hook
+
+glib-uninstall-schemas-hook: uninstall-gsettingsschemaDATA
+	@test -n "$(GSETTINGS_DISABLE_SCHEMAS_COMPILE)$(DESTDIR)" || (echo $(GLIB_COMPILE_SCHEMAS) $(gsettingsschemadir); $(GLIB_COMPILE_SCHEMAS) $(gsettingsschemadir))
+
+.PHONY: glib-install-schemas-hook glib-uninstall-schemas-hook
+endef
+
+_GLIB_CLEANFILES += $(_GLIB_ENUMS_XML_GENERATED) $(_GLIB_GSETTINGS_VALID_FILES)
+
+$(foreach f,$(_GLIB_ENUMS_XML_GENERATED),$(eval $(call _glib_make_enums_xml_rule,$f)))
+$(foreach f,$(_GLIB_GSETTINGS_SCHEMA_FILES),$(eval $(call _glib_make_schema_validate_rule,$f)))
+$(if $(_GLIB_GSETTINGS_SCHEMA_FILES),$(eval $(_glib_make_schema_rules)))
+
+
+### Cleanup
+.PHONY: clean-glib distclean-glib
+
+clean-am: clean-glib
+clean-glib:
+	$(if $(strip $(_GLIB_CLEANFILES)),-rm -f $(_GLIB_CLEANFILES))
+
+distclean-am: distclean-glib
+distclean-glib:
+	$(if $(strip $(_GLIB_DISTCLEANFILES)),-rm -f $(_GLIB_DISTCLEANFILES))

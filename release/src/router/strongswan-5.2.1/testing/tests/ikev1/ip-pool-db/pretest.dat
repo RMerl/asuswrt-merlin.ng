@@ -1,0 +1,16 @@
+moon::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql > /etc/ipsec.d/ipsec.sql
+moon::cat /etc/ipsec.d/ipsec.sql | sqlite3 /etc/ipsec.d/ipsec.db
+moon::ipsec pool --add bigpool --start 10.3.0.1 --end 10.3.3.232 --timeout 0 2> /dev/null
+moon::ipsec pool --addattr dns  --server PH_IP_WINNETOU 2> /dev/null
+moon::ipsec pool --addattr dns  --server PH_IP_VENUS 2> /dev/null
+moon::ipsec pool --addattr nbns --server PH_IP_VENUS 2> /dev/null
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+carol::ipsec start
+dave::ipsec start
+moon::ipsec start
+carol::sleep 2
+carol::ipsec up home
+dave::ipsec up home
+carol::sleep 1

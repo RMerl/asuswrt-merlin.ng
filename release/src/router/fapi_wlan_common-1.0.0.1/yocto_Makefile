@@ -1,0 +1,24 @@
+# fapi_wlan source Makefile
+
+PKG_NAME := libfapiwlancommon
+
+LIBRARY = libfapiwlancommon.so
+#CCSP module is not included
+LIB_OBJS = fapi_wlan.o wlan_config_server_api.o help_list.o help_debug.o fapi_wlan_beerock.o fapi_wlan_tools.o
+EXTRALDFLAGS := -L./ -lfapiwlancommon  -ldl -lhelper -lrt
+
+COMPILE = $(CC) $(INCLUDES) $(CFLAGS) $(DEFS) $(CPPFLAGS) -I./include -DCONFIG_CTRL_IFACE -DCONFIG_CTRL_IFACE_UNIX -DYOCTO
+
+%.o: %.c
+	$(COMPILE) -fPIC -MT $@ -MD -MP -MF $@.d -c -o $@ $<
+
+$(LIBRARY): $(LIB_OBJS)
+	$(CC) -shared -fPIC -Wl,-soname,$@ $(LIB_OBJS) $(LDFLAGS) -o $@
+
+fapi_wlan_cli: fapi_wlan_cli.o $(LIBRARY)
+	$(CC) -o $@ $< $(EXTRALDFLAGS) $(LDFLAGS)
+
+all: $(LIBRARY) fapi_wlan_cli
+
+.PHONY: all
+

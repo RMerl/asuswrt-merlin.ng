@@ -1,0 +1,8 @@
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 -s 120 -p deadbeef PH_IP_ALICE::128 bytes from PH_IP_ALICE: icmp_req=1::YES
+carol::sleep 15::NO
+carol::cat /var/log/daemon.log::deleting CHILD_SA after 10 seconds of inactivity::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED::NO
+carol::ipsec status 2> /dev/null::home.*INSTALLED::NO
+carol::ping -c 1 -s 120 -p deadbeef PH_IP_ALICE::128 bytes from PH_IP_ALICE: icmp_req=1::NO

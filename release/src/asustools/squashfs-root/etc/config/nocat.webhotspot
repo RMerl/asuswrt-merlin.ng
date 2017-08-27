@@ -1,0 +1,78 @@
+
+<fieldset>
+	<legend><% tran("hotspot.nocat_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("hotspot.nocat_srv"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="NC_enable" <% nvram_checked("NC_enable","1"); %> onclick="show_layer_ext(this, 'idnocat', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="NC_enable" <% nvram_checked("NC_enable","0"); %> onclick="show_layer_ext(this, 'idnocat', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idnocat">
+		<div class="setting">
+            		<div class="label"><% tran("hotspot.nocat_gatewayaddr"); %></div>
+			<input type="hidden" name="NC_GatewayAddr" value="0.0.0.0" />
+			<input size="3" maxlength="3" class="num" name="NC_GatewayAddr_0" onblur="valid_range(this,0,255,'IP')" value="<% get_single_ip("NC_GatewayAddr","0"); %>" />.<input size="3" maxlength="3" class="num" name="NC_GatewayAddr_1" onblur="valid_range(this,0,255,'IP')" value="<% get_single_ip("NC_GatewayAddr","1"); %>" />.<input size="3" maxlength="3" class="num" name="NC_GatewayAddr_2" onblur="valid_range(this,0,255,'IP')" value="<% get_single_ip("NC_GatewayAddr","2"); %>" />.<input size="3" maxlength="3" class="num" name="NC_GatewayAddr_3" onblur="valid_range(this,0,255,'IP')" value="<% get_single_ip("NC_GatewayAddr","3"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_gateway"); %></div>
+			<input maxlength="39" name="NC_GatewayName" size="39" value="<% nvram_get("NC_GatewayName"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_ifname"); %></div>
+			<% show_ifselect("NC_ifname"); %>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_home"); %></div>
+			<input maxlength="100" name="NC_HomePage" size="39" value="<% nvram_get("NC_HomePage"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_redirect"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="NC_ForcedRedirect" <% nvram_checked("NC_ForcedRedirect","1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="NC_ForcedRedirect" <% nvram_checked("NC_ForcedRedirect","0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_allowweb"); %></div>
+			<input maxlength="100" name="NC_AllowedWebHosts" size="39" value="<% nvram_get("NC_AllowedWebHosts"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_docroot"); %></div>
+			<input maxlength="100" name="NC_DocumentRoot" size="39" value="<% nvram_get("NC_DocumentRoot"); %>" /> /splash.html
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_splash"); %></div>
+			<input maxlength="100" name="NC_SplashURL" size="39" value="<% nvram_get("NC_SplashURL"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_port"); %></div>
+			<input maxlength="39" name="NC_ExcludePorts" size="39" value="<% nvram_get("NC_ExcludePorts"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_MAClist"); %></div>
+			<input name="NC_MACWhiteList" size="39" value="<% nvram_get("NC_MACWhiteList"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_timeout"); %></div>
+			<input class="num" type="text" size="6" name="NC_LoginTimeout" value="<% nvram_get("NC_LoginTimeout"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_verbose"); %></div>
+			<select name="NC_Verbosity">
+				<option value="0" <% nvram_selected("NC_Verbosity","0"); %> >0</option>
+				<option value="1" <% nvram_selected("NC_Verbosity","1"); %> >1</option>
+				<option value="2" <% nvram_selected("NC_Verbosity","2"); %> >2</option>
+				<option value="3" <% nvram_selected("NC_Verbosity","3"); %> >3</option>
+				<option value="4" <% nvram_selected("NC_Verbosity","4"); %> >4</option>
+				<option value="5" <% nvram_selected("NC_Verbosity","5"); %> >5</option>
+				<option value="6" <% nvram_selected("NC_Verbosity","6"); %> >6</option>
+				<option value="7" <% nvram_selected("NC_Verbosity","7"); %> >7</option>
+				<option value="8" <% nvram_selected("NC_Verbosity","8"); %> >8</option>
+				<option value="9" <% nvram_selected("NC_Verbosity","9"); %> >9</option>
+				<option value="10" <% nvram_selected("NC_Verbosity","10"); %> >10</option>
+			</select>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("hotspot.nocat_route"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="NC_RouteOnly" <% nvram_checked("NC_RouteOnly","1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="NC_RouteOnly" <% nvram_checked("NC_RouteOnly","0"); %> /><% tran("share.disable"); %>
+		</div>
+	</div>
+</fieldset><br/>

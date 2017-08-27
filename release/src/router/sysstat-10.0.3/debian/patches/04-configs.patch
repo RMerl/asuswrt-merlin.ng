@@ -1,0 +1,36 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 04-configs
+
+Minor fixes in config files.
+---
+ cron/crontab.sample  |    3 ---
+ sysstat.sysconfig.in |    3 ++-
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/cron/crontab.sample b/cron/crontab.sample
+index ddb26fc..597ece9 100644
+--- a/cron/crontab.sample
++++ b/cron/crontab.sample
+@@ -1,7 +1,4 @@
+ # Crontab sample for root or adm
+-# Please update this crontab with the proper location
+-# for sa1 and sa2 shell scripts (replace @SA_LIB_DIR@ with
+-# /usr/lib/sa for example).
+ #
+ # 8am-7pm activity reports every 20 minutes during weekdays.
+ # 0 8-18 * * 1-5 @SA_LIB_DIR@/sa1 1200 3 &
+diff --git a/sysstat.sysconfig.in b/sysstat.sysconfig.in
+index 54dcef9..34cfa04 100644
+--- a/sysstat.sysconfig.in
++++ b/sysstat.sysconfig.in
+@@ -1,6 +1,7 @@
+-# @PACKAGE_NAME@-@PACKAGE_VERSION@ configuration file.
++# @PACKAGE_NAME@ configuration file.
+ 
+ # How long to keep log files (in days).
++# Used by sa2(8) script
+ # If value is greater than 28, then log files are kept in
+ # multiple directories, one for each month.
+ HISTORY=@HISTORY@
+-- 

@@ -1,0 +1,336 @@
+ChangeLog discontinued, git history can be found here:
+http://git.kernel.org/?p=libs/netlink/libnl.git
+
+Summary of Changes from 1.0-pre6 to 1.0-pre7
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o Generic netlink support
+	  o Route Addition/Deletion
+	  o Added nl_cache_subset()
+	  o Have nl_object_clone() make real clones without
+	    sharing any data.
+	  o Remove old nl_object_alloc() not based on a object
+	    operations to avoid bugs due to missing init.
+	  o Added nl-list-caches utility
+	  o Removed nlmsg_build_no_hdr(), duplicate
+	  o Reworked message interface
+	  o Fixed nlmsg_put() and genlmsg_put() to correctly reserve
+	    tail room for user specific headers.
+	  o Added nl_cache_move()
+	  o Renamed nl_cache_delete() to nl_cache_remove() (no API break)
+	  o Fixed reference counting while objects stay in caches.
+	  o Object marking
+	  o Moved attribute mask for objects into generic structure
+	  o nl-list-caches: List available dump procedures
+	  o Use PAGE_SIZE as initial buffer size when reading from
+	    netlink socket
+	  o Double buffer size when recv() returns MSG_TRUNC
+	  o Replaced filter object operation with new compare operation
+	    capable of listing differences between two objects
+	  o Added nl_object_identical() to check if two objects are
+	    identical from a uniqueness point of view
+	  o Added nl_object_diff() returning a bitmask of differences in
+	    attributes
+	  o Added nl_object_attr_list() generating a list of attribute
+	    name the object has assigned 
+	  o Cache updates based on event notifications, code based on
+	    Patrick McHardy's patches
+	  o Cache Manager
+	  o Added NL_AUTO_PID, NL_AUTO_SEQ for convenience
+	  o Disable MSG_PEEK by default and provide nl_socket_enable_msg_peek()
+	  o Fixed nl_recvmsgs() to return 0 when interrupted via NL_STOP or
+	    NL_SKIP
+	  o Fixed nl_recvmsgs() to stop reading after parsing if not in the
+	    middle of a multipart message.
+	  o Fixed nl_recvmsgs() to not stop after receving an ACK
+	  o Fixed nl_recvmsgs() to not blindly discard remaining messages
+	    if a NLMSG_DONE message is received.
+	
+	Petr Gotthard <petr.gotthard@siemens.com>
+	Siemens AG Oesterreich
+	  o Fix u32 to properly handle multiple keys
+	  o rtnl_htb_set_(r|c)buffer()
+	  o Fixed MTU handling in HTB class, problem pointed out
+	    by Edouard Thuleau
+	
+	Zilvinas Valinskas <zilvinas@wilibox.com>
+	  o Fix wrong msg_namelen in nl_recv()
+	  o Fix memory leak in flnl_request_put()
+
+	Helmut Schaa <hschaa@suse.de>
+	  o Fix for using libnl from within C++
+
+	Patrick McHardy <kaber@trash.net>
+	  o *_alloc_cache(): Only refill cache if handle is provided
+	
+	James Oakley <jfunk@funktronics.ca>
+	  o Fix rtnl_link_set_arptype() typo
+
+	Philip Craig <philipc@snapgear.com>
+	  o Change address family type from char to int
+	  o Fix the error handling when the build fails.
+	  o add nl_cache_mngr_get_fd()
+	  o add netfilter support
+	  o add netfilter conntrack support
+	  o add netfilter log support
+
+Summary of Changes from 1.0-pre5 to 1.0-pre6
+================================================
+	Christopher Aillon <caillon@redhat.com>
+	  o Use $(libdir) instead of $(prefix)/lib for 64bit awesomeness.
+
+	Thomas Graf <tgraf@suug.ch>
+	  o Extend nl_msg to include source address, destination address
+	    and the protocol being used.
+	  o Make nl_send*() take a nl_msg instead of a nlmsghdr (API BREAK)
+	  o Change callbacks to take a nl_msg instead of source address
+	    and nlmsghdr (API BREAK)
+	  o caches must specify the protocol they're hooked up from now on
+	    if they intend to be associated with message types.
+	  o cache_mngt_associate now takes the protocol besides the message
+	    type to allow for multiple protocols to be supported (API BREAK)
+	  o overwrite destination address in nl_send() when specified in the
+	    message itself, allows for unbound addressing.
+	  o Support for netlink based fib_lookup()
+	  o Documentation fixes
+	  o Fix double nlmsg_free() in nl_recvmsgs() while receiving
+	    a multipart message and the read was interrupted.
+	  o Change cache operations to store names for message types.
+	  o Provide interface to convert message type to character string.
+	  o Add dp_dump_msgtype to prefix each dumped element with a
+	    pretty printed message type.
+	  o netlink fib lookup support
+	  o nl_recvmsgs() debugging
+	  o use nl_cachemngt_type2name() when pretty printing netlink header
+	  o Routing protocol translations.
+	  o Routing metric translations.
+	  o Revised route dumping
+	  o Nexthop flag translations.
+	  o Add support for IFF_DORMANT
+
+	Petr Gotthard <petr.gotthard@siemens.com>
+	Siemens AG Oesterreich
+	  o Fix access to obj after freeing it
+	  o Fix u32 selector access after realloc() 
+	  o Fix missing out-of-memory error handling in various places
+	  o Enhance nl-monitor to have group selection selectable and
+	    demonstrate usage of select()
+	  o Don't ignore IFF_RUNNING any longer
+	  o fw classifier support
+	
+	Patrick McHardy <kaber@trash.net>
+	  o Fix conflicting types for __u64
+	  o Fix printf format string warnings
+	  o Fix object cloning
+	  o Deal with structure padding in nl_object_clone
+	  o Fix nl_addr leak
+	  o Set ce_msgtype in all parsed objects
+	  o Fix addr flag filter
+	  o Fix RTNLGRP definitions (was based on broken kernel version)
+	  o Export nl_get_errno()
+	  o Add function to get/set peer pid
+	  o Add IFF_LOWER_UP
+	  o Add/export some missing accessor functions
+	  o print /0 prefix in nl_addr2str()
+	  o Fix invalid free in nl_addr_parse for AF_UNSPEC addresses
+	  o Use __str2flags instead of __str2type in rtnl_link_str2flags()
+	  o Make sure object and filter types match in nl_object_match()
+	  o Add support for credential passing over netlink sockets (API BREAK)
+	  o Add support for custom dump callbacks
+	  o Add NL_DUMP_ENV format
+
+	Michael Biebl <biebl@teco.edu>
+	"Alex V. Myltsev" <avm@altlinux.ru>
+	  o Makefile fixes
+
+
+Summary of Changes from 1.0-pre4 to 1.0-pre5
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o Use minimized local copies for <linux/if.h>, <linux/if_arp.h>,
+	    and <linux/if_ether.h> to avoid compile troubles with
+	    applications including <net/if*.h>
+	    Reported by Christopher Aillon.
+
+Summary of Changes from 1.0-pre3 to 1.0-pre4
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o Fix wrong rtnl_addr_set_prefixlen() external declaration,
+	    reported by Dan Williams.
+	  o Fix nl_addr_parse() to not change the original string
+	    for prefixes.
+	  o Do not build documentation per default, but have the user
+	    issue 'make gendoc'
+	  o Assume neighbours to be permanent, set NUD_PERMANENT if not
+	    specified otherwise.
+
+Summary of Changes from 1.0-pre2 to 1.0-pre3
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o Fix SFQ parser to allocate qdisc options.
+	  o Fix rule statistics dumping to not call itself.
+	  o Complete Netem qdisc interface.
+	  o Add rtnl_*_put() and rtnl_*_free() to increase readability.
+	  o Cleanup of nl-* tools
+	  o Fix inclusion guards of route/neightbl.h
+	  o Fix nl_connect() to only modify rx/tx socket buffers if not
+	    already modified by the user.
+	  o Fix wrong nl_handle_alloc() prototype.
+	  o Fix typo in route/addr.c causing label to be marked as
+	    local address.
+	  o Use ~0UL as default prefix length instead of 0.
+	  o Fix neighbour message parser to correctly store core.
+	    attributes and provide them again.
+	  o Fix neighbour message parser to correctly guess address family.
+	    to make it compatible with nl_addr_parse() and ether llc
+	    addresses.
+	  o Add rtnl_route_table2str(), rtnl_route_str2table().
+	  o Add nl_cache_nitems_filter() to find out if a filter produces
+	    any matches.
+	  o Remove rtnl_rule_set_(dst|src)_str() (obsolete).
+	  o Remove scope and protocol field of routing rule.
+	  o Complete routing rules module.
+	  o Move realms translations from route to rtnl module.
+
+Summary of Changes from 1.0-pre1 to 1.0-pre2
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o More API documentation
+	  o Added flags argument to rtnl_addr_(add|build_add_request)().
+	  o Added rtnl_addr_(set|get)_multicast().
+	  o Moved scope translations routines from route/route.c to
+	    route/rtnl.c, required by other modules as well.
+	  o Removed old rtattr bits from rtnetlink-kernel.h
+	  o Customized libnl.css for doxygen documentation
+	  o Removed non-reentrant translation routines, only bloating
+	    the code and too risky.
+	  o Fixed wrong version number from 1.0-pre1.
+	  o Reenabled unfinished policer module.
+	  o Reworked TBF module, automatic caluclation of transmit times,
+	    limit setable via latency, automatic cell size calculation,
+	    options TLV generation. (untested)
+	  o Renamed nl_xmittime() to rtnl_tc_calc_txtime().
+	  o Renamde nl_build_rtable() to rtnl_tc_build_rate_table()
+
+	Petr Gotthard <petr.gotthard@siemens.com>,
+	Siemens AG Oesterreich
+	  o Fix symlinks to libnl library files to be moveable
+	  o Fix extern struct prototypes meant to be static.
+	  o Add empty install target to src/Makefile
+
+	Simon Stelling <blubb@gentoo.org>
+	  o Use LIBDIR instead of $(prefix)/lib for users to alllow librariers
+	    into $(prefix)/lib64.
+
+Summary of Changes from 0.5.0 to 1.0-pre1
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o Uncountable number of changes, rewrite of certain modules,
+	    several major API breakages
+	
+	Petr Gotthard <petr.gotthard@siemens.com>,
+	Siemens AG Oesterreich
+	  o added class_build, rtnl_class_build_add_request, rtnl_class_add
+	  o added HTB (Hierachical Token Bucket) class support
+	  o added nl_xmittime, nl_build_rtable
+	  o added nl_data_append to realloc a nl_data structure
+	  o added rtnl_rcopy_ratespec as reverse to rtnl_copy_ratespec
+	  o fixed byte order conversion of rtnl_filter.protocol
+	  o SuSE and Fedora Linux compile fixes
+	  o fixed u32 classifier support
+	  o added rtnl_u32_set_handle, rtnl_u32_set_classid, rtnl_u32_set_flags
+	    and several rtnl_u32_add_key_... operations to u32 classifier
+
+Summary of Changes from 0.4.4 to 0.5.0
+================================================
+	Thomas Graf <tgraf@suug.ch>
+	  o API documentation
+	  o nl_cache_filter to manually filter on a object
+	  o partial routing support
+	  o routing rules support
+	  o Propely set address family when setting addresses
+	  o debug flag and some rare messages, more to come
+	  o make error mesage verboseness configureable
+	  o tc fixes to wait for ack
+	  o cleanup and adaption of address code to latest internal API
+	  o various cleanups
+	  o dozens of API breakages (better now than later)
+
+	Daniel Hottinger <hotti@hotti.ch>
+	  o arch 64bit printf length modifier fixes
+
+	Baruch Even <baruch@ev-en.org>,
+	Mediatrix Telecom, inc. <ericb@mediatrix.com>
+	  o address support
+
+Summary of changes from 0.4.3 to 0.4.4
+================================================
+	Thomas Graf <tgraf@suug.ch>:
+	  o overall cleanups for better code quality
+	  o replace dump_(brief|full|with_stats) ops with
+	    dump[NL_DUMP_MAX] array to allow further additions without
+	    breaking the ABI.
+	  o add of send_ack callback, called whenever when oppenent
+	    asks for an ACK.
+	  o make nl_parse_rtattr initialize the tb buffer like in the
+	    kernel, caller must no longer take care of it.
+	  o remove nl_addrnattr (obsolete)
+	  o fixed nl_msg_append_raw to correctly calculate length
+	    for raw data not aligned to NLMSG_ALIGN
+	  o fix memory leak in nl_recv in case of errors
+	  o correctly check sequence numbers if more than one message
+	    was sent out before the answer is being received.
+	  o add workaround for buggy netlink applications not properly
+	    setting NLM_F_MULTI.
+
+Summary of changes from 0.4.2 to 0.4.3
+================================================
+
+	Thomas Graf <tgraf@suug.ch>:
+	  o use parser_param in nl_cache_parse
+	  o EGP: dump nfilters attribute
+	  o allow retrieving of filters attached to classes via
+	    FILTER_CACHE_PARENT(C) cache argument
+	  o filter message building API
+
+Summary of changes from 0.4.1 to 0.4.2
+================================================
+
+	Baruch Even <baruch@ev-en.org>:
+	  o memory leak fix in nl_parse_rtattr
+	  o reset padding to 0 when appending raw data to a nl_msg
+	  o avoid overwriting nlmsg ptr when buffer extending fails
+	  o typo fixes
+	  o create symlinks libnl.so.0 and libnl.so
+	
+	Thomas Graf <tgraf@suug.ch>:
+	  o EGP classifier support
+	  o avoid null pointer in printf call
+	  o added nl_cache_parse to put nl_msg's into a cache
+	  o added rtnl_filter_build to build a nl_msg filter message
+	  o correctly install header files
+	  o nl_msg_payload/nl_msg_payloadlen to access nl_msg payload
+	  o nl_parse_nested macro to simplify nested TLV parsing
+	  o NL_ERROR_ASSERT compile flag to assert(0) on errors
+	  o rta alignment fix in nl_msg_append_tlv
+	  o added nl_msg_parse_rtattr as shortcut for nl_parse_rtattr
+	    for nl_msg API
+	  o added nl_parse_nested for nested TLVs
+	  o added RTA_ARRAY_ELEMS macro to calculate array length
+	    for array TLVs
+	  o added nl_wait_for_ack to wait for the next ack
+	  o added rtnl_link_build_change_request(...)
+	  o added rtnl_neigh_build_*_request
+	  o converted neighbour code to use nl_wait_for_ack
+	  o cb_recvmsgs_ow callback to overwrite internal calls to
+	    nl_recvmsgs_def
+	  o cb_seq_check callback to overwrite default sequence checking
+	  o added nl_parser_param as argument for message parsers including
+	    a callback to be called upon successful parsing of a message.
+	    Removes the requirement of having all parsed messages to be added
+	    to a cache.
+	  o added cb_recv_ow and nl_send_ow callbacks to overwrite internal
+	    calls to nl_recv and nl_send.
+
+	Jamal Hadi Salim <hadi@cyberus.ca>
+	  o Linux 2.4 compile fixes

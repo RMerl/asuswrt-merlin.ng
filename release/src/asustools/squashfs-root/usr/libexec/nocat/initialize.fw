@@ -1,0 +1,384 @@
+#!/bin/sh
+##
+#
+# initialize.fw: setup the default firewall rules
+#
+# *** NOTE ***
+#
+# If you want to have local firewall rules in addition to what NoCat
+# provides, add them at the bottom of this file.  They will be recreated
+# each time gateway is restarted.
+#
+##
+# The current service classes by fwmark are:
+#
+#  1: Owner
+#  2: Co-op
+#  3: Public
+#  4: Free
+#
+#NOTE: all NoCat Configuration items should be set in the environment before calling.
+
+
+export PATH=$FirewallPath:/tmp/sbin:/tmp/bin:/bin:/usr/bin:/sbin:/usr/sbin
+
+# match rule numbers in the $1 table, chain $2
+rule_num() {
+    NUM=`iptables -t $1 -L $2 -n | sed -e '1,2d' | grep -n $3 | head -n 1 | cut -d : -f 1`
+    if [ -z "$NUM" ]; then echo "0"; else echo "$NUM"; fi
+}
+
+#Special handling of linksys firewall:
+#we replace the FORWARD jump to lan2wan rule with jump to NoCat
+#in NoCat we will jump to lan2wan instead of accept for the accepted marked client packets
+#at the end we will not drop but return, so the port forwarding as defined in the linksys rules can be applied
+#after those rules we will remove the general acceptance (state NEW) of
+#any connections on non authorized clients and add a drop just to be sure
+#In case the initialization was already perfromed, first replace the NoCat rule
+#with the the lan2wan rule, only if the NoCat rule contains a lan2wan rule
+#Then, lan2wwan rule again witht the nocat rule ase described above
+
+#Test for RE-initialization:
+NOCAT_RULE_NR=`rule_num filter FORWARD 'NoCat '`
+if [ $NOCAT_RULE_NR -gt 0 ]; then
+    if [ $Verbosity -gt 4 ]; then logger "Previous NoCat initialization detected."; fi
+    #yes, now check if this a linksys specific re-initialization
+    TEST_NOCAT_LAN2WAN_IPTABLES_RESULT=`rule_num filter NoCat 'lan2wan'`
+    if [ $Verbosity -gt 4 ]; then logger "TEST_NOCAT_LAN2WAN=$TEST_NOCAT_LAN2WAN_IPTABLES_RESULT."; fi
+    if [ $TEST_NOCAT_LAN2WAN_IPTABLES_RESULT -gt 0 ]; then
+        #yes, now put lan2wan back in the forward chain
+        if [ $Verbosity -gt 4 ]; then logger "Ewrt: Replacing lan2wan at position: $NOCAT_RULE_NR in the FORWARD chain."; fi
+        iptables -t filter -D FORWARD $NOCAT_RULE_NR
+        iptables -t filter -I FORWARD $NOCAT_RULE_NR -j lan2wan
+    fi
+fi
+
+TARGET_ACCEPT="ACCEPT"
+TARGET_DROP="DROP"
+
+#Check if this an Ewrt-specific initialization
+LAN2WAN_RULE_NR=`rule_num filter FORWARD lan2wan`
+if [ $LAN2WAN_RULE_NR -gt 0 ]; then
+    if [ $Verbosity -gt 4 ]; then logger "Ewrt (WRT54G) firewall detected, preserving."; fi
+
+    # Set accept target to LOG ACCEPTed packets, if the nvram value log_level is set
+    LOG_LEVEL=`/usr/sbin/nvram get log_level`
+    if [ $Verbosity -gt 4 ]; then logger "Ewrt: log_level=$LOG_LEVEL"; fi 
+    if [ $LOG_LEVEL -gt 0 ]; then
+        if [ $Verbosity -gt 4 ]; then logger "Ewrt: Logging DROPPED packets."; fi 
+        TARGET_DROP="logdrop"
+        if [ $LOG_LEVEL -gt 1 ]; then
+           if [ $Verbosity -gt 4 ]; then logger "Ewrt: Logging ACCEPTED packets."; fi 
+           TARGET_ACCEPT="logaccept"
+        fi
+    fi
+fi
+ 
+if [ $Verbosity -gt 4 ]; then logger "Enabling IP-forwarding and rp_filter (to kill IP spoof attempts)"; fi
+echo "1" > /proc/sys/net/ipv4/ip_forward
+echo "1" > /proc/sys/net/ipv4/conf/all/rp_filter
+
+if [ $Verbosity -gt 4 ]; then logger "Initializing NoCat chains in filter:FORWARD."; fi
+iptables -t filter -N NoCat 2>/dev/null
+iptables -t filter -F NoCat
+iptables -t filter -D FORWARD -j NoCat 2>/dev/null
+#Insert the NoCat chain, and the traffic counter chains
+if [ $LAN2WAN_RULE_NR -gt 0 ]; then
+   #Replace lan2wan with jump to NoCat, will later filter ACCEPTED peers via a chain to lan2wan from the NoCat chain
+   if [ $Verbosity -gt 4 ]; then logger "Ewrt: Inserting jump to NoCat chain, while chaining filters (lan2wan) to NoCat ACCEPTS"; fi
+   # Get rule num again; deleting the NoCat rule in the FORWARD chain before may have changed the rule 
+   LAN2WAN_RULE_NR=`rule_num filter FORWARD 'lan2wan'`
+   iptables -t filter -D FORWARD $LAN2WAN_RULE_NR
+   iptables -t filter -I FORWARD $LAN2WAN_RULE_NR -j NoCat
+
+else
+   if [ $Verbosity -gt 4 ]; then logger "Inserting jump to NoCat chain at top of FORWARD chain"; fi
+   iptables -t filter -I FORWARD -j NoCat
+fi
+#Add traffic counting chains to top of NoCat chain
+if [ $Verbosity -gt 4 ]; then logger "Inserting traffic counters (NoCat_Upload/Download) at top of NoCat chain."; fi
+iptables -t filter -N NoCat_Download 2>/dev/null
+iptables -t filter -F NoCat_Download
+iptables -t filter -D NoCat -j NoCat_Download 2>/dev/null
+iptables -t filter -I NoCat -j NoCat_Download
+iptables -t filter -N NoCat_Upload 2>/dev/null
+iptables -t filter -F NoCat_Upload
+iptables -t filter -D NoCat -j NoCat_Upload 2>/dev/null
+iptables -t filter -I NoCat -j NoCat_Upload
+
+if [ $Verbosity -gt 6 ]; then logger "Appending NoCat_Ports (ExcludePorts|IncludePorts) chain in filter:NoCat."; fi
+iptables -t filter -N NoCat_Ports 2>/dev/null
+iptables -t filter -F NoCat_Ports
+iptables -t filter -D NoCat -j NoCat_Ports 2>/dev/null
+iptables -t filter -A NoCat -j NoCat_Ports
+
+if [ $Verbosity -gt 6 ]; then logger "Appending NoCat_Inbound (ACCEPTS) chain in filter:NoCat."; fi
+iptables -t filter -N NoCat_Inbound 2>/dev/null
+iptables -t filter -F NoCat_Inbound
+iptables -t filter -D NoCat -j NoCat_Inbound 2>/dev/null
+iptables -t filter -A NoCat -j NoCat_Inbound
+
+if [ $Verbosity -gt 6 ]; then logger "Appending NoCat_Capture chain to nat:PREROUTING."; fi
+iptables -t nat -N NoCat_Capture 2>/dev/null
+iptables -t nat -F NoCat_Capture
+iptables -t nat -D PREROUTING -j NoCat_Capture 2>/dev/null
+iptables -t nat -A PREROUTING -j NoCat_Capture
+
+
+#
+# Only nat if we're not routing
+#
+iptables -t nat -D POSTROUTING -j NoCat_NAT 2>/dev/null
+if [ $RouteOnly -gt 0 ]; then
+    if [ $Verbosity -gt 5 ]; then logger "Not using NoCat_NAT chain, NAT routing is not enabled. (RouteOnly=$RouteOnly)"; fi
+else
+    if [ $Verbosity -gt 5 ]; then logger "Inserting NoCat_NAT chain in nat:POSTROUTING. (RouteOnly=$RouteOnly)"; fi
+    iptables -t nat -N NoCat_NAT 2>/dev/null
+    iptables -t nat -F NoCat_NAT
+    iptables -t nat -I POSTROUTING -j NoCat_NAT
+fi
+
+if [ $Verbosity -gt 6 ]; then logger "Appending NoCat chain to mangle:PREROUTING."; fi
+iptables -t mangle -N NoCat 2>/dev/null
+iptables -t mangle -F NoCat
+iptables -t mangle -D PREROUTING -j NoCat 2>/dev/null
+iptables -t mangle -A PREROUTING -j NoCat
+
+#Need to add a config var for SipProxy, or eg, AllowProxies to make this machine-independent
+#sip_enable=`/usr/sbin/nvram get sip_enable`
+#sip_listen_port=`/usr/sbin/nvram get sip_listen_port`
+#sip_rtp_port_low=`/usr/sbin/nvram get sip_rtp_port_low`
+#sip_rtp_port_high=`/usr/sbin/nvram get sip_rtp_port_high`
+#sip_if_inbound=$InternalDevice
+#sip_if_outbound=$ExternalDevice
+#sip_self_ip=$GatewayAddr
+#if [ "$SipProxy" -gt 0 ]; then
+#  if [ $Verbosity -gt 4 ]; then logger "SIP Proxy enabled: redirecting outgoing SIP traffic to siproxd (myself) at $sip_self_ip:$sip_listen_port"; fi
+#  iptables -t nat -A PREROUTING -m udp -p udp -i $sip_if_inbound --destination-port $sip_self_ip:$sip_listen_port -j REDIRECT
+#  if [ $Verbosity -gt 4 ]; then logger "allow incoming SIP and RTP traffic on $sip_if_outbound, SIP port: $sip_listen_port, RTP ports $sip_rtp_port_low:$sip_rtp_port_high"; fi
+#  iptables -A INPUT -m udp -p udp -i $sip_if_outbound --dport $sip_listen_port -j ACCEPT
+#  iptables -A INPUT -m udp -p udp -i $sip_if_outbound --dport $sip_rtp_port_low:$sip_rtp_port_high -j ACCEPT
+#else 
+  if [ $Verbosity -gt 6 ]; then logger "SIP Proxy not enabled"; fi
+#fi
+
+#Define commands to add stuff to the NoCat chains
+fwd="iptables	    -t filter -A NoCat"
+ports="iptables	    -t filter -A NoCat_Ports"
+nat="iptables	    -t nat    -A NoCat_NAT"
+redirect="iptables  -t nat    -A NoCat_Capture"
+mangle="iptables    -t mangle -A NoCat"
+
+if [ "$MembersOnly" ]; then
+  if [ $Verbosity -gt 4 ]; then logger "Allowing Members Only (No Public Access)."; fi
+  classes="1 2"
+else
+  if [ $Verbosity -gt 4 ]; then logger "Public Access is enabled."; fi
+  classes="1 2 3"
+fi
+
+if [ $Verbosity -gt 5 ]; then logger "Handle tagged traffic: ExternalDevice=$ExternalDevice, InternalDevice=$InternalDevice , LocalNetwork=$LocalNetwork , classes=$classes "; fi
+#
+# Handle tagged traffic.
+#
+for iface in $InternalDevice; do
+    for net in $LocalNetwork; do
+	for fwmark in $classes; do
+	    # Only forward tagged traffic per class
+            if [ $Verbosity -gt 6 ]; then logger "filter::NoCat: Allowing traffic tagged with class: $fwmark from network: $net inbound on interface: $iface."; fi
+            if [ $LAN2WAN_RULE_NR -gt 0 ]; then
+                # Use lan2wan rule to chain filter rules onto the firewall access when we are running on EWRT
+                $fwd -i $iface -s $net -m mark --mark $fwmark -j lan2wan
+                # This is added in case lan2wan simply RETURNS instead of REJECT, DROP or ACCEPT, which is the case if no policy is activated
+                $fwd -i $iface -s $net -m mark --mark $fwmark -j $TARGET_ACCEPT
+            else
+                $fwd -i $iface -s $net -m mark --mark $fwmark -j ACCEPT
+#	        $fwd -o $iface -d $net -m mark --mark $fwmark -j ACCEPT
+            fi
+        
+	    # Masquerade permitted connections.
+            if [ $RouteOnly -eq 0 ]; then
+                if [ $Verbosity -gt 5 ]; then logger "nat::NoCat - Traffic tagged with class: $fwmark from network: $net will MASQUERADE on outbound interface: $ExternalDevice."; fi
+                $nat -o $ExternalDevice -s $net -m mark --mark $fwmark -j MASQUERADE
+            fi
+	done
+
+        # Allow (i.e. forward & NAT enabled) all traffic to those on the MACWhiteList, and don't capture
+        # connections initially.  NOTE: these are completely bypassed from NoCat's 
+	# AUTH mechanism, and internal peers-database. Excellent for infrastructure
+        # routing or serving over an otherwise captive portal.
+	# NOTE: we may want to watch out for mac/arp-spoofing attempts
+        if [ "$MACWhiteList" ]; then
+            for mac in $MACWhiteList; do
+                if [ $Verbosity -gt 5 ]; then logger "nat::NoCat_Capture: Bypassing all traffic to/from whitelisted MAC: $mac"; fi
+    	        $redirect -s $net -m mac --mac-source $mac -j RETURN
+	        $fwd -s $net -m mac --mac-source $mac -j ACCEPT
+	        $fwd -d $net -m mac --mac-source $mac -j ACCEPT
+	        $nat      -s $net -m mac --mac-source $mac -j MASQUERADE
+	    done
+        fi
+	   
+        # Allow web traffic to the specified hosts, and don't capture
+        # connections intended for them.
+        #
+        if [ $Verbosity -gt 5 ]; then logger "nat::NoCat_Capture: Allowing HTTP traffic to hosts: LocalPortal=$LocalPortal AuthServiceAddr=$AuthServiceAddr AllowedWebHosts=$AllowedWebHosts"; fi
+        if [ "$LocalPortal" -o "$AuthServiceAddr" -o "$AllowedWebHosts" ]; then 
+	    for host in $LocalPortal $AuthServiceAddr $AllowedWebHosts; do
+	        for port in 80 443; do
+    	            $redirect -s $net -d $host -p tcp --dport $port -j RETURN
+		    $fwd -s $net -d $host -p tcp --dport $port -j ACCEPT
+	            $nat      -s $net -d $host -p tcp --dport $port -j MASQUERADE
+	        done
+	    done
+        fi
+
+	# Accept forward and back traffic to/from DNSAddr
+        if [ $AnyDNS -gt 0 ]; then 
+	    if [ $Verbosity -gt 4 ]; then logger "Allowing traffic to/from all DNS servers."; fi
+            for prot in tcp udp; do
+	        $fwd -o $iface -d $net -p $prot --sport 53 -j ACCEPT
+                $fwd -i $iface -s $net -p $prot --dport 53 -j ACCEPT
+                if [ $RouteOnly -eq 0 ]; then $nat -p $prot -s $net --dport 53 -j MASQUERADE; fi
+            done
+        elif [ "$DNSAddr" ]; then
+            for dns in $DNSAddr; do
+	        if [ $Verbosity -gt 4 ]; then logger "Allowing traffic to/from DNS server: $dns."; fi
+		for prot in tcp udp; do
+	            $fwd -o $iface -s $dns -d $net -p $prot --sport 53 -j ACCEPT
+		    $fwd -i $iface -s $net -d $dns -p $prot --dport 53 -j ACCEPT
+		    $nat -p $prot -s $net -d $dns --dport 53 -j MASQUERADE
+		
+		    # Force unauthenticated DNS traffic through our DNS server.
+		    # Of course, only the first rule of this type will match.
+		    # But it's easier to leave them all in ATM.
+		    $redirect -i $InternalDevice -m mark --mark 4 -p $prot \
+		        --dport 53 -j DNAT --to-destination $dns:53
+		done
+	    done
+        fi
+    done
+
+    # Set packets from internal devices to fw mark 4, or 'denied', by default.
+    if [ $Verbosity -gt 4 ]; then logger "mangle::NoCat: Deny packets from interface: $iface by default (i.e. give them class: 4)"; fi
+    $mangle -i $iface -j MARK --set-mark 4
+done
+
+# Redirect outbound non-auth web traffic to the local gateway process
+#
+# If MembersOnly is active, then redirect public class as well
+#
+if [ "$MembersOnly" ]; then
+    nonauth="3 4"
+else
+    nonauth="4"
+fi
+#for port in 80 443; do
+for port in 80; do
+    if [ $Verbosity -gt 4 ]; then logger "nat::Nocat_Capture: REDIRECTING outbound, unauthenticated, traffic on port: $port to the local gateway"; fi
+    for mark in $nonauth; do
+	$redirect -m mark --mark $mark -p tcp --dport $port  -j DNAT \
+	    --to-destination $GatewayAddr:$GatewayPort
+    done
+done
+
+# Lock down more ports for public users, if specified. Port restrictions
+# are not applied to co-op and owner class users.
+#
+# There are two philosophies in restricting access:  That Which Is Not
+# Specifically Permitted Is Denied, and That Which Is Not Specifically
+# Denied Is Permitted.
+#
+# If "IncludePorts" is defined, the default policy will be to deny all
+# traffic, and only allow the ports mentioned.
+#
+# If "ExcludePorts" is defined, the default policy will be to allow all
+# traffic, except to the ports mentioned.
+#
+# If both are defined, ExcludePorts will be ignored, and the default policy
+# will be to deny all traffic, allowing everything in IncludePorts, and
+# issue a warning.
+#
+if [ $Verbosity -gt 4 ]; then logger "Lock down more ports for public users IncludePorts=$IncludePorts , ExcludePorts=$ExcludePorts"; fi
+if [ "$IncludePorts" ]; then
+  if [ "$ExcludePorts" ]; then
+    if [ $Verbosity -gt 4 ]; then 
+        logger "Warning: ExcludePorts and IncludePorts are both defined."
+        logger "Ignoring 'ExcludePorts'.  Please check your nocat.conf."
+    fi
+  fi
+
+  # Enable all ports in IncludePorts
+  for iface in $InternalDevice; do
+    for port in $IncludePorts; do
+      $ports -p tcp -i $iface --dport $port -m mark --mark 3 -j ACCEPT
+      $ports -p udp -i $iface --dport $port -m mark --mark 3 -j ACCEPT
+    done
+
+    # Always permit access to the GatewayPort (or we can't logout)
+    $ports -p tcp -i $iface --dport $GatewayPort -j ACCEPT
+    $ports -p udp -i $iface --dport $GatewayPort -j ACCEPT
+  
+    # ...and disable access to the rest.
+    $ports -p tcp -i $iface -m mark --mark 3 -j DROP
+    $ports -p udp -i $iface -m mark --mark 3 -j DROP
+  done
+
+elif [ "$ExcludePorts" ]; then
+  # If ExcludePorts has entries, simply deny access to them.
+  for iface in $InternalDevice; do
+    for port in $ExcludePorts; do
+	$ports -p tcp -i $iface --dport $port -m mark --mark 3 -j DROP
+	$ports -p udp -i $iface --dport $port -m mark --mark 3 -j DROP
+    done
+  done
+fi
+  
+#
+# Disable access on the external to GatewayPort from anything but the AuthServiceAddr
+#
+if [ $LAN2WAN_RULE_NR -gt 0 ]; then
+    if [ $Verbosity -gt 4 ]; then logger "Ewrt: Removing default ACCEPT of locally FORWARDED, NEW outgoing connections"; fi
+    ACCEPT_NEW_RULE_NR=`rule_num filter FORWARD NEW`
+    if [ $ACCEPT_NEW_RULE_NR -gt 0 ]; then
+        iptables -t filter -D FORWARD $ACCEPT_NEW_RULE_NR
+        #just to be sure - HUH?? -TJ
+        #iptables -t filter -I FORWARD $ACCEPT_NEW_RULE_NR -j DROP
+    fi
+else
+    # Filter policy.
+    if [ $Verbosity -gt 4 ]; then logger "Set filter::FORWARD to DROP anything else"; fi
+    $fwd -j DROP
+fi
+
+if [ "$AuthServiceAddr" ]; then
+    if [ $Verbosity -gt 4 ]; then logger "Disable external access to port: $GatewayPort from all but: AuthServiceAddr=$AuthServiceAddr"; fi
+    for addr in $AuthServiceAddr; do
+        iptables -D INPUT -i $ExternalDevice -s ! $addr -p tcp --dport $GatewayPort -j DROP
+        iptables -I INPUT -i $ExternalDevice -s ! $addr -p tcp --dport $GatewayPort -j DROP
+    done
+fi
+#
+# Call the bandwidth throttle rules.
+#
+# Note: This feature is *highly* experimental.
+#
+# This functionality requires the 'tc' advanced router tool,
+# part of the iproute2 package, available at:
+# ftp://ftp.inr.ac.ru/ip-routing/
+#
+# To use bandwidth throttling, edit the upload and download 
+# bandwidth thresholds at the top of the throttle.fw file,
+# and make throttle.fw executable.  Try something like this:
+#
+# chmod +x throttle.fw
+#
+#logger "Calling the bandwidth throttle rules..."
+#[ -x throttle.fw ] && throttle.fw
+
+##
+# Add any other local firewall rules below.
+##
+
+#
+# Ende
+#

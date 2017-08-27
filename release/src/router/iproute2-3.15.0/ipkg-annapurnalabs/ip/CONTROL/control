@@ -1,0 +1,9 @@
+Package: ip
+Version: 3.15.0-1
+Depends: libc, libnl-tiny
+Source: package/network/utils/iproute2
+Section: net
+Maintainer: Russell Senior <russell@personaltelco.net>
+Architecture: annapurnalabs
+Installed-Size: 70190
+Description:  Routing control utility (Minimal)

@@ -1,0 +1,13 @@
+
+
+				Memory leaks - really?
+				----------------------
+
+Note that some developers are thinking that the ALSA library has some memory
+leaks. Sure, it can be truth, but before contacting us, please, be sure that
+these leaks are not forced.
+
+The biggest reported leak is that the global configuration is cached for
+next usage. If you do not want this feature, simply, call
+snd_config_update_free_global() after all snd_*_open*() calls. This function
+will free the cache.

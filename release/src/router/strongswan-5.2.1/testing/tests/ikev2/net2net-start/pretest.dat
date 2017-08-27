@@ -1,0 +1,6 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+sun::ipsec start
+sun::sleep 2
+moon::ipsec start
+moon::sleep 3 

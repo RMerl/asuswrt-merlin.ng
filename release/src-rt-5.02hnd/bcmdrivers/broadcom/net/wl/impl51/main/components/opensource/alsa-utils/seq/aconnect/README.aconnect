@@ -1,0 +1,46 @@
+================================================================
+	aconnect - control subscriptions
+		ver.0.1.3
+	Copyright (C) 1999-2000 Takashi Iwai
+================================================================
+
+aconnect is a utility to control subscriptions of two ports as the
+third "manager" client.
+
+For example, the following connects two ports, from 64:0 to 65:0.
+
+	% aconnect 64:0 65:0
+
+To disconnect the existing subscription, use -d option.
+
+	% aconnect -d 64:0 65:0
+
+To see which port is available as input port, run the following
+command:
+
+	% aconnect -i
+	client 0: 'System' [type=kernel]
+	    0 'Timer           '
+	    1 'Announce        '
+	client 64: '0: MIDI Synth' [type=kernel]
+	    0 'card 0: synth-midi: 0'
+
+Similary, to see the output ports, use -o flag.
+
+	% aconnect -o
+	client 64: '0: MIDI Synth' [type=kernel]
+	    0 'card 0: synth-midi: 0'
+	client 65: 'AWE Wave Table Synth : 0' [type=kernel]
+	    0 'Emu8000 port 0  '
+	    1 'Emu8000 port 1  '
+	    2 'Emu8000 port 2  '
+	    3 'Emu8000 port 3  '
+
+The option -l together with -i or -o shows subscribers for each port.
+
+Ports are connected exclusively when the option -e is specified.
+
+For modifying time-stamp with a queue, use -r or -t option followed by
+a queue index which updates the time-stamp.  Former uses real-time queue,
+while the latter uses tick queue.  The queue must be used (not necessarily
+owned) by the receiver client.

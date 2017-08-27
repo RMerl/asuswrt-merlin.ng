@@ -1,0 +1,7 @@
+moon::ipsec status 2> /dev/null::host-host.*ESTABLISHED.*moon.strongswan.org.*sun.strongswan.org::YES
+sun:: ipsec status 2> /dev/null::host-host.*ESTABLISHED.*sun.strongswan.org.*moon.strongswan.org::YES
+moon::ipsec status 2> /dev/null::host-host.*INSTALLED, TRANSPORT::YES
+sun:: ipsec status 2> /dev/null::host-host.*INSTALLED, TRANSPORT::YES
+moon::ping -c 1 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_req=1::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES

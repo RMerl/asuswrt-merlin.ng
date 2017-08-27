@@ -1,0 +1,13 @@
+# -*- text -*-
+#
+#       For TERENA VSA's
+#
+#       $Id$
+#
+VENDOR		TERENA				25178
+
+BEGIN-VENDOR	TERENA
+
+ATTRIBUTE	Eduroam-SP-Country			10	string
+
+END-VENDOR	TERENA

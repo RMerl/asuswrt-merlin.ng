@@ -1,0 +1,34 @@
+.\" Copyright (c)  2016   Dmitry Butskoy (dmitry@butskoy.name)
+.\" License: GPL v2 or any later version
+.\" See COPYING for the status of this software
+.TH TCPTRACEROUTE 8 "8 March 2016" "Traceroute" "Traceroute For Linux"
+.\" .UC 6
+.SH NAME
+tcptraceroute \- print the route packets trace to network host
+.SH SYNOPSIS
+.na
+.BR tcptraceroute
+.RI " [" options ]
+.ad
+.SH DESCRIPTION
+.I tcptraceroute
+is just a link to the system
+.B traceroute\fR,
+to allow run it without specifying
+.B \-T
+option each time (for switch to the TCP method). It is fully equivalent to
+.B traceroute \-T\fR,
+the rest of the command line is the same.
+.br
+See
+.BR traceroute (8)
+for more info.
+.SH NOTES
+There was an original implementation of tcptraceroute, which had some options
+differ (but rare used). Most common
+.BR "" [ "dnFi:f:m:q:w:s:t:" ]
+was exactly the same, but
+.BR "" [ "l:p:NSAE" ]
+was not. For full compatibility, a wrapper provided (available in the source code).
+.SH SEE ALSO
+.BR traceroute (8)

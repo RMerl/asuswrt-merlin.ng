@@ -1,0 +1,22 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+carol::echo 0 > /proc/sys/net/ipv4/ip_forward
+dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
+alice::ln -s /etc/freeradius/sites-available/inner-tunnel-second /etc/freeradius/sites-enabled/inner-tunnel-second
+alice::cat /etc/freeradius/sites-enabled/inner-tunnel-second
+alice::sed -i "s:DEBIAN_VERSION:\`cat /etc/debian_version\`:" /etc/pts/data1.sql
+alice::cd /usr/local/share/strongswan/templates/database/imv; cat tables.sql data.sql /etc/pts/data1.sql | sqlite3 /etc/pts/config.db
+alice::LEAK_DETECTIVE_DISABLE=1 LOG4CXX_CONFIGURATION=/etc/tnc/log4cxx.properties radiusd
+alice::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+dave::cat /etc/tnc_config
+moon::ipsec start
+dave::ipsec start
+carol::ipsec start
+dave::sleep 1
+dave::ipsec up home
+carol::ipsec up home
+carol::sleep 1
+alice::ipsec attest --sessions
+alice::ipsec attest --devices

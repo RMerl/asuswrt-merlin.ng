@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Interface definition prerequisites</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-interface.html" title="How to define and implement interfaces">
+<link rel="prev" href="howto-interface-implement.html" title="Implementing interfaces">
+<link rel="next" href="howto-interface-properties.html" title="Interface properties">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-interface.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface-implement.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-interface-properties.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-prerequisite"></a>Interface definition prerequisites</h2></div></div></div>
+<p>
+      To specify that an interface requires the presence of other interfaces
+      when implemented, GObject introduces the concept of
+      <span class="emphasis"><em>prerequisites</em></span>: it is possible to associate
+      a list of prerequisite types to an interface. For example, if
+      object A wishes to implement interface I1, and if interface I1 has a
+      prerequisite on interface I2, A has to implement both I1 and I2.
+    </p>
+<p>
+      The mechanism described above is, in practice, very similar to
+      Java's interface I1 extends interface I2. The example below shows
+      the GObject equivalent:
+</p>
+<pre class="programlisting">
+/* Make the MamanIbar interface require MamanIbaz interface. */
+G_DEFINE_INTERFACE (MamanIbar, maman_ibar, MAMAN_TYPE_IBAZ);
+</pre>
+<p>
+      In the <code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS" title="G_DEFINE_INTERFACE()">G_DEFINE_INTERFACE</a></code>
+      call above, the third parameter defines the prerequisite type. This
+      is the GType of either an interface or a class. In this case
+      the MamanIbaz interface is a prerequisite of the MamanIbar. The code
+      below shows how an implementation can implement both interfaces and
+      register their implementations:
+</p>
+<pre class="programlisting">
+static void
+maman_ibar_do_another_action (MamanIbar *ibar)
+{
+  MamanBar *self = MAMAN_BAR (ibar);
+
+  g_print ("Bar implementation of IBar interface Another Action: 0x%x.\n",
+           self-&gt;instance_member);
+}
+
+static void
+maman_ibar_interface_init (MamanIbarInterface *iface)
+{
+  iface-&gt;do_another_action = maman_ibar_do_another_action;
+}
+
+static void
+maman_ibaz_do_action (MamanIbaz *ibaz)
+{
+  MamanBar *self = MAMAN_BAR (ibaz);
+
+  g_print ("Bar implementation of Ibaz interface Action: 0x%x.\n",
+           self-&gt;instance_member);
+}
+
+static void
+maman_ibaz_do_something (MamanIbaz *ibaz)
+{
+  MamanBar *self = MAMAN_BAR (ibaz);
+
+  g_print ("Bar implementation of Ibaz interface Something: 0x%x.\n",
+           self-&gt;instance_member);
+}
+
+static void
+maman_ibaz_interface_init (MamanIbazInterface *iface)
+{
+  iface-&gt;do_action = maman_ibaz_do_action;
+  iface-&gt;do_something = maman_ibaz_do_something;
+}
+
+static void
+maman_bar_class_init (MamanBarClass *klass)
+{
+
+}
+
+static void
+maman_bar_init (MamanBar *self)
+{
+  self-&gt;instance_member = 0x666;
+}
+
+G_DEFINE_TYPE_WITH_CODE (MamanBar, maman_bar, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (MAMAN_TYPE_IBAZ,
+                                                maman_ibaz_interface_init)
+                         G_IMPLEMENT_INTERFACE (MAMAN_TYPE_IBAR,
+                                                maman_ibar_interface_init))
+</pre>
+<p>
+      It is very important to notice that the order in which interface
+      implementations are added to the main object is not random:
+      <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-add-interface-static" title="g_type_add_interface_static ()">g_type_add_interface_static</a></code>,
+      which is called by
+      <code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS" title="G_DEFINE_INTERFACE()">G_IMPLEMENT_INTERFACE</a></code>,
+      must be invoked first on the interfaces which have no prerequisites and then on
+      the others.
+    </p>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+.TH RLM_IPPOOL_TOOL 8
+.SH NAME
+rlm_ippool_tool - dump the contents of the FreeRadius ippool database files
+.SH SYNOPSIS
+.P
+If an ipaddress is specified then that address is used to
+limit the actions or output.
+
+.B rlm_ippool_tool
+.RB [ \-a ]
+.RB [ \-c ]
+.RB [ \-o ]
+.RB [ \-v ]
+\fIsession-db\fP \fIindex-db\fP [\fIipaddress\fP]
+
+.P
+Mark the entry nasIP/nasPort as having ipaddress
+
+.B rlm_ippool_tool
+\-n \fIsession-db\fP \fIindex-db\fP \fIipaddress\fP \fInasIP\fP \fInasPort\fP
+
+.P
+Update old format database to new.
+
+.B rlm_ippool_tool
+\-u \fIsession-db\fP \fInew-session-db\fP
+
+.SH DESCRIPTION
+\fBrlm_ippool_tool\fP dumps the contents of the FreeRADIUS ippool databases for
+analyses or for removal of active (stuck?) entries.
+.P
+Or with the \fB\-n\fP argument adds a usage entry to the FreeRADIUS ippool databases.
+
+
+.SH OPTIONS
+
+.IP \-a
+Print all active entries.
+.IP \-c
+Report number of active entries.
+.IP \-r
+Remove active entries.
+.IP \-v
+Verbose report of all entries.
+.IP \-o
+Assume old database format (nas/port pair, not md5 output).
+.IP \-n
+Mark the entry nasIP/nasPort as having ipaddress.
+.IP \-u
+Update old format database to new.
+
+.SH EXAMPLES
+
+.P
+Given the syntax in the FreeRadius radiusd.conf:
+.IP
+.nf
+ ippool myippool {
+	range-start = 192.0.2.0
+	range-stop = 192.0.2.255
+	[...]
+	session-db = ${raddbdir}/ip-pool.db
+	ip-index = ${raddbdir}/ip-index.db
+ }
+.fi
+.P
+To see the number of active entries in this pool, use:
+.IP
+.nf
+ $ rlm_ippool_tool -c ip-pool.db ip-index.db
+ 13
+.fi
+.P
+To see all active entries in this pool, use:
+.IP
+.nf
+ $ rlm_ippool_tool -a ip-pool.db ip-index.db
+ 192.0.2.5
+ 192.0.2.82
+ 192.0.2.244
+ 192.0.2.57
+ 192.0.2.120
+ 192.0.2.27
+ [...]
+.fi
+.P
+To see all information about the active entries in the use, use:
+.IP
+.nf
+ $ rlm_ippool_tool -av ip-pool.db ip-index.db
+ NAS:172.16.1.1 port:0x2e8 - ipaddr:192.0.2.5 active:1 cli:0 num:1
+ NAS:172.16.1.1 port:0x17c - ipaddr:192.0.2.82 active:1 cli:0 num:1
+ NAS:172.16.1.1 port:0x106 - ipaddr:192.0.2.244 active:1 cli:0 num:1
+ NAS:172.16.1.1 port:0x157 - ipaddr:192.0.2.57 active:1 cli:0 num:1
+ NAS:172.16.1.1 port:0x2d8 - ipaddr:192.0.2.120 active:1 cli:0 num:1
+ NAS:172.16.1.1 port:0x162 - ipaddr:192.0.2.27 active:1 cli:0 num:1
+ [...]
+.fi
+.P
+To see only information of one entry, use:
+.IP
+.nf
+ $ rlm_ippool_tool -v ip-pool.db ip-index.db 192.0.2.1
+ NAS:172.16.1.1 port:0x90 - ipaddr:192.0.2.1 active:0 cli:0 num:0
+.fi
+.P
+To add an IP address usage entry, use:
+.IP
+.nf
+ $ rlm_ippool_tool -n ip-pool.db ip-index.db 192.0.0.1 172.16.1.1 0x90
+ rlm_ippool_tool: Allocating ip to nas/port: 172.16.1.1/144
+ rlm_ippool_tool: num: 1
+ rlm_ippool_tool: Allocated ip 192.0.2.1 to client on nas 172.16.1.1,port 144
+.fi
+
+.SH SEE ALSO
+radiusd(8)
+.SH AUTHORS
+Currently part of the FreeRADIUS Project (http://www.freeradius.org)
+Originally by Edwin Groothuis, edwin@mavetju.org (http://www.mavetju.org)
+
+Mailing list details are at http://www.freeradius.org/

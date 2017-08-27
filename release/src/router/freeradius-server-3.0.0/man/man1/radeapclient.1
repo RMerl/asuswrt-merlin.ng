@@ -1,0 +1,100 @@
+.TH RADEAPCLIENT 1 "08 September 2003" "" "FreeRADIUS Daemon"
+.SH NAME
+radeapclient - send EAP packets to a RADIUS server, calculate responses
+.SH SYNOPSIS
+.B radeapclient
+.RB [ \-4 ]
+.RB [ \-6 ]
+.RB [ \-c
+.IR count ]
+.RB [ \-d
+.IR raddb_directory ]
+.RB [ \-f
+.IR file ]
+.RB [ \-h ]
+.RB [ \-i
+.IR source_ip ]
+.RB [ \-q ]
+.RB [ \-s ]
+.RB [ \-r
+.IR retries ]
+.RB [ \-S
+.IR file ]
+.RB [ \-t
+.IR timeout ]
+.RB [ \-v ]
+.RB [ \-x ]
+\fIserver {acct|auth} secret\fP
+.SH DESCRIPTION
+\fBradeapclient\fP is a radius client program. It can send arbitrary radius
+packets to a radius server, then shows the reply. Radeapclient differs from
+radclient in that if there is an EAP-MD5 challenge, then it will be responded
+to.
+.PP
+\fBradeapclient\fP is otherwise identical to \fBradclient\fP.
+.PP
+The \fIEAP-Identity\fP attribute, if present is used to construct an
+EAP Identity message.
+.PP
+.PP
+The \fIEAP-MD5-Password\fP attribute, if present is used to respond to an
+MD5 challenge.
+.PP
+No other EAP types are currently supported.
+
+.SH OPTIONS
+.IP \-4
+Use IPv4 (default)
+.IP \-6
+Use IPv6
+.IP \-c\ \fIcount\fP
+Send each packet \fIcount\fP times.
+.IP \-d\ \fIraddb\fP
+Set dictionary directory.
+.IP \-f\ \fIfile\fP
+Read packets from \fIfile\fP, not stdin.
+.IP \-r\ \fIretries\fP
+If timeout, retry sending the packet \fIretries\fP times.
+.IP \-t\ \fItimeout\fP
+Wait \fItimeout\fP seconds before retrying (may be a floating point number).
+.IP \-h
+Print usage help information.
+.IP \-i\ \fIid\fP
+Set request id to '\fIid\fP'.  Values may be 0..255
+.IP \-S\ \fIfile\fP
+Read secret from \fIfile\fP, not command line.
+.IP \-q
+Quiet, do not print anything out.
+.IP \-s
+Print out summary information of auth results.
+.IP \-v
+Show program version information.
+.IP \-x
+Enable debugging mode.
+
+.SH EXAMPLE
+
+A sample session that queries the remote server with an EAP-MD5
+challenge.
+.RS
+.sp
+.nf
+.ne 3
+( echo 'User-Name = "bob"';
+  echo 'EAP-MD5-Password = "hello"';
+  echo 'NAS-IP-Address = marajade.sandelman.ottawa.on.c';
+  echo 'EAP-Code = Response';
+  echo 'EAP-Id = 210';
+  echo 'EAP-Type-Identity = "bob";
+  echo 'Message-Authenticator = 0x00';
+  echo 'NAS-Port = 0' ) >req.txt
+
+radeapclient -x localhost auth testing123 <req.txt
+.fi
+.sp
+.RE
+
+.SH SEE ALSO
+radclient(1)
+.SH AUTHOR
+Michael Richardson, <mcr@sandelman.ottawa.on.ca>

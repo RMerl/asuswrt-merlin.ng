@@ -1,0 +1,217 @@
+.TH MPSTAT 1 "AUGUST 2011" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+mpstat \- Report processors related statistics.
+.SH SYNOPSIS
+.B mpstat [ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ] [ -P {
+.I cpu
+.B [,...] | ON | ALL } ] [ -V ] [
+.I interval
+.B [
+.I count
+.B ] ]
+.SH DESCRIPTION
+The
+.B mpstat
+command writes to standard output activities for each available processor,
+processor 0 being the first one.
+Global average activities among all processors are also reported.
+The
+.B mpstat
+command can be used both on SMP and UP machines, but in the latter, only global
+average activities will be printed. If no activity has been selected, then the
+default report is the CPU utilization report.
+
+The
+.I interval
+parameter specifies the amount of time in seconds between each report.
+A value of 0 (or no parameters at all) indicates that processors statistics are
+to be reported for the time since system startup (boot).
+The
+.I count
+parameter can be specified in conjunction with the
+.I interval
+parameter if this one is not set to zero. The value of
+.I count
+determines the number of reports generated at
+.I interval
+seconds apart. If the
+.I interval
+parameter is specified without the
+.I count
+parameter, the
+.B mpstat
+command generates reports continuously.
+
+.SH OPTIONS
+.IP -A
+This option is equivalent to specifying
+.BR "-I ALL -u -P ALL"
+.IP "-I { SUM | CPU | SCPU | ALL }"
+Report interrupts statistics.
+
+With the
+.B SUM
+keyword, the
+.B mpstat
+command reports the total number of interrupts per processor.
+The following values are displayed:
+
+.B CPU
+.RS
+.RS
+Processor number. The keyword
+.I all
+indicates that statistics are calculated as averages among all
+processors.
+.RE
+
+.B intr/s
+.RS
+Show the total number of interrupts received per second by
+the CPU or CPUs.
+.RE
+
+With the
+.B CPU
+keyword, the number of each individual interrupt received per
+second by the CPU or CPUs is displayed.
+
+With the
+.B SCPU
+keyword, the number of each individual software interrupt received per
+second by the CPU or CPUs is displayed. This option works only
+with kernels 2.6.31 and later.
+
+The
+.B ALL
+keyword is equivalent to specifying all the keywords above and
+therefore all the interrupts statistics are displayed.
+.RE
+.RE
+.IP "-P { cpu [,...] | ON | ALL }"
+Indicate the processor number for which statistics are to be reported.
+.I cpu
+is the processor number. Note that processor 0 is the first processor.
+The
+.B ON
+keyword indicates that statistics are to be reported for every
+online processor, whereas the
+.B ALL
+keyword indicates that statistics are to be reported for all processors.
+.IP -u
+Report CPU utilization. The following values are displayed:
+
+.B CPU
+.RS
+.RS
+Processor number. The keyword
+.I all
+indicates that statistics are calculated as averages among all
+processors.
+.RE
+
+.B %usr
+.RS
+Show the percentage of CPU utilization that occurred while
+executing at the user level (application).
+.RE
+
+.B %nice
+.RS
+Show the percentage of CPU utilization that occurred while
+executing at the user level with nice priority.
+.RE
+
+.B %sys
+.RS
+Show the percentage of CPU utilization that occurred while
+executing at the system level (kernel). Note that this does not
+include time spent servicing hardware and software interrupts.
+.RE
+
+.B %iowait
+.RS
+Show the percentage of time that the CPU or CPUs were idle during which
+the system had an outstanding disk I/O request.
+.RE
+
+.B %irq
+.RS
+Show the percentage of time spent by the CPU or CPUs to service hardware
+interrupts.
+.RE
+
+.B %soft
+.RS
+Show the percentage of time spent by the CPU or CPUs to service software
+interrupts.
+.RE
+
+.B %steal
+.RS
+Show the percentage of time spent in involuntary wait by the virtual CPU
+or CPUs while the hypervisor was servicing another virtual processor.
+.RE
+
+.B %guest
+.RS
+Show the percentage of time spent by the CPU or CPUs to run a virtual
+processor.
+.RE
+
+.B %idle
+.RS
+Show the percentage of time that the CPU or CPUs were idle and the system
+did not have an outstanding disk I/O request.
+.RE
+
+Note: On SMP machines a processor that does not have any activity at all
+is a disabled (offline) processor.
+.RE
+.IP -V
+Print version number then exit.
+
+.SH ENVIRONMENT
+The
+.B mpstat
+command takes into account the following environment variable:
+
+.IP S_TIME_FORMAT
+If this variable exists and its value is
+.BR ISO
+then the current locale will be ignored when printing the date in the report header.
+The
+.B mpstat
+command will use the ISO 8601 format (YYYY-MM-DD) instead.
+
+.SH EXAMPLES
+.B mpstat 2 5
+.RS
+Display five reports of global statistics among all processors at two second intervals.
+.RE
+
+.B mpstat -P ALL 2 5
+.RS
+Display five reports of statistics for all processors at two second intervals.
+
+.SH BUGS
+.I /proc
+filesystem must be mounted for the
+.B mpstat
+command to work.
+
+Only a few activities are given by the Linux kernel for each processor.
+
+.SH FILES
+.IR /proc
+contains various files with system statistics.
+
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sar (1),
+.BR pidstat (1),
+.BR iostat (1),
+.BR vmstat (8)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

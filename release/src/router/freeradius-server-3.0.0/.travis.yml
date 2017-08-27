@@ -1,0 +1,17 @@
+language: c
+compiler:
+  - clang
+  - gcc
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libtalloc-dev libssl-dev
+  - sudo apt-get install -qq gdb
+  - sudo apt-get install -qq build-essential autoconf dh-make debhelper devscripts fakeroot lintian pbuilder quilt
+  - sudo apt-get install -qq -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" libmysqlclient-dev
+  - sudo apt-get install -qq libkrb5-dev libgdbm-dev libhiredis-dev libldap2-dev libpam0g-dev libpcap-dev libpcre3-dev libperl-dev
+  - sudo apt-get install -qq libpq-dev libreadline-dev libsnmp-dev libiodbc2-dev libidn11-dev libyubikey-dev libykclient-dev
+  - sudo apt-get install -qq firebird-dev freetds-dev python-dev ruby-dev
+before_script:
+  - ./configure -C --enable-werror --prefix=$HOME/travis
+  - make
+script: make travis-test

@@ -1,0 +1,19 @@
+# Crontab sample for root or adm
+# Please update this crontab with the proper location
+# for sa1 and sa2 shell scripts (replace @SA_LIB_DIR@ with
+# /usr/lib/sa for example).
+#
+# 8am-7pm activity reports every 20 minutes during weekdays.
+# 0 8-18 * * 1-5 @SA_LIB_DIR@/sa1 1200 3 &
+# activity reports every @CRON_INTERVAL@ minutes everyday.
+0 * * * * @SA_LIB_DIR@/sa1 @CRON_INTERVAL_SEC@ @CRON_COUNT@ &
+#
+# Activity reports every an hour on Saturday and Sunday.
+# 0 * * * 0,6 @SA_LIB_DIR@/sa1 &
+#
+# 7pm-8am activity reports every an hour during weekdays.
+# 0 19-7 * * 1-5 @SA_LIB_DIR@/sa1 &
+#
+# Daily summary prepared at 19:05.
+# 5 19 * * 1-5 @SA_LIB_DIR@/sa2 -A &
+5 19 * * * @SA_LIB_DIR@/sa2 -A &

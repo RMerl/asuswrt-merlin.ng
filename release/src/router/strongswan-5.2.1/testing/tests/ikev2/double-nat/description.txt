@@ -1,0 +1,5 @@
+The roadwarrior <b>alice</b> sitting behind the NAT router <b>moon</b> sets up a tunnel to
+the peer <b>bob</b> hiding behind the NAT router <b>sun</b>. UDP encapsulation is used to
+traverse the NAT routers. <b>leftfirewall=yes</b> automatically inserts iptables-based
+firewall rules that let pass the tunneled traffic. In order to test the double NAT-ed IPsec
+tunnel <b>alice</b> pings <b>bob</b>.

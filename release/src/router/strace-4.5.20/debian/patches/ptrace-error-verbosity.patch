@@ -1,0 +1,53 @@
+Description: try to make the PTRACE scope sysctl more discoverable via a
+ verbose error message when failures happen.
+Author: Kees Cook <kees@ubuntu.com>
+
+Index: strace-4.5.20/strace.c
+===================================================================
+--- strace-4.5.20.orig/strace.c	2010-06-09 15:28:09.409640952 -0700
++++ strace-4.5.20/strace.c	2010-06-09 16:40:43.399373288 -0700
+@@ -431,6 +431,7 @@
+ 				unsigned int ntid = 0, nerr = 0;
+ 				struct dirent *de;
+ 				int tid;
++				int eperm = 0;
+ 				while ((de = readdir(dir)) != NULL) {
+ 					if (de->d_fileno == 0)
+ 						continue;
+@@ -438,8 +439,11 @@
+ 					if (tid <= 0)
+ 						continue;
+ 					++ntid;
+-					if (ptrace(PTRACE_ATTACH, tid, (char *) 1, 0) < 0)
++					if (ptrace(PTRACE_ATTACH, tid, (char *) 1, 0) < 0) {
++						if (errno == EPERM)
++							eperm = 1;
+ 						++nerr;
++					}
+ 					else if (tid != tcbtab[tcbi]->pid) {
+ 						tcp = alloctcb(tid);
+ 						tcp->flags |= TCB_ATTACHED|TCB_CLONE_THREAD|TCB_CLONE_DETACHED|TCB_FOLLOWFORK;
+@@ -459,6 +463,11 @@
+ 				ntid -= nerr;
+ 				if (ntid == 0) {
+ 					perror("attach: ptrace(PTRACE_ATTACH, ...)");
++					if (eperm)
++						fprintf(stderr,
++"Could not attach to process.  If your uid matches the uid of the target\n"
++"process, check the setting of /proc/sys/kernel/yama/ptrace_scope, or try\n"
++"again as the root user.  For more details, see /etc/sysctl.d/10-ptrace.conf\n");
+ 					droptcb(tcp);
+ 					continue;
+ 				}
+@@ -474,6 +483,11 @@
+ # endif
+ 		if (ptrace(PTRACE_ATTACH, tcp->pid, (char *) 1, 0) < 0) {
+ 			perror("attach: ptrace(PTRACE_ATTACH, ...)");
++			if (errno == EPERM)
++				fprintf(stderr,
++"Could not attach to process.  If your uid matches the uid of the target\n"
++"process, check the setting of /proc/sys/kernel/yama/ptrace_scope, or try\n"
++"again as the root user.  For more details, see /etc/sysctl.d/10-ptrace.conf\n");
+ 			droptcb(tcp);
+ 			continue;
+ 		}

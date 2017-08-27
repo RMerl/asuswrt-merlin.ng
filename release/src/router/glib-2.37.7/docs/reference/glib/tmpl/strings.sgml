@@ -1,0 +1,372 @@
+<!-- ##### SECTION Title ##### -->
+Strings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GString ##### -->
+<para>
+
+</para>
+
+@str: 
+@len: 
+@allocated_len: 
+
+<!-- ##### FUNCTION g_string_new ##### -->
+<para>
+
+</para>
+
+@init: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_new_len ##### -->
+<para>
+
+</para>
+
+@init: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_sized_new ##### -->
+<para>
+
+</para>
+
+@dfl_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_assign ##### -->
+<para>
+
+</para>
+
+@string: 
+@rval: 
+@Returns: 
+
+
+<!-- ##### MACRO g_string_sprintf ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO g_string_sprintfa ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_string_vprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@args: 
+
+
+<!-- ##### FUNCTION g_string_append_vprintf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@args: 
+
+
+<!-- ##### FUNCTION g_string_printf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_string_append_printf ##### -->
+<para>
+
+</para>
+
+@string: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_string_append ##### -->
+<para>
+
+</para>
+
+@string: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_append_c ##### -->
+<para>
+
+</para>
+
+@string: 
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_append_unichar ##### -->
+<para>
+
+</para>
+
+@string: 
+@wc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_append_len ##### -->
+<para>
+
+</para>
+
+@string: 
+@val: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_append_uri_escaped ##### -->
+<para>
+
+</para>
+
+@string: 
+@unescaped: 
+@reserved_chars_allowed: 
+@allow_utf8: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_prepend ##### -->
+<para>
+
+</para>
+
+@string: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_prepend_c ##### -->
+<para>
+
+</para>
+
+@string: 
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_prepend_unichar ##### -->
+<para>
+
+</para>
+
+@string: 
+@wc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_prepend_len ##### -->
+<para>
+
+</para>
+
+@string: 
+@val: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_insert ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_insert_c ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@c: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_insert_unichar ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@wc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_insert_len ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@val: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_overwrite ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@val: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_overwrite_len ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@val: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_erase ##### -->
+<para>
+
+</para>
+
+@string: 
+@pos: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_truncate ##### -->
+<para>
+
+</para>
+
+@string: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_set_size ##### -->
+<para>
+
+</para>
+
+@string: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_free ##### -->
+<para>
+
+</para>
+
+@string: 
+@free_segment: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_free_to_bytes ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_up ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_down ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_hash ##### -->
+<para>
+
+</para>
+
+@str: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_string_equal ##### -->
+<para>
+
+</para>
+
+@v: 
+@v2: 
+@Returns: 
+
+

@@ -1,0 +1,20 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw-carol.*ESTABLISHED.*moon.strongswan.org.*carol.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw-dave.*ESTABLISHED.*moon.strongswan.org.*dave.strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw-carol.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw-dave.*INSTALLED, TUNNEL::YES
+moon:: cat /var/log/daemon.log::XAuth authentication of.*carol.*successful::YES
+moon:: cat /var/log/daemon.log::XAuth authentication of.*dave.*successful::YES
+moon:: cat /var/log/daemon.log::assigning virtual IP 10.3.0.1 to peer.*carol::YES
+moon:: cat /var/log/daemon.log::assigning virtual IP 10.3.0.2 to peer.*dave::YES
+carol::cat /var/log/daemon.log::installing new virtual IP 10.3.0.1::YES
+dave:: cat /var/log/daemon.log::installing new virtual IP 10.3.0.2::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+dave:: ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES

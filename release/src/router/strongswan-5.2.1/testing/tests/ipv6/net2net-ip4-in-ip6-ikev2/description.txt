@@ -1,0 +1,4 @@
+An IPv6 ESP tunnel connection between the gateways <b>moon</b> and <b>sun</b> is successfully set up.
+It connects the two IPv4 subnets hiding behind their respective gateways. The authentication is based on
+X.509 certificates. In order to test the IPv4-over-IPv6 ESP tunnel, client <b>alice</b> behind <b>moon</b>
+sends an IPv4 ICMP request to client <b>bob</b> behind <b>sun</b> using the ping command.

@@ -1,0 +1,32 @@
+env:
+  # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+  #   via the "travis encrypt" command using the project repo's public key
+  global:
+    - secure: "KhAdQ9ja+LBObWNQTYO7Df5J4DyOih6S+eerDMu8UPSO+CoWV2pWoQzbOfocjyOscGOwC+2PrrHDNZyGfqkCLDXg1BxynXPCFerHC1yc2IajvKpGXmAAygNIvp4KACDfGv/dkXrViqIzr/CdcNaU4vIMHSVb5xkeLi0W1dPnQOI="
+  matrix:
+    - LWS_METHOD=default
+    - LWS_METHOD=noserver CMAKE_ARGS="-DLWS_WITHOUT_SERVER=ON"
+    - LWS_METHOD=noclient CMAKE_ARGS="-DLWS_WITHOUT_CLIENT=ON"
+    - LWS_METHOD=noext CMAKE_ARGS="-DLWS_WITHOUT_EXTENSIONS=ON"
+    - LWS_METHOD=libev CMAKE_ARGS="-DLWS_WITH_LIBEV=ON"
+    - LWS_METHOD=noipv6 CMAKE_ARGS="-DLWS_IPV6=OFF"
+    - LWS_METHOD=http2 CMAKE_ARGS="-DLWS_WITH_HTTP2=ON"
+    - LWS_METHOD=nossl CMAKE_ARGS="-DLWS_WITH_SSL=OFF"
+    - LWS_METHOD=nodaemon CMAKE_ARGS="-DLWS_WITHOUT_DAEMONIZE=ON"
+os:
+  - linux
+  - osx
+language: c
+install:
+  - ./travis_install.sh
+script:
+  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then mkdir build && cd build && cmake $CMAKE_ARGS .. && cmake --build .; fi
+addons:
+  coverity_scan:
+    project:
+      name: "warmcat/libwebsockets"
+    notification_email: andy.green@linaro.org
+    build_command_prepend: "mkdir build && cd build && cmake .."
+    build_command:   "cmake --build ."
+    branch_pattern: coverity_scan
+

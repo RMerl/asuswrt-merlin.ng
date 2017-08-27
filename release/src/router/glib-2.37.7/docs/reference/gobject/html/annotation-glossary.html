@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Annotation Glossary</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="index.html" title="GObject Reference Manual">
+<link rel="prev" href="api-index-2-38.html" title="Index of new symbols in 2.38">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a class="shortcut" href="#glsC">C</a>
+                     | 
+                  <a class="shortcut" href="#glsO">O</a>
+                     | 
+                  <a class="shortcut" href="#glsT">T</a>
+                     | 
+                  <a class="shortcut" href="#glsA">A</a>
+                     | 
+                  <a class="shortcut" href="#glsT">T</a>
+                     | 
+                  <a class="shortcut" href="#glsS">S</a>
+                     | 
+                  <a class="shortcut" href="#glsE">E</a>
+                     | 
+                  <a class="shortcut" href="#glsT">T</a>
+                     | 
+                  <a class="shortcut" href="#glsS">S</a>
+                     | 
+                  <a class="shortcut" href="#glsI">I</a>
+                     | 
+                  <a class="shortcut" href="#glsA">A</a>
+                     | 
+                  <a class="shortcut" href="#glsO">O</a>
+                     | 
+                  <a class="shortcut" href="#glsT">T</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
+<td><a accesskey="p" href="api-index-2-38.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><img src="right-insensitive.png" width="16" height="16" border="0"></td>
+</tr></table>
+<div class="glossary">
+<div class="titlepage"><div><div><h1 class="title">
+<a name="annotation-glossary"></a>Annotation Glossary</h1></div></div></div>
+<a name="glsC"></a><h3 class="title">C</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-closure"></a>closure</span></dt>
+<dd class="glossdef"><p>This parameter is a 'user_data', for callbacks; many bindings can pass NULL here.</p></dd>
+<a name="glsO"></a><h3 class="title">O</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-out"></a>out</span></dt>
+<dd class="glossdef"><p>Parameter for returning results. Default is <acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>.</p></dd>
+<a name="glsT"></a><h3 class="title">T</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-transfer%20none"></a>transfer none</span></dt>
+<dd class="glossdef"><p>Don't free data after the code is done.</p></dd>
+<a name="glsA"></a><h3 class="title">A</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-allow-none"></a>allow-none</span></dt>
+<dd class="glossdef"><p>NULL is ok, both for passing and for returning.</p></dd>
+<a name="glsT"></a><h3 class="title">T</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-transfer%20container"></a>transfer container</span></dt>
+<dd class="glossdef"><p>Free data container after the code is done.</p></dd>
+<a name="glsS"></a><h3 class="title">S</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-scope%20notified"></a>scope notified</span></dt>
+<dd class="glossdef"><p>The callback is valid until the GDestroyNotify argument is called.</p></dd>
+<a name="glsE"></a><h3 class="title">E</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-element-type"></a>element-type</span></dt>
+<dd class="glossdef"><p>Generics and defining elements of containers and arrays.</p></dd>
+<a name="glsT"></a><h3 class="title">T</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-type"></a>type</span></dt>
+<dd class="glossdef"><p>Override the parsed C type with given type.</p></dd>
+<a name="glsS"></a><h3 class="title">S</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-scope%20call"></a>scope call</span></dt>
+<dd class="glossdef"><p>The callback is valid only during the call to the method.</p></dd>
+<a name="glsI"></a><h3 class="title">I</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-inout"></a>inout</span></dt>
+<dd class="glossdef"><p>Parameter for input and for returning results. Default is <acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>.</p></dd>
+<a name="glsA"></a><h3 class="title">A</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-array"></a>array</span></dt>
+<dd class="glossdef"><p>Parameter points to an array of items.</p></dd>
+<a name="glsO"></a><h3 class="title">O</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-out%20caller-allocates"></a>out caller-allocates</span></dt>
+<dd class="glossdef"><p>Out parameter, where caller must allocate storage.</p></dd>
+<a name="glsT"></a><h3 class="title">T</h3>
+<dt><span class="glossterm"><a name="annotation-glossterm-transfer%20full"></a>transfer full</span></dt>
+<dd class="glossdef"><p>Free data after the code is done.</p></dd>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

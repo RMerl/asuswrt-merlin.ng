@@ -1,0 +1,26 @@
+charon.plugins.pkcs11.modules {}
+	List of available PKCS#11 modules.
+
+charon.plugins.pkcs11.load_certs = yes
+	Whether to load certificates from tokens.
+
+charon.plugins.pkcs11.reload_certs = no
+	Reload certificates from all tokens if charon receives a SIGHUP.
+
+charon.plugins.pkcs11.use_dh = no
+	Whether the PKCS#11 modules should be used for DH and ECDH (see _use_ecc_
+	option).
+
+charon.plugins.pkcs11.use_ecc = no
+	Whether the PKCS#11 modules should be used for ECDH and ECDSA public key
+	operations. ECDSA private keys can be used regardless of this option.
+
+charon.plugins.pkcs11.use_hasher = no
+	Whether the PKCS#11 modules should be used to hash data.
+
+charon.plugins.pkcs11.use_pubkey = no
+	Whether the PKCS#11 modules should be used for public key operations, even
+	for keys not stored on tokens.
+
+charon.plugins.pkcs11.use_rng = no
+	Whether the PKCS#11 modules should be used as RNG.

@@ -1,0 +1,8 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::finance.*: ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::NO
+moon:: ipsec status 2> /dev/null::sales.*: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon::cat /var/log/daemon.log::constraint check failed: group membership to 'finance' required::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::NO
+carol::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_req=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES

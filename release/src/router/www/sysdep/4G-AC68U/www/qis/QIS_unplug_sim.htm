@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>                                     
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
+<link type="text/css" rel="stylesheet" href="/form_style.css">
+<script type="text/javascript" src="/qis/QISMobilePlugin.js"></script>
+<script type="text/JavaScript" src="/js/jquery.js"></script>
+<script type="text/javascript">
+var first_wanstate = -1;
+var first_wansbstate = -1;
+var first_wanauxstate = -1;
+var second_wanstate = -1;
+var second_wansbstate = -1;
+var second_wanauxstate = -1;
+var wan_wanstate = -1;
+var wan_wansbstate = -1;
+var wan_wanauxstate = -1;
+var usb_wanstate = -1;
+var usb_wansbstate = -1;
+var usb_wanauxstate = -1;
+var modem_autoapn = '<% nvram_get("modem_autoapn"); %>';
+var usb_modem_auto_lines = "";
+var usb_modem_auto_running = "";
+var usb_modem_auto_spn = "";
+
+function initial(){
+	if(parent.ISMOBILE){
+		parent.set_step("internet_type");
+		hideObjs();
+		document.getElementById("QISmain").style.display = "none";
+		document.getElementById("QISmain_m").style.display = "";		
+	}
+	else{
+		parent.set_step("t1");
+		document.getElementById("detectAgain").focus();
+	}
+}
+
+function getDualWANState(){
+	if( parent.ewan_index == 0 ){
+		wan_wanstate = first_wanstate;
+		wan_wansbstate = first_wansbstate;
+		wan_wanauxstate = first_wanauxstate;
+	}
+	else if(parent.ewan_index == 1){
+		wan_wanstate = second_wanstate;
+		wan_wansbstate = second_wansbstate;
+		wan_wanauxstate = second_wanauxstate;
+	}
+
+	if( parent.usb_index == 0 ){
+		usb_wanstate = first_wanstate;
+		usb_wansbstate = first_wansbstate;
+		usb_wanauxstate = first_wanauxstate;
+	}
+	else if(parent.usb_index == 1){
+		usb_wanstate = second_wanstate;
+		usb_wansbstate = second_wansbstate;
+		usb_wanauxstate = second_wanauxstate;
+	}
+}
+
+function redirect_page(redirect_flag){
+	document.redirectForm.action = "/qis/QIS_"+redirect_flag+".htm?flag=sim";
+	document.redirectForm.submit();
+}
+
+function submitenter(myfield,e)
+{	
+	var keycode;
+	if (window.event) keycode = window.event.keyCode;
+	else if (e) keycode = e.which;
+	else return true;
+
+	if (keycode == 13){
+		update_sim_info();
+   		return false;
+  	}
+	else
+   	return true;
+}
+
+var wait_autoisp = 2;
+var run_update_apn = 1;
+function detect_if_sim_plug(flag){
+	$.ajax({
+		url: '/result_of_get_changed_status_QIS.asp',
+		dataType: 'script',
+		
+		error: function(xhr){
+			detect_if_sim_plug();		
+		},
+		success: function(response){
+			getDualWANState();
+			if(usb_wanstate == 2 && usb_wansbstate == 0 && usb_wanauxstate == 0){
+				redirect_page("wireless");
+			}
+			else if(sim_state == 1){
+				if(modem_autoapn == "1"){
+					if(run_update_apn){
+						parent.update_apn_progress();
+						run_update_apn = 0;
+					}					
+
+					if(usb_modem_auto_spn.length != 0){
+						setTimeout('detect_if_sim_plug();', 1000);
+					}
+					else{
+						if(usb_modem_auto_running.length == 0 || usb_modem_auto_lines.length == 0){
+							setTimeout('detect_if_sim_plug();', 3000);
+						}
+						else{
+							if(usb_modem_auto_running != usb_modem_auto_lines)
+								setTimeout('detect_if_sim_plug();', 5000);
+							else{
+								if(wait_autoisp > 0 ){
+									setTimeout('detect_if_sim_plug();', 1000);
+									wait_autoisp--;
+								}
+								else{
+									redirect_page("modem");	
+								}
+							}
+						}
+					}
+				}
+				else{
+					redirect_page("modem");				
+				}
+			}
+			else if( sim_state == 2 || sim_state == 3){
+				redirect_page("detect");
+			}
+			else{
+				if(flag == null){
+					setTimeout(function(){
+								document.getElementById("loadingIcon").style.display = "none";
+								document.getElementById("skipButton").style.display = "";}, 1000);
+				}
+				setTimeout('detect_if_sim_plug(1);', 1000);
+			}
+		}
+	});	
+}
+
+function update_sim_info(){
+	document.getElementById("skipButton").style.display = "none";
+	document.getElementById("loadingIcon").style.display = "";
+	changeiuiBackground(1);
+	detect_if_sim_plug();
+}
+</script>
+</head>
+
+<body onLoad="initial();" onKeyPress="submitenter(this,event)">
+<div class="QISmain" id="QISmain">
+	<div id='waitarea'>
+		<div class="formfonttitle" style="padding:6 0 0 10;">
+				<div>
+					<table width="730px">
+						<tr>
+							<td align="left">
+								<div class="description_down"><#QIS_unplug_title3#></div>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		</div>
+		<p class="QISGeneralFont"><#QIS_unplug_desc31#></p></br>
+		<p class="QISGeneralFont"><#QIS_unplug_desc32#></p>
+		<div class="QISGeneralFont">				
+				<ol type="1">		
+					<li style="line-height:25px;"><#QIS_unplug_step1#></li>
+					<li style="line-height:25px;"><#QIS_unplug_step3#></li>
+				</ol>	
+		</div>
+		<table id="tblsetting_1" class="QISform" width="400" border=0 align="center" cellpadding="3" cellspacing="0" style="margin-top:-25px;">
+			<tr>
+				<td align="center" colspan="2">
+					<span><img style="margin-bottom:-30px;" src="/images/WANunplug_sim.png"></span>
+				</td>
+			</tr>
+		</table>
+		<br/>
+
+		<div class='apply_gen'>
+			<div id="fresharea">
+				<input type="button" id="detectAgain" class="button_gen_long" onclick="update_sim_info();" value="<#CTL_Detect_Again#>">
+				<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif">
+				<input type="button" id="skipButton" value="<#CTL_Skip#>" onclick="redirect_page('wireless');" class="button_gen">
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<div id="QISmain_m" style="display:none;">
+
+</div>
+
+<form method="post" name="redirectForm" action="" target="">
+<input type="hidden" name="flag" value="">
+</form>
+</body>

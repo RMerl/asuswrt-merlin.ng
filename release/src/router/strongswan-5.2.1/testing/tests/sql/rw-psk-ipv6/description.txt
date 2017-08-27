@@ -1,0 +1,6 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up an IPv6 tunnel connection each 
+to gateway <b>moon</b>. The authentication is based on distinct <b>pre-shared keys</b>
+and IPv6 addresses. Upon the successful establishment of the IPsec tunnels automatically
+inserted ip6tables-based firewall rules let pass the tunneled traffic. In order to test
+both tunnel and firewall, both <b>carol</b> and <b>dave</b> send an IPv6 ICMP request
+to client <b>alice</b> behind the gateway <b>moon</b> using the ping6 command.

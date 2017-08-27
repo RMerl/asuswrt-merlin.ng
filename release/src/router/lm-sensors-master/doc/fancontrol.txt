@@ -1,0 +1,133 @@
+
+fancontrol - automated software based fan speed regulation
+
+
+Introduction
+
+fancontrol is a shellscript for use with lm_sensors. It reads its
+configuration from a file, then calculates fan speeds from temperatures and
+sets the corresponding pwm outputs to the computed values.  It is included in
+lm_sensors since version 2.8.0. For easy configuration, there's a script
+named pwmconfig which lets you interactively write your configuration file for
+fancontrol. Alternatively you can write this file yourself using the
+information from the configuration section of this document.
+
+Please be careful when using the fan control features of your mainboard, in
+addition to the risk of burning your CPU, at higher temperatures there will be
+a higher wearout of your other hardware components, too. So if you plan to use
+these components in 50 years, _maybe_ you shouldn't use fancontrol/your
+hardware at all.  Also please keep in mind most fans aren't designed to be
+powered by a PWMed voltage, for more detailed information on this I recommend
+this appnote: http://www.maxim-ic.com/appnotes.cfm/appnote_number/707
+In practice it doesn't seem to be a major issue, the fans will get slightly
+warmer, just be sure to have a temperature alarm and/or shutdown call, in case
+some fan fails, because you probably won't hear it anymore ;)
+
+Configuration
+
+Since most of you are going to use the pwmconfig script, the config
+file syntax will be discussed last. First I'm going to describe the various
+variables available for changing fancontrol's behaviour:
+
+INTERVAL
+	This variable defines at which interval in seconds the main loop of
+	fancontrol will be executed
+
+FCTEMPS
+	Maps pwm outputs to temperature sensors so fancontrol knows which
+	temperature sensors should be used for calculation of new values for
+	the corresponding pwm outputs.
+
+FCFANS
+	FCFANS records the association between a pwm and a fan.
+	Then fancontrol can check the fan speed and restart it if it
+	stops unexpectedly.
+
+MINTEMP
+	The temperature below which the fan gets switched to minimum speed.
+
+MAXTEMP
+	The temperature over which the fan gets switched to maximum speed.
+
+MINSTART
+	Sets the minimum speed at which the fan begins spinning. You should
+	use a safe value to be sure it works, even when the fan gets old.
+
+MINSTOP
+	The minimum speed at which the fan still spins. Use a safe value here,
+	too.
+
+MINPWM
+	The PWM value to use when the temperature is below MINTEMP.
+	Typically, this will be either 0 if it is OK for the fan to plain
+	stop, or the same value as MINSTOP if you don't want the fan to
+	ever stop.
+	If this value isn't defined, it defaults to 0 (stopped fan).
+
+MAXPWM
+	The PWM value to use when the temperature is over MAXTEMP.
+	If this value isn't defined, it defaults to 255 (full speed).
+
+A graph might help you understand how the different values relate
+to each other:
+
+    PWM ^
+    255 +
+        |
+        |
+        |                             ,-------------- MAXPWM
+        |                           ,'.
+        |                         ,'  .
+        |                       ,'    .
+        |                     ,'      .
+        |                   ,'        .
+        |                 ,'          .
+        |       MINSTOP .'            .
+        |               |             .
+        |               |             .
+        |               |             .
+ MINPWM |---------------'             .
+        |               .             .
+        |               .             .
+        |               .             .
+      0 +---------------+-------------+---------------->
+                     MINTEMP       MAXTEMP            t (degree C)
+
+The configuration file format is a bit strange:
+
+VARIABLE=chip/pwmdev=value chip/pwmdev2=value2 [...]
+VARIABLE2=[...]
+
+Each variable has its own line. The variable name is followed by an equal sign
+and the device=value pairs. These consist of the path to the pwm output for
+which the value is valid, equal sign followed by the value and are separated
+by a blank. Path can be absolute or relative (from /sys/bus/i2c/devices or
+/sys/class/hwmon depending on the kernel version).
+
+Example:
+
+MINTEMP=hwmon0/device/pwm1=40 hwmon0/device/pwm2=54
+
+You have to play with the temperature values a bit to get happy. For initial
+setup I recommend using the pwmconfig script. Small changes can be made by
+editing the config file directly following the rules above.
+
+
+The algorithm
+
+fancontrol first reads its configuration, writes it to arrays and loops its
+main function.  This function gets the temperatures and fanspeeds from
+kernel driver files and calculates new speeds depending on temperature
+changes, but only if the temp is between MINTEMP and MAXTEMP. After that, the
+new values are written to the pwm outputs.  The pwm value increases
+linearly with rising temperature.
+
+
+Planned features
+
+rc-scripts for some gnu/linux-distributions
+smoother regulation (temp interpolation)
+gui for configuration
+
+If you have other wishes or want to contribute something, please let me know:
+marius.reiner${AT}hdev.de

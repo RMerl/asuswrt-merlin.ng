@@ -1,0 +1,44 @@
+#!/bin/bash
+
+source=.
+version=`cat $source/../version`
+package=$source/../alsa-utils-$version.tar.bz2
+packagedir=/usr/src/redhat
+xrpmbuild=rpm
+rpmbuild --usage 2> /dev/null > /dev/null && xrpmbuild=rpmbuild
+
+# SuSE path
+if [ -d /usr/src/packages ]; then
+  packagedir=/usr/src/packages
+fi
+
+make -C .. clean
+make -C .. dist
+
+if [ ! -r $package ]; then
+  echo "Error: wrong package: $package"
+  exit 1
+fi
+
+cp -fv $package ${packagedir}/SOURCES
+
+if [ ! -r $source/buildrpm ]; then
+  echo "Error: invalid directory: $source"
+  exit 1
+fi
+
+if [ ! -d ${packagedir} ]; then
+  echo "Error: ${packagedir} directory not found"
+  exit 1
+fi
+
+if [ ! -r $source/alsadriver.spec ]; then
+  cd $source/..
+  ./configure
+  cd utils
+fi
+
+cp -fv $source/alsa-utils.spec ${packagedir}/SPECS
+cd ${packagedir}/SPECS
+$xrpmbuild -ba alsa-utils.spec
+cd ${packagedir}

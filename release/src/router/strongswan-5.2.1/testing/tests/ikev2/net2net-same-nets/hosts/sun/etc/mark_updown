@@ -1,0 +1,238 @@
+#! /bin/sh
+# updown script setting inbound marks on ESP traffic in the mangle chain
+#
+# Copyright (C) 2003-2004 Nigel Meteringham
+# Copyright (C) 2003-2004 Tuomo Soini
+# Copyright (C) 2002-2004 Michael Richardson
+# Copyright (C) 2005-2010 Andreas Steffen <andreas.steffen@strongswan.org>
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# CAUTION:  Installing a new version of strongSwan will install a new
+# copy of this script, wiping out any custom changes you make.  If
+# you need changes, make a copy of this under another name, and customize
+# that, and use the (left/right)updown parameters in ipsec.conf to make
+# strongSwan use yours instead of this default one.
+
+# things that this script gets (from ipsec_pluto(8) man page)
+#
+#      PLUTO_VERSION
+#              indicates  what  version of this interface is being
+#              used.  This document describes version  1.1.   This
+#              is upwardly compatible with version 1.0.
+#
+#       PLUTO_VERB
+#              specifies the name of the operation to be performed
+#              (prepare-host, prepare-client, up-host, up-client,
+#              down-host, or down-client).  If the address family
+#              for security gateway to security gateway communica-
+#              tions is IPv6, then a suffix of -v6 is added to the
+#              verb.
+#
+#       PLUTO_CONNECTION
+#              is the name of the  connection  for  which  we  are
+#              routing.
+#
+#       PLUTO_NEXT_HOP
+#              is the next hop to which packets bound for the peer
+#              must be sent.
+#
+#       PLUTO_INTERFACE
+#              is the name of the ipsec interface to be used.
+#
+#       PLUTO_REQID
+#              is the requid of the ESP policy
+#
+#       PLUTO_ME
+#              is the IP address of our host.
+#
+#       PLUTO_MY_ID
+#              is the ID of our host.
+#
+#       PLUTO_MY_CLIENT
+#              is the IP address / count of our client subnet.  If
+#              the  client  is  just  the  host,  this will be the
+#              host's own IP address / max (where max  is  32  for
+#              IPv4 and 128 for IPv6).
+#
+#       PLUTO_MY_CLIENT_NET
+#              is the IP address of our client net.  If the client
+#              is just the host, this will be the  host's  own  IP
+#              address.
+#
+#       PLUTO_MY_CLIENT_MASK
+#              is  the  mask for our client net.  If the client is
+#              just the host, this will be 255.255.255.255.
+#
+#       PLUTO_MY_SOURCEIP
+#       PLUTO_MY_SOURCEIP4_$i
+#       PLUTO_MY_SOURCEIP6_$i
+#              contains IPv4/IPv6 virtual IP received from a responder,
+#              $i enumerates from 1 to the number of IP per address family.
+#              PLUTO_MY_SOURCEIP is a legacy variable and equals to the first
+#              virtual IP, IPv4 or IPv6.
+#
+#       PLUTO_MY_PROTOCOL
+#              is the IP protocol that will be transported.
+#
+#       PLUTO_MY_PORT
+#              is  the  UDP/TCP  port  to  which  the IPsec SA  is
+#              restricted on our side.
+#
+#       PLUTO_PEER
+#              is the IP address of our peer.
+#
+#       PLUTO_PEER_ID
+#              is the ID of our peer.
+#
+#       PLUTO_PEER_CA
+#              is the CA which issued the cert of our peer.
+#
+#       PLUTO_PEER_CLIENT
+#              is the IP address / count of the peer's client sub-
+#              net.   If the client is just the peer, this will be
+#              the peer's own IP address / max (where  max  is  32
+#              for IPv4 and 128 for IPv6).
+#
+#       PLUTO_PEER_CLIENT_NET
+#              is the IP address of the peer's client net.  If the
+#              client is just the peer, this will  be  the  peer's
+#              own IP address.
+#
+#       PLUTO_PEER_CLIENT_MASK
+#              is  the  mask  for  the  peer's client net.  If the
+#              client   is   just   the   peer,   this   will   be
+#              255.255.255.255.
+#
+#       PLUTO_PEER_PROTOCOL
+#              is the IP protocol that will be transported.
+#
+#       PLUTO_PEER_PORT
+#              is  the  UDP/TCP  port  to  which  the IPsec SA  is
+#              restricted on the peer side.
+#
+#       PLUTO_XAUTH_ID
+#              is an optional user ID employed by the XAUTH protocol
+#
+#       PLUTO_MARK_IN
+#              is an optional XFRM mark set on the inbound IPsec SA
+#
+#       PLUTO_MARK_OUT
+#              is an optional XFRM mark set on the outbound IPsec SA
+#
+#       PLUTO_UDP_ENC
+#              contains the remote UDP port in the case of ESP_IN_UDP
+#              encapsulation
+#
+#       PLUTO_DNS4_$i
+#       PLUTO_DNS6_$i
+#              contains IPv4/IPv6 DNS server attribute received from a
+#              responder, $i enumerates from 1 to the number of servers per
+#              address family.
+#
+
+# define a minimum PATH environment in case it is not set
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/sbin:/usr/local/sbin"
+export PATH
+
+# check parameter(s)
+case "$1:$*" in
+':')			# no parameters
+	;;
+iptables:iptables)	# due to (left/right)firewall; for default script only
+	;;
+custom:*)		# custom parameters (see above CAUTION comment)
+	;;
+*)	echo "$0: unknown parameters \`$*'" >&2
+	exit 2
+	;;
+esac
+
+# define NETMAP
+SAME_NET=$PLUTO_PEER_CLIENT
+IN_NET=$PLUTO_MY_CLIENT
+OUT_NET="10.8.0.0/14"
+
+# define internal interface
+INT_INTERFACE="eth1"
+
+# is there an inbound mark to be set?
+if [ -n "$PLUTO_MARK_IN" ]
+then
+	if [ -n "$PLUTO_UDP_ENC" ]
+	then
+	    SET_MARK_IN="-p udp --sport $PLUTO_UDP_ENC"
+	else
+		SET_MARK_IN="-p esp"
+	fi
+	SET_MARK_IN="$SET_MARK_IN -s $PLUTO_PEER -j MARK --set-mark $PLUTO_MARK_IN"
+fi
+
+# is there an outbound mark to be set?
+if [ -n "$PLUTO_MARK_OUT" ]
+then
+	SET_MARK_OUT="-i $INT_INTERFACE -s $SAME_NET -d $OUT_NET -j MARK --set-mark $PLUTO_MARK_OUT"
+fi
+
+# resolve octal escape sequences
+PLUTO_MY_ID=`printf "$PLUTO_MY_ID"`
+PLUTO_PEER_ID=`printf "$PLUTO_PEER_ID"`
+
+# the big choice
+case "$PLUTO_VERB:$1" in
+up-client:)
+	# connection to my client subnet coming up
+	# If you are doing a custom version, firewall commands go here.
+	if [ -n "$PLUTO_MARK_IN" ]
+	then
+	    iptables -t mangle -A PREROUTING $SET_MARK_IN
+	    iptables -t nat -A PREROUTING -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN \
+		     -d $IN_NET -j NETMAP --to $SAME_NET 
+	    iptables -I FORWARD 1 -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN -j ACCEPT
+	    iptables -t nat -A POSTROUTING -o $INT_INTERFACE -m mark --mark $PLUTO_MARK_IN \
+	             -s $SAME_NET -j NETMAP --to $OUT_NET 
+	fi
+	if [ -n "$PLUTO_MARK_OUT" ]
+	then
+	    iptables -t mangle -A PREROUTING $SET_MARK_OUT 
+	    iptables -t nat -A PREROUTING -i $INT_INTERFACE -m mark --mark $PLUTO_MARK_OUT \
+	             -d $OUT_NET -j NETMAP --to $SAME_NET
+	    iptables -I FORWARD 1 -o $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_OUT -j ACCEPT
+	    iptables -t nat -A POSTROUTING -o $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_OUT \
+	             -s $SAME_NET -j NETMAP --to $IN_NET
+	fi
+	;;
+down-client:)
+	# connection to my client subnet going down
+	# If you are doing a custom version, firewall commands go here.
+	if [ -n "$PLUTO_MARK_IN" ]
+	then
+	    iptables -t mangle -D PREROUTING $SET_MARK_IN
+	    iptables -t nat -D PREROUTING -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN \
+	             -d $IN_NET -j NETMAP --to $SAME_NET 
+	    iptables -D FORWARD -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN -j ACCEPT
+	    iptables -t nat -D POSTROUTING -o eth1 -m mark --mark $PLUTO_MARK_IN \
+	             -s $SAME_NET -j NETMAP --to $OUT_NET 
+	fi
+	if [ -n "$PLUTO_MARK_OUT" ]
+	then
+	    iptables -t mangle -D PREROUTING $SET_MARK_OUT
+	    iptables -t nat -D PREROUTING -i $INT_INTERFACE -m mark --mark $PLUTO_MARK_OUT \
+	             -d $OUT_NET -j NETMAP --to $SAME_NET
+	    iptables -D FORWARD -o $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_OUT -j ACCEPT
+	    iptables -t nat -D POSTROUTING -o $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_OUT \
+	             -s $SAME_NET -j NETMAP --to $IN_NET
+	fi
+	;;
+*)	echo "$0: unknown verb \`$PLUTO_VERB' or parameter \`$1'" >&2
+	exit 1
+	;;
+esac

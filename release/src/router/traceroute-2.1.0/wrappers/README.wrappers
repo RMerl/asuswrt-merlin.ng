@@ -1,0 +1,18 @@
+
+This directory contains various wrappers for traceroute, which provide
+some compatibility for some another traceroute-like software,
+including tcptraceroute(8).
+
+These wrappers try to emulate the command-line interface only.
+The actual output is the output of the underlain traceroute(8).
+
+Some of options and features certainly are not supported
+(especially if it is considered too extra :) ).
+
+The idea of such wrappers is mostly not wrappers itself. It is to inspect
+the features implemented by competitors, whether it is already supported by us,
+or it is useful to be supported, or it is not useful or excessive.
+
+We have no plans to implement all features of all existing software.
+Let the people a chance to play with something... ;)
+

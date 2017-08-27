@@ -1,0 +1,6 @@
+#%PAM-1.0
+auth       include	password-auth
+account    required	pam_nologin.so
+account    include	password-auth
+password   include	password-auth
+session    include	password-auth

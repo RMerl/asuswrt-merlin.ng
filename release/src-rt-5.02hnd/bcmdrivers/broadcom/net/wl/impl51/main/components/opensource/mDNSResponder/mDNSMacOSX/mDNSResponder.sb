@@ -1,0 +1,151 @@
+; -*- Mode: Scheme; tab-width: 4 -*-
+;
+; Copyright (c) 2007 Apple Inc. All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without 
+; modification, are permitted provided that the following conditions are met:
+;
+; 1.  Redistributions of source code must retain the above copyright notice, 
+;     this list of conditions and the following disclaimer. 
+; 2.  Redistributions in binary form must reproduce the above copyright notice, 
+;     this list of conditions and the following disclaimer in the documentation 
+;     and/or other materials provided with the distribution. 
+; 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of its 
+;     contributors may be used to endorse or promote products derived from this 
+;     software without specific prior written permission. 
+;
+; THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY 
+; EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+; DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY 
+; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+; (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND 
+; ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;
+;############################################################################
+
+(version 1)
+
+; WARNING: The sandbox rule capabilities and syntax used in this file are currently an
+; Apple SPI (System Private Interface) and are subject to change at any time without notice.
+; Apple may in future announce an official public supported sandbox API, but until then Developers
+; are cautioned not to build products that use or depend on the sandbox facilities illustrated here.
+
+; Use "debug all" to log all operations examined by seatbelt, whether allowed or not.
+; Use "debug deny" to log only operations that are denied by seatbelt
+; to discover what specific attempted operation is causing an exception.
+
+;(debug all)
+(debug deny)
+
+; To help debugging, "with send-signal SIGFPE" will trigger a fake floating-point exception,
+; which will crash the process and show the call stack leading to the offending operation.
+; For the shipping version "deny" is probably better because it vetoes the operation
+; without killing the process.
+
+(deny default)
+;(deny default (with send-signal SIGFPE))
+
+; Special exception: "send-signal" command does not apply to the mach-* operations,
+; so for those we have to use a plain unadorned "deny" instead
+; (which means we may not get any notification of unintentional mach-* denials)
+(deny mach-lookup)
+(deny mach-priv-host-port)
+
+; Mach communications
+; These are needed for things like getpwnam, hostname changes, & keychain
+(allow mach-lookup (global-name
+					"com.apple.bsd.dirhelper"
+					"com.apple.distributed_notifications.2"
+					"com.apple.ocspd"
+					"com.apple.PowerManagement.control"
+					"com.apple.mDNSResponderHelper"
+					"com.apple.SecurityServer"
+					"com.apple.SystemConfiguration.configd"
+					"com.apple.system.DirectoryService.libinfo_v1"
+					"com.apple.system.DirectoryService.membership_v1"
+					"com.apple.system.notification_center"
+					"com.apple.system.logger"
+					"com.apple.webcontentfilter.dns"
+					"com.apple.server.bluetooth"
+					"com.apple.awacs"
+					"com.apple.blued"))
+
+; Rules to allow the operations mDNSResponder needs start here
+
+(allow signal (target self))
+(allow network*)			; Allow networking, including Unix Domain Sockets
+(if (defined? 'system-socket)
+    (allow system-socket))  ; To create raw sockets
+(allow sysctl-read)			; To get hardware model information
+(allow sysctl-write)		; Needed for CFSocket
+(allow file-read-metadata)	; Needed for dyld to work
+(allow ipc-posix-shm)		; Needed for POSIX shared memory
+
+(allow file-read-data                 (regex #"^/dev/random$"))
+(allow file-read-data file-write-data (regex #"^/dev/console$"))		; Needed for syslog early in the boot process
+(allow file-read-data                 (regex #"^/dev/autofs_nowait$"))	; Used by CF to circumvent automount triggers
+(allow file-read-data                 (regex #"^/private/etc/hosts$"))			; /etc/hosts support
+(allow file-read-data                 (regex #"^/private/etc$"))				; /etc/hosts support
+
+; Allow us to read and write our socket
+(allow file-read*     file-write*     (regex #"^/private/var/run/mDNSResponder$"))
+
+; Allow us to read system version, settings, and other miscellaneous necessary file system accesses
+(allow file-read-data                 (regex #"^/dev/urandom$"))
+(allow file-read-data                 (regex #"^/usr/sbin(/mDNSResponder)?$"))		; Needed for CFCopyVersionDictionary()
+(allow file-read-data                 (regex #"^/usr/share/icu/.*$"))
+(allow file-read-data                 (regex #"^/usr/share/zoneinfo/.*$"))
+(allow file-read-data                 (regex #"^/Library/Preferences/SystemConfiguration/preferences\.plist$"))
+(allow file-read-data                 (regex #"^/Library/Preferences/SystemConfiguration/com\.apple\.nat\.plist$"))
+(allow file-read-data                 (regex #"^/Library/Preferences/(ByHost/)?\.GlobalPreferences.*\.plist$"))
+(allow file-read-data                 (regex #"^/Library/Preferences/com\.apple\.security.*\.plist$"))
+(allow file-read-data                 (regex #"^/Library/Preferences/com\.apple\.crypto\.plist$"))
+(allow file-read-data                 (regex #"^/Library/Security/Trust Settings/Admin\.plist$"))
+(allow file-read-data                 (regex #"^/System/Library/CoreServices/SystemVersion.*$"))
+(allow file-read-data                 (regex #"^/System/Library/Preferences/com\.apple\.security.*\.plist$"))
+(allow file-read-data                 (regex #"^/System/Library/Preferences/com\.apple\.crypto\.plist$"))
+(allow file-read-data                 (regex #"^/System/Library/SystemConfiguration/PowerManagement\.bundle(/|$)"))
+(allow file-read-data                 (regex #"^/Library/Preferences/SystemConfiguration/com\.apple\.PowerManagement\.plist$"))
+(allow file-read-data                 (regex #"^/private/var/preferences/SystemConfiguration/preferences\.plist$"))
+
+; Allow access to System Keychain
+(allow file-read-data                 (regex #"^/System/Library/Security$"))
+(allow file-read-data                 (regex #"^/System/Library/Keychains/.*$"))
+; We just need access to System.keychain. But we don't want errors logged if other keychains are
+; accessed under /Library/Keychains. Other keychains may be accessed as part of setting up an SSL
+; connection. Instead of adding access to it here(to things which we don't need), we disable any
+; logging that might happen during the access
+(deny  file-read-data                 (regex #"^/Library/Keychains/") (with no-log))
+(allow file-read-data                 (regex #"^/Library/Keychains/System\.keychain$"))
+; Our Module Directory Services cache
+(allow file-read-data                 (regex #"^/private/var/tmp/mds/"))
+(allow file-read* file-write*         (regex #"^/private/var/tmp/mds/[0-9]+(/|$)"))
+(allow file-read-data                 (regex #"^/private/var/db/mds/"))
+(allow file-read* file-write*         (regex #"^/private/var/db/mds/[0-9]+(/|$)"))
+(allow file-read* file-write*         (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds(/|$)"))
+(allow file-read* file-write*         (regex #"^/private/var/folders/[^/]+/[^/]+/-Caches-/mds(/|$)")) ; Required on 10.5 and 10.6
+; CRL Cache for SSL/TLS connections
+(allow file-read-data                 (regex #"^/private/var/db/crls/crlcache\.db$"))
+
+; For mDNS sleep proxy offload and IOPMConnectionCreate
+(if (defined? 'iokit-open)
+   (begin
+     (allow iokit-open (iokit-user-client-class "NVEthernetUserClientMDNS"))
+     (allow iokit-open (iokit-user-client-class "mDNSOffloadUserClient"))
+     (allow iokit-open (iokit-user-client-class "RootDomainUserClient"))))
+
+; For D2D
+(allow file-read-data (regex #"^/System/Library/PrivateFrameworks/DeviceToDeviceManager.framework(/|$)"))
+(allow file-read-data (regex #"^/System/Library/PrivateFrameworks/MobileBluetooth.framework(/|$)"))
+(allow file-read-data (regex #"^/System/Library/Frameworks/CoreFoundation.framework(/|$)"))
+(allow file-read-data (regex #"^/System/Library/Frameworks/SystemConfiguration.framework(/|$)"))
+(allow file-read-data (regex #"^/System/Library/Frameworks/IOKit.framework(/|$)"))
+(allow file-read-data (regex #"^/System/Library/Frameworks/Security.framework(/|$)"))
+(allow file-read-data file-write-data file-ioctl (regex #"^/dev/dtracehelper$"))
+
+; For WebFilterDNS framework
+(allow file-read-data (regex #"^/System/Library/PrivateFrameworks/WebFilterDNS.framework(/|$)"))

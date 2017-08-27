@@ -1,0 +1,11 @@
+;
+; SiS SI7018 mixer abstract layer
+;
+; Copyright (c) 2003 Jaroslav Kysela <perex@perex.cz>
+; License: GPL v2 (http://www.gnu.org/licenses/gpl.html)
+;
+
+(defun sndoc_mixer_open (hctl pcm)
+  (princ "sndoc_mixer_open: hctl=" hctl " pcm=" pcm "\n")
+  0
+)

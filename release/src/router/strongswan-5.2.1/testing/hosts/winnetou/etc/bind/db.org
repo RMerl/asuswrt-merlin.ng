@@ -1,0 +1,40 @@
+;
+; Zonefile for the org zone
+;
+$TTL	604800
+@		IN	SOA	ns1.org.	root.org. (
+				     1		; Serial
+				 604800		; Refresh
+				  86400		; Retry	
+				2419200		; Expire
+				 604800 )	; Negative Cache TTL
+;
+@		IN	NS	ns1.org.
+ns1		IN	A	192.168.0.150
+ns1		IN	AAAA	fe80::fcfd:c0ff:fea8:96
+;
+strongswan	IN	NS	ns1.strongswan.org.
+ns1.strongswan	IN	A	192.168.0.150
+ns1.strongswan	IN	AAAA	fe80::fcfd:c0ff:fea8:96
+;
+strongswan.org.	IN	DS	481 8 1 5B239B124E38890C1853F5ECF299DEDEB5537E55
+strongswan.org.	IN	DS	481 8 2 FEE6842CA2322347D818318D278A929E0B9FD82353B84AE94A6A4C7B 1DFB4FEE
+;
+; This is a zone-signing key, keyid 24285, for org.
+org.		IN	DNSKEY	256 3 8	(
+				AwEAAa6IO30MFlgyj0hJLe0vqvHLr1/4kRCNl/Biz7VYwgzRkiYxHxLJ
+				U+i8/r9rEWU85Q6WEt77xQ+HyxzwmoXpSaMtymYifNFZnvwl31CbkzIB
+				FTtBUQ3BCKZjv0WgpLExDqAKgclCWBZ1PrHvDn1HTl6mMgCpiWothzkn
+				zoNbB0g9
+				)
+;
+; This is a key-signing key, keyid 51859, for org.
+org.		IN	DNSKEY	257 3 8 (
+				AwEAAfAyiINF1/fIyebiAZhG3kFxv1+j3D3TxNBPccbiVUgYSnse95mb
+				mn40KgguCljoi6kDu10Qo+XUwpR78dGJiqvKfej7cz6wbIr5qu9Kv7f8
+				lJPRQ2igxZ/0ZCLXGbozRuQGy39klQeG98fwxNkzHqXRxkhyAgpY8E2B
+				umRsi2Cca/vKF+6OpNx9b8RXIBcUTdhx0Vjg+3gYhSRR1rPB160sbaL+
+				v3Fxv9ZzOIY9ekforNxuqV9/U0DCiOhgpZC7H+5ShPb0VNzYvv0IwIAG
+				VPVEJdh5SNPQ0LclPXcR3av+DpjvdY5oAOn/mLPCHjxBnzOl7Q3P43dL
+				DtYdKb9mGnk=
+				)

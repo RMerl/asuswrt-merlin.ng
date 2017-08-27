@@ -1,0 +1,32 @@
+# -*- text -*-
+#
+#  $Id$
+
+# This module loads RADIUS clients as needed, rather than when the server
+# starts.
+#
+#  There are no configuration entries for this module.  Instead, it
+#  relies on the "client" configuration.  You must:
+#
+#	1) link raddb/sites-enabled/dynamic_clients to
+#	   raddb/sites-available/dynamic_clients
+#
+#	2) Define a client network/mask (see top of the above file)
+#
+#	3) uncomment the "directory" entry in that client definition
+#
+#	4) list "dynamic_clients" in the "authorize" section of the
+#	   "dynamic_clients' virtual server.  The default example already
+#	   does this.
+#
+#	5) put files into the above directory, one per IP.
+#	   e.g. file "192.0.2.1" should contain a normal client definition
+#	   for a client with IP address 192.0.2.1.
+#
+#  For more documentation, see the file:
+#
+#	raddb/sites-available/dynamic-clients
+#
+dynamic_clients {
+
+}

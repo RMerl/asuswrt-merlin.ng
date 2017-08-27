@@ -1,0 +1,226 @@
+  This directory contains scripts to create the server certificates.
+To make a set of default (i.e. test) certificates, simply type:
+
+$ ./bootstrap
+
+  The "openssl" command will be run against the sample configuration
+files included here, and will make a self-signed certificate authority
+(i.e. root CA), and a server certificate.  This "root CA" should be
+installed on any client machine needing to do EAP-TLS, PEAP, or
+EAP-TTLS.
+
+  The Microsoft "XP Extensions" will be automatically included in the
+server certificate.  Without those extensions Windows clients will
+refuse to authenticate to FreeRADIUS.
+
+  The root CA and the "XP Extensions" file also contain a crlDistributionPoints
+attribute. The latest release of Windows Phone needs this to be present
+for the handset to validate the RADIUS server certificate. The RADIUS
+server must have the URI defined but the CA need not have...however it
+is best practice for a CA to have a revocation URI. Note that whilst
+the Windows Mobile client cannot actually use the CRL when doing 802.1X
+it is recommended that the URI be an actual working URL and contain a
+revocation format file as there may be other OS behaviour at play and
+future OSes that may do something with that URI.
+
+  In general, you should use self-signed certificates for 802.1x (EAP)
+authentication.  When you list root CAs from other organisations in
+the "ca_file", you permit them to masquerade as you, to authenticate
+your users, and to issue client certificates for EAP-TLS.
+
+  If FreeRADIUS was configured to use OpenSSL, then simply starting
+the server in root in debugging mode should also create test
+certificates, i.e.:
+
+$ radiusd -X
+
+  That will cause the EAP-TLS module to run the "bootstrap" script in
+this directory.  The script will be executed only once, the first time
+the server has been installed on a particular machine.  This bootstrap
+script SHOULD be run on installation of any pre-built binary package
+for your OS.  In any case, the script will ensure that it is not run
+twice, and that it does not over-write any existing certificates.
+
+  If you already have CA and server certificates, rename (or delete)
+this directory, and create a new "certs" directory containing your
+certificates.  Note that the "make install" command will NOT
+over-write your existing "raddb/certs" directory, which means that the
+"bootstrap" command will not be run.
+
+
+		NEW INSTALLATIONS OF FREERADIUS
+
+
+  We suggest that new installations use the test certificates for
+initial tests, and then create real certificates to use for normal
+user authentication.  See the instructions below for how to create the
+various certificates.  The old test certificates can be deleted by
+running the following command:
+
+$ rm -f *.pem *.der *.csr *.crt *.key *.p12 serial* index.txt*
+
+  Then, follow the instructions below for creating real certificates.
+
+  Once the final certificates have been created, you can delete the
+"bootstrap" command from this directory, and delete the
+"make_cert_command" configuration from the "tls" sub-section of
+eap.conf.
+
+  If you do not want to enable EAP-TLS, PEAP, or EAP-TTLS, then delete
+the relevant sub-sections from the "eap.conf" file.
+
+
+		MAKING A ROOT CERTIFICATE
+
+
+$ vi ca.cnf
+
+  Edit the "input_password" and "output_password" fields to be the
+  password for the CA certificate.
+
+  Edit the [certificate_authority] section to have the correct values
+  for your country, state, etc.
+
+$ make ca.pem
+
+  This step creates the CA certificate.
+
+$ make ca.der
+
+  This step creates the DER format of the self-signed certificate,
+  which is can be imported into Windows.
+
+
+		MAKING A SERVER CERTIFICATE
+
+
+$ vi server.cnf
+
+  Edit the "input_password" and "output_password" fields to be the
+  password for the server certificate.
+
+  Edit the [server] section to have the correct values for your
+  country, state, etc.  Be sure that the commonName field here is
+  different from the commonName for the CA certificate.
+
+$ make server.pem
+
+  This step creates the server certificate.
+
+  If you have an existing certificate authority, and wish to create a
+  certificate signing request for the server certificate, edit
+  server.cnf as above, and type the following command.
+
+$ make server.csr
+
+  You will have to ensure that the certificate contains the XP
+  extensions needed by Microsoft clients.
+
+
+		MAKING A CLIENT CERTIFICATE
+
+
+  Client certificates are used by EAP-TLS, and optionally by EAP-TTLS
+and PEAP.  The following steps outline how to create a client
+certificate that is signed by the server certificate created above.
+You will have to have the password for the server certificate in the
+"input_password" and "output_password" fields of the server.cnf file.
+
+
+$ vi client.cnf
+
+  Edit the "input_password" and "output_password" fields to be the
+  password for the client certificate.  You will have to give these
+  passwords to the end user who will be using the certificates.
+
+  Edit the [client] section to have the correct values for your
+  country, state, etc.  Be sure that the commonName field here is
+  the User-Name that will be used for logins!
+
+$ make client.pem
+
+  The users certificate will be in "emailAddress.pem",
+  i.e. "user@example.com.pem".
+
+  To create another client certificate, just repeat the steps for
+  making a client certificate, being sure to enter a different login
+  name for "commonName", and a different password.
+
+
+		PERFORMANCE
+
+
+  EAP performance for EAP-TLS, TTLS, and PEAP is dominated by SSL
+  calculations.  That is, a normal system can handle PAP
+  authentication at a rate of 10k packets/s.  However, SSL involves
+  RSA calculations, which are very expensive.  To benchmark your system,
+  do:
+
+$ openssl speed rsa
+
+  or
+
+$ openssl speed rsa2048
+
+  to test 2048 bit keys.
+
+  A 1GHz system will likely do 30 calculations/s.  A 2GHz system may
+  do 50 calculations/s, or more.  That number is also the number of
+  authentications/s that can be done for EAP-TLS (or TTLS, or PEAP).
+
+
+		COMPATIBILITY
+
+The certificates created using this method are known to be compatible
+with ALL operating systems.  Some common issues are:
+
+  - Windows requires certain OIDs in the certificates.  If it doesn't
+    see them, it will stop doing EAP.  The most visible effect is
+    that the client starts EAP, gets a few Access-Challenge packets,
+    and then a little while later re-starts EAP.  If this happens, see
+    the FAQ, and the comments in raddb/eap.conf for how to fix it.
+
+  - Windows requires the root certificates to be on the client PC.
+    If it doesn't have them, you will see the same issue as above.
+
+  - Windows XP post SP2 has a bug where it has problems with
+    certificate chains.  i.e. if the server certificate is an
+    intermediate one, and not a root one, then authentication will
+    silently fail, as above.
+
+  - Some versions of Windows CE cannot handle 4K RSA certificates.
+    They will (again) silently fail, as above.
+
+  - In none of these cases will Windows give the end user any
+    reasonable error message describing what went wrong.  This leads
+    people to blame the RADIUS server.  That blame is misplaced.
+
+  - Certificate chains of more than 64K bytes are known to not work.
+    This is a problem in FreeRADIUS.  However, most clients cannot
+    handle 64K certificate chains.  Most Access Points will shut down
+    the EAP session after about 50 round trips, while 64K certificate
+    chains will take about 60 round trips.  So don't use large
+    certificate chains.  They will only work after everyone upgrade
+    everything in the network.
+
+  - All other operating systems are known to work with EAP and
+    FreeRADIUS.  This includes Linux, *BSD, Mac OS X, Solaris,
+    Symbian, along with all known embedded systems, phones, WiFi
+    devices, etc.
+
+  - Someone needs to ask Microsoft to please stop making life hard for
+    their customers.
+
+
+		SECURITY CONSIDERATIONS
+
+The default certificate configuration files uses MD5 for message
+digests, to maintain compatibility with network equipment that
+supports only this algorithm.
+
+MD5 has known weaknesses and is discouraged in favour of SHA1 (see
+http://www.kb.cert.org/vuls/id/836068 for details). If your network
+equipment supports the SHA1 signature algorithm, we recommend that you
+change the "ca.cnf", "server.cnf", and "client.cnf" files to specify
+the use of SHA1 for the certificates. To do this, change the
+'default_md' entry in those files from 'md5' to 'sha1'.

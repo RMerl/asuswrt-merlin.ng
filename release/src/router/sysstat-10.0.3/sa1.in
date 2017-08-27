@@ -1,0 +1,46 @@
+#!/bin/sh
+# @SA_LIB_DIR@/sa1
+# (C) 1999-2011 Sebastien Godard (sysstat <at> orange.fr)
+#
+#@(#) @PACKAGE_NAME@-@PACKAGE_VERSION@
+#@(#) sa1: Collect and store binary data in system activity data file.
+#
+HISTORY=0
+SADC_OPTIONS=""
+SYSCONFIG_DIR=@SYSCONFIG_DIR@
+[ -r ${SYSCONFIG_DIR}/sysstat ] && . ${SYSCONFIG_DIR}/sysstat
+if [ ${HISTORY} -gt 28 ]
+then
+	CURRENTDIR=`date +%Y%m`
+	DATE=`date +%d`
+	CURRENTFILE=sa${DATE}
+	DDIR=@SA_DIR@
+	cd ${DDIR} || exit 1
+	[ -d ${CURRENTDIR} ] || mkdir -p ${CURRENTDIR}
+	# If ${CURRENTFILE} exists and is a regular file, then make sure
+       	# the file was modified this day (and not e.g. month ago)
+	# and move it to ${CURRENTDIR}
+	[ ! -L ${CURRENTFILE} ] &&
+		[ -f ${CURRENTFILE} ] &&
+		[ "`date +%Y%m%d -r ${CURRENTFILE}`" = "${CURRENTDIR}${DATE}" ] &&
+		mv -f ${CURRENTFILE} ${CURRENTDIR}/${CURRENTFILE}
+	touch ${CURRENTDIR}/${CURRENTFILE}
+	# Remove the "compatibility" link and recreate it to point to
+	# the (new) current file
+	rm -f ${CURRENTFILE}
+	ln -s ${CURRENTDIR}/${CURRENTFILE} ${CURRENTFILE}
+fi
+umask 0022
+ENDIR=@SA_LIB_DIR@
+cd ${ENDIR}
+[ "$1" = "--boot" ] && shift && BOOT=y || BOOT=n
+if [ $# = 0 ] && [ "${BOOT}" = "n" ]
+then
+# Note: Stats are written at the end of previous file *and* at the
+# beginning of the new one (when there is a file rotation) only if
+# outfile has been specified as '-' on the command line...
+	exec ${ENDIR}/sadc -F -L ${SADC_OPTIONS} 1 1 -
+else
+	exec ${ENDIR}/sadc -F -L ${SADC_OPTIONS} $* -
+fi
+

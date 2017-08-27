@@ -1,0 +1,40 @@
+sysstat for Debian
+==================
+
+The sar(1) command can display both current statistics (when sar
+is called with interval and count parameters, e.g. `sar 1 10')
+or all-day statistics (when is called without those parameters,
+e.g. just `sar').
+
+To display all-day statistics with the sar(1) command, the  the data must
+have been collected first with sadc(8) or sa1(8) and saved in a file
+in /var/log/sysstat directory.
+This Debian package provides a system crontab file, which runs sa1 script,
+but it is by default DISABLED and the statistics are not collected. Thus when
+you try to run sar without any parameters, you most probably get error like
+	`Cannot open /var/log/sysstat/saXX: No such file or directory'.
+
+To avoid the error, please enable collecting data by the crontab by running
+	dpkg-reconfigure sysstat
+and answering `yes' to the question
+	`Do you want to activate sysstat's cron job?'
+
+
+                      -=-=-=-=-=-=-=-=-=-=-=-
+
+As it was said above, the package installs system crontab files, namely
+/etc/cron.d/sysstat and /etc/cron.daily/sysstat. There's no need to follow
+the `Examples' section of sa1(8) and sa2(8) man pages and create entries
+in your root crontab file by hand. Creating such entries can lead to a
+situation, where e.g. two copies of sa2(8) script will be run simultaneously,
+which can cause errors.
+
+
+                      -=-=-=-=-=-=-=-=-=-=-=-
+
+Before reporting a bug regarding this package, please make sure you read the
+FAQ.gz file from this directory.
+
+
+
+ -- Robert Luberda <robert@debian.org>  Thu, 25 Nov 2004 23:06:45 +0100

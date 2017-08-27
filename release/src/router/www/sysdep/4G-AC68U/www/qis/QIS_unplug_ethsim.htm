@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>                                     
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
+<link type="text/css" rel="stylesheet" href="/form_style.css">
+<script type="text/javascript" src="/qis/QISMobilePlugin.js"></script>
+<script type="text/JavaScript" src="/js/jquery.js"></script>
+<script type="text/javascript">
+var now_flag = '<% get_parameter("flag"); %>';
+var modem_autoapn = '<% nvram_get("modem_autoapn"); %>';
+
+function initial(){
+	if(parent.ISMOBILE){
+		parent.set_step("internet_type");
+		hideObjs();
+		document.getElementById("QISmain").style.display = "none";
+		document.getElementById("QISmain_m").style.display = "";		
+	}
+	else{
+		parent.set_step("t1");
+		document.getElementById("detectAgain").focus();
+	}
+
+}
+
+function redirect_page(redirect_flag){
+	document.redirectForm.action = "/qis/QIS_"+redirect_flag+".htm";
+	document.redirectForm.submit();
+}
+
+function submitenter(myfield,e)
+{	
+	var keycode;
+	if (window.event) keycode = window.event.keyCode;
+	else if (e) keycode = e.which;
+	else return true;
+
+	if (keycode == 13){
+		update_wan_info();
+   		return false;
+  	}
+	else
+   	return true;
+}
+
+function detect_if_wan_plug(flag){
+	$.ajax({
+		url: '/result_of_get_changed_status_QIS.asp',
+		dataType: 'script',
+		
+		error: function(xhr){
+			detect_if_wan_plug();		
+		},
+		success: function(response){
+			if(autodet_state == 4){ // ethernet did not plug
+				if(sim_state == 1 || sim_state == 2){
+					redirect_page("admin_pass");
+				}
+				else if(flag == null){
+					document.getElementById("loadingIcon").style.display = "none";
+					document.getElementById("skipButton").style.display = "";
+				}
+				setTimeout("detect_if_wan_plug(1)", 1000);
+			}
+			else if(autodet_state == 0){
+				document.getElementById("loadingIcon").style.display = "";
+				detect_if_wan_plug();
+			}
+			else
+				redirect_page("admin_pass");
+		}
+	});	
+}
+
+function update_wan_info(flag){
+	$.ajax({
+		url: '/start_autodet.asp',
+		dataType: 'script',
+		error: function(xhr){
+			update_wan_info();		
+		},
+		success: function(response){
+			if(flag == null){
+				document.getElementById("skipButton").style.display = "none";
+				document.getElementById("loadingIcon").style.display = "";
+				setTimeout("detect_if_wan_plug();", 10000);
+			}
+			else{
+				setTimeout("detect_if_wan_plug(1);", 1000);
+			}
+		}
+	});
+}
+
+</script>
+</head>
+
+<body onLoad="initial();" onKeyPress="submitenter(this,event)">
+<div class="QISmain" id="QISmain">
+	<div id='waitarea'>
+		<div class="formfonttitle" style="padding:6 0 0 10;">
+				<div>
+					<table width="730px">
+						<tr>
+							<td align="left">
+								<div class="description_down"><#QIS_unplug_title1#></div>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		</div>
+		<p class="QISGeneralFont"><#QIS_unplug_desc1#></p></br>
+		<p class="QISGeneralFont"><#QIS_unplug_desc2#></p>
+		<div class="QISGeneralFont">				
+				<ol type="1">		
+					<li style="line-height:25px;"><#QIS_unplug_step1#></li>
+					<li style="line-height:25px;"><#QIS_unplug_step2#></li>
+					<li style="line-height:25px;"><#QIS_unplug_step3#></li>
+				</ol>	
+		</div>
+		<table id="tblsetting_1" class="QISform" width="400" border=0 align="center" cellpadding="3" cellspacing="0" style="margin-top:-25px;">
+			<tr>
+				<td align="center" colspan="2">
+					<span><img style="margin-top:35px; margin-bottom:35px;" src="/images/WANunplug_ethsim.png"></span>
+				</td>
+			</tr>
+		</table>
+		<br/>
+
+		<div class='apply_gen'>
+			<div id="fresharea">
+				<input type="button" id="skipButton" value="<#CTL_Skip#>" onclick="redirect_page('wireless');" class="button_gen">
+				<input type="button" id="detectAgain" class="button_gen_long" onclick="update_wan_info();" value="<#CTL_Detect_Again#>">
+				<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif">
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<div id="QISmain_m" style="display:none;">
+
+</div>
+
+<form method="post" name="redirectForm" action="" target="">
+<input type="hidden" name="flag" value="">
+</form>
+</body>

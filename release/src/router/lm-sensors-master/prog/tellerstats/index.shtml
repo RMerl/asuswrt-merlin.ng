@@ -1,0 +1,48 @@
+<html>
+<META HTTP-EQUIV="expires" CONTENT="300">
+<META HTTP-EQUIV="Refresh" CONTENT="3600;URL=http:index.shtml">
+<title>Computer Hardware Statistics</title>
+<body bgcolor=FFFFFF>
+
+<center><font size=5>Computer Hardware Statistics</font><br>
+<font size=4>Running 48 Hour Window</font><p>
+
+<!--#config timefmt="%c" -->
+These plots were generated <!--#echo var="LAST_MODIFIED" -->
+<br>
+
+<table border=2>
+<tr>
+<td valign=center align=center><a href=voltagesB.png><img src=voltages.png width=320 height=240><br>All Voltages</a></td>
+<td valign=center align=center><a href=tempsB.png><img src=temps.png width=320 height=240><br>All Temps</td>
+<td valign=center align=center><a href=loadB.png><img src=load.png width=320 height=240><br>System Loading</td>
+</tr>
+<tr>
+<td valign=center align=center><a href=TwelveVOLTB.png><img src=TwelveVOLT.png width=320 height=240><br>+12 Volt Supply</td>
+<td valign=center align=center><a href=NegFiveVOLTB.png><img src=NegFiveVOLT.png width=320 height=240><br>-5 Volt Supply</td>
+<td valign=center align=center><a href=NegTwelveVOLTB.png><img src=NegTwelveVOLT.png width=320 height=240><br>-12 Volt Supply</td>
+</tr>
+<tr>
+<td valign=center align=center><a href=cpu1VB.png><img src=cpu1V.png width=320 height=240><br>CPU1 Core Voltage</td>
+<td valign=center align=center><a href=cpu2VB.png><img src=cpu2V.png width=320 height=240><br>CPU2 Core Voltage</td>
+<td valign=center align=center><a href=ThreeVOLTB.png><img src=ThreeVOLT.png width=320 height=240><br>+3.3 Volt Supply</td>
+</tr>
+<tr>
+<td valign=center align=center><a href=FiveVOLTB.png><img src=FiveVOLT.png width=320 height=240><br>+5 Volt Supply</td>
+<td valign=center align=center><a href=cpu_tempB.png><img src=cpu_temp.png width=320 height=240><br>CPU Temperature (degrees C)</td>
+<td valign=center align=center><a href=mb_tempB.png><img src=mb_temp.png width=320 height=240><br>Motherboard Temperature (degrees C)</td>
+</tr>
+<tr>
+<td valign=center align=center><a href=fanoneB.png><img src=fanone.png width=320 height=240><br>Fan #1 Speed (RPM)</td>
+<td valign=center align=center><a href=fantwoB.png><img src=fantwo.png width=320 height=240><br>Fan #2 Speed (RPM)</td>
+<td valign=center align=center><a href=fanthreeB.png><img src=fanthree.png width=320 height=240><br>Fan #3 Speed (RPM)</td>
+</tr>
+</table><p>
+
+This page generated with drivers and the tellerstats scripts from
+<a href="http://www.lm-sensors.org/">The lm_sensors drivers</a>.
+
+<p>
+
+</body>
+</html>

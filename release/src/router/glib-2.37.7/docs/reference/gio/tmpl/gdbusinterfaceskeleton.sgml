@@ -1,0 +1,183 @@
+<!-- ##### SECTION Title ##### -->
+GDBusInterfaceSkeleton
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusInterfaceSkeleton ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusInterfaceSkeleton::g-authorize-method ##### -->
+<para>
+
+</para>
+
+@gdbusinterfaceskeleton: the object which received the signal.
+@arg1: 
+@Returns: 
+
+<!-- ##### ARG GDBusInterfaceSkeleton:g-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GDBusInterfaceSkeletonClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+@get_info: 
+@get_vtable: 
+@get_properties: 
+@flush: 
+@g_authorize_method: 
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_flush ##### -->
+<para>
+
+</para>
+
+@interface_: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_info ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_vtable ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_properties ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_export ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@connection: 
+@object_path: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_unexport ##### -->
+<para>
+
+</para>
+
+@interface_: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_unexport_from_connection ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@connection: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_connection ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_connections ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_has_connection ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_object_path ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### ENUM GDBusInterfaceSkeletonFlags ##### -->
+<para>
+
+</para>
+
+@G_DBUS_INTERFACE_SKELETON_FLAGS_NONE: 
+@G_DBUS_INTERFACE_SKELETON_FLAGS_HANDLE_METHOD_INVOCATIONS_IN_THREAD: 
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_get_flags ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_skeleton_set_flags ##### -->
+<para>
+
+</para>
+
+@interface_: 
+@flags: 
+
+

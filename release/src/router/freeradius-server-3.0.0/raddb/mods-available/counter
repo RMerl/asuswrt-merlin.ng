@@ -1,0 +1,82 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  counter module:
+#  This module takes an attribute (count-attribute).
+#  It also takes a key, and creates a counter for each unique
+#  key.  The count is incremented when accounting packets are
+#  received by the server.  The value of the increment depends
+#  on the attribute type.
+#  If the attribute is Acct-Session-Time or of an integer type we add
+#  the value of the attribute. If it is anything else we increase the
+#  counter by one.
+#
+#  The 'reset' parameter defines when the counters are all reset to
+#  zero.  It can be hourly, daily, weekly, monthly or never.
+#
+#  hourly: Reset on 00:00 of every hour
+#  daily: Reset on 00:00:00 every day
+#  weekly: Reset on 00:00:00 on sunday
+#  monthly: Reset on 00:00:00 of the first day of each month
+#
+#  It can also be user defined. It should be of the form:
+#  num[hdwm] where:
+#  h: hours, d: days, w: weeks, m: months
+#  If the letter is omitted days will be assumed. In example:
+#  reset = 10h (reset every 10 hours)
+#  reset = 12  (reset every 12 days)
+#
+#
+#  The check_name attribute defines an attribute which will be
+#  registered by the counter module and can be used to set the
+#  maximum allowed value for the counter after which the user
+#  is rejected.
+#  Something like:
+#
+#  DEFAULT Max-Daily-Session := 36000
+#          Fall-Through = 1
+#
+#  You should add the counter module in the instantiate
+#  section so that it registers check_name before the files
+#  module reads the users file.
+#
+#  If check_name is set and the user is to be rejected then we
+#  send back a Reply-Message and we log a Failure-Message in
+#  the radius.log
+#
+#  If the count attribute is Acct-Session-Time then on each
+#  login we send back the remaining online time as a
+#  Session-Timeout attribute ELSE and if the reply_name is
+#  set, we send back that attribute.  The reply_name attribute
+#  MUST be of an integer type.
+#
+#  The counter-name can also be used instead of using the check_name
+#  like below:
+#
+#  DEFAULT  Daily-Session-Time > 3600, Auth-Type = Reject
+#      Reply-Message = "You've used up more than one hour today"
+#
+#  The allowed_service_type attribute can be used to only take
+#  into account specific sessions. For example if a user first
+#  logs in through a login menu and then selects ppp there will
+#  be two sessions. One for Login-User and one for Framed-User
+#  service type. We only need to take into account the second one.
+#
+#  The module should be added in the instantiate, authorize and
+#  accounting sections.  Make sure that in the authorize
+#  section it comes after any module which sets the
+#  'check_name' attribute.
+#
+counter daily {
+	filename = ${db_dir}/db.daily
+	key = User-Name
+	count_attribute = Acct-Session-Time
+	reset = daily
+	counter_name = Daily-Session-Time
+	check_name = Max-Daily-Session
+	reply_name = Session-Timeout
+	allowed_service_type = Framed-User
+	cache_size = 5000
+}
+

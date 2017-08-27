@@ -1,0 +1,16 @@
+# libnetfilter_queue pkg-config file
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libnetfilter_queue
+Description: netfilter userspace packet queueing library
+URL: http://netfilter.org/projects/libnetfilter_queue/
+Version: @VERSION@
+Requires: libnfnetlink
+Conflicts:
+Libs: -L${libdir} -lnetfilter_queue
+Libs.private: @LIBNFNETLINK_LIBS@
+Cflags: -I${includedir}

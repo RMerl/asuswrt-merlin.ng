@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+touch ltconfig
+libtoolize --force --copy --automake
+aclocal $ACLOCAL_FLAGS
+autoheader
+automake --foreign --copy --add-missing
+touch depcomp		# seems to be missing for old automake
+autoconf
+export CFLAGS='-O2 -Wall -W -pipe -g'
+echo "CFLAGS=$CFLAGS"
+echo "./configure $@"
+./configure $@ || exit 1
+unset CFLAGS
+if [ -z "$GITCOMPILE_NO_MAKE" ]; then
+  make
+fi

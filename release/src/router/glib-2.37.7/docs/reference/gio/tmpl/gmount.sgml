@@ -1,0 +1,377 @@
+<!-- ##### SECTION Title ##### -->
+GMount
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GMount ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GMount::changed ##### -->
+<para>
+
+</para>
+
+@gmount: the object which received the signal.
+
+<!-- ##### SIGNAL GMount::pre-unmount ##### -->
+<para>
+
+</para>
+
+@gmount: the object which received the signal.
+
+<!-- ##### SIGNAL GMount::unmounted ##### -->
+<para>
+
+</para>
+
+@gmount: the object which received the signal.
+
+<!-- ##### STRUCT GMountIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@changed: 
+@unmounted: 
+@get_root: 
+@get_name: 
+@get_icon: 
+@get_uuid: 
+@get_volume: 
+@get_drive: 
+@can_unmount: 
+@can_eject: 
+@unmount: 
+@unmount_finish: 
+@eject: 
+@eject_finish: 
+@remount: 
+@remount_finish: 
+@guess_content_type: 
+@guess_content_type_finish: 
+@guess_content_type_sync: 
+@pre_unmount: 
+@unmount_with_operation: 
+@unmount_with_operation_finish: 
+@eject_with_operation: 
+@eject_with_operation_finish: 
+@get_default_location: 
+@get_sort_key: 
+@get_symbolic_icon: 
+
+<!-- ##### FUNCTION g_mount_get_name ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_uuid ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_icon ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_drive ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_root ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_volume ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_get_default_location ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_can_unmount ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### ENUM GMountMountFlags ##### -->
+<para>
+
+</para>
+
+@G_MOUNT_MOUNT_NONE: 
+
+<!-- ##### ENUM GMountUnmountFlags ##### -->
+<para>
+
+</para>
+
+@G_MOUNT_UNMOUNT_NONE: 
+@G_MOUNT_UNMOUNT_FORCE: 
+
+<!-- ##### FUNCTION g_mount_unmount ##### -->
+<para>
+
+</para>
+
+@mount: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mount_unmount_finish ##### -->
+<para>
+
+</para>
+
+@mount: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_unmount_with_operation ##### -->
+<para>
+
+</para>
+
+@mount: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mount_unmount_with_operation_finish ##### -->
+<para>
+
+</para>
+
+@mount: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_remount ##### -->
+<para>
+
+</para>
+
+@mount: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mount_remount_finish ##### -->
+<para>
+
+</para>
+
+@mount: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_can_eject ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_eject ##### -->
+<para>
+
+</para>
+
+@mount: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mount_eject_finish ##### -->
+<para>
+
+</para>
+
+@mount: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_eject_with_operation ##### -->
+<para>
+
+</para>
+
+@mount: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mount_eject_with_operation_finish ##### -->
+<para>
+
+</para>
+
+@mount: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_guess_content_type ##### -->
+<para>
+
+</para>
+
+@mount: 
+@force_rescan: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_mount_guess_content_type_finish ##### -->
+<para>
+
+</para>
+
+@mount: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_guess_content_type_sync ##### -->
+<para>
+
+</para>
+
+@mount: 
+@force_rescan: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_is_shadowed ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_mount_shadow ##### -->
+<para>
+
+</para>
+
+@mount: 
+
+
+<!-- ##### FUNCTION g_mount_unshadow ##### -->
+<para>
+
+</para>
+
+@mount: 
+
+
+<!-- ##### FUNCTION g_mount_get_sort_key ##### -->
+<para>
+
+</para>
+
+@mount: 
+@Returns: 
+
+

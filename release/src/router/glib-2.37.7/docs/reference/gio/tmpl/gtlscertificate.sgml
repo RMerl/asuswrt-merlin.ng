@@ -1,0 +1,127 @@
+<!-- ##### SECTION Title ##### -->
+GTlsCertificate
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTlsCertificate ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GTlsCertificate:certificate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsCertificate:certificate-pem ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsCertificate:issuer ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsCertificate:private-key ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsCertificate:private-key-pem ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_tls_certificate_new_from_pem ##### -->
+<para>
+
+</para>
+
+@data: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_certificate_new_from_file ##### -->
+<para>
+
+</para>
+
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_certificate_new_from_files ##### -->
+<para>
+
+</para>
+
+@cert_file: 
+@key_file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_certificate_list_new_from_file ##### -->
+<para>
+
+</para>
+
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_certificate_get_issuer ##### -->
+<para>
+
+</para>
+
+@cert: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_certificate_verify ##### -->
+<para>
+
+</para>
+
+@cert: 
+@identity: 
+@trusted_ca: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_certificate_is_same ##### -->
+<para>
+
+</para>
+
+@cert_one: 
+@cert_two: 
+@Returns: 
+
+

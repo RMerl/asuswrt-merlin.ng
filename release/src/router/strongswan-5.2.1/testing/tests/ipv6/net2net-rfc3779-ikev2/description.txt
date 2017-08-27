@@ -1,0 +1,11 @@
+An IPv6 ESP tunnel connection between the gateways <b>moon</b> and <b>sun</b> is successfully set up.
+It connects the two subnets hiding behind their respective gateways. The authentication is based on
+<b>X.509 certificates</b> containing <b>RFC 3779 IP address block constraints</b>.
+Both <b>moon</b> and <b>sun</b> set <b>rightsubnet=::/0</b> thus allowing the peers to narrow down
+the address range to their actual subnets <b>fec1::/16</b> and <b>fec2::/16</b>, respectively.
+These unilaterally proposed traffic selectors must be validated by corresponding IP address block constraints.
+<p/>
+Upon the successful establishment of the IPsec tunnel, <b>leftfirewall=yes</b>
+automatically inserts ip6tables-based firewall rules that let pass the tunneled traffic.
+In order to test both the net-to-net tunnel and the firewall rules, client <b>alice</b> behind <b>moon</b>
+sends an IPv6 ICMP request to client <b>bob</b> behind <b>sun</b> using the ping6 command.

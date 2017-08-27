@@ -1,0 +1,170 @@
+<div>
+	<fieldset>
+		<legend><% tran("management.psswd_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.psswd_user"); %></div>
+			<input type="password" maxlength="63" size="20" value="d6nw5v1x2pc7st9m" name="http_username" onblur="valid_name(this,management.psswd_user,SPACE_NO)" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("management.psswd_pass"); %></div>
+			<input type="password" maxlength="63" size="20" value="d6nw5v1x2pc7st9m" name="http_passwd" onblur="valid_name(this,management.psswd_pass,SPACE_NO)" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("management.pass_conf"); %></div>
+			<input type="password" maxlength="63" size="20" value="d6nw5v1x2pc7st9m" name="http_passwdConfirm" onblur="valid_name(this,management.pass_conf,SPACE_NO)" />
+		</div>
+	</fieldset><br />
+	
+	<fieldset>
+		<legend><% tran("management.web_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("share.proto"); %></div>
+			<input class="spaceradio" type="checkbox" value="1" name="_http_enable" <% nvram_checked("http_enable", "1"); %> />HTTP&nbsp;
+			<input class="spaceradio" type="checkbox" value="1" onclick="handle_https(this.form)" name="_https_enable" <% nvram_checked("https_enable", "1"); %> />HTTPS
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("management.web_refresh"); %></div>
+			<input class="num" name="refresh_time" size="2" maxlength="2" value="<% nvram_get("refresh_time"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("management.web_sysinfo"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="status_auth" <% nvram_checked("status_auth","1"); %> onclick="show_layer_ext(this, 'idsysinfo', true)" /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="status_auth" <% nvram_checked("status_auth","0"); %> onclick="show_layer_ext(this, 'idsysinfo', false)" /><% tran("share.disable"); %>
+		</div>
+		<div id="idsysinfo">
+			<div class="setting">
+				<div class="label"><% tran("management.web_sysinfopass"); %></div>
+				<input class="spaceradio" type="checkbox" value="1" name="_info_passwd" <% nvram_checked("info_passwd", "1"); %> /><% tran("share.enabled"); %>
+			</div>
+			<div class="setting">
+		  		<div class="label"><% tran("management.web_sysinfomasq"); %></div>
+		  		<input class="spaceradio" type="radio" value="1" name="maskmac" <% nvram_checked("maskmac","1"); %> /><% tran("share.enable"); %>&nbsp;
+		  		<input class="spaceradio" type="radio" value="0" name="maskmac" <% nvram_checked("maskmac","0"); %> /><% tran("share.disable"); %>
+			</div>
+		</div>
+	</fieldset><br />
+	
+	<fieldset>
+		<legend><% tran("management.remote_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.remote_gui"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="remote_management" onclick="show_layer_ext(this, 'idhttpd', true);SelPort(1,this.form)" <% nvram_checked("remote_management","1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="remote_management" onclick="show_layer_ext(this, 'idhttpd', false);SelPort(0,this.form)" <% nvram_checked("remote_management","0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div id="idhttpd">
+			<div class="setting">
+				<div class="label"><% tran("management.remote_https"); %></div>
+				<input type="checkbox" value="1" name="_remote_mgt_https" <% nvram_checked("remote_mgt_https", "1"); %> />
+			</div>
+			<div class="setting">
+				<div class="label"><% tran("management.remote_guiport"); %></div>
+				<input class="num" maxlength="5" size="5" name="http_wanport" onblur="valid_range(this,1,65535,management.remote_guiport)" value="<% nvram_get("http_wanport"); %>" />
+				<span class="default"><script type="text/javascript">
+				//<![CDATA[
+				document.write("(" + share.deflt + ": 8080, " + share.range + ": 1 - 65535)");
+				//]]>
+				</script></span>
+			</div>
+		</div>
+		<% ifndef("SSHD","<!--"); %>
+		<div class="setting">
+			<div class="label"><% tran("management.remote_ssh"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="remote_mgt_ssh" onclick="show_layer_ext(this, 'idssh', true);selSSH(this.value, 0)" <% nvram_checked("remote_mgt_ssh","1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="remote_mgt_ssh" onclick="show_layer_ext(this, 'idssh', false);selSSH(this.value, 0)" <% nvram_checked("remote_mgt_ssh","0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting" id="idssh">
+			<div class="label"><% tran("management.remote_sshport"); %></div>
+			<input class="num" maxlength="5" size="5" name="sshd_wanport" onblur="valid_range(this,1,65535,management.remote_sshport)" value="<% nvram_get("sshd_wanport"); %>" />
+			<span class="default"><script type="text/javascript">
+			//<![CDATA[
+			document.write("(" + share.deflt + ": 22, " + share.range + ": 1 - 65535)");
+			//]]>
+			</script></span>
+		</div>
+		<% ifndef("SSHD","-->"); %>
+		<div class="setting">
+			<div class="label"><% tran("management.remote_telnet"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="remote_mgt_telnet" onclick="show_layer_ext(this, 'idtelnet', true);selTelnet(this.value, 0)" <% nvram_checked("remote_mgt_telnet","1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="remote_mgt_telnet" onclick="show_layer_ext(this, 'idtelnet', false);selTelnet(this.value, 0)" <% nvram_checked("remote_mgt_telnet","0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting" id="idtelnet">
+			<div class="label"><% tran("management.remote_telnetport"); %></div>
+			<input class="num" maxlength="5" size="5" name="telnet_wanport" onblur="valid_range(this,1,65535,management.remote_telnetport)" value="<% nvram_get("telnet_wanport"); %>" />
+			<span class="default"><script type="text/javascript">
+			//<![CDATA[
+			document.write("(" + share.deflt + ": 23, " + share.range + ": 1 - 65535)");
+			//]]>
+			</script></span>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("management.remote_allowanyip"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="remote_ip_any" onclick="show_layer_ext(this, 'idremip', false)" <% nvram_checked("remote_ip_any","1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="remote_ip_any" onclick="show_layer_ext(this, 'idremip', true)" <% nvram_checked("remote_ip_any","0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting" id="idremip">
+			<div class="label"><% tran("management.remote_ip"); %></div>
+			<input type="hidden" name="remote_ip" value="4" />
+			<input class="num" maxLength="3" size="3" onBlur="valid_range(this,1,223,'IP')" value="<% get_single_ip("remote_ip","0"); %>" name="remote_ip_0" /> .
+            <input class="num" maxLength="3" size="3" onBlur="valid_range(this,0,255,'IP')" value="<% get_single_ip("remote_ip","1"); %>" name="remote_ip_1" /> .
+            <input class="num" maxLength="3" size="3" onBlur="valid_range(this,0,255,'IP')" value="<% get_single_ip("remote_ip","2"); %>" name="remote_ip_2" /> .
+            <input class="num" maxLength="3" size="3" onBlur="valid_range(this,1,254,'IP')" value="<% get_single_ip("remote_ip","3"); %>" name="remote_ip_3" /> <% tran("share.to"); %>
+            <input class="num" maxLength="3" size="3" onBlur="valid_range(this,1,254,'IP')" value="<% nvram_list("remote_ip", "1"); %>" name="remote_ip_4" />	
+		</div>
+	</fieldset><br />
+	
+	<% nvram_match("boot_wait_web","0","<!--"); %>
+	<fieldset>
+		<legend><% tran("management.boot_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.boot_srv"); %></div>
+			<input class="spaceradio" type="radio" value="on" name="boot_wait" <% nvram_checked("boot_wait","on"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="off" name="boot_wait" <% nvram_checked("boot_wait","off"); %> /><% tran("share.disable"); %>
+		</div>
+	</fieldset><br />
+	<% nvram_match("boot_wait_web","0","-->"); %>
+	
+	<fieldset>
+		<legend><% tran("management.cron_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.cron_srvd"); %></div>
+			<input class="spaceradio" type="radio" value="1" name="cron_enable" <% nvram_checked("cron_enable","1"); %> onclick="show_layer_ext(this, 'idcron', true)" /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" value="0" name="cron_enable" <% nvram_checked("cron_enable","0"); %> onclick="show_layer_ext(this, 'idcron', false)" /><% tran("share.disable"); %>
+		</div>
+		<div class="setting" id="idcron">
+				<div class="label"><% tran("management.cron_jobs"); %></div>
+					<textarea cols="60" rows="4" id="cron_jobs" name="cron_jobs"></textarea>
+					<script type="text/javascript">
+					//<![CDATA[
+						var cron_jobs = fix_cr( '<% nvram_get("cron_jobs"); %>' );
+						document.getElementById("cron_jobs").value = cron_jobs;
+					//]]>
+					</script>
+		</div>
+	</fieldset><br />
+	<fieldset>
+		<legend><% tran("management.wifi_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.wifi_srv"); %></div>
+			<input class="spaceradio" type="radio" name="nas_enable" value="1" <% nvram_checked("nas_enable", "1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" name="nas_enable" value="0" <% nvram_checked("nas_enable", "0"); %> /><% tran("share.disable"); %>
+		</div>
+	</fieldset><br />
+	
+	<fieldset>
+		<legend><% tran("management.rst_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.rst_srv"); %></div>
+			<input class="spaceradio" type="radio" name="resetbutton_enable" value="1" <% nvram_checked("resetbutton_enable", "1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" name="resetbutton_enable" value="0" <% nvram_checked("resetbutton_enable", "0"); %> /><% tran("share.disable"); %>
+		</div>
+	</fieldset><br />
+	
+	<fieldset>
+		<legend><% tran("management.routing_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("management.routing_srv"); %></div>
+			<input class="spaceradio" type="radio" name="zebra_enable" value="1" <% nvram_checked("zebra_enable", "1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" name="zebra_enable" value="0" <% nvram_checked("zebra_enable", "0"); %> /><% tran("share.disable"); %>
+		</div>
+	</fieldset><br />
+</div>

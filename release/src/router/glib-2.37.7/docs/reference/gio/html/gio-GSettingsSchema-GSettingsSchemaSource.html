@@ -1,0 +1,611 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GSettingsSchema, GSettingsSchemaSource</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="settings.html" title="Settings">
+<link rel="prev" href="GSettingsBackend.html" title="GSettingsBackend">
+<link rel="next" href="resources.html" title="Resources">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GSettingsSchema-GSettingsSchemaSource.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#gio-GSettingsSchema-GSettingsSchemaSource.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="settings.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSettingsBackend.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="resources.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GSettingsSchema-GSettingsSchemaSource"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GSettingsSchema-GSettingsSchemaSource.top_of_page"></a>GSettingsSchema, GSettingsSchemaSource</span></h2>
+<p>GSettingsSchema, GSettingsSchemaSource — Introspecting and controlling the loading of
+                    GSettings schemas</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GSettingsSchema-GSettingsSchemaSource.synopsis"></a><h2>Synopsis</h2>
+<a name="GSettingsSchema"></a><pre class="synopsis">                    <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource">GSettingsSchemaSource</a>;
+#define             <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#G-TYPE-SETTINGS-SCHEMA-SOURCE:CAPS" title="G_TYPE_SETTINGS_SCHEMA_SOURCE">G_TYPE_SETTINGS_SCHEMA_SOURCE</a>
+<a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="returnvalue">GSettingsSchemaSource</span></a> * <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-get-default" title="g_settings_schema_source_get_default ()">g_settings_schema_source_get_default</a>
+                                                        (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="returnvalue">GSettingsSchemaSource</span></a> * <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-ref" title="g_settings_schema_source_ref ()">g_settings_schema_source_ref</a>    (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *source</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-unref" title="g_settings_schema_source_unref ()">g_settings_schema_source_unref</a>      (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *source</code></em>);
+
+<a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="returnvalue">GSettingsSchemaSource</span></a> * <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-new-from-directory" title="g_settings_schema_source_new_from_directory ()">g_settings_schema_source_new_from_directory</a>
+                                                        (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *directory</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> trusted</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+
+<a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="returnvalue">GSettingsSchema</span></a> *   <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-lookup" title="g_settings_schema_source_lookup ()">g_settings_schema_source_lookup</a>     (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *source</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *schema_id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> recursive</code></em>);
+
+                    <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema-struct" title="GSettingsSchema">GSettingsSchema</a>;
+#define             <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#G-TYPE-SETTINGS-SCHEMA:CAPS" title="G_TYPE_SETTINGS_SCHEMA">G_TYPE_SETTINGS_SCHEMA</a>
+<a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="returnvalue">GSettingsSchema</span></a> *   <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-ref" title="g_settings_schema_ref ()">g_settings_schema_ref</a>               (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-unref" title="g_settings_schema_unref ()">g_settings_schema_unref</a>             (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);
+
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-get-id" title="g_settings_schema_get_id ()">g_settings_schema_get_id</a>            (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-get-path" title="g_settings_schema_get_path ()">g_settings_schema_get_path</a>          (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GSettingsSchema-GSettingsSchemaSource.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GBoxed
+   +----GSettingsSchema
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GSettingsSchema-GSettingsSchemaSource.description"></a><h2>Description</h2>
+<p>
+The <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> and <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> APIs provide a
+mechanism for advanced control over the loading of schemas and a
+mechanism for introspecting their content.
+</p>
+<p>
+Plugin loading systems that wish to provide plugins a way to access
+settings face the problem of how to make the schemas for these
+settings visible to GSettings.  Typically, a plugin will want to ship
+the schema along with itself and it won't be installed into the
+standard system directories for schemas.
+</p>
+<p>
+<a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> provides a mechanism for dealing with this by
+allowing the creation of a new 'schema source' from which schemas can
+be acquired.  This schema source can then become part of the metadata
+associated with the plugin and queried whenever the plugin requires
+access to some settings.
+</p>
+<p>
+Consider the following example:
+</p>
+<p>
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span>
+<span class="cbracket">{</span>
+<span class="normal">   </span><span class="symbol">...</span>
+<span class="normal">   </span><span class="usertype">GSettingsSchemaSource</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">schema_source</span><span class="symbol">;</span>
+<span class="normal">   </span><span class="symbol">...</span>
+<span class="cbracket">}</span><span class="normal"> Plugin</span><span class="symbol">;</span>
+
+<span class="normal">Plugin </span><span class="symbol">*</span>
+<span class="function">initialise_plugin</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">dir</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">Plugin</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">plugin</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="symbol">...</span>
+
+<span class="normal">  plugin</span><span class="symbol">-&gt;</span><span class="normal">schema_source </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="function">g_settings_new_schema_source_from_directory</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dir</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="function"><a href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-get-default">g_settings_schema_source_get_default</a></span><span class="normal"> </span><span class="symbol">(),</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="symbol">...</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> plugin</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="symbol">...</span>
+
+<span class="normal"><a href="GSettings.html">GSettings</a> </span><span class="symbol">*</span>
+<span class="function">plugin_get_settings</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">Plugin</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">plugin</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">schema_id</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GSettingsSchema</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">schema</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">schema_id </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    schema_id </span><span class="symbol">=</span><span class="normal"> plugin</span><span class="symbol">-&gt;</span><span class="normal">identifier</span><span class="symbol">;</span>
+
+<span class="normal">  schema </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-lookup">g_settings_schema_source_lookup</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">plugin</span><span class="symbol">-&gt;</span><span class="normal">schema_source</span><span class="symbol">,</span>
+<span class="normal">                                            schema_id</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">schema </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="symbol">...</span><span class="normal"> disable the plugin </span><span class="usertype">or</span><span class="normal"> abort</span><span class="symbol">,</span><span class="normal"> etc </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="GSettings.html#g-settings-new-full">g_settings_new_full</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">schema</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+</p>
+<p>
+The code above shows how hooks should be added to the code that
+initialises (or enables) the plugin to create the schema source and
+how an API can be added to the plugin system to provide a convenient
+way for the plugin to access its settings, using the schemas that it
+ships.
+</p>
+<p>
+From the standpoint of the plugin, it would need to ensure that it
+ships a gschemas.compiled file as part of itself, and then simply do
+the following:
+</p>
+<p>
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GSettings</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">settings</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gint</span><span class="normal"> some_value</span><span class="symbol">;</span>
+
+<span class="normal">  settings </span><span class="symbol">=</span><span class="normal"> </span><span class="function">plugin_get_settings</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  some_value </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GSettings.html#g-settings-get-int">g_settings_get_int</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">settings</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"some-value"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+</p>
+<p>
+It's also possible that the plugin system expects the schema source
+files (ie: .gschema.xml files) instead of a gschemas.compiled file.
+In that case, the plugin loading system must compile the schemas for
+itself before attempting to create the settings source.
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GSettingsSchema-GSettingsSchemaSource.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GSettingsSchemaSource"></a><h3>GSettingsSchemaSource</h3>
+<pre class="programlisting">typedef struct _GSettingsSchemaSource GSettingsSchemaSource;</pre>
+<p>
+This is an opaque structure type.  You may not access it directly.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-SETTINGS-SCHEMA-SOURCE:CAPS"></a><h3>G_TYPE_SETTINGS_SCHEMA_SOURCE</h3>
+<pre class="programlisting">#define                 G_TYPE_SETTINGS_SCHEMA_SOURCE                   (g_settings_schema_source_get_type ())
+</pre>
+<p>
+A boxed <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> corresponding to <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a>.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-source-get-default"></a><h3>g_settings_schema_source_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="returnvalue">GSettingsSchemaSource</span></a> * g_settings_schema_source_get_default
+                                                        (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Gets the default system schema source.
+</p>
+<p>
+This function is not required for normal uses of <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a> but it
+may be useful to authors of plugin management systems or to those who
+want to introspect the content of schemas.
+</p>
+<p>
+If no schemas are installed, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.
+</p>
+<p>
+The returned source may actually consist of multiple schema sources
+from different directories, depending on which directories were given
+in <code class="envar">XDG_DATA_DIRS</code> and
+<code class="envar">GSETTINGS_SCHEMA_DIR</code>.  For this reason, all lookups
+performed against the default source should probably be done
+recursively.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the default schema source. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-source-ref"></a><h3>g_settings_schema_source_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="returnvalue">GSettingsSchemaSource</span></a> * g_settings_schema_source_ref    (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *source</code></em>);</pre>
+<p>
+Increase the reference count of <em class="parameter"><code>source</code></em>, returning a new reference.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new reference to <em class="parameter"><code>source</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-source-unref"></a><h3>g_settings_schema_source_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_settings_schema_source_unref      (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *source</code></em>);</pre>
+<p>
+Decrease the reference count of <em class="parameter"><code>source</code></em>, possibly freeing it.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-source-new-from-directory"></a><h3>g_settings_schema_source_new_from_directory ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="returnvalue">GSettingsSchemaSource</span></a> * g_settings_schema_source_new_from_directory
+                                                        (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *directory</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> trusted</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Attempts to create a new schema source corresponding to the contents
+of the given directory.
+</p>
+<p>
+This function is not required for normal uses of <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a> but it
+may be useful to authors of plugin management systems.
+</p>
+<p>
+The directory should contain a file called
+<code class="filename">gschemas.compiled</code> as produced by
+<span class="command"><strong>glib-compile-schemas</strong></span>.
+</p>
+<p>
+If <em class="parameter"><code>trusted</code></em> is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> then <code class="filename">gschemas.compiled</code> is
+trusted not to be corrupted.  This assumption has a performance
+advantage, but can result in crashes or inconsistent behaviour in the
+case of a corrupted file.  Generally, you should set <em class="parameter"><code>trusted</code></em> to
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> for files installed by the system and to <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> for files in
+the home directory.
+</p>
+<p>
+If <em class="parameter"><code>parent</code></em> is non-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then there are two effects.
+</p>
+<p>
+First, if <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-lookup" title="g_settings_schema_source_lookup ()"><code class="function">g_settings_schema_source_lookup()</code></a> is called with the
+<em class="parameter"><code>recursive</code></em> flag set to <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> and the schema can not be found in the
+source, the lookup will recurse to the parent.
+</p>
+<p>
+Second, any references to other schemas specified within this
+source (ie: <code class="literal">child</code> or <code class="literal">extends</code>)
+references may be resolved from the <em class="parameter"><code>parent</code></em>.
+</p>
+<p>
+For this second reason, except in very unusual situations, the
+<em class="parameter"><code>parent</code></em> should probably be given as the default schema source, as
+returned by <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#g-settings-schema-source-get-default" title="g_settings_schema_source_get_default ()"><code class="function">g_settings_schema_source_get_default()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>directory</code></em> :</span></p></td>
+<td>the filename of a directory</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>trusted</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, if the directory is trusted</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a pointer to a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> pointer set to <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-source-lookup"></a><h3>g_settings_schema_source_lookup ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="returnvalue">GSettingsSchema</span></a> *   g_settings_schema_source_lookup     (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a> *source</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *schema_id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> recursive</code></em>);</pre>
+<p>
+Looks up a schema with the identifier <em class="parameter"><code>schema_id</code></em> in <em class="parameter"><code>source</code></em>.
+</p>
+<p>
+This function is not required for normal uses of <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a> but it
+may be useful to authors of plugin management systems or to those who
+want to introspect the content of schemas.
+</p>
+<p>
+If the schema isn't found directly in <em class="parameter"><code>source</code></em> and <em class="parameter"><code>recursive</code></em> is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>
+then the parent sources will also be checked.
+</p>
+<p>
+If the schema isn't found, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource" title="GSettingsSchemaSource"><span class="type">GSettingsSchemaSource</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>schema_id</code></em> :</span></p></td>
+<td>a schema ID</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>recursive</code></em> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the lookup should be recursive</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSettingsSchema-struct"></a><h3>GSettingsSchema</h3>
+<pre class="programlisting">typedef struct _GSettingsSchema GSettingsSchema;</pre>
+<p>
+This is an opaque structure type.  You may not access it directly.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-SETTINGS-SCHEMA:CAPS"></a><h3>G_TYPE_SETTINGS_SCHEMA</h3>
+<pre class="programlisting">#define                 G_TYPE_SETTINGS_SCHEMA                          (g_settings_schema_get_type ())
+</pre>
+<p>
+A boxed <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> corresponding to <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a>.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-ref"></a><h3>g_settings_schema_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="returnvalue">GSettingsSchema</span></a> *   g_settings_schema_ref               (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);</pre>
+<p>
+Increase the reference count of <em class="parameter"><code>schema</code></em>, returning a new reference.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>schema</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new reference to <em class="parameter"><code>schema</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-unref"></a><h3>g_settings_schema_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_settings_schema_unref             (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);</pre>
+<p>
+Decrease the reference count of <em class="parameter"><code>schema</code></em>, possibly freeing it.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>schema</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-get-id"></a><h3>g_settings_schema_get_id ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_settings_schema_get_id            (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);</pre>
+<p>
+Get the ID of <em class="parameter"><code>schema</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>schema</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the ID. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-settings-schema-get-path"></a><h3>g_settings_schema_get_path ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_settings_schema_get_path          (<em class="parameter"><code><a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a> *schema</code></em>);</pre>
+<p>
+Gets the path associated with <em class="parameter"><code>schema</code></em>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<p>
+Schemas may be single-instance or relocatable.  Single-instance
+schemas correspond to exactly one set of keys in the backend
+database: those located at the path returned by this function.
+</p>
+<p>
+Relocatable schemas can be referenced by other schemas and can
+threfore describe multiple sets of keys at different locations.  For
+relocatable schemas, this function will return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>schema</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema"><span class="type">GSettingsSchema</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the path of the schema, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

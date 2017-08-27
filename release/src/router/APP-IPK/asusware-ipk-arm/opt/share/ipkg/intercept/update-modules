@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ ! -f $IPKG_INTERCEPT_DIR/update-modules ]; then
+  echo "update-modules" > $IPKG_INTERCEPT_DIR/update-modules
+  chmod +x $IPKG_INTERCEPT_DIR/update-modules
+fi
+

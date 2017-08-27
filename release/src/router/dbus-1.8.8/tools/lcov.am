@@ -1,0 +1,43 @@
+# Copyright © 2008-2011 Collabora Ltd.
+# Copyright © 2008-2011 Nokia Corporation
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+lcov-reset:
+	lcov --directory @abs_top_srcdir@ --zerocounters
+
+lcov-report:
+	lcov --directory @abs_top_srcdir@ --capture \
+		--output-file @abs_top_builddir@/lcov.info
+	$(mkdir_p) @abs_top_builddir@/lcov.html
+	git_commit=`GIT_DIR=@abs_top_srcdir@/.git git log -1 --pretty=format:%h 2>/dev/null`;\
+	genhtml --title "@PACKAGE_STRING@ $$git_commit" \
+		--output-directory @abs_top_builddir@/lcov.html lcov.info
+	@echo
+	@echo 'lcov report can be found in:'
+	@echo 'file://@abs_top_builddir@/lcov.html/index.html'
+	@echo
+
+lcov-check:
+	$(MAKE) lcov-reset
+	$(MAKE) check $(LCOV_CHECK_ARGS)
+	$(MAKE) lcov-report
+
+## vim:set ft=automake:

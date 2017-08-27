@@ -1,0 +1,7 @@
+The roadwarrior <b>carol</b> sets up an IPsec tunnel connection to the gateway
+<b>moon</b>. Both end points activate <b>Dead Peer Detection</b> (DPD) with a
+polling interval of 10 s. When the network connectivity between <b>carol</b>
+and <b>moon</b> is forcefully disrupted for a duration of 100 s, <b>moon</b>
+clears the connection after 4 unsuccessful retransmits whereas <b>carol</b>
+also takes down the connection but installs a route which triggers when
+<b>carol</b> sends a ping to client <b>alice</b> behind gateway <b>moon</b>.

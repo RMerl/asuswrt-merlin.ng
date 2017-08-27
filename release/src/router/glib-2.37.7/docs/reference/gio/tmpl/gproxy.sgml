@@ -1,0 +1,103 @@
+<!-- ##### SECTION Title ##### -->
+GProxy
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GProxy ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GProxyInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@connect: 
+@connect_async: 
+@connect_finish: 
+@supports_hostname: 
+
+<!-- ##### MACRO G_PROXY_EXTENSION_POINT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_proxy_connect ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@connection: 
+@proxy_address: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_connect_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@connection: 
+@proxy_address: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_proxy_connect_finish ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_get_default_for_protocol ##### -->
+<para>
+
+</para>
+
+@protocol: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_proxy_supports_hostname ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+

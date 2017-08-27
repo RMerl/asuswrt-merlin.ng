@@ -1,0 +1,354 @@
+<!-- ##### SECTION Title ##### -->
+Unix Mounts
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GUnixMountPoint ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GUnixMountEntry ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GUnixMountMonitor ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GUnixMountMonitor::mountpoints-changed ##### -->
+<para>
+
+</para>
+
+@gunixmountmonitor: the object which received the signal.
+
+<!-- ##### SIGNAL GUnixMountMonitor::mounts-changed ##### -->
+<para>
+
+</para>
+
+@gunixmountmonitor: the object which received the signal.
+
+<!-- ##### FUNCTION g_unix_mount_free ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+
+
+<!-- ##### FUNCTION g_unix_mount_compare ##### -->
+<para>
+
+</para>
+
+@mount1: 
+@mount2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_get_mount_path ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_get_device_path ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_get_fs_type ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_is_readonly ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_is_system_internal ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_guess_icon ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_guess_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_guess_name ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_guess_can_eject ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_guess_should_display ##### -->
+<para>
+
+</para>
+
+@mount_entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_free ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_compare ##### -->
+<para>
+
+</para>
+
+@mount1: 
+@mount2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_get_mount_path ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_get_device_path ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_get_fs_type ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_get_options ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_is_readonly ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_is_user_mountable ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_is_loopback ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_guess_icon ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_guess_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_guess_name ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_point_guess_can_eject ##### -->
+<para>
+
+</para>
+
+@mount_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_points_get ##### -->
+<para>
+
+</para>
+
+@time_read: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mounts_get ##### -->
+<para>
+
+</para>
+
+@time_read: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_at ##### -->
+<para>
+
+</para>
+
+@mount_path: 
+@time_read: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mounts_changed_since ##### -->
+<para>
+
+</para>
+
+@time: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_points_changed_since ##### -->
+<para>
+
+</para>
+
+@time: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_monitor_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_mount_monitor_set_rate_limit ##### -->
+<para>
+
+</para>
+
+@mount_monitor: 
+@limit_msec: 
+
+
+<!-- ##### FUNCTION g_unix_is_mount_path_system_internal ##### -->
+<para>
+
+</para>
+
+@mount_path: 
+@Returns: 
+
+

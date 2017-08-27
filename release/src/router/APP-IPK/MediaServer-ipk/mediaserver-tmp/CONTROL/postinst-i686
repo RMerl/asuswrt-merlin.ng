@@ -1,0 +1,46 @@
+#! /bin/sh
+
+APPS_MOUNTED_PATH=`nvram get apps_mounted_path`
+APPS_DEV=`nvram get apps_dev`
+APPS_INSTALL_FOLDER=`nvram get apps_install_folder`
+APPS_INSTALL_PATH=$APPS_MOUNTED_PATH/$APPS_INSTALL_FOLDER
+
+APPS_DEV=`nvram get apps_dev`
+
+APP_LINK_DIR=/tmp/opt
+APP_LINK_LIB=$APP_LINK_DIR/lib
+APP_LIB=$APPS_INSTALL_PATH/lib
+
+APPS_MOUNTED_TYPE=`mount |grep "/dev/$APPS_DEV on " |awk '{print $5}'`
+
+if [ "$APPS_MOUNTED_TYPE" == "vfat" ] || [ "$APPS_MOUNTED_TYPE" == "tfat" ]; then
+
+	ln -sf $APP_LIB/libpthread-2.12.1.so $APP_LINK_LIB/libpthread.so.0
+	ln -sf $APP_LIB/libpthread-2.12.1.so $APP_LINK_LIB/libpthread.so
+	ln -sf $APP_LIB/libstdc++.so.6.0.14 $APP_LINK_LIB/libstdc++.so.6
+	ln -sf $APP_LIB/libstdc++.so.6.0.14 $APP_LINK_LIB/libstdc++.so
+     
+fi
+
+
+
+mv -f /opt/tmp/bin/* $APPS_INSTALL_PATH/bin/
+chmod -R 777 $APPS_INSTALL_PATH/bin
+mv -f /opt/tmp/lib/* $APPS_INSTALL_PATH/lib/
+chmod -R 777 $APPS_INSTALL_PATH/lib
+mv -f /opt/tmp/include/id3tag_ms.h $APPS_INSTALL_PATH/include/
+chmod -R 777 $APPS_INSTALL_PATH/include
+mv -f /opt/tmp/share/* $APPS_INSTALL_PATH/share/
+chmod -R 777 $APPS_INSTALL_PATH/share
+mv -f /opt/tmp/var $APPS_INSTALL_PATH/
+chmod -R 777 $APPS_INSTALL_PATH/var
+
+chmod -R 777 $APPS_INSTALL_PATH
+chmod 777 $APPS_INSTALL_PATH/etc/init.d/S50mediaserver
+
+
+
+
+
+
+

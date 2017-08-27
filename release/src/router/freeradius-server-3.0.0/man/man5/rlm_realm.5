@@ -1,0 +1,94 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_realm 5 "14 March 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_realm \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_realm\fP module parses the User-Name attribute into a
+User section and a Realm section.  This is used primarily in a
+proxy situation, however, Realms can also be used locally to provide
+different service profiles based on the Realm being used.
+.PP
+The main configuration items to be aware of are:
+.IP format
+This can be either 'prefix' or 'suffix'.  It specifies whether the
+Realm is before or after the User portion in the User-Name string.
+.IP delimiter
+A single character in quotes, which is used as the delimiting
+character that separates the Realm and User sections of the string.
+.IP ignore_default
+This is set to either 'yes' or 'no'.  If set to 'yes', this will 
+prevent the module instance from matching a realm against the DEFAULT
+entry.  This may be useful if you have multiple realm module instances.
+The default is 'no'.
+.IP ignore_null
+This is set to either 'yes' or 'no'.  If set to 'yes', this will 
+prevent the module instance from matching a realm against the NULL
+entry.  This may be useful if you have multiple realm module instances.
+The default is 'no'.
+.PP
+This module parses the realm from the User-Name attrbiute according
+to the instance configuration, and then performs a lookup to find a
+matching realm in the '/etc/raddb/proxy.conf' file.  Depending on the
+configuration of the Realm as matched in the file, the username may
+be rewritten in a 'stripped' format, or with the Realm portion
+removed.  In either case, a Realm attribute is created and added to
+the packet on a match, which can be used by other modules.
+.SH CONFIGURATION
+.PP
+.DS
+modules {
+  ... stuff here ...
+.br
+.br
+  # useranme@realm syntax
+.br
+  realm suffix {
+.br
+    format = suffix
+.br
+    delimiter = "@"
+.br
+  }
+.br
+.br
+   # realm/username syntax
+.br
+   realm prefix {
+.br
+    format = prefix
+.br
+    delimiter = "/"
+.br
+  }
+.br
+.br
+  ... stuff here ...
+.br
+}
+.DE
+.PP
+.SH SECTIONS
+.BR authorization,
+.BR pre-accounting
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf,
+.I /etc/raddb/proxy.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5),
+.BR proxy.conf (5)
+.SH AUTHORS
+Chris Parker, cparker@segv.org

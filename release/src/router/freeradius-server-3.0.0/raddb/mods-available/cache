@@ -1,0 +1,98 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#	A module to cache attributes.  The idea is that you can look
+#	up information in a database, and then cache it.  Repeated
+#	requests for the same information will then have the cached
+#	values added to the request.
+#
+#	The module can cache a fixed set of attributes per key.
+#	It can be listed in "authorize", "post-auth", "pre-proxy"
+#	and "post-proxy".
+#
+#	If you want different things cached for authorize and post-auth,
+#	you will need to define two instances of the "cache" module.
+#
+#	The module returns "ok" if it found a cache entry.
+#	The module returns "updated" if it added a new cache entry.
+#	The module returns "noop" if it did nothing.
+#
+cache {
+	#  The key used to index the cache.  It is dynamically expanded
+	#  at run time.
+	key = "%{User-Name}"
+
+	#  The TTL of cache entries, in seconds.  Entries older than this
+	#  will be expired.
+	#
+	#  You can set the TTL per cache entry, but adding a control
+	#  variable "Cache-TTL".  The value there will over-ride this one.
+	#  Setting a Cache-TTL of 0 means "delete this entry".
+	#
+	#  This value should be between 10 and 86400.
+	ttl = 10
+
+	#  You can flush the cache via
+	#
+	#	radmin -e "set module config cache epoch 123456789"
+	#
+	#  Where last value is a 32-bit Unix timestamp.  Cache entries
+	#  older than this are expired, and new entries added.
+	#
+	#  You should never set the "epoch" configuration item in
+	#  this file.
+
+	#  The module can also operate in status-only mode where it will
+	#  not add new cache entries, or merge existing ones.
+	#
+	#  To enable set the control attribute "Cache-Status-Only" to "yes"
+	#  The module will return "ok" if it found a cache entry.
+	#  The module will return "notfound" if it failed to find a cache entry,
+	#  or the entry had expired.
+	#
+	#  Note: expired entries will still be removed.
+
+	#  If yes the following attributes will be added to the request list:
+	#  	* Cache-Entry-Hits - The number of times this entry has been
+	#			     retrieved.
+	add_stats = no
+
+	#  The list of attributes to cache for a particular key.
+	#  Each key gets the same set of cached attributes.
+	#  The attributes are dynamically expanded at run time.
+	#
+	#  You can specify which list the attribute goes into by
+	#  prefixing the attribute name with the list.  This allows
+	#  you to update multiple lists with one configuration.
+	#
+	#  If no list is specified the default list will be updated.
+	#
+	#  The default list is specified in the same way as unlang update
+	#  stanzas. If no default list is set, it will default to the
+	#  request list.
+	#
+	#  Quoting around values determine how they're processed:
+	#  - double quoted values are xlat expanded.
+	#  - single quoted values are treated as literals.
+	#  - bare values are treated as attribute references.
+	#
+	#  The '+=' operator causes all instances of the reference to
+	#  be cached.
+	#
+	#  Attributes that are generated from processing the update section
+	#  are also added to the current request, as if there'd been a cache
+	#  hit.
+	update {
+		# [outer.]<list>:<attribute> <op> <value>
+
+		# Cache all instances of Reply-Message in the reply list
+		reply:Reply-Message += &reply:Reply-Message
+
+		# Add our own to show when the cache was last updated
+		reply:Reply-Message += "Cache last updated at %t"
+
+		reply:Class := "%{randstr:ssssssssssssssssssssssssssssssss}"
+	}
+}

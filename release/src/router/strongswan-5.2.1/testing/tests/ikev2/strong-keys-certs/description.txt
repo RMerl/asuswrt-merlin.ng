@@ -1,0 +1,7 @@
+This scenario is derived from <a href="../rw-cert"><b>ikev2/rw-cert</b></a>.
+The gateway <b>moon</b> uses a 2048 bit RSA private key protected by <b>AES-128</b>
+encryption whereas the roadwarriors <b>carol</b> and <b>dave</b> have an
+<b>AES-192</b> and <b>AES-256</b> envelope, respectively. 
+The X.509 certificate of the gateway <b>moon</b> uses a <b>SHA-224</b> hash in
+its signature whereas the certificates of the roadwarriors <b>carol</b>
+and <b>dave</b> use <b>SHA-384</b> and <b>SHA-512</b>, respectively.

@@ -1,0 +1,11 @@
+  All versions of the BAY software prior to 18.0.2 are broken in
+regards to the Message-Authenticator.  They send a strictly MD5
+encoded secret instead of the encoding required by the RFC.  This has
+been fixed in 18.0.2 and only 18.0.2.
+
+  If you see messages in the radius log like:
+
+Received packet from xxx.xxx.xxx.xxx with invalid Message-Authenticator!
+
+  and you are using a Bay Annex, then you MUST upgrade the software on
+your Annex.  There is NO other solution to the problem.

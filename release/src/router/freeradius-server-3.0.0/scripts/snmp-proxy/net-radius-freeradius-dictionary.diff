@@ -1,0 +1,81 @@
+--- Net-Radius-1.56.orig/Radius/Dictionary.pm	2008-06-20 14:08:57.000000000 +0100
++++ Net-Radius-1.56.1/Radius/Dictionary.pm	2008-06-20 15:54:33.000000000 +0100
+@@ -30,14 +30,23 @@
+ 
+ sub readfile {
+   my ($self, $filename) = @_;
++  my $dict;
+ 
+-  open DICT, "<$filename";
++  open $dict, "<$filename";
+ 
+-  while (defined(my $l = <DICT>)) {
++  my @in_vendor = ();
++
++  while (defined(my $l = <$dict>)) {
+     next if $l =~ /^\#/;
+     next unless my @l = split /\s+/, $l;
+ 
+-    if ($l[0] =~ m/^vendor$/i) 
++    if ($l[0] =~ m/^\$include$/i)
++    {
++        my @fn = split /\//, $filename;
++        $fn[$#fn] = $l[1];
++        $self->readfile(join '/', @fn);
++    }
++    elsif ($l[0] =~ m/^vendor$/i) 
+     {
+ 	if (defined $l[1] and defined $l[2] and $l[2] =~ /^[xo0-9]+$/)
+ 	{
+@@ -53,8 +62,42 @@
+ 	    warn "Garbled VENDOR line $l\n";
+ 	}
+     }
++    elsif ($l[0] =~ m/^begin-vendor$/i)
++    {
++    if ( defined $l[1] )
++    {
++        push @in_vendor, $l[1];
++    }
++    else
++    {
++	    warn "Garbled BEGIN-VENDOR line $l\n";
++    }
++    }
++    elsif ($l[0] =~ m/^end-vendor$/i)
++    {
++    if ( defined $l[1] )
++    {
++        if ( $in_vendor[$#in_vendor] eq $l[1] ) {
++            pop @in_vendor;
++        }else {
++            warn "mismatched END-VENDOR line $l\n";
++        }
++    }
++    else
++    {
++	    warn "Garbled END-VENDOR line $l\n";
++    }
++    }
+     elsif ($l[0] =~ m/^attribute$/i) 
+     {
++    if (@l == 5) {
++        my @tags = grep { not ( m/^encrypt=\d$/ or m/^has_tag$/ ) } split /,/, pop @l;
++        push @l, join ',', @tags if scalar @tags;
++    }
++    if (@l == 4 and scalar @in_vendor) {
++        push @l, $in_vendor[$#in_vendor];
++    }
++
+ 	if (@l == 4)
+ 	{
+ 	    $self->{attr}->{$l[1]}  = [@l[2,3]];
+@@ -166,7 +209,7 @@
+       warn "Warning: Weird dictionary line: $l\n";
+     }
+   }
+-  close DICT;
++  close $dict;
+ }
+ 
+ # Accessors for standard attributes

@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GDBusObjectProxy</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="Highlevel D-Bus Support">
+<link rel="prev" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton">
+<link rel="next" href="GDBusObjectManager.html" title="GDBusObjectManager">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GDBusObjectProxy.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GDBusObjectProxy.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GDBusObjectProxy.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GDBusObjectProxy.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusObjectSkeleton.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusObjectManager.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusObjectProxy"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusObjectProxy.top_of_page"></a>GDBusObjectProxy</span></h2>
+<p>GDBusObjectProxy — Client-side D-Bus object</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GDBusObjectProxy.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GDBusObjectProxy.html#GDBusObjectProxy-struct" title="GDBusObjectProxy">GDBusObjectProxy</a>;
+struct              <a class="link" href="GDBusObjectProxy.html#GDBusObjectProxyClass" title="struct GDBusObjectProxyClass">GDBusObjectProxyClass</a>;
+<a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="returnvalue">GDBusObjectProxy</span></a> *  <a class="link" href="GDBusObjectProxy.html#g-dbus-object-proxy-new" title="g_dbus_object_proxy_new ()">g_dbus_object_proxy_new</a>             (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);
+<a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *   <a class="link" href="GDBusObjectProxy.html#g-dbus-object-proxy-get-connection" title="g_dbus_object_proxy_get_connection ()">g_dbus_object_proxy_get_connection</a>  (<em class="parameter"><code><a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> *proxy</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectProxy.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GDBusObjectProxy
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectProxy.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDBusObjectProxy implements
+ <a class="link" href="GDBusObject.html" title="GDBusObject">GDBusObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectProxy.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GDBusObjectProxy.html#GDBusObjectProxy--g-connection" title='The "g-connection" property'>g-connection</a>"             <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>*      : Read / Write / Construct Only
+  "<a class="link" href="GDBusObjectProxy.html#GDBusObjectProxy--g-object-path" title='The "g-object-path" property'>g-object-path</a>"            <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectProxy.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> is an object used to represent a remote object
+with one or more D-Bus interfaces. Normally, you don't instantiate
+a <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> yourself - typically <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient"><span class="type">GDBusObjectManagerClient</span></a>
+is used to obtain it.
+</p>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectProxy.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GDBusObjectProxy-struct"></a><h3>GDBusObjectProxy</h3>
+<pre class="programlisting">typedef struct _GDBusObjectProxy GDBusObjectProxy;</pre>
+<p>
+The <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> structure contains private data and should
+only be accessed using the provided API.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusObjectProxyClass"></a><h3>struct GDBusObjectProxyClass</h3>
+<pre class="programlisting">struct GDBusObjectProxyClass {
+  GObjectClass parent_class;
+};
+</pre>
+<p>
+Class structure for <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObjectClass"><span class="type">GObjectClass</span></a> <em class="structfield"><code><a name="GDBusObjectProxyClass.parent-class"></a>parent_class</code></em>;</span></p></td>
+<td>The parent class.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-object-proxy-new"></a><h3>g_dbus_object_proxy_new ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="returnvalue">GDBusObjectProxy</span></a> *  g_dbus_object_proxy_new             (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> for the given connection and
+object path.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>the object path</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-object-proxy-get-connection"></a><h3>g_dbus_object_proxy_get_connection ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *   g_dbus_object_proxy_get_connection  (<em class="parameter"><code><a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> *proxy</code></em>);</pre>
+<p>
+Gets the connection that <em class="parameter"><code>proxy</code></em> is for.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>proxy</code></em> :</span></p></td>
+<td>a <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>. Do not free, the
+object is owned by <em class="parameter"><code>proxy</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectProxy.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDBusObjectProxy--g-connection"></a><h3>The <code class="literal">"g-connection"</code> property</h3>
+<pre class="programlisting">  "g-connection"             <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>*      : Read / Write / Construct Only</pre>
+<p>
+The connection of the proxy.
+</p>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusObjectProxy--g-object-path"></a><h3>The <code class="literal">"g-object-path"</code> property</h3>
+<pre class="programlisting">  "g-object-path"            <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct Only</pre>
+<p>
+The object path of the proxy.
+</p>
+<p>Default value: NULL</p>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

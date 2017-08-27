@@ -1,0 +1,62 @@
+#
+#	Configuration file for the rlm_attr_filter module.
+#	Please see rlm_attr_filter(5) manpage for more information.
+#
+#	$Id$
+#
+#	This file contains security and configuration information
+#	for each realm. It can be used be an rlm_attr_filter module
+#	instance to filter attributes before sending packets to the
+#	home server of a realm.
+#
+#	When a packet is sent to a home server, these attributes
+#	and values are tested. Only the first match is used unless
+#	the "Fall-Through" variable is set to "Yes". In that case
+#	the rules defined in the DEFAULT case are processed as well.
+#
+#	A special realm named "DEFAULT" matches on all realm names.
+#	You can have only one DEFAULT entry. All entries are processed
+#	in the order they appear in this file. The first entry that
+#	matches the login-request will stop processing unless you use
+#	the Fall-Through variable.
+#
+#	The first line indicates the realm to which the rules apply.
+#	Indented (with the tab character) lines following the first
+#	line indicate the filter rules.
+#
+
+# This is a complete entry for 'nochap' realm. It allows to send very
+# basic attributes to the home server. Note that there is no Fall-Through
+# entry so that no DEFAULT entry will be used. Only the listed attributes
+# will be sent in the packet, all other attributes will be filtered out.
+#
+#nochap
+#	User-Name =* ANY,
+#	User-Password =* ANY,
+#	NAS-Ip-Address =* ANY,
+#	NAS-Identifier =* ANY
+
+# The entry for the 'brokenas' realm removes the attribute NAS-Port-Type
+# if its value is different from 'Ethernet'. Then the default rules are
+# applied.
+#
+#brokenas
+#	NAS-Port-Type == Ethernet
+#	Fall-Through = Yes
+
+# The rest of this file contains the DEFAULT entry.
+# DEFAULT matches with all realm names.
+
+DEFAULT
+	User-Name =* ANY,
+	User-Password =* ANY,
+	CHAP-Password =* ANY,
+	CHAP-Challenge =* ANY,
+	MS-CHAP-Challenge =* ANY,
+	MS-CHAP-Response =* ANY,
+	EAP-Message =* ANY,
+	Message-Authenticator =* ANY,
+	State =* ANY,
+	NAS-IP-Address =* ANY,
+	NAS-Identifier =* ANY,
+	Proxy-State =* ANY

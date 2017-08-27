@@ -1,0 +1,3 @@
+# This enables all CLM modes for NIC drivers and others with no
+# need for filtering. Not customized for any specific product.
+--ccrev "all/0 ww/all US/all" --txbf

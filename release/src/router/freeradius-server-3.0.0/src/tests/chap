@@ -1,0 +1,5 @@
+#
+#  TESTS 1
+#
+User-Name = "bob",
+CHAP-Password := "bob"

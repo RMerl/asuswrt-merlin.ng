@@ -1,0 +1,11 @@
+# -*- text -*-
+#
+#  $Id$
+
+# CHAP module
+#
+#  To authenticate requests containing a CHAP-Password attribute.
+#
+chap {
+	# no configuration
+}

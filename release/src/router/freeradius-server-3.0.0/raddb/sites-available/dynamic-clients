@@ -1,0 +1,224 @@
+# -*- text -*-
+######################################################################
+#
+#	Sample configuration file for dynamically updating the list
+#	of RADIUS clients at run time.
+#
+#	Everything is keyed off of a client "network".  (e.g. 192.0.2/24)
+#	This configuration lets the server know that clients within
+#	that network are defined dynamically.
+#
+#	When the server receives a packet from an unknown IP address
+#	within that network, it tries to find a dynamic definition
+#	for that client.  If the definition is found, the IP address
+#	(and other configuration) is added to the server's internal
+#	cache of "known clients", with a configurable lifetime.
+#
+#	Further packets from that IP address result in the client
+#	definition being found in the cache.  Once the lifetime is
+#	reached, the client definition is deleted, and any new requests
+#	from that client are looked up as above.
+#
+#	If the dynamic definition is not found, then the request is
+#	treated as if it came from an unknown client.  i.e. It is
+#	silently discarded.
+#
+#	As part of protection from Denial of Service (DoS) attacks,
+#	the server will add only one new client per second.  This CANNOT
+#	be changed, and is NOT configurable.
+#
+#	$Id$
+#
+######################################################################
+
+#
+#  Define a network where clients may be dynamically defined.
+client dynamic {
+	ipaddr = 192.0.2.0
+
+	#
+	#  You MUST specify a netmask!
+	#  IPv4 /32 or IPv6 /128 are NOT allowed!
+	netmask = 24
+
+	#
+	#  Any other configuration normally found in a "client"
+	#  entry can be used here.
+
+	#
+	#  A shared secret does NOT have to be defined.  It can
+	#  be left out.
+
+	#
+	#  Define the virtual server used to discover dynamic clients.
+	dynamic_clients = dynamic_client_server
+
+	#
+	#  The directory where client definitions are stored.  This
+	#  needs to be used ONLY if the client definitions are stored
+	#  in flat-text files.  Each file in that directory should be
+	#  ONE and only one client definition.  The name of the file
+	#  should be the IP address of the client.
+	#
+	#  If you are storing clients in SQL, this entry should not
+	#  be used.
+#	directory = ${confdir}/dynamic-clients/
+
+	#
+	#  Define the lifetime (in seconds) for dynamic clients.
+	#  They will be cached for this lifetime, and deleted afterwards.
+	#
+	#  If the lifetime is "0", then the dynamic client is never
+	#  deleted.  The only way to delete the client is to re-start
+	#  the server.
+	lifetime = 3600
+}
+
+#
+#  This is the virtual server referenced above by "dynamic_clients".
+server dynamic_client_server {
+
+	#
+	#  The only contents of the virtual server is the "authorize" section.
+	authorize {
+
+		#
+		#  Put any modules you want here.  SQL, LDAP, "exec",
+		#  Perl, etc.  The only requirements is that the
+		#  attributes MUST go into the control item list.
+		#
+		#  The request that is processed through this section
+		#  is EMPTY.  There are NO attributes.  The request is fake,
+		#  and is NOT the packet that triggered the lookup of
+		#  the dynamic client.
+		#
+		#  The ONLY piece of useful information is either
+		#
+		#	Packet-Src-IP-Address (IPv4 clients)
+		#	Packet-Src-IPv6-Address (IPv6 clients)
+		#
+		#  The attributes used to define a dynamic client mirror
+		#  the configuration items in the "client" structure.
+		#
+
+		#
+		#  Example 1: Hard-code a client IP.  This example is
+		#             useless, but it documents the attributes
+		#             you need.
+		#
+		update control {
+
+			#
+			#  Echo the IP address of the client.
+			FreeRADIUS-Client-IP-Address = "%{Packet-Src-IP-Address}"
+
+			# require_message_authenticator
+			FreeRADIUS-Client-Require-MA = no
+
+			# secret
+			FreeRADIUS-Client-Secret = "testing123"
+
+			# shortname
+			FreeRADIUS-Client-Shortname = "%{Packet-Src-IP-Address}"
+
+			# nas_type
+			FreeRADIUS-Client-NAS-Type = "other"
+
+			# virtual_server
+			#
+			#  This can ONLY be used if the network client
+			#  definition (e.g. "client dynamic" above) has
+			#  NO virtual_server defined.
+			#
+			#  If the network client definition does have a
+			#  virtual_server defined, then that is used,
+			#  and there is no need to define this attribute.
+			#
+			FreeRADIUS-Client-Virtual-Server = "something"
+
+		}
+
+		#
+		#  Example 2: Read the clients from "clients" files
+		#             in a directory.
+		#
+
+		#             This requires you to uncomment the
+		#             "directory" configuration in the
+		#             "client dynamic" configuration above,
+		#	      and then put one file per IP address in
+		#             that directory.
+		#
+		dynamic_clients
+
+		#
+		#  Example 3: Look the clients up in SQL.
+		#
+		#  This requires the SQL module to be configured, of course.
+		if ("%{sql: SELECT nasname FROM nas WHERE nasname = '%{Packet-Src-IP-Address}'}") {
+			update control {
+				#
+				#  Echo the IP.
+				FreeRADIUS-Client-IP-Address = "%{Packet-Src-IP-Address}"
+
+				#
+				#  Do multiple SELECT statements to grab
+				#  the various definitions.
+				FreeRADIUS-Client-Shortname = "%{sql: SELECT shortname FROM nas WHERE nasname = '%{Packet-Src-IP-Address}'}"
+
+				FreeRADIUS-Client-Secret = "%{sql: SELECT secret FROM nas WHERE nasname = '%{Packet-Src-IP-Address}'}"
+
+				FreeRADIUS-Client-NAS-Type = "%{sql: SELECT type FROM nas WHERE nasname = '%{Packet-Src-IP-Address}'}"
+
+				FreeRADIUS-Client-Virtual-Server = "%{sql: SELECT server FROM nas WHERE nasname = '%{Packet-Src-IP-Address}'}"
+			}
+
+		}
+
+		# Do an LDAP lookup in the elements OU, check to see if
+		# the Packet-Src-IP-Address object has a "ou"
+		# attribute, if it does continue.  Change "ACME.COM" to
+		# the real OU of your organization.
+		#
+		# Assuming the following schema:
+		#
+		# OU=Elements,OU=Radius,DC=ACME,DC=COM
+		#
+		# Elements will hold a record of every NAS in your
+		# Network.  Create Group objects based on the IP
+		# Address of the NAS and set the "Location" or "l"
+		# attribute to the NAS Huntgroup the NAS belongs to
+		# allow them to be centrally managed in LDAP.
+		#
+		# e.g.  CN=10.1.2.3,OU=Elements,OU=Radius,DC=ACME,DC=COM
+		#
+		# With a "l" value of "CiscoRTR" for a Cisco Router
+		# that has a NAS-IP-Address or Source-IP-Address of
+		# 10.1.2.3.
+		#
+		# And with a "ou" value of the shared secret password
+		# for the NAS element. ie "password"
+		if ("%{ldap:ldap:///OU=Elements,OU=Radius,DC=ACME,DC=COM?ou?sub?cn=%{Packet-Src-IP-Address}}") {
+			update control {
+			       FreeRADIUS-Client-IP-Address = "%{Packet-Src-IP-Address}"
+
+				# Set the Client-Shortname to be the Location
+				# "l" just like in the Huntgroups, but this
+				# time to the shortname.
+
+				FreeRADIUS-Client-Shortname = "%{ldap:ldap:///OU=Elements,OU=Radius,DC=ACME,DC=COM?l?sub?cn=%{Packet-Src-IP-Address}}"
+
+				# Lookup and set the Shared Secret based on
+				# the "ou" attribute.
+				FreeRADIUS-Client-Secret = "%{ldap:ldap:///OU=Elements,OU=Radius,DC=ACME,DC=COM?ou?sub?cn=%{Packet-Src-IP-Address}}"
+			}
+		}
+
+		#
+		#  Tell the caller that the client was defined properly.
+		#
+		#  If the authorize section does NOT return "ok", then
+		#  the new client is ignored.
+		ok
+	}
+}

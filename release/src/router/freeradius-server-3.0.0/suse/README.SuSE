@@ -1,0 +1,14 @@
+
+Please note that the radiusd does run as user 'radiusd' and
+group 'radiusd' per default after installation.
+(/etc/raddb/radiusd.conf)
+This was done because of security reasons and is possible with many
+authentication types (users, LDAP, SQL ...)
+
+If you would like to use unix (shadow) authentication (Auth-Type = System) 
+or PAM (Auth-Type = Pam) you have to change the values to run the daemon
+as user/group root:
+
+user = root
+group = root
+

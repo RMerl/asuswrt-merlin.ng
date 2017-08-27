@@ -1,0 +1,144 @@
+<!-- ##### SECTION Title ##### -->
+GDBusServer
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusServer ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusServer::new-connection ##### -->
+<para>
+
+</para>
+
+@gdbusserver: the object which received the signal.
+@arg1: 
+@Returns: 
+
+<!-- ##### ARG GDBusServer:active ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusServer:address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusServer:authentication-observer ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusServer:client-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusServer:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusServer:guid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GDBusServerFlags ##### -->
+<para>
+
+</para>
+
+@G_DBUS_SERVER_FLAGS_NONE: 
+@G_DBUS_SERVER_FLAGS_RUN_IN_THREAD: 
+@G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS: 
+
+<!-- ##### FUNCTION g_dbus_server_new_sync ##### -->
+<para>
+
+</para>
+
+@address: 
+@flags: 
+@guid: 
+@observer: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_server_start ##### -->
+<para>
+
+</para>
+
+@server: 
+
+
+<!-- ##### FUNCTION g_dbus_server_stop ##### -->
+<para>
+
+</para>
+
+@server: 
+
+
+<!-- ##### FUNCTION g_dbus_server_is_active ##### -->
+<para>
+
+</para>
+
+@server: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_server_get_guid ##### -->
+<para>
+
+</para>
+
+@server: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_server_get_flags ##### -->
+<para>
+
+</para>
+
+@server: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_server_get_client_address ##### -->
+<para>
+
+</para>
+
+@server: 
+@Returns: 
+
+

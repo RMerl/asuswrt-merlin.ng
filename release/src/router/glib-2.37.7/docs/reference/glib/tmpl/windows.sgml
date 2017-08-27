@@ -1,0 +1,118 @@
+<!-- ##### SECTION Title ##### -->
+Windows Compatibility Functions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO MAXPATHLEN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_win32_error_message ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_getlocale ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_get_package_installation_directory ##### -->
+<para>
+
+</para>
+
+@package: 
+@dll_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_get_package_installation_directory_of_module ##### -->
+<para>
+
+</para>
+
+@hmodule: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_get_package_installation_subdirectory ##### -->
+<para>
+
+</para>
+
+@package: 
+@dll_name: 
+@subdir: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_get_windows_version ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_locale_filename_from_utf8 ##### -->
+<para>
+
+</para>
+
+@utf8filename: 
+@Returns: 
+
+
+<!-- ##### MACRO G_WIN32_DLLMAIN_FOR_DLL_NAME ##### -->
+<para>
+
+</para>
+
+@static: 
+@dll_name: 
+
+
+<!-- ##### MACRO G_WIN32_HAVE_WIDECHAR_API ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_WIN32_IS_NT_BASED ##### -->
+<para>
+
+</para>
+
+
+

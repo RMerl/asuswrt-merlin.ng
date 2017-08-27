@@ -1,0 +1,53 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+env:
+  matrix:
+    - BUNDLEDLIBTOM=--disable-bundled-libtom WEXTRAFLAGS=-Werror
+    - BUNDLEDLIBTOM=--enable-bundled-libtom
+    - MULTI=1
+    - NOWRITEV=1
+
+# TODO: remove this section when libtomcrypt compiles on OSX: https://github.com/libtom/libtomcrypt/issues/82
+matrix:
+  exclude:
+    - os: osx
+      env: BUNDLEDLIBTOM=--disable-bundled-libtom WEXTRAFLAGS=-Werror
+
+compiler:
+  - gcc
+  - clang
+
+# container-based builds
+sudo: false
+addons:
+  apt:
+    packages:
+    # packages list: https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+    - zlib1g-dev
+    - libtomcrypt-dev
+    - libtommath-dev
+
+
+before_install:
+  - if [ "$CC" = "clang" ]; then WEXTRAFLAGS="$WEXTRAFLAGS -Wno-error=incompatible-library-redeclaration" ; fi  # workaround
+
+install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" -a "$BUNDLEDLIBTOM" = "--disable-bundled-libtom" ]; then brew update > /dev/null && brew install libtomcrypt libtommath ; fi
+
+script:
+  - autoconf && autoheader && ./configure "$BUNDLEDLIBTOM" CFLAGS="-O2 -Wall -Wno-pointer-sign $WEXTRAFLAGS" --prefix="$HOME/inst"
+  - if [ "$NOWRITEV" = "1" ]; then sed -i -e s/HAVE_WRITEV/DONT_HAVE_WRITEV/ config.h ; fi
+  - make -j3 
+  # avoid concurrent install, osx/freebsd is racey (https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=208093)
+  - make install 
+
+after_success:
+  - ~/inst/bin/dropbearkey -t rsa -f testrsa
+  - ~/inst/bin/dropbearkey -t dss -f testdss
+  - ~/inst/bin/dropbearkey -t ecdsa -f testec256 -s 256
+  - ~/inst/bin/dropbearkey -t ecdsa -f testec384 -s 384
+  - ~/inst/bin/dropbearkey -t ecdsa -f testec521 -s 521

@@ -1,0 +1,9 @@
+at the outset the gateway authenticates itself to the client by sending an
+IKEv2 <b>RSA signature</b> accompanied by a certificate.
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+<b>carol</b> uses the <i>Extensible Authentication Protocol</i>
+in association with the <i>Authentication and Key Agreement</i> protocol
+(<b>EAP-AKA</b>) to authenticate against the gateway. This protocol is used
+in UMTS, but here a secret from <b>ipsec.secrets</b> is used instead of a USIM/(R)UIM.
+In addition to her IKEv2 identity <b>carol@strongswan.org</b>, roadwarrior <b>carol</b>
+uses the EAP identity <b>carol</b>.

@@ -1,0 +1,2270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GApplication</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="application.html" title="Application support">
+<link rel="next" href="GApplicationCommandLine.html" title="GApplicationCommandLine">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GApplication.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GApplication.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GApplication.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GApplication.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#GApplication.signals" class="shortcut">Signals</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="application.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GApplicationCommandLine.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GApplication"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GApplication.top_of_page"></a>GApplication</span></h2>
+<p>GApplication — Core application class</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GApplication.synopsis"></a><h2>Synopsis</h2>
+<a name="GApplicationFlags"></a><pre class="synopsis">                    <a class="link" href="GApplication.html#GApplication-struct" title="GApplication">GApplication</a>;
+struct              <a class="link" href="GApplication.html#GApplicationClass" title="struct GApplicationClass">GApplicationClass</a>;
+
+enum                <a class="link" href="GApplication.html#GApplicationFlags-enum" title="enum GApplicationFlags">GApplicationFlags</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GApplication.html#g-application-id-is-valid" title="g_application_id_is_valid ()">g_application_id_is_valid</a>           (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>);
+<a class="link" href="GApplication.html" title="GApplication"><span class="returnvalue">GApplication</span></a> *      <a class="link" href="GApplication.html#g-application-new" title="g_application_new ()">g_application_new</a>                   (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a> flags</code></em>);
+
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GApplication.html#g-application-get-application-id" title="g_application_get_application_id ()">g_application_get_application_id</a>    (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-set-application-id" title="g_application_set_application_id ()">g_application_set_application_id</a>    (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>);
+
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="GApplication.html#g-application-get-inactivity-timeout" title="g_application_get_inactivity_timeout ()">g_application_get_inactivity_timeout</a>
+                                                        (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-set-inactivity-timeout" title="g_application_set_inactivity_timeout ()">g_application_set_inactivity_timeout</a>
+                                                        (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> inactivity_timeout</code></em>);
+
+<a class="link" href="GApplication.html#GApplicationFlags"><span class="returnvalue">GApplicationFlags</span></a>   <a class="link" href="GApplication.html#g-application-get-flags" title="g_application_get_flags ()">g_application_get_flags</a>             (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-set-flags" title="g_application_set_flags ()">g_application_set_flags</a>             (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a> flags</code></em>);
+
+<a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *   <a class="link" href="GApplication.html#g-application-get-dbus-connection" title="g_application_get_dbus_connection ()">g_application_get_dbus_connection</a>   (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GApplication.html#g-application-get-dbus-object-path" title="g_application_get_dbus_object_path ()">g_application_get_dbus_object_path</a>  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-set-action-group" title="g_application_set_action_group ()">g_application_set_action_group</a>      (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> *action_group</code></em>);
+
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GApplication.html#g-application-get-is-registered" title="g_application_get_is_registered ()">g_application_get_is_registered</a>     (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GApplication.html#g-application-get-is-remote" title="g_application_get_is_remote ()">g_application_get_is_remote</a>         (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GApplication.html#g-application-register" title="g_application_register ()">g_application_register</a>              (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-hold" title="g_application_hold ()">g_application_hold</a>                  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-release" title="g_application_release ()">g_application_release</a>               (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-quit" title="g_application_quit ()">g_application_quit</a>                  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-activate" title="g_application_activate ()">g_application_activate</a>              (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-open" title="g_application_open ()">g_application_open</a>                  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> **files</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> n_files</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *hint</code></em>);
+
+<span class="returnvalue">int</span>                 <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()">g_application_run</a>                   (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> argc</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> **argv</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-set-default" title="g_application_set_default ()">g_application_set_default</a>           (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<a class="link" href="GApplication.html" title="GApplication"><span class="returnvalue">GApplication</span></a> *      <a class="link" href="GApplication.html#g-application-get-default" title="g_application_get_default ()">g_application_get_default</a>           (<em class="parameter"><code><span class="type">void</span></code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-mark-busy" title="g_application_mark_busy ()">g_application_mark_busy</a>             (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GApplication.html#g-application-unmark-busy" title="g_application_unmark_busy ()">g_application_unmark_busy</a>           (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GApplication.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GApplication
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----GApplicationFlags
+</pre>
+</div>
+<div class="refsect1">
+<a name="GApplication.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GApplication implements
+ <a class="link" href="GActionGroup.html" title="GActionGroup">GActionGroup</a> and  <a class="link" href="GActionMap.html" title="GActionMap">GActionMap</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GApplication.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GApplication.html#GApplication--action-group" title='The "action-group" property'>action-group</a>"             <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>*         : Write
+  "<a class="link" href="GApplication.html#GApplication--application-id" title='The "application-id" property'>application-id</a>"           <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct
+  "<a class="link" href="GApplication.html#GApplication--flags" title='The "flags" property'>flags</a>"                    <a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a>     : Read / Write
+  "<a class="link" href="GApplication.html#GApplication--inactivity-timeout" title='The "inactivity-timeout" property'>inactivity-timeout</a>"       <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write
+  "<a class="link" href="GApplication.html#GApplication--is-registered" title='The "is-registered" property'>is-registered</a>"            <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read
+  "<a class="link" href="GApplication.html#GApplication--is-remote" title='The "is-remote" property'>is-remote</a>"                <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read
+</pre>
+</div>
+<div class="refsect1">
+<a name="GApplication.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="GApplication.html#GApplication-activate" title='The "activate" signal'>activate</a>"                                       : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+  "<a class="link" href="GApplication.html#GApplication-command-line" title='The "command-line" signal'>command-line</a>"                                   : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+  "<a class="link" href="GApplication.html#GApplication-open" title='The "open" signal'>open</a>"                                           : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+  "<a class="link" href="GApplication.html#GApplication-shutdown" title='The "shutdown" signal'>shutdown</a>"                                       : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+  "<a class="link" href="GApplication.html#GApplication-startup" title='The "startup" signal'>startup</a>"                                        : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GApplication.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> is the foundation of an application.  It wraps some
+low-level platform-specific services and is intended to act as the
+foundation for higher-level application classes such as
+<a href="http://developer.gnome.org/gtk2/GtkApplication.html"><span class="type">GtkApplication</span></a> or <span class="type">MxApplication</span>.  In general, you should not use
+this class outside of a higher level framework.
+</p>
+<p>
+GApplication provides convenient life cycle management by maintaining
+a <em class="firstterm">use count</em> for the primary application instance.
+The use count can be changed using <a class="link" href="GApplication.html#g-application-hold" title="g_application_hold ()"><code class="function">g_application_hold()</code></a> and
+<a class="link" href="GApplication.html#g-application-release" title="g_application_release ()"><code class="function">g_application_release()</code></a>. If it drops to zero, the application exits.
+Higher-level classes such as <a href="http://developer.gnome.org/gtk2/GtkApplication.html"><span class="type">GtkApplication</span></a> employ the use count to
+ensure that the application stays alive as long as it has any opened
+windows.
+</p>
+<p>
+Another feature that GApplication (optionally) provides is process
+uniqueness.  Applications can make use of this functionality by
+providing a unique application ID.  If given, only one application
+with this ID can be running at a time per session.  The session
+concept is platform-dependent, but corresponds roughly to a graphical
+desktop login.  When your application is launched again, its
+arguments are passed through platform communication to the already
+running program.  The already running instance of the program is
+called the <em class="firstterm">primary instance</em>; for non-unique
+applications this is the always the current instance.
+On Linux, the D-Bus session bus is used for communication.
+</p>
+<p>
+The use of <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> differs from some other commonly-used
+uniqueness libraries (such as libunique) in important ways.  The
+application is not expected to manually register itself and check if
+it is the primary instance.  Instead, the <code class="code"><code class="function">main()</code></code>
+function of a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> should do very little more than
+instantiating the application instance, possibly connecting signal
+handlers, then calling <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a>.  All checks for
+uniqueness are done internally.  If the application is the primary
+instance then the startup signal is emitted and the mainloop runs.
+If the application is not the primary instance then a signal is sent
+to the primary instance and <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> promptly returns.
+See the code examples below.
+</p>
+<p>
+If used, the expected form of an application identifier is very close
+to that of of a
+<a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface" target="_top">DBus bus name</a>.
+Examples include: "com.example.MyApp", "org.example.internal-apps.Calculator".
+For details on valid application identifiers, see <a class="link" href="GApplication.html#g-application-id-is-valid" title="g_application_id_is_valid ()"><code class="function">g_application_id_is_valid()</code></a>.
+</p>
+<p>
+On Linux, the application identifier is claimed as a well-known bus name
+on the user's session bus.  This means that the uniqueness of your
+application is scoped to the current session.  It also means that your
+application may provide additional services (through registration of other
+object paths) at that bus name.  The registration of these object paths
+should be done with the shared GDBus session bus.  Note that due to the
+internal architecture of GDBus, method calls can be dispatched at any time
+(even if a main loop is not running).  For this reason, you must ensure that
+any object paths that you wish to register are registered before <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+attempts to acquire the bus name of your application (which happens in
+<a class="link" href="GApplication.html#g-application-register" title="g_application_register ()"><code class="function">g_application_register()</code></a>).  Unfortunately, this means that you cannot use
+<a class="link" href="GApplication.html#g-application-get-is-remote" title="g_application_get_is_remote ()"><code class="function">g_application_get_is_remote()</code></a> to decide if you want to register object paths.
+</p>
+<p>
+GApplication also implements the <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> and <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a>
+interfaces and lets you easily export actions by adding them with
+<a class="link" href="GActionMap.html#g-action-map-add-action" title="g_action_map_add_action ()"><code class="function">g_action_map_add_action()</code></a>. When invoking an action by calling
+<a class="link" href="GActionGroup.html#g-action-group-activate-action" title="g_action_group_activate_action ()"><code class="function">g_action_group_activate_action()</code></a> on the application, it is always
+invoked in the primary instance. The actions are also exported on
+the session bus, and GIO provides the <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a> wrapper to
+conveniently access them remotely. GIO provides a <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a> wrapper
+for remote access to exported <a href="GMenuModel.html"><span class="type">GMenuModels</span></a>.
+</p>
+<p>
+There is a number of different entry points into a GApplication:
+</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">via 'Activate' (i.e. just starting the application)</li>
+<li class="listitem">via 'Open' (i.e. opening some files)</li>
+<li class="listitem">by handling a command-line</li>
+<li class="listitem">via activating an action</li>
+</ul></div>
+<p>
+The <a class="link" href="GApplication.html#GApplication-startup" title='The "startup" signal'><span class="type">"startup"</span></a> signal lets you handle the application
+initialization for all of these in a single place.
+</p>
+<p>
+Regardless of which of these entry points is used to start the application,
+GApplication passes some <em class="firstterm"><a name="platform-data"></a>platform
+data</em> from the launching instance to the primary instance,
+in the form of a <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> dictionary mapping strings to variants.
+To use platform data, override the <em class="parameter"><code>before_emit</code></em> or <em class="parameter"><code>after_emit</code></em> virtual
+functions in your <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> subclass. When dealing with
+<a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine"><span class="type">GApplicationCommandLine</span></a> objects, the platform data is directly
+available via <a class="link" href="GApplicationCommandLine.html#g-application-command-line-get-cwd" title="g_application_command_line_get_cwd ()"><code class="function">g_application_command_line_get_cwd()</code></a>,
+<a class="link" href="GApplicationCommandLine.html#g-application-command-line-get-environ" title="g_application_command_line_get_environ ()"><code class="function">g_application_command_line_get_environ()</code></a> and
+<a class="link" href="GApplicationCommandLine.html#g-application-command-line-get-platform-data" title="g_application_command_line_get_platform_data ()"><code class="function">g_application_command_line_get_platform_data()</code></a>.
+</p>
+<p>
+As the name indicates, the platform data may vary depending on the
+operating system, but it always includes the current directory (key
+"cwd"), and optionally the environment (ie the set of environment
+variables and their values) of the calling process (key "environ").
+The environment is only added to the platform data if the
+<a class="link" href="GApplication.html#G-APPLICATION-SEND-ENVIRONMENT:CAPS"><code class="literal">G_APPLICATION_SEND_ENVIRONMENT</code></a> flag is set. <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> subclasses
+can add their own platform data by overriding the <em class="parameter"><code>add_platform_data</code></em>
+virtual function. For instance, <a href="http://developer.gnome.org/gtk2/GtkApplication.html"><span class="type">GtkApplication</span></a> adds startup notification
+data in this way.
+</p>
+<p>
+To parse commandline arguments you may handle the
+<a class="link" href="GApplication.html#GApplication-command-line" title='The "command-line" signal'><span class="type">"command-line"</span></a> signal or override the <code class="function">local_command_line()</code>
+vfunc, to parse them in either the primary instance or the local instance,
+respectively.
+</p>
+<p>
+</p>
+<div class="example">
+<a name="gapplication-example-open"></a><p class="title"><b>Example 18. Opening files with a GApplication</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gio/gio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;string.h&gt;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">application</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"activated</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Note: when doing a longer-lasting action here that returns</span>
+<span class="comment">   * to the mainloop, you should use g_application_hold() and</span>
+<span class="comment">   * g_application_release() to keep the application alive until</span>
+<span class="comment">   * the action is completed.</span>
+<span class="comment">   */</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">open</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">application</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="usertype">GFile</span><span class="normal">        </span><span class="symbol">**</span><span class="normal">files</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="usertype">gint</span><span class="normal">           n_files</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">   </span><span class="symbol">*</span><span class="normal">hint</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gint</span><span class="normal"> i</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> n_files</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">uri </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GFile.html#g-file-get-uri">g_file_get_uri</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">files</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"open %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> uri</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">uri</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="comment">/* Note: when doing a longer-lasting action here that returns</span>
+<span class="comment">   * to the mainloop, you should use g_application_hold() and</span>
+<span class="comment">   * g_application_release() to keep the application alive until</span>
+<span class="comment">   * the action is completed.</span>
+<span class="comment">   */</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">**</span><span class="normal">argv</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">app</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> status</span><span class="symbol">;</span>
+
+<span class="normal">  app </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GApplication.html#g-application-new">g_application_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"org.gtk.TestApplication"</span><span class="symbol">,</span>
+<span class="normal">                           <a href="GApplication.html#G-APPLICATION-HANDLES-OPEN:CAPS">G_APPLICATION_HANDLES_OPEN</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"activate"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">activate</span><span class="symbol">),</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"open"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">open</span><span class="symbol">),</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-set-inactivity-timeout">g_application_set_inactivity_timeout</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="number">10000</span><span class="symbol">);</span>
+
+<span class="normal">  status </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GApplication.html#g-application-run">g_application_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> argv</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> status</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+<p>
+</p>
+<div class="example">
+<a name="gapplication-example-actions"></a><p class="title"><b>Example 19. A GApplication with actions</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gio/gio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;string.h&gt;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">application</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-hold">g_application_hold</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"activated</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-release">g_application_release</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate_action</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GAction</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">action</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GVariant</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">parameter</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">gpointer</span><span class="normal">  data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">application </span><span class="symbol">=</span><span class="normal"> </span><span class="function">G_APPLICATION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">data</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-hold">g_application_hold</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"action %s activated</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GAction.html#g-action-get-name">g_action_get_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-release">g_application_release</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate_toggle_action</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GSimpleAction</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">action</span><span class="symbol">,</span>
+<span class="normal">                        </span><span class="usertype">GVariant</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">parameter</span><span class="symbol">,</span>
+<span class="normal">                        </span><span class="usertype">gpointer</span><span class="normal">       data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">application </span><span class="symbol">=</span><span class="normal"> </span><span class="function">G_APPLICATION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">data</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="usertype">GVariant</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">state</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> b</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"action %s activated</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GAction.html#g-action-get-name">g_action_get_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">)));</span>
+
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-hold">g_application_hold</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">);</span>
+<span class="normal">  state </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GAction.html#g-action-get-state">g_action_get_state</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">));</span>
+<span class="normal">  b </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-get-boolean">g_variant_get_boolean</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref">g_variant_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GSimpleAction.html#g-simple-action-set-state">g_simple_action_set_state</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-new-boolean">g_variant_new_boolean</a></span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"state change %d -&gt; %d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">b</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-release">g_application_release</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">add_actions</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">app</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GSimpleAction</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">action</span><span class="symbol">;</span>
+
+<span class="normal">  action </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GSimpleAction.html#g-simple-action-new">g_simple_action_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"simple-action"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"activate"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">activate_action</span><span class="symbol">),</span><span class="normal"> app</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GActionMap.html#g-action-map-add-action">g_action_map_add_action</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION_MAP</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">),</span><span class="normal"> </span><span class="function">G_ACTION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">);</span>
+
+<span class="normal">  action </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GSimpleAction.html#g-simple-action-new-stateful">g_simple_action_new_stateful</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"toggle-action"</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">                                         </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-new-boolean">g_variant_new_boolean</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"activate"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">activate_toggle_action</span><span class="symbol">),</span><span class="normal"> app</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GActionMap.html#g-action-map-add-action">g_action_map_add_action</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION_MAP</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">),</span><span class="normal"> </span><span class="function">G_ACTION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">action</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">describe_and_activate_action</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GActionGroup</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">group</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GVariantType</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">param_type</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GVariant</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">state</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> enabled</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">tmp</span><span class="symbol">;</span>
+
+<span class="normal">  param_type </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GActionGroup.html#g-action-group-get-action-parameter-type">g_action_group_get_action_parameter_type</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">group</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="normal">  state </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GActionGroup.html#g-action-group-get-action-state">g_action_group_get_action_state</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">group</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="normal">  enabled </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GActionGroup.html#g-action-group-get-action-enabled">g_action_group_get_action_enabled</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">group</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"action name:      %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="normal">  tmp </span><span class="symbol">=</span><span class="normal"> param_type </span><span class="symbol">?</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariantType.html#g-variant-type-dup-string">g_variant_type_dup_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">param_type</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"parameter type:   %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> tmp </span><span class="symbol">?</span><span class="normal"> tmp </span><span class="symbol">:</span><span class="normal"> </span><span class="string">"&lt;none&gt;"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">tmp</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"state type:       %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span>
+<span class="normal">           state </span><span class="symbol">?</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-get-type-string">g_variant_get_type_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> </span><span class="string">"&lt;none&gt;"</span><span class="symbol">);</span>
+<span class="normal">  tmp </span><span class="symbol">=</span><span class="normal"> state </span><span class="symbol">?</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-print">g_variant_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"state:            %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> tmp </span><span class="symbol">?</span><span class="normal"> tmp </span><span class="symbol">:</span><span class="normal"> </span><span class="string">"&lt;none&gt;"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">tmp</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"enabled:          %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> enabled </span><span class="symbol">?</span><span class="normal"> </span><span class="string">"true"</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> </span><span class="string">"false"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">state </span><span class="symbol">!=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#g-variant-unref">g_variant_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="GActionGroup.html#g-action-group-activate-action">g_action_group_activate_action</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">group</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">**</span><span class="normal">argv</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">app</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> status</span><span class="symbol">;</span>
+
+<span class="normal">  app </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GApplication.html#g-application-new">g_application_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"org.gtk.TestApplication"</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"activate"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">activate</span><span class="symbol">),</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-set-inactivity-timeout">g_application_set_inactivity_timeout</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="number">10000</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function">add_actions</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">argc </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">strcmp</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> </span><span class="string">"--simple-action"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="GApplication.html#g-application-register">g_application_register</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function">describe_and_activate_action</span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION_GROUP</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"simple-action"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function">exit</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">argc </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="function">strcmp</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> </span><span class="string">"--toggle-action"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="function"><a href="GApplication.html#g-application-register">g_application_register</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function">describe_and_activate_action</span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION_GROUP</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"toggle-action"</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function">exit</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  status </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GApplication.html#g-application-run">g_application_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> argv</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> status</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+<p>
+</p>
+<div class="example">
+<a name="gapplication-example-menu"></a><p class="title"><b>Example 20. A GApplication with menus</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">FIXME</span><span class="symbol">:</span><span class="normal"> MISSING XINCLUDE CONTENT</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+<p>
+</p>
+<div class="example">
+<a name="gapplication-example-dbushooks"></a><p class="title"><b>Example 21. Using extra D-Bus hooks with a GApplication</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gio/gio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;string.h&gt;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">application</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"activated</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Note: when doing a longer-lasting action here that returns</span>
+<span class="comment">   * to the mainloop, you should use g_application_hold() and</span>
+<span class="comment">   * g_application_release() to keep the application alive until</span>
+<span class="comment">   * the action is completed.</span>
+<span class="comment">   */</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">typedef</span><span class="normal"> </span><span class="usertype">GApplication</span><span class="normal"> TestApplication</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="usertype">GApplicationClass</span><span class="normal"> TestApplicationClass</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GType</span><span class="normal"> </span><span class="function">test_application_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+<span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#G-DEFINE-TYPE:CAPS">G_DEFINE_TYPE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">TestApplication</span><span class="symbol">,</span><span class="normal"> test_application</span><span class="symbol">,</span><span class="normal"> G_TYPE_APPLICATION</span><span class="symbol">)</span>
+
+<span class="keyword">static</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">test_application_dbus_register</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">application</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">object_path</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* We must chain up to the parent class */</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">G_APPLICATION_CLASS</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">test_application_parent_class</span><span class="symbol">)-&gt;</span><span class="function">dbus_register</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">,</span>
+<span class="normal">                                                                           connection</span><span class="symbol">,</span>
+<span class="normal">                                                                           object_path</span><span class="symbol">,</span>
+<span class="normal">                                                                           error</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">/* Now we can do our own stuff here. For example, we could export some D-Bus objects */</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">test_application_dbus_unregister</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GApplication</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">application</span><span class="symbol">,</span>
+<span class="normal">                                  </span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                                  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">object_path</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Do our own stuff here, e.g. unexport any D-Bus objects we exported in the dbus_register</span>
+<span class="comment">   * hook above. Be sure to check that we actually did export them, since the hook</span>
+<span class="comment">   * above might have returned early due to the parent class' hook returning FALSE!</span>
+<span class="comment">   */</span>
+
+<span class="normal">  </span><span class="comment">/* Lastly, we must chain up to the parent class */</span>
+<span class="normal">  </span><span class="function">G_APPLICATION_CLASS</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">test_application_parent_class</span><span class="symbol">)-&gt;</span><span class="function">dbus_unregister</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application</span><span class="symbol">,</span>
+<span class="normal">                                                                        connection</span><span class="symbol">,</span>
+<span class="normal">                                                                        object_path</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">test_application_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">TestApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">app</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">test_application_class_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">TestApplicationClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">class</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GApplicationClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">g_application_class </span><span class="symbol">=</span><span class="normal"> </span><span class="function">G_APPLICATION_CLASS</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">class</span><span class="symbol">);</span>
+
+<span class="normal">  g_application_class</span><span class="symbol">-&gt;</span><span class="normal">dbus_register </span><span class="symbol">=</span><span class="normal"> test_application_dbus_register</span><span class="symbol">;</span>
+<span class="normal">  g_application_class</span><span class="symbol">-&gt;</span><span class="normal">dbus_unregister </span><span class="symbol">=</span><span class="normal"> test_application_dbus_unregister</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> <a href="GApplication.html">GApplication</a> </span><span class="symbol">*</span>
+<span class="function">test_application_new</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">application_id</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">GApplicationFlags</span><span class="normal">  flags</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-return-val-if-fail">g_return_val_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="GApplication.html#g-application-id-is-valid">g_application_id_is_valid</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">application_id</span><span class="symbol">),</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-new">g_object_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">test_application_get_type</span><span class="normal"> </span><span class="symbol">(),</span>
+<span class="normal">                       </span><span class="string">"application-id"</span><span class="symbol">,</span><span class="normal"> application_id</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="string">"flags"</span><span class="symbol">,</span><span class="normal"> flags</span><span class="symbol">,</span>
+<span class="normal">                       <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">**</span><span class="normal">argv</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GApplication</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">app</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> status</span><span class="symbol">;</span>
+
+<span class="normal">  app </span><span class="symbol">=</span><span class="normal"> </span><span class="function">test_application_new</span><span class="normal"> </span><span class="symbol">(</span><span class="string">"org.gtk.TestApplication"</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"activate"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">activate</span><span class="symbol">),</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="GApplication.html#g-application-set-inactivity-timeout">g_application_set_inactivity_timeout</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> </span><span class="number">10000</span><span class="symbol">);</span>
+
+<span class="normal">  status </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GApplication.html#g-application-run">g_application_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">,</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> argv</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">app</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> status</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+</p>
+</div>
+<div class="refsect1">
+<a name="GApplication.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GApplication-struct"></a><h3>GApplication</h3>
+<pre class="programlisting">typedef struct _GApplication GApplication;</pre>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplicationClass"></a><h3>struct GApplicationClass</h3>
+<pre class="programlisting">struct GApplicationClass {
+  /* signals */
+  void                      (* startup)             (GApplication              *application);
+
+  void                      (* activate)            (GApplication              *application);
+
+  void                      (* open)                (GApplication              *application,
+                                                     GFile                    **files,
+                                                     gint                       n_files,
+                                                     const gchar               *hint);
+
+  int                       (* command_line)        (GApplication              *application,
+                                                     GApplicationCommandLine   *command_line);
+
+  /* vfuncs */
+
+  /**
+   * GApplicationClass::local_command_line:
+   * @application: a #GApplication
+   * @arguments: (inout) (array zero-terminated=1): array of command line arguments
+   * @exit_status: (out): exit status to fill after processing the command line.
+   *
+   * This virtual function is always invoked in the local instance. It
+   * gets passed a pointer to a %NULL-terminated copy of @argv and is
+   * expected to remove arguments that it handled (shifting up remaining
+   * arguments).
+   *
+   * The last argument to local_command_line() is a pointer to the @status
+   * variable which can used to set the exit status that is returned from
+   * g_application_run().
+   *
+   * See g_application_run() for more details on #GApplication startup.
+   *
+   * Returns: %TRUE if the commandline has been completely handled
+   */
+  gboolean                  (* local_command_line)  (GApplication              *application,
+                                                     gchar                   ***arguments,
+                                                     int                       *exit_status);
+
+  void                      (* before_emit)         (GApplication              *application,
+                                                     GVariant                  *platform_data);
+  void                      (* after_emit)          (GApplication              *application,
+                                                     GVariant                  *platform_data);
+  void                      (* add_platform_data)   (GApplication              *application,
+                                                     GVariantBuilder           *builder);
+  void                      (* quit_mainloop)       (GApplication              *application);
+  void                      (* run_mainloop)        (GApplication              *application);
+  void                      (* shutdown)            (GApplication              *application);
+
+  gboolean                  (* dbus_register)       (GApplication              *application,
+                                                     GDBusConnection           *connection,
+                                                     const gchar               *object_path,
+                                                     GError                   **error);
+  void                      (* dbus_unregister)     (GApplication              *application,
+                                                     GDBusConnection           *connection,
+                                                     const gchar               *object_path);
+};
+</pre>
+<p>
+Virtual function table for <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.startup"></a>startup</code></em> ()</span></p></td>
+<td>invoked on the primary instance immediately after registration</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.activate"></a>activate</code></em> ()</span></p></td>
+<td>invoked on the primary instance when an activation occurs</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.open"></a>open</code></em> ()</span></p></td>
+<td>invoked on the primary instance when there are files to open</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.command-line"></a>command_line</code></em> ()</span></p></td>
+<td>invoked on the primary instance when a command-line is
+not handled locally</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.local-command-line"></a>local_command_line</code></em> ()</span></p></td>
+<td>invoked (locally) when the process has been invoked
+via commandline execution (as opposed to, say, D-Bus activation - which
+is not currently supported by GApplication). The virtual function has
+the chance to inspect (and possibly replace) the list of command line
+arguments. See <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> for more information.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.before-emit"></a>before_emit</code></em> ()</span></p></td>
+<td>invoked on the primary instance before 'activate', 'open',
+'command-line' or any action invocation, gets the 'platform data' from
+the calling instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.after-emit"></a>after_emit</code></em> ()</span></p></td>
+<td>invoked on the primary instance after 'activate', 'open',
+'command-line' or any action invocation, gets the 'platform data' from
+the calling instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.add-platform-data"></a>add_platform_data</code></em> ()</span></p></td>
+<td>invoked (locally) to add 'platform data' to be sent to
+the primary instance when activating, opening or invoking actions</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.quit-mainloop"></a>quit_mainloop</code></em> ()</span></p></td>
+<td>Used to be invoked on the primary instance when the use
+count of the application drops to zero (and after any inactivity
+timeout, if requested). Not used anymore since 2.32</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.run-mainloop"></a>run_mainloop</code></em> ()</span></p></td>
+<td>Used to be invoked on the primary instance from
+<a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> if the use-count is non-zero. Since 2.32,
+GApplication is iterating the main context directly and is not
+using <em class="parameter"><code>run_mainloop</code></em> anymore</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.shutdown"></a>shutdown</code></em> ()</span></p></td>
+<td>invoked only on the registered primary instance immediately
+after the main loop terminates</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.dbus-register"></a>dbus_register</code></em> ()</span></p></td>
+<td>invoked locally during registration, if the application is
+using its D-Bus backend. You can use this to export extra objects on the
+bus, that need to exist before the application tries to own the bus name.
+The function is passed the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> to to session bus, and the
+object path that <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> will use to export is D-Bus API.
+If this function returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, registration will proceed; otherwise
+registration will abort. Since: 2.34</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GApplicationClass.dbus-unregister"></a>dbus_unregister</code></em> ()</span></p></td>
+<td>invoked locally during unregistration, if the application
+is using its D-Bus backend. Use this to undo anything done by the
+<em class="parameter"><code>dbus_register</code></em> vfunc. Since: 2.34</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplicationFlags-enum"></a><h3>enum GApplicationFlags</h3>
+<pre class="programlisting">typedef enum {
+  G_APPLICATION_FLAGS_NONE,
+  G_APPLICATION_IS_SERVICE  =          (1 &lt;&lt; 0),
+  G_APPLICATION_IS_LAUNCHER =          (1 &lt;&lt; 1),
+
+  G_APPLICATION_HANDLES_OPEN =         (1 &lt;&lt; 2),
+  G_APPLICATION_HANDLES_COMMAND_LINE = (1 &lt;&lt; 3),
+  G_APPLICATION_SEND_ENVIRONMENT    =  (1 &lt;&lt; 4),
+
+  G_APPLICATION_NON_UNIQUE =           (1 &lt;&lt; 5)
+} GApplicationFlags;
+</pre>
+<p>
+Flags used to define the behaviour of a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="G-APPLICATION-FLAGS-NONE:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_FLAGS_NONE</code></span></p></td>
+<td>Default
+</td>
+</tr>
+<tr>
+<td><p><a name="G-APPLICATION-IS-SERVICE:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_IS_SERVICE</code></span></p></td>
+<td>Run as a service. In this mode, registration
+     fails if the service is already running, and the application
+     will initially wait up to 10 seconds for an initial activation
+     message to arrive.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-APPLICATION-IS-LAUNCHER:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_IS_LAUNCHER</code></span></p></td>
+<td>Don't try to become the primary instance.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-APPLICATION-HANDLES-OPEN:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_HANDLES_OPEN</code></span></p></td>
+<td>This application handles opening files (in
+    the primary instance). Note that this flag only affects the default
+    implementation of <code class="function">local_command_line()</code>, and has no effect if
+    <a class="link" href="GApplication.html#G-APPLICATION-HANDLES-COMMAND-LINE:CAPS"><code class="literal">G_APPLICATION_HANDLES_COMMAND_LINE</code></a> is given.
+    See <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> for details.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-APPLICATION-HANDLES-COMMAND-LINE:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_HANDLES_COMMAND_LINE</code></span></p></td>
+<td>This application handles command line
+    arguments (in the primary instance). Note that this flag only affect
+    the default implementation of <code class="function">local_command_line()</code>.
+    See <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> for details.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-APPLICATION-SEND-ENVIRONMENT:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_SEND_ENVIRONMENT</code></span></p></td>
+<td>Send the environment of the
+    launching process to the primary instance. Set this flag if your
+    application is expected to behave differently depending on certain
+    environment variables. For instance, an editor might be expected
+    to use the <code class="envar">GIT_COMMITTER_NAME</code> environment variable
+    when editing a git commit message. The environment is available
+    to the <a class="link" href="GApplication.html#GApplication-command-line" title='The "command-line" signal'><span class="type">"command-line"</span></a> signal handler, via
+    <a class="link" href="GApplicationCommandLine.html#g-application-command-line-getenv" title="g_application_command_line_getenv ()"><code class="function">g_application_command_line_getenv()</code></a>.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-APPLICATION-NON-UNIQUE:CAPS"></a><span class="term"><code class="literal">G_APPLICATION_NON_UNIQUE</code></span></p></td>
+<td>Make no attempts to do any of the typical
+    single-instance application negotiation, even if the application
+    ID is given.  The application neither attempts to become the
+    owner of the application ID nor does it check if an existing
+    owner already exists.  Everything occurs in the local process.
+    Since: 2.30.
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-id-is-valid"></a><h3>g_application_id_is_valid ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_application_id_is_valid           (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>);</pre>
+<p>
+Checks if <em class="parameter"><code>application_id</code></em> is a valid application identifier.
+</p>
+<p>
+A valid ID is required for calls to <a class="link" href="GApplication.html#g-application-new" title="g_application_new ()"><code class="function">g_application_new()</code></a> and
+<a class="link" href="GApplication.html#g-application-set-application-id" title="g_application_set_application_id ()"><code class="function">g_application_set_application_id()</code></a>.
+</p>
+<p>
+For convenience, the restrictions on application identifiers are
+reproduced here:
+</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">Application identifiers must contain only the ASCII characters "[A-Z][a-z][0-9]_-." and must not begin with a digit.</li>
+<li class="listitem">Application identifiers must contain at least one '.' (period) character (and thus at least three elements).</li>
+<li class="listitem">Application identifiers must not begin or end with a '.' (period) character.</li>
+<li class="listitem">Application identifiers must not contain consecutive '.' (period) characters.</li>
+<li class="listitem">Application identifiers must not exceed 255 characters.</li>
+</ul></div>
+<p>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application_id</code></em> :</span></p></td>
+<td>a potential application identifier</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>application_id</code></em> is valid</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-new"></a><h3>g_application_new ()</h3>
+<pre class="programlisting"><a class="link" href="GApplication.html" title="GApplication"><span class="returnvalue">GApplication</span></a> *      g_application_new                   (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a> flags</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> instance.
+</p>
+<p>
+If non-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, the application id must be valid.  See
+<a class="link" href="GApplication.html#g-application-id-is-valid" title="g_application_id_is_valid ()"><code class="function">g_application_id_is_valid()</code></a>.
+</p>
+<p>
+If no application ID is given then some features of <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+(most notably application uniqueness) will be disabled.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application_id</code></em> :</span></p></td>
+<td>the application id. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>the application flags</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> instance</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-application-id"></a><h3>g_application_get_application_id ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_application_get_application_id    (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Gets the unique identifier for <em class="parameter"><code>application</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the identifier for <em class="parameter"><code>application</code></em>, owned by <em class="parameter"><code>application</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-set-application-id"></a><h3>g_application_set_application_id ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_set_application_id    (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>);</pre>
+<p>
+Sets the unique identifier for <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+The application id can only be modified if <em class="parameter"><code>application</code></em> has not yet
+been registered.
+</p>
+<p>
+If non-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, the application id must be valid.  See
+<a class="link" href="GApplication.html#g-application-id-is-valid" title="g_application_id_is_valid ()"><code class="function">g_application_id_is_valid()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application_id</code></em> :</span></p></td>
+<td>the identifier for <em class="parameter"><code>application</code></em>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-inactivity-timeout"></a><h3>g_application_get_inactivity_timeout ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               g_application_get_inactivity_timeout
+                                                        (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Gets the current inactivity timeout for the application.
+</p>
+<p>
+This is the amount of time (in milliseconds) after the last call to
+<a class="link" href="GApplication.html#g-application-release" title="g_application_release ()"><code class="function">g_application_release()</code></a> before the application stops running.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the timeout, in milliseconds</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-set-inactivity-timeout"></a><h3>g_application_set_inactivity_timeout ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_set_inactivity_timeout
+                                                        (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> inactivity_timeout</code></em>);</pre>
+<p>
+Sets the current inactivity timeout for the application.
+</p>
+<p>
+This is the amount of time (in milliseconds) after the last call to
+<a class="link" href="GApplication.html#g-application-release" title="g_application_release ()"><code class="function">g_application_release()</code></a> before the application stops running.
+</p>
+<p>
+This call has no side effects of its own.  The value set here is only
+used for next time <a class="link" href="GApplication.html#g-application-release" title="g_application_release ()"><code class="function">g_application_release()</code></a> drops the use count to
+zero.  Any timeouts currently in progress are not impacted.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>inactivity_timeout</code></em> :</span></p></td>
+<td>the timeout, in milliseconds</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-flags"></a><h3>g_application_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="GApplication.html#GApplicationFlags"><span class="returnvalue">GApplicationFlags</span></a>   g_application_get_flags             (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Gets the flags for <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+See <a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the flags for <em class="parameter"><code>application</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-set-flags"></a><h3>g_application_set_flags ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_set_flags             (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a> flags</code></em>);</pre>
+<p>
+Sets the flags for <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+The flags can only be modified if <em class="parameter"><code>application</code></em> has not yet been
+registered.
+</p>
+<p>
+See <a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>the flags for <em class="parameter"><code>application</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-dbus-connection"></a><h3>g_application_get_dbus_connection ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *   g_application_get_dbus_connection   (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Gets the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> being used by the application, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<p>
+If <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> is using its D-Bus backend then this function will
+return the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> being used for uniqueness and
+communication with the desktop environment and other instances of the
+application.
+</p>
+<p>
+If <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> is not using D-Bus then this function will return
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.  This includes the situation where the D-Bus backend would
+normally be in use but we were unable to connect to the bus.
+</p>
+<p>
+This function must not be called before the application has been
+registered.  See <a class="link" href="GApplication.html#g-application-get-is-registered" title="g_application_get_is_registered ()"><code class="function">g_application_get_is_registered()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-dbus-object-path"></a><h3>g_application_get_dbus_object_path ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_application_get_dbus_object_path  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Gets the D-Bus object path being used by the application, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<p>
+If <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> is using its D-Bus backend then this function will
+return the D-Bus object path that <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> is using.  If the
+application is the primary instance then there is an object published
+at this path.  If the application is not the primary instance then
+the result of this function is undefined.
+</p>
+<p>
+If <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> is not using D-Bus then this function will return
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.  This includes the situation where the D-Bus backend would
+normally be in use but we were unable to connect to the bus.
+</p>
+<p>
+This function must not be called before the application has been
+registered.  See <a class="link" href="GApplication.html#g-application-get-is-registered" title="g_application_get_is_registered ()"><code class="function">g_application_get_is_registered()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the object path, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-set-action-group"></a><h3>g_application_set_action_group ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_set_action_group      (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> *action_group</code></em>);</pre>
+<div class="warning">
+<h3 class="title">Warning</h3>
+<p><code class="literal">g_application_set_action_group</code> has been deprecated since version 2.32 and should not be used in newly-written code. Use the <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> interface instead.  Never ever
+mix use of this API with use of <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> on the same <em class="parameter"><code>application</code></em>
+or things will go very badly wrong.  This function is known to
+introduce buggy behaviour (ie: signals not emitted on changes to the
+action group), so you should really use <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> instead.</p>
+</div>
+<p>
+This used to be how actions were associated with a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>.
+Now there is <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> for that.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>action_group</code></em> :</span></p></td>
+<td>a <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-is-registered"></a><h3>g_application_get_is_registered ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_application_get_is_registered     (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Checks if <em class="parameter"><code>application</code></em> is registered.
+</p>
+<p>
+An application is registered if <a class="link" href="GApplication.html#g-application-register" title="g_application_register ()"><code class="function">g_application_register()</code></a> has been
+successfully called.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>application</code></em> is registered</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-is-remote"></a><h3>g_application_get_is_remote ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_application_get_is_remote         (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Checks if <em class="parameter"><code>application</code></em> is remote.
+</p>
+<p>
+If <em class="parameter"><code>application</code></em> is remote then it means that another instance of
+application already exists (the 'primary' instance).  Calls to
+perform actions on <em class="parameter"><code>application</code></em> will result in the actions being
+performed by the primary instance.
+</p>
+<p>
+The value of this property cannot be accessed before
+<a class="link" href="GApplication.html#g-application-register" title="g_application_register ()"><code class="function">g_application_register()</code></a> has been called.  See
+<a class="link" href="GApplication.html#g-application-get-is-registered" title="g_application_get_is_registered ()"><code class="function">g_application_get_is_registered()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>application</code></em> is remote</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-register"></a><h3>g_application_register ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_application_register              (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Attempts registration of the application.
+</p>
+<p>
+This is the point at which the application discovers if it is the
+primary instance or merely acting as a remote for an already-existing
+primary instance.  This is implemented by attempting to acquire the
+application identifier as a unique bus name on the session bus using
+GDBus.
+</p>
+<p>
+If there is no application ID or if <a class="link" href="GApplication.html#G-APPLICATION-NON-UNIQUE:CAPS"><code class="literal">G_APPLICATION_NON_UNIQUE</code></a> was
+given, then this process will always become the primary instance.
+</p>
+<p>
+Due to the internal architecture of GDBus, method calls can be
+dispatched at any time (even if a main loop is not running).  For
+this reason, you must ensure that any object paths that you wish to
+register are registered before calling this function.
+</p>
+<p>
+If the application has already been registered then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is
+returned with no work performed.
+</p>
+<p>
+The <a class="link" href="GApplication.html#GApplication-startup" title='The "startup" signal'><span class="type">"startup"</span></a> signal is emitted if registration succeeds
+and <em class="parameter"><code>application</code></em> is the primary instance (including the non-unique
+case).
+</p>
+<p>
+In the event of an error (such as <em class="parameter"><code>cancellable</code></em> being cancelled, or a
+failure to connect to the session bus), <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned and <em class="parameter"><code>error</code></em>
+is set appropriately.
+</p>
+<p>
+Note: the return value of this function is not an indicator that this
+instance is or is not the primary instance of the application.  See
+<a class="link" href="GApplication.html#g-application-get-is-remote" title="g_application_get_is_remote ()"><code class="function">g_application_get_is_remote()</code></a> for that.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a pointer to a NULL <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if registration succeeded</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-hold"></a><h3>g_application_hold ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_hold                  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Increases the use count of <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+Use this function to indicate that the application has a reason to
+continue to run.  For example, <a class="link" href="GApplication.html#g-application-hold" title="g_application_hold ()"><code class="function">g_application_hold()</code></a> is called by GTK+
+when a toplevel window is on the screen.
+</p>
+<p>
+To cancel the hold, call <a class="link" href="GApplication.html#g-application-release" title="g_application_release ()"><code class="function">g_application_release()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-release"></a><h3>g_application_release ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_release               (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Decrease the use count of <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+When the use count reaches zero, the application will stop running.
+</p>
+<p>
+Never call this function except to cancel the effect of a previous
+call to <a class="link" href="GApplication.html#g-application-hold" title="g_application_hold ()"><code class="function">g_application_hold()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-quit"></a><h3>g_application_quit ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_quit                  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Immediately quits the application.
+</p>
+<p>
+Upon return to the mainloop, <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> will return,
+calling only the 'shutdown' function before doing so.
+</p>
+<p>
+The hold count is ignored.
+</p>
+<p>
+The result of calling <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> again after it returns is
+unspecified.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-activate"></a><h3>g_application_activate ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_activate              (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Activates the application.
+</p>
+<p>
+In essence, this results in the <a class="link" href="GApplication.html#GApplication-activate" title='The "activate" signal'><span class="type">"activate"</span></a> signal being
+emitted in the primary instance.
+</p>
+<p>
+The application must be registered before calling this function.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-open"></a><h3>g_application_open ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_open                  (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> **files</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> n_files</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *hint</code></em>);</pre>
+<p>
+Opens the given files.
+</p>
+<p>
+In essence, this results in the <a class="link" href="GApplication.html#GApplication-open" title='The "open" signal'><span class="type">"open"</span></a> signal being emitted
+in the primary instance.
+</p>
+<p>
+<em class="parameter"><code>n_files</code></em> must be greater than zero.
+</p>
+<p>
+<em class="parameter"><code>hint</code></em> is simply passed through to the ::open signal.  It is
+intended to be used by applications that have multiple modes for
+opening files (eg: "view" vs "edit", etc).  Unless you have a need
+for this functionality, you should use "".
+</p>
+<p>
+The application must be registered before calling this function
+and it must have the <a class="link" href="GApplication.html#G-APPLICATION-HANDLES-OPEN:CAPS"><code class="literal">G_APPLICATION_HANDLES_OPEN</code></a> flag set.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>files</code></em> :</span></p></td>
+<td>an array of <a href="GFile.html"><span class="type">GFiles</span></a> to open. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_files]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>n_files</code></em> :</span></p></td>
+<td>the length of the <em class="parameter"><code>files</code></em> array</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hint</code></em> :</span></p></td>
+<td>a hint (or ""), but never <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-run"></a><h3>g_application_run ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 g_application_run                   (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> argc</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> **argv</code></em>);</pre>
+<p>
+Runs the application.
+</p>
+<p>
+This function is intended to be run from <code class="function">main()</code> and its return value
+is intended to be returned by <code class="function">main()</code>. Although you are expected to pass
+the <em class="parameter"><code>argc</code></em>, <em class="parameter"><code>argv</code></em> parameters from <code class="function">main()</code> to this function, it is possible
+to pass <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>argv</code></em> is not available or commandline handling is not
+required.
+</p>
+<p>
+First, the <code class="function">local_command_line()</code> virtual function is invoked.
+This function always runs on the local instance. It gets passed a pointer
+to a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated copy of <em class="parameter"><code>argv</code></em> and is expected to remove the arguments
+that it handled (shifting up remaining arguments). See
+<a class="xref" href="GApplicationCommandLine.html#gapplication-example-cmdline2" title="Example 23. Split commandline handling">Example 23, “Split commandline handling”</a> for an example of
+parsing <em class="parameter"><code>argv</code></em> manually. Alternatively, you may use the <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#GOptionContext"><span class="type">GOptionContext</span></a> API,
+after setting <code class="literal">argc = g_strv_length (argv);</code>.
+</p>
+<p>
+The last argument to <code class="function">local_command_line()</code> is a pointer to the <em class="parameter"><code>status</code></em>
+variable which can used to set the exit status that is returned from
+<a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a>.
+</p>
+<p>
+If <code class="function">local_command_line()</code> returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, the command line is expected
+to be completely handled, including possibly registering as the primary
+instance, calling <a class="link" href="GApplication.html#g-application-activate" title="g_application_activate ()"><code class="function">g_application_activate()</code></a> or <a class="link" href="GApplication.html#g-application-open" title="g_application_open ()"><code class="function">g_application_open()</code></a>, etc.
+</p>
+<p>
+If <code class="function">local_command_line()</code> returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> then the application is registered
+and the <a class="link" href="GApplication.html#GApplication-command-line" title='The "command-line" signal'><span class="type">"command-line"</span></a> signal is emitted in the primary
+instance (which may or may not be this instance). The signal handler
+gets passed a <a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine"><span class="type">GApplicationCommandLine</span></a> object that (among other things)
+contains the remaining commandline arguments that have not been handled
+by <code class="function">local_command_line()</code>.
+</p>
+<p>
+If the application has the <a class="link" href="GApplication.html#G-APPLICATION-HANDLES-COMMAND-LINE:CAPS"><code class="literal">G_APPLICATION_HANDLES_COMMAND_LINE</code></a>
+flag set then the default implementation of <code class="function">local_command_line()</code>
+always returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> immediately, resulting in the commandline
+always being handled in the primary instance.
+</p>
+<p>
+Otherwise, the default implementation of <code class="function">local_command_line()</code> tries
+to do a couple of things that are probably reasonable for most
+applications.  First, <a class="link" href="GApplication.html#g-application-register" title="g_application_register ()"><code class="function">g_application_register()</code></a> is called to attempt
+to register the application.  If that works, then the command line
+arguments are inspected.  If no commandline arguments are given, then
+<a class="link" href="GApplication.html#g-application-activate" title="g_application_activate ()"><code class="function">g_application_activate()</code></a> is called.  If commandline arguments are
+given and the <a class="link" href="GApplication.html#G-APPLICATION-HANDLES-OPEN:CAPS"><code class="literal">G_APPLICATION_HANDLES_OPEN</code></a> flag is set then they
+are assumed to be filenames and <a class="link" href="GApplication.html#g-application-open" title="g_application_open ()"><code class="function">g_application_open()</code></a> is called.
+</p>
+<p>
+If you need to handle commandline arguments that are not filenames,
+and you don't mind commandline handling to happen in the primary
+instance, you should set <a class="link" href="GApplication.html#G-APPLICATION-HANDLES-COMMAND-LINE:CAPS"><code class="literal">G_APPLICATION_HANDLES_COMMAND_LINE</code></a> and
+process the commandline arguments in your <a class="link" href="GApplication.html#GApplication-command-line" title='The "command-line" signal'><span class="type">"command-line"</span></a>
+signal handler, either manually or using the <a href="http://library.gnome.org/devel/glib/unstable/glib-Commandline-option-parser.html#GOptionContext"><span class="type">GOptionContext</span></a> API.
+</p>
+<p>
+If you are interested in doing more complicated local handling of the
+commandline then you should implement your own <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> subclass
+and override <code class="function">local_command_line()</code>. In this case, you most likely want
+to return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> from your <code class="function">local_command_line()</code> implementation to
+suppress the default handling. See
+<a class="xref" href="GApplicationCommandLine.html#gapplication-example-cmdline2" title="Example 23. Split commandline handling">Example 23, “Split commandline handling”</a> for an example.
+</p>
+<p>
+If, after the above is done, the use count of the application is zero
+then the exit status is returned immediately.  If the use count is
+non-zero then the default main context is iterated until the use count
+falls to zero, at which point 0 is returned.
+</p>
+<p>
+If the <a class="link" href="GApplication.html#G-APPLICATION-IS-SERVICE:CAPS"><code class="literal">G_APPLICATION_IS_SERVICE</code></a> flag is set, then the service will
+run for as much as 10 seconds with a use count of zero while waiting
+for the message that caused the activation to arrive.  After that,
+if the use count falls to zero the application will exit immediately,
+except in the case that <a class="link" href="GApplication.html#g-application-set-inactivity-timeout" title="g_application_set_inactivity_timeout ()"><code class="function">g_application_set_inactivity_timeout()</code></a> is in
+use.
+</p>
+<p>
+This function sets the prgname (<a href="http://library.gnome.org/devel/glib/unstable/glib-Miscellaneous-Utility-Functions.html#g-set-prgname"><code class="function">g_set_prgname()</code></a>), if not already set,
+to the basename of argv[0].  Since 2.38, if <a class="link" href="GApplication.html#G-APPLICATION-IS-SERVICE:CAPS"><code class="literal">G_APPLICATION_IS_SERVICE</code></a>
+is specified, the prgname is set to the application ID.  The main
+impact of this is is that the wmclass of windows created by Gtk+ will
+be set accordingly, which helps the window manager determine which
+application is showing the window.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>argc</code></em> :</span></p></td>
+<td>the argc from <code class="function">main()</code> (or 0 if <em class="parameter"><code>argv</code></em> is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>)</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>argv</code></em> :</span></p></td>
+<td>the argv from <code class="function">main()</code>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=argc][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the exit status</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-set-default"></a><h3>g_application_set_default ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_set_default           (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Sets or unsets the default application for the process, as returned
+by <a class="link" href="GApplication.html#g-application-get-default" title="g_application_get_default ()"><code class="function">g_application_get_default()</code></a>.
+</p>
+<p>
+This function does not take its own reference on <em class="parameter"><code>application</code></em>.  If
+<em class="parameter"><code>application</code></em> is destroyed then the default application will revert
+back to <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>the application to set as default, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-get-default"></a><h3>g_application_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="GApplication.html" title="GApplication"><span class="returnvalue">GApplication</span></a> *      g_application_get_default           (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Returns the default <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> instance for this process.
+</p>
+<p>
+Normally there is only one <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> per process and it becomes
+the default when it is created.  You can exercise more control over
+this by using <a class="link" href="GApplication.html#g-application-set-default" title="g_application_set_default ()"><code class="function">g_application_set_default()</code></a>.
+</p>
+<p>
+If there is no default application then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the default application for this process, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-mark-busy"></a><h3>g_application_mark_busy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_mark_busy             (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Increases the busy count of <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+Use this function to indicate that the application is busy, for instance
+while a long running operation is pending.
+</p>
+<p>
+The busy state will be exposed to other processes, so a session shell will
+use that information to indicate the state to the user (e.g. with a
+spinner).
+</p>
+<p>
+To cancel the busy indication, use <a class="link" href="GApplication.html#g-application-unmark-busy" title="g_application_unmark_busy ()"><code class="function">g_application_unmark_busy()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.38</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-application-unmark-busy"></a><h3>g_application_unmark_busy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_application_unmark_busy           (<em class="parameter"><code><a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application</code></em>);</pre>
+<p>
+Decreases the busy count of <em class="parameter"><code>application</code></em>.
+</p>
+<p>
+When the busy count reaches zero, the new state will be propagated
+to other processes.
+</p>
+<p>
+This function must only be called to cancel the effect of a previous
+call to <a class="link" href="GApplication.html#g-application-mark-busy" title="g_application_mark_busy ()"><code class="function">g_application_mark_busy()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.38</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GApplication.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GApplication--action-group"></a><h3>The <code class="literal">"action-group"</code> property</h3>
+<pre class="programlisting">  "action-group"             <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>*         : Write</pre>
+<p>The group of actions that the application exports.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication--application-id"></a><h3>The <code class="literal">"application-id"</code> property</h3>
+<pre class="programlisting">  "application-id"           <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write / Construct</pre>
+<p>The unique identifier for the application.</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication--flags"></a><h3>The <code class="literal">"flags"</code> property</h3>
+<pre class="programlisting">  "flags"                    <a class="link" href="GApplication.html#GApplicationFlags"><span class="type">GApplicationFlags</span></a>     : Read / Write</pre>
+<p>Flags specifying the behaviour of the application.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication--inactivity-timeout"></a><h3>The <code class="literal">"inactivity-timeout"</code> property</h3>
+<pre class="programlisting">  "inactivity-timeout"       <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write</pre>
+<p>Time (ms) to stay alive after becoming idle.</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication--is-registered"></a><h3>The <code class="literal">"is-registered"</code> property</h3>
+<pre class="programlisting">  "is-registered"            <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
+<p>If g_application_register() has been called.</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication--is-remote"></a><h3>The <code class="literal">"is-remote"</code> property</h3>
+<pre class="programlisting">  "is-remote"                <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
+<p>If this application instance is remote.</p>
+<p>Default value: FALSE</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GApplication.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GApplication-activate"></a><h3>The <code class="literal">"activate"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)        : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+The ::activate signal is emitted on the primary instance when an
+activation occurs. See <a class="link" href="GApplication.html#g-application-activate" title="g_application_activate ()"><code class="function">g_application_activate()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>the application</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication-command-line"></a><h3>The <code class="literal">"command-line"</code> signal</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>                user_function                      (<a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>            *application,
+                                                        <a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine"><span class="type">GApplicationCommandLine</span></a> *command_line,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>                 user_data)         : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+The ::command-line signal is emitted on the primary instance when
+a commandline is not handled locally. See <a class="link" href="GApplication.html#g-application-run" title="g_application_run ()"><code class="function">g_application_run()</code></a> and
+the <a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine"><span class="type">GApplicationCommandLine</span></a> documentation for more information.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>the application</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>command_line</code></em> :</span></p></td>
+<td>a <a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine"><span class="type">GApplicationCommandLine</span></a> representing the
+passed commandline</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>An integer that is set as the exit status for the calling
+process. See <a class="link" href="GApplicationCommandLine.html#g-application-command-line-set-exit-status" title="g_application_command_line_set_exit_status ()"><code class="function">g_application_command_line_set_exit_status()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication-open"></a><h3>The <code class="literal">"open"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      files,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>          n_files,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>        *hint,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)        : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+The ::open signal is emitted on the primary instance when there are
+files to open. See <a class="link" href="GApplication.html#g-application-open" title="g_application_open ()"><code class="function">g_application_open()</code></a> for more information.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>the application</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>files</code></em> :</span></p></td>
+<td>an array of <a href="GFile.html"><span class="type">GFiles</span></a>. <span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_files][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GFile]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>n_files</code></em> :</span></p></td>
+<td>the length of <em class="parameter"><code>files</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>hint</code></em> :</span></p></td>
+<td>a hint provided by the calling instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication-shutdown"></a><h3>The <code class="literal">"shutdown"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)        : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+The ::shutdown signal is emitted only on the registered primary instance
+immediately after the main loop terminates.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>the application</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GApplication-startup"></a><h3>The <code class="literal">"startup"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a> *application,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)        : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
+<p>
+The ::startup signal is emitted on the primary instance immediately
+after registration. See <a class="link" href="GApplication.html#g-application-register" title="g_application_register ()"><code class="function">g_application_register()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>application</code></em> :</span></p></td>
+<td>the application</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,182 @@
+.TH SADF 1 "NOVEMBER 2011" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+sadf \- Display data collected by sar in multiple formats.
+.SH SYNOPSIS
+.B sadf [ -d | -j | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ] [ -P {
+.I cpu
+.B [,...] | ALL } ] [ -s [
+.I hh:mm:ss
+.B ] ] [ -e [
+.I hh:mm:ss
+.B ] ] [ --
+.I sar_options
+.B ] [
+.I interval
+.B [
+.I count
+.B ] ] [
+.I datafile
+.B ]
+.SH DESCRIPTION
+The
+.B sadf
+command is used for displaying the contents of data files created by the
+.B sar(1)
+command. But unlike sar,
+.B sadf
+can write its data in many different formats (CSV, XML, etc.)
+The default format is one that can
+easily be handled by pattern processing commands like awk (see option -p).
+
+The
+.B sadf
+command extracts and writes to standard output records saved in the
+.I datafile
+file. This file must have been created by a version of
+.B sar
+which is compatible with that of
+.B sadf.
+If
+.I datafile
+is omitted,
+.B sadf
+uses the standard system activity file, the
+.IR @SA_DIR@/sa dd
+file, where the dd parameter indicates the current day.
+
+The
+.I interval
+and
+.I count
+parameters are used to tell
+.B sadf
+to select
+.I count
+records at
+.I interval
+seconds apart. If the
+.I count
+parameter is not set, then all the records saved in the data file will be
+displayed.
+
+All the activity flags of
+.B sar
+may be entered on the command line to indicate which
+activities are to be reported. Before specifying them, put a pair of
+dashes (--) on the command line in order not to confuse the flags
+with those of
+.B sadf.
+Not specifying any flags selects only CPU activity.
+
+.SH OPTIONS
+.IP -C
+Tell
+.B sadf
+to display comments present in file.
+.IP -d
+Print the contents of the data file in a format that can easily
+be ingested by a relational database system. The output consists
+of fields separated by a semicolon. Each record contains
+the hostname of the host where the file was created, the interval value
+(or -1 if not applicable), the timestamp in a form easily acceptable by
+most databases, and additional semicolon separated data fields as specified
+by
+.I sar_options
+command line options.
+Note that timestamp output can be controlled by options -T and -t.
+.IP "-e [ hh:mm:ss ]"
+Set the ending time of the report, given in local time. The default ending
+time is 18:00:00. Hours must be given in 24-hour format.
+.IP -H
+Display only the header of the report (when applicable). If no format has
+been specified, then the header of the data file is displayed.
+.IP -h
+When used in conjunction with option -d, all activities
+will be displayed horizontally on a single line.
+.IP -j
+Print the contents of the data file in JSON (JavaScript Object Notation)
+format. Timestamps can be controlled by option -t.
+.IP "-P { cpu [,...] | ALL }"
+Tell
+.B sadf
+that processor dependent statistics are to be reported only for the
+specified processor or processors. Specifying the
+.B ALL
+keyword reports statistics for each individual processor, and globally for
+all processors. Note that processor 0 is the first processor.
+.IP -p
+Print the contents of the data file in a format that can
+easily be handled by pattern processing commands like awk.
+The output consists of fields separated by a tab. Each record contains the
+hostname of the host where the file was created, the interval value
+(or -1 if not applicable), the timestamp,
+the device name (or - if not applicable),
+the field name and its value.
+Note that timestamp output can be controlled by options -T and -t.
+.IP "-s [ hh:mm:ss ]"
+Set the starting time of the data (given in local time), causing the
+.B sadf
+command to extract records time-tagged at, or following, the time
+specified. The default starting time is 08:00:00.
+Hours must be given in 24-hour format.
+.IP -T
+Display timestamp (UTC - Coordinated Universal Time) in seconds from
+the epoch.
+.IP -t
+Display timestamp in local time instead of UTC (Coordinated Universal Time).
+.IP -V
+Print version number then exit.
+.IP -x
+Print the contents of the data file in XML format.
+Timestamps can be controlled by option -t.
+The corresponding
+DTD (Document Type Definition) and XML Schema are included in the sysstat
+source package. They are also available at
+.I http://pagesperso-orange.fr/sebastien.godard/download.html
+
+.SH ENVIRONMENT
+The
+.B sadf
+command takes into account the following environment variable:
+
+.IP S_TIME_DEF_TIME
+If this variable exists and its value is
+.BR UTC
+then
+.B sadf
+will use UTC time instead of local time to determine the current daily data
+file located in the
+.IR @SA_DIR@
+directory.
+.SH EXAMPLES
+.B sadf -d @SA_DIR@/sa21 -- -r -n DEV
+.RS
+Extract memory, swap space and network statistics from system activity
+file 'sa21', and display them in a format that can be ingested by a
+database.
+.RE
+
+.B sadf -p -P 1
+.RS
+Extract CPU statistics for processor 1 (the second processor) from current
+daily data file, and display them in a format that can easily be handled
+by a pattern processing command.
+.RE
+
+.SH FILES
+.IR @SA_DIR@/sa dd
+.RS
+Indicate the daily data file, where the
+.B dd
+parameter is a number representing the day of the month.
+
+.RE
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sar (1),
+.BR sadc (8),
+.BR sa1 (8),
+.BR sa2 (8)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

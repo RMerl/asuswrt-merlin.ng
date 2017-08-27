@@ -1,0 +1,32 @@
+
+<fieldset>
+	<legend><% tran("service.snmp_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.snmp_srv"); %></div>
+		<input class="spaceradio" type="radio" name="snmpd_enable" value="1" <% nvram_checked("snmpd_enable", "1"); %> onclick="show_layer_ext(this, 'idsnmp', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" name="snmpd_enable" value="0" <% nvram_checked("snmpd_enable", "0"); %> onclick="show_layer_ext(this, 'idsnmp', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idsnmp">
+		<div class="setting">
+			<div class="label"><% tran("service.snmp_loc"); %></div>
+			<input maxlength="100" size="25" name="snmpd_syslocation" value="<% nvram_get("snmpd_syslocation"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("service.snmp_contact"); %></div>
+			<input maxlength="100" size="25" name="snmpd_syscontact" value="<% nvram_get("snmpd_syscontact"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("service.snmp_name"); %></div>
+			<input maxlength="100" size="25" name="snmpd_sysname" value="<% nvram_get("snmpd_sysname"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("service.snmp_read"); %></div>
+			<input maxlength="100" size="25" name="snmpd_rocommunity" value="<% nvram_get("snmpd_rocommunity"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("service.snmp_write"); %></div>
+			<input maxlength="100" size="25" name="snmpd_rwcommunity" value="<% nvram_get("snmpd_rwcommunity"); %>" />
+		</div>
+	</div>
+</fieldset><br />
+

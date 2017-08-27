@@ -1,0 +1,15 @@
+#
+#	Configuration file for the rlm_attr_filter module.
+#	Please see rlm_attr_filter(5) manpage for more information.
+#
+#	$Id$
+#
+#	This configuration file is used to remove almost all of the attributes
+#	From an Accounting-Response message.  The RFC's say that an
+#	Accounting-Response packet can contain only a few attributes.
+#	We enforce that here.
+#
+DEFAULT
+	Vendor-Specific =* ANY,
+	Message-Authenticator =* ANY,
+	Proxy-State =* ANY

@@ -1,0 +1,175 @@
+FREERADIUS-NOTIFICATION-MIB DEFINITIONS ::= BEGIN
+       IMPORTS freeRadius
+			FROM FREERADIUS-SMI
+               radiusAuthServerAddress,radiusAuthClientServerPortNumber
+			FROM RADIUS-AUTH-CLIENT-MIB
+	       radiusAuthServIdent
+			FROM RADIUS-AUTH-SERVER-MIB
+	       radiusd
+			FROM FREERADIUS-PRODUCT-RADIUSD-MIB;
+
+freeRadiusNotificationMib MODULE-IDENTITY
+	LAST-UPDATED "201012170000Z"
+	ORGANIZATION "FREERADIUS project"
+	CONTACT-INFO
+		"FreeRADIUS Network Object Model Environment project
+
+		see http://www.freeradius.org for contact persons of a particular
+		area or subproject of FREERADIUS.
+
+		Administrative contact for MIB module:
+
+		Alan DeKok
+
+		email: aland@freeradius.org"
+	DESCRIPTION
+		"FreeRADIUS Notification MIBs."
+	::= { freeRadius 4 }
+
+serverGlobal  OBJECT IDENTIFIER ::= { freeRadiusNotificationMib 1 }
+
+serverStart NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that the server has started"
+       ::= { serverGlobal 1 }
+
+serverStop NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that the server is stopping"
+       ::= { serverGlobal 2 }
+
+serverMaxRequests NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that the server has reached the max_requests limit"
+       ::= { serverGlobal 3 }
+
+serverSignal  OBJECT IDENTIFIER ::= { serverGlobal 4 }
+
+signalHup NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that the server has received a HUP signal"
+       ::= { serverSignal 1 }
+
+signalTerm NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that the server has received a TERM signal"
+       ::= { serverSignal 2 }
+
+serverThread  OBJECT IDENTIFIER ::= { serverGlobal 5 }
+
+threadStart NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that a thread has started"
+       ::= { serverThread 1 }
+
+threadStop NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that a thread has stopped"
+       ::= { serverThread 2 }
+
+threadUnresponsive NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that a child thread is unresponsive"
+       ::= { serverThread 3 }
+
+threadMaxThreads NOTIFICATION-TYPE
+       OBJECTS { identity }
+       STATUS current
+       DESCRIPTION "Notification that the max_threads limit has been reached"
+       ::= { serverThread 4 }
+
+serverModules  OBJECT IDENTIFIER ::= { freeRadiusNotificationMib 2 }
+
+serverModuleGeneric  OBJECT IDENTIFIER ::= { serverModules 1 }
+
+serverModuleConnectionUp NOTIFICATION-TYPE
+       OBJECTS { radiusdModuleName,
+		 radiusdModuleInstance }
+       STATUS current
+       DESCRIPTION "Notification that the module has opened a new connection"
+       ::= { serverModuleGeneric 1 }
+
+serverModuleConnectionDown NOTIFICATION-TYPE
+       OBJECTS { radiusdModuleName,
+		 radiusdModuleInstance }
+       STATUS current
+       DESCRIPTION "Notification that the module has dropped a connection"
+       ::= { serverModuleGeneric 2 }
+
+serverModuleConnectionNone NOTIFICATION-TYPE
+       OBJECTS { radiusdModuleName,
+		 radiusdModuleInstance }
+       STATUS current
+       DESCRIPTION "Notification that the module has no connections"
+       ::= { serverModuleGeneric 3 }
+
+serverModuleConnectionFail NOTIFICATION-TYPE
+       OBJECTS { radiusdModuleName,
+		 radiusdModuleInstance }
+       STATUS current
+       DESCRIPTION "Notification that the module has failed to open a new connection"
+       ::= { serverModuleGeneric 4 }
+
+serverModuleHup NOTIFICATION-TYPE
+       OBJECTS { radiusdModuleName,
+		 radiusdModuleInstance }
+       STATUS current
+       DESCRIPTION "Notification that the module has been HUP'd via radmin"
+       ::= { serverModuleGeneric 5 }
+
+homeServer  OBJECT IDENTIFIER ::= { freeRadiusNotificationMib 3 }
+
+--
+--  For now, we only support IPv4 traps, and we support only UDP.
+--  We can add IPv6 and TCP / TLS later.
+--
+--  We also use the "authserver" fields for both authentication and accounting
+--  servers.
+--
+homeServerAlive NOTIFICATION-TYPE
+       OBJECTS { radiusAuthServerAddress,
+		 radiusAuthClientServerPortNumber,
+		 radiusAuthServIdent }
+       STATUS current
+       DESCRIPTION "Notification that a home server is alive"
+       ::= { homeServer 1 }
+
+homeServerZombie NOTIFICATION-TYPE
+       OBJECTS { radiusAuthServerAddress,
+		 radiusAuthClientServerPortNumber,
+		 radiusAuthServIdent }
+       STATUS current
+       DESCRIPTION "Notification that a home server is zombie"
+       ::= { homeServer 2 }
+
+homeServerDead NOTIFICATION-TYPE
+       OBJECTS { radiusAuthServerAddress,
+		 radiusAuthClientServerPortNumber,
+		 radiusAuthServIdent }
+       STATUS current
+       DESCRIPTION "Notification that a home server is dead"
+       ::= { homeServer 3 }
+
+homeServerPool  OBJECT IDENTIFIER ::= { freeRadiusNotificationMib 4 }
+
+homeServerPoolNormal NOTIFICATION-TYPE
+       OBJECTS { radiusdConfigName }
+       STATUS current
+       DESCRIPTION "Notification that the pool is operating normally"
+       ::= { homeServerPool 1 }
+
+homeServerPoolFallback NOTIFICATION-TYPE
+       OBJECTS { radiusdConfigName }
+       STATUS current
+       DESCRIPTION "Notification that the pool is in fallback mode"
+       ::= { homeServerPool 2 }
+
+END

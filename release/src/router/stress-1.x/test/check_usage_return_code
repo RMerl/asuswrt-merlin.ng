@@ -1,0 +1,3 @@
+# Test that the --help option is accepted and that stress returns 0.
+
+../src/stress --help

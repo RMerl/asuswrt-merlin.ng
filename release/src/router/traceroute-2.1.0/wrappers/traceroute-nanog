@@ -1,0 +1,76 @@
+#!/bin/sh
+#
+#   Copyright (c)  2007             Dmitry K. Butskoy
+#                                   <buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#  Shell wrapper providing traceroute-nanog(8) command line interface.
+#
+#  The original implementation of traceroute-nanog(8) can be obtained
+#  from ftp://ftp.login.com/pub/software/traceroute/
+#
+
+
+prgname=$0
+opts=""
+spray=""
+
+
+usage () {
+    echo "Usage: $prgname [-adnruvAMOPQU$] [-w wait] [-S start_ttl]
+		[-m max_ttl] [-p port] [-q nqueries] [-g gateway] [-t tos]
+		[-s src_addr] [-I proto]  host  [data_size]" >&2
+}
+
+warning () {
+    echo "$prgname: Option '$1' is not implemented in this wrapper" >&2
+}
+ 
+
+PARSED=`getopt 'adnruvAMOPQU$w:S:m:p:q:g:t:s:I:f:T:' "$@"`
+[ $? != 0 ] && {
+    usage
+    exit 2
+}
+
+eval set -- "$PARSED"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+	-[Adrn])  opts="$opts $1"; shift ;;
+	-[gmpqstw])  opts="$opts $1 $2"; shift 2 ;;
+	-I)  case "$2" in
+		icmp)  opts="$opts -I" ;;
+		tcp)  opts="$opts -T" ;;
+		udp)   ;;
+		udplite)  opts="$opts -UL" ;;
+		*)  opts="$opts -P $2" ;;
+	     esac
+	     shift 2  ;;
+	-S)  opts="$opts -f $2"; shift 2 ;;
+	-P)  spray=1; shift ;;
+	-f)  opts="$opts --sport=$2"; shift 2 ;;
+	-u)  ;;
+	-$)  opts="-f 64 -m 64 -q 1"; shift ;;
+	-M)  opts="$opts --mtu"; shift ;;
+	-[aUOvQ])  warning $1; shift ;;
+	-T)  warning $1; shift 2 ;;
+	--)  shift; break ;;
+	*)  echo "$prgname: Internal parsing error" >&2; exit 2 ;;
+    esac
+done
+
+[ $# -eq 0 ] && {
+    usage
+    exit 2
+}
+
+[ -z "$spray" ] && opts="$opts -N 1"
+
+exec traceroute $opts $1 $2
+

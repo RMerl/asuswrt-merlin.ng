@@ -1,0 +1,402 @@
+<!-- ##### SECTION Title ##### -->
+GDBusProxy
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GDBusProxyFlags ##### -->
+<para>
+
+</para>
+
+@G_DBUS_PROXY_FLAGS_NONE: 
+@G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES: 
+@G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS: 
+@G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START: 
+@G_DBUS_PROXY_FLAGS_GET_INVALIDATED_PROPERTIES: 
+
+<!-- ##### STRUCT GDBusProxy ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusProxy::g-properties-changed ##### -->
+<para>
+
+</para>
+
+@gdbusproxy: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### SIGNAL GDBusProxy::g-signal ##### -->
+<para>
+
+</para>
+
+@gdbusproxy: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+
+<!-- ##### ARG GDBusProxy:g-bus-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-default-timeout ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-interface-info ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-interface-name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-name-owner ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusProxy:g-object-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GDBusProxyClass ##### -->
+<para>
+
+</para>
+
+@g_properties_changed: 
+@g_signal: 
+
+<!-- ##### FUNCTION g_dbus_proxy_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@info: 
+@name: 
+@object_path: 
+@interface_name: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_new_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_new_sync ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@info: 
+@name: 
+@object_path: 
+@interface_name: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_new_for_bus ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@info: 
+@name: 
+@object_path: 
+@interface_name: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_new_for_bus_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_new_for_bus_sync ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@info: 
+@name: 
+@object_path: 
+@interface_name: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_flags ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_connection ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_name ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_name_owner ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_object_path ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_interface_name ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_default_timeout ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_set_default_timeout ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@timeout_msec: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_cached_property ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@property_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_set_cached_property ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@property_name: 
+@value: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_cached_property_names ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_set_interface_info ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_get_interface_info ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_call ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@method_name: 
+@parameters: 
+@flags: 
+@timeout_msec: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_call_finish ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_call_sync ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@method_name: 
+@parameters: 
+@flags: 
+@timeout_msec: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_call_with_unix_fd_list ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@method_name: 
+@parameters: 
+@flags: 
+@timeout_msec: 
+@fd_list: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_call_with_unix_fd_list_finish ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@out_fd_list: 
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_proxy_call_with_unix_fd_list_sync ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@method_name: 
+@parameters: 
+@flags: 
+@timeout_msec: 
+@fd_list: 
+@out_fd_list: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

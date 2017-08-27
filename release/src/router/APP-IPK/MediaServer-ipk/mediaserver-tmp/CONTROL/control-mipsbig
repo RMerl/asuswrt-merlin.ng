@@ -1,0 +1,13 @@
+Package: mediaserver
+Architecture: mipsbig
+Priority: optional
+Section: net
+Version: 1.0.0.53
+Maintainer: ASUS
+Source: http://127.0.0.1/
+URL:http://www.asusnetwork.net:8081/meidaserverui/mediaserver.asp
+Description: Media tools
+Depends: asuslighttpd,zlib,gdbm,sqlite,libjpeg,libexif,libogg,flac,libvorbis,asusffmpeg
+Suggests: 
+Conflicts: 
+Enabled: yes

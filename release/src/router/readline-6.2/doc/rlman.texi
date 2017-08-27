@@ -1,0 +1,97 @@
+\input texinfo    @c -*-texinfo-*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename readline.info
+@settitle GNU Readline Library
+@comment %**end of header (This is for running Texinfo on a region.)
+@synindex vr fn
+
+@include version.texi
+
+@copying
+This manual describes the GNU Readline Library
+(version @value{VERSION}, @value{UPDATED}), a library which aids in the
+consistency of user interface across discrete programs which provide
+a command line interface.
+
+Copyright @copyright{} 1988--2011 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with the Front-Cover texts being ``A GNU Manual'',
+and with the Back-Cover Texts as in (a) below.  A copy of the license is
+included in the section entitled ``GNU Free Documentation License''.
+
+(a) The FSF's Back-Cover Text is: You are free to copy and modify
+this GNU manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom.''
+
+@end quotation
+@end copying
+
+@dircategory Libraries
+@direntry
+* Readline: (readline).       The GNU readline library API.
+@end direntry
+
+@titlepage  
+@title GNU Readline Library
+@subtitle Edition @value{EDITION}, for @code{Readline Library} Version @value{VERSION}.
+@subtitle @value{UPDATED-MONTH}
+@author Chet Ramey, Case Western Reserve University
+@author Brian Fox, Free Software Foundation
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+@sp 1
+Published by the Free Software Foundation @*
+59 Temple Place, Suite 330, @*
+Boston, MA 02111-1307 @*
+USA @*
+
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top GNU Readline Library
+
+This document describes the GNU Readline Library, a utility which aids
+in the consistency of user interface across discrete programs which
+provide a command line interface.
+
+@menu
+* Command Line Editing::	   GNU Readline User's Manual.
+* Programming with GNU Readline::  GNU Readline Programmer's Manual.
+* GNU Free Documentation License::	License for copying this manual.
+* Concept Index::		   Index of concepts described in this manual.
+* Function and Variable Index::	   Index of externally visible functions
+				   and variables.
+@end menu
+@end ifnottex
+
+@include rluser.texi
+@include rltech.texi
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+
+@include fdl.texi
+
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+
+@node Function and Variable Index
+@unnumbered Function and Variable Index
+@printindex fn
+
+@bye

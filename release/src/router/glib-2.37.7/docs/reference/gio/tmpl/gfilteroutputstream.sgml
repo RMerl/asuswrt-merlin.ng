@@ -1,0 +1,67 @@
+<!-- ##### SECTION Title ##### -->
+GFilterOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFilterOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GFilterOutputStream:base-stream ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GFilterOutputStream:close-base-stream ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_filter_output_stream_get_base_stream ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filter_output_stream_get_close_base_stream ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filter_output_stream_set_close_base_stream ##### -->
+<para>
+
+</para>
+
+@stream: 
+@close_base: 
+
+

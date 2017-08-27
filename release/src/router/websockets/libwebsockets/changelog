@@ -1,0 +1,924 @@
+Changelog
+---------
+
+v1.6.0-chrome48-firefox42
+=======================
+
+Major API improvements
+----------------------
+
+v1.6.0 has many cleanups and improvements in the API.  Although at first it
+looks pretty drastic, user code will only need four actions to update it.
+
+ - Do the three search/replaces in your user code, /libwebsocket_/lws_/,
+   /libwebsockets_/lws_/, and /struct\ libwebsocket/struct\ lws/
+
+ - Remove the context parameter from your user callbacks
+
+ - Remove context as the first parameter from the "Eleven APIS" listed in the
+   User Api Changes section
+
+ - Add lws_get_context(wsi) as the first parameter on the "Three APIS" listed
+   in the User Api Changes section, and anywhere else you still need context
+
+That's it... generally only a handful of the 14 affected APIs are actually in
+use in your user code and you can find them quickest by compiling and visiting
+the errors each in turn.  And the end results are much cleaner, more
+predictable and maintainable.
+
+
+User api additions
+------------------
+
+1) lws now exposes his internal platform file abstraction in a way that can be
+both used by user code to make it platform-agnostic, and be overridden or
+subclassed by user code.  This allows things like handling the URI "directory
+space" as a virtual filesystem that may or may not be backed by a regular
+filesystem.  One example use is serving files from inside large compressed
+archive storage without having to unpack anything except the file being
+requested.
+
+The test server shows how to use it, basically the platform-specific part of
+lws prepares a file operations structure that lives in the lws context.
+
+Helpers are provided to also leverage these platform-independent file handling
+apis
+
+static inline lws_filefd_type
+lws_plat_file_open(struct lws *wsi, const char *filename,
+		   unsigned long *filelen, int flags)
+static inline int
+lws_plat_file_close(struct lws *wsi, lws_filefd_type fd)
+
+static inline unsigned long
+lws_plat_file_seek_cur(struct lws *wsi, lws_filefd_type fd, long offset)
+
+static inline int
+lws_plat_file_read(struct lws *wsi, lws_filefd_type fd, unsigned long *amount,
+		   unsigned char *buf, unsigned long len)
+
+static inline int
+lws_plat_file_write(struct lws *wsi, lws_filefd_type fd, unsigned long *amount,
+		    unsigned char *buf, unsigned long len)
+		    
+The user code can also override or subclass the file operations, to either
+wrap or replace them.  An example is shown in test server.
+
+A wsi can be associated with the file activity, allowing per-connection
+authentication and state to be used when interpreting the file request.
+
+2) A new API void * lws_wsi_user(struct lws *wsi) lets you get the pointer to
+the user data associated with the wsi, just from the wsi.
+
+3) URI argument handling.  Libwebsockets parses and protects URI arguments
+like test.html?arg1=1&arg2=2, it decodes %xx uriencoding format and reduces
+path attacks like ../.../../etc/passwd so they cannot go behind the web
+server's /.  There is a list of confirmed attacks we're proof against in
+./test-server/attack.sh.
+
+There is a new API lws_hdr_copy_fragment that should be used now to access
+the URI arguments (it returns the fragments length)
+
+               while (lws_hdr_copy_fragment(wsi, buf, sizeof(buf),
+                                            WSI_TOKEN_HTTP_URI_ARGS, n) > 0) {
+                       lwsl_info("URI Arg %d: %s\n", ++n, buf);
+               }
+
+For the example above, calling with n=0 will return "arg1=1" and n=1 "arg2=2".
+All legal uriencodings will have been reduced in those strings.
+
+lws_hdr_copy_fragment() returns the length of the x=y fragment, so it's also
+possible to deal with arguments containing %00.  If you don't care about that,
+the returned string has '\0' appended to simplify processing.
+
+
+User api changes
+----------------
+
+1) Three APIS
+
+ - lws_callback_on_writable_all_protocol(const struct lws_protocols *protocol)
+ - lws_callback_all_protocol(const struct lws_protocols *protocol)
+ - lws_rx_flow_allow_all_protocol(lws_rx_flow_allow_all_protocol)
+
+Now take an additional pointer to the lws_context in their first argument.
+
+The reason for this change is struct lws_protocols has been changed to remove
+members that lws used for private storage: so the protocols struct in now
+truly const and may be reused serially or simultaneously by different contexts.
+
+2) Eleven APIs
+
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_by_name(struct lws_context *context,
+                struct lws *wsi,
+                const unsigned char *name,
+                const unsigned char *value,
+                int length,
+                unsigned char **p,
+                unsigned char *end);
+LWS_VISIBLE LWS_EXTERN int
+lws_finalize_http_header(struct lws_context *context,
+             struct lws *wsi,
+             unsigned char **p,
+             unsigned char *end);
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_by_token(struct lws_context *context,
+                 struct lws *wsi,
+                 enum lws_token_indexes token,
+                 const unsigned char *value,
+                 int length,
+                 unsigned char **p,
+                 unsigned char *end);
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_content_length(struct lws_context *context,
+                   struct lws *wsi,
+                   unsigned long content_length,
+                   unsigned char **p,
+                   unsigned char *end);
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_status(struct lws_context *context, struct lws *wsi,
+               unsigned int code, unsigned char **p,
+               unsigned char *end);
+
+LWS_VISIBLE LWS_EXTERN int
+lws_serve_http_file(struct lws_context *context, struct lws *wsi,
+            const char *file, const char *content_type,
+            const char *other_headers, int other_headers_len);
+LWS_VISIBLE LWS_EXTERN int
+lws_serve_http_file_fragment(struct lws_context *context, struct lws *wsi);
+
+LWS_VISIBLE LWS_EXTERN int
+lws_return_http_status(struct lws_context *context, struct lws *wsi,
+               unsigned int code, const char *html_body);
+
+LWS_VISIBLE LWS_EXTERN int
+lws_callback_on_writable(const struct lws_context *context, struct lws *wsi);
+
+LWS_VISIBLE LWS_EXTERN void
+lws_get_peer_addresses(struct lws_context *context, struct lws *wsi,
+               lws_sockfd_type fd, char *name, int name_len,
+               char *rip, int rip_len);
+
+LWS_VISIBLE LWS_EXTERN int
+lws_read(struct lws_context *context, struct lws *wsi,
+     unsigned char *buf, size_t len); 
+
+no longer require their initial struct lws_context * parameter.
+
+3) Several older apis start with libwebsocket_ or libwebsockets_ while newer ones
+all begin lws_.  These apis have been changed to all begin with lws_.
+
+To convert, search-replace
+
+ - libwebsockets_/lws_
+ - libwebsocket_/lws_
+ - struct\ libwebsocket/struct\ lws
+ 
+4) context parameter removed from user callback.
+
+Since almost all apis no longer need the context as a parameter, it's no longer
+provided at the user callback directly.
+
+However if you need it, for ALL callbacks wsi is valid and has a valid context
+pointer you can recover using lws_get_context(wsi).
+
+
+v1.5-chrome47-firefox41
+=======================
+
+User api changes
+----------------
+
+LWS_CALLBACK_CLIENT_CONNECTION_ERROR may provide an error string if in is
+non-NULL.  If so, the string has length len.
+
+LWS_SERVER_OPTION_PEER_CERT_NOT_REQUIRED is available to relax the requirement
+for peer certs if you are using the option to require client certs.
+
+LWS_WITHOUT_BUILTIN_SHA1 cmake option forces lws to use SHA1() defined
+externally, eg, byOpenSSL, and disables build of libwebsockets_SHA1()
+
+
+v1.4-chrome43-firefox36
+=======================
+
+User api additions
+------------------
+
+There's a new member in the info struct used to control context creation,
+ssl_private_key_password, which allows passing into lws the passphrase on
+an SSL cetificate
+
+There's a new member in struct protocols, id, which is ignored by lws but can
+be used by the user code to mark the selected protocol by user-defined version
+or capabliity flag information, for the case multiple versions of a protocol are
+supported.
+
+int lws_is_ssl(wsi) added to allow user code to know if the connection was made
+over ssl or not.  If LWS_SERVER_OPTION_ALLOW_NON_SSL_ON_SSL_PORT is used, both
+ssl and non-ssl connections are possible and may need to be treated differently
+in the user code.
+
+int lws_partial_buffered(wsi) added... should be checked after any
+libwebsocket_write that will be followed by another libwebsocket_write inside
+the same writeable callback.  If set, you can't do any more writes until the
+writeable callback is called again.  If you only do one write per writeable callback,
+you can ignore this.
+
+HTTP2-related: HTTP2 changes how headers are handled, lws now has new version-
+agnositic header creation APIs.  These do the right thing depending on each
+connection's HTTP version without the user code having to know or care, except
+to make sure to use the new APIs for headers (test-server is updated to use
+them already, so look there for examples)
+
+The APIs "render" the headers into a user-provided buffer and bump *p as it
+is used.  If *p reaches end, then the APIs return nonzero for error.
+
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_status(struct libwebsocket_context *context,
+			    struct libwebsocket *wsi,
+			    unsigned int code,
+			    unsigned char **p,
+			    unsigned char *end);
+
+Start a response header reporting status like 200, 500, etc
+
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_by_name(struct libwebsocket_context *context,
+			    struct libwebsocket *wsi,
+			    const unsigned char *name,
+			    const unsigned char *value,
+			    int length,
+			    unsigned char **p,
+			    unsigned char *end);
+
+Add a header like name: value in HTTP1.x
+
+LWS_VISIBLE LWS_EXTERN int 
+lws_finalize_http_header(struct libwebsocket_context *context,
+			    struct libwebsocket *wsi,
+			    unsigned char **p,
+			    unsigned char *end);
+
+Finish off the headers, like add the extra \r\n in HTTP1.x
+
+LWS_VISIBLE LWS_EXTERN int
+lws_add_http_header_by_token(struct libwebsocket_context *context,
+			    struct libwebsocket *wsi,
+			    enum lws_token_indexes token,
+			    const unsigned char *value,
+			    int length,
+			    unsigned char **p,
+			    unsigned char *end);
+
+Add a header by using a lws token as the name part.  In HTTP2, this can be
+compressed to one or two bytes.
+
+
+User api removal
+----------------
+
+protocols struct member no_buffer_all_partial_tx is removed.  Under some
+conditions like rewriting extension such as compression in use, the built-in
+partial send buffering is the only way to deal with the problem, so turning
+it off is deprecated.
+
+
+User api changes
+----------------
+
+HTTP2-related: API libwebsockets_serve_http_file() takes an extra parameter at
+the end now
+
+int other_headers_len)
+
+If you are providing other headers, they must be generated using the new
+HTTP-version-agnostic APIs, and you must provide the length of them using this
+additional parameter.
+
+struct lws_context_creation_info now has an additional member
+SSL_CTX *provided_client_ssl_ctx you may set to an externally-initialized
+SSL_CTX managed outside lws.  Defaulting to zero keeps the existing behaviour of
+lws managing the context, if you memset the struct to 0 or have as a filescope
+initialized struct in bss, no need to change anything.
+
+
+v1.3-chrome37-firefox30
+=======================
+
+ .gitignore                                               |    1 -
+ CMakeLists.txt                                           |  447 +++--
+ README.build                                             |   35 +-
+ README.coding                                            |   14 +
+ changelog                                                |   66 +
+ cmake/LibwebsocketsConfig.cmake.in                       |   17 +
+ cmake/LibwebsocketsConfigVersion.cmake.in                |   11 +
+ config.h.cmake                                           |   18 +
+ cross-ming.cmake                                         |   31 +
+ cross-openwrt-makefile                                   |   91 +
+ lib/client-handshake.c                                   |  205 ++-
+ lib/client-parser.c                                      |   58 +-
+ lib/client.c                                             |  158 +-
+ lib/context.c                                            |  341 ++++
+ lib/extension-deflate-frame.c                            |    2 +-
+ lib/extension.c                                          |  178 ++
+ lib/handshake.c                                          |  287 +---
+ lib/lextable.h                                           |  338 ++++
+ lib/libev.c                                              |  175 ++
+ lib/libwebsockets.c                                      | 2089 +++--------------------
+ lib/libwebsockets.h                                      |  253 ++-
+ lib/lws-plat-unix.c                                      |  404 +++++
+ lib/lws-plat-win.c                                       |  358 ++++
+ lib/minilex.c                                            |  530 +++---
+ lib/output.c                                             |  445 ++---
+ lib/parsers.c                                            |  682 ++++----
+ lib/pollfd.c                                             |  239 +++
+ lib/private-libwebsockets.h                              |  501 +++++-
+ lib/server-handshake.c                                   |  274 +--
+ lib/server.c                                             |  858 ++++++++--
+ lib/service.c                                            |  517 ++++++
+ lib/sha-1.c                                              |   38 +-
+ lib/ssl-http2.c                                          |   78 +
+ lib/ssl.c                                                |  571 +++++++
+ test-server/attack.sh                                    |  101 +-
+ test-server/test-client.c                                |    9 +-
+ test-server/test-echo.c                                  |   17 +-
+ test-server/test-fraggle.c                               |    7 -
+ test-server/test-ping.c                                  |   12 +-
+ test-server/test-server.c                                |  330 ++--
+ test-server/test.html                                    |    4 +-
+ win32port/client/client.vcxproj                          |  259 ---
+ win32port/client/client.vcxproj.filters                  |   39 -
+ .../libwebsocketswin32.vcxproj.filters                   |   93 -
+ win32port/server/server.vcxproj                          |  276 ---
+ win32port/server/server.vcxproj.filters                  |   51 -
+ win32port/win32helpers/gettimeofday.h                    |   59 +-
+ win32port/win32helpers/netdb.h                           |    1 -
+ win32port/win32helpers/strings.h                         |    0
+ win32port/win32helpers/sys/time.h                        |    1 -
+ win32port/win32helpers/unistd.h                          |    0
+ win32port/win32helpers/websock-w32.c                     |  104 --
+ win32port/win32helpers/websock-w32.h                     |   62 -
+ win32port/win32port.sln                                  |  100 --
+ win32port/zlib/gzio.c                                    |    3 +-
+ 55 files changed, 6779 insertions(+), 5059 deletions(-)
+
+
+User api additions
+------------------
+
+POST method is supported
+
+The protocol 0 / HTTP callback can now get two new kinds of callback,
+LWS_CALLBACK_HTTP_BODY (in and len are a chunk of the body of the HTTP request)
+and LWS_CALLBACK_HTTP_BODY_COMPLETION (the expected amount of body has arrived
+and been passed to the user code already).  These callbacks are used with the
+post method (see the test server for details).
+
+The period between the HTTP header completion and the completion of the body
+processing is protected by a 5s timeout.
+
+The chunks are stored in a malloc'd buffer of size protocols[0].rx_buffer_size.
+
+
+New server option you can enable from user code
+LWS_SERVER_OPTION_ALLOW_NON_SSL_ON_SSL_PORT allows non-SSL connections to
+also be accepted on an SSL listening port.  It's disabled unless you enable
+it explicitly.
+
+
+Two new callbacks are added in protocols[0] that are optional for allowing
+limited thread access to libwebsockets, LWS_CALLBACK_LOCK_POLL and
+LWS_CALLBACK_UNLOCK_POLL.
+
+If you use them, they protect internal and external poll list changes, but if
+you want to use external thread access to libwebsocket_callback_on_writable()
+you have to implement your locking here even if you don't use external
+poll support.
+
+If you will use another thread for this, take a lot of care about managing
+your list of live wsi by doing it from ESTABLISHED and CLOSED callbacks
+(with your own locking).
+
+If you configure cmake with -DLWS_WITH_LIBEV=1 then the code allowing the libev
+eventloop instead of the default poll() one will also be compiled in.  But to
+use it, you must also set the LWS_SERVER_OPTION_LIBEV flag on the context
+creation info struct options member.
+
+IPV6 is supported and enabled by default except for Windows, you can disable
+the support at build-time by giving -DLWS_IPV6=, and disable use of it even if
+compiled in by making sure the flag LWS_SERVER_OPTION_DISABLE_IPV6 is set on
+the context creation info struct options member.
+
+You can give LWS_SERVER_OPTION_DISABLE_OS_CA_CERTS option flag to
+guarantee the OS CAs will not be used, even if that support was selected at
+build-time.
+
+Optional "token limits" may be enforced by setting the member "token_limits"
+in struct lws_context_creation_info to point to a struct lws_token_limits.
+NULL means no token limits used for compatibility.
+
+
+User api changes
+----------------
+
+Extra optional argument to libwebsockets_serve_http_file() allows injecion
+of HTTP headers into the canned response.  Eg, cookies may be added like
+that without getting involved in having to send the header by hand.
+
+A new info member http_proxy_address may be used at context creation time to
+set the http proxy.  If non-NULL, it overrides http_proxy environment var.
+
+Cmake supports LWS_SSL_CLIENT_USE_OS_CA_CERTS defaulting to on, which gets
+the client to use the OS CA Roots.  If you're worried somebody with the
+ability to forge for force creation of a client cert from the root CA in
+your OS, you should disable this since your selfsigned $0 cert is a lot safer
+then...
+
+
+v1.23-chrome32-firefox24
+========================
+
+ Android.mk                            |   29 +
+ CMakeLists.txt                        |  573 ++++++++----
+ COPYING                               |  503 -----------
+ INSTALL                               |  365 --------
+ Makefile.am                           |   13 -
+ README.build                          |  371 ++------
+ README.coding                         |   63 ++
+ autogen.sh                            | 1578 ---------------------------------
+ changelog                             |   69 ++
+ cmake/FindGit.cmake                   |  163 ++++
+ cmake/FindOpenSSLbins.cmake           |   15 +-
+ cmake/UseRPMTools.cmake               |  176 ++++
+ config.h.cmake                        |   25 +-
+ configure.ac                          |  226 -----
+ cross-arm-linux-gnueabihf.cmake       |   28 +
+ lib/Makefile.am                       |   89 --
+ lib/base64-decode.c                   |   98 +-
+ lib/client-handshake.c                |  123 ++-
+ lib/client-parser.c                   |   19 +-
+ lib/client.c                          |  145 ++-
+ lib/daemonize.c                       |    4 +-
+ lib/extension.c                       |    2 +-
+ lib/getifaddrs.h                      |    4 +-
+ lib/handshake.c                       |   76 +-
+ lib/libwebsockets.c                   |  491 ++++++----
+ lib/libwebsockets.h                   |  164 ++--
+ lib/output.c                          |  214 ++++-
+ lib/parsers.c                         |  102 +--
+ lib/private-libwebsockets.h           |   66 +-
+ lib/server-handshake.c                |    5 +-
+ lib/server.c                          |   29 +-
+ lib/sha-1.c                           |    2 +-
+ libwebsockets-api-doc.html            |  249 +++---
+ libwebsockets.pc.in                   |   11 -
+ libwebsockets.spec                    |   14 +-
+ m4/ignore-me                          |    2 -
+ scripts/FindLibWebSockets.cmake       |   33 +
+ scripts/kernel-doc                    |    1 +
+ test-server/Makefile.am               |  131 ---
+ test-server/leaf.jpg                  |  Bin 0 -> 2477518 bytes
+ test-server/test-client.c             |   78 +-
+ test-server/test-echo.c               |   33 +-
+ test-server/test-fraggle.c            |   26 +-
+ test-server/test-ping.c               |   15 +-
+ test-server/test-server.c             |  197 +++-
+ test-server/test.html                 |    5 +-
+ win32port/win32helpers/gettimeofday.c |   74 +-
+ win32port/win32helpers/websock-w32.h  |    6 +-
+ 48 files changed, 2493 insertions(+), 4212 deletions(-)
+
+
+User api additions
+------------------
+
+ - You can now call libwebsocket_callback_on_writable() on http connectons,
+ 	and get a LWS_CALLBACK_HTTP_WRITEABLE callback, the same way you can
+	regulate writes with a websocket protocol connection.
+
+ - A new member in the context creation parameter struct "ssl_cipher_list" is
+ 	added, replacing CIPHERS_LIST_STRING.  NULL means use the ssl library
+	default list of ciphers.
+
+ - Not really an api addition, but libwebsocket_service_fd() will now zero
+ 	the revents field of the pollfd it was called with if it handled the
+	descriptor.  So you can tell if it is a non-lws fd by checking revents
+	after the service call... if it's still nonzero, the descriptor
+	belongs to you and you need to take care of it.
+
+ - libwebsocket_rx_flow_allow_all_protocol(protocol) will unthrottle all
+ 	connections with the established protocol.  It's designed to be
+	called from user server code when it sees it can accept more input
+	and may have throttled connections using the server rx flow apis
+	while it was unable to accept any other input  The user server code
+	then does not have to try to track while connections it choked, this
+	will free up all of them in one call.
+
+ - there's a new, optional callback LWS_CALLBACK_CLOSED_HTTP which gets
+	called when an HTTP protocol socket closes
+
+ - for LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION callback, the user_space alloc
+	has already been done before the callback happens.  That means we can
+	use the user parameter to the callback to contain the user pointer, and
+	move the protocol name to the "in" parameter.  The docs for this
+	callback are also updated to reflect how to check headers in there.
+
+ - libwebsocket_client_connect() is now properly nonblocking and async.  See
+	README.coding and test-client.c for information on the callbacks you
+	can rely on controlling the async connection period with.
+
+ - if your OS does not support the http_proxy environment variable convention
+ 	(eg, reportedly OSX), you can use a new api libwebsocket_set_proxy()
+ 	to set the proxy details in between context creation and the connection
+ 	action.  For OSes that support http_proxy, that's used automatically.
+
+User api changes
+----------------
+
+ - the external poll callbacks now get the socket descriptor coming from the
+ 	"in" parameter.  The user parameter provides the user_space for the
+	wsi as it normally does on the other callbacks.
+	LWS_CALLBACK_FILTER_NETWORK_CONNECTION also has the socket descriptor
+	delivered by @in now instead of @user.
+
+ - libwebsocket_write() now returns -1 for error, or the amount of data
+ 	actually accepted for send.  Under load, the OS may signal it is
+	ready to send new data on the socket, but have only a restricted
+	amount of memory to buffer the packet compared to usual.
+
+
+User api removal
+----------------
+
+ - libwebsocket_ensure_user_space() is removed from the public api, if you
+ 	were using it to get user_space, you need to adapt your code to only
+	use user_space inside the user callback.
+
+ - CIPHERS_LIST_STRING is removed
+
+ - autotools build has been removed.  See README.build for info on how to
+ 	use CMake for your platform
+
+
+v1.21-chrome26-firefox18
+========================
+
+ - Fixes buffer overflow bug in max frame size handling if you used the
+ 	default protocol buffer size.  If you declared rx_buffer_size in your
+	protocol, which is recommended anyway, your code was unaffected.
+
+v1.2-chrome26-firefox18
+=======================
+
+Diffstat
+--------
+
+ .gitignore                                                      |  16 +++
+ CMakeLists.txt                                                  | 544 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ LICENSE                                                         | 526 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Makefile.am                                                     |   1 +
+ README                                                          |  20 +++
+ README.build                                                    | 258 ++++++++++++++++++++++++++++++++-----
+ README.coding                                                   |  52 ++++++++
+ changelog                                                       | 136 ++++++++++++++++++++
+ cmake/FindOpenSSLbins.cmake                                     |  33 +++++
+ config.h.cmake                                                  | 173 +++++++++++++++++++++++++
+ configure.ac                                                    |  22 +++-
+ lib/Makefile.am                                                 |  20 ++-
+ lib/base64-decode.c                                             |   2 +-
+ lib/client-handshake.c                                          | 190 +++++++++++-----------------
+ lib/client-parser.c                                             |  88 +++++++------
+ lib/client.c                                                    | 384 ++++++++++++++++++++++++++++++-------------------------
+ lib/daemonize.c                                                 |  32 +++--
+ lib/extension-deflate-frame.c                                   |  58 +++++----
+ lib/extension-deflate-stream.c                                  |  19 ++-
+ lib/extension-deflate-stream.h                                  |   4 +-
+ lib/extension.c                                                 |  11 +-
+ lib/getifaddrs.c                                                | 315 +++++++++++++++++++++++-----------------------
+ lib/getifaddrs.h                                                |  30 ++---
+ lib/handshake.c                                                 | 124 +++++++++++-------
+ lib/libwebsockets.c                                             | 736 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------------
+ lib/libwebsockets.h                                             | 237 ++++++++++++++++++++++------------
+ lib/output.c                                                    | 192 +++++++++++-----------------
+ lib/parsers.c                                                   | 966 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------------------------------
+ lib/private-libwebsockets.h                                     | 225 +++++++++++++++++++++------------
+ lib/server-handshake.c                                          |  82 ++++++------
+ lib/server.c                                                    |  96 +++++++-------
+ libwebsockets-api-doc.html                                      | 189 ++++++++++++++++++----------
+ libwebsockets.spec                                              |  17 +--
+ test-server/attack.sh                                           | 148 ++++++++++++++++++++++
+ test-server/test-client.c                                       | 125 +++++++++---------
+ test-server/test-echo.c                                         |  31 +++--
+ test-server/test-fraggle.c                                      |  32 ++---
+ test-server/test-ping.c                                         |  52 ++++----
+ test-server/test-server.c                                       | 129 ++++++++++++-------
+ win32port/libwebsocketswin32/libwebsocketswin32.vcxproj         | 279 ----------------------------------------
+ win32port/libwebsocketswin32/libwebsocketswin32.vcxproj.filters |  23 +++-
+ 41 files changed, 4398 insertions(+), 2219 deletions(-)
+
+
+User api additions
+------------------
+
+ - lws_get_library_version() returns a const char * with a string like
+ 	 "1.1 9e7f737", representing the library version from configure.ac
+	 and the git HEAD hash the library was built from
+
+ - TCP Keepalive can now optionally be applied to all lws sockets, on Linux
+ 	also with controllable timeout, number of probes and probe interval.
+	(On BSD type OS, you can only use system default settings for the
+	timing and retries, although enabling it is supported by setting
+	ka_time to nonzero, the exact value has no meaning.)
+	This enables detection of idle connections which are logically okay,
+	but are in fact dead, due to network connectivity issues at the server,
+	client, or any intermediary.  By default it's not enabled, but you
+	can enable it by setting a non-zero timeout (in seconds) at the new
+	ka_time member at context creation time.
+
+ - Two new optional user callbacks added, LWS_CALLBACK_PROTOCOL_DESTROY which
+ 	is called one-time per protocol as the context is being destroyed, and
+	LWS_CALLBACK_PROTOCOL_INIT which is called when the context is created
+	and the protocols are added, again it's a one-time affair.
+	This lets you manage per-protocol allocations properly including
+	cleaning up after yourself when the server goes down.
+
+User api changes
+----------------
+
+ - libwebsocket_create_context() has changed from taking a ton of parameters
+	to just taking a pointer to a struct containing the parameters.  The
+	struct lws_context_creation_info is in libwebsockets.h, the members
+	are in the same order as when they were parameters to the call
+	previously.  The test apps are all updated accordingly so you can
+	see example code there.
+
+ - Header tokens are now deleted after the websocket connection is
+	established.  Not just the header data is saved, but the pointer and
+	length array is also removed from (union) scope saving several hundred
+	bytes per connection once it is established
+
+ - struct libwebsocket_protocols has a new member rx_buffer_size, this
+	controls rx buffer size per connection of that protocol now.  Sources
+	for apps built against older versions of the library won't declare
+	this in their protocols, defaulting it to 0.  Zero buffer is legal,
+	it causes a default buffer to be allocated (currently 4096)
+
+	If you want to receive only atomic frames in your user callback, you
+	should set this to greater than your largest frame size.  If a frame
+	comes that exceeds that, no error occurs but the callback happens as
+	soon as the buffer limit is reached, and again if it is reached again
+	or the frame completes.  You can detect that has happened by seeing
+	there is still frame content pending using
+	libwebsockets_remaining_packet_payload()
+
+	By correctly setting this, you can save a lot of memory when your
+	protocol has small frames (see the test server and client sources).
+
+ - LWS_MAX_HEADER_LEN now defaults to 1024 and is the total amount of known
+ 	header payload lws can cope with, that includes the GET URL, origin
+	etc.  Headers not understood by lws are ignored and their payload
+	not included in this.
+
+
+User api removals
+-----------------
+
+ - The configuration-time option MAX_USER_RX_BUFFER has been replaced by a
+	buffer size chosen per-protocol.  For compatibility, there's a default
+	of 4096 rx buffer, but user code should set the appropriate size for
+	the protocol frames.
+
+ - LWS_INITIAL_HDR_ALLOC and LWS_ADDITIONAL_HDR_ALLOC are no longer needed
+ 	and have been removed.  There's a new header management scheme that
+	handles them in a much more compact way.
+
+ - libwebsockets_hangup_on_client() is removed.  If you want to close the
+ 	connection you must do so from the user callback and by returning
+	-1 from there.
+
+ - libwebsocket_close_and_free_session() is now private to the library code
+ 	only and not exposed for user code.  If you want to close the
+	connection, you must do so from the user callback by returning -1
+	from there.
+
+
+New features
+------------
+
+ - Cmake project file added, aimed initially at Windows support: this replaces
+	the visual studio project files that were in the tree until now.
+
+ - CyaSSL now supported in place of OpenSSL (--use-cyassl on configure)
+
+ - PATH_MAX or MAX_PATH no longer needed
+
+ - cutomizable frame rx buffer size by protocol
+
+ - optional TCP keepalive so dead peers can be detected, can be enabled at
+ 	context-creation time
+
+ - valgrind-clean: no SSL or CyaSSL: completely clean.  With OpenSSL, 88 bytes
+ 	lost at OpenSSL library init and symptomless reports of uninitialized
+	memory usage... seems to be a known and ignored problem at OpenSSL
+
+ - By default debug is enabled and the library is built for -O0 -g to faclitate
+	that.  Use --disable-debug configure option to build instead with -O4
+	and no -g (debug info), obviously providing best performance and
+	reduced binary size.
+
+ - 1.0 introduced some code to try to not deflate small frames, however this
+ 	seems to break when confronted with a mixture of frames above and
+	below the threshold, so it's removed.  Veto the compression extension
+	in your user callback if you will typically have very small frames.
+
+ - There are many memory usage improvements, both a reduction in malloc/
+ 	realloc and architectural changes.  A websocket connection now
+	consumes only 296 bytes with SSL or 272 bytes without on x86_64,
+	during header processing an additional 1262 bytes is allocated in a
+	single malloc, but is freed when the websocket connection starts.
+	The RX frame buffer defined by the protocol in user
+	code is also allocated per connection, this represents the largest
+	frame you can receive atomically in that protocol.
+
+ - On ARM9 build, just http+ws server no extensions or ssl, <12Kbytes .text
+ 	and 112 bytes per connection (+1328 only during header processing)
+
+
+v1.1-chrome26-firefox18
+=======================
+
+Diffstat
+--------
+
+ Makefile.am                            |    4 +
+ README-test-server                     |  291 ---
+ README.build                           |  239 ++
+ README.coding                          |  138 ++
+ README.rst                             |   72 -
+ README.test-apps                       |  272 +++
+ configure.ac                           |  116 +-
+ lib/Makefile.am                        |   55 +-
+ lib/base64-decode.c                    |    5 +-
+ lib/client-handshake.c                 |  121 +-
+ lib/client-parser.c                    |  394 ++++
+ lib/client.c                           |  807 +++++++
+ lib/daemonize.c                        |  212 ++
+ lib/extension-deflate-frame.c          |  132 +-
+ lib/extension-deflate-stream.c         |   12 +-
+ lib/extension-x-google-mux.c           | 1223 ----------
+ lib/extension-x-google-mux.h           |   96 -
+ lib/extension.c                        |    8 -
+ lib/getifaddrs.c                       |  271 +++
+ lib/getifaddrs.h                       |   76 +
+ lib/handshake.c                        |  582 +----
+ lib/libwebsockets.c                    | 2493 ++++++---------------
+ lib/libwebsockets.h                    |  115 +-
+ lib/md5.c                              |  217 --
+ lib/minilex.c                          |  440 ++++
+ lib/output.c                           |  628 ++++++
+ lib/parsers.c                          | 2016 +++++------------
+ lib/private-libwebsockets.h            |  284 +--
+ lib/server-handshake.c                 |  275 +++
+ lib/server.c                           |  377 ++++
+ libwebsockets-api-doc.html             |  300 +--
+ m4/ignore-me                           |    2 +
+ test-server/Makefile.am                |  111 +-
+ test-server/libwebsockets.org-logo.png |  Bin 0 -> 7029 bytes
+ test-server/test-client.c              |   45 +-
+ test-server/test-echo.c                |  330 +++
+ test-server/test-fraggle.c             |   20 +-
+ test-server/test-ping.c                |   22 +-
+ test-server/test-server-extpoll.c      |  554 -----
+ test-server/test-server.c              |  349 ++-
+ test-server/test.html                  |    3 +-
+ win32port/zlib/ZLib.vcxproj            |  749 ++++---
+ win32port/zlib/ZLib.vcxproj.filters    |  188 +-
+ win32port/zlib/adler32.c               |  348 ++-
+ win32port/zlib/compress.c              |  160 +-
+ win32port/zlib/crc32.c                 |  867 ++++----
+ win32port/zlib/crc32.h                 |  882 ++++----
+ win32port/zlib/deflate.c               | 3799 +++++++++++++++-----------------
+ win32port/zlib/deflate.h               |  688 +++---
+ win32port/zlib/gzclose.c               |   50 +-
+ win32port/zlib/gzguts.h                |  325 ++-
+ win32port/zlib/gzlib.c                 | 1157 +++++-----
+ win32port/zlib/gzread.c                | 1242 ++++++-----
+ win32port/zlib/gzwrite.c               | 1096 +++++----
+ win32port/zlib/infback.c               | 1272 ++++++-----
+ win32port/zlib/inffast.c               |  680 +++---
+ win32port/zlib/inffast.h               |   22 +-
+ win32port/zlib/inffixed.h              |  188 +-
+ win32port/zlib/inflate.c               | 2976 +++++++++++++------------
+ win32port/zlib/inflate.h               |  244 +-
+ win32port/zlib/inftrees.c              |  636 +++---
+ win32port/zlib/inftrees.h              |  124 +-
+ win32port/zlib/trees.c                 | 2468 +++++++++++----------
+ win32port/zlib/trees.h                 |  256 +--
+ win32port/zlib/uncompr.c               |  118 +-
+ win32port/zlib/zconf.h                 |  934 ++++----
+ win32port/zlib/zlib.h                  | 3357 ++++++++++++++--------------
+ win32port/zlib/zutil.c                 |  642 +++---
+ win32port/zlib/zutil.h                 |  526 ++---
+ 69 files changed, 19556 insertions(+), 20145 deletions(-)
+
+user api changes
+----------------
+
+ - libwebsockets_serve_http_file() now takes a context as first argument
+
+ - libwebsockets_get_peer_addresses() now takes a context and wsi as first
+	two arguments
+
+
+user api additions
+------------------
+
+ - lwsl_...() logging apis, default to stderr but retargetable by user code;
+	may be used also by user code
+
+ - lws_set_log_level() set which logging apis are able to emit (defaults to
+	notice, warn, err severities), optionally set the emit callback
+
+ - lwsl_emit_syslog() helper callback emits to syslog
+
+ - lws_daemonize() helper code that forks the app into a headless daemon
+	properly, maintains a lock file with pid in suitable for sysvinit etc to
+	control lifecycle
+
+ - LWS_CALLBACK_HTTP_FILE_COMPLETION callback added since http file
+	transfer is now asynchronous (see test server code)
+
+ - lws_frame_is_binary() from a wsi pointer, let you know if the received
+	data was sent in BINARY mode
+
+
+user api removals
+-----------------
+
+ - libwebsockets_fork_service_loop() - no longer supported (had intractable problems)
+	arrange your code to act from the user callback instead from same
+	process context as the service loop
+
+ - libwebsockets_broadcast() - use libwebsocket_callback_on_writable[_all_protocol]()
+	instead from same process context as the service loop.  See the test apps
+	for examples.
+
+ - x-google-mux() removed until someone wants it
+
+ - pre -v13 (ancient) protocol support removed
+
+
+New features
+------------
+
+ - echo test server and client compatible with echo.websocket.org added
+
+ - many new configure options (see README.build) to reduce footprint of the
+	library to what you actually need, eg, --without-client and
+	--without-server
+
+ - http + websocket server can build to as little as 12K .text for ARM
+
+ - no more MAX_CLIENTS limitation; adapts to support the max number of fds
+	allowed to the process by ulimit, defaults to 1024 on Fedora and
+	Ubuntu.  Use ulimit to control this without needing to configure
+	the library.  Code here is smaller and faster.
+
+ - adaptive ratio of listen socket to connection socket service allows
+	good behaviour under Apache ab test load.  Tested with thousands
+	of simultaneous connections
+
+ - reduction in per-connection memory footprint by moving to a union to hold
+	mutually-exclusive state for the connection
+
+ - robustness: Out of Memory taken care of for all allocation code now
+
+ - internal getifaddrs option if your toolchain lacks it (some uclibc)
+
+ - configurable memory limit for deflate operations
+
+ - improvements in SSL code nonblocking operation, possible hang solved,
+	some SSL operations broken down into pollable states so there is
+	no library blocking, timeout coverage for SSL_connect
+
+ - extpoll test server merged into single test server source
+
+ - robustness: library should deal with all recoverable socket conditions
+
+ - rx flowcontrol for backpressure notification fixed and implmeneted
+	correctly in the test server
+
+ - optimal lexical parser added for header processing; all headers in a
+	single 276-byte state table
+
+ - latency tracking api added (configure --with-latency)
+
+ - Improved in-tree documentation, REAME.build, README.coding,
+	README.test-apps, changelog
+
+ - Many small fixes
+
+
+v1.0-chrome25-firefox17 (6cd1ea9b005933f)

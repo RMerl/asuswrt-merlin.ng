@@ -1,0 +1,127 @@
+#!/bin/sh
+#
+#   Copyright (c)  2007             Dmitry K. Butskoy
+#                                   <buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#  Shell wrapper providing traceproto(8) command line interface.
+#
+#  The original implementation of traceproto(8) can be obtained
+#  from http://traceproto.sourceforge.net/
+#
+
+
+prgname=$0
+opts=""
+length=""
+method="tcp"
+sendwait=100
+cont=""
+iface=$TP_DEFAULT_IF
+
+
+usage () {
+    echo "Usage: $prgname [-cCTfAhvR] [-p protocol] [-d dst_port] [-D max_dst_port]
+	[-s src_port] [-S max_src_port] [-m min_ttl] [-M max_ttl] [-w response_timeout]
+	[-W send_delay] [-a account_level] [-P payload_size]
+	[-F interface] [-k skips] [-I consecutive_trace_count]
+	[-H packets_per_hop] [-i incr_pattern] [-o output_style] [-t tcp_flags]
+	target" >&2
+}
+
+warning () {
+    echo "$prgname: Option '$1' is not implemented in this wrapper" >&2
+}
+ 
+
+PARSED=`getopt 'cCTfAhvRp:d:D:s:S:m:M:w:W:a:P:F:k:I:H:i:o:t:' "$@"`
+[ $? != 0 ] && exit 2
+
+eval set -- "$PARSED"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+	-p)  method=$2; shift 2 ;;
+	-d)  opts="$opts -p $2"; shift 2 ;;
+	-s)  opts="$opts --sport=$2"; shift 2 ;;
+	-m)  opts="$opts -f $2"; shift 2 ;;
+	-M)  opts="$opts -m $2"; shift 2 ;;
+	-w)  opts="$opts -w $2"; shift 2 ;;
+	-W)  sendwait=$2; shift 2 ;;
+	-P)  length=$2; shift 2 ;;
+	-c)  cont=100000; shift ;;
+	-I)  cont=$2; shift 2 ;;
+	-H)  opts="$opts -q $2"; shift 2 ;;
+	-f)  opts="$opts -F"; shift ;;
+	-F)  iface=$2; shift 2 ;;
+	-A)  opts="$opts -A"; shift ;;
+	-o)  [ $2 != "c" ] && warning $1; shift 2 ;;
+	-t)  case $2 in
+		*S*)  opts="$opts -O syn" ;;
+	     esac
+	     case $2 in
+		*A*)  opts="$opts -O ack" ;;
+	     esac
+	     case $2 in
+		*R*)  opts="$opts -O rst" ;;
+	     esac
+	     case $2 in
+		*U*)  opts="$opts -O urg" ;;
+	     esac
+	     case $2 in
+		*P*)  opts="$opts -O psh" ;;
+	     esac
+	     case $2 in
+		*F*)  opts="$opts -O fin" ;;
+	     esac
+	     case $2 in
+		*E*)  opts="$opts -O ece" ;;
+	     esac
+	     case $2 in
+		*C*)  opts="$opts -O cwr" ;;
+	     esac
+	     shift 2 ;;
+	-[DSaki])  warning $1; shift 2 ;;
+	-[TCR])  warning $1; shift ;;
+	-h)  usage; exit 0 ;;
+	-v)  echo "\"traceproto\"-compatible wrapper for new Linux Traceroute" >&2;
+	     exit 0 ;;
+	--)  shift; break ;;
+	*)  echo "$prgname: Internal parsing error" >&2; exit 2 ;;
+    esac
+done
+
+
+
+[ $# -eq 0 ] && {
+    usage
+    exit 2
+}
+
+host=$1
+
+
+opts="-M $method $opts"
+opts="$opts -z $sendwait"
+[ -n "$iface" ] && opts="$opts -i $iface"
+
+[ -n "$TP_OUTPUT_STYLE" -a "$TP_OUTPUT_STYLE" != "classic" ] && {
+	echo "$prgname: warning: only classic output style supported" >&2
+}
+
+[ -n "$TP_RA_SERVER" -a -z "$RA_SERVER" ] && RA_SERVER=$TP_RA_SERVER
+
+
+[ -z "$cont" ] && exec traceroute $opts $host $length
+
+while [ "$cont" -gt 0 ]
+do
+    cont=$(($cont - 1))
+    traceroute $opts $host $length
+done
+

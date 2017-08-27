@@ -1,0 +1,30 @@
+.TH rlm_chap 5 "3 February 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_chap \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_chap\fP module provides CHAP functionality.
+.PP
+This module validates a user with CHAP authentication.
+If called in Authorize, it will look for CHAP-Password
+attribute in the Acess-Request and adds an Auth-Type
+attribute set to CHAP if the Config-Items list unless 
+Auth-Type has already set.
+.PP
+CHAP authentication requires access to the clear-text
+password for the user.  Standard Unix system authentication
+or passwords encrypted via crypt() are not compatible
+with CHAP.
+.PP
+.SH SECTIONS
+.BR authorization,
+.BR authentication
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Chris Parker, cparker@segv.org
+

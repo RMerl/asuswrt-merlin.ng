@@ -1,0 +1,80 @@
+<!-- ##### SECTION Title ##### -->
+Varargs Value Collection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### UNION GTypeCValue ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_VALUE_COLLECT_INIT ##### -->
+<para>
+
+</para>
+
+@value: 
+@_value_type: 
+@var_args: 
+@flags: 
+@__error: 
+
+
+<!-- ##### MACRO G_VALUE_COLLECT ##### -->
+<para>
+
+</para>
+
+@value: 
+@var_args: 
+@flags: 
+@__error: 
+
+
+<!-- ##### MACRO G_VALUE_COLLECT_SKIP ##### -->
+<para>
+
+</para>
+
+@_value_type: 
+@var_args: 
+
+
+<!-- ##### MACRO G_VALUE_LCOPY ##### -->
+<para>
+
+</para>
+
+@value: 
+@var_args: 
+@flags: 
+@__error: 
+
+
+<!-- ##### MACRO G_VALUE_COLLECT_FORMAT_MAX_LENGTH ##### -->
+<para>
+
+</para>
+
+
+

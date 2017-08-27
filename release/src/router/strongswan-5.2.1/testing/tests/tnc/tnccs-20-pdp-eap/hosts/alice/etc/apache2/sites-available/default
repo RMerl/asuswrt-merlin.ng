@@ -1,0 +1,26 @@
+WSGIPythonPath /var/www/tnc
+
+<VirtualHost *:80>
+    ServerName tnc.strongswan.org
+    ServerAlias tnc
+    ServerAdmin webmaster@localhost
+
+    DocumentRoot /var/www/tnc
+
+    <Directory /var/www/tnc/config>
+        <Files wsgi.py>
+            Order deny,allow
+            Allow from all
+        </Files>
+    </Directory>
+
+    WSGIScriptAlias / /var/www/tnc/config/wsgi.py
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+
+    Alias /static/ /var/www/tnc/static/
+
+    ErrorLog ${APACHE_LOG_DIR}/tnc/error.log
+    LogLevel warn
+    CustomLog ${APACHE_LOG_DIR}/tnc/access.log combined
+</VirtualHost>

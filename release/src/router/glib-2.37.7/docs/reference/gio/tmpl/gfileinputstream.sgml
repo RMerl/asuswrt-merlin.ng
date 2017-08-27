@@ -1,0 +1,66 @@
+<!-- ##### SECTION Title ##### -->
+GFileInputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFileInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_file_input_stream_query_info ##### -->
+<para>
+
+</para>
+
+@stream: 
+@attributes: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_input_stream_query_info_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@attributes: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_file_input_stream_query_info_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+

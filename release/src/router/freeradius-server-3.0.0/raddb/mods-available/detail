@@ -1,0 +1,93 @@
+# -*- text -*-
+#
+#  $Id$
+
+# Write a detailed log of all accounting records received.
+#
+detail {
+	#  Note that we do NOT use NAS-IP-Address here, as
+	#  that attribute MAY BE from the originating NAS, and
+	#  NOT from the proxy which actually sent us the
+	#  request.
+	#
+	#  The following line creates a new detail file for
+	#  every radius client (by IP address or hostname).
+	#  In addition, a new detail file is created every
+	#  day, so that the detail file doesn't have to go
+	#  through a 'log rotation'
+	#
+	#  If your detail files are large, you may also want
+	#  to add a ':%H' (see doc/variables.txt) to the end
+	#  of it, to create a new detail file every hour, e.g.:
+	#
+	#   ..../detail-%Y%m%d:%H
+	#
+	#  This will create a new detail file for every hour.
+	#
+	#  If you are reading detail files via the "listen" section
+	#  (e.g. as in raddb/sites-available/robust-proxy-accounting),
+	#  you MUST use a unique directory for each combination of a
+	#  detail file writer, and reader.  That is, there can only
+	#  be ONE "listen" section reading detail files from a
+	#  particular directory.
+	#
+	filename = ${radacctdir}/%{%{Packet-Src-IP-Address}:-%{Packet-Src-IPv6-Address}}/detail-%Y%m%d
+
+	#
+	#  If you are using radrelay, delete the above line for "file",
+	#  and use this one instead:
+	#
+#	filename = ${radacctdir}/detail
+
+	#
+	#  The Unix-style permissions on the 'detail' file.
+	#
+	#  The detail file often contains secret or private
+	#  information about users.  So by keeping the file
+	#  permissions restrictive, we can prevent unwanted
+	#  people from seeing that information.
+	permissions = 0600
+
+	# The Unix group of the log file.
+	#
+	# The user that the server runs as must be in the specified
+	# system group otherwise this will fail to work.
+	#
+#	group = freerad
+
+	#
+	#  Every entry in the detail file has a header which
+	#  is a timestamp.  By default, we use the ctime
+	#  format (see "man ctime" for details).
+	#
+	#  The header can be customised by editing this
+	#  string.  See "doc/variables.txt" for a description
+	#  of what can be put here.
+	#
+	header = "%t"
+
+	#
+	#  Uncomment this line if the detail file reader will be
+	#  reading this detail file.
+	#
+#	locking = yes
+
+	#
+	#  Log the Packet src/dst IP/port.  This is disabled by
+	#  default, as that information isn't used by many people.
+	#
+#	log_packet_header = yes
+
+	#
+	# Certain attributes such as User-Password may be
+	# "sensitive", so they should not be printed in the
+	# detail file.  This section lists the attributes
+	# that should be suppressed.
+	#
+	# The attributes should be listed one to a line.
+	#
+	#suppress {
+		# User-Password
+	#}
+
+}

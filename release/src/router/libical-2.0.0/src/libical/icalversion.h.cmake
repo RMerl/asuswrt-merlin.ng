@@ -1,0 +1,7 @@
+#ifndef ICAL_VERSION_H
+#define ICAL_VERSION_H
+
+#define ICAL_PACKAGE "@CMAKE_PROJECT_NAME@"
+#define ICAL_VERSION "@PROJECT_VERSION@"
+
+#endif

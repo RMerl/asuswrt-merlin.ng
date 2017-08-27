@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+<book lang="en" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <part>
+    <title>foo</title>
+    <chapter>
+      <title>bar</title>
+      <xi:include href="xml/ExampleAnimal.xml"/>
+      <xi:include href="xml/ExampleCat.xml"/>
+      <xi:include href="xml/ExampleObject.xml"/>
+      <xi:include href="xml/ExampleObjectManagerClient.xml"/>
+    </chapter>
+  </part>
+</book>

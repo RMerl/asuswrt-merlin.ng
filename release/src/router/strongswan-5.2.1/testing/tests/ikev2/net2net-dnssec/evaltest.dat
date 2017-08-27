@@ -1,0 +1,9 @@
+moon:: cat /var/log/daemon.log::performing a DNS query for IPSECKEY RRs of.*sun.strongswan.org::YES
+sun::  cat /var/log/daemon.log::performing a DNS query for IPSECKEY RRs of.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::net-net.*ESTABLISHED.*moon.strongswan.org.*sun.strongswan.org::YES
+sun::  ipsec status 2> /dev/null::net-net.*ESTABLISHED.*sun.strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::INSTALLED, TUNNEL::YES
+sun::  ipsec status 2> /dev/null::INSTALLED, TUNNEL::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_req=1::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES

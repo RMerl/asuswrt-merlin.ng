@@ -1,0 +1,30 @@
+#!/bin/sh
+RFLOW_IP=$(nvram get rflow_ip)
+RFLOW_PORT=$(nvram get rflow_port)
+RFLOW_IF=$(nvram get rflow_if)
+killall -q -9 rflow
+if [ "$RFLOW_IF" = "$(nvram get wan_ifname)" ]; then
+
+if [ "$(nvram get wan_proto)" = "pppoe" ]; then
+    RFLOW_IF="ppp0"
+fi
+if [ "$(nvram get wan_proto)" = "pptp" ]; then
+    RFLOW_IF="ppp0"
+fi
+if [ "$(nvram get wan_proto)" = "l2tp" ]; then
+    RFLOW_IF="ppp0"
+fi
+
+fi
+if [ "$(nvram get rflow_enable)" = "1" ]; then
+    rflow -i $RFLOW_IF -F $RFLOW_IP:$RFLOW_PORT -d -A 60 -I 15&
+fi
+
+MACUPD_IP=$(nvram get macupd_ip)
+MACUPD_PORT=$(nvram get macupd_port)
+MACUPD_INTERVAL=$(nvram get macupd_interval)
+killall -q -9 macupd
+if [ "$(nvram get macupd_enable)" = "1" ]; then
+    macupd $MACUPD_IP $MACUPD_PORT $MACUPD_INTERVAL&
+fi
+

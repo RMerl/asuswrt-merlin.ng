@@ -1,0 +1,95 @@
+.TH CHECKRAD 5 "13 January 2006"
+.SH NAME
+checkrad -- See if a user is (still) logged in on a certain port.
+.SH SYNOPSIS
+.B checkrad
+.RB [ -d ]
+.I nas-type nas-ip nas-port login session-id
+.SH DESCRIPTION
+\fBCheckrad\fP is used by the radius server to check if its idea of a user logged in
+on a certain port/NAS is correct if a double login is detected.
+
+Returns: 0 = no duplicate, 1 = duplicate, >1 = error.
+
+.SH OPTIONS
+
+.IP -d
+Enable printing of debugging informations.
+
+.IP nas-type
+Type of port/NAS. Can be one of:
+
+.RS
+.IP \(bu
+ascend
+.IP \(bu
+bay
+.IP \(bu
+cisco
+.IP \(bu
+cisco_l2tp
+.IP \(bu
+computone
+.IP \(bu
+cvx
+.IP \(bu
+digitro
+.IP \(bu
+dot1x
+.IP \(bu
+livingston
+.IP \(bu
+max40xx
+.IP \(bu
+mikrotik
+.IP \(bu
+mikrotik_snmp
+.IP \(bu
+multitech
+.IP \(bu
+netserver
+.IP \(bu
+other
+.IP \(bu
+pathras
+.IP \(bu
+patton
+.IP \(bu
+portslave
+.IP \(bu
+pr3000
+.IP \(bu
+pr4000
+.IP \(bu
+redback
+.IP \(bu
+tc
+.IP \(bu
+usrhiper
+.IP \(bu
+versanet
+.P
+The "other" type cause \fBcheckrad\fP to skip any check and always returns 1.
+.RE
+
+
+.IP nas-ip
+IP address of the NAS to check.
+
+.IP nas-port
+The NAS port to check (may be ignored by some nas-type).
+
+.IP login
+The login name to check.
+
+.IP session-id
+Session to check. (actually ignored by all nas-type)
+
+.SH SEE ALSO
+radiusd(8)
+
+.SH AUTHOR
+Written by Miquel van Smoorenburg, miquels@cistron.nl.
+
+This manual page was written by Marco Nenciarini <mnencia@debian.org> for
+the Debian project (but may be used by others).

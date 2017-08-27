@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GFileDescriptorBased</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GFileIOStream.html" title="GFileIOStream">
+<link rel="next" href="GFilterInputStream.html" title="GFilterInputStream">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GFileDescriptorBased.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GFileDescriptorBased.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GFileDescriptorBased.prerequisites" class="shortcut">Prerequisites</a>
+                   | 
+                  <a href="#GFileDescriptorBased.implementations" class="shortcut">Known Implementations</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFileIOStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GFilterInputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GFileDescriptorBased"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GFileDescriptorBased.top_of_page"></a>GFileDescriptorBased</span></h2>
+<p>GFileDescriptorBased — Interface for file descriptor based IO</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GFileDescriptorBased.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gfiledescriptorbased.h&gt;
+
+                    <a class="link" href="GFileDescriptorBased.html#GFileDescriptorBased-struct" title="GFileDescriptorBased">GFileDescriptorBased</a>;
+<span class="returnvalue">int</span>                 <a class="link" href="GFileDescriptorBased.html#g-file-descriptor-based-get-fd" title="g_file_descriptor_based_get_fd ()">g_file_descriptor_based_get_fd</a>      (<em class="parameter"><code><a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased"><span class="type">GFileDescriptorBased</span></a> *fd_based</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileDescriptorBased.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----GFileDescriptorBased
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileDescriptorBased.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GFileDescriptorBased requires
+ <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GFileDescriptorBased.implementations"></a><h2>Known Implementations</h2>
+<p>
+GFileDescriptorBased is implemented by
+ <a class="link" href="GUnixInputStream.html" title="GUnixInputStream">GUnixInputStream</a> and  <a class="link" href="GUnixOutputStream.html" title="GUnixOutputStream">GUnixOutputStream</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GFileDescriptorBased.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased"><span class="type">GFileDescriptorBased</span></a> is implemented by streams (implementations of
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> or <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>) that are based on file descriptors.
+</p>
+<p>
+Note that <code class="filename">&lt;gio/gfiledescriptorbased.h&gt;</code> belongs to
+the UNIX-specific GIO interfaces, thus you have to use the
+<code class="filename">gio-unix-2.0.pc</code> pkg-config file when using it.
+</p>
+</div>
+<div class="refsect1">
+<a name="GFileDescriptorBased.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GFileDescriptorBased-struct"></a><h3>GFileDescriptorBased</h3>
+<pre class="programlisting">typedef struct _GFileDescriptorBased GFileDescriptorBased;</pre>
+<p>
+An interface for file descriptor based io objects.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-descriptor-based-get-fd"></a><h3>g_file_descriptor_based_get_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 g_file_descriptor_based_get_fd      (<em class="parameter"><code><a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased"><span class="type">GFileDescriptorBased</span></a> *fd_based</code></em>);</pre>
+<p>
+Gets the underlying file descriptor.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>fd_based</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased"><span class="type">GFileDescriptorBased</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>The file descriptor</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.24</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileDescriptorBased.see-also"></a><h2>See Also</h2>
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>, <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

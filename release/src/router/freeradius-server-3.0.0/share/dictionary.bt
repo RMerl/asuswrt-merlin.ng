@@ -1,0 +1,17 @@
+# -*- text -*-
+# Copyright (C) 2012 The FreeRADIUS Server project and contributors
+##############################################################################
+#
+#	British Telecom VSA's
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		BT				594
+
+BEGIN-VENDOR	BT
+
+ATTRIBUTE	SID-Auth				1	string
+
+END-VENDOR	BT

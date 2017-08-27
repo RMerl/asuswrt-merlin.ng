@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GInetAddressMask</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GInetAddress.html" title="GInetAddress">
+<link rel="next" href="GSocketAddress.html" title="GSocketAddress">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GInetAddressMask.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GInetAddress.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSocketAddress.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GInetAddressMask"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GInetAddressMask.top_of_page"></a>GInetAddressMask</span></h2>
+<p>GInetAddressMask — An IPv4/IPv6 address mask</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GInetAddressMask.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask">GInetAddressMask</a>;
+<a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *  <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-new" title="g_inet_address_mask_new ()">g_inet_address_mask_new</a>             (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *addr</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> length</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *  <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-new-from-string" title="g_inet_address_mask_new_from_string ()">g_inet_address_mask_new_from_string</a> (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *mask_string</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-to-string" title="g_inet_address_mask_to_string ()">g_inet_address_mask_to_string</a>       (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);
+<a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="returnvalue">GSocketFamily</span></a>       <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-get-family" title="g_inet_address_mask_get_family ()">g_inet_address_mask_get_family</a>      (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *      <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-get-address" title="g_inet_address_mask_get_address ()">g_inet_address_mask_get_address</a>     (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-get-length" title="g_inet_address_mask_get_length ()">g_inet_address_mask_get_length</a>      (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-matches" title="g_inet_address_mask_matches ()">g_inet_address_mask_matches</a>         (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="gio-GInetAddressMask.html#g-inet-address-mask-equal" title="g_inet_address_mask_equal ()">g_inet_address_mask_equal</a>           (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask2</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GInetAddressMask.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> represents a range of IPv4 or IPv6 addresses
+described by a base address and a length indicating how many bits
+of the base address are relevant for matching purposes. These are
+often given in string form. Eg, "10.0.0.0/8", or "fe80::/10".
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GInetAddressMask.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GInetAddressMask"></a><h3>GInetAddressMask</h3>
+<pre class="programlisting">typedef struct {
+  GObject parent_instance;
+} GInetAddressMask;
+</pre>
+<p>
+A combination of an IPv4 or IPv6 base address and a length,
+representing a range of IP addresses.
+</p>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-new"></a><h3>g_inet_address_mask_new ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *  g_inet_address_mask_new             (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *addr</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> length</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> representing all addresses whose
+first <em class="parameter"><code>length</code></em> bits match <em class="parameter"><code>addr</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>addr</code></em> :</span></p></td>
+<td>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>length</code></em> :</span></p></td>
+<td>number of bits of <em class="parameter"><code>addr</code></em> to use</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>return location for <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-new-from-string"></a><h3>g_inet_address_mask_new_from_string ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *  g_inet_address_mask_new_from_string (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *mask_string</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Parses <em class="parameter"><code>mask_string</code></em> as an IP address and (optional) length, and
+creates a new <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>. The length, if present, is
+delimited by a "/". If it is not present, then the length is
+assumed to be the full length of the address.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask_string</code></em> :</span></p></td>
+<td>an IP address or address/length string</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>return location for <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> corresponding to <em class="parameter"><code>string</code></em>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+on error.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-to-string"></a><h3>g_inet_address_mask_to_string ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             g_inet_address_mask_to_string       (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>
+Converts <em class="parameter"><code>mask</code></em> back to its corresponding string form.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a string corresponding to <em class="parameter"><code>mask</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-get-family"></a><h3>g_inet_address_mask_get_family ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="returnvalue">GSocketFamily</span></a>       g_inet_address_mask_get_family      (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>
+Gets the <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> of <em class="parameter"><code>mask</code></em>'s address
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> of <em class="parameter"><code>mask</code></em>'s address</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-get-address"></a><h3>g_inet_address_mask_get_address ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *      g_inet_address_mask_get_address     (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>mask</code></em>'s base address
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<em class="parameter"><code>mask</code></em>'s base address. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-get-length"></a><h3>g_inet_address_mask_get_length ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               g_inet_address_mask_get_length      (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>
+Gets <em class="parameter"><code>mask</code></em>'s length
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<em class="parameter"><code>mask</code></em>'s length</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-matches"></a><h3>g_inet_address_mask_matches ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_inet_address_mask_matches         (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>
+Tests if <em class="parameter"><code>address</code></em> falls within the range described by <em class="parameter"><code>mask</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>address</code></em> :</span></p></td>
+<td>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>whether <em class="parameter"><code>address</code></em> falls within the range described by
+<em class="parameter"><code>mask</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-equal"></a><h3>g_inet_address_mask_equal ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_inet_address_mask_equal           (<em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask2</code></em>);</pre>
+<p>
+Tests if <em class="parameter"><code>mask</code></em> and <em class="parameter"><code>mask2</code></em> are the same mask.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask</code></em> :</span></p></td>
+<td>a <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mask2</code></em> :</span></p></td>
+<td>another <a class="link" href="gio-GInetAddressMask.html#GInetAddressMask" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>whether <em class="parameter"><code>mask</code></em> and <em class="parameter"><code>mask2</code></em> are the same mask</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

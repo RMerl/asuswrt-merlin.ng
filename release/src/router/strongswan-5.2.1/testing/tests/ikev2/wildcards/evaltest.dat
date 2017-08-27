@@ -1,0 +1,8 @@
+carol::ipsec status 2> /dev/null::alice..*PH_IP_CAROL.*PH_IP_ALICE::YES
+moon:: ipsec status 2> /dev/null::alice.*PH_IP_ALICE.*PH_IP_CAROL::YES
+carol::ipsec status 2> /dev/null::venus.*PH_IP_CAROL.*PH_IP_VENUS::NO
+moon:: ipsec status 2> /dev/null::venus.*PH_IP_VENUS.*PH_IP_CAROL::NO
+dave:: ipsec status 2> /dev/null::venus.*PH_IP_DAVE.*PH_IP_VENUS::YES
+moon:: ipsec status 2> /dev/null::venus.*PH_IP_VENUS.*PH_IP_DAVE::YES
+dave:: ipsec status 2> /dev/null::alice.*PH_IP_DAVE.*PH_IP_ALICE::NO
+moon:: ipsec status 2> /dev/null::alice.*PH_IP_ALICE.*PH_IP_DAVE::NO

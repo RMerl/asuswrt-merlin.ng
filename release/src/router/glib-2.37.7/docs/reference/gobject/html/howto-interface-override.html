@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Overriding interface methods</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-interface.html" title="How to define and implement interfaces">
+<link rel="prev" href="howto-interface-properties.html" title="Interface properties">
+<link rel="next" href="howto-signals.html" title="How to create and use signals">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-interface.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface-properties.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-signals.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-override"></a>Overriding interface methods</h2></div></div></div>
+<p>
+      If a base class already implements an interface, and in a derived
+      class you wish to implement the same interface overriding only certain
+      methods of that interface, you just reimplement the interface and
+      set only the interface methods you wish to override.
+    </p>
+<p>
+      In this example MamanDerivedBaz is derived from MamanBaz. Both
+      implement the MamanIbaz interface. MamanDerivedBaz only implements one
+      method of the MamanIbaz interface and uses the base class implementation
+      of the other.
+</p>
+<pre class="programlisting">
+static void
+maman_derived_ibaz_do_action (MamanIbaz *ibaz)
+{
+  MamanDerivedBaz *self = MAMAN_DERIVED_BAZ (ibaz);
+  g_print ("DerivedBaz implementation of Ibaz interface Action\n");
+}
+
+static void
+maman_derived_ibaz_interface_init (MamanIbazInterface *iface)
+{
+  /* Override the implementation of do_action */
+  iface-&gt;do_action = maman_derived_ibaz_do_action;
+
+  /*
+   * We simply leave iface-&gt;do_something alone, it is already set to the
+   * base class implementation.
+   */
+}
+
+G_DEFINE_TYPE_WITH_CODE (MamanDerivedBaz, maman_derived_baz, MAMAN_TYPE_BAZ,
+                         G_IMPLEMENT_INTERFACE (MAMAN_TYPE_IBAZ,
+                                                maman_derived_ibaz_interface_init)
+
+static void
+maman_derived_baz_class_init (MamanDerivedBazClass *klass)
+{
+
+}
+
+static void
+maman_derived_baz_init (MamanDerivedBaz *self)
+{
+
+}
+</pre>
+<p>
+    </p>
+<p>
+      To access the base class interface implementation use
+      <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-interface-peek-parent" title="g_type_interface_peek_parent ()">g_type_interface_peek_parent</a></code>
+      from within an interface's <code class="function">default_init</code> function.
+    </p>
+<p>
+      If you wish to call the base class implementation of an interface
+      method from an derived class where than interface method has been
+      overridden then you can stash away the pointer returned from
+      <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-interface-peek-parent" title="g_type_interface_peek_parent ()">g_type_interface_peek_parent</a></code>
+      in a global variable.
+    </p>
+<p>
+      In this example MamanDerivedBaz overides the
+      <code class="function">do_action</code> interface method. In it's overridden method
+      it calls the base class implementation of the same interface method.
+</p>
+<pre class="programlisting">
+static MamanIbazInterface *maman_ibaz_parent_interface = NULL;
+
+static void
+maman_derived_ibaz_do_action (MamanIbaz *ibaz)
+{
+  MamanDerivedBaz *self = MAMAN_DERIVED_BAZ (ibaz);
+  g_print ("DerivedBaz implementation of Ibaz interface Action\n");
+
+  /* Now we call the base implementation */
+  maman_ibaz_parent_interface-&gt;do_action (ibaz);
+}
+
+static void
+maman_derived_ibaz_interface_init (MamanIbazInterface *iface)
+{
+  maman_ibaz_parent_interface = g_type_interface_peek_parent (iface);
+  iface-&gt;do_action = maman_derived_ibaz_do_action;
+}
+
+G_DEFINE_TYPE_WITH_CODE (MamanDerivedBaz, maman_derived_baz, MAMAN_TYPE_BAZ,
+                         G_IMPLEMENT_INTERFACE (MAMAN_TYPE_IBAZ,
+                                                maman_derived_ibaz_interface_init))
+
+static void
+maman_derived_baz_class_init (MamanDerivedBazClass *klass)
+{
+}
+
+static void
+maman_derived_baz_init (MamanDerivedBaz *self)
+{
+}
+</pre>
+<p>
+    </p>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

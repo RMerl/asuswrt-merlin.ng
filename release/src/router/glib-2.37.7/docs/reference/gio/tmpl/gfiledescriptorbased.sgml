@@ -1,0 +1,39 @@
+<!-- ##### SECTION Title ##### -->
+GFileDescriptorBased
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFileDescriptorBased ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_file_descriptor_based_get_fd ##### -->
+<para>
+
+</para>
+
+@fd_based: 
+@Returns: 
+
+

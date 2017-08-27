@@ -1,0 +1,18 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  A simple file to map a MAC address to a VLAN.
+#
+#  The file should be in the format MAC,VLAN
+#  the VLAN name cannot have spaces in it, for example:
+#
+#	00:01:02:03:04:05,VLAN1
+#	03:04:05:06:07:08,VLAN2
+#	...
+#
+passwd mac2vlan {
+	filename = ${modconfdir}/${.:name}/${.:instance}
+	format = "*VMPS-Mac:=VMPS-VLAN-Name"
+	delimiter = ","
+}

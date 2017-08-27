@@ -1,0 +1,13 @@
+charon-systemd.journal {}
+	Section to configure native systemd journal logger, very similar to the
+	syslog logger as described in LOGGER CONFIGURATION in
+	**strongswan.conf**(5).
+
+charon-systemd.journal.default = 1
+	Default loglevel.
+
+	Specifies the default loglevel to be used for subsystems for which no
+	specific loglevel is defined.
+
+charon-systemd.journal.<subsystem> = <default>
+	Loglevel for a specific subsystem.

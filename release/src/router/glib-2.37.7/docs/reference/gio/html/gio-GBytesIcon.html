@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GBytesIcon</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="icons.html" title="Icons">
+<link rel="prev" href="GFileIcon.html" title="GFileIcon">
+<link rel="next" href="GLoadableIcon.html" title="GLoadableIcon">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GBytesIcon.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="icons.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFileIcon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GLoadableIcon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GBytesIcon"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GBytesIcon.top_of_page"></a>GBytesIcon</span></h2>
+<p>GBytesIcon — An icon stored in memory as a GBytes</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GBytesIcon.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="gio-GBytesIcon.html#GBytesIcon" title="GBytesIcon">GBytesIcon</a>;
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             <a class="link" href="gio-GBytesIcon.html#g-bytes-icon-new" title="g_bytes_icon_new ()">g_bytes_icon_new</a>                    (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a> *bytes</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="returnvalue">GBytes</span></a> *            <a class="link" href="gio-GBytesIcon.html#g-bytes-icon-get-bytes" title="g_bytes_icon_get_bytes ()">g_bytes_icon_get_bytes</a>              (<em class="parameter"><code><a class="link" href="gio-GBytesIcon.html#GBytesIcon" title="GBytesIcon"><span class="type">GBytesIcon</span></a> *icon</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GBytesIcon.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="gio-GBytesIcon.html#GBytesIcon" title="GBytesIcon"><span class="type">GBytesIcon</span></a> specifies an image held in memory in a common format (usually
+png) to be used as icon.
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GBytesIcon.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GBytesIcon"></a><h3>GBytesIcon</h3>
+<pre class="programlisting">typedef struct _GBytesIcon GBytesIcon;</pre>
+<p>
+Gets an icon for a <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a>. Implements <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bytes-icon-new"></a><h3>g_bytes_icon_new ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             g_bytes_icon_new                    (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a> *bytes</code></em>);</pre>
+<p>
+Creates a new icon for a bytes.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bytes</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for the given
+<em class="parameter"><code>bytes</code></em>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GBytesIcon]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.38</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bytes-icon-get-bytes"></a><h3>g_bytes_icon_get_bytes ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="returnvalue">GBytes</span></a> *            g_bytes_icon_get_bytes              (<em class="parameter"><code><a class="link" href="gio-GBytesIcon.html#GBytesIcon" title="GBytesIcon"><span class="type">GBytesIcon</span></a> *icon</code></em>);</pre>
+<p>
+Gets the <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a> associated with the given <em class="parameter"><code>icon</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.38</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GBytesIcon.see-also"></a><h2>See Also</h2>
+<a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>, <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

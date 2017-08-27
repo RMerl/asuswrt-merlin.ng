@@ -1,0 +1,183 @@
+rlm_sqlcounter installation and running guide
+by Ram Narula ram@princess1.net
+Internet for Education (Thailand)
+
+*) Pre-requisites:
+Make sure to have configured radiusd with rlm_sqlcounter
+installed
+
+> make clean
+> ./configure --with-experimental-modules
+> make
+> make install
+
+Make sure to have radiusd running properly under sql
+and there must be a "sql" entry under accounting{ } section
+of radiusd.conf
+
+*) Configuration:
+
+[1] Create a text file called sqlcounter.conf in the same
+directory where radiusd.conf resides (usually /usr/local/etc/raddb)
+with the following content (for mysql):
+
+#-----#
+sqlcounter noresetcounter {
+                sql_module_instance = sqlcca3
+                counter_name = Max-All-Session-Time
+                check_name = Max-All-Session
+                reply_name = Session-Timeout
+                key = User-Name
+                reset = never
+
+                query = "SELECT SUM(AcctSessionTime) FROM radacct WHERE UserName='%{%k}'"
+
+        }
+
+
+sqlcounter dailycounter {
+                sql_module_instance = sqlcca3
+                driver = "rlm_sqlcounter"
+                counter_name = Daily-Session-Time
+                check_name = Max-Daily-Session
+                reply_name = Session-Timeout
+                key = User-Name
+                reset = daily
+
+                query = "SELECT SUM(AcctSessionTime - GREATEST((%b - UNIX_TIMESTAMP(AcctStartTime)), 0)) FROM radacct WHERE UserName='%{%k}' AND UNIX_TIMESTAMP(AcctStartTime) + AcctSessionTime > '%b'"
+
+        }
+
+sqlcounter monthlycounter {
+                sql_module_instance = sqlcca3
+                counter_name = Monthly-Session-Time
+                check_name = Max-Monthly-Session
+                reply_name = Session-Timeout
+                key = User-Name
+                reset = monthly
+
+                query = "SELECT SUM(AcctSessionTime - GREATEST((%b - UNIX_TIMESTAMP(AcctStartTime)), 0)) FROM radacct WHERE UserName='%{%k}' AND UNIX_TIMESTAMP(AcctStartTime) + AcctSessionTime > '%b'"
+
+	}
+
+#-----#
+
+The respective lines for postgresql are:
+
+query = "SELECT SUM(AcctSessionTime) FROM radacct WHERE UserName='%{%k}'"
+query = "SELECT SUM(AcctSessionTime - GREATER((%b - AcctStartTime::ABSTIME::INT4), 0)) FROM radacct WHERE UserName='%{%k}' AND AcctStartTime::ABSTIME::INT4 + AcctSessionTime > '%b'"
+query = "SELECT SUM(AcctSessionTime - GREATER((%b - AcctStartTime::ABSTIME::INT4), 0)) FROM radacct WHERE UserName='%{%k}' AND AcctStartTime::ABSTIME::INT4 + AcctSessionTime > '%b'"
+
+If you are running postgres 7.x, you may not have a GREATER function.
+
+An example of one is:
+
+CREATE OR REPLACE FUNCTION "greater"(integer, integer) RETURNS integer AS '
+DECLARE
+  res INTEGER;
+  one INTEGER := 0;
+  two INTEGER := 0;
+BEGIN
+  one = $1;
+  two = $2;
+  IF one IS NULL THEN
+    one = 0;
+  END IF;
+  IF two IS NULL THEN
+    two = 0;
+  END IF;
+  IF one > two THEN
+    res := one;
+  ELSE
+    res := two;
+  END IF;
+  RETURN res;
+END;
+' LANGUAGE 'plpgsql';
+
+[2] Include the above file to radiusd.conf by adding a line in
+modules{ } section
+
+modules {
+
+$INCLUDE  ${confdir}/sqlcounter.conf
+
+...some other entries here...
+
+[3] Make sure to have the sqlcounter names under authorize section
+like the followings:
+
+authorize {
+...some entries here...
+...some entries here...
+...some entries here...
+...some entries here...
+
+noresetcounter
+dailycounter
+monthlycounter
+}
+
+noresetcounter: the counter that never resets, can be used
+for real session-time cumulation
+
+dailycounter: the counter that resets everyday, can be used
+for limiting daily access time (eg. 3 hours a day)
+
+monthlycounter: the counter that resets monthly, can be used for
+limiting monthly access time (eg. 50 hours per month)
+
+You can make your own names and directives for resetting the counter
+by reading the sample sqlcounter configuration in
+raddb/experimental.conf
+
+
+
+*) Implementation:
+
+Add sqlcounter names to be used into radcheck or radgroupcheck
+table appropriately for sql. For users file just follow the
+example below.
+
+Note: The users in the example below must be able to login
+normally as the example will only show how to apply sqlcounter
+counters.
+
+Scenarios
+[1] username test0001 have total time limit of 15 hours
+(user can login as many times as needed but can be online for
+total time of 15 hours which is 54000 seconds)
+If using normal users file authentication the entry can look like:
+
+test0001  Max-All-Session := 54000, User-Password == "blah"
+          Service-Type = Framed-User,
+          Framed-Protocol = PPP
+
+or for sql make sure to have Max-All-Session entry under either
+radcheck or radgroup check table:
+> INSERT into radcheck VALUES ('','test0001','Max-All-Session','54000',':=');
+
+[2] username test0002 have total time limit of 3 hours a day
+
+test0002  Max-Daily-Session := 10800, User-Password == "blah"
+          Service-Type = Framed-User,
+          Framed-Protocol = PPP
+or in sql:
+> INSERT into radcheck VALUES ('','test0002','Max-Daily-Session','10800',':=');
+
+
+[3] username test0003 have total time limit of 90 hours a month
+
+test0003  Max-Monthly-Session := 324000, User-Password == "blah"
+          Service-Type = Framed-User,
+          Framed-Protocol = PPP
+in sql:
+> INSERT into radcheck VALUES ('','test0003','Max-Monthly-Session','10800',':=');
+
+
+Note that Max-All-Session, Max-Daily-Session and Max-Monthly-Session are
+definied in sqlcounter.conf
+
+VERY IMPORTANT:
+Accounting must be done via sql or this will not work.
+

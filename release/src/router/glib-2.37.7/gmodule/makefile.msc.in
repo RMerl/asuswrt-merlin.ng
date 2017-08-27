@@ -1,0 +1,37 @@
+## Makefile for building the gmodule dll with Microsoft C
+## Use: nmake -f makefile.msc install
+
+TOP = ..\..
+
+!INCLUDE ..\build\win32\make.msc
+
+################################################################
+
+INCLUDES = -FImsvc_recommended_pragmas.h -I .. -I . -I ..\glib
+DEFINES = -DHAVE_CONFIG_H -DG_LOG_DOMAIN=\"GModule\"
+
+all : \
+	gmoduleconf.h \
+	libgmodule-2.0-@LT_CURRENT_MINUS_AGE@.dll
+
+gmodule_OBJECTS = \
+	gmodule.obj
+gmodule.def: gmodule.symbols
+	echo EXPORTS > gmodule.def
+	cl /EP -DINCLUDE_VARIABLES -DG_OS_WIN32 -DINCLUDE_INTERNAL_SYMBOLS -DALL_FILES \
+		-DG_GNUC_MALLOC= -DG_GNUC_CONST= -DG_GNUC_NULL_TERMINATED= -DG_GNUC_NORETURN= \
+		-DG_GNUC_PRINTF=;G_GNUC_PRINTF gmodule.symbols >> gmodule.def
+
+
+gmoduleconf.h: gmoduleconf.h.win32
+	copy gmoduleconf.h.win32 gmoduleconf.h
+
+gmodule.res : gmodule.rc
+	rc -DBUILDNUMBER=0 -r -fo gmodule.res gmodule.rc
+
+libgmodule-2.0-@LT_CURRENT_MINUS_AGE@.dll : $(gmodule_OBJECTS) gmodule.def gmodule.res
+	$(CC) $(CFLAGS) -LD -Fe$@ $(gmodule_OBJECTS) gmodule.res \
+	..\glib\glib-2.0.lib $(LDFLAGS) /implib:gmodule-2.0.lib /def:gmodule.def
+
+clean::
+	del gmoduleconf.h

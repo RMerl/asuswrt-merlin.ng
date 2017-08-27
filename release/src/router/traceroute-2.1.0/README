@@ -1,0 +1,39 @@
+This is a new modern implementation of the traceroute(8)
+utility for Linux systems.
+
+Traceroute tracks the route packets taken from an IP network on their
+way to a given host. It utilizes the IP protocol's time to live (TTL)
+field and attempts to elicit an ICMP TIME_EXCEEDED response from each
+gateway along the path to the host.
+
+Main features:
+- Full support for both IPv4 and IPv6 protocols
+- Several tracerouting methods, including:
+  * UDP datagrams (including udplite and udp to particlular port)
+  * ICMP ECHO packets (including dgram icmp sockets)
+  * TCP SYNs (in general, any TCP request with various flags and options)
+  * DCCP Request packets
+  * Generic IP datagrams
+- UDP methods do not require root privileges
+- Ability to send several probe packets at a time
+- Ability to compute a proper time to wait for each probe
+- perform AS path lookups for returned addresses
+- show ICMP extensions, including MPLS
+- perform path MTU discovery automatically
+- show guessed number of hops in backward direction
+- command line compatible with the original traceroute
+- and much more, see traceroute(8)
+
+This code was written from the scratch, using some ideas of
+Olaf Kirch's traceroute, the original implementation of Van Jacobson
+(which was long used before) and some current BSD's ones.
+
+This traceroute requires Linux kernel 2.6 and higher.
+
+You can try to contact the author at <Dmitry at Butskoy dot name> .
+
+
+Good tracerouting!
+
+Dmitry Butskoy
+

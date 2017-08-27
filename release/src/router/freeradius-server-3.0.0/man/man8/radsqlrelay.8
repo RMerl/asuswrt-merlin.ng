@@ -1,0 +1,93 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH RADSQLRELAY 8 "19 June 2005" "" "FreeRADIUS helper program"
+
+.SH NAME
+radsqlrelay - relay SQL queries to a central database server
+
+.SH SYNOPSIS
+.B radsqlrelay
+.RB [ \-? ]
+.RB [ \-d
+.IR sql_driver ]
+.RB [ \-b
+.IR database ]
+.RB [ \-f
+.IR file ]
+.RB [ \-h
+.IR host ]
+.RB [ \-u
+.IR user ]
+.RB [ \-P
+.IR port ]
+.RB [ \-p
+.IR password ]
+.RB [ \-1 ]
+.RB [ \-x ]
+\fIfile_path\fP
+
+.SH DESCRIPTION
+\fBradsqlrelay\fP tails a SQL \fIlogfile\fP and forwards the queries
+to a database server. Used to replicate accounting records to one
+(central) database, even if the database has extended downtime.
+.PP
+The SQL logfile is created by the \fBrlm_sql_log\fP module. The module
+must be configured in the \fBradiusd\fP server before you can use
+\fBradsqlrelay\fP.
+
+.SH OPTIONS
+.IP "\-?"
+Print usage help information.
+.IP "\-d \fIsql_driver\fP"
+Driver to use: mysql, pg, oracle.
+.IP "\-b \fIdatabase\fP"
+Name of the database to use.
+.IP "\-f \fIfile\fP"
+Read password from file, instead of command line.
+.IP "\-h \fIhost\fP"
+Connect to host.
+.IP "\-u \fIuser\fP"
+User for login.
+.IP "\-P \fIport\fP"
+Port number to use for connection.
+.IP "\-p \fIpassword\fP"
+Password to use when connecting to server.
+.IP "\-1"
+One-shot mode: push the file to database and exit.
+.IP "\-x"
+Turn on debugging.
+.IP "file_path"
+The pathname of the SQL logfile to use.
+
+.SH NOTES
+.SS Oracle driver
+The command "radsqlrelay -d oracle -b db.domain.tld sql-relay" reads the
+database description stored in $TNS_ADMIN/tnsnames.ora:
+.PP
+.DS
+db.domain.tld =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = db.domain.tld)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = <DB SID>)
+    )
+  )
+.DE
+
+.SH SEE ALSO
+.BR rlm_sql_log (5)
+
+.SH AUTHOR
+Nicolas Baradakis <nicolas.baradakis@cegetel.net>

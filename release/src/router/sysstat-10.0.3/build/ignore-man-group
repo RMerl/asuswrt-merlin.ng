@@ -1,0 +1,6 @@
+
+Here again, don't bother too much with that. When set, this parameter tells
+the configuration process not to take into account the contents of the
+man_group variable.
+This parameter is only used by some distros to package sysstat.
+

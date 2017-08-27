@@ -1,0 +1,41 @@
+CHECKLIST FOR NEW RELEASES
+==========================
+
+Release steps:
+- Check out lm-sensors
+- Update if necessary, the version number of libsensors
+  (edit lib/Module.mk and change LIBMAINVER and/or LIBMINORVER)
+  Remember: update main number when interface changes, minor if new
+  functionality is added, and patch if only bugs are fixed.
+- Update the CHANGES file (set version and release date)
+- Update doc/developers/lm_sensors.lsm (Version, Entered-date and Primary-site)
+- Update doc/libsensors-API.txt and SENSORS_API_VERSION in lib/sensors.h
+- Update version.h
+- Commit
+- Tag the release using SVN:
+  svn copy http://lm-sensors.org/svn/lm-sensors/trunk http://lm-sensors.org/svn/lm-sensors/tags/V3-x-x -m "3.x.x release"
+
+- Move to a temporary directory and get a copy of the freshly tagged code:
+  svn export http://lm-sensors.org/svn/lm-sensors/tags/V3-x-x lm_sensors-3.x.x
+- Tar it up:
+  tar -jcf lm_sensors-3.x.x.tar.bz2 lm_sensors-3.x.x
+- Sign it:
+  gpg -b lm_sensors-3.x.x.tar.bz2
+- Post it:
+  scp lm_sensors-3.x.x.tar.bz2{,.sig} devel.atrpms.net:/srv/lm-sensors.org/dl/lm-sensors/releases
+- Set correct permissions:
+  ssh devel.atrpms.net chmod 664 '/srv/lm-sensors.org/dl/lm-sensors/releases/lm_sensors-3.x.x.tar.bz2{,.sig}'
+
+After release, remember to:
+- Update the Download page on lm-sensors.org, then add a news item
+- Announce on the lm-sensors mailing list
+- Add "+SVN" to version.h and commit
+- Mark the corresponding release milestone as complete using trac-admin
+  e.g. 'trac-admin /srv/lm-sensors.org/trac milestone completed 3.x.x now'
+- Create a new version for the bug tracking system using trac-admin
+  e.g. 'trac-admin /srv/lm-sensors.org/trac version add 3.x.x now'
+- Create a new release milestone using trac-admin
+  e.g. 'trac-admin /srv/lm-sensors.org/trac milestone add 3.x.x+1 2012-05-10'
+- Send lm_sensors.lsm to the LSM by mailing it to lsm@qqx.org with the
+  subject `add' (no quotes)
+- Copy to mirrors

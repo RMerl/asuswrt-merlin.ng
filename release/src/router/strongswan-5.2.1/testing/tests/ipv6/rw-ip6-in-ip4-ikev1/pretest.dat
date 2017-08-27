@@ -1,0 +1,15 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::ip6tables-restore < /etc/ip6tables.rules
+carol::ip6tables-restore < /etc/ip6tables.rules
+dave::ip6tables-restore < /etc/ip6tables.rules
+alice::"ip route add fec3:\:/16 via fec1:\:1"
+moon::ipsec start
+carol::ipsec start
+dave::ipsec start
+moon::expect-connection rw
+carol::expect-connection home
+dave::expect-connection home
+carol::ipsec up home
+dave::ipsec up home

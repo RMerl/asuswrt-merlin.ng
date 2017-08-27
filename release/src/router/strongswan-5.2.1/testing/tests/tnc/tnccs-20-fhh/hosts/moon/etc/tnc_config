@@ -1,0 +1,3 @@
+#IMV configuration file for strongSwan server 
+
+IMV "Dummy"	/usr/local/lib/libdummyimv.so

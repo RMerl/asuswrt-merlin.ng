@@ -1,0 +1,48 @@
+<!-- ##### SECTION Title ##### -->
+GBytesIcon
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GBytesIcon ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_bytes_icon_new ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bytes_icon_get_bytes ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+

@@ -1,0 +1,12 @@
+PCAP_LIBS	:= @PCAP_LIBS@
+
+ifneq ($(PCAP_LIBS),)
+TARGET		:= radsniff
+else
+TARGET		:=
+endif
+
+SOURCES		:= radsniff.c
+
+TGT_PREREQS	:= libfreeradius-radius.a
+TGT_LDLIBS	:= $(LIBS) $(PCAP_LIBS)

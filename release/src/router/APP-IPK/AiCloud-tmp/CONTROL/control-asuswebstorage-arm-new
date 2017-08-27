@@ -1,0 +1,13 @@
+Package: asuswebstorage
+Architecture: arm
+Priority: optional
+Section: net
+Version: 9.1.0.0.14.0.g0bb531f
+Maintainer: ASUS
+Source: http://127.0.0.1/
+URL: http://www.asusnetwork.net/cloud_sync.asp
+Description: Cloud client
+Depends: inotify,libcurl,openssl,libxml2,zlib   
+Suggests: 
+Conflicts: 
+Enabled: yes

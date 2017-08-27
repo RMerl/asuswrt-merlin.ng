@@ -1,0 +1,54 @@
+<!-- ##### SECTION Title ##### -->
+GThreadedSocketService
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GThreadedSocketService ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GThreadedSocketService::run ##### -->
+<para>
+
+</para>
+
+@gthreadedsocketservice: the object which received the signal.
+@arg1: 
+@arg2: 
+@Returns: 
+
+<!-- ##### ARG GThreadedSocketService:max-threads ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_threaded_socket_service_new ##### -->
+<para>
+
+</para>
+
+@max_threads: 
+@Returns: 
+
+

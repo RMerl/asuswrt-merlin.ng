@@ -1,0 +1,193 @@
+<!-- ##### SECTION Title ##### -->
+GDBusMethodInvocation
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusMethodInvocation ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_sender ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_object_path ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_interface_name ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_method_name ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_method_info ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_connection ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_message ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_parameters ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_get_user_data ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_value ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@parameters: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_error ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@domain: 
+@code: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_error_valist ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@domain: 
+@code: 
+@format: 
+@var_args: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_error_literal ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@domain: 
+@code: 
+@message: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_gerror ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@error: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_dbus_error ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@error_name: 
+@error_message: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_take_error ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@error: 
+
+
+<!-- ##### FUNCTION g_dbus_method_invocation_return_value_with_unix_fd_list ##### -->
+<para>
+
+</para>
+
+@invocation: 
+@parameters: 
+@fd_list: 
+
+

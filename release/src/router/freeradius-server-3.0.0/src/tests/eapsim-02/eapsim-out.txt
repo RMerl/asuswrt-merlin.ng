@@ -1,0 +1,161 @@
+
+Read:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	EAP-Id = 210
+	EAP-Type-Identity = "eapmd5"
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+Mapped to:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	EAP-Id = 210
+	EAP-Type-Identity = "eapmd5"
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+	EAP-Message = 0x02d2000b016561706d6435
+Unmapped to:
+	EAP-Message = 0x02d2000b016561706d6435
+	EAP-Id = 210
+	EAP-Code = Response
+	EAP-Type-Identity = "eapmd5"
+
+Read:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Request
+	EAP-Id = 211
+	EAP-Sim-Subtype = Start
+	EAP-Sim-ANY_ID_REQ = 0x0000
+	EAP-Sim-VERSION_LIST = 0x000100010000
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+Mapped to:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Request
+	EAP-Id = 211
+	EAP-Sim-Subtype = Start
+	EAP-Sim-ANY_ID_REQ = 0x0000
+	EAP-Sim-VERSION_LIST = 0x000100010000
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+	EAP-Message = 0x01d30014120a00000d0100000f02000100010000
+Unmapped to:
+	EAP-Message = 0x01d30014120a00000d0100000f02000100010000
+	EAP-Id = 211
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0a00000d0100000f02000100010000
+	EAP-Sim-Subtype = Start
+	EAP-Sim-ANY_ID_REQ = 0x0000
+	EAP-Sim-VERSION_LIST = 0x000100010000
+
+Read:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	EAP-Id = 211
+	EAP-Sim-Subtype = Start
+	EAP-Sim-NONCE_MT = 0x00004d6c40de483add9950902c4024ce765e
+	EAP-Sim-IDENTITY = 0x000c456170536572766572477579
+	EAP-Sim-SELECTED_VERSION = 0x0001
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+Mapped to:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Response
+	EAP-Id = 211
+	EAP-Sim-Subtype = Start
+	EAP-Sim-NONCE_MT = 0x00004d6c40de483add9950902c4024ce765e
+	EAP-Sim-IDENTITY = 0x000c456170536572766572477579
+	EAP-Sim-SELECTED_VERSION = 0x0001
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+	EAP-Message = 0x02d30030120a0000070500004d6c40de483add9950902c4024ce765e0e04000c45617053657276657247757910010001
+Unmapped to:
+	EAP-Message = 0x02d30030120a0000070500004d6c40de483add9950902c4024ce765e0e04000c45617053657276657247757910010001
+	EAP-Id = 211
+	EAP-Code = Response
+	EAP-Type-SIM = 0x0a0000070500004d6c40de483add9950902c4024ce765e0e04000c45617053657276657247757910010001
+	EAP-Sim-Subtype = Start
+	EAP-Sim-NONCE_MT = 0x00004d6c40de483add9950902c4024ce765e
+	EAP-Sim-IDENTITY = 0x000c456170536572766572477579
+	EAP-Sim-SELECTED_VERSION = 0x0001
+
+Read:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Request
+	EAP-Id = 212
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-RAND = 0x00000123456789abcdef123456789abcdeff23456789abcdefff
+	EAP-Sim-MAC = 0x4d6c40de483add9950902c4024ce765e
+	EAP-Sim-KEY = 0x0123456789abcdef0123456789abcdef
+	EAP-Sim-EXTRA = 0x4d6c40de483add9950902c4024ce765e
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+Mapped to:
+	User-Name = "eapsim"
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Request
+	EAP-Id = 212
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-RAND = 0x00000123456789abcdef123456789abcdeff23456789abcdefff
+	EAP-Sim-MAC = 0x4d6c40de483add9950902c4024ce765e
+	EAP-Sim-KEY = 0x0123456789abcdef0123456789abcdef
+	EAP-Sim-EXTRA = 0x4d6c40de483add9950902c4024ce765e
+	Message-Authenticator = 0x30
+	NAS-Port = 0
+	EAP-Message = 0x01d40038120b0000010700000123456789abcdef123456789abcdeff23456789abcdefff0b05000013ff4927cdce9e996d7dd44d860802e8
+Unmapped to:
+	EAP-Message = 0x01d40038120b0000010700000123456789abcdef123456789abcdeff23456789abcdefff0b05000013ff4927cdce9e996d7dd44d860802e8
+	EAP-Id = 212
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0b0000010700000123456789abcdef123456789abcdeff23456789abcdefff0b05000013ff4927cdce9e996d7dd44d860802e8
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-RAND = 0x00000123456789abcdef123456789abcdeff23456789abcdefff
+	EAP-Sim-MAC = 0x000013ff4927cdce9e996d7dd44d860802e8
+Confirming MAC...succeed
+
+Read:
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Request
+	EAP-Id = 212
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-IDENTITY = 0x001a323134343730313030303030303031306540706169732e6d6f66
+	EAP-Sim-Rand1 = 0x101112131415161718191a1b1c1d1e1f
+	EAP-Sim-SRES1 = 0xd1d2d3d4
+	EAP-Sim-KC1 = 0xa0a1a2a3a4a5a6a7
+	EAP-Sim-Rand2 = 0x202122232425262728292a2b2c2d2e2f
+	EAP-Sim-SRES2 = 0xe1e2e3e4
+	EAP-Sim-KC2 = 0xb0b1b2b3b4b5b6b7
+	EAP-Sim-Rand3 = 0x303132333435363738393a3b3c3d3e3f
+	EAP-Sim-SRES3 = 0xf1f2f3f4
+	EAP-Sim-KC3 = 0xc0c1c2c3c4c5c6c7
+Mapped to:
+	NAS-IP-Address = marajade.sandelman.ottawa.on.ca
+	EAP-Code = Request
+	EAP-Id = 212
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-IDENTITY = 0x001a323134343730313030303030303031306540706169732e6d6f66
+	EAP-Sim-Rand1 = 0x101112131415161718191a1b1c1d1e1f
+	EAP-Sim-SRES1 = 0xd1d2d3d4
+	EAP-Sim-KC1 = 0xa0a1a2a3a4a5a6a7
+	EAP-Sim-Rand2 = 0x202122232425262728292a2b2c2d2e2f
+	EAP-Sim-SRES2 = 0xe1e2e3e4
+	EAP-Sim-KC2 = 0xb0b1b2b3b4b5b6b7
+	EAP-Sim-Rand3 = 0x303132333435363738393a3b3c3d3e3f
+	EAP-Sim-SRES3 = 0xf1f2f3f4
+	EAP-Sim-KC3 = 0xc0c1c2c3c4c5c6c7
+	EAP-Message = 0x01d40028120b00000e08001a323134343730313030303030303031306540706169732e6d6f660000
+	Message-Authenticator = 0x00000000000000000000000000000000
+Unmapped to:
+	EAP-Message = 0x01d40028120b00000e08001a323134343730313030303030303031306540706169732e6d6f660000
+	EAP-Id = 212
+	EAP-Code = Request
+	EAP-Type-SIM = 0x0b00000e08001a323134343730313030303030303031306540706169732e6d6f660000
+	EAP-Sim-Subtype = Challenge
+	EAP-Sim-IDENTITY = 0x001a323134343730313030303030303031306540706169732e6d6f660000

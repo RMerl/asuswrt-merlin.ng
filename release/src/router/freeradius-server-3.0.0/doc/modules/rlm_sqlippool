@@ -1,0 +1,40 @@
+Welcome to the SQL Based IP Pool module.
+
+**********************************************************************
+As of September 2006 this module is still under some development and
+currently is only tested by the developers on PostgreSQL (Version 8.1)
+                         Use it at your own risk!
+If plan to attempt to use a DB other than PostgreSQL please expect to
+have to do extra work which is not for SQL newbies.
+Having said that it works great for us in production and should (with
+some work) function correctly with other SQL server types.
+**********************************************************************
+
+
+To use the sqlipool module you simply need to have an IP-Pool Attribute
+(Keep in mind that its a **CHECK** item, not reply) in the required
+configuration file, which is either in files(users), sql or any other
+type of configuration schema.
+
+The initialization of the radippool table is left to the user instead of
+being handled inside the module. This allows pool management to be done
+from any sql capable programming language and pools can be created,
+resized, deleted at run time without radiusd needing to be restarted.
+
+The only required fields are, pool_name and ip_address. A pool consists
+of one or more rows in the table with the same pool_name and a different
+ip_address. There is no restriction on which ip addresses/ranges may be in
+the same pool, and addresses do not need to be concurrent.
+
+We are currently using the variable definitions of the xlat module, so
+before editing the sqlippool.conf file, please go and read the
+variables.txt in the freeradius/doc directory. It will help you alot!..
+
+As you may noticed, there is a pool-key variable in the config file which
+allows you to select which attribute is unique according to your NAS setup.
+On a standard dialup NAS this is going to be "NAS-Port" but on an ethernet
+or wireless network it will probably be "Calling-Station-Id". Other more
+exotic options like "3GPP-IMSI" may also exist depending on your NAS.
+The only requirement is that the pool-key must be unique and must be
+received in both Access-Request and Accounting packages so that we know to
+clear the lease on the ip when the session disconnects.

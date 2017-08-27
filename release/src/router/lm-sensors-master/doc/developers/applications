@@ -1,0 +1,69 @@
+How to write applications which use the hwmon drivers
+=====================================================
+
+You have several choices in accessing sensor devices using the hwmon drivers.
+This document will briefly describe these methods, their advantages and
+disadvantages, and provide examples.
+
+From lowest-level to the highest-level, the access methods are:
+
+   1. sysfs access
+   2. libsensors library
+   3. sensors program
+
+
+Details:
+
+1. sysfs access
+---------------
+   Hwmon drivers create subdirectories in the sysfs filesystem (usually /sys)
+   which can be accessed directly by applications.
+   Naming and content standards for the entries in these subdirectories
+   are documented in the file Documentation/hwmon/sysfs-interface in the 2.6
+   kernel source tree. sysfs is the lowest-level access to sensor values.
+
+   Note that most drivers provide only raw sensor readings via /sys;
+   many readings must be scaled or adjusted, and these adjustments
+   must often be changed by the user. An application using /sys must
+   generally provide adjustment facilities and the requirements
+   of the adjustments can be quite complex. For this reason, this
+   approach isn't recommended. Instead, consider the libsensors library,
+   which offers a higher-level interface on top of sysfs (see below.)
+
+   Still, this method may work well for shell and perl scripts written to
+   access a specific device.
+
+   For an example of a program using /sys accesses, see gkrellm (though
+   recent versions use libsensors instead.) See also lib/sysfs.c.
+
+2. libsensors library
+---------------------
+   The libsensors library provides standardized access to all chip drivers.
+   It also provides a translation layer with settings in /etc/sensors.conf
+   so that your application sees adjusted (scaled) values using settings
+   provided by the user. Other facilities are sensor labelling, limit setting,
+   and ignoring individual sensors. This is the recommended way to access
+   the sensor chips.
+
+   The library API is documented in the libsensors(3) manual page. The
+   configuration file format is documented in the sensors.conf(5) manual
+   page.
+
+   Note that since version 3.2.0, libsensors falls under the LGPL, not the
+   GPL as it used to. In more human language, that means it is now ALLOWED
+   to link any application to the library, even to the shared version,
+   regardless of the application's license.
+
+   For examples of programs using libsensors accesses, see prog/sensors and
+   prog/sensord.
+
+3. sensors program
+------------------
+   The 'sensors' program is a text-based application that uses libsensors.
+   The output is fairly standardized; therefore this output could be
+   used by other applications.
+   One simple method is 'sensors|grep ALARM'.
+   Note though that there is no guarantee that the output format won't change
+   in the future, so be careful. We might improve the command-line interface
+   of 'sensors' someday to make it more convenient for external programs to
+   use it as a back-end.

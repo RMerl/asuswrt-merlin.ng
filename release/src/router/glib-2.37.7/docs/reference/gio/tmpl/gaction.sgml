@@ -1,0 +1,173 @@
+<!-- ##### SECTION Title ##### -->
+GAction
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GAction ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GAction:enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GAction:name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GAction:parameter-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GAction:state ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GAction:state-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GActionInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@get_name: 
+@get_parameter_type: 
+@get_state_type: 
+@get_state_hint: 
+@get_enabled: 
+@get_state: 
+@change_state: 
+@activate: 
+
+<!-- ##### FUNCTION g_action_name_is_valid ##### -->
+<para>
+
+</para>
+
+@action_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_get_name ##### -->
+<para>
+
+</para>
+
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_get_parameter_type ##### -->
+<para>
+
+</para>
+
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_get_state_type ##### -->
+<para>
+
+</para>
+
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_get_state_hint ##### -->
+<para>
+
+</para>
+
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_get_enabled ##### -->
+<para>
+
+</para>
+
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_get_state ##### -->
+<para>
+
+</para>
+
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_change_state ##### -->
+<para>
+
+</para>
+
+@action: 
+@value: 
+
+
+<!-- ##### FUNCTION g_action_activate ##### -->
+<para>
+
+</para>
+
+@action: 
+@parameter: 
+
+
+<!-- ##### FUNCTION g_action_parse_detailed_name ##### -->
+<para>
+
+</para>
+
+@detailed_name: 
+@action_name: 
+@target_value: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_action_print_detailed_name ##### -->
+<para>
+
+</para>
+
+@action_name: 
+@parameter: 
+@Returns: 
+
+

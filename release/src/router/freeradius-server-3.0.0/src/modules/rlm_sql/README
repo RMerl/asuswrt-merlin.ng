@@ -1,0 +1,29 @@
+FreeRADIUS SQL Module
+
+The core rlm_sql code handles database indepenent stuff and links the specific database drivers depending on your config. Sample sql configurations can be found in the raddb/sql.conf file.
+
+
+Mike Machado
+mike@innercite.com
+InnerCite Inc.
+Engineering Director / CTO
+
+Returning 'SQL_DOWN' allows sql.c to reconnect and try again, in most cases
+
+sql_select_query: returns -1 on failure, SQL_DOWN on 'socket not connected'
+sql_query: returns -1 on failure, SQL_DOWN on 'socket not connected'
+sql_store_result: returns -1 on failure, SQL_DOWN on 'socket not connected'
+sql_num_fields: cannot return an error, complains if zero fields
+sql_finish_select_query: returns 0 always
+sql_finish_query: does nothing, returns 0
+sql_free_result: returns 0 always, mysql_free_result has no return value
+sql_release_socket: returns 1 always
+sql_fetch_row: returns 0 if ok, SQL_DOWN on 'socket not connected', row is
+		in sqlsocket->row now
+
+TODO:
+
+db2/iodbc/unixodbc:
+     for the above functions, where it can return SQL_DOWN, determine if an
+     error with the database exists, if it is down, and return SQL_DOWN
+

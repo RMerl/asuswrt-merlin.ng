@@ -1,0 +1,146 @@
+<!-- ##### SECTION Title ##### -->
+GContentType
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_content_type_equals ##### -->
+<para>
+
+</para>
+
+@type1: 
+@type2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_is_a ##### -->
+<para>
+
+</para>
+
+@type: 
+@supertype: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_is_unknown ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_get_description ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_get_mime_type ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_get_icon ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_get_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_get_generic_icon_name ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_can_be_executable ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_from_mime_type ##### -->
+<para>
+
+</para>
+
+@mime_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_guess ##### -->
+<para>
+
+</para>
+
+@filename: 
+@data: 
+@data_size: 
+@result_uncertain: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_type_guess_for_tree ##### -->
+<para>
+
+</para>
+
+@root: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_content_types_get_registered ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

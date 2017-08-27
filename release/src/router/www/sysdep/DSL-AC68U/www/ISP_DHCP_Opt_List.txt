@@ -1,0 +1,3 @@
+["0", "Switzerland", "Swisscom", "100008,0001,ASUS", "", ""]
+["1", "United Kingdom", "SKY (MER)", "", "", ""]
+["2", "United Kingdom", "Sky - Fibre Broadband", "", "", ""]

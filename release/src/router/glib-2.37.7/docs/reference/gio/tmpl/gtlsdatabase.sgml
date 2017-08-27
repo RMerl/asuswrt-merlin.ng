@@ -1,0 +1,229 @@
+<!-- ##### SECTION Title ##### -->
+GTlsDatabase
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTlsDatabase ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GTlsDatabaseVerifyFlags ##### -->
+<para>
+
+</para>
+
+@G_TLS_DATABASE_VERIFY_NONE: 
+
+<!-- ##### MACRO G_TLS_DATABASE_PURPOSE_AUTHENTICATE_SERVER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TLS_DATABASE_PURPOSE_AUTHENTICATE_CLIENT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_tls_database_verify_chain ##### -->
+<para>
+
+</para>
+
+@self: 
+@chain: 
+@purpose: 
+@identity: 
+@interaction: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_verify_chain_async ##### -->
+<para>
+
+</para>
+
+@self: 
+@chain: 
+@purpose: 
+@identity: 
+@interaction: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tls_database_verify_chain_finish ##### -->
+<para>
+
+</para>
+
+@self: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### ENUM GTlsDatabaseLookupFlags ##### -->
+<para>
+
+</para>
+
+@G_TLS_DATABASE_LOOKUP_NONE: 
+@G_TLS_DATABASE_LOOKUP_KEYPAIR: 
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificate_issuer ##### -->
+<para>
+
+</para>
+
+@self: 
+@certificate: 
+@interaction: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificate_issuer_async ##### -->
+<para>
+
+</para>
+
+@self: 
+@certificate: 
+@interaction: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificate_issuer_finish ##### -->
+<para>
+
+</para>
+
+@self: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificates_issued_by ##### -->
+<para>
+
+</para>
+
+@self: 
+@issuer_raw_dn: 
+@interaction: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificates_issued_by_async ##### -->
+<para>
+
+</para>
+
+@self: 
+@issuer_raw_dn: 
+@interaction: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificates_issued_by_finish ##### -->
+<para>
+
+</para>
+
+@self: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_create_certificate_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@certificate: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificate_for_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@handle: 
+@interaction: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificate_for_handle_async ##### -->
+<para>
+
+</para>
+
+@self: 
+@handle: 
+@interaction: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tls_database_lookup_certificate_for_handle_finish ##### -->
+<para>
+
+</para>
+
+@self: 
+@result: 
+@error: 
+@Returns: 
+
+

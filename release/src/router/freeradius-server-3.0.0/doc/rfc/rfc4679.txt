@@ -1,0 +1,1403 @@
+
+
+
+
+
+
+Network Working Group                                       V. Mammoliti
+Request for Comments: 4679                                       G. Zorn
+Category: Informational                                    Cisco Systems
+                                                               P. Arberg
+                                                  Redback Networks, Inc.
+                                                             R. Rennison
+                                                             ECI Telecom
+                                                          September 2006
+
+
+              DSL Forum Vendor-Specific RADIUS Attributes
+
+Status of this Memo
+
+   This memo provides information for the Internet community.  It does
+   not specify an Internet standard of any kind.  Distribution of this
+   memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2006).
+
+IESG Note
+
+   This RFC is not a candidate for any level of Internet Standard.  The
+   IETF disclaims any knowledge of the fitness of this RFC for any
+   purpose and in particular notes that the decision to publish is not
+   based on IETF review for such things as security, congestion control,
+   or inappropriate interaction with deployed protocols.  The RFC Editor
+   has chosen to publish this document at its discretion.  Readers of
+   this document should exercise caution in evaluating its value for
+   implementation and deployment.  See RFC 3932 for more information.
+
+Abstract
+
+   This document describes the set of Remote Authentication Dial-In User
+   Service Vendor-Specific Attributes (RADIUS VSAs) defined by the DSL
+   Forum.
+
+   These attributes are designed to transport Digital Subscriber Line
+   (DSL) information that is not supported by the standard RADIUS
+   attribute set.  It is expected that this document will be updated if
+   and when the DSL Forum defines additional vendor-specific attributes,
+   since its primary purpose is to provide a reference for DSL equipment
+   vendors wishing to interoperate with other vendors' products.
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 1]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+Table of Contents
+
+   1. Introduction ....................................................3
+   2. Terminology .....................................................3
+      2.1. Requirements Language ......................................3
+      2.2. Technical Terms and Acronyms ...............................3
+   3. Attributes ......................................................5
+      3.1. DSL Forum RADIUS VSA Definition ............................5
+      3.2. DSL Forum Vendor Specific Sub-Attribute Encoding ...........6
+      3.3. Sub-attribute Definitions ..................................6
+           3.3.1. Agent-Circuit-Id ....................................6
+           3.3.2. Agent-Remote-Id .....................................8
+           3.3.3. Actual-Data-Rate-Upstream ...........................9
+           3.3.4. Actual-Data-Rate-Downstream .........................9
+           3.3.5. Minimum-Data-Rate-Upstream .........................10
+           3.3.6. Minimum-Data-Rate-Downstream .......................11
+           3.3.7. Attainable-Data-Rate-Upstream ......................11
+           3.3.8. Attainable-Data-Rate-Downstream ....................12
+           3.3.9. Maximum-Data-Rate-Upstream .........................13
+           3.3.10. Maximum-Data-Rate-Downstream ......................13
+           3.3.11. Minimum-Data-Rate-Upstream-Low-Power ..............14
+           3.3.12. Minimum-Data-Rate-Downstream-Low-Power ............15
+           3.3.13. Maximum-Interleaving-Delay-Upstream ...............16
+           3.3.14. Actual-Interleaving-Delay-Upstream ................16
+           3.3.15. Maximum-Interleaving-Delay-Downstream .............17
+           3.3.16. Actual-Interleaving-Delay-Downstream ..............18
+           3.3.17. Access-Loop-Encapsulation .........................19
+           3.3.18. IWF-Session .......................................20
+   4. Table of Attributes ............................................21
+   5. Security Considerations ........................................21
+   6. References .....................................................22
+      6.1. Normative References ......................................22
+      6.2. Informative References ....................................22
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 2]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+1.  Introduction
+
+   The DSL Forum has created additional RADIUS [RFC2865] [RFC2866]
+   vendor-specific attributes to carry DSL line identification and
+   characterization information.  This information is forwarded from the
+   Access Node/DSLAM to the BRAS via Vendor-Specific PPPoE Tags
+   [RFC2516], DHCP Relay Options [RFC3046], and Vendor-Specific
+   Information Suboptions [RFC4243].  This document describes the
+   subscriber line identification and characterization information and
+   its mapping to RADIUS VSAs by the BRAS.
+
+   The information acquired may be used to provide authentication and
+   accounting functionality.  It may also be collected and used for
+   management and troubleshooting purposes.
+
+2.  Terminology
+
+   The following sections define the usage and meaning of certain
+   specialized terms in the context of this document.
+
+2.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in [RFC2119].
+
+2.2.  Technical Terms and Acronyms
+
+   AAL5
+      ATM Adaption Layer 5 [ITU.I363-5.1996]
+
+   Access Node/DSLAM
+      The Access Node/DSLAM is a DSL signal terminator that contains a
+      minimum of one Ethernet interface that serves as its northbound
+      interface into which it aggregates traffic from several
+      Asynchronous Transfer Mode (ATM)-based (subscriber ports) or
+      Ethernet-based southbound interfaces.
+
+   BNG
+      Broadband Network Gateway.  A BNG is an IP edge router where
+      bandwidth and QoS policies are applied; the functions performed by
+      a BRAS are a superset of those performed by a BNG.
+
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 3]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   BRAS
+      Broadband Remote Access Server.  A BRAS is a BNG and is the
+      aggregation point for the subscriber traffic.  It provides
+      aggregation capabilities (e.g., IP, PPP, Ethernet) between the
+      access network and the core network.  Beyond its aggregation
+      function, the BRAS is also an injection point for policy
+      management and IP QoS in the access network.
+
+   DSL
+      Digital Subscriber Line.  DSL is a technology that allows digital
+      data transmission over wires in the local telephone network.
+
+   DSLAM
+      Digital Subscriber Line Access Multiplexer.  DSLAM is a device
+      that terminates DSL subscriber lines.  The data is aggregated and
+      forwarded to ATM- or Ethernet-based aggregation networks.
+
+   FCS
+      Frame Check Sequence.  The FCS is a checksum added to an Ethernet
+      frame for error detection/correction purposes.
+
+   IPoA
+      IP over ATM
+
+   IWF
+      Interworking Function.  The set of functions required for
+      interconnecting two networks of different technologies (e.g., ATM
+      and Ethernet).  IWF is utilized to enable the carriage of PPP over
+      ATM (PPPoA) traffic over PPPoE.
+
+   LLC
+      Logical Link Control
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 4]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+3.  Attributes
+
+   The following subsections describe the Attributes defined by this
+   document.  These Attributes MAY be transmitted in one or more RADIUS
+   Attributes of type Vendor-Specific [RFC2865].  More than one
+   attribute MAY be transmitted in a single Vendor-Specific Attribute;
+   if this is done, the attributes SHOULD be packed as a sequence of
+   Vendor-Type/Vendor-Length/Value triples following the initial Type,
+   Length, and Vendor-Id fields.
+
+3.1.  DSL Forum RADIUS VSA Definition
+
+   Description
+
+      This Attribute functions as a "container", encapsulating one or
+      more vendor-specific sub-attributes; the encoding follows the
+      recommendations in [RFC2865].
+
+   A summary of the generic DSL Forum VSA format is shown below.  The
+   fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Type      |  Length       |           Vendor-Id
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            Vendor-Id (cont)       |       Sub-Attribute(s)...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Type
+
+      26 for Vendor-Specific
+
+   Length
+
+      This field MUST be set equal to the sum of the Vendor-Length
+      fields of the sub-attributes contained in the Vendor-Specific
+      Attribute, plus six (Type + Length + Vendor-Id).
+
+   Vendor-Id
+
+      This field MUST be set to decimal 3561, the enterprise number
+      assigned to the ADSL Forum [IANA].
+
+   Sub-Attributes
+
+      This field MUST contain one or more DSL Forum Vendor-Specific
+      sub-attributes, as specified below.
+
+
+
+Mammoliti, et al.            Informational                      [Page 5]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+3.2.  DSL Forum Vendor Specific Sub-Attribute Encoding
+
+   A summary of the sub-attribute format is shown below.  The fields are
+   transmitted from left to right.
+
+    0                   1                   2
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | Vendor-Type | Vendor-Length |  Value...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      The Vendor-Type field is one octet in length and contains the
+      sub-attribute type, as assigned by the DSL Forum.
+
+   Vendor-Length
+
+      The Vendor-Length field is one octet and indicates the length of
+      the entire sub-attribute, including the Vendor-Type,
+      Vendor-Length, and Value fields.
+
+   Value
+
+      The Value field is zero or more octets and contains information
+      specific to the sub-attribute.  The format and length of the Value
+      field is determined by the Vendor-Type and Vendor-Length fields.
+      The format of the value field is one of 2 data types, string or
+      integer [RFC2865].
+
+3.3.  Sub-attribute Definitions
+
+   The following sub-sections define the DSL Forum vendor-specific sub-
+   attributes.
+
+3.3.1.  Agent-Circuit-Id
+
+   Description
+
+      This Attribute contains information describing the subscriber
+      agent circuit identifier corresponding to the logical access loop
+      port of the Access Node/DSLAM from which a subscriber's requests
+      are initiated.  It MAY be present in both Access-Request and
+      Accounting-Request packets.
+
+   A summary of the Agent-Circuit-Id Attribute format is shown below.
+   The fields are transmitted from left to right.
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 6]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |           String...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      1 for Agent-Circuit-Id
+
+   Vendor-Length
+
+      <= 65
+
+   String
+
+      The String field contains information about the Access-Node to
+      which the subscriber is attached, along with an identifier for the
+      subscriber's DSL port on that Access-Node.
+
+      The exact syntax of the string is implementation dependent;
+      however, a typical practice is to subdivide it into two or more
+      space-separated components, one to identify the Access-Node and
+      another the subscriber line on that node, with perhaps an
+      indication of whether that line is Ethernet or ATM.  Example
+      formats for this string are shown below.
+
+      "Access-Node-Identifier atm slot/port:vpi.vci"
+         (when ATM/DSL is used)
+
+      "Access-Node-Identifier eth slot/port[:vlan-id]"
+         (when Ethernet/DSL is used)
+
+      An example showing the slot and port field encoding is given
+      below:
+
+      "[Relay-identifier] atm 3/0:100.33"
+         (slot = 3, port = 0, vpi = 100, vci = 33)
+
+      The Access-Node-Identifier is a unique ASCII string that does not
+      include 'space' characters.  The syntax of the slot and port
+      fields reflects typical practices currently in place.  The slot
+      identifier does not exceed 6 characters in length, and the port
+      identifier does not exceed 3 characters in length using a '\' as a
+      delimiter.
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 7]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+      The exact manner in which slots are identified is Access
+      Node/DSLAM implementation dependent.  The vpi, vci, and vlan-id
+      fields (when applicable) are related to a given access loop
+      (U-interface).
+
+3.3.2.  Agent-Remote-Id
+
+   Description
+
+      The Agent-Remote-Id Attribute contains an operator-specific,
+      statically configured string that uniquely identifies the
+      subscriber on the associated access loop of the Access Node/DSLAM.
+
+      In a typical subscriber environment, multiple attributes can be
+      used to identify the user, among others: Username (for example, as
+      defined on a PPP client); Agent-Circuit-Id (a static, pre-defined
+      string sent from the Access Node/DSLAM); Agent-Remote-Id (an
+      operator-defined string configured on and sent by the Access
+      Node/DSLAM).
+
+      This Attribute MAY be included in both Access-Request and
+      Accounting-Request packets.
+
+   A summary of the Agent-Remote-Id Attribute format is shown below.
+   The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |           String...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      2 for Agent-Remote-Id
+
+   Vendor-Length
+
+      <= 65
+
+   String
+
+      This value of this field is entirely open to the service
+      provider's discretion.  For example, it MAY contain a subscriber
+      billing identifier or telephone number.
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 8]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+3.3.3.  Actual-Data-Rate-Upstream
+
+   Description
+
+      This Attribute contains the actual upstream train rate of a
+      subscriber's synchronized DSL link.  It MAY be included in both
+      Access-Request and Accounting-Request packets.
+
+   A summary of the Actual-Data-Rate-Upstream Attribute format is shown
+   below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      129 (0x81) for Actual-Data-Rate-Upstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field contains a 4-byte unsigned integer, indicating the
+      subscriber's actual data rate upstream of a synchronized DSL link.
+      The rate is coded in bits per second.
+
+3.3.4.  Actual-Data-Rate-Downstream
+
+   Description
+
+      This Attribute contains the actual downstream train rate of a
+      subscriber's synchronized DSL link.  It MAY be included in both
+      Access-Request and Accounting-Request packets.
+
+   A summary of the Actual-Data-Rate-Downstream Attribute format is
+   shown below.  The fields are transmitted from left to right.
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                      [Page 9]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      130 (0x82) for Actual-Data-Rate-Downstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field contains a 4-byte unsigned integer, indicating the
+      subscriber's actual data rate downstream of a synchronized DSL
+      link.  The rate is coded in bits per second.
+
+3.3.5.  Minimum-Data-Rate-Upstream
+
+   Description
+
+      This Attribute contains the subscriber's operator-configured
+      minimum upstream data rate.  It MAY be included in Accounting-
+      Request packets.
+
+   A summary of the Minimum-Data-Rate-Upstream Attribute format is shown
+   below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      131 (0x83) for Minimum-Data-Rate-Upstream
+
+   Vendor-Length
+
+      6
+
+
+
+Mammoliti, et al.            Informational                     [Page 10]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   Value
+
+      This field contains a 4-byte unsigned integer, indicating the
+      subscriber's minimum upstream data rate (as configured by the
+      operator).  The rate is coded in bits per second.
+
+3.3.6.  Minimum-Data-Rate-Downstream
+
+   Description
+
+      This Attribute contains the subscriber's operator-configured
+      minimum downstream data rate.  It MAY be included in Accounting-
+      Request packets.
+
+   A summary of the Minimum-Data-Rate-Downstream Attribute format is
+   shown below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      132 (0x84) for Minimum-Data-Rate-Downstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field contains a 4-byte unsigned integer, indicating the
+      subscriber's minimum downstream data rate (as configured by the
+      operator).  The rate is coded in bits per second.
+
+3.3.7.  Attainable-Data-Rate-Upstream
+
+   Description
+
+      This Attribute contains the subscriber's attainable upstream data
+      rate.  It MAY be included in Accounting-Request packets.
+
+   A summary of the Attainable-Data-Rate-Upstream Attribute format is
+   shown below.  The fields are transmitted from left to right.
+
+
+
+Mammoliti, et al.            Informational                     [Page 11]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      133 (0x85) for Attainable-Data-Rate-Upstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field contains a 4-byte unsigned integer, indicating the
+      subscriber's actual DSL attainable upstream data rate.  The rate
+      is coded in bits per second.
+
+3.3.8.  Attainable-Data-Rate-Downstream
+
+   Description
+
+      This Attribute contains the subscriber's attainable downstream
+      data rate.  It MAY be included in Accounting-Request packets.
+
+   A summary of the Attainable-Data-Rate-Downstream Attribute format is
+   shown below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      134 (0x86) for Attainable-Data-Rate-Downstream
+
+   Vendor-Length
+
+      6
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 12]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   Value
+
+      This field contains a 4-byte unsigned integer, indicating the
+      subscriber's actual DSL attainable downstream data rate.  The rate
+      is coded in bits per second.
+
+3.3.9.  Maximum-Data-Rate-Upstream
+
+   Description
+
+      This Attribute contains the subscriber's maximum upstream data
+      rate, as configured by the operator.  It MAY be included in
+      Accounting-Request packets.
+
+   A summary of the Maximum-Data-Rate-Upstream Attribute format is shown
+   below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      135 (0x87) for Maximum-Data-Rate-Upstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value of the subscriber's DSL maximum upstream data rate.  The
+      rate is coded in bits per second.
+
+3.3.10.  Maximum-Data-Rate-Downstream
+
+   Description
+
+      This Attribute contains the subscriber's maximum downstream data
+      rate, as configured by the operator.  It MAY be included in
+      Accounting-Request packets.
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 13]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   A summary of the Maximum-Data-Rate-Downstream Attribute format is
+   shown below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      136 (0x88) for Maximum-Data-Rate-Downstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value of the subscriber's DSL maximum downstream data rate.  The
+      rate is coded in bits per second.
+
+3.3.11.  Minimum-Data-Rate-Upstream-Low-Power
+
+   Description
+
+      This Attribute contains the subscriber's minimum upstream data
+      rate in low power state, as configured by the operator.  It MAY be
+      included in Accounting-Request packets.
+
+   A summary of the Minimum-Data-Rate-Upstream-Low-Power Attribute
+   format is shown below.  The fields are transmitted from left to
+   right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      137 (0x89) for Minimum-Data-Rate-Upstream-Low-Power
+
+
+
+Mammoliti, et al.            Informational                     [Page 14]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value of the subscriber's DSL minimum upstream data rate when in
+      low power state (L1/L2).  The rate is coded in bits per second.
+
+3.3.12.  Minimum-Data-Rate-Downstream-Low-Power
+
+   Description
+
+      This Attribute contains the subscriber's minimum downstream data
+      rate in low power state, as configured by the operator.  It MAY be
+      included in Accounting-Request packets.
+
+   A summary of the Minimum-Data-Rate-Downstream-Low-Power Attribute
+   format is shown below.  The fields are transmitted from left to
+   right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      138 (0x8A) for Minimum-Data-Rate-Downstream-Low-Power
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value of the subscriber's DSL minimum downstream data rate.  The
+      rate is coded in bits per second.
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 15]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+3.3.13.  Maximum-Interleaving-Delay-Upstream
+
+   Description
+
+      This Attribute contains the subscriber's maximum one-way upstream
+      interleaving delay, as configured by the operator.  It MAY be
+      included in Accounting-Request packets.
+
+   A summary of the Maximum-Interleaving-Delay-Upstream Attribute format
+   is shown below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      139 (0x8B) for Maximum-Interleaving-Delay-Upstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value in milliseconds of the subscriber's DSL maximum one-way
+      upstream interleaving delay.
+
+3.3.14.  Actual-Interleaving-Delay-Upstream
+
+   Description
+
+      This Attribute contains the subscriber's actual one-way upstream
+      interleaving delay.  It MAY be included in Accounting-Request
+      packets.
+
+   A summary of the Actual-Interleaving-Delay-Upstream Attribute format
+   is shown below.  The fields are transmitted from left to right.
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 16]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      140 (0x8C) for Actual-Interleaving-Delay-Upstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value in milliseconds of the subscriber's DSL actual upstream
+      interleaving delay.
+
+3.3.15.  Maximum-Interleaving-Delay-Downstream
+
+   Description
+
+      This Attribute contains the subscriber's maximum one-way
+      downstream interleaving delay, as configured by the operator.  It
+      MAY be included in Accounting-Request packets.
+
+   A summary of the Maximum-Interleaving-Delay-Downstream Attribute
+   format is shown below.  The fields are transmitted from left to
+   right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      141 (0x8D) for Maximum-Interleaving-Delay-Downstream
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 17]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value in milliseconds of the subscriber's DSL maximum one-way
+      downstream interleaving delay.
+
+3.3.16.  Actual-Interleaving-Delay-Downstream
+
+   Description
+
+      This Attribute contains the subscriber's actual one-way downstream
+      interleaving delay.  It MAY be included in Accounting-Request
+      packets.
+
+   A summary of the Actual-Interleaving-Delay-Downstream Attribute
+   format is shown below.  The fields are transmitted from left to
+   right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |            Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+              Value (cont'd.)      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      142 (0x8E) for Actual-Interleaving-Delay-Downstream
+
+   Vendor-Length
+
+      6
+
+   Value
+
+      This field is a 4-byte unsigned integer, indicating the numeric
+      value in milliseconds of the subscriber's DSL actual downstream
+      interleaving delay.
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 18]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+3.3.17.  Access-Loop-Encapsulation
+
+   Description
+
+      This Attribute describes the encapsulation(s) used by the
+      subscriber on the DSL access loop.  It MAY be present in both
+      Access-Request and Accounting-Request packets.
+
+   A summary of the Access-Loop-Encapsulation Attribute format is shown
+   below.  The fields are transmitted from left to right.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |                    Value
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    Value (cont'd) |
+   +-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      144 (0x90) for Access-Loop-Encapsulation
+
+   Vendor-Length
+
+      5
+
+   Value
+
+      This field is a string 3 bytes in length, logically divided into
+      three 1-byte sub-fields as shown in the following diagram:
+
+       0                   1                   2
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |   Data Link   |    Encaps 1   |    Encaps 2   |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Valid values for the sub-fields are as follows:
+
+      Data Link
+
+         0x01 AAL5
+         0x02 Ethernet
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 19]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+      Encaps 1
+
+         0x00 NA - Not Available
+         0x01 Untagged Ethernet
+         0x02 Single-Tagged Ethernet
+
+      Encaps 2
+
+         0x00 NA - Not Available
+         0x01 PPPoA LLC
+         0x02 PPPoA Null
+         0x03 IPoA LLC
+         0x04 IPoA Null
+         0x05 Ethernet over AAL5 LLC with FCS
+         0x06 Ethernet over AAL5 LLC without FCS
+         0x07 Ethernet over AAL5 Null with FCS
+         0x08 Ethernet over AAL5 Null without FCS
+
+3.3.18.  IWF-Session
+
+   Description
+
+      The presence of this Attribute indicates that the IWF has been
+      performed with respect to the subscriber's session; note that no
+      data field is necessary.  It MAY be included in both Access-
+      Request and Accounting-Request packets.
+
+   A summary of the IWF-Session Attribute format is shown below.  The
+   fields are transmitted from left to right.
+
+    0                   1
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Vendor-Type  | Vendor-Length |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Vendor-Type
+
+      254 (0xFE) for IWF-Session
+
+   Vendor-Length
+
+      2
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 20]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+4.  Table of Attributes
+
+   The following table provides a guide to which attributes may be found
+   in which kinds of packets, and in what quantity; note that since none
+   of the DSL Forum VSAs may be present in the Access-Accept, Access-
+   Reject or Access-Challenge packets, those columns have been omitted
+   from the table.
+
+   Request   Acct-Request  #   Attribute
+   0-1       0-1            1  Agent-Circuit-Id
+   0-1       0-1            2  Agent-Remote-Id
+   0-1       0-1          129  Actual-Data-Rate-Upstream
+   0-1       0-1          130  Actual-Data-Rate-Downstream
+   0         0-1          131  Minimum-Data-Rate-Upstream
+   0         0-1          132  Minimum-Data-Rate-Downstream
+   0         0-1          133  Attainable-Data-Rate-Upstream
+   0         0-1          134  Attainable-Data-Rate-Downstream
+   0         0-1          135  Maximum-Data-Rate-Upstream
+   0         0-1          136  Maximum-Data-Rate-Downstream
+   0         0-1          137  Minimum-Data-Rate-Upstream-Low-Power
+   0         0-1          138  Minimum-Data-Rate-Downstream-Low-Power
+   0         0-1          139  Maximum-Interleaving-Delay-Upstream
+   0         0-1          140  Actual-Interleaving-Delay-Upstream
+   0         0-1          141  Maximum-Interleaving-Delay-Downstream
+   0         0-1          142  Actual-Interleaving-Delay-Downstream
+   0-1       0-1          144  Access-Loop-Encapsulation
+   0-1       0-1          254  IWF-Session
+
+   The following table defines the meaning of the above table entries.
+
+   0      This Attribute MUST NOT be present in packet.
+
+   0-1    Zero or one instances of this Attribute MAY be present in
+          packet.
+
+5.  Security Considerations
+
+   The security of these Attributes relies on an implied trust
+   relationship between the Access Node/DSLAM and the BRAS.  The
+   identifiers that are inserted by the Access Node/DSLAM are
+   unconditionally trusted; the BRAS does not perform any validity check
+   on the information received.  These Attributes are intended to be
+   used in environments in which the network infrastructure (the Access
+   Node/DSLAM, the BRAS, and the entire network in which those two
+   devices reside) is trusted and secure.
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 21]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   As used in this document, the word "trusted" implies that
+   unauthorized traffic cannot enter the network except through secured
+   and trusted devices and that all devices internal to the network are
+   secure and trusted.  Careful consideration should be given to the
+   potential security vulnerabilities that are present in this model
+   before deploying this option in actual networks.
+
+   The Attributes described in this document neither increase nor
+   decrease the security of the RADIUS protocol.  For discussions of
+   various RADIUS vulnerabilities, see [RFC2607], [RFC3579], [RFC3162],
+   and [RFC3580].
+
+6.  References
+
+6.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [RFC2865]  Rigney, C., Willens, S., Rubens, A., and W. Simpson,
+              "Remote Authentication Dial In User Service (RADIUS)",
+              RFC 2865, June 2000.
+
+   [RFC2866]  Rigney, C., "RADIUS Accounting", RFC 2866, June 2000.
+
+6.2.  Informative References
+
+   [IANA]     Internet Assigned Numbers Authority, "PRIVATE ENTERPRISE
+              NUMBERS", January 2006,
+              <http://www.iana.org/assignments/enterprise-numbers>.
+
+   [ITU.I363-5.1996]
+              International Telecommunications Union, "B-ISDN ATM
+              Adaptation Layer Specification: Type 5 AAL", ITU-T
+              Recommendation I.363.5, August 1996.
+
+   [RFC2516]  Mamakos, L., Lidl, K., Evarts, J., Carrel, D., Simone, D.,
+              and R. Wheeler, "A Method for Transmitting PPP Over
+              Ethernet (PPPoE)", RFC 2516, February 1999.
+
+   [RFC2607]  Aboba, B. and J. Vollbrecht, "Proxy Chaining and Policy
+              Implementation in Roaming", RFC 2607, June 1999.
+
+   [RFC3046]  Patrick, M., "DHCP Relay Agent Information Option",
+              RFC 3046, January 2001.
+
+   [RFC3162]  Aboba, B., Zorn, G., and D. Mitton, "RADIUS and IPv6",
+              RFC 3162, August 2001.
+
+
+
+Mammoliti, et al.            Informational                     [Page 22]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+   [RFC3579]  Aboba, B. and P. Calhoun, "RADIUS (Remote Authentication
+              Dial In User Service) Support For Extensible
+              Authentication Protocol (EAP)", RFC 3579, September 2003.
+
+   [RFC3580]  Congdon, P., Aboba, B., Smith, A., Zorn, G., and J. Roese,
+              "IEEE 802.1X Remote Authentication Dial In User Service
+              (RADIUS) Usage Guidelines", RFC 3580, September 2003.
+
+   [RFC4243]  Stapp, M., Johnson, R., and T. Palaniappan, "Vendor-
+              Specific Information Suboption for the Dynamic Host
+              Configuration Protocol (DHCP) Relay Agent Option",
+              RFC 4243, December 2005.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 23]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+Authors' Addresses
+
+   Vince Mammoliti
+   Cisco Systems
+   181 Bay Street, Suite 3400
+   Toronto, ON  M5J 2T3
+   Canada
+
+   EMail: vince@cisco.com
+
+
+   Glen Zorn
+   Cisco Systems
+   2901 Third Avenue, Suite 600
+   SEA1/5/
+   Seattle, WA  98121
+   USA
+
+   Phone: +1 (425) 344 8113
+   EMail: gwz@cisco.com
+
+
+   Peter Arberg
+   Redback Networks, Inc.
+   300 Holger Way
+   San Jose, CA  95134
+   USA
+
+   EMail: parberg@redback.com
+
+
+   Robert Rennison
+   ECI Telecom
+   Omega Corporate Center
+   1300 Omega Drive
+   Pittsburgh, PA  15205
+   USA
+
+   EMail: robert.rennison@ecitele.com
+
+
+
+
+
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 24]
+
+RFC 4679                  DSL Forum RADIUS VSA            September 2006
+
+
+Full Copyright Statement
+
+   Copyright (C) The Internet Society (2006).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78 and at www.rfc-editor.org/copyright.html, and
+   except as set forth therein, the authors retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
+   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
+
+
+
+
+
+
+
+Mammoliti, et al.            Informational                     [Page 25]
+

@@ -1,0 +1,513 @@
+<!-- ##### SECTION Title ##### -->
+Miscellaneous Utility Functions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_get_application_name ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_set_application_name ##### -->
+<para>
+
+</para>
+
+@application_name: 
+
+
+<!-- ##### FUNCTION g_get_prgname ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_set_prgname ##### -->
+<para>
+
+</para>
+
+@prgname: 
+
+
+<!-- ##### FUNCTION g_get_environ ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_environ_getenv ##### -->
+<para>
+
+</para>
+
+@envp: 
+@variable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_environ_setenv ##### -->
+<para>
+
+</para>
+
+@envp: 
+@variable: 
+@value: 
+@overwrite: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_environ_unsetenv ##### -->
+<para>
+
+</para>
+
+@envp: 
+@variable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_getenv ##### -->
+<para>
+
+</para>
+
+@variable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_setenv ##### -->
+<para>
+
+</para>
+
+@variable: 
+@value: 
+@overwrite: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unsetenv ##### -->
+<para>
+
+</para>
+
+@variable: 
+
+
+<!-- ##### FUNCTION g_listenv ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_user_name ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_real_name ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_user_cache_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_user_data_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_user_config_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_user_runtime_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### ENUM GUserDirectory ##### -->
+<para>
+
+</para>
+
+@G_USER_DIRECTORY_DESKTOP: 
+@G_USER_DIRECTORY_DOCUMENTS: 
+@G_USER_DIRECTORY_DOWNLOAD: 
+@G_USER_DIRECTORY_MUSIC: 
+@G_USER_DIRECTORY_PICTURES: 
+@G_USER_DIRECTORY_PUBLIC_SHARE: 
+@G_USER_DIRECTORY_TEMPLATES: 
+@G_USER_DIRECTORY_VIDEOS: 
+@G_USER_N_DIRECTORIES: 
+
+<!-- ##### FUNCTION g_get_user_special_dir ##### -->
+<para>
+
+</para>
+
+@directory: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_system_data_dirs ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_system_config_dirs ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_reload_user_special_dirs_cache ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### FUNCTION g_get_host_name ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_home_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_tmp_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_current_dir ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_basename ##### -->
+<para>
+
+</para>
+
+@file_name: 
+@Returns: 
+
+
+<!-- ##### MACRO g_dirname ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_path_is_absolute ##### -->
+<para>
+
+</para>
+
+@file_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_path_skip_root ##### -->
+<para>
+
+</para>
+
+@file_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_path_get_basename ##### -->
+<para>
+
+</para>
+
+@file_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_path_get_dirname ##### -->
+<para>
+
+</para>
+
+@file_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_build_filename ##### -->
+<para>
+
+</para>
+
+@first_element: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_build_filenamev ##### -->
+<para>
+
+</para>
+
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_build_path ##### -->
+<para>
+
+</para>
+
+@separator: 
+@first_element: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_build_pathv ##### -->
+<para>
+
+</para>
+
+@separator: 
+@args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_format_size ##### -->
+<para>
+
+</para>
+
+@size: 
+@Returns: 
+
+
+<!-- ##### ENUM GFormatSizeFlags ##### -->
+<para>
+
+</para>
+
+@G_FORMAT_SIZE_DEFAULT: 
+@G_FORMAT_SIZE_LONG_FORMAT: 
+@G_FORMAT_SIZE_IEC_UNITS: 
+
+<!-- ##### FUNCTION g_format_size_full ##### -->
+<para>
+
+</para>
+
+@size: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_format_size_for_display ##### -->
+<para>
+
+</para>
+
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_find_program_in_path ##### -->
+<para>
+
+</para>
+
+@program: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bit_nth_lsf ##### -->
+<para>
+
+</para>
+
+@mask: 
+@nth_bit: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bit_nth_msf ##### -->
+<para>
+
+</para>
+
+@mask: 
+@nth_bit: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bit_storage ##### -->
+<para>
+
+</para>
+
+@number: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_spaced_primes_closest ##### -->
+<para>
+
+</para>
+
+@num: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_atexit ##### -->
+<para>
+
+</para>
+
+@func: 
+
+
+<!-- ##### FUNCTION g_parse_debug_string ##### -->
+<para>
+
+</para>
+
+@string: 
+@keys: 
+@nkeys: 
+@Returns: 
+
+
+<!-- ##### STRUCT GDebugKey ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+
+<!-- ##### USER_FUNCTION GVoidFunc ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### USER_FUNCTION GFreeFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+
+
+<!-- ##### FUNCTION g_qsort_with_data ##### -->
+<para>
+
+</para>
+
+@pbase: 
+@total_elems: 
+@size: 
+@compare_func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_nullify_pointer ##### -->
+<para>
+
+</para>
+
+@nullify_location: 
+
+

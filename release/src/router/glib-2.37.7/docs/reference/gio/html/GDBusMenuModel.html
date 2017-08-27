@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GDBusMenuModel</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="gio-GMenuModel-exporter.html" title="GMenuModel exporter">
+<link rel="next" href="extending.html" title="Extending GIO">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GDBusMenuModel.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GDBusMenuModel.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GMenuModel-exporter.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="extending.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusMenuModel"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusMenuModel.top_of_page"></a>GDBusMenuModel</span></h2>
+<p>GDBusMenuModel — A D-Bus GMenuModel implementation</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GDBusMenuModel.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GDBusMenuModel.html#GDBusMenuModel-struct" title="GDBusMenuModel">GDBusMenuModel</a>;
+<a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="returnvalue">GDBusMenuModel</span></a> *    <a class="link" href="GDBusMenuModel.html#g-dbus-menu-model-get" title="g_dbus_menu_model_get ()">g_dbus_menu_model_get</a>               (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusMenuModel.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="GMenuModel.html" title="GMenuModel">GMenuModel</a>
+         +----GDBusMenuModel
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusMenuModel.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a> is an implementation of <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> that can be used
+as a proxy for a menu model that is exported over D-Bus with
+<a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-export-menu-model" title="g_dbus_connection_export_menu_model ()"><code class="function">g_dbus_connection_export_menu_model()</code></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="GDBusMenuModel.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GDBusMenuModel-struct"></a><h3>GDBusMenuModel</h3>
+<pre class="programlisting">typedef struct _GDBusMenuModel GDBusMenuModel;</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-menu-model-get"></a><h3>g_dbus_menu_model_get ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="returnvalue">GDBusMenuModel</span></a> *    g_dbus_menu_model_get               (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);</pre>
+<p>
+Obtains a <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a> for the menu model which is exported
+at the given <em class="parameter"><code>bus_name</code></em> and <em class="parameter"><code>object_path</code></em>.
+</p>
+<p>
+The thread default main context is taken at the time of this call.
+All signals on the menu model (and any linked models) are reported
+with respect to this context.  All calls on the returned menu model
+(and linked models) must also originate from this same context, with
+the thread default main context unchanged.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_name</code></em> :</span></p></td>
+<td>the bus name which exports the menu model</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>the object path at which the menu model is exported</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a> object. Free with
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.32</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusMenuModel.see-also"></a><h2>See Also</h2>
+<a class="link" href="gio-GMenuModel-exporter.html" title="GMenuModel exporter">GMenuModel Exporter</a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

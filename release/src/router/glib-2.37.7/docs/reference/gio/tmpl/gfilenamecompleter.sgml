@@ -1,0 +1,75 @@
+<!-- ##### SECTION Title ##### -->
+GFilenameCompleter
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFilenameCompleter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GFilenameCompleter::got-completion-data ##### -->
+<para>
+
+</para>
+
+@gfilenamecompleter: the object which received the signal.
+
+<!-- ##### FUNCTION g_filename_completer_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_completer_get_completion_suffix ##### -->
+<para>
+
+</para>
+
+@completer: 
+@initial_text: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_completer_get_completions ##### -->
+<para>
+
+</para>
+
+@completer: 
+@initial_text: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_completer_set_dirs_only ##### -->
+<para>
+
+</para>
+
+@completer: 
+@dirs_only: 
+
+

@@ -1,0 +1,2 @@
+thunder5_tcp
+^((^get .*http/1\.1\x0d\x0aaccept: \*/\*\x0d\x0acache-control: no-cache\x0d\x0aconnection: keep-alive\x0d\x0a.*pragma: no-cache\x0d\x0a.*user-agent: mozilla/4\.0 \(compatible; msie 6\.0; windows nt 5\.1; sv1; \.net clr 1\.1\.4322; \.net clr 2\.0\.50727\)\x0d\x0a\x0d\x0a$)|(post (/.*http/*[\x09-\x0d -~].*host: .*sandai.net|/ http/1\..\x0d\x0ahost: .*:80\x0d\x0acontent-type: application/octet-stream\x0d\x0a)))

@@ -1,0 +1,4 @@
+# SoH module
+soh {
+	dhcp = yes
+}

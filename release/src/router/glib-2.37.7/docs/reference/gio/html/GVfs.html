@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GVfs</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="extending.html" title="Extending GIO">
+<link rel="prev" href="extending.html" title="Extending GIO">
+<link rel="next" href="GIOModule.html" title="GIOModule">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GVfs.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GVfs.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="extending.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="extending.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GIOModule.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GVfs"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GVfs.top_of_page"></a>GVfs</span></h2>
+<p>GVfs — Virtual File System</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GVfs.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GVfs.html#GVfs-struct" title="GVfs">GVfs</a>;
+#define             <a class="link" href="GVfs.html#G-VFS-EXTENSION-POINT-NAME:CAPS" title="G_VFS_EXTENSION_POINT_NAME">G_VFS_EXTENSION_POINT_NAME</a>
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             <a class="link" href="GVfs.html#g-vfs-get-file-for-path" title="g_vfs_get_file_for_path ()">g_vfs_get_file_for_path</a>             (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             <a class="link" href="GVfs.html#g-vfs-get-file-for-uri" title="g_vfs_get_file_for_uri ()">g_vfs_get_file_for_uri</a>              (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *uri</code></em>);
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             <a class="link" href="GVfs.html#g-vfs-parse-name" title="g_vfs_parse_name ()">g_vfs_parse_name</a>                    (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *parse_name</code></em>);
+<a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *              <a class="link" href="GVfs.html#g-vfs-get-default" title="g_vfs_get_default ()">g_vfs_get_default</a>                   (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *              <a class="link" href="GVfs.html#g-vfs-get-local" title="g_vfs_get_local ()">g_vfs_get_local</a>                     (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GVfs.html#g-vfs-is-active" title="g_vfs_is_active ()">g_vfs_is_active</a>                     (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * <a class="link" href="GVfs.html#g-vfs-get-supported-uri-schemes" title="g_vfs_get_supported_uri_schemes ()">g_vfs_get_supported_uri_schemes</a>   (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GVfs.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GVfs
+</pre>
+</div>
+<div class="refsect1">
+<a name="GVfs.description"></a><h2>Description</h2>
+<p>
+Entry point for using GIO functionality.
+</p>
+</div>
+<div class="refsect1">
+<a name="GVfs.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GVfs-struct"></a><h3>GVfs</h3>
+<pre class="programlisting">typedef struct _GVfs GVfs;</pre>
+<p>
+Virtual File System object.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VFS-EXTENSION-POINT-NAME:CAPS"></a><h3>G_VFS_EXTENSION_POINT_NAME</h3>
+<pre class="programlisting">#define G_VFS_EXTENSION_POINT_NAME "gio-vfs"
+</pre>
+<p>
+Extension point for <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> functionality.
+See Extending GIO.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-file-for-path"></a><h3>g_vfs_get_file_for_path ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             g_vfs_get_file_for_path             (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
+<p>
+Gets a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for <em class="parameter"><code>path</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vfs</code></em> :</span></p></td>
+<td>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
+<td>a string containing a VFS path.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.
+Free the returned object with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-file-for-uri"></a><h3>g_vfs_get_file_for_uri ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             g_vfs_get_file_for_uri              (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *uri</code></em>);</pre>
+<p>
+Gets a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for <em class="parameter"><code>uri</code></em>.
+</p>
+<p>
+This operation never fails, but the returned object
+might not support any I/O operation if the URI
+is malformed or if the URI scheme is not supported.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vfs</code></em> :</span></p></td>
+<td>a<a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>uri</code></em> :</span></p></td>
+<td>a string containing a URI</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.
+Free the returned object with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-parse-name"></a><h3>g_vfs_parse_name ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             g_vfs_parse_name                    (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *parse_name</code></em>);</pre>
+<p>
+This operation never fails, but the returned object might
+not support any I/O operations if the <em class="parameter"><code>parse_name</code></em> cannot
+be parsed by the <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> module.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vfs</code></em> :</span></p></td>
+<td>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parse_name</code></em> :</span></p></td>
+<td>a string to be parsed by the VFS module.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for the given <em class="parameter"><code>parse_name</code></em>.
+Free the returned object with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-default"></a><h3>g_vfs_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *              g_vfs_get_default                   (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Gets the default <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> for the system.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-local"></a><h3>g_vfs_get_local ()</h3>
+<pre class="programlisting"><a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *              g_vfs_get_local                     (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Gets the local <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> for the system.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-is-active"></a><h3>g_vfs_is_active ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_vfs_is_active                     (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>);</pre>
+<p>
+Checks if the VFS is active.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vfs</code></em> :</span></p></td>
+<td>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if construction of the <em class="parameter"><code>vfs</code></em> was successful
+and it is now active.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-supported-uri-schemes"></a><h3>g_vfs_get_supported_uri_schemes ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const * g_vfs_get_supported_uri_schemes   (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>);</pre>
+<p>
+Gets a list of URI schemes supported by <em class="parameter"><code>vfs</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vfs</code></em> :</span></p></td>
+<td>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of strings.
+The returned array belongs to GIO and must
+not be freed or modified. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

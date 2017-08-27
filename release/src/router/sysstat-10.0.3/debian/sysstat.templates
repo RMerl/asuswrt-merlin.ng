@@ -1,0 +1,34 @@
+# These templates have been reviewed by the debian-l10n-english
+# team
+#
+# If modifications/additions/rewording are needed, please ask
+# debian-l10n-english@lists.debian.org for advice.
+#
+# Even minor modifications require translation updates and such
+# changes should be coordinated with translators and reviewers.
+
+Template: sysstat/remove_files
+Type: boolean
+Default: true
+_Description: Remove old format statistics data files?
+ The format of daily data statistics files has changed in version ${s_version}
+ of sysstat and is not compatible with the previous one.
+ .
+ If you choose this option, all existing data files in the /var/log/sysstat/
+ directory will be deleted.
+ .
+ If you don't choose this option, the sar(1) command will not work properly
+ until you remove the files manually.
+
+Template: sysstat/enable
+Type: boolean
+Default: false
+_Description: Activate sysstat's cron job?
+ If this option is enabled the sysstat package will monitor system
+ activities and store the data in log files within /var/log/sysstat/.
+ .
+ This data allows the sar(1) command to display system statistics for the
+ whole day.
+ .
+ If you don't enable this option, the sar(1) command will only show the
+ current statistics.

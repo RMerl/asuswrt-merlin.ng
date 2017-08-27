@@ -1,0 +1,127 @@
+# sysstat Brazilian Portuguese translation
+# Copyright (C) 2009 THE sysstat'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the sysstat package.
+# André Luís Lopes <andrelop@debian.org>, 2008.
+# Adriano Rafael Gomes <adrianorg@gmail.com>, 2009.
+#
+msgid ""
+msgstr "pt_BR utf-8\n"
+"Project-Id-Version: sysstat\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-25 15:08+0900\n"
+"Last-Translator: Adriano Rafael Gomes <adrianorg@gmail.com>\n"
+"Language-Team: Brazilian Portuguese <debian-l10n-portuguese@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Remover arquivos de dados estatísticos em formato antigo?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+#| msgid ""
+#| "Format of daily data statistics files has changed in version ${s_version} "
+#| "of sysstat and is *not* compatible with the previous one!"
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"O formato dos arquivos de estatísticas de dados diários mudou na versão "
+"${s_version} do sysstat e não é compatível com a versão anterior."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+#| msgid ""
+#| "If you activate this option, any existing data files in /var/log/sysstat/ "
+#| "directory will be deleted."
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Caso você escolha esta opção, todos os arquivos de dados existentes no "
+"diretório /var/log/sysstat/ serão apagados."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+#| msgid ""
+#| "If you don't enable this option, the sar(1) command will show only the "
+#| "current statistics."
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Caso você não escolha esta opção, o comando sar(1) não funcionará "
+"corretamente até que você remova os arquivos manualmente."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+#| msgid "Do you want to activate sysstat's cron job?"
+msgid "Activate sysstat's cron job?"
+msgstr "Ativar o cron job do sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+#| msgid ""
+#| "If this option is enabled the sysstat package will collect (using the "
+#| "cron daemon and init.d script) binary data concerning system activities "
+#| "and store them in log files within /var/log/sysstat/ directory."
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Caso esta opção seja habilitada, o pacote sysstat monitorará atividades "
+"do sistema e armazenará os dados em arquivos de log no diretório /var/log/"
+"sysstat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+#| msgid ""
+#| "With this data the sar(1) command will be able to display day-long system "
+#| "statistics."
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Estes dados permitem ao comando sar(1) exibir estatísticas do sistema para "
+"o dia todo."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+#| msgid ""
+#| "If you don't enable this option, the sar(1) command will show only the "
+#| "current statistics."
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Caso você não habilite esta opção, o comando sar(1) exibirá somente as "
+"estatísticas atuais."
+
+#~ msgid "Do you want post-installation script to remove these data files?"
+#~ msgstr ""
+#~ "Deseja que o script de pós-instalação remova esses arquivos de dados ?"
+
+#~ msgid ""
+#~ "If you don't want to remove them automatically, please remove them by "
+#~ "hand later, in order for the sar command to work properly."
+#~ msgstr ""
+#~ "Caso você não queira removê-los automaticamente, por favor, remova-os "
+#~ "manualmente posteriormente para que o comando sar funcione corretamente."
+
+#~ msgid "WARNING: daily data files format has changed!"
+#~ msgstr "AVISO: o formato dos arquivo de dados diários mudou !"
+
+#~ msgid "Existing data files need to be deleted."
+#~ msgstr "Arquivos de dados existentes precisam ser apagados."

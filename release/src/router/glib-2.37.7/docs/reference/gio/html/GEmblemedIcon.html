@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GEmblemedIcon</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="icons.html" title="Icons">
+<link rel="prev" href="GThemedIcon.html" title="GThemedIcon">
+<link rel="next" href="GEmblem.html" title="GEmblem">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GEmblemedIcon.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GEmblemedIcon.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GEmblemedIcon.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
+                  <a href="#GEmblemedIcon.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="icons.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GThemedIcon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GEmblem.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GEmblemedIcon"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GEmblemedIcon.top_of_page"></a>GEmblemedIcon</span></h2>
+<p>GEmblemedIcon — Icon with emblems</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GEmblemedIcon.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+struct              <a class="link" href="GEmblemedIcon.html#GEmblemedIcon-struct" title="struct GEmblemedIcon">GEmblemedIcon</a>;
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             <a class="link" href="GEmblemedIcon.html#g-emblemed-icon-new" title="g_emblemed_icon_new ()">g_emblemed_icon_new</a>                 (<em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> *emblem</code></em>);
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             <a class="link" href="GEmblemedIcon.html#g-emblemed-icon-get-icon" title="g_emblemed_icon_get_icon ()">g_emblemed_icon_get_icon</a>            (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             <a class="link" href="GEmblemedIcon.html#g-emblemed-icon-get-emblems" title="g_emblemed_icon_get_emblems ()">g_emblemed_icon_get_emblems</a>         (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GEmblemedIcon.html#g-emblemed-icon-add-emblem" title="g_emblemed_icon_add_emblem ()">g_emblemed_icon_add_emblem</a>          (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> *emblem</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GEmblemedIcon.html#g-emblemed-icon-clear-emblems" title="g_emblemed_icon_clear_emblems ()">g_emblemed_icon_clear_emblems</a>       (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GEmblemedIcon
+</pre>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GEmblemedIcon implements
+ <a class="link" href="GIcon.html" title="GIcon">GIcon</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GEmblemedIcon.html#GEmblemedIcon--gicon" title='The "gicon" property'>gicon</a>"                    <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>*                : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> is an implementation of <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> that supports
+adding an emblem to an icon. Adding multiple emblems to an
+icon is ensured via <a class="link" href="GEmblemedIcon.html#g-emblemed-icon-add-emblem" title="g_emblemed_icon_add_emblem ()"><code class="function">g_emblemed_icon_add_emblem()</code></a>. 
+</p>
+<p>
+Note that <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> allows no control over the position
+of the emblems. See also <a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> for more information.
+</p>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GEmblemedIcon-struct"></a><h3>struct GEmblemedIcon</h3>
+<pre class="programlisting">struct GEmblemedIcon;</pre>
+<p>
+An implementation of <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for icons with emblems.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-emblemed-icon-new"></a><h3>g_emblemed_icon_new ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             g_emblemed_icon_new                 (<em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> *emblem</code></em>);</pre>
+<p>
+Creates a new emblemed icon for <em class="parameter"><code>icon</code></em> with the emblem <em class="parameter"><code>emblem</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>emblem</code></em> :</span></p></td>
+<td>a <a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GEmblemedIcon]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.18</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-emblemed-icon-get-icon"></a><h3>g_emblemed_icon_get_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *             g_emblemed_icon_get_icon            (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>);</pre>
+<p>
+Gets the main icon for <em class="parameter"><code>emblemed</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>emblemed</code></em> :</span></p></td>
+<td>a <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> that is owned by <em class="parameter"><code>emblemed</code></em>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.18</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-emblemed-icon-get-emblems"></a><h3>g_emblemed_icon_get_emblems ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             g_emblemed_icon_get_emblems         (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>);</pre>
+<p>
+Gets the list of emblems for the <em class="parameter"><code>icon</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>emblemed</code></em> :</span></p></td>
+<td>a <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> s that is owned by <em class="parameter"><code>emblemed</code></em>. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> Gio.Emblem][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.18</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-emblemed-icon-add-emblem"></a><h3>g_emblemed_icon_add_emblem ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_emblemed_icon_add_emblem          (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> *emblem</code></em>);</pre>
+<p>
+Adds <em class="parameter"><code>emblem</code></em> to the <a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a> s.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>emblemed</code></em> :</span></p></td>
+<td>a <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>emblem</code></em> :</span></p></td>
+<td>a <a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.18</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-emblemed-icon-clear-emblems"></a><h3>g_emblemed_icon_clear_emblems ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_emblemed_icon_clear_emblems       (<em class="parameter"><code><a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a> *emblemed</code></em>);</pre>
+<p>
+Removes all the emblems from <em class="parameter"><code>icon</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>emblemed</code></em> :</span></p></td>
+<td>a <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GEmblemedIcon--gicon"></a><h3>The <code class="literal">"gicon"</code> property</h3>
+<pre class="programlisting">  "gicon"                    <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>*                : Read / Write / Construct Only</pre>
+<p>The GIcon to attach emblems to.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GEmblemedIcon.see-also"></a><h2>See Also</h2>
+<a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>, <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>, <a class="link" href="GEmblem.html" title="GEmblem"><span class="type">GEmblem</span></a>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

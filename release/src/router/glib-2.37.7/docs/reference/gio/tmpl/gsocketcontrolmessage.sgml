@@ -1,0 +1,78 @@
+<!-- ##### SECTION Title ##### -->
+GSocketControlMessage
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocketControlMessage ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_socket_control_message_deserialize ##### -->
+<para>
+
+</para>
+
+@level: 
+@type: 
+@size: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_control_message_get_level ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_control_message_get_msg_type ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_control_message_get_size ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_control_message_serialize ##### -->
+<para>
+
+</para>
+
+@message: 
+@data: 
+
+

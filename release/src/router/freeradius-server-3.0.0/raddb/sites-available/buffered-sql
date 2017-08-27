@@ -1,0 +1,129 @@
+# -*- text -*-
+######################################################################
+#
+#	In 2.0.0, radrelay functionality is integrated into the
+#	server core.  This virtual server gives an example of
+#	using radrelay functionality inside of the server.
+#
+#	In this example, the detail file is read, and the data
+#	is put into SQL.  This configuration is used when a RADIUS
+#	server on this machine is receiving accounting packets,
+#	and writing them to the detail file.
+#
+#	The purpose of this virtual server is to de-couple the storage
+#	of long-term accounting data in SQL from "live" information
+#	needed by the RADIUS server as it is running.
+#
+#	The benefit of this approach is that for a busy server, the
+#	overhead of performing SQL queries may be significant.  Also,
+#	if the SQL databases are large (as is typical for ones storing
+#	months of data), the INSERTs and UPDATEs may take a relatively
+#	long time.  Rather than slowing down the RADIUS server by
+#	having it interact with a database, you can just log the
+#	packets to a detail file, and then read that file later at a
+#	time when the RADIUS server is typically lightly loaded.
+#
+#	If you use on virtual server to log to the detail file,
+#	and another virtual server (i.e. this one) to read from
+#	the detail file, then this process will happen automatically.
+#	A sudden spike of RADIUS traffic means that the detail file
+#	will grow in size, and the server will be able to handle
+#	large volumes of traffic quickly.  When the traffic dies down,
+#	the server will have time to read the detail file, and insert
+#	the data into a long-term SQL database.
+#
+#	$Id$
+#
+######################################################################
+
+server buffered-sql {
+	listen {
+		type = detail
+
+		#  The location where the detail file is located.
+		#  This should be on local disk, and NOT on an NFS
+		#  mounted location!
+		filename = "${radacctdir}/detail-*"
+
+		#
+		#  The server can read accounting packets from the
+		#  detail file much more quickly than those packets
+		#  can be written to a database.  If the database is
+		#  overloaded, then bad things can happen.
+		#
+		#  The server will keep track of how long it takes to
+		#  process an entry from the detail file.  It will
+		#  then pause between handling entries.  This pause
+		#  allows databases to "catch up", and gives the
+		#  server time to notice that other packets may have
+		#  arrived.
+		#
+		#  The pause is calculated dynamically, to ensure that
+		#  the load due to reading the detail files is limited
+		#  to a small percentage of CPU time.  The
+		#  "load_factor" configuration item is a number
+		#  between 1 and 100.  The server will try to keep the
+		#  percentage of time taken by "detail" file entries
+		#  to "load_factor" percentage of the CPU time.
+		#
+		#  If the "load_factor" is set to 100, then the server
+		#  will read packets as fast as it can, usually
+		#  causing databases to go into overload.
+		#
+		load_factor = 10
+
+		#
+		#  Set the interval for polling the detail file.
+		#  If the detail file doesn't exist, the server will
+		#  wake up, and poll for it every N seconds.
+		#
+		#  Useful range of values: 1 to 60
+		poll_interval = 1
+
+		#
+		#  Set the retry interval for when the home server
+		#  does not respond.  The current packet will be
+		#  sent repeatedly, at this interval, until the
+		#  home server responds.
+		#
+		#  Useful range of values: 5 to 30
+		retry_interval = 30
+
+	}
+
+	#
+	#  Pre-accounting.  Decide which accounting type to use.
+	#
+	preacct {
+		preprocess
+
+		#
+		#  Ensure that we have a semi-unique identifier for every
+		#  request, and many NAS boxes are broken.
+		acct_unique
+
+		#
+		#  Read the 'acct_users' file.  This isn't always
+		#  necessary, and can be deleted if you do not use it.
+		files
+	}
+
+	#
+	#  Accounting.  Log the accounting data.
+	#
+	accounting {
+		#
+		#  Log traffic to an SQL database.
+		#
+		#  See "Accounting queries" in sql.conf
+	#	sql
+
+
+		#  Cisco VoIP specific bulk accounting
+	#	pgsql-voip
+
+	}
+
+	# The requests are not being proxied, so no pre/post-proxy
+	# sections are necessary.
+}

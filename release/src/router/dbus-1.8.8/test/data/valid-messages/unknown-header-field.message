@@ -1,0 +1,19 @@
+## message with a 'name' header field and unknown 'unkn' field
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+REQUIRED_FIELDS
+
+HEADER_FIELD UNKNOWN
+TYPE DICT
+LENGTH Dict
+START_LENGTH Dict
+STRING 'int32'
+TYPE INT32
+INT32 0x12345678
+END_LENGTH Dict
+
+ALIGN 8
+END_LENGTH Header
+START_LENGTH Body
+END_LENGTH Body

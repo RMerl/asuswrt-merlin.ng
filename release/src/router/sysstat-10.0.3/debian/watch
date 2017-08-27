@@ -1,0 +1,4 @@
+# control file for the uscan(1) tool
+version=3
+http://pagesperso-orange.fr/sebastien.godard/download.html \
+	(?:.*perso.*/)sysstat-([\d\.]+)\.tar\.bz2

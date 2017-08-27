@@ -1,0 +1,15 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= $(TARGETNAME).c
+
+SRC_CFLAGS	:= @mod_cflags@
+TGT_LDLIBS	:= @mod_ldflags@
+
+install: install.bindir $(R)$(bindir)/rad_counter
+
+$(R)$(bindir)/rad_counter: src/modules/rlm_counter/rad_counter
+	@$(INSTALL) -m 755 src/modules/rlm_counter/rad_counter $(R)$(bindir)/

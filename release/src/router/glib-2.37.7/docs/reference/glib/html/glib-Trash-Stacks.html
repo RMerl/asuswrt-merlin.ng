@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Reference Manual: Trash Stacks</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-data-types.html" title="GLib Data Types">
+<link rel="prev" href="glib-Sequences.html" title="Sequences">
+<link rel="next" href="glib-Hash-Tables.html" title="Hash Tables">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#glib-Trash-Stacks.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-data-types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Sequences.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Hash-Tables.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Trash-Stacks"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Trash-Stacks.top_of_page"></a>Trash Stacks</span></h2>
+<p>Trash Stacks — maintain a stack of unused allocated memory chunks</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="glib-Trash-Stacks.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;glib.h&gt;
+
+struct              <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack">GTrashStack</a>;
+<span class="returnvalue">void</span>                <a class="link" href="glib-Trash-Stacks.html#g-trash-stack-push" title="g_trash_stack_push ()">g_trash_stack_push</a>                  (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data_p</code></em>);
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>            <a class="link" href="glib-Trash-Stacks.html#g-trash-stack-pop" title="g_trash_stack_pop ()">g_trash_stack_pop</a>                   (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>);
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>            <a class="link" href="glib-Trash-Stacks.html#g-trash-stack-peek" title="g_trash_stack_peek ()">g_trash_stack_peek</a>                  (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>);
+<a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               <a class="link" href="glib-Trash-Stacks.html#g-trash-stack-height" title="g_trash_stack_height ()">g_trash_stack_height</a>                (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Trash-Stacks.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> is an efficient way to keep a stack of unused allocated
+memory chunks. Each memory chunk is required to be large enough to hold
+a <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a>. This allows the stack to be maintained without any space
+overhead, since the stack pointers can be stored inside the memory chunks.
+</p>
+<p>
+There is no function to create a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>. A <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>*
+is a perfectly valid empty stack.
+</p>
+</div>
+<div class="refsect1">
+<a name="glib-Trash-Stacks.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GTrashStack"></a><h3>struct GTrashStack</h3>
+<pre class="programlisting">struct GTrashStack {
+  GTrashStack *next;
+};
+</pre>
+<p>
+Each piece of memory that is pushed onto the stack
+is cast to a <span class="structname">GTrashStack*</span>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> *<em class="structfield"><code><a name="GTrashStack.next"></a>next</code></em>;</span></p></td>
+<td>pointer to the previous element of the stack,
+gets stored in the first <code class="literal">sizeof (gpointer)</code>
+bytes of the element</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-trash-stack-push"></a><h3>g_trash_stack_push ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_trash_stack_push                  (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data_p</code></em>);</pre>
+<p>
+Pushes a piece of memory onto a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stack_p</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data_p</code></em> :</span></p></td>
+<td>the piece of memory to push on the stack</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-trash-stack-pop"></a><h3>g_trash_stack_pop ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>            g_trash_stack_pop                   (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>);</pre>
+<p>
+Pops a piece of memory off a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stack_p</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the element at the top of the stack</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-trash-stack-peek"></a><h3>g_trash_stack_peek ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>            g_trash_stack_peek                  (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>);</pre>
+<p>
+Returns the element at the top of a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>
+which may be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stack_p</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the element at the top of the stack</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-trash-stack-height"></a><h3>g_trash_stack_height ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               g_trash_stack_height                (<em class="parameter"><code><a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a> **stack_p</code></em>);</pre>
+<p>
+Returns the height of a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>.
+</p>
+<p>
+Note that execution of this function is of O(N) complexity
+where N denotes the number of items on the stack.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>stack_p</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Trash-Stacks.html#GTrashStack" title="struct GTrashStack"><span class="type">GTrashStack</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the height of the stack</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

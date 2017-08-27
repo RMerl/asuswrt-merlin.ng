@@ -1,0 +1,99 @@
+
+<fieldset>
+	<legend><% tran("service.dhcp_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_vendor"); %></div>
+		<input maxlength="79" size="20" name="dhcpc_vendorclass" value="<% nvram_get("dhcpc_vendorclass"); %>" />
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_reqip"); %></div>
+		<input maxlength="79" size="20" name="dhcpc_requestip" value="<% nvram_get("dhcpc_requestip"); %>" />
+	</div>
+</fieldset><br />
+
+<fieldset>
+	<legend><% tran("service.dhcp_legend2"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_jffs2"); %></div>
+		<script type="text/javascript">
+		//<![CDATA[
+		if (<% nvram_get("enable_jffs2"); %> == 1 )
+			document.write('<input type="checkbox" value="1" name="_dhcpd_usejffs" <% nvram_checked("dhcpd_usejffs", "1"); %> />');
+		else
+			document.write('<span style="color:#999999;"><em>(' + share.nmounted + ')</em></span>');
+		//]]>
+		</script>
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_nvramlease"); %></div>
+		<input type="checkbox" value="1" name="_dhcpd_usenvram" <% nvram_checked("dhcpd_usenvram", "1"); %> />
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_domain"); %></div>
+		<select name="dhcp_domain">
+			<option value="wan" <% nvram_selected("dhcp_domain", "wan"); %> >WAN</option>
+			<option value="lan" <% nvram_selected("dhcp_domain", "lan"); %> >LAN &amp; WLAN</option>
+		</select>
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_landomain"); %></div>
+		<input maxlength="79" size="20" name="lan_domain" onblur="valid_name(this,service.dhcp_landomain,SPACE_NO)" value="<% nvram_get("lan_domain"); %>" />
+	</div>
+	<div class="setting">
+		<div class="label"><% tran("service.dhcp_option"); %></div>
+		<textarea cols="60" rows="4" id="dhcpd_options" name="dhcpd_options"></textarea>
+		<script type="text/javascript">
+		//<![CDATA[
+			var dhcpd_options = fix_cr( '<% nvram_get("dhcpd_options"); %>' );
+			document.getElementById("dhcpd_options").value = dhcpd_options;
+		//]]>
+		</script>
+	</div>
+	<table class="table center" summary="static lease table">
+		<tr>
+			<th colspan="4"><% tran("share.static_lease"); %></th>
+		</tr>
+		<tr>
+			<th width="25%"><% tran("share.mac"); %></th>
+			<th width="25%"><% tran("share.hostname"); %></th>
+			<th width="25%"><% tran("share.ip"); %></th>
+			<th width="25%"><% tran("idx.dhcp_lease"); %></th>
+		</tr>
+			<% show_staticleases(); %>
+	</table><br />
+	<div class="center">
+		<script type="text/javascript">
+		//<![CDATA[
+		document.write("<input class=\"button\" type=\"button\" name=\"add_button\" value=\"" + sbutton.add + "\" onclick=\"lease_add_submit(this.form);\" />");
+		document.write("<input class=\"button\" type=\"button\" name=\"del_button\" value=\"" + sbutton.remove + "\" onclick=\"lease_remove_submit(this.form);\" />");
+		//]]>
+		</script>
+	</div>
+</fieldset><br/>
+
+<fieldset>
+		<legend><% tran("service.dnsmasq_legend"); %></legend>
+		<div class="setting">
+			<div class="label"><% tran("service.dnsmasq_srv"); %></div>
+			<input class="spaceradio" type="radio" name="dnsmasq_enable" value="1" <% nvram_checked("dnsmasq_enable", "1"); %> onclick="show_layer_ext(this, 'iddnsmasq', true)" /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" name="dnsmasq_enable" value="0" <% nvram_checked("dnsmasq_enable", "0"); %> onclick="show_layer_ext(this, 'iddnsmasq', false)" /><% tran("share.disable"); %>
+		</div>
+		<div id="iddnsmasq">
+			<div class="setting">
+				<div class="label"><% tran("service.dnsmasq_loc"); %></div>
+				<input class="spaceradio" type="radio" name="local_dns" value="1" <% nvram_checked("local_dns", "1"); %> /><% tran("share.enable"); %>&nbsp;
+				<input class="spaceradio" type="radio" name="local_dns" value="0" <% nvram_checked("local_dns", "0"); %> /><% tran("share.disable"); %>
+			</div>
+			<div class="setting">
+				<div class="label"><% tran("service.dnsmasq_opt"); %></div>
+					<textarea cols="60" rows="4" id="dnsmasq_options" name="dnsmasq_options"></textarea>
+					<script type="text/javascript">
+					//<![CDATA[
+						var dnsmasq_options = fix_cr( '<% nvram_get("dnsmasq_options"); %>' );
+						document.getElementById("dnsmasq_options").value = dnsmasq_options;
+					//]]>
+					</script>
+			</div>
+		</div>
+</fieldset><br />
+

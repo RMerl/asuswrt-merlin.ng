@@ -1,0 +1,131 @@
+<!-- ##### SECTION Title ##### -->
+GFileAttribute
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GFileAttributeType ##### -->
+<para>
+
+</para>
+
+@G_FILE_ATTRIBUTE_TYPE_INVALID: 
+@G_FILE_ATTRIBUTE_TYPE_STRING: 
+@G_FILE_ATTRIBUTE_TYPE_BYTE_STRING: 
+@G_FILE_ATTRIBUTE_TYPE_BOOLEAN: 
+@G_FILE_ATTRIBUTE_TYPE_UINT32: 
+@G_FILE_ATTRIBUTE_TYPE_INT32: 
+@G_FILE_ATTRIBUTE_TYPE_UINT64: 
+@G_FILE_ATTRIBUTE_TYPE_INT64: 
+@G_FILE_ATTRIBUTE_TYPE_OBJECT: 
+@G_FILE_ATTRIBUTE_TYPE_STRINGV: 
+
+<!-- ##### ENUM GFileAttributeInfoFlags ##### -->
+<para>
+
+</para>
+
+@G_FILE_ATTRIBUTE_INFO_NONE: 
+@G_FILE_ATTRIBUTE_INFO_COPY_WITH_FILE: 
+@G_FILE_ATTRIBUTE_INFO_COPY_WHEN_MOVED: 
+
+<!-- ##### ENUM GFileAttributeStatus ##### -->
+<para>
+
+</para>
+
+@G_FILE_ATTRIBUTE_STATUS_UNSET: 
+@G_FILE_ATTRIBUTE_STATUS_SET: 
+@G_FILE_ATTRIBUTE_STATUS_ERROR_SETTING: 
+
+<!-- ##### STRUCT GFileAttributeInfo ##### -->
+<para>
+
+</para>
+
+@name: 
+@type: 
+@flags: 
+
+<!-- ##### STRUCT GFileAttributeInfoList ##### -->
+<para>
+
+</para>
+
+@infos: 
+@n_infos: 
+
+<!-- ##### FUNCTION g_file_attribute_info_list_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_info_list_ref ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_info_list_unref ##### -->
+<para>
+
+</para>
+
+@list: 
+
+
+<!-- ##### FUNCTION g_file_attribute_info_list_dup ##### -->
+<para>
+
+</para>
+
+@list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_info_list_lookup ##### -->
+<para>
+
+</para>
+
+@list: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_info_list_add ##### -->
+<para>
+
+</para>
+
+@list: 
+@name: 
+@type: 
+@flags: 
+
+

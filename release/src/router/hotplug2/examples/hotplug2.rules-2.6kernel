@@ -1,0 +1,65 @@
+DEVPATH is set, ACTION == add {
+	makedev /dev/%DEVICENAME% 0644
+}
+
+SUBSYSTEM ~~ ^(usb|tty|block|scsi_generic)$, ACTION == remove {
+	remove /dev/%DEVICENAME%
+}
+
+MODALIAS is set, ACTION == add {
+	exec /sbin/modprobe -q %MODALIAS% ;
+}
+
+SUBSYSTEM == usb, DEVICENAME ~~ ^([1-4]-[1-3][:.0-9]*+)$, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_usb_interface %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM ~~ ^(usb|usbmisc)$, DEVICENAME ~~ ^(lp[0-9]+)$, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_lp %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == tty, DEVICENAME ~~ ^(ttyUSB[0-9]+)$, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_tty %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == tty, DEVICENAME ~~ ^(ttyACM[0-9]+)$, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_tty %DEVICENAME% %ACTION% ;
+}
+
+DEVICENAME ~~ ^(sg[0-9]+)$, ACTION == add {
+	exec /sbin/asus_sg %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == block, DEVICENAME ~~ ^(sr[0-9]+)$, ACTION == add {
+	exec /sbin/asus_sr %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == block, DEVICENAME ~~ ^(sd[a-z][0-9]*+)$, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_sd %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == block, DEVICENAME ~~ ^(mmcblk[0-9]p[0-9]*+)$, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_mmc %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == usb, DEVICENAME == usbbcm, ACTION ~~ ^(add|remove)$ {
+	exec /sbin/asus_usbbcm %DEVICENAME% %ACTION% ;
+}
+
+SUBSYSTEM == net, ACTION is set {
+	exec /sbin/hotplug %SUBSYSTEM% ;
+}
+
+SUBSYSTEM == firmware, FIRMWARE is set, DEVPATH is set, ACTION is set {
+	exec /sbin/hotplug %SUBSYSTEM% ;
+}
+
+SUBSYSTEM == misc, DEVICENAME ~~ ^(tun|tap)$, DEVPATH is set, ACTION == add {
+	exec mkdir -p -m 0777 /dev/net ;
+	symlink /dev/%DEVICENAME% /dev/net/%DEVICENAME%
+}
+
+SUBSYSTEM == bluetooth, DEVICENAME == hci0, ACTION == add {
+	exec sh -c "nvram get x_Setting | grep -q 1 || start_bluetooth_service" ;
+}
+

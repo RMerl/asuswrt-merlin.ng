@@ -1,0 +1,186 @@
+<!-- ##### SECTION Title ##### -->
+Standard Macros
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_OS_WIN32 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_OS_BEOS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_OS_UNIX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_DIR_SEPARATOR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_DIR_SEPARATOR_S ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_IS_DIR_SEPARATOR ##### -->
+<para>
+
+</para>
+
+@c: 
+
+
+<!-- ##### MACRO G_SEARCHPATH_SEPARATOR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_SEARCHPATH_SEPARATOR_S ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO TRUE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO FALSE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NULL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO MIN ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+
+
+<!-- ##### MACRO MAX ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+
+
+<!-- ##### MACRO ABS ##### -->
+<para>
+
+</para>
+
+@a: 
+
+
+<!-- ##### MACRO CLAMP ##### -->
+<para>
+
+</para>
+
+@x: 
+@low: 
+@high: 
+
+
+<!-- ##### MACRO G_STRUCT_MEMBER ##### -->
+<para>
+
+</para>
+
+@member_type: 
+@struct_p: 
+@struct_offset: 
+
+
+<!-- ##### MACRO G_STRUCT_MEMBER_P ##### -->
+<para>
+
+</para>
+
+@struct_p: 
+@struct_offset: 
+
+
+<!-- ##### MACRO G_STRUCT_OFFSET ##### -->
+<para>
+
+</para>
+
+@struct_type: 
+@member: 
+
+
+<!-- ##### MACRO G_MEM_ALIGN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_CONST_RETURN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_N_ELEMENTS ##### -->
+<para>
+
+</para>
+
+@arr: 
+
+

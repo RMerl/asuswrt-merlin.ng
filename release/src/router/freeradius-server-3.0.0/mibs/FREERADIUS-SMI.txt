@@ -1,0 +1,52 @@
+FREERADIUS-SMI DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY,
+	OBJECT-IDENTITY,
+	enterprises
+		FROM SNMPv2-SMI;
+
+freeRadius MODULE-IDENTITY
+	LAST-UPDATED "200712170000Z"
+	ORGANIZATION "FREERADIUS project"
+	CONTACT-INFO
+		"FreeRADIUS Network Object Model Environment project
+		
+		see http://www.freeradius.org for contact persons of a particular
+		area or subproject of FREERADIUS.
+
+		Administrative contact for MIB module:
+
+		Alan DeKok
+
+		email: aland@freeradius.org"
+	DESCRIPTION
+		"The Structure of FREERADIUS."
+	::= { enterprises 11344 }	-- assigned by IANA
+
+freeRadiusProducts OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"freeRadiusProducts is the root OBJECT IDENTIFIER from
+		which sysObjectID values are assigned."
+	::= { freeRadius 1 }
+
+freeRadiusMgmt OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"freeRadiusMgmt defines the subtree for production FREERADIUS related
+		MIB registrations."
+	::= { freeRadius 2 }
+
+freeRadiusTest OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"freeRadiusTest defines the subtree for testing FREERADIUS related
+		MIB registrations."
+	::= { freeRadius 3 }
+
+-- 4 is the notification MIB
+
+-- more to come if necessary.
+
+END

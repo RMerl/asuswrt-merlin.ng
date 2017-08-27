@@ -1,0 +1,146 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH radrelay.conf 5 "27 May 2005" "" "FreeRADIUS configuration file"
+.SH NAME
+radrelay.conf \- configuration file for the FreeRADIUS server "radrelay" personality
+.SH DESCRIPTION
+The \fBradrelay.conf\fP file resides in the radius database directory,
+by default \fB/etc/raddb\fP.  It defines the global configuration for
+the FreeRADIUS server, when the server is operating as "radrelay".
+.SH "FILE FORMAT"
+For a detailed description of the file format, see "man radiusd.conf".
+The configuration entries are much the same for radrelay.conf, with a
+few differences as noted here.
+.SH "REPLICATION FOR BACKUPS"
+Many sites run multiple radius servers; at least one primary and one
+backup server. When the primary goes down, most NASes detect that and
+switch to the backup server.
+
+That will cause your accounting packets to go the the backup server -
+and some NASes don't even switch back to the primary server when it
+comes back up.
+
+The result is that accounting records are missed, and/or the
+administrator must jump through hoops in order to combine the
+different detail files from multiple servers. It also means that the
+session database ("radutmp", used for radwho and simultaneous use
+detection) gets out of sync.
+
+radrelay solves this issue by "relaying" packets from one server to
+another, so they both have the same set of accounting data.
+.SH "BUFFERING FOR HIGH-LOAD SERVERS"
+If the RADIUS server suddenly receives a many accounting packets,
+there may be insufficient CPU power to process them all in a timely
+manner.  This problem is especially noticable when the accounting
+packets are going to a back-end database.
+
+Similarly, you may have one database that tracks "live" sessions, and
+another that tracks historical accounting data.  In that case,
+accessing the first database is fast, as it is small.  Accessing the
+second database many be slower, as it may contain multiple gigabytes
+of data.  In addition, writing to the first database in a timely
+manner is important, while data may be written to the second database
+with a few minutes delay, without any harm being done.
+.SH "RELAYING OF ACCOUNTING PACKETS"
+The \fBradrelay.conf\fP file controls the "radrelay" personality of
+the server, which can perform both of the functions above at the same
+time.
+.SH USAGE
+First, you should configure the main radius server to log to an extra,
+single detail file.  This may be done by adding an extra instance of
+the detail module to \fBradiusd.conf\fP:
+
+For example:
+
+.DS
+	detail radrelay-detail {
+.br
+		filename = ${radacctdir}/radrelay/detail
+.br
+		permissions = 0600
+.br
+		dir_permissions = 0755
+.br
+		locking = yes
+.br
+	}
+.br
+	...
+.br
+	accounting {
+.br
+		...
+.br
+		radrelay-detail
+.br
+		...
+.br
+	}
+.br
+.DE
+This configuration will cause accounting packets to be logged to the
+\fI${radacctdir}/radrelay/detail\fP file.  This file should not be
+rotated by standard log rotation scripts, as the \fBradrelay\fP
+program will read and rotate it.
+.SH RADRELAY.CONF EXAMPLE
+See the \fBradrelay.conf\fP file for detailed instructions on
+configuration entries, what they mean, and how to use them.
+
+To have the "radrelay" portion of the server read the above detail
+file, configure \fBradrelay.conf\fP with the following section:
+
+.DS
+.br
+	listen {
+.br
+		type = detail
+.br
+		filename = ${radacctdir}/radrelay/detail
+.br
+		max_outstanding = 100
+.br
+		identity = radrelay
+.br
+	}
+.br
+.DE
+
+The server will read the accounting packets from the detail file, and
+process them just as if it had received them from the NAS.  Therefore,
+you should configure the "accounting" section of \fBradrelay.conf\fP
+to write the accounting records to an "sql" module, or to proxy them
+to another RADIUS server.
+
+Then, start the server via the following command:
+
+$ radiusd -n radrelay
+
+The server should start up, read the detail file, and process
+accounting packets from it.
+.SH NOTES
+The \fBradiusd.conf\fP file is not read at all when the server is
+running as radrelay.  Please edit \fBradrelay.conf\fP.
+.SH CREDITS
+The original "radrelay" program was written by Miquel van Smoorenburg
+for the Cistron radius project, and ported to FreeRADIUS by Simon
+Ekstrand.  The "radsqlrelay" was written by Kostas Kalavras.  It was
+never released as part of an offical FreeRADIUS release, but served as
+a basis for the design of this implementation.
+.PP
+.SH FILES
+/etc/raddb/radrelay.conf
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Alan DeKok <aland@ox.org>

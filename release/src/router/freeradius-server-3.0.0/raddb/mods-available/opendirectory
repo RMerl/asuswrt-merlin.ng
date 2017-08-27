@@ -1,0 +1,13 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  This module is only used when the server is running on the same
+#  system as OpenDirectory.  The configuration of the module is hard-coded
+#  by Apple, and cannot be changed here.
+#
+#  There are no configuration entries for this module.
+#
+opendirectory {
+
+}

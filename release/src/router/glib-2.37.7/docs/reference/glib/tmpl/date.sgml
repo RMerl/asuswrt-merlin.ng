@@ -1,0 +1,636 @@
+<!-- ##### SECTION Title ##### -->
+Date and Time Functions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_USEC_PER_SEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT GTimeVal ##### -->
+<para>
+
+</para>
+
+@tv_sec: 
+@tv_usec: 
+
+<!-- ##### FUNCTION g_get_current_time ##### -->
+<para>
+
+</para>
+
+@result: 
+
+
+<!-- ##### FUNCTION g_usleep ##### -->
+<para>
+
+</para>
+
+@microseconds: 
+
+
+<!-- ##### FUNCTION g_time_val_add ##### -->
+<para>
+
+</para>
+
+@time_: 
+@microseconds: 
+
+
+<!-- ##### FUNCTION g_time_val_from_iso8601 ##### -->
+<para>
+
+</para>
+
+@iso_date: 
+@time_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_time_val_to_iso8601 ##### -->
+<para>
+
+</para>
+
+@time_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_monotonic_time ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_real_time ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### STRUCT GDate ##### -->
+<para>
+
+</para>
+
+@julian_days: 
+@julian: 
+@dmy: 
+@day: 
+@month: 
+@year: 
+
+<!-- ##### TYPEDEF GTime ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GDateDMY ##### -->
+<para>
+
+</para>
+
+@G_DATE_DAY: 
+@G_DATE_MONTH: 
+@G_DATE_YEAR: 
+
+<!-- ##### TYPEDEF GDateDay ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GDateMonth ##### -->
+<para>
+
+</para>
+
+@G_DATE_BAD_MONTH: 
+@G_DATE_JANUARY: 
+@G_DATE_FEBRUARY: 
+@G_DATE_MARCH: 
+@G_DATE_APRIL: 
+@G_DATE_MAY: 
+@G_DATE_JUNE: 
+@G_DATE_JULY: 
+@G_DATE_AUGUST: 
+@G_DATE_SEPTEMBER: 
+@G_DATE_OCTOBER: 
+@G_DATE_NOVEMBER: 
+@G_DATE_DECEMBER: 
+
+<!-- ##### TYPEDEF GDateYear ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GDateWeekday ##### -->
+<para>
+
+</para>
+
+@G_DATE_BAD_WEEKDAY: 
+@G_DATE_MONDAY: 
+@G_DATE_TUESDAY: 
+@G_DATE_WEDNESDAY: 
+@G_DATE_THURSDAY: 
+@G_DATE_FRIDAY: 
+@G_DATE_SATURDAY: 
+@G_DATE_SUNDAY: 
+
+<!-- ##### MACRO G_DATE_BAD_DAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_DATE_BAD_JULIAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_DATE_BAD_YEAR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_date_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_new_dmy ##### -->
+<para>
+
+</para>
+
+@day: 
+@month: 
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_new_julian ##### -->
+<para>
+
+</para>
+
+@julian_day: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_clear ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_dates: 
+
+
+<!-- ##### FUNCTION g_date_free ##### -->
+<para>
+
+</para>
+
+@date: 
+
+
+<!-- ##### FUNCTION g_date_set_day ##### -->
+<para>
+
+</para>
+
+@date: 
+@day: 
+
+
+<!-- ##### FUNCTION g_date_set_month ##### -->
+<para>
+
+</para>
+
+@date: 
+@month: 
+
+
+<!-- ##### FUNCTION g_date_set_year ##### -->
+<para>
+
+</para>
+
+@date: 
+@year: 
+
+
+<!-- ##### FUNCTION g_date_set_dmy ##### -->
+<para>
+
+</para>
+
+@date: 
+@day: 
+@month: 
+@y: 
+
+
+<!-- ##### FUNCTION g_date_set_julian ##### -->
+<para>
+
+</para>
+
+@date: 
+@julian_date: 
+
+
+<!-- ##### FUNCTION g_date_set_time ##### -->
+<para>
+
+</para>
+
+@date: 
+@time_: 
+
+
+<!-- ##### FUNCTION g_date_set_time_t ##### -->
+<para>
+
+</para>
+
+@date: 
+@timet: 
+
+
+<!-- ##### FUNCTION g_date_set_time_val ##### -->
+<para>
+
+</para>
+
+@date: 
+@timeval: 
+
+
+<!-- ##### FUNCTION g_date_set_parse ##### -->
+<para>
+
+</para>
+
+@date: 
+@str: 
+
+
+<!-- ##### FUNCTION g_date_add_days ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_days: 
+
+
+<!-- ##### FUNCTION g_date_subtract_days ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_days: 
+
+
+<!-- ##### FUNCTION g_date_add_months ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_months: 
+
+
+<!-- ##### FUNCTION g_date_subtract_months ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_months: 
+
+
+<!-- ##### FUNCTION g_date_add_years ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_years: 
+
+
+<!-- ##### FUNCTION g_date_subtract_years ##### -->
+<para>
+
+</para>
+
+@date: 
+@n_years: 
+
+
+<!-- ##### FUNCTION g_date_days_between ##### -->
+<para>
+
+</para>
+
+@date1: 
+@date2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_compare ##### -->
+<para>
+
+</para>
+
+@lhs: 
+@rhs: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_clamp ##### -->
+<para>
+
+</para>
+
+@date: 
+@min_date: 
+@max_date: 
+
+
+<!-- ##### FUNCTION g_date_order ##### -->
+<para>
+
+</para>
+
+@date1: 
+@date2: 
+
+
+<!-- ##### FUNCTION g_date_get_day ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_month ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_year ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_julian ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_weekday ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_day_of_year ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_days_in_month ##### -->
+<para>
+
+</para>
+
+@month: 
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_is_first_of_month ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_is_last_of_month ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_is_leap_year ##### -->
+<para>
+
+</para>
+
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_monday_week_of_year ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_monday_weeks_in_year ##### -->
+<para>
+
+</para>
+
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_sunday_week_of_year ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_sunday_weeks_in_year ##### -->
+<para>
+
+</para>
+
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_get_iso8601_week_of_year ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_strftime ##### -->
+<para>
+
+</para>
+
+@s: 
+@slen: 
+@format: 
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_to_struct_tm ##### -->
+<para>
+
+</para>
+
+@date: 
+@tm: 
+
+
+<!-- ##### FUNCTION g_date_valid ##### -->
+<para>
+
+</para>
+
+@date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_valid_day ##### -->
+<para>
+
+</para>
+
+@day: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_valid_month ##### -->
+<para>
+
+</para>
+
+@month: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_valid_year ##### -->
+<para>
+
+</para>
+
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_valid_dmy ##### -->
+<para>
+
+</para>
+
+@day: 
+@month: 
+@year: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_valid_julian ##### -->
+<para>
+
+</para>
+
+@julian_date: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_date_valid_weekday ##### -->
+<para>
+
+</para>
+
+@weekday: 
+@Returns: 
+
+

@@ -1,0 +1,23 @@
+libical is distributed under two licenses.
+You may choose the terms of either:
+
+ * The Mozilla Public License (MPL) v1.0
+ 
+ or
+ 
+ * The GNU Library General Public License (LGPL) v2.1
+
+----------------------------------------------------------------------
+
+Software distributed under these licenses is distributed on an "AS
+IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+implied. See the License for the specific language governing rights
+and limitations under the License.
+
+     The Original Code is libical. 
+
+     The Initial Developer of the Original Code is Eric Busboom
+
+     All Rights Reserved. 
+
+     Contributor(s): See individual source files.

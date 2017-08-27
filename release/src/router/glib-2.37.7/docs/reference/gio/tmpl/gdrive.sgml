@@ -1,0 +1,385 @@
+<!-- ##### SECTION Title ##### -->
+GDrive
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDrive ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDrive::changed ##### -->
+<para>
+
+</para>
+
+@gdrive: the object which received the signal.
+
+<!-- ##### SIGNAL GDrive::disconnected ##### -->
+<para>
+
+</para>
+
+@gdrive: the object which received the signal.
+
+<!-- ##### SIGNAL GDrive::eject-button ##### -->
+<para>
+
+</para>
+
+@gdrive: the object which received the signal.
+
+<!-- ##### SIGNAL GDrive::stop-button ##### -->
+<para>
+
+</para>
+
+@gdrive: the object which received the signal.
+
+<!-- ##### STRUCT GDriveIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@changed: 
+@disconnected: 
+@eject_button: 
+@get_name: 
+@get_icon: 
+@has_volumes: 
+@get_volumes: 
+@is_media_removable: 
+@has_media: 
+@is_media_check_automatic: 
+@can_eject: 
+@can_poll_for_media: 
+@eject: 
+@eject_finish: 
+@poll_for_media: 
+@poll_for_media_finish: 
+@get_identifier: 
+@enumerate_identifiers: 
+@get_start_stop_type: 
+@can_start: 
+@can_start_degraded: 
+@start: 
+@start_finish: 
+@can_stop: 
+@stop: 
+@stop_finish: 
+@stop_button: 
+@eject_with_operation: 
+@eject_with_operation_finish: 
+@get_sort_key: 
+@get_symbolic_icon: 
+
+<!-- ##### ENUM GDriveStartFlags ##### -->
+<para>
+
+</para>
+
+@G_DRIVE_START_NONE: 
+
+<!-- ##### ENUM GDriveStartStopType ##### -->
+<para>
+
+</para>
+
+@G_DRIVE_START_STOP_TYPE_UNKNOWN: 
+@G_DRIVE_START_STOP_TYPE_SHUTDOWN: 
+@G_DRIVE_START_STOP_TYPE_NETWORK: 
+@G_DRIVE_START_STOP_TYPE_MULTIDISK: 
+@G_DRIVE_START_STOP_TYPE_PASSWORD: 
+
+<!-- ##### FUNCTION g_drive_get_name ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_get_icon ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_get_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_has_volumes ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_get_volumes ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_can_eject ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_get_start_stop_type ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_can_start ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_can_start_degraded ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_can_stop ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_can_poll_for_media ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_poll_for_media ##### -->
+<para>
+
+</para>
+
+@drive: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_drive_poll_for_media_finish ##### -->
+<para>
+
+</para>
+
+@drive: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_has_media ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_is_media_check_automatic ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_is_media_removable ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_eject ##### -->
+<para>
+
+</para>
+
+@drive: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_drive_eject_finish ##### -->
+<para>
+
+</para>
+
+@drive: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_eject_with_operation ##### -->
+<para>
+
+</para>
+
+@drive: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_drive_eject_with_operation_finish ##### -->
+<para>
+
+</para>
+
+@drive: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_start ##### -->
+<para>
+
+</para>
+
+@drive: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_drive_start_finish ##### -->
+<para>
+
+</para>
+
+@drive: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_stop ##### -->
+<para>
+
+</para>
+
+@drive: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_drive_stop_finish ##### -->
+<para>
+
+</para>
+
+@drive: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_enumerate_identifiers ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_get_identifier ##### -->
+<para>
+
+</para>
+
+@drive: 
+@kind: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_drive_get_sort_key ##### -->
+<para>
+
+</para>
+
+@drive: 
+@Returns: 
+
+

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ -z "$(nvram get wds_watchdog_enable)" ]; then
+    nvram set wds_watchdog_enable=0
+    nvram set wds_watchdog_interval_sec=120
+    #nvram set need_commit=1
+fi
+killall -9 wdswatchdog.sh    
+if [ "$(nvram get wds_watchdog_enable)" = "1" ]; then    
+    /etc/config/wdswatchdog.sh&
+fi

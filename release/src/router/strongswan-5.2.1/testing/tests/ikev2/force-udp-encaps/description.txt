@@ -1,0 +1,6 @@
+The roadwarrior <b>alice</b> sitting behind the NAT router <b>moon</b> sets up a tunnel to
+gateway <b>sun</b>. Since the firewall on <b>sun</b> blocks the ESP protocol, enforced UDP
+encapsulation (<b>forceencaps=yes</b>) is used by <b>alice</b> to punch through this hurdle. 
+<b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules that let pass
+the tunneled traffic. In order to test the tunnel, host <b>alice</b> pings the
+client <b>bob</b> behind the gateway <b>sun</b>.

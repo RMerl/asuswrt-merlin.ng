@@ -1,0 +1,10 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
+The strong mutual authentication is based on <b>EAP-TTLS</b> only (without a separate IKEv2
+authentication) with the gateway being authenticated by a server certificate during the
+EAP-TLS tunnel setup (phase1 of EAP-TTLS). This tunnel protects the ensuing weak client
+authentication based on <b>EAP-MD5</b> (phase2 of EAP-TTLS).
+<p/>
+With the setting <b>charon.plugins.eap-ttls.phase2_piggyback = yes</b> the server <b>moon</b>
+initiates phase2 of the EAP-TTLS protocol by piggybacking a tunneled EAP Identity request
+right onto the TLS Finished message. Client <b>carol</b> presents the correct MD5 password
+and succeeds whereas client <b>dave</b> chooses the wrong password and fails.

@@ -1,0 +1,120 @@
+#!/bin/sh
+######################################################################
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+#
+#    Copyright (C) 2009 Network RADIUS SARL <info@networkradius.com>
+#
+######################################################################
+#
+#  This script assumes that "radmin" is in PATH, and that the user
+#  running this script has permission to connect to the radmin socket,
+#  and to read/write files in the "logdir" directory.  If none of this is
+#  true, then it won't work.
+#
+#   Usage: raddebug [-c condition] [-i client-ip-address] [-I client-ipv6-address] [-f socket_file] [-t timeout]  [-u username]
+#
+#
+
+usage() {
+    printf "Usage: %s: [-c condition] [-d directory] [-i client-ip-address] [-I client-ipv6-address] [-f socket_file] [-t timeout] [-u user]\n" $(basename $0) >&2
+    exit 2
+}
+
+extra=
+condition=1
+timeout=60
+while getopts 'd:c:i:I:f:t:u:' OPTION
+do
+  case $OPTION in
+  c)	condition="$OPTARG"
+	;;
+  d)    [ "$extra" = "" ] || usage
+	extra="-d $OPTARG"
+	;;
+  i)	condition="(Packet-Src-IP-Address == $OPTARG)"
+	;;
+  I)	condition="(Packet-Src-IPv6-Address == $OPTARG)"
+	;;
+  f)	[ "$extra" = "" ] || usage
+	extra="-f $OPTARG"
+	;;
+  t)	timeout="$OPTARG"
+	[ "$timeout" = "0" ] && timeout=1000000
+	;;
+  u)	condition="(User-Name == $OPTARG)"
+	;;
+  ?)	usage
+	;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+radmin="radmin $extra"
+
+#
+#  Start off by turning off debugging.
+#  If there's a problem, die.
+#
+$radmin -e "debug condition"
+if [ "$?" != "0" ]; then
+  exit 1
+fi
+
+#
+#  Debug to a file, and then tell us where the file is.
+#
+outfile=`$radmin -e "debug file radmin.debug.$$" -e "show debug file"`
+group=`$radmin -e "debug file radmin.debug.$$" -e "show config group"`
+
+#
+#  If there was an error setting the debug output, re-set the
+#  debug condition, echo the error, and exit.
+#
+echo $outfile | grep 'ERROR' >/dev/null 2>&1
+if [ "$?" = "0" ]; then
+  $radmin -e "debug condition"
+  echo $outfile
+  exit 1
+fi
+
+#
+#  Truncate the file, and ensure it's writable by radiusd
+#
+cp /dev/null $outfile
+[ "$group" != "" ] && chgrp $group $outfile
+chmod g+w $outfile
+
+TAILPID=$$
+
+#
+#  Set the trap to clean up on exit and any interrupts.
+#
+trap '$radmin -e "debug condition" -e "debug file"; rm -f $outfile;kill -TERM $TAILPID;exit 0' 1 2 15
+
+#
+#  Set the debug condition
+#
+$radmin -e "debug condition \"$condition\""
+
+#
+#  Print the output, and wait for "timeout".  Then, stop printing.
+#
+tail -f $outfile &
+TAILPID=$!
+sleep $timeout
+kill -TERM $TAILPID
+$radmin -e "debug condition" -e "debug file"
+rm -f $outfile

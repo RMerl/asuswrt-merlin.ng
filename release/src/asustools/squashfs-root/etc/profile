@@ -1,0 +1,17 @@
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/jffs/sbin:/jffs/bin:/jffs/usr/sbin:/jffs/usr/bin:/mmc/sbin:/mmc/bin:/mmc/usr/sbin:/mmc/usr/bin:/opt/sbin:/opt/bin:/opt/usr/sbin:/opt/usr/bin
+export LD_LIBRARY_PATH=/lib:/usr/lib:/jffs/lib:/jffs/usr/lib:/jffs/usr/local/lib:/mmc/lib:/mmc/usr/lib:/opt/lib:/opt/usr/lib
+export PS1='\u@\h:\w\$ '
+
+reboot() {
+  for f in /opt/etc/init.d/K* ; do
+    [ -x "$f" ] && "$f" stop
+  done
+  echo "$(nvram get rc_shutdown)" > /tmp/.rc_shutdown
+  if [ -f /tmp/.rc_shutdown ]; then
+    chmod +x /tmp/.rc_shutdown
+    /tmp/.rc_shutdown
+  fi
+  /sbin/reboot
+  }
+
+ 

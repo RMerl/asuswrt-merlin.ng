@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: How to define and implement interfaces</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt02.html" title="Part IV. Tutorial">
+<link rel="prev" href="howto-gobject-chainup.html" title="Chaining up">
+<link rel="next" href="howto-interface-implement.html" title="Implementing interfaces">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-gobject-chainup.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-interface-implement.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="howto-interface"></a>How to define and implement interfaces</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="sect1"><a href="howto-interface.html#howto-interface-define">Defining interfaces</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-implement.html">Implementing interfaces</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-prerequisite.html">Interface definition prerequisites</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-properties.html">Interface properties</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-override.html">Overriding interface methods</a></span></dt>
+</dl></div>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-define"></a>Defining interfaces</h2></div></div></div>
+<p>
+    The bulk of interface definition has already been shown in <a class="xref" href="gtype-non-instantiable-classed.html" title="Non-instantiable classed types: interfaces">the section called “Non-instantiable classed types: interfaces”</a>
+    but I feel it is needed to show exactly how to create an interface.
+  </p>
+<p>
+    As above, the first step is to get the header right. This interface
+    defines two methods:
+</p>
+<pre class="programlisting">
+#ifndef __MAMAN_IBAZ_H__
+#define __MAMAN_IBAZ_H__
+
+#include &lt;glib-object.h&gt;
+
+#define MAMAN_TYPE_IBAZ                 (maman_ibaz_get_type ())
+#define MAMAN_IBAZ(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAMAN_TYPE_IBAZ, MamanIbaz))
+#define MAMAN_IS_IBAZ(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAMAN_TYPE_IBAZ))
+#define MAMAN_IBAZ_GET_INTERFACE(inst)  (G_TYPE_INSTANCE_GET_INTERFACE ((inst), MAMAN_TYPE_IBAZ, MamanIbazInterface))
+
+
+typedef struct _MamanIbaz               MamanIbaz; /* dummy object */
+typedef struct _MamanIbazInterface      MamanIbazInterface;
+
+struct _MamanIbazInterface
+{
+  GTypeInterface parent_iface;
+
+  void (*do_action) (MamanIbaz *self);
+  void (*do_something) (MamanIbaz *self);
+};
+
+GType maman_ibaz_get_type (void);
+
+void maman_ibaz_do_action    (MamanIbaz *self);
+void maman_ibaz_do_something (MamanIbaz *self);
+
+#endif /* __MAMAN_IBAZ_H__ */
+</pre>
+<p>
+    This code is the same as the code for a normal <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a>
+    which derives from a <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> except for a few details:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+        The <code class="function">_GET_CLASS</code> macro is called <code class="function">_GET_INTERFACE</code>
+                  and not implemented with <code class="function"><a class="link" href="gobject-Type-Information.html#G-TYPE-INSTANCE-GET-CLASS:CAPS" title="G_TYPE_INSTANCE_GET_CLASS()">G_TYPE_INSTANCE_GET_CLASS</a></code>
+                  but with <code class="function"><a class="link" href="gobject-Type-Information.html#G-TYPE-INSTANCE-GET-INTERFACE:CAPS" title="G_TYPE_INSTANCE_GET_INTERFACE()">G_TYPE_INSTANCE_GET_INTERFACE</a></code>.
+      </p></li>
+<li class="listitem"><p>
+        The instance type, <span class="type">MamanIbaz</span> is not fully defined: it is
+        used merely as an abstract type which represents an instance of
+        whatever object which implements the interface.
+      </p></li>
+<li class="listitem"><p>
+        The parent of the <span class="type">MamanIbazInterface</span> is not
+        <span class="type">GObjectClass</span> but <span class="type">GTypeInterface</span>.
+      </p></li>
+</ul></div>
+<p>
+  </p>
+<p>
+    The implementation of the <span class="type">MamanIbaz</span> type itself is trivial:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS" title="G_DEFINE_INTERFACE()">G_DEFINE_INTERFACE</a></code>
+       creates a <code class="function">maman_ibaz_get_type</code> function which registers the
+       type in the type system. The third argument is used to define a
+       <a class="link" href="howto-interface-prerequisite.html" title="Interface definition prerequisites">prerequisite interface</a>
+       (which we'll talk about more later). Just pass <code class="code">0</code> for this
+       argument when an interface has no prerequisite.
+       </p></li>
+<li class="listitem"><p><code class="function">maman_ibaz_default_init</code> is expected
+      to register the interface's signals if there are any (we will see a bit
+      later how to use them).</p></li>
+<li class="listitem"><p>The interface methods <code class="function">maman_ibaz_do_action</code>
+      and <code class="function">maman_ibaz_do_something</code> dereference the interface
+      structure to access its associated interface function and call it.
+      </p></li>
+</ul></div>
+<p>
+</p>
+<pre class="programlisting">
+G_DEFINE_INTERFACE (MamanIbaz, maman_ibaz, 0);
+
+static void
+maman_ibaz_default_init (gpointer g_class)
+{
+    /* add properties and signals to the interface here */
+}
+
+void
+maman_ibaz_do_action (MamanIbaz *self)
+{
+  g_return_if_fail (MAMAN_IS_IBAZ (self));
+
+  MAMAN_IBAZ_GET_INTERFACE (self)-&gt;do_action (self);
+}
+
+void
+maman_ibaz_do_something (MamanIbaz *self)
+{
+  g_return_if_fail (MAMAN_IS_IBAZ (self));
+
+  MAMAN_IBAZ_GET_INTERFACE (self)-&gt;do_something (self);
+}
+</pre>
+<p>
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="GUDev Reference Manual" link="index.html" author="David ZeuthenBastien Nocera" name="gudev">
+  <chapters>
+    <sub name="API Reference" link="ref-API.html">
+      <sub name="GUdevClient" link="GUdevClient.html"/>
+      <sub name="GUdevDevice" link="GUdevDevice.html"/>
+      <sub name="GUdevEnumerator" link="GUdevEnumerator.html"/>
+    </sub>
+    <sub name="Object Hierarchy" link="gudev-hierarchy.html"/>
+    <sub name="Index" link="ix01.html"/>
+    <sub name="Index of new symbols in 165" link="ix02.html"/>
+  </chapters>
+  <functions>
+    <function name="GUdevClient" link="GUdevClient.html#GUdevClient-struct"/>
+    <function name="struct GUdevClientClass" link="GUdevClient.html#GUdevClientClass"/>
+    <function name="enum GUdevDeviceType" link="GUdevClient.html#GUdevDeviceType"/>
+    <function name="GUdevDeviceNumber" link="GUdevClient.html#GUdevDeviceNumber"/>
+    <function name="g_udev_client_new ()" link="GUdevClient.html#g-udev-client-new"/>
+    <function name="g_udev_client_query_by_subsystem ()" link="GUdevClient.html#g-udev-client-query-by-subsystem"/>
+    <function name="g_udev_client_query_by_device_number ()" link="GUdevClient.html#g-udev-client-query-by-device-number"/>
+    <function name="g_udev_client_query_by_device_file ()" link="GUdevClient.html#g-udev-client-query-by-device-file"/>
+    <function name="g_udev_client_query_by_sysfs_path ()" link="GUdevClient.html#g-udev-client-query-by-sysfs-path"/>
+    <function name="g_udev_client_query_by_subsystem_and_name ()" link="GUdevClient.html#g-udev-client-query-by-subsystem-and-name"/>
+    <function name="The &quot;subsystems&quot; property" link="GUdevClient.html#GUdevClient--subsystems"/>
+    <function name="The &quot;uevent&quot; signal" link="GUdevClient.html#GUdevClient-uevent"/>
+    <function name="GUdevDevice" link="GUdevDevice.html#GUdevDevice-struct"/>
+    <function name="struct GUdevDeviceClass" link="GUdevDevice.html#GUdevDeviceClass"/>
+    <function name="g_udev_device_get_subsystem ()" link="GUdevDevice.html#g-udev-device-get-subsystem"/>
+    <function name="g_udev_device_get_devtype ()" link="GUdevDevice.html#g-udev-device-get-devtype"/>
+    <function name="g_udev_device_get_name ()" link="GUdevDevice.html#g-udev-device-get-name"/>
+    <function name="g_udev_device_get_number ()" link="GUdevDevice.html#g-udev-device-get-number"/>
+    <function name="g_udev_device_get_sysfs_path ()" link="GUdevDevice.html#g-udev-device-get-sysfs-path"/>
+    <function name="g_udev_device_get_driver ()" link="GUdevDevice.html#g-udev-device-get-driver"/>
+    <function name="g_udev_device_get_action ()" link="GUdevDevice.html#g-udev-device-get-action"/>
+    <function name="g_udev_device_get_seqnum ()" link="GUdevDevice.html#g-udev-device-get-seqnum"/>
+    <function name="g_udev_device_get_device_type ()" link="GUdevDevice.html#g-udev-device-get-device-type"/>
+    <function name="g_udev_device_get_device_number ()" link="GUdevDevice.html#g-udev-device-get-device-number"/>
+    <function name="g_udev_device_get_device_file ()" link="GUdevDevice.html#g-udev-device-get-device-file"/>
+    <function name="g_udev_device_get_device_file_symlinks ()" link="GUdevDevice.html#g-udev-device-get-device-file-symlinks"/>
+    <function name="g_udev_device_get_parent ()" link="GUdevDevice.html#g-udev-device-get-parent"/>
+    <function name="g_udev_device_get_parent_with_subsystem ()" link="GUdevDevice.html#g-udev-device-get-parent-with-subsystem"/>
+    <function name="g_udev_device_get_tags ()" link="GUdevDevice.html#g-udev-device-get-tags"/>
+    <function name="g_udev_device_get_is_initialized ()" link="GUdevDevice.html#g-udev-device-get-is-initialized"/>
+    <function name="g_udev_device_get_usec_since_initialized ()" link="GUdevDevice.html#g-udev-device-get-usec-since-initialized"/>
+    <function name="g_udev_device_get_property_keys ()" link="GUdevDevice.html#g-udev-device-get-property-keys"/>
+    <function name="g_udev_device_has_property ()" link="GUdevDevice.html#g-udev-device-has-property"/>
+    <function name="g_udev_device_get_property ()" link="GUdevDevice.html#g-udev-device-get-property"/>
+    <function name="g_udev_device_get_property_as_int ()" link="GUdevDevice.html#g-udev-device-get-property-as-int"/>
+    <function name="g_udev_device_get_property_as_uint64 ()" link="GUdevDevice.html#g-udev-device-get-property-as-uint64"/>
+    <function name="g_udev_device_get_property_as_double ()" link="GUdevDevice.html#g-udev-device-get-property-as-double"/>
+    <function name="g_udev_device_get_property_as_boolean ()" link="GUdevDevice.html#g-udev-device-get-property-as-boolean"/>
+    <function name="g_udev_device_get_property_as_strv ()" link="GUdevDevice.html#g-udev-device-get-property-as-strv"/>
+    <function name="g_udev_device_get_sysfs_attr ()" link="GUdevDevice.html#g-udev-device-get-sysfs-attr"/>
+    <function name="g_udev_device_get_sysfs_attr_as_int ()" link="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-int"/>
+    <function name="g_udev_device_get_sysfs_attr_as_uint64 ()" link="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-uint64"/>
+    <function name="g_udev_device_get_sysfs_attr_as_double ()" link="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-double"/>
+    <function name="g_udev_device_get_sysfs_attr_as_boolean ()" link="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-boolean"/>
+    <function name="g_udev_device_get_sysfs_attr_as_strv ()" link="GUdevDevice.html#g-udev-device-get-sysfs-attr-as-strv"/>
+    <function name="GUdevEnumerator" link="GUdevEnumerator.html#GUdevEnumerator-struct"/>
+    <function name="struct GUdevEnumeratorClass" link="GUdevEnumerator.html#GUdevEnumeratorClass"/>
+    <function name="g_udev_enumerator_new ()" link="GUdevEnumerator.html#g-udev-enumerator-new"/>
+    <function name="g_udev_enumerator_add_match_subsystem ()" link="GUdevEnumerator.html#g-udev-enumerator-add-match-subsystem"/>
+    <function name="g_udev_enumerator_add_nomatch_subsystem ()" link="GUdevEnumerator.html#g-udev-enumerator-add-nomatch-subsystem"/>
+    <function name="g_udev_enumerator_add_match_sysfs_attr ()" link="GUdevEnumerator.html#g-udev-enumerator-add-match-sysfs-attr"/>
+    <function name="g_udev_enumerator_add_nomatch_sysfs_attr ()" link="GUdevEnumerator.html#g-udev-enumerator-add-nomatch-sysfs-attr"/>
+    <function name="g_udev_enumerator_add_match_property ()" link="GUdevEnumerator.html#g-udev-enumerator-add-match-property"/>
+    <function name="g_udev_enumerator_add_match_name ()" link="GUdevEnumerator.html#g-udev-enumerator-add-match-name"/>
+    <function name="g_udev_enumerator_add_match_tag ()" link="GUdevEnumerator.html#g-udev-enumerator-add-match-tag"/>
+    <function name="g_udev_enumerator_add_match_is_initialized ()" link="GUdevEnumerator.html#g-udev-enumerator-add-match-is-initialized"/>
+    <function name="g_udev_enumerator_add_sysfs_path ()" link="GUdevEnumerator.html#g-udev-enumerator-add-sysfs-path"/>
+    <function name="g_udev_enumerator_execute ()" link="GUdevEnumerator.html#g-udev-enumerator-execute"/>
+    <function name="The &quot;client&quot; property" link="GUdevEnumerator.html#GUdevEnumerator--client"/>
+  </functions>
+</book>

@@ -1,0 +1,204 @@
+/*======================================================================
+ FILE: icalderivedparameters.{c,h}
+ CREATOR: eric 09 May 1999
+
+ (C) COPYRIGHT 2000, Eric Busboom, http://www.softwarestudio.org
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of either:
+
+    The LGPL as published by the Free Software Foundation, version
+    2.1, available at: http://www.fsf.org/copyleft/lesser.html
+
+ Or:
+
+    The Mozilla Public License Version 1.0. You may obtain a copy of
+    the License at http://www.mozilla.org/MPL/
+
+ Contributions from:
+    Graham Davison (g.m.davison@computer.org)
+======================================================================*/
+/*#line 29 "icalparameter.c.in"*/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "icalderivedparameter.h"
+#include "icalparameter.h"
+#include "icalparameterimpl.h"
+#include "icalerror.h"
+#include "icalmemory.h"
+#include "icaltime.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+icalvalue_kind icalparameter_value_to_value_kind(icalparameter_value value);
+
+struct icalparameter_impl* icalparameter_new_impl(icalparameter_kind kind);
+
+/* This map associates each of the parameters with the string
+   representation of the parameter's name */
+struct icalparameter_kind_map {
+    icalparameter_kind kind;
+    const char *name;
+
+};
+
+/* This map associates the enumerations for the VALUE parameter with
+   the kinds of VALUEs. */
+
+struct icalparameter_value_kind_map {
+    icalparameter_value value;
+    icalvalue_kind kind;
+};
+
+/* This map associates the parameter enumerations with a specific parameter and the string representation of the enumeration */
+
+struct icalparameter_map {
+    icalparameter_kind kind;
+    int enumeration;
+    const char* str;
+};
+
+
+
+<insert_code_here>
+
+const char* icalparameter_kind_to_string(icalparameter_kind kind)
+{
+    int i;
+
+    for (i=0; parameter_map[i].kind != ICAL_NO_PARAMETER; i++) {
+        if (parameter_map[i].kind == kind) {
+            return parameter_map[i].name;
+        }
+    }
+
+    return 0;
+
+}
+
+int icalparameter_compare_kind_map(const struct icalparameter_kind_map *a, const struct icalparameter_kind_map *b)
+{
+    return strcasecmp(a->name, b->name);
+}
+
+icalparameter_kind icalparameter_string_to_kind(const char* string)
+{
+    struct icalparameter_kind_map key;
+    struct icalparameter_kind_map *result;
+
+    if (string == 0) {
+        return ICAL_NO_PARAMETER;
+    }
+
+    key.kind = ICAL_ANY_PARAMETER;
+    key.name = string;
+    result = bsearch(&key, parameter_map, sizeof(parameter_map) / sizeof(struct icalparameter_kind_map), sizeof(struct icalparameter_kind_map), (int(*)(const void *, const void *))icalparameter_compare_kind_map);
+
+    if (result) {
+        return result->kind;
+    }
+
+    if (strncmp(string,"X-",2) == 0) {
+        return ICAL_X_PARAMETER;
+    }
+
+    if (ical_get_unknown_token_handling_setting() == ICAL_TREAT_AS_ERROR) {
+        return ICAL_NO_PARAMETER;
+    } else {
+        return ICAL_IANA_PARAMETER;
+    }
+}
+
+
+icalvalue_kind icalparameter_value_to_value_kind(icalparameter_value value)
+{
+    int i;
+
+    for (i=0; value_kind_map[i].kind  != ICAL_NO_VALUE; i++) {
+
+        if (value_kind_map[i].value == value) {
+            return value_kind_map[i].kind;
+        }
+    }
+
+    return ICAL_NO_VALUE;
+}
+
+
+const char* icalparameter_enum_to_string(int e)
+{
+    int i;
+
+    icalerror_check_arg_rz(e >= ICALPARAMETER_FIRST_ENUM,"e");
+    icalerror_check_arg_rz(e <= ICALPARAMETER_LAST_ENUM,"e");
+
+    for (i=0; icalparameter_map[i].kind != ICAL_NO_PARAMETER; i++){
+        if(e == icalparameter_map[i].enumeration){
+            return icalparameter_map[i].str;
+        }
+    }
+
+    return 0;
+}
+
+int icalparameter_string_to_enum(const char* str)
+{
+    int i;
+
+    icalerror_check_arg_rz(str != 0,"str");
+
+    for (i=0; icalparameter_map[i].kind != ICAL_NO_PARAMETER; i++){
+        if(strcasecmp(str,icalparameter_map[i].str) == 0) {
+            return icalparameter_map[i].enumeration;
+        }
+    }
+
+    return 0;
+}
+
+icalparameter* icalparameter_new_from_value_string(icalparameter_kind kind,const  char* val)
+{
+
+    struct icalparameter_impl* param=0;
+    int found_kind = 0;
+    int i;
+
+    icalerror_check_arg_rz((val!=0),"val");
+
+    /* Search through the parameter map to find a matching kind */
+
+    param = icalparameter_new_impl(kind);
+    if (!param)
+        return 0;
+
+    for (i=0; icalparameter_map[i].kind != ICAL_NO_PARAMETER; i++){
+        if(kind == icalparameter_map[i].kind) {
+            found_kind = 1;
+            if(strcasecmp(val,icalparameter_map[i].str) == 0) {
+
+                param->data = (int)icalparameter_map[i].enumeration;
+                return param;
+            }
+        }
+    }
+
+    if(found_kind == 1){
+        /* The kind was in the parameter map, but the string did not
+           match, so assume that it is an alternate value, like an
+           X-value.*/
+
+        icalparameter_set_xvalue(param, val);
+
+    } else {
+
+        /* If the kind was not found, then it must be a string type */
+
+        ((struct icalparameter_impl*)param)->string = icalmemory_strdup(val);
+
+    }
+
+   return param;
+}

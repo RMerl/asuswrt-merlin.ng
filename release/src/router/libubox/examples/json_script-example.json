@@ -1,0 +1,38 @@
+[
+  [ "exec", "%EXECVAR%", "/%%/" ],
+  [ "if",
+    [ "eq", "EQVAR", "eqval" ],
+    [ "exec_if", "%VAR%", "%%", "jk" ]
+  ],
+  [ "case", "CASEVAR", {
+    "caseval0": ["cmd_case_0", "cmd_case_arg0", "case_cmd_arg1"],
+    "caseval1": ["cmd_case_1", "cmd_case_arg0", "case_cmd_arg1"]
+  } ],
+
+  [ "if",
+    [ "and", [ "eq", "EQVAR", "eqval" ],
+             [ "has", "HASVAR" ],
+             [ "regex", "REGEXVAR0", "regexval" ],
+             [ "regex", "REGEXVAR1", [ "regexval10", "regexval11" ] ],
+             [ "not", [ "eq", "NOTEQVAR", "noteqval" ] ] ],
+    [ "exec_if_and", "%ANDVAR%" ]
+  ],
+
+  [ "if",
+    [ "or", [ "eq", "EQVAR", "eqval" ],
+            [ "has", "HASVAR" ],
+            [ "regex", "REGEXVAR0", "regexval" ],
+            [ "regex", "REGEXVAR1", [ "regexval10", "regexval11" ] ],
+            [ "not", [ "eq", "NOTEQVAR", "noteqval" ] ] ],
+    [ "exec_if_or", "%ORVAR%" ]
+  ],
+
+  [ "if",
+	[ "isdir", "%ISDIRVAR%" ],
+	[ "exec_isdir", "%ISDIRVAR%" ]
+  ],
+
+  [ "return", "foobar" ],
+
+  [ "exec_non_reachable", "Arghhh" ]
+]

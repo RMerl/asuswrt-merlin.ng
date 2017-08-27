@@ -1,0 +1,565 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GPermission</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="permissions.html" title="Permissions">
+<link rel="prev" href="permissions.html" title="Permissions">
+<link rel="next" href="GSimplePermission.html" title="GSimplePermission">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GPermission.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GPermission.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GPermission.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="permissions.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="permissions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSimplePermission.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GPermission"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GPermission.top_of_page"></a>GPermission</span></h2>
+<p>GPermission — An object representing the permission to perform
+                    a certain action</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GPermission.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="GPermission.html#GPermission-struct" title="GPermission">GPermission</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-get-allowed" title="g_permission_get_allowed ()">g_permission_get_allowed</a>            (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-get-can-acquire" title="g_permission_get_can_acquire ()">g_permission_get_can_acquire</a>        (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-get-can-release" title="g_permission_get_can_release ()">g_permission_get_can_release</a>        (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>);
+
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-acquire" title="g_permission_acquire ()">g_permission_acquire</a>                (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GPermission.html#g-permission-acquire-async" title="g_permission_acquire_async ()">g_permission_acquire_async</a>          (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-acquire-finish" title="g_permission_acquire_finish ()">g_permission_acquire_finish</a>         (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-release" title="g_permission_release ()">g_permission_release</a>                (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GPermission.html#g-permission-release-async" title="g_permission_release_async ()">g_permission_release_async</a>          (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GPermission.html#g-permission-release-finish" title="g_permission_release_finish ()">g_permission_release_finish</a>         (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="GPermission.html#g-permission-impl-update" title="g_permission_impl_update ()">g_permission_impl_update</a>            (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> allowed</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> can_acquire</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> can_release</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPermission.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GPermission
+         +----<a class="link" href="GSimplePermission.html" title="GSimplePermission">GSimplePermission</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPermission.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GPermission.html#GPermission--allowed" title='The "allowed" property'>allowed</a>"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read
+  "<a class="link" href="GPermission.html#GPermission--can-acquire" title='The "can-acquire" property'>can-acquire</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read
+  "<a class="link" href="GPermission.html#GPermission--can-release" title='The "can-release" property'>can-release</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPermission.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> represents the status of the caller's permission to
+perform a certain action.
+</p>
+<p>
+You can query if the action is currently allowed and if it is
+possible to acquire the permission so that the action will be allowed
+in the future.
+</p>
+<p>
+There is also an API to actually acquire the permission and one to
+release it.
+</p>
+<p>
+As an example, a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> might represent the ability for the
+user to write to a <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a> object.  This <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> object could
+then be used to decide if it is appropriate to show a "Click here to
+unlock" button in a dialog and to provide the mechanism to invoke
+when that button is clicked.
+</p>
+</div>
+<div class="refsect1">
+<a name="GPermission.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GPermission-struct"></a><h3>GPermission</h3>
+<pre class="programlisting">typedef struct _GPermission GPermission;</pre>
+<p>
+<a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> is an opaque data structure and can only be accessed
+using the following functions.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-get-allowed"></a><h3>g_permission_get_allowed ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_get_allowed            (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>);</pre>
+<p>
+Gets the value of the 'allowed' property.  This property is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if
+the caller currently has permission to perform the action that
+<em class="parameter"><code>permission</code></em> represents the permission to perform.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of the 'allowed' property</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-get-can-acquire"></a><h3>g_permission_get_can_acquire ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_get_can_acquire        (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>);</pre>
+<p>
+Gets the value of the 'can-acquire' property.  This property is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>
+if it is generally possible to acquire the permission by calling
+<a class="link" href="GPermission.html#g-permission-acquire" title="g_permission_acquire ()"><code class="function">g_permission_acquire()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of the 'can-acquire' property</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-get-can-release"></a><h3>g_permission_get_can_release ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_get_can_release        (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>);</pre>
+<p>
+Gets the value of the 'can-release' property.  This property is <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>
+if it is generally possible to release the permission by calling
+<a class="link" href="GPermission.html#g-permission-release" title="g_permission_release ()"><code class="function">g_permission_release()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of the 'can-release' property</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-acquire"></a><h3>g_permission_acquire ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_acquire                (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Attempts to acquire the permission represented by <em class="parameter"><code>permission</code></em>.
+</p>
+<p>
+The precise method by which this happens depends on the permission
+and the underlying authentication mechanism.  A simple example is
+that a dialog may appear asking the user to enter their password.
+</p>
+<p>
+You should check with <a class="link" href="GPermission.html#g-permission-get-can-acquire" title="g_permission_get_can_acquire ()"><code class="function">g_permission_get_can_acquire()</code></a> before calling
+this function.
+</p>
+<p>
+If the permission is acquired then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned.  Otherwise,
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned and <em class="parameter"><code>error</code></em> is set appropriately.
+</p>
+<p>
+This call is blocking, likely for a very long time (in the case that
+user interaction is required).  See <a class="link" href="GPermission.html#g-permission-acquire-async" title="g_permission_acquire_async ()"><code class="function">g_permission_acquire_async()</code></a> for
+the non-blocking version.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a pointer to a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the permission was successfully acquired</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-acquire-async"></a><h3>g_permission_acquire_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_permission_acquire_async          (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Attempts to acquire the permission represented by <em class="parameter"><code>permission</code></em>.
+</p>
+<p>
+This is the first half of the asynchronous version of
+<a class="link" href="GPermission.html#g-permission-acquire" title="g_permission_acquire ()"><code class="function">g_permission_acquire()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when done</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the user data to pass to <em class="parameter"><code>callback</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-acquire-finish"></a><h3>g_permission_acquire_finish ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_acquire_finish         (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Collects the result of attempting to acquire the permission
+represented by <em class="parameter"><code>permission</code></em>.
+</p>
+<p>
+This is the second half of the asynchronous version of
+<a class="link" href="GPermission.html#g-permission-acquire" title="g_permission_acquire ()"><code class="function">g_permission_acquire()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>the <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> given to the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a pointer to a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the permission was successfully acquired</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-release"></a><h3>g_permission_release ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_release                (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Attempts to release the permission represented by <em class="parameter"><code>permission</code></em>.
+</p>
+<p>
+The precise method by which this happens depends on the permission
+and the underlying authentication mechanism.  In most cases the
+permission will be dropped immediately without further action.
+</p>
+<p>
+You should check with <a class="link" href="GPermission.html#g-permission-get-can-release" title="g_permission_get_can_release ()"><code class="function">g_permission_get_can_release()</code></a> before calling
+this function.
+</p>
+<p>
+If the permission is released then <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned.  Otherwise,
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned and <em class="parameter"><code>error</code></em> is set appropriately.
+</p>
+<p>
+This call is blocking, likely for a very long time (in the case that
+user interaction is required).  See <a class="link" href="GPermission.html#g-permission-release-async" title="g_permission_release_async ()"><code class="function">g_permission_release_async()</code></a> for
+the non-blocking version.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a pointer to a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the permission was successfully released</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-release-async"></a><h3>g_permission_release_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_permission_release_async          (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Attempts to release the permission represented by <em class="parameter"><code>permission</code></em>.
+</p>
+<p>
+This is the first half of the asynchronous version of
+<a class="link" href="GPermission.html#g-permission-release" title="g_permission_release ()"><code class="function">g_permission_release()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when done</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the user data to pass to <em class="parameter"><code>callback</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-release-finish"></a><h3>g_permission_release_finish ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_permission_release_finish         (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Collects the result of attempting to release the permission
+represented by <em class="parameter"><code>permission</code></em>.
+</p>
+<p>
+This is the second half of the asynchronous version of
+<a class="link" href="GPermission.html#g-permission-release" title="g_permission_release ()"><code class="function">g_permission_release()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>the <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> given to the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a pointer to a <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the permission was successfully released</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-permission-impl-update"></a><h3>g_permission_impl_update ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_permission_impl_update            (<em class="parameter"><code><a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> *permission</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> allowed</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> can_acquire</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> can_release</code></em>);</pre>
+<p>
+This function is called by the <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> implementation to update
+the properties of the permission.  You should never call this
+function except from a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> implementation.
+</p>
+<p>
+GObject notify signals are generated, as appropriate.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>permission</code></em> :</span></p></td>
+<td>a <a class="link" href="GPermission.html" title="GPermission"><span class="type">GPermission</span></a> instance</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>allowed</code></em> :</span></p></td>
+<td>the new value for the 'allowed' property</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>can_acquire</code></em> :</span></p></td>
+<td>the new value for the 'can-acquire' property</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>can_release</code></em> :</span></p></td>
+<td>the new value for the 'can-release' property</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GPermission.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GPermission--allowed"></a><h3>The <code class="literal">"allowed"</code> property</h3>
+<pre class="programlisting">  "allowed"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
+<p>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the caller currently has permission to perform the action that
+<em class="parameter"><code>permission</code></em> represents the permission to perform.
+</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPermission--can-acquire"></a><h3>The <code class="literal">"can-acquire"</code> property</h3>
+<pre class="programlisting">  "can-acquire"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
+<p>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if it is generally possible to acquire the permission by calling
+<a class="link" href="GPermission.html#g-permission-acquire" title="g_permission_acquire ()"><code class="function">g_permission_acquire()</code></a>.
+</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPermission--can-release"></a><h3>The <code class="literal">"can-release"</code> property</h3>
+<pre class="programlisting">  "can-release"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
+<p>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if it is generally possible to release the permission by calling
+<a class="link" href="GPermission.html#g-permission-release" title="g_permission_release ()"><code class="function">g_permission_release()</code></a>.
+</p>
+<p>Default value: FALSE</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

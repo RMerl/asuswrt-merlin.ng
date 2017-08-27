@@ -1,0 +1,15 @@
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppoe.o pppoe.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppoehash.o pppoehash.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppoe_client.o pppoe_client.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppoe_relay.o pppoe_relay.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppoe_server.o pppoe_server.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o utils.o utils.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o libpppoe.o libpppoe.c
+ar -rc libpppoe.a pppoehash.o pppoe_client.o pppoe_relay.o pppoe_server.o utils.o libpppoe.o
+mips-linux-gcc -o pppoe.so -shared pppoe.o libpppoe.a
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppoed.o pppoed.c
+mips-linux-gcc -I.. -I../.. -I../../../include -D_linux_=1 -fPIC   -c -o pppd_utils.o pppd_utils.c
+mips-linux-gcc -o pppoed pppoed.o pppd_utils.o libpppoe.a
+/usr/crossdev/mips/mips-linux/lib/libc.so.6: undefined reference to `no symbol'
+collect2: ld returned 1 exit status
+make: *** [pppoed] Error 1

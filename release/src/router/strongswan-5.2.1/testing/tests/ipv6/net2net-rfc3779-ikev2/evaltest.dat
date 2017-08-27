@@ -1,0 +1,9 @@
+moon:: ipsec status 2> /dev/null::net-net.*ESTABLISHED.*moon.strongswan.org.*sun.strongswan.org::YES
+sun::  ipsec status 2> /dev/null::net.net.*ESTABLISHED.*sun.strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::net-net.*INSTALLED, TUNNEL::YES
+sun::  ipsec status 2> /dev/null::net.net.*INSTALLED, TUNNEL::YES
+moon:: cat /var/log/daemon.log::TS fec2:\:/16 is contained in address block constraint fec2:\:/16::YES
+sun::  cat /var/log/daemon.log::TS fec1:\:/16 is contained in address block constraint fec1:\:/16::YES
+alice::ping6 -c 1 -p deadbeef ip6-bob.strongswan.org::64 bytes from ip6-bob.strongswan.org: icmp_seq=1::YES
+sun::tcpdump::IP6 ip6-moon.strongswan.org > ip6-sun.strongswan.org: ESP::YES
+sun::tcpdump::IP6 ip6-sun.strongswan.org > ip6-moon.strongswan.org: ESP::YES

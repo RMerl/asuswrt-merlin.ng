@@ -1,0 +1,75 @@
+#!/bin/sh
+TC=/usr/sbin/tc
+IPTABLES=/usr/sbin/iptables
+IP=/usr/sbin/ip
+if [ "$1" = "status" ]
+then
+	$TC -s qdisc ls dev $2
+	$TC -s class ls dev $2
+	$TC -s qdisc ls dev imq$3
+	$TC -s class ls dev imq$3
+	exit
+fi
+$TC qdisc del dev $3 root    2> /dev/null > /dev/null
+$TC qdisc del dev imq$5 root  2> /dev/null > /dev/null
+$IP link set imq$5 down
+if [ "$1" = "stop" ]
+then
+	exit
+fi
+$TC qdisc add dev $3 root handle 1: htb default 30
+$TC class add dev $3 parent 1: classid 1:1 htb rate 100mbit burst 1000k quantum $((${4}+18))
+$TC class add dev $3 parent 1:1 classid 1:100 htb rate 100mbit ceil 100mbit burst 1000k prio 2 quantum $((${4}+18))
+$TC class add dev $3 parent 1:1 classid 1:2 htb rate $2kbit burst 6k prio 3 quantum $((${4}+18))
+$TC class add dev $3 parent 1:2 classid 1:10 htb rate $((75*${2}/100))kbit ceil $2kbit burst 6k prio 4 quantum $((${4}+18))
+$TC class add dev $3 parent 1:2 classid 1:20 htb rate $((15*${2}/100))kbit ceil $2kbit burst 6k prio 5 quantum $((${4}+18))
+$TC class add dev $3 parent 1:2 classid 1:30 htb rate $((10*${2}/100))kbit ceil $2kbit burst 6k prio 6 quantum $((${4}+18))
+$TC class add dev $3 parent 1:2 classid 1:40 htb rate 1kbit ceil $2kbit burst 6k prio 7 quantum $((${4}+18))
+$TC qdisc add dev $3 parent 1:100 handle 100: sfq perturb 10
+$TC qdisc add dev $3 parent 1:10 handle 10: sfq perturb 10
+$TC qdisc add dev $3 parent 1:20 handle 20: sfq perturb 10
+$TC qdisc add dev $3 parent 1:30 handle 30: sfq perturb 10
+$TC qdisc add dev $3 parent 1:40 handle 40: sfq perturb 10
+$TC qdisc add dev $3 parent 1:50 handle 50: sfq perturb 10
+$TC filter add dev $3 parent 1:0 protocol ip prio 2 handle 100 fw flowid 1:100
+$TC filter add dev $3 parent 1:0 protocol ip prio 3 handle 40 fw flowid 1:40
+$TC filter add dev $3 parent 1:0 protocol ip prio 5 handle 30 fw flowid 1:30
+$TC filter add dev $3 parent 1:0 protocol ip prio 7 handle 20 fw flowid 1:20
+$TC filter add dev $3 parent 1:0 protocol ip prio 9 handle 10 fw flowid 1:10
+$TC filter add dev $3 parent 1:0 protocol ip prio 4 u32 match ip protocol 1 0xff flowid 1:10
+$TC filter add dev $3 parent 1:0 protocol ip prio 4 u32 \
+     match ip protocol 6 0xff \
+     match u8 0x05 0x0f at 0 \
+     match u16 0x0000 0xffc0 at 2 \
+     match u8 0x10 0xff at 33 \
+     flowid 1:10
+
+if [ "$1" != "0" ] ; then 
+$IP link set imq$5 down
+$IP link set imq$5 up
+$TC qdisc add dev imq$5 root handle 1: htb default 30
+$TC class add dev imq$5 parent 1: classid 1:1 htb rate 100mbit burst 1000k quantum $((${4}+18))
+$TC class add dev imq$5 parent 1:1 classid 1:100 htb rate 100mbit ceil 100mbit burst 1000k prio 2 quantum $((${4}+18))
+$TC class add dev imq$5 parent 1:1 classid 1:2 htb rate $1kbit burst 6k prio 3 quantum $((${4}+18))
+$TC class add dev imq$5 parent 1:2 classid 1:10 htb rate $((75*${1}/100))kbit ceil $1kbit burst 6k prio 4 quantum $((${4}+18))
+$TC class add dev imq$5 parent 1:2 classid 1:20 htb rate $((15*${1}/100))kbit ceil $1kbit burst 6k prio 5 quantum $((${4}+18))
+$TC class add dev imq$5 parent 1:2 classid 1:30 htb rate $((10*${1}/100))kbit ceil $1kbit burst 6k prio 6 quantum $((${4}+18))
+$TC class add dev imq$5 parent 1:2 classid 1:40 htb rate 1kbit ceil $1kbit burst 6k prio 7 quantum $((${4}+18))
+$TC qdisc add dev imq$5 parent 1:100 handle 100: sfq perturb 10
+$TC qdisc add dev imq$5 parent 1:10 handle 10: sfq perturb 10
+$TC qdisc add dev imq$5 parent 1:20 handle 20: red bandwidth $((8*${1}/10))kbit limit 1000000 min 5000 max 100000 avpkt 1000 burst 50 ecn
+$TC qdisc add dev imq$5 parent 1:30 handle 30: red bandwidth $((7*${1}/10))kbit limit  500000 min 2500 max  50000 avpkt  500 burst 25 ecn
+$TC qdisc add dev imq$5 parent 1:40 handle 40: red limit 250000 min 1250 max 25000 avpkt 250 burst 10 ecn
+$TC filter add dev imq$5 parent 1:0 protocol ip prio 5 u32 \
+   match ip protocol 6 0xff \
+   match u8 0x05 0x0f at 0 \
+   match u16 0x0000 0xffc0 at 2 \
+   match u8 0x10 0xff at 33 \
+   flowid 1:10
+$TC filter add dev imq$5 parent 1:0 protocol ip prio 10 handle 40 fw flowid 1:40
+$TC filter add dev imq$5 parent 1:0 protocol ip prio 9 handle 30 fw flowid 1:30
+$TC filter add dev imq$5 parent 1:0 protocol ip prio 8 handle 20 fw flowid 1:20
+$TC filter add dev imq$5 parent 1:0 protocol ip prio 7 handle 10 fw flowid 1:10
+$TC filter add dev imq$5 parent 1:0 protocol ip prio 6 handle 100 fw flowid 1:100
+
+fi

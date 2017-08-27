@@ -1,0 +1,276 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_PREREQ(2.59)
+AC_INIT(aplay/aplay.c)
+AC_PREFIX_DEFAULT(/usr)
+AM_INIT_AUTOMAKE(alsa-utils, 1.0.23)
+
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.15])
+
+dnl Checks for programs.
+
+dnl try to gues cross-compiler if not set
+if test "x$target" != "x$host" -a -z "`echo $CC | grep -e '-gcc'`";
+then
+  AC_MSG_CHECKING(for cross-compiler)
+
+  which ${program_prefix}gcc >/dev/null 2>&1 && CC=${program_prefix}gcc
+  which ${target_cpu}-${target_os}-gcc >/dev/null 2>&1 \
+  && CC=${target_cpu}-${target-os}-gcc
+  which ${target_cpu}-${target_vendor}-${target_os}-gcc >/dev/null 2>&1 \
+  && CC=${target_cpu}-${target_vendor}-${target_os}-gcc
+
+  AC_MSG_RESULT($CC)
+fi
+
+AC_PROG_CC
+dnl AC_PROG_CXX
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AM_PATH_ALSA(1.0.16)
+
+dnl Check components
+AC_CHECK_HEADERS([alsa/pcm.h], [have_pcm="yes"], [have_pcm="no"],
+  [#include <alsa/asoundlib.h>])
+AC_CHECK_HEADERS([alsa/mixer.h], [have_mixer="yes"], [have_mixer="no"],
+  [#include <alsa/asoundlib.h>])
+AC_CHECK_HEADERS([alsa/rawmidi.h], [have_rawmidi="yes"], [have_rawmidi="no"],
+  [#include <alsa/asoundlib.h>])
+AC_CHECK_HEADERS([alsa/seq.h], [have_seq="yes"], [have_seq="no"],
+  [#include <alsa/asoundlib.h>])
+
+AM_CONDITIONAL(HAVE_PCM, test "$have_pcm" = "yes")
+AM_CONDITIONAL(HAVE_MIXER, test "$have_mixer" = "yes")
+AM_CONDITIONAL(HAVE_RAWMIDI, test "$have_rawmidi" = "yes")
+AM_CONDITIONAL(HAVE_SEQ, test "$have_seq" = "yes")
+
+dnl Check for librt
+LIBRT=""
+AC_MSG_CHECKING(for librt)
+AC_ARG_WITH(librt,
+  AS_HELP_STRING([--with-librt], [Use librt for monotonic clock (default = yes)]),
+  [ have_librt="$withval" ], [ have_librt="yes" ])
+if test "$have_librt" = "yes"; then
+  AC_CHECK_LIB([rt], [clock_gettime], [HAVE_LIBRT="yes"])
+  if test "$HAVE_LIBRT" = "yes" ; then
+    LIBRT="-lrt"
+    AC_DEFINE([HAVE_LIBRT], 1, [Have librt])
+    AC_DEFINE([HAVE_CLOCK_GETTIME], 1, [Have clock gettime])
+  fi
+else
+  AC_MSG_RESULT(no)
+fi
+
+dnl Disable alsamixer
+CURSESINC=""
+CURSESLIB=""
+CURSES_CFLAGS=""
+alsamixer=
+if test "$have_mixer" = "yes"; then
+AC_ARG_ENABLE(alsamixer,
+     [  --disable-alsamixer     Disable alsamixer compilation],
+     [case "${enableval}" in
+       yes) alsamixer=true ;;
+       no)  alsamixer=false ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --enable-alsamixer) ;;
+     esac],[alsamixer=true])
+fi
+AM_CONDITIONAL(ALSAMIXER, test x$alsamixer = xtrue)
+
+dnl Disable alsaconf
+AC_ARG_ENABLE(alsaconf,
+     [  --disable-alsaconf      Disable alsaconf packaging],
+     [case "${enableval}" in
+       yes) alsaconf=true ;;
+       no)  alsaconf=false ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --enable-alsaconf) ;;
+     esac],[alsaconf=true])
+AM_CONDITIONAL(ALSACONF, test x$alsaconf = xtrue)
+
+xmlto=""
+if test x"$alsaconf" = xtrue; then
+   AC_ARG_ENABLE(xmlto,
+     AS_HELP_STRING([--disable-xmlto], [Disable man page creation via xmlto]),
+     xmlto="$enableval", xmlto="yes")
+   if test "$xmlto" = "yes"; then
+      AC_CHECK_PROG([xmlto], [xmlto], [yes])
+   fi
+fi
+AM_CONDITIONAL(USE_XMLTO, test x"$xmlto" = xyes)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+if test x$alsamixer = xtrue; then
+  AC_ARG_WITH(curses,
+    [  --with-curses libname   Specify the curses library to use (default=auto)],
+    curseslib="$withval",
+    curseslib="auto")
+  CURSESLIBDIR=""
+  NCURSESLIBSUFFIX=""
+  CURSES_NLS="no"
+  if test "$curseslib" = "ncursesw" -o \( "$curseslib" = "auto" -a "$USE_NLS" = "yes" \); then
+    AC_CHECK_PROG([ncursesw5_config], [ncursesw5-config], [yes])
+    if test "$ncursesw5_config" = "yes"; then
+      CURSESINC="<ncurses.h>"
+      CURSESLIB=`ncursesw5-config --libs`
+      CURSESLIBDIR=`ncursesw5-config --libdir`
+      CURSES_CFLAGS=`ncursesw5-config --cflags`
+      curseslib="ncursesw"
+    else
+      AC_CHECK_LIB(ncursesw, initscr, 
+                 [ CURSESINC='<ncurses.h>'; CURSESLIB='-lncursesw'; curseslib="ncursesw"])
+    fi
+    if test -n "$CURSESINC"; then
+      NCURSESLIBSUFFIX="w"
+      CURSES_NLS="yes"
+    fi
+  fi
+  if test "$curseslib" = "ncurses" -o "$curseslib" = "auto"; then
+    AC_CHECK_PROG([ncurses5_config], [ncurses5-config], [yes])
+    if test "$ncurses5_config" = "yes"; then
+      CURSESINC="<ncurses.h>"
+      CURSESLIB=`ncurses5-config --libs`
+      CURSESLIBDIR=`ncurses5-config --libdir`
+      CURSES_CFLAGS=`ncurses5-config --cflags`
+      curseslib="ncurses"
+    else
+      AC_CHECK_LIB(ncurses, initscr, 
+                 [ CURSESINC='<ncurses.h>'; CURSESLIB='-lncurses'; curseslib="ncurses"])
+    fi
+  fi
+  if test "$curseslib" = "curses" -o "$curseslib" = "auto"; then
+    AC_CHECK_LIB(curses, initscr, 
+                 [ CURSESINC='<curses.h>'; CURSESLIB='-lcurses'; curseslib="curses"])
+  fi
+  if test -z "$CURSESINC"; then
+     AC_MSG_ERROR(this packages requires a curses library)
+  fi
+
+  AC_MSG_CHECKING([for curses library])
+  AC_MSG_RESULT([$curseslib])
+  AC_MSG_CHECKING([for curses header name])
+  AC_MSG_RESULT([$CURSESINC])
+  AC_MSG_CHECKING([for curses compiler flags])
+  AC_MSG_RESULT([$CURSES_CFLAGS])
+
+  dnl CURSESLIBS might have the library path at the beginning.  If so, we cut it
+  dnl off so that we can insert the other curses libraries before the ncurses
+  dnl library but after the library path (which is later again prepended below).
+  if test -n "$CURSESLIBDIR"; then
+    if test "-L$CURSESLIBDIR " = "$(echo $CURSESLIB | cut -c-$((${#CURSESLIBDIR}+3)) )"; then
+      CURSESLIB="$(echo $CURSESLIB | cut -c$((${#CURSESLIBDIR}+4))-)"
+    fi
+  fi
+
+  saved_CFLAGS="$CFLAGS"
+  saved_LDFLAGS="$LDFLAGS"
+  saved_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $CURSES_CFLAGS"
+  if test -n "$CURSESLIBDIR"; then
+    LDFLAGS="$LDFLAGS -L$CURSESLIBDIR"
+  fi
+  LIBS="$CURSESLIB $LIBS"
+
+  AC_TRY_LINK([#include <panel.h>], [set_escdelay(100);],[HAVE_CURSES_ESCDELAY="yes"])
+  if test "$HAVE_CURSES_ESCDELAY" = "yes"; then
+    AC_DEFINE([HAVE_CURSES_ESCDELAY], 1, [Have curses set_escdelay])
+  fi
+
+  if test "$USE_NLS" = "yes"; then
+    AC_MSG_CHECKING([for curses NLS support])
+    dnl In theory, a single-byte curses works just fine in ISO 8859-* locales.
+    dnl In practice, however, everybody uses UTF-8 nowadays, so we'd better
+    dnl check for wide-character support.
+    dnl For ncurses/ncursesw, CURSES_NLS was already set above.
+    if test "$curseslib" = "curses"; then
+      AC_TRY_LINK([
+          #define _XOPEN_SOURCE 1
+          #define _XOPEN_SOURCE_EXTENDED 1
+          #include <curses.h>
+        ], [
+          cchar_t wc;
+          setcchar(&wc, L"x", A_NORMAL, 0, 0);
+        ],
+        [CURSES_NLS="yes"])
+    fi
+    AC_MSG_RESULT([$CURSES_NLS])
+    if test "$CURSES_NLS" = "yes"; then
+      AC_DEFINE([ENABLE_NLS_IN_CURSES], [1],
+                [Define if curses-based programs can show translated messages.])
+    fi
+  fi
+
+  AC_CHECK_HEADERS([panel.h menu.h form.h], [],
+                   [AC_MSG_ERROR([required curses helper header not found])])
+  AC_CHECK_LIB([panel$NCURSESLIBSUFFIX], [new_panel],
+               [CURSESLIB="-lpanel$NCURSESLIBSUFFIX $CURSESLIB"],
+               [AC_MSG_ERROR([panel$NCURSESLIBSUFFIX library not found])])
+  AC_CHECK_LIB([menu$NCURSESLIBSUFFIX], [new_menu],
+               [CURSESLIB="-lmenu$NCURSESLIBSUFFIX $CURSESLIB"],
+               [AC_MSG_ERROR([menu$NCURSESLIBSUFFIX library not found])])
+  AC_CHECK_LIB([form$NCURSESLIBSUFFIX], [new_form],
+               [CURSESLIB="-lform$NCURSESLIBSUFFIX $CURSESLIB"],
+               [AC_MSG_ERROR([form$NCURSESLIBSUFFIX library not found])])
+
+  CFLAGS="$saved_CFLAGS"
+  LDFLAGS="$saved_LDFLAGS"
+  LIBS="$saved_LIBS"
+
+  if test -n "$CURSESLIBDIR"; then
+    CURSESLIB="-L$CURSESLIBDIR $CURSESLIB"
+  fi
+
+  AC_MSG_CHECKING([for curses linker flags])
+  AC_MSG_RESULT([$CURSESLIB])
+fi
+
+AC_SUBST(CURSESINC)
+AC_SUBST(CURSESLIB)
+AC_SUBST(CURSES_CFLAGS)
+
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+
+eval dir="$datadir"
+case "$dir" in
+/*) ;;
+*) dir="$prefix/share"
+esac
+
+soundsdir="$dir/sounds/alsa"
+AC_DEFINE_UNQUOTED(SOUNDSDIR, "$soundsdir", [directory containing sample data])
+
+mydatadir="$dir/alsa"
+AC_DEFINE_UNQUOTED(DATADIR, "$mydatadir", [directory containing alsa configuration])
+
+AC_ARG_WITH(testsound,
+  [  --with-testsound=file        give the path of test sound file for alsaconf],
+  TESTSOUND="$withval",
+  TESTSOUND="$dir/test.wav")
+AC_SUBST(TESTSOUND)
+
+AM_CONFIG_HEADER(include/aconfig.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_INLINE
+AC_HEADER_TIME
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+
+dnl Enable largefile support
+AC_SYS_LARGEFILE
+
+SAVE_UTIL_VERSION
+
+AC_SUBST(LIBRT)
+
+AC_OUTPUT(Makefile alsactl/Makefile alsactl/init/Makefile \
+	  alsamixer/Makefile amidi/Makefile amixer/Makefile \
+	  m4/Makefile po/Makefile.in \
+	  alsaconf/alsaconf alsaconf/Makefile \
+	  alsaconf/po/Makefile \
+	  aplay/Makefile include/Makefile iecset/Makefile utils/Makefile \
+	  utils/alsa-utils.spec seq/Makefile seq/aconnect/Makefile \
+	  seq/aplaymidi/Makefile seq/aseqdump/Makefile seq/aseqnet/Makefile \
+	  speaker-test/Makefile speaker-test/samples/Makefile)

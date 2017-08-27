@@ -1,0 +1,25 @@
+charon.plugins.certexpire.csv.cron
+	Cron style string specifying CSV export times.
+
+charon.plugins.certexpire.csv.empty_string =
+	String to use in empty intermediate CA fields.
+
+charon.plugins.certexpire.csv.fixed_fields = yes
+	Use a fixed intermediate CA field count.
+
+charon.plugins.certexpire.csv.force = yes
+	Force export of all trustchains we have a private key for.
+
+charon.plugins.certexpire.csv.format = %d:%m:%Y
+	**strftime**(3) format string to export expiration dates as.
+
+charon.plugins.certexpire.csv.local
+	**strftime**(3) format string for the CSV file name to export local
+	certificates to.
+
+charon.plugins.certexpire.csv.remote
+	**strftime**(3) format string for the CSV file name to export remote
+	certificates to.
+
+charon.plugins.certexpire.csv.separator = ,
+	CSV field separator.

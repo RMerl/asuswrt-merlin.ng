@@ -1,0 +1,348 @@
+<!-- ##### SECTION Title ##### -->
+gapplication
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GApplication ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GApplication::activate ##### -->
+<para>
+
+</para>
+
+@gapplication: the object which received the signal.
+
+<!-- ##### SIGNAL GApplication::command-line ##### -->
+<para>
+
+</para>
+
+@gapplication: the object which received the signal.
+@arg1: 
+@Returns: 
+
+<!-- ##### SIGNAL GApplication::open ##### -->
+<para>
+
+</para>
+
+@gapplication: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+
+<!-- ##### SIGNAL GApplication::shutdown ##### -->
+<para>
+
+</para>
+
+@gapplication: the object which received the signal.
+
+<!-- ##### SIGNAL GApplication::startup ##### -->
+<para>
+
+</para>
+
+@gapplication: the object which received the signal.
+
+<!-- ##### ARG GApplication:action-group ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GApplication:application-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GApplication:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GApplication:inactivity-timeout ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GApplication:is-registered ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GApplication:is-remote ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GApplicationClass ##### -->
+<para>
+
+</para>
+
+@startup: 
+@activate: 
+@open: 
+@command_line: 
+@local_command_line: 
+@before_emit: 
+@after_emit: 
+@add_platform_data: 
+@quit_mainloop: 
+@run_mainloop: 
+@shutdown: 
+@dbus_register: 
+@dbus_unregister: 
+
+<!-- ##### ENUM GApplicationFlags ##### -->
+<para>
+
+</para>
+
+@G_APPLICATION_FLAGS_NONE: 
+@G_APPLICATION_IS_SERVICE: 
+@G_APPLICATION_IS_LAUNCHER: 
+@G_APPLICATION_HANDLES_OPEN: 
+@G_APPLICATION_HANDLES_COMMAND_LINE: 
+@G_APPLICATION_SEND_ENVIRONMENT: 
+@G_APPLICATION_NON_UNIQUE: 
+
+<!-- ##### FUNCTION g_application_id_is_valid ##### -->
+<para>
+
+</para>
+
+@application_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_new ##### -->
+<para>
+
+</para>
+
+@application_id: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_get_application_id ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_set_application_id ##### -->
+<para>
+
+</para>
+
+@application: 
+@application_id: 
+
+
+<!-- ##### FUNCTION g_application_get_inactivity_timeout ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_set_inactivity_timeout ##### -->
+<para>
+
+</para>
+
+@application: 
+@inactivity_timeout: 
+
+
+<!-- ##### FUNCTION g_application_get_flags ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_set_flags ##### -->
+<para>
+
+</para>
+
+@application: 
+@flags: 
+
+
+<!-- ##### FUNCTION g_application_get_dbus_connection ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_get_dbus_object_path ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_set_action_group ##### -->
+<para>
+
+</para>
+
+@application: 
+@action_group: 
+
+
+<!-- ##### FUNCTION g_application_get_is_registered ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_get_is_remote ##### -->
+<para>
+
+</para>
+
+@application: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_register ##### -->
+<para>
+
+</para>
+
+@application: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_hold ##### -->
+<para>
+
+</para>
+
+@application: 
+
+
+<!-- ##### FUNCTION g_application_release ##### -->
+<para>
+
+</para>
+
+@application: 
+
+
+<!-- ##### FUNCTION g_application_quit ##### -->
+<para>
+
+</para>
+
+@application: 
+
+
+<!-- ##### FUNCTION g_application_activate ##### -->
+<para>
+
+</para>
+
+@application: 
+
+
+<!-- ##### FUNCTION g_application_open ##### -->
+<para>
+
+</para>
+
+@application: 
+@files: 
+@n_files: 
+@hint: 
+
+
+<!-- ##### FUNCTION g_application_run ##### -->
+<para>
+
+</para>
+
+@application: 
+@argc: 
+@argv: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_set_default ##### -->
+<para>
+
+</para>
+
+@application: 
+
+
+<!-- ##### FUNCTION g_application_get_default ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_mark_busy ##### -->
+<para>
+
+</para>
+
+@application: 
+
+
+<!-- ##### FUNCTION g_application_unmark_busy ##### -->
+<para>
+
+</para>
+
+@application: 
+
+

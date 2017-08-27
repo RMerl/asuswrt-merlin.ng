@@ -1,0 +1,79 @@
+<!-- ##### SECTION Title ##### -->
+GMemoryInputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GMemoryInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_memory_input_stream_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_input_stream_new_from_data ##### -->
+<para>
+
+</para>
+
+@data: 
+@len: 
+@destroy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_input_stream_new_from_bytes ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_memory_input_stream_add_data ##### -->
+<para>
+
+</para>
+
+@stream: 
+@data: 
+@len: 
+@destroy: 
+
+
+<!-- ##### FUNCTION g_memory_input_stream_add_bytes ##### -->
+<para>
+
+</para>
+
+@stream: 
+@bytes: 
+
+

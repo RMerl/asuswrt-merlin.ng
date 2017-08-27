@@ -1,0 +1,8 @@
+usr/include
+usr/lib/libical.a
+usr/lib/libical.so
+usr/lib/libicalss.a
+usr/lib/libicalss.so
+usr/lib/libicalvcal.a
+usr/lib/libicalvcal.so
+usr/lib/pkgconfig/libical.pc

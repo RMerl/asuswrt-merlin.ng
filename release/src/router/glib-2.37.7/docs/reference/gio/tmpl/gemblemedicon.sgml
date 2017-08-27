@@ -1,0 +1,80 @@
+<!-- ##### SECTION Title ##### -->
+GEmblemedIcon
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GEmblemedIcon ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GEmblemedIcon:gicon ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_emblemed_icon_new ##### -->
+<para>
+
+</para>
+
+@icon: 
+@emblem: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_emblemed_icon_get_icon ##### -->
+<para>
+
+</para>
+
+@emblemed: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_emblemed_icon_get_emblems ##### -->
+<para>
+
+</para>
+
+@emblemed: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_emblemed_icon_add_emblem ##### -->
+<para>
+
+</para>
+
+@emblemed: 
+@emblem: 
+
+
+<!-- ##### FUNCTION g_emblemed_icon_clear_emblems ##### -->
+<para>
+
+</para>
+
+@emblemed: 
+
+

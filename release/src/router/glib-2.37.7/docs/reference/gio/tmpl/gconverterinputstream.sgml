@@ -1,0 +1,54 @@
+<!-- ##### SECTION Title ##### -->
+GConverterInputstream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GConverterInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GConverterInputStream:converter ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_converter_input_stream_new ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@converter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_converter_input_stream_get_converter ##### -->
+<para>
+
+</para>
+
+@converter_stream: 
+@Returns: 
+
+

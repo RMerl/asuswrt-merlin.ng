@@ -1,0 +1,12 @@
+Package: asusavahi
+Architecture: mipsel
+Priority: optional
+Section: tool
+Version: 0.6.31.1
+Maintainer: ASUS
+Source: http://127.0.0.1/
+Description:  a system which facilitates service discovery on a local network
+Depends: asuslibdaemon,expat
+Suggests: 
+Conflicts: 
+Enabled: yes

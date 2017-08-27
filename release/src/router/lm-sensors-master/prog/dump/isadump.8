@@ -1,0 +1,114 @@
+.TH ISADUMP 8 "April 2011"
+.SH NAME
+isadump \- examine ISA registers
+
+.SH SYNOPSIS
+.B isadump
+.RB [ -y ]
+.RB [ -W | -L ]
+.RB [ "-k V1,V2..." ]
+.I addrreg
+.I datareg
+.RI [ "bank " [ bankreg ]]
+#for I2C-like access
+.br
+.B isadump
+.B -f
+.RB [ -y ]
+.RB [ -W | -L ]
+.I address
+.RI [ "range " [ "bank " [ bankreg ]]]
+#for flat address space
+
+.SH DESCRIPTION
+isadump is a small helper program to examine registers visible through the ISA
+bus. It is intended to probe any chip that lives on the ISA bus working with an
+address register and a data register (I2C-like access) or a flat range (of up
+to 256 bytes).
+
+.SH OPTIONS
+.TP
+.B -f
+Enable flat address space mode.
+.TP
+.B -y
+Disable interactive mode. By default, isadump will wait for a confirmation
+from the user before messing with the ISA bus. When this flag is used, it
+will perform the operation directly. This is mainly meant to be used in
+scripts.
+.TP
+.B -k V1,V2...
+Specify a comma-separated list of bytes to send as the key sequence to enter
+the chip configuration mode. Most Super-I/O chips need this.
+Known key sequences are: 0x87,0x01,0x55,0x55 for ITE, 0x55 for SMSC, 0x87,0x87
+for Winbond and VIA, none needed for National Semiconductor.
+.TP
+.B -W
+Perform 16-bit reads.
+.TP
+.B -L
+Perform 32-bit reads.
+
+.SH OPTIONS (I2C-like access mode)
+At least two options must be provided to isadump. \fIaddrreg\fR contains the
+ISA address of the address register for the chip to probe; \fIdatareg\fR
+contains the address of the data register. Both addresses are integers between
+0x0000 and 0x3FFF. Usually, if the chip's base address is 0x0nn0, the
+address register is at 0x0nn5 and the data register is at 0x0nn6. The most
+common base address for hardware monitoring chips is 0x0290.
+.PP
+For Super-I/O chips, address register is typically at 0x2E with data
+register at 0x2F.
+.PP
+The \fIbank\fR and \fIbankreg\fR parameters are useful on the Winbond chips
+as well as on Super-I/O chips.
+\fIbank\fR is an integer between 0 and 31, and \fIbankreg\fR is an integer
+between 0x00 and 0xFF (default value: 0x4E for Winbond chips, 0x07
+for Super-I/O chips). The W83781D datasheet has more information on bank
+selection.
+
+.SH OPTIONS (flat address space mode)
+In flat mode, only one parameter is
+mandatory. \fIaddress\fR contains the ISA address of the chip to probe;
+it is an integer between 0x0000 and 0xFFFF.
+If provided, \fIrange\fR is how many bytes should be read (must be a
+multiple of 16). If the range isn't provided, it defaults to 256 bytes
+and the address is forcibly aligned on a 256-byte boundary.
+.PP
+The \fIbank\fR and \fIbankreg\fR parameters are useful on the National
+Semiconductor PC87365 and PC87366 Super-I/O chips.
+\fIbank\fR is an integer between 0 and 31, and \fIbankreg\fR is an integer
+between 0x00 and 0xFF (default value: 0x09; must fit in the specified
+range). See the PC87365 datasheet for more information on bank selection.
+
+.SH NOTES
+If no bank is specified, no bank change operation is performed.
+.PP
+If a bank is specified, the original value is restored before isadump exits.
+.PP
+Dumping Super-I/O chips is typically a two-step process. First, you will have
+to access the main Super-I/O address using a command like:
+isadump 0x2e 0x2f 0x09.
+This will select logical device 9 (correct value depend on the chip). At 0x60
+you will find the logical device address word, for example "ec c0".
+Then you can use a command like:
+isadump -f 0xecc0 16.
+This will dump the logical device registers. The correct range depends on
+the chip.
+
+.SH WARNING
+Poking around in ISA data space is extremely dangerous.
+Running isadump with random parameters can cause system
+crashes, data loss, and worse!  Be extremely careful when using
+this program.
+
+.SH SEE ALSO
+i2cdump(8), isaset(8)
+
+.SH AUTHOR
+Frodo Looijaard, Mark D. Studebaker, and the lm_sensors group
+(http://www.lm-sensors.org/)
+.PP
+This manual page was originally written by David Z Maze <dmaze@debian.org> for
+the Debian GNU/Linux system. It was then reviewed and augmented by the lm_sensors
+team and is now part of the lm_sensors source distribution.

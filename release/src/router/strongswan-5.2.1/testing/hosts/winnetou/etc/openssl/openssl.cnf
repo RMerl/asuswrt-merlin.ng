@@ -1,0 +1,185 @@
+# openssl.cnf -  OpenSSL configuration file for the ZHW PKI
+# Mario Strasser <mario.strasser@zhwin.ch>
+#	
+
+# This definitions were set by the ca_init script DO NOT change
+# them manualy.
+CAHOME			= /etc/openssl 
+RANDFILE		= $CAHOME/.rand
+
+# Extra OBJECT IDENTIFIER info:
+oid_section		= new_oids
+
+[ new_oids ]
+SmartcardLogin		= 1.3.6.1.4.1.311.20.2
+ClientAuthentication	= 1.3.6.1.4.1.311.20.2.2
+
+####################################################################
+
+[ ca ]
+default_ca	= root_ca		# The default ca section
+
+####################################################################
+
+[ root_ca ]				
+
+dir		= $CAHOME
+certs		= $dir/certs		  # Where the issued certs are kept
+crl_dir		= $dir/crl                # Where the issued crl are kept
+database	= $dir/index.txt          # database index file.
+new_certs_dir   = $dir/newcerts           # default place for new certs.
+
+certificate     = $dir/strongswanCert.pem # The CA certificate
+serial          = $dir/serial             # The current serial number
+crl             = $dir/crl.pem            # The current CRL
+crlnumber	= $dir/crlnumber	  # The current CRL serial number
+private_key     = $dir/strongswanKey.pem  # The private key
+RANDFILE        = $dir/.rand              # private random number file
+
+x509_extensions = host_ext		  # The extensions to add to the cert
+
+crl_extensions	= crl_ext  		  # The extensions to add to the CRL
+
+default_days    = 1825                    # how long to certify for
+default_crl_days= 30			  # how long before next CRL
+default_md      = sha256                  # which md to use.
+preserve        = no                      # keep passed DN ordering
+email_in_dn	= no			  # allow/forbid EMail in DN
+
+policy          = policy_match		  # specifying how similar the request must look
+
+####################################################################
+
+# the 'match' policy
+[ policy_match ]
+countryName		= match
+stateOrProvinceName	= optional
+localityName            = optional
+organizationName	= match
+organizationalUnitName	= optional
+userId			= optional
+serialNumber		= optional
+commonName		= supplied
+emailAddress		= optional
+
+# the 'anything' policy
+[ policy_anything ]
+countryName		= optional
+stateOrProvinceName	= optional
+localityName		= optional
+organizationName	= optional
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+####################################################################
+
+[ req ]
+default_bits		= 1024
+default_keyfile 	= privkey.pem
+distinguished_name	= req_distinguished_name
+attributes		= req_attributes
+x509_extensions		= ca_ext	# The extensions to add to the self signed cert
+# req_extensions 	= v3_req 	# The extensions to add to a certificate request
+
+
+# This sets a mask for permitted string types. There are several options. 
+# default: PrintableString, T61String, BMPString.
+# pkix	 : PrintableString, BMPString.
+# utf8only: only UTF8Strings.
+# nombstr : PrintableString, T61String (no BMPStrings or UTF8Strings).
+# MASK:XXXX a literal mask value.
+# WARNING: current versions of Netscape crash on BMPStrings or UTF8Strings
+# so use this option with caution!
+string_mask 			= nombstr
+
+# req_extensions = v3_req # The extensions to add to a certificate request
+
+####################################################################
+
+[ req_distinguished_name ]
+countryName			= Country Name (2 letter code)
+countryName_default		= CH
+countryName_min			= 2
+countryName_max			= 2
+
+#stateOrProvinceName		= State or Province Name (full name)
+#stateOrProvinceName_default	= ZH
+
+#localityName			= Locality Name (eg, city)
+#localityName_default		= Winterthur
+
+organizationName		= Organization Name (eg, company)
+organizationName_default	= Linux strongSwan
+
+0.organizationalUnitName		= Organizational Unit Name (eg, section)
+#0.organizationalUnitName_default	= Research
+
+#1.organizationalUnitName	= Type (eg, Staff)
+#1.organizationalUnitName_default = Staff
+
+#userId				= UID 
+
+commonName			= Common Name (eg, YOUR name)
+commonName_default		= $ENV::COMMON_NAME
+commonName_max			= 64
+
+#0.emailAddress			= Email Address (eg, foo@bar.com)
+#0.emailAddress_min              = 0
+#0.emailAddress_max              = 40
+
+#1.emailAddress                  = Second Email Address (eg, foo@bar.com)
+#1.emailAddress_min              = 0
+#1.emailAddress_max              = 40
+
+####################################################################
+
+[ req_attributes ]
+
+####################################################################
+
+[ host_ext ]
+
+basicConstraints		= CA:FALSE
+keyUsage 			= digitalSignature, keyEncipherment, keyAgreement
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid, issuer:always
+subjectAltName			= DNS:$ENV::COMMON_NAME
+#extendedKeyUsage		= OCSPSigning
+#extendedKeyUsage		= serverAuth
+crlDistributionPoints          	= URI:http://crl.strongswan.org/strongswan.crl
+
+####################################################################
+
+[ user_ext ]
+
+basicConstraints		= CA:FALSE
+keyUsage                        = digitalSignature, keyEncipherment, keyAgreement
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid, issuer:always
+subjectAltName                  = email:$ENV::COMMON_NAME 
+#authorityInfoAccess		= OCSP;URI:http://ocsp.strongswan.org:8880
+crlDistributionPoints          	= URI:http://crl.strongswan.org/strongswan.crl
+
+####################################################################
+
+[ ca_ext ]
+
+basicConstraints               	= critical, CA:TRUE #, pathlen:1
+keyUsage                        = cRLSign, keyCertSign
+subjectKeyIdentifier		= hash
+authorityKeyIdentifier		= keyid, issuer:always
+#subjectAltName                  = DNS:$ENV::COMMON_NAME
+#extendedKeyUsage               = OCSPSigning
+
+####################################################################
+
+[ crl_ext ]
+
+# CRL extensions.
+# Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.
+
+#issuerAltName			= issuer:copy
+authorityKeyIdentifier		= keyid:always, issuer:always
+
+# eof

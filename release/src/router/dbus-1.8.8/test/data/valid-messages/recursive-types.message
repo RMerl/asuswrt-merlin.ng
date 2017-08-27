@@ -1,0 +1,99 @@
+## Message with recursive types
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+
+REQUIRED_FIELDS
+
+ALIGN 8
+END_LENGTH Header
+START_LENGTH Body
+
+# Everything is inside a dict
+TYPE DICT
+LENGTH Dict1
+START_LENGTH Dict1
+
+# first dict entry is an array of array of uint32
+STRING 'mega-uint-array'
+TYPE ARRAY
+TYPE ARRAY
+TYPE ARRAY
+TYPE UINT32
+LENGTH Array1
+START_LENGTH Array1
+
+LENGTH Array1_1
+START_LENGTH Array1_1
+UINT32_ARRAY { 1, 2, 3, 4, 5}
+UINT32_ARRAY { 2, 3, 4, 5, 1}
+UINT32_ARRAY { 3, 4, 5, 1, 2}
+END_LENGTH Array1_1
+
+LENGTH Array1_2
+START_LENGTH Array1_2
+UINT32_ARRAY { 4, 5, 6, 7, 8}
+UINT32_ARRAY { 5, 6, 7, 8, 4}
+END_LENGTH Array1_2
+
+END_LENGTH Array1
+
+# second dict entry is an array of strings
+STRING 'string-array'
+TYPE ARRAY
+TYPE STRING
+STRING_ARRAY { 'a', 'string', 'array'}
+
+# third dict entry is another dict
+STRING 'nested-dict'
+TYPE DICT
+LENGTH Dict2
+START_LENGTH Dict2
+
+STRING 'string'
+TYPE STRING
+STRING 'a deeply nested string'     
+
+STRING 'super-nested-dict'
+TYPE DICT
+LENGTH Dict3
+START_LENGTH Dict3
+
+STRING 'double-array'
+TYPE ARRAY
+TYPE DOUBLE
+DOUBLE_ARRAY {1.0, 2.0, 3.0}
+
+STRING 'dict-array'
+TYPE ARRAY
+TYPE DICT
+LENGTH Array2
+START_LENGTH Array2
+
+LENGTH Dict4
+START_LENGTH Dict4
+STRING 'key4'
+TYPE BYTE
+BYTE '4'
+END_LENGTH Dict4
+
+LENGTH Dict5
+START_LENGTH Dict5
+STRING 'key5'
+TYPE BYTE
+BYTE '5'
+END_LENGTH Dict5
+
+END_LENGTH Array2
+
+STRING 'boolean'
+TYPE BOOLEAN
+BOOLEAN false
+
+END_LENGTH Dict3
+
+END_LENGTH Dict2
+
+END_LENGTH Dict1
+
+END_LENGTH Body

@@ -1,0 +1,27 @@
+.TH SENSORS-CONF-CONVERT 8 "August 2013" "lm-sensors 3"
+.SH NAME
+sensors-conf-convert \- sensors configuration conversion
+
+.SH SYNOPSIS
+.B sensors-conf-convert
+<
+.I /etc/sensors.conf
+>
+.I /etc/sensors3.conf
+
+.SH DESCRIPTION
+The purpose of the
+.B sensors-conf-convert
+tool is to convert
+.I sensors.conf
+from the lm_sensors version 2 format to the lm_sensors
+version 3 format.
+.P
+The old configuration file is read from the standard input and the
+new one is written to the standard output.
+
+.SH SEE ALSO
+sensors(1), libsensors(3)
+
+.SH AUTHOR
+Jean Delvare

@@ -1,0 +1,8 @@
+A tunnel connecting the subnets behind the gateways <b>moon</b> and <b>sun</b>,
+respectively, is automatically established by means of the setting
+<b>auto=start</b> in ipsec.conf. The connection is tested by client <b>alice</b>
+behind gateway <b>moon</b> pinging the client <b>bob</b> located behind
+gateway <b>sun</b>.
+<p>
+<b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules
+that let pass the tunneled traffic.

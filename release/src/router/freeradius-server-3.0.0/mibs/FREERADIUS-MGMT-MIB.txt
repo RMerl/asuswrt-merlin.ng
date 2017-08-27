@@ -1,0 +1,34 @@
+FREERADIUS-MGMT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY,
+	OBJECT-IDENTITY
+		FROM SNMPv2-SMI
+	freeRadiusMgmt
+		FROM FREERADIUS-SMI;
+
+freeradiusObjects MODULE-IDENTITY
+	LAST-UPDATED "200712170000Z"
+	ORGANIZATION "FreeRADIUS Project"
+	CONTACT-INFO
+		"FreeRADIUS Network Object Model Environment project
+
+		see http://www.freeradius.org for contact persons of a particular
+		area or subproject of FREERADIUS.
+
+		Administrative contact for MIB module:
+
+		Alan DeKok
+
+		email: aland@freeradius.org"
+	DESCRIPTION
+		"Generic objects used by notification MIBs"
+	::= { freeRadiusMgmt 1 }
+
+radiusObject OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"A generic object"
+	::= { freeradiusObjects 1 }
+
+END

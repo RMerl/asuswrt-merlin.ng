@@ -1,0 +1,15 @@
+# Common configuration of ROM offload of romlsim
+#
+# $Copyright Broadcom Corporation$
+#
+# $Id$
+
+DEVSIM_BUILD	:= 1
+ROMOFFLOAD	:= 1
+GLOBALIZE	:= 1
+ROMLSIM		:= 1
+
+# Tell emacs to use Makefile mode since it does not know from the filename:
+#       Local Variables:
+#       mode: makefile
+#       End:

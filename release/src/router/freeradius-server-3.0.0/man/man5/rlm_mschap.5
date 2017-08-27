@@ -1,0 +1,110 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_mschap 5 "13 March 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_mschap \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_mschap\fP module provides MS-CHAP and MS-CHAPv2
+authentication support. 
+.PP
+This module validates a user with MS-CHAP or MS-CHAPv2 
+authentication.
+If called in Authorize, it will look for MS-CHAP Challenge/Response
+attributes in the Acess-Request and adds an Auth-Type
+attribute set to MS-CHAP in the Config-Items list unless 
+Auth-Type has already set.
+.PP
+The module can authenticate the MS-CHAP session via plain-text
+passwords (User-Password attribute), or NT passwords (NT-Password
+attribute).  The module cannot perform authentication against an NT
+domain.
+.PP
+The module also enforces the SMB-Account-Ctrl attribute.  See the
+Samba documentation for the meaning of SMB account control.  The
+module does not read Samba password files.  Instead, the fIrlm_passwd\fP
+module can be used to read a Samba password file, and supply an
+NT-Password attribute which this module can use.
+.PP
+The main configuration items to be aware of are:
+.IP authtype
+This is the string used to set the authtype.  Normally it should be
+left to the default value of MS-CHAP.
+.IP use_mppe
+Unless this is set to 'no', FreeRADIUS will add MS-CHAP-MPPE-Keys for
+MS-CHAPv1 and MS-MPPE-Recv-Key/MS-MPPE-Send-Key for MS-CHAPv2.  The
+default is 'yes'.
+.IP require_encryption
+If MPPE is enabled, setting this attribute to 'yes' will cause the
+MS-MPPE-Encryption-Policy attribute to be set to require encryption.
+The default is 'no'.
+.IP require_strong
+If MPPE is enabled, setting this attribute to 'yes' will cause the
+MS-MPPE-Encryption-Types attribute to be set to require a 128 bit key.
+The default is 'no'.
+.IP with_ntdomain_hack
+Windows clients send User-Name in the form of "DOMAIN\\User", but send the
+challenge/response based only on the User portion.  Setting this value
+to yes, enables a work-around for this error.  The default is 'no'.
+.PP
+.SH CONFIGURATION
+.DS
+modules {
+  ...
+.br
+  mschap {
+.br
+	authtype = MS-CHAP
+.br
+	use_mppe = yes	
+.br
+  }
+.br
+  ...
+.br
+}
+.br
+ ...
+.br
+authorize {
+  ...
+.br
+  mschap
+.br
+  ...
+.br
+}
+ ...
+.br
+authenticate {
+  ...
+.br
+  mschap
+.br
+  ...
+.br
+}
+.DE
+.PP
+.SH SECTIONS
+.BR authorization,
+.BR authentication
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Chris Parker, cparker@segv.org
+

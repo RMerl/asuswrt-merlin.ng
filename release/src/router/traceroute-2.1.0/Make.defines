@@ -1,0 +1,55 @@
+#  The name of this distributive (used for tarballs etc.).
+# *MUST* be defined here...
+#
+NAME = traceroute
+
+#  All subdir lists below are space-separated, with make's '%' wildcard
+# allowed. Default value is shown in commented out example.
+#
+
+#  Subdirs to exclude anyway
+#
+#SKIPDIRS = tmp%
+
+#  Subdirs to be treated as libdirs.
+#
+#LIBDIRS = lib%
+
+#  An exact non-wildcard list of libdirs to be placed last in LIBDIRS list,
+# with the order specified. Useful, when some library should be
+# specified last because of referencing from another library...
+#
+#LIBLAST = 
+
+#  Subdirs to be treated as includedirs.
+# Also all LIBDIRS will be actually used for includes too.
+#
+#INCLUDEDIRS = include%
+
+#  Subdirs to be treated as moduledirs.
+#
+#MODDIRS = mod%
+
+#  Subdirs of executables which will use modules at run-time linking.
+#
+#MODUSERS =
+
+#  Subdirs of executables to be installed in `*/sbin' instead of `*/bin'.
+#
+#SBINUSERS =
+
+#  Subdirs to exclude from install
+#
+SKIPINSTALL = test% libsupp
+
+
+#  A better way to alter the variables is to use "+=" or
+# "override VAR += value"
+#
+# CFLAGS +=
+# CPPFLAGS +=
+# LDFLAGS +=
+# LIBS +=
+
+CPPFLAGS += -D_GNU_SOURCE
+

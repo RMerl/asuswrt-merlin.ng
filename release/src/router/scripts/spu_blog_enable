@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ ! -n "$1" ] ; then
+  echo "Usage: $0 <0 disable, 1 enable>: Enable or disable blogging in the SPU driver"
+else
+  if [ $1 -eq 0 ] ; then
+    echo 0 > /sys/module/bcmspu/parameters/blog_enable
+    ps | while read p x x x n x; do test "$n" = "[pdc_rx]" && taskset -p 0xf $p; done
+    fc flush
+  else
+    echo 1 > /sys/module/bcmspu/parameters/blog_enable
+    ps | while read p x x x n x; do test "$n" = "[pdc_rx]" && taskset -p 0x1 $p; done
+  fi
+fi

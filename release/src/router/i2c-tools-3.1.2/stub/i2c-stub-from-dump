@@ -1,0 +1,229 @@
+#!/usr/bin/perl -w
+#
+# Copyright (C) 2007-2012  Jean Delvare <jdelvare@suse.de>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA  02110-1301, USA
+#
+# This script feeds the i2c-stub driver with dump data from a real
+# I2C or SMBus chip. This can be useful when writing a driver for
+# a device you do not have access to, but of which you have a dump.
+
+use strict;
+use vars qw($bus_nr @addr $err);
+
+# Kernel version detection code by Mark M. Hoffman,
+# copied from sensors-detect.
+use vars qw(@kernel_version);
+
+sub initialize_kernel_version
+{
+	`uname -r` =~ /(\d+)\.(\d+)\.(\d+)(.*)/;
+	@kernel_version = ($1, $2, $3, $4);
+}
+
+sub kernel_version_at_least
+{
+	my ($vers, $plvl, $slvl) = @_;
+	return 1 if ($kernel_version[0]  > $vers ||
+	              ($kernel_version[0] == $vers && 
+	                ($kernel_version[1]  > $plvl || 
+	                  ($kernel_version[1] == $plvl && 
+	                    ($kernel_version[2] >= $slvl)))));
+	return 0;
+}
+
+# Find out the i2c bus number of i2c-stub
+sub get_i2c_stub_bus_number
+{
+	my $nr;
+
+	open(FH, "i2cdetect -l |") || die "Can't run i2cdetect";
+	while (<FH>) {
+		next unless m/^i2c-(\d+).*\tSMBus stub/;
+		$nr = $1;
+		last;
+	}
+	close(FH);
+
+	return $nr;
+}
+
+# Unload i2c-stub if we need an address it doesn't offer
+sub check_chip_addr {
+	my $chip_addr_file = shift;
+	my @addr = @{shift()};
+	local $_;
+
+	open(CHIP_ADDR, $chip_addr_file) || return;
+	$_ = <CHIP_ADDR>;
+	chomp;
+	my %stub_addr = map { $_ => 1 } split ',';
+	close(CHIP_ADDR);
+
+	foreach my $addr (@addr) {
+		unless (exists $stub_addr{$addr}) {
+			print STDERR "Cycling i2c-stub to get the address we need\n";
+			system("/sbin/rmmod", "i2c-stub");
+			return;
+		}
+	}
+}
+
+# Load the required kernel drivers if needed
+sub load_kernel_drivers
+{
+	local $_;
+	my @addr = @{shift()};
+	my $nr;
+
+	# i2c-stub may be loaded without the address we want
+	check_chip_addr("/sys/module/i2c_stub/parameters/chip_addr", \@addr);
+
+	# Maybe everything is already loaded
+	$nr = get_i2c_stub_bus_number();
+	return $nr if defined $nr;
+
+	system("/sbin/modprobe", "i2c-dev") == 0 || exit 1;
+	if (kernel_version_at_least(2, 6, 19)) {
+		system("/sbin/modprobe", "i2c-stub",
+		       "chip_addr=".join(',', @addr)) == 0 || exit 1;
+	} else {
+		system("/sbin/modprobe", "i2c-stub") == 0 || exit 1;
+	}
+	# udev may take some time to create the device node
+	if (!(-x "/sbin/udevadm" && system("/sbin/udevadm settle") == 0)
+	 && !(-x "/sbin/udevsettle" && system("/sbin/udevsettle") == 0)) {
+		sleep(1);
+	}
+
+	$nr = get_i2c_stub_bus_number();
+	if (!defined($nr)) {
+		print STDERR "Please load i2c-stub first\n";
+		exit 2;
+	}
+
+	return $nr;
+}
+
+sub process_dump
+{
+	my ($addr, $dump) = @_;
+	my $err = 0;
+	my ($bytes, $words);
+
+	open(DUMP, $dump) || die "Can't open $dump: $!\n";
+ OUTER_LOOP:
+	while (<DUMP>) {
+		if (m/^([0-9a-f]0) ?[:|](( [0-9a-fX]{2}){16})/i) {
+			# Byte dump
+			my $offset = hex($1);
+			my @values = split(/ /, $2);
+			shift(@values);
+			for (my $i = 0; $i < 16 && (my $val = shift(@values)); $i++) {
+				next if $val =~ m/X/;
+				if (system("i2cset", "-y", $bus_nr, $addr,
+					   sprintf("0x\%02x", $offset+$i),
+					   "0x$val", "b")) {
+					$err = 3;
+					last OUTER_LOOP;
+				}
+				$bytes++;
+			}
+		} elsif (m/^([0-9a-f][08]) ?[:|](( [0-9a-fX]{4}){8})/i) {
+			# Word dump
+			my $offset = hex($1);
+			my @values = split(/ /, $2);
+			shift(@values);
+			for (my $i = 0; $i < 8 && (my $val = shift(@values)); $i++) {
+				next if $val =~ m/X/;
+				if (system("i2cset", "-y", $bus_nr, $addr,
+					   sprintf("0x\%02x", $offset+$i),
+					   "0x$val", "w")) {
+					$err = 3;
+					last OUTER_LOOP;
+				}
+				$words++;
+			}
+		}
+	}
+	close(DUMP);
+
+	if ($bytes) {
+		printf SAVEOUT "$bytes byte values written to \%d-\%04x\n",
+			$bus_nr, $addr;
+	}
+
+	if ($words) {
+		printf SAVEOUT "$words word values written to \%d-\%04x\n",
+			$bus_nr, $addr;
+	}
+
+	if (!$err && !$bytes && !$words) {
+		printf SAVEOUT "Only garbage found in dump file $dump\n";
+		$err = 1;
+	}
+
+	return $err;
+}
+
+if ($>) {
+	print "You must be root to use this script\n";
+	exit 1;
+}
+
+if (@ARGV < 2) {
+	print STDERR "Usage: i2c-stub-from-dump <addr>[,<addr>,...] <dump file> [<dump file> ...]\n";
+	exit 1;
+}
+
+# Check the parameters
+@addr = split(/,/, shift @ARGV);
+foreach (@addr) {
+	unless (m/^0x[0-7][0-9a-f]$/i) {
+		print STDERR "Invalid address $_\n";
+		exit 1;
+	}
+	$_ = oct $_;
+}
+
+if (@addr < @ARGV) {
+	print STDERR "Fewer addresses than dumps provided\n";
+	exit 4;
+}
+
+initialize_kernel_version();
+if (@addr > 1 && !kernel_version_at_least(2, 6, 24)) {
+	print STDERR "Multiple addresses not supported by this kernel version\n";
+	exit 5;
+}
+
+$bus_nr = load_kernel_drivers(\@addr);
+
+# We don't want to see the output of 256 i2cset
+open(SAVEOUT, ">&STDOUT");
+open(STDOUT, ">/dev/null");
+foreach (@addr) {
+	if (!@ARGV) {
+		printf STDERR "Skipping \%d-\%04x, no dump file privided\n",
+		       $bus_nr, $_;
+		next;
+	}
+	$err = process_dump($_, shift @ARGV);
+	last if $err;
+}
+close(STDOUT);
+
+exit($err);

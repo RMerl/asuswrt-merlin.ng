@@ -1,0 +1,29 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  Execute external programs
+#
+#  This module is useful only for 'xlat'.  To use it,
+#  put 'exec' into the 'instantiate' section.  You can then
+#  do dynamic translation of attributes like:
+#
+#  Attribute-Name = `%{exec:/path/to/program args}`
+#
+#  The value of the attribute will be replaced with the output
+#  of the program which is executed.  Due to RADIUS protocol
+#  limitations, any output over 253 bytes will be ignored.
+#
+#  The RADIUS attributes from the user request will be placed
+#  into environment variables of the executed program, as
+#  described in "man unlang" and in doc/variables.txt
+#
+#  See also "echo" for more sample configuration.
+#
+exec {
+	wait = no
+	input_pairs = request
+	shell_escape = yes
+	output = none
+}

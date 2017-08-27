@@ -1,0 +1,65 @@
+# Slovak debconf translation of sysstat
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the sysstat package.
+# Ivan Masár <helix84@centrum.sk>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-06 23:42+0100\n"
+"Last-Translator: Ivan Masár <helix84@centrum.sk>\n"
+"Language-Team: Slovak <sk-i18n@lists.linux.sk>\n" 
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Odstrániť dátové súbory štatistík v starom formáte?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "The format of daily data statistics files has changed in version ${s_version} of sysstat and is not compatible with the previous one."
+msgstr "Vo verzii sysstat ${s_version} sa zmenil formát dátových súborov štatistík a nie je kompatibilný s predošlými verziami."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "If you choose this option, all existing data files in the /var/log/sysstat/ directory will be deleted."
+msgstr "Ak zvolíte túto možnosť, všetky existujúce súbory v adresári /var/log/sysstat/ budú zmazané."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "If you don't choose this option, the sar(1) command will not work properly until you remove the files manually."
+msgstr "Ak nezvolíte túto možnosť, príkaz sar(1) nebude správne fungovať pokým tieto súbory manuálne neodstránite."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Aktivovať úlohu cron sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "If this option is enabled the sysstat package will monitor system activities and store the data in log files within /var/log/sysstat/."
+msgstr "Ak zapnete túto voľbu, balík sysstat bude monitorovať aktivitu vášho systému a ukladať údaje do súborov v adresári /var/log/sysstat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "This data allows the sar(1) command to display system statistics for the whole day."
+msgstr "Tieto údaje umožnia príkazu sar(1) zobraziť štatistiky systému za celý deň."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "If you don't enable this option, the sar(1) command will only show the current statistics."
+msgstr "Ak nezapnete túto voľbu, príkaz sar(1) zobrazí iba aktuálnu štatistiku."
+

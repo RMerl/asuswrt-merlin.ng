@@ -1,0 +1,112 @@
+#
+#	The WiMAX module currently takes no configuration.
+#
+#	It should be listed in the "authorize" and "preacct" sections.
+#	This enables the module to fix the horrible binary version
+#	of Calling-Station-Id to the normal format, as specified in
+#	RFC 3580, Section 3.21.
+#
+#	In order to calculate the various WiMAX keys, the module should
+#	be listed in the "post-auth" section.  If EAP authentication
+#	has been used, AND the EAP method derives MSK and EMSK, then
+#	the various WiMAX keys can be calculated.
+#
+#	Some useful things to remember:
+#
+#	WiMAX-MSK = EAP MSK, but is 64 octets.
+#
+#	MIP-RK-1 = HMAC-SHA256(ESMK, "miprk@wimaxforum.org" | 0x00020001)
+#	MIP-RK-2 = HMAC-SHA256(ESMK, MIP-RK-1 | "miprk@wimaxforum.org" | 0x00020002)
+#	MIP-RK = MIP-RK-1 | MIP-RK-2
+#
+#	MIP-SPI = first 4 octets of HMAC-SHA256(MIP-RK, "SPI CMIP PMIP")
+#		plus some magic... you've got to track *all* MIP-SPI's
+#		on your system!
+#
+#	SPI-CMIP4 = MIP-SPI
+#	SPI-PMIP4 = MIP-SPI + 1
+#	SPI-CMIP6 = MIP-SPI + 2
+#
+#	MN-NAI is the Mobile node NAI.  You have to create it, and put
+#	it into the request or reply as something like:
+#
+#		WiMAX-MN-NAI = "%{User-Name}"
+#
+#	You will also have to have the appropriate IP address (v4 or v6)
+#	in order to calculate the keys below.
+#
+#	Lifetimes are derived from Session-Timeout.  It needs to be set
+#	to some useful number.
+#
+#	The hash function below H() is HMAC-SHA1.
+#
+#
+#	MN-HA-CMIP4 = H(MIP-RK, "CMIP4 MN HA" | HA-IPv4 | MN-NAI)
+#
+#		Where HA-IPv4 is	WiMAX-hHA-IP-MIP4
+#		or maybe		WiMAX-vHA-IP-MIP4
+#
+#		Which goes into		WiMAX-MN-hHA-MIP4-Key
+#		or maybe		WiMAX-RRQ-MN-HA-Key
+#		or maybe even		WiMAX-vHA-MIP4-Key
+#
+#	The corresponding SPI is SPI-CMIP4, which is MIP-SPI,
+#
+#		which goes into		WiMAX-MN-hHA-MIP4-SPI
+#		or maybe		WiMAX-RRQ-MN-HA-SPI
+#		or even			WiMAX-MN-vHA-MIP4-SPI
+#
+#	MN-HA-PMIP4 = H(MIP-RK, "PMIP4 MN HA" | HA-IPv4 | MN-NAI)
+#	MN-HA-CMIP6 = H(MIP-RK, "CMIP6 MN HA" | HA-IPv6 | MN-NAI)
+#
+#		both with similar comments to above for MN-HA-CMIP4.
+#
+#	In order to tell which one to use (CMIP4, PMIP4, or CMIP6),
+#	you have to set WiMAX-IP-Technology in the reply to one of
+#	the appropriate values.
+#
+#
+#	FA-RK = H(MIP-RK, "FA-RK")
+#
+#	MN-FA = H(FA-RK, "MN FA" | FA-IP | MN-NAI)
+#
+#		Where does the FA-IP come from?  No idea...
+#
+#
+#	The next two keys (HA-RK and FA-HA) are not generated
+#	for every authentication request, but only on demand.
+#
+#	HA-RK = 160-bit random number assigned by the AAA server
+#		to a specific HA.
+#
+#	FA-HA = H(HA-RK, "FA-HA" | HA-IPv4 | FA-CoAv4 | SPI)
+#
+#		where HA-IPv4 is as above.
+#		and FA-CoAv4 address of the FA as seen by the HA
+#		and SPI is the relevant SPI for the HA-RK.
+#
+#	DHCP-RK = 160-bit random number assigned by the AAA server
+#		  to a specific DHCP server.  vDHCP-RK is the same
+#		  thing.
+#
+wimax {
+	#
+	#  Some WiMAX equipment requires that the MS-MPPE-*-Key
+	#  attributes are sent in the Access-Accept, in addition to
+	#  the WiMAX-MSK attribute.
+	#
+	#  Other WiMAX equipment request that the MS-MPPE-*-Key
+	#  attributes are NOT sent in the Access-Accept.
+	#
+	#  By default, the EAP modules sends MS-MPPE-*-Key attributes.
+	#  The default virtual server (raddb/sites-available/default)
+	#  contains examples of adding the WiMAX-MSK.
+	#
+	#  This configuration option makes the WiMAX module delete
+	#  the MS-MPPE-*-Key attributes.  The default is to leave
+	#  them in place.
+	#
+	#  If the keys are deleted (by setting this to "yes"), then
+	#  the WiMAX-MSK attribute is automatically added to the reply.
+	delete_mppe_keys = no
+}

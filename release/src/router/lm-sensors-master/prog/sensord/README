@@ -1,0 +1,9 @@
+Daemon that periodically logs sensor readings to syslog or a round-robin
+database, and warns of sensor alarms.
+
+Compile this program by making lm_sensors with the following argument:
+  make PROG_EXTRA:=sensord
+
+The RRD (Round Robin Database) development headers and libraries are
+REQUIRED. Get this package from:
+  http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/

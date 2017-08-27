@@ -1,0 +1,5 @@
+#ifdef _LZMA_PROB32
+-D_LZMA_PROB32
+#else
+-U_LZMA_PROB32
+#endif

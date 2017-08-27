@@ -1,0 +1,90 @@
+# translation of sysstat-eu.po to Euskara
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Piarres Beobide <pi@beobide.net>, 2009.
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat-eu\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-04 23:55+0100\n"
+"Last-Translator: Piarres Beobide <pi@beobide.net>\n"
+"Language-Team: Euskara <debian-l10n-basque@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Kendu formatu zaharreko estatistika datu fitxategiak?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Eguneko datu estatistika fitxategien formatua aldatu egin da sysstat-en "
+"${s_version} bertsioan eta ez da aurrekoekin bateragarria."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Aukera hau hautatuaz gero /var/log/sysstat/ direktorioko datu fitxategi "
+"guztiak ezabatuak izango dira."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Aukera hau hautatzen ez baduzu, sar(1) komandoak ez du behar bezala "
+"funtzionatuko fitxategi horiek eskuz ezabatu arte."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Sysstat's cron-lana aktibatu?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Aukera hau gaituaz gero sysstat paketeak sistema aktibitatean monitorizatu eta "
+"datuak /var/log/sysstat/ direktorioko erregistro fitxategietan bilduko ditu."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Datu hauek sar(1) komandoari egun osoko sistema estatistikak bistaratzeko aukera "
+"ematen diote."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Aukera hau gaitzen ez baduzu, sar(1) komandoak uneko estatistikak bakarrik "
+"bistaraziko ditu."
+

@@ -1,0 +1,19 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+carol::cat /var/log/daemon.log::installing new virtual IP 10.3.0.1::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: cat /var/log/daemon.log::installing new virtual IP 10.3.1.1::YES
+moon:: cat /var/log/daemon.log::acquired new lease for address 10.3.0.1 in pool.*pool0::YES
+moon:: cat /var/log/daemon.log::assigning virtual IP 10.3.0.1 to peer::YES
+moon:: cat /var/log/daemon.log::no available address found in pool.*pool0::YES
+moon:: cat /var/log/daemon.log::acquired new lease for address 10.3.1.1 in pool.*pool1::YES
+moon:: cat /var/log/daemon.log::assigning virtual IP 10.3.1.1 to peer::YES
+moon:: ipsec pool --status 2> /dev/null::pool0.*10.3.0.1.*10.3.0.1.*48h.*1 .*1 .*1 ::YES
+moon:: ipsec pool --status 2> /dev/null::pool1.*10.3.1.1.*10.3.1.1.*48h.*1 .*1 .*1 ::YES
+moon:: ipsec pool --leases --filter pool=pool0,addr=10.3.0.1,id=carol@strongswan.org 2> /dev/null::online::YES
+moon:: ipsec pool --leases --filter pool=pool1,addr=10.3.1.1,id=dave@strongswan.org 2> /dev/null::online::YES
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[2]: ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw[{]1}.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw[{]2}.*INSTALLED, TUNNEL::YES

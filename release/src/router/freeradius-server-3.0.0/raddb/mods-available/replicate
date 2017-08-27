@@ -1,0 +1,40 @@
+#  Replicate packet(s) to a home server.
+#
+#  This module will open a new socket for each packet, and "clone"
+#  the incoming packet to the destination realm (i.e. home server).
+#
+#  Use it by setting "Replicate-To-Realm = name" in the control list,
+#  just like Proxy-To-Realm.  The configurations for the two attributes
+#  are identical.  The realm must exist, the home_server_pool must exist,
+#  and the home_server must exist.
+#
+#  The only difference is that the "replicate" module sends requests
+#  and does not expect a reply.  Any reply is ignored.
+#
+#  Both Replicate-To-Realm and Proxy-To-Realm can be used at the same time.
+#
+#  To use this module, list "replicate" in the "authorize" or
+#  "accounting" section.  Then, ensure that Replicate-To-Realm is set.
+#  The contents of the "packet" attribute list will be sent to the
+#  home server.  The usual load-balancing, etc. features of the home
+#  server will be used.
+#
+#  "radmin" can be used to mark home servers alive/dead, in order to
+#  enable/disable replication to specific servers.
+#
+#  Packets can be replicated to multiple destinations.  Just set
+#  Replicate-To-Realm multiple times.  One packet will be sent for
+#  each of the Replicate-To-Realm attribute in the "control" list.
+#
+#  If no packets are sent, the module returns "noop".  If at least one
+#  packet is sent, the module returns "ok".  If an error occurs, the
+#  module returns "fail"
+#
+#  Note that replication does NOT change any of the packet statistics.
+#  If you use "radmin" to look at the statistics for a home server,
+#  the replicated packets will cause NO counters to increment.  This
+#  is not a bug, this is how replication works.
+#
+replicate {
+
+}

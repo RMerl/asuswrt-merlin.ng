@@ -1,0 +1,1269 @@
+<!-- ##### SECTION Title ##### -->
+GFileInfo
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GFileAttributeMatcher ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM GFileType ##### -->
+<para>
+
+</para>
+
+@G_FILE_TYPE_UNKNOWN: 
+@G_FILE_TYPE_REGULAR: 
+@G_FILE_TYPE_DIRECTORY: 
+@G_FILE_TYPE_SYMBOLIC_LINK: 
+@G_FILE_TYPE_SPECIAL: 
+@G_FILE_TYPE_SHORTCUT: 
+@G_FILE_TYPE_MOUNTABLE: 
+
+<!-- ##### STRUCT GFileInfo ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_IS_BACKUP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_IS_SYMLINK ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_IS_VIRTUAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_COPY_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_ICON ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_SYMBOLIC_ICON ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_ALLOCATED_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_SYMLINK_TARGET ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_TARGET_URI ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_SORT_ORDER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ETAG_VALUE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ID_FILE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ID_FILESYSTEM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ACCESS_CAN_READ ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ACCESS_CAN_WRITE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ACCESS_CAN_TRASH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_ACCESS_CAN_RENAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_MOUNT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_UNMOUNT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_EJECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE_FILE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_HAL_UDI ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_POLL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_IS_MEDIA_CHECK_AUTOMATIC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_START ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_START_DEGRADED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_CAN_STOP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_MOUNTABLE_START_STOP_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_MODIFIED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_ACCESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_ACCESS_USEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_CHANGED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_CHANGED_USEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_CREATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TIME_CREATED_USEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_DEVICE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_INODE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_MODE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_NLINK ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_UID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_GID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_RDEV ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_BLOCK_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_BLOCKS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_UNIX_IS_MOUNTPOINT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_DOS_IS_ARCHIVE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_DOS_IS_SYSTEM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_OWNER_USER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_OWNER_USER_REAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_OWNER_GROUP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_THUMBNAIL_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_THUMBNAILING_FAILED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_PREVIEW_ICON ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_FILESYSTEM_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_FILESYSTEM_FREE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_FILESYSTEM_USED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_FILESYSTEM_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_FILESYSTEM_READONLY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_GVFS_BACKEND ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_SELINUX_CONTEXT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TRASH_ITEM_COUNT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TRASH_DELETION_DATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_TRASH_ORIG_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_FILESYSTEM_USE_PREVIEW ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_FILE_ATTRIBUTE_STANDARD_DESCRIPTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_file_info_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_dup ##### -->
+<para>
+
+</para>
+
+@other: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_copy_into ##### -->
+<para>
+
+</para>
+
+@src_info: 
+@dest_info: 
+
+
+<!-- ##### FUNCTION g_file_info_has_attribute ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_has_namespace ##### -->
+<para>
+
+</para>
+
+@info: 
+@name_space: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_list_attributes ##### -->
+<para>
+
+</para>
+
+@info: 
+@name_space: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_type ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_remove_attribute ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_as_string ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_data ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@type: 
+@value_pp: 
+@status: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_status ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_string ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_stringv ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_byte_string ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_boolean ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_uint32 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_int32 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_uint64 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_int64 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_attribute_object ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@type: 
+@value_p: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_status ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@status: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_string ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_stringv ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_byte_string ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_boolean ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_uint32 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_int32 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_uint64 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_int64 ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_object ##### -->
+<para>
+
+</para>
+
+@info: 
+@attribute: 
+@attr_value: 
+
+
+<!-- ##### FUNCTION g_file_info_clear_status ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_file_info_get_file_type ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_is_hidden ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_is_backup ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_is_symlink ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_display_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_edit_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_icon ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_content_type ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_size ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_modification_time ##### -->
+<para>
+
+</para>
+
+@info: 
+@result: 
+
+
+<!-- ##### FUNCTION g_file_info_get_symlink_target ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_etag ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_sort_order ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_get_deletion_date ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_info_set_attribute_mask ##### -->
+<para>
+
+</para>
+
+@info: 
+@mask: 
+
+
+<!-- ##### FUNCTION g_file_info_unset_attribute_mask ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_file_info_set_file_type ##### -->
+<para>
+
+</para>
+
+@info: 
+@type: 
+
+
+<!-- ##### FUNCTION g_file_info_set_is_hidden ##### -->
+<para>
+
+</para>
+
+@info: 
+@is_hidden: 
+
+
+<!-- ##### FUNCTION g_file_info_set_is_symlink ##### -->
+<para>
+
+</para>
+
+@info: 
+@is_symlink: 
+
+
+<!-- ##### FUNCTION g_file_info_set_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@name: 
+
+
+<!-- ##### FUNCTION g_file_info_set_display_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@display_name: 
+
+
+<!-- ##### FUNCTION g_file_info_set_edit_name ##### -->
+<para>
+
+</para>
+
+@info: 
+@edit_name: 
+
+
+<!-- ##### FUNCTION g_file_info_set_icon ##### -->
+<para>
+
+</para>
+
+@info: 
+@icon: 
+
+
+<!-- ##### FUNCTION g_file_info_set_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@info: 
+@icon: 
+
+
+<!-- ##### FUNCTION g_file_info_set_content_type ##### -->
+<para>
+
+</para>
+
+@info: 
+@content_type: 
+
+
+<!-- ##### FUNCTION g_file_info_set_size ##### -->
+<para>
+
+</para>
+
+@info: 
+@size: 
+
+
+<!-- ##### FUNCTION g_file_info_set_modification_time ##### -->
+<para>
+
+</para>
+
+@info: 
+@mtime: 
+
+
+<!-- ##### FUNCTION g_file_info_set_symlink_target ##### -->
+<para>
+
+</para>
+
+@info: 
+@symlink_target: 
+
+
+<!-- ##### FUNCTION g_file_info_set_sort_order ##### -->
+<para>
+
+</para>
+
+@info: 
+@sort_order: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_new ##### -->
+<para>
+
+</para>
+
+@attributes: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_ref ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_subtract ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@subtract: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_unref ##### -->
+<para>
+
+</para>
+
+@matcher: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_matches ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_matches_only ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@attribute: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_enumerate_namespace ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@ns: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_enumerate_next ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_file_attribute_matcher_to_string ##### -->
+<para>
+
+</para>
+
+@matcher: 
+@Returns: 
+
+

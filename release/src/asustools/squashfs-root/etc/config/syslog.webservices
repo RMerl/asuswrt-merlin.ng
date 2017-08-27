@@ -1,0 +1,12 @@
+<fieldset>	
+	<legend><% tran("service.syslog_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.syslog_srv"); %></div>
+		<input class="spaceradio" type="radio" name="syslogd_enable" value="1" <% nvram_checked("syslogd_enable", "1"); %> onclick="show_layer_ext(this, 'idsyslog', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" name="syslogd_enable" value="0" <% nvram_checked("syslogd_enable", "0"); %> onclick="show_layer_ext(this, 'idsyslog', false)" /><% tran("share.disable"); %>
+	</div>
+	<div class="setting" id="idsyslog">
+		<div class="label"><% tran("service.syslog_ip"); %></div>
+		<input maxlength="64" size="25" name="syslogd_rem_ip" value="<% nvram_get("syslogd_rem_ip"); %>" />
+	</div>
+</fieldset><br/>

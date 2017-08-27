@@ -1,0 +1,601 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GFileEnumerator</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="file_ops.html" title="File Operations">
+<link rel="prev" href="GFileInfo.html" title="GFileInfo">
+<link rel="next" href="gio-GIOError.html" title="GIOError">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GFileEnumerator.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GFileEnumerator.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GFileEnumerator.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="file_ops.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFileInfo.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GIOError.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GFileEnumerator"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GFileEnumerator.top_of_page"></a>GFileEnumerator</span></h2>
+<p>GFileEnumerator — Enumerated Files Routines</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GFileEnumerator.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GFileEnumerator.html#GFileEnumerator-struct" title="GFileEnumerator">GFileEnumerator</a>;
+<a class="link" href="GFileInfo.html" title="GFileInfo"><span class="returnvalue">GFileInfo</span></a> *         <a class="link" href="GFileEnumerator.html#g-file-enumerator-next-file" title="g_file_enumerator_next_file ()">g_file_enumerator_next_file</a>         (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GFileEnumerator.html#g-file-enumerator-close" title="g_file_enumerator_close ()">g_file_enumerator_close</a>             (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GFileEnumerator.html#g-file-enumerator-next-files-async" title="g_file_enumerator_next_files_async ()">g_file_enumerator_next_files_async</a>  (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> num_files</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             <a class="link" href="GFileEnumerator.html#g-file-enumerator-next-files-finish" title="g_file_enumerator_next_files_finish ()">g_file_enumerator_next_files_finish</a> (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GFileEnumerator.html#g-file-enumerator-close-async" title="g_file_enumerator_close_async ()">g_file_enumerator_close_async</a>       (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GFileEnumerator.html#g-file-enumerator-close-finish" title="g_file_enumerator_close_finish ()">g_file_enumerator_close_finish</a>      (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GFileEnumerator.html#g-file-enumerator-is-closed" title="g_file_enumerator_is_closed ()">g_file_enumerator_is_closed</a>         (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GFileEnumerator.html#g-file-enumerator-has-pending" title="g_file_enumerator_has_pending ()">g_file_enumerator_has_pending</a>       (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GFileEnumerator.html#g-file-enumerator-set-pending" title="g_file_enumerator_set_pending ()">g_file_enumerator_set_pending</a>       (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> pending</code></em>);
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             <a class="link" href="GFileEnumerator.html#g-file-enumerator-get-container" title="g_file_enumerator_get_container ()">g_file_enumerator_get_container</a>     (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>);
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             <a class="link" href="GFileEnumerator.html#g-file-enumerator-get-child" title="g_file_enumerator_get_child ()">g_file_enumerator_get_child</a>         (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> *info</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileEnumerator.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GFileEnumerator
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileEnumerator.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GFileEnumerator.html#GFileEnumerator--container" title='The "container" property'>container</a>"                <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>*                : Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileEnumerator.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> allows you to operate on a set of <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>s, 
+returning a <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> structure for each file enumerated (e.g. 
+<a class="link" href="GFile.html#g-file-enumerate-children" title="g_file_enumerate_children ()"><code class="function">g_file_enumerate_children()</code></a> will return a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> for each 
+of the children within a directory).
+</p>
+<p>
+To get the next file's information from a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>, use 
+<a class="link" href="GFileEnumerator.html#g-file-enumerator-next-file" title="g_file_enumerator_next_file ()"><code class="function">g_file_enumerator_next_file()</code></a> or its asynchronous version, 
+<a class="link" href="GFileEnumerator.html#g-file-enumerator-next-files-async" title="g_file_enumerator_next_files_async ()"><code class="function">g_file_enumerator_next_files_async()</code></a>. Note that the asynchronous 
+version will return a list of <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a>s, whereas the 
+synchronous will only return the next file in the enumerator.
+</p>
+<p>
+The ordering of returned files is unspecified for non-Unix
+platforms; for more information, see <a href="http://library.gnome.org/devel/glib/unstable/glib-File-Utilities.html#g-dir-read-name"><code class="function">g_dir_read_name()</code></a>.  On Unix,
+when operating on local files, returned files will be sorted by
+inode number.  Effectively you can assume that the ordering of
+returned files will be stable between successive calls (and
+applications) assuming the directory is unchanged.
+</p>
+<p>
+If your application needs a specific ordering, such as by name or
+modification time, you will have to implement that in your
+application code.
+</p>
+<p>
+To close a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>, use <a class="link" href="GFileEnumerator.html#g-file-enumerator-close" title="g_file_enumerator_close ()"><code class="function">g_file_enumerator_close()</code></a>, or 
+its asynchronous version, <a class="link" href="GFileEnumerator.html#g-file-enumerator-close-async" title="g_file_enumerator_close_async ()"><code class="function">g_file_enumerator_close_async()</code></a>. Once 
+a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> is closed, no further actions may be performed 
+on it, and it should be freed with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="GFileEnumerator.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GFileEnumerator-struct"></a><h3>GFileEnumerator</h3>
+<pre class="programlisting">typedef struct _GFileEnumerator GFileEnumerator;</pre>
+<p>
+A per matched file iterator.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-next-file"></a><h3>g_file_enumerator_next_file ()</h3>
+<pre class="programlisting"><a class="link" href="GFileInfo.html" title="GFileInfo"><span class="returnvalue">GFileInfo</span></a> *         g_file_enumerator_next_file         (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Returns information for the next file in the enumerated object.
+Will block until the information is available. The <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> 
+returned from this function will contain attributes that match the 
+attribute string that was passed when the <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> was created.
+</p>
+<p>
+See the documentation of <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> for information about the
+order of returned files.
+</p>
+<p>
+On error, returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and sets <em class="parameter"><code>error</code></em> to the error. If the
+enumerator is at the end, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned and <em class="parameter"><code>error</code></em> will
+be unset.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>location to store the error occurring, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error or end of enumerator.
+Free the returned object with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> when no longer needed. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-close"></a><h3>g_file_enumerator_close ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_file_enumerator_close             (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Releases all resources used by this enumerator, making the
+enumerator return <a class="link" href="gio-GIOError.html#G-IO-ERROR-CLOSED:CAPS"><code class="literal">G_IO_ERROR_CLOSED</code></a> on all calls.
+</p>
+<p>
+This will be automatically called when the last reference
+is dropped, but you might want to call this function to make 
+sure resources are released as early as possible.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>location to store the error occurring, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><span class="type">TRUE</span></a> on success or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><span class="type">FALSE</span></a> on error.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-next-files-async"></a><h3>g_file_enumerator_next_files_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_file_enumerator_next_files_async  (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> num_files</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Request information for a number of files from the enumerator asynchronously.
+When all i/o for the operation is finished the <em class="parameter"><code>callback</code></em> will be called with
+the requested information. 
+</p>
+<p>
+See the documentation of <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> for information about the
+order of returned files.
+</p>
+<p>
+The callback can be called with less than <em class="parameter"><code>num_files</code></em> files in case of error
+or at the end of the enumerator. In case of a partial error the callback will
+be called with any succeeding items and no error, and on the next request the
+error will be reported. If a request is cancelled the callback will be called
+with <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.
+</p>
+<p>
+During an async request no other sync and async calls are allowed, and will
+result in <a class="link" href="gio-GIOError.html#G-IO-ERROR-PENDING:CAPS"><code class="literal">G_IO_ERROR_PENDING</code></a> errors. 
+</p>
+<p>
+Any outstanding i/o request with higher priority (lower numerical value) will
+be executed before an outstanding request with lower priority. Default
+priority is <a href="http://library.gnome.org/devel/glib/unstable/glib-The-Main-Event-Loop.html#G-PRIORITY-DEFAULT:CAPS"><code class="literal">G_PRIORITY_DEFAULT</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>num_files</code></em> :</span></p></td>
+<td>the number of file info objects to request</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>io_priority</code></em> :</span></p></td>
+<td>the <a class="link" href="GAsyncResult.html#io-priority">io priority</a>
+of the request.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied. <span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the data to pass to callback function. <span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-next-files-finish"></a><h3>g_file_enumerator_next_files_finish ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *             g_file_enumerator_next_files_finish (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Finishes the asynchronous operation started with <a class="link" href="GFileEnumerator.html#g-file-enumerator-next-files-async" title="g_file_enumerator_next_files_async ()"><code class="function">g_file_enumerator_next_files_async()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a>s. You must free the list with
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a> and unref the infos with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> when you're
+done with them. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> Gio.FileInfo]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-close-async"></a><h3>g_file_enumerator_close_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_file_enumerator_close_async       (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Asynchronously closes the file enumerator. 
+</p>
+<p>
+If <em class="parameter"><code>cancellable</code></em> is not <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then the operation can be cancelled by
+triggering the cancellable object from another thread. If the operation
+was cancelled, the error <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned in 
+<a class="link" href="GFileEnumerator.html#g-file-enumerator-close-finish" title="g_file_enumerator_close_finish ()"><code class="function">g_file_enumerator_close_finish()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>io_priority</code></em> :</span></p></td>
+<td>the <a class="link" href="GAsyncResult.html#io-priority">I/O priority</a>
+of the request.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cancellable</code></em> :</span></p></td>
+<td>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied. <span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the data to pass to callback function. <span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-close-finish"></a><h3>g_file_enumerator_close_finish ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_file_enumerator_close_finish      (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Finishes closing a file enumerator, started from <a class="link" href="GFileEnumerator.html#g-file-enumerator-close-async" title="g_file_enumerator_close_async ()"><code class="function">g_file_enumerator_close_async()</code></a>.
+</p>
+<p>
+If the file enumerator was already closed when <a class="link" href="GFileEnumerator.html#g-file-enumerator-close-async" title="g_file_enumerator_close_async ()"><code class="function">g_file_enumerator_close_async()</code></a> 
+was called, then this function will report <a class="link" href="gio-GIOError.html#G-IO-ERROR-CLOSED:CAPS"><code class="literal">G_IO_ERROR_CLOSED</code></a> in <em class="parameter"><code>error</code></em>, and 
+return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>. If the file enumerator had pending operation when the close 
+operation was started, then this function will report <a class="link" href="gio-GIOError.html#G-IO-ERROR-PENDING:CAPS"><code class="literal">G_IO_ERROR_PENDING</code></a>, and
+return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>.  If <em class="parameter"><code>cancellable</code></em> was not <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then the operation may have been 
+cancelled by triggering the cancellable object from another thread. If the operation
+was cancelled, the error <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be set, and <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> will be 
+returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the close operation has finished successfully.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-is-closed"></a><h3>g_file_enumerator_is_closed ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_file_enumerator_is_closed         (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>);</pre>
+<p>
+Checks if the file enumerator has been closed.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>enumerator</code></em> is closed.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-has-pending"></a><h3>g_file_enumerator_has_pending ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_file_enumerator_has_pending       (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>);</pre>
+<p>
+Checks if the file enumerator has pending operations.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>enumerator</code></em> has pending operations.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-set-pending"></a><h3>g_file_enumerator_set_pending ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_file_enumerator_set_pending       (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> pending</code></em>);</pre>
+<p>
+Sets the file enumerator as having pending operations.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>pending</code></em> :</span></p></td>
+<td>a boolean value.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-get-container"></a><h3>g_file_enumerator_get_container ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             g_file_enumerator_get_container     (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>);</pre>
+<p>
+Get the <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> container which is being enumerated.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> which is being enumerated. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.18</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-enumerator-get-child"></a><h3>g_file_enumerator_get_child ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *             g_file_enumerator_get_child         (<em class="parameter"><code><a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> *enumerator</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> *info</code></em>);</pre>
+<p>
+Return a new <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> which refers to the file named by <em class="parameter"><code>info</code></em> in the source
+directory of <em class="parameter"><code>enumerator</code></em>.  This function is primarily intended to be used
+inside loops with <a class="link" href="GFileEnumerator.html#g-file-enumerator-next-file" title="g_file_enumerator_next_file ()"><code class="function">g_file_enumerator_next_file()</code></a>.
+</p>
+<p>
+This is a convenience method that's equivalent to:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GFileInfo.html#g-file-info-get-name">g_file_info_get_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">info</span><span class="symbol">);</span>
+<span class="usertype">GFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">child </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GFile.html#g-file-get-child">g_file_get_child</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="GFileEnumerator.html#g-file-enumerator-get-container">g_file_enumerator_get_container</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">enumr</span><span class="symbol">),</span>
+<span class="normal">                                 name</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>enumerator</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>info</code></em> :</span></p></td>
+<td>a <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> gotten from <a class="link" href="GFileEnumerator.html#g-file-enumerator-next-file" title="g_file_enumerator_next_file ()"><code class="function">g_file_enumerator_next_file()</code></a>
+or the async equivalents.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for the <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a> passed it. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.36</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileEnumerator.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GFileEnumerator--container"></a><h3>The <code class="literal">"container"</code> property</h3>
+<pre class="programlisting">  "container"                <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>*                : Write / Construct Only</pre>
+<p>The container that is being enumerated.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Carols sales acert
+pki --acert \
+	--issuercert hosts/moon/etc/ipsec.d/aacerts/aa.pem \
+	--issuerkey hosts/moon/etc/ipsec.d/private/aa.pem --in \
+	../../../hosts/carol/etc/ipsec.d/certs/carolCert.pem \
+	--group sales -l 87600 -f pem \
+	> hosts/carol/etc/ipsec.d/acerts/carol-sales.pem
+
+# Daves marketing acert
+pki --acert \
+	--issuercert hosts/moon/etc/ipsec.d/aacerts/aa.pem \
+	--issuerkey hosts/moon/etc/ipsec.d/private/aa.pem \
+	--in ../../../hosts/dave/etc/ipsec.d/certs/daveCert.pem \
+	--group marketing -l 87600 -f pem
+	> hosts/dave/etc/ipsec.d/acerts/dave-marketing.pem
+
+# Daves sales acert from expired AA
+pki --acert \
+	--issuercert hosts/moon/etc/ipsec.d/aacerts/aa-expired.pem \
+	--issuerkey hosts/moon/etc/ipsec.d/private/aa-expired.pem \
+	--in ../../../hosts/dave/etc/ipsec.d/certs/daveCert.pem \
+	--group sales -l 87600 -f pem \
+	> hosts/dave/etc/ipsec.d/acerts/dave-expired-aa.pem

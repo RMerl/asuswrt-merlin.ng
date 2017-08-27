@@ -1,0 +1,120 @@
+<!-- ##### SECTION Title ##### -->
+Data HMACs
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GHmac ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_hmac_new ##### -->
+<para>
+
+</para>
+
+@digest_type: 
+@key: 
+@key_len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hmac_copy ##### -->
+<para>
+
+</para>
+
+@hmac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hmac_ref ##### -->
+<para>
+
+</para>
+
+@hmac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hmac_unref ##### -->
+<para>
+
+</para>
+
+@hmac: 
+
+
+<!-- ##### FUNCTION g_hmac_update ##### -->
+<para>
+
+</para>
+
+@hmac: 
+@data: 
+@length: 
+
+
+<!-- ##### FUNCTION g_hmac_get_string ##### -->
+<para>
+
+</para>
+
+@hmac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hmac_get_digest ##### -->
+<para>
+
+</para>
+
+@hmac: 
+@buffer: 
+@digest_len: 
+
+
+<!-- ##### FUNCTION g_compute_hmac_for_data ##### -->
+<para>
+
+</para>
+
+@digest_type: 
+@key: 
+@key_len: 
+@data: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_compute_hmac_for_string ##### -->
+<para>
+
+</para>
+
+@digest_type: 
+@key: 
+@key_len: 
+@str: 
+@length: 
+@Returns: 
+
+

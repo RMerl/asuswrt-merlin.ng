@@ -1,0 +1,224 @@
+The following people have contributed to 'sysstat' in one way or another:
+
+	First I would like to thank Michael <michael [at] roka.net>: He is the
+	very first person to have given me feedback about sysstat, and to
+	point out to me that certain fields in /proc/stat didn't have the
+	meaning I thought they had. This was in 1999!
+
+	Many thanks to the translators involved in sysstat:
+
+	  * Birko Bergt <birko.bergt [at] gmx.de> for his translation into
+	    German,
+	  * Fernando Félix Redondo <fernando.felix [at] rediris.es> for his
+	    translation into Spanish (now maintained by Muralito
+	    <muralito [at] montevideo.com.uy>),
+	  * Frederic L. W. Meunier <0 [at] pervalidus.net> for the
+	    Portuguese translation.
+	  * Gert Brits <gbrits [at] techconcepts.co.za> for the translation
+	    into Afrikaans.
+	  * Roy Sigurd Karlsbakk <roy [at] karlsbakk.net> for the Norwegian
+	    translation.
+	  * Stefano Barni <barninga [at] interfree.it> for the translation
+	    into Italian.
+	  * Dennis Selsky <selsky [at] siberia.net> for the Russian translation.
+	  * Eugen Hoanca <eugenh [at] urban-grafx.ro> for the Romanian
+	    translation.
+	  * Robert Luberda <robert [at] debian.org> for the translation into
+	    Polish.
+	  * Miroslav David <md20128 [at] decef.elf.stuba.sk> for the Slovak
+	    translation.
+	  * Hideki Yamane <henrich [at] samba.gr.jp> for the translation into
+	    Japanese.
+	  * Daniel Nylander <po [at] danielnylander.se> for the Swedish
+	    translation.
+	  * John Damm Sørensen <john [at] hovedpuden.dk> for the Danish
+	    translation.
+	  * Bram Schoenmakers <bramschoenmakers [at] kde.nl> for the Dutch
+	    translation.
+
+	Carl-Christian Weber <ccweber [at] itz-koeln.de> helped me to make sar
+	work on SMP machines.
+
+	Stefan Majer <smajer [at] advance-bank.de> provided me with a patch to
+	rotate daily system activity files.
+
+	Klaus Franken <klaus.franken [at] fth2.siemens.de> created the RPM
+	packages. He also included a short initialization script for sar
+	to start it as a daemon on boot.
+
+	Jason (Jay) R. Fink <jay_rf [at] exis.net> set up and maintained the
+	first web site for sysstat.
+
+	Preston Brown <pbrown [at] redhat.com> sent me the RedHat patch to
+	enable good packaging.
+
+	David Doubrava <linux_monitor [at] volny.cz> created the isag
+	command (Interactive System Activity Graph).
+
+	Rik van Riel <riel [at] conectiva.com.br> explained me the meaning
+	of several fields that were added in Linux kernel 2.4
+	/proc/meminfo file.
+
+	Hubert Nueckel <hubert.nueckel [at] oracle.com> sent me a patch to
+	fix CPU utilization displayed by sar, iostat and mpstat commands
+	on IA64 machines.
+
+	Victor Hazlewood <victor [at] sdsc.edu> sent me a patch to implement
+	a database friendly option for sar (option -H).
+
+	Christopher Blizzard <blizzard [at] redhat.com> added the ability to
+	display kB/s transfers to devices in iostat reporting when
+	option -x is used.
+
+	John Caruso <caruso [at] paradiso.umuc.edu> wrote the sargon script
+	shell as a replacement for sa1/sa2 files.
+
+	Wilhelm Nuesser <wilhelm.nuesser [at] sap.com> sent me a patch to
+	fix average wait times and service times displayed by iostat -x.
+
+	Rick Lindsley <ricklind [at] us.ibm.com> has played a great part in
+	making sysstat work on kernels 2.5 and above.
+
+	John Salmon <John.Salmon [at] cw.com> wrote a patch to enable file
+	locking for sadc (option -L).
+
+	Jim W. Jaszewski <grok [at] sprint.ca> fixed several typos in
+	sysstat FAQ!
+
+	Charlie Bennett <ccb [at] redhat.com> sent me several patches to
+	fix known problems with sysstat. He also added the sysstat.ioconf
+	file support, and the -p option to sar.
+
+	Thomas Polliard <thomas [at] polliard.com> helped me define the XML
+	output format for sadf. He also wrote the corresponding DTD.
+
+	Dwight Tovey <dtovey [at] emergecore.com> updated sysstat so that
+	it may be installed on Slackware.
+
+	Bryce Harrington <bryce [at] osdl.org> helped me to add support for
+	hotplug CPU to sysstat.
+
+	Ivana Varekova <varekova [at] redhat.com> added support for iostat
+	NFS statistics. Ivana also added support for autoconf, and created
+	cifsiostat command.
+
+	Nils Philippsen <nphilipp [at] redhat.com> made history configurable.
+
+	Robert Luberda <robert [at] debian.org> brought a few improvements
+	to sysstat's code, and also reported several bugs.
+
+	Jeroen Roovers <jer [at] gentoo.org> sent me a patch to fix a rare
+	parallel make issue creating archive libsyscom.a.
+
+	Livio Soares <livio [at] eecg.toronto.edu> sent me a patch to fix
+	a bug where mpstat didn't parse /proc/interrupts correctly when
+	some CPUs had been set offline.
+
+	Emil Glatz <Emil.Glatz [at] wescoglobal.com> wrote the XML Schema
+	to be used with sadf option -x.
+
+	Eduardo Ferro Aldama <eduardo.ferro.aldama [at] gmail.com> added
+	option -l to pidstat to display the process command name and
+	arguments.
+
+	Mario Konrad <Mario.Konrad [at] gmx.net> added regular expressions
+	support to pidstat'x option -C. He also added option -s to pidstat
+	to display task stack statistics.
+
+	Jan Kaluza <jkaluza [at] redhat.com> contributed several patches
+	to sysstat. Among them, he added some more power management
+	statistics to sar.
+
+I would also thank the following people for their hints or bug reports
+(in alphabetical order):
+
+	Des Atkinson <Des.Atkinson@met[...].uk>
+	Sravan Bhamidipati <bsravanin@gma[...].com>
+	Chuck Blake <cb@mit[...].edu>
+	Michael Blakeley <mike@bla[...].com>
+	Pascal Bleser <pbleser@ato[...].com>
+	Lodewijk Bonebakker <jlbonebakker@gma[...].com>
+	Jesse Brandeburg <jesse.brandeburg@int[...].com>
+	Xavier Bru <xavier.bru@bul[...].net>
+	Jason Burnett <jason@jnj[...].org>
+	Fabricio Ceolin <ceolin@ule[...].com
+	Mark J. Cox <mjc@red[...].com>
+	Jean Dagenais <jean.dagenais@int[...].com>
+	Nicolas Denis <denisn@wan[...].fr>
+	Andrew Donkin <ard@wai[...].nz>
+	Greg Edwards <edwardsg@sgi[...].com>
+	Tony Ernst <tee@sgi[...].com>
+	Chris Evans <chris@sca[...].org>
+	Damien Faure <damien-jn.faure@bul[...].net>
+	Dr. David Alan Gilbert <dave@tre[...].org>
+	David Gesswein <djg@drs[...].com>
+	Ladislav Hagara <ladislav.hagara@uno[...].cz>
+	Don Harrop <don@swb[...].com>
+	Jürgen Heinemann <heinemann.juergen@hjc[...].de>
+	Kei Ishida <ishida.kei@oss[...].jp>
+	Tatsuo Ito <tito@mir[...].com>
+	David S. Jackson <dsj@syl[...].net>
+	Erik Jacobson <erikj@sub[...].com>	
+	Jordan <ledzep37@hom[...].com>	
+	Jurriaan <thunder7@xs4[...].nl>
+	Jonathan Kamens <jik@kam[...].us>
+	Ilya Katsnelson <ilya.katsnelson@mot[...].com>
+	Mike Kobler <mkobler@gma[...].com>
+	Byeong-taek Lee <btlee@psy[...].kr>
+	Ivo Letzas <letzas@for[...].nu>	
+	Neculai Macarie <macarie.neculai@nex[...].com>
+	Robert Macaulay <Robert_Macaulay@Del[...].com>
+	Pierre Machard <pmachard@deb[...].org>
+	Jérôme Marchand <jmarchan@red[...].com>
+	Alan Matsuoka <alanm@red[...].com>
+	Rodney J. Mertz <rjm@elv[...].com>
+	Roy Millar <100044.14@com[...].com>
+	Chris Minshull <CMinshull@nyx[...].com>
+	Pascal Monschein <ext.astek.monschein@snc[...].fr>
+	Chris Morrow <cmorrow@ver[...].com>
+	David J. Morse <David_J_Morse@Del[...].com>
+	Hariprasad Nellitheertha <hari@in.[...].com>
+	Giulio Orsero <giulioo@pob[...].com>
+	Edouard G. Parmelan <edouard.parmelan@qua[...].fr>
+	Oliver Paukstadt <oliver.paukstadt@mil[...].com>	
+	Plattner(?) <Plattner.external@inf[...].com>
+	Gerardo Exequiel Pozzi <vmlinuz386@yah[...].ar>
+	ReDragon <redragon@vns[...].net>
+	Amir Rapson <amir.rapson@gma[...].com>
+	Paul Rivoli <paul@kbs[...].au>
+	Scott Rochford <Scott_Rochford@DEL[...].com>
+	Rolphin <rolphin@fre[...].fr>
+	Jeroen Roovers <jer@gen[...].org>
+	Pavol Rusnak <prusnak@sus[...].cz>
+	Joseph E. Sacco <jsacco@ear[...].net>
+	Sachin Sant <sachinp@in.[...].com>
+	Eivind Sarto <ivan@kas[...].com>
+	Danilo Sartori <d.sartori@res[...].it>
+	Tan Shao Yi <tansy@tan[...].org>
+	Yibin Shen <zituan@taobao.com>
+	Lee Schermerhorn <lee.schermerhorn@hp.[...].com>
+	Benno Schulenberg <bensberg@jus[...].net>
+	Michel Simoni <m_simoni@clu[...].fr>
+	Gabrielle Singleton <gelle@umi[...].edu>
+	Rod Skinner <rod.skinner@int[...].com>	
+	Kevin C. Smallwood <kcs@lin[...].com>
+	Dick Snippe <Dick.Snippe@tec[...].nl>
+	Graham Swallow <gps@tri[...].uk>
+	Mike Sweger <mikesw@whi[...].net>
+	Don Totten <dontotten@ibm[...].net>
+	Stephen Tweedie <sct@red[...].com>
+	Petr Uzel <petr.uzel@sus[...].cz>
+	Thomas Weber <TWEBER@de.[...].com>
+	Yongjun Wei <yjwei@nan[...].com>
+	Stefan Wild <SWILD@de.[...].com>
+	Thomas Winn <tcwinn@gma[...].com>
+	Holger Wolf <Holger.Wolf@de.[...].com>
+	Urban Widmark <urban@sve[...].se>
+	Yu Yongcong <yuyc@cn.[...].com>
+	Peter Zaitsev <pz@spy[...].ru>
+	Zhen Zhang <furykerry@gma[...].com>
+
+--	
+Sebastien Godard (sysstat <at> orange.fr) is the author and the current
+maintainer of this package.
+

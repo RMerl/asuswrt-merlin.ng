@@ -1,0 +1,60 @@
+#!/bin/sh
+#
+#    sens_create_rrd -
+#	Create a sensors rrd database of 14 sensor readings
+#	at 5 minute intervals for 1 week.
+#
+#    Copyright 2001 Mark D. Studebaker <mdsxyz123@yahoo.com>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#    MA 02110-1301 USA.
+#
+RRDPATH=/usr/bin
+RRDB=$1
+#Heartbeat 15 minutes
+HB=900
+#Rows 12 * 24 * 7 = 1 week of every 5 minutes
+RW=2016
+
+if [ $# -ne 1 ]
+then
+	echo usage: $0 database.rrd
+	exit 1
+fi
+
+DIR=`dirname $1`
+if [ ! -w $DIR ]
+then
+	echo $0: directory $DIR not present or not writable
+	exit 1
+fi
+
+$RRDPATH/rrdtool create $RRDB --step 300 \
+	DS:fan1:GAUGE:${HB}:0:12000 \
+	DS:fan2:GAUGE:${HB}:0:12000 \
+	DS:fan3:GAUGE:${HB}:0:12000 \
+	DS:temp1:GAUGE:${HB}:-25:250 \
+	DS:temp2:GAUGE:${HB}:-25:250 \
+	DS:temp3:GAUGE:${HB}:-25:250 \
+	DS:in0:GAUGE:${HB}:-25:25 \
+	DS:in1:GAUGE:${HB}:-25:25 \
+	DS:in2:GAUGE:${HB}:-25:25 \
+	DS:in3:GAUGE:${HB}:-25:25 \
+	DS:in4:GAUGE:${HB}:-25:25 \
+	DS:in5:GAUGE:${HB}:-25:25 \
+	DS:in6:GAUGE:${HB}:-25:25 \
+	DS:loadavg:GAUGE:${HB}:0:U \
+	RRA:AVERAGE:0.5:1:$RW
+

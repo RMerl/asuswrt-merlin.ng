@@ -1,0 +1,92 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_detail 5 "27 June 2013" "" "FreeRADIUS Module"
+.SH NAME
+rlm_detail \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_detail\fP module writes radius packets to 'detail' files.
+It is primarily used for storing accounting information, but can be
+used in other sections to write packet details as well.
+.PP
+The file format is similar to that of the old Livingston servers, and
+many 'detail' file parsers should work with FreeRADIUS.
+.PP
+The main configuration items to be aware of are:
+.IP file
+The file name in which to store the radius packet records.  NOTE: this
+variable is run through dynamic string expansion, and can include
+FreeRADIUS variables to create a dynamic filename.
+.PP
+     %{radacctdir}/%{Client-IP-Address}/detail-%Y%m
+.PP
+     This will create one file per month, for each client.  
+     This accomplishes 'file rotation' automatically from 
+     within the server.
+.PP
+.IP perm
+The file permissions of the file.  
+If omitted, the default is 0600.
+.IP dirperm
+The directory permissions of the directory where the detail files are
+created.  The default is 0755.
+.IP locking
+This option is set to 'yes' or 'no'.  By default it is 'no'.  Set this
+to yes to enable file locking, which is used with the 'radrelay'
+program.
+.SH CONFIGURATION
+.PP
+.DS
+modules {
+  ...
+.br
+  detail {
+.br
+    filename = %A/%{Client-IP-Address}/detail-%Y%m
+.br
+    permissions = 0600
+.br
+    dir_permissions = 0755
+.br
+    locking = no
+.br
+  }
+.br
+  ... 
+.br
+}
+  ...
+.br
+accounting {
+ ...
+.br
+ detail
+ ...
+.br
+}
+.DE
+.PP
+.SH SECTIONS
+.BR authorization,
+.BR accounting,
+.BR pre_proxy,
+.BR post_proxy,
+.BR post_authentication
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHORS
+Chris Parker, cparker@segv.org

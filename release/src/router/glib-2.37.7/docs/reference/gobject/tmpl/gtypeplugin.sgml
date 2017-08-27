@@ -1,0 +1,116 @@
+<!-- ##### SECTION Title ##### -->
+GTypePlugin
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTypePlugin ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GTypePluginClass ##### -->
+<para>
+
+</para>
+
+@use_plugin: 
+@unuse_plugin: 
+@complete_type_info: 
+@complete_interface_info: 
+
+<!-- ##### USER_FUNCTION GTypePluginUse ##### -->
+<para>
+
+</para>
+
+@plugin: 
+
+
+<!-- ##### USER_FUNCTION GTypePluginUnuse ##### -->
+<para>
+
+</para>
+
+@plugin: 
+
+
+<!-- ##### USER_FUNCTION GTypePluginCompleteTypeInfo ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@g_type: 
+@info: 
+@value_table: 
+
+
+<!-- ##### USER_FUNCTION GTypePluginCompleteInterfaceInfo ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@instance_type: 
+@interface_type: 
+@info: 
+
+
+<!-- ##### FUNCTION g_type_plugin_use ##### -->
+<para>
+
+</para>
+
+@plugin: 
+
+
+<!-- ##### FUNCTION g_type_plugin_unuse ##### -->
+<para>
+
+</para>
+
+@plugin: 
+
+
+<!-- ##### FUNCTION g_type_plugin_complete_type_info ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@g_type: 
+@info: 
+@value_table: 
+
+
+<!-- ##### FUNCTION g_type_plugin_complete_interface_info ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@instance_type: 
+@interface_type: 
+@info: 
+
+

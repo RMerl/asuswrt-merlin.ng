@@ -1,0 +1,14 @@
+TARGETNAME	:= @targetname@
+
+ifneq "$(TARGETNAME)" ""
+TARGET		:= $(TARGETNAME).a
+endif
+
+SOURCES		:= $(TARGETNAME).c 
+
+SRC_CFLAGS	:= @mod_cflags@
+TGT_LDLIBS	:= @mod_ldflags@
+
+SRC_INCDIRS	:= ../../ ../../libeap/
+TGT_PREREQS	:= libfreeradius-eap.a
+

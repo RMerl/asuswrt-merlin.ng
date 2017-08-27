@@ -1,0 +1,11 @@
+#if defined(CONFIG_BCM_KF_ARM_BCM963XX)
+This directory provides support to selected ARM-based SoC from Broadcom.
+
+The code in this directory is pertinent to the contents of each SoC.
+One can choose to enable the SoC in SMP or uni-core mode with the flag.
+
+This directory also provides the binding information 
+(i.e. base address and IRQ#) for all the peripherals contained in the SoC.
+
+All board-level support is in "mach-bcm*'.
+#endif

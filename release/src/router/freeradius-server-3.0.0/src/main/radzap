@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+#	$Id$
+#
+
+usage() {
+	echo "Usage: radzap [options] server[:port] secret" >&2
+        echo "       -h Print usage help information."
+        echo "       -d raddb_directory: directory where radiusd.conf is located."
+        echo "       -N nas_ip_address: IP address of the NAS to zap."
+	echo "       -P nas_port: NAS port that the user is logged into."
+	echo "       -u username: Name of user to zap (case insensitive)."
+	echo "       -U username: like -u, but case-sensitive."
+	echo "       -x Enable debugging output."
+	exit ${1:-0}
+}
+
+while test "$#" != "0"
+do
+  case $1 in
+      -h) usage;;
+
+      -d) RADDB="-d $2";shift;shift;;
+
+      -N) NAS_IP_ADDR="-N $2";shift;shift;;
+
+      -P) NAS_PORT="-P $2";shift;shift;;
+
+      -u) USER_NAME="-u $2";shift;shift;;
+
+      -U) USER_NAME="-U $2";shift;shift;;
+
+      -x) DEBUG="-x";shift;;
+
+      *) break;;
+
+  esac
+done
+
+if test "$#" != "2"; then
+    usage 1 >&2
+fi
+
+
+SERVER=$1
+SECRET=$2
+
+#
+#  Radzap is now a wrapper around radwho & radclient.
+#
+radwho -ZR $RADDB $NAS_IP_ADDR $NAS_PORT $USER_NAME | radclient $DEBUG $RADDB -f - $SERVER acct $SECRET

@@ -1,0 +1,98 @@
+<!-- ##### SECTION Title ##### -->
+GIcon
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GIcon ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GIconIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@hash: 
+@equal: 
+@to_tokens: 
+@from_tokens: 
+@serialize: 
+
+<!-- ##### FUNCTION g_icon_hash ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_icon_equal ##### -->
+<para>
+
+</para>
+
+@icon1: 
+@icon2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_icon_to_string ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_icon_new_for_string ##### -->
+<para>
+
+</para>
+
+@str: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_icon_serialize ##### -->
+<para>
+
+</para>
+
+@icon: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_icon_deserialize ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+

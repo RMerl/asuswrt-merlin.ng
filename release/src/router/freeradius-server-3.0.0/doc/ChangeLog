@@ -1,0 +1,91 @@
+FreeRADIUS 3.0.0 Mon  7 Oct 2013 15:48:14 EDT urgency=medium
+	Feature improvements
+	* Documentation for upgrading from 2.x is in raddb/README.rst
+	  Please follow it.  It will make the upgrade easier.
+	* Moved configuration entries in radiusd.conf to make more sense.
+	* Added the "integer64" and "ipv4prefix" data types.
+	* Added RADIUS over TLS (i.e. RadSec). See raddb/sites-available/tls
+	* Updated internal API to support new attributes and formats
+	* Added code to send SNMP Traps.  See raddb/trigger.conf.
+	* Added preliminary support for Apple's Grand Central Dispatch
+	* Added provisions for raddb/dictionary.local, for local changes.
+	  See raddb/dictionary for more details.
+	* Added packet/s tracking. See max_pps in the "listen" section.
+	* The %{} expansions and "unlang" conditions are now parsed at server
+	  start. Descriptive errors are produced for syntax and format errors.
+	* Casting is now supported for "unlang" comparisons.  See "man unlang"
+	  e.g. <ipaddr>127.0.0.1 == Framed-IP-Address.
+	* Direct comparison of attribute references is now supported.
+	  e.g. &Foo == &Bar.  This avoids stringification of the attributes.
+	* Direct assignment of attributes is now supported.
+	  e.g. Foo := &Bar.  It also works for "octets" data types.
+	* Comparisons of IPv4 and IPv6 prefixes are now supported.
+	  The "<" operator means "within the prefix" for comparisons.
+	* New sha1 xlat expansion (thanks to Alan Buxey)
+	* Colourised log messages when logging to stdout.  Look for yellow
+	  warnings and red errors.  Doing this will save you a LOT of grief.
+	* If the PCRE library is available, use it (insted of the POSIX
+	  functions) to process regular expressions (thanks to Phil Mayers).
+	* -xv now displays all the features the server was built with, and
+	  the versions of the core libraries (libtalloc, libssl).
+
+	Module Changes
+	* Moved raddb/modules/ to raddb/mods-available/, and raddb/mods-enabled/,
+	  following the examples of other projects.
+	* Additional files for each module are now in raddb/mods-config/.
+	  See raddb/mods-config/README.rst for documentation.
+	* Moved "users" to raddb/mods-config/files/authorize
+	* Moved "hints" and "huntgroups" to raddb/mods-config/preprocess/
+	* Moved eap.conf to mods-available/eap
+	* Moved sql.conf to mods-available/sql
+	* Moved TLS configuration for EAP into a common subsection.
+	  See raddb/mods-available/eap, "tls-config" section.
+	* Added for MS-CHAP Change Password from Phil Mayers.
+	  See raddb/mods-available/mschap, "passchange" subsection.
+	* Added EAP-PWD implementation from Dan Harkins
+	* Added connection pools for modules. This unifies connection
+	  management which was previously different for different modules.
+	* SQL now uses the connection pool.  See mods-available/sql
+	* SQL now supports arbitrary Acct-Status-Types.
+	  These changes are not compatible with 2.x.
+	* SQL now has full support for SQLite.  See raddb/sql/main/sqlite/
+	* SQLite supports auto-creation of new databases on server startup for
+	  bootstrapping purposes.
+	* LDAP now uses the connection pool.  The LDAP module has been
+	  completely re-written for performance and simplicity.
+	* LDAP now caches groups.  This makes multiple group checks MUCH
+	  faster.
+	* Removed all limitations on 253 octet attributes.  RFC 6929 allows
+	  for attributes up to 4K in length.
+	* New rlm_idn module providing an expansion for performing IDNA encoding
+	of internationalized domain names.  Thanks to 'skids'.
+	* New rlm_yubikey module to validate yubikey OTP tokens.
+	  See raddb/modules/yubikey
+
+	Bug fixes
+	* All known bug fixes from 2.2.x are included.
+	* Removed "addport" functionality.
+	* Removed many unused or duplicate modules.  See raddb/README.rst.
+
+	Internal / API changes:
+	* All traces of the old build system have been removed.
+	  The new build system is faster and simpler.
+	* clang is fully supported.
+	* We now use "talloc" for memory management.  A number of new
+	  features required this change.  Thanks to the Samba people!
+	* Many internal APIs have been updated to use talloc.
+	* New API for iterating over VALUE_PAIRs.  This is in preparation
+	  for attributes, in version 3.1.
+	* No new code should directly modify any field of a VALUE_PAIR.
+	* VALUE_PAIRs contain pointers to DICT_ATTR instead of containing
+	  attribute and vendor fields.  This will allow nested attributes.
+	* Some protocol specific code has been moved out into proto_* modules.
+	  More will come in subsequent versions.  See proto_dhcp and proto_vmps.
+	* Standardised internal logging macros.  radlog() should not be used.
+	  See src/include/log.h
+	* Use OpenSSL hashing functions when available.
+	* The server now builds with no warnings on most platforms.
+	* New RADIUS encoder/decoder, to support new formats.
+	* Added RFC 6929 "extended attributes", via the new encoder/decoder.
+	* Added full WiMAX support, via the new encoder/decoder.  The old
+	  code could not handle some unusual corner cases.

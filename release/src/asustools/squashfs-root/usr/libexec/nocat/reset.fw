@@ -1,0 +1,24 @@
+#!/bin/sh
+##
+#
+# reset.fw: reset the default firewall rules
+#
+##
+
+export PATH=/tmp/sbin:/tmp/bin:/bin:/usr/bin:/sbin:/usr/sbin
+
+# Flush all user-defined chains
+#
+iptables -t filter -D FORWARD -j NoCat 2>/dev/null
+
+iptables -t nat -D PREROUTING -j NoCat_Capture 2>/dev/null
+
+#Disabled the RouteOnly check, as it doesn't matter if the -D cmd fails.
+#Now this can be run from outside NoCat, and end up with the right result
+#-TJ
+#if [ -z "$RouteOnly" ]; then
+  iptables -t nat -D POSTROUTING -j NoCat_NAT 2>/dev/null
+#fi
+
+iptables -t mangle -D PREROUTING -j NoCat 2>/dev/null
+

@@ -1,0 +1,14 @@
+moon:: ipsec listocspcerts 2> /dev/null::altNames.*ocsp.*strongswan.org::YES
+carol::ipsec listocspcerts 2> /dev/null::altNames.*ocsp.strongswan.org::YES
+dave:: ipsec listocspcerts 2> /dev/null::altNames.*ocsp.strongswan.org::YES
+moon:: cat /var/log/daemon.log::ocsp response correctly signed by.*ocsp.research.strongswan.org::YES
+moon:: cat /var/log/daemon.log::ocsp response correctly signed by.*ocsp.sales.strongswan.org::YES
+carol::cat /var/log/daemon.log::ocsp response correctly signed by.*ocsp.strongswan.org::YES
+dave:: cat /var/log/daemon.log::ocsp response correctly signed by.*ocsp.strongswan.org::YES
+moon:: cat /var/log/daemon.log::certificate status is good::YES
+carol::cat /var/log/daemon.log::certificate status is good::YES
+dave:: cat /var/log/daemon.log::certificate status is good::YES
+moon:: ipsec status 2> /dev/null::alice.*ESTABLISHED.*moon.strongswan.org.*CN=carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::venus.*ESTABLISHED.*moon.strongswan.org.*CN=dave@strongswan.org::YES
+carol::ipsec status 2> /dev/null::ESTABLISHED.*CN=carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::ESTABLISHED.*CN=dave@strongswan.org.*moon.strongswan.org::YES

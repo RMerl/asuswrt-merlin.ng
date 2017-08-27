@@ -1,0 +1,136 @@
++Input was: 
++   identity: (len=27)313234343037303130303030303030314065617073696d2e666f6f
++   nonce_mt: 0123456789abcdeffedcba9876543201
++   chal0: 101112131415161718191a1b1c1d1e1f
++   chal1: 202122232425262728292a2b2c2d2e2f
++   chal2: 303132333435363738393a3b3c3d3e3f
++   sres0: d1d2d3d4
++   sres1: e1e2e3e4
++   sres2: f1f2f3f4
++   Kc0: a0a1a2a3a4a5a6a7
++   Kc1: b0b1b2b3b4b5b6b7
++   Kc2: c0c1c2c3c4c5c6c7
++   versionlist[4]: 00020001
++   select 00 01
++
++
++Output
++mk:         c21b4e4f_4e43619b_891e711f_f84f5e37_5e296d1a
++K_aut:      cdd4e489_a7ae78da_67b593bd_8c231102
++K_encr:     c322b087_a282de07_b0079dab_8e65d96f
++msk:        eeea3a75_8d74d4f4_a7a77b98_5733806e_8093c8f9
++            6a733668_70fcfb7e_4b0d7ab3_e8657531_25de1aa1
++            318e21c4_57346f82_ba047e35_16ea4648_22f8039e
++            aa6cc9be
++emsk:       fdc00fa1_d159910d_99251485_5d057d84_a4b1bd00
++            4d34bef5_f7070000_cb380340_e8f00240_fcf9ffbf
++            c0970040_fdb20408_00000000_58e50640_003b3731
++            fcf9ffbf
+
++SHA1buffer was: 31323434_30373031_30303030_30303031_40656170_
++                73696d2e_666f6fa0_a1a2a3a4_a5a6a7b0_b1b2b3b4_
++                b5b6b7c0_c1c2c3c4_c5c6c701_23456789_abcdeffe_
++                dcba9876_54320100_010001
+
+VERSION is 1 byte:
+
++SHA1buffer was: 31323434_30373031_30303030_30303031_40656170_
++                73696d2e_666f6fa0_a1a2a3a4_a5a6a7b0_b1b2b3b4_
++                b5b6b7c0_c1c2c3c4_c5c6c701_23456789_abcdeffe_
++                dcba9876_54320100_0101
++Input was: 
++   identity: (len=27)313234343037303130303030303030314065617073696d2e666f6f
++   nonce_mt: 0123456789abcdeffedcba9876543201
++   rand0: 101112131415161718191a1b1c1d1e1f
++   rand1: 202122232425262728292a2b2c2d2e2f
++   rand2: 303132333435363738393a3b3c3d3e3f
++   sres0: d1d2d3d4
++   sres1: e1e2e3e4
++   sres2: f1f2f3f4
++   Kc0: a0a1a2a3a4a5a6a7
++   Kc1: b0b1b2b3b4b5b6b7
++   Kc2: c0c1c2c3c4c5c6c7
++   versionlist[2]: 0001
++   select 00 01
++
++
++Output
++mk:         cfe4d5bc_fb87bcab_4d83ebea_90c179df_3cfee43c
++K_aut:      32aa4046_770c30ed_bce21212_d7d9393c
++K_encr:     e3810875_f8c40f7f_cb2544ed_d0d873c3
++msk:        3a8dd0fb_411d15e1_4d485c8b_bd94ab23_a8ea3e5a
++            d888521c_d1a3fa7d_1fabd7e2_afd062f6_75c3de8b
++            5adda978_91d78a3d_2efcb988_265ceee3_fa924279
++            43fa0125
++emsk:       5296957b_61bc72f8_5c2acbd5_501299d1_b7e2b04f
++            39127a69_003b0140_f8200340_003b0140_03000000
++            98bb0240_003b0140_e8f9ffbf_a4810408_bc373731
++            fcf9ffbf
+
+1-byte:
++SHA1buffer was: 31323434_30373031_30303030_30303031_40656170_
++                73696d2e_666f6fa0_a1a2a3a4_a5a6a7b0_b1b2b3b4_
++                b5b6b7c0_c1c2c3c4_c5c6c701_23456789_abcdeffe_
++                dcba9876_54321000_0101
++Input was: 
++   identity: (len=27)313234343037303130303030303030314065617073696d2e666f6f
++   nonce_mt: 0123456789abcdeffedcba9876543210
++   rand0: 101112131415161718191a1b1c1d1e1f
++   rand1: 202122232425262728292a2b2c2d2e2f
++   rand2: 303132333435363738393a3b3c3d3e3f
++   sres0: d1d2d3d4
++   sres1: e1e2e3e4
++   sres2: f1f2f3f4
++   Kc0: a0a1a2a3a4a5a6a7
++   Kc1: b0b1b2b3b4b5b6b7
++   Kc2: c0c1c2c3c4c5c6c7
++   versionlist[2]: 0001
++   select 00 01
++
++
++Output
++mk:         d328f534_d9292b67_0e73c798_591e1e09_04c0c8cc
++K_aut:      aa19e454_833aa2ea_ccc116db_9312b543
++K_encr:     51fc0641_e4d9fa43_23f9516d_15b9f618
++msk:        ced8e588_7d883785_ee2d2e41_f1aeb82d_1cfca277
++            7309b411_30047c52_130807c0_bdf0e56e_205433e0
++            58b2f48e_2337809d_e1b2681c_e30932d9_2a62cbe8
++            40bfb568
++emsk:       a273b6f5_47d12da7_c1d0dff4_746e0ded_70e74a83
++            520b22a8_003b0140_f8200340_003b0140_03000000
++            98bb0240_003b0140_e8f9ffbf_a4810408_bc373731
++            fcf9ffbf
+
+2-bytes:
++SHA1buffer was: 31323434_30373031_30303030_30303031_40656170_
++                73696d2e_666f6fa0_a1a2a3a4_a5a6a7b0_b1b2b3b4_
++                b5b6b7c0_c1c2c3c4_c5c6c701_23456789_abcdeffe_
++                dcba9876_54321000_010001
++Input was: 
++   identity: (len=27)313234343037303130303030303030314065617073696d2e666f6f
++   nonce_mt: 0123456789abcdeffedcba9876543210
++   rand0: 101112131415161718191a1b1c1d1e1f
++   rand1: 202122232425262728292a2b2c2d2e2f
++   rand2: 303132333435363738393a3b3c3d3e3f
++   sres0: d1d2d3d4
++   sres1: e1e2e3e4
++   sres2: f1f2f3f4
++   Kc0: a0a1a2a3a4a5a6a7
++   Kc1: b0b1b2b3b4b5b6b7
++   Kc2: c0c1c2c3c4c5c6c7
++   versionlist[2]: 0001
++   select 00 01
++
++
++Output
++mk:         e576d5ca_332e9930_018bf1ba_ee2763c7_95b3c712
++K_aut:      536e5ebc_4465582a_a6a8ec99_86ebb620
++K_encr:     25af1942_efcbf4bc_72b39434_21f2a974
++msk:        39d45aea_f4e30601_983e972b_6cfd46d1_c3637733
++            65690d09_cd44976b_525f47d3_a60a985e_955c53b0
++            90b2e4b7_3719196a_40254296_8fd14a88_8f46b9a7
++            886e4488
++emsk:       5949eab0_fff69d52_315c6c63_4fd14a7f_0d52023d
++            56f79698_003b0140_f8200340_003b0140_03000000
++            98bb0240_003b0140_e8f9ffbf_a4810408_bc373731
++            fcf9ffbf

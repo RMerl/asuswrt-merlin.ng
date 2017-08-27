@@ -1,0 +1,23 @@
+# -*- text -*-
+#
+#  $Id$
+
+# The logintime module. This handles the Login-Time,
+# Current-Time, and Time-Of-Day attributes.  It should be
+# included in the *end* of the authorize section in order to
+# handle Login-Time checks. It should also be included in the
+# instantiate section in order to register the Current-Time
+# and Time-Of-Day comparison functions.
+#
+# When the Login-Time attribute is set to some value, and the
+# user has been permitted to log in, a Session-Timeout is
+# calculated based on the remaining time.  See "doc/README".
+#
+logintime {
+	# The minimum timeout (in seconds) a user is allowed
+	# to have. If the calculated timeout is lower we don't
+	# allow the login. Some NAS do not handle values
+	# lower than 60 seconds well.
+	minimum_timeout = 60
+}
+

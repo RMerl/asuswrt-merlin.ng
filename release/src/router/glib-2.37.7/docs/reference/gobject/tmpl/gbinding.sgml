@@ -1,0 +1,175 @@
+<!-- ##### SECTION Title ##### -->
+gbinding
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GBinding ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GBinding:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GBinding:source ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GBinding:source-property ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GBinding:target ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GBinding:target-property ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GBindingFlags ##### -->
+<para>
+
+</para>
+
+@G_BINDING_DEFAULT: 
+@G_BINDING_BIDIRECTIONAL: 
+@G_BINDING_SYNC_CREATE: 
+@G_BINDING_INVERT_BOOLEAN: 
+
+<!-- ##### FUNCTION g_binding_get_source ##### -->
+<para>
+
+</para>
+
+@binding: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_binding_get_source_property ##### -->
+<para>
+
+</para>
+
+@binding: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_binding_get_target ##### -->
+<para>
+
+</para>
+
+@binding: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_binding_get_target_property ##### -->
+<para>
+
+</para>
+
+@binding: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_binding_get_flags ##### -->
+<para>
+
+</para>
+
+@binding: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_binding_unbind ##### -->
+<para>
+
+</para>
+
+@binding: 
+
+
+<!-- ##### FUNCTION g_object_bind_property ##### -->
+<para>
+
+</para>
+
+@source: 
+@source_property: 
+@target: 
+@target_property: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GBindingTransformFunc ##### -->
+<para>
+
+</para>
+
+@binding: 
+@source_value: 
+@target_value: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_bind_property_full ##### -->
+<para>
+
+</para>
+
+@source: 
+@source_property: 
+@target: 
+@target_property: 
+@flags: 
+@transform_to: 
+@transform_from: 
+@user_data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_bind_property_with_closures ##### -->
+<para>
+
+</para>
+
+@source: 
+@source_property: 
+@target: 
+@target_property: 
+@flags: 
+@transform_to: 
+@transform_from: 
+@Returns: 
+
+

@@ -1,0 +1,303 @@
+<!-- ##### SECTION Title ##### -->
+GVolume
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GVolume ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GVolume::changed ##### -->
+<para>
+
+</para>
+
+@gvolume: the object which received the signal.
+
+<!-- ##### SIGNAL GVolume::removed ##### -->
+<para>
+
+</para>
+
+@gvolume: the object which received the signal.
+
+<!-- ##### STRUCT GVolumeIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@changed: 
+@removed: 
+@get_name: 
+@get_icon: 
+@get_uuid: 
+@get_drive: 
+@get_mount: 
+@can_mount: 
+@can_eject: 
+@mount_fn: 
+@mount_finish: 
+@eject: 
+@eject_finish: 
+@get_identifier: 
+@enumerate_identifiers: 
+@should_automount: 
+@get_activation_root: 
+@eject_with_operation: 
+@eject_with_operation_finish: 
+@get_sort_key: 
+@get_symbolic_icon: 
+
+<!-- ##### FUNCTION g_volume_get_name ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_uuid ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_icon ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_symbolic_icon ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_drive ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_mount ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_can_mount ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_should_automount ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_activation_root ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_mount ##### -->
+<para>
+
+</para>
+
+@volume: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_volume_mount_finish ##### -->
+<para>
+
+</para>
+
+@volume: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_can_eject ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_eject ##### -->
+<para>
+
+</para>
+
+@volume: 
+@flags: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_volume_eject_finish ##### -->
+<para>
+
+</para>
+
+@volume: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_eject_with_operation ##### -->
+<para>
+
+</para>
+
+@volume: 
+@flags: 
+@mount_operation: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_volume_eject_with_operation_finish ##### -->
+<para>
+
+</para>
+
+@volume: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### MACRO G_VOLUME_IDENTIFIER_KIND_HAL_UDI ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VOLUME_IDENTIFIER_KIND_LABEL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VOLUME_IDENTIFIER_KIND_NFS_MOUNT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VOLUME_IDENTIFIER_KIND_UNIX_DEVICE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VOLUME_IDENTIFIER_KIND_UUID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_VOLUME_IDENTIFIER_KIND_CLASS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_volume_enumerate_identifiers ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_identifier ##### -->
+<para>
+
+</para>
+
+@volume: 
+@kind: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_volume_get_sort_key ##### -->
+<para>
+
+</para>
+
+@volume: 
+@Returns: 
+
+

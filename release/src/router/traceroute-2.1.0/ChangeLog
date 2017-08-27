@@ -1,0 +1,432 @@
+2016-03-08  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.1.0
+
+	*  Improve the main loop for better interactivity.
+
+	   Instead of waiting silently for maximum expiration time of probes
+	   in progress, use timeout of the first probe (which will be printed
+	   first from now) only.
+
+	*  Speedup wait mechanism.
+
+	   Traditional traceroute implementation always waited the whole timeout
+	   for any probe. But if we already have some replies from the same hop,
+	   or even from some next hop, we can use the round trip time
+	   of such a reply as a hint to determine the actual reasonable
+	   amount of time to wait.
+
+	   Now the `-w' option has a form of three (in general) float values
+	   separated by a comma (or a slash): `-w MAX_SECS,HERE,NEAR' .
+	   (last two are optional). MAX_SECS specifies the maximum time
+	   (in seconds) to wait, in any case.
+
+	   The optional HERE specifies a factor to multiply the round trip time
+	   of an already received response from the same hop.
+	   The resulting value is used as a timeout for the probe, instead of
+	   (but no more than) MAX_SECS. The optional NEAR specifies a similar
+	   factor for a response from some next hop.
+	   The time of the first found result is used in both cases.
+
+	   First, we look for the same hop (of the probe which will be printed
+	   first from now). If nothing found, then look for some next hop.
+	   If nothing found, use MAX_SECS. If HERE and/or NEAR have zero values,
+	   the corresponding computation is skipped.
+
+	   HERE and NEAR are always set to zero if only MAX_SECS is specified
+	   (which provides compatibility with previous versions). Thus, if your
+	   scripts use `-w SECS', then nothing changed for you, since
+	   the lonely SECS implies `-w SECS,0,0' .
+
+	   Defaults are 5.0 seconds for MAX_SECS, 3.0 times for HERE and
+	   10.0 times for NEAR.
+
+	   Certainly, the new algorithm can lead to premature expiry
+	   (especially when response times differ at times) and printing "*"
+	   instead of a time. Anyway, you can always switch this algorithm off,
+	   just by specifying `-w' with the desired timeout only (fe. `-w 5').
+
+	   We continue to wait whole MAX_SECS when one probe per time
+	   must be sent (`--sport', `-P proto'), because it seems more harmful
+	   rather than helpful to try to wait less in such cases.
+
+	   To provide compatibility with 2.0.x versions, use:
+
+		traceroute -w 5
+
+	   (or any other desired `-w' value).
+
+	*  Hint people to use the system traceroute(8) instead of
+	   tcptraceroute wrapper (by providing a stderr header).
+
+	   The using of this wrapper is a little bit harmful, since it has
+	   less possibilities and a little different set of options.
+
+	   For those who are used to use tcptraceroute in cmdline,
+	   just create a link with that name to the system traceroute.
+	   When invoked as "tcp*", it then behaves as `traceroute -T'.
+	   (The simple manual page added for this case in the wrapper subdir).
+
+	   The original tcptraceroute had some options differ ("lpNSAE"),
+	   but they was rare used. Most common "dnFifmqwst" was just the same.
+	   Therefore it should be painless to use the system binary directly,
+	   instead of the limited wrapper (which is still provided indeed).
+
+
+2016-02-15  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.22
+
+	*  Some portability fixing and improvements (Felix Janda)
+
+	*  Require clear numbers for options and arguments (Sergey Salnikov)
+
+	*  Drop compilation date from the version string (Debian #774365)
+
+	*  New tcp module option `reuse', which utilize SO_REUSEADDR
+	   to reuse local port numbers for the huge workloads (Richard Sheehan)
+
+	*  Avoid poll(2) call with spurious zero timeout in some rare cases
+	   by rounding the value properly using ceil(3)
+
+
+2014-11-12  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.21
+
+	*  Fix `--mtu' and `-F' working on kernels >= 3.13
+
+	*  Some manual page improving (Christopher Mann)
+
+
+2014-06-14  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.20
+
+	*  Describe all complementary long options in the man page (Jan Synacek)
+
+	*  Use correct service name for AS lookups (Frederic Mangano)
+
+	*  Avoid some rare case null dereference (geogriffin@jsgriff.com)
+
+	*  Improve expiration check for simultaneous probes
+
+
+2012-11-19  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.19
+
+	*  DCCP protocol support (rfc4340), by Samuel Jero
+
+	   Use "-D" option for it (the protocol-specific options
+	   are available too).
+
+	*  Update COPYING and COPYING.LIB license files to the latest
+	   published ones (due to FSF address changes etc.) (Jan Synacek)
+
+	*  Add mention of "-l" option to manual (Filip Holec)
+
+
+2011-08-16  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.18
+
+	*  Handle new dgram icmp sockets ("echo ping sockets"),
+	   appeared in kernel 3.0 .
+
+	   Now unprivileged users may perform ICMP tracerouting
+	   without any special rights of the executable
+	   (neither setuid bits nor cap_net_raw settings).
+	   It is allowed if any group of a user matches sysctl range
+	   of "net/ipv4/ping_group_range".
+
+	   The support for dgram icmp way (and whether it is allowed)
+	   is auto-detected at runtime. First, the traditional raw socket
+	   is tried (for full compatibility reasons), then new dgram
+	   socket as a fallback.
+	   The icmp module now has two additional options "raw" and "dgram",
+	   which cause to try one particular way only.
+
+	   Note, that there is no IPv6 implementation for dgram icmp sockets
+	   in kernels 3.0 yet, but new traceroute is ready for it anyway.
+
+	*  New tcp module option `info' ("-T -O info"),
+	   which prints all tcp flags of tcp reply from the reached
+	   target host.
+
+	   The flags are shown comma-separated in the same place
+	   where icmp extensions is printed (ie. in `<>' brackets)
+
+	   This feature is utilized by tcptraceroute wrapper now,
+	   and allow it to be completely functional replacement
+	   of the original tcptraceroute.
+
+	*  Fix determination of system-wide ECN setings for tcp module.
+
+	   Since the kernel 2.6.31 the default sysctl net/ipv4/tcp_ecn
+	   was changed from zero to '2', whereas the actual value
+	   for ecn to be set is still '1'
+
+	*  Allow different packet sizes for `--mtu'.
+	   Suport `-l' option for tracepath wrapper.
+
+	*  Some code and manual cleanups
+
+
+2010-12-14  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.17
+
+	*  Adapt code to make possible the use of Linux capabilities
+	   (for raw sockets etc.) instead of superuser privileges only.
+
+	   On modern systems the capabilities can be stored as
+	   file attributes, ie.:
+
+	   "setcap cap_net_raw=pe /usr/bin/traceroute"
+
+
+2010-09-13  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.16
+
+	*  A little work-around in the build system
+	   for the new (buggy?) make 3.82
+
+	*  Add `--fwmark=num' option for firewall mark (for kernel >= 2.6.25).
+	   Idea comes from an anonymous SF patch #3042539
+
+
+2010-07-14  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.15
+
+	*  Use string routines more safely (fix SF bug #3029216)
+
+	*  Provide help for lft wrapper
+
+
+2010-04-21  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.14
+
+	*  Fix support for IPv6's flow_labels and tclass.
+	   Thanks to Peter Bieringer for testing
+
+	*  Use route header "type 2" instead of deprecated "type 0"
+	   for `-g' option for IPv6. The default value can be changed
+	   by specifying a number in the place of the first `-g' address.
+
+
+2009-11-02  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.13
+
+	*  Check for first_hop is not zero value (vladz@devzero.fr)
+
+	*  Always fill unresolved IP address by its numeric interpretation,
+	   even if getnameinfo(3) leaves it untouched (as it does for ipv6
+	   in some glibc versions, whereas always fills for ipv4)
+
+	*  Cosmetic changes for man page (Andreas Mohr)
+
+
+2008-09-15  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.12
+
+	*  Use common recv_reply() routine for all modules which
+	   do recvmsg(2) call. Method-specific things go to callbacks.
+
+	   Pass to init methods pointer to datalen instead of the value.
+
+	*  Implement ICMP Extension support (rfc4884), `-e' option.
+	   Parse MPLS info (rfc4950) to be more readable (Kaj Niemi)
+
+	*  Implement Path MTU Discovery (similar to tracepath(1)),
+	   with `--mtu' option. Changed mtu is printed once in a form 
+	   of `F=NUM' at the first probe of a hop which requires
+	   such mtu to be reached. (Actually, the correspond "frag needed"
+	   icmp message is normally sent by the previous hop).
+
+	*  Print the number of backward hops when it differs with forward,
+	   by `--back' option. The backward hops is guessed by a technique
+	   similar to tracepath(1), there is no reliable way to obtain
+	   such info though.
+
+	*  The optional second argument (packet_len) now is the full length
+	   of the packet, including IP headers. (It is obvious enough due to
+	   the nature of this feature, and this is the behaviour of the
+	   original traceroute). Particular trace methods can ignore this
+	   (fe. tcp), or increase it up to the minimal value (udp, icmp).
+	   The actual packet's size is alvays reported in the output header.
+
+	*  Add tracepath(1)/tracepath6(1) shell wrapper.
+
+	*  Allow DEF_AF to be redefined at cmdline (Teran McKinney)
+
+	*  Do not check the correctness of `sim_probes' value -- it is
+	   unneeded at all. This also fixes a bug when a value of sim_probes
+	   appears to be more than the total number of probes.
+	   Reported by Milos Malik.
+
+	*  Allow default UDP method to cross zero port boundary (Milos Malik).
+	   It is a strange corner case, but traditional traceroute
+	   behaves exactly so.
+
+
+2008-04-25  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.11
+
+	*  Use new pmtudisc value "probe" instead of "do" for `-F' option
+	   (available since the kernel 2.6.22).
+
+	   For kernels before 2.6.22, the `-F' (dontfragment) option
+	   seems completely useless for IPv6 and partially useful
+	   for IPv4 (when a user can flush routing caches some way).
+
+	*  Fix installation in build system (Mike Frysinger)
+
+	*  Don't compute checksum for ipv6 icmp packets ourselves,
+	   the kernel overwrites it anyway by the proper values.
+
+	*  Don't use explicit path to traceroute in wrapper scripts
+
+
+2008-04-17  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.10
+
+	*  raw_can_connect(): ipv6 connected raw sockets
+	   receive MSG_ERRQUEUE properly only for kernels >= 2.6.25
+
+	*  remove useless "host" parameter for init methods
+
+	*  add probe_by_seq() and probe_by_sk() routines,
+	   don't pass whole probes' pointer to recv_probe method
+
+	*  collect all sends in do_send() routine
+
+	*  Interpret ENOBUFS errors for send(2) as "can retry later".
+
+	   Slow devices (like ppp) with small tx_queue_len can reject
+	   the sending of too many packets simultaneously. To handle this,
+	   do_send() now returns a negate value in a case of ENOBUFS
+	   and similar (instead of program exit). The send_probe method
+	   clears the probe and returns immediately in such cases.
+	   Then, if there is an amount of time to wait for something,
+	   the failed probe will be attempted again after that time expired.
+	   If nothing to wait more, the program is exited.
+
+
+2007-09-26  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.9
+
+	*  Complete manual page.
+
+	*  Edit manual page to sound more English, thanks to Chris Ward
+
+
+2007-09-04  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.8
+
+	*  Move all wrappers to special "wrappers/" dir.
+	   Add lft(8) shell wrapper.
+	   Add traceproto(8) shell wrapper.
+	   Add traceroute-nanog(8) shell wrapper.
+
+	*  Interpret first_hop as number, not index
+
+	*  Build system is re-worked to match more the modern requirements
+	   (Thanks to Mike Frysinger for testing).
+
+	*  Check for kernel version >= 2.6.22.2 in raw_can_connect()
+
+	*  Add generic "raw" method, "-P protonum" option.
+	   New "one_per_time" flag for tr_module.
+
+
+2007-07-31  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.7
+
+	*  Fix revents checking typo
+
+	*  Expect normal data reply from udp too.
+
+	*  Implement udp to port (-U) and udplite (-UL) methods.
+	   Both available for unprivileged users.
+	   Add "coverage" option for udplite.
+
+	*  Allow non-digit service names for `-p' and `--sport'
+
+	*  Drop period at the end of "SEE ALSO" section, and
+	   avoid specific distro names in the manual (Mike Frysinger)
+
+	*  Explicitly mention that this program is licensed
+	   as "GPL version 2 or any later version".
+	   (Similar for libsupp subdir: LGPL version 2.1 or any later).
+
+	*  Always check whether the dest and source port match in
+	   received packets. Can decrease an amount of (hypothetical)
+	   garbage received just after the bind() but before connect()
+
+
+2007-07-19  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.6
+
+	*  Rename tr_ops to tr_module
+
+	*  Implement module-specific options (-O opt,...)
+
+	*  Add TCP specific options (all the tcp header flags,
+	   ecn, sack, timestamps, window_scaling, mss, sysctl)
+	   Build tcp probe packet depending on them.
+
+	*  Add "--sport" option for explicit source port selection.
+	   Always cause "-N 1" when it is set.
+
+	*  Add new routine bind_socket().
+	   Always (auto)bind sockets in tune_socket().
+
+	*  Add tcptraceroute(8) shell wrapper
+
+
+2007-07-16  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.5
+
+	*  Use MSG_ERRQUEUE for raw sockets too.
+
+	*  raw_can_connect () work-around for kernel bug #8747
+
+	*  random.c, csum.c: new separate files
+
+	*  New implementation of tcp method ("-T"), using
+	   half-open technique. The old implementation module
+	   renamed to "tcpconn" ("-M tcpconn").
+
+	*  Common parse_cmsg() routine
+
+	*  put ee_info for parse_icmp_res() too,
+	   handle ICMP6_PACKET_TOO_BIG for IPv6,
+	   report "!F-num" when "frag needed" (legacy compatibility)
+
+
+2007-07-11  Dmitry Butskoy  <Dmitry@Butskoy.name> - 2.0.4
+
+	*  clear includes of unneeded headers
+
+	*  move poll stuff to separate poll.c
+
+	*  add module stuff (module.c), options etc.
+	   Adapt udp/icmp/tcp for this.
+
+	*  Add common routines use_recverr() and set_ttl()
+
+
+2007-02-28  Dmitry Butskoy  <Dmitry@Butskoy.name>
+
+	*  fix variable type for getsockname (Mike Frysinger)
+
+
+2007-01-09  Dmitry Butskoy  <Dmitry@Butskoy.name>  - 2.0.3
+
+	*  version 2.0.3
+
+	*  allow option args without separator (add CLIF_MAY_JOIN_ARG flag),
+	   for compatibility (Benjamin LaHaise)
+
+	*  no more "tcptraceroute" symlink for rpm packages, because
+	   it conflicts with the same-name old package anyway (James Ralston)
+
+	*  fix compilation on glibc < 2.4 (Andy Shevchenko)
+
+
+2006-10-30  Dmitry Butskoy  <Dmitry@Butskoy.name>  - 2.0.2
+
+	*  version 2.0.2
+
+	*  More accurate check_expired() routine.
+
+	*  Some minor fixes.
+
+	*  Add NOTES section to manual
+
+
+2006-10-20  Dmitry Butskoy  <Dmitry@Butskoy.name>  - 2.0.1
+
+	*  version 2.0.1
+
+	*  Now ops methods write send_time (as well as recv_time)
+
+	*  Use SO_TIMESTAMP to obtain msecs precisely
+
+	*  Complete manual
+

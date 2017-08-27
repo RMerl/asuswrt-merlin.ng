@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pagesperso-orange.fr/sebastien.godard/sysstat" targetNamespace="http://pagesperso-orange.fr/sebastien.godard/sysstat" elementFormDefault="qualified">
+<xs:annotation>
+	<xs:appinfo>-- XML Schema v2.13 for sysstat. See sadf.h --</xs:appinfo>
+</xs:annotation>
+
+<xs:element name="sysstat" type="sysstat-type"></xs:element>
+
+<xs:complexType name="sysstat-type">
+	<xs:sequence>
+		<xs:element name="sysdata-version" type="sysdata-version-type"></xs:element>
+    		<xs:element name="host" type="host-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="sysdata-version" type="sysdata-version-type"></xs:element>
+<xs:simpleType name="sysdata-version-type">
+	<xs:restriction base="xs:string"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="host" type="host-type"></xs:element>
+<xs:complexType name="host-type">
+	<xs:sequence>
+		<xs:element name="sysname" type="sysname-type"></xs:element>
+		<xs:element name="release" type="release-type"></xs:element>
+		<xs:element name="machine" type="machine-type"></xs:element>
+		<xs:element name="file-date" type="file-date-type"></xs:element>
+		<xs:element name="number-of-cpus" type="number-of-cpus-type"></xs:element>
+		<xs:element name="statistics" type="statistics-type"></xs:element>
+		<xs:element name="restarts" type="restarts-type"></xs:element>
+		<xs:element name="comments" type="comments-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="nodename" type="xs:string"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="sysname" type="sysname-type"></xs:element>
+<xs:simpleType name="sysname-type">
+	<xs:restriction base="xs:string"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="release" type="release-type"></xs:element>
+<xs:simpleType name="release-type">
+	<xs:restriction base="xs:string"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="machine" type="machine-type"></xs:element>
+<xs:simpleType name="machine-type">
+	<xs:restriction base="xs:string"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="file-date" type="file-date-type"></xs:element>
+<xs:simpleType name="file-date-type">
+	<xs:restriction base="xs:date"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="number-of-cpus" type="number-of-cpus-type"></xs:element>
+<xs:simpleType name="number-of-cpus-type">
+	<xs:restriction base="xs:nonNegativeInteger"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="statistics" type="statistics-type"></xs:element>
+<xs:complexType name="statistics-type">
+	<xs:sequence>
+		<xs:element name="timestamp" type="timestamp-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="restarts" type="restarts-type"></xs:element>
+<xs:complexType name="restarts-type">
+	<xs:sequence>
+		<xs:element name="boot" type="boot-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="comments" type="comments-type"></xs:element>
+<xs:complexType name="comments-type">
+	<xs:sequence>
+		<xs:element name="comment" type="comment-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="timestamp" type="timestamp-type"></xs:element>
+<xs:complexType name="timestamp-type">
+	<xs:sequence>
+		<xs:element name="cpu-load" type="cpu-load-type"></xs:element>
+		<xs:element name="cpu-load-all" type="cpu-load-all-type"></xs:element>
+		<xs:element name="process-and-context-switch" type="process-and-context-switch-type"></xs:element>
+		<xs:element name="interrupts" type="interrupts-type"></xs:element>
+		<xs:element name="swap-pages" type="swap-pages-type"></xs:element>
+		<xs:element name="paging" type="paging-type"></xs:element>
+		<xs:element name="io" type="io-type"></xs:element>
+		<xs:element name="memory" type="memory-type"></xs:element>
+		<xs:element name="hugepages" type="hugepages-type"></xs:element>
+		<xs:element name="kernel" type="kernel-type"></xs:element>
+		<xs:element name="queue" type="queue-type"></xs:element>
+		<xs:element name="serial" type="serial-type"></xs:element>
+		<xs:element name="disk" type="disk-type"></xs:element>
+		<xs:element name="network" type="network-type"></xs:element>
+		<xs:element name="power-management" type="power-management-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="date" type="xs:date"></xs:attribute>
+	<xs:attribute name="time" type="xs:time"></xs:attribute>
+	<xs:attribute name="utc" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="interval" type="xs:nonNegativeInteger"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="boot" type="boot-type"></xs:element>
+<xs:complexType name="boot-type">
+	<xs:attribute name="date" type="xs:date"></xs:attribute>
+	<xs:attribute name="time" type="xs:time"></xs:attribute>
+	<xs:attribute name="utc" type="xs:nonNegativeInteger"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="comment" type="comment-type"></xs:element>
+<xs:complexType name="comment-type">
+	<xs:attribute name="date" type="xs:date"></xs:attribute>
+	<xs:attribute name="time" type="xs:time"></xs:attribute>
+	<xs:attribute name="utc" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="com" type="xs:string"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="cpu-load" type="cpu-load-type"></xs:element>
+<xs:complexType name="cpu-load-type">
+	<xs:sequence>
+		<xs:element name="cpu" type="cpu-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="cpu" type="cpu-type"></xs:element>
+<xs:complexType name="cpu-type">
+	<xs:attribute name="number" type="xs:string"></xs:attribute>
+	<xs:attribute name="user" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="nice" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="system" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iowait" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="steal" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idle" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="hundredth-type">
+	<xs:restriction base="xs:float">
+		<xs:pattern value="\d*\.\d\d"></xs:pattern>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="cpu-load-all" type="cpu-load-all-type"></xs:element>
+<xs:complexType name="cpu-load-all-type">
+	<xs:sequence>
+		<xs:element name="cpu-all" type="cpu-all-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="cpu-all" type="cpu-all-type"></xs:element>
+<xs:complexType name="cpu-all-type">
+	<xs:attribute name="number" type="xs:string"></xs:attribute>
+	<xs:attribute name="usr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="nice" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="sys" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iowait" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="steal" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="irq" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="soft" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="guest" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idle" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="process-and-context-switch" type="process-and-context-switch-type"></xs:element>
+<xs:complexType name="process-and-context-switch-type">
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+	<xs:attribute name="proc" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="cswch" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="per-type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="second"></xs:enumeration>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="interrupts" type="interrupts-type"></xs:element>
+<xs:complexType name="interrupts-type">
+	<xs:sequence>
+		<xs:element name="int-global" type="int-global-type" minOccurs="1"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="int-global" type="int-global-type"></xs:element>
+<xs:complexType name="int-global-type">
+	<xs:sequence>
+		<xs:element name="irq" type="irq-type" minOccurs="1"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="irq" type="irq-type"></xs:element>
+<xs:complexType name="irq-type">
+	<xs:attribute name="intr" type="xs:int"></xs:attribute>
+	<xs:attribute name="value" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="swap-pages" type="swap-pages-type"></xs:element>
+<xs:complexType name="swap-pages-type">
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+	<xs:attribute name="pswpin" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="pswpout" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="paging" type="paging-type"></xs:element>
+<xs:complexType name="paging-type">
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+	<xs:attribute name="pgpgin" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="pgpgout" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fault" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="majflt" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="pgfree" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="pgscank" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="pgscand" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="pgsteal" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="vmeff-precent" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="io" type="io-type"></xs:element>
+<xs:complexType name="io-type">
+	<xs:sequence>
+		<xs:element name="io-reads" type="io-reads-type" minOccurs="1"></xs:element>
+		<xs:element name="io-writes" type="io-writes-type" minOccurs="1"></xs:element>
+		<xs:element name="tps" type="tps-type" minOccurs="1"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="io-reads" type="io-reads-type"></xs:element>
+<xs:complexType name="io-reads-type">
+	<xs:attribute name="rtps" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="bread" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="io-writes" type="io-writes-type"></xs:element>
+<xs:complexType name="io-writes-type">
+	<xs:attribute name="wtps" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="bwrtn" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="tps" type="tps-type"></xs:element>
+<xs:simpleType name="tps-type">
+	<xs:restriction base="hundredth-type"></xs:restriction>
+</xs:simpleType>
+
+<xs:element name="memory" type="memory-type"></xs:element>
+<xs:complexType name="memory-type">
+	<xs:sequence>
+		<xs:element name="memfree" type="xs:negativeInteger"></xs:element>
+		<xs:element name="memused" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="memused-percent" type="hundredth-type"></xs:element>
+		<xs:element name="buffers" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="cached" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="commit" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="commit-percent" type="hundredth-type"></xs:element>
+		<xs:element name="active" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="inactive" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="swpfree" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="swpused" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="swpused-percent" type="hundredth-type"></xs:element>
+		<xs:element name="swpcad" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="swpcad-percent" type="hundredth-type"></xs:element>
+		<xs:element name="frmpg" type="hundredth-type"></xs:element>
+		<xs:element name="bufpg" type="hundredth-type"></xs:element>
+		<xs:element name="campg" type="hundredth-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="unit" type="unit-type"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="unit-type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="kB"></xs:enumeration>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="hugepages" type="hugepages-type"></xs:element>
+<xs:complexType name="hugepages-type">
+	<xs:sequence>
+		<xs:element name="hugfree" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="hugused" type="xs:nonNegativeInteger"></xs:element>
+		<xs:element name="hugused-percent" type="hundredth-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="kernel" type="kernel-type"></xs:element>
+<xs:complexType name="kernel-type">
+	<xs:attribute name="dentunusd" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="file-nr" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="inode-nr" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="pty-nr" type="xs:nonNegativeInteger"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="queue" type="queue-type"></xs:element>
+<xs:complexType name="queue-type">
+	<xs:attribute name="runq-sz" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="plist-sz" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="ldavg-1" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ldavg-5" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ldavg-15" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="blocked" type="xs:nonNegativeInteger"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="serial" type="serial-type"></xs:element>
+<xs:complexType name="serial-type">
+	<xs:sequence>
+		<xs:element name="tty" type="tty-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="tty" type="tty-type"></xs:element>
+<xs:complexType name="tty-type">
+	<xs:attribute name="line" type="xs:int"></xs:attribute>
+	<xs:attribute name="rcvin" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="xmtin" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="framerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="prtyerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="brk" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ovrun" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="disk" type="disk-type"></xs:element>
+<xs:complexType name="disk-type">
+	<xs:sequence>
+		<xs:element name="disk-device" type="disk-device-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="disk-device" type="disk-device-type"></xs:element>
+<xs:complexType name="disk-device-type">
+	<xs:attribute name="dev" type="xs:string"></xs:attribute>
+	<xs:attribute name="tps" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rd_sec" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="wr_sec" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="avgrq-sz" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="avrqu-sz" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="await" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="svctm" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="util-percent" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="network" type="network-type"></xs:element>
+<xs:complexType name="network-type">
+	<xs:sequence>
+		<xs:element name="net-dev" type="net-dev-type" minOccurs="1"></xs:element>
+		<xs:element name="net-edev" type="net-edev-type" minOccurs="1"></xs:element>
+		<xs:element name="net-nfs" type="net-nfs-type" minOccurs="1"></xs:element>
+		<xs:element name="net-nfsd" type="net-nfsd-type" minOccurs="1"></xs:element>
+		<xs:element name="net-sock" type="net-sock-type" minOccurs="1"></xs:element>
+		<xs:element name="net-ip" type="net-ip-type"></xs:element>
+		<xs:element name="net-eip" type="net-eip-type"></xs:element>
+		<xs:element name="net-icmp" type="net-icmp-type"></xs:element>
+		<xs:element name="net-eicmp" type="net-eicmp-type"></xs:element>
+		<xs:element name="net-tcp" type="net-tcp-type"></xs:element>
+		<xs:element name="net-etcp" type="net-etcp-type"></xs:element>
+		<xs:element name="net-udp" type="net-udp-type"></xs:element>
+		<xs:element name="net-sock6" type="net-sock6-type" minOccurs="1"></xs:element>
+		<xs:element name="net-ip6" type="net-ip6-type"></xs:element>
+		<xs:element name="net-eip6" type="net-eip6-type"></xs:element>
+		<xs:element name="net-icmp6" type="net-icmp6-type"></xs:element>
+		<xs:element name="net-eicmp6" type="net-eicmp6-type"></xs:element>
+		<xs:element name="net-udp6" type="net-udp6-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="per" type="per-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-dev" type="net-dev-type"></xs:element>
+<xs:complexType name="net-dev-type">
+	<xs:attribute name="iface" type="xs:string"></xs:attribute>
+	<xs:attribute name="rxpck" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txpck" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rxkB" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txkB" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rxcmp" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txcmp" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rxmcst" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-edev" type="net-edev-type"></xs:element>
+<xs:complexType name="net-edev-type">
+	<xs:attribute name="iface" type="xs:string"></xs:attribute>
+	<xs:attribute name="rxerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="coll" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rxdrop" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txdrop" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txcarr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rxfram" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="rxfifo" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="txfifo" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-nfs" type="net-nfs-type"></xs:element>
+<xs:complexType name="net-nfs-type">
+	<xs:attribute name="call" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="retrans" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="read" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="write" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="access" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="getatt" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-nfsd" type="net-nfsd-type"></xs:element>
+<xs:complexType name="net-nfsd-type">
+	<xs:attribute name="scall" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="badcall" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="packet" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="udp" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="tcp" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="hit" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="miss" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="sread" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="swrite" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="saccess" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="sgetatt" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-sock" type="net-sock-type"></xs:element>
+<xs:complexType name="net-sock-type">
+	<xs:attribute name="totsck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="tcpsck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="udpsck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="rawsck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="ip-frag" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="tcp-tw" type="xs:nonNegativeInteger"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-ip" type="net-ip-type"></xs:element>
+<xs:complexType name="net-ip-type">
+	<xs:attribute name="irec" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fwddgm" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idel" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="orq" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="asmrq" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="asmok" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fragok" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fragcrt" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-eip" type="net-eip-type"></xs:element>
+<xs:complexType name="net-eip-type">
+	<xs:attribute name="ihdrerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iadrerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iukwnpr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idisc" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="odisc" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="onort" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="asmf" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fragf" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-icmp" type="net-icmp-type"></xs:element>
+<xs:complexType name="net-icmp-type">
+	<xs:attribute name="imsg" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="omsg" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iech" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iechr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oech" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oechr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="itm" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="itmr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="otm" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="otmr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iadrmk" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iadrmkr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oadrmk" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oadrmkr" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-eicmp" type="net-eicmp-type"></xs:element>
+<xs:complexType name="net-eicmp-type">
+	<xs:attribute name="ierr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idstunr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="odstunr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="itmex" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="otmex" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iparmpb" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oparmpb" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="isrcq" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="osrcq" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iredir" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oredir" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-tcp" type="net-tcp-type"></xs:element>
+<xs:complexType name="net-tcp-type">
+	<xs:attribute name="active" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="passive" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iseg" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oseg" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-etcp" type="net-etcp-type"></xs:element>
+<xs:complexType name="net-etcp-type">
+	<xs:attribute name="atmptf" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="estres" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="retrans" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="isegerr" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="orsts/" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-udp" type="net-udp-type"></xs:element>
+<xs:complexType name="net-udp-type">
+	<xs:attribute name="idgm" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="odgm" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="noport" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idgmerr" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-sock6" type="net-sock6-type"></xs:element>
+<xs:complexType name="net-sock6-type">
+	<xs:attribute name="tcp6sck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="udp6sck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="raw6sck" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="ip6-frag" type="xs:nonNegativeInteger"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-ip6" type="net-ip6-type"></xs:element>
+<xs:complexType name="net-ip6-type">
+	<xs:attribute name="irec6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fwddgm6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idel6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="orq6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="asmrq6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="asmok6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="imcpck6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="omcpck6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fragok6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fragcr6" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-eip6" type="net-eip6-type"></xs:element>
+<xs:complexType name="net-eip6-type">
+	<xs:attribute name="ihdrer6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iadrer6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iukwnp6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="i2big6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idisc6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="odisc6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="inort6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="onort6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="asmf6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="fragf6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="itrpck6" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-icmp6" type="net-icmp6-type"></xs:element>
+<xs:complexType name="net-icmp6-type">
+	<xs:attribute name="imsg6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="omsg6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iech6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iechr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oechr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="igmbq6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="igmbr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ogmbr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="igmbrd6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ogmbrd6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="irtsol6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ortsol6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="irtad6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="inbsol6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="onbsol6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="inbad6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="onbad6" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-eicmp6" type="net-eicmp6-type"></xs:element>
+<xs:complexType name="net-eicmp6-type">
+	<xs:attribute name="ierr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idtunr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="odtunr6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="itmex6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="otmex6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iprmpb6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oprmpb6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="iredir6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="oredir6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="ipck2b6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="opck2b6" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="net-udp6" type="net-udp6-type"></xs:element>
+<xs:complexType name="net-udp6-type">
+	<xs:attribute name="idgm6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="odgm6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="noport6" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="idgmer6" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="power-management" type="power-management-type"></xs:element>
+<xs:complexType name="power-management-type">
+	<xs:sequence>
+		<xs:element name="cpu-frequency" type="cpu-frequency-type" minOccurs="1"></xs:element>
+		<xs:element name="fan-speed" type="fan-speed-type"></xs:element>
+		<xs:element name="temperature" type="temperature-type"></xs:element>
+		<xs:element name="voltage-input" type="voltage-input-type"></xs:element>
+		<xs:element name="cpu-weighted-frequency" type="cpu-weighted-frequency-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="cpu-frequency" type="cpu-frequency-type"></xs:element>
+<xs:complexType name="cpu-frequency-type">
+	<xs:sequence>
+		<xs:element name="cpufreq" type="cpufreq-type" minOccurs="1"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="unit" type="frequnit-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="cpufreq" type="cpufreq-type"></xs:element>
+<xs:complexType name="cpufreq-type">
+	<xs:attribute name="number" type="xs:string"></xs:attribute>
+	<xs:attribute name="frequency" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="frequnit-type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="MHz"></xs:enumeration>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="fan-speed" type="fan-speed-type"></xs:element>
+<xs:complexType name="fan-speed-type">
+	<xs:sequence>
+		<xs:element name="fan" type="fan-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="unit" type="fanunit-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="fan" type="fan-type"></xs:element>
+<xs:complexType name="fan-type">
+	<xs:attribute name="number" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="rpm" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="drpm" type="xs:integer"></xs:attribute>
+	<xs:attribute name="device" type="xs:string"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="fanunit-type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="rpm"></xs:enumeration>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="temperature" type="temperature-type"></xs:element>
+<xs:complexType name="temperature-type">
+	<xs:sequence>
+		<xs:element name="temp" type="temp-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="unit" type="tempunit-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="temp" type="temp-type"></xs:element>
+<xs:complexType name="temp-type">
+	<xs:attribute name="number" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="degC" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="percent-temp" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="device" type="xs:string"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="tempunit-type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="degree Celsius"></xs:enumeration>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="voltage-input" type="voltage-input-type"></xs:element>
+<xs:complexType name="voltage-input-type">
+	<xs:sequence>
+		<xs:element name="in" type="in-type"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="unit" type="inunit-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="in" type="in-type"></xs:element>
+<xs:complexType name="in-type">
+	<xs:attribute name="number" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="inV" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="percent-in" type="hundredth-type"></xs:attribute>
+	<xs:attribute name="device" type="xs:string"></xs:attribute>
+</xs:complexType>
+
+<xs:simpleType name="inunit-type">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="V"></xs:enumeration>
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:element name="cpu-weighted-frequency" type="cpu-weighted-frequency-type"></xs:element>
+<xs:complexType name="cpu-weighted-frequency-type">
+	<xs:sequence>
+		<xs:element name="cpuwfreq" type="cpuwfreq-type" minOccurs="1"></xs:element>
+	</xs:sequence>
+	<xs:attribute name="unit" type="frequnit-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="cpuwfreq" type="cpuwfreq-type"></xs:element>
+<xs:complexType name="cpuwfreq-type">
+	<xs:attribute name="number" type="xs:string"></xs:attribute>
+	<xs:attribute name="weighted-frequency" type="hundredth-type"></xs:attribute>
+</xs:complexType>
+
+<xs:element name="usb-devices" type="usb-devices-type"></xs:element>
+<xs:complexType name="usb-devices-type">
+	<xs:sequence>
+		<xs:element name="usb" type="usb-type"></xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:element name="usb" type="usb-type"></xs:element>
+<xs:complexType name="usb-type">
+	<xs:attribute name="bus_number" type="xs:integer"></xs:attribute>
+	<xs:attribute name="idvendor" type="xs:string"></xs:attribute>
+	<xs:attribute name="idprod" type="xs:string"></xs:attribute>
+	<xs:attribute name="maxpower" type="xs:nonNegativeInteger"></xs:attribute>
+	<xs:attribute name="manufact" type="xs:string"></xs:attribute>
+	<xs:attribute name="product" type="xs:string"></xs:attribute>
+</xs:complexType>
+
+</xs:schema>

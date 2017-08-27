@@ -1,0 +1,114 @@
+#
+#  Tests for xlat expansion
+#
+
+xlat %{foo: bar}
+data ERROR offset 2 'Unknown module'
+
+xlat %{test:bar}
+data %{test:bar}
+
+xlat %{1}
+data %{1}
+
+xlat %{9}
+data ERROR offset 2 'Invalid regex reference'
+
+xlat %{10}
+data ERROR offset 2 'Unknown attribute'
+
+xlat %{%{foo}:-%{bar}}
+data ERROR offset 4 'Unknown attribute'
+
+xlat %{%{User-Name}:-%{bar}}
+data ERROR offset 18 'Unknown attribute'
+
+xlat %{%{User-Name}:-bar}
+data %{%{User-Name}:-bar}
+
+xlat %{%{test:bar}:-%{User-Name}}
+data %{%{test:bar}:-%{User-Name}}
+
+xlat %{%{test:bar}:-%{%{User-Name}:-bar}}
+data %{%{test:bar}:-%{%{User-Name}:-bar}}
+
+xlat %{Tunnel-Password}
+data %{Tunnel-Password}
+
+xlat %{Tunnel-Password:1}
+data %{Tunnel-Password:1}
+
+xlat %{Tunnel-Password:1[3]}
+data %{Tunnel-Password:1[3]}
+
+xlat %{Tunnel-Password:1[*]}
+data %{Tunnel-Password:1[*]}
+
+xlat %{Tunnel-Password:1[#]}
+data %{Tunnel-Password:1[#]}
+
+xlat %{reply:Tunnel-Password}
+data %{reply:Tunnel-Password}
+
+xlat %{reply:Tunnel-Password:1}
+data %{reply:Tunnel-Password:1}
+
+xlat %{reply:Tunnel-Password:1[3]}
+data %{reply:Tunnel-Password:1[3]}
+
+xlat %{reply:Tunnel-Password:1[*]}
+data %{reply:Tunnel-Password:1[*]}
+
+xlat %{reply:Tunnel-Password:1[#]}
+data %{reply:Tunnel-Password:1[#]}
+
+xlat %{User-Name[3]}
+data %{User-Name[3]}
+
+xlat %{User-Name[*]}
+data %{User-Name[*]}
+
+xlat %{User-Name[#]}
+data %{User-Name[#]}
+
+xlat %{request:User-Name[3]}
+data %{User-Name[3]}
+
+xlat %{request:User-Name[*]}
+data %{User-Name[*]}
+
+xlat %{request:User-Name[#]}
+data %{User-Name[#]}
+
+xlat %{coa:User-Name[#]}
+data %{coa:User-Name[#]}
+
+xlat %{coaX:User-Name[#]}
+data ERROR offset 2 'Unknown module'
+
+xlat %{3GPP-SGSN-Address}
+data %{3GPP-SGSN-Address}
+
+xlat %{%{Operator-Name}:-}
+data %{%{Operator-Name}:-}
+
+xlat %{%{}:-}
+data ERROR offset 4 'Empty expression is invalid'
+
+xlat %{%{}:-foo}
+data ERROR offset 4 'Empty expression is invalid'
+
+xlat %{}
+data ERROR offset 2 'Empty expression is invalid'
+
+xlat %{ }
+data ERROR offset 2 'Unknown attribute'
+
+xlat %{%{User-Name}:-}
+data %{%{User-Name}:-}
+
+xlat "Hello %S goo"
+data "Hello %S goo"
+
+xlat "%{Foreach-Variable-0}"
+data "%{Foreach-Variable-0}"

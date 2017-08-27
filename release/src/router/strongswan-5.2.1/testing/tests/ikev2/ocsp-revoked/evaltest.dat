@@ -1,0 +1,8 @@
+moon:: cat /var/log/daemon.log::requesting ocsp status from::YES
+moon:: cat /var/log/daemon.log::ocsp response correctly signed by::YES
+moon:: cat /var/log/daemon.log::certificate was revoked on::YES
+moon:: cat /var/log/daemon.log::authentication of.*carol@strongswan.org.*with RSA signature failed
+carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED::NO
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED::NO
+

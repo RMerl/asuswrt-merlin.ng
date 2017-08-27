@@ -1,0 +1,69 @@
+<!-- ##### SECTION Title ##### -->
+Shell-related Utilities
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GShellError ##### -->
+<para>
+
+</para>
+
+@G_SHELL_ERROR_BAD_QUOTING: 
+@G_SHELL_ERROR_EMPTY_STRING: 
+@G_SHELL_ERROR_FAILED: 
+
+<!-- ##### MACRO G_SHELL_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_shell_parse_argv ##### -->
+<para>
+
+</para>
+
+@command_line: 
+@argcp: 
+@argvp: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_shell_quote ##### -->
+<para>
+
+</para>
+
+@unquoted_string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_shell_unquote ##### -->
+<para>
+
+</para>
+
+@quoted_string: 
+@error: 
+@Returns: 
+
+

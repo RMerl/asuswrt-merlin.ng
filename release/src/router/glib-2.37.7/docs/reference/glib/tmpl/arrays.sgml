@@ -1,0 +1,230 @@
+<!-- ##### SECTION Title ##### -->
+Arrays
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GArray ##### -->
+<para>
+
+</para>
+
+@data: 
+@len: 
+
+<!-- ##### FUNCTION g_array_new ##### -->
+<para>
+
+</para>
+
+@zero_terminated: 
+@clear_: 
+@element_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_sized_new ##### -->
+<para>
+
+</para>
+
+@zero_terminated: 
+@clear_: 
+@element_size: 
+@reserved_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_ref ##### -->
+<para>
+
+</para>
+
+@array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_unref ##### -->
+<para>
+
+</para>
+
+@array: 
+
+
+<!-- ##### FUNCTION g_array_get_element_size ##### -->
+<para>
+
+</para>
+
+@array: 
+@Returns: 
+
+
+<!-- ##### MACRO g_array_append_val ##### -->
+<para>
+
+</para>
+
+@a: 
+@v: 
+
+
+<!-- ##### FUNCTION g_array_append_vals ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### MACRO g_array_prepend_val ##### -->
+<para>
+
+</para>
+
+@a: 
+@v: 
+
+
+<!-- ##### FUNCTION g_array_prepend_vals ##### -->
+<para>
+
+</para>
+
+@array: 
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### MACRO g_array_insert_val ##### -->
+<para>
+
+</para>
+
+@a: 
+@i: 
+@v: 
+
+
+<!-- ##### FUNCTION g_array_insert_vals ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@data: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_remove_index ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_remove_index_fast ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_remove_range ##### -->
+<para>
+
+</para>
+
+@array: 
+@index_: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_sort ##### -->
+<para>
+
+</para>
+
+@array: 
+@compare_func: 
+
+
+<!-- ##### FUNCTION g_array_sort_with_data ##### -->
+<para>
+
+</para>
+
+@array: 
+@compare_func: 
+@user_data: 
+
+
+<!-- ##### MACRO g_array_index ##### -->
+<para>
+
+</para>
+
+@a: 
+@t: 
+@i: 
+
+
+<!-- ##### FUNCTION g_array_set_size ##### -->
+<para>
+
+</para>
+
+@array: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_array_set_clear_func ##### -->
+<para>
+
+</para>
+
+@array: 
+@clear_func: 
+
+
+<!-- ##### FUNCTION g_array_free ##### -->
+<para>
+
+</para>
+
+@array: 
+@free_segment: 
+@Returns: 
+
+

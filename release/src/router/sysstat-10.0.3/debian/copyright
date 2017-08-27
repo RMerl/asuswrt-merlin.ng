@@ -1,0 +1,33 @@
+This package was debianized by Robert Luberda <robert@debian.org> on
+Wed, 29 Nov 2000 21:48:44 +0100.
+
+It was downloaded from http://pagesperso-orange.fr/sebastien.godard/
+
+The isag script is distributed together with sysstat's sources, but
+can also be found on
+  http://www.volny.cz/linux_monitor/isag/index.html
+
+Upstream Author:
+    Sebastien Godard <sysstat<at>orange.fr>
+    David Doubrava <linux_monitor<at>volny.cz> (the isag script)
+
+Copyright:
+    Copyright (C) 1998-2008 by Sebastien GODARD (sysstat <at> orange.fr)
+    Copyright (C) 2000, 2001 David Doubrava (linux_monitor(at)volny(dot)cz)
+    Copyright (C) 2004, Red Hat, Inc
+
+License:
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published  by  the
+   Free Software Foundation; either version 2 of the License, or (at  your
+   option) any later version.
+
+   This program is distributed in the hope that it  will  be  useful,  but
+   WITHOUT ANY WARRANTY; without the implied warranty  of  MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+   for more details.
+
+On Debian GNU/Linux systems you can find a copy of the GNU General Public
+Licenses in /usr/share/common-licenses/GPL-2 and
+/usr/share/common-licenses/GPL-3 files.

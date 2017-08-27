@@ -1,0 +1,147 @@
+<!-- ##### SECTION Title ##### -->
+I18N
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO _ ##### -->
+<para>
+
+</para>
+
+@String: 
+
+
+<!-- ##### MACRO Q_ ##### -->
+<para>
+
+</para>
+
+@String: 
+
+
+<!-- ##### MACRO C_ ##### -->
+<para>
+
+</para>
+
+@Context: 
+@String: 
+
+
+<!-- ##### MACRO N_ ##### -->
+<para>
+
+</para>
+
+@String: 
+
+
+<!-- ##### MACRO NC_ ##### -->
+<para>
+
+</para>
+
+@Context: 
+@String: 
+
+
+<!-- ##### FUNCTION g_dgettext ##### -->
+<para>
+
+</para>
+
+@domain: 
+@msgid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dcgettext ##### -->
+<para>
+
+</para>
+
+@domain: 
+@msgid: 
+@category: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dngettext ##### -->
+<para>
+
+</para>
+
+@domain: 
+@msgid: 
+@msgid_plural: 
+@n: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dpgettext ##### -->
+<para>
+
+</para>
+
+@domain: 
+@msgctxtid: 
+@msgidoffset: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dpgettext2 ##### -->
+<para>
+
+</para>
+
+@domain: 
+@context: 
+@msgid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_strip_context ##### -->
+<para>
+
+</para>
+
+@msgid: 
+@msgval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_language_names ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_locale_variants ##### -->
+<para>
+
+</para>
+
+@locale: 
+@Returns: 
+
+

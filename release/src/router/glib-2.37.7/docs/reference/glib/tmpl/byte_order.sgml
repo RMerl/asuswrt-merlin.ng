@@ -1,0 +1,522 @@
+<!-- ##### SECTION Title ##### -->
+Byte Order Macros
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_BYTE_ORDER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_LITTLE_ENDIAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_BIG_ENDIAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_PDP_ENDIAN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO g_htonl ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO g_htons ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO g_ntohl ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO g_ntohs ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GLONG_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GLONG_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GLONG_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GLONG_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GULONG_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GULONG_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GULONG_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GULONG_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSIZE_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSIZE_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSIZE_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSIZE_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSSIZE_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSSIZE_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSSIZE_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GSSIZE_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT16_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT16_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT16_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT16_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT32_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT32_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT32_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT32_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT64_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT64_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT64_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GINT64_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT64_FROM_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT64_FROM_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT64_TO_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT64_TO_LE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_SWAP_BE_PDP ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_SWAP_LE_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT16_SWAP_LE_PDP ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_SWAP_BE_PDP ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_SWAP_LE_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT32_SWAP_LE_PDP ##### -->
+<para>
+
+</para>
+
+@val: 
+
+
+<!-- ##### MACRO GUINT64_SWAP_LE_BE ##### -->
+<para>
+
+</para>
+
+@val: 
+
+

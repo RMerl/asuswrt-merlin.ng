@@ -1,0 +1,48 @@
+#***********************************************************************
+#
+# Makefile
+#
+#***********************************************************************
+
+#C = $(CC)
+#TOP = $(TOP)
+
+#CC = mipsel-uclibc-g++
+CPPFLAGS = -I$(SRCBASE)/libiconv-1.14/include -I$(SRCBASE)/curl-7.21.7/include -I$(SRCBASE)/openssl-ipk/include -I$(SRCBASE)/libxml2/include
+CPPFLAGS += -I$(LD_DIR) -I$(LD_DIR)/include -I. -I$(SRCBASE)/shared
+CPPFLAGS += $(if $(QCA),$(EXTRACFLAGS))
+
+LDFLAGS = -L$(SRCBASE)/curl-7.21.7/lib/.libs -L$(SRCBASE)/libxml2/.libs -L$(SRCBASE)/libiconv-1.14/lib/.libs -L$(SRCBASE)/openssl-ipk
+LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib -Wl,-dynamic-linker=/opt/lib/ld-uClibc.so.1
+LIBS = -lpthread -liconv -lcurl -lcrypto -lssl -lxml2
+
+ifeq ($(RTCONFIG_QTN),y)
+LDFLAGS += -L$(SRCBASE)/libqcsapi_client
+LIBS += -lqcsapi_client
+endif
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(LD_DIR)/common/include
+endif
+
+ifeq ($(OLEG_ARM_D),1)
+CPPFLAGS += -DOLEG_ARM
+endif
+ifeq ($(OLEG_MIPSEL_D),1)
+CPPFLAGS += -DOLEG_MIPSEL
+endif
+ifeq ($(I686_D),1)
+CPPFLAGS += -DI686
+endif
+ifeq ($(SMARTSYNCIPK_D),1)
+CPPFLAGS += -DSMARTSYNCIPK
+endif
+
+objects = ftpclient.o api.o list.o
+all: ftpclient
+
+ftpclient: $(objects)
+	$(CXX) -o $@ $^ $(CPPFLAGS) $(LDFLAGS)  $(LIBS) 
+
+.PHONY: clean
+clean:
+	-rm -rf ftpclient $(objects)

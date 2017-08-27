@@ -1,0 +1,96 @@
+.TH RADDEBUG 8 "1 September 2010" "" "FreeRADIUS Daemon"
+.SH NAME
+raddebug - Display debugging output from a running server.
+.SH SYNOPSIS
+.B raddebug
+.RB [ \-c
+.IR condition ]
+.RB [ \-d
+.IR config_directory ]
+.RB [ \-i
+.IR ipv4-address ]
+.RB [ \-I
+.IR ipv6-address ]
+.RB [ \-f
+.IR socket_file ]
+.RB [ \-t
+.IR timeout ]
+.RB [ \-u
+.IR user-name ]
+.SH DESCRIPTION
+\fBraddebug\fP is a shell script wrapper around \fBradmin\fP that
+automates the process of obtaining debugging output from a running
+server.  It does this without impacting service availability, unlike
+using \fBradiusd -X\fP.  There are a number of prerequisites that are
+required for its proper operation:
+.PP
+.in +0.3i
+* \fBradmin\fP must be available in the PATH.
+.br
+* The user running \fBraddebug\fP must have permission to connect to
+  the server control socket.
+.br
+* The control socket must be configured.  For instructions, see
+  raddb/sites-available/control-socket
+.br
+* The control socket must be marked as "mode = rw".
+.br
+* The user running \fBraddebug\fP must have permission to read and
+  write files in the "logdir" directory.  This is usually
+  /var/log/radiusd.
+.in -0.3i
+.PP
+For a number of reasons, the debugging output is placed in an
+intermediate file, rather than being sent directly to standard output.
+In order to prevent this file from growing too large, the
+\fBraddebug\fP program is automatically terminated after 10 seconds.
+This timeout can be changed via the "-t" parameter.
+.PP
+When the script exits, debug mode in the server is disabled, and the
+intermediate file is deleted.
+.PP
+Debug output from a live server can be redirected to only one
+location.  If a second instance of \fIraddebug\fP is started while the
+first one is still running, the later one will over-ride the first
+one, and the first will stop producing output.
+.SH OPTIONS
+
+.IP \-c\ \fIcondition\fP
+Set a specific debug condition.  The format of the condition is as
+specified in the CONDITIONS section of the \fIunlang\fP manual page.
+.IP \-f\ \fIsocket_file\fP
+The path to the control socket.  See the \fIradmin\fP manual page for
+more description of this option.
+.IP \-i\ \fIipv4-address\fP
+Show debug output for the client having the given IPv4 address.  This
+option is equivalent to using:
+.br
+.in +0.3i
+-c '(Packet-Src-IP-Address == ipv4-address)'
+.in -0.3i
+.IP "\-d \fIconfig directory\fP"
+The radius configuration directory, usually /etc/raddb.  See the
+\fIradmin\fP manual page for more description of this option.
+.IP \-I\ \fIipv6-address\fP
+Show debug output for the client having the given IPv6 address.  This
+option is equivalent to using:
+.br
+.in +0.3i
+-c '(Packet-Src-IPv6-Address == ipv6-address)'
+.in -0.3i
+.IP \-t\ \fItimeout\fP
+Stop printing debug output after "timeout" seconds.  The default
+timeout is sixty (60) seconds.  Use "-t 0" to print debugging output forever,
+or until the script exits.
+.IP \-u\ \fIname\fP
+Show debug output for users having the given name.  This
+option is equivalent to using:
+.br
+.in +0.3i
+-c '(User-Name == name)'
+.in -0.3i
+
+.SH SEE ALSO
+radmin(8),  raddb/sites-available/control-socket, unlang(5), radiusd.conf(5)
+.SH AUTHORS
+Alan DeKok <aland@freeradius.org>

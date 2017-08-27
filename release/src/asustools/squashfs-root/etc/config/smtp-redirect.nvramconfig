@@ -1,0 +1,3 @@
+"smtp_redirect_enable"  "Any SMTP feature"  "CHOICE"  "2" "0" "1"  "TRUE" "0"  
+"smtp_redirect_destination"  "smtp destination server"  "MERGEIPADDRS" "FALSE" "0"  
+"smtp_source_network"  "smtp source network"  "MERGEIPADDRS" "FALSE" "0"

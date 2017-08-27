@@ -1,0 +1,11 @@
+charon.plugins.socket-default.fwmark =
+	Firewall mark to set on outbound packets.
+
+charon.plugins.socket-default.set_source = yes
+	Set source address on outbound packets, if possible.
+
+charon.plugins.socket-default.use_ipv4 = yes
+	Listen on IPv4, if possible.
+
+charon.plugins.socket-default.use_ipv6 = yes
+	Listen on IPv6, if possible.

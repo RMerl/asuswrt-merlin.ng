@@ -1,0 +1,54 @@
+<!-- ##### SECTION Title ##### -->
+GTcpWrapperConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTcpWrapperConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GTcpWrapperConnection:base-io-stream ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_tcp_wrapper_connection_new ##### -->
+<para>
+
+</para>
+
+@base_io_stream: 
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tcp_wrapper_connection_get_base_io_stream ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+

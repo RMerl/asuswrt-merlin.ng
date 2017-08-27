@@ -1,0 +1,205 @@
+<html lang="en">
+<head>
+<title>Stress 1.0.4</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="Stress 1.0.4">
+<meta name="generator" content="makeinfo 4.11">
+<link title="Top" rel="top" href="#Top">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<h1 class="settitle">Stress 1.0.4</h1>
+<div class="contents">
+<h2>Table of Contents</h2>
+<ul>
+<li><a name="toc_Top" href="#Top">Stress</a>
+<li><a name="toc_Overview" href="#Overview">1 Overview of <samp><span class="command">stress</span></samp></a>
+<li><a name="toc_Invoking-stress" href="#Invoking-stress">2 Invoking stress</a>
+<li><a name="toc_Examples" href="#Examples">3 Example invocations</a>
+<li><a name="toc_Copying-This-Manual" href="#Copying-This-Manual">Appendix A Copying This Manual</a>
+<li><a name="toc_Index" href="#Index">Index</a>
+</li></ul>
+</div>
+
+
+
+<div class="node">
+<p><hr>
+<a name="Top"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="#Overview">Overview</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#dir">(dir)</a>
+
+</div>
+
+<h2 class="unnumbered">Stress</h2>
+
+<ul class="menu">
+<li><a accesskey="1" href="#Overview">Overview</a>:                     Overview of <samp><span class="command">stress</span></samp>. 
+<li><a accesskey="2" href="#Invoking-stress">Invoking stress</a>:              How to run <samp><span class="command">stress</span></samp>. 
+<li><a accesskey="3" href="#Examples">Examples</a>:                     Some example invocations. 
+<li><a accesskey="4" href="#Copying-This-Manual">Copying This Manual</a>
+<li><a accesskey="5" href="#Index">Index</a>
+</ul>
+
+<div class="node">
+<p><hr>
+<a name="Overview"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="#Invoking-stress">Invoking stress</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Top">Top</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
+
+</div>
+
+<h2 class="chapter">1 Overview of <samp><span class="command">stress</span></samp></h2>
+
+<p><samp><span class="command">stress</span></samp> is not a benchmark, but is rather a tool designed to put
+given subsytems under a specified load.  Instances in which this is useful
+include those in which a system administrator wishes to perform tuning
+activities, a kernel or libc programmer wishes to evaluate denial of service
+possibilities, etc.
+
+<div class="node">
+<p><hr>
+<a name="Invoking-stress"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="#Examples">Examples</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Overview">Overview</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
+
+</div>
+
+<h2 class="chapter">2 Invoking stress</h2>
+
+<p><a name="index-stress-1"></a><a name="index-invoking-_0040command_007bstress_007d-2"></a>
+The format for running the <samp><span class="command">stress</span></samp> program is:
+
+<pre class="example">     <samp><span class="command">stress</span></samp> [<var>option</var> [<var>args</var>]] ...
+</pre>
+   <p><samp><span class="command">stress</span></samp> supports the following options:
+
+     <dl>
+<dt>&lsquo;<samp><span class="samp">-?</span></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--help</span></samp>&rsquo;<dd>Show help information.
+
+     <dt>&lsquo;<samp><span class="samp">--version</span></samp>&rsquo;<dd>Show version information.
+
+     <br><dt>&lsquo;<samp><span class="samp">-v</span></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--verbose</span></samp>&rsquo;<dd>Turn up verbosity.
+
+     <br><dt>&lsquo;<samp><span class="samp">-q</span></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--quiet</span></samp>&rsquo;<dd>Turn down verbosity.
+
+     <br><dt>&lsquo;<samp><span class="samp">-n</span></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--dry-run</span></samp>&rsquo;<dd>Show what would have been done.
+
+     <br><dt>&lsquo;<samp><span class="samp">-t </span><var>secs</var></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--timeout </span><var>secs</var></samp>&rsquo;<dd>Time out after <var>secs</var> seconds.
+
+     <dt>&lsquo;<samp><span class="samp">--backoff </span><var>usecs</var></samp>&rsquo;<dd>Wait for factor of <var>usecs</var> microseconds before starting work.
+
+     <br><dt>&lsquo;<samp><span class="samp">-c </span><var>forks</var></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--cpu </span><var>forks</var></samp>&rsquo;<dd>Spawn <var>forks</var> processes each spinning on &lsquo;<samp><span class="samp">sqrt()</span></samp>&rsquo;.
+
+     <br><dt>&lsquo;<samp><span class="samp">-i </span><var>forks</var></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--io </span><var>forks</var></samp>&rsquo;<dd>Spawn <var>forks</var> processes each spinning on &lsquo;<samp><span class="samp">sync()</span></samp>&rsquo;.
+
+     <br><dt>&lsquo;<samp><span class="samp">-m </span><var>forks</var></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--vm </span><var>forks</var></samp>&rsquo;<dd>Spawn <var>forks</var> processes each spinning on &lsquo;<samp><span class="samp">malloc()</span></samp>&rsquo;.
+
+     <dt>&lsquo;<samp><span class="samp">--vm-bytes </span><var>bytes</var></samp>&rsquo;<dd>Allocate <var>bytes</var> number of bytes.  The default is 1.
+
+     <dt>&lsquo;<samp><span class="samp">--vm-hang</span></samp>&rsquo;<dd>Instruct each vm hog process to go to sleep after allocating memory.  This
+contrasts with their normal behavior, which is to free the memory and
+reallocate <em>ad infinitum</em>.  This is useful for simulating low memory
+conditions on a machine.  For example, the following command allocates 256M of
+RAM and holds it until killed.
+
+     <pre class="example">          % stress --vm 2 --vm-bytes 128M --vm-hang
+</pre>
+     <br><dt>&lsquo;<samp><span class="samp">-d </span><var>forks</var></samp>&rsquo;<dt>&lsquo;<samp><span class="samp">--hdd </span><var>forks</var></samp>&rsquo;<dd>Spawn <var>forks</var> processes each spinning on &lsquo;<samp><span class="samp">write()</span></samp>&rsquo;.
+
+     <dt>&lsquo;<samp><span class="samp">--hdd-bytes </span><var>bytes</var></samp>&rsquo;<dd>Write <var>bytes</var> number of bytes.  The default is 1GB.
+
+     <dt>&lsquo;<samp><span class="samp">--hdd-noclean</span></samp>&rsquo;<dd>Do not unlink file(s) to which random ASCII data is written.
+
+   </dl>
+
+   <p>Note: Suffixes may be s,m,h,d,y (time) or k,m,g (size).
+
+<div class="node">
+<p><hr>
+<a name="Examples"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="#Copying-This-Manual">Copying This Manual</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Invoking-stress">Invoking stress</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
+
+</div>
+
+<h2 class="chapter">3 Example invocations</h2>
+
+<p>The simple case is that you just want to bring the system load average up to
+an arbitrary value.  The following forks 13 processes, each of which spins
+in a tight loop calculating the sqrt() of a random number acquired with
+rand().
+
+   <p>% &lsquo;<samp><span class="samp">stress -c 13</span></samp>&rsquo;
+
+   <p>Long options are supported, as well as is making the output less verbose. 
+The following forks 1024 processes, and only reports error messages if any.
+
+   <p>% &lsquo;<samp><span class="samp">stress --quiet --cpu 1k</span></samp>&rsquo;
+
+   <p>To see how your system performs when it is I/O bound, use the -i switch. 
+The following forks 4 processes, each of which spins in a tight loop calling
+sync(), which is a system call that flushes memory buffers to disk.
+
+   <p>% &lsquo;<samp><span class="samp">stress -i 4</span></samp>&rsquo;
+
+   <p>Multiple hogs may be combined on the same command line.  The following does
+everything the preceding examples did in one command, but also turns up the
+verbosity level as well as showing how to cause the command to
+self-terminate after 1 minute.
+
+   <p>% &lsquo;<samp><span class="samp">stress -c 13 -i 4 --verbose --timeout 1m</span></samp>&rsquo;
+
+   <p>You can write a file of arbitrary length to disk.  The file is created with
+mkstemp() in the current directory, the default is to unlink it, but
+unlinking can be overridden with the &ndash;hdd-noclean flag.
+
+   <p>% &lsquo;<samp><span class="samp">stress -d 1 --hdd-noclean --hdd-bytes 13</span></samp>&rsquo;
+
+   <p>Large file support is enabled.
+
+   <p>% &lsquo;<samp><span class="samp">stress -d 1 --hdd-noclean --hdd-bytes 3G</span></samp>&rsquo;
+
+<div class="node">
+<p><hr>
+<a name="Copying-This-Manual"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="#Index">Index</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Examples">Examples</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
+
+</div>
+
+<h2 class="appendix">Appendix A Copying This Manual</h2>
+
+<p>You may copy this manual under the terms of the GNU General Public License.
+
+<div class="node">
+<p><hr>
+<a name="Index"></a>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Copying-This-Manual">Copying This Manual</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
+
+</div>
+
+<h2 class="unnumbered">Index</h2>
+
+<ul class="index-cp" compact>
+<li><a href="#index-invoking-_0040command_007bstress_007d-2">invoking <samp><span class="command">stress</span></samp></a>: <a href="#Invoking-stress">Invoking stress</a></li>
+<li><a href="#index-stress-1"><code>stress</code></a>: <a href="#Invoking-stress">Invoking stress</a></li>
+   </ul></body></html>
+

@@ -1,0 +1,52 @@
+.TH SA2 8 "AUGUST 2010" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+sa2 \- Write a daily report in the @SA_DIR@ directory.
+.SH SYNOPSIS
+.B @SA_LIB_DIR@/sa2
+.SH DESCRIPTION
+The
+.B sa2
+command is a shell procedure variant of the
+.B sar
+command which writes a daily report in the
+.IR @SA_DIR@/sar dd
+file, where the dd parameter indicates the current day. The
+.B sa2
+command handles all of the flags and parameters of the
+.B sar
+command.
+
+The
+.B sa2
+command is designed to be started automatically by the cron command.
+
+.SH EXAMPLES
+To run the
+.B sa2
+command daily, place the following entry in your root or adm crontab file:
+
+.B 5 19 * * 1-5 @SA_LIB_DIR@/sa2 -A &
+
+This will generate a daily report called
+.IR @SA_DIR@/sar dd
+It will also remove reports more than one week old.
+.SS Debian note
+The Debian sysstat package has already placed such an entry in your system crontab.
+Please refer to the
+.I /usr/share/doc/sysstat/README.Debian
+file for details.
+.SH FILES
+.IR @SA_DIR@/sar dd
+.RS
+Indicate the daily report file, where the
+.B dd
+parameter is a number representing the day of the month.
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sar (1),
+.BR sadc (8),
+.BR sa1 (8),
+.BR sadf (1)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

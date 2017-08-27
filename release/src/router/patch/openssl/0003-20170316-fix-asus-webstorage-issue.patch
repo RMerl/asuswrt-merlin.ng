@@ -1,0 +1,86 @@
+diff --git a/release/src/router/openssl/doc/apps/ciphers.pod b/release/src/router/openssl/doc/apps/ciphers.pod
+index a486187..a976365 100644
+--- a/release/src/router/openssl/doc/apps/ciphers.pod
++++ b/release/src/router/openssl/doc/apps/ciphers.pod
+@@ -427,7 +427,7 @@ e.g. DES-CBC3-SHA. In these cases, RSA authentication is used.
+  TLS_DH_anon_WITH_3DES_EDE_CBC_SHA       ADH-DES-CBC3-SHA
+ 
+ =head2 AES ciphersuites from RFC3268, extending TLS v1.0
+-
++ TLS_RSA_WITH_AES_128_CBC_SHA            AES128-SHA
+  TLS_RSA_WITH_AES_256_CBC_SHA            AES256-SHA
+ 
+  TLS_DH_DSS_WITH_AES_128_CBC_SHA         DH-DSS-AES128-SHA
+diff --git a/release/src/router/openssl/ssl/s3_lib.c b/release/src/router/openssl/ssl/s3_lib.c
+index 1f7fcc8..ea301220 100644
+--- a/release/src/router/openssl/ssl/s3_lib.c
++++ b/release/src/router/openssl/ssl/s3_lib.c
+@@ -927,7 +927,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
+ 
+ /* New AES ciphersuites */
+ /* Cipher 2F */
+-    /*{
++    {
+      1,
+      TLS1_TXT_RSA_WITH_AES_128_SHA,
+      TLS1_CK_RSA_WITH_AES_128_SHA,
+@@ -940,7 +940,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
+      SSL_HANDSHAKE_MAC_DEFAULT | TLS1_PRF,
+      128,
+      128,
+-     },*/
++     },
+ /* Cipher 30 */
+     {
+      1,
+diff --git a/release/src/router/openssl/ssl/t1_trce.c b/release/src/router/openssl/ssl/t1_trce.c
+index 59b3289..8160a75 100644
+--- a/release/src/router/openssl/ssl/t1_trce.c
++++ b/release/src/router/openssl/ssl/t1_trce.c
+@@ -185,7 +185,7 @@ static ssl_trace_tbl ssl_ciphers_tbl[] = {
+     {0x0029, "TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5"},
+     {0x002A, "TLS_KRB5_EXPORT_WITH_RC2_CBC_40_MD5"},
+     {0x002B, "TLS_KRB5_EXPORT_WITH_RC4_40_MD5"},
+-    //{0x002F, "TLS_RSA_WITH_AES_128_CBC_SHA"},
++    {0x002F, "TLS_RSA_WITH_AES_128_CBC_SHA"},
+     {0x0030, "TLS_DH_DSS_WITH_AES_128_CBC_SHA"},
+     {0x0031, "TLS_DH_RSA_WITH_AES_128_CBC_SHA"},
+     {0x0032, "TLS_DHE_DSS_WITH_AES_128_CBC_SHA"},
+diff --git a/release/src/router/openssl/ssl/tls1.h b/release/src/router/openssl/ssl/tls1.h
+index 82d0879..0501429 100644
+--- a/release/src/router/openssl/ssl/tls1.h
++++ b/release/src/router/openssl/ssl/tls1.h
+@@ -578,7 +578,7 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
+ # define TLS1_TXT_DHE_DSS_WITH_RC4_128_SHA               "DHE-DSS-RC4-SHA"
+ 
+ /* AES ciphersuites from RFC3268 */
+-//# define TLS1_TXT_RSA_WITH_AES_128_SHA                   "AES128-SHA"
++# define TLS1_TXT_RSA_WITH_AES_128_SHA                   "AES128-SHA"
+ # define TLS1_TXT_DH_DSS_WITH_AES_128_SHA                "DH-DSS-AES128-SHA"
+ # define TLS1_TXT_DH_RSA_WITH_AES_128_SHA                "DH-RSA-AES128-SHA"
+ # define TLS1_TXT_DHE_DSS_WITH_AES_128_SHA               "DHE-DSS-AES128-SHA"
+diff --git a/release/src/router/openssl/test/testfipsssl b/release/src/router/openssl/test/testfipsssl
+index 6dcfb32..9cbac39 100644
+--- a/release/src/router/openssl/test/testfipsssl
++++ b/release/src/router/openssl/test/testfipsssl
+@@ -11,7 +11,7 @@ else
+   cert="$2"
+ fi
+ 
+-ciphers="DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA:AES256-SHA:EDH-RSA-DES-CBC3-SHA:EDH-DSS-DES-CBC3-SHA:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA:EXP1024-DHE-DSS-DES-CBC-SHA:EXP1024-DES-CBC-SHA:EDH-RSA-DES-CBC-SHA:EDH-DSS-DES-CBC-SHA:DES-CBC-SHA:EXP-EDH-RSA-DES-CBC-SHA:EXP-EDH-DSS-DES-CBC-SHA:EXP-DES-CBC-SHA"
++ciphers="DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA:AES256-SHA:EDH-RSA-DES-CBC3-SHA:EDH-DSS-DES-CBC3-SHA:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA:AES128-SHA:EXP1024-DHE-DSS-DES-CBC-SHA:EXP1024-DES-CBC-SHA:EDH-RSA-DES-CBC-SHA:EDH-DSS-DES-CBC-SHA:DES-CBC-SHA:EXP-EDH-RSA-DES-CBC-SHA:EXP-EDH-DSS-DES-CBC-SHA:EXP-DES-CBC-SHA"
+ 
+ ssltest="../util/shlib_wrap.sh ./ssltest -F -key $key -cert $cert -c_key $key -c_cert $cert -cipher $ciphers"
+ 
+diff --git a/release/src/router/openssl/test/testssl b/release/src/router/openssl/test/testssl
+index 65bf0e2..69b0e78 100644
+--- a/release/src/router/openssl/test/testssl
++++ b/release/src/router/openssl/test/testssl
+@@ -288,6 +288,7 @@ fi
+ # Multi-buffer tests
+ 
+ if [ -z "$extra" -a `uname -m` = "x86_64" ]; then
++  $ssltest -cipher AES128-SHA    -bytes 8m     || exit 1
+   $ssltest -cipher AES128-SHA256 -bytes 8m	|| exit 1
+ fi
+ 

@@ -1,0 +1,68 @@
+<!-- ##### SECTION Title ##### -->
+GWin32OutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GWin32OutputStream ##### -->
+<para>
+
+</para>
+
+@parent_instance: 
+
+<!-- ##### FUNCTION g_win32_output_stream_new ##### -->
+<para>
+
+</para>
+
+@handle: 
+@close_handle: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_output_stream_set_close_handle ##### -->
+<para>
+
+</para>
+
+@stream: 
+@close_handle: 
+
+
+<!-- ##### FUNCTION g_win32_output_stream_get_close_handle ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_win32_output_stream_get_handle ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+

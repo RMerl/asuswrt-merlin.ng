@@ -1,0 +1,9 @@
+charon.plugins.random.random = ${random_device}
+	File to read random bytes from.
+
+charon.plugins.random.urandom = ${urandom_device}
+	File to read pseudo random bytes from.
+
+charon.plugins.random.strong_equals_true = no
+	If set to yes the RNG_STRONG class reads random bytes from the same source
+	as the RNG_TRUE class.

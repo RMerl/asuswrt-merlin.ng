@@ -1,0 +1,5 @@
+soup_cookie_jar_sqlite_get_type
+soup_cookie_jar_sqlite_new
+soup_gnome_features_2_26_get_type
+soup_password_manager_gnome_get_type
+soup_proxy_resolver_gnome_get_type

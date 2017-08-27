@@ -1,0 +1,6 @@
+
+Answer y if you don't want to install sysstat's documentation files.
+Those are primarily manual pages for sysstat's commands. They also
+include a few other files like the FAQ or README files.
+Default answer is n here (documentation files ARE installed).
+

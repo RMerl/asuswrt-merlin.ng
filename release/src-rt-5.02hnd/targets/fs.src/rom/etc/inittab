@@ -1,0 +1,15 @@
+# See examples/inittab for full description of fields.
+# This file contains customizations for the Broadcom CPE Router SDK
+
+# "bcm_boot_launcher start" will execute all scripts in /etc/rc3.d starting
+# with letter S in lexicographical order 
+::sysinit:/bin/sh -l -c "bcm_boot_launcher start"
+
+# if you don't want to type username/passwd in console login, copy this
+# file to inittab.custom and replace "-/bin/sh -l -c consoled" below with "-/bin/sh"
+# The '-' means interactive, is still attached to terminal
+::respawn:-/bin/sh -l -c consoled
+
+# Currently, there are no scripts for shutdown
+::shutdown:/bin/sh -l -c "bcm_boot_launcher stop"
+

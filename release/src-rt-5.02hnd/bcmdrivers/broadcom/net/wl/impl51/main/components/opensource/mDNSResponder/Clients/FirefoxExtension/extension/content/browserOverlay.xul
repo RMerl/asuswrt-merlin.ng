@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://bonjour4firefox/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://bonjour4firefox/locale/bonjour4firefox.dtd">
+<overlay id="bonjour4firefox-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  	<script src="overlay.js"/>
+  	<stringbundleset id="stringbundleset">
+    	<stringbundle id="bonjour4firefox-strings" src="chrome://bonjour4firefox/locale/bonjour4firefox.properties"/>
+  	</stringbundleset>
+
+  	<menupopup id="viewSidebarMenu">
+		<menuitem observes="viewBonjour4FirefoxSidebar"/>
+	</menupopup>
+
+  	<toolbarpalette id="BrowserToolbarPalette">
+  		<toolbarbutton id="bonjour4firefox-toolbar-button"
+    		label="&bonjour4firefoxToolbar.label;"
+    		tooltiptext="&bonjour4firefoxToolbar.tooltip;"
+    		oncommand="toggleSidebar('viewBonjour4FirefoxSidebar');"
+    		class="toolbarbutton-1 chromeclass-toolbar-additional"/>
+  	</toolbarpalette>
+
+	<broadcasterset id="mainBroadcasterSet">
+		<broadcaster id="viewBonjour4FirefoxSidebar"
+			autoCheck="false"
+			label="Bonjour"
+			type="checkbox" group="sidebar"
+			sidebarurl="chrome://bonjour4firefox/content/bonjour4firefox.xul"
+			sidebartitle="&bonjour4firefox.label;"
+			oncommand="toggleSidebar('viewBonjour4FirefoxSidebar');"/>
+	</broadcasterset>
+</overlay>

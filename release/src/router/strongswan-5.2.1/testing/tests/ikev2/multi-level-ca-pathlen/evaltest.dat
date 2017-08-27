@@ -1,0 +1,4 @@
+moon:: cat /var/log/daemon.log::path length of 2 violates constraint of 1::YES
+carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED::NO
+moon:: ipsec status 2> /dev/null::duck.*INSTALLED::NO

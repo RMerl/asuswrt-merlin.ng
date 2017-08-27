@@ -1,0 +1,20 @@
+alice::rm /etc/ipsec.d/cacerts/*
+venus::rm /etc/ipsec.d/cacerts/*
+sun::rm /etc/ipsec.d/cacerts/*
+alice::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/ipsec.d/ipsec.sql
+venus::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/ipsec.d/ipsec.sql
+sun::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/ipsec.d/ipsec.sql
+alice::cat /etc/ipsec.d/ipsec.sql | sqlite3 /etc/ipsec.d/ipsec.db
+venus::cat /etc/ipsec.d/ipsec.sql | sqlite3 /etc/ipsec.d/ipsec.db
+sun::cat /etc/ipsec.d/ipsec.sql | sqlite3 /etc/ipsec.d/ipsec.db
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p udp -j SNAT --to-source PH_IP_MOON:1024-1100
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to-source PH_IP_MOON:2000-2100
+alice::ipsec start
+venus::ipsec start
+sun::ipsec start
+alice::expect-connection nat-t
+venus::expect-connection nat-t
+sun::expect-connection nat-t
+alice::ipsec up nat-t
+venus::ipsec up nat-t

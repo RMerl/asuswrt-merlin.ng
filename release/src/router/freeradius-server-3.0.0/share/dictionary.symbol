@@ -1,0 +1,41 @@
+# -*- text -*-
+# Copyright (C) 2011 The FreeRADIUS Server project and contributors
+##############################################################################
+#
+#	Symbol VSAs
+#
+#	$Id$
+#
+##############################################################################
+VENDOR		Symbol				388
+
+BEGIN-VENDOR	Symbol
+
+ATTRIBUTE	Symbol-Admin-Role			1	integer
+VALUE	Symbol-Admin-Role		Monitor			1
+VALUE	Symbol-Admin-Role		Helpdesk		2
+VALUE	Symbol-Admin-Role		NetworkAdmin		4
+VALUE	Symbol-Admin-Role		SysAdmin		8
+VALUE	Symbol-Admin-Role		WebAdmin		16
+VALUE	Symbol-Admin-Role		SuperUser		32768
+
+ATTRIBUTE	Symbol-Current-ESSID			2	string
+ATTRIBUTE	Symbol-Allowed-ESSID			3	string
+ATTRIBUTE	Symbol-WLAN-Index			4	integer
+ATTRIBUTE	Symbol-QoS-Profile			5	integer
+ATTRIBUTE	Symbol-Allowed-Radio			6	string
+ATTRIBUTE	Symbol-Expiry-Date-Time			7	string
+ATTRIBUTE	Symbol-Start-Date-Time			8	string
+ATTRIBUTE	Symbol-Posture-Status			9	string
+ATTRIBUTE	Symbol-Downlink-Limit			10	string
+ATTRIBUTE	Symbol-Uplink-Limit			11	string
+ATTRIBUTE	Symbol-User-Group			12	string
+
+ATTRIBUTE	Symbol-Login-Source			100	integer
+VALUE	Symbol-Login-Source		HTTP			16
+VALUE	Symbol-Login-Source		SSH			32
+VALUE	Symbol-Login-Source		Telnet			64
+VALUE	Symbol-Login-Source		Console			128
+VALUE	Symbol-Login-Source		All			240
+
+END-VENDOR	Symbol

@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>udev</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="libudev Reference Manual">
+<link rel="up" href="ch01.html" title="libudev">
+<link rel="prev" href="ch01.html" title="libudev">
+<link rel="next" href="libudev-udev-list.html" title="udev_list">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="ch01.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">libudev Reference Manual</th>
+<td><a accesskey="n" href="libudev-udev-list.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#libudev-udev.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#libudev-udev.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="libudev-udev"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libudev-udev.top_of_page"></a>udev</span></h2>
+<p>udev — libudev context</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="libudev-udev.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">struct              <a class="link" href="libudev-udev.html#udev" title="struct udev">udev</a>;
+struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       <a class="link" href="libudev-udev.html#udev-ref" title="udev_ref ()">udev_ref</a>                            (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev.html#udev-unref" title="udev_unref ()">udev_unref</a>                          (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       <a class="link" href="libudev-udev.html#udev-new" title="udev_new ()">udev_new</a>                            (<em class="parameter"><code><span class="type">void</span></code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev.html#udev-set-log-fn" title="udev_set_log_fn ()">udev_set_log_fn</a>                     (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">void</span> (*log_fn) (struct udev *udev, int priority, const char *file, int line, const char *fn, const char *format, va_list args)</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libudev-udev.html#udev-get-log-priority" title="udev_get_log_priority ()">udev_get_log_priority</a>               (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev.html#udev-set-log-priority" title="udev_set_log_priority ()">udev_set_log_priority</a>               (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> priority</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev.html#udev-get-sys-path" title="udev_get_sys_path ()">udev_get_sys_path</a>                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev.html#udev-get-dev-path" title="udev_get_dev_path ()">udev_get_dev_path</a>                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="libudev-udev.html#udev-get-run-path" title="udev_get_run_path ()">udev_get_run_path</a>                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+<span class="returnvalue">void</span> *              <a class="link" href="libudev-udev.html#udev-get-userdata" title="udev_get_userdata ()">udev_get_userdata</a>                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libudev-udev.html#udev-set-userdata" title="udev_set_userdata ()">udev_set_userdata</a>                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">void</span> *userdata</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="libudev-udev.description"></a><h2>Description</h2>
+<p>
+The context contains the default values read from the udev config file,
+and is passed to all library operations.
+</p>
+</div>
+<div class="refsect1">
+<a name="libudev-udev.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="udev"></a><h3>struct udev</h3>
+<pre class="programlisting">struct udev;</pre>
+<p>
+Opaque object representing the library context.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-ref"></a><h3>udev_ref ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       udev_ref                            (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Take a reference of the udev library context.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the passed udev library context</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-unref"></a><h3>udev_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_unref                          (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Drop a reference of the udev library context. If the refcount
+reaches zero, the resources of the context will be released.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-new"></a><h3>udev_new ()</h3>
+<pre class="programlisting">struct <a class="link" href="libudev-udev.html#udev" title="struct udev"><span class="returnvalue">udev</span></a> *       udev_new                            (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Create udev library context. This reads the udev configuration
+file, and fills in the default values.
+</p>
+<p>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev library context.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new udev library context</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-set-log-fn"></a><h3>udev_set_log_fn ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_set_log_fn                     (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">void</span> (*log_fn) (struct udev *udev, int priority, const char *file, int line, const char *fn, const char *format, va_list args)</code></em>);</pre>
+<p>
+The built-in logging writes to stderr. It can be
+overridden by a custom function, to plug log messages
+into the users' logging functionality.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>log_fn</code></em> :</span></p></td>
+<td>function to be called for logging messages</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-get-log-priority"></a><h3>udev_get_log_priority ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 udev_get_log_priority               (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+The initial logging priority is read from the udev config file
+at startup.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the current logging priority</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-set-log-priority"></a><h3>udev_set_log_priority ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_set_log_priority               (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">int</span> priority</code></em>);</pre>
+<p>
+Set the current logging priority. The value controls which messages
+are logged.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>priority</code></em> :</span></p></td>
+<td>the new logging priority</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-get-sys-path"></a><h3>udev_get_sys_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_get_sys_path                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Retrieve the sysfs mount point. The default is "/sys". For
+testing purposes, it can be overridden with the environment
+variable SYSFS_PATH.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the sys mount point</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-get-dev-path"></a><h3>udev_get_dev_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_get_dev_path                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Retrieve the device directory path. The default value is "/dev",
+the actual value may be overridden in the udev configuration
+file.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the device directory path</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-get-run-path"></a><h3>udev_get_run_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        udev_get_run_path                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Retrieve the udev runtime directory path. The default is "/run/udev".
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the runtime directory path</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-get-userdata"></a><h3>udev_get_userdata ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span> *              udev_get_userdata                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>);</pre>
+<p>
+Retrieve stored data pointer from library context. This might be useful
+to access from callbacks like a custom logging function.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>stored userdata</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="udev-set-userdata"></a><h3>udev_set_userdata ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                udev_set_userdata                   (<em class="parameter"><code><span class="type">struct udev</span> *udev</code></em>,
+                                                         <em class="parameter"><code><span class="type">void</span> *userdata</code></em>);</pre>
+<p>
+Store custom <em class="parameter"><code>userdata</code></em> in the library context.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>udev</code></em> :</span></p></td>
+<td>udev library context</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>userdata</code></em> :</span></p></td>
+<td>data pointer</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.17</div>
+</body>
+</html>

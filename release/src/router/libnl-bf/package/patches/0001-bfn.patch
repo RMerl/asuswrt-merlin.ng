@@ -1,0 +1,3669 @@
+diff --git a/.gitignore b/.gitignore
+index 85ddb3c..8709bfa 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -5,6 +5,7 @@
+ *.lo
+ *.o
+ *.swp
++tags
+ Makefile
+ Makefile.in
+ defs.h.in
+@@ -27,4 +28,4 @@ cscope.*
+ /install-sh
+ /missing
+ /*.pc
+-
++TAGS
+diff --git a/include/Makefile.am b/include/Makefile.am
+index 2ba0ece..79ade11 100644
+--- a/include/Makefile.am
++++ b/include/Makefile.am
+@@ -54,6 +54,10 @@ nobase_libnlinclude_HEADERS = \
+ 	netlink/route/qdisc/red.h \
+ 	netlink/route/qdisc/sfq.h \
+ 	netlink/route/qdisc/tbf.h \
++	netlink/route/qdisc/bf.h \
++	netlink/route/qdisc/hfsc.h \
++	netlink/route/qdisc/codel.h \
++	netlink/route/qdisc/fq_codel.h \
+ 	netlink/route/qdisc/plug.h \
+ 	netlink/route/addr.h \
+ 	netlink/route/class.h \
+diff --git a/include/linux/pkt_sched.h b/include/linux/pkt_sched.h
+index 7ccc1fd..a614d99 100644
+--- a/include/linux/pkt_sched.h
++++ b/include/linux/pkt_sched.h
+@@ -129,23 +129,23 @@ struct tc_multiq_qopt {
+ 
+ /* PLUG section */
+ 
+-#define TCQ_PLUG_BUFFER                0
+-#define TCQ_PLUG_RELEASE_ONE           1
++#define TCQ_PLUG_BUFFER	       0
++#define TCQ_PLUG_RELEASE_ONE	  1
+ #define TCQ_PLUG_RELEASE_INDEFINITE    2
+-#define TCQ_PLUG_LIMIT                 3
++#define TCQ_PLUG_LIMIT	        3
+ 
+ struct tc_plug_qopt {
+         /* TCQ_PLUG_BUFFER: Inset a plug into the queue and
+-         *  buffer any incoming packets
+-         * TCQ_PLUG_RELEASE_ONE: Dequeue packets from queue head
+-         *   to beginning of the next plug.
+-         * TCQ_PLUG_RELEASE_INDEFINITE: Dequeue all packets from queue.
+-         *   Stop buffering packets until the next TCQ_PLUG_BUFFER
+-         *   command is received (just act as a pass-thru queue).
+-         * TCQ_PLUG_LIMIT: Increase/decrease queue size
+-         */
+-        int             action;
+-        __u32           limit;
++	*  buffer any incoming packets
++	* TCQ_PLUG_RELEASE_ONE: Dequeue packets from queue head
++	*   to beginning of the next plug.
++	* TCQ_PLUG_RELEASE_INDEFINITE: Dequeue all packets from queue.
++	*   Stop buffering packets until the next TCQ_PLUG_BUFFER
++	*   command is received (just act as a pass-thru queue).
++	* TCQ_PLUG_LIMIT: Increase/decrease queue size
++	*/
++        int	    action;
++        __u32	  limit;
+ };
+ 
+ /* TBF section */
+@@ -168,7 +168,6 @@ enum {
+ 
+ #define TCA_TBF_MAX (__TCA_TBF_MAX - 1)
+ 
+-
+ /* TEQL section */
+ 
+ /* TEQL does not require any parameters */
+@@ -220,10 +219,10 @@ struct tc_red_qopt {
+ };
+ 
+ struct tc_red_xstats {
+-	__u32           early;          /* Early drops */
+-	__u32           pdrop;          /* Drops due to queue limits */
+-	__u32           other;          /* Drops due to drop() calls */
+-	__u32           marked;         /* Marked packets */
++	__u32	  early;	 /* Early drops */
++	__u32	  pdrop;	 /* Drops due to queue limits */
++	__u32	  other;	 /* Drops due to drop() calls */
++	__u32	  marked;	/* Marked packets */
+ };
+ 
+ /* GRED section */
+@@ -244,17 +243,17 @@ struct tc_gred_qopt {
+ 	__u32		limit;        /* HARD maximal queue length (bytes)    */
+ 	__u32		qth_min;      /* Min average length threshold (bytes) */
+ 	__u32		qth_max;      /* Max average length threshold (bytes) */
+-	__u32		DP;           /* up to 2^32 DPs */
++	__u32		DP;	  /* up to 2^32 DPs */
+ 	__u32		backlog;
+ 	__u32		qave;
+ 	__u32		forced;
+ 	__u32		early;
+ 	__u32		other;
+ 	__u32		pdrop;
+-	__u8		Wlog;         /* log(W)               */
+-	__u8		Plog;         /* log(P_max/(qth_max-qth_min)) */
++	__u8		Wlog;	/* log(W)	      */
++	__u8		Plog;	/* log(P_max/(qth_max-qth_min)) */
+ 	__u8		Scell_log;    /* cell size for idle damping */
+-	__u8		prio;         /* prio of this VQ */
++	__u8		prio;	/* prio of this VQ */
+ 	__u32		packets;
+ 	__u32		bytesin;
+ };
+@@ -290,10 +289,10 @@ struct tc_choke_qopt {
+ };
+ 
+ struct tc_choke_xstats {
+-	__u32		early;          /* Early drops */
+-	__u32		pdrop;          /* Drops due to queue limits */
+-	__u32		other;          /* Drops due to drop() calls */
+-	__u32		marked;         /* Marked packets */
++	__u32		early;	 /* Early drops */
++	__u32		pdrop;	 /* Drops due to queue limits */
++	__u32		other;	 /* Drops due to drop() calls */
++	__u32		marked;	/* Marked packets */
+ 	__u32		matched;	/* Drops due to flow match */
+ };
+ 
+@@ -624,4 +623,136 @@ struct tc_qfq_stats {
+ 	__u32 lmax;
+ };
+ 
++/* CODEL */
++enum {
++	TCA_CODEL_UNSPEC,
++	TCA_CODEL_TARGET,
++	TCA_CODEL_LIMIT,
++	TCA_CODEL_INTERVAL,
++	TCA_CODEL_ECN,
++	__TCA_CODEL_MAX
++};
++
++#define TCA_CODEL_MAX	(__TCA_CODEL_MAX - 1)
++
++struct tc_codel_xstats {
++        __u32   maxpacket; /* largest packet we've seen so far */
++        __u32   count;     /* how many drops we've done since the last time we
++			    * entered dropping state */
++        __u32   lastcount; /* count at entry to dropping state */
++        __u32   ldelay;    /* delay seen by most recently dequeued packet */
++        __s32   drop_next; /* time to drop next packet */
++        __u32   drop_overlimit; /* instance count of max qdisc packet limit */
++        __u32   ecn_mark;  /* packet count we ECN marked instead of dropped */
++        __u32   dropping;  /* are we in dropping state ? */
++};
++
++/* FQ_CODEL */
++
++enum {
++        TCA_FQ_CODEL_UNSPEC,
++        TCA_FQ_CODEL_TARGET,
++        TCA_FQ_CODEL_LIMIT,
++        TCA_FQ_CODEL_INTERVAL,
++        TCA_FQ_CODEL_ECN,
++        TCA_FQ_CODEL_FLOWS,
++        TCA_FQ_CODEL_QUANTUM,
++        __TCA_FQ_CODEL_MAX
++};
++
++#define TCA_FQ_CODEL_MAX        (__TCA_FQ_CODEL_MAX - 1)
++
++enum {
++        TCA_FQ_CODEL_XSTATS_QDISC,
++        TCA_FQ_CODEL_XSTATS_CLASS,
++};
++
++struct tc_fq_codel_qd_stats {
++        __u32   maxpacket;      /* largest packet we've seen so far */
++        __u32   drop_overlimit; /* number of time max qdisc
++			         * packet limit was hit
++			         */
++        __u32   ecn_mark;       /* number of packets we ECN marked
++			         * instead of being dropped
++			         */
++        __u32   new_flow_count; /* number of time packets
++			         * created a 'new flow'
++			         */
++        __u32   new_flows_len;  /* count of flows in new list */
++        __u32   old_flows_len;  /* count of flows in old list */
++};
++
++struct tc_fq_codel_cl_stats {
++        __s32   deficit;
++        __u32   ldelay;	     /* in-queue delay seen by most recently
++			      * dequeued packet
++			      */
++        __u32   count;
++        __u32   lastcount;
++        __u32   dropping;
++        __s32   drop_next;
++};
++
++struct tc_fq_codel_xstats {
++        __u32   type;
++        union {
++	       struct tc_fq_codel_qd_stats qdisc_stats;
++	       struct tc_fq_codel_cl_stats class_stats;
++        };
++};
++
++
++/* BF section */
++
++enum {
++	TCA_BF_UNSPEC = 0,
++	TCA_BF_PARAMS,
++	TCA_BF_INIT,
++	__TCA_BF_MAX,
++};
++
++enum TC_BF_STRATA {
++	TC_BF_STRATUM_RT = 0,
++	TC_BF_STRATUM_NOMINAL,
++	TC_BF_STRATUM_OPTIMAL,
++	TC_BF_STRATUM_BULK,
++	__TC_BF_STRATA_COUNT,
++};
++#define TC_BF_STRATUM_NONE		TC_BF_STRATUM_BULK
++
++#define TC_BF_MAX_PRIORITY_POW2	8
++
++enum BF_PRIORITY_CALC {
++        BF_PRIORITY_CALC_DEFAULT = 0,
++        BF_PRIORITY_CALC_FLOW_NODE,
++        BF_PRIORITY_CALC_NODE_FLOW,
++        BF_PRIORITY_CALC_FLOW_ONLY,
++        BF_PRIORITY_CALC_NODE_ONLY,
++        __BF_PRIORITY_CALC_COUNT,
++};
++
++struct tc_bf_glob {
++	__u32 defcls;		/* default class number */
++	__u32 flow_priorities_pow2;	/* Range of flow priorities log2 */
++	__u32 node_priorities_pow2;	/* Range of node priorities log2 */
++	enum BF_PRIORITY_CALC calc;
++	__u32 total_bw;
++	__u32 direct_pkts;
++};
++
++
++struct tc_bf_opt {
++	__u32 flow_priority;
++	__u32 node_priority;
++	__u32 bytes_per_sec_limits[__TC_BF_STRATA_COUNT];
++};
++
++struct tc_bf_xstats {
++	enum TC_BF_STRATA oversub_strata;
++};
++
++
++#define TCA_BF_MAX      (__TCA_BF_MAX - 1)
++
++
+ #endif
+diff --git a/include/netlink-local.h b/include/netlink-local.h
+index 01c611a..0c062a1 100644
+--- a/include/netlink-local.h
++++ b/include/netlink-local.h
+@@ -126,7 +126,9 @@ static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
+ 	return cb->cb_set[type](msg, cb->cb_args[type]);
+ }
+ 
++#ifndef ARRAY_SIZE
+ #define ARRAY_SIZE(X) (sizeof(X) / sizeof((X)[0]))
++#endif
+ 
+ /* This is also defined in stddef.h */
+ #ifndef offsetof
+diff --git a/include/netlink-types.h b/include/netlink-types.h
+index 5ced836..ea38faf 100644
+--- a/include/netlink-types.h
++++ b/include/netlink-types.h
+@@ -35,7 +35,7 @@ struct nl_cb
+ {
+ 	nl_recvmsg_msg_cb_t	cb_set[NL_CB_TYPE_MAX+1];
+ 	void *			cb_args[NL_CB_TYPE_MAX+1];
+-	
++
+ 	nl_recvmsg_err_cb_t	cb_err;
+ 	void *			cb_err_arg;
+ 
+@@ -157,7 +157,7 @@ struct rtnl_link
+ 	uint32_t			l_txqlen;
+ 	uint32_t			l_weight;
+ 	uint32_t			l_master;
+-	struct nl_addr *		l_addr;	
++	struct nl_addr *		l_addr;
+ 	struct nl_addr *		l_bcast;
+ 	char				l_qdisc[IFQDISCSIZ];
+ 	struct rtnl_link_map		l_map;
+@@ -190,9 +190,9 @@ struct rtnl_neigh
+ 	uint32_t	n_ifindex;
+ 	uint16_t	n_state;
+ 	uint8_t		n_flags;
+-	uint8_t		n_type;	
++	uint8_t		n_type;
+ 	struct nl_addr *n_lladdr;
+-	struct nl_addr *n_dst;	
++	struct nl_addr *n_dst;
+ 	uint32_t	n_probes;
+ 	struct rtnl_ncacheinfo n_cacheinfo;
+ 	uint32_t                n_state_mask;
+@@ -225,14 +225,14 @@ struct rtnl_addr
+ 	uint8_t		a_scope;
+ 	uint32_t	a_ifindex;
+ 
+-	struct nl_addr *a_peer;	
++	struct nl_addr *a_peer;
+ 	struct nl_addr *a_local;
+ 	struct nl_addr *a_bcast;
+ 	struct nl_addr *a_anycast;
+ 	struct nl_addr *a_multicast;
+ 
+ 	struct rtnl_addr_cacheinfo a_cacheinfo;
+-	
++
+ 	char a_label[IFNAMSIZ];
+ 	uint32_t a_flag_mask;
+ 	struct rtnl_link *a_link;
+@@ -384,7 +384,7 @@ struct rtnl_neightbl_parms
+ 	 * Queue length for the delayed proxy arp requests.
+ 	 */
+ 	uint32_t		ntp_proxy_qlen;
+-	
++
+ 	/**
+ 	 * Mask of available parameter attributes
+ 	 */
+@@ -552,6 +552,12 @@ struct rtnl_dsmark_class
+ 	uint32_t	cdm_mask;
+ };
+ 
++struct rtnl_drr_class
++{
++	uint32_t	cd_quantum;
++	uint32_t	cd_mask;
++};
++
+ struct rtnl_fifo
+ {
+ 	uint32_t	qf_limit;
+@@ -577,6 +583,45 @@ struct rtnl_tbf
+ 	uint32_t		qt_mask;
+ };
+ 
++struct rtnl_codel_qdisc
++{
++        uint32_t        qc_target;
++        uint32_t        qc_limit;
++        uint32_t        qc_interval;
++        uint32_t        qc_ecn;
++	uint32_t	qc_mask;
++};
++
++struct rtnl_fq_codel_qdisc
++{
++        uint32_t        qcq_target;
++        uint32_t        qcq_limit;
++        uint32_t        qcq_interval;
++        uint32_t        qcq_ecn;
++        uint32_t        qcq_flows;
++        uint32_t        qcq_quantum;
++        uint32_t        qcq_mask;
++};
++
++struct rtnl_bf_qdisc
++{
++	uint32_t		qb_defcls;
++	uint32_t		qb_flow_priorities_pow2;
++	uint32_t		qb_node_priorities_pow2;
++	enum BF_PRIORITY_CALC	qb_calc_method;
++	uint32_t		qb_total_bw;
++	uint32_t		qb_direct_pkts;
++	uint32_t		qb_mask;
++};
++
++struct rtnl_bf_class
++{
++	uint32_t	cb_flow_prio;
++	uint32_t	cb_node_prio;
++	uint32_t	cb_limits[__TC_BF_STRATA_COUNT];
++	uint32_t	cb_mask;
++};
++
+ struct rtnl_sfq
+ {
+ 	uint32_t	qs_quantum;
+@@ -587,6 +632,20 @@ struct rtnl_sfq
+ 	uint32_t	qs_mask;
+ };
+ 
++struct rtnl_sfb
++{
++        uint32_t	qsb_rehash_interval;
++        uint32_t	qsb_warmup_time;
++        uint32_t	qsb_limit;
++        uint32_t	qsb_target;
++        uint32_t	qsb_max;
++        uint32_t	qsb_increment;
++        uint32_t	qsb_decrement;
++        uint32_t	qsb_penalty_rate;
++        uint32_t	qsb_penalty_burst;
++	uint32_t	qsb_mask;
++};
++
+ struct rtnl_netem_corr
+ {
+ 	uint32_t	nmc_delay;
+@@ -627,6 +686,27 @@ struct rtnl_netem
+ 	struct rtnl_netem_dist  qnm_dist;
+ };
+ 
++struct rtnl_hfsc_qdisc
++{
++	uint32_t		qsc_defcls;
++	uint32_t		qsc_mask;
++};
++
++struct rtnl_curve
++{
++	uint32_t		sc_m1;
++	uint32_t		sc_d;
++	uint32_t		sc_m2;
++};
++
++struct rtnl_hfsc_class
++{
++	struct rtnl_curve	csc_rt_sc;
++	struct rtnl_curve	csc_fair_sc;
++	struct rtnl_curve	csc_upper_sc;
++	uint32_t		csc_mask;
++};
++
+ struct rtnl_htb_qdisc
+ {
+ 	uint32_t		qh_rate2quantum;
+diff --git a/include/netlink/route/qdisc/bf.h b/include/netlink/route/qdisc/bf.h
+new file mode 100644
+index 0000000..c5558ef
+--- /dev/null
++++ b/include/netlink/route/qdisc/bf.h
+@@ -0,0 +1,53 @@
++/*
++ * netlink/route/sch/bf.h	BF Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_BF_H_
++#define NETLINK_BF_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern uint32_t	rtnl_bf_get_defcls(struct rtnl_qdisc *);
++extern int	rtnl_bf_set_defcls(struct rtnl_qdisc *, uint32_t);
++extern uint32_t rtnl_bf_get_flow_priorities(struct rtnl_qdisc *);
++extern uint32_t rtnl_bf_get_node_priorities(struct rtnl_qdisc *);
++extern int rtnl_bf_set_priorities(struct rtnl_qdisc *, uint32_t flow_prios,
++				  uint32_t node_prios);
++extern enum BF_PRIORITY_CALC rtnl_bf_get_prio_calc_method(struct rtnl_qdisc *);
++extern int rtnl_bf_set_prio_calc_method(struct rtnl_qdisc *,
++					enum BF_PRIORITY_CALC);
++extern uint32_t rtnl_bf_get_total_bandwidth(struct rtnl_qdisc *);
++extern int rtnl_bf_set_total_bandwidth(struct rtnl_qdisc *, uint32_t);
++
++extern uint32_t	rtnl_bf_get_flow_prio(struct rtnl_class *);
++extern int	rtnl_bf_set_flow_prio(struct rtnl_class *, uint32_t);
++extern uint32_t	rtnl_bf_get_node_prio(struct rtnl_class *);
++extern int	rtnl_bf_set_node_prio(struct rtnl_class *, uint32_t);
++extern uint32_t	rtnl_bf_get_rate(struct rtnl_class *, uint32_t);
++extern int	rtnl_bf_set_rates(struct rtnl_class *, uint32_t *);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/codel.h b/include/netlink/route/qdisc/codel.h
+new file mode 100644
+index 0000000..a3653b8
+--- /dev/null
++++ b/include/netlink/route/qdisc/codel.h
+@@ -0,0 +1,34 @@
++/*
++ * netlink/route/sch/codel.h     CODEL Qdisc
++ */
++
++#ifndef NETLINK_CODEL_H_
++#define NETLINK_CODEL_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/* Target Delay in usecs - Default 5 * 1000us */
++extern int	rtnl_codel_qdisc_get_target_usecs(struct rtnl_qdisc *);
++extern int	rtnl_codel_qdisc_set_target_usecs(struct rtnl_qdisc *,
++						  uint32_t);
++/* Maximum number of enqueued packets before tail drop begins */
++extern int	rtnl_codel_qdisc_get_packet_limit(struct rtnl_qdisc *);
++extern int	rtnl_codel_qdisc_set_packet_limit(struct rtnl_qdisc *,
++						  uint32_t);
++/* Moving window for calculating target delay in usecs - Default 100 * 1000us */
++extern int	rtnl_codel_qdisc_get_interval(struct rtnl_qdisc *);
++extern int	rtnl_codel_qdisc_set_interval(struct rtnl_qdisc *, uint32_t);
++/* Determines whether or not drops can be emulated via ECN - Default False*/
++extern int	rtnl_codel_qdisc_get_ecn(struct rtnl_qdisc *);
++extern int	rtnl_codel_qdisc_set_ecn(struct rtnl_qdisc *, uint32_t);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/drr.h b/include/netlink/route/qdisc/drr.h
+new file mode 100644
+index 0000000..2d46e9d
+--- /dev/null
++++ b/include/netlink/route/qdisc/drr.h
+@@ -0,0 +1,21 @@
++/*
++ * netlink/route/sch/drr.c	Deficit Round Robin Qdisc
++ */
++
++#ifndef NETLINK_DRR_H_
++#define NETLINK_DRR_H_
++
++#include <netlink/netlink.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern int rtnl_class_drr_set_quantum(struct rtnl_qdisc *, uint32_t);
++extern uint32_t rtnl_class_drr_get_quantum(struct rtnl_qdisc *);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/fq_codel.h b/include/netlink/route/qdisc/fq_codel.h
+new file mode 100644
+index 0000000..da7c637
+--- /dev/null
++++ b/include/netlink/route/qdisc/fq_codel.h
+@@ -0,0 +1,41 @@
++/*
++ * netlink/route/sch/fq_codel.h     Fair Queue CODEL Qdisc
++ */
++
++#ifndef NETLINK_FQ_CODEL_H_
++#define NETLINK_FQ_CODEL_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/* Target Delay in usecs - Default 5 * 1000us */
++extern int	rtnl_fq_codel_qdisc_get_target_usecs(struct rtnl_qdisc *);
++extern int	rtnl_fq_codel_qdisc_set_target_usecs(struct rtnl_qdisc *,
++						     uint32_t);
++/* Maximum number of enqueued packets before tail drop begins */
++extern int	rtnl_fq_codel_qdisc_get_packet_limit(struct rtnl_qdisc *);
++extern int	rtnl_fq_codel_qdisc_set_packet_limit(struct rtnl_qdisc *,
++						     uint32_t);
++/* Moving window for calculating target delay in usecs - Default 100 * 1000us */
++extern int	rtnl_fq_codel_qdisc_get_interval(struct rtnl_qdisc *);
++extern int	rtnl_fq_codel_qdisc_set_interval(struct rtnl_qdisc *, uint32_t);
++/* Determines whether or not drops can be emulated via ECN - Default False */
++extern int	rtnl_fq_codel_qdisc_get_ecn(struct rtnl_qdisc *);
++extern int	rtnl_fq_codel_qdisc_set_ecn(struct rtnl_qdisc *, uint32_t);
++/* The maximum number of flows into which connections may be classified */
++extern int	rtnl_fq_codel_qdisc_get_max_flow_count(struct rtnl_qdisc *);
++extern int	rtnl_fq_codel_qdisc_set_max_flow_count(struct rtnl_qdisc *,
++						       uint32_t);
++/* The quantum value for byte round robin between flows */
++extern int	rtnl_fq_codel_qdisc_get_quantum(struct rtnl_qdisc *);
++extern int	rtnl_fq_codel_qdisc_set_quantum(struct rtnl_qdisc *, uint32_t);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/hfsc.h b/include/netlink/route/qdisc/hfsc.h
+new file mode 100644
+index 0000000..d47b29d
+--- /dev/null
++++ b/include/netlink/route/qdisc/hfsc.h
+@@ -0,0 +1,46 @@
++/*
++ * netlink/route/sch/hfsc.h	HFSC Qdisc
++ */
++
++#ifndef NETLINK_HFSC_H_
++#define NETLINK_HFSC_H_
++
++#include <netlink/netlink.h>
++#include <netlink/route/tc.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++struct hfsc_spec {
++	unsigned int rate;
++	unsigned int delay_max;
++	unsigned int work_max;
++};
++
++extern uint32_t	rtnl_hfsc_get_defcls(struct rtnl_qdisc *);
++extern int	rtnl_hfsc_set_defcls(struct rtnl_qdisc *, uint32_t);
++
++/* m1-d-m2: Direct Method of Specifying service curve slopes */
++extern void	rtnl_hfsc_get_realtime_sc(struct rtnl_class *,
++					  struct tc_service_curve *);
++extern int	rtnl_hfsc_set_realtime_sc(struct rtnl_class *,
++					  struct tc_service_curve *);
++extern void	rtnl_hfsc_get_fair_sc(struct rtnl_class *,
++				      struct tc_service_curve *);
++extern int	rtnl_hfsc_set_fair_sc(struct rtnl_class *,
++				      struct tc_service_curve *);
++extern void	rtnl_hfsc_get_upperlimit_sc(struct rtnl_class *,
++					    struct tc_service_curve *);
++extern int	rtnl_hfsc_set_upperlimit_sc(struct rtnl_class *,
++					    struct tc_service_curve *);
++
++/* umax-dmax-rate Method of specifying service curve translations */
++extern int	rtnl_hfsc_spec_to_sc(struct hfsc_spec *,
++				     struct tc_service_curve *);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/include/netlink/route/qdisc/sfb.h b/include/netlink/route/qdisc/sfb.h
+new file mode 100644
+index 0000000..2899ab2
+--- /dev/null
++++ b/include/netlink/route/qdisc/sfb.h
+@@ -0,0 +1,60 @@
++/*
++ * netlink/route/sch/sfb.c	SFB Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#ifndef NETLINK_SFB_H_
++#define NETLINK_SFB_H_
++
++#include <netlink/netlink.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++extern void	rtnl_sfb_set_rehash_interval(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_rehash_interval(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_warmup_time(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_warmup_time(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_max(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_max(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_bin_size(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_bin_size(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_increment(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_increment(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_decrement(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_decrement(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_limit(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_limit(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_penalty_rate(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_penalty_rate(struct rtnl_qdisc *);
++
++extern void	rtnl_sfb_set_penalty_burst(struct rtnl_qdisc *, int);
++extern int	rtnl_sfq_get_penalty_burst(struct rtnl_qdisc *);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/lib/Makefile.am b/lib/Makefile.am
+index aee8d0f..cc88227 100644
+--- a/lib/Makefile.am
++++ b/lib/Makefile.am
+@@ -72,7 +72,10 @@ libnl_route_3_la_SOURCES = \
+ 	route/qdisc/blackhole.c route/qdisc/cbq.c route/qdisc/dsmark.c \
+ 	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \
+ 	route/qdisc/prio.c route/qdisc/red.c route/qdisc/sfq.c \
+-	route/qdisc/tbf.c route/qdisc/plug.c \
++	route/qdisc/tbf.c route/qdisc/plug.c route/qdisc/sfb.c \
++	route/qdisc/hfsc.c route/qdisc/codel.c route/qdisc/fq_codel.c \
++	route/qdisc/drr.c \
++	route/qdisc/bf.c \
+ 	\
+ 	fib_lookup/lookup.c fib_lookup/request.c \
+ 	\
+@@ -98,6 +101,8 @@ EXTRA_DIST = \
+ 
+ if ENABLE_CLI
+ nobase_pkglib_LTLIBRARIES = \
++	cli/qdisc/bf.la \
++	cli/qdisc/hfsc.la \
+ 	cli/qdisc/htb.la \
+ 	cli/qdisc/blackhole.la \
+ 	cli/qdisc/pfifo.la \
+@@ -107,6 +112,8 @@ nobase_pkglib_LTLIBRARIES = \
+ 	cli/cls/cgroup.la
+ 
+ cli_qdisc_htb_la_LDFLAGS = -module -avoid-version
++cli_qdisc_bf_la_LDFLAGS = -module -avoid-version
++cli_qdisc_hfsc_la_LDFLAGS = -module -avoid-version
+ cli_qdisc_blackhole_la_LDFLAGS = -module -avoid-version
+ cli_qdisc_pfifo_la_LDFLAGS = -module -avoid-version
+ cli_qdisc_plug_la_LDFLAGS = -module -avoid-version
+diff --git a/lib/cli/qdisc/bf.c b/lib/cli/qdisc/bf.c
+new file mode 100644
+index 0000000..04b146b
+--- /dev/null
++++ b/lib/cli/qdisc/bf.c
+@@ -0,0 +1,218 @@
++/*
++ * lib/cli/qdisc/bf.c     	Bigfoot module for CLI lib
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#include <netlink/cli/utils.h>
++#include <netlink/cli/tc.h>
++#include <netlink/route/qdisc/bf.h>
++
++static void print_qdisc_usage(void)
++{
++	printf(
++"Usage: nl-qdisc-add [...] bf [OPTIONS]...\n"
++"\n"
++"OPTIONS\n"
++"     --help                Show this help text.\n"
++"     --default=ID          Default class for unclassified traffic.\n"
++"     --flow-prios=FPRIOS   Range from 1 to NPRIOS available for flows.\n"
++"     --node-prios=NPRIOS   Range from 1 to FPRIOS available for nodes.\n"
++"     --calc-method=METHOD  ID of calc method for combining node/flow prios.\n"
++"     --total-bw=BYTES/SEC  Total available bandwidth in bytes per second.\n"
++"\n"
++"CALC METHOD\n"
++"   The available methods are:\n"
++"     0 Default             This is the FLOW/NODE method\n"
++"     1 Flow/Node	    Strict priority with flow priority precedence.\n"
++"     2 Node/Flow	    Strict priority with node priority precedence.\n"
++"     3 Flow Only	    Strict priority, flow only, node not considered.\n"
++"     4 Node Only	    Strict priority, node only, flow not considered.\n"
++"NOTE\n"
++"   Due to internal limitations, 0 is not a valid value for either FPRIOS or\n"
++"   NPRIOS. "
++"EXAMPLE\n"
++"    # Create bf root qdisc 1: and direct unclassified traffic to class 1:10\n"
++"    nl-qdisc-add --dev=eth1 --parent=root --handle=1: bf --default=10 --flow-prios=4 --node-prios=16 --calc-method=0 --total-bw=1000000\n");
++}
++
++static void bf_parse_qdisc_argv(struct rtnl_tc *tc, int argc, char **argv)
++{
++	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) tc;
++	unsigned int flow_prios = 0;
++	unsigned int node_prios = 0;
++	long rate;
++
++	for (;;) {
++		int c, optidx = 0;
++		enum {
++			ARG_DEFAULT = 257,
++			ARG_FLOW_PRIOS = 258,
++			ARG_NODE_PRIOS = 259,
++			ARG_CALC_METHOD = 260,
++			ARG_TOTAL_BW = 261,
++		};
++		static struct option long_opts[] = {
++			{ "help", 0, 0, 'h' },
++			{ "default", 1, 0, ARG_DEFAULT },
++			{ "flow-prios", 1, 0, ARG_FLOW_PRIOS },
++			{ "node-prios", 1, 0, ARG_NODE_PRIOS },
++			{ "calc-method", 1, 0, ARG_CALC_METHOD },
++			{ "total-bw", 1, 0, ARG_TOTAL_BW },
++			{ 0, 0, 0, 0 }
++		};
++	
++		c = getopt_long(argc, argv, "hv", long_opts, &optidx);
++		if (c == -1)
++			break;
++
++		switch (c) {
++		case 'h':
++			print_qdisc_usage();
++			return;
++		case ARG_DEFAULT:
++			rtnl_bf_set_defcls(qdisc, nl_cli_parse_u32(optarg));
++			break;
++		case ARG_FLOW_PRIOS:
++			flow_prios = nl_cli_parse_u32(optarg);
++			break;
++		case ARG_NODE_PRIOS:
++			node_prios = nl_cli_parse_u32(optarg);
++			break;
++		case ARG_CALC_METHOD:
++			rtnl_bf_set_prio_calc_method(qdisc, 
++						     nl_cli_parse_u32(optarg));
++			break;
++		case ARG_TOTAL_BW:
++			rate = nl_size2int(optarg);
++			if (rate < 0) {
++				nl_cli_fatal(rate, "Unable to parse total-bw "
++					     "\"%s\": Invalid format.", optarg);
++			}
++			rtnl_bf_set_total_bandwidth(qdisc, rate);
++			break;
++
++		}
++ 	}
++
++	if ((flow_prios != 0) || (node_prios != 0))
++		rtnl_bf_set_priorities(qdisc, flow_prios, node_prios);
++}
++
++static void print_class_usage(void)
++{
++	printf(
++"Usage: nl-class-add [...] bf [OPTIONS]...\n"
++"\n"
++"OPTIONS\n"
++"     --help                Show this help text.\n"
++"     --realtime=RATE	    Realtime rate limit (default: 0).\n"
++"     --nominal=RATE        Nominal rate limit (default: rt rate).\n"
++"     --optimal=RATE        Optimal rate limit (default: nom rate).\n"
++"     --flow-prio=FPRIO     App Priority, lower is served first (default: 1).\n"
++"     --node-prio=NPRIO     Device Priority, lower is first (default: 1).\n"
++"     --total-bw=BW         Total BW available for the interface (default: 0)\n"
++"\n"
++"EXAMPLE"
++"    # Attach class 1:1 to bf qdisc 1: and nominal rate limit it to 20mbit\n"
++"    nl-class-add --dev=eth1 --parent=1: --classid=1:1 bf --nom=20mbit\n");
++}
++
++static void bf_parse_class_argv(struct rtnl_tc *tc, int argc, char **argv)
++{
++	struct rtnl_class *cls = (struct rtnl_class *) tc;
++	unsigned int rates[__TC_BF_STRATA_COUNT] = {0};
++
++	for (;;) {
++		int c, optidx = 0;
++		enum {
++			ARG_RT = 257,
++			ARG_NOM = 258,
++			ARG_OPT = 259,
++			ARG_FPRIO = 260,
++			ARG_NPRIO = 261,
++		};
++		static struct option long_opts[] = {
++			{ "help", 0, 0, 'h' },
++			{ "realtime", 1, 0, ARG_RT },
++			{ "nominal", 1, 0, ARG_NOM },
++			{ "optimal", 1, 0, ARG_OPT },
++			{ "flow-prio", 1, 0, ARG_FPRIO },
++			{ "node-prio", 1, 0, ARG_NPRIO },
++			{ 0, 0, 0, 0 }
++		};
++	
++		c = getopt_long(argc, argv, "h", long_opts, &optidx);
++		if (c == -1)
++			break;
++
++		switch (c) {
++		case 'h':
++			print_class_usage();
++			return;
++		case ARG_RT:
++			rates[TC_BF_STRATUM_RT] = nl_cli_parse_u32(optarg);
++			break;
++		case ARG_NOM:
++			rates[TC_BF_STRATUM_NOMINAL] = nl_cli_parse_u32(optarg);
++			break;
++		case ARG_OPT:
++			rates[TC_BF_STRATUM_OPTIMAL] = nl_cli_parse_u32(optarg);
++			break;
++		case ARG_FPRIO:
++			rtnl_bf_set_flow_prio(cls, nl_cli_parse_u32(optarg));
++			break;
++		case ARG_NPRIO:
++			rtnl_bf_set_node_prio(cls, nl_cli_parse_u32(optarg));
++			break;
++
++		}
++ 	}
++
++	if (rates[TC_BF_STRATUM_NOMINAL] == 0)
++		rates[TC_BF_STRATUM_NOMINAL] = rates[TC_BF_STRATUM_RT];
++
++	if (rates[TC_BF_STRATUM_OPTIMAL] == 0)
++		rates[TC_BF_STRATUM_OPTIMAL] = rates[TC_BF_STRATUM_NOMINAL];
++
++	rtnl_bf_set_rates(cls, rates);
++}
++
++static struct nl_cli_tc_module bf_qdisc_module =
++{
++	.tm_name		= "bf",
++	.tm_type		= RTNL_TC_TYPE_QDISC,
++	.tm_parse_argv		= bf_parse_qdisc_argv,
++};
++
++static struct nl_cli_tc_module bf_class_module =
++{
++	.tm_name		= "bf",
++	.tm_type		= RTNL_TC_TYPE_CLASS,
++	.tm_parse_argv		= bf_parse_class_argv,
++};
++
++static void __init bf_init(void)
++{
++	nl_cli_tc_register(&bf_qdisc_module);
++	nl_cli_tc_register(&bf_class_module);
++}
++
++static void __exit bf_exit(void)
++{
++	nl_cli_tc_unregister(&bf_class_module);
++	nl_cli_tc_unregister(&bf_qdisc_module);
++}
+diff --git a/lib/cli/qdisc/hfsc.c b/lib/cli/qdisc/hfsc.c
+new file mode 100644
+index 0000000..9393c88
+--- /dev/null
++++ b/lib/cli/qdisc/hfsc.c
+@@ -0,0 +1,221 @@
++/*
++ * lib/cli/qdisc/hfsc.c     	HFSC module for CLI lib
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++#include <netlink/cli/utils.h>
++#include <netlink/cli/tc.h>
++#include <netlink/route/qdisc/hfsc.h>
++
++static void print_qdisc_usage(void)
++{
++	printf(
++"Usage: nl-qdisc-add [...] hfsc [OPTIONS]...\n"
++"\n"
++"OPTIONS\n"
++"     --help                Show this help text.\n"
++"     --default=ID          Default class for unclassified traffic.\n"
++"\n"
++"EXAMPLE"
++"    # Create hfsc root qdisc 1: and direct unclassified traffic to class 1:3\n"
++"    nl-qdisc-add --dev=eth1 --parent=root --handle=1: hfsc --default=3\n");
++}
++
++static void hfsc_parse_qdisc_argv(struct rtnl_tc *tc, int argc, char **argv)
++{
++	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) tc;
++
++	for (;;) {
++		int c, optidx = 0;
++		enum {
++			ARG_DEFAULT = 257,
++		};
++		static struct option long_opts[] = {
++			{ "help", 0, 0, 'h' },
++			{ "default", 1, 0, ARG_DEFAULT },
++			{ 0, 0, 0, 0 }
++		};
++	
++		c = getopt_long(argc, argv, "hv", long_opts, &optidx);
++		if (c == -1)
++			break;
++
++		switch (c) {
++		case 'h':
++			print_qdisc_usage();
++			return;
++		case ARG_DEFAULT:
++			rtnl_hfsc_set_defcls(qdisc, nl_cli_parse_u32(optarg));
++			break;
++		}
++ 	}
++}
++
++#if 0
++static void print_class_usage(void)
++{
++	printf(
++"Usage: nl-class-add [...] hfsc [OPTIONS]...\n"
++"\n"
++"OPTIONS\n"
++"     Usage: ... hfsc [ [ --rt \"SC\" ] [ --ls \"SC\" ] | [--sc \"SC\" ] ] [--ul\"SC\" ]\n"
++"     --help                Show this help text.\n"
++"     --realtime=\"SC\"     Realtime service curve.  Cannot be used with sc.\n"
++"     --linkshare=\"SC\"    Link sharing service curve.  Cannot be used with ls\n"
++"     --servicecurve=\"SC\" Combined service curve; Cannot be used with rt or ls.\n"
++"     --upperlimit=\"SC\"   Upper limit service curve.\n"
++"       Slope Format\n"
++"        SC := [ [ m1 BPS ] [ d SEC ] m2 BPS\n"
++"         m1 : slope of first segment\n"
++"         d  : x-coordinate of intersection\n"
++"         m2 : slope of second segment\n"
++"       Alternative Format:\n"
++"        SC := [ [ umax BYTE ] dmax SEC ] rate BPS\n"
++"         umax : maximum unit of work\n"
++"         dmax : maximum Delay\n"
++"         rate : rate\n"
++"\n"
++"     Note: Service curve definitions must be in quotes on the command line.\n"
++"     Note: Must provide at least one service curve.\n"
++"     Note: If Upper limit is provided, linkshare or combined service curve must be given.\n"
++"EXAMPLE"
++"    # Attach class 1:1 to hfsc qdisc 1: and rate limit it to 20mbit\n"
++"    nl-class-add --dev=eth1 --parent=1: --classid=1:1 hfsc --sc=\"rate 20mbit\"\n");
++}
++
++
++static int hfsc_get_sc_slope(char *optarg, struct service_curve *sc_out)
++{
++	return 0;
++}
++
++static int hfsc_get_sc_alt(char *optarg, struct service_curve *sc_out)
++{
++	return 0;
++}
++
++static int hfsc_get_sc(char *optarg, struct service_curve *sc_out)
++{
++	memset(sc_out, 0, sizeof(*sc_out));
++	
++	if ((hfsc_get_sc_slope(optarg, sc) < 0) &&
++	    (hfsc_get_sc_alt(optarg, sc) < 0))
++		return -EINVAL;
++
++	if ((sc->m1 == 0) && (sc->m2 == 0)) {
++		return -ENOENT;
++	}
++	
++}
++
++static void hfsc_parse_class_argv(struct rtnl_tc *tc, int argc, char **argv)
++{
++	struct rtnl_class *class = (struct rtnl_class *) tc;
++	struct tc_service_curve sc;
++	long rate;
++
++	for (;;) {
++		int c, optidx = 0;
++		enum {
++			ARG_RT = 257,
++			ARG_LS = 258,
++			ARG_SC = 259,
++			ARG_UL = 260,
++		};
++		static struct option long_opts[] = {
++			{ "help", 0, 0, 'h' },
++			{ "realtime", 1, 0, ARG_RT },
++			{ "linkshare", 1, 0, ARG_LS },
++			{ "servicecurve", 1, 0, ARG_SC },
++			{ "upperlimit", 1, 0, ARG_UL },
++			{ 0, 0, 0, 0 }
++		};
++	
++		c = getopt_long(argc, argv, "h", long_opts, &optidx);
++		if (c == -1)
++			break;
++
++		switch (c) {
++		case 'h':
++			print_class_usage();
++			return;
++
++		case ARG_RT:
++			rate = nl_size2int(optarg);
++			if (rate < 0) {
++				nl_cli_fatal(rate, "Unable to parse htb rate "
++					"\"%s\": Invalid format.", optarg);
++			}
++
++			rtnl_htb_set_rate(class, rate);
++			break;
++
++		case ARG_LS:
++			rate = nl_size2int(optarg);
++			if (rate < 0) {
++				nl_cli_fatal(rate, "Unable to parse htb ceil rate "
++					"\"%s\": Invalid format.", optarg);
++			}
++
++			rtnl_htb_set_ceil(class, rate);
++			break;
++
++		case ARG_SC:
++			rtnl_htb_set_prio(class, nl_cli_parse_u32(optarg));
++			break;
++
++		case ARG_UL:
++			rate = nl_size2int(optarg);
++			if (rate < 0) {
++				nl_cli_fatal(rate, "Unable to parse quantum "
++					"\"%s\": Invalid format.", optarg);
++			}
++
++			rtnl_htb_set_quantum(class, rate);
++			break;
++ 	}
++}
++
++#endif
++
++static struct nl_cli_tc_module hfsc_qdisc_module =
++{
++	.tm_name		= "hfsc",
++	.tm_type		= RTNL_TC_TYPE_QDISC,
++	.tm_parse_argv		= hfsc_parse_qdisc_argv,
++};
++
++#if 0
++static struct nl_cli_tc_module hfsc_class_module =
++{
++	.tm_name		= "hfsc",
++	.tm_type		= RTNL_TC_TYPE_CLASS,
++	.tm_parse_argv		= hfsc_parse_class_argv,
++};
++#endif
++
++static void __init hfsc_init(void)
++{
++	nl_cli_tc_register(&hfsc_qdisc_module);
++//	nl_cli_tc_register(&hfsc_class_module);
++}
++
++static void __exit hfsc_exit(void)
++{
++//	nl_cli_tc_unregister(&hfsc_class_module);
++	nl_cli_tc_unregister(&hfsc_qdisc_module);
++}
+diff --git a/lib/route/classid.c b/lib/route/classid.c
+index abed244..a6cdcb3 100644
+--- a/lib/route/classid.c
++++ b/lib/route/classid.c
+@@ -438,4 +438,13 @@ static void __init classid_init(void)
+ 		fprintf(stderr, "Failed to read classid file: %s\n", nl_geterror(err));
+ }
+ 
++static void __exit classid_exit(void)
++{
++	void free_map(void *map) {
++		free(((struct classid_map *)map)->name);
++		free(map);
++	};
++	tdestroy(id_root, free_map);
++}
++
+ /** @} */
+diff --git a/lib/route/qdisc/bf.c b/lib/route/qdisc/bf.c
+new file mode 100644
+index 0000000..f1f207e
+--- /dev/null
++++ b/lib/route/qdisc/bf.c
+@@ -0,0 +1,543 @@
++/*
++ * lib/route/qdisc/bf.c		BF Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @ingroup class
++ * @defgroup qdisc_bf Bigfoot Scheduler (BF)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/class.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/bf.h>
++
++/** @cond SKIP */
++#define SCH_BF_HAS_DEFCLS		0x001
++#define SCH_BF_HAS_FLOW_PRIO_LIMIT	0x002
++#define SCH_BF_HAS_NODE_PRIO_LIMIT	0x004
++#define SCH_BF_HAS_PRIO_CALC_METHOD	0x008
++#define SCH_BF_HAS_TOTAL_BW		0x010
++#define SCH_BF_HAS_FLOW_PRIO		0x020
++#define SCH_BF_HAS_NODE_PRIO		0x040
++#define SCH_BF_HAS_RATES		0x080
++/** @endcond */
++
++static char *strata_names[__TC_BF_STRATA_COUNT] = {
++	"realtime", "nominal", "optimal", "bulk",
++};
++
++static char *prio_calc_method_names[__BF_PRIORITY_CALC_COUNT] = {
++	"default", "flow-node", "node-flow", "flow-only", "node-only",
++};
++
++static struct nla_policy bf_policy[TCA_BF_MAX+1] = {
++	[TCA_BF_INIT]	= { .minlen = sizeof(struct tc_bf_glob) },
++	[TCA_BF_PARAMS]	= { .minlen = sizeof(struct tc_bf_opt) },
++};
++
++static int bf_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_BF_MAX + 1];
++	struct rtnl_bf_qdisc *bf = data;
++	int err;
++
++	if ((err = tca_parse(tb, TCA_BF_MAX, tc, bf_policy)) < 0)
++		return err;
++	
++	if (tb[TCA_BF_INIT]) {
++		struct tc_bf_glob opts;
++
++		bf->qb_mask = 0;
++		nla_memcpy(&opts, tb[TCA_BF_INIT], sizeof(opts));
++
++		bf->qb_defcls = opts.defcls;
++		bf->qb_mask |= SCH_BF_HAS_DEFCLS;
++
++		bf->qb_flow_priorities_pow2	= opts.flow_priorities_pow2;
++		bf->qb_mask |= SCH_BF_HAS_FLOW_PRIO_LIMIT;
++
++		bf->qb_node_priorities_pow2	= opts.node_priorities_pow2;
++		bf->qb_mask |= SCH_BF_HAS_NODE_PRIO_LIMIT;
++
++		bf->qb_calc_method		= opts.calc;
++		bf->qb_mask |= SCH_BF_HAS_PRIO_CALC_METHOD;
++
++		bf->qb_total_bw			= opts.total_bw;
++		bf->qb_mask |= SCH_BF_HAS_TOTAL_BW;
++	}
++
++	return 0;
++}
++
++static int bf_class_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	int err;
++	struct nlattr *tb[TCA_BF_MAX + 1];
++	struct rtnl_bf_class *bf = data;
++
++	if ((err = tca_parse(tb, TCA_BF_MAX, tc, bf_policy)) < 0)
++		return err;
++
++	if (tb[TCA_BF_PARAMS]) {
++		unsigned int i;
++		struct tc_bf_opt opts;
++		
++		bf->cb_mask = 0;
++		nla_memcpy(&opts, tb[TCA_BF_PARAMS], sizeof(opts));
++		bf->cb_flow_prio = opts.flow_priority;
++		bf->cb_mask |= SCH_BF_HAS_FLOW_PRIO;
++
++		bf->cb_node_prio = opts.node_priority;
++		bf->cb_mask |= SCH_BF_HAS_NODE_PRIO;
++			
++		for (i = 0; i < __TC_BF_STRATA_COUNT; i++) {
++			bf->cb_limits[i] = opts.bytes_per_sec_limits[i];
++		}
++		bf->cb_mask |= SCH_BF_HAS_RATES;
++	}
++
++	return 0;
++}
++
++static void bf_qdisc_dump_line(struct rtnl_tc *tc, void *data,
++			       struct nl_dump_params *p)
++{
++	struct rtnl_bf_qdisc *bf = data;
++
++	if (!bf)
++		return;
++
++	if (bf->qb_mask & SCH_BF_HAS_DEFCLS) {
++		char buf[64];
++		nl_dump(p, " default-class %s",
++			rtnl_tc_handle2str(bf->qb_defcls,
++			buf, sizeof(buf)));
++	}
++	
++	if (bf->qb_mask & SCH_BF_HAS_FLOW_PRIO_LIMIT) {
++		nl_dump(p, " flow-priorities %u",
++			(1 << bf->qb_flow_priorities_pow2));
++	}
++
++	if (bf->qb_mask & SCH_BF_HAS_NODE_PRIO_LIMIT) {
++		nl_dump(p, " node-priorities %u",
++			(1 << bf->qb_node_priorities_pow2));
++	}
++
++	if (bf->qb_mask & SCH_BF_HAS_PRIO_CALC_METHOD) {
++		nl_dump(p, " priority-calculation %s",
++			prio_calc_method_names[bf->qb_calc_method]);
++	}
++
++	if (bf->qb_mask & SCH_BF_HAS_TOTAL_BW) {
++		nl_dump(p, " total-bw %u", bf->qb_total_bw);
++	}
++}
++
++static void bf_class_dump_line(struct rtnl_tc *tc, void *data,
++			       struct nl_dump_params *p)
++{
++	struct rtnl_bf_class *bf = data;
++
++	if (!bf)
++		return;
++
++	if (bf->cb_mask & SCH_BF_HAS_FLOW_PRIO) {
++		nl_dump(p, " flow_prio %u", bf->cb_node_prio);
++	}
++
++	if (bf->cb_mask & SCH_BF_HAS_NODE_PRIO) {
++		nl_dump(p, " node_prio %u", bf->cb_node_prio);
++	}
++
++	if (bf->cb_mask & SCH_BF_HAS_RATES) {
++		unsigned int i;
++
++		for (i = 0; i < __TC_BF_STRATA_COUNT; i++) {
++			nl_dump(p, " %s_limit %u", strata_names[i],
++				bf->cb_limits[i]);
++		}
++	}
++}
++
++static void bf_class_dump_stats(struct rtnl_tc *tc, void *data,
++				struct nl_dump_params *p)
++{
++	enum TC_BF_STRATA stratum;
++	struct tc_bf_xstats *x;
++
++	if (!(x = tca_xstats(tc)))
++		return;
++
++	stratum = x->oversub_strata;
++	if (stratum == TC_BF_STRATUM_BULK) {
++		nl_dump(p, " No strata");
++	} else {
++		while(stratum < TC_BF_STRATUM_BULK) {
++			nl_dump(p, " %s", strata_names[stratum]);
++			stratum++;
++		}
++	}
++	nl_dump_line(p, " limited (oversubscription)\n");
++}
++
++static int bf_qdisc_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct rtnl_bf_qdisc *bf = data;
++	struct tc_bf_glob opts = {0};
++
++	if (bf) {
++		if (bf->qb_mask & SCH_BF_HAS_DEFCLS)
++			opts.defcls = bf->qb_defcls;
++
++		if (bf->qb_mask & SCH_BF_HAS_FLOW_PRIO_LIMIT)
++			opts.flow_priorities_pow2 = bf->qb_flow_priorities_pow2;
++
++		if (bf->qb_mask & SCH_BF_HAS_NODE_PRIO_LIMIT)
++			opts.node_priorities_pow2 = bf->qb_node_priorities_pow2;
++			
++		if (bf->qb_mask & SCH_BF_HAS_PRIO_CALC_METHOD)
++			opts.calc = bf->qb_calc_method;
++
++		if (bf->qb_mask & SCH_BF_HAS_TOTAL_BW)
++			opts.total_bw = bf->qb_total_bw;
++	}
++	
++	return nla_put(msg, TCA_BF_INIT, sizeof(opts), &opts);
++}
++
++
++static int bf_class_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	unsigned int i;
++	struct rtnl_bf_class *bf = data;
++	struct tc_bf_opt opts = {0};
++
++	if ((!bf) || !(bf->cb_mask & (SCH_BF_HAS_RATES)))
++		BUG(); 
++		
++	if (bf->cb_mask & SCH_BF_HAS_FLOW_PRIO) {
++		opts.flow_priority = bf->cb_flow_prio;
++	}
++	
++	if (bf->cb_mask & SCH_BF_HAS_NODE_PRIO) {
++		opts.node_priority = bf->cb_node_prio;
++	}
++
++	for (i = 0; i < __TC_BF_STRATA_COUNT; i++) {
++		opts.bytes_per_sec_limits[i] = bf->cb_limits[i];
++	}
++
++	NLA_PUT(msg, TCA_BF_PARAMS, sizeof(opts), &opts);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++static struct rtnl_tc_ops bf_qdisc_ops;
++static struct rtnl_tc_ops bf_class_ops;
++
++static struct rtnl_bf_qdisc *bf_qdisc_data(struct rtnl_qdisc *qdisc)
++{
++	return rtnl_tc_data_check(TC_CAST(qdisc), &bf_qdisc_ops);
++}
++
++static struct rtnl_bf_class *bf_class_data(struct rtnl_class *class)
++{
++	return rtnl_tc_data_check(TC_CAST(class), &bf_class_ops);
++}
++
++/*
++ * Calculate the next highest power of 2.  0 is an illegal value to pass to
++ * this function.
++ */
++static unsigned int next_pow2(unsigned int value)
++{
++        unsigned int retval;
++        unsigned int bits;
++
++        if (value == 0)
++                return 0;
++
++        bits = 0;
++        retval = 0;
++        do {
++                retval++;
++                bits += value & 1;
++                value >>= 1;
++        } while (value != 0);
++
++        return (bits > 1) ? retval : retval - 1;
++}
++
++
++
++/**
++ * @name Attribute Modifications
++ * @{
++ */
++uint32_t rtnl_bf_get_defcls(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_bf_qdisc *bf;
++
++	if ((bf = bf_qdisc_data(qdisc)) && bf->qb_mask & SCH_BF_HAS_DEFCLS)
++		return bf->qb_defcls;
++
++	return TC_H_UNSPEC;
++}
++
++
++int rtnl_bf_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls)
++{
++	struct rtnl_bf_qdisc *bf;
++
++	if (!(bf = bf_qdisc_data(qdisc)))
++		return -NLE_OPNOTSUPP;
++
++	bf->qb_defcls = defcls;
++	bf->qb_mask |= SCH_BF_HAS_DEFCLS;
++
++	return 0;
++}
++
++uint32_t rtnl_bf_get_flow_priorities(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_bf_qdisc *bf;
++	
++	if ((bf = bf_qdisc_data(qdisc)) && 
++	    (bf->qb_mask & SCH_BF_HAS_FLOW_PRIO_LIMIT))
++		return (1 << bf->qb_flow_priorities_pow2);
++
++	return TC_H_UNSPEC;
++}
++
++uint32_t rtnl_bf_get_node_priorities(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_bf_qdisc *bf;
++	
++	if ((bf = bf_qdisc_data(qdisc)) && 
++	    (bf->qb_mask & SCH_BF_HAS_NODE_PRIO_LIMIT))
++		return (1 << bf->qb_node_priorities_pow2);
++
++	return TC_H_UNSPEC;
++}
++
++int rtnl_bf_set_priorities(struct rtnl_qdisc *qdisc, uint32_t flow_prios,
++			   uint32_t node_prios)
++{
++	unsigned int flow_pow2, node_pow2;
++	struct rtnl_bf_qdisc *bf;
++
++	if (!(bf = bf_qdisc_data(qdisc)))
++		return -NLE_OPNOTSUPP;
++
++	if ((flow_prios == 0) || (node_prios == 0))
++		return -NLE_RANGE;
++
++	flow_pow2 = next_pow2(flow_prios);
++	node_pow2 = next_pow2(node_prios);
++
++	if ((flow_pow2 + node_pow2) > TC_BF_MAX_PRIORITY_POW2)
++		return -NLE_RANGE;
++
++	bf->qb_node_priorities_pow2 = node_pow2;
++	bf->qb_flow_priorities_pow2 = flow_pow2;
++
++	bf->qb_mask |= SCH_BF_HAS_NODE_PRIO_LIMIT;
++	bf->qb_mask |= SCH_BF_HAS_FLOW_PRIO_LIMIT;
++
++	return 0;
++}
++
++enum BF_PRIORITY_CALC rtnl_bf_get_prio_calc_method(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_bf_qdisc *bf;
++	
++	if ((bf = bf_qdisc_data(qdisc)) && 
++            (bf->qb_mask & SCH_BF_HAS_PRIO_CALC_METHOD))
++			return bf->qb_calc_method;
++
++	return TC_H_UNSPEC;
++}
++
++int rtnl_bf_set_prio_calc_method(struct rtnl_qdisc *qdisc,
++				 enum BF_PRIORITY_CALC calc)
++{
++	struct rtnl_bf_qdisc *bf;
++
++	if (!(bf = bf_qdisc_data(qdisc)))
++		return -NLE_OPNOTSUPP;
++
++	bf->qb_calc_method = calc;
++	bf->qb_mask |= SCH_BF_HAS_PRIO_CALC_METHOD;
++
++	return 0;
++}
++
++uint32_t rtnl_bf_get_total_bandwidth(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_bf_qdisc *bf;
++
++	if ((bf = bf_qdisc_data(qdisc)) &&
++	    (bf->qb_mask & SCH_BF_HAS_TOTAL_BW))
++		return bf->qb_total_bw;
++
++	return TC_H_UNSPEC;
++}
++
++int rtnl_bf_set_total_bandwidth(struct rtnl_qdisc *qdisc, uint32_t total_bw)
++{
++	struct rtnl_bf_qdisc *bf;
++	
++	if (!(bf = bf_qdisc_data(qdisc)))
++		return -NLE_OPNOTSUPP;
++
++	bf->qb_total_bw = total_bw;
++	bf->qb_mask |= SCH_BF_HAS_TOTAL_BW;
++
++	return 0;
++}
++
++
++uint32_t rtnl_bf_get_flow_prio(struct rtnl_class *cls)
++{
++	struct rtnl_bf_class *bf;
++
++	if ((bf = bf_class_data(cls)) && bf->cb_mask & SCH_BF_HAS_FLOW_PRIO)
++		return bf->cb_flow_prio;
++
++	return 0;
++}
++
++int rtnl_bf_set_flow_prio(struct rtnl_class *class, uint32_t flow_prio)
++{
++	struct rtnl_bf_class *bf;
++	
++	if (!(bf = bf_class_data(class)))
++		return -NLE_OPNOTSUPP;
++
++	bf->cb_flow_prio = flow_prio;
++	bf->cb_mask |= SCH_BF_HAS_FLOW_PRIO;
++	
++	return 0;
++}
++
++uint32_t rtnl_bf_get_node_prio(struct rtnl_class *class)
++{
++	struct rtnl_bf_class *bf;
++
++	if ((bf = bf_class_data(class)) && bf->cb_mask & SCH_BF_HAS_NODE_PRIO)
++		return bf->cb_node_prio;
++
++	return 0;
++}
++
++int rtnl_bf_set_node_prio(struct rtnl_class *class, uint32_t node_prio)
++{
++	struct rtnl_bf_class *bf;
++	
++	if (!(bf = bf_class_data(class)))
++		return -NLE_OPNOTSUPP;
++
++	bf->cb_node_prio = node_prio;
++	bf->cb_mask |= SCH_BF_HAS_NODE_PRIO;
++	
++	return 0;
++}
++
++
++uint32_t rtnl_bf_get_rate(struct rtnl_class *class, uint32_t strata)
++{
++	struct rtnl_bf_class *bf;
++
++	if ((bf = bf_class_data(class)) && bf->cb_mask & SCH_BF_HAS_RATES)
++		return bf->cb_limits[strata];
++
++	return 0;
++}
++
++int rtnl_bf_set_rates(struct rtnl_class *class, uint32_t *rates)
++{
++	unsigned int i;
++	struct rtnl_bf_class *bf;
++
++	if (!(bf = bf_class_data(class)))
++		return -NLE_OPNOTSUPP;
++
++	if (!rates)
++		return -ENOENT;
++
++	for (i = 0; i < __TC_BF_STRATA_COUNT; i++) {
++		bf->cb_limits[i] = rates[i];
++	}
++	bf->cb_mask |= SCH_BF_HAS_RATES;
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops bf_qdisc_ops = {
++	.to_kind		= "bf",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_bf_qdisc),
++	.to_msg_parser		= bf_qdisc_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= bf_qdisc_dump_line,
++	    [NL_DUMP_DETAILS]	= NULL,
++	},
++	.to_msg_fill		= bf_qdisc_msg_fill,
++};
++
++static struct rtnl_tc_ops bf_class_ops = {
++	.to_kind		= "bf",
++	.to_type		= RTNL_TC_TYPE_CLASS,
++	.to_size		= sizeof(struct rtnl_bf_class),
++	.to_msg_parser		= bf_class_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= bf_class_dump_line,
++	    [NL_DUMP_DETAILS]	= NULL,
++	    [NL_DUMP_STATS]	= bf_class_dump_stats,
++	},
++	.to_msg_fill		= bf_class_msg_fill,
++};
++
++static void __init bf_init(void)
++{
++	rtnl_tc_register(&bf_qdisc_ops);
++	rtnl_tc_register(&bf_class_ops);
++}
++
++static void __exit bf_exit(void)
++{
++	rtnl_tc_unregister(&bf_class_ops);
++	rtnl_tc_unregister(&bf_qdisc_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/codel.c b/lib/route/qdisc/codel.c
+new file mode 100644
+index 0000000..701788b
+--- /dev/null
++++ b/lib/route/qdisc/codel.c
+@@ -0,0 +1,303 @@
++/*
++ * lib/route/qdisc/codel.c       CODEL Qdisc
++ */
++
++/**
++ * @ingroup qdisc
++ * @defgroup qdisc_codel Controlled Delay AQM
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/codel.h>
++
++/** @cond SKIP */
++#define SCH_CODEL_ATTR_TARGET	0x1
++#define SCH_CODEL_ATTR_LIMIT	0x2
++#define SCH_CODEL_ATTR_INTERVAL	0x4
++#define SCH_CODEL_ATTR_ECN	0x8
++/** @endcond */
++
++static struct nla_policy codel_policy[TCA_CODEL_MAX + 1] = {
++	[TCA_CODEL_TARGET]	= { .type = NLA_U32 },
++	[TCA_CODEL_LIMIT]	= { .type = NLA_U32 },
++	[TCA_CODEL_INTERVAL]	= { .type = NLA_U32 },
++	[TCA_CODEL_ECN]		= { .type = NLA_U32 },
++};
++
++static int codel_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct rtnl_codel_qdisc *codel = data;
++	struct nlattr *tb[TCA_CODEL_MAX + 1];
++	int err;
++
++	err = tca_parse(tb, TCA_CODEL_MAX, tc, codel_policy);
++	if (err < 0)
++		return err;
++
++	if (tb[TCA_CODEL_TARGET]) {
++		codel->qc_target = nla_get_u32(tb[TCA_CODEL_TARGET]);
++		codel->qc_mask |= SCH_CODEL_ATTR_TARGET;
++	}
++
++	if (tb[TCA_CODEL_LIMIT]) {
++		codel->qc_limit = nla_get_u32(tb[TCA_CODEL_LIMIT]);
++		codel->qc_mask |= SCH_CODEL_ATTR_LIMIT;
++	}
++
++	if (tb[TCA_CODEL_INTERVAL]) {
++		codel->qc_interval = nla_get_u32(tb[TCA_CODEL_INTERVAL]);
++		codel->qc_mask |= SCH_CODEL_ATTR_INTERVAL;
++	}
++
++	if (tb[TCA_CODEL_ECN]) {
++		codel->qc_ecn = !!nla_get_u32(tb[TCA_CODEL_ECN]);
++		codel->qc_mask |= SCH_CODEL_ATTR_ECN;
++	}
++
++	return 0;
++}
++
++static void codel_qdisc_dump_line(struct rtnl_tc *tc, void *data,
++				  struct nl_dump_params *p)
++{
++	struct rtnl_codel_qdisc *codel = data;
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_TARGET))
++		nl_dump(p, " target %u usecs", codel->qc_target);
++}
++
++static void codel_qdisc_dump_details(struct rtnl_tc *tc, void *data,
++				     struct nl_dump_params *p)
++{
++	struct rtnl_codel_qdisc *codel = data;
++
++	if (!codel)
++		return;
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_LIMIT))
++		nl_dump(p, " limit %u packets", codel->qc_limit);
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_INTERVAL))
++		nl_dump(p, " interval %u usecs", codel->qc_limit);
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_ECN))
++		nl_dump(p, " ecn %s", codel->qc_ecn ? "enabled" : "disabled");
++}
++
++static int codel_qdisc_msg_fill(struct rtnl_tc *tc, void *data,
++				struct nl_msg *msg)
++{
++	struct rtnl_codel_qdisc *codel = data;
++
++	if (!codel)
++		return 0;
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_TARGET))
++		NLA_PUT_U32(msg, TCA_CODEL_TARGET, codel->qc_target);
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_LIMIT))
++		NLA_PUT_U32(msg, TCA_CODEL_LIMIT, codel->qc_limit);
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_INTERVAL))
++		NLA_PUT_U32(msg, TCA_CODEL_INTERVAL, codel->qc_interval);
++
++	if (codel && (codel->qc_mask & SCH_CODEL_ATTR_ECN))
++		NLA_PUT_U32(msg, TCA_CODEL_ECN, codel->qc_ecn);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Qdisc Attribute Access
++ * @{
++ */
++
++/**
++ * Get target delay for CODEL qdisc.
++ * @arg qdisc		CODEL qdisc.
++ * @return Target delay in microseconds, or a negative error code.
++ */
++int rtnl_codel_qdisc_get_target_usecs(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (codel->qc_mask & SCH_CODEL_ATTR_TARGET)
++		return codel->qc_target;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the target delay for CODEL qdisc.
++ * @arg qdisc		CODEL qdisc to be modified.
++ * @arg target_usecs	Target delay in miscroseconds.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_codel_qdisc_set_target_usecs(struct rtnl_qdisc *qdisc, uint32_t target_usecs)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	codel->qc_target = target_usecs;
++	codel->qc_mask |= SCH_CODEL_ATTR_TARGET;
++
++	return 0;
++}
++
++/**
++ * Get maximum number of enqueued packets before tail drop occurs.
++ * @arg qdisc		CODEL qdisc.
++ * @return Maximum number of enqueued packets, or a negative error code.
++ */
++int rtnl_codel_qdisc_get_packet_limit(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (codel->qc_mask & SCH_CODEL_ATTR_LIMIT)
++		return codel->qc_limit;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the maximum number of queued packets for CODEL qdisc.
++ * @arg qdisc	CODEL qdisc to be modified.
++ * @arg limit	Maximum number of queued packets before tail drop starts.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_codel_qdisc_set_packet_limit(struct rtnl_qdisc *qdisc, uint32_t max_packets)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	codel->qc_limit = max_packets;
++	codel->qc_mask |= SCH_CODEL_ATTR_LIMIT;
++
++	return 0;
++}
++
++
++/**
++ * Get width of the moving time window for calculating delay, in microseconds.
++ * @arg qdisc		CODEL qdisc.
++ * @return Width of the moving window in microseconds, or a negative error code.
++ */
++int rtnl_codel_qdisc_get_interval(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (codel->qc_mask & SCH_CODEL_ATTR_INTERVAL)
++		return codel->qc_interval;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the width of the moving window over which the delay is calculated.
++ * @arg qdisc		CODEL qdisc to be modified.
++ * @arg window_usecs	Moving window width in microseconds
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_codel_qdisc_set_interval(struct rtnl_qdisc *qdisc, uint32_t window_usecs)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	codel->qc_interval = window_usecs;
++	codel->qc_mask |= SCH_CODEL_ATTR_INTERVAL;
++
++	return 0;
++}
++
++
++/**
++ * Get ECN for CODEL qdisc.  If this is set, CODEL will mark packets with ECN
++ * rather than dropping them, where it is possible.
++ * @arg qdisc		CODEL qdisc.
++ * @return 1 if ECN marking instead of dropping is enabled, 0 if it is disabled,
++ * or a negative error code.
++ */
++int rtnl_codel_qdisc_get_ecn(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (codel->qc_mask & SCH_CODEL_ATTR_ECN)
++		return !!(codel->qc_ecn);
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the target delay for CODEL qdisc.
++ * @arg qdisc		CODEL qdisc to be modified.
++ * @arg ecn		0 indicates ECN marking instead of dropping is disabled,
++ * and 1 indicates that ECN marking instead of dropping is enabled.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_codel_qdisc_set_ecn(struct rtnl_qdisc *qdisc, uint32_t ecn)
++{
++	struct rtnl_codel_qdisc *codel;
++
++	if (!(codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	codel->qc_ecn = !!(ecn);
++	codel->qc_mask |= SCH_CODEL_ATTR_ECN;
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops codel_qdisc_ops = {
++	.to_kind		= "codel",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_codel_qdisc),
++	.to_msg_parser		= codel_qdisc_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]      = codel_qdisc_dump_line,
++	    [NL_DUMP_DETAILS]   = codel_qdisc_dump_details,
++	},
++	.to_msg_fill		= codel_qdisc_msg_fill,
++};
++
++static void __init codel_init(void)
++{
++	rtnl_tc_register(&codel_qdisc_ops);
++}
++
++static void __exit codel_exit(void)
++{
++	rtnl_tc_unregister(&codel_qdisc_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/drr.c b/lib/route/qdisc/drr.c
+new file mode 100644
+index 0000000..c7b2a29
+--- /dev/null
++++ b/lib/route/qdisc/drr.c
+@@ -0,0 +1,150 @@
++/*
++ * lib/route/qdisc/drr.c       DRR Qdisc
++ */
++
++/**
++ * @ingroup qdisc
++ * @ingroup class
++ * @defgroup qdisc_drr Deficit Round Robin
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/drr.h>
++
++/** @cond SKIP */
++#define SCH_DRR_HAS_QUANTUM	0x1
++/** @endcond */
++
++static struct nla_policy drr_policy[TCA_DRR_MAX + 1] = {
++	[TCA_DRR_QUANTUM]	= { .type = NLA_U32 },
++};
++
++static int drr_class_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct rtnl_drr_class *drr = data;
++	struct nlattr *tb[TCA_DRR_MAX + 1];
++	int err;
++
++	err = tca_parse(tb, TCA_DRR_MAX, tc, drr_policy);
++	if (err < 0)
++		return err;
++
++	if (tb[TCA_DRR_QUANTUM]) {
++		drr->cd_quantum = nla_get_u32(tb[TCA_DRR_QUANTUM]);
++		drr->cd_mask |= SCH_DRR_HAS_QUANTUM;
++	}
++
++	return 0;
++}
++
++static void drr_class_dump_line(struct rtnl_tc *tc, void *data,
++				  struct nl_dump_params *p)
++{
++	struct rtnl_drr_class *drr = data;
++
++	if (drr && (drr->cd_mask & SCH_DRR_HAS_QUANTUM))
++		nl_dump(p, " quantum %u", drr->cd_quantum);
++}
++
++static int drr_class_msg_fill(struct rtnl_tc *tc, void *data,
++			      struct nl_msg *msg)
++{
++	struct rtnl_drr_class *drr = data;
++
++	if (drr && (drr->cd_mask & SCH_DRR_HAS_QUANTUM))
++		NLA_PUT_U32(msg, TCA_DRR_QUANTUM, drr->cd_quantum);
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Class Attribute Access
++ * @{
++ */
++
++/**
++ * Get quantum for DRR class.
++ * @arg cls		DRR class.
++ * @return Quantum per DRR round in bytes, or 0 for error.
++ */
++int rtnl_drr_class_get_quantum(struct rtnl_class *cls)
++{
++	struct rtnl_drr_class *drr;
++
++	if (!(drr = rtnl_tc_data(TC_CAST(cls))))
++		return -NLE_NOMEM;
++
++	if (drr->cd_mask & SCH_DRR_HAS_QUANTUM)
++		return drr->cd_quantum;
++	else
++		return 0;
++}
++
++/**
++ * Sets the quantum for a DRR class.
++ * @arg cls		DRR class.
++ * @arg quantum		Quantum per DRR round in bytes.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_drr_qdisc_set_quantum(struct rtnl_class *cls, uint32_t quantum)
++{
++	struct rtnl_drr_class *drr;
++
++	if (!(drr = rtnl_tc_data(TC_CAST(cls))))
++		return -NLE_NOMEM;
++
++	drr->cd_quantum = quantum;
++	drr->cd_mask |= SCH_DRR_HAS_QUANTUM;
++
++	return 0;
++}
++
++
++/** @} */
++
++static struct rtnl_tc_ops drr_qdisc_ops = {
++	.to_kind		= "drr",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= 0,
++	.to_msg_parser		= NULL,
++	.to_dump = {
++	    [NL_DUMP_LINE]      = NULL,
++	    [NL_DUMP_DETAILS]   = NULL,
++	},
++	.to_msg_fill		= NULL,
++};
++
++static struct rtnl_tc_ops drr_class_ops = {
++	.to_kind		= "drr",
++	.to_type		= RTNL_TC_TYPE_CLASS,
++	.to_size		= sizeof(struct rtnl_drr_class),
++	.to_msg_parser		= drr_class_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= drr_class_dump_line,
++	    [NL_DUMP_DETAILS]	= NULL,
++	},
++	.to_msg_fill		= drr_class_msg_fill,
++};
++
++static void __init drr_init(void)
++{
++	rtnl_tc_register(&drr_qdisc_ops);
++	rtnl_tc_register(&drr_class_ops);
++}
++
++static void __exit drr_exit(void)
++{
++	rtnl_tc_unregister(&drr_class_ops);
++	rtnl_tc_unregister(&drr_qdisc_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/fq_codel.c b/lib/route/qdisc/fq_codel.c
+new file mode 100644
+index 0000000..7303b63
+--- /dev/null
++++ b/lib/route/qdisc/fq_codel.c
+@@ -0,0 +1,413 @@
++/*
++ * lib/route/qdisc/fq_codel.c       Fair Queue CODEL Qdisc
++ */
++
++/**
++ * @ingroup qdisc
++ * @defgroup qdisc_fq_codel Fair Queue with Per-Flow Controlled Delay AQM
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/fq_codel.h>
++
++/** @cond SKIP */
++#define SCH_FQ_CODEL_ATTR_TARGET	0x01
++#define SCH_FQ_CODEL_ATTR_LIMIT		0x02
++#define SCH_FQ_CODEL_ATTR_INTERVAL	0x04
++#define SCH_FQ_CODEL_ATTR_ECN		0x08
++#define SCH_FQ_CODEL_ATTR_FLOWS		0x10
++#define SCH_FQ_CODEL_ATTR_QUANTUM	0x20
++/** @endcond */
++
++static struct nla_policy fq_codel_policy[TCA_FQ_CODEL_MAX + 1] = {
++	[TCA_FQ_CODEL_TARGET]	= { .type = NLA_U32 },
++	[TCA_FQ_CODEL_LIMIT]	= { .type = NLA_U32 },
++	[TCA_FQ_CODEL_INTERVAL]	= { .type = NLA_U32 },
++	[TCA_FQ_CODEL_ECN]	= { .type = NLA_U32 },
++	[TCA_FQ_CODEL_FLOWS]	= { .type = NLA_U32 },
++	[TCA_FQ_CODEL_QUANTUM]	= { .type = NLA_U32 },
++};
++
++static int fq_codel_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel = data;
++	struct nlattr *tb[TCA_FQ_CODEL_MAX + 1];
++	int err;
++
++	err = tca_parse(tb, TCA_FQ_CODEL_MAX, tc, fq_codel_policy);
++	if (err < 0)
++		return err;
++
++	if (tb[TCA_FQ_CODEL_TARGET]) {
++		fq_codel->qcq_target = nla_get_u32(tb[TCA_FQ_CODEL_TARGET]);
++		fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_TARGET;
++	}
++
++	if (tb[TCA_FQ_CODEL_LIMIT]) {
++		fq_codel->qcq_limit = nla_get_u32(tb[TCA_FQ_CODEL_LIMIT]);
++		fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_LIMIT;
++	}
++
++	if (tb[TCA_FQ_CODEL_INTERVAL]) {
++		fq_codel->qcq_interval = nla_get_u32(tb[TCA_FQ_CODEL_INTERVAL]);
++		fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_INTERVAL;
++	}
++
++	if (tb[TCA_FQ_CODEL_ECN]) {
++		fq_codel->qcq_ecn = !!nla_get_u32(tb[TCA_FQ_CODEL_ECN]);
++		fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_ECN;
++	}
++
++	if (tb[TCA_FQ_CODEL_FLOWS]) {
++		fq_codel->qcq_flows = nla_get_u32(tb[TCA_FQ_CODEL_FLOWS]);
++		fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_FLOWS;
++	}	
++
++	if (tb[TCA_FQ_CODEL_QUANTUM]) {
++		fq_codel->qcq_quantum = nla_get_u32(tb[TCA_FQ_CODEL_QUANTUM]);
++		fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_QUANTUM;
++	}	
++
++	return 0;
++}
++
++static void fq_codel_qdisc_dump_line(struct rtnl_tc *tc, void *data,
++				  struct nl_dump_params *p)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel = data;
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_TARGET))
++		nl_dump(p, " target %u usecs", fq_codel->qcq_target);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_FLOWS))
++		nl_dump(p, " max_flows %u", fq_codel->qcq_flows);
++}
++
++static void fq_codel_qdisc_dump_details(struct rtnl_tc *tc, void *data,
++				     struct nl_dump_params *p)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel = data;
++
++	if (!fq_codel)
++		return;
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_LIMIT))
++		nl_dump(p, " limit %u packets", fq_codel->qcq_limit);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_INTERVAL))
++		nl_dump(p, " interval %u usecs", fq_codel->qcq_limit);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_ECN))
++		nl_dump(p, " ecn %s", fq_codel->qcq_ecn ? "enable" : "disable");
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_QUANTUM))
++		nl_dump(p, " quantum %u bytes", fq_codel->qcq_quantum);
++}
++
++static int fq_codel_qdisc_msg_fill(struct rtnl_tc *tc, void *data,
++				struct nl_msg *msg)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel = data;
++
++	if (!fq_codel)
++		return 0;
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_TARGET))
++		NLA_PUT_U32(msg, TCA_FQ_CODEL_TARGET, fq_codel->qcq_target);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_LIMIT))
++		NLA_PUT_U32(msg, TCA_FQ_CODEL_LIMIT, fq_codel->qcq_limit);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_INTERVAL))
++		NLA_PUT_U32(msg, TCA_FQ_CODEL_INTERVAL, fq_codel->qcq_interval);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_ECN))
++		NLA_PUT_U32(msg, TCA_FQ_CODEL_ECN, fq_codel->qcq_ecn);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_FLOWS))
++		NLA_PUT_U32(msg, TCA_FQ_CODEL_FLOWS, fq_codel->qcq_flows);
++
++	if (fq_codel && (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_QUANTUM))
++		NLA_PUT_U32(msg, TCA_FQ_CODEL_QUANTUM, fq_codel->qcq_quantum);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++/**
++ * @name Qdisc Attribute Access
++ * @{
++ */
++
++/**
++ * Get target delay for FQ_CODEL qdisc.
++ * @arg qdisc		FQ_CODEL qdisc.
++ * @return Target delay in microseconds, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_get_target_usecs(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_TARGET)
++		return fq_codel->qcq_target;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the target delay for FQ_CODEL qdisc.
++ * @arg qdisc		FQ_CODEL qdisc to be modified.
++ * @arg target_usecs	Target delay in miscroseconds.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_set_target_usecs(struct rtnl_qdisc *qdisc,
++					 uint32_t target_usecs)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	fq_codel->qcq_target = target_usecs;
++	fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_TARGET;
++
++	return 0;
++}
++
++/**
++ * Get maximum number of enqueued packets before tail drop occurs.
++ * @arg qdisc		FQ_CODEL qdisc.
++ * @return Maximum number of enqueued packets, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_get_packet_limit(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_LIMIT)
++		return fq_codel->qcq_limit;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the maximum number of queued packets for FQ_CODEL qdisc.
++ * @arg qdisc	FQ_CODEL qdisc to be modified.
++ * @arg limit	Maximum number of queued packets before tail drop starts.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_set_packet_limit(struct rtnl_qdisc *qdisc,
++					 uint32_t max_packets)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	fq_codel->qcq_limit = max_packets;
++	fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_LIMIT;
++
++	return 0;
++}
++
++
++/**
++ * Get width of the moving time window for calculating delay, in microseconds.
++ * @arg qdisc		FQ_CODEL qdisc.
++ * @return Width of the moving window in microseconds, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_get_interval(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_INTERVAL)
++		return fq_codel->qcq_interval;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the width of the moving window over which the delay is calculated.
++ * @arg qdisc		FQ_CODEL qdisc to be modified.
++ * @arg window_usecs	Moving window width in microseconds
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_set_interval(struct rtnl_qdisc *qdisc,
++				     uint32_t window_usecs)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	fq_codel->qcq_interval = window_usecs;
++	fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_INTERVAL;
++
++	return 0;
++}
++
++
++/**
++ * Get ECN for FQ_CODEL qdisc.  If this is set, FQ_CODEL will mark packets with
++ * ECN rather than dropping them, where it is possible.
++ * @arg qdisc		FQ_CODEL qdisc.
++ * @return 1 if ECN marking instead of dropping is enabled, 0 if it is disabled,
++ * or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_get_ecn(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_ECN)
++		return !!(fq_codel->qcq_ecn);
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Sets the target delay for FQ_CODEL qdisc.
++ * @arg qdisc		FQ_CODEL qdisc to be modified.
++ * @arg ecn		0 indicates ECN marking instead of dropping is disabled,
++ * and 1 indicates that ECN marking instead of dropping is enabled.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_set_ecn(struct rtnl_qdisc *qdisc, uint32_t ecn)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	fq_codel->qcq_ecn = !!(ecn);
++	fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_ECN;
++
++	return 0;
++}
++
++/**
++ * Get maximum number of flows for FQ_CODEL qdisc.  This is the number of
++ * flows into which connections may be classified.
++ * @arg qdisc		FQ_CODEL qdisc.
++ * @return Maximum number of flows for qdisc, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_get_max_flow_count(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_FLOWS)
++		return fq_codel->qcq_flows;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the maximum number of flows for FQ_CODEL qdisc.  This is the number of
++ * flows into which connections may be classified.
++ * @arg qdisc		FQ_CODEL qdisc to be modified.
++ * @arg ecn		New maximum number of flows.  This must be greater than
++ * 0, and less than 65536.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_set_max_flow_count(struct rtnl_qdisc *qdisc,
++					   uint32_t max_flows)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	fq_codel->qcq_flows = max_flows;
++	fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_FLOWS;
++
++	return 0;
++}
++
++/**
++ * Get the quantum for round robin between the active flows. 
++ * @arg qdisc		FQ_CODEL qdisc.
++ * @return The current quantum in bytes each flow receives during round robin.
++ */
++int rtnl_fq_codel_qdisc_get_quantum(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	if (fq_codel->qcq_mask & SCH_FQ_CODEL_ATTR_QUANTUM)
++		return fq_codel->qcq_quantum;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the quantum for round robin between the active flows. 
++ * @arg qdisc		FQ_CODEL qdisc to be modified.
++ * @arg quantum		Set the number of bytes each flow may transmit before
++ * allowing the next flow to transmit during round robin between active flows.
++ * If this number is < 256, it will be set to 256.
++ * @return 0 on success, or a negative error code.
++ */
++int rtnl_fq_codel_qdisc_set_quantum(struct rtnl_qdisc *qdisc,
++				    uint32_t quantum)
++{
++	struct rtnl_fq_codel_qdisc *fq_codel;
++
++	if (!(fq_codel = rtnl_tc_data(TC_CAST(qdisc))))
++		return -NLE_NOMEM;
++
++	fq_codel->qcq_quantum = quantum;
++	fq_codel->qcq_mask |= SCH_FQ_CODEL_ATTR_QUANTUM;
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops fq_codel_qdisc_ops = {
++	.to_kind		= "fq_codel",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_fq_codel_qdisc),
++	.to_msg_parser		= fq_codel_qdisc_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]      = fq_codel_qdisc_dump_line,
++	    [NL_DUMP_DETAILS]   = fq_codel_qdisc_dump_details,
++	},
++	.to_msg_fill		= fq_codel_qdisc_msg_fill,
++};
++
++static void __init fq_codel_init(void)
++{
++	rtnl_tc_register(&fq_codel_qdisc_ops);
++}
++
++static void __exit fq_codel_exit(void)
++{
++	rtnl_tc_unregister(&fq_codel_qdisc_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/hfsc.c b/lib/route/qdisc/hfsc.c
+new file mode 100644
+index 0000000..a19e5be
+--- /dev/null
++++ b/lib/route/qdisc/hfsc.c
+@@ -0,0 +1,404 @@
++/*
++ * lib/route/qdisc/hfsc.c	HFSC Qdisc
++ */
++
++/**
++ * @ingroup qdisc
++ * @ingroup class
++ * @defgroup qdisc_hfsc Hierachical Fair Service Curve (HFSC)
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/cache.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/class.h>
++#include <netlink/route/link.h>
++#include <netlink/route/qdisc/hfsc.h>
++
++#define USEC_PER_SEC		1000000
++
++/** @cond SKIP */
++#define SCH_HFSC_HAS_DEFCLS		0x02
++
++#define SCH_HFSC_HAS_RT_SC		0x001
++#define SCH_HFSC_HAS_FAIR_SC		0x002
++#define SCH_HFSC_HAS_UPPER_SC		0x004
++/** @endcond */
++
++static struct nla_policy hfsc_policy[TCA_HFSC_MAX + 1] = {
++	[TCA_HFSC_RSC]	= { .minlen = sizeof(struct tc_service_curve) },
++	[TCA_HFSC_FSC]	= { .minlen = sizeof(struct tc_service_curve) },
++	[TCA_HFSC_USC]	= { .minlen = sizeof(struct tc_service_curve) },
++};
++
++static int hfsc_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct rtnl_hfsc_qdisc *hfsc = data;
++	struct tc_hfsc_qopt *opt;
++
++	if (tc->tc_opts->d_size < sizeof(struct tc_hfsc_qopt))
++		return -NLE_INVAL;
++
++	opt = (struct tc_hfsc_qopt *) tc->tc_opts->d_data;
++	hfsc->qsc_defcls = opt->defcls;
++	hfsc->qsc_mask = SCH_HFSC_HAS_DEFCLS;
++
++	return 0;
++}
++
++static int hfsc_class_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct nlattr *tb[TCA_HFSC_MAX + 1];
++	struct rtnl_hfsc_class *hfsc = data;
++	int err;
++
++	if ((err = tca_parse(tb, TCA_HFSC_MAX, tc, hfsc_policy)) < 0)
++		return err;
++
++	hfsc->csc_mask = 0;
++	if (tb[TCA_HFSC_RSC]) {
++		nla_memcpy(&hfsc->csc_rt_sc, tb[TCA_HFSC_RSC],
++			   sizeof(struct tc_service_curve));
++		hfsc->csc_mask |= SCH_HFSC_HAS_RT_SC;
++	}
++
++	if (tb[TCA_HFSC_FSC]) {
++		nla_memcpy(&hfsc->csc_fair_sc, tb[TCA_HFSC_FSC],
++			   sizeof(struct tc_service_curve));
++		hfsc->csc_mask |= SCH_HFSC_HAS_FAIR_SC;
++	}
++
++	if (tb[TCA_HFSC_USC]) {
++		nla_memcpy(&hfsc->csc_upper_sc, tb[TCA_HFSC_USC],
++			   sizeof(struct tc_service_curve));
++		hfsc->csc_mask |= SCH_HFSC_HAS_UPPER_SC;
++	}
++
++	return 0;
++}
++
++static void hfsc_qdisc_dump_line(struct rtnl_tc *tc, void *data,
++				 struct nl_dump_params *p)
++{
++	struct rtnl_hfsc_qdisc *hfsc = data;
++
++	if (!hfsc)
++		return;
++
++	if (hfsc->qsc_mask & SCH_HFSC_HAS_DEFCLS) {
++		char buf[64];
++		nl_dump(p, " default-class %s",
++			rtnl_tc_handle2str(hfsc->qsc_defcls, buf, sizeof(buf)));
++	}
++}
++
++
++static void hfsc_print_sc(struct nl_dump_params *p, char *name,
++			  struct rtnl_curve *sc)
++{
++	double val;
++	char *unit;
++
++	nl_dump(p, "%s ", name);
++	val = nl_cancel_down_bits(sc->sc_m1, &unit);
++	nl_dump(p, " m1 %.2f%s/s", val, unit);
++
++	val = nl_cancel_down_us(sc->sc_d, &unit);
++        nl_dump(p, " d %.2f%s", val, unit);
++
++	val = nl_cancel_down_bits(sc->sc_m2, &unit);
++	nl_dump(p, " m2 %.2f%s/s", val, unit);
++}
++
++
++static void hfsc_class_dump_line(struct rtnl_tc *tc, void *data,
++				 struct nl_dump_params *p)
++{
++	struct rtnl_hfsc_class *hfsc = data;
++
++	if (!hfsc)
++		return;
++
++	if ((hfsc->csc_mask & SCH_HFSC_HAS_RT_SC) &&
++	    (hfsc->csc_mask & SCH_HFSC_HAS_FAIR_SC) &&
++	    (memcmp(&hfsc->csc_rt_sc,
++		    &hfsc->csc_fair_sc,
++		    sizeof(hfsc->csc_rt_sc)) == 0)) {
++                hfsc_print_sc(p, "sc", &hfsc->csc_rt_sc);
++	} else {
++		if (hfsc->csc_mask & SCH_HFSC_HAS_RT_SC)
++                	hfsc_print_sc(p, "rt", &hfsc->csc_rt_sc);
++		if (hfsc->csc_mask & SCH_HFSC_HAS_FAIR_SC)
++                	hfsc_print_sc(p, "ls", &hfsc->csc_fair_sc);
++        }
++
++	if (hfsc->csc_mask & SCH_HFSC_HAS_UPPER_SC)
++               	hfsc_print_sc(p, "ul", &hfsc->csc_upper_sc);
++}
++
++
++static int hfsc_qdisc_msg_fill(struct rtnl_tc *tc, void *data,
++			       struct nl_msg *msg)
++{
++	struct rtnl_hfsc_qdisc *hfsc = data;
++        struct tc_hfsc_qopt opts = {0};
++
++	if (!hfsc || !(hfsc->qsc_mask & SCH_HFSC_HAS_DEFCLS))
++		return -NLE_INVAL;
++
++	opts.defcls = hfsc->qsc_defcls;
++
++	return nlmsg_append(msg, &opts, sizeof(opts), NL_DONTPAD);
++}
++
++/* FIXME: Verify we have at least one curve, and if upper, must have fair */
++static int hfsc_class_msg_fill(struct rtnl_tc *tc, void *data,
++			       struct nl_msg *msg)
++{
++	struct rtnl_hfsc_class *hfsc = data;
++	struct tc_service_curve sc;
++
++	if (!hfsc)
++		BUG();
++
++	if (hfsc->csc_mask & SCH_HFSC_HAS_RT_SC) {
++		memcpy(&sc, &hfsc->csc_rt_sc, sizeof(sc));
++	} else {
++		memset(&sc, 0, sizeof(sc));
++	}
++	NLA_PUT(msg, TCA_HFSC_RSC, sizeof(sc), &sc);
++
++	if (hfsc->csc_mask & SCH_HFSC_HAS_FAIR_SC) {
++		memcpy(&sc, &hfsc->csc_fair_sc, sizeof(sc));
++	} else {
++		memset(&sc, 0, sizeof(sc));
++	}
++	NLA_PUT(msg, TCA_HFSC_FSC, sizeof(sc), &sc);
++
++	if (hfsc->csc_mask & SCH_HFSC_HAS_UPPER_SC) {
++		memcpy(&sc, &hfsc->csc_upper_sc, sizeof(sc));
++	} else {
++		memset(&sc, 0, sizeof(sc));
++	}
++	NLA_PUT(msg, TCA_HFSC_USC, sizeof(sc), &sc);
++
++	return 0;
++
++nla_put_failure:
++	return -NLE_MSGSIZE;
++}
++
++static struct rtnl_tc_ops hfsc_qdisc_ops;
++static struct rtnl_tc_ops hfsc_class_ops;
++
++static struct rtnl_hfsc_qdisc *hfsc_qdisc_data(struct rtnl_qdisc *qdisc)
++{
++	return rtnl_tc_data_check(TC_CAST(qdisc), &hfsc_qdisc_ops);
++}
++
++static struct rtnl_hfsc_class *hfsc_class_data(struct rtnl_class *class)
++{
++	return rtnl_tc_data_check(TC_CAST(class), &hfsc_class_ops);
++}
++
++/**
++ * @name Attribute Modifications
++ * @{
++ */
++
++/**
++ * Return default class of HFSC qdisc
++ * @arg qdisc		hfsc qdisc object
++ *
++ * Returns the classid of the class where all unclassified traffic
++ * goes to.
++ *
++ * @return classid or TC_H_UNSPEC if unspecified.
++ */
++uint32_t rtnl_hfsc_get_defcls(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_hfsc_qdisc *hfsc;
++
++	if ((hfsc = hfsc_qdisc_data(qdisc)) &&
++	    hfsc->qsc_mask & SCH_HFSC_HAS_DEFCLS)
++		return hfsc->qsc_defcls;
++
++	return TC_H_UNSPEC;
++}
++
++/**
++ * Set default class of the hfsc qdisc to the specified value
++ * @arg qdisc		qdisc to change
++ * @arg defcls		new default class
++ */
++int rtnl_hfsc_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls)
++{
++	struct rtnl_hfsc_qdisc *hfsc;
++
++	if (!(hfsc = hfsc_qdisc_data(qdisc)))
++		return -NLE_OPNOTSUPP;
++
++	hfsc->qsc_defcls = defcls;
++	hfsc->qsc_mask |= SCH_HFSC_HAS_DEFCLS;
++
++	return 0;
++}
++
++/* m1-d-m2: Direct Method of Specifying service curve slopes */
++void rtnl_hfsc_get_realtime_sc(struct rtnl_class *cls,
++			       struct tc_service_curve *curve_out)
++{
++	struct rtnl_hfsc_class *hfsc;
++
++	if ((hfsc = hfsc_class_data(cls)) &&
++	    (hfsc->csc_mask & SCH_HFSC_HAS_RT_SC)) {
++		memcpy(curve_out, &hfsc->csc_rt_sc, sizeof(*curve_out));
++	} else {
++		memset(curve_out, 0, sizeof(*curve_out));
++	}
++}
++
++
++int rtnl_hfsc_set_realtime_sc(struct rtnl_class *cls,
++			      struct tc_service_curve *curve_in)
++{
++	struct rtnl_hfsc_class *hfsc;
++
++	if (!(hfsc = hfsc_class_data(cls)))
++		return -NLE_OPNOTSUPP;
++
++	memcpy(&hfsc->csc_rt_sc, curve_in, sizeof(hfsc->csc_rt_sc));
++	hfsc->csc_mask |= SCH_HFSC_HAS_RT_SC;
++
++	return 0;
++}
++
++void rtnl_hfsc_get_fair_sc(struct rtnl_class *cls,
++			   struct tc_service_curve *curve_out)
++{
++	struct rtnl_hfsc_class *hfsc;
++
++	if ((hfsc = hfsc_class_data(cls)) &&
++	    (hfsc->csc_mask & SCH_HFSC_HAS_FAIR_SC)) {
++		memcpy(curve_out, &hfsc->csc_fair_sc, sizeof(*curve_out));
++	} else {
++		memset(curve_out, 0, sizeof(*curve_out));
++	}
++}
++
++
++int rtnl_hfsc_set_fair_sc(struct rtnl_class *cls,
++			  struct tc_service_curve *curve_in)
++{
++	struct rtnl_hfsc_class *hfsc;
++
++	if (!(hfsc = hfsc_class_data(cls)))
++		return -NLE_OPNOTSUPP;
++
++	memcpy(&hfsc->csc_fair_sc, curve_in, sizeof(hfsc->csc_fair_sc));
++	hfsc->csc_mask |= SCH_HFSC_HAS_FAIR_SC;
++
++	return 0;
++}
++
++void rtnl_hfsc_get_upperlimit_sc(struct rtnl_class *cls,
++				 struct tc_service_curve *curve_out)
++{
++	struct rtnl_hfsc_class *hfsc;
++
++	if ((hfsc = hfsc_class_data(cls)) &&
++	    (hfsc->csc_mask & SCH_HFSC_HAS_UPPER_SC)) {
++		memcpy(curve_out, &hfsc->csc_upper_sc, sizeof(*curve_out));
++	} else {
++		memset(curve_out, 0, sizeof(*curve_out));
++	}
++}
++
++
++int rtnl_hfsc_set_upperlimit_sc(struct rtnl_class *cls,
++				struct tc_service_curve *curve_in)
++{
++	struct rtnl_hfsc_class *hfsc;
++
++	if (!(hfsc = hfsc_class_data(cls)))
++		return -NLE_OPNOTSUPP;
++
++	memcpy(&hfsc->csc_upper_sc, curve_in, sizeof(hfsc->csc_upper_sc));
++	hfsc->csc_mask |= SCH_HFSC_HAS_UPPER_SC;
++
++	return 0;
++}
++
++/* umax-dmax-rate Method of specifying service curve translations */
++int rtnl_hfsc_spec_to_sc(struct hfsc_spec *spec_in,
++			 struct tc_service_curve *curve_out)
++{
++	unsigned int umax, dmax, rate;
++
++	umax = spec_in->work_max;
++	dmax = spec_in->delay_max;
++	rate = spec_in->rate;
++
++	if (umax != 0 && dmax == 0) {
++		return -EINVAL;
++	}
++
++	if (rate == 0) {
++		curve_out->m1 	= 0;
++		curve_out->d	= 0;
++		curve_out->m2	= 0;
++		return 0;
++	}
++
++	/* concave: slope of first segment is umax/dmax, intersect at dmax */
++	if ((dmax != 0) && (ceil(1.0 * umax * USEC_PER_SEC / dmax) > rate)) {
++		curve_out->m1	= ceil(1.0 * umax * USEC_PER_SEC / dmax);
++		curve_out->d	= dmax;
++		curve_out->m2	= rate;
++	} else {
++	/* convex: slope of first segment = 0, intersect (dmax - umax / rate */
++	/* FIXME: is that calc correct?  Maybe it's (dmax - umax) / rate? */
++		curve_out->m1	= 0;
++		curve_out->d	= ceil(dmax - umax * USEC_PER_SEC / rate);
++		curve_out->m2	= rate;
++	}
++
++	return 0;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops hfsc_qdisc_ops = {
++	.to_kind		= "hfsc",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_hfsc_qdisc),
++	.to_msg_parser		= hfsc_qdisc_msg_parser,
++	.to_dump[NL_DUMP_LINE]	= hfsc_qdisc_dump_line,
++	.to_msg_fill		= hfsc_qdisc_msg_fill,
++};
++
++static struct rtnl_tc_ops hfsc_class_ops = {
++	.to_kind		= "hfsc",
++	.to_type		= RTNL_TC_TYPE_CLASS,
++	.to_size		= sizeof(struct rtnl_hfsc_class),
++	.to_msg_parser		= hfsc_class_msg_parser,
++	.to_dump[NL_DUMP_LINE]	= hfsc_class_dump_line,
++	.to_msg_fill		= hfsc_class_msg_fill,
++};
++
++static void __init hfsc_init(void)
++{
++	rtnl_tc_register(&hfsc_qdisc_ops);
++	rtnl_tc_register(&hfsc_class_ops);
++}
++
++static void __exit hfsc_exit(void)
++{
++	rtnl_tc_unregister(&hfsc_qdisc_ops);
++	rtnl_tc_unregister(&hfsc_class_ops);
++}
+diff --git a/lib/route/qdisc/sfb.c b/lib/route/qdisc/sfb.c
+new file mode 100644
+index 0000000..2612285
+--- /dev/null
++++ b/lib/route/qdisc/sfb.c
+@@ -0,0 +1,522 @@
++/*
++ * lib/route/qdisc/sfb.c		Stochastic Fair Blue Qdisc
++ */
++/*
++ **************************************************************************
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ **************************************************************************
++ */
++
++/**
++ * @ingroup qdisc
++ * @defgroup qdisc_sfb Stochastic Fair Blue (SFB)
++ * @brief
++ * Sch_sfb is an implementation of the Stochastic Fair Blue (SFB) queue
++ * management algorithm for Linux.
++ *
++ * SFB aims to keep your queues short while avoiding packet drops,
++ * maximising link utilisation and preserving fairness between flows.
++ * SFB will detect flows that do not respond to congestion indications,
++ * and limit them to a constant share of the link's capacity.
++ *
++ * SFB only deals with marking and/or droping packets.  Reordering of
++ * packets is handled by sfb's child qdisc; by default, this is pfifo,
++ * meaning that no reordering will happen.  You may want to use something
++ * like prio or sfq as sfb's child.
++ *
++ * Unlike most other fair queueing policies, SFB doesn't actually keep
++ * per-flow state; it manages flow information using a Bloom filter,
++ * which means that hash collisions are reduced to a minimum while using
++ * fairly little memory.
++ * @{
++ */
++
++#include <netlink-local.h>
++#include <netlink-tc.h>
++#include <netlink/netlink.h>
++#include <netlink/utils.h>
++#include <netlink/route/tc-api.h>
++#include <netlink/route/qdisc.h>
++#include <netlink/route/qdisc/sfb.h>
++
++/** @cond SKIP */
++#define SCH_SFB_ATTR_REHASH	0x001
++#define SCH_SFB_ATTR_WARMUP	0x002
++#define SCH_SFB_ATTR_LIMIT	0x004
++#define SCH_SFB_ATTR_TARGET	0x008
++#define SCH_SFB_ATTR_MAX	0x010
++#define SCH_SFB_ATTR_INCREMENT	0x020
++#define SCH_SFB_ATTR_DECREMENT	0x040
++#define SCH_SFB_ATTR_PEN_RATE	0x080
++#define SCH_SFB_ATTR_PEN_BURST	0x100
++/** @endcond */
++
++static int sfb_msg_parser(struct rtnl_tc *tc, void *data)
++{
++	struct rtnl_sfb *sfb = data;
++	struct tc_sfb_qopt *opts;
++
++	if (!(tc->ce_mask & TCA_ATTR_OPTS))
++		return 0;
++
++	if (tc->tc_opts->d_size < sizeof(*opts))
++		return -NLE_INVAL;
++
++	opts = (struct tc_sfb_qopt *) tc->tc_opts->d_data;
++
++	sfb->qsb_rehash_interval	= opts->rehash_interval;
++	sfb->qsb_warmup_time		= opts->warmup_time;
++	sfb->qsb_limit			= opts->limit;
++	sfb->qsb_target			= opts->bin_size;
++	sfb->qsb_max			= opts->max;
++	sfb->qsb_increment		= opts->increment;
++	sfb->qsb_decrement		= opts->decrement;
++	sfb->qsb_penalty_rate		= opts->penalty_rate;
++	sfb->qsb_penalty_burst		= opts->penalty_burst;
++
++	sfb->qsb_mask = (SCH_SFB_ATTR_REHASH | SCH_SFB_ATTR_WARMUP |
++			 SCH_SFB_ATTR_LIMIT | SCH_SFB_ATTR_MAX |
++			 SCH_SFB_ATTR_TARGET |
++			 SCH_SFB_ATTR_INCREMENT | SCH_SFB_ATTR_DECREMENT |
++			 SCH_SFB_ATTR_PEN_RATE | SCH_SFB_ATTR_PEN_BURST);
++
++	return 0;
++}
++
++static void sfb_dump_line(struct rtnl_tc *tc, void *data,
++			  struct nl_dump_params *p)
++{
++	struct rtnl_sfb *sfb = data;
++
++	if (sfb)
++		nl_dump(p, " limit %u target %u max %u" ,
++		        sfb->qsb_limit, sfb->qsb_target, sfb->qsb_max);
++}
++
++static void sfb_dump_details(struct rtnl_tc *tc, void *data,
++			     struct nl_dump_params *p)
++{
++	struct rtnl_sfb *sfb = data;
++
++	if (sfb)
++		nl_dump(p, "rehash_interval %us warmup_time %us "
++			   "increment %u decrement %u "
++			   "penalty_rate %up/s penalty_burst %up",
++			sfb->qsb_rehash_interval, sfb->qsb_warmup_time,
++			sfb->qsb_increment, sfb->qsb_decrement,
++			sfb->qsb_penalty_rate, sfb->qsb_penalty_burst);
++}
++
++static int sfb_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
++{
++	struct rtnl_sfb *sfb = data;
++	struct tc_sfb_qopt opts = {0};
++
++	if (!sfb)
++		BUG();
++
++	opts.rehash_interval	= sfb->qsb_rehash_interval;
++	opts.warmup_time	= sfb->qsb_warmup_time;
++	opts.limit		= sfb->qsb_limit;	
++	opts.bin_size 		= sfb->qsb_target;
++	opts.max		= sfb->qsb_max;
++	opts.increment		= sfb->qsb_increment;
++	opts.decrement		= sfb->qsb_decrement;
++	opts.penalty_rate	= sfb->qsb_penalty_rate;
++	opts.penalty_burst	= sfb->qsb_penalty_burst;
++
++	return nlmsg_append(msg, &opts, sizeof(opts), NL_DONTPAD);
++}
++
++/**
++ * @name Attribute Access
++ * @{
++ */
++
++/**
++ * Set the rehash interval of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg interval_secs	Specifies how often, in seconds, before we will switch
++ * to a fresh Bloom filter and a different set of hash functions.  Since Bloom
++ * filters are more resistent to hash collisions that hash tables, this may be
++ * set to a fairly large value.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_rehash_interval(struct rtnl_qdisc *qdisc, int interval_secs)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_rehash_interval = interval_secs;
++	sfb->qsb_mask |= SCH_SFB_ATTR_REHASH;
++}
++
++/**
++ * Get rehash interval of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Rehash interval in seconds, or a negative error code.
++ */
++int rtnl_sfb_get_rehash_interval(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_REHASH)
++		return sfb->qsb_rehash_interval;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the warmup time of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg warmup_secs	In seconds, how long we will perform double buffering
++ * before switching to a new bloom filter.  This should be long enough to make
++ * sure that the new filter is ``primed'' before it is used, a few tens of 
++ * seconds should be enough.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_warmup_time(struct rtnl_qdisc *qdisc, int warmup_secs)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_warmup_time = warmup_secs;
++	sfb->qsb_mask |= SCH_SFB_ATTR_WARMUP;
++}
++
++/**
++ * Get warmup time of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Warmup time in seconds, or a negative error code.
++ */
++int rtnl_sfb_get_warmup_time(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_WARMUP)
++		return sfb->qsb_warmup_time;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the total packet limit of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg interval	The hard limit on the number of packets in all of sfb's
++ * aggregates (total qdisc limit).  Set it to some large value, it should never
++ * be reached anyway.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_limit(struct rtnl_qdisc *qdisc, int interval)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_limit = interval;
++	sfb->qsb_mask |= SCH_SFB_ATTR_REHASH;
++}
++
++/**
++ * Get rehash interval of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Limit in packets, or a negative error code.
++ */
++int rtnl_sfb_get_limit(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_REHASH)
++		return sfb->qsb_limit;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the target number of packets per aggregate of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg target_packets	the target per-flow queue size in packets.  sfb will
++ * try to keep each per-aggregate queue between 0 and target.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_target_packets(struct rtnl_qdisc *qdisc, int target_packets)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_target = target_packets;
++	sfb->qsb_mask |= SCH_SFB_ATTR_TARGET;
++}
++
++/**
++ * Get rehash interval of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Target packets per aggregate, or a negative error code.
++ */
++int rtnl_sfb_get_target_packets(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_TARGET)
++		return sfb->qsb_target;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the max packets per aggregate of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg max_packets	The maximum number of packets queued for a given
++ * aggregate.  It should be very slightly larger than target, in order to
++ * absorb transient bursts.  Setting this to more than roughly 1.5 times target
++ * will cause instabilities with which Blue is not designed to cope.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_max_packets(struct rtnl_qdisc *qdisc, int max_packets)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_max = max_packets;
++	sfb->qsb_mask |= SCH_SFB_ATTR_MAX;
++}
++
++/**
++ * Get max packets per aggregate of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Max packets, or a negative error code.
++ */
++int rtnl_sfb_get_max_packets(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_MAX)
++		return sfb->qsb_max;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the underflow increment of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg increment	16-bit fixed point integer that represents the value by
++ * which per-flow dropping probability is decreased on queue underflow.  This
++ * should be a small fraction of a percent, and increment should be a few times
++ * smaller than decrement.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_underflow_increment(struct rtnl_qdisc *qdisc, int increment)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_increment = increment;
++	sfb->qsb_mask |= SCH_SFB_ATTR_INCREMENT;
++}
++
++/**
++ * Get underflow increment of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Underflow increment in 16-bit fixed point, or a negative error code.
++ */
++int rtnl_sfb_get_underflow_increment(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_INCREMENT)
++		return sfb->qsb_increment;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the overflow decrement of SFB qdisc.
++ * 
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg decrement	16-bit fixed point integer that represents the value by
++ * which per-flow dropping probability is increased on queue overflow.  This
++ * should be a small fraction of a percent, and decrement should be a few times
++ * larger than increment.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_overflow_decrement(struct rtnl_qdisc *qdisc, int decrement)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_decrement = decrement;
++	sfb->qsb_mask |= SCH_SFB_ATTR_DECREMENT;
++}
++
++/**
++ * Get overflow decrement of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Overflow decrement in 16-bit fixed point, or a negative error code.
++ */
++int rtnl_sfb_get_overflow_decrement(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_DECREMENT)
++		return sfb->qsb_decrement;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the penalty rate of SFB qdisc.
++ *
++ * When a flow doesn't back off in response to congestion indication, sfb will
++ * categorise it as ``non-reactive'' and will rate-limit it.  
++ *
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg packets_per_sec	Total throughput that non-reactive flows are allowed to
++ * use in packets per second.  You should set penalty_rate to some reasonable
++ * fraction of your up-link throughput (the default values are probably too
++ * small).
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_penalty_rate(struct rtnl_qdisc *qdisc, int packets_per_sec)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_penalty_rate = packets_per_sec;
++	sfb->qsb_mask |= SCH_SFB_ATTR_PEN_RATE;
++}
++
++/**
++ * Get the penalty rate of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Penalty rate in packets per second, or a negative error code.
++ */
++int rtnl_sfb_get_penalty_rate(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_PEN_RATE)
++		return sfb->qsb_penalty_rate;
++	else
++		return -NLE_NOATTR;
++}
++
++/**
++ * Set the penalty burst of SFB qdisc.
++ *
++ * When a flow doesn't back off in response to congestion indication, sfb will
++ * categorise it as ``non-reactive'' and will rate-limit it.  
++ *
++ * @arg qdisc		SFB qdisc to be modified.
++ * @arg burst_packets   Number of packets in the token bucket for penalty rate
++ * limiting.
++ * @return 0 on success or a negative error code.
++ */
++void rtnl_sfb_set_penalty_burst(struct rtnl_qdisc *qdisc, int burst_packets)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	sfb->qsb_penalty_burst = burst_packets;
++	sfb->qsb_mask |= SCH_SFB_ATTR_PEN_BURST;
++}
++
++/**
++ * Get the penalty burst of SFB qdisc.
++ * @arg qdisc		SFB qdisc.
++ * @return Penalty burst size in packets, or a negative error code.
++ */
++int rtnl_sfb_get_penalty_burst(struct rtnl_qdisc *qdisc)
++{
++	struct rtnl_sfb *sfb;
++	
++	if (!(sfb = rtnl_tc_data(TC_CAST(qdisc))))
++		BUG();
++
++	if (sfb->qsb_mask & SCH_SFB_ATTR_PEN_RATE)
++		return sfb->qsb_penalty_burst;
++	else
++		return -NLE_NOATTR;
++}
++
++/** @} */
++
++static struct rtnl_tc_ops sfb_ops = {
++	.to_kind		= "sfb",
++	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_sfb),
++	.to_msg_parser		= sfb_msg_parser,
++	.to_dump = {
++	    [NL_DUMP_LINE]	= sfb_dump_line,
++	    [NL_DUMP_DETAILS]	= sfb_dump_details,
++	},
++	.to_msg_fill		= sfb_msg_fill,
++};
++
++static void __init sfb_init(void)
++{
++	rtnl_tc_register(&sfb_ops);
++}
++
++static void __exit sfb_exit(void)
++{
++	rtnl_tc_unregister(&sfb_ops);
++}
++
++/** @} */
+diff --git a/lib/route/qdisc/tbf.c b/lib/route/qdisc/tbf.c
+index 8a6c400..7c33382 100644
+--- a/lib/route/qdisc/tbf.c
++++ b/lib/route/qdisc/tbf.c
+@@ -54,13 +54,13 @@ static int tbf_msg_parser(struct rtnl_tc *tc, void *data)
+ 	
+ 		rtnl_copy_ratespec(&tbf->qt_rate, &opts.rate);
+ 		tbf->qt_rate_txtime = opts.buffer;
+-		bufsize = rtnl_tc_calc_bufsize(nl_ticks2us(opts.buffer),
++		bufsize = rtnl_tc_calc_bufsize(tbf->qt_rate_txtime,
+ 					       opts.rate.rate);
+ 		tbf->qt_rate_bucket = bufsize;
+ 
+ 		rtnl_copy_ratespec(&tbf->qt_peakrate, &opts.peakrate);
+ 		tbf->qt_peakrate_txtime = opts.mtu;
+-		bufsize = rtnl_tc_calc_bufsize(nl_ticks2us(opts.mtu),
++		bufsize = rtnl_tc_calc_bufsize(tbf->qt_peakrate_txtime,
+ 					       opts.peakrate.rate);
+ 		tbf->qt_peakrate_bucket = bufsize;
+ 
+@@ -135,7 +135,7 @@ static int tbf_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
+ 	struct rtnl_tbf *tbf = data;
+ 	int required = TBF_ATTR_RATE | TBF_ATTR_LIMIT;
+ 
+-	if (!(tbf->qt_mask & required) != required)
++	if ((tbf->qt_mask & required) != required)
+ 		return -NLE_MISSING_ATTR;
+ 
+ 	memset(&opts, 0, sizeof(opts));
+diff --git a/lib/route/tc.c b/lib/route/tc.c
+index 6826a05..0d48c6b 100644
+--- a/lib/route/tc.c
++++ b/lib/route/tc.c
+@@ -578,7 +578,7 @@ int rtnl_tc_calc_txtime(int bufsize, int rate)
+ 	
+ 	tx_time_secs = (double) bufsize / (double) rate;
+ 
+-	return tx_time_secs * 1000000.;
++	return nl_us2ticks(tx_time_secs * 1000000.);
+ }
+ 
+ /**
+@@ -601,7 +601,7 @@ int rtnl_tc_calc_bufsize(int txtime, int rate)
+ 
+ 	bufsize = (double) txtime * (double) rate;
+ 
+-	return bufsize / 1000000.;
++	return nl_ticks2us(bufsize / 1000000.);
+ }
+ 
+ /**

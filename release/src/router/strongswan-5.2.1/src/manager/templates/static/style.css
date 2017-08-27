@@ -1,0 +1,133 @@
+
+body {
+    font-family: Verdana, Helvetica, sans-serif;
+    font-size: .9em;
+    color: #230100;
+    background-color: #f7f4d3;
+    margin: 0;
+}
+
+.content {
+    text-align: center;
+}
+
+.content > * {
+    background-color: #e5bf5e;
+    border: solid 2px;
+    padding: .2em 1em .2em 1em;
+    margin: 1em;
+    text-align: left;
+}
+
+textarea, select, input {
+	background-color: #ffec9e;
+	border: 1px solid;
+	padding: 1px 3px 1px 3px;
+}
+
+.menu {
+	text-align: right;
+    background-color: #e5bf5e;
+    padding: 3px;
+    border-bottom: solid 2px;
+}
+
+a {
+	color: black;
+	text-decoration: none;
+}
+
+h1 {
+	margin-top: 1em;
+	
+}
+
+hr {
+	border: solid 1px;
+}
+
+a img {
+	border: none;
+}
+
+.expand {
+}
+
+.expand h1 {
+    font-size: 1em;
+    cursor: pointer;
+    margin: 0;
+    float: left;
+    padding-top: 3px;
+}
+
+.expand h1 span {
+	margin-left: 2em;
+	margin-right: 2em;
+}
+
+.expander {
+	clear:left;
+}
+
+.controls {
+	margin-top: 3px;
+	text-align: right;
+}
+
+.center {
+	text-align: center;
+}
+
+.left {
+	text-align: left;
+}
+
+.right {
+	text-align: right;
+}
+
+.highlight {
+}
+
+.fleft {
+	margin-right: 2em;
+	float: left;
+}
+
+.fright {
+	float: left;
+}
+
+.cleft {
+	clear:left;
+}
+
+.cright {
+	clear:right;
+}
+
+.both {
+	clear:both;
+}
+
+.drawing {
+    border-collapse:collapse
+}
+
+.drawing .images {
+	height: 100px;
+}
+
+.drawing .images td {
+    padding: 0px;
+    width: 100px;
+}
+
+.drawing tr .left {
+	text-align: left;
+}
+.drawing tr .right {
+	text-align: right;
+}
+

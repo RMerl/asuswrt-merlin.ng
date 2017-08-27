@@ -1,0 +1,52 @@
+<!-- ##### SECTION Title ##### -->
+GTlsFileDatabase
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTlsFileDatabase ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GTlsFileDatabase:anchors ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GTlsFileDatabaseInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+
+<!-- ##### FUNCTION g_tls_file_database_new ##### -->
+<para>
+
+</para>
+
+@anchors: 
+@error: 
+@Returns: 
+
+

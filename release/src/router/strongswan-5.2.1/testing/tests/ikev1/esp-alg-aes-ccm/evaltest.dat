@@ -1,0 +1,11 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 -s 120 -p deadbeef PH_IP_ALICE::128 bytes from PH_IP_ALICE: icmp_req=1::YES
+moon:: ipsec statusall 2> /dev/null::AES_CCM_12_128::YES
+carol::ipsec statusall 2> /dev/null::AES_CCM_12_128::YES
+carol::ip xfrm state::aead rfc4309(ccm(aes))::YES
+moon:: ip xfrm state::aead rfc4309(ccm(aes))::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP.*length 180::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP.*length 180::YES

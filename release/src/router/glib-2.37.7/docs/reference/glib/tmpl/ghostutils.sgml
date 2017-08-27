@@ -1,0 +1,67 @@
+<!-- ##### SECTION Title ##### -->
+Hostname Utilities
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_hostname_to_ascii ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hostname_to_unicode ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hostname_is_non_ascii ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hostname_is_ascii_encoded ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_hostname_is_ip_address ##### -->
+<para>
+
+</para>
+
+@hostname: 
+@Returns: 
+
+

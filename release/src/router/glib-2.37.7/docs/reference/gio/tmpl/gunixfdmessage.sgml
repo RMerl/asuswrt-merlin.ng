@@ -1,0 +1,83 @@
+<!-- ##### SECTION Title ##### -->
+GUnixFDMessage
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GUnixFDMessage ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GUnixFDMessage:fd-list ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_unix_fd_message_new_with_fd_list ##### -->
+<para>
+
+</para>
+
+@fd_list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_message_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_message_get_fd_list ##### -->
+<para>
+
+</para>
+
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_message_append_fd ##### -->
+<para>
+
+</para>
+
+@message: 
+@fd: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_fd_message_steal_fds ##### -->
+<para>
+
+</para>
+
+@message: 
+@length: 
+@Returns: 
+
+

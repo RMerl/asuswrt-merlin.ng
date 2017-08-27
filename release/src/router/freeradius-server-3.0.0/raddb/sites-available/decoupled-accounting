@@ -1,0 +1,140 @@
+# -*- text -*-
+######################################################################
+#
+#	This is a sample configuration for "decoupled" accounting.
+#	"Decoupled" accounting is where the accounting packets are
+#	NOT written "live" to the back-end database.  This method
+#	can only be used if you are not interested in "live"
+#	accounting.  i.e. Where you can tolerate delays that may be
+#	a few seconds, before accounting packets get written to
+#	the DB.
+#
+#	Oddly enough, this method can speed up the processing of
+#	accounting packets, as all database activity is serialized.
+#
+#	This file is NOT meant to be used as-is.  It needs to be
+#	edited to match your local configuration.
+#
+#	$Id$
+#
+######################################################################
+
+#  Define a virtual server to write the accounting packets.
+#  Any "listen" section that listens on an accounting port should
+#  set "virtual_server = write-detail.example.com
+server write_detail.example.com {
+	accounting {
+		#
+		#  Write the "detail" files.
+		#
+		#  See raddb/modules/detail.example.com for more info.
+		detail.example.com
+	}
+
+	# That's it!
+}
+
+#  Define a virtual server to process the accounting packets.
+server read-detail.example.com {
+	#  Read accounting packets from the detail file(s) for
+	#  the home server.
+	listen {
+		type = detail
+		filename = "${radacctdir}/detail.example.com/detail-*:*"
+		load_factor = 10
+	}
+
+	#  All packets read from the detail file are processed through
+	#  the preacct && accounting sections.
+	#
+	#  The following text is copied verbatim from sites-available/default.
+	#  You should edit it for your own local configuration.
+
+#
+#  Pre-accounting.  Decide which accounting type to use.
+#
+preacct {
+	preprocess
+
+	#
+	#  Ensure that we have a semi-unique identifier for every
+	#  request, and many NAS boxes are broken.
+	acct_unique
+
+	#
+	#  Look for IPASS-style 'realm/', and if not found, look for
+	#  '@realm', and decide whether or not to proxy, based on
+	#  that.
+	#
+	#  Accounting requests are generally proxied to the same
+	#  home server as authentication requests.
+#	IPASS
+	suffix
+#	ntdomain
+
+	#
+	#  Read the 'acct_users' file
+	files
+}
+
+#
+#  Accounting.  Log the accounting data.
+#
+accounting {
+	#
+	#  Create a 'detail'ed log of the packets.
+	#  Note that accounting requests which are proxied
+	#  are also logged in the detail file.
+	detail
+#	daily
+
+	#  Update the wtmp file
+	#
+	#  If you don't use "radlast", you can delete this line.
+	unix
+
+	#
+	#  For Simultaneous-Use tracking.
+	#
+	#  Due to packet losses in the network, the data here
+	#  may be incorrect.  There is little we can do about it.
+	radutmp
+#	sradutmp
+
+	#  Return an address to the IP Pool when we see a stop record.
+#	main_pool
+
+	#
+	#  Log traffic to an SQL database.
+	#
+	#  NOTE! You will have to ensure that any accounting packets
+	#  NOT handled by the SQL module (e.g. "stop with zero session length"
+	#  result in the accounting section still returning "ok".
+	#
+	#  Otherwise, the server will think that the accounting packet
+	#  was NOT handled properly, and will keep trying to process it
+	#  through this virtual server!
+	#
+	#  See "Accounting queries" in sql.conf
+#	sql
+
+	#
+	#  Instead of sending the query to the SQL server,
+	#  write it into a log file.
+	#
+#	sql_log
+
+	#  Cisco VoIP specific bulk accounting
+#	pgsql-voip
+
+	#  Filter attributes from the accounting response.
+	attr_filter.accounting_response
+
+	#
+	#  See "Autz-Type Status-Server" for how this works.
+	#
+#	Acct-Type Status-Server {
+#
+#	}
+}
+}

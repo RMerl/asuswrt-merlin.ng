@@ -1,0 +1,3 @@
+carol::iptables -D INPUT -i eth0 -s PH_IP_MOON -j DROP
+moon::ipsec stop
+carol::ipsec stop

@@ -1,0 +1,190 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+CFLAGS = -Wall -g
+EXTRA_ARGS=
+PROFILE_ARGS=
+
+# To enable debugging: export DEB_BUILD_OPTIONS="debug profiling threadoff"
+ifneq (,$(findstring profiling,$(DEB_BUILD_OPTIONS)))
+	PROFILE_ARGS= --with-gprof
+endif
+
+ifneq (,$(findstring backtrace,$(DEB_BUILD_OPTIONS)))
+	EXTRA_ARGS=--with-backtrace
+	BTCFLAGS=-rdynamic
+endif
+
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0 -ggdb  -D_GNU_SOURCE -MD -MP -Wl,--as-needed -Wall -ansi
+else
+	CFLAGS += -O2
+endif
+
+# shared library versions, option 1
+version=2.0.5
+major=2
+# option 2, assuming the library is created as src/.libs/libfoo.so.2.0.5 or so
+#version=`ls src/.libs/lib*.so.* | \
+# awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}'`
+#major=`ls src/.libs/lib*.so.* | \
+# awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
+
+PYVERS=$(shell pyversions -vr)
+
+build: build-c $(PYVERS:%=build-python%/build-stamp)
+install: build install-c $(PYVERS:%=install-python%)
+clean: clean-c $(PYVERS:%=clean-python%)
+
+### Python libraries build rules ###
+build-python%/configure-stamp:
+	dh_testdir
+
+	mkdir build-python$*
+	cd build-python$* && \
+	PYTHON=/usr/bin/python$* CFLAGS="$(BTCFLAGS) $(CFLAGS)" ../configure \
+		--host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) \
+		--srcdir=.. \
+		--prefix=/usr \
+		--includedir="/usr/include" \
+		--mandir="/usr/share/man" \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		$(EXTRA_ARGS) $(PROFILE_ARGS) \
+		--libexecdir="/usr/lib/libical"	\
+		--enable-python
+	touch $@
+
+build-python%/build-stamp: build-c build-python%/configure-stamp
+	dh_testdir
+
+	# Trick into using already built build-c libs so we don't end up
+	# building the same ical lib more than once.
+	find "build-python$*/src" -maxdepth 1 -mindepth 1 | grep -v python$$ | xargs -r -t rm -rf
+	find "build-c/src" -maxdepth 1 -mindepth 1 | grep -v python$$ | xargs -r -t -I{} ln -s "../../{}" "build-python$*/src"
+	
+	$(MAKE) -C build-python$*/src/python pyexecdir=/usr/lib/pymodules/python$*
+
+	touch $@
+
+install-python%: build-python%/build-stamp
+	dh_testdir
+	dh_testroot
+#	dh_clean -k 
+	dh_installdirs
+
+	# install with hack to move installed python libs to pymodule dir
+	$(MAKE) -C build-python$*/src/python install pyexecdir=/usr/lib/pymodules/python$* DESTDIR=$(CURDIR)/debian/tmp && \
+	mv -i $(CURDIR)/debian/tmp/usr/lib/python$*/*/* $(CURDIR)/debian/tmp/usr/lib/pymodules/python$*/
+
+clean-python%:
+#	mkdir -p build-python$* && cd build-python$*
+	dh_testdir
+#	dh_testroot
+	rm -rf build-python$*
+	dh_prep
+
+### C libraries build rules ###
+build-c/configure-stamp: configure
+#config.status: configure
+	dh_testdir
+
+ifneq "$(wildcard /usr/share/misc/config.sub)" ""
+	cp -f /usr/share/misc/config.sub config.sub
+endif
+ifneq "$(wildcard /usr/share/misc/config.guess)" ""
+	cp -f /usr/share/misc/config.guess config.guess
+endif
+
+	mkdir build-c
+	cd build-c && \
+	CFLAGS="$(BTCFLAGS) $(CFLAGS)" ../configure \
+		--host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) \
+		--prefix=/usr \
+		--includedir="/usr/include" \
+		--mandir="/usr/share/man" \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		$(EXTRA_ARGS) $(PROFILE_ARGS) \
+		--libexecdir="/usr/lib/libical"
+
+	touch $@
+
+build-c: build-c/build-stamp
+build-c/build-stamp:  build-c/configure-stamp
+	dh_testdir
+
+#	$(MAKE) clean
+	$(MAKE) -C build-c
+
+	touch $@
+
+clean-c:
+	dh_testdir
+	dh_testroot
+
+	rm -rf build-c
+
+	dh_prep
+
+install-c: build-c
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+
+	$(MAKE) -C build-c DESTDIR=$(CURDIR)/debian/tmp install
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs ChangeLog
+	dh_installdocs
+	dh_installexamples
+	dh_install -s --sourcedir=debian/tmp
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_perl
+	dh_pysupport
+#	dh_makeshlibs
+	dh_installdeb
+#	dh_shlibdeps
+	# We need to exclude dependency resolving for the python extension
+        # module because if libical0 is installed but libical-dev is not
+        # we get build errors.  The lib in /usr/lib will be found first
+        # but no .la will exist to get the dependency info from.  Is there
+        # a way to tell dh_shlibdeps to find the lib first in debian/tmp?
+	dh_shlibdeps -XLibicalWrap
+#	dh_shlibdeps -l$(CURDIR)/debian/tmp/usr/lib -- -v
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install 

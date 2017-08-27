@@ -1,0 +1,129 @@
+<!-- ##### SECTION Title ##### -->
+URI Functions
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO G_URI_RESERVED_CHARS_ALLOWED_IN_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_URI_RESERVED_CHARS_ALLOWED_IN_USERINFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_URI_RESERVED_CHARS_GENERIC_DELIMITERS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_uri_parse_scheme ##### -->
+<para>
+
+</para>
+
+@uri: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_uri_escape_string ##### -->
+<para>
+
+</para>
+
+@unescaped: 
+@reserved_chars_allowed: 
+@allow_utf8: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_uri_unescape_string ##### -->
+<para>
+
+</para>
+
+@escaped_string: 
+@illegal_characters: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_uri_unescape_segment ##### -->
+<para>
+
+</para>
+
+@escaped_string: 
+@escaped_string_end: 
+@illegal_characters: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_uri_list_extract_uris ##### -->
+<para>
+
+</para>
+
+@uri_list: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_from_uri ##### -->
+<para>
+
+</para>
+
+@uri: 
+@hostname: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_to_uri ##### -->
+<para>
+
+</para>
+
+@filename: 
+@hostname: 
+@error: 
+@Returns: 
+
+

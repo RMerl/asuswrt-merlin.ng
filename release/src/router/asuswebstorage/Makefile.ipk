@@ -1,0 +1,35 @@
+#***********************************************************************
+#
+# Makefile
+#
+#***********************************************************************
+
+CFLAGS =  -I$(LD_DIR)/include -I$(SRCBASE)/curl-7.21.7/include   -I$(SRCBASE)/libxml2/include  -I$(SRCBASE)/openssl-ipk/include -I$(SRCBASE)/libiconv-1.14/include
+CFLAGS += -DIPKG -D_FILE_OFFSET_BITS=64
+ 
+LDFLAGS =  -L$(SRCBASE)/curl-7.21.7/lib/.libs    -L$(SRCBASE)/libxml2/.libs  -L$(SRCBASE)/openssl-ipk -L$(SRCBASE)/zlib -I$(LD_DIR)/lib
+LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib
+
+LIBS = -lpthread -ldl -lm -L$(SRCBASE)/curl-7.21.7/lib/.libs -lcurl -L$(SRCBASE)/libxml2/.libs -lxml2 -L$(SRCBASE)/openssl-ipk -lssl -lcrypto -L$(SRCBASE)/zlib -lz  
+
+ifeq ($(OLEG_ARM_D),1)
+CFLAGS += -DOLEG_ARM
+endif
+ifeq ($(OLEG_MIPSEL_D),1)
+CFLAGS += -DOLEG_MIPSEL
+endif
+ifeq ($(I686_D),1)
+CFLAGS += -DI686
+endif
+ifeq ($(SMARTSYNCIPK_D),1)
+CFLAGS += -DSMARTSYNCIPK
+endif
+
+all: asuswebstorage
+asuswebstorage: asuswebstorage.o api.o function.o list.o mem_pool.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)  $^ -o $@ 
+
+
+.PHONY: clean
+clean:
+	-rm -rf *.o asuswebstorage

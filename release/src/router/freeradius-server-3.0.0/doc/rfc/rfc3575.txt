@@ -1,0 +1,451 @@
+
+
+
+
+
+
+Network Working Group                                           B. Aboba
+Request for Comments: 3575                                     Microsoft
+Updates: 2865                                                  July 2003
+Category: Standard Track
+
+
+                     IANA Considerations for RADIUS
+              (Remote Authentication Dial In User Service)
+
+Status of this Memo
+
+   This document specifies an Internet standards track protocol for the
+   Internet community, and requests discussion and suggestions for
+   improvements.  Please refer to the current edition of the "Internet
+   Official Protocol Standards" (STD 1) for the standardization state
+   and status of this protocol.  Distribution of this memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2003).  All Rights Reserved.
+
+Abstract
+
+   This document describes the IANA considerations for the Remote
+   Authentication Dial In User Service (RADIUS).
+
+   This document updates RFC 2865.
+
+1.  Introduction
+
+   This document provides guidance to the Internet Assigned Numbers
+   Authority (IANA) regarding registration of values related to the
+   Remote Authentication Dial In User Service (RADIUS), defined in
+   [RFC2865], in accordance with BCP 26, [RFC2434].  It also reserves
+   Packet Type Codes that are or have been in use on the Internet.
+
+1.1.  Specification of Requirements
+
+   In this document, several words are used to signify the requirements
+   of the specification.  These words are often capitalized.  The key
+   words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+   "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document
+   are to be interpreted as described in [RFC2119].
+
+
+
+
+
+
+
+
+Aboba                       Standards Track                     [Page 1]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+1.2.  Terminology
+
+   The following terms are used here with the meanings defined in BCP
+   26:  "name space", "assigned value", "registration".
+
+   The following policies are used here with the meanings defined in BCP
+   26: "Private Use", "First Come First Served", "Expert Review",
+   "Specification Required", "IESG Approval", "IETF Consensus",
+   "Standards Action".
+
+2.  IANA Considerations
+
+   There are three name spaces in RADIUS that require registration:
+   Packet Type Codes, Attribute Types, and Attribute Values (for certain
+   Attributes).  This document creates no new IANA registries, since a
+   RADIUS registry was created by [RFC2865].
+
+   RADIUS is not intended as a general-purpose protocol, and allocations
+   SHOULD NOT be made for purposes unrelated to Authentication,
+   Authorization or Accounting.
+
+2.1.  Recommended Registration Policies
+
+   For registration requests where a Designated Expert should be
+   consulted, the responsible IESG area director should appoint the
+   Designated Expert.  The intention is that any allocation will be
+   accompanied by a published RFC.  However, the Designated Expert can
+   approve allocations once it seems clear that an RFC will be
+   published, allowing for the allocation of values prior to the
+   document being approved for publication as an RFC.  The Designated
+   Expert will post a request to the AAA WG mailing list (or a successor
+   designated by the Area Director) for comment and review, including an
+   Internet-Draft.  Before a period of 30 days has passed, the
+   Designated Expert will either approve or deny the registration
+   request, publish a notice of the decision to the AAA WG mailing list
+   or its successor, and inform IANA of its decision.  A denial notice
+   must be justified by an explanation and, in the cases where it is
+   possible, concrete suggestions on how the request can be modified so
+   as to become acceptable.
+
+   Packet Type Codes have a range from 1 to 253.  RADIUS Type Codes 1-5
+   and 11-13 were allocated in [RFC2865], while Type Codes 40-45,
+   250-253 are allocated by this document.  Type Codes 250-253 are
+   allocated for Experimental Uses, and 254-255 are reserved.  Packet
+   Type Codes 6-10, 12-13, 21-34, 50-51 have no meaning defined by an
+   IETF RFC, but are reserved until a specification is provided for
+   them.  This is being done to avoid interoperability problems with
+   software that implements non-standard RADIUS extensions that are or
+
+
+
+Aboba                       Standards Track                     [Page 2]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+   have been in use on the Internet.  Because a new Packet Type has
+   considerable impact on interoperability, a new Packet Type Code
+   requires IESG Approval.  The intention is that any allocation will be
+   accompanied by a published RFC.  Type Codes 52-249 should be
+   allocated first; when these are exhausted, Type Codes 14-20, 35-39,
+   46-49 may be allocated.  For a list of Type Codes, see Appendix A.
+
+   Attribute Types have a range from 1 to 255, and are the scarcest
+   resource in RADIUS, thus must be allocated with care.  Attributes
+   1-53,55,60-88,90-91,94-100 have been allocated, with 17 and 21
+   available for re-use.  Attributes 17, 21, 54, 56-59, 89, 101-191 may
+   be allocated by IETF Consensus.  It is recommended that attributes 17
+   and 21 be used only after all others are exhausted.
+
+   Note that RADIUS defines a mechanism for Vendor-Specific extensions
+   (Attribute 26) for functions specific only to one vendor's
+   implementation of RADIUS, where no interoperability is deemed useful.
+   For functions specific only to one vendor's implementation of RADIUS,
+   the use of that should be encouraged instead of the allocation of
+   global attribute types.
+
+   As noted in [RFC2865]:
+
+      Attribute Type Values 192-223 are reserved for experimental use,
+      values 224-240 are reserved for implementation-specific use, and
+      values 241-255 are reserved and should not be used.
+
+   Therefore Attribute Type values 192-240 are considered Private Use,
+   and values 241-255 require Standards Action.
+
+   Certain attributes (for example, NAS-Port-Type) in RADIUS define a
+   list of values to correspond with various meanings.  There can be 4
+   billion (2^32) values for each attribute.  Additional values can be
+   allocated by the Designated Expert.  The exception to this policy is
+   the Service-Type attribute (6), whose values define new modes of
+   operation for RADIUS.  Values 1-16 of the Service-Type attribute have
+   been allocated.  Allocation of new Service-Type values are by IETF
+   Consensus.  The intention is that any allocation will be accompanied
+   by a published RFC.
+
+3.  References
+
+3.1.  Normative References
+
+   [RFC2119]      Bradner, S., "Key words for use in RFCs to Indicate
+                  Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+
+
+
+
+Aboba                       Standards Track                     [Page 3]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+   [RFC2434]      Narten, T. and H. Alvestrand, "Guidelines for Writing
+                  an IANA Considerations Section in RFCs", BCP 26, RFC
+                  2434, October 1998.
+
+   [RFC2865]      Rigney, C., Willens, S., Rubens, A. and W. Simpson,
+                  "Remote Authentication Dial In User Service (RADIUS)",
+                  RFC 2865, June 2000.
+
+3.2.  Informative References
+
+   [RFC2607]      Aboba, B. and J. Vollbrecht, "Proxy Chaining and
+                  Policy Implementation in Roaming", RFC 2607, June
+                  1999.
+
+   [RFC2866]      Rigney, C., "RADIUS Accounting", RFC 2866, June 2000.
+
+   [RFC2867]      Zorn, G., Aboba, B. and D. Mitton, "RADIUS Accounting
+                  Modifications for Tunnel Protocol Support", RFC 2867,
+                  June 2000.
+
+   [RFC2868]      Zorn, G., Leifer, D., Rubens, A., Shriver, J.,
+                  Holdrege, M. and I. Goyret, "RADIUS Attributes for
+                  Tunnel Protocol Support", RFC 2868, June 2000.
+
+   [RFC2869]      Rigney, C., Willats, W. and P. Calhoun, "RADIUS
+                  Extensions", RFC 2869, June 2000.
+
+   [RFC2869bis]   Aboba, B. and P. Calhoun, "RADIUS Support for
+                  Extensible Authentication Protocol (EAP)", Work in
+                  Progress.
+
+   [RFC2882]      Mitton, D., "Network Access Servers Requirements:
+                  Extended RADIUS Practices", RFC 2882, July 2000.
+
+   [RFC3162]      Aboba, B., Zorn, G. and D. Mitton, "RADIUS and IPv6",
+                  RFC 3162, August 2001.
+
+   [DynAuth]      Chiba, M., Dommety, G., Eklund, M., Mitton, D. and B.
+                  Aboba, "Dynamic Authorization Extensions to Remote
+                  Authentication Dial In User Service (RADIUS)", RFC
+                  3576, July 2003.
+
+4.  Security Considerations
+
+   The security considerations detailed in [RFC2434] are generally
+   applicable to this document.  Security considerations relating to the
+   RADIUS protocol are discussed in [RFC2607], [RFC2865], [RFC3162],
+   [DynAuth], and [RFC2869bis].
+
+
+
+Aboba                       Standards Track                     [Page 4]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+Appendix A - RADIUS Packet Types
+
+   A list of RADIUS Packet Type Codes is given below.  This document
+   instructs IANA to list them in the registry of Packet Type Codes.
+   Note that Type Codes 40-45, defined in [DynAuth], are being formally
+   allocated here.  Codes 40-45 were listed in [RFC2882] and have been
+   implemented and used.  Given their current widespread usage, these
+   assignments are not reclaimable in practice.
+
+   #        Message                      Reference
+   ----     -------------------------    ---------
+   1        Access-Request               [RFC2865]
+   2        Access-Accept                [RFC2865]
+   3        Access-Reject                [RFC2865]
+   4        Accounting-Request           [RFC2865]
+   5        Accounting-Response          [RFC2865]
+   6        Accounting-Status            [RFC2882]
+            (now Interim Accounting)
+   7        Password-Request             [RFC2882]
+   8        Password-Ack                 [RFC2882]
+   9        Password-Reject              [RFC2882]
+   10       Accounting-Message           [RFC2882]
+   11       Access-Challenge             [RFC2865]
+   12       Status-Server (experimental) [RFC2865]
+   13       Status-Client (experimental) [RFC2865]
+   21       Resource-Free-Request        [RFC2882]
+   22       Resource-Free-Response       [RFC2882]
+   23       Resource-Query-Request       [RFC2882]
+   24       Resource-Query-Response      [RFC2882]
+   25       Alternate-Resource-
+            Reclaim-Request              [RFC2882]
+   26       NAS-Reboot-Request           [RFC2882]
+   27       NAS-Reboot-Response          [RFC2882]
+   28       Reserved
+   29       Next-Passcode                [RFC2882]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aboba                       Standards Track                     [Page 5]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+   #        Message                      Reference
+   ----     -------------------------    ---------
+   30       New-Pin                      [RFC2882]
+   31       Terminate-Session            [RFC2882]
+   32       Password-Expired             [RFC2882]
+   33       Event-Request                [RFC2882]
+   34       Event-Response               [RFC2882]
+   40       Disconnect-Request           [DynAuth]
+   41       Disconnect-ACK               [DynAuth]
+   42       Disconnect-NAK               [DynAuth]
+   43       CoA-Request                  [DynAuth]
+   44       CoA-ACK                      [DynAuth]
+   45       CoA-NAK                      [DynAuth]
+   50       IP-Address-Allocate          [RFC2882]
+   51       IP-Address-Release           [RFC2882]
+   250-253  Experimental Use
+   254      Reserved
+   255      Reserved                     [RFC2865]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aboba                       Standards Track                     [Page 6]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+Intellectual Property Statement
+
+   The IETF takes no position regarding the validity or scope of any
+   intellectual property or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; neither does it represent that it
+   has made any effort to identify any such rights.  Information on the
+   IETF's procedures with respect to rights in standards-track and
+   standards- related documentation can be found in BCP-11.  Copies of
+   claims of rights made available for publication and any assurances of
+   licenses to be made available, or the result of an attempt made to
+   obtain a general license or permission for the use of such
+   proprietary rights by implementers or users of this specification can
+   be obtained from the IETF Secretariat.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights which may cover technology that may be required to practice
+   this standard.  Please address the information to the IETF Executive
+   Director.
+
+Acknowledgments
+
+   Thanks to Ignacio Goyret of Lucent, Allison Mankin of Lucent Bell
+   Labs, Thomas Narten of IBM, Glen Zorn and Harald Alvestrand of Cisco
+   for discussions relating to this document.
+
+Authors' Addresses
+
+   Bernard Aboba
+   Microsoft Corporation
+   One Microsoft Way
+   Redmond, WA 98052
+
+   EMail: bernarda@microsoft.com
+   Phone: +1 425 706 6605
+   Fax:   +1 425 936 7329
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aboba                       Standards Track                     [Page 7]
+
+RFC 3575             IANA Considerations for RADIUS            July 2003
+
+
+Full Copyright Statement
+
+   Copyright (C) The Internet Society (2003).  All Rights Reserved.
+
+   This document and translations of it may be copied and furnished to
+   others, and derivative works that comment on or otherwise explain it
+   or assist in its implementation may be prepared, copied, published
+   and distributed, in whole or in part, without restriction of any
+   kind, provided that the above copyright notice and this paragraph are
+   included on all such copies and derivative works.  However, this
+   document itself may not be modified in any way, such as by removing
+   the copyright notice or references to the Internet Society or other
+   Internet organizations, except as needed for the purpose of
+   developing Internet standards in which case the procedures for
+   copyrights defined in the Internet Standards process must be
+   followed, or as required to translate it into languages other than
+   English.
+
+   The limited permissions granted above are perpetual and will not be
+   revoked by the Internet Society or its successors or assignees.
+
+   This document and the information contained herein is provided on an
+   "AS IS" basis and THE INTERNET SOCIETY AND THE INTERNET ENGINEERING
+   TASK FORCE DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+   BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION
+   HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is currently provided by the
+   Internet Society.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aboba                       Standards Track                     [Page 8]
+

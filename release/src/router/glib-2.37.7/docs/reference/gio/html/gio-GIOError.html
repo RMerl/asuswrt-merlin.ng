@@ -1,0 +1,418 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GIOError</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="file_ops.html" title="File Operations">
+<link rel="prev" href="GFileEnumerator.html" title="GFileEnumerator">
+<link rel="next" href="GMountOperation.html" title="GMountOperation">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#gio-GIOError.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="file_ops.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFileEnumerator.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GMountOperation.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GIOError"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GIOError.top_of_page"></a>GIOError</span></h2>
+<p>GIOError — Error helper functions</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="gio-GIOError.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+#define             <a class="link" href="gio-GIOError.html#G-IO-ERROR:CAPS" title="G_IO_ERROR">G_IO_ERROR</a>
+enum                <a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum">GIOErrorEnum</a>;
+<a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>        <a class="link" href="gio-GIOError.html#g-io-error-from-errno" title="g_io_error_from_errno ()">g_io_error_from_errno</a>               (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> err_no</code></em>);
+<a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>        <a class="link" href="gio-GIOError.html#g-io-error-from-win32-error" title="g_io_error_from_win32_error ()">g_io_error_from_win32_error</a>         (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> error_code</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.description"></a><h2>Description</h2>
+<p>
+Contains helper functions for reporting errors to the user.
+</p>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="G-IO-ERROR:CAPS"></a><h3>G_IO_ERROR</h3>
+<pre class="programlisting">#define G_IO_ERROR g_io_error_quark()
+</pre>
+<p>
+Error domain for GIO. Errors in this domain will be from the <a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> enumeration.
+See <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for more information on error domains.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOErrorEnum"></a><h3>enum GIOErrorEnum</h3>
+<pre class="programlisting">typedef enum {
+  G_IO_ERROR_FAILED,
+  G_IO_ERROR_NOT_FOUND,
+  G_IO_ERROR_EXISTS,
+  G_IO_ERROR_IS_DIRECTORY,
+  G_IO_ERROR_NOT_DIRECTORY,
+  G_IO_ERROR_NOT_EMPTY,
+  G_IO_ERROR_NOT_REGULAR_FILE,
+  G_IO_ERROR_NOT_SYMBOLIC_LINK,
+  G_IO_ERROR_NOT_MOUNTABLE_FILE,
+  G_IO_ERROR_FILENAME_TOO_LONG,
+  G_IO_ERROR_INVALID_FILENAME,
+  G_IO_ERROR_TOO_MANY_LINKS,
+  G_IO_ERROR_NO_SPACE,
+  G_IO_ERROR_INVALID_ARGUMENT,
+  G_IO_ERROR_PERMISSION_DENIED,
+  G_IO_ERROR_NOT_SUPPORTED,
+  G_IO_ERROR_NOT_MOUNTED,
+  G_IO_ERROR_ALREADY_MOUNTED,
+  G_IO_ERROR_CLOSED,
+  G_IO_ERROR_CANCELLED,
+  G_IO_ERROR_PENDING,
+  G_IO_ERROR_READ_ONLY,
+  G_IO_ERROR_CANT_CREATE_BACKUP,
+  G_IO_ERROR_WRONG_ETAG,
+  G_IO_ERROR_TIMED_OUT,
+  G_IO_ERROR_WOULD_RECURSE,
+  G_IO_ERROR_BUSY,
+  G_IO_ERROR_WOULD_BLOCK,
+  G_IO_ERROR_HOST_NOT_FOUND,
+  G_IO_ERROR_WOULD_MERGE,
+  G_IO_ERROR_FAILED_HANDLED,
+  G_IO_ERROR_TOO_MANY_OPEN_FILES,
+  G_IO_ERROR_NOT_INITIALIZED,
+  G_IO_ERROR_ADDRESS_IN_USE,
+  G_IO_ERROR_PARTIAL_INPUT,
+  G_IO_ERROR_INVALID_DATA,
+  G_IO_ERROR_DBUS_ERROR,
+  G_IO_ERROR_HOST_UNREACHABLE,
+  G_IO_ERROR_NETWORK_UNREACHABLE,
+  G_IO_ERROR_CONNECTION_REFUSED,
+  G_IO_ERROR_PROXY_FAILED,
+  G_IO_ERROR_PROXY_AUTH_FAILED,
+  G_IO_ERROR_PROXY_NEED_AUTH,
+  G_IO_ERROR_PROXY_NOT_ALLOWED,
+  G_IO_ERROR_BROKEN_PIPE
+} GIOErrorEnum;
+</pre>
+<p>
+Error codes returned by GIO functions.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="G-IO-ERROR-FAILED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_FAILED</code></span></p></td>
+<td>Generic error condition for when any operation fails.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-FOUND:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_FOUND</code></span></p></td>
+<td>File not found.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-EXISTS:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_EXISTS</code></span></p></td>
+<td>File already exists.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-IS-DIRECTORY:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_IS_DIRECTORY</code></span></p></td>
+<td>File is a directory.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-DIRECTORY:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_DIRECTORY</code></span></p></td>
+<td>File is not a directory.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-EMPTY:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_EMPTY</code></span></p></td>
+<td>File is a directory that isn't empty.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-REGULAR-FILE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_REGULAR_FILE</code></span></p></td>
+<td>File is not a regular file.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-SYMBOLIC-LINK:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_SYMBOLIC_LINK</code></span></p></td>
+<td>File is not a symbolic link.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-MOUNTABLE-FILE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_MOUNTABLE_FILE</code></span></p></td>
+<td>File cannot be mounted.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-FILENAME-TOO-LONG:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_FILENAME_TOO_LONG</code></span></p></td>
+<td>Filename is too many characters.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-INVALID-FILENAME:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_INVALID_FILENAME</code></span></p></td>
+<td>Filename is invalid or contains invalid characters.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-TOO-MANY-LINKS:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_TOO_MANY_LINKS</code></span></p></td>
+<td>File contains too many symbolic links.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NO-SPACE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NO_SPACE</code></span></p></td>
+<td>No space left on drive.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-INVALID-ARGUMENT:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_INVALID_ARGUMENT</code></span></p></td>
+<td>Invalid argument.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PERMISSION-DENIED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PERMISSION_DENIED</code></span></p></td>
+<td>Permission denied.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-SUPPORTED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_SUPPORTED</code></span></p></td>
+<td>Operation not supported for the current backend.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-MOUNTED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_MOUNTED</code></span></p></td>
+<td>File isn't mounted.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-ALREADY-MOUNTED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_ALREADY_MOUNTED</code></span></p></td>
+<td>File is already mounted.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-CLOSED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_CLOSED</code></span></p></td>
+<td>File was closed.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-CANCELLED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_CANCELLED</code></span></p></td>
+<td>Operation was cancelled. See <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PENDING:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PENDING</code></span></p></td>
+<td>Operations are still pending.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-READ-ONLY:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_READ_ONLY</code></span></p></td>
+<td>File is read only.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-CANT-CREATE-BACKUP:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_CANT_CREATE_BACKUP</code></span></p></td>
+<td>Backup couldn't be created.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-WRONG-ETAG:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_WRONG_ETAG</code></span></p></td>
+<td>File's Entity Tag was incorrect.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-TIMED-OUT:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_TIMED_OUT</code></span></p></td>
+<td>Operation timed out.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-WOULD-RECURSE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_WOULD_RECURSE</code></span></p></td>
+<td>Operation would be recursive.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-BUSY:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_BUSY</code></span></p></td>
+<td>File is busy.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-WOULD-BLOCK:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></span></p></td>
+<td>Operation would block.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-HOST-NOT-FOUND:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_HOST_NOT_FOUND</code></span></p></td>
+<td>Host couldn't be found (remote operations).
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-WOULD-MERGE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_WOULD_MERGE</code></span></p></td>
+<td>Operation would merge files.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-FAILED-HANDLED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_FAILED_HANDLED</code></span></p></td>
+<td>Operation failed and a helper program has
+    already interacted with the user. Do not display any error dialog.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-TOO-MANY-OPEN-FILES:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_TOO_MANY_OPEN_FILES</code></span></p></td>
+<td>The current process has too many files
+    open and can't open any more. Duplicate descriptors do count toward
+    this limit. Since 2.20
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NOT-INITIALIZED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NOT_INITIALIZED</code></span></p></td>
+<td>The object has not been initialized. Since 2.22
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-ADDRESS-IN-USE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_ADDRESS_IN_USE</code></span></p></td>
+<td>The requested address is already in use. Since 2.22
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PARTIAL-INPUT:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PARTIAL_INPUT</code></span></p></td>
+<td>Need more input to finish operation. Since 2.24
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-INVALID-DATA:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_INVALID_DATA</code></span></p></td>
+<td>The input data was invalid. Since 2.24
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-DBUS-ERROR:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_DBUS_ERROR</code></span></p></td>
+<td>A remote object generated an error that
+    doesn't correspond to a locally registered <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error
+    domain. Use <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a> to extract the D-Bus
+    error name and <a class="link" href="gio-GDBusError.html#g-dbus-error-strip-remote-error" title="g_dbus_error_strip_remote_error ()"><code class="function">g_dbus_error_strip_remote_error()</code></a> to fix up the
+    message so it matches what was received on the wire. Since 2.26.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-HOST-UNREACHABLE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_HOST_UNREACHABLE</code></span></p></td>
+<td>Host unreachable. Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-NETWORK-UNREACHABLE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_NETWORK_UNREACHABLE</code></span></p></td>
+<td>Network unreachable. Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-CONNECTION-REFUSED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_CONNECTION_REFUSED</code></span></p></td>
+<td>Connection refused. Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PROXY-FAILED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PROXY_FAILED</code></span></p></td>
+<td>Connection to proxy server failed. Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PROXY-AUTH-FAILED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PROXY_AUTH_FAILED</code></span></p></td>
+<td>Proxy authentication failed. Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PROXY-NEED-AUTH:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PROXY_NEED_AUTH</code></span></p></td>
+<td>Proxy server needs authentication. Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-PROXY-NOT-ALLOWED:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_PROXY_NOT_ALLOWED</code></span></p></td>
+<td>Proxy connection is not allowed by ruleset.
+    Since 2.26
+</td>
+</tr>
+<tr>
+<td><p><a name="G-IO-ERROR-BROKEN-PIPE:CAPS"></a><span class="term"><code class="literal">G_IO_ERROR_BROKEN_PIPE</code></span></p></td>
+<td>Broken pipe. Since 2.36
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-error-from-errno"></a><h3>g_io_error_from_errno ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>        g_io_error_from_errno               (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> err_no</code></em>);</pre>
+<p>
+Converts errno.h error codes into GIO error codes.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>err_no</code></em> :</span></p></td>
+<td>Error number as defined in errno.h.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> value for the given errno.h error number.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-error-from-win32-error"></a><h3>g_io_error_from_win32_error ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>        g_io_error_from_win32_error         (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> error_code</code></em>);</pre>
+<p>
+Converts some common error codes into GIO error codes. The
+fallback value G_IO_ERROR_FAILED is returned for error codes not
+handled.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error_code</code></em> :</span></p></td>
+<td>Windows error number.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> value for the given error number.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.26</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

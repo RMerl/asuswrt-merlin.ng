@@ -1,0 +1,76 @@
+# This is a LDAPv3 schema for RADIUS attributes.
+# Tested on Sun One Directory server 5.2
+# Created by Daniel Wilson (danielwilson_2k@yahoo.com)
+##############
+dn: cn=schema
+objectClass: top
+objectClass: ldapSubentry
+objectClass: subschema
+cn: schema
+#######################
+# aci to ensure that the standard schema attributes are visible to
+# all LDAP clients (anonymous access).
+#
+aci: (target="ldap:///cn=schema")(targetattr !="aci")(version 3.0;acl "anonymous, no acis"; allow (read, search, compare) userdn = "ldap:///anyone";
+#######################
+objectClasses: ( 1.3.6.1.4.1.3317.4.3.2.1 NAME 'radiusprofile' SUP top AUXILIARY DESC 'Free Radius schema for Directory Server 5.2' MUST (cn) MAY ( radiusArapFeatures $ radiusArapSecurity $ radiusArapZoneAccess $ radiusAuthType $ radiusCallbackId $ radiusCallbackNumber $ radiusCalledStationId $ radiusCallingStationId $ radiusClass $ radiusClientIPAddress $ radiusFilterId $ radiusFramedAppleTalkLink $ radiusFramedAppleTalkNetwork $ radiusFramedAppleTalkZone $ radiusFramedCompression $ radiusFramedIPAddress $ radiusFramedIPNetmask $ radiusFramedIPXNetwork $ radiusFramedMTU $ radiusFramedProtocol $ radiusCheckItem $ radiusReplyItem $ radiusFramedRoute $ radiusFramedRouting $ radiusIdleTimeout $ radiusGroupName $ radiusHint $ radiusHuntgroupName $ radiusLoginIPHost $ radiusLoginLATGroup $ radiusLoginLATNode $ radiusLoginLATPort $ radiusLoginLATService $ radiusLoginService $ radiusLoginTCPPort $ radiusLoginTime $ radiusPasswordRetry $ radiusPortLimit $ radiusPrompt $ radiusProxyToRealm $ radiusRealm $ radiusReplicateToRealm $ radiusServiceType $ radiusSessionTimeout $ radiusStripUserName $ radiusTerminationAction $ radiusTunnelClientEndpoint $ radiusProfileDn $ radiusSimultaneousUse $ radiusTunnelAssignmentId $ radiusTunnelMediumType $ radiusTunnelPassword $ radiusTunnelPreference $ radiusTunnelPrivateGroupId $ radiusTunnelServerEndpoint $ radiusTunnelType $ radiusUserCategory $ radiusVSA $ radiusExpiration $ dialupAccess) X-ORIGIN 'user defined')
+attributeTypes: ( 1.3.6.1.4.1.3317.4.3.1.1 NAME 'radiusArapFeatures' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined')
+attributeTypes: ( 1.3.6.1.4.1.3317.4.3.1.2 NAME 'radiusArapSecurity' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined')
+attributeTypes: ( 1.3.6.1.4.1.3317.4.3.1.3 NAME 'radiusArapZoneAccess' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined')
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.44 NAME 'radiusAuthType' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.4 NAME 'radiusCallbackId' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.5 NAME 'radiusCallbackNumber' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.6 NAME 'radiusCalledStationId' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.7 NAME 'radiusCallingStationId' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.8 NAME 'radiusClass' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.45 NAME 'radiusClientIPAddress' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.9 NAME 'radiusFilterId' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.10 NAME 'radiusFramedAppleTalkLink' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.11 NAME 'radiusFramedAppleTalkNetwork' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.12 NAME 'radiusFramedAppleTalkZone' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.13 NAME 'radiusFramedCompression' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.14 NAME 'radiusFramedIPAddress' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.15 NAME 'radiusFramedIPNetmask' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.16 NAME 'radiusFramedIPXNetwork' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.17 NAME 'radiusFramedMTU' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.18 NAME 'radiusFramedProtocol' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.19 NAME 'radiusFramedRoute' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.20 NAME 'radiusFramedRouting' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.46 NAME 'radiusGroupName' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.47 NAME 'radiusHint' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.48 NAME 'radiusHuntgroupName' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.21 NAME 'radiusIdleTimeout' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.22 NAME 'radiusLoginIPHost' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.23 NAME 'radiusLoginLATGroup' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.24 NAME 'radiusLoginLATNode' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.25 NAME 'radiusLoginLATPort' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.26 NAME 'radiusLoginLATService' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.27 NAME 'radiusLoginService' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.28 NAME 'radiusLoginTCPPort' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.29 NAME 'radiusPasswordRetry' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.30 NAME 'radiusPortLimit' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.49 NAME 'radiusProfileDn' DESC '' EQUALITY distinguishedNameMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.31 NAME 'radiusPrompt' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.50 NAME 'radiusProxyToRealm' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.51 NAME 'radiusReplicateToRealm' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.52 NAME 'radiusRealm' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.32 NAME 'radiusServiceType' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.33 NAME 'radiusSessionTimeout' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.34 NAME 'radiusTerminationAction' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.35 NAME 'radiusTunnelAssignmentId' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.36 NAME 'radiusTunnelMediumType' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.37 NAME 'radiusTunnelPassword' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.38 NAME 'radiusTunnelPreference' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.39 NAME 'radiusTunnelPrivateGroupId' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.40 NAME 'radiusTunnelServerEndpoint' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.41 NAME 'radiusTunnelType' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.42 NAME 'radiusVSA' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.43 NAME 'radiusTunnelClientEndpoint' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.53 NAME 'radiusSimultaneousUse' DESC '' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.54 NAME 'radiusLoginTime' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.55 NAME 'radiusUserCategory' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.56 NAME 'radiusStripUserName' DESC '' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.57 NAME 'dialupAccess' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.58 NAME 'radiusExpiration' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE X-ORIGIN 'user defined' )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.59 NAME 'radiusCheckItem' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes:  ( 1.3.6.1.4.1.3317.4.3.1.60 NAME 'radiusReplyItem' DESC '' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )

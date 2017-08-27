@@ -1,0 +1,113 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_expr 5 "5 February 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_expr \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_expr\fP module allows the server to perform
+limited mathematical calculations.  This module is not called
+directly in any section, it is invoked through the dynamic expansion
+of strings.
+.PP
+For example, some NAS boxes send a NAS-Port attribute
+which is a 32-bit number composed of port, card, and interface, all in
+different bytes.  To see these attributes split into pieces, you can
+have an entry in the 'users' file like:
+
+.DS
+DEFAULT
+.br
+    Vendor-Interface = `%{expr: %{NAS-Port} / (256 * 256)}`,
+.br
+    Vendor-Card = `%{expr: (%{NAS-Port} / 256) %% 256}`,
+.br
+    Vendor-Port = `%{expr: %{NAS-Port} %% 256}`
+.br
+
+.DE
+where the attributes Vendor-Interface, Vendor-Card, and Vendor-Port
+are attributes created by either you or a vendor-supplied
+dictionary.
+
+The methematical operators supported by the expression module are:
+.TP
+.B +
+addition
+.TP
+.B -
+subtraction
+.TP
+.B /
+division
+.TP
+.B %%
+modulo remainder
+.TP
+.B *
+multiplication
+.TP
+.B &
+boolean AND
+.TP
+.B |
+boolean OR
+.TP
+.B ()
+grouping of sub-expressions
+.PP
+NOTE: The modulo remainder operator is '%%', and not '%'.  This
+is due to the '%' character being used as a special character for
+dynamic translation.
+.PP
+NOTE: These operators do NOT have precedence.  The parsing
+of the input string, and the calculation of the answer, is done
+strictly left to right.  If you wish to order the expressions, you
+MUST group them into sub-expression, as shown in the previous
+example.
+.PP
+All of the calculations are performed as unsigned 32-bit integers.
+.DE
+.SH CONFIGURATION
+.DS
+modules {
+  ...
+.br
+  expr {
+.br
+  }
+.br
+  ...
+.br
+}
+.br
+ ...
+.br
+instantiate {
+  ...
+.br
+  expr
+  ...
+.br
+}
+.SH SECTIONS
+.BR instantiate
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Chris Parker, cparker@segv.org
+

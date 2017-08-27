@@ -1,0 +1,13 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+# The expiration module. This handles the Expiration attribute
+# It should be included in the *end* of the authorize section
+# in order to handle user Expiration. It should also be included
+# in the instantiate section in order to register the Expiration
+# compare function
+#
+expiration {
+}

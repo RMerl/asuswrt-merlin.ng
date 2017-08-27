@@ -1,0 +1,10 @@
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+sun::service charon start 2> /dev/null
+moon::service charon start 2> /dev/null
+moon::sleep 1
+sun::swanctl --load-creds 2> /dev/null
+moon::swanctl --load-creds 2> /dev/null
+sun::swanctl --load-conns 2> /dev/null
+moon::swanctl --load-conns 2> /dev/null
+alice::ping -c 3 10.2.0.10

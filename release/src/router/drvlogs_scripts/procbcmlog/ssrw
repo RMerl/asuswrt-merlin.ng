@@ -1,0 +1,28 @@
+#!/bin/sh
+
+usage()
+{
+  echo "Usage: $0 [-d dev] <b/h/w> <hexaddr> <count> <val>: Read/Write memory on SPI slave device. \nUse -d option to specify device number. If not specified, first SPI slave device will be used."
+  exit 1
+}
+
+if [ $# -eq 0 ] ; then
+  usage
+else
+  dev=0
+  if [ $1 = "-d" ] ;
+  then
+       dev=$2 
+       shift 2
+  fi
+
+  if [ $# -ne 4 -a $# -ne 3 ]  ; then
+     usage
+  fi
+
+  if [ ! -n "$4" ] ; then
+     echo u $dev $2 $1 $3 > /proc/bcmlog
+  else
+     echo u $dev $2 $1 $3 $4 > /proc/bcmlog
+  fi
+fi

@@ -1,0 +1,41 @@
+COMPANY ID LIST
+---------------
+
+Many SMBus chips have a company ID at location 0x3E or 0xFE.
+
+Here is a partial list.
+This may help identify a chip after doing a 'i2cdump [bus] [address]'.
+
+0x01	National Semiconductor
+0x12C3	Asus (at 0x4F)
+0x1934	Fintek (at 0x5D-0x5E)
+0x23	Analog Devices (old products) or Fintek
+0x41	Analog Devices (new products)
+0x49	TI
+0x4D	Maxim
+0x54	On Semi
+0x5C	SMSC
+0x5D 	SMSC
+0x55	SMSC
+0x5CA3	Winbond (at 0x4F)
+0x61	Andigilog
+0x90	ITE (at 0x58)
+0xA1	Philips
+0xA3	Winbond (at 0x4F)
+0xC3	Asus (at 0x4F)
+0xDA	Dallas
+
+[A-Z]{3} at 0x00-0x02: Fujitsu-Siemens
+
+
+Jedec JC 42.4 compliant temperature sensors provide the manufacturer ID
+in 16-bit register 0x06. Known manufacturer IDs are as follows.
+
+0x001F	Atmel
+0x004D	Maxim
+0x0054	Microchip
+0x00B3	IDT
+0x104A	ST Microelectronics
+0x1131	NXP (Philips)
+0x11D4	Analog Devices
+0x1B09	ON Semiconductor

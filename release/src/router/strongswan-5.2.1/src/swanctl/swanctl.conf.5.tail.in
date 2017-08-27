@@ -1,0 +1,10 @@
+.SH FILES
+.
+.nf
+.na
+/etc/swanctl/swanctl.conf       configuration file
+.ad
+.fi
+.
+.SH SEE ALSO
+.BR swanctl (8)

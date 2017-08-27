@@ -1,0 +1,71 @@
+/* lws_config.h  Generated from lws_config.h.in  */
+
+#ifndef NDEBUG
+	#ifndef _DEBUG
+		#define _DEBUG
+	#endif
+#endif
+
+/* Define to 1 to use wolfSSL/CyaSSL as a replacement for OpenSSL.
+ * LWS_OPENSSL_SUPPORT needs to be set also for this to work. */
+#cmakedefine USE_WOLFSSL
+
+/* Also define to 1 (in addition to USE_WOLFSSL) when using the
+  (older) CyaSSL library */
+#cmakedefine USE_OLD_CYASSL
+
+/* The Libwebsocket version */
+#cmakedefine LWS_LIBRARY_VERSION "${LWS_LIBRARY_VERSION}"
+
+#define LWS_LIBRARY_VERSION_MAJOR ${LWS_LIBRARY_VERSION_MAJOR}
+#define LWS_LIBRARY_VERSION_MINOR ${LWS_LIBRARY_VERSION_MINOR}
+#define LWS_LIBRARY_VERSION_PATCH ${LWS_LIBRARY_VERSION_PATCH}
+/* LWS_LIBRARY_VERSION_NUMBER looks like 1005001 for e.g. version 1.5.1 */
+#define LWS_LIBRARY_VERSION_NUMBER (LWS_LIBRARY_VERSION_MAJOR*1000000)+(LWS_LIBRARY_VERSION_MINOR*1000)+LWS_LIBRARY_VERSION_PATCH
+
+/* The current git commit hash that we're building from */
+#cmakedefine LWS_BUILD_HASH "${LWS_BUILD_HASH}"
+
+/* Build with OpenSSL support */
+#cmakedefine LWS_OPENSSL_SUPPORT
+
+/* The client should load and trust CA root certs it finds in the OS */
+#cmakedefine LWS_SSL_CLIENT_USE_OS_CA_CERTS
+
+/* Sets the path where the client certs should be installed. */
+#cmakedefine LWS_OPENSSL_CLIENT_CERTS "${LWS_OPENSSL_CLIENT_CERTS}"
+
+/* Turn off websocket extensions */
+#cmakedefine LWS_NO_EXTENSIONS
+
+/* Enable libev io loop */
+#cmakedefine LWS_USE_LIBEV
+
+/* Build with support for ipv6 */
+#cmakedefine LWS_USE_IPV6
+
+/* Build with support for HTTP2 */
+#cmakedefine LWS_USE_HTTP2
+
+/* Turn on latency measuring code */
+#cmakedefine LWS_LATENCY
+
+/* Don't build the daemonizeation api */
+#cmakedefine LWS_NO_DAEMONIZE
+
+/* Build without server support */
+#cmakedefine LWS_NO_SERVER
+
+/* Build without client support */
+#cmakedefine LWS_NO_CLIENT
+
+/* If we should compile with MinGW support */
+#cmakedefine LWS_MINGW_SUPPORT
+
+/* Use the BSD getifaddrs that comes with libwebsocket, for uclibc support */
+#cmakedefine LWS_BUILTIN_GETIFADDRS
+
+/* use SHA1() not internal libwebsockets_SHA1 */
+#cmakedefine LWS_SHA1_USE_OPENSSL_NAME
+
+${LWS_SIZEOFPTR_CODE}

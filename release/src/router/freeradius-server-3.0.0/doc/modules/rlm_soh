@@ -1,0 +1,183 @@
+== Intro ==
+
+This release adds support for Microsoft Statement-of-Health (SoH), which is
+a form of network access protection.
+
+Client supprot is present in Windows XP SP3, Vista and 7.
+
+SoH data can come in from several places:
+
+ * inside EAP-PEAP packets for 802.1x wireless/wired connections
+ * inside a radius packet (Microsoft VSA #55, MS-Quarantine-SOH) - VPN and
+   terminal services gateways can act as the radius client
+ * inside a DHCP request, in vendor-specific options
+
+FreeRadius supports all three types. The SoH statement is decoded into
+radius-style attributes, and you can write a policy in "unlang" to act
+on them, and permit, restrict or deny network access.
+
+== PEAP support ==
+
+SoH support in peap is enabled in eap.conf using config like so:
+
+ eap {
+  peap {
+   soh = yes
+   soh_virtual_server = "soh-server"
+  }
+ }
+
+When SoH is enabled, an EAP-PEAP client will be challenged to provide an
+SoH statement after providing it's identity (or resuming a PEAP session via
+SSL session resumption). Clients which do not support PEAP will NAK the
+request, and clients which do will answer it.
+
+The client reply will be written into a fake radius request and sent to the
+virtual server specified above; it will either look like:
+
+ SoH-Supported = no
+
+...or (from a Vista machine):
+
+ SoH-Supported = yes
+ SoH-MS-Machine-OS-vendor = Microsoft
+ SoH-MS-Machine-OS-version = 6
+ SoH-MS-Machine-OS-release = 0
+ SoH-MS-Machine-OS-build = 6001
+ SoH-MS-Machine-SP-version = 1
+ SoH-MS-Machine-SP-release = 0
+ SoH-MS-Machine-Processor = x86_64
+ SoH-MS-Machine-Name = "netbios.example.com"
+ SoH-MS-Correlation-Id = 0x54468936cb494374b127a6a3cc3bb11c01ca78d858ee1ef0
+ SoH-MS-Machine-Role = client
+ SoH-MS-Windows-Health-Status = "firewall ok snoozed=0 microsoft=1 up2date=1 enabled=1"
+ SoH-MS-Windows-Health-Status = "antivirus error not-installed"
+ SoH-MS-Windows-Health-Status = "antispyware ok snoozed=0 microsoft=1 up2date=1 enabled=1"
+ SoH-MS-Windows-Health-Status = "auto-updates ok action=install"
+ SoH-MS-Windows-Health-Status = "security-updates warn some-missing"
+
+If you have "copy_request_to_tunnel = yes" set on the peap module, the
+request variables like NAS-IP-Address and so on will be copied to the fake
+request as well.
+
+Clients without SoH seem to just NAK the SoH request and continue with the inner
+EAP auth. This has been tested as working with Windows XP SP2 and lower, Linux
+clients using NetworkManager & wpa_supplicant, MacOS 10.5, Nokia/Symbian S60 and
+iPhone OS 3.x. It should therefore be safe to deploy.
+
+== Radius support ==
+
+If you are running a Microsoft VPN or Terminal Services Gateway, these can
+be configured to send the SoH data to an upstream radius server, in this
+case presumably FreeRadius. To take advantage of this you will need to add
+the "soh" module to the "authorize" section of your virtual server, like so:
+
+server tsgateway {
+  preprocess
+  soh
+  if () {
+    ... policy goes here
+  }
+}
+
+The SoH module simply looks for the Microsoft VSA #55 and decodes the SoH
+data, adding the SoH attributes to the request - see above for an example
+of the available attributes.
+
+The SoH module also does dynamic expansions - see below for more info.
+
+== DHCP support ==
+
+If you compile FreeRadius with DHCP support, the "soh" module can challenge
+a DHCP client for SoH data in the DHCPOFFER packet. As with normal radius,
+the SoH attributes are added to the request. You would use like so:
+
+server dhcp {
+  dhcp DHCP-Discover {
+    soh
+    # note - no SoH attributes are added here, the client hasn't sent them yet
+
+    # other DHCP config
+  }
+
+  dhcp DHCP-Request {
+    soh
+    if () {
+      # SoH policy
+    }
+    # other DHCP config
+  }
+}
+
+== soh module ==
+
+The "soh" module decodes the radius & DHCP payloads. It also makes some dynamic
+variables available, for example:
+
+authorize {
+  soh
+  update request {
+    Tmp-String-0 = "%{soh:OS}"
+  }
+}
+
+...will give you a string like "Windows Vista 6.1.100 sp 1.0" or "Windows XP 5.x.x sp 3.0"
+
+At the moment, this is the only dynamic expansion; in future, we will make
+various bits of info available, for example non-Microsoft SoH records (see below)
+
+== Non-microsoft SoH data ==
+
+The Windows SoH structure is extensible and, in principle, clients can be
+extended with .dll plugins to add vendor-specific info to the SoH, which
+can then be checked on the server.
+
+At the present time, few plugins are known and I have seen none, so can't
+add support for them.
+
+== Client configuration ==
+
+The code works fine with Win XP SP3 & Vista on both wired & wireless. However
+contrary to what some sites claim, the NAP service is disabled by default, as
+are the many NAP remediation agents. These can be enabled from the command prompt
+with (for XP; instructions may differ for other windows versions):
+
+ sc config napagent start= auto
+ sc start napagent
+
+ # optionally for wired 802.1x; the dot3svc should usually be made dependent
+ # on the napagent service, else the machine might attempt 802.1x before NAP
+ # has started...
+
+ sc config dot3svc start= auto depend= napagent
+ sc start dot3svc
+
+ # enable the EAP agent
+ netsh nap client show config
+
+ # get the "ID" value for the "EAP Quarantine Enforcement Client"
+ netsh nap client set enforce id=$ID admin=enable
+
+ # repeat for DHCP, VPN or Terminal Services agents
+
+This can be automated via Group Policy.
+
+You then need to enable EAP, PEAP, Quarantine Checks & the relevant auth method
+on the relevant adapters. This can be done with "netsh xml profiles" or Group
+Policy - google for the relevant terms, or see the MS article:
+
+ http://technet.microsoft.com/en-us/library/bb726965.aspx
+
+...and related links.
+
+== TODO ==
+
+Currently the code does not support sending the final SoH reply. This
+is because the SoH reply (see section 2.2.9 of MS-SOH version
+v20091104) needs various fields formatted in a manner which is not
+obvious to me, and I don't currently have access to a windows NAP
+server to look at a working example. The clients I have access don't
+seem to mind.
+
+ Phil Mayers <p.mayers@imperial.ac.uk>
+ December 2009

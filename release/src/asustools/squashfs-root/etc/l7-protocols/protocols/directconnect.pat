@@ -1,0 +1,2 @@
+directconnect
+^(\$mynick |\$lock |\$key )

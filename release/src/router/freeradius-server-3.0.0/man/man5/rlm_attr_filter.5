@@ -1,0 +1,145 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_attr_filter 5 "27 June 2013" "" "FreeRADIUS Module"
+.SH NAME
+rlm_attr_filter \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_attr_filter\fP module exists for filtering certain
+attributes and values in received ( or transmitted ) radius packets.
+It gives the server a flexible framework to filter the attributes we
+send to or receive from home servers or NASes.  This makes sense, for
+example, in an out-sourced dialup situation to various policy
+decisions, such as restricting a client to certain ranges of
+Idle-Timeout or Session-Timeout.
+.PP
+Filter rules are normally defined and applied on a per-realm basis,
+where the realm is anything that is defined and matched based on the
+configuration of the \fIrlm_realm\fP module.  Filter rules can
+optionally be applied using another attribute, by editing the
+\fIkey\fP configuration for this module.
+.PP
+In 2.0.1 and earlier versions, the "accounting" section filtered the
+Accounting-Request, even though it was documented as filtering the
+response.  This issue has been fixed in version 2.0.2 and later
+versions.  The "preacct" section may now be used to filter
+Accounting-Request packets.  The "accounting" section now filters
+Accounting-Response packets.  Administrators using "attr_filter" in
+the "accounting" section SHOULD move the reference to "attr_filter"
+from "accounting" to "preacct".
+.PP
+The file that defines the attribute filtering rules follows a similar
+syntax to the \fIusers\fP file.  There are a few differences however:
+.PP
+.DS
+    There are no check-items allowed other than the name of the key.
+.PP
+    There can only be a single DEFAULT entry.
+.PP
+The rules for each entry are parsed to top to bottom, and an
+attribute must pass *all* the rules which affect it in order to
+make it past the filter.  Order of the rules is important.
+The operators and their purpose in defining the rules are as
+follows:
+.TP
+.B =   
+THIS OPERATOR IS NOT ALLOWED.  If used, and warning message is
+printed and it is treated as ==
+.TP
+.B :=  
+Set, this attribute and value will always be placed in the
+output A/V Pairs.  If the attribute exists, it is overwritten.
+.TP
+.B  ==  
+Equal, value must match exactly.
+.TP
+.B  =*  
+Always Equal, allow all values for the specified attribute.
+.TP
+.B    !*  
+Never Equal, disallow all values for the specified attribute.
+( This is redundant, as any A/V Pair not explicitly permitted
+will be dropped ).
+.TP
+.B    !=  
+Not Equal, value must not match.
+.TP
+.B    >=  
+Greater Than or Equal
+.TP
+.B    <=  
+Less Than or Equal
+.TP
+.B    >   
+Greater Than
+.TP
+.B    <   
+Less Than
+.PP
+If regular expressions are enabled the following operators are
+also possible.  ( Regular Expressions are included by default
+unless your system doesn't support them, which should be rare ).
+The value field uses standard regular expression syntax.
+.PP
+.TP
+.B    =~  
+Regular Expression Equal
+.TP
+.B    !~  
+Regular Expression Not Equal
+.PP
+See the default \fI/etc/raddb/attrs\fP for working examples of
+sample rule ordering and how to use the different operators.
+.DE
+.PP
+The configuration items are:
+.IP file
+This specifies the location of the file used to load the filter rules.
+This file is used to filter the accounting response, packet before it
+is proxied, proxy response from the home server, or our response to
+the NAS.
+.IP key
+Usually %{Realm} (the default).  Can also be %{User-Name}, or other
+attribute that exists in the request.  Note that the module always
+keys off of attributes in the request, and NOT in any other packet.
+.IP relaxed
+If set to 'yes', then attributes which do not match any filter rules
+explicitly, will also be allowed. This behaviour may be overridden 
+for an individual filter block using the Relax-Filter check item.
+The default for this configuration item is 'no'.
+.PP
+.SH SECTIONS
+.IP preacct
+Filters Accounting-Request packets.
+.IP accounting
+Filters Accounting-Response packets.
+.IP pre-proxy
+Filters Accounting-Request or Access-Request packets prior to proxying
+them.
+.IP post-proxy
+Filters Accounting-Response, Access-Accept, Access-Reject, or
+Access-Challenge responses from a home server.
+.IP authorize
+Filters Access-Request packets.
+.IP post-auth
+Filters Access-Accept or Access-Reject packets.
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.I /etc/raddb/filter/*
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Chris Parker, cparker@segv.org
+

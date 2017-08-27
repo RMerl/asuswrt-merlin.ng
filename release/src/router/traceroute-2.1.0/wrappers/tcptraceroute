@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+#   Copyright (c)  2007             Dmitry Butskoy
+#                                   <buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#  Shell wrapper providing tcptraceroute(8) command line interface.
+#
+#  The original implementation of tcptraceroute(8) can be obtained
+#  from http://michael.toren.net/code/tcptraceroute/
+#
+
+opts="-T -O info"
+length=""
+prgname=$0
+
+
+usage () {
+    echo "Usage: $prgname [-hvnFSAE] [-i dev] [-f furst_ttl] [-l length]
+	[-q nqueries] [-t tos] [-m max_ttl] [-p src_port] [-s src_addr]
+	[-w wait_time]  host  [dest_port]  [length]" >&2
+}
+
+
+PARSED=`getopt 'hvdnNi:l:f:Fm:p:q:w:s:t:SAE' "$@"`
+[ $? != 0 ] && exit 2
+
+eval set -- "$PARSED"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+	-[dnF])  opts="$opts $1"; shift ;;
+	-N)  shift ;;
+	-[ifmqwst])  opts="$opts $1 $2"; shift 2 ;;
+	-l)  length=$2; shift 2 ;;
+	-p)  opts="$opts --sport=$2"; shift 2 ;;
+	-S)  opts="$opts -O syn"; shift ;;
+	-A)  opts="$opts -O ack"; shift ;;
+	-E)  opts="$opts -O ecn"; shift ;;
+	-h)  usage ; exit 0 ;;
+	-v)  echo "\"tcptraceroute\"-compatible wrapper for new Linux Traceroute" >&2;
+	     exit 0 ;;
+	--)  shift; break ;;
+	*)  echo "$prgname: Internal parsing error" >&2; exit 2 ;;
+    esac
+done
+
+[ $# -eq 0 ] && {
+    usage
+    exit 2
+}
+
+host=$1
+shift
+
+[ $# -gt 0 ] && {
+    opts="$opts -p $1"
+    shift
+}
+
+[ $# -gt 0 ] && {
+    length=$1
+    shift
+}
+
+
+#  Say to the people it is actually another program...
+echo "Running:
+	traceroute $opts $host $length" >&2
+
+
+exec traceroute $opts $host $length
+

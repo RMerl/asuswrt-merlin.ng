@@ -1,0 +1,77 @@
+#
+#  Configuration for the OTP module.
+#
+
+#  This module allows you to use various handheld OTP tokens
+#  for authentication (Auth-Type := otp).  These tokens are
+#  available from various vendors.
+#
+#  It works in conjunction with otpd, which implements token
+#  management and OTP verification functions; and lsmd or gsmd,
+#  which implements synchronous state management functions.
+#  otpd, lsmd and gsmd are available from TRI-D Systems:
+#              <http://www.tri-dsystems.com/>
+
+#  You must list this module in BOTH the authorize and authenticate
+#  sections in order to use it.
+otp {
+	# otpd rendezvous point.
+	# (default: /var/run/otpd/socket)
+	#otpd_rp = /var/run/otpd/socket
+
+	# Text to use for the challenge.
+	# Default "Challenge: %{reply:OTP-Challenge}\n Response: "
+
+	challenge_prompt = "Challenge: %{reply:OTP-Challenge} \n Response: "
+
+	# Length of the challenge.  Most tokens probably support a
+	# max of 8 digits.  (range: 5-32 digits, default 6)
+	#challenge_length = 6
+
+	# Maximum time, in seconds, that a challenge is valid.
+	# (The user must respond to a challenge within this time.)
+	# It is also the minimal time between consecutive async mode
+	# authentications, a necessary restriction due to an inherent
+	# weakness of the RADIUS protocol which allows replay attacks.
+	# (default: 30)
+	#challenge_delay = 30
+
+	# Whether or not to allow asynchronous ("pure" challenge/
+	# response) mode authentication.  Since sync mode is much more
+	# usable, and all reasonable tokens support it, the typical
+	# use of async mode is to allow re-sync of event based tokens.
+	# But because of the vulnerability of async mode with some tokens,
+	# you probably want to disable this and require that out-of-sync
+	# users re-sync from specifically secured terminals.
+	# See the otpd docs for more info.
+	# (default: no)
+	#allow_async = no
+
+	# Whether or not to allow synchronous mode authentication.
+	# When using otpd with lsmd, it is *CRITICALLY IMPORTANT*
+	# that if your OTP users can authenticate to multiple RADIUS
+	# servers, this must be "yes" for the primary/default server,
+	# and "no" for the others.  This is because lsmd does not
+	# share state information across multiple servers.  Using "yes"
+	# on all your RADIUS servers would allow replay attacks!
+	# Also, for event based tokens, the user will be out of sync
+	# on the "other" servers.  In order to use "yes" on all your
+	# servers, you must either use gsmd, which synchronises state
+	# globally, or implement your own state synchronisation method.
+	# (default: yes)
+	#allow_sync = yes
+
+	# If both allow_async and allow_sync are "yes", a challenge is
+	# always presented to the user.  This is incompatible with NAS
+	# that can't present or don't handle Access-Challenge's, e.g.
+	# PPTP servers.  Even though a challenge is presented, the user
+	# can still enter their synchronous passcode.
+
+	# The following are MPPE settings.  Note that MS-CHAP (v1) is
+	# strongly discouraged.  All possible values are listed as
+	# {value = meaning}.  Default values are first.
+	#mschapv2_mppe = {2 = required, 1 = optional, 0 = forbidden}
+	#mschapv2_mppe_bits = {2 = 128, 1 = 128 or 40, 0 = 40}
+	#mschap_mppe = {2 = required, 1 = optional, 0 = forbidden}
+	#mschap_mppe_bits = {2 = 128}
+}

@@ -1,0 +1,85 @@
+<!-- ##### SECTION Title ##### -->
+GSocketAddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocketAddress ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GSocketAddress:family ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GSocketFamily ##### -->
+<para>
+
+</para>
+
+@G_SOCKET_FAMILY_INVALID: 
+@G_SOCKET_FAMILY_UNIX: 
+@G_SOCKET_FAMILY_IPV4: 
+@G_SOCKET_FAMILY_IPV6: 
+
+<!-- ##### FUNCTION g_socket_address_new_from_native ##### -->
+<para>
+
+</para>
+
+@native: 
+@len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_address_get_family ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_address_to_native ##### -->
+<para>
+
+</para>
+
+@address: 
+@dest: 
+@destlen: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_address_get_native_size ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+

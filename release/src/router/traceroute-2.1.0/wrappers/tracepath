@@ -1,0 +1,63 @@
+#!/bin/sh
+#
+#   Copyright (c)  2008             Dmitry Butskoy
+#                                   <buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#  Shell wrapper providing tracepath(1) or tracepath6(1) command line interface.
+#
+#  The original implementation of tracepath/tracepath6 can be obtained
+#  from the iputils package, available at http://www.skbuff.net/iputils/
+#
+
+opts="-q1 --mtu --back"
+port=44444
+prgname=$0
+length=""
+
+
+usage () {
+    echo "Usage: $prgname [-nbh] [ -l pktlen ] host[/port]" >&2
+}
+
+
+PARSED=`getopt 'hnbl:' "$@"`
+[ $? != 0 ] && exit 2
+
+eval set -- "$PARSED"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+	-n)  opts="$opts $1"; shift ;;
+	-b)  shift ;;
+	-l)  length=$2; shift 2 ;;
+	-h)  usage ; exit 0 ;;
+	--)  shift; break ;;
+	*)  echo "$prgname: Internal parsing error" >&2; exit 2 ;;
+    esac
+done
+
+[ $# -eq 0 ] && {
+    usage
+    exit 2
+}
+
+host=$1
+case "$host" in
+    */*) port=${host##*/}
+	 host=${host%/*}
+	 ;;
+esac
+
+
+case "$prgname" in
+    *6)  opts="$opts -6" ;;
+esac
+
+exec traceroute $opts -p $port $host $length
+

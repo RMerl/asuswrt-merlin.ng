@@ -1,0 +1,46 @@
+# -*- text -*-
+#
+#  $Id$
+
+# Realm module, for proxying.
+#
+#  You can have multiple instances of the realm module to
+#  support multiple realm syntaxes at the same time.  The
+#  search order is defined by the order that the modules are listed
+#  in the authorize and preacct sections.
+#
+#  Four config options:
+#	format	 -  must be "prefix" or "suffix"
+#			  The special cases of "DEFAULT"
+#			  and "NULL" are allowed, too.
+#	delimiter      -  must be a single character
+
+#  'realm/username'
+#
+#  Using this entry, IPASS users have their realm set to "IPASS".
+realm IPASS {
+	format = prefix
+	delimiter = "/"
+}
+
+#  'username@realm'
+#
+realm suffix {
+	format = suffix
+	delimiter = "@"
+}
+
+#  'username%realm'
+#
+realm realmpercent {
+	format = suffix
+	delimiter = "%"
+}
+
+#
+#  'domain\user'
+#
+realm ntdomain {
+	format = prefix
+	delimiter = "\\"
+}

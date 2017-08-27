@@ -1,0 +1,777 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH unlang 5 "16 July 2013" "" "FreeRADIUS Processing un-language"
+.SH NAME
+unlang \- FreeRADIUS Processing un\-language
+.SH DESCRIPTION
+FreeRADIUS supports a simple processing language in its configuration
+files.  We call it an "un-language" because the intention is NOT to
+create yet another programming language.  If you need something more
+complicated than what is described here, we suggest using the Perl or
+Python modules rlm_perl, or rlm_python.
+
+The goal of the language is to allow simple policies to be written
+with minimal effort.  Those policies are then applied when a request
+is being processed.  Requests are processed through virtual servers
+(including the default one), in the sections titled "authorize",
+"authenticate", "post-auth", "preacct", "accounting", "pre-proxy",
+"post-proxy", and "session".
+
+These policies cannot be used in any other part of the configuration
+files, such as module or client configuration.
+.SH KEYWORDS
+The keywords for the language are a combination of pre-defined
+keywords, and references to loadable module names.  We document only
+the pre-defined keywords here.
+
+Subject to a few limitations described below, any keyword can appear
+in any context.  The language consists of a series of entries, each
+one one line.  Each entry begins with a keyword.  Entries are
+organized into lists.  Processing of the language is line by line,
+from the start of the list to the end.  Actions are executed
+per-keyword.
+.IP module-name
+A reference to the named module.  When processing reaches this point,
+the pre-compiled module is called.  The module may succeed or fail,
+and will return a status to "unlang" if so.  This status can be tested
+in a condition.  See the "Simple Conditions" text in the CONDITIONS
+section, and MODULE RETURN CODES, below.
+
+.DS
+	chap  # call the CHAP module
+.br
+	sql   # call the SQL module
+.br
+	...
+.DE
+.IP if
+.br
+Checks for a particular condition.  If true, the block after the
+condition is processed.  Otherwise, the block is ignored.  See
+CONDITIONS, below, for documentation on the format of the conditions.
+
+.DS
+	if (condition) {
+.br
+		...
+.br
+	}
+.DE
+.IP else
+.br
+Define a block to be executed only if the previous "if" condition
+returned false.
+
+.DS
+	else {
+.br
+		...
+.br
+	}
+.DE
+.IP elsif
+.br
+Define a block to be executed only if the previous "if" condition
+returned false, and if the specified condition evaluates to true.
+
+.DS
+	elsif (condition) {
+.br
+		...
+.br
+	}
+.DE
+.IP foreach
+.br
+Loops over a named variable, running the block for each copy of the
+named variable.  The return value of the block is the return value of
+the last statement executed.  The loop can be exited early by using
+the "break" keyword.  Unlike other languages, "break" here means "exit
+the loop at the next iteration", not "exit the loop now".  The result
+is that any statements after the "break" keyword will still be
+executed.  We recommend using "break" only when it is the last
+statement in a "foreach" block.
+
+The attribute name is just the name, e.g. reply:Reply-Message, with
+none of the usual variable referenced %{...}.  This is because it is a
+reference to the attribute, and not an expansion of the attribute.
+
+Inside of the "foreach" block, the attribute which is being looped
+over can be referenced as "Foreach-Variable-#".  Where "#" is the
+depth of the loop, starting at "0".  e.g. "Foreach-Variable-0".  The
+loops can be nested up to eight (8) deep, though this is not
+recommended.
+
+.DS
+	foreach Attribute-Name {
+.br
+		...
+.br
+	}
+.DE
+.IP switch
+.br
+Evaluate the given string, and choose the first matching "case"
+statement inside of the current block.  If the string is surrounded by
+double quotes, it is expanded as described in the DATA TYPES section,
+below.
+
+No statement other than "case" can appear in a "switch" block.
+
+.DS
+	switch "string" {
+.br
+		...
+.br
+	}
+.DE
+.IP case
+.br
+Define a static string to match a parent "switch" statement.  The
+strings given here are not expanded as is done with the parent
+"switch" statement.
+
+A "case" statement cannot appear outside of a "switch" block.
+
+.DS
+	case string {
+.br
+		...
+.br
+	}
+.DE
+
+A default entry can be defined by omitting the static string.  This
+entry will be used if no other "case" entry matches.  Only one default
+entry can exist in a "switch" section.
+
+.DS
+	case {
+.br
+		...
+.br
+	}
+.DE
+.IP update
+.br
+Update a particular attribute list, based on the attributes given in
+the current block.
+
+.DS
+	update <list> {
+.br
+		attribute = value
+.br
+		...
+.br
+	}
+.DE
+
+The <list> can be one of "request", "reply", "proxy-request",
+"proxy-reply", "coa", "disconnect", or "control".  As of Version 3,
+the <list> can be omitted, in which case "request" is assumed.
+
+The "control" list is the list of attributes maintainted internally by
+the server that controls how the server processes the request.  Any
+attribute that does not go in a packet on the network will generally
+be placed in the "control" list.
+
+For EAP methods with tunneled authentication sessions (i.e. PEAP and
+EAP-TTLS), the inner tunnel session can also reference
+"outer.request", "outer.reply", and "outer.control".  Those references
+allow you to address the relevant list in the outer tunnel session.
+
+The "coa" and "disconnect" sections can only be used when the server
+receives an Access-Request or Accounting-Request.  Use "request" and
+"reply" instead of "coa" when the server receives a CoA-Request or
+Disconnect-Request packet.
+
+Adding one or more attributes to either of the "coa" or "disconnect"
+list causes server to originate a CoA-Request or Disconnect-Request
+packet.  That packet is sent when the current Access-Request or
+Accounting-Request has been finished, and a reply sent to the NAS.
+See raddb/sites-available/originate-coa for additional information.
+
+The only contents permitted in an "update" section are attributes and
+values.  The contents of the "update" section are described in the
+ATTRIBUTES section below.
+.IP redundant
+This section contains a simple list of modules.  The first module is
+called when the section is being processed.  If the first module
+succeeds in its operation, then the server stops processing the
+section, and returns to the parent section.
+
+If, however, the module fails, then the next module in the list is
+tried, as described above.  The processing continues until one module
+succeeds, or until the list has been exhausted.
+
+Redundant sections can contain only a list of modules, and cannot
+contain keywords that perform conditional operations (if, else, etc)
+or update an attribute list.
+
+.DS
+	redundant {
+.br
+		sql1	# try this
+.br
+		sql2	# try this only if sql1 fails.
+.br
+		...
+.br
+	}
+.DE
+.IP load-balance
+This section contains a simple list of modules.  When the section is
+entered, one module is chosen at random to process the request.  All
+of the modules in the list should be the same type (e.g. ldap or sql).
+All of the modules in the list should behave identically, otherwise
+the load-balance section will return different results for the same
+request.
+
+Load-balance sections can contain only a list of modules, and cannot
+contain keywords that perform conditional operations (if, else, etc)
+or update an attribute list.
+
+.DS
+	load-balance {
+.br
+		ldap1	# 50% of requests go here
+.br
+		ldap2	# 50% of requests go here
+.br
+	}
+.DE
+
+In general, we recommend using "redundant-load-balance" instead of
+"load-balance".
+.IP redundant-load-balance
+This section contains a simple list of modules.  When the section is
+entered, one module is chosen at random to process the request.  If
+that module succeeds, then the server stops processing the section.
+If, however, the module fails, then one of the remaining modules is
+chosen at random to process the request.  This process repeats until
+one module succeeds, or until the list has been exhausted.
+
+All of the modules in the list should be the same type (e.g. ldap or
+sql).  All of the modules in the list should behave identically,
+otherwise the load-balance section will return different results for
+the same request.
+
+Load-balance sections can contain only a list of modules, and cannot
+contain keywords that perform conditional operations (if, else, etc)
+or update an attribute list.
+
+.DS
+	redundant-load-balance {
+.br
+		ldap1	# 50%, unless ldap2 is down, then 100%
+.br
+		ldap2	# 50%, unless ldap1 is down, then 100%
+.br
+	}
+.DE
+.SH CONDITIONS
+The conditions are similar to C conditions in syntax, though
+quoted strings are supported, as with the Unix shell.
+.IP Simple
+conditions
+.br
+.DS
+	(foo)
+.DE
+
+Evalutes to true if 'foo' is a non-empty string (single quotes, double
+quotes, or back-quoted).  Also evaluates to true if 'foo' is a
+non-zero number.  Note that the language is poorly typed, so the
+string "0000" can be interpreted as a numerical zero.  This issue can
+be avoided by comparings strings to an empty string, rather than by
+evaluating the string by itself.
+
+If the word 'foo' is not a quoted string, then it can be taken as a
+reference to a named attribute.  See "Referencing attribute lists",
+below, for examples of attribute references.  The condition evaluates
+to true if the named attribute exists.
+
+Otherwise, if the word 'foo' is not a quoted string, and is not an
+attribute reference, then it is interpreted as a reference to a module
+return code.  The condition evaluates to true if the most recent
+module return code matches the name given here.  Valid module return
+codes are given in MODULE RETURN CODES, below.
+.IP Negation
+.DS
+	(!foo)
+.DE
+
+Evalutes to true if 'foo' evaluates to false, and vice-versa.
+.PP
+Short-circuit operators
+.RS
+.br
+.DS
+	(foo || bar)
+.br
+	(foo && bar)
+.DE
+
+"&&" and "||" are short-circuit operators.  "&&" evaluates the first
+condition, and evaluates the second condition if and only if the
+result of the first condition is true.  "||" is similar, but executes
+the second command if and only if the result of the first condition is
+false.
+.RE
+.IP Comparisons
+.DS
+	(foo == bar)
+.DE
+
+Compares 'foo' to 'bar', and evaluates to true if the comparison holds
+true.  Valid comparison operators are "==", "!=", "<", "<=", ">",
+">=", "=~", and "!~", all with their usual meanings.  Invalid
+comparison operators are ":=" and "=".
+.RE
+.IP Attribute Comparisons
+.DS
+	(User-Name == "foo")
+.DE
+
+Compares the value of the User-Name attribute to the string 'foo', and
+evaluates to true if the comparison holds true.  The comparison is
+done by printing the attribute to a string, and then doing a string
+comparison of the two sides of the condition.
+.RE
+.IP Inter-Attribute Comparisons
+.DS
+	(User-Name == &Filter-Id)
+.DE
+
+Compares the value of the User-Name attribute to the contents of the
+Filter-Id attribute, and evaluates to true if the comparison holds
+true.  Unlike the previous example, this comparison is done in a
+type-safe way.  For example, comparing the IP addresses 1.2.3.4 and
+127.0.0.1 as strings will return different results than comparing them
+as IP addresses.
+
+The "&" character in the condition means that the comparison "refers"
+to the Filter-Id attribute.  If left off, it means that the User-Name
+attribute is compared to the literal string "Filter-Id".
+
+Where the left-hand side is an attribute, the "&" can be omitted.
+However, it is allowed for completeness.  e.g. The comparison
+"(&User-Name == &Filter-Id)" is equivalent to the example above.
+.RE
+.IP Casts
+.DS
+	(<type>foo == bar)
+.DE
+
+The left-hand-side of a condition can be "cast" to a specific data
+type.  The data type must be one which is valid for the dictionaries.
+e.g. "integer", "ipaddr", etc.
+
+The comparison is performed in a type-safe way, as with
+"Inter-Attribute Comparisons", above.  Both sides of the condition are
+parsed into temporary attributes, and the attributes compared via
+type-specific methods.  The temporary attributes have no other effect,
+and are not saved anywhere.
+
+Casting allows conditions to perform type-specific comparisons.  In
+previous versions of the server, the data would have to be manually
+placed into an intermediate attribute (or attributes), and then the
+attribute (or attributes) compared.  The use of a cast allows for
+simpler policies.
+
+Casts are allowed only on the left-hand side argument of a condition.
+.PP
+Conditions may be nested to any depth, subject only to line length
+limitations (8192 bytes).
+.SH DATA TYPES
+There are only a few data types supported in the language.  Reference
+to attributes, numbers, and strings.  Any data type can appear in
+stand-alone condition, in which case they are evaluated as described
+in "Simple conditions", above.  They can also appear (with some
+exceptions noted below) on the left-hand or on the right-hand side of
+a comparison.
+.IP numbers
+Numbers are composed of decimal digits.  Floating point, hex, and
+octal numbers are not supported.  The maximum value for a number is
+machine-dependent, but is usually 32-bits, including one bit for a
+sign value.
+.PP
+word
+.RS
+Text that is not enclosed in quotes is interpreted differently
+depending on where it occurs in a condition.  On the left hand side of
+a condition, it is interpreted as a reference to an attribute.  On the
+right hand side, it is interpreted as a simple string, in the same
+manner as a single-quoted string.
+
+Using attribute references permits limited type-specific comparisons,
+as seen in the examples below.
+
+.DS
+	if (User-Name == "bob") {
+.br
+		...
+.br
+	if (Framed-IP-Address > 127.0.0.1) {
+.br
+		...
+.br
+	if (Service-Type == Login-User) { 
+.DE
+.RE
+.IP """strings"""
+.RS
+Double-quoted strings are expanded by inserting the value of any
+variables (see VARIABLES, below) before being evaluated.  If
+the result is a number it is evaluated in a numerical context.
+
+String length is limited by line-length, usually about 8000
+characters.  A double quote character can be used in a string via
+the normal back-slash escaping method.  ("like \\"this\\" !")
+.RE
+.IP 'strings'
+Single-quoted strings are evaluated as-is.  Their values are not
+expanded as with double-quoted strings above, and they are not
+interpreted as attribute references.
+.IP `strings`
+Back-quoted strings are evaluated by expanding the contents of the
+string, as described above for double-quoted strings.  The resulting
+command given inside of the string in a sub-shell, and taking the
+output as a string.  This behavior is much the same as that of Unix
+shells.
+
+Note that for security reasons, the input string is split into command
+and arguments before variable expansion is done.
+
+For performance reasons, we suggest that the use of back-quoted
+strings be kept to a minimum.  Executing external programs is
+relatively expensive, and executing a large number of programs for
+every request can quickly use all of the CPU time in a server.  If you
+believe that you need to execute many programs, we suggest finding
+alternative ways to achieve the same result.  In some cases, using a
+real language may be sufficient.
+.IP /regex/i
+These strings are valid only on the right-hand side of a comparison,
+and then only when the comparison operator is "=~" or "!~".  They are
+regular expressions, as implemented by the local regular expression
+library on the system.  This is usually Posix regular expressions.
+
+The trailing 'i' is optional, and indicates that the regular
+expression match should be done in a case-insensitive fashion.
+
+If the comparison operator is "=~", then parantheses in the regular
+expression will define variables containing the matching text, as
+described below in the VARIABLES section.
+.SH VARIABLES
+Run-time variables are referenced using the following syntax
+
+.DS
+	%{Variable-Name}
+.DE
+
+Note that unlike C, there is no way to declare variables, or to refer
+to them outside of a string context.  All references to variables MUST
+be contained inside of a double-quoted or back-quoted string.
+
+Many potential variables are defined in the dictionaries that
+accompany the server.  These definitions define only the name and
+type, and do not define the value of the variable.  When the server
+receives a packet, it uses the packet contents to look up entries in
+the dictionary, and instantiates variables with a name taken from the
+dictionaries, and a value taken from the packet contents.  This
+process means that if a variable does not exist, it is usually because
+it was not mentioned in a packet that the server received.
+
+Once the variable is instantiated, it is added to an appropriate
+attribute list, as described below.  In many cases, attributes and
+variables are inter-changeble, and are often talked about that way.
+However, variables can also refer to run-time calls to modules, which
+may perform operations like SQL SELECTs, and which may return the
+result as the value of the variable.
+.PP
+Referencing attribute lists
+.RS
+Attribute lists may be referenced via the following syntax
+
+.DS
+	%{<list>:Attribute-Name}
+.DE
+
+Where <list> is one of "request", "reply", "control", "proxy-request",
+"proxy-reply", or "outer.request", "outer.reply", "outer.control",
+"outer.proxy-request", or "outer.proxy-reply". just as with the
+"update" section, above.  The "<list>:" prefix is optional, and if
+omitted, is assumed to refer to the "request" list.
+
+When a variable is encountered, the given list is examined for an
+attribute of the given name.  If found, the variable reference in the
+string is replaced with the value of that attribute.  Some examples are:
+
+.DS
+	%{User-Name}
+.br
+	%{request:User-Name} # same as above
+.br
+	%{reply:User-Name}
+.br
+	%{outer.request:User-Name} # from inside of a TTLS/PEAP tunnel
+.DE
+.RE
+.PP
+Results of regular expression matches
+.RS
+If a regular expression match has previously been performed, then the
+special variable %{0} will contain a copy of the input string.  The
+variables %{1} through %{8} will contain the substring matches,
+starting from the left-most parantheses, and onwards.  If there are
+more than 8 parantheses, the additional results will not be placed
+into any variables.
+.RE
+.PP
+Obtaining results from databases
+.RS
+It is useful to query a database for some information, and to use the
+result in a condition.  The following syntax will call a module, pass
+it the given string, and replace the variable reference with the
+resulting string returned from the module.
+
+.DS
+	%{module: string ...}
+.DE
+
+The syntax of the string is module-specific.  Please read the module
+documentation for additional details.
+.RE
+.PP
+Conditional Syntax
+.RS
+Conditional syntax similar to that used in Unix shells may also be
+used.
+.IP %{%{Foo}:-bar}
+If %{Foo} has a value, returns that value.
+.br
+Otherwise, returns literal string "bar".
+.IP %{%{Foo}:-%{Bar}}
+If %{Foo} has a value, returns that value.
+.br
+Otherwise, returns the expansion of %{Bar}.
+
+These conditional expansions can be nested to almost any depth, such
+as with %{%{One}:-%{%{Two}:-%{Three}}}
+.RE
+.PP
+String lengths and arrays
+.RS
+Similar to a Unix shell, there are ways to reference string lenths,
+and the second or more instance of an attribute in a list.  If you
+need more than this functionality, we suggest using a real language.
+.IP %{strlen:string}
+The number of characters in "string".  If "string" does not exist,
+then the length also does not exist, instead of being zero.
+
+The "string" is expanded before the length is taken.
+
+.IP %{integer:Attribute-Name}
+The integer value of the Attribute-Name, instead of the enumerated
+name.
+
+e.g. If a request contains "Service-Type = Login-User", the expansion
+of %{integer:Service-Type} will yeild "1".
+
+.IP %{hex:Attribute-Name}
+The hex value of the Attribute-Name, as a series of hex digits.
+
+e.g. If a request contains "Framed-IP-Address = 127.0.0.1", the expansion
+of %{hex:Framed-IP-Address} will yeild "0x7f000001".
+
+.IP %{Attribute-Name[index]}
+Reference the N'th occurance of the given attribute.  The syntax
+%{<list>:Attribute-Name[index]} may also be used.  The indexes start
+at zero.  This feature is NOT available for non-attribute dynamic
+translations, like %{sql:...}.
+
+For example, %{User-Name[0]} is the same as %{User-Name}
+
+The variable %{Cisco-AVPair[2]} will reference the value of the
+THIRD Cisco-AVPair attribute (if it exists) in the request packet,
+.IP %{Attribute-Name[#]}
+Returns the total number of attributes of that name in the relevant
+attribute list.  The number will usually be between 0 and 200.
+
+For most requests, %{request:User-Name[#]} == 1
+.IP %{Attribute-Name[*]}
+Expands to a single string, with the value of each array
+member separated by a newline.
+.IP %{#Attribute-Name[index]}
+Expands to the length of the string %{Attribute-Name[index]}.
+.SH ATTRIBUTES
+The attribute lists described above may be edited by listing one or
+more attributes in an "update" section.  Once the attributes have been
+defined, they may be referenced as described above in the VARIABLES
+section.
+
+The following syntax defines attributes in an "update" section.  Each
+attribute and value has to be all on one line in the configuration
+file.  There is no need for commas or semi-colons after the value.
+
+.DS
+	Attribute-Name = value
+.DE
+.PP
+Attribute names
+.RS
+The Attribute-Name must be a name previously defined in a dictionary.
+If an undefined name is used, the server will return an error, and
+will not start.
+
+The names can be qualified with a list prefix.  For example,
+"request:User-Name" is usually a synonym for "User-Name".
+.RE
+.IP Operators
+The operator used to assign the value of the attribute may be one of
+the following, with the given meaning.
+.RS
+.IP =
+Add the attribute to the list, if and only if an attribute of the same
+name is not already present in that list.
+.IP := 
+Add the attribute to the list.  If any attribute of the same name is
+already present in that list, its value is replaced with the value of
+the current attribute.
+.IP +=
+Add the attribute to the tail of the list, even if attributes of the
+same name are already present in the list.
+.RE
+.PP
+Enforcement and Filtering Operators
+.RS
+The following operators may also be used in addition to the ones
+listed above.  Their function is to perform enforcement or filtering
+on attributes in a list.
+.IP -=
+Remove all matching attributes from the list.  Both the attribute name
+and value have to match in order for the attribute to be removed from
+the list.
+.IP ==
+Keep all matching attributes.  Both the attribute name and value have
+to match in order for the attribute to remain in the list.
+
+Note that this operator is very different than the '=' operator listed
+above!
+.IP <=
+Keep all attributes having values less than, or equal to, the value
+given here.  Any larger value is replaced by the value given here.  If
+no attribute exists, it is added with the value given here, as with
+"+=".
+
+This operator is valid only for attributes of integer type.
+.IP >=
+Keep all attributes having values greater than, or equal to, the value
+given here.  Any larger value is replaced by the value given here.  If
+no attribute exists, it is added with the value given here, as with
+"+=".
+
+This operator is valid only for attributes of integer type.
+.IP !*
+Delete all occurances of the named attribute, no matter what the
+value.
+.RE
+.IP Values
+.br
+The value can be an attribute reference, or an attribute-specific
+string.
+
+When the value is an an attribute reference, it must take the form of
+"&Attribute-Name".  The leading "&" signifies that the value is a
+reference.  The "Attribute-Name" is an attribute name, such as
+"User-Name" or "request:User-Name".  When an attribute reference is
+used, both attributes must have the same data type.  For example,
+"User-Name := &NAS-Port" is invalid, because "User-Name" is a string,
+and "NAS-Port" is an integer.
+
+When the value is an attribute-specific string, it can be a string,
+integer, IP address, etc.  The value may be expanded as described
+above in the DATA TYPES section, above.  For example, specifying
+"Framed-IP-Address = 127.0.0.1" will cause the "Framed-IP-Address"
+attribute to be set to the IP address "127.0.0.1".  However, using
+"Framed-IP-Address := \"%{echo: 127.0.0.1}\"" will cause the "echo"
+module to be run with a string "127.0.0.1".  The output of the "echo"
+module will then be parsed as an IP address, and placed into the
+Framed-IP-Address attribute.
+
+This flexibility means that you can assign an IP address by specifying
+it directly, or by having the address returned from a database query,
+or by having the address returned as the output of a program that is
+executed.
+
+When string values are finally assigned to a variable, they can have a
+maximum length of 253 characters.  This limit is due in part to both
+protocol and internal server requirements.  That is, the strings in
+the language can be nearly 8k in length, say for a long SQL query.
+However, the output of that SQL query should be no more than 253
+characters in length.
+.SH OTHER KEYWORDS
+Other keywords in the language are taken from the names of modules
+loaded by the server.  These keywords are dependent on both the
+modules, and the local configuration.
+
+Some use keywords that are defined in the default configuration file
+are:
+.IP fail
+Cause the request to be treated as if a database failure had occurred.
+.IP noop
+Do nothing.  This also serves as an instruction to the configurable
+failover tracking that nothing was done in the current section.
+.IP ok
+Instructs the server that the request was processed properly.  This
+keyword can be used to over-ride earlier failures, if the local
+administrator determines that the faiures are not catastrophic.
+.IP reject
+Causes the request to be immediately rejected
+.SH MODULE RETURN CODES
+When a module is called, it returns one of the following codes to
+"unlang", with the following meaning.
+
+.DS
+	notfound        information was not found
+.br
+	noop            the module did nothing
+.br
+	ok              the module succeeded
+.br
+	updated         the module updated the request
+.br
+	fail            the module failed
+.br
+	reject          the module rejected the request
+.br
+	userlock        the user was locked out
+.br
+	invalid         the configuration was invalid
+.br
+	handled         the module has handled the request itself
+.DE
+
+These return codes can be tested for in a condition, as described
+above in the CONDITIONS section.
+
+See also the file doc/configurable_failover for additional methods of
+trapping and modifying module return codes.
+.SH FILES
+/etc/raddb/radiusd.conf
+.SH "SEE ALSO"
+.BR radiusd.conf (5),
+.BR dictionary (5)
+.SH AUTHOR
+Alan DeKok <aland@deployingradius.com>

@@ -1,0 +1,755 @@
+<!-- ##### SECTION Title ##### -->
+The Base Object Type
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GObject ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GObject::notify ##### -->
+<para>
+
+</para>
+
+@gobject: the object which received the signal.
+@arg1: 
+
+<!-- ##### STRUCT GObjectClass ##### -->
+<para>
+
+</para>
+
+@g_type_class: 
+@constructor: 
+@set_property: 
+@get_property: 
+@dispose: 
+@finalize: 
+@dispatch_properties_changed: 
+@notify: 
+@constructed: 
+
+<!-- ##### STRUCT GObjectConstructParam ##### -->
+<para>
+
+</para>
+
+@pspec: 
+@value: 
+
+<!-- ##### USER_FUNCTION GObjectGetPropertyFunc ##### -->
+<para>
+
+</para>
+
+@object: 
+@property_id: 
+@value: 
+@pspec: 
+
+
+<!-- ##### USER_FUNCTION GObjectSetPropertyFunc ##### -->
+<para>
+
+</para>
+
+@object: 
+@property_id: 
+@value: 
+@pspec: 
+
+
+<!-- ##### USER_FUNCTION GObjectFinalizeFunc ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_TYPE_IS_OBJECT ##### -->
+<para>
+
+</para>
+
+@type: 
+
+
+<!-- ##### MACRO G_OBJECT ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_IS_OBJECT ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_OBJECT_CLASS ##### -->
+<para>
+
+</para>
+
+@class: 
+
+
+<!-- ##### MACRO G_IS_OBJECT_CLASS ##### -->
+<para>
+
+</para>
+
+@class: 
+
+
+<!-- ##### MACRO G_OBJECT_GET_CLASS ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_OBJECT_TYPE ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_OBJECT_TYPE_NAME ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_OBJECT_CLASS_TYPE ##### -->
+<para>
+
+</para>
+
+@class: 
+
+
+<!-- ##### MACRO G_OBJECT_CLASS_NAME ##### -->
+<para>
+
+</para>
+
+@class: 
+
+
+<!-- ##### FUNCTION g_object_class_install_property ##### -->
+<para>
+
+</para>
+
+@oclass: 
+@property_id: 
+@pspec: 
+
+
+<!-- ##### FUNCTION g_object_class_install_properties ##### -->
+<para>
+
+</para>
+
+@oclass: 
+@n_pspecs: 
+@pspecs: 
+
+
+<!-- ##### FUNCTION g_object_class_find_property ##### -->
+<para>
+
+</para>
+
+@oclass: 
+@property_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_class_list_properties ##### -->
+<para>
+
+</para>
+
+@oclass: 
+@n_properties: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_class_override_property ##### -->
+<para>
+
+</para>
+
+@oclass: 
+@property_id: 
+@name: 
+
+
+<!-- ##### FUNCTION g_object_interface_install_property ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@pspec: 
+
+
+<!-- ##### FUNCTION g_object_interface_find_property ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@property_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_interface_list_properties ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@n_properties_p: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_new ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@first_property_name: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_newv ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@n_parameters: 
+@parameters: 
+@Returns: 
+
+
+<!-- ##### STRUCT GParameter ##### -->
+<para>
+
+</para>
+
+@name: 
+@value: 
+
+<!-- ##### FUNCTION g_object_ref ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_unref ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### FUNCTION g_object_ref_sink ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_clear_object ##### -->
+<para>
+
+</para>
+
+@object_ptr: 
+
+
+<!-- ##### TYPEDEF GInitiallyUnowned ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF GInitiallyUnownedClass ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_TYPE_INITIALLY_UNOWNED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_object_is_floating ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_force_floating ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### USER_FUNCTION GWeakNotify ##### -->
+<para>
+
+</para>
+
+@data: 
+@where_the_object_was: 
+
+
+<!-- ##### FUNCTION g_object_weak_ref ##### -->
+<para>
+
+</para>
+
+@object: 
+@notify: 
+@data: 
+
+
+<!-- ##### FUNCTION g_object_weak_unref ##### -->
+<para>
+
+</para>
+
+@object: 
+@notify: 
+@data: 
+
+
+<!-- ##### FUNCTION g_object_add_weak_pointer ##### -->
+<para>
+
+</para>
+
+@object: 
+@weak_pointer_location: 
+
+
+<!-- ##### FUNCTION g_object_remove_weak_pointer ##### -->
+<para>
+
+</para>
+
+@object: 
+@weak_pointer_location: 
+
+
+<!-- ##### USER_FUNCTION GToggleNotify ##### -->
+<para>
+
+</para>
+
+@data: 
+@object: 
+@is_last_ref: 
+
+
+<!-- ##### FUNCTION g_object_add_toggle_ref ##### -->
+<para>
+
+</para>
+
+@object: 
+@notify: 
+@data: 
+
+
+<!-- ##### FUNCTION g_object_remove_toggle_ref ##### -->
+<para>
+
+</para>
+
+@object: 
+@notify: 
+@data: 
+
+
+<!-- ##### FUNCTION g_object_connect ##### -->
+<para>
+
+</para>
+
+@object: 
+@signal_spec: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_disconnect ##### -->
+<para>
+
+</para>
+
+@object: 
+@signal_spec: 
+@...: 
+
+
+<!-- ##### FUNCTION g_object_set ##### -->
+<para>
+
+</para>
+
+@object: 
+@first_property_name: 
+@...: 
+
+
+<!-- ##### FUNCTION g_object_get ##### -->
+<para>
+
+</para>
+
+@object: 
+@first_property_name: 
+@...: 
+
+
+<!-- ##### FUNCTION g_object_notify ##### -->
+<para>
+
+</para>
+
+@object: 
+@property_name: 
+
+
+<!-- ##### FUNCTION g_object_notify_by_pspec ##### -->
+<para>
+
+</para>
+
+@object: 
+@pspec: 
+
+
+<!-- ##### FUNCTION g_object_freeze_notify ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### FUNCTION g_object_thaw_notify ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### FUNCTION g_object_get_data ##### -->
+<para>
+
+</para>
+
+@object: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_set_data ##### -->
+<para>
+
+</para>
+
+@object: 
+@key: 
+@data: 
+
+
+<!-- ##### FUNCTION g_object_set_data_full ##### -->
+<para>
+
+</para>
+
+@object: 
+@key: 
+@data: 
+@destroy: 
+
+
+<!-- ##### FUNCTION g_object_steal_data ##### -->
+<para>
+
+</para>
+
+@object: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_dup_data ##### -->
+<para>
+
+</para>
+
+@object: 
+@key: 
+@dup_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_replace_data ##### -->
+<para>
+
+</para>
+
+@object: 
+@key: 
+@oldval: 
+@newval: 
+@destroy: 
+@old_destroy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_get_qdata ##### -->
+<para>
+
+</para>
+
+@object: 
+@quark: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_set_qdata ##### -->
+<para>
+
+</para>
+
+@object: 
+@quark: 
+@data: 
+
+
+<!-- ##### FUNCTION g_object_set_qdata_full ##### -->
+<para>
+
+</para>
+
+@object: 
+@quark: 
+@data: 
+@destroy: 
+
+
+<!-- ##### FUNCTION g_object_steal_qdata ##### -->
+<para>
+
+</para>
+
+@object: 
+@quark: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_dup_qdata ##### -->
+<para>
+
+</para>
+
+@object: 
+@quark: 
+@dup_func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_replace_qdata ##### -->
+<para>
+
+</para>
+
+@object: 
+@quark: 
+@oldval: 
+@newval: 
+@destroy: 
+@old_destroy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_set_property ##### -->
+<para>
+
+</para>
+
+@object: 
+@property_name: 
+@value: 
+
+
+<!-- ##### FUNCTION g_object_get_property ##### -->
+<para>
+
+</para>
+
+@object: 
+@property_name: 
+@value: 
+
+
+<!-- ##### FUNCTION g_object_new_valist ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@first_property_name: 
+@var_args: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_object_set_valist ##### -->
+<para>
+
+</para>
+
+@object: 
+@first_property_name: 
+@var_args: 
+
+
+<!-- ##### FUNCTION g_object_get_valist ##### -->
+<para>
+
+</para>
+
+@object: 
+@first_property_name: 
+@var_args: 
+
+
+<!-- ##### FUNCTION g_object_watch_closure ##### -->
+<para>
+
+</para>
+
+@object: 
+@closure: 
+
+
+<!-- ##### FUNCTION g_object_run_dispose ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### MACRO G_OBJECT_WARN_INVALID_PROPERTY_ID ##### -->
+<para>
+
+</para>
+
+@object: 
+@property_id: 
+@pspec: 
+
+
+<!-- ##### STRUCT GWeakRef ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_weak_ref_init ##### -->
+<para>
+
+</para>
+
+@weak_ref: 
+@object: 
+
+
+<!-- ##### FUNCTION g_weak_ref_clear ##### -->
+<para>
+
+</para>
+
+@weak_ref: 
+
+
+<!-- ##### FUNCTION g_weak_ref_get ##### -->
+<para>
+
+</para>
+
+@weak_ref: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_weak_ref_set ##### -->
+<para>
+
+</para>
+
+@weak_ref: 
+@object: 
+
+

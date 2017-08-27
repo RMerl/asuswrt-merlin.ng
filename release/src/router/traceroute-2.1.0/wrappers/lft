@@ -1,0 +1,117 @@
+#!/bin/sh
+#
+#   Copyright (c)  2007             Dmitry K. Butskoy
+#                                   <buc@citadel.stu.neva.ru>
+#   License:  GPL v2 or any later
+#
+#   See COPYING for the status of this software.
+#
+
+#
+#  Shell wrapper providing lft(8) command line interface.
+#
+#  The original implementation of lft(8) can be obtained
+#  from http://pwhois.org/lft/
+#
+
+
+prgname=$0
+opts=""
+length=""
+method="-T"
+
+dport=""
+sport=""
+queries=2
+ahead=5
+scatter=20
+timeout=1000
+
+
+usage () {
+    echo "Usage: $prgname [-ACEFINRSTUVbehinpruvz] [-d dport] [-s sport]
+	[-m retry min] [-M retry max] [-a ahead] [-c scatter ms] [-t timeout ms]
+	[-l min ttl] [-H max ttl] [-L length] [-q ISN] [-D device] [--help]
+	[gateway ...]  target:dport" >&2
+}
+
+warning () {
+    echo "$prgname: Option '$1' is not implemented in this wrapper" >&2
+}
+ 
+
+PARSED=`getopt -o 'ACEFINRSTUVbehinpruvzd:s:m:M:a:c:t:l:H:L:q:D:' -l help -- "$@"`
+[ $? != 0 ] && exit 2
+
+eval set -- "$PARSED"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+	-d)  dport=$2; shift 2 ;;
+	-s)  sport=$2; shift 2 ;;
+	-z)  sport=""; shift ;;
+	-m)  queries=$2; shift 2 ;;
+	-a)  ahead=$2; shift 2 ;;
+	-c)  scatter=$2; shift 2 ;;
+	-t)  timeout=$2; shift 2 ;;
+	-l)  opts="$opts -f $2"; shift 2 ;;
+	-L)  length=$2; shift 2 ;;
+	-D)  case "$2" in
+		[0-9]*)  opts="$opts -s $2" ;;
+		*)  opts="$opts -i $2" ;;
+	     esac
+	     shift 2
+	     ;;
+	-H)  opts="$opts -m $2"; shift 2 ;;
+	-I)  opts="$opts -t 0x10"; shift ;;
+	-n)  opts="$opts -n"; shift ;;
+	-h)  shift ;;
+	-F)  opts="$opts -O fin"; shift ;;
+	-u)  method="-U"; shift ;;
+	-N)  opts="$opts -A"; shift ;;
+	-p)  method="-I"; shift ;;
+	-b)  shift ;;
+	-A)  opts="$opts -A"; shift ;;
+	-[ieErCTUV])  warning $1; shift ;;
+	-[Mq])  warning $1; shift 2 ;;
+	-[RS])  shift ;;
+	--help)  usage; exit 0 ;;
+	-v)  echo "\"lft\"-compatible wrapper for new Linux Traceroute" >&2;
+	     exit 0 ;;
+	--)  shift; break ;;
+	*)  echo "$prgname: Internal parsing error" >&2; exit 2 ;;
+    esac
+done
+
+while [ $# -gt 1 ]
+do
+    opts="$opts -g $1"
+    shift
+done
+
+[ $# -eq 0 ] && {
+    usage
+    exit 2
+}
+
+case "$1" in
+	*:*:*)  host=$1 ;;
+	*:*)  dport=${1##*:}; host=${1%:*} ;;
+	*)  host=$1 ;;
+esac
+
+[ -n "$dport" ] && opts="$opts -p $dport"
+[ -n "$sport" ] && opts="$opts --sport=$sport"
+opts="$opts -q $queries"
+opts="$opts -N $(($ahead * $queries))"
+opts="$opts -z $scatter"
+
+timeout=`printf "%04d" $timeout`
+sec=${timeout%???}
+opts="$opts -w $sec.${timeout#$sec}"
+
+opts="$method $opts"
+
+exec traceroute $opts $host $length
+

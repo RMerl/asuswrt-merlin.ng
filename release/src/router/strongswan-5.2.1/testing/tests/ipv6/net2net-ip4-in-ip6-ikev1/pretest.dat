@@ -1,0 +1,9 @@
+moon::iptables-restore < /etc/iptables.drop
+sun::iptables-restore < /etc/iptables.drop
+moon::ip6tables-restore < /etc/ip6tables.rules
+sun::ip6tables-restore < /etc/ip6tables.rules
+moon::ipsec start
+sun::ipsec start
+moon::expect-connection net-net
+sun::expect-connection net-net
+moon::ipsec up net-net

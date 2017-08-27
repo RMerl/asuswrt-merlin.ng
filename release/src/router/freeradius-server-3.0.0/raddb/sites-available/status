@@ -1,0 +1,127 @@
+# -*- text -*-
+######################################################################
+#
+#	A virtual server to handle ONLY Status-Server packets.
+#
+#	Server statistics can be queried with a properly formatted
+#	Status-Server request.  See dictionary.freeradius for comments.
+#
+#	If radiusd.conf has "status_server = yes", then any client
+#	will be able to send a Status-Server packet to any port
+#	(listen section type "auth", "acct", or "status"), and the
+#	server will respond.
+#
+#	If radiusd.conf has "status_server = no", then the server will
+#	ignore Status-Server packets to "auth" and "acct" ports.  It
+#	will respond only if the Status-Server packet is sent to a
+#	"status" port.
+#
+#	The server statistics are available ONLY on socket of type
+#	"status".  Qeuries for statistics sent to any other port
+#	are ignored.
+#
+#	Similarly, a socket of type "status" will not process
+#	authentication or accounting packets.  This is for security.
+#
+#	$Id$
+#
+######################################################################
+
+server status {
+	listen {
+		#  ONLY Status-Server is allowed to this port.
+		#  ALL other packets are ignored.
+		type = status
+
+		ipaddr = 127.0.0.1
+		port = 18121
+	}
+
+	#
+	#  We recommend that you list ONLY management clients here.
+	#  i.e. NOT your NASes or Access Points, and for an ISP,
+	#  DEFINITELY not any RADIUS servers that are proxying packets
+	#  to you.
+	#
+	#  If you do NOT list a client here, then any client that is
+	#  globally defined (i.e. all of them) will be able to query
+	#  these statistics.
+	#
+	#  Do you really want your partners seeing the internal details
+	#  of what your RADIUS server is doing?
+	#
+	client admin {
+		ipaddr = 127.0.0.1
+		secret = adminsecret
+	}
+
+	#
+	#  Simple authorize section.  The "Autz-Type Status-Server"
+	#  section will work here, too.  See "raddb/sites-available/default".
+	authorize {
+		ok
+
+		# respond to the Status-Server request.
+		Autz-Type Status-Server {
+			ok
+		}
+	}
+}
+
+#	Statistics can be queried via a number of methods:
+#
+#	All packets received/sent by the server (1 = auth, 2 = acct)
+#		FreeRADIUS-Statistics-Type = 3
+#
+#	All packets proxied by the server (4 = proxy-auth, 8 = proxy-acct)
+#		FreeRADIUS-Statistics-Type = 12
+#
+#	All packets sent && received:
+#		FreeRADIUS-Statistics-Type = 15
+#
+#	Internal server statistics:
+#		FreeRADIUS-Statistics-Type = 16
+#
+#	All packets for a particular client (globally defined)
+#		FreeRADIUS-Statistics-Type = 35
+#		FreeRADIUS-Stats-Client-IP-Address = 192.0.2.1
+#
+#	All packets for a client attached to a "listen" ip/port
+#		FreeRADIUS-Statistics-Type = 35
+#		FreeRADIUS-Stats-Client-IP-Address = 192.0.2.1
+#		FreeRADIUS-Stats-Server-IP-Address = 127.0.0.1
+#		FreeRADIUS-Stats-Server-Port = 1812
+#
+#	All packets for a "listen" IP/port
+#		FreeRADIUS-Statistics-Type = 67
+#		FreeRADIUS-Stats-Server-IP-Address = 127.0.0.1
+#		FreeRADIUS-Stats-Server-Port = 1812
+#
+#	All packets for a home server IP / port
+#		FreeRADIUS-Statistics-Type = 131
+#		FreeRADIUS-Stats-Server-IP-Address = 192.0.2.2
+#		FreeRADIUS-Stats-Server-Port = 1812
+
+#
+#  You can also get exponentially weighted moving averages of
+#  response times (in usec) of home servers.  Just set the config
+#  item "historic_average_window" in a home_server section.
+#
+#  By default it is zero (don't calculate it).  Useful values
+#  are between 100, and 10,000.  The server will calculate and
+#  remember the moving average for this window, and for 10 times
+#  that window.
+#
+
+#
+#  Some of this could have been simplified.  e.g. the proxy-auth and
+#  proxy-acct bits aren't completely necessary.  But using them permits
+#  the server to be queried for ALL inbound && outbound packets at once.
+#  This gives a good snapshot of what the server is doing.
+#
+#  Due to internal limitations, the statistics might not be exactly up
+#  to date.  Do not expect all of the numbers to add up perfectly.
+#  The Status-Server packets are also counted in the total requests &&
+#  responses.  The responses are counted only AFTER the response has
+#  been sent.
+#

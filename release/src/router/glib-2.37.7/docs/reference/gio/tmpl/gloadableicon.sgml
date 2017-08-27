@@ -1,0 +1,77 @@
+<!-- ##### SECTION Title ##### -->
+GLoadableIcon
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GLoadableIcon ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GLoadableIconIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@load: 
+@load_async: 
+@load_finish: 
+
+<!-- ##### FUNCTION g_loadable_icon_load ##### -->
+<para>
+
+</para>
+
+@icon: 
+@size: 
+@type: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_loadable_icon_load_async ##### -->
+<para>
+
+</para>
+
+@icon: 
+@size: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_loadable_icon_load_finish ##### -->
+<para>
+
+</para>
+
+@icon: 
+@res: 
+@type: 
+@error: 
+@Returns: 
+
+

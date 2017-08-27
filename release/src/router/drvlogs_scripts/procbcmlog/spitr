@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ ! -n "$1" ] ; then
+  echo "Usage: $0 <Leg(0)/HS(1)> <CS (0-3)> <CLK Speed> <Write Data (up to 4 hex concat bytes)> <length>: Transfer data over SPI"
+  echo "Examples: $0 0 3 0 0x80 3"
+  echo "          $0 0 3 0 0x800000 3"
+else
+echo p $1 $2 $3 $4 $5 > /proc/bcmlog
+fi

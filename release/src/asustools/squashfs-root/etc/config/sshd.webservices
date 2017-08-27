@@ -1,0 +1,42 @@
+<% nvram_match("sshd_web","0","<!--"); %>
+<fieldset>
+	<legend><% tran("service.ssh_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.ssh_srv"); %></div>
+		<input class="spaceradio" type="radio" name="sshd_enable" value="1" <% nvram_checked("sshd_enable", "1"); %> onclick="show_layer_ext(this, 'idssh', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" name="sshd_enable" value="0" <% nvram_checked("sshd_enable", "0"); %> onclick="show_layer_ext(this, 'idssh', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idssh">
+		<div class="setting">
+			<div class="label"><% tran("service.ssh_forwarding"); %></div>
+			<input class="spaceradio" type="radio" name="sshd_forwarding" value="1" <% nvram_checked("sshd_forwarding", "1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" name="sshd_forwarding" value="0" <% nvram_checked("sshd_forwarding", "0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("service.ssh_password"); %></div>
+			<input class="spaceradio" type="radio" name="sshd_passwd_auth" value="1" <% nvram_checked("sshd_passwd_auth", "1"); %> /><% tran("share.enable"); %>&nbsp;
+			<input class="spaceradio" type="radio" name="sshd_passwd_auth" value="0" <% nvram_checked("sshd_passwd_auth", "0"); %> /><% tran("share.disable"); %>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("share.port"); %></div>
+			<input class="num" maxlength="5" size="5" name="sshd_port" onblur="valid_range(this,1,65535,'SHHd Port')" value="<% nvram_get("sshd_port"); %>" />
+			<span class="default">
+			<script type="text/javascript">
+			//<![CDATA[
+			document.write("(" + share.deflt + ": 22)");
+			//]]>
+			</script></span>
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("service.ssh_key"); %></div>
+			<textarea id="sshd_authorized_keys" name="sshd_authorized_keys" cols="60" rows="2">&nbsp;</textarea>
+			<script type="text/javascript">
+			//<![CDATA[
+				var var_authorized_keys = fix_cr( '<% nvram_get("sshd_authorized_keys"); %>' );
+				document.getElementById("sshd_authorized_keys").value = var_authorized_keys;
+			//]]>
+			</script>
+		</div>
+	</div>
+</fieldset><br />
+<% nvram_match("sshd_web","0","-->"); %>

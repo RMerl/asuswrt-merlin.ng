@@ -1,0 +1,388 @@
+.\" Copyright 1999-2002 Merlin Hughes <merlin@merlin.org>
+.\" sensord is distributed under the GPL
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.TH sensord 8  "October 2007" "lm-sensors 3" "Linux System Administration"
+.SH NAME
+sensord \- Sensor information logging daemon.
+.SH SYNOPSIS
+.B sensord [
+.I options
+.B ] [
+.I chips
+.B ]
+
+.SH DESCRIPTION
+.B Sensord
+is a daemon that can be used to periodically log sensor readings from
+hardware health-monitoring chips to
+.BR syslog (3)
+or a round-robin database (RRD)
+and to alert when a sensor alarm is signalled; for example, if a
+fan fails, a temperature limit is exceeded, etc.
+
+.SH OPTIONS
+.IP "-i, --interval time"
+Specify the interval between scanning for sensor alarms; the default is to
+scan every minute.
+
+The time should be specified as a raw integer (seconds) or with a suffix
+`s' for seconds, `m' for minutes or `h' for hours; for example, the
+default interval is `60' or `1m'.
+
+Specify an interval of zero to suppress scanning explicitly for alarms.
+.IP "-l, --log-interval time"
+Specify the interval between logging all sensor readings; the default is
+to log all readings every half hour.
+
+The time is specified as before; e.g., `30m'.
+
+Specify an interval of zero to suppress logging of regular sensor
+readings.
+.IP "-t, --rrd-interval time"
+Specify the interval between logging all sensor readings to a round-robin
+database; the default is to log all readings every five minutes
+.B if
+a round-robin database is configured.
+
+The time is specified as before; e.g., `5m'.
+.IP "-T, --rrd-no-average"
+Specify that the round-robin database should not be averaged.
+
+.IP "-r, --rrd-file file"
+Specify a round-robin database into which to log all sensor readings;
+e.g., `/var/log/sensord.rrd'. This database will be created if it does
+not exist. By default, no round-robin database is used.
+
+See the section
+.B ROUND ROBIN DATABASES
+below for more details.
+.IP "-c, --config-file file"
+Specify a
+.BR libsensors (3)
+configuration file. If no file is specified, the libsensors default
+configuration file is used.
+
+.IP "-p, --pid-file file"
+Specify what PID file to write; the default is to write the file
+`/var/run/sensord.pid'. You should always specify an absolute path
+here. The file is removed when the daemon exits.
+.IP "-f, --syslog-facility facility"
+Specify the
+.BR syslog (3)
+facility to use when logging sensor readings and alarms; the default is
+to use
+.IR daemon .
+
+Other possible facilities include
+.IR local0
+through
+.IR local7 ,
+and
+.IR user .
+.IP "-g, --rrd-cgi directory"
+Prints out a sample
+.BR rrdcgi (1)
+CGI script that can be used to display graphs of recent sensor information
+in a Web page, and exits. You must specify the world-writable, Web-accessible
+directory where the graphs should be stored; the CGI script assumes that
+this will be accessed under the `/sensord/' directory on the Webserver. See
+the section
+.B ROUND ROBIN DATABASES
+below for more details.
+.IP "-a, --load-average"
+Include the load average in the RRD database. You should
+also specify this flag when you create the CGI script.
+.IP "-d, --debug"
+Prints a small amount of additional debugging information.
+.IP "-h, --help"
+Prints a help message and exits.
+.IP "-v, --version"
+Displays the program version and exits.
+.SH CHIPS
+To restrict the devices that are scanned by this daemon, you may
+optionally specify a list of chip names. By default, all available
+chips are scanned.
+
+A typical chip name would be `w83782d-*' (you may want to escape the
+`*' for your shell) which would scan any W83782D chips on any bus. See
+.BR sensors.conf (5)
+for more details. Another option is to simply not load the sensor
+modules for chips in which you have no interest.
+.SH SIGNALS
+Upon receipt of a SIGTERM (see
+.BR signal (7)
+for details) this daemon should gracefully shut down.
+
+Upon receipt of a SIGHUP, this daemon will rescan the kernel interface
+for chips and features, and reload the libsensors configuration file.
+.SH LOGGING
+All messages from this daemon are logged to
+.BR syslog (3)
+under the program name `sensord' and facility
+.IR daemon ,
+or whatever is specified on the command line.
+
+Regular sensor readings are logged at the level
+.IR info .
+Alarms are logged at the level
+.IR alert .
+Inconsequential status messages are logged at
+the minimum level,
+.IR debug ,
+when debugging is enabled.
+
+You can use an appropriate `/etc/syslog.conf'
+file to direct these messages in a useful manner. See
+.BR syslog.conf (5)
+for full details. Assuming you set the logging facility to local4,
+the following is a sample configuration:
+.IP
+.nf
+# Sample syslog.conf entries
+*.info;...;local4.none;local4.warn  /var/log/messages
+local4.info                        -/var/log/sensors
+local4.alert                        /dev/console
+local4.alert                        *
+.fi
+.PP
+The first line ensures that regular sensor readings do not clutter
+`/var/log/messages'; we first say `local4.none' to eliminate
+informational messages; then `local4.warn' to enable warnings and
+above. The second line says to log all regular sensor readings to
+`/var/log/sensors'; the leading hyphen `-' means that this file
+is not flushed after every message. The final two lines ensure
+that alarms are printed to the system console as well as
+to all connected users (in addition to `/var/log/messages' and
+`/var/log/sensors').
+.SH LOG ROTATION
+On a typical system with a good sensor chip, expect about 2KB per sensor
+reading in the log file. This works out at about 3MB per month. You
+should be rotating your syslog files anyway, but just to be sure you'll
+want to use something like
+.BR logrotate (8)
+or equivalent. You might, for example, want an entry in
+`/etc/logrotate.d/syslog' containing:
+.IP
+.nf
+# Sample logrotate.d entry
+/var/log/sensors {
+    postrotate
+        /usr/sbin/killall -HUP syslogd
+    endscript
+}
+.fi
+.PP
+Note, of course, that you want to restart
+.BR syslogd (8)
+and not
+.BR sensord (8)
+.
+.SH ALARMS
+Alarms generally indicate a critical condition; for example, a fan
+failure or an unacceptable temperature or voltage. However, some
+sensor chips do not support alarms, while others are incorrectly
+configured and may signal alarms incorrectly.
+
+Note that some drivers may lack support for alarm reporting
+even though the chips they support do have alarms. As of Linux 2.6.23,
+many drivers still don't report alarms in a format suitable for
+libsensors 3.
+
+.SH BEEPS
+If you see `(beep)' beside any sensor reading, that just means that
+your system is configured to issue an audio warning from the
+motherboard if an alarm is signalled on that sensor.
+.SH ROUND ROBIN DATABASES
+.BR Sensord (8)
+provides support for storing sensor readings in a round-robin
+database. This may be a useful alternative to the use of
+.BR syslog (3).
+
+Round-robin databases are
+constant-size databases that can be used to store, for example,
+a week's worth of sensor readings. Subsequent readings stored
+in the database will overwrite readings that are over a week
+old. This capability is extremely useful because it allows
+useful information to be stored in an easily-accessible
+manner for a useful length of time, without the burden of
+ever-growing log files.
+
+The
+.BR rrdtool (1)
+utility and its associated library provide the basic framework for
+the round-robin database beneath
+.BR sensord (8).
+In addition, the
+.BR rrdcgi (1)
+and
+.BR rrdgraph (1)
+utilities provide support for generating graphs of these data for
+display in a Web page.
+
+If you wish to use the default configuration of round-robin
+database, which holds one week of sensor readings at five-minute
+intervals, then simply start
+.BR sensord (8)
+and specify where you want the database stored. It will automatically
+be created and configured using these default parameters.
+
+If you wish readings to be stored for a longer period, or want multiple
+readings to be averaged into each database entry, then you must
+manually create and configure the database before starting
+.BR sensord (8).
+Consult the
+.BR rrdcreate (1)
+manual for details. Note that the database must match exactly the
+names and order of sensors read by
+.BR sensord (8).
+It is recommended that you create the default database and then use
+.BR rrdinfo (1)
+to obtain this information, and/or
+.BR rrdtune (1)
+to change it.
+
+After creating the round-robin database, you must then configure
+your Web server to display the sensor information. This assumes that
+you have a Web server preconfigured and functioning on your machine.
+.BR Sensord (8)
+provides a command-line option
+.BR --rrd-cgi
+to generate a basic CGI script to
+display these graphs; you can then customize this script as desired.
+Consult the
+.BR rrdcgi (1)
+manual for details. This CGI script requires a world-writable, Web-accessible
+directory into which to write the graphs that it generates.
+
+An example of how to set up Web-accessible graphs of recent sensor readings
+follows:
+.IP
+.nf
+sensord --log-interval 0 \\
+  --load-average \\
+  --rrd-file /var/log/sensord.rrd
+.fi
+.PP
+Here, we start
+.BR sensord (8)
+and configure it to store readings in a round-robin database; note
+that we disable logging of sensor readings to
+.BR syslog (3),
+and enable logging of the load average.
+.IP
+.nf
+mkdir /var/www/sensord
+chown www-data:staff /var/www/sensord
+chmod a=rwxs /var/www/sensord
+.fi
+.PP
+Here, we create a world-writable, Web-accessible directory in which
+graphs will be stored; we set the ownership and permissions on this
+directory appropriately. You will have to determine the location and
+ownership that is appropriate for your machine.
+.IP
+.nf
+sensord --load-average \\
+  --rrd-file /var/log/sensord.rrd \\
+  --rrd-cgi /var/www/sensord \\
+  > /usr/lib/cgi-bin/sensord.cgi
+chmod a+rx /usr/lib/cgi-bin/sensord.cgi
+.fi
+.PP
+Here, we create
+a CGI script that will display sensor readings from the database.
+You must specify the location of the round-robin database, the
+location of the directory where the images should be stored,
+and whether you want the load average displayed. The
+.BR --rrd-cgi
+command-line parameter causes
+.BR sensord (8)
+to display a suitable CGI script on
+.BR stdout
+and then to exit. You will need to write this script to the CGI
+bin directory of your Web server,
+and edit the script if the image directory you chose is not the
+`/sensord/' directory of your Web server.
+
+Finally, you should be able to view your sensor readings from
+the URL `http://localhost/cgi-bin/sensord.cgi'.
+.SH MODULES
+It is expected that all required sensor modules are loaded prior to
+this daemon being started. This can either be achieved with a system
+specific module loading scheme (e.g., listing the required modules
+in the file `/etc/modules' under Debian) or with explicit
+.BR modprobe (1)
+commands in an init script before loading the daemon.
+
+For example, a `sensord' initialization script might
+contain (among others) the following commands:
+.IP
+.nf
+# Sample init.d scriptlet
+echo -n "Loading AMD756 module: "
+modprobe i2c-amd756 || { echo Fail. ; exit 1 ; }
+echo OK.
+echo -n "Loading W83781D module: "
+modprobe w83781d || { echo Fail. ; exit 1 ; }
+echo OK.
+echo -n "Starting sensord: "
+daemon sensord
+.fi
+.PP
+Ignore the platform-specific shell functions; the general idea
+should be fairly clear.
+.SH ERRORS
+Errors encountered by this daemon are logged to
+.BR syslogd (8)
+after which the daemon will exit.
+.SH BUGS
+Round-robin database support doesn't cope with
+multiple sensor chips having duplicate sensor labels.
+.SH FILES
+.I /etc/sensors3.conf
+.br
+.I /etc/sensors.conf
+.RS
+The system-wide
+.BR libsensors (3)
+configuration file. See
+.BR sensors.conf (5)
+for further details.
+.RE
+.I /etc/syslog.conf
+.RS
+The system-wide
+.BR syslog (3)
+/
+.BR syslogd (8)
+configuration file. See
+.BR syslog.conf (5)
+for further details.
+.RE
+
+.SH SEE ALSO
+sensors.conf(5)
+.SH AUTHORS
+.B Sensord
+was written by Merlin Hughes <merlin@merlin.org>. Basics of round-robin
+databases were misappropriated from Mark D. Studebaker.

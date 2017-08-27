@@ -1,0 +1,351 @@
+The guidelines in this file are the ideals; it's better to send a
+not-fully-following-guidelines patch than no patch at all, though.  We
+can always polish it up.
+
+Mailing list
+===
+
+The D-Bus mailing list is dbus@lists.freedesktop.org; discussion
+of patches, etc. should go there.
+
+Security
+===
+
+Most of D-Bus is security sensitive.  Guidelines related to that:
+
+ - avoid memcpy(), sprintf(), strlen(), snprintf, strlcat(),
+   strstr(), strtok(), or any of this stuff. Use DBusString. 
+   If DBusString doesn't have the feature you need, add it 
+   to DBusString. 
+
+   There are some exceptions, for example
+   if your strings are just used to index a hash table 
+   and you don't do any parsing/modification of them, perhaps
+   DBusString is wasteful and wouldn't help much. But definitely 
+   if you're doing any parsing, reallocation, etc. use DBusString.
+
+ - do not include system headers outside of dbus-memory.c, 
+   dbus-sysdeps.c, and other places where they are already 
+   included. This gives us one place to audit all external 
+   dependencies on features in libc, etc.
+
+ - do not use libc features that are "complicated" 
+   and may contain security holes. For example, you probably shouldn't
+   try to use regcomp() to compile an untrusted regular expression.
+   Regular expressions are just too complicated, and there are many 
+   different libc's out there.
+
+ - we need to design the message bus daemon (and any similar features)
+   to use limited privileges, run in a chroot jail, and so on.
+
+http://vsftpd.beasts.org/ has other good security suggestions.
+
+Coding Style
+===
+
+ - The C library uses GNU coding conventions, with GLib-like
+   extensions (e.g. lining up function arguments). The
+   Qt wrapper uses KDE coding conventions.
+
+ - Write docs for all non-static functions and structs and so on. try
+   "doxygen Doxyfile" prior to commit and be sure there are no
+   warnings printed.
+
+ - All external interfaces (network protocols, file formats, etc.)
+   should have documented specifications sufficient to allow an
+   alternative implementation to be written. Our implementation should
+   be strict about specification compliance (should not for example
+   heuristically parse a file and accept not-well-formed
+   data). Avoiding heuristics is also important for security reasons;
+   if it looks funny, ignore it (or exit, or disconnect).
+
+Development
+===
+
+D-Bus uses Git as its version control system. The main repository is
+hosted at git.freedesktop.org/dbus/dbus. To clone D-Bus, execute the
+following command:
+
+    git clone git://git.freedesktop.org/dbus/dbus
+OR
+    git clone git.freedesktop.org:dbus/dbus
+
+The latter form is the one that allows pushing, but it also requires
+an SSH account on the server. The former form allows anonymous
+checkouts.
+
+D-Bus development happens in two branches in parallel: the current
+stable branch, with an even minor number (like 1.0, 1.2 and 1.4), and
+the next development branch, with the next odd number.
+
+The stable branch is named after the version number itself (dbus-1.2,
+dbus-1.4), whereas the development branch is simply known as "master".
+
+When making a change to D-Bus, do the following:
+
+ - check out the earliest branch of D-Bus that makes sense to have
+   your change in. If it's a bugfix, it's normally the current stable
+   branch; if it's a feature, it's normally the "master" branch. If
+   you have an important security fix, you may want to apply to older
+   branches too.
+
+ - for large changes:
+     if you're developing a new, large feature, it's recommended
+     to create a new branch and do your development there. Publish
+     your branch at a suitable place and ask others to help you
+     develop and test it. Once your feature is considered finalised,
+     you may merge it into the "master" branch.
+
+- for small changes:
+    . make your change to the source code
+    . execute tests to guarantee that you're not introducing a
+      regression. For that, execute: make check
+      (if possible, add a new test to check the fix you're
+      introducing)
+    . commit your change using "git commit"
+      in the commit message, write a short sentence describing what
+      you did in the first line. Then write a longer description in
+      the next paragraph(s).
+    . repeat the previous steps if necessary to have multiple commits
+
+ - extract your patches and send to the D-Bus mailing list for
+   review or post them to the D-Bus Bugzilla, attaching them to a bug
+   report. To extract the patches, execute:
+     git format-patch origin/master
+
+ - once your code has been reviewed, you may push it to the Git
+   server:
+     git push origin my-branch:remote
+   OR
+     git push origin dbus-X.Y
+   OR
+     git push origin master
+   (consult the Git manual to know which command applies)
+
+ - (Optional) if you've not worked on "master", merge your changes to
+   that branch. If you've worked on an earlier branch than the current
+   stable, merge your changes upwards towards the stable branch, then
+   from there into "master".
+
+    . execute: git checkout master
+    . ensure that you have the latest "master" from the server, update
+      if you don't
+    . execute: git merge dbus-X.Y
+    . if you have any conflicts, resolve them, git add the conflicted
+      files and then git commit
+    . push the "master" branch to the server as well
+
+  Executing this merge is recommended, but not necessary for all
+  changes. You should do this step if your bugfix is critical for the
+  development in "master", or if you suspect that conflicts will arise
+  (you're usually the best person to resolve conflicts introduced by
+  your own code), or if it has been too long since the last merge.
+
+
+Making a release
+===
+
+To make a release of D-Bus, do the following:
+
+ - check out a fresh copy from Git
+
+ - verify that the libtool versioning/library soname is 
+   changed if it needs to be, or not changed if not
+
+ - update the file NEWS based on the git history
+
+ - verify that the version number of dbus-specification.xml is
+   changed if it needs to be; if changes have been made, update the
+   release date in that file
+
+ - update the AUTHORS file with "make update-authors" if necessary
+
+ - the version number should have major.minor.micro, even
+   if micro is 0, i.e. "1.0.0" and "1.2.0" not "1.0"/"1.2"; the micro
+   version should be even for releases, and odd for intermediate snapshots
+
+ - "make distcheck" (DO NOT just "make dist" - pass the check!)
+
+ - if make distcheck fails, fix it.
+
+ - once distcheck succeeds, "git commit -a".  This is the version
+   of the tree that corresponds exactly to the released tarball.
+
+ - tag the tree with "git tag -s -m 'Released X.Y.Z' dbus-X.Y.Z"
+   where X.Y.Z is the version of the release.  If you can't sign
+   then simply created an unsigned annotated tag:
+   "git tag -a -m 'Released X.Y.Z' dbus-X.Y.Z".
+
+ - bump the version number up in configure.ac (so the micro version is odd),
+   and commit it.  Make sure you do this *after* tagging the previous
+   release! The idea is that git has a newer version number
+   than anything released. Similarly, bump the version number of
+   dbus-specification.xml and set the release date to "(not finalized)".
+
+ - merge the branch you've released to the chronologically-later
+   branch (usually "master"). You'll probably have to fix a merge
+   conflict in configure.ac (the version number).
+
+ - push your changes and the tag to the central repository with
+     git push origin master dbus-X.Y dbus-X.Y.Z
+
+ - scp your tarball to freedesktop.org server and copy it to
+   dbus.freedesktop.org:/srv/dbus.freedesktop.org/www/releases/dbus/dbus-X.Y.Z.tar.gz.
+   This should be possible if you're in group "dbus"
+
+ - Update the online documentation with `make -C doc maintainer-upload-docs`.
+
+ - update the wiki page http://www.freedesktop.org/Software/dbus by
+   adding the new release under the Download heading. Then, cut the
+   link and changelog for the previous that was there.
+
+ - update the wiki page
+   http://www.freedesktop.org/Software/DbusReleaseArchive pasting the
+   previous release. Note that bullet points for each of the changelog
+   items must be indented three more spaces to conform to the
+   formatting of the other releases there.
+  
+ - post to dbus@lists.freedesktop.org announcing the release.
+ 
+
+Making a ".0" stable release
+===
+
+We create a branch for each stable release. The branch name should be
+dbus-X.Y which is a branch that has releases versioned X.Y.Z;
+changes on a stable branch should be limited to significant bug fixes.
+
+Because we won't make minor changes like keeping up with the latest
+deprecations on a stable branch, stable branches should turn off the
+gcc warning for deprecated declarations (e.g. see commit 4ebb275ab7).
+
+Be extra-careful not to merge master (or any branch based on master) into a
+stable branch.
+
+To branch:
+  git branch dbus-X.Y
+and upload the branch tag to the server:
+  git push origin dbus-X.Y
+
+To develop in this branch:
+  git checkout dbus-X.Y
+
+Environment variables
+===
+
+These are the environment variables that are used by the D-Bus client library
+
+DBUS_VERBOSE=1
+Turns on printing verbose messages. This only works if D-Bus has been
+compiled with --enable-verbose-mode
+
+DBUS_MALLOC_FAIL_NTH=n
+Can be set to a number, causing every nth call to dbus_alloc or
+dbus_realloc to fail. This only works if D-Bus has been compiled with
+--enable-tests.
+
+DBUS_MALLOC_FAIL_GREATER_THAN=n
+Can be set to a number, causing every call to dbus_alloc or
+dbus_realloc to fail if the number of bytes to be allocated is greater
+than the specified number. This only works if D-Bus has been compiled with
+--enable-tests.
+
+DBUS_TEST_MALLOC_FAILURES=n
+Many of the D-Bus tests will run over and over, once for each malloc
+involved in the test. Each run will fail a different malloc, plus some
+number of mallocs following that malloc (because a fair number of bugs
+only happen if two or more mallocs fail in a row, e.g. error recovery
+that itself involves malloc).  This env variable sets the number of
+mallocs to fail.
+Here's why you care: If set to 0, then the malloc checking is skipped,
+which makes the test suite a heck of a lot faster. Just run with this
+env variable unset before you commit.
+
+Tests
+===
+
+These are the test programs that are built if dbus is compiled using
+--enable-tests.
+
+dbus/test-dbus
+This is the main unit test program that tests all aspects of the D-Bus
+client library.
+
+dbus/bus-test
+This it the unit test program for the message bus.
+
+test/break-loader
+A test that tries to break the message loader by passing it randomly
+created invalid messages.
+
+test/name-test/*
+This is a suite of programs which are run with a temporary session bus.
+If your test involves multiple processes communicating, your best bet
+is to add a test in here.
+
+"make check" runs all the deterministic test programs (i.e. not break-loader).
+
+"make lcov-check" is available if you configure with --enable-compiler-coverage
+and gives a complete report on test suite coverage.
+
+Patches
+===
+
+Please file them at http://bugzilla.freedesktop.org under component
+dbus, and also post to the mailing list for discussion.  The commit
+rules are:
+
+ - for fixes that don't affect API or protocol, they can be committed
+   if any one qualified reviewer other than patch author
+   reviews and approves
+
+ - for fixes that do affect API or protocol, two people
+   in the reviewer group have to review and approve the commit, and 
+   posting to the list is definitely mandatory
+
+ - if there's a live unresolved controversy about a change,
+   don't commit it while the argument is still raging.
+
+ - at their discretion, members of the reviewer group may also commit
+   branches/patches under these conditions:
+
+   - the branch does not add or change API, ABI or wire-protocol
+
+   - the branch solves a known problem and is covered by the regression tests
+
+   - there are no objections from the rest of the review group within
+     a week of the patches being attached to Bugzilla
+
+   - the committer gets a positive review on Bugzilla from someone they
+     consider qualified to review the change (e.g. a colleague with D-Bus
+     experience; not necessarily a member of the reviewer group)
+
+ - regardless of reviews, to commit a patch:
+    - make check must pass
+    - the test suite must be extended to cover the new code
+      as much as reasonably feasible (see Tests above)
+    - the patch has to follow the portability, security, and 
+      style guidelines
+    - the patch should as much as reasonable do one thing, 
+      not many unrelated changes
+   No reviewer should approve a patch without these attributes, and
+   failure on these points is grounds for reverting the patch.
+
+The reviewer group that can approve patches:
+
+Havoc Pennington <hp@pobox.net>
+Michael Meeks <michael.meeks@novell.com>
+Alexander Larsson  <alexl@redhat.com>
+Zack Rusin <zack@kde.org>
+Joe Shaw <joe@assbarn.com>
+Mikael Hallendal <micke@imendio.com>
+Richard Hult <richard@imendio.com>
+Owen Fraser-Green <owen@discobabe.net>
+Olivier Andrieu <oliv__a@users.sourceforge.net>
+Colin Walters <walters@verbum.org>
+Thiago Macieira <thiago@kde.org>
+John Palmieri <johnp@redhat.com>
+Scott James Remnant <scott@netsplit.com>
+Will Thompson <will.thompson@collabora.co.uk>
+Simon McVittie <simon.mcvittie@collabora.co.uk>
+David Zeuthen <davidz@redhat.com>

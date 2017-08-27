@@ -1,0 +1,146 @@
+<!-- ##### SECTION Title ##### -->
+ExampleObject
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT ExampleObject ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG ExampleObject:animal ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG ExampleObject:cat ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT ExampleObjectIface ##### -->
+<para>
+
+</para>
+
+@parent_iface: 
+
+<!-- ##### FUNCTION example_object_get_animal ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_get_cat ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_peek_animal ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_peek_cat ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+
+<!-- ##### STRUCT ExampleObjectProxy ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT ExampleObjectProxyClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION example_object_proxy_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@object_path: 
+@Returns: 
+
+
+<!-- ##### STRUCT ExampleObjectSkeleton ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT ExampleObjectSkeletonClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION example_object_skeleton_new ##### -->
+<para>
+
+</para>
+
+@object_path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION example_object_skeleton_set_animal ##### -->
+<para>
+
+</para>
+
+@object: 
+@interface_: 
+
+
+<!-- ##### FUNCTION example_object_skeleton_set_cat ##### -->
+<para>
+
+</para>
+
+@object: 
+@interface_: 
+
+

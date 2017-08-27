@@ -1,0 +1,103 @@
+#!/bin/sh
+#
+# Plugin to count the daily amount of freeradius authentication packets.
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+#
+#    Copyright (C) 2008 Alan DeKok <aland@deployingradius.com>
+#
+# Magic markers - optional - used by installation scripts and
+# munin-config:
+#
+#%# family=manual
+#%# capabilities=autoconf
+
+RADMIN=radmin
+SOCKETFILE=/var/run/radiusd/radiusd.sock
+
+if [ "$1" = "autoconf" ]; then
+    #
+    #  FIXME: Check if FreeRADIUS is running.
+    #
+    echo yes
+    exit 0
+fi
+
+if [ "$1" = "config" ]; then
+    echo 'graph_title FreeRADIUS Authentication Requests'
+    echo 'graph_args --base 1000 -l 0 '
+    echo 'graph_period second'
+    echo 'graph_vlabel requests / ${graph_period}'
+    echo 'graph_category Other'
+
+    echo 'requests.label Access-Requests'
+    echo 'requests.info total received request packets'
+    echo 'requests.type DERIVE'
+    echo 'requests.min 0'
+
+    echo 'responses.label responses (all types)'
+    echo 'responses.info total sent response packets'
+    echo 'responses.type DERIVE'
+    echo 'responses.min 0'
+
+    echo 'accepts.label Access-Accepts'
+    echo 'accepts.info total sent Access-Accept packets'
+    echo 'accepts.type DERIVE'
+    echo 'accepts.min 0'
+
+    echo 'rejects.label Access-Rejects'
+    echo 'rejects.info total sent Access-Reject packets'
+    echo 'rejects.type DERIVE'
+    echo 'rejects.min 0'
+
+    echo 'challenges.label Access-Challenges'
+    echo 'challenges.info total sent Access-Challenge packets'
+    echo 'challenges.type DERIVE'
+    echo 'challenges.min 0'
+
+    echo 'dup.label Duplicate requests'
+    echo 'dup.info total duplicate request packets'
+    echo 'dup.type DERIVE'
+    echo 'dup.min 0'
+
+    echo 'invalid.label Invalid requests'
+    echo 'invalid.info total invalid request packets'
+    echo 'invalid.type DERIVE'
+    echo 'invalid.min 0'
+
+    echo 'malformed.label Malformed requests'
+    echo 'malformed.info total malformed request packets'
+    echo 'malformed.type DERIVE'
+    echo 'malformed.min 0'
+
+    echo 'bad_signature.label Requests with bad signature'
+    echo 'bad_signature.info total request packets with a bad signature'
+    echo 'bad_signature.type DERIVE'
+    echo 'bad_signature.min 0'
+
+    echo 'dropped.label Dropped requests'
+    echo 'dropped.info total request packets dropped for other reasons'
+    echo 'dropped.type DERIVE'
+    echo 'dropped.min 0'
+
+    echo 'unknown_types.label Unknown type'
+    echo 'unknown_types.info total request packets of unknown type'
+    echo 'unknown_types.type DERIVE'
+    echo 'unknown_types.min 0'
+
+    exit 0
+fi
+
+$RADMIN -f $SOCKETFILE -e "stats client auth" | awk '{print $1".value " $2}'

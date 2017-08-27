@@ -1,0 +1,41 @@
+
+<fieldset>
+	<legend><% tran("hotspot.sputnik_legend"); %></legend>
+	<div class="center"><img src="images/sputnik.png" alt="sputnik logo" /></div><br />
+	<div class="setting">
+		<div class="label"><% tran("hotspot.sputnik_srv"); %></div>
+		<input class="spaceradio" type="radio" name="apd_enable" value="1" <% nvram_checked("apd_enable", "1"); %> onclick="show_layer_ext(this, 'idsputnik', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" name="apd_enable" value="0" <% nvram_checked("apd_enable", "0"); %> onclick="show_layer_ext(this, 'idsputnik', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idsputnik">
+		<div class="setting">
+			<div class="label"><% tran("hotspot.sputnik_mode"); %></div>
+				<select name="sputnik_mode" >
+					<script type="text/javascript">
+					//<![CDATA[
+						document.write("<option value=\"standard\" <% nvram_selected_js("sputnik_mode", "standard"); %> >" + share.standard + "</option>");
+					//]]>
+					</script>
+					<option value="nms" <% nvram_selected("sputnik_mode", "nms"); %> >NMS</option>
+				</select>
+		</div>
+		<div class="setting">	
+			<div class="label"><% tran("hotspot.sputnik_id"); %></div>
+			<input class="spaceradio" type="radio" name="sputnik_mjid_type" value="0" <% nvram_checked("sputnik_mjid_type", "0"); %> /><% tran("hotspot.sputnik_instant"); %>
+		</div>
+		<div class="setting">	
+			<div class="label">&nbsp;</div>
+			<input class="spaceradio" type="radio" name="sputnik_mjid_type" value="1" <% nvram_checked("sputnik_mjid_type", "1"); %> /><% tran("hotspot.sputnik_express"); %>
+		</div>
+		<% nvram_invmatch("sputnik_done","1","<!--"); %>
+		<div class="setting">	
+			<div class="label">&nbsp;</div>
+			<input class="spaceradio" type="radio" name="sputnik_mjid_type" value="2" <% nvram_checked("sputnik_mjid_type", "2"); %> /><% tran("share.use"); %>&nbsp;
+			<input class="text" maxLength="100" size="35" name="sputnik_mjid" value="<% nvram_get("sputnik_mjid"); %>" />
+		</div>
+		<% nvram_invmatch("sputnik_done","1","-->"); %>
+		<div class="center">
+			<a href="http://www.sputnik.com/products/ddwrt.html" target="_blank"><% tran("hotspot.sputnik_learn"); %></a>&nbsp;<% tran("hotspot.sputnik_about"); %>
+		</div>
+	</div>
+</fieldset><br />

@@ -1,0 +1,105 @@
+# Translators, if you are not familiar with the PO format, gettext
+# documentation is worth reading, especially sections dedicated to
+# this format, e.g. by running:
+# info -n '(gettext)PO Files'
+# info -n '(gettext)Header Entry'
+# Some information specific to po-debconf are available at
+# /usr/share/doc/po-debconf/README-trans
+# or http://www.debian.org/intl/l10n/po-debconf/README-trans
+# Developers do not need to manually edit POT or PO files.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 6.0.1-2\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-04 23:20+0100\n"
+"Last-Translator: Martin Bagge <brother@bsnet.se>\n"
+"Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Swedish\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Ta bort datafiler med det äldre statistikformatet?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"Formatet på de dagliga datastatistikfilerna har ändrats i version "
+"${s_version} av sysstat och är inte kompatibel med den tidigare."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Väljer du detta alternativ kommer alla datafiler i katalogen /var/log/"
+"sysstat/ att raderas."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Om du inte väljer detta alternativ kommer kommandot sar(1) inte fungera på "
+"ett korrekt sätt innan filerna har raderats manuellt."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Vill du aktivera cron-jobbet för sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Om detta alternativ aktiveras kommer sysstat-paketet att övervaka "
+"systemaktiviterna och lagra data i loggfiler i /var/log/systat/."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Dessa data gör att kommandot sar(1) visar systemstatistik för hela dagen."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Om du inte aktiverar detta alternativ kan kommandot sar(1) endast visa "
+"aktuell statistik."
+
+#~ msgid "Do you want post-installation script to remove these data files?"
+#~ msgstr ""
+#~ "Vill du att skriptet som kÃ¶rs efter installation ska radera dessa filer?"
+
+#~ msgid ""
+#~ "If you don't want to remove them automatically, please remove them by "
+#~ "hand later, in order for the sar command to work properly."
+#~ msgstr ""
+#~ "Om du inte vill raderar dom automatiskt, vÃ¤nligen radera dom pÃ¥ egen "
+#~ "hand senare fÃ¶r att kommandot sar ska fungerar korrekt."

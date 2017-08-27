@@ -1,0 +1,4 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the cipher suite
+<b>AES_CCM_12_128</b> both for IKE and ESP by defining <b>ike=aes128ccm12-aesxcbc-modp2048</b>
+(or alternatively <b>aes128ccm96</b>) and <b>esp=aes128ccm12-modp2048</b> in ipsec.conf, respectively.
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

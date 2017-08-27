@@ -1,0 +1,405 @@
+##
+## vmpsd.conf	-- FreeRADIUS VMPS server configuration file.
+##
+##	http://www.freeradius.org/
+##	$Id$
+##
+
+#
+#	This configuration file is for a stand-alone VMPS server that
+#	does not do RADIUS.  For an integrated radius + vmps server,
+#	edit "radiusd.conf", and add two sections to it:
+#
+#		listen {
+#			type = vmps
+#			...
+#		}
+#
+#		vmps {
+#			...
+#		}
+#
+#
+#	See the text below for additional documentation on those two
+#	sections.
+#
+
+#  	The location of other config files and
+#  	logfiles are declared in this file
+#
+#  	Also general configuration for modules can be done
+#  	in this file, it is exported through the API to
+#  	modules that ask for it.
+#
+#	The configuration variables defined here are of the form ${foo}
+#	They are local to this file, and do not change from request to
+#	request.
+#
+#	The per-request variables are of the form %{Attribute-Name}, and
+#	are taken from the values of the attribute in the incoming
+#	request.  See 'doc/variables.txt' for more information.
+
+#
+#  Standard includes, etc.
+#
+#	FIXME: to make this work: prefix, etc.  See radiusd.conf...
+#
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+sysconfdir = @sysconfdir@
+localstatedir = @localstatedir@
+sbindir = @sbindir@
+logdir = @logdir@
+raddbdir = @raddbdir@
+radacctdir = @radacctdir@
+
+#
+#  The logging messages for the server are appended to the
+#  tail of this file.
+#
+log_file = ${logdir}/vmpsd.log
+
+#
+#  Destination for log messages.  This can be one of:
+#
+#	files - log to ${log_file}, as defined above.
+#	syslog - to syslog (see also the log{} section, below)
+#	stdout - standard output
+#	stderr - standard error.
+#
+#  The command-line option "-X" over-rides this option, and forces
+#  logging to go to stdout.
+#
+log_destination = files
+
+#
+# libdir: Where to find the rlm_* modules.
+#
+#   This should be automatically set at configuration time.
+#
+#   If the server builds and installs, but fails at execution time
+#   with an 'undefined symbol' error, then you can use the libdir
+#   directive to work around the problem.
+#
+#   The cause is usually that a library has been installed on your
+#   system in a place where the dynamic linker CANNOT find it.  When
+#   executing as root (or another user), your personal environment MAY
+#   be set up to allow the dynamic linker to find the library.  When
+#   executing as a daemon, FreeRADIUS MAY NOT have the same
+#   personalized configuration.
+#
+#   To work around the problem, find out which library contains that symbol,
+#   and add the directory containing that library to the end of 'libdir',
+#   with a colon separating the directory names.  NO spaces are allowed.
+#
+#   e.g. libdir = /usr/local/lib:/opt/package/lib
+#
+#   You can also try setting the LD_LIBRARY_PATH environment variable
+#   in a script which starts the server.
+#
+#   If that does not work, then you can re-configure and re-build the
+#   server to NOT use shared libraries, via:
+#
+#	./configure --disable-shared
+#	make
+#	make install
+#
+libdir = @libdir@
+
+#  pidfile: Where to place the PID of the RADIUS server.
+#
+#  The server may be signalled while it's running by using this
+#  file.
+#
+#  This file is written when ONLY running in daemon mode.
+#
+#  e.g.:  kill -HUP `cat /var/run/radiusd/radiusd.pid`
+#
+pidfile = ${run_dir}/vmpsd.pid
+
+
+# user/group: The name (or #number) of the user/group to run vmpsd as.
+#
+#   If these are commented out, the server will run as the user/group
+#   that started it.  In order to change to a different user/group, you
+#   MUST be root ( or have root privileges ) to start the server.
+#
+#   We STRONGLY recommend that you run the server with as few permissions
+#   as possible.  That is, if you're not using shadow passwords, the
+#   user and group items below should be set to 'nobody'.
+#
+#    On SCO (ODT 3) use "user = nouser" and "group = nogroup".
+#
+#  NOTE that some kernels refuse to setgid(group) when the value of
+#  (unsigned)group is above 60000; don't use group nobody on these systems!
+#
+#  On systems with shadow passwords, you might have to set 'group = shadow'
+#  for the server to be able to read the shadow password file.  If you can
+#  authenticate users while in debug mode, but not in daemon mode, it may be
+#  that the debugging mode server is running as a user that can read the
+#  shadow info, and the user listed below can not.
+#
+#user = nobody
+#group = nobody
+
+#  max_request_time: The maximum time (in seconds) to handle a request.
+#
+#  Requests which take more time than this to process may be killed, and
+#  a REJECT message is returned.
+#
+#  WARNING: If you notice that requests take a long time to be handled,
+#  then this MAY INDICATE a bug in the server, in one of the modules
+#  used to handle a request, OR in your local configuration.
+#
+#  This problem is most often seen when using an SQL database.  If it takes
+#  more than a second or two to receive an answer from the SQL database,
+#  then it probably means that you haven't indexed the database.  See your
+#  SQL server documentation for more information.
+#
+#  Useful range of values: 5 to 120
+#
+max_request_time = 30
+
+#  cleanup_delay: The time to wait (in seconds) before cleaning up
+#  a reply which was sent to the NAS.
+#
+#  The VMPS request is normally cached internally for a short period
+#  of time, after the reply is sent to the NAS.  The reply packet may be
+#  lost in the network, and the NAS will not see it.  The NAS will then
+#  re-send the request, and the server will respond quickly with the
+#  cached reply.
+#
+#  If this value is set too low, then duplicate requests from the NAS
+#  MAY NOT be detected, and will instead be handled as separate requests.
+#
+#  If this value is set too high, then the server will cache too many
+#  requests, and some new requests may get blocked.  (See 'max_requests'.)
+#
+#  Useful range of values: 2 to 10
+#
+cleanup_delay = 5
+
+#  listen: Make the server listen on a particular IP address, and send
+#  replies out from that address. This directive is most useful for
+#  hosts with multiple IP addresses on one interface.
+#
+#  If you want the server to listen on additional addresses, or on
+#  additional ports, you can use multiple "listen" sections.
+#
+#  Each section make the server listen for only one type of packet,
+#  therefore authentication and accounting have to be configured in
+#  different sections.
+#
+#  The server ignore all "listen" section if you are using '-i' and '-p'
+#  on the command line.
+#
+listen {
+	#  IP address on which to listen.
+	#  Allowed values are:
+	#	dotted quad (1.2.3.4)
+	#       hostname    (radius.example.com)
+	#       wildcard    (*)
+	ipaddr = *
+
+	#  OR, you can use an IPv6 address, but not both
+	#  at the same time.
+#	ipv6addr = ::	# any.  ::1 == localhost
+
+	#  Port on which to listen.
+	#  Allowed values are:
+	#	integer port number
+	#	1589 is the default VMPS port.
+	port = 1589
+
+	#  Type of packets to listen for.  Use "vmps" for VMPSd.
+	#
+	type = vmps
+
+	#  Some systems support binding to an interface, in addition
+	#  to the IP address.  This feature isn't strictly necessary,
+	#  but for sites with many IP addresses on one interface,
+	#  it's useful to say "listen on all addresses for eth0".
+	#
+	#  If your system does not support this feature, you will
+	#  get an error if you try to use it.
+	#
+#	interface = eth0
+
+	#  Per-socket lists of clients.  This is a very useful feature.
+	#
+	#  The name here is a reference to a section elsewhere in
+	#  radiusd.conf, or clients.conf.  Having the name as
+	#  a reference allows multiple sockets to use the same
+	#  set of clients.
+	#
+	#  If this configuration is used, then the global list of clients
+	#  is IGNORED for this "listen" section.  Take care configuring
+	#  this feature, to ensure you don't accidentally disable a
+	#  client you need.
+	#
+	#  See clients.conf for the configuration of "per_socket_clients".
+	#
+#	clients = per_socket_clients
+}
+
+#  hostname_lookups: Log the names of clients or just their IP addresses
+#  e.g., www.freeradius.org (on) or 206.47.27.232 (off).
+#
+#  The default is 'off' because it would be overall better for the net
+#  if people had to knowingly turn this feature on, since enabling it
+#  means that each client request will result in AT LEAST one lookup
+#  request to the nameserver.   Enabling hostname_lookups will also
+#  mean that your server may stop randomly for 30 seconds from time
+#  to time, if the DNS requests take too long.
+#
+#  Turning hostname lookups off also means that the server won't block
+#  for 30 seconds, if it sees an IP address which has no name associated
+#  with it.
+#
+#  allowed values: {no, yes}
+#
+hostname_lookups = no
+
+#  Core dumps are a bad thing.  This should only be set to 'yes'
+#  if you're debugging a problem with the server.
+#
+#  allowed values: {no, yes}
+#
+allow_core_dumps = no
+
+#
+#  Logging section.  The various "log_*" configuration items
+#  will eventually be moved here.
+#
+log {
+	#
+	#  Which syslog facility to use, if ${log_destination} == "syslog"
+	#
+	#  The exact values permitted here are OS-dependent.  You probably
+	#  don't want to change this.
+	#
+	syslog_facility = daemon
+}
+
+# THREAD POOL CONFIGURATION
+#
+#  The thread pool is a long-lived group of threads which
+#  take turns (round-robin) handling any incoming requests.
+#
+#  You probably want to have a few spare threads around,
+#  so that high-load situations can be handled immediately.  If you
+#  don't have any spare threads, then the request handling will
+#  be delayed while a new thread is created, and added to the pool.
+#
+#  You probably don't want too many spare threads around,
+#  otherwise they'll be sitting there taking up resources, and
+#  not doing anything productive.
+#
+#  The numbers given below should be adequate for most situations.
+#
+thread pool {
+	#  Number of servers to start initially --- should be a reasonable
+	#  ballpark figure.
+	start_servers = 5
+
+	#  Limit on the total number of servers running.
+	#
+	#  If this limit is ever reached, clients will be LOCKED OUT, so it
+	#  should NOT BE SET TOO LOW.  It is intended mainly as a brake to
+	#  keep a runaway server from taking the system with it as it spirals
+	#  down...
+	#
+	#  You may find that the server is regularly reaching the
+	#  'max_servers' number of threads, and that increasing
+	#  'max_servers' doesn't seem to make much difference.
+	#
+	#  If this is the case, then the problem is MOST LIKELY that
+	#  your back-end databases are taking too long to respond, and
+	#  are preventing the server from responding in a timely manner.
+	#
+	#  The solution is NOT do keep increasing the 'max_servers'
+	#  value, but instead to fix the underlying cause of the
+	#  problem: slow database, or 'hostname_lookups=yes'.
+	#
+	#  For more information, see 'max_request_time', above.
+	#
+	max_servers = 32
+
+	#  Server-pool size regulation.  Rather than making you guess
+	#  how many servers you need, The server dynamically adapts to
+	#  the load it sees, that is, it tries to maintain enough
+	#  servers to handle the current load, plus a few spare
+	#  servers to handle transient load spikes.
+	#
+	#  It does this by periodically checking how many servers are
+	#  waiting for a request.  If there are fewer than
+	#  min_spare_servers, it creates a new spare.  If there are
+	#  more than max_spare_servers, some of the spares die off.
+	#  The default values are probably OK for most sites.
+	#
+	min_spare_servers = 3
+	max_spare_servers = 10
+
+	#  There may be memory leaks or resource allocation problems with
+	#  the server.  If so, set this value to 300 or so, so that the
+	#  resources will be cleaned up periodically.
+	#
+	#  This should only be necessary if there are serious bugs in the
+	#  server which have not yet been fixed.
+	#
+	#  '0' is a special value meaning 'infinity', or 'the servers never
+	#  exit'
+	max_requests_per_server = 0
+}
+
+# MODULE CONFIGURATION
+#
+#  The names and configuration of each module is located in this section.
+#
+#  After the modules are defined here, they may be referred to by name,
+#  in other sections of this configuration file.
+#
+modules {
+	#
+	#	Add modules here.  See "radiusd.conf" for examples.
+	#
+}
+
+# Instantiation
+#
+#  This section orders the loading of the modules.  Modules
+#  listed here will get loaded BEFORE the later sections like
+#  authorize, authenticate, etc. get examined.
+#
+#  This section is not strictly needed.  When a section like
+#  authorize refers to a module, it's automatically loaded and
+#  initialized.  However, some modules may not be listed in any
+#  of the following sections, so they can be listed here.
+#
+#  Also, listing modules here ensures that you have control over
+#  the order in which they are initialized.  If one module needs
+#  something defined by another module, you can list them in order
+#  here, and ensure that the configuration will be OK.
+#
+instantiate {
+	#
+	#	Add modules here.  See "radiusd.conf" for examples.
+	#
+}
+
+#
+#  And the REAL contents.  This section is just like the "post-auth"
+#  section of radiusd.conf.  In fact, it calls the "post-auth" component
+#  of the modules that are listed here.  But it's called "vmps" for
+#  simplicity.
+#
+vmps {
+	#
+	#  This is a hack for testing
+	#
+	update reply {
+		VMPS-Packet-Type = VMPS-Join-Response
+		VMPS-VLAN-Name = "foo"
+		VMPS-Cookie = "%{VMPS-Mac}"
+	}
+}

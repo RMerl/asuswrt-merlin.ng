@@ -1,0 +1,270 @@
+#! /bin/bash
+# This is not an autoconf generated configure
+#
+INCLUDE=${1:-"$PWD/include"}
+
+# Make a temp directory in build tree.
+TMPDIR=$(mktemp -d config.XXXXXX)
+trap 'status=$?; rm -rf $TMPDIR; exit $status' EXIT HUP INT QUIT TERM
+
+check_toolchain()
+{
+    : ${PKG_CONFIG:=pkg-config}
+    : ${AR=ar}
+    : ${CC=gcc}
+    echo "PKG_CONFIG:=${PKG_CONFIG}" >>Config
+    echo "AR:=${AR}" >>Config
+    echo "CC:=${CC}" >>Config
+}
+
+check_atm()
+{
+    cat >$TMPDIR/atmtest.c <<EOF
+#include <atm.h>
+int main(int argc, char **argv) {
+	struct atm_qos qos;
+	(void) text2qos("aal5,ubr:sdu=9180,rx:none",&qos,0);
+	return 0;
+}
+EOF
+
+    $CC -I$INCLUDE -o $TMPDIR/atmtest $TMPDIR/atmtest.c -latm >/dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+	echo "TC_CONFIG_ATM:=y" >>Config
+	echo yes
+    else
+	echo no
+    fi
+    rm -f $TMPDIR/atmtest.c $TMPDIR/atmtest
+}
+
+check_xt()
+{
+    #check if we have xtables from iptables >= 1.4.5.
+    cat >$TMPDIR/ipttest.c <<EOF
+#include <xtables.h>
+#include <linux/netfilter.h>
+static struct xtables_globals test_globals = {
+	.option_offset = 0,
+	.program_name = "tc-ipt",
+	.program_version = XTABLES_VERSION,
+	.orig_opts = NULL,
+	.opts = NULL,
+	.exit_err = NULL,
+};
+
+int main(int argc, char **argv)
+{
+	xtables_init_all(&test_globals, NFPROTO_IPV4);
+	return 0;
+}
+EOF
+
+    if $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL \
+	$(${PKG_CONFIG} xtables --cflags --libs) -ldl >/dev/null 2>&1
+    then
+	echo "TC_CONFIG_XT:=y" >>Config
+	echo "using xtables"
+    fi
+    rm -f $TMPDIR/ipttest.c $TMPDIR/ipttest
+}
+
+check_xt_old()
+{
+    # bail if previous XT checks has already succeded.
+    if grep -q TC_CONFIG_XT Config
+    then
+	return
+    fi
+
+    #check if we dont need our internal header ..
+    cat >$TMPDIR/ipttest.c <<EOF
+#include <xtables.h>
+char *lib_dir;
+unsigned int global_option_offset = 0;
+const char *program_version = XTABLES_VERSION;
+const char *program_name = "tc-ipt";
+struct afinfo afinfo = {
+	.libprefix      = "libxt_",
+};
+
+void exit_error(enum exittype status, const char *msg, ...)
+{
+}
+
+int main(int argc, char **argv) {
+
+	return 0;
+}
+
+EOF
+
+    $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL -ldl >/dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+	echo "TC_CONFIG_XT_OLD:=y" >>Config
+	echo "using old xtables (no need for xt-internal.h)"
+    fi
+    rm -f $TMPDIR/ipttest.c $TMPDIR/ipttest
+}
+
+check_xt_old_internal_h()
+{
+    # bail if previous XT checks has already succeded.
+    if grep -q TC_CONFIG_XT Config
+    then
+	return
+    fi
+
+    #check if we need our own internal.h
+    cat >$TMPDIR/ipttest.c <<EOF
+#include <xtables.h>
+#include "xt-internal.h"
+char *lib_dir;
+unsigned int global_option_offset = 0;
+const char *program_version = XTABLES_VERSION;
+const char *program_name = "tc-ipt";
+struct afinfo afinfo = {
+	.libprefix      = "libxt_",
+};
+
+void exit_error(enum exittype status, const char *msg, ...)
+{
+}
+
+int main(int argc, char **argv) {
+
+	return 0;
+}
+
+EOF
+	$CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL -ldl >/dev/null 2>&1
+
+	if [ $? -eq 0 ]
+	then
+	    echo "using old xtables with xt-internal.h"
+	    echo "TC_CONFIG_XT_OLD_H:=y" >>Config
+	fi
+	rm -f $TMPDIR/ipttest.c $TMPDIR/ipttest
+}
+
+check_ipt()
+{
+	if ! grep TC_CONFIG_XT Config > /dev/null
+	then
+		echo "using iptables"
+	fi
+}
+
+check_ipt_lib_dir()
+{
+	IPT_LIB_DIR=$(${PKG_CONFIG} --variable=xtlibdir xtables)
+	if [ -n "$IPT_LIB_DIR" ]; then
+		echo $IPT_LIB_DIR
+		echo "IPT_LIB_DIR:=$IPT_LIB_DIR" >> Config
+		return
+	fi
+
+	for dir in /lib /usr/lib /usr/local/lib
+	do
+		for file in $dir/{xtables,iptables}/lib*t_*so ; do
+			if [ -f $file ]; then
+				echo ${file%/*}
+				echo "IPT_LIB_DIR:=${file%/*}" >> Config
+				return
+			fi
+		done
+	done
+	echo "not found!"
+}
+
+check_setns()
+{
+    cat >$TMPDIR/setnstest.c <<EOF
+#include <sched.h>
+int main(int argc, char **argv) 
+{
+	(void)setns(0,0);
+	return 0;
+}
+EOF
+    $CC -I$INCLUDE -o $TMPDIR/setnstest $TMPDIR/setnstest.c >/dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+	echo "IP_CONFIG_SETNS:=y" >>Config
+	echo "yes"
+    else
+	echo "no"
+    fi
+    rm -f $TMPDIR/setnstest.c $TMPDIR/setnstest
+}
+
+check_ipset()
+{
+    cat >$TMPDIR/ipsettest.c <<EOF
+#include <linux/netfilter/ipset/ip_set.h>
+#ifndef IP_SET_INVALID
+#define IPSET_DIM_MAX 3
+typedef unsigned short ip_set_id_t;
+#endif
+#include <linux/netfilter/xt_set.h>
+
+struct xt_set_info info;
+#if IPSET_PROTOCOL == 6
+int main(void)
+{
+	return IPSET_MAXNAMELEN;
+}
+#else
+#error unknown ipset version
+#endif
+EOF
+
+    if $CC -I$INCLUDE -o $TMPDIR/ipsettest $TMPDIR/ipsettest.c >/dev/null 2>&1
+    then
+	echo "TC_CONFIG_IPSET:=y" >>Config
+	echo "yes"
+    else
+	echo "no"
+    fi
+    rm -f $TMPDIR/ipsettest.c $TMPDIR/ipsettest
+}
+
+check_selinux()
+# SELinux is a compile time option in the ss utility
+{
+	if ${PKG_CONFIG} libselinux --exists
+	then
+		echo "HAVE_SELINUX:=y" >>Config
+		echo "yes"
+	else
+		echo "no"
+	fi
+}
+
+echo "# Generated config based on" $INCLUDE >Config
+check_toolchain
+
+echo "TC schedulers"
+
+echo -n " ATM	"
+check_atm
+
+echo -n " IPT	"
+check_xt
+check_xt_old
+check_xt_old_internal_h
+check_ipt
+
+echo -n " IPSET  "
+check_ipset
+
+echo -n "iptables modules directory: "
+check_ipt_lib_dir
+
+echo -n "libc has setns: "
+check_setns
+
+echo -n "SELinux support: "
+check_selinux

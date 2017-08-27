@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e 
+
+[ "$1" != "upgrade" ] && update-alternatives --remove sar /usr/bin/sar.sysstat
+
+
+#DEBHELPER#
+
+exit 0

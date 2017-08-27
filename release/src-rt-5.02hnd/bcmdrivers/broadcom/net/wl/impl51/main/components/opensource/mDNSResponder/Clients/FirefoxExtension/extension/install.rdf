@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>bonjour4firefox@apple.com</em:id>
+    <em:name>Bonjour Extension for Firefox</em:name>
+    <em:version>1.0</em:version>
+    <em:creator>Apple Inc.</em:creator>
+    <em:description>Bonjour Browsing Extension for Firefox</em:description>
+    <em:iconURL>chrome://bonjour4firefox/content/bonjour4firefox.png</em:iconURL>
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- firefox -->
+        <em:minVersion>3.5</em:minVersion>
+        <em:maxVersion>3.6.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+  </Description>
+</RDF>

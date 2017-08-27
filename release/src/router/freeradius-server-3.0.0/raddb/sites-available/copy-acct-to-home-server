@@ -1,0 +1,169 @@
+# -*- text -*-
+######################################################################
+#
+#	In 2.0.0, radrelay functionality is integrated into the
+#	server core.  This virtual server gives an example of
+#	using radrelay functionality inside of the server.
+#
+#	In this example, the detail file is read, and the packets
+#	are proxied to a home server.  You will have to configure
+#	realms, home_server_pool, and home_server in proxy.conf
+#	for this to work.
+#
+#	The purpose of this virtual server is to enable duplication
+#	of information across a load-balanced, or fail-over set of
+#	servers.  For example, if a group of clients lists two
+#	home servers (primary, secondary), then RADIUS accounting
+#	messages will go only to one server at a time.  This file
+#	configures a server (primary, secondary) to send copies of
+#	the accounting information to each other.
+#
+#	That way, each server has the same set of information, and
+#	can make the same decision about the user.
+#
+#	$Id$
+#
+######################################################################
+
+server copy-acct-to-home-server {
+	listen {
+		type = detail
+
+		######################################################
+		#
+		#  !!!! WARNING !!!!
+		#
+		#  The detail file reader acts just like a NAS.
+		#
+		#  This means that if accounting fails, the packet
+		#  is re-tried FOREVER.  It is YOUR responsibility
+		#  to write an accounting policy that returns "ok"
+		#  if the packet was processed properly, "fail" on
+		#  a database error, AND "ok" if you want to ignore
+		#  the packet (e.g. no Acct-Status-Type).
+		#
+		#  Neither the detail file write OR the detail file
+		#  reader look at the contents of the packets.  They
+		#  just either dump the packet verbatim to the file,
+		#  or read it verbatim from the file and pass it to
+		#  the server.
+		#
+		######################################################
+
+
+		#  The location where the detail file is located.
+		#  This should be on local disk, and NOT on an NFS
+		#  mounted location!
+		#
+		#  On most systems, this should support file globbing
+		#  e.g. "${radacctdir}/detail-*:*"
+		#  This lets you write many smaller detail files as in
+		#  the example in radiusd.conf: ".../detail-%Y%m%d:%H"
+		#  Writing many small files is often better than writing
+		#  one large file.  File globbing also means that with
+		#  a common naming scheme for detail files, then you can
+		#  have many detail file writers, and only one reader.
+		filename = ${radacctdir}/detail
+
+		#
+		#  The server can read accounting packets from the
+		#  detail file much more quickly than those packets
+		#  can be written to a database.  If the database is
+		#  overloaded, then bad things can happen.
+		#
+		#  The server will keep track of how long it takes to
+		#  process an entry from the detail file.  It will
+		#  then pause between handling entries.  This pause
+		#  allows databases to "catch up", and gives the
+		#  server time to notice that other packets may have
+		#  arrived.
+		#
+		#  The pause is calculated dynamically, to ensure that
+		#  the load due to reading the detail files is limited
+		#  to a small percentage of CPU time.  The
+		#  "load_factor" configuration item is a number
+		#  between 1 and 100.  The server will try to keep the
+		#  percentage of time taken by "detail" file entries
+		#  to "load_factor" percentage of the CPU time.
+		#
+		#  If the "load_factor" is set to 100, then the server
+		#  will read packets as fast as it can, usually
+		#  causing databases to go into overload.
+		#
+		load_factor = 10
+	}
+
+	#
+	#  Pre-accounting.  Decide which accounting type to use.
+	#
+	preacct {
+		preprocess
+
+		# Since we're just proxying, we don't need acct_unique.
+
+		#
+		#  Look for IPASS-style 'realm/', and if not found, look for
+		#  '@realm', and decide whether or not to proxy, based on
+		#  that.
+		#
+		#  Accounting requests are generally proxied to the same
+		#  home server as authentication requests.
+	#	IPASS
+		suffix
+	#	ntdomain
+
+		#
+		#  Read the 'acct_users' file.  This isn't always
+		#  necessary, and can be deleted if you do not use it.
+		files
+	}
+
+	#
+	#  Accounting.  Log the accounting data.
+	#
+	accounting {
+		   #
+		   # Since we're proxying, we don't log anything
+		   # locally.  Ensure that the accounting section
+		   # "succeeds" by forcing an "ok" return.
+		   ok
+	}
+
+
+	#
+	#  When the server decides to proxy a request to a home server,
+	#  the proxied request is first passed through the pre-proxy
+	#  stage.  This stage can re-write the request, or decide to
+	#  cancel the proxy.
+	#
+	#  Only a few modules currently have this method.
+	#
+	pre-proxy {
+
+		#  If you want to have a log of packets proxied to a home
+		#  server, un-comment the following line, and the
+		#  'detail pre_proxy_log' section in radiusd.conf.
+	#	pre_proxy_log
+	}
+
+	#
+	#  When the server receives a reply to a request it proxied
+	#  to a home server, the request may be massaged here, in the
+	#  post-proxy stage.
+	#
+	post-proxy {
+		#
+
+		#  If you want to have a log of replies from a home
+		#  server, un-comment the following line, and the
+		#  'detail post_proxy_log' section in radiusd.conf.
+	#	post_proxy_log
+
+
+		#  Uncomment the following line if you want to filter
+		#  replies from remote proxies based on the rules
+		#  defined in the 'attrs' file.
+
+	#	attr_filter
+	}
+}

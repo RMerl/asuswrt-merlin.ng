@@ -1,0 +1,17 @@
+#!/bin/sh
+
+CURRENTPATH=`pwd`
+OPENSSL_PATH="${CURRENTPATH}/../openssl/libs/ios-armv7"
+OPENSSL_LIB_PATH="${OPENSSL_PATH}/lib/"
+OPENSSL_INC_PATH="${OPENSSL_PATH}/include/"
+
+SDK_VER="iPhoneOS.sdk"
+DEVELOPER=`xcode-select -print-path`
+SDK_PATH="${DEVELOPER}/Platforms/iPhoneOS.platform/Developer/SDKs/${SDK_VER}"
+export DEVPATH=${DEVELOPER}/Platforms/iPhoneOS.platform/Developer
+export CC=${DEVELOPER}/usr/bin/gcc
+export CFLAGS="-fembed-bitcode -fstack-protector -Wno-unused-label -I${OPENSSL_INC_PATH} -DPJ_CONFIG_IPHONE=1 -isysroot ${SDK_PATH}"
+export LDFLAGS="${OPENSSL_LIB_PATH}/libssl.a ${OPENSSL_LIB_PATH}/libcrypto.a" 
+export ARCH="-arch armv7"
+export CROSS_TYPE=armv7-apple-darwin9
+./configure-iphone CC=${CC} ARCH=${ARCH}

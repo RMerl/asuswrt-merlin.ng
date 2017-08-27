@@ -1,0 +1,112 @@
+<!-- ##### SECTION Title ##### -->
+GDBusObjectManagerServer
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusObjectManagerServer ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GDBusObjectManagerServer:connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerServer:object-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GDBusObjectManagerServerClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_new ##### -->
+<para>
+
+</para>
+
+@object_path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_get_connection ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_set_connection ##### -->
+<para>
+
+</para>
+
+@manager: 
+@connection: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_export ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_export_uniquely ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_is_exported ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_server_unexport ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object_path: 
+@Returns: 
+
+

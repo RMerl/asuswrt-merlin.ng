@@ -1,0 +1,12 @@
+#
+#  For testing ntlm_auth authentication with PAP.
+#
+#  If you have problems with authentication failing, even when the
+#  password is good, it may be a bug in Samba:
+#
+#	https://bugzilla.samba.org/show_bug.cgi?id=6563
+#
+exec ntlm_auth {
+	wait = yes
+	program = "/path/to/ntlm_auth --request-nt-key --domain=MYDOMAIN --username=%{mschap:User-Name} --password=%{User-Password}"
+}

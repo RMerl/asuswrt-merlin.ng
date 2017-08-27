@@ -1,0 +1,47 @@
+.TH SYSSTAT 5 "SEPTEMBER 2010" Linux "Linux User's Manual" -*- nroff -*-
+.SH NAME
+sysstat \- sysstat configuration file.
+.SH DESCRIPTION
+This file is read by
+.BR sa1 (8)
+and
+.BR sa2 (8)
+shell scripts from the sysstat's set of tools.
+It consists of a sequence of shell variable assignments used to
+configure sysstat logging.
+The variables and their meanings are:
+.TP
+.B HISTORY
+The number of days during which a daily data file or a report
+should be kept. Data files or reports older than this number of
+days will be removed by the
+.BR sa2 (8)
+shell script.
+
+.TP
+.B COMPRESSAFTER
+Number of days after which daily data files are to be compressed,
+either by gzip or bzip2.
+
+.TP
+.B SADC_OPTIONS
+Options that should be passed to
+.BR sadc (8).
+With these options (see
+.BR sadc (8)
+manual page), you can select some additional data which are going to be saved in
+daily data files.
+These options are used only when a new data file is created. They will be
+ignored with an already existing one.
+
+.SH FILES
+.IR @SYSCONFIG_DIR@/sysstat
+
+.SH AUTHOR
+Sebastien Godard (sysstat <at> orange.fr)
+.SH SEE ALSO
+.BR sadc (8),
+.BR sa1 (8),
+.BR sa2 (8)
+
+.I http://pagesperso-orange.fr/sebastien.godard/

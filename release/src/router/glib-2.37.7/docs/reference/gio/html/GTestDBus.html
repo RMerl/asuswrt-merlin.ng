@@ -1,0 +1,637 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GTestDBus</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="testing.html" title="GIO Testing">
+<link rel="prev" href="testing.html" title="GIO Testing">
+<link rel="next" href="migrating.html" title="Part III. Migrating to GIO">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GTestDBus.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GTestDBus.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GTestDBus.properties" class="shortcut">Properties</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="testing.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="testing.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="migrating.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTestDBus"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTestDBus.top_of_page"></a>GTestDBus</span></h2>
+<p>GTestDBus — D-Bus testing helper</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GTestDBus.synopsis"></a><h2>Synopsis</h2>
+<a name="GTestDBusFlags"></a><pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+                    <a class="link" href="GTestDBus.html#GTestDBus-struct" title="GTestDBus">GTestDBus</a>;
+enum                <a class="link" href="GTestDBus.html#GTestDBusFlags-enum" title="enum GTestDBusFlags">GTestDBusFlags</a>;
+<a class="link" href="GTestDBus.html" title="GTestDBus"><span class="returnvalue">GTestDBus</span></a> *         <a class="link" href="GTestDBus.html#g-test-dbus-new" title="g_test_dbus_new ()">g_test_dbus_new</a>                     (<em class="parameter"><code><a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="type">GTestDBusFlags</span></a> flags</code></em>);
+<a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="returnvalue">GTestDBusFlags</span></a>      <a class="link" href="GTestDBus.html#g-test-dbus-get-flags" title="g_test_dbus_get_flags ()">g_test_dbus_get_flags</a>               (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="GTestDBus.html#g-test-dbus-get-bus-address" title="g_test_dbus_get_bus_address ()">g_test_dbus_get_bus_address</a>         (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GTestDBus.html#g-test-dbus-add-service-dir" title="g_test_dbus_add_service_dir ()">g_test_dbus_add_service_dir</a>         (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GTestDBus.html#g-test-dbus-up" title="g_test_dbus_up ()">g_test_dbus_up</a>                      (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GTestDBus.html#g-test-dbus-stop" title="g_test_dbus_stop ()">g_test_dbus_stop</a>                    (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GTestDBus.html#g-test-dbus-down" title="g_test_dbus_down ()">g_test_dbus_down</a>                    (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="GTestDBus.html#g-test-dbus-unset" title="g_test_dbus_unset ()">g_test_dbus_unset</a>                   (<em class="parameter"><code><span class="type">void</span></code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTestDBus.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----GTestDBus
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----GTestDBusFlags
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTestDBus.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="GTestDBus.html#GTestDBus--flags" title='The "flags" property'>flags</a>"                    <a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="type">GTestDBusFlags</span></a>        : Read / Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTestDBus.description"></a><h2>Description</h2>
+<p>
+A helper class for testing code which uses D-Bus without touching the user's
+session bus.
+</p>
+<p>
+</p>
+<div class="refsect2">
+<a name="gio-D-Bus-Test-Scaffolding"></a><h3>Creating unit tests using GTestDBus</h3>
+<p>
+    Testing of D-Bus services can be tricky because normally we only ever run
+    D-Bus services over an existing instance of the D-Bus daemon thus we
+    usually don't activate D-Bus services that are not yet installed into the
+    target system. The <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> object makes this easier for us by taking care
+    of the lower level tasks such as running a private D-Bus daemon and looking
+    up uninstalled services in customizable locations, typically in your source code tree.
+  </p>
+<p>
+    The first thing you will need is a separate service description file for the
+    D-Bus daemon. Typically a 'services' subdirectory of your 'tests' directory
+    is a good place to put this file.
+  </p>
+<p>
+    The service file should list your service along with an absolute path to the
+    uninstalled service executable in your source tree. Using autotools we would
+    achieve this by adding a file such as 'my-server.service.in' in the services
+    directory and have it processed by configure.
+    </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="symbol">[</span><span class="normal">D</span><span class="symbol">-</span><span class="usertype">BUS</span><span class="normal"> Service</span><span class="symbol">]</span>
+<span class="normal">Name</span><span class="symbol">=</span><span class="normal">org</span><span class="symbol">.</span><span class="normal">gtk</span><span class="symbol">.</span><span class="normal">GDBus</span><span class="symbol">.</span><span class="normal">Examples</span><span class="symbol">.</span><span class="normal">ObjectManager</span>
+<span class="normal">Exec</span><span class="symbol">=</span><span class="normal">@abs_top_builddir@</span><span class="symbol">/</span><span class="normal">gio</span><span class="symbol">/</span><span class="normal">tests</span><span class="symbol">/</span><span class="normal"><a href="gdbus.html">gdbus</a></span><span class="symbol">-</span><span class="normal">example</span><span class="symbol">-</span><span class="normal">objectmanager</span><span class="symbol">-</span><span class="normal">server</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    You will also need to indicate this service directory in your test
+    fixtures, so you will need to pass the path while compiling your
+    test cases. Typically this is done with autotools with an added
+    preprocessor flag specified to compile your tests such as:
+    </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="symbol">-</span><span class="normal">DTEST_SERVICES</span><span class="symbol">=\</span><span class="string">""</span><span class="normal">$</span><span class="symbol">(</span><span class="normal">abs_top_builddir</span><span class="symbol">)/</span><span class="normal">tests</span><span class="symbol">/</span><span class="normal">services</span><span class="string">"</span><span class="specialchar">\"</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  </p>
+<p>
+    Once you have a service definition file which is local to your source tree,
+    you can proceed to setup a GTest fixture using the GTestDBus scaffolding.
+    </p>
+<div class="example">
+<a name="gdbus-test-fixture"></a><p class="title"><b>Example 27. Test Fixture for D-Bus services</b></p>
+<div class="example-contents">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">"gdbus-object-manager-example/gdbus-example-objectmanager-generated.h"</span>
+
+<span class="comment">/* ---------------------------------------------------------------------------------------------------- */</span>
+
+<span class="comment">/* The fixture contains a GTestDBus object and</span>
+<span class="comment"> * a proxy to the service we're going to be testing.</span>
+<span class="comment"> */</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GTestDBus</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">dbus</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GDBusObjectManager</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">manager</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> TestFixture</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">fixture_setup</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">TestFixture</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">fixture</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gconstpointer</span><span class="normal"> unused</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GError</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">error </span><span class="symbol">=</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">/* Create the global dbus-daemon for this test suite</span>
+<span class="comment">   */</span>
+<span class="normal">  fixture</span><span class="symbol">-&gt;</span><span class="normal">dbus </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GTestDBus.html#g-test-dbus-new">g_test_dbus_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="GTestDBus.html#G-TEST-DBUS-NONE:CAPS">G_TEST_DBUS_NONE</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Add the private directory with our in-tree service files, </span>
+<span class="comment">   * TEST_SERVICES is defined by the build system to point</span>
+<span class="comment">   * to the right directory.</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="GTestDBus.html#g-test-dbus-add-service-dir">g_test_dbus_add_service_dir</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">dbus</span><span class="symbol">,</span><span class="normal"> TEST_SERVICES</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Start the private D-Bus daemon</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="GTestDBus.html#g-test-dbus-up">g_test_dbus_up</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">dbus</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Create the proxy that we're going to test</span>
+<span class="comment">   */</span>
+<span class="normal">  fixture</span><span class="symbol">-&gt;</span><span class="normal">manager </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="function"><a href="ExampleObjectManagerClient.html#example-object-manager-client-new-for-bus-sync">example_object_manager_client_new_for_bus_sync</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="GDBusConnection.html#G-BUS-TYPE-SESSION:CAPS">G_BUS_TYPE_SESSION</a></span><span class="symbol">,</span>
+<span class="normal">                                                    <a href="GDBusObjectManagerClient.html#G-DBUS-OBJECT-MANAGER-CLIENT-FLAGS-NONE:CAPS">G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE</a></span><span class="symbol">,</span>
+<span class="normal">                                                    </span><span class="string">"org.gtk.GDBus.Examples.ObjectManager"</span><span class="symbol">,</span>
+<span class="normal">                                                    </span><span class="string">"/example/Animals"</span><span class="symbol">,</span>
+<span class="normal">                                                    <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* GCancellable */</span>
+<span class="normal">                                                    </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">manager </span><span class="symbol">==</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Message-Logging.html#g-error">g_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error getting object manager client: %s"</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">fixture_teardown</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">TestFixture</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">fixture</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gconstpointer</span><span class="normal"> unused</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Tear down the proxy</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">manager</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">manager</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Stop the private D-Bus daemon</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="GTestDBus.html#g-test-dbus-down">g_test_dbus_down</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">dbus</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">dbus</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/* The gdbus-example-objectmanager-server exports 10 objects,</span>
+<span class="comment"> * to test the server has actually activated, let's ensure</span>
+<span class="comment"> * that 10 objects exist.</span>
+<span class="comment"> */</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">test_gtest_dbus</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">TestFixture</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">fixture</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gconstpointer</span><span class="normal"> unused</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GList</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">objects</span><span class="symbol">;</span>
+
+<span class="normal">  objects </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GDBusObjectManager.html#g-dbus-object-manager-get-objects">g_dbus_object_manager_get_objects</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fixture</span><span class="symbol">-&gt;</span><span class="normal">manager</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-assert-cmpint">g_assert_cmpint</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-length">g_list_length</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">objects</span><span class="symbol">),</span><span class="normal"> </span><span class="symbol">==,</span><span class="normal"> </span><span class="number">10</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Doubly-Linked-Lists.html#g-list-free-full">g_list_free_full</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">objects</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal">   argc</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-init">g_test_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">argc</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">argv</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* This test simply ensures that we can bring the GTestDBus up and down a hand</span>
+<span class="comment">   * full of times in a row, each time successfully activating the in-tree service</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-add">g_test_add</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/GTestDBus/Cycle1"</span><span class="symbol">,</span><span class="normal"> TestFixture</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">          fixture_setup</span><span class="symbol">,</span><span class="normal"> test_gtest_dbus</span><span class="symbol">,</span><span class="normal"> fixture_teardown</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-add">g_test_add</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/GTestDBus/Cycle2"</span><span class="symbol">,</span><span class="normal"> TestFixture</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">          fixture_setup</span><span class="symbol">,</span><span class="normal"> test_gtest_dbus</span><span class="symbol">,</span><span class="normal"> fixture_teardown</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-add">g_test_add</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/GTestDBus/Cycle3"</span><span class="symbol">,</span><span class="normal"> TestFixture</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">          fixture_setup</span><span class="symbol">,</span><span class="normal"> test_gtest_dbus</span><span class="symbol">,</span><span class="normal"> fixture_teardown</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-add">g_test_add</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/GTestDBus/Cycle4"</span><span class="symbol">,</span><span class="normal"> TestFixture</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">          fixture_setup</span><span class="symbol">,</span><span class="normal"> test_gtest_dbus</span><span class="symbol">,</span><span class="normal"> fixture_teardown</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-add">g_test_add</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"/GTestDBus/Cycle5"</span><span class="symbol">,</span><span class="normal"> TestFixture</span><span class="symbol">,</span><span class="normal"> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">          fixture_setup</span><span class="symbol">,</span><span class="normal"> test_gtest_dbus</span><span class="symbol">,</span><span class="normal"> fixture_teardown</span><span class="symbol">);</span>
+<span class="normal">  </span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-run">g_test_run</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<p><br class="example-break">
+  </p>
+<p>
+    Note that these examples only deal with isolating the D-Bus aspect of your
+    service. To successfully run isolated unit tests on your service you may need
+    some additional modifications to your test case fixture. For example; if your
+    service uses GSettings and installs a schema then it is important that your test service
+    not load the schema in the ordinary installed location (chances are that your service
+    and schema files are not yet installed, or worse; there is an older version of the
+    schema file sitting in the install location).
+  </p>
+<p>
+    Most of the time we can work around these obstacles using the environment. Since the
+    environment is inherited by the D-Bus daemon created by GTestDBus and then in turn
+    inherited by any services the D-Bus daemon activates, using the setup routine for your
+    fixture is a practical place to help sandbox your runtime environment. For the rather
+    typical GSettings case we can work around this by setting GSETTINGS_SCHEMA_DIR to the
+    in tree directory holding your schemas in the above <code class="function">fixture_setup()</code> routine.
+  </p>
+<p>
+    The GSettings schemas need to be locally pre-compiled for this to work. This can be achieved
+    by compiling the schemas locally as a step before running test cases, an autotools setup might
+    do the following in the directory holding schemas:
+    </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">all</span><span class="symbol">-</span><span class="normal">am</span><span class="symbol">:</span>
+<span class="normal">        $</span><span class="symbol">(</span><span class="normal">GLIB_COMPILE_SCHEMAS</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">.</span>
+
+<span class="normal">CLEANFILES </span><span class="symbol">+=</span><span class="normal"> gschemas</span><span class="symbol">.</span><span class="normal">compiled</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  </p>
+</div>
+<p>
+</p>
+</div>
+<div class="refsect1">
+<a name="GTestDBus.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GTestDBus-struct"></a><h3>GTestDBus</h3>
+<pre class="programlisting">typedef struct _GTestDBus GTestDBus;</pre>
+<p>
+The <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> structure contains only private data and
+should only be accessed using the provided API.
+</p>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTestDBusFlags-enum"></a><h3>enum GTestDBusFlags</h3>
+<pre class="programlisting">typedef enum {
+  G_TEST_DBUS_NONE = 0
+} GTestDBusFlags;
+</pre>
+<p>
+Flags to define future <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> behaviour.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><a name="G-TEST-DBUS-NONE:CAPS"></a><span class="term"><code class="literal">G_TEST_DBUS_NONE</code></span></p></td>
+<td>No flags.
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-new"></a><h3>g_test_dbus_new ()</h3>
+<pre class="programlisting"><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="returnvalue">GTestDBus</span></a> *         g_test_dbus_new                     (<em class="parameter"><code><a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="type">GTestDBusFlags</span></a> flags</code></em>);</pre>
+<p>
+Create a new <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> object.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="type">GTestDBusFlags</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-get-flags"></a><h3>g_test_dbus_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="returnvalue">GTestDBusFlags</span></a>      g_test_dbus_get_flags               (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);</pre>
+<p>
+Gets the flags of the <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> object.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the value of <a class="link" href="GTestDBus.html#GTestDBus--flags" title='The "flags" property'><span class="type">"flags"</span></a> property</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-get-bus-address"></a><h3>g_test_dbus_get_bus_address ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       g_test_dbus_get_bus_address         (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);</pre>
+<p>
+Get the address on which dbus-daemon is running. if <a class="link" href="GTestDBus.html#g-test-dbus-up" title="g_test_dbus_up ()"><code class="function">g_test_dbus_up()</code></a> has not
+been called yet, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned. This can be used with
+<a class="link" href="GDBusConnection.html#g-dbus-connection-new-for-address" title="g_dbus_connection_new_for_address ()"><code class="function">g_dbus_connection_new_for_address()</code></a>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the address of the bus, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-add-service-dir"></a><h3>g_test_dbus_add_service_dir ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_test_dbus_add_service_dir         (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>);</pre>
+<p>
+Add a path where dbus-daemon will lookup for .services files. This can't be
+called after <a class="link" href="GTestDBus.html#g-test-dbus-up" title="g_test_dbus_up ()"><code class="function">g_test_dbus_up()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
+<td>path to a directory containing .service files</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-up"></a><h3>g_test_dbus_up ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_test_dbus_up                      (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);</pre>
+<p>
+Start a dbus-daemon instance and set DBUS_SESSION_BUS_ADDRESS. After this
+call, it is safe for unit tests to start sending messages on the session bus.
+</p>
+<p>
+If this function is called from setup callback of <a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-add"><code class="function">g_test_add()</code></a>,
+<a class="link" href="GTestDBus.html#g-test-dbus-down" title="g_test_dbus_down ()"><code class="function">g_test_dbus_down()</code></a> must be called in its teardown callback.
+</p>
+<p>
+If this function is called from unit test's <code class="function">main()</code>, then <a class="link" href="GTestDBus.html#g-test-dbus-down" title="g_test_dbus_down ()"><code class="function">g_test_dbus_down()</code></a>
+must be called after <a href="http://library.gnome.org/devel/glib/unstable/glib-Testing.html#g-test-run"><code class="function">g_test_run()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-stop"></a><h3>g_test_dbus_stop ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_test_dbus_stop                    (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);</pre>
+<p>
+Stop the session bus started by <a class="link" href="GTestDBus.html#g-test-dbus-up" title="g_test_dbus_up ()"><code class="function">g_test_dbus_up()</code></a>.
+</p>
+<p>
+Unlike <a class="link" href="GTestDBus.html#g-test-dbus-down" title="g_test_dbus_down ()"><code class="function">g_test_dbus_down()</code></a>, this won't verify the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>
+singleton returned by <a class="link" href="GDBusConnection.html#g-bus-get" title="g_bus_get ()"><code class="function">g_bus_get()</code></a> or <a class="link" href="GDBusConnection.html#g-bus-get-sync" title="g_bus_get_sync ()"><code class="function">g_bus_get_sync()</code></a> is destroyed. Unit
+tests wanting to verify behaviour after the session bus has been stopped
+can use this function but should still call <a class="link" href="GTestDBus.html#g-test-dbus-down" title="g_test_dbus_down ()"><code class="function">g_test_dbus_down()</code></a> when done.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-down"></a><h3>g_test_dbus_down ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_test_dbus_down                    (<em class="parameter"><code><a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a> *self</code></em>);</pre>
+<p>
+Stop the session bus started by <a class="link" href="GTestDBus.html#g-test-dbus-up" title="g_test_dbus_up ()"><code class="function">g_test_dbus_up()</code></a>.
+</p>
+<p>
+This will wait for the singleton returned by <a class="link" href="GDBusConnection.html#g-bus-get" title="g_bus_get ()"><code class="function">g_bus_get()</code></a> or <a class="link" href="GDBusConnection.html#g-bus-get-sync" title="g_bus_get_sync ()"><code class="function">g_bus_get_sync()</code></a>
+is destroyed. This is done to ensure that the next unit test won't get a
+leaked singleton from this test.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>self</code></em> :</span></p></td>
+<td>a <a class="link" href="GTestDBus.html" title="GTestDBus"><span class="type">GTestDBus</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-test-dbus-unset"></a><h3>g_test_dbus_unset ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_test_dbus_unset                   (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Unset DISPLAY and DBUS_SESSION_BUS_ADDRESS env variables to ensure the test
+won't use user's session bus.
+</p>
+<p>
+This is useful for unit tests that want to verify behaviour when no session
+bus is running. It is not necessary to call this if unit test already calls
+<a class="link" href="GTestDBus.html#g-test-dbus-up" title="g_test_dbus_up ()"><code class="function">g_test_dbus_up()</code></a> before acquiring the session bus.
+</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTestDBus.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GTestDBus--flags"></a><h3>The <code class="literal">"flags"</code> property</h3>
+<pre class="programlisting">  "flags"                    <a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="type">GTestDBusFlags</span></a>        : Read / Write / Construct Only</pre>
+<p>
+<a class="link" href="GTestDBus.html#GTestDBusFlags"><span class="type">GTestDBusFlags</span></a> specifying the behaviour of the dbus session
+</p>
+<p class="since">Since 2.34</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+BUILD := i386-pc-linux-gnu
+
+PLATFORM := arm-buildroot-linux
+CROSS_COMPILE := arm-buildroot-linux-uclibcgnueabi-
+IPKG_TOOLS := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../../ipkg-utils-1.7 && pwd)
+
+STRIP := $(CROSS_COMPILE)strip
+
+#
+# standard packages
+#
+
+obj-y += Asusware-ipk
+
+all: $(obj-y)
+
+clean:
+	rm -rf asusware_*
+
+Asusware-ipk:
+	cp -rf AiCloud-tmp/CONTROL/control-asusware-arm-new asusware-ipk-arm/CONTROL/control
+	@$(IPKG_TOOLS)/ipkg-build asusware-ipk-arm ./

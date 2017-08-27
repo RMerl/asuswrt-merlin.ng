@@ -1,0 +1,12 @@
+prefix=/root/桌面/GPL/MS_GPL_mips/opt
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libpostproc
+Description: FFmpeg post processing library
+Version: 51.1.0
+Requires: 
+Conflicts:
+Libs: -L${libdir} -lpostproc
+Cflags: -I${includedir}

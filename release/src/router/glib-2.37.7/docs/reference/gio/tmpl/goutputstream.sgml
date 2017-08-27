@@ -1,0 +1,278 @@
+<!-- ##### SECTION Title ##### -->
+GOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM GOutputStreamSpliceFlags ##### -->
+<para>
+
+</para>
+
+@G_OUTPUT_STREAM_SPLICE_NONE: 
+@G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE: 
+@G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET: 
+
+<!-- ##### STRUCT GOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_output_stream_write ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_write_all ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@bytes_written: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_splice ##### -->
+<para>
+
+</para>
+
+@stream: 
+@source: 
+@flags: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_flush ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_close ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_write_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@buffer: 
+@count: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_output_stream_write_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_splice_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@source: 
+@flags: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_output_stream_splice_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_flush_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_output_stream_flush_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_close_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_output_stream_close_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_is_closing ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_is_closed ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_has_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_set_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_clear_pending ##### -->
+<para>
+
+</para>
+
+@stream: 
+
+
+<!-- ##### FUNCTION g_output_stream_write_bytes ##### -->
+<para>
+
+</para>
+
+@stream: 
+@bytes: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_output_stream_write_bytes_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@bytes: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_output_stream_write_bytes_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@error: 
+@Returns: 
+
+

@@ -1,0 +1,445 @@
+# NLS support for the sysstat package.
+# This file is distributed under the same license as the sysstat package.
+# Copyright (C) 1999-2011 Free Software Foundation, Inc.
+# Sebastien GODARD <sysstat [at] orange.fr>, 1999.
+# Japanese translation by Hideki Yamane (Debian-JP) <henrich@debian.or.jp>, 2008-2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 10.0.2\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2011-08-16 14:17+0200\n"
+"PO-Revision-Date: 2011-09-25 00:30+0900\n"
+"Last-Translator: Hideki Yamane (Debian-JP) <henrich@debian.or.jp>\n"
+"Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cifsiostat.c:69 iostat.c:80 mpstat.c:86 nfsiostat.c:68 pidstat.c:78
+#: sar.c:90
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ]\n"
+msgstr "使い方: %s [ オプション ] [ <間隔> [ <回数> ] ]\n"
+
+#: cifsiostat.c:73 nfsiostat.c:72
+#, c-format
+msgid ""
+"Options are:\n"
+"[ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ --debuginfo ] [ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+
+#: cifsiostat.c:76 nfsiostat.c:75
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -h ] [ -k | -m ] [ -t ] [ -V ]\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat バージョン %s\n"
+
+#: ioconf.c:490 rd_stats.c:68 rd_stats.c:2120 sa_common.c:1061 sadc.c:623
+#: sadc.c:632 sadc.c:692
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "%s を開けません: %s\n"
+
+#: iostat.c:83
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ] [ --debuginfo ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <デバイス> [...] | ALL ] [ -p [ <デバイス> [,...] | ALL ] ] [ --debuginfo ]\n"
+
+#: iostat.c:87
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <デバイス> [...] | ALL ] [ -p [ <デバイス> [,...] | ALL ] ]\n"
+
+#: iostat.c:313
+#, c-format
+msgid "Cannot find disk data\n"
+msgstr "ディスクデータが見つかりません\n"
+
+#: mpstat.c:89
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ]\n"
+"[ -P { <cpu> [,...] | ON | ALL } ] [ -V ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -A ] [ -I { SUM | CPU | SCPU | ALL } ] [ -u ]\n"
+"[ -P { <cpu> [,...] | ON | ALL } ] [ -V ]\n"
+
+# sar.c:
+#: mpstat.c:582 pidstat.c:1823 sar.c:381
+msgid "Average:"
+msgstr "平均値:"
+
+#: mpstat.c:929
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "そんなに CPU はありません!\n"
+
+#: pidstat.c:81
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <command> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -s ]\n"
+"[ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -C <コマンド> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -s ]\n"
+"[ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:199 sar.c:1013
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "要求された動作情報は利用できません\n"
+
+#: pr_stats.c:2319 pr_stats.c:2332
+msgid "Summary"
+msgstr "サマリ"
+
+#: pr_stats.c:2370
+msgid "Other devices not listed here"
+msgstr "ここに挙げられていない他のデバイス"
+
+#: rd_stats.c:2166
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "そんなに大量のプロセッサは扱えません!\n"
+
+#: sa_common.c:870
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "システム動作情報ファイルの読み込み中にエラーが起きました: %s\n"
+
+#: sa_common.c:880
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "システム動作情報ファイルが途中で予期無く終了しました\n"
+
+#: sa_common.c:898
+#, c-format
+msgid "File created using sar/sadc from sysstat version %d.%d.%d"
+msgstr "sysstat バージョン %d.%d.%d の sar/sadc を使って作られたファイル"
+
+#: sa_common.c:929
+#, c-format
+msgid "Invalid system activity file: %s\n"
+msgstr "システム動作情報ファイルの形式が正しくありません: %s\n"
+
+#: sa_common.c:936
+#, c-format
+msgid "Current sysstat version can no longer read the format of this file (%#x)\n"
+msgstr "sysstat の現在のバージョンではこのデータファイル (%#x) の形式を読み込めなくなっています\n"
+
+#: sa_common.c:1168
+#, c-format
+msgid "Requested activities not available in file %s\n"
+msgstr "要求された動作情報はファイル %s 内にはありません\n"
+
+#: sadc.c:81
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+msgstr "使い方: %s [ オプション ] [ <間隔> [ <回数> ] ] [ <出力ファイル> ]\n"
+
+#: sadc.c:84
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <comment> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -C <コメント> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+
+#: sadc.c:223
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "システム動作情報ファイルに書き込みができません: %s\n"
+
+#: sadc.c:510
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "システム動作情報ファイルのヘッダに書き込みができません: %s\n"
+
+#: sadc.c:791
+#, c-format
+msgid "Cannot append data to that file (%s)\n"
+msgstr "ファイル (%s) にデータを追加できません\n"
+
+#: sadf.c:88
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+msgstr "使い方: %s [ オプション ] [ <間隔> [ <回数> ] ] [ <データファイル名> ]\n"
+
+#: sadf.c:91
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -d | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options> ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -d | -p | -x ] [ -C ] [ -H ] [ -h ] [ -T ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar のオプション> ]\n"
+
+#: sadf_misc.c:379
+#, c-format
+msgid "System activity data file: %s (%#x)\n"
+msgstr "システム動作情報ファイル: %s (%#x)\n"
+
+#: sadf_misc.c:388
+#, c-format
+msgid "Host: "
+msgstr "ホスト名: "
+
+#: sadf_misc.c:394
+#, c-format
+msgid "Size of a long int: %d\n"
+msgstr "long int のサイズ: %d\n"
+
+#: sadf_misc.c:396
+#, c-format
+msgid "List of activities:\n"
+msgstr "動作情報のリスト:\n"
+
+#: sadf_misc.c:409
+#, c-format
+msgid "\t[Unknown activity format]"
+msgstr "\t[不明な動作記録フォーマット]"
+
+#: sar.c:105
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -p ] [ -q ] [ -r ]\n"
+"[ -R ] [ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -m { <keyword> [,...] | ALL } ] [ -n { <keyword> [,...] | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"利用可能なオプション:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -H ] [ -p ] [ -q ] [ -r ]\n"
+"[ -R ] [ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -m { <キーワード> [,...] | ALL } ] [ -n { <キーワード> [,...] | ALL } ]\n"
+"[ -o [ <ファイル名> ] | -f [ <ファイル名> ] ]\n"
+"[ -i <間隔> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:126
+#, c-format
+msgid "Main options and reports:\n"
+msgstr "主要なオプションとその結果:\n"
+
+#: sar.c:127
+#, c-format
+msgid "\t-b\tI/O and transfer rate statistics\n"
+msgstr "\t-b\tI/O と転送率の状況\n"
+
+#: sar.c:128
+#, c-format
+msgid "\t-B\tPaging statistics\n"
+msgstr "\t-B\tページングの状態\n"
+
+#: sar.c:129
+#, c-format
+msgid "\t-d\tBlock device statistics\n"
+msgstr "\t-d\tブロックデバイスの状態\n"
+
+#: sar.c:130
+#, c-format
+msgid "\t-H\tHugepages utilization statistics\n"
+msgstr "\t-H\tHugepage の利用状況\n"
+
+#: sar.c:131
+#, c-format
+msgid ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tInterrupts statistics\n"
+msgstr ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\t割り込み状況\n"
+
+#: sar.c:133
+#, c-format
+msgid ""
+"\t-m { <keyword> [,...] | ALL }\n"
+"\t\tPower management statistics\n"
+"\t\tKeywords are:\n"
+"\t\tCPU\tCPU instantaneous clock frequency\n"
+"\t\tFAN\tFans speed\n"
+"\t\tFREQ\tCPU average clock frequency\n"
+"\t\tIN\tVoltage inputs\n"
+"\t\tTEMP\tDevices temperature\n"
+"\t\tUSB\tUSB devices plugged into the system\n"
+msgstr ""
+"\t-m { <キーワード> [,...] | ALL }\n"
+"\t\t電源管理状態の\n"
+"\t\tキーワード:\n"
+"\t\tCPU\tCPU 周波数\n"
+"\t\tFAN\tファン回転数\n"
+"\t\tFREQ\tCPU の平均周波数\n"
+"\t\tIN\t入力電圧\n"
+"\t\tTEMP\tデバイス温度\n"
+"\t\tUSB\tシステムに挿入されている USB デバイス\n"
+
+#: sar.c:142
+#, c-format
+msgid ""
+"\t-n { <keyword> [,...] | ALL }\n"
+"\t\tNetwork statistics\n"
+"\t\tKeywords are:\n"
+"\t\tDEV\tNetwork interfaces\n"
+"\t\tEDEV\tNetwork interfaces (errors)\n"
+"\t\tNFS\tNFS client\n"
+"\t\tNFSD\tNFS server\n"
+"\t\tSOCK\tSockets\t(v4)\n"
+"\t\tIP\tIP traffic\t(v4)\n"
+"\t\tEIP\tIP traffic\t(v4) (errors)\n"
+"\t\tICMP\tICMP traffic\t(v4)\n"
+"\t\tEICMP\tICMP traffic\t(v4) (errors)\n"
+"\t\tTCP\tTCP traffic\t(v4)\n"
+"\t\tETCP\tTCP traffic\t(v4) (errors)\n"
+"\t\tUDP\tUDP traffic\t(v4)\n"
+"\t\tSOCK6\tSockets\t(v6)\n"
+"\t\tIP6\tIP traffic\t(v6)\n"
+"\t\tEIP6\tIP traffic\t(v6) (errors)\n"
+"\t\tICMP6\tICMP traffic\t(v6)\n"
+"\t\tEICMP6\tICMP traffic\t(v6) (errors)\n"
+"\t\tUDP6\tUDP traffic\t(v6)\n"
+msgstr ""
+"\t-n { <キーワード> [,...] | ALL }\n"
+"\t\tネットワークの状態\n"
+"\t\tキーワード一覧:\n"
+"\t\tDEV\tネットワークインターフェイス\n"
+"\t\tEDEV\tネットワークインターフェイス (エラー)\n"
+"\t\tNFS\tNFS クライアント\n"
+"\t\tNFSD\tNFS サーバ\n"
+"\t\tSOCK\tソケット\t(v4)\n"
+"\t\tIP\tIP トラフィック\t(v4)\n"
+"\t\tEIP\tIP トラフィック\t(v4) (エラー)\n"
+"\t\tICMP\tICMP トラフィック\t(v4)\n"
+"\t\tEICMP\tICMP トラフィック\t(v4) (エラー)\n"
+"\t\tTCP\tTCP トラフィック\t(v4)\n"
+"\t\tETCP\tTCP トラフィック\t(v4) (エラー)\n"
+"\t\tUDP\tUDP トラフィック\t(v4)\n"
+"\t\tSOCK6\tSockets\t(v6)\n"
+"\t\tIP6\tIP トラフィック\t(v6)\n"
+"\t\tEIP6\tIP トラフィック\t(v6) (エラー)\n"
+"\t\tICMP6\tICMP トラフィック\t(v6)\n"
+"\t\tEICMP6\tICMP トラフィック\t(v6) (エラー)\n"
+"\t\tUDP6\tUDP トラフィック\t(v6)\n"
+
+#: sar.c:163
+#, c-format
+msgid "\t-q\tQueue length and load average statistics\n"
+msgstr "\t-q\tQキューの長さとロードアベレージの状態\n"
+
+#: sar.c:164
+#, c-format
+msgid "\t-r\tMemory utilization statistics\n"
+msgstr "\t-r\tメモリ利用率の状態\n"
+
+#: sar.c:165
+#, c-format
+msgid "\t-R\tMemory statistics\n"
+msgstr "\t-R\tメモリの状況\n"
+
+#: sar.c:166
+#, c-format
+msgid "\t-S\tSwap space utilization statistics\n"
+msgstr "\t-S\tスワップ領域の利用状況\n"
+
+#: sar.c:167
+#, c-format
+msgid ""
+"\t-u [ ALL ]\n"
+"\t\tCPU utilization statistics\n"
+msgstr ""
+"\t-u [ ALL ]\n"
+"\t\tCPU 利用の利用状況\n"
+
+#: sar.c:169
+#, c-format
+msgid "\t-v\tKernel table statistics\n"
+msgstr "\t-v\tカーネルのテーブル状態\n"
+
+#: sar.c:170
+#, c-format
+msgid "\t-w\tTask creation and system switching statistics\n"
+msgstr "\t-w\tタスクの作成とシステムスイッチの状態\n"
+
+# , c-format
+#: sar.c:171
+#, c-format
+msgid "\t-W\tSwapping statistics\n"
+msgstr "\t-W\tスワップの状態\n"
+
+# , c-format
+#: sar.c:172
+#, c-format
+msgid "\t-y\tTTY device statistics\n"
+msgstr "\t-y\tTTY デバイスの状態\n"
+
+#: sar.c:215
+#, c-format
+msgid "End of data collecting unexpected\n"
+msgstr "データの収集が予期無く終了しました\n"
+
+#: sar.c:802
+#, c-format
+msgid "Invalid data format\n"
+msgstr "データ形式が正しくありません\n"
+
+#: sar.c:806
+#, c-format
+msgid "Using a wrong data collector from a different sysstat version\n"
+msgstr "異なるバージョンの sysstat のデータ収集プログラムによる不正なデータを使っています\n"
+
+#: sar.c:830
+#, c-format
+msgid "Inconsistent input data\n"
+msgstr "矛盾した入力データです\n"
+
+#: sar.c:1260
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "-f と -o オプションは相互に排他的です\n"
+
+#: sar.c:1266
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "システム動作情報ファイルの読み込みがありません (-f オプションを使ってください)\n"
+
+#: sar.c:1393
+#, c-format
+msgid "Cannot find the data collector (%s)\n"
+msgstr "データ収集プログラム (%s) が見つかりません\n"

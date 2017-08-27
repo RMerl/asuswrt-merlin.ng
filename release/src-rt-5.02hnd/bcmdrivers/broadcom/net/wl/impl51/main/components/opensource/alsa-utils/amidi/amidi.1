@@ -1,0 +1,155 @@
+.TH AMIDI 1 "26 Jun 2006"
+
+.SH NAME
+amidi \- read from and write to ALSA RawMIDI ports
+
+.SH SYNOPSIS
+\fBamidi\fP [\fI\-p port\fP] [\fI\-s file\fP | \fI\-S data\fP]
+[\fI\-r file\fP] [\fI\-d\fP] [\fI\-t seconds\fP] [\fI\-a\fP]
+
+.SH DESCRIPTION
+.B amidi
+is a command-line utility which allows to receive and send
+SysEx (system exclusive) data from/to external MIDI devices.
+It can also send any other MIDI commands.
+
+.B amidi
+handles only files containing raw MIDI commands, without timing
+information.
+.B amidi
+does not support Standard MIDI (.mid) files, but
+.B aplaymidi(1)
+and
+.B arecordmidi(1)
+do.
+
+.SH OPTIONS
+
+Use the
+.I \-h,
+.I \-V,
+.I \-l,
+or
+.I \-L
+options to display information;
+or use at least one of the
+.I \-s,
+.I \-r,
+.I \-S,
+or
+.I \-d
+options to specify what data to send or receive.
+
+.TP
+.I \-h, \-\-help
+Help: prints a list of options.
+
+.TP
+.I \-V, \-\-version
+Prints the current version.
+
+.TP
+.I \-l, \-\-list\-devices
+Prints a list of all hardware MIDI ports.
+
+.TP
+.I \-L, \-\-list\-rawmidis
+Prints all RawMIDI definitions.
+(used when debugging configuration files)
+
+.TP
+.I \-p, \-\-port=name
+Sets the name of the ALSA RawMIDI port to use.
+If this is not specified,
+.B amidi
+uses the default port defined in the configuration file
+(the default for this is port 0 on card 0, which may not exist).
+
+.TP
+.I \-s, \-\-send=filename
+Sends the contents of the specified file to the MIDI port.
+The file must contain raw MIDI commands (e.g. a .syx file);
+for Standard MIDI (.mid) files, use
+.B aplaymidi(1).
+
+.TP
+.I \-r, \-\-receive=filename
+Writes data received from the MIDI port into the specified file.
+The file will contain raw MIDI commands (such as in a .syx file);
+to record a Standard MIDI (.mid) file, use
+.B arecordmidi(1).
+
+.B amidi
+will filter out any Active Sensing bytes (FEh), unless the
+.I \-a
+option has been given.
+
+.TP
+.I \-S, \-\-send\-hex="..."
+Sends the bytes specified as hexadecimal numbers to the MIDI port.
+
+.TP
+.I \-d, \-\-dump
+Prints data received from the MIDI port as hexadecimal bytes.
+Active Sensing bytes (FEh) will not be shown, unless the
+.I \-a
+option has been given.
+
+This option is useful for debugging.
+
+.TP
+.I \-t, \-\-timeout=seconds
+Stops receiving data when no data has been received for the specified
+amount of time.
+
+If this option has not been given, you must press Ctrl+C (or kill
+.B amidi\fR)
+to stop receiving data.
+
+.TP
+.I \-a, \-\-active\-sensing
+Does not ignore Active Sensing bytes (FEh) when saving or printing
+received MIDI commands.
+
+.SH EXAMPLES
+
+.TP
+.B amidi \-p hw:0 \-s my_settings.syx
+will send the MIDI commands in
+.I my_settings.syx
+to port
+.I hw:0.
+
+.TP
+.B amidi \-S 'F0 43 10 4C 00 00 7E 00 F7'
+sends an XG Reset to the default port.
+
+.TP
+.B amidi \-p hw:1,2 \-S F0411042110C000000000074F7 \-r dump.syx \-t 1
+sends a \(lqParameter Dump Request\(rq to a GS device, saves the received
+parameter data to the file
+.I dump.syx,
+and stops after the device has finished sending data
+(when no data has been received for one second).
+
+.TP
+.B amidi \-p virtual \-d
+creates a virtual RawMIDI port and prints all data sent to this port.
+
+.SH FILES
+.I /usr/share/alsa/alsa.conf
+default rawmidi definitions
+.br
+.I /etc/asound.conf
+system-wide rawmidi definitions
+.br
+.I ~/.asoundrc
+user specific rawmidi definitions
+
+.SH SEE ALSO
+aplaymidi(1)
+.br
+arecordmidi(1)
+
+.SH AUTHOR
+Clemens Ladisch <clemens@ladisch.de>

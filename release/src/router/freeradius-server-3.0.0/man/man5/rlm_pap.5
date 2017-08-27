@@ -1,0 +1,97 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_pap 5 "6 June 2008" "" "FreeRADIUS Module"
+.SH NAME
+rlm_pap \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_pap\fP module authenticates RADIUS Access-Request packets
+that contain a User-Password attribute.  The module should also be
+listed last in the \fIauthorize\fP section, so that it can set the
+Auth-Type attribute as appropriate.
+.PP
+When a RADIUS packet contains a clear-text password in the form of a
+User-Password attribute, the \fIrlm_pap\fP module may be used for
+authentication.  The module requires a "known good" password, which it
+uses to validate the password given in the RADIUS packet.  That "known
+good" password must be supplied by another module
+(e.g. \fIrlm_files\fP, \fIrlm_ldap\fP, etc.), and is usually taken
+from a database.
+.SH CONFIGURATION
+.PP
+The only relevant configuration item is:
+.IP auto_header
+If set to "yes", the module will look inside of the User-Password
+attribute for the headers {crypt}, {clear}, etc., and will
+automatically create the appropriate attribute, with the correct
+value.
+.PP
+This module understands many kinds of password hashing methods, as
+given by the following table.
+.PP
+.DS
+.br
+Header       Attribute          Description
+.br
+------       ---------          -----------
+.br
+{clear}      Cleartext-Password clear-text passwords
+.br
+{cleartext}  Cleartext-Password clear-text passwords
+.br
+{crypt}      Crypt-Password     Unix-style "crypt"ed passwords
+.br
+{md5}        MD5-Password       MD5 hashed passwords
+.br
+{smd5}       SMD5-Password      MD5 hashed passwords, with a salt
+.br
+{sha}        SHA-Password       SHA1 hashed passwords
+.br
+{ssha}       SSHA-Password      SHA1 hashed passwords, with a salt
+.br
+{nt}         NT-Password        Windows NT hashed passwords
+.br
+{x-nthash}   NT-Password        Windows NT hashed passwords
+.br
+{lm}         LM-Password        Windows Lan Manager (LM) passwords.
+.DE
+
+The module tries to be flexible when handling the various password
+formats.  It will automatically handle Base-64 encoded data, hex
+strings, and binary data, and convert them to a format that the server
+can use.
+.PP
+It is important to understand the difference between the User-Password
+and Cleartext-Password attributes.  The Cleartext-Password attribute
+is the "known good" password for the user.  Simply supplying the
+Cleartext-Password to the server will result in most authentication
+methods working.  The User-Password attribute is the password as typed
+in by the user on their private machine.  The two are not the same,
+and should be treated very differently.  That is, you should generally
+not use the User-Password attribute anywhere in the RADIUS
+configuration.
+.PP
+For backwards compatibility, there are old configuration parameters
+which may be work, although we do not recommend using them.
+.SH SECTIONS
+.BR authorize
+.BR authenticate
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Alan DeKok <aland@freeradius.org>
+

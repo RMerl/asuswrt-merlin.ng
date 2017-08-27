@@ -1,0 +1,202 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH radiusd.conf 5 "28 Jun 2013" "" "FreeRADIUS configuration file"
+.SH NAME
+radiusd.conf \- configuration file for the FreeRADIUS server
+.SH DESCRIPTION
+The \fBradiusd.conf\fP file resides in the radius database directory,
+by default \fB/etc/raddb\fP.  It defines the global configuration for
+the FreeRADIUS RADIUS server.
+.SH "CONTENTS"
+There are a large number of configuration parameters for the server.
+Most are documented in the file itself as comments.  This page
+documents only the format of the file.  Please read the
+\fBradiusd.conf\fP file itself for more information.
+
+The configuration file parser is independent of the server
+configuration.  This means that you can put almost anything into the
+configuration file.  So long as it is properly formatted, the server
+will start.
+
+When the server parses the configuration file, it looks only for those
+configurations it understands.  Extra configuration items are ignored.
+This "feature" can be (ab)used in certain interesting ways.
+.SH "FILE FORMAT"
+The file format is line-based, like many other Unix configuration
+files.  Each entry in the file must be placed on a line by itself,
+although continuations are supported.
+
+The file consists of configuration items (variable = value pairs),
+sections, and comments.
+.IP Variables
+Variables can be set via:
+
+.DS
+.br
+	name = value
+.DE
+
+Single and double-quoted strings are permitted:
+
+.DS
+.br
+	string1 = "hello world"
+.br
+	string2 = 'hello mom'
+.DE
+.IP Sections
+A section begins with a section name, followed on the same line by an
+open bracket '\fB{\fP'.  Section may contain other sections, comments, or
+variables.  Sections may be nested to any depth, limited
+only by available memory.  A section ends with a close bracket
+\'\fB}\fP', on a line by itself.
+
+.DS
+.br
+	section {
+.br
+		...
+.br
+	}
+.DE
+
+Sections can sometimes have a second name following the first one.
+The situations where this is legal depend on the context.  See the
+examples and comments in the \fBradiusd.conf\fP file for more
+information.
+
+.DS
+.br
+	section foo {
+.br
+		...
+.br
+	}
+.DE
+.IP Comments
+Any line beginning with a (\fB#\fP) is deemed to be a comment, and is
+ignored.  Comments can appear after a variable or section definitions.
+
+.DS
+.br
+	# comment
+.br
+	foo = bar # set variable 'foo' to value 'bar'
+.br
+	section {	# start of section
+.br
+	...
+.br
+	}		# end of section
+.DE
+.IP Continuations
+Long lines can be broken up via continuations, using '\\' as the last
+character of the line.  For example, the following entry:
+
+.DS
+.br
+	foo = "blah \\
+.br
+	blah \\
+.br
+	blah"
+.DE
+
+will set the value of the variable "foo" to "blah blah blah".  Any CR
+or LF is not turned into a space, but all other whitespace is
+preserved in the final value.
+.SH "REFERENCES"
+The value of a variable can reference another variable.  These
+references are evaluated when the configuration file is loaded, which
+means that there is no run-time cost associated with them.  This
+feature is most useful for turning long, repeated pieces of text into
+short ones.
+
+Variables are referenced by ${variable_name}, as in the following examples.
+
+.DS
+	foo = bar       # set variable 'foo' to value 'bar'
+.br
+	who = ${foo}    # sets variable 'who' to value of variable 'foo'
+.br
+	my = "${foo} a" # sets variable 'my' to "bar a"
+.DE
+
+If the variable exists in a section or subsection, it can be
+referenced as ${section.subsection.variable}.  Forward references are
+not allowed.  Relative references are allowed, by pre-pending the name
+with one or more period.
+
+.DS
+	blogs = ${.foo}
+
+.DE
+Will set variable \fBblogs\fP to the value of variable \fBfoo\fP,
+from the current section.
+
+.DS
+	blogs = ${..foo}
+
+.DE
+Will set variable \fBblogs\fP to the value of variable \fBfoo\fP, from the
+section which contains the current section.
+
+.DS
+	blogs = ${modules.detail.filename}
+
+.DE
+Will set variable \fBblogs\fP to the value of variable \fBfilename\fP,
+of the \fBdetail\fP module, which is in the \fBmodules\fP section of
+the configuration file.
+
+Properties of anonymous parent sections may also be referenced, currently
+\fBname\fP and \fBinstance\fP are supported.
+
+.DS
+	modules {
+		example foo {
+			file = ${.:name}
+		}
+	}
+	
+.DE
+Will set variable \fBfile\fP to the name of the containing section (example).
+
+.DS
+	modules {
+		example foo {
+			file = ${.:instance}
+		}
+	}
+	
+.DE
+Will set variable \fBfile\fP to the instance name of the containing 
+section (foo).
+
+.DS
+	modules {
+		example foo {
+			file = ${..:name}
+		}
+	}
+	
+.DE
+Will set variable \fBfile\fP to the name of the parent of the containing
+section (modules).
+.SH FILES
+/etc/raddb/radiusd.conf
+.SH "SEE ALSO"
+.BR radiusd (8)
+.BR unlang (5)
+.SH AUTHOR
+Alan DeKok <aland@freeradius.org>

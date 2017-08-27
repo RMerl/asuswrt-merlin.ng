@@ -1,0 +1,9 @@
+A tunnel that will connect the subnets behind the gateways <b>moon</b>
+and <b>sun</b>, respectively, is preconfigured by installing a %trap eroute
+on gateway <b>moon</b> by means of the setting <b>auto=route</b> in ipsec.conf.
+A subsequent ping issued by client <b>alice</b> behind gateway <b>moon</b> to
+<b>bob</b> located behind gateway <b>sun</b> triggers the %trap eroute and
+leads to the automatic establishment of the subnet-to-subnet tunnel.
+<p>
+<b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules
+that let pass the tunneled traffic.

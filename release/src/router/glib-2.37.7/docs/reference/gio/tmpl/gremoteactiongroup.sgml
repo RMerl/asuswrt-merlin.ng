@@ -1,0 +1,61 @@
+<!-- ##### SECTION Title ##### -->
+gremoteactiongroup
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GRemoteActionGroup ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GRemoteActionGroupInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@activate_action_full: 
+@change_action_state_full: 
+
+<!-- ##### FUNCTION g_remote_action_group_activate_action_full ##### -->
+<para>
+
+</para>
+
+@remote: 
+@action_name: 
+@parameter: 
+@platform_data: 
+
+
+<!-- ##### FUNCTION g_remote_action_group_change_action_state_full ##### -->
+<para>
+
+</para>
+
+@remote: 
+@action_name: 
+@value: 
+@platform_data: 
+
+

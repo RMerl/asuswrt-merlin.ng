@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: Instantiable classed types: objects</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gtype.html" title="The GLib Dynamic Type System">
+<link rel="prev" href="gtype-non-instantiable.html" title="Non-instantiable non-classed fundamental types">
+<link rel="next" href="gtype-non-instantiable-classed.html" title="Non-instantiable classed types: interfaces">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gtype.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gtype-non-instantiable.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gtype-non-instantiable-classed.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gtype-instantiable-classed"></a>Instantiable classed types: objects</h2></div></div></div>
+<p>
+          Types which are registered with a class and are declared instantiable are
+          what most closely resembles an <span class="emphasis"><em>object</em></span>. 
+          Although <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>s (detailed in <a class="xref" href="chapter-gobject.html" title="The GObject base class"><i>The GObject base class</i></a>) 
+          are the most well known type of instantiable
+          classed types, other kinds of similar objects used as the base of an inheritance 
+          hierarchy have been externally developed and they are all built on the fundamental
+          features described below.
+        </p>
+<p>
+          For example, the code below shows how you could register 
+          such a fundamental object type in the type system:
+</p>
+<pre class="programlisting">
+typedef struct {
+  GObject parent;
+  /* instance members */
+  int field_a;
+} MamanBar;
+
+typedef struct {
+  GObjectClass parent;
+  /* class members */
+  void (*do_action_public_virtual) (MamanBar *self, guint8 i);
+
+  void (*do_action_public_pure_virtual) (MamanBar *self, guint8 i);
+} MamanBarClass;
+
+#define MAMAN_TYPE_BAR (maman_bar_get_type ())
+
+GType 
+maman_bar_get_type (void)
+{
+  static GType type = 0;
+  if (type == 0) {
+    const GTypeInfo info = {
+      sizeof (MamanBarClass),
+      NULL,           /* base_init */
+      NULL,           /* base_finalize */
+      (GClassInitFunc) foo_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof (MamanBar),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) NULL /* instance_init */
+    };
+    type = g_type_register_static (G_TYPE_OBJECT,
+                                   "BarType",
+                                   &amp;info, 0);
+  }
+  return type;
+}
+</pre>
+<p>
+          Upon the first call to <code class="function">maman_bar_get_type</code>, the type named
+          <span class="emphasis"><em>BarType</em></span> will be registered in the type system as inheriting
+          from the type <span class="emphasis"><em>G_TYPE_OBJECT</em></span>.
+        </p>
+<p>
+          Every object must define two structures: its class structure and its 
+          instance structure. All class structures must contain as first member
+          a <a class="link" href="gobject-Type-Information.html#GTypeClass" title="struct GTypeClass"><span class="type">GTypeClass</span></a> structure. All instance structures must contain as first
+          member a <a class="link" href="gobject-Type-Information.html#GTypeInstance" title="struct GTypeInstance"><span class="type">GTypeInstance</span></a> structure. The declaration of these C types,
+          coming from <code class="filename">gtype.h</code> is shown below:
+</p>
+<pre class="programlisting">
+struct _GTypeClass
+{
+  GType g_type;
+};
+struct _GTypeInstance
+{
+  GTypeClass *g_class;
+};
+</pre>
+<p>
+          These constraints allow the type system to make sure that every object instance
+          (identified by a pointer to the object's instance structure) contains in its
+          first bytes a pointer to the object's class structure.
+        </p>
+<p>
+          This relationship is best explained by an example: let's take object B which
+          inherits from object A:
+</p>
+<pre class="programlisting">
+/* A definitions */
+typedef struct {
+  GTypeInstance parent;
+  int field_a;
+  int field_b;
+} A;
+typedef struct {
+  GTypeClass parent_class;
+  void (*method_a) (void);
+  void (*method_b) (void);
+} AClass;
+
+/* B definitions. */
+typedef struct {
+  A parent;
+  int field_c;
+  int field_d;
+} B;
+typedef struct {
+  AClass parent_class;
+  void (*method_c) (void);
+  void (*method_d) (void);
+} BClass;
+</pre>
+<p>          
+          The C standard mandates that the first field of a C structure is stored starting
+          in the first byte of the buffer used to hold the structure's fields in memory.
+          This means that the first field of an instance of an object B is A's first field
+          which in turn is GTypeInstance's first field which in turn is g_class, a pointer
+          to B's class structure.
+        </p>
+<p>
+          Thanks to these simple conditions, it is possible to detect the type of every
+          object instance by doing: 
+</p>
+<pre class="programlisting">
+B *b;
+b-&gt;parent.parent.g_class-&gt;g_type
+</pre>
+<p>
+          or, more quickly:
+</p>
+<pre class="programlisting">
+B *b;
+((GTypeInstance*)b)-&gt;g_class-&gt;g_type
+</pre>
+<p>
+        </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gtype-instantiable-classed-init-done"></a>Initialization and Destruction</h3></div></div></div>
+<p>
+            instantiation of these types can be done with 
+            <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>:
+</p>
+<pre class="programlisting">
+GTypeInstance* g_type_create_instance (GType          type);
+void           g_type_free_instance   (GTypeInstance *instance);
+</pre>
+<p>
+            <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code> will look up the type information
+            structure associated to the type requested. Then, the instance size and instantiation
+            policy (if the n_preallocs field is set to a non-zero value, the type system allocates
+            the object's instance structures in chunks rather than mallocing for every instance)
+            declared by the user are used to get a buffer to hold the object's instance
+            structure.
+          </p>
+<p>
+            If this is the first instance of the object ever created, the type system must create a class structure.
+            It allocates a buffer to hold the object's class structure and initializes it. The first part of the
+            class structure (ie: the embedded parent class structure) is initialized by copying the contents from
+            the class structure of the parent class. The rest of class structure is initialized to zero.  If there
+            is no parent, the entire class structure is initialized to zero. The type system then invokes the
+            base_class_initialization functions (<a class="link" href="gobject-Type-Information.html#GBaseInitFunc" title="GBaseInitFunc ()"><span class="type">GBaseInitFunc</span></a>) from topmost 
+            fundamental object to bottom-most most derived object. The object's class_init 
+            (<a class="link" href="gobject-Type-Information.html#GClassInitFunc" title="GClassInitFunc ()"><span class="type">GClassInitFunc</span></a>) function is invoked afterwards to complete
+            initialization of the class structure.
+            Finally, the object's interfaces are initialized (we will discuss interface initialization
+            in more detail later).
+          </p>
+<p>
+            Once the type system has a pointer to an initialized class structure, it sets the object's
+            instance class pointer to the object's class structure and invokes the object's
+            instance_init (<a class="link" href="gobject-Type-Information.html#GInstanceInitFunc" title="GInstanceInitFunc ()"><span class="type">GInstanceInitFunc</span></a>)functions, from top-most fundamental 
+            type to bottom-most most derived type.
+          </p>
+<p>
+            Object instance destruction through <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> is very simple:
+            the instance structure is returned to the instance pool if there is one and if this was the
+            last living instance of the object, the class is destroyed.
+          </p>
+<p>
+            Class destruction (the concept of destruction is sometimes partly 
+            referred to as finalization in GType) is the symmetric process of 
+            the initialization: interfaces are destroyed first. 
+            Then, the most derived 
+            class_finalize (<a class="link" href="gobject-Type-Information.html#GClassFinalizeFunc" title="GClassFinalizeFunc ()"><span class="type">GClassFinalizeFunc</span></a>) function is invoked. The 
+            base_class_finalize (<a class="link" href="gobject-Type-Information.html#GBaseFinalizeFunc" title="GBaseFinalizeFunc ()"><span class="type">GBaseFinalizeFunc</span></a>) functions are 
+            Finally invoked from bottom-most most-derived type to top-most fundamental type and 
+            the class structure is freed.
+          </p>
+<p>
+            As many readers have now understood it, the base initialization/finalization process is
+            very similar to the C++ constructor/destructor paradigm. The practical details are different
+            though and it is important not to get confused by superficial similarities. 
+            GTypes have no instance destruction mechanism. It is
+            the user's responsibility to implement correct destruction semantics on top
+            of the existing GType code. (this is what GObject does. See 
+            <a class="xref" href="chapter-gobject.html" title="The GObject base class"><i>The GObject base class</i></a>)
+           Furthermore, C++ code equivalent to the base_init 
+           and class_init callbacks of GType is usually not needed because C++ cannot really create object 
+           types at runtime.
+          </p>
+<p>
+            The instantiation/finalization process can be summarized as follows:
+            </p>
+<div class="table">
+<a name="gtype-init-fini-table"></a><p class="title"><b>Table 1. GType Instantiation/Finalization</b></p>
+<div class="table-contents"><table summary="GType Instantiation/Finalization" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function Invoked</th>
+<th align="left">Function's parameters</th>
+</tr></thead>
+<tbody>
+<tr>
+<td rowspan="3" align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code> for target type</td>
+<td align="left">type's base_init function</td>
+<td align="left">On the inheritance tree of classes from fundamental type to target type. 
+                      base_init is invoked once for each class structure.</td>
+</tr>
+<tr>
+<td align="left">target type's class_init function</td>
+<td align="left">On target type's class structure</td>
+</tr>
+<tr>
+<td align="left">interface initialization, see 
+                      <a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-init" title="Interface Initialization">the section called “Interface Initialization”</a>
+</td>
+<td align="left"> </td>
+</tr>
+<tr>
+<td align="left">Each call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code> for target type</td>
+<td align="left">target type's instance_init function</td>
+<td align="left">On object's instance</td>
+</tr>
+<tr>
+<td rowspan="3" align="left">Last call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> for target type</td>
+<td align="left">interface destruction, see
+                      <a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-dest" title="Interface Destruction">the section called “Interface Destruction”</a>
+</td>
+<td align="left"> </td>
+</tr>
+<tr>
+<td align="left">target type's class_finalize function</td>
+<td align="left">On target type's class structure</td>
+</tr>
+<tr>
+<td align="left">type's base_finalize function</td>
+<td align="left">On the inheritance tree of classes from fundamental type to target type. 
+                      base_finalize is invoked once for each class structure.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+          </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

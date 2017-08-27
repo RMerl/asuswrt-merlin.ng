@@ -1,0 +1,90 @@
+<!-- ##### SECTION Title ##### -->
+GActionMap
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GActionMap ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GActionMapInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@lookup_action: 
+@add_action: 
+@remove_action: 
+
+<!-- ##### FUNCTION g_action_map_lookup_action ##### -->
+<para>
+
+</para>
+
+@action_map: 
+@action_name: 
+@Returns: 
+
+
+<!-- ##### STRUCT GActionEntry ##### -->
+<para>
+
+</para>
+
+@name: 
+@activate: 
+@parameter_type: 
+@state: 
+@change_state: 
+
+<!-- ##### FUNCTION g_action_map_add_action_entries ##### -->
+<para>
+
+</para>
+
+@action_map: 
+@entries: 
+@n_entries: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_action_map_add_action ##### -->
+<para>
+
+</para>
+
+@action_map: 
+@action: 
+
+
+<!-- ##### FUNCTION g_action_map_remove_action ##### -->
+<para>
+
+</para>
+
+@action_map: 
+@action_name: 
+
+

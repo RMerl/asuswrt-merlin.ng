@@ -1,0 +1,47 @@
+#
+# Make sure the PYTHONPATH environmental variable contains the
+# directory(s) for the modules listed below.
+#
+# Uncomment any func_* which are included in your module. If
+# rlm_python is called for a section which does not have
+# a function defined, it will return NOOP.
+#
+python {
+	module = example
+
+	mod_instantiate = ${.module}
+#	func_instantiate = instantiate
+
+	mod_detach = ${.module}
+#	func_detach = instantiate
+
+	mod_authorize = ${.module}
+#	func_authorize = authorize
+
+	mod_authenticate = ${.module}
+#	func_authenticate = authenticate
+
+	mod_preacct = ${.module}
+#	func_preacct = preacct
+
+	mod_accounting = ${.module}
+#	func_accounting = accounting
+
+	mod_checksimul = ${.module}
+#	func_checksimul = checksimul
+
+	mod_pre_proxy = ${.module}
+#	func_pre_proxy = pre_proxy
+
+	mod_post_proxy = ${.module}
+#	func_post_proxy = post_proxy
+
+	mod_post_auth = ${.module}
+#	func_post_auth = post_auth
+
+	mod_recv_coa = ${.module}
+#	func_recv_coa = recv_coa
+
+	mod_send_coa = ${.module}
+#	func_send_coa = send_coa
+}

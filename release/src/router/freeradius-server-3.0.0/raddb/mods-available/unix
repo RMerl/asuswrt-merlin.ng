@@ -1,0 +1,23 @@
+# -*- text -*-
+#
+#  $Id$
+
+# Unix /etc/passwd style authentication
+#
+unix {
+	#  As of 1.1.0, the Unix module no longer reads,
+	#  or caches /etc/passwd, /etc/shadow, or /etc/group.
+	#  If you wish to cache those files, see the passwd
+	#  module.
+	#
+
+	#
+	#  The location of the "wtmp" file.
+	#  The only use for 'radlast'.  If you don't use
+	#  'radlast', then you can comment out this item.
+	#
+	#  Note that the radwtmp file may get large!  You should
+	#  rotate it (cp /dev/null radwtmp), or just not use it.
+	#
+	radwtmp = ${logdir}/radwtmp
+}

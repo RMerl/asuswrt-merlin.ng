@@ -1,0 +1,45 @@
+Release Highlights
+==================
+
+Version 2.0.0:
+--------------
+ * WARNING: Version 2 IS NOT Binary Compatible with Older Versions
+ * Version 2 is Source Compatible with Older Versions 
+ * Lots of source code scrubbing
+ * [New] RSCALE support (requires libicu from http://www.icu-project.org)
+ * [New] CalDAV attachment support (draft-daboo-caldav-attachments)
+ * [New] Resurrect the Berkeley DB storage support
+ * [Bug] issue83: Incorrect recurrence generation for weekly pattern
+ * Handle RRULEs better
+ * Handle threading better
+
+Version 1.0.1:
+--------------
+ * [Bug] issue74: Do not escape double quote character
+ * [Bug] issue80,issue92: fix crashes using icaltimezone_load_builtin_timezone() recursively
+ * [Bug] Fix icalcomponent_foreach_recurrence() and large durations between recurrences (e.g. FREQ=YEARLY)
+ * [Bug] Properly handle UTCOFFSETs of the form +/-00mmss
+ * [Bug] Properly skip bogus dates (e.g. 2/30, 4/31) in RRULE:FREQ=MONTHLY
+ * [Bug] Properly handle RRULE:FREQ=MONTHLY;BYDAY;BYMONTHDAY when DTSTART isn't on BYDAY
+ * [Bug] Fix RRULE:FREQ=YEARLY;BYDAY;BYWEEKNO - MUST use ISO weeks
+ * [Bug] Properly skip bogus dates (e.g. 2/29) in RRULE:FREQ=YEARLY[;BYMONTH][;BYMONTHDAY]
+
+ * [New] Update tzdata to version 2014g
+ * [New] Support added for schedule params: agent, status, force-send
+ * [New] Added a UID to the VFREEBUSY component
+ * [New] Allow dates > 2038 if sizeof(time_t) > 4
+ * [New] Add properties from draft-ietf-tzdist-service
+ * [New] Add support for RRULE:FREQ=YEARLY;BYDAY;BYYEARDAY and fixed RRULE:FREQ=YEARLY;BYYEARDAY with negative days
+
+ * [Build] Autotools build system is removed
+ * [Build] CMake version 2.8.9 (or higher) is required (was CMake version 2.4.0)
+ * [Build] Add new -DSHARED_ONLY and -DSTATIC_ONLY CMake options
+ * [Build] Remove -DSTATIC_LIBRARY CMake option
+ * [Build] MSYS2 builds (fixed instructions)
+ * [Build/Doc] Now can build api documentation with make docs
+
+ * [Quality] More regression tests added, in particular for recurrence
+ * [Quality] Almost all compile warnings silenced
+ * [Quality] A bunch of Coverity Scan warnings silenced
+
+

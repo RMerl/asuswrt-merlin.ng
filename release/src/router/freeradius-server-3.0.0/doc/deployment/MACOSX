@@ -1,0 +1,12 @@
+	Installing FreeRADIUS on MAC OSX
+	--------------------------------
+
+1) download, unzip and untar freeradius.tar.gz
+
+2) $ ./configure
+
+3) $ make
+
+4) $ make install
+
+It's what the developers use, so we make sure it works.

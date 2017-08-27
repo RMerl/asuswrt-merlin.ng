@@ -1,0 +1,136 @@
+<!-- ##### SECTION Title ##### -->
+GUnixSocketAddress
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GUnixSocketAddress ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GUnixSocketAddress:abstract ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GUnixSocketAddress:address-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GUnixSocketAddress:path ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GUnixSocketAddress:path-as-array ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GUnixSocketAddressType ##### -->
+<para>
+
+</para>
+
+@G_UNIX_SOCKET_ADDRESS_INVALID: 
+@G_UNIX_SOCKET_ADDRESS_ANONYMOUS: 
+@G_UNIX_SOCKET_ADDRESS_PATH: 
+@G_UNIX_SOCKET_ADDRESS_ABSTRACT: 
+@G_UNIX_SOCKET_ADDRESS_ABSTRACT_PADDED: 
+
+<!-- ##### FUNCTION g_unix_socket_address_new ##### -->
+<para>
+
+</para>
+
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_new_abstract ##### -->
+<para>
+
+</para>
+
+@path: 
+@path_len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_new_with_type ##### -->
+<para>
+
+</para>
+
+@path: 
+@path_len: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_get_is_abstract ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_get_address_type ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_get_path ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_get_path_len ##### -->
+<para>
+
+</para>
+
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_unix_socket_address_abstract_names_supported ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

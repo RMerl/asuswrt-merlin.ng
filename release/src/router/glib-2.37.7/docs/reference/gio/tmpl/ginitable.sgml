@@ -1,0 +1,88 @@
+<!-- ##### SECTION Title ##### -->
+GInitable
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GInitable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GInitableIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@init: 
+
+<!-- ##### FUNCTION g_initable_init ##### -->
+<para>
+
+</para>
+
+@initable: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_initable_new ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@cancellable: 
+@error: 
+@first_property_name: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_initable_new_valist ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@first_property_name: 
+@var_args: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_initable_newv ##### -->
+<para>
+
+</para>
+
+@object_type: 
+@n_parameters: 
+@parameters: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

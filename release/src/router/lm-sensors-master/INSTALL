@@ -1,0 +1,83 @@
+INSTALLATION INSTRUCTIONS
+=========================
+
+The lm-sensors package, version 3, provides user-space support for the
+hardware monitoring drivers in Linux 2.6.5 and later. For older kernel
+versions, you have to use lm-sensors version 2.
+
+
+Dependencies
+============
+
+Build-time dependencies:
+* GNU make
+* gcc
+* bison
+* flex
+* rrd header files (optional, for sensord)
+
+Run-time dependencies:
+* perl (for sensors-detect)
+* rrdtool >= 1.2.1 (optional, for sensord)
+* proper kernel configuration (see below)
+
+
+Compilation
+===========
+
+At the top of the Makefile are a couple of configuration variables that
+you may want to change. There's a description of what each variable does
+in the Makefile itself.
+
+Compilation is done by `make all'. You will get a lot of warnings about
+files which are not found, all ending in `.*d'. You can safely ignore
+this; they contain dependency information, which is regenerated on the
+spot.
+
+`make install' installs the package (to /usr/local by default).
+
+
+Kernel configuration
+====================
+
+This package assumes that you have a properly configured kernel. If
+you run a distribution kernel, that should be the case. If you're
+building your own kernel, here are some recommendations:
+* Enable "I2C support" (CONFIG_I2C=y or m). On many motherboards, the
+  sensor chip is connected to the SMBus, which is supported by I2C
+  in the Linux kernel.
+* Enable "I2C device interface" (CONFIG_I2C_CHARDEV=m). sensors-detect
+  needs this to probe for SMBus hardware monitoring chips.
+* In I2C Hardware Bus support, enable all drivers you might need,
+  preferably as modules. If you're not sure, select them all.
+* Enable "Hardware Monitoring support" (CONFIG_HWMON=y or m).
+* Enable all hardware monitoring drivers you might need, preferably
+  as modules. If you're not sure, select them all.
+
+
+Using the sensors package
+=========================
+
+There is a scanning program installed called sensors-detect. It
+will scan all available I2C and SMBus adapters for all known sensor
+devices, and will also look for ISA, PCI and Super-I/O chips with
+sensors, and give you a list of what kernel drivers you need to load
+(using modprobe).
+
+After loading the suggested drivers, you can use the installed sensors
+program to get a report of all detected sensor devices. Check the manual
+page for available options.
+
+The initial output of `sensors' will not be perfect. You have to adjust
+the configuration file (/etc/sensors3.conf) to match your motherboard.
+This includes (re)labelling inputs, ignoring unused inputs, changing
+voltage compute lines and setting limits. Write down all the sensor
+information your BIOS displays as a hint to what you are supposed to
+obtain in the end. Make sure you modify the right chip section.
+
+Once you are done with editing the configuration file, calling
+`sensors -s' will set the new limits. Then the output of `sensors'
+should look much better.
+
+There are many auxiliary programs not installed. You can find them under
+the prog subdirectory. A list can be found in doc/progs.

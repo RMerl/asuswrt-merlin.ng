@@ -1,0 +1,541 @@
+<!-- ##### SECTION Title ##### -->
+IO Channels
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GIOChannel ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_io_channel_unix_new ##### -->
+<para>
+
+</para>
+
+@fd: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_unix_get_fd ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_win32_new_fd ##### -->
+<para>
+
+</para>
+
+@fd: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_win32_new_socket ##### -->
+<para>
+
+</para>
+
+@socket: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_win32_new_messages ##### -->
+<para>
+
+</para>
+
+@hwnd: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_init ##### -->
+<para>
+
+</para>
+
+@channel: 
+
+
+<!-- ##### FUNCTION g_io_channel_new_file ##### -->
+<para>
+
+</para>
+
+@filename: 
+@mode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_read_chars ##### -->
+<para>
+
+</para>
+
+@channel: 
+@buf: 
+@count: 
+@bytes_read: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_read_unichar ##### -->
+<para>
+
+</para>
+
+@channel: 
+@thechar: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_read_line ##### -->
+<para>
+
+</para>
+
+@channel: 
+@str_return: 
+@length: 
+@terminator_pos: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_read_line_string ##### -->
+<para>
+
+</para>
+
+@channel: 
+@buffer: 
+@terminator_pos: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_read_to_end ##### -->
+<para>
+
+</para>
+
+@channel: 
+@str_return: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_write_chars ##### -->
+<para>
+
+</para>
+
+@channel: 
+@buf: 
+@count: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_write_unichar ##### -->
+<para>
+
+</para>
+
+@channel: 
+@thechar: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_flush ##### -->
+<para>
+
+</para>
+
+@channel: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_seek_position ##### -->
+<para>
+
+</para>
+
+@channel: 
+@offset: 
+@type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### ENUM GSeekType ##### -->
+<para>
+
+</para>
+
+@G_SEEK_CUR: 
+@G_SEEK_SET: 
+@G_SEEK_END: 
+
+<!-- ##### FUNCTION g_io_channel_shutdown ##### -->
+<para>
+
+</para>
+
+@channel: 
+@flush: 
+@err: 
+@Returns: 
+
+
+<!-- ##### ENUM GIOStatus ##### -->
+<para>
+
+</para>
+
+@G_IO_STATUS_ERROR: 
+@G_IO_STATUS_NORMAL: 
+@G_IO_STATUS_EOF: 
+@G_IO_STATUS_AGAIN: 
+
+<!-- ##### ENUM GIOChannelError ##### -->
+<para>
+
+</para>
+
+@G_IO_CHANNEL_ERROR_FBIG: 
+@G_IO_CHANNEL_ERROR_INVAL: 
+@G_IO_CHANNEL_ERROR_IO: 
+@G_IO_CHANNEL_ERROR_ISDIR: 
+@G_IO_CHANNEL_ERROR_NOSPC: 
+@G_IO_CHANNEL_ERROR_NXIO: 
+@G_IO_CHANNEL_ERROR_OVERFLOW: 
+@G_IO_CHANNEL_ERROR_PIPE: 
+@G_IO_CHANNEL_ERROR_FAILED: 
+
+<!-- ##### MACRO G_IO_CHANNEL_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_io_channel_error_from_errno ##### -->
+<para>
+
+</para>
+
+@en: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_ref ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_unref ##### -->
+<para>
+
+</para>
+
+@channel: 
+
+
+<!-- ##### FUNCTION g_io_create_watch ##### -->
+<para>
+
+</para>
+
+@channel: 
+@condition: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_add_watch ##### -->
+<para>
+
+</para>
+
+@channel: 
+@condition: 
+@func: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_add_watch_full ##### -->
+<para>
+
+</para>
+
+@channel: 
+@priority: 
+@condition: 
+@func: 
+@user_data: 
+@notify: 
+@Returns: 
+
+
+<!-- ##### ENUM GIOCondition ##### -->
+<para>
+
+</para>
+
+@G_IO_IN: 
+@G_IO_OUT: 
+@G_IO_PRI: 
+@G_IO_ERR: 
+@G_IO_HUP: 
+@G_IO_NVAL: 
+
+<!-- ##### USER_FUNCTION GIOFunc ##### -->
+<para>
+
+</para>
+
+@source: 
+@condition: 
+@data: 
+@Returns: 
+
+
+<!-- ##### STRUCT GIOFuncs ##### -->
+<para>
+
+</para>
+
+@io_read: 
+@io_write: 
+@io_seek: 
+@io_close: 
+@io_create_watch: 
+@io_free: 
+@io_set_flags: 
+@io_get_flags: 
+
+<!-- ##### FUNCTION g_io_channel_get_buffer_size ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_set_buffer_size ##### -->
+<para>
+
+</para>
+
+@channel: 
+@size: 
+
+
+<!-- ##### FUNCTION g_io_channel_get_buffer_condition ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_get_flags ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_set_flags ##### -->
+<para>
+
+</para>
+
+@channel: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### ENUM GIOFlags ##### -->
+<para>
+
+</para>
+
+@G_IO_FLAG_APPEND: 
+@G_IO_FLAG_NONBLOCK: 
+@G_IO_FLAG_IS_READABLE: 
+@G_IO_FLAG_IS_WRITABLE: 
+@G_IO_FLAG_IS_WRITEABLE: 
+@G_IO_FLAG_IS_SEEKABLE: 
+@G_IO_FLAG_MASK: 
+@G_IO_FLAG_GET_MASK: 
+@G_IO_FLAG_SET_MASK: 
+
+<!-- ##### FUNCTION g_io_channel_get_line_term ##### -->
+<para>
+
+</para>
+
+@channel: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_set_line_term ##### -->
+<para>
+
+</para>
+
+@channel: 
+@line_term: 
+@length: 
+
+
+<!-- ##### FUNCTION g_io_channel_get_buffered ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_set_buffered ##### -->
+<para>
+
+</para>
+
+@channel: 
+@buffered: 
+
+
+<!-- ##### FUNCTION g_io_channel_get_encoding ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_set_encoding ##### -->
+<para>
+
+</para>
+
+@channel: 
+@encoding: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_get_close_on_unref ##### -->
+<para>
+
+</para>
+
+@channel: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_set_close_on_unref ##### -->
+<para>
+
+</para>
+
+@channel: 
+@do_close: 
+
+
+<!-- ##### FUNCTION g_io_channel_read ##### -->
+<para>
+
+</para>
+
+@channel: 
+@buf: 
+@count: 
+@bytes_read: 
+@Returns: 
+
+
+<!-- ##### ENUM GIOError ##### -->
+<para>
+
+</para>
+
+@G_IO_ERROR_NONE: 
+@G_IO_ERROR_AGAIN: 
+@G_IO_ERROR_INVAL: 
+@G_IO_ERROR_UNKNOWN: 
+
+<!-- ##### FUNCTION g_io_channel_write ##### -->
+<para>
+
+</para>
+
+@channel: 
+@buf: 
+@count: 
+@bytes_written: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_seek ##### -->
+<para>
+
+</para>
+
+@channel: 
+@offset: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_channel_close ##### -->
+<para>
+
+</para>
+
+@channel: 
+
+

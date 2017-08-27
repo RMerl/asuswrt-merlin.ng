@@ -1,0 +1,1291 @@
+
+
+
+
+
+
+Network Working Group                                          D. Nelson
+Request for Comments: 4670                            Enterasys Networks
+Obsoletes: 2620                                              August 2006
+Category: Informational
+
+
+                 RADIUS Accounting Client MIB for IPv6
+
+Status of This Memo
+
+   This memo provides information for the Internet community.  It does
+   not specify an Internet standard of any kind.  Distribution of this
+   memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2006).
+
+Abstract
+
+   This memo defines a set of extensions that instrument RADIUS
+   accounting client functions.  These extensions represent a portion of
+   the Management Information Base (MIB) for use with network management
+   protocols in the Internet community.  Using these extensions,
+   IP-based management stations can manage RADIUS accounting clients.
+
+   This memo obsoletes RFC 2620 by deprecating the MIB table containing
+   IPv4-only address formats and defining a new table to add support for
+   version-neutral IP address formats.  The remaining MIB objects from
+   RFC 2620 are carried forward into this document.  This memo also adds
+   UNITS and REFERENCE clauses to selected objects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nelson                       Informational                      [Page 1]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+Table of Contents
+
+   1. Introduction ....................................................3
+   2. Terminology .....................................................3
+   3. The Internet-Standard Management Framework ......................3
+   4. Scope of Changes ................................................3
+   5. Structure of the MIB Module .....................................4
+   6. Deprecated Objects ..............................................5
+   7. Definitions .....................................................5
+   8. Security Considerations ........................................19
+   9. References .....................................................20
+      9.1. Normative References ......................................20
+      9.2. Informative References ....................................21
+   Appendix A. Acknowledgements ......................................22
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nelson                       Informational                      [Page 2]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+1.  Introduction
+
+   This memo defines a portion of the Management Information Base (MIB)
+   for use with network management protocols in the Internet community.
+   The objects defined within this memo relate to the Remote
+   Authentication Dial-In User Service (RADIUS) Accounting Client as
+   defined in RFC 2866 [RFC2866].
+
+2.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+   This document uses terminology from RFC 2865 [RFC2865] and RFC 2866
+   [RFC2866].
+
+   This document uses the word "malformed" with respect to RADIUS
+   packets, particularly in the context of counters of "malformed
+   packets".  While RFC 2866 does not provide an explicit definition of
+   "malformed", malformed generally means that the implementation has
+   determined the packet does not match the format defined in RFC 2866.
+   Those implementations are used in deployments today, and thus set the
+   de facto definition of "malformed".
+
+3.  The Internet-Standard Management Framework
+
+   For a detailed overview of the documents that describe the current
+   Internet-Standard Management Framework, please refer to section 7 of
+   RFC 3410 [RFC3410].
+
+   Managed objects are accessed via a virtual information store, termed
+   the Management Information Base or MIB.  MIB objects are generally
+   accessed through the Simple Network Management Protocol (SNMP).
+   Objects in the MIB are defined using the mechanisms defined in the
+   Structure of Management Information (SMI).  This memo specifies a MIB
+   module that is compliant to the SMIv2, which is described in STD 58,
+   RFC 2578 [RFC2578], STD 58, RFC 2579 [RFC2579] and STD 58, RFC 2580
+   [RFC2580].
+
+4.  Scope of Changes
+
+   This document obsoletes RFC 2620 [RFC2620], RADIUS Accounting Client
+   MIB, by deprecating the radiusAccServerTable table and adding a new
+   table, radiusAccServerExtTable, containing
+   radiusAccServerInetAddressType, radiusAccServerInetAddress, and
+   radiusAccClientServerInetPortNumber.  The purpose of these added MIB
+   objects is to support version-neutral IP addressing formats.  The
+
+
+
+Nelson                       Informational                      [Page 3]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+   existing table containing radiusAuthServerAddress and
+   radiusAuthClientServerPortNumber is deprecated.  The remaining MIB
+   objects from RFC 2620 are carried forward into this document.
+
+   RFC 4001 [RFC4001], which defines the SMI Textual Conventions for
+   IPv6 addresses, contains the following recommendation.
+
+   'In particular, when revising a MIB module that contains IPv4
+   specific tables, it is suggested to define new tables using the
+   textual conventions defined in this memo [RFC4001] that support all
+   versions of IP.  The status of the new tables SHOULD be "current",
+   whereas the status of the old IP version specific tables SHOULD be
+   changed to "deprecated".  The other approach, of having multiple
+   similar tables for different IP versions, is strongly discouraged.'
+
+5.  Structure of the MIB Module
+
+   The RADIUS accounting protocol, described in RFC 2866 [RFC2866],
+   distinguishes between the client function and the server function.
+   In RADIUS accounting, clients send Accounting-Requests, and servers
+   reply with Accounting-Responses.  Typically, Network Access Server
+   (NAS) devices implement the client function, and thus would be
+   expected to implement the RADIUS accounting client MIB, while RADIUS
+   accounting servers implement the server function, and thus would be
+   expected to implement the RADIUS accounting server MIB.
+
+   However, it is possible for a RADIUS accounting entity to perform
+   both client and server functions.  For example, a RADIUS proxy may
+   act as a server to one or more RADIUS accounting clients, while
+   simultaneously acting as an accounting client to one or more
+   accounting servers.  In such situations, it is expected that RADIUS
+   entities combining client and server functionality will support both
+   the client and server MIBs.  The client MIB is defined in this
+   document, and the server MIB is defined in [RFC4671].
+
+   This MIB module contains two scalars as well as a single table, the
+   RADIUS Accounting Server Table, which contains one row for each
+   RADIUS server with which the client shares a secret.  Each entry in
+   the RADIUS Accounting Server Table includes fifteen columns
+   presenting a view of the activity of the RADIUS client.
+
+   This MIB imports from [RFC2578], [RFC2580], [RFC3411], and [RFC4001].
+
+
+
+
+
+
+
+
+
+Nelson                       Informational                      [Page 4]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+6.  Deprecated Objects
+
+   The deprecated table in this MIB is carried forward from RFC 2620
+   [RFC2620].  There are two conditions under which it MAY be desirable
+   for managed entities to continue to support the deprecated table:
+
+   1.  The managed entity only supports IPv4 address formats.
+
+   2.  The managed entity supports both IPv4 and IPv6 address formats,
+       and the deprecated table is supported for backwards compatibility
+       with older management stations.  This option SHOULD only be used
+       when the IP addresses in the new table are in IPv4 format and can
+       accurately be represented in both the new table and the
+       deprecated table.
+
+   Managed entities SHOULD NOT instantiate row entries in the deprecated
+   table, containing IPv4-only address objects, when the RADIUS
+   accounting server address represented in such a table row is not an
+   IPv4 address.  Managed entities SHOULD NOT return inaccurate values
+   of IP address or SNMP object access errors for IPv4-only address
+   objects in otherwise populated tables.  When row entries exist in
+   both the deprecated IPv4-only table and the new IP-version-neutral
+   table that describe the same RADIUS accounting server, the row
+   indexes SHOULD be the same for the corresponding rows in each table,
+   to facilitate correlation of these related rows by management
+   applications.
+
+7.  Definitions
+
+   RADIUS-ACC-CLIENT-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+          MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+          Counter32, Integer32, Gauge32,
+          IpAddress, TimeTicks, mib-2      FROM SNMPv2-SMI
+          SnmpAdminString                  FROM SNMP-FRAMEWORK-MIB
+          InetAddressType, InetAddress,
+          InetPortNumber                   FROM INET-ADDRESS-MIB
+          MODULE-COMPLIANCE, OBJECT-GROUP  FROM SNMPv2-CONF;
+
+
+   radiusAccClientMIB MODULE-IDENTITY
+         LAST-UPDATED "200608210000Z" -- 21 August 2006
+         ORGANIZATION "IETF RADIUS Extensions Working Group."
+         CONTACT-INFO
+                " Bernard Aboba
+                  Microsoft
+                  One Microsoft Way
+
+
+
+Nelson                       Informational                      [Page 5]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+                  Redmond, WA  98052
+                  US
+                  Phone: +1 425 936 6605
+                  EMail: bernarda@microsoft.com"
+         DESCRIPTION
+               "The MIB module for entities implementing the client
+                side of the Remote Authentication Dial-In User Service
+                (RADIUS) accounting protocol.  Copyright (C) The
+                Internet Society (2006).  This version of this MIB
+                module is part of RFC 4670; see the RFC itself for
+                full legal notices."
+         REVISION "200608210000Z"  -- 21 August 2006
+         DESCRIPTION
+               "Revised version as published in RFC 4670.
+                This version obsoletes that of RFC 2620 by
+                deprecating the MIB table containing IPv4-only
+                address formats and defining a new table to add support
+                for version-neutral IP address formats.  The remaining
+                MIB objects from RFC 2620 are carried forward into this
+                version."
+         REVISION "199906110000Z"  -- 11 Jun 1999
+         DESCRIPTION "Initial version as published in RFC 2620."
+         ::= { radiusAccounting 2 }
+
+   radiusMIB OBJECT-IDENTITY
+         STATUS  current
+         DESCRIPTION
+                "The OID assigned to RADIUS MIB work by the IANA."
+         ::= { mib-2 67 }
+
+   radiusAccounting  OBJECT IDENTIFIER ::= {radiusMIB 2}
+
+   radiusAccClientMIBObjects     OBJECT IDENTIFIER
+         ::= { radiusAccClientMIB 1 }
+
+   radiusAccClient  OBJECT IDENTIFIER
+         ::= { radiusAccClientMIBObjects 1 }
+
+   radiusAccClientInvalidServerAddresses OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS Accounting-Response packets
+                received from unknown addresses."
+         ::= { radiusAccClient 1 }
+
+
+
+
+Nelson                       Informational                      [Page 6]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+   radiusAccClientIdentifier OBJECT-TYPE
+         SYNTAX SnmpAdminString
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The NAS-Identifier of the RADIUS accounting client.
+                This is not necessarily the same as sysName in MIB
+                II."
+         REFERENCE "RFC 2865 section 5.32"
+         ::= { radiusAccClient 2 }
+
+   radiusAccServerTable OBJECT-TYPE
+         SYNTAX SEQUENCE OF RadiusAccServerEntry
+         MAX-ACCESS not-accessible
+         STATUS     deprecated
+         DESCRIPTION
+               "The (conceptual) table listing the RADIUS accounting
+                servers with which the client shares a secret."
+         ::= { radiusAccClient 3 }
+
+   radiusAccServerEntry OBJECT-TYPE
+         SYNTAX     RadiusAccServerEntry
+         MAX-ACCESS not-accessible
+         STATUS     deprecated
+         DESCRIPTION
+               "An entry (conceptual row) representing a RADIUS
+                accounting server with which the client shares a
+                secret."
+         INDEX      { radiusAccServerIndex }
+         ::= { radiusAccServerTable 1 }
+
+   RadiusAccServerEntry ::= SEQUENCE {
+         radiusAccServerIndex                           Integer32,
+         radiusAccServerAddress                         IpAddress,
+         radiusAccClientServerPortNumber                Integer32,
+         radiusAccClientRoundTripTime                   TimeTicks,
+         radiusAccClientRequests                        Counter32,
+         radiusAccClientRetransmissions                 Counter32,
+         radiusAccClientResponses                       Counter32,
+         radiusAccClientMalformedResponses              Counter32,
+         radiusAccClientBadAuthenticators               Counter32,
+         radiusAccClientPendingRequests                   Gauge32,
+         radiusAccClientTimeouts                        Counter32,
+         radiusAccClientUnknownTypes                    Counter32,
+         radiusAccClientPacketsDropped                  Counter32
+   }
+
+
+
+
+
+Nelson                       Informational                      [Page 7]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+   radiusAccServerIndex OBJECT-TYPE
+         SYNTAX     Integer32 (1..2147483647)
+         MAX-ACCESS not-accessible
+         STATUS     deprecated
+         DESCRIPTION
+               "A number uniquely identifying each RADIUS
+                Accounting server with which this client
+                communicates."
+         ::= { radiusAccServerEntry 1 }
+
+   radiusAccServerAddress OBJECT-TYPE
+         SYNTAX     IpAddress
+         MAX-ACCESS read-only
+         STATUS     deprecated
+         DESCRIPTION
+               "The IP address of the RADIUS accounting server
+                referred to in this table entry."
+         ::= { radiusAccServerEntry 2 }
+
+   radiusAccClientServerPortNumber  OBJECT-TYPE
+         SYNTAX Integer32 (0..65535)
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The UDP port the client is using to send requests to
+                this server."
+         REFERENCE "RFC 2866 section 3"
+         ::= { radiusAccServerEntry 3 }
+
+   radiusAccClientRoundTripTime  OBJECT-TYPE
+         SYNTAX TimeTicks
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+                "The time interval between the most recent
+                Accounting-Response and the Accounting-Request that
+                matched it from this RADIUS accounting server."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerEntry 4 }
+
+   -- Request/Response statistics
+   --
+   -- Requests = Responses + PendingRequests + ClientTimeouts
+   --
+   -- Responses - MalformedResponses - BadAuthenticators -
+   -- UnknownTypes - PacketsDropped = Successfully received
+
+
+
+
+
+Nelson                       Informational                      [Page 8]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+   radiusAccClientRequests OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS Accounting-Request packets
+                sent.  This does not include retransmissions."
+         REFERENCE "RFC 2866 section 4.1"
+         ::= { radiusAccServerEntry 5 }
+
+   radiusAccClientRetransmissions OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS Accounting-Request packets
+                retransmitted to this RADIUS accounting server.
+                Retransmissions include retries where the
+                Identifier and Acct-Delay have been updated, as
+                well as those in which they remain the same."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerEntry 6 }
+
+   radiusAccClientResponses OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS packets received on the
+                accounting port from this server."
+         REFERENCE "RFC 2866 section 4.2"
+         ::= { radiusAccServerEntry 7 }
+
+   radiusAccClientMalformedResponses OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+                "The number of malformed RADIUS Accounting-Response
+                 packets received from this server.  Malformed packets
+                include packets with an invalid length.  Bad
+                authenticators and unknown types are not included as
+                malformed accounting responses."
+         REFERENCE "RFC 2866 section 3"
+
+
+
+Nelson                       Informational                      [Page 9]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+         ::= { radiusAccServerEntry 8 }
+
+   radiusAccClientBadAuthenticators OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS Accounting-Response
+                packets that contained invalid authenticators
+                received from this server."
+         REFERENCE "RFC 2866 section 3"
+         ::= { radiusAccServerEntry 9 }
+
+   radiusAccClientPendingRequests OBJECT-TYPE
+         SYNTAX Gauge32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS Accounting-Request packets
+                sent to this server that have not yet timed out or
+                received a response.  This variable is incremented
+                when an Accounting-Request is sent and decremented
+                due to receipt of an Accounting-Response, a timeout,
+                or a retransmission."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerEntry 10 }
+
+   radiusAccClientTimeouts OBJECT-TYPE
+        SYNTAX Counter32
+        UNITS "timeouts"
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+             "The number of accounting timeouts to this server.
+              After a timeout, the client may retry to the same
+              server, send to a different server, or give up.
+              A retry to the same server is counted as a
+              retransmit as well as a timeout.  A send to a different
+              server is counted as an Accounting-Request as well as
+              a timeout."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerEntry  11 }
+
+   radiusAccClientUnknownTypes OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+
+
+
+Nelson                       Informational                     [Page 10]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS packets of unknown type that
+                were received from this server on the accounting port."
+         REFERENCE "RFC 2866 section 4"
+         ::= { radiusAccServerEntry  12 }
+
+   radiusAccClientPacketsDropped OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS deprecated
+         DESCRIPTION
+               "The number of RADIUS packets that were received from
+                this server on the accounting port and dropped for some
+                other reason."
+         ::= { radiusAccServerEntry  13 }
+
+
+   -- New MIB objects added in this revision
+
+   radiusAccServerExtTable OBJECT-TYPE
+         SYNTAX SEQUENCE OF RadiusAccServerExtEntry
+         MAX-ACCESS not-accessible
+         STATUS     current
+         DESCRIPTION
+               "The (conceptual) table listing the RADIUS accounting
+                servers with which the client shares a secret."
+         ::= { radiusAccClient 4 }
+
+   radiusAccServerExtEntry OBJECT-TYPE
+         SYNTAX     RadiusAccServerExtEntry
+         MAX-ACCESS not-accessible
+         STATUS     current
+         DESCRIPTION
+               "An entry (conceptual row) representing a RADIUS
+                accounting server with which the client shares a
+                secret."
+         INDEX      { radiusAccServerExtIndex }
+         ::= { radiusAccServerExtTable 1 }
+
+   RadiusAccServerExtEntry ::= SEQUENCE {
+         radiusAccServerExtIndex                    Integer32,
+         radiusAccServerInetAddressType             InetAddressType,
+         radiusAccServerInetAddress                 InetAddress,
+         radiusAccClientServerInetPortNumber        InetPortNumber,
+         radiusAccClientExtRoundTripTime            TimeTicks,
+
+
+
+Nelson                       Informational                     [Page 11]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+         radiusAccClientExtRequests                 Counter32,
+         radiusAccClientExtRetransmissions          Counter32,
+         radiusAccClientExtResponses                Counter32,
+         radiusAccClientExtMalformedResponses       Counter32,
+         radiusAccClientExtBadAuthenticators        Counter32,
+         radiusAccClientExtPendingRequests          Gauge32,
+         radiusAccClientExtTimeouts                 Counter32,
+         radiusAccClientExtUnknownTypes             Counter32,
+         radiusAccClientExtPacketsDropped           Counter32,
+         radiusAccClientCounterDiscontinuity        TimeTicks
+   }
+
+   radiusAccServerExtIndex OBJECT-TYPE
+         SYNTAX     Integer32 (1..2147483647)
+         MAX-ACCESS not-accessible
+         STATUS     current
+         DESCRIPTION
+               "A number uniquely identifying each RADIUS
+                Accounting server with which this client
+                communicates."
+         ::= { radiusAccServerExtEntry 1 }
+
+
+   radiusAccServerInetAddressType OBJECT-TYPE
+            SYNTAX     InetAddressType
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                  "The type of address format used for the
+                   radiusAccServerInetAddress object."
+            ::= { radiusAccServerExtEntry 2 }
+
+
+      radiusAccServerInetAddress OBJECT-TYPE
+            SYNTAX     InetAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                  "The IP address of the RADIUS accounting
+                   server referred to in this table entry, using
+                   the version-neutral IP address format."
+            ::= { radiusAccServerExtEntry 3 }
+
+      radiusAccClientServerInetPortNumber  OBJECT-TYPE
+            SYNTAX InetPortNumber ( 1..65535 )
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+
+
+
+Nelson                       Informational                     [Page 12]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+                  "The UDP port the client is using to send requests
+                   to this accounting server.  The value zero (0) is
+                   invalid."
+            REFERENCE "RFC 2866 section 3"
+            ::= { radiusAccServerExtEntry 4 }
+
+
+   radiusAccClientExtRoundTripTime  OBJECT-TYPE
+         SYNTAX TimeTicks
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+                "The time interval between the most recent
+                Accounting-Response and the Accounting-Request that
+                matched it from this RADIUS accounting server."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerExtEntry 5 }
+
+   -- Request/Response statistics
+   --
+   -- Requests = Responses + PendingRequests + ClientTimeouts
+   --
+   -- Responses - MalformedResponses - BadAuthenticators -
+   -- UnknownTypes - PacketsDropped = Successfully received
+
+   radiusAccClientExtRequests OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS Accounting-Request packets
+                sent.  This does not include retransmissions.
+                This counter may experience a discontinuity when the
+                RADIUS Accounting Client module within the managed
+                entity is reinitialized, as indicated by the current
+                value of radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 4.1"
+         ::= { radiusAccServerExtEntry 6 }
+
+   radiusAccClientExtRetransmissions OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS Accounting-Request packets
+                retransmitted to this RADIUS accounting server.
+
+
+
+Nelson                       Informational                     [Page 13]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+                Retransmissions include retries where the
+                Identifier and Acct-Delay have been updated, as
+                well as those in which they remain the same.
+                This counter may experience a discontinuity when the
+                RADIUS Accounting Client module within the managed
+                entity is reinitialized, as indicated by the current
+                value of radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerExtEntry 7 }
+
+   radiusAccClientExtResponses OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS packets received on the
+                accounting port from this server.  This counter
+                may experience a discontinuity when the RADIUS
+                Accounting Client module within the managed entity is
+                reinitialized, as indicated by the current value of
+                radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 4.2"
+         ::= { radiusAccServerExtEntry 8 }
+
+   radiusAccClientExtMalformedResponses OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of malformed RADIUS Accounting-Response
+                packets received from this server.  Malformed packets
+                include packets with an invalid length.  Bad
+                authenticators and unknown types are not included as
+                malformed accounting responses.  This counter may
+                experience a discontinuity when the RADIUS Accounting
+                Client module within the managed entity is
+                reinitialized, as indicated by the current
+                value of radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 3"
+         ::= { radiusAccServerExtEntry 9 }
+
+   radiusAccClientExtBadAuthenticators OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+
+
+
+Nelson                       Informational                     [Page 14]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+         DESCRIPTION
+               "The number of RADIUS Accounting-Response
+                packets that contained invalid authenticators
+                received from this server.  This counter may
+                experience a discontinuity when the RADIUS
+                Accounting Client module within the managed
+                entity is reinitialized, as indicated by the
+                current value of
+                radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 3"
+         ::= { radiusAccServerExtEntry 10 }
+
+   radiusAccClientExtPendingRequests OBJECT-TYPE
+         SYNTAX Gauge32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS Accounting-Request packets
+                sent to this server that have not yet timed out or
+                received a response.  This variable is incremented
+                when an Accounting-Request is sent and decremented
+                due to receipt of an Accounting-Response, a timeout,
+                or a retransmission.  This counter may experience a
+                discontinuity when the RADIUS Accounting Client module
+                within the managed entity is reinitialized, as
+                indicated by the current value of
+                radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 2"
+         ::= { radiusAccServerExtEntry 11 }
+
+   radiusAccClientExtTimeouts OBJECT-TYPE
+        SYNTAX Counter32
+        UNITS "timeouts"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+             "The number of accounting timeouts to this server.
+              After a timeout, the client may retry to the same
+              server, send to a different server, or give up.
+              A retry to the same server is counted as a
+              retransmit as well as a timeout.  A send to a different
+              server is counted as an Accounting-Request as well as
+              a timeout.  This counter may experience a discontinuity
+              when the RADIUS Accounting Client module within the
+              managed entity is reinitialized, as indicated by the
+              current value of radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 2"
+
+
+
+Nelson                       Informational                     [Page 15]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+         ::= { radiusAccServerExtEntry  12 }
+
+   radiusAccClientExtUnknownTypes OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS packets of unknown type that
+                were received from this server on the accounting port.
+                This counter may experience a discontinuity when the
+                RADIUS Accounting Client module within the managed
+                entity is reinitialized, as indicated by the current
+                value of radiusAccClientCounterDiscontinuity."
+         REFERENCE "RFC 2866 section 4"
+         ::= { radiusAccServerExtEntry  13 }
+
+   radiusAccClientExtPacketsDropped OBJECT-TYPE
+         SYNTAX Counter32
+         UNITS "packets"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of RADIUS packets that were received from
+                this server on the accounting port and dropped for some
+                other reason.  This counter may experience a
+                discontinuity when the RADIUS Accounting Client module
+                within the managed entity is reinitialized, as indicated
+                by the current value of
+                radiusAccClientCounterDiscontinuity."
+         ::= { radiusAccServerExtEntry  14 }
+
+   radiusAccClientCounterDiscontinuity OBJECT-TYPE
+            SYNTAX TimeTicks
+            UNITS "centiseconds"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                  "The number of centiseconds since the last
+                   discontinuity in the RADIUS Accounting Client
+                   counters.  A discontinuity may be the result of a
+                   reinitialization of the RADIUS Accounting Client
+                   module within the managed entity."
+            ::= { radiusAccServerExtEntry 15 }
+
+
+
+
+
+
+
+Nelson                       Informational                     [Page 16]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+   -- conformance information
+
+   radiusAccClientMIBConformance  OBJECT IDENTIFIER
+         ::= { radiusAccClientMIB 2 }
+
+   radiusAccClientMIBCompliances  OBJECT IDENTIFIER
+         ::= { radiusAccClientMIBConformance 1 }
+
+   radiusAccClientMIBGroups  OBJECT IDENTIFIER
+         ::= { radiusAccClientMIBConformance 2 }
+
+
+   -- units of conformance
+
+   radiusAccClientMIBCompliance MODULE-COMPLIANCE
+        STATUS  deprecated
+        DESCRIPTION
+              "The compliance statement for accounting clients
+               implementing the RADIUS Accounting Client MIB.
+               Implementation of this module is for IPv4-only
+               entities, or for backwards compatibility use with
+               entities that support both IPv4 and IPv6."
+        MODULE  -- this module
+            MANDATORY-GROUPS { radiusAccClientMIBGroup }
+
+        ::= { radiusAccClientMIBCompliances 1 }
+
+
+   radiusAccClientExtMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+              "The compliance statement for accounting
+               clients implementing the RADIUS Accounting
+               Client IPv6 Extensions MIB.  Implementation of
+               this module is for entities that support IPv6,
+               or support IPv4 and IPv6."
+        MODULE  -- this module
+            MANDATORY-GROUPS { radiusAccClientExtMIBGroup }
+
+        OBJECT radiusAccServerInetAddressType
+        SYNTAX InetAddressType { ipv4(1), ipv6(2) }
+        DESCRIPTION
+              "An implementation is only required to support
+               IPv4 and globally unique IPv6 addresses."
+
+        OBJECT radiusAccServerInetAddress
+        SYNTAX InetAddress ( SIZE (4|16) )
+        DESCRIPTION
+
+
+
+Nelson                       Informational                     [Page 17]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+              "An implementation is only required to support
+               IPv4 and globally unique IPv6 addresses."
+
+        ::= { radiusAccClientMIBCompliances 2 }
+
+
+   -- units of conformance
+
+   radiusAccClientMIBGroup OBJECT-GROUP
+        OBJECTS { radiusAccClientIdentifier,
+                  radiusAccClientInvalidServerAddresses,
+                  radiusAccServerAddress,
+                  radiusAccClientServerPortNumber,
+                  radiusAccClientRoundTripTime,
+                  radiusAccClientRequests,
+                  radiusAccClientRetransmissions,
+                  radiusAccClientResponses,
+                  radiusAccClientMalformedResponses,
+                  radiusAccClientBadAuthenticators,
+                  radiusAccClientPendingRequests,
+                  radiusAccClientTimeouts,
+                  radiusAccClientUnknownTypes,
+                  radiusAccClientPacketsDropped
+            }
+        STATUS  deprecated
+        DESCRIPTION
+              "The basic collection of objects providing management of
+               RADIUS Accounting Clients."
+        ::= { radiusAccClientMIBGroups 1 }
+
+
+   radiusAccClientExtMIBGroup OBJECT-GROUP
+        OBJECTS { radiusAccClientIdentifier,
+                  radiusAccClientInvalidServerAddresses,
+                  radiusAccServerInetAddressType,
+                  radiusAccServerInetAddress,
+                  radiusAccClientServerInetPortNumber,
+                  radiusAccClientExtRoundTripTime,
+                  radiusAccClientExtRequests,
+                  radiusAccClientExtRetransmissions,
+                  radiusAccClientExtResponses,
+                  radiusAccClientExtMalformedResponses,
+                  radiusAccClientExtBadAuthenticators,
+                  radiusAccClientExtPendingRequests,
+                  radiusAccClientExtTimeouts,
+                  radiusAccClientExtUnknownTypes,
+                  radiusAccClientExtPacketsDropped,
+                  radiusAccClientCounterDiscontinuity
+
+
+
+Nelson                       Informational                     [Page 18]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+            }
+        STATUS  current
+        DESCRIPTION
+              "The basic collection of objects providing management of
+               RADIUS Accounting Clients."
+        ::= { radiusAccClientMIBGroups 2 }
+
+
+   END
+
+8.  Security Considerations
+
+   There are no management objects defined in this MIB that have a MAX-
+   ACCESS clause of read-write and/or read-create.  So, if this MIB is
+   implemented correctly, then there is no risk that an intruder can
+   alter or create any management objects of this MIB via direct SNMP
+   SET operations.
+
+   There are a number of managed objects in this MIB that may contain
+   sensitive information.  These are:
+
+   radiusAcctServerIPAddress
+      This can be used to determine the address of the RADIUS accounting
+      server with which the client is communicating.  This information
+      could be useful in mounting an attack on the accounting server.
+
+   radiusAcctServerInetAddress
+      This can be used to determine the address of the RADIUS accounting
+      server with which the client is communicating.  This information
+      could be useful in mounting an attack on the accounting server.
+
+   radiusAcctClientServerPortNumber
+      This can be used to determine the port number on which the RADIUS
+      accounting client is sending.  This information could be useful in
+      impersonating the client in order to send data to the accounting
+      server.
+
+   radiusAcctClientServerInetPortNumber
+      This can be used to determine the port number on which the RADIUS
+      accounting client is sending.  This information could be useful in
+      impersonating the client in order to send data to the accounting
+      server.
+
+   It is thus important to control even GET access to these objects and
+   possibly to even encrypt the values of these object when sending them
+   over the network via SNMP.  Not all versions of SNMP provide features
+   for such a secure environment.
+
+
+
+
+Nelson                       Informational                     [Page 19]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+   SNMP versions prior to SNMPv3 do not provide a secure environment.
+   Even if the network itself is secure (for example by using IPsec),
+   there is no control as to who on the secure network is allowed to
+   access and GET/SET (read/change/create/delete) the objects in this
+   MIB.
+
+   It is RECOMMENDED that implementers consider the security features as
+   provided by the SNMPv3 framework (see [RFC3410], section 8),
+   including full support for the SNMPv3 cryptographic mechanisms (for
+   authentication and privacy).
+
+   Further, deployment of SNMP versions prior to SNMPv3 is NOT
+   RECOMMENDED.  Instead, it is RECOMMENDED to deploy SNMPv3 and to
+   enable cryptographic security.  It is then a customer/operator
+   responsibility to ensure that the SNMP entity giving access to an
+   instance of this MIB module is properly configured to give access to
+   the objects only to those principals (users) that have legitimate
+   rights to indeed GET or SET (change/create/delete) them.
+
+9.  References
+
+9.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [RFC2578]  McCloghrie, K., Ed., Perkins, D., Ed., and J.
+              Schoenwaelder, Ed., "Structure of Management Information
+              Version 2 (SMIv2)", STD 58, RFC 2578, April 1999.
+
+   [RFC2579]  McCloghrie, K., Ed., Perkins, D., Ed., and J.
+              Schoenwaelder, Ed., "Textual Conventions for SMIv2",
+              STD 58, RFC 2579, April 1999.
+
+   [RFC2580]  McCloghrie, K., Perkins, D., and J. Schoenwaelder,
+              "Conformance Statements for SMIv2", STD 58, RFC 2580,
+              April 1999.
+
+   [RFC2866]  Rigney, C., "RADIUS Accounting", RFC 2866, June 2000.
+
+   [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
+              Architecture for Describing Simple Network Management
+              Protocol (SNMP) Management Frameworks", STD 62, RFC 3411,
+              December 2002.
+
+   [RFC4001]  Daniele, M., Haberman, B., Routhier, S., and J.
+              Schoenwaelder, "Textual Conventions for Internet Network
+              Addresses", RFC 4001, February 2005.
+
+
+
+Nelson                       Informational                     [Page 20]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+9.2.  Informative References
+
+   [RFC2620]  Aboba, B. and G. Zorn, "RADIUS Accounting Client MIB",
+              RFC 2620, June 1999.
+
+   [RFC2865]  Rigney, C., Willens, S., Rubens, A., and W. Simpson,
+              "Remote Authentication Dial In User Service (RADIUS)", RFC
+              2865, June 2000.
+
+   [RFC3410]  Case, J., Mundy, R., Partain, D., and B. Stewart,
+              "Introduction and Applicability Statements for Internet-
+              Standard Management Framework", RFC 3410, December 2002.
+
+   [RFC4671]  Nelson, D., "RADIUS Accounting Server MIB for IPv6", RFC
+              4671, August 2006.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nelson                       Informational                     [Page 21]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+Appendix A.  Acknowledgements
+
+   The authors of the original MIB are Bernard Aboba and Glen Zorn.
+
+   Many thanks to all reviewers, especially to Dave Harrington, Dan
+   Romascanu, C.M. Heard, Bruno Pape, Greg Weber, and Bert Wijnen.
+
+Author's Address
+
+   David B. Nelson
+   Enterasys Networks
+   50 Minuteman Road
+   Andover, MA  01810
+   USA
+
+   EMail: dnelson@enterasys.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nelson                       Informational                     [Page 22]
+
+RFC 4670             RADIUS Acct Client MIB (IPv6)           August 2006
+
+
+Full Copyright Statement
+
+   Copyright (C) The Internet Society (2006).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
+   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
+
+
+
+
+
+
+
+Nelson                       Informational                     [Page 23]
+

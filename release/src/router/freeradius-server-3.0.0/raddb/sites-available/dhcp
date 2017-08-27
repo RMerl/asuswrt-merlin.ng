@@ -1,0 +1,222 @@
+# -*- text -*-
+######################################################################
+#
+#	This is a virtual server that handles DHCP.
+#
+#		!!!! WARNING !!!!
+#
+#	This code is experimental, and SHOULD NOT be used in a
+#	production system.  It is intended for validation and
+#	experimentation ONLY.
+#
+#	In order for this to work, you will need to run configure:
+#
+#		$ ./configure --with-dhcp
+#		$ make
+#		$ vi share/dictionary
+#
+#	## Un-comment the line containing $INCLUDE dictionary.dhcp
+#	## Then, save the file.
+#
+#		$ make install
+#
+#	DHCP is NOT enabled by default.
+#
+#	The goal of this effort is to get the code in front of
+#	people who are interested in another DHCP server.
+#	We NEED FEEDBACK, patches, bug reports, etc.  Especially patches!
+#
+#	Please contribute, or this work will be nothing more than
+#	a curiosity.
+#
+#
+#	Q: What does it do?
+#	A: It allows the server to receive DHCP packets, and to
+#	   respond with static, pre-configured DHCP responses.
+#
+#	Q: Does it do static/dynamic IP assignment?
+#	A: No.  Or, maybe.  Try it and see.
+#
+#	Q: Does it read ISC configuration or lease files?
+#	A: No.  Please submit patches.
+#
+#	Q: Does it have DHCP feature X?
+#	A: No.  Please submit patches.
+#
+#	Q: Does it support option 82?
+#	A: Yes.
+#
+#	Q: Does it support other options?
+#	A: Maybe.  See dictionary.dhcp.  Please submit patches.
+#
+#	Q: It doesn't seem to do much of anything!
+#	A: Exactly.
+#
+#	$Id$
+#
+######################################################################
+
+#
+#  The DHCP functionality goes into a virtual server.
+#
+server dhcp {
+
+#  Define a DHCP socket.
+#
+#  The default port below is 6700, so you don't break your network.
+#  If you want it to do real DHCP, change this to 67, and good luck!
+#
+#  You can also bind the DHCP socket to an interface.
+#  See below, and raddb/radiusd.conf for examples.
+#
+#  This lets you run *one* DHCP server instance and have it listen on
+#  multiple interfaces, each with a separate policy.
+#
+#  If you have multiple interfaces, it is a good idea to bind the
+#  listen section to an interface.  You will also need one listen
+#  section per interface.
+#
+#  FreeBSD does *not* support binding sockets to interfaces.  Therefore,
+#  if you have multiple interfaces, broadcasts may go out of the wrong
+#  one, or even all interfaces.  The solution is to use the "setfib" command.
+#  If you have a network "10.10.0/24" on LAN1, you will need to do:
+#
+#  Pick any IP on the 10.10.0/24 network
+#	$ setfib 1 route add default 10.10.0.1
+#
+#  Edit /etc/rc.local, and add a line:
+#	setfib 1 /path/to/radiusd
+#
+#  The kern must be built with the following options:
+#	options    ROUTETABLES=2
+#  or any value larger than 2.
+#
+# The other only solution is to update FreeRADIUS to use BPF sockets.
+#
+listen {
+	ipaddr = 127.0.0.1
+	port = 6700
+	type = dhcp
+#	interface = lo0
+
+	# The DHCP server defaults to allowing broadcast packets.
+	# Set this to "no" only when the server receives *all* packets
+	# from a relay agent.  i.e. when *no* clients are on the same
+	# LAN as the DHCP server.
+	#
+	# It's set to "no" here for testing.
+	broadcast = no
+
+	# On Linux if you're running the server as non-root, you
+	# will need to do:
+	#
+	#	sudo setcap cap_net_admin=ei /path/to/radiusd
+	#
+	# This will allow the server to set ARP table entries
+	# for newly allocated IPs
+}
+
+#  Packets received on the socket will be processed through one
+#  of the following sections, named after the DHCP packet type.
+#  See dictionary.dhcp for the packet types.
+dhcp DHCP-Discover {
+	update reply {
+	       DHCP-Message-Type = DHCP-Offer
+	}
+
+	#  The contents here are invented.  Change them!
+	update reply {
+		DHCP-Domain-Name-Server = 127.0.0.1
+		DHCP-Domain-Name-Server = 127.0.0.2
+		DHCP-Subnet-Mask = 255.255.255.0
+		DHCP-Router-Address = 192.0.2.1
+		DHCP-IP-Address-Lease-Time = 86400
+		DHCP-DHCP-Server-Identifier = 192.0.2.1
+	}
+
+	#  Do a simple mapping of MAC to assigned IP.
+	#
+	#  See below for the definition of the "mac2ip"
+	#  module.
+	#
+	#mac2ip
+
+	#  If the MAC wasn't found in that list, do something else.
+	#  You could call a Perl, Python, or Java script here.
+
+	#if (notfound) {
+	# ...
+	#}
+
+	#  Or, allocate IPs from the DHCP pool in SQL.
+#	dhcp_sqlippool
+
+	ok
+}
+
+dhcp DHCP-Request {
+	update reply {
+	       DHCP-Message-Type = DHCP-Ack
+	}
+
+	#  The contents here are invented.  Change them!
+	update reply {
+		DHCP-Domain-Name-Server = 127.0.0.1
+		DHCP-Domain-Name-Server = 127.0.0.2
+		DHCP-Subnet-Mask = 255.255.255.0
+		DHCP-Router-Address = 192.0.2.1
+		DHCP-IP-Address-Lease-Time = 86400
+		DHCP-DHCP-Server-Identifier = 192.0.2.1
+	}
+
+	#  Do a simple mapping of MAC to assigned IP.
+	#
+	#  See below for the definition of the "mac2ip"
+	#  module.
+	#
+	#mac2ip
+
+	#  If the MAC wasn't found in that list, do something else.
+	#  You could call a Perl, Python, or Java script here.
+
+	#if (notfound) {
+	# ...
+	#}
+
+	#  Or, allocate IPs from the DHCP pool in SQL.
+#	dhcp_sqlippool
+
+	ok
+}
+
+#  If there's no named section for the packet type, then the packet
+#  is processed through this section.
+dhcp {
+	# send a DHCP NAK.
+	reject
+}
+
+
+}
+
+######################################################################
+#
+#  This next section is a sample configuration for the "passwd"
+#  module, that reads flat-text files.  It should go into
+#  radiusd.conf, in the "modules" section.
+#
+#  The file is in the format <mac>,<ip>
+#
+#	00:01:02:03:04:05,192.0.2.100
+#	01:01:02:03:04:05,192.0.2.101
+#	02:01:02:03:04:05,192.0.2.102
+#
+#  This lets you perform simple static IP assignment.
+#
+######################################################################
+
+#passwd mac2ip {
+#	filename = ${confdir}/mac2ip
+#	format = "*DHCP-Client-Hardware-Address:=DHCP-Your-IP-Address"
+#	delimiter = ","
+#}

@@ -1,0 +1,41 @@
+#***********************************************************************
+#
+# Makefile for mipsel asuswrt
+#
+#***********************************************************************
+
+#CC = mipsel-linux-uclibc-gcc
+
+CFLAGS = -g -D_FILE_OFFSET_BITS=64 
+#CFLAGS += -DNVRAM_ -D__DEBUG__ -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/shared
+#CFLAGS += -DNVRAM_  -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/shared
+CFLAGS += -Wall
+LDFLAGS = -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib  -Wl,-dynamic-linker=/opt/lib/ld-uClibc.so.1
+#LDFLAGS =  -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared
+LIBS = -lpthread -lgcc_s
+
+ifeq ($(OLEG_ARM_D),1)
+CFLAGS += -DOLEG_ARM
+endif
+ifeq ($(OLEG_MIPSEL_D),1)
+CFLAGS += -DOLEG_MIPSEL
+endif
+ifeq ($(I686_D),1)
+CFLAGS += -DI686
+endif
+ifeq ($(SMARTSYNCIPK_D),1)
+CFLAGS += -DSMARTSYNCIPK
+endif
+
+objects = main.o list.o usb.o usb_api.o
+
+all : usbclient
+
+usbclient : $(objects)
+	echo "CFLAGS:$(CFLAGS)"
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^
+
+.PHONY : clean
+clean:
+	rm -rf *.o usbclient
+

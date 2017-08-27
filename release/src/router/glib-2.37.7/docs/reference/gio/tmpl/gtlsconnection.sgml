@@ -1,0 +1,265 @@
+<!-- ##### SECTION Title ##### -->
+GTlsConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GTlsConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GTlsConnection::accept-certificate ##### -->
+<para>
+
+</para>
+
+@gtlsconnection: the object which received the signal.
+@arg1: 
+@arg2: 
+@Returns: 
+
+<!-- ##### ARG GTlsConnection:base-io-stream ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:certificate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:database ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:interaction ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:peer-certificate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:peer-certificate-errors ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:rehandshake-mode ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:require-close-notify ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GTlsConnection:use-system-certdb ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_tls_connection_set_certificate ##### -->
+<para>
+
+</para>
+
+@conn: 
+@certificate: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_certificate ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_peer_certificate ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_peer_certificate_errors ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_set_require_close_notify ##### -->
+<para>
+
+</para>
+
+@conn: 
+@require_close_notify: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_require_close_notify ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### ENUM GTlsRehandshakeMode ##### -->
+<para>
+
+</para>
+
+@G_TLS_REHANDSHAKE_NEVER: 
+@G_TLS_REHANDSHAKE_SAFELY: 
+@G_TLS_REHANDSHAKE_UNSAFELY: 
+
+<!-- ##### FUNCTION g_tls_connection_set_rehandshake_mode ##### -->
+<para>
+
+</para>
+
+@conn: 
+@mode: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_rehandshake_mode ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_set_use_system_certdb ##### -->
+<para>
+
+</para>
+
+@conn: 
+@use_system_certdb: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_use_system_certdb ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_database ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_set_database ##### -->
+<para>
+
+</para>
+
+@conn: 
+@database: 
+
+
+<!-- ##### FUNCTION g_tls_connection_get_interaction ##### -->
+<para>
+
+</para>
+
+@conn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_set_interaction ##### -->
+<para>
+
+</para>
+
+@conn: 
+@interaction: 
+
+
+<!-- ##### FUNCTION g_tls_connection_handshake ##### -->
+<para>
+
+</para>
+
+@conn: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_handshake_async ##### -->
+<para>
+
+</para>
+
+@conn: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_tls_connection_handshake_finish ##### -->
+<para>
+
+</para>
+
+@conn: 
+@result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_tls_connection_emit_accept_certificate ##### -->
+<para>
+
+</para>
+
+@conn: 
+@peer_cert: 
+@errors: 
+@Returns: 
+
+

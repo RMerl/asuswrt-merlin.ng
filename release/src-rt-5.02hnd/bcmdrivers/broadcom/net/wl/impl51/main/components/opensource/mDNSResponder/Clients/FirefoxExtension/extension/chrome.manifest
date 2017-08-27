@@ -1,0 +1,6 @@
+content	bonjour4firefox	content/
+locale	bonjour4firefox	en-US	locale/en-US/
+skin	bonjour4firefox	classic/1.0	skin/ 
+skin	bonjour4firefox classic/1.0 skin-darwin/ os=darwin
+overlay	chrome://browser/content/browser.xul	chrome://bonjour4firefox/content/browserOverlay.xul
+style	chrome://global/content/customizeToolbar.xul	chrome://bonjour4firefox/skin/overlay.css

@@ -1,0 +1,245 @@
+# Chinese (traditional) translations for sysstat.
+# Copyright (C) 2008 THE sysstat'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the sysstat package.
+# Zi-You Dai <ioppooster@gmail.com>, 2008.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 8.1.5\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2008-07-12 18:20+0200\n"
+"PO-Revision-Date: 2008-08-18 18:49+0800\n"
+"Last-Translator: Zi-You Dai <ioppooster@gmail.com>\n"
+"Language-Team: Chinese (traditional)  <zh-l10n@linux.org.tw>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat 版本 %s\n"
+
+#: ioconf.c:479 iostat.c:462 rd_stats.c:69 rd_stats.c:1469 rd_stats.c:1576
+#: sa_common.c:984 sadc.c:478 sadc.c:487 sadc.c:547
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "無法打開 %s： %s\n"
+
+#: iostat.c:80 mpstat.c:83 pidstat.c:77 sar.c:89
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ]\n"
+msgstr "用法： %s [ 選項 ] [ <時間間隔> [ <計算> ] ]\n"
+
+#: iostat.c:83
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+msgstr ""
+"選項是：\n"
+"[-c ]·[ -d ] [ -N ] [ -n ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[·<裝置> ·[...]·|· ALL ]·[ -p [ <裝置> | ALL ] ]\n"
+
+#: iostat.c:1268
+#, c-format
+msgid "Time: %s\n"
+msgstr "時間： %s\n"
+
+#: iostat.c:1645
+#, c-format
+msgid "-x and -p options are mutually exclusive\n"
+msgstr "-x 和 -p 選項互相排斥\n"
+
+#: mpstat.c:86
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -I { SUM | CPU | ALL } ] [ -u ] [ -P { <cpu> | ALL } ] [ -V ]\n"
+msgstr ""
+"選項是：\n"
+"[ -A ] [ -I { SUM | CPU | ALL } ] [ -u ] [ -P { <cpu> | ALL } ] [ -V ]\n"
+
+#: mpstat.c:403 pidstat.c:1362 sar.c:287
+msgid "Average:"
+msgstr "平均時間："
+
+#: mpstat.c:708
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "沒有那麼多處理器！\n"
+
+#: pidstat.c:80
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <command> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"選項是：\n"
+"[ -C <命令> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:181 sar.c:892
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "所需的運行記錄無法取得\n"
+
+#: rd_stats.c:1622
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "處理器太多無法處理！\n"
+
+#: sa_common.c:800
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "讀取系統運行記錄時出錯： %s\n"
+
+#: sa_common.c:810
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "系統運行記錄文件的結尾有未知錯誤\n"
+
+#: sa_common.c:828
+#, c-format
+msgid "File created using sar/sadc from sysstat version %d.%d.%d"
+msgstr "從 sysstat 版本 %d，%d，%d 使用 sar/sadc 建立檔案"
+
+#: sa_common.c:858
+#, c-format
+msgid "Invalid system activity file: %s\n"
+msgstr "無效的系統運行記錄檔案： %s\n"
+
+#: sa_common.c:865
+#, c-format
+msgid "Current sysstat version can no longer read the format of this file (%#x)\n"
+msgstr "目前的 sysstat 版本已無法讀取此檔案格式 (%#x)\n"
+
+#: sa_common.c:1058
+#, c-format
+msgid "Requested activities not available in file %s\n"
+msgstr "所需的運行記錄在此檔案 %s 中無法獲得\n"
+
+#: sadc.c:78
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+msgstr "用法： %s [ 選項 ] [ <時間間隔> [ <計算> ] ] [ <輸出檔> ]\n"
+
+#: sadc.c:81
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <comment> ] [ -S { INT | DISK | ALL } ] [ -F ] [ -L ] [ -V ]\n"
+msgstr ""
+"選項是：\n"
+"[ -C <命令> ] [ -S { INT | DISK | ALL } ] [ -F ] [ -L ] [ -V ]\n"
+
+#: sadc.c:107
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "無法將數據寫入系統運行記錄檔案： %s\n"
+
+#: sadc.c:364
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "無法寫入系統運行記錄檔案的檔頭： %s\n"
+
+#: sadc.c:641
+#, c-format
+msgid "Cannot append data to that file (%s)\n"
+msgstr "不能增加數據到該檔案 (%s)\n"
+
+#: sadf.c:85
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+msgstr "用法： %s [ 選項 ] [ <時間間隔> [ <計算> ] ] [ <數據檔> ]\n"
+
+#: sadf.c:88
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -d | -D | -H | -p | -x ] [ -h ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options...> ]\n"
+msgstr ""
+"選項是：\n"
+"[ -d | -D | -H | -p | -x ] [ -h ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss>·] ]\n"
+"[·--·<sar_options...>·]\n"
+
+#: sadf.c:526
+#, c-format
+msgid "System activity data file: %s (%#x)\n"
+msgstr "系統運行記錄數據檔： %s (%#x)\n"
+
+#: sadf.c:535
+#, c-format
+msgid "Host: "
+msgstr "主機："
+
+#: sadf.c:540
+#, fuzzy, c-format
+msgid "Size of a long int: %d\n"
+msgstr "整數大小過長： %d\n"
+
+#: sadf.c:542
+#, c-format
+msgid "List of activities:\n"
+msgstr "運行記錄清單：\n"
+
+#: sar.c:92
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -p ] [ -q ] [ -r ] [ -R ]\n"
+"[ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"選項是：\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -p ] [ -q ] [ -r ] [ -R ]\n"
+"[ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <檔名> ] | -f [ <檔名> ] ]\n"
+"[ -i <時間間隔> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:143
+#, c-format
+msgid "End of data collecting unexpected\n"
+msgstr "數據結尾有未知錯誤\n"
+
+#: sar.c:703
+#, c-format
+msgid "Invalid data format\n"
+msgstr "無效的數據格式\n"
+
+#: sar.c:707
+#, c-format
+msgid "Using a wrong data collector from a different sysstat version\n"
+msgstr "從一個不同的 sysstat 版本，使用了錯誤的數據收集器\n"
+
+#: sar.c:727
+#, c-format
+msgid "Inconsistent input data\n"
+msgstr "不一致的數據輸入\n"
+
+#: sar.c:1121
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "-f 和 -o選項是互相排斥的\n"
+
+#: sar.c:1127
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "無法查看系統活動記錄檔 (使用 -f 選項)\n"
+
+#: sar.c:1224
+#, c-format
+msgid "Cannot find the data collector (%s)\n"
+msgstr "無法找到數據收集器 (%s)\n"

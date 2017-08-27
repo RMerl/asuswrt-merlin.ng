@@ -1,0 +1,283 @@
+	SQL Module
+
+0. Introduction
+
+  The SQL module is composed of two parts: a generic SQL front-end
+  (rlm_sql), and a series of database-dependent back-end drivers,
+  (rlm_sql_mysql, rlm_sql_postgresql, etc.)
+
+  In order to build the drivers, you MUST ALSO install the development
+  versions of the database.  That is, you must have the appropriate
+  header files and client libraries for (say) MySQL.  The
+  rlm_sql_mysql driver is NOT a complete MySQL client implementation.
+  Instead, it is a small 'shim' between the FreeRADIUS rlm_sql module,
+  and the MySQL client libraries.
+
+
+  In general, the SQL schemas mirror the layout of the 'users' file.
+  So for configuring check items and reply items, see 'man 5 users',
+  and the examples in the 'users' file.
+
+
+1. Schema and usage
+
+  The schemas are available in raddb/sql/<DB>/*, where <DB> is the
+  name of the database (mysql, postgresql, etc.)
+
+  The SQL module employs two sets of check and reply item tables for
+  processing in the authorization stage.  One set of tables (radcheck and
+  radreply) are specific to a single user.  The other set of tables
+  (radgroupcheck and radgroupreply) is used to apply check and reply items
+  to users that are members of a certain SQL group.  The usergroup table
+  provides the list of groups each user is a member of along with a priority
+  field to control the order in which groups are processed.
+
+  When a request comes into the server and is processed by the SQL module,
+  the flow goes something like this:
+
+  1. Search the radcheck table for any check attributes specific to the user
+  2. If check attributes are found, and there's a match, pull the reply items
+     from the radreply table for this user and add them to the reply
+  3. Group processing then begins if any of the following conditions are met:
+     a. The user IS NOT found in radcheck
+     b. The user IS found in radcheck, but the check items don't match
+     c. The user IS found in radcheck, the check items DO match AND
+        Fall-Through is set in the radreply table
+     d. The user IS found in radcheck, the check items DO match AND
+	the read_groups directive is set to 'yes'
+  4. If groups are to be processed for this user, the first thing that is
+     done is the list of groups this user is a member of is pulled from the
+     usergroup table ordered by the priority field.  The priority field of
+     the usergroup table allows us to control the order in which groups are
+     processed, so that we can emulate the ordering in the users file.  This
+     can be important in many cases.
+  5. For each group this user is a member of, the corresponding check items
+     are pulled from radgroupcheck table and compared with the request.  If
+     there is a match, the reply items for this group are pulled from the
+     radgroupreply table and applied.
+  6. Processing continues to the next group IF:
+     a. There was not a match for the last group's check items OR
+     b. Fall-Through was set in the last group's reply items
+     (The above is exactly the same as in the users file)
+  7. Finally, if the user has a User-Profile attribute set or the Default
+     Profile option is set in the sql.conf, then steps 4-6 are repeated for
+     the groups that the profile is a member of.
+
+  For any fairly complex setup, it is likely that most of the actual
+  processing will be done in the groups.  In these cases, the user entry in
+  radcheck will be of limited use except for things like setting the user's
+  password.  So, one might have the following setup:
+
+  radcheck table:
+  joeuser        Cleartext-Password      :=       somepassword
+
+  radreply table:
+  joeuser        Fall-Through       =        Yes
+
+  radgroupcheck table:
+  Check items for various connection scenarios
+
+  radgroupreply table:
+  reply items for the groups
+
+  usergroup table:
+  joeuser      WLANgroup    1(this is the priority)
+  joeuser      PPPgroup     2
+
+
+2. What NOT to do.
+
+  One of the fields of the SQL schema is named 'op'  This is for the
+  'operator' used by the attributes.  e.g.:
+
+   Framed-IP-Address  =      1.2.3.4
+   ^ ATTRIBUTE ----^  ^ OP   ^ VALUE
+
+  If you want the server to be completely misconfigured, and to never
+  do what you want, leave the 'op' field blank.  If you want to be
+  rudely told to RTFM, then post questions on the mailing list, asking
+
+  "why doesn't my SQL configuration work when I leave the 'op' field empty?"
+
+
+  The short answer is that with the op field empty, the server does
+  not know what you want it to do with the attribute.  Should it be
+  added to the reply?  Maybe you wanted to compare the operator to one
+  in the request?   The server simply doesn't know.
+
+  So put a value in the field.  The value is the string form of the
+  operator: "=", ">=", etc.  See Section 4, below, for more details.
+
+
+3. Authentication versus Authorization
+
+  Many people ask if they can "authenticate" users to their SQL
+  database.  The answer to this question is "You're asking the wrong
+  question."
+
+  An SQL database stores information.  An SQL database is NOT an
+  authentication server.  The ONLY users who should be able to
+  authenticate themselves to the database are the people who
+  administer it.  Most administrators do NOT want every user to be
+  able to access the database, which means that most users will not be
+  able to "authenticate" themselves to the database.
+
+  Instead, the users will have their authorization information (name,
+  password, configuration) stored in the database.  The configuration
+  files for FreeRADIUS contain a username and password used to
+  authenticate FreeRADIUS to the SQL server.  (See raddb/sql.conf).
+  Once the FreeRADIUS authentication server is connected to the SQL
+  database server, then FreeRADIUS can pull user names and passwords
+  out of the database, and use that information to perform the
+  authentication.
+
+4. Operators
+
+ The list of operators is given below.
+
+ Op	Example and documentation
+ --	-------------------------
+
+ =	"Attribute = Value"
+
+	Not allowed as a check item for RADIUS protocol attributes.  It is
+	allowed for server configuration attributes (Auth-Type, etc), and sets
+	the value of on attribute, only if there is no other item of the
+	same attribute.
+
+	As a reply item, it means "add the item to the reply list, but
+	only if there is no other item of the same attribute."
+
+
+ :=	"Attribute := Value"
+
+	Always matches as a check item, and replaces in the
+	configuration items any attribute of the same name.  If no
+	attribute of that name appears in the request, then this
+	attribute is added.
+
+	As a reply item, it has an identical meaning, but for the
+	reply items, instead of the request items.
+
+ ==	"Attribute == Value"
+
+	As a check item, it matches if the named attribute is present
+	in the request, AND has the given value.
+
+	Not allowed as a reply item.
+
+
+ +=	"Attribute += Value"
+
+	Always matches as a check item, and adds the current attribute
+	with value to the list of configuration items.
+
+	As a reply item, it has an identical meaning, but the
+	attribute is added to the reply items.
+
+
+ !=	"Attribute != Value"
+
+	As a check item, matches if the given attribute is in the
+	request, AND does not have the given value.
+
+	Not allowed as a reply item.
+
+
+ >	"Attribute > Value"
+
+	As a check item, it matches if the request contains an
+	attribute with a value greater than the one given.
+
+	Not allowed as a reply item.
+
+
+ >=	"Attribute >= Value"
+
+	As a check item, it matches if the request contains an
+	attribute with a value greater than, or equal to the one
+	given.
+
+	Not allowed as a reply item.
+
+ <	"Attribute < Value"
+
+	As a check item, it matches if the request contains an
+	attribute with a value less than the one given.
+
+	Not allowed as a reply item.
+
+
+ <=	"Attribute <= Value"
+
+	As a check item, it matches if the request contains an
+	attribute with a value less than, or equal to the one given.
+
+	Not allowed as a reply item.
+
+
+ =~	"Attribute =~ Expression"
+
+	As a check item, it matches if the request contains an
+	attribute which matches the given regular expression.  This
+	operator may only be applied to string attributes.
+
+	Not allowed as a reply item.
+
+
+ !~	"Attribute !~ Expression"
+
+	As a check item, it matches if the request contains an
+	attribute which does not match the given regular expression.
+	This operator may only be applied to string attributes.
+
+	Not allowed as a reply item.
+
+
+ =*	"Attribute =* Value"
+
+	As a check item, it matches if the request contains the named
+	attribute, no matter what the value is.
+
+	Not allowed as a reply item.
+
+
+ !*	"Attribute !* Value"
+
+	As a check item, it matches if the request does not contain
+	the named attribute, no matter what the value is.
+
+	Not allowed as a reply item.
+
+5. Instances
+
+  Just like any other module, multiple instances of the rlm_sql
+  module can be defined and used wherever you like.
+
+  The default .conf files for the different database types,
+  contain 1 instance without a name like so:
+  sql {
+    ...
+  }
+
+  You can create multiple named instances like so:
+  sql sql_instance1 {
+    ...
+  }
+  sql sql_instance2 {
+    ...
+  }
+
+  And then you can use a specific instance in radiusd.conf, like
+  so:
+  authorize {
+    ...
+    sql_instance1
+    ...
+  }
+  accounting {
+    ...
+    sql_instance1
+    sql_instance2
+    ...
+  }

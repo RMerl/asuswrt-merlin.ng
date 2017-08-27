@@ -1,0 +1,20 @@
+charon.plugins.eap-peap.fragment_size = 1024
+	Maximum size of an EAP-PEAP packet.
+
+charon.plugins.eap-peap.max_message_count = 32
+	Maximum number of processed EAP-PEAP packets (0 = no limit).
+
+charon.plugins.eap-peap.include_length = no
+	Include length in non-fragmented EAP-PEAP packets.
+
+charon.plugins.eap-peap.phase2_method = mschapv2
+	Phase2 EAP client authentication method.
+
+charon.plugins.eap-peap.phase2_piggyback = no
+	Phase2 EAP Identity request piggybacked by server onto TLS Finished message.
+
+charon.plugins.eap-peap.phase2_tnc = no
+	Start phase2 EAP TNC protocol after successful client authentication.
+
+charon.plugins.eap-peap.request_peer_auth = no
+	Request peer authentication based on a client certificate.

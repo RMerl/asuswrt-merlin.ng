@@ -1,0 +1,255 @@
+<!-- ##### SECTION Title ##### -->
+gmenumodel
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GMenuModel ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GMenuModel::items-changed ##### -->
+<para>
+
+</para>
+
+@gmenumodel: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+
+<!-- ##### FUNCTION g_menu_model_is_mutable ##### -->
+<para>
+
+</para>
+
+@model: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_model_get_n_items ##### -->
+<para>
+
+</para>
+
+@model: 
+@Returns: 
+
+
+<!-- ##### MACRO G_MENU_ATTRIBUTE_ACTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MENU_ATTRIBUTE_TARGET ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MENU_ATTRIBUTE_LABEL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MENU_ATTRIBUTE_ICON ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MENU_LINK_SECTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_MENU_LINK_SUBMENU ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_menu_model_get_item_attribute_value ##### -->
+<para>
+
+</para>
+
+@model: 
+@item_index: 
+@attribute: 
+@expected_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_model_get_item_attribute ##### -->
+<para>
+
+</para>
+
+@model: 
+@item_index: 
+@attribute: 
+@format_string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_model_get_item_link ##### -->
+<para>
+
+</para>
+
+@model: 
+@item_index: 
+@link: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_model_iterate_item_attributes ##### -->
+<para>
+
+</para>
+
+@model: 
+@item_index: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_model_iterate_item_links ##### -->
+<para>
+
+</para>
+
+@model: 
+@item_index: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_model_items_changed ##### -->
+<para>
+
+</para>
+
+@model: 
+@position: 
+@removed: 
+@added: 
+
+
+<!-- ##### STRUCT GMenuAttributeIter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_menu_attribute_iter_get_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@out_name: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_attribute_iter_get_name ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_attribute_iter_get_value ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_attribute_iter_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### STRUCT GMenuLinkIter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_menu_link_iter_get_name ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_link_iter_get_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@out_link: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_link_iter_get_value ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_menu_link_iter_next ##### -->
+<para>
+
+</para>
+
+@iter: 
+@Returns: 
+
+

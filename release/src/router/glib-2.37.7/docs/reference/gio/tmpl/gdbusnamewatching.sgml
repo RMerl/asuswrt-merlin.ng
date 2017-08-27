@@ -1,0 +1,117 @@
+<!-- ##### SECTION Title ##### -->
+gdbusnamewatching
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### USER_FUNCTION GBusNameAppearedCallback ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@name_owner: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION GBusNameVanishedCallback ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@user_data: 
+
+
+<!-- ##### ENUM GBusNameWatcherFlags ##### -->
+<para>
+
+</para>
+
+@G_BUS_NAME_WATCHER_FLAGS_NONE: 
+@G_BUS_NAME_WATCHER_FLAGS_AUTO_START: 
+
+<!-- ##### FUNCTION g_bus_watch_name ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@name: 
+@flags: 
+@name_appeared_handler: 
+@name_vanished_handler: 
+@user_data: 
+@user_data_free_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bus_watch_name_on_connection ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@flags: 
+@name_appeared_handler: 
+@name_vanished_handler: 
+@user_data: 
+@user_data_free_func: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bus_unwatch_name ##### -->
+<para>
+
+</para>
+
+@watcher_id: 
+
+
+<!-- ##### FUNCTION g_bus_watch_name_with_closures ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@name: 
+@flags: 
+@name_appeared_closure: 
+@name_vanished_closure: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_bus_watch_name_on_connection_with_closures ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@flags: 
+@name_appeared_closure: 
+@name_vanished_closure: 
+@Returns: 
+
+

@@ -1,0 +1,1518 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Reference Manual: N-ary Trees</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-data-types.html" title="GLib Data Types">
+<link rel="prev" href="glib-Balanced-Binary-Trees.html" title="Balanced Binary Trees">
+<link rel="next" href="glib-Quarks.html" title="Quarks">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#glib-N-ary-Trees.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-data-types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Balanced-Binary-Trees.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Quarks.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-N-ary-Trees"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-N-ary-Trees.top_of_page"></a>N-ary Trees</span></h2>
+<p>N-ary Trees — trees of data with any number of branches</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="glib-N-ary-Trees.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;glib.h&gt;
+
+struct              <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode">GNode</a>;
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-new" title="g_node_new ()">g_node_new</a>                          (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-copy" title="g_node_copy ()">g_node_copy</a>                         (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>            (<a class="link" href="glib-N-ary-Trees.html#GCopyFunc" title="GCopyFunc ()">*GCopyFunc</a>)                        (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> src</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-copy-deep" title="g_node_copy_deep ()">g_node_copy_deep</a>                    (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GCopyFunc" title="GCopyFunc ()"><span class="type">GCopyFunc</span></a> copy_func</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-insert" title="g_node_insert ()">g_node_insert</a>                       (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-insert-before" title="g_node_insert_before ()">g_node_insert_before</a>                (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *sibling</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-insert-after" title="g_node_insert_after ()">g_node_insert_after</a>                 (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *sibling</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-append" title="g_node_append()">g_node_append</a>                       (parent,
+                                                         node)
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-prepend" title="g_node_prepend ()">g_node_prepend</a>                      (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-insert-data" title="g_node_insert_data()">g_node_insert_data</a>                  (parent,
+                                                         position,
+                                                         data)
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-insert-data-after" title="g_node_insert_data_after()">g_node_insert_data_after</a>            (parent,
+                                                         sibling,
+                                                         data)
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-insert-data-before" title="g_node_insert_data_before()">g_node_insert_data_before</a>           (parent,
+                                                         sibling,
+                                                         data)
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-append-data" title="g_node_append_data()">g_node_append_data</a>                  (parent,
+                                                         data)
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-prepend-data" title="g_node_prepend_data()">g_node_prepend_data</a>                 (parent,
+                                                         data)
+
+<span class="returnvalue">void</span>                <a class="link" href="glib-N-ary-Trees.html#g-node-reverse-children" title="g_node_reverse_children ()">g_node_reverse_children</a>             (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-N-ary-Trees.html#g-node-traverse" title="g_node_traverse ()">g_node_traverse</a>                     (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Balanced-Binary-Trees.html#GTraverseType" title="enum GTraverseType"><span class="type">GTraverseType</span></a> order</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> max_depth</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNodeTraverseFunc" title="GNodeTraverseFunc ()"><span class="type">GNodeTraverseFunc</span></a> func</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+enum                <a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags">GTraverseFlags</a>;
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>            (<a class="link" href="glib-N-ary-Trees.html#GNodeTraverseFunc" title="GNodeTraverseFunc ()">*GNodeTraverseFunc</a>)                (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-N-ary-Trees.html#g-node-children-foreach" title="g_node_children_foreach ()">g_node_children_foreach</a>             (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNodeForeachFunc" title="GNodeForeachFunc ()"><span class="type">GNodeForeachFunc</span></a> func</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<span class="returnvalue">void</span>                (<a class="link" href="glib-N-ary-Trees.html#GNodeForeachFunc" title="GNodeForeachFunc ()">*GNodeForeachFunc</a>)                 (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-get-root" title="g_node_get_root ()">g_node_get_root</a>                     (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-find" title="g_node_find ()">g_node_find</a>                         (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Balanced-Binary-Trees.html#GTraverseType" title="enum GTraverseType"><span class="type">GTraverseType</span></a> order</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-find-child" title="g_node_find_child ()">g_node_find_child</a>                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="returnvalue">gint</span></a>                <a class="link" href="glib-N-ary-Trees.html#g-node-child-index" title="g_node_child_index ()">g_node_child_index</a>                  (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);
+<a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="returnvalue">gint</span></a>                <a class="link" href="glib-N-ary-Trees.html#g-node-child-position" title="g_node_child_position ()">g_node_child_position</a>               (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *child</code></em>);
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-first-child" title="g_node_first_child()">g_node_first_child</a>                  (node)
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-last-child" title="g_node_last_child ()">g_node_last_child</a>                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-nth-child" title="g_node_nth_child ()">g_node_nth_child</a>                    (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> n</code></em>);
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-first-sibling" title="g_node_first_sibling ()">g_node_first_sibling</a>                (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-next-sibling" title="g_node_next_sibling()">g_node_next_sibling</a>                 (node)
+#define             <a class="link" href="glib-N-ary-Trees.html#g-node-prev-sibling" title="g_node_prev_sibling()">g_node_prev_sibling</a>                 (node)
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             <a class="link" href="glib-N-ary-Trees.html#g-node-last-sibling" title="g_node_last_sibling ()">g_node_last_sibling</a>                 (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+
+#define             <a class="link" href="glib-N-ary-Trees.html#G-NODE-IS-LEAF:CAPS" title="G_NODE_IS_LEAF()">G_NODE_IS_LEAF</a>                      (node)
+#define             <a class="link" href="glib-N-ary-Trees.html#G-NODE-IS-ROOT:CAPS" title="G_NODE_IS_ROOT()">G_NODE_IS_ROOT</a>                      (node)
+<a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               <a class="link" href="glib-N-ary-Trees.html#g-node-depth" title="g_node_depth ()">g_node_depth</a>                        (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               <a class="link" href="glib-N-ary-Trees.html#g-node-n-nodes" title="g_node_n_nodes ()">g_node_n_nodes</a>                      (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>);
+<a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               <a class="link" href="glib-N-ary-Trees.html#g-node-n-children" title="g_node_n_children ()">g_node_n_children</a>                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="glib-N-ary-Trees.html#g-node-is-ancestor" title="g_node_is_ancestor ()">g_node_is_ancestor</a>                  (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *descendant</code></em>);
+<a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               <a class="link" href="glib-N-ary-Trees.html#g-node-max-height" title="g_node_max_height ()">g_node_max_height</a>                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>);
+
+<span class="returnvalue">void</span>                <a class="link" href="glib-N-ary-Trees.html#g-node-unlink" title="g_node_unlink ()">g_node_unlink</a>                       (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-N-ary-Trees.html#g-node-destroy" title="g_node_destroy ()">g_node_destroy</a>                      (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-N-ary-Trees.description"></a><h2>Description</h2>
+<p>
+The <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> struct and its associated functions provide a N-ary tree
+data structure, where nodes in the tree can contain arbitrary data.
+</p>
+<p>
+To create a new tree use <a class="link" href="glib-N-ary-Trees.html#g-node-new" title="g_node_new ()"><code class="function">g_node_new()</code></a>.
+</p>
+<p>
+To insert a node into a tree use <a class="link" href="glib-N-ary-Trees.html#g-node-insert" title="g_node_insert ()"><code class="function">g_node_insert()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#g-node-insert-before" title="g_node_insert_before ()"><code class="function">g_node_insert_before()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-append" title="g_node_append()"><code class="function">g_node_append()</code></a> and <a class="link" href="glib-N-ary-Trees.html#g-node-prepend" title="g_node_prepend ()"><code class="function">g_node_prepend()</code></a>.
+</p>
+<p>
+To create a new node and insert it into a tree use
+<a class="link" href="glib-N-ary-Trees.html#g-node-insert-data" title="g_node_insert_data()"><code class="function">g_node_insert_data()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-insert-data-after" title="g_node_insert_data_after()"><code class="function">g_node_insert_data_after()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#g-node-insert-data-before" title="g_node_insert_data_before()"><code class="function">g_node_insert_data_before()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-append-data" title="g_node_append_data()"><code class="function">g_node_append_data()</code></a>
+and <a class="link" href="glib-N-ary-Trees.html#g-node-prepend-data" title="g_node_prepend_data()"><code class="function">g_node_prepend_data()</code></a>.
+</p>
+<p>
+To reverse the children of a node use <a class="link" href="glib-N-ary-Trees.html#g-node-reverse-children" title="g_node_reverse_children ()"><code class="function">g_node_reverse_children()</code></a>.
+</p>
+<p>
+To find a node use <a class="link" href="glib-N-ary-Trees.html#g-node-get-root" title="g_node_get_root ()"><code class="function">g_node_get_root()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-find" title="g_node_find ()"><code class="function">g_node_find()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#g-node-find-child" title="g_node_find_child ()"><code class="function">g_node_find_child()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-child-index" title="g_node_child_index ()"><code class="function">g_node_child_index()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-child-position" title="g_node_child_position ()"><code class="function">g_node_child_position()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#g-node-first-child" title="g_node_first_child()"><code class="function">g_node_first_child()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-last-child" title="g_node_last_child ()"><code class="function">g_node_last_child()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-nth-child" title="g_node_nth_child ()"><code class="function">g_node_nth_child()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#g-node-first-sibling" title="g_node_first_sibling ()"><code class="function">g_node_first_sibling()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-prev-sibling" title="g_node_prev_sibling()"><code class="function">g_node_prev_sibling()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-next-sibling" title="g_node_next_sibling()"><code class="function">g_node_next_sibling()</code></a>
+or <a class="link" href="glib-N-ary-Trees.html#g-node-last-sibling" title="g_node_last_sibling ()"><code class="function">g_node_last_sibling()</code></a>.
+</p>
+<p>
+To get information about a node or tree use <a class="link" href="glib-N-ary-Trees.html#G-NODE-IS-LEAF:CAPS" title="G_NODE_IS_LEAF()"><code class="function">G_NODE_IS_LEAF()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#G-NODE-IS-ROOT:CAPS" title="G_NODE_IS_ROOT()"><code class="function">G_NODE_IS_ROOT()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-depth" title="g_node_depth ()"><code class="function">g_node_depth()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-n-nodes" title="g_node_n_nodes ()"><code class="function">g_node_n_nodes()</code></a>,
+<a class="link" href="glib-N-ary-Trees.html#g-node-n-children" title="g_node_n_children ()"><code class="function">g_node_n_children()</code></a>, <a class="link" href="glib-N-ary-Trees.html#g-node-is-ancestor" title="g_node_is_ancestor ()"><code class="function">g_node_is_ancestor()</code></a> or <a class="link" href="glib-N-ary-Trees.html#g-node-max-height" title="g_node_max_height ()"><code class="function">g_node_max_height()</code></a>.
+</p>
+<p>
+To traverse a tree, calling a function for each node visited in the
+traversal, use <a class="link" href="glib-N-ary-Trees.html#g-node-traverse" title="g_node_traverse ()"><code class="function">g_node_traverse()</code></a> or <a class="link" href="glib-N-ary-Trees.html#g-node-children-foreach" title="g_node_children_foreach ()"><code class="function">g_node_children_foreach()</code></a>.
+</p>
+<p>
+To remove a node or subtree from a tree use <a class="link" href="glib-N-ary-Trees.html#g-node-unlink" title="g_node_unlink ()"><code class="function">g_node_unlink()</code></a> or
+<a class="link" href="glib-N-ary-Trees.html#g-node-destroy" title="g_node_destroy ()"><code class="function">g_node_destroy()</code></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="glib-N-ary-Trees.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GNode"></a><h3>struct GNode</h3>
+<pre class="programlisting">struct GNode {
+  gpointer data;
+  GNode	  *next;
+  GNode	  *prev;
+  GNode	  *parent;
+  GNode	  *children;
+};
+</pre>
+<p>
+The <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> struct represents one node in a
+<a class="link" href="glib-N-ary-Trees.html" title="N-ary Trees">N-ary Tree</a>. fields
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> <em class="structfield"><code><a name="GNode.data"></a>data</code></em>;</span></p></td>
+<td>contains the actual data of the node.</td>
+</tr>
+<tr>
+<td><p><span class="term"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *<em class="structfield"><code><a name="GNode.next"></a>next</code></em>;</span></p></td>
+<td>points to the node's next sibling (a sibling is another
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> with the same parent).</td>
+</tr>
+<tr>
+<td><p><span class="term"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *<em class="structfield"><code><a name="GNode.prev"></a>prev</code></em>;</span></p></td>
+<td>points to the node's previous sibling.</td>
+</tr>
+<tr>
+<td><p><span class="term"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *<em class="structfield"><code><a name="GNode.parent"></a>parent</code></em>;</span></p></td>
+<td>points to the parent of the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>, or is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if the
+<a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> is the root of the tree.</td>
+</tr>
+<tr>
+<td><p><span class="term"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *<em class="structfield"><code><a name="GNode.children"></a>children</code></em>;</span></p></td>
+<td>points to the first child of the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.  The other
+children are accessed by using the <em class="parameter"><code>next</code></em> pointer of each
+child.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-new"></a><h3>g_node_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_new                          (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> containing the given data.
+Used to create the first node in a tree.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data of the new node</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-copy"></a><h3>g_node_copy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_copy                         (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Recursively copies a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> (but does not deep-copy the data inside the 
+nodes, see <a class="link" href="glib-N-ary-Trees.html#g-node-copy-deep" title="g_node_copy_deep ()"><code class="function">g_node_copy_deep()</code></a> if you need that).
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> containing the same data pointers</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GCopyFunc"></a><h3>GCopyFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>            (*GCopyFunc)                        (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> src</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+A function of this signature is used to copy the node data 
+when doing a deep-copy of a tree.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>src</code></em> :</span></p></td>
+<td>A pointer to the data which should be copied</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>Additional data</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>A pointer to the copy</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.4</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-copy-deep"></a><h3>g_node_copy_deep ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_copy_deep                    (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GCopyFunc" title="GCopyFunc ()"><span class="type">GCopyFunc</span></a> copy_func</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Recursively copies a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> and its data.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>copy_func</code></em> :</span></p></td>
+<td>the function which is called to copy the data inside each node,
+or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to use the original data.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>data to pass to <em class="parameter"><code>copy_func</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> containing copies of the data in <em class="parameter"><code>node</code></em>.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.4</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-insert"></a><h3>g_node_insert ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_insert                       (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Inserts a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> beneath the parent at the given position.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place <em class="parameter"><code>node</code></em> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position to place <em class="parameter"><code>node</code></em> at, with respect to its siblings
+If position is -1, <em class="parameter"><code>node</code></em> is inserted as the last child of <em class="parameter"><code>parent</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to insert</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the inserted <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-insert-before"></a><h3>g_node_insert_before ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_insert_before                (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *sibling</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Inserts a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> beneath the parent before the given sibling.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place <em class="parameter"><code>node</code></em> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sibling</code></em> :</span></p></td>
+<td>the sibling <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place <em class="parameter"><code>node</code></em> before.
+If sibling is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, the node is inserted as the last child of <em class="parameter"><code>parent</code></em>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to insert</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the inserted <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-insert-after"></a><h3>g_node_insert_after ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_insert_after                 (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *sibling</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Inserts a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> beneath the parent after the given sibling.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place <em class="parameter"><code>node</code></em> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sibling</code></em> :</span></p></td>
+<td>the sibling <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place <em class="parameter"><code>node</code></em> after.
+If sibling is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, the node is inserted as the first child of <em class="parameter"><code>parent</code></em>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to insert</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the inserted <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-append"></a><h3>g_node_append()</h3>
+<pre class="programlisting">#define             g_node_append(parent, node)</pre>
+<p>
+Inserts a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> as the last child of the given parent.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to insert</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the inserted <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-prepend"></a><h3>g_node_prepend ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_prepend                      (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *parent</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Inserts a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> as the first child of the given parent.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to insert</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the inserted <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-insert-data"></a><h3>g_node_insert_data()</h3>
+<pre class="programlisting">#define             g_node_insert_data(parent, position, data)</pre>
+<p>
+Inserts a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> at the given position.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> at. If position is -1,
+the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> is inserted as the last child of <em class="parameter"><code>parent</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data for the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-insert-data-after"></a><h3>g_node_insert_data_after()</h3>
+<pre class="programlisting">#define             g_node_insert_data_after(parent, sibling, data)</pre>
+<p>
+Inserts a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> after the given sibling.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sibling</code></em> :</span></p></td>
+<td>the sibling <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> after</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data for the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-insert-data-before"></a><h3>g_node_insert_data_before()</h3>
+<pre class="programlisting">#define             g_node_insert_data_before(parent, sibling, data)</pre>
+<p>
+Inserts a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> before the given sibling.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>sibling</code></em> :</span></p></td>
+<td>the sibling <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> before</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data for the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-append-data"></a><h3>g_node_append_data()</h3>
+<pre class="programlisting">#define             g_node_append_data(parent, data)</pre>
+<p>
+Inserts a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> as the last child of the given parent.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data for the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-prepend-data"></a><h3>g_node_prepend_data()</h3>
+<pre class="programlisting">#define             g_node_prepend_data(parent, data)</pre>
+<p>
+Inserts a new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> as the first child of the given parent.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parent</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to place the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> under</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data for the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-reverse-children"></a><h3>g_node_reverse_children ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_node_reverse_children             (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Reverses the order of the children of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+(It doesn't change the order of the grandchildren.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-traverse"></a><h3>g_node_traverse ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_node_traverse                     (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Balanced-Binary-Trees.html#GTraverseType" title="enum GTraverseType"><span class="type">GTraverseType</span></a> order</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="type">gint</span></a> max_depth</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNodeTraverseFunc" title="GNodeTraverseFunc ()"><span class="type">GNodeTraverseFunc</span></a> func</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Traverses a tree starting at the given root <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+It calls the given function for each node visited.
+The traversal can be halted at any point by returning <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> from <em class="parameter"><code>func</code></em>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>root</code></em> :</span></p></td>
+<td>the root <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> of the tree to traverse</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>order</code></em> :</span></p></td>
+<td>the order in which nodes are visited - <a class="link" href="glib-Balanced-Binary-Trees.html#G-IN-ORDER:CAPS"><code class="literal">G_IN_ORDER</code></a>,
+<a class="link" href="glib-Balanced-Binary-Trees.html#G-PRE-ORDER:CAPS"><code class="literal">G_PRE_ORDER</code></a>, <a class="link" href="glib-Balanced-Binary-Trees.html#G-POST-ORDER:CAPS"><code class="literal">G_POST_ORDER</code></a>, or <a class="link" href="glib-Balanced-Binary-Trees.html#G-LEVEL-ORDER:CAPS"><code class="literal">G_LEVEL_ORDER</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>which types of children are to be visited, one of
+<a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-ALL:CAPS"><code class="literal">G_TRAVERSE_ALL</code></a>, <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAVES:CAPS"><code class="literal">G_TRAVERSE_LEAVES</code></a> and <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAVES:CAPS"><code class="literal">G_TRAVERSE_NON_LEAVES</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>max_depth</code></em> :</span></p></td>
+<td>the maximum depth of the traversal. Nodes below this
+depth will not be visited. If max_depth is -1 all nodes in
+the tree are visited. If depth is 1, only the root is visited.
+If depth is 2, the root and its children are visited. And so on.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>func</code></em> :</span></p></td>
+<td>the function to call for each visited <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>user data to pass to the function</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTraverseFlags"></a><h3>enum GTraverseFlags</h3>
+<pre class="programlisting">typedef enum {
+  G_TRAVERSE_LEAVES     = 1 &lt;&lt; 0,
+  G_TRAVERSE_NON_LEAVES = 1 &lt;&lt; 1,
+  G_TRAVERSE_ALL        = G_TRAVERSE_LEAVES | G_TRAVERSE_NON_LEAVES,
+  G_TRAVERSE_MASK       = 0x03,
+  G_TRAVERSE_LEAFS      = G_TRAVERSE_LEAVES,
+  G_TRAVERSE_NON_LEAFS  = G_TRAVERSE_NON_LEAVES
+} GTraverseFlags;
+</pre>
+<p>
+Specifies which nodes are visited during several of the tree
+functions, including <a class="link" href="glib-N-ary-Trees.html#g-node-traverse" title="g_node_traverse ()"><code class="function">g_node_traverse()</code></a> and <a class="link" href="glib-N-ary-Trees.html#g-node-find" title="g_node_find ()"><code class="function">g_node_find()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="G-TRAVERSE-LEAVES:CAPS"></a><span class="term"><code class="literal">G_TRAVERSE_LEAVES</code></span></p></td>
+<td>only leaf nodes should be visited. This name has
+                    been introduced in 2.6, for older version use
+                    <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAFS:CAPS"><code class="literal">G_TRAVERSE_LEAFS</code></a>.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-TRAVERSE-NON-LEAVES:CAPS"></a><span class="term"><code class="literal">G_TRAVERSE_NON_LEAVES</code></span></p></td>
+<td>only non-leaf nodes should be visited. This
+                        name has been introduced in 2.6, for older
+                        version use <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAFS:CAPS"><code class="literal">G_TRAVERSE_NON_LEAFS</code></a>.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-TRAVERSE-ALL:CAPS"></a><span class="term"><code class="literal">G_TRAVERSE_ALL</code></span></p></td>
+<td>all nodes should be visited.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-TRAVERSE-MASK:CAPS"></a><span class="term"><code class="literal">G_TRAVERSE_MASK</code></span></p></td>
+<td>a mask of all traverse flags.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-TRAVERSE-LEAFS:CAPS"></a><span class="term"><code class="literal">G_TRAVERSE_LEAFS</code></span></p></td>
+<td>identical to <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAVES:CAPS"><code class="literal">G_TRAVERSE_LEAVES</code></a>.
+</td>
+</tr>
+<tr>
+<td><p><a name="G-TRAVERSE-NON-LEAFS:CAPS"></a><span class="term"><code class="literal">G_TRAVERSE_NON_LEAFS</code></span></p></td>
+<td>identical to <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAVES:CAPS"><code class="literal">G_TRAVERSE_NON_LEAVES</code></a>.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GNodeTraverseFunc"></a><h3>GNodeTraverseFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>            (*GNodeTraverseFunc)                (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Specifies the type of function passed to <a class="link" href="glib-N-ary-Trees.html#g-node-traverse" title="g_node_traverse ()"><code class="function">g_node_traverse()</code></a>. The
+function is called with each of the nodes visited, together with the
+user data passed to <a class="link" href="glib-N-ary-Trees.html#g-node-traverse" title="g_node_traverse ()"><code class="function">g_node_traverse()</code></a>. If the function returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, then the traversal is stopped.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>user data passed to <a class="link" href="glib-N-ary-Trees.html#g-node-traverse" title="g_node_traverse ()"><code class="function">g_node_traverse()</code></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> to stop the traversal.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-children-foreach"></a><h3>g_node_children_foreach ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_node_children_foreach             (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNodeForeachFunc" title="GNodeForeachFunc ()"><span class="type">GNodeForeachFunc</span></a> func</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Calls a function for each of the children of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+Note that it doesn't descend beneath the child nodes.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>which types of children are to be visited, one of
+<a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-ALL:CAPS"><code class="literal">G_TRAVERSE_ALL</code></a>, <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAVES:CAPS"><code class="literal">G_TRAVERSE_LEAVES</code></a> and <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAVES:CAPS"><code class="literal">G_TRAVERSE_NON_LEAVES</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>func</code></em> :</span></p></td>
+<td>the function to call for each visited node</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>user data to pass to the function</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GNodeForeachFunc"></a><h3>GNodeForeachFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                (*GNodeForeachFunc)                 (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Specifies the type of function passed to <a class="link" href="glib-N-ary-Trees.html#g-node-children-foreach" title="g_node_children_foreach ()"><code class="function">g_node_children_foreach()</code></a>.
+The function is called with each child node, together with the user
+data passed to <a class="link" href="glib-N-ary-Trees.html#g-node-children-foreach" title="g_node_children_foreach ()"><code class="function">g_node_children_foreach()</code></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>user data passed to <a class="link" href="glib-N-ary-Trees.html#g-node-children-foreach" title="g_node_children_foreach ()"><code class="function">g_node_children_foreach()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-get-root"></a><h3>g_node_get_root ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_get_root                     (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Gets the root of a tree.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the root of the tree</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-find"></a><h3>g_node_find ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_find                         (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Balanced-Binary-Trees.html#GTraverseType" title="enum GTraverseType"><span class="type">GTraverseType</span></a> order</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Finds a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> in a tree.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>root</code></em> :</span></p></td>
+<td>the root <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> of the tree to search</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>order</code></em> :</span></p></td>
+<td>the order in which nodes are visited - <a class="link" href="glib-Balanced-Binary-Trees.html#G-IN-ORDER:CAPS"><code class="literal">G_IN_ORDER</code></a>,
+<a class="link" href="glib-Balanced-Binary-Trees.html#G-PRE-ORDER:CAPS"><code class="literal">G_PRE_ORDER</code></a>, <a class="link" href="glib-Balanced-Binary-Trees.html#G-POST-ORDER:CAPS"><code class="literal">G_POST_ORDER</code></a>, or <a class="link" href="glib-Balanced-Binary-Trees.html#G-LEVEL-ORDER:CAPS"><code class="literal">G_LEVEL_ORDER</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>which types of children are to be searched, one of
+<a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-ALL:CAPS"><code class="literal">G_TRAVERSE_ALL</code></a>, <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAVES:CAPS"><code class="literal">G_TRAVERSE_LEAVES</code></a> and <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAVES:CAPS"><code class="literal">G_TRAVERSE_NON_LEAVES</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data to find</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the found <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if the data is not found</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-find-child"></a><h3>g_node_find_child ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_find_child                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Finds the first child of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> with the given data.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>which types of children are to be searched, one of
+<a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-ALL:CAPS"><code class="literal">G_TRAVERSE_ALL</code></a>, <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAVES:CAPS"><code class="literal">G_TRAVERSE_LEAVES</code></a> and <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAVES:CAPS"><code class="literal">G_TRAVERSE_NON_LEAVES</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data to find</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the found child <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if the data is not found</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-child-index"></a><h3>g_node_child_index ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="returnvalue">gint</span></a>                g_node_child_index                  (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>
+Gets the position of the first child of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> 
+which contains the given data.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>data</code></em> :</span></p></td>
+<td>the data to find</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the index of the child of <em class="parameter"><code>node</code></em> which contains
+<em class="parameter"><code>data</code></em>, or -1 if the data is not found</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-child-position"></a><h3>g_node_child_position ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint"><span class="returnvalue">gint</span></a>                g_node_child_position               (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *child</code></em>);</pre>
+<p>
+Gets the position of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> with respect to its siblings.
+<em class="parameter"><code>child</code></em> must be a child of <em class="parameter"><code>node</code></em>. The first child is numbered 0, 
+the second 1, and so on.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>child</code></em> :</span></p></td>
+<td>a child of <em class="parameter"><code>node</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the position of <em class="parameter"><code>child</code></em> with respect to its siblings</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-first-child"></a><h3>g_node_first_child()</h3>
+<pre class="programlisting">#define             g_node_first_child(node)</pre>
+<p>
+Gets the first child of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first child of <em class="parameter"><code>node</code></em>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>node</code></em> is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+or has no children</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-last-child"></a><h3>g_node_last_child ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_last_child                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Gets the last child of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> (must not be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>)</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the last child of <em class="parameter"><code>node</code></em>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>node</code></em> has no children</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-nth-child"></a><h3>g_node_nth_child ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_nth_child                    (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="type">guint</span></a> n</code></em>);</pre>
+<p>
+Gets a child of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>, using the given index.
+The first child is at index 0. If the index is 
+too big, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>n</code></em> :</span></p></td>
+<td>the index of the desired child</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the child of <em class="parameter"><code>node</code></em> at index <em class="parameter"><code>n</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-first-sibling"></a><h3>g_node_first_sibling ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_first_sibling                (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Gets the first sibling of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+This could possibly be the node itself.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the first sibling of <em class="parameter"><code>node</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-next-sibling"></a><h3>g_node_next_sibling()</h3>
+<pre class="programlisting">#define             g_node_next_sibling(node)</pre>
+<p>
+Gets the next sibling of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the next sibling of <em class="parameter"><code>node</code></em>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>node</code></em> is the last node
+or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-prev-sibling"></a><h3>g_node_prev_sibling()</h3>
+<pre class="programlisting">#define             g_node_prev_sibling(node)</pre>
+<p>
+Gets the previous sibling of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the previous sibling of <em class="parameter"><code>node</code></em>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>node</code></em> is the first
+node or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-last-sibling"></a><h3>g_node_last_sibling ()</h3>
+<pre class="programlisting"><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="returnvalue">GNode</span></a> *             g_node_last_sibling                 (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Gets the last sibling of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+This could possibly be the node itself.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the last sibling of <em class="parameter"><code>node</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-NODE-IS-LEAF:CAPS"></a><h3>G_NODE_IS_LEAF()</h3>
+<pre class="programlisting">#define	 G_NODE_IS_LEAF(node) (((GNode*) (node))-&gt;children == NULL)
+</pre>
+<p>
+Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> is a leaf node.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> is a leaf node
+(i.e. it has no children)</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-NODE-IS-ROOT:CAPS"></a><h3>G_NODE_IS_ROOT()</h3>
+<pre class="programlisting">#define             G_NODE_IS_ROOT(node)</pre>
+<p>
+Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> is the root of a tree.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> is the root of a tree
+(i.e. it has no parent or siblings)</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-depth"></a><h3>g_node_depth ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               g_node_depth                        (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Gets the depth of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+</p>
+<p>
+If <em class="parameter"><code>node</code></em> is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> the depth is 0. The root node has a depth of 1.
+For the children of the root node the depth is 2. And so on.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the depth of the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-n-nodes"></a><h3>g_node_n_nodes ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               g_node_n_nodes                      (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GTraverseFlags" title="enum GTraverseFlags"><span class="type">GTraverseFlags</span></a> flags</code></em>);</pre>
+<p>
+Gets the number of nodes in a tree.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>root</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>which types of children are to be counted, one of
+<a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-ALL:CAPS"><code class="literal">G_TRAVERSE_ALL</code></a>, <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-LEAVES:CAPS"><code class="literal">G_TRAVERSE_LEAVES</code></a> and <a class="link" href="glib-N-ary-Trees.html#G-TRAVERSE-NON-LEAVES:CAPS"><code class="literal">G_TRAVERSE_NON_LEAVES</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the number of nodes in the tree</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-n-children"></a><h3>g_node_n_children ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               g_node_n_children                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Gets the number of children of a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the number of children of <em class="parameter"><code>node</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-is-ancestor"></a><h3>g_node_is_ancestor ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>            g_node_is_ancestor                  (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *descendant</code></em>);</pre>
+<p>
+Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>node</code></em> is an ancestor of <em class="parameter"><code>descendant</code></em>.
+This is true if node is the parent of <em class="parameter"><code>descendant</code></em>, 
+or if node is the grandparent of <em class="parameter"><code>descendant</code></em> etc.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>descendant</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>node</code></em> is an ancestor of <em class="parameter"><code>descendant</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-max-height"></a><h3>g_node_max_height ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint"><span class="returnvalue">guint</span></a>               g_node_max_height                   (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>);</pre>
+<p>
+Gets the maximum height of all branches beneath a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>.
+This is the maximum distance from the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to all leaf nodes.
+</p>
+<p>
+If <em class="parameter"><code>root</code></em> is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, 0 is returned. If <em class="parameter"><code>root</code></em> has no children, 
+1 is returned. If <em class="parameter"><code>root</code></em> has children, 2 is returned. And so on.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>root</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the maximum height of the tree beneath <em class="parameter"><code>root</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-unlink"></a><h3>g_node_unlink ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_node_unlink                       (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *node</code></em>);</pre>
+<p>
+Unlinks a <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> from a tree, resulting in two separate trees.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>node</code></em> :</span></p></td>
+<td>the <a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> to unlink, which becomes the root of a new tree</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-node-destroy"></a><h3>g_node_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_node_destroy                      (<em class="parameter"><code><a class="link" href="glib-N-ary-Trees.html#GNode" title="struct GNode"><span class="type">GNode</span></a> *root</code></em>);</pre>
+<p>
+Removes <em class="parameter"><code>root</code></em> and its children from the tree, freeing any memory
+allocated.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>root</code></em> :</span></p></td>
+<td>the root of the tree/subtree to destroy</td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

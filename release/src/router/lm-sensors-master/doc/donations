@@ -1,0 +1,132 @@
+The lm_sensors team gratefully acknowledges the following donations.
+
+Drivers are very difficult to develop without actual hardware.
+Generally, the work goes quickly once we have the hardware.
+
+Evaluation boards are fine. Real computer hardware is much better though,
+because it lets us do real-world testing over a longer period of time.
+In many cases, the way a chipset is integrated in systems must be taken
+into account in the driver, and evaluation boards don't help much there.
+Donation of usable computer hardware also supports the project in general,
+so hardware which isn't directly related to the development of a hardware
+monitoring driver, but can be used to build test systems, is welcome too.
+
+If you would like to make a donation, please contact us. See
+http://www.lm-sensors.org/wiki/AuthorsAndContributors. Thanks!
+
+
+Donations are listed in chronological order. Note that the person mentioned
+is the one who holds the device now, which is not necessarily the one to whom
+the donation was sent in the first place.
+
+
+Donation from	Donation and subsequent development work	Date & Person
+-------------	----------------------------------------	-------------
+
+TI		i810 motherboard w/ 366 Celeron			1999-07
+		Drivers developed: i801, i810, w83627hf		??
+
+AMD		various sensor evaluation boards		2000
+		Drivers developed: various			??
+
+SiS		SiS 540/630 motherboard w/ 5595			2000-01
+		Drivers developed: sis5595 improvements		Phil
+
+Cendio Systems 	Asus P3B-F w/ AS99127F				2000-05
+		Drivers developed: as99127f improvements	MDS
+
+Atipa		SuperMicro 370DLE w/ Serverworks, LM87		2000-09
+		Drivers developed: serverworks support added	trash
+		to i2c-piix4; lm87 testing and improvements
+
+Fujitsu		Complete system for general project support	2001-11
+Siemens		(broken)					Phil
+Computers
+
+HardData Ltd.	Tyan 2466 w/ 1G Duron; W83627HF and W83782D	2002-05
+		Drivers developed: Tyan 2466 initialization;	MDS
+		DDR recognition
+
+Intel		SMBus 2.0 system				2002-06
+		Drivers developed: SMBus 2.0 support in		MDS
+		i2c-core and i2c-i801; ADM1025 improvements;
+		82801 improvements; smsc47m1 driver
+
+VIA		8231 and two 8233 motherboards			2002-06
+		Drivers developed: VT8231 support in via686a;	MDS
+		vt1211; VT8233A and VT8231 support in
+		i2c-viapro
+
+HP		IPMI system					2002-10
+		Drivers developed: bmcsensors, i2c-ipmi		MDS
+
+Analog Devices	ADM1032 evaluation board			2003-10
+		Drivers developed: ADM1032 support in lm90;	Jean Delvare
+		lm90 ported to Linux 2.6
+
+National	LM83 evaluation board				2003-12
+Semiconductor	Drivers developed: lm83 testing and		Jean Delvare
+		improvements; lm83 ported to Linux 2.6
+
+Analog Devices	ADM1025 evaluation board			2004-01
+		Drivers developed: adm1025 testing and		Jean Delvare
+		improvements; adm1025 ported to Linux 2.6
+
+Analog Devices	ADT7467/8 evaluation board			2004-01
+		Drivers developed: nothing yet			Jean Delvare
+
+Analog Devices	ADM1031 evaluation board			2004-04
+		Drivers developed: adm1031 for Linux 2.4 and	Jean Delvare
+		2.6
+		(broken)
+
+Wincor Nixdorf	Seagate Barracuda 7200.7 160GB harddisk drive	2004-10
+								trash
+
+Aweta		Intel Server system				2005-09
+		Drivers developed: PC87431 (IPMI SMB)		MDS
+
+Barracuda	Jetway K8M8MS, Sempron 2600+, 256 MB RAM	2005-10
+Networks	Drivers developed: f71805f			Jean Delvare
+
+Winbond		Celeron CPU, 512MB RAM				2006-03
+		W83792D watchdog and VID support		Rudolf Marek
+
+ASUSTeK		ASUS P5MT-S					2006-03
+		Platform for W83792D related development	Rudolf Marek
+
+Winbond		Asus P4P800-VM					2006-08
+		This board has a Winbond W83627THF hardware	Jean Delvare
+		monitoring chip.
+
+Winbond		Asus P4P800-X, Pentium 4 2.8 GHz, 512 MB RAM	2006-08
+		This board has an (hidden) Intel 82801EB	Jean Delvare
+		(ICH5) SMBus with SPD EEPROMs connected, and
+		a Winbond W83627THF hardware monitoring chip.
+
+Observit	Intel D865GSA, Celeron D-352,			2007-06
+		128 MB RAM					trash
+		Resulted in: backport of the w83627ehf driver
+		to Linux 2.4, improvements to the Linux 2.6
+		w83627ehf driver.
+
+Observit	Intel D865GBF, Celeron 2.4 GHz, 512 MB RAM	2007-06
+		Resulted in: improvements to the lm85 driver.	Jean Delvare
+
+Nuvoton		2 x Asus P5QL Pro, 1 GB RAM,			2009-07
+		Pentium D-945, video card (dead)		Jean Delvare
+		This board has an ATK0110 ACPI device backed
+		by a Winbond W83667HG.
+
+ASUSTeK		ASUS Z8NA-D6, 2 x Xeon E5520, 2 x 1 GB RAM	2010-04
+		This board has a Winbond W83795ADG, SMBus is	Jean Delvare
+		multiplexed with GPIOs.
+		Drivers developed: w83795
+
+lleo19		Intel DH57JG with i3-540 CPU, 4GB RAM, chassis,	2011-01
+		and power supply.				Guenter Roeck
+		Used to add support for NCT6775F (W83677HG-I)
+		to w83627ehf driver.
+
+AMD		Asus EAH6450 Silent video card			2011-12
+								Jean Delvare

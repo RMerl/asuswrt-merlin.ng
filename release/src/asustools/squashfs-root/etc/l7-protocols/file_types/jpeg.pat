@@ -1,0 +1,2 @@
+jpeg
+\xff\xd8

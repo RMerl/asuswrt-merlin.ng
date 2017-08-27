@@ -1,0 +1,5 @@
+The <b>strongSwan Root CA</b> constrains the path length to <b>one</b> intermediate CA
+but the <b>Research CA</b> creates a subsidiary <b>Duck Research CA</b> which in turn
+issues an end entity certificate to roadwarrior <b>carol</b> so that the total
+path length becomes <b>two</b>. This is detected by gateway <b>moon</b> which aborts
+the negotiation.

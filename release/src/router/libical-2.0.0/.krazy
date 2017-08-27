@@ -1,0 +1,37 @@
+CHECKSETS foss,c++
+
+EXCLUDE dpointer
+
+EXTRA crud,camelcase
+EXTRA style
+
+#Skip foo_export.h
+SKIP libical_.*_export\.h
+
+#Skip examples
+SKIP /examples/
+
+#For now skip java
+SKIP /java/
+#For now skip python
+SKIP /python/
+#For now skip perl
+SKIP /Net-ICal-Libical/
+
+#Skip ancient Apple files
+SKIP /src/libicalvcal/port\.h
+SKIP /src/libicalvcal/vcaltmp\.
+SKIP /src/libicalvcal/vcc\.
+SKIP /src/libicalvcal/vobject\.
+
+#Skip contributed files
+SKIP /src/libical/astime\.h
+SKIP /src/libical/caldate\.c
+SKIP /cmake/modules/GObjectIntrospectionMacros\.cmake|/cmake/modules/FindGObjectIntrospection\.cmake
+SKIP /doc/Doxyfile\.cmake
+SKIP /iOS\.cmake
+
+#Skip zoneinfo
+SKIP /zoneinfo/
+
+STYLE_LINEMAX 100

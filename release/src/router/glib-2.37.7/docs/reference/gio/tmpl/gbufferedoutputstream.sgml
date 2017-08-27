@@ -1,0 +1,95 @@
+<!-- ##### SECTION Title ##### -->
+GBufferedOutputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GBufferedOutputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GBufferedOutputStream:auto-grow ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GBufferedOutputStream:buffer-size ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_buffered_output_stream_new ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_output_stream_new_sized ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_output_stream_get_buffer_size ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_output_stream_set_buffer_size ##### -->
+<para>
+
+</para>
+
+@stream: 
+@size: 
+
+
+<!-- ##### FUNCTION g_buffered_output_stream_get_auto_grow ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_buffered_output_stream_set_auto_grow ##### -->
+<para>
+
+</para>
+
+@stream: 
+@auto_grow: 
+
+

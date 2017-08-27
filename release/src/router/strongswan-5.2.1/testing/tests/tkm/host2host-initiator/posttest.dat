@@ -1,0 +1,4 @@
+moon::DAEMON_NAME=charon-tkm ipsec stop
+moon::killall tkm_keymanager
+moon::rm -f /tmp/tkm.rpc.ike /tmp/tkm.rpc.ees /tmp/tkm.log
+sun::ipsec stop

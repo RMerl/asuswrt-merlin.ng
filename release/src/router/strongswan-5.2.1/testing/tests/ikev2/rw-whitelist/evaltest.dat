@@ -1,0 +1,19 @@
+moon:: cat /var/log/daemon.log::whitelist functionality was already enabled::YES
+moon:: cat /var/log/daemon.log::authentication of 'carol@strongswan.org' with RSA signature successful::YES
+moon:: cat /var/log/daemon.log::authentication of 'dave@strongswan.org' with RSA signature successful::YES
+moon:: cat /var/log/daemon.log::peer identity 'dave@strongswan.org' not whitelisted::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::YES
+dave:: cat /var/log/daemon.log:: received AUTHENTICATION_FAILED notify error::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED::NO
+dave:: ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_req=1::NO
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::NO
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::NO
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::NO
+alice::tcpdump::IP carol1.strongswan.org > alice.strongswan.org: ICMP echo request::YES
+alice::tcpdump::IP alice.strongswan.org > carol1.strongswan.org: ICMP echo reply::YES
+alice::tcpdump::IP dave1.strongswan.org > alice.strongswan.org: ICMP echo request::NO
+alice::tcpdump::IP alice.strongswan.org > dave1.strongswan.org: ICMP echo reply::NO

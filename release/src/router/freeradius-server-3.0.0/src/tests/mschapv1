@@ -1,0 +1,16 @@
+#
+#	bob	Cleartext-Password := "bob"
+#
+#	TESTS 1
+#
+#  SHOULD get:
+#
+#	MS-CHAP-MPPE-Keys = 0x4318b176c3d8e3de9a936faf344359a0f1e3c9b5585b9f1f0000000000000000
+#	MS-MPPE-Encryption-Policy = 0x00000001
+#	MS-MPPE-Encryption-Types = 0x00000006
+#
+#	NT Hash hash = 0x9a936faf344359a0f1e3c9b5585b9f1f
+#
+User-Name = "bob",
+MS-CHAP-Challenge = 0xb9634adc358b2ab3,
+MS-CHAP-Response = 0xb9010000000000000000000000000000000000000000000000007a42408782f745ef90a86fd21b0d9294132750f4af66a419

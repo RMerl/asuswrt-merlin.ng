@@ -1,0 +1,749 @@
+<!-- ##### SECTION Title ##### -->
+Key-value file parser
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GKeyFile ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_KEY_FILE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM GKeyFileError ##### -->
+<para>
+
+</para>
+
+@G_KEY_FILE_ERROR_UNKNOWN_ENCODING: 
+@G_KEY_FILE_ERROR_PARSE: 
+@G_KEY_FILE_ERROR_NOT_FOUND: 
+@G_KEY_FILE_ERROR_KEY_NOT_FOUND: 
+@G_KEY_FILE_ERROR_GROUP_NOT_FOUND: 
+@G_KEY_FILE_ERROR_INVALID_VALUE: 
+
+<!-- ##### ENUM GKeyFileFlags ##### -->
+<para>
+
+</para>
+
+@G_KEY_FILE_NONE: 
+@G_KEY_FILE_KEEP_COMMENTS: 
+@G_KEY_FILE_KEEP_TRANSLATIONS: 
+
+<!-- ##### FUNCTION g_key_file_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_free ##### -->
+<para>
+
+</para>
+
+@key_file: 
+
+
+<!-- ##### FUNCTION g_key_file_ref ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_unref ##### -->
+<para>
+
+</para>
+
+@key_file: 
+
+
+<!-- ##### FUNCTION g_key_file_set_list_separator ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@separator: 
+
+
+<!-- ##### FUNCTION g_key_file_load_from_file ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@file: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_load_from_data ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@data: 
+@length: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_load_from_data_dirs ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@file: 
+@full_path: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_load_from_dirs ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@file: 
+@search_dirs: 
+@full_path: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_to_data ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_start_group ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_groups ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_keys ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_has_group ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_has_key ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_value ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_string ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_locale_string ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@locale: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_boolean ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_integer ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_int64 ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_uint64 ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_double ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_string_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_locale_string_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@locale: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_boolean_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_integer_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_double_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_get_comment ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_set_value ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_key_file_set_string ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@string: 
+
+
+<!-- ##### FUNCTION g_key_file_set_locale_string ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@locale: 
+@string: 
+
+
+<!-- ##### FUNCTION g_key_file_set_boolean ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_key_file_set_integer ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_key_file_set_int64 ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_key_file_set_uint64 ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_key_file_set_double ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@value: 
+
+
+<!-- ##### FUNCTION g_key_file_set_string_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@list: 
+@length: 
+
+
+<!-- ##### FUNCTION g_key_file_set_locale_string_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@locale: 
+@list: 
+@length: 
+
+
+<!-- ##### FUNCTION g_key_file_set_boolean_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@list: 
+@length: 
+
+
+<!-- ##### FUNCTION g_key_file_set_integer_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@list: 
+@length: 
+
+
+<!-- ##### FUNCTION g_key_file_set_double_list ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@list: 
+@length: 
+
+
+<!-- ##### FUNCTION g_key_file_set_comment ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@comment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_remove_group ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_remove_key ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_key_file_remove_comment ##### -->
+<para>
+
+</para>
+
+@key_file: 
+@group_name: 
+@key: 
+@error: 
+@Returns: 
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_GROUP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_GENERIC_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_NO_DISPLAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_COMMENT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_ICON ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_HIDDEN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_ONLY_SHOW_IN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_NOT_SHOW_IN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_TRY_EXEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_EXEC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_TERMINAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_MIME_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_CATEGORIES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_STARTUP_NOTIFY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_KEY_URL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_TYPE_APPLICATION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_TYPE_LINK ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_KEY_FILE_DESKTOP_TYPE_DIRECTORY ##### -->
+<para>
+
+</para>
+
+
+

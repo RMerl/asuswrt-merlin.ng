@@ -1,0 +1,26 @@
+.TH LIGHTTPD-ANGEL "8" "2016-10-18" "" ""
+.
+.SH NAME
+lighttpd-angel \- monitor/supervise lighttpd daemon
+.
+.SH SYNOPSIS
+\fBlighttpd-angel\fP <\fBargs\fP>
+.
+.SH DESCRIPTION
+\fBlighttpd-angel\fP monitors/supervises lighttpd daemon (started with <args>).
+lighttpd-angel will restart lighttpd if lighttpd exits for any reason, other
+than by signals sent by lighttpd-angel.
+.PP
+Send lighttpd-angel SIGINT to initiate graceful shutdown of lighttpd.
+.PP
+Send lighttpd-angel SIGTERM to initiate shutdown of lighttpd.
+.PP
+Send lighttpd-angel SIGHUP to initiate restart of lighttpd, reloading config.
+.
+.SH SEE ALSO
+Online Documentation:
+
+https://blog.lighttpd.net/articles/2007/09/02/there-is-an-angel-for-lighty/
+.
+.SH AUTHOR
+Jan Kneschke <jan@kneschke.de>

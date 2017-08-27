@@ -1,0 +1,26 @@
+#! /bin/sh
+
+APPS_MOUNTED_PATH=`nvram get apps_mounted_path`
+APPS_INSTALL_FOLDER=`nvram get apps_install_folder`
+APPS_INSTALL_PATH=$APPS_MOUNTED_PATH/$APPS_INSTALL_FOLDER
+
+rm -rf $APPS_INSTALL_PATH/bin/write_webdav_conf
+rm -rf $APPS_INSTALL_PATH/bin/lighttpd*
+rm -rf $APPS_INSTALL_PATH/bin/aicloud_openssl
+rm -rf $APPS_INSTALL_PATH/lib/libsmbclient.*
+rm -rf $APPS_INSTALL_PATH/lib/liblightsql.so
+rm -rf $APPS_INSTALL_PATH/lib/aicloud_mod*
+rm -rf $APPS_INSTALL_PATH/lib/mod_aicloud_auth.so
+rm -rf $APPS_INSTALL_PATH/lib/mod_aicloud_invite.so
+rm -rf $APPS_INSTALL_PATH/lib/libws.so
+rm -rf $APPS_INSTALL_PATH/lib/libpush_log.so
+rm -rf $APPS_INSTALL_PATH/etc/apps_asus_script/gencert.sh
+rm -rf $APPS_INSTALL_PATH/etc/apps_asus_script/aicloud_nvram_check.sh
+rm -rf $APPS_INSTALL_PATH/etc/aicloud_UI
+rm -rf $APPS_INSTALL_PATH/etc/samba
+rm -rf $APPS_INSTALL_PATH/etc/init.d/S50aicloud
+rm -rf /tmp/lighttpd.conf
+rm -rf /tmp/webDAV.conf
+rm -rf /tmp/lighttpd
+
+sh /tmp/smartsync_remove&

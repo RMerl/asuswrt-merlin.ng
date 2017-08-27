@@ -1,0 +1,30 @@
+## Message of opposite endianness, with lots of random fields in it
+
+OPPOSITE_ENDIAN
+
+## VALID_HEADER includes a LENGTH Header and LENGTH Body
+VALID_HEADER method_call
+
+REQUIRED_FIELDS
+
+HEADER_FIELD UNKNOWN
+TYPE INT32
+INT32 0xfeeb
+
+ALIGN 8
+END_LENGTH Header
+
+START_LENGTH Body
+
+TYPE INT32
+INT32 89765432
+TYPE UINT32
+UINT32 0xfffffff
+TYPE STRING
+STRING 'Hello this is a string'
+TYPE DOUBLE
+DOUBLE 3.14159
+
+TYPE NIL
+
+END_LENGTH Body

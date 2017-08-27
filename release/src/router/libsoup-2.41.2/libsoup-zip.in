@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Build zipfiles for libsoup on Win32. Separate runtime and developer
+# ones.  After running make install, run this.
+
+ZIP=/tmp/libsoup-@VERSION@.zip
+DEVZIP=/tmp/libsoup-dev-@VERSION@.zip
+
+cd @prefix@
+rm $ZIP
+
+current_minus_age=`expr @SOUP_CURRENT@ - @SOUP_AGE@`
+
+zip $ZIP -@ <<EOF
+bin/libsoup-@SOUP_API_VERSION@-$current_minus_age.dll
+EOF
+
+rm $DEVZIP
+zip -r $DEVZIP -@ <<EOF
+include/libsoup-@SOUP_API_VERSION@
+lib/libsoup-@SOUP_API_VERSION@.dll.a
+lib/pkgconfig/libsoup-@SOUP_API_VERSION@.pc
+share/gtk-doc/html/libsoup
+EOF

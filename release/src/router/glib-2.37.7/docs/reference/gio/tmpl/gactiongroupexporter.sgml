@@ -1,0 +1,45 @@
+<!-- ##### SECTION Title ##### -->
+gactiongroupexporter
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_dbus_connection_export_action_group ##### -->
+<para>
+
+</para>
+
+@connection: 
+@object_path: 
+@action_group: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_connection_unexport_action_group ##### -->
+<para>
+
+</para>
+
+@connection: 
+@export_id: 
+
+

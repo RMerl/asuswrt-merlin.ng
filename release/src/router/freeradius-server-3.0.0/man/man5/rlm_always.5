@@ -1,0 +1,95 @@
+.\"     # DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"     # DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.TH rlm_always 5 "3 February 2004" "" "FreeRADIUS Module"
+.SH NAME
+rlm_always \- FreeRADIUS Module
+.SH DESCRIPTION
+The \fIrlm_always\fP module provides a simple way to "always" return a
+value during the processing of a configuration section.  The module
+does nothing other than return a configured value.
+.PP
+.PP
+The main configuration item to be aware of is:
+.IP rcode
+This module will always return with the rcode specified.  The
+default, if none specified is: fail (RLM_MODULE_FAIL).
+.PP
+The valid options are:
+.IP reject
+RLM_MODULE_REJECT
+.IP fail
+RLM_MODULE_FAIL
+.IP ok
+RLM_MODULE_OK
+.IP handled
+RLM_MODULE_HANDLED
+.IP invalid
+RLM_MODULE_INVALID
+.IP userlock
+RLM_MODULE_USERLOCK
+.IP notfound
+RLM_MODULE_NOTFOUND
+.IP noop
+RLM_MODULE_NOOP
+.IP updated
+RLM_MODULE_UPDATED
+.SH CONFIGURATION
+.DS
+modules {
+  ...
+.br
+  always ok {
+.br
+	rcode = ok
+.br
+  }
+.br
+  ...
+.br
+}
+.br
+ ...
+.br
+authorize {
+  ...
+.br
+  redundant {
+     sql1          # try to find the user in sql1
+.br
+     sql2          # try to find the user in sql2
+.br
+     ok            # if still not found, it's OK.
+.br
+  }
+  ...
+.br
+}
+.DE
+.PP
+.SH SECTIONS
+.BR authorization,
+.BR authentication,
+.BR postauthentication,
+.BR preaccounting,
+.BR accounting,
+.BR preproxy,
+.BR postproxy
+.PP
+.SH FILES
+.I /etc/raddb/radiusd.conf
+.PP
+.SH "SEE ALSO"
+.BR radiusd (8),
+.BR radiusd.conf (5)
+.SH AUTHOR
+Chris Parker, cparker@segv.org

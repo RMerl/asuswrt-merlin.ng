@@ -1,0 +1,251 @@
+<!-- ##### SECTION Title ##### -->
+GDBusObjectManagerClient
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusObjectManagerClient ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GDBusObjectManagerClient::interface-proxy-properties-changed ##### -->
+<para>
+
+</para>
+
+@gdbusobjectmanagerclient: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+@arg4: 
+
+<!-- ##### SIGNAL GDBusObjectManagerClient::interface-proxy-signal ##### -->
+<para>
+
+</para>
+
+@gdbusobjectmanagerclient: the object which received the signal.
+@arg1: 
+@arg2: 
+@arg3: 
+@arg4: 
+@arg5: 
+
+<!-- ##### ARG GDBusObjectManagerClient:bus-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:get-proxy-type-destroy-notify ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:get-proxy-type-func ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:get-proxy-type-user-data ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:name-owner ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDBusObjectManagerClient:object-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT GDBusObjectManagerClientClass ##### -->
+<para>
+
+</para>
+
+@parent_class: 
+@interface_proxy_signal: 
+@interface_proxy_properties_changed: 
+
+<!-- ##### ENUM GDBusObjectManagerClientFlags ##### -->
+<para>
+
+</para>
+
+@G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE: 
+@G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_DO_NOT_AUTO_START: 
+
+<!-- ##### USER_FUNCTION GDBusProxyTypeFunc ##### -->
+<para>
+
+</para>
+
+@manager: 
+@object_path: 
+@interface_name: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@name: 
+@object_path: 
+@get_proxy_type_func: 
+@get_proxy_type_user_data: 
+@get_proxy_type_destroy_notify: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_new_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_new_sync ##### -->
+<para>
+
+</para>
+
+@connection: 
+@flags: 
+@name: 
+@object_path: 
+@get_proxy_type_func: 
+@get_proxy_type_user_data: 
+@get_proxy_type_destroy_notify: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_new_for_bus ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@name: 
+@object_path: 
+@get_proxy_type_func: 
+@get_proxy_type_user_data: 
+@get_proxy_type_destroy_notify: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_new_for_bus_finish ##### -->
+<para>
+
+</para>
+
+@res: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_new_for_bus_sync ##### -->
+<para>
+
+</para>
+
+@bus_type: 
+@flags: 
+@name: 
+@object_path: 
+@get_proxy_type_func: 
+@get_proxy_type_user_data: 
+@get_proxy_type_destroy_notify: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_get_connection ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_get_flags ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_get_name ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_object_manager_client_get_name_owner ##### -->
+<para>
+
+</para>
+
+@manager: 
+@Returns: 
+
+

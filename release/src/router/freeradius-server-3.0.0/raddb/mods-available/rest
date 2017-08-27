@@ -1,0 +1,112 @@
+rest {
+	#
+	#  This subsection configures the tls related items
+	#  that control how FreeRADIUS connects to a HTTPS
+	#  server.
+	#
+	tls {
+#		ca_file	= ${certdir}/cacert.pem
+#		ca_path	= ${certdir}
+
+#		certificate_file	= /path/to/radius.crt
+#		private_key_file	= /path/to/radius.key
+#		private_key_password	= "supersecret"
+#		random_file		= ${certdir}/random
+
+		#  Server certificate verification requirements.  Can be:
+		#    "no"  (don't even bother trying)
+		#    "yes" (verify the cert was issued by one of the
+		#	   trusted CAs)
+		#
+		#  The default is "yes"
+#		check_cert     = "yes"
+
+		#  Server certificate CN verification requirements.  Can be:
+		#    "no"  (don't even bother trying)
+		#    "yes" (verify the CN in the certificate matches the host
+		#	   in the URI)
+		#
+		#  The default is "yes"
+#		check_cert_cn  = "yes"
+	}
+
+	# rlm_rest will open a connection to the server specified in connect_uri
+	# to populate the connection cache, ready for the first request.
+	# The server will not start if the server specified is unreachable.
+	#
+	# If you wish to disable this pre-caching and reachability check,
+	# comment out the configuration item below.
+	connect_uri = "http://127.0.0.1/"
+
+	authorize {
+		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?section=authorize"
+		method = "get"
+		tls = ${..tls}
+	}
+	authenticate {
+		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?section=authenticate"
+		method = "get"
+		tls = ${..tls}
+	}
+	accounting {
+		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?section=accounting"
+		method = "post"
+		tls = ${..tls}
+	}
+	session {
+		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?section=checksimul"
+		method = "post"
+		tls = ${..tls}
+	}
+	post-auth {
+		uri = "${..connect_uri}/user/%{User-Name}/mac/%{Called-Station-ID}?section=post-auth"
+		method = "post"
+		tls = ${..tls}
+	}
+
+	#
+	#  The connection pool is new for 3.0, and will be used in many
+	#  modules, for all kinds of connection-related activity.
+	#
+	pool {
+		# Number of connections to start
+		start = 5
+
+		# Minimum number of connections to keep open
+		min = 4
+
+		# Maximum number of connections
+		#
+		# If these connections are all in use and a new one
+		# is requested, the request will NOT get a connection.
+		max = 10
+
+		# Spare connections to be left idle
+		#
+		# NOTE: Idle connections WILL be closed if "idle_timeout"
+		# is set.
+		spare = 3
+
+		# Number of uses before the connection is closed
+		#
+		# 0 means "infinite"
+		uses = 0
+
+		# The lifetime (in seconds) of the connection
+		lifetime = 0
+
+		# idle timeout (in seconds).  A connection which is
+		# unused for this length of time will be closed.
+		idle_timeout = 60
+
+		# NOTE: All configuration settings are enforced.  If a
+		# connection is closed because of "idle_timeout",
+		# "uses", or "lifetime", then the total number of
+		# connections MAY fall below "min".  When that
+		# happens, it will open a new connection.  It will
+		# also log a WARNING message.
+		#
+		# The solution is to either lower the "min" connections,
+		# or increase lifetime/idle_timeout.
+	}
+}

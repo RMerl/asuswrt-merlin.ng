@@ -1,0 +1,4 @@
+moon::ipsec stop
+carol::ipsec stop
+carol::rm /etc/ipsec.d/private/*
+carol::rm /etc/ipsec.d/certs/*

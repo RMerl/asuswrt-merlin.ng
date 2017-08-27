@@ -1,0 +1,344 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GTlsBackend</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="GTlsServerConnection.html" title="GTlsServerConnection">
+<link rel="next" href="GTlsDatabase.html" title="GTlsDatabase">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#GTlsBackend.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#GTlsBackend.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#GTlsBackend.prerequisites" class="shortcut">Prerequisites</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GTlsServerConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsDatabase.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTlsBackend"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTlsBackend.top_of_page"></a>GTlsBackend</span></h2>
+<p>GTlsBackend — TLS backend implementation</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="GTlsBackend.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;gio/gio.h&gt;
+
+#define             <a class="link" href="GTlsBackend.html#G-TLS-BACKEND-EXTENSION-POINT-NAME:CAPS" title="G_TLS_BACKEND_EXTENSION_POINT_NAME">G_TLS_BACKEND_EXTENSION_POINT_NAME</a>
+                    <a class="link" href="GTlsBackend.html#GTlsBackend-struct" title="GTlsBackend">GTlsBackend</a>;
+struct              <a class="link" href="GTlsBackend.html#GTlsBackendInterface" title="struct GTlsBackendInterface">GTlsBackendInterface</a>;
+<a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="returnvalue">GTlsBackend</span></a> *       <a class="link" href="GTlsBackend.html#g-tls-backend-get-default" title="g_tls_backend_get_default ()">g_tls_backend_get_default</a>           (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="GTlsBackend.html#g-tls-backend-supports-tls" title="g_tls_backend_supports_tls ()">g_tls_backend_supports_tls</a>          (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);
+<a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="returnvalue">GTlsDatabase</span></a> *      <a class="link" href="GTlsBackend.html#g-tls-backend-get-default-database" title="g_tls_backend_get_default_database ()">g_tls_backend_get_default_database</a>  (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="GTlsBackend.html#g-tls-backend-get-certificate-type" title="g_tls_backend_get_certificate_type ()">g_tls_backend_get_certificate_type</a>  (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="GTlsBackend.html#g-tls-backend-get-client-connection-type" title="g_tls_backend_get_client_connection_type ()">g_tls_backend_get_client_connection_type</a>
+                                                        (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="GTlsBackend.html#g-tls-backend-get-server-connection-type" title="g_tls_backend_get_server_connection_type ()">g_tls_backend_get_server_connection_type</a>
+                                                        (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="GTlsBackend.html#g-tls-backend-get-file-database-type" title="g_tls_backend_get_file_database_type ()">g_tls_backend_get_file_database_type</a>
+                                                        (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----GTlsBackend
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GTlsBackend requires
+ <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.description"></a><h2>Description</h2>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="G-TLS-BACKEND-EXTENSION-POINT-NAME:CAPS"></a><h3>G_TLS_BACKEND_EXTENSION_POINT_NAME</h3>
+<pre class="programlisting">#define G_TLS_BACKEND_EXTENSION_POINT_NAME "gio-tls-backend"
+</pre>
+<p>
+Extension point for TLS functionality via <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>.
+See Extending GIO.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsBackend-struct"></a><h3>GTlsBackend</h3>
+<pre class="programlisting">typedef struct _GTlsBackend GTlsBackend;</pre>
+<p>
+TLS (Transport Layer Security, aka SSL) backend. This is an
+internal type used to coordinate the different classes implemented
+by a TLS backend.
+</p>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsBackendInterface"></a><h3>struct GTlsBackendInterface</h3>
+<pre class="programlisting">struct GTlsBackendInterface {
+  GTypeInterface g_iface;
+
+  /* methods */
+  gboolean       ( *supports_tls)               (GTlsBackend *backend);
+  GType          ( *get_certificate_type)       (void);
+  GType          ( *get_client_connection_type) (void);
+  GType          ( *get_server_connection_type) (void);
+  GType          ( *get_file_database_type)     (void);
+  GTlsDatabase * ( *get_default_database)       (GTlsBackend *backend);
+};
+</pre>
+<p>
+Provides an interface for describing TLS-related types.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GTlsBackendInterface.g-iface"></a>g_iface</code></em>;</span></p></td>
+<td>The parent interface.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GTlsBackendInterface.supports-tls"></a>supports_tls</code></em> ()</span></p></td>
+<td>returns whether the backend supports TLS.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GTlsBackendInterface.get-certificate-type"></a>get_certificate_type</code></em> ()</span></p></td>
+<td>returns the <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> implementation type</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GTlsBackendInterface.get-client-connection-type"></a>get_client_connection_type</code></em> ()</span></p></td>
+<td>returns the <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a> implementation type</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GTlsBackendInterface.get-server-connection-type"></a>get_server_connection_type</code></em> ()</span></p></td>
+<td>returns the <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> implementation type</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GTlsBackendInterface.get-file-database-type"></a>get_file_database_type</code></em> ()</span></p></td>
+<td>returns the <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase"><span class="type">GTlsFileDatabase</span></a> implementation type.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="GTlsBackendInterface.get-default-database"></a>get_default_database</code></em> ()</span></p></td>
+<td>returns a default <a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> instance.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-default"></a><h3>g_tls_backend_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="returnvalue">GTlsBackend</span></a> *       g_tls_backend_get_default           (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Gets the default <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> for the system.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-supports-tls"></a><h3>g_tls_backend_supports_tls ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            g_tls_backend_supports_tls          (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>
+Checks if TLS is supported; if this returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> for the default
+<a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>, it means no "real" TLS backend is available.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>backend</code></em> :</span></p></td>
+<td>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>whether or not TLS is supported</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-default-database"></a><h3>g_tls_backend_get_default_database ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="returnvalue">GTlsDatabase</span></a> *      g_tls_backend_get_default_database  (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>
+Gets the default <a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> used to verify TLS connections.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>backend</code></em> :</span></p></td>
+<td>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the default database, which should be
+unreffed when done. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-certificate-type"></a><h3>g_tls_backend_get_certificate_type ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               g_tls_backend_get_certificate_type  (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>
+Gets the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> implementation.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>backend</code></em> :</span></p></td>
+<td>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a>
+implementation.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-client-connection-type"></a><h3>g_tls_backend_get_client_connection_type ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               g_tls_backend_get_client_connection_type
+                                                        (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>
+Gets the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a> implementation.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>backend</code></em> :</span></p></td>
+<td>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a>
+implementation.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-server-connection-type"></a><h3>g_tls_backend_get_server_connection_type ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               g_tls_backend_get_server_connection_type
+                                                        (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>
+Gets the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> implementation.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>backend</code></em> :</span></p></td>
+<td>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>
+implementation.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.28</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-file-database-type"></a><h3>g_tls_backend_get_file_database_type ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               g_tls_backend_get_file_database_type
+                                                        (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>
+Gets the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>'s <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase"><span class="type">GTlsFileDatabase</span></a> implementation.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>backend</code></em> :</span></p></td>
+<td>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> of backend's <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase"><span class="type">GTlsFileDatabase</span></a> implementation.</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 2.30</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

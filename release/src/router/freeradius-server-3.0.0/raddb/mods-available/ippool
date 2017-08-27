@@ -1,0 +1,75 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  Do server side ip pool management. Should be added in
+#  post-auth and accounting sections.
+#
+#  The module also requires the existence of the Pool-Name
+#  attribute. That way the administrator can add the Pool-Name
+#  attribute in the user profiles and use different pools for
+#  different users. The Pool-Name attribute is a *check* item
+#  not a reply item.
+#
+#  The Pool-Name should be set to the ippool module instance
+#  name or to DEFAULT to match any module.
+
+#
+# Example:
+# radiusd.conf: ippool students { [...] }
+#		ippool teachers { [...] }
+# users file  : DEFAULT Group == students, Pool-Name := "students"
+#		DEFAULT Group == teachers, Pool-Name := "teachers"
+#		DEFAULT	Group == other, Pool-Name := "DEFAULT"
+#
+# ********* IF YOU CHANGE THE RANGE PARAMETERS YOU MUST *********
+# ********* THEN ERASE THE DB FILES                     *********
+#
+ippool main_pool {
+
+	#  range-start,range-stop:
+	#	The start and end ip addresses for this pool.
+	range_start = 192.0.2.1
+	range_stop = 192.0.2.254
+
+	#  netmask:
+	#	The network mask used for this pool.
+	netmask = 255.255.255.0
+
+	#  cache_size:
+	#	The gdbm cache size for the db files. Should
+	#	be equal to the number of ip's available in
+	#	the ip pool
+	cache_size = 800
+
+	# session-db:
+	#	The main db file used to allocate addresses.
+	session_db = ${db_dir}/db.ippool
+
+	# ip-index:
+	#	Helper db index file used in multilink
+	ip_index = ${db_dir}/db.ipindex
+
+	# override:
+	#	If set, the Framed-IP-Address already in the
+	#	reply (if any) will be discarded, and replaced
+	#	with a Framed-IP-Address assigned here.
+	override = no
+
+	# maximum-timeout:
+	#	Specifies the maximum time in seconds that an
+	#	entry may be active.  If set to zero, means
+	#	"no timeout".  The default value is 0
+	maximum_timeout = 0
+
+	# key:
+	#	The key to use for the session database (which
+	#	holds the allocated ip's) normally it should
+	#	just be the nas ip/port (which is the default).
+	#
+	#	If your NAS sends the same value of NAS-Port
+	#	all requests, the key should be based on some
+	#	other attribute that is in ALL requests, AND
+	#	is unique to each machine needing an IP address.
+	#key = "%{NAS-IP-Address} %{NAS-Port}"
+}

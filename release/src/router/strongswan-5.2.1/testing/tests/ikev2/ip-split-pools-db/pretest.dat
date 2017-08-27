@@ -1,0 +1,12 @@
+moon::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql > /etc/ipsec.d/ipsec.sql
+moon::cat /etc/ipsec.d/ipsec.sql | sqlite3 /etc/ipsec.d/ipsec.db
+moon::ipsec pool --add pool0 --start 10.3.0.1 --end 10.3.0.1 --timeout 48 2> /dev/null
+moon::ipsec pool --add pool1 --start 10.3.1.1 --end 10.3.1.1 --timeout 48 2> /dev/null
+moon::ipsec pool --status 2> /dev/null
+carol::ipsec start
+dave::ipsec start
+moon::ipsec start
+carol::sleep 2
+carol::ipsec up home
+dave::ipsec up home
+carol::sleep 1

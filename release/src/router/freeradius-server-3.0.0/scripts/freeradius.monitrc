@@ -1,0 +1,18 @@
+#
+#  Script for use with Monit
+#
+#	http://mmonit.com/monit/
+#
+
+#
+#  Totalmem limit should be lowered to 200.0 if none of the 
+#  interpreted language modules or rlm_cache are being used.
+#
+check process radiusd with pidfile /var/run/radiusd/radiusd.pid
+   start program = "/etc/init.d/radiusd start"
+   stop program = "/etc/init.d/radiusd stop"
+   if failed host 127.0.0.1 port 1812 type udp protocol radius secret testing123 then alert
+   if failed host 127.0.0.1 port 1813 type udp protocol radius secret testing123 then alert
+   if cpu > 95% for 2 cycles then alert
+   if totalmem > 1024.0 MB for 5 cycles then restart
+   if 5 restarts within 5 cycles then timeout

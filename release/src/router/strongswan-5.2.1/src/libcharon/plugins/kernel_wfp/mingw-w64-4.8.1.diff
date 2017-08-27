@@ -1,0 +1,26 @@
+diff -Naur /mingw-orig/x86_64-w64-mingw32/include/fwptypes.h /mingw/x86_64-w64-mingw32/include/fwptypes.h
+--- /mingw-orig/x86_64-w64-mingw32/include/fwptypes.h	2013-08-30 07:15:40 +0200
++++ /mingw/x86_64-w64-mingw32/include/fwptypes.h	2014-01-02 16:32:26 +0100
+@@ -333,11 +333,6 @@
+     } __C89_NAMELESSUNIONNAME;
+ } FWP_CONDITION_VALUE0;
+
+-typedef struct FWPM_DISPLAY_DATA0_ {
+-    wchar_t *name;
+-    wchar_t *description;
+-} FWPM_DISPLAY_DATA0;
+-
+ #endif /* WINAPI_PARTITION_DESKTOP. */
+ /* Begin additional prototypes for all interfaces */
+
+diff -Naur /mingw-orig/x86_64-w64-mingw32/include/iketypes.h /mingw/x86_64-w64-mingw32/include/iketypes.h
+--- /mingw-orig/x86_64-w64-mingw32/include/iketypes.h	2013-08-30 07:15:40 +0200
++++ /mingw/x86_64-w64-mingw32/include/iketypes.h	2014-01-02 16:31:12 +0100
+@@ -212,7 +212,6 @@
+     FWP_BYTE_BLOB presharedKey;
+     UINT32 flags;
+ } IKEEXT_PRESHARED_KEY_AUTHENTICATION1;
+-#endif
+
+ typedef struct IKEEXT_CERTIFICATE_AUTHENTICATION0_ {
+     IKEEXT_CERT_CONFIG_TYPE inboundConfigType;

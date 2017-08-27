@@ -1,0 +1,58 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  Persistent, embedded Perl interpreter.
+#
+perl {
+	#
+	#  The Perl script to execute on authorize, authenticate,
+	#  accounting, xlat, etc.  This is very similar to using
+	#  'rlm_exec' module, but it is persistent, and therefore
+	#  faster.
+	#
+	filename = ${modconfdir}/${.:instance}/example.pl
+
+	#
+	#  The following hashes are given to the module and
+	#  filled with value-pairs (Attribute names and values)
+	#
+	#  %RAD_CHECK		Check items
+	#  %RAD_REQUEST		Attributes from the request
+	#  %RAD_REPLY		Attributes for the reply
+	#
+	#  The return codes from functions in the perl_script
+	#  are passed directly back to the server.  These
+	#  codes are defined in doc/configurable_failover,
+	#  src/include/modules.h (RLM_MODULE_REJECT, etc),
+	#  and are pre-defined in the 'example.pl' program
+	#  which is included.
+	#
+
+	#
+	#  List of functions in the module to call.
+	#  Uncomment and change if you want to use function
+	#  names other than the defaults.
+	#
+	#func_authenticate = authenticate
+	#func_authorize = authorize
+	#func_preacct = preacct
+	#func_accounting = accounting
+	#func_checksimul = checksimul
+	#func_pre_proxy = pre_proxy
+	#func_post_proxy = post_proxy
+	#func_post_auth = post_auth
+	#func_recv_coa = recv_coa
+	#func_send_coa = send_coa
+	#func_xlat = xlat
+	#func_detach = detach
+
+	#
+	#  Uncomment the following lines if you wish
+	#  to use separate functions for Start and Stop
+	#  accounting packets. In that case, the
+	#  func_accounting function is not called.
+	#
+	#func_start_accounting = accounting_start
+	#func_stop_accounting = accounting_stop
+}

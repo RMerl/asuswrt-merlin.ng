@@ -1,0 +1,33 @@
+charon.plugins.kernel-netlink.fwmark =
+	Firewall mark to set on the routing rule that directs traffic to our routing
+	table.
+
+	Firewall mark to set on the routing rule that directs traffic to our routing
+	table. The format is [!]mark[/mask], where the optional exclamation mark
+	inverts the meaning (i.e. the rule only applies to packets that don't match
+	the mark).
+
+charon.plugins.kernel-netlink.mss = 0
+	MSS to set on installed routes, 0 to disable.
+
+charon.plugins.kernel-netlink.mtu = 0
+	MTU to set on installed routes, 0 to disable.
+
+charon.plugins.kernel-netlink.roam_events = yes
+	Whether to trigger roam events when interfaces, addresses or routes change.
+
+charon.plugins.kernel-netlink.set_proto_port_transport_sa = no
+	Whether to set protocol and ports in the selector installed on transport
+	mode IPsec SAs in the kernel.
+
+	Whether to set protocol and ports in the selector installed on transport
+	mode IPsec SAs in the kernel. While doing so enforces policies for inbound
+	traffic, it also prevents the use of a single IPsec SA by more than one
+	traffic selector.
+
+charon.plugins.kernel-netlink.xfrm_acq_expires = 165
+	Lifetime of XFRM acquire state in kernel.
+
+	Lifetime of XFRM acquire state in kernel. The value gets written to
+	/proc/sys/net/core/xfrm_acq_expires. Indirectly controls the delay of XFRM
+	acquire messages sent.

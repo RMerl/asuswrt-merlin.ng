@@ -1,0 +1,26 @@
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[2]: ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw[{]1}.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw[{]2}.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 -s 120 -p deadbeef PH_IP_ALICE::128 bytes from PH_IP_ALICE: icmp_req=1::YES
+dave:: ping -c 1 -s 120 -p deadbeef PH_IP_ALICE::128 bytes from PH_IP_ALICE: icmp_req=1::YES
+moon:: ipsec statusall 2> /dev/null::rw\[1].*IKE proposal: AES_GCM_16_256::YES
+moon:: ipsec statusall 2> /dev/null::rw\[2].*IKE proposal: AES_GCM_16_128::YES
+carol::ipsec statusall 2> /dev/null::IKE proposal: AES_GCM_16_256::YES
+dave:: ipsec statusall 2> /dev/null::IKE proposal: AES_GCM_16_128::YES
+moon:: ipsec statusall 2> /dev/null::rw[{]1}.*AES_GCM_16_256,::YES
+moon:: ipsec statusall 2> /dev/null::rw[{]2}.*AES_GCM_16_128,::YES
+carol::ipsec statusall 2> /dev/null::AES_GCM_16_256,::YES
+dave:: ipsec statusall 2> /dev/null::AES_GCM_16_128,::YES
+moon:: ip xfrm state::aead rfc4106(gcm(aes))::YES
+carol::ip xfrm state::aead rfc4106(gcm(aes))::YES
+dave:: ip xfrm state::aead rfc4106(gcm(aes))::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP.*length 184::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP.*length 184::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP.*length 184::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP.*length 184::YES
+

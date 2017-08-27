@@ -1,0 +1,139 @@
+<!-- ##### SECTION Title ##### -->
+Extension Points
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GIOExtension ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GIOExtensionPoint ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_io_extension_get_name ##### -->
+<para>
+
+</para>
+
+@extension: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_get_priority ##### -->
+<para>
+
+</para>
+
+@extension: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_get_type ##### -->
+<para>
+
+</para>
+
+@extension: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_get_extension_by_name ##### -->
+<para>
+
+</para>
+
+@extension_point: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_get_extensions ##### -->
+<para>
+
+</para>
+
+@extension_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_get_required_type ##### -->
+<para>
+
+</para>
+
+@extension_point: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_implement ##### -->
+<para>
+
+</para>
+
+@extension_point_name: 
+@type: 
+@extension_name: 
+@priority: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_lookup ##### -->
+<para>
+
+</para>
+
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_register ##### -->
+<para>
+
+</para>
+
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_io_extension_point_set_required_type ##### -->
+<para>
+
+</para>
+
+@extension_point: 
+@type: 
+
+
+<!-- ##### FUNCTION g_io_extension_ref_class ##### -->
+<para>
+
+</para>
+
+@extension: 
+@Returns: 
+
+

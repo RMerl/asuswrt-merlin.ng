@@ -1,0 +1,2 @@
+tonghuashun
+^(GET /docookie\.php\?uname=|\xfd\xfd\xfd\xfd\x30\x30\x30\x30\x30)

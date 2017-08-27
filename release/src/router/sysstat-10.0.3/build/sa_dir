@@ -1,0 +1,7 @@
+
+This is the directory where daily data files will be stored.
+Those files contain statistics reported by the sar command.
+The usual location is /var/log/sa. The directory will be
+automatically created during installation stage if necessary.
+Just press Enter to accept this usual location.
+

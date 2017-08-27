@@ -1,0 +1,45 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 03-manpages
+
+Added README.Debian file and the 'Debian note' to sa1 and sa2 man pages
+to explain source of common problems (closes: #279049, #269712).
+---
+ man/sa1.in |    6 +++++-
+ man/sa2.in |    5 +++++
+ 2 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/man/sa1.in b/man/sa1.in
+index 7da2228..3ff63b1 100644
+--- a/man/sa1.in
++++ b/man/sa1.in
+@@ -50,7 +50,11 @@ To create a daily record of
+ activities, place the following entry in your root or adm crontab file:
+ 
+ .B 0 8-18 * * 1-5 @SA_LIB_DIR@/sa1 1200 3 &
+-
++.SS Debian note
++The Debian sysstat package has already placed such an entry in your system crontab.
++Please refer to the
++.I /usr/share/doc/sysstat/README.Debian
++file for details.
+ .SH FILES
+ .IR @SA_DIR@/sa dd
+ .RS
+diff --git a/man/sa2.in b/man/sa2.in
+index 2f688e3..7260cfe 100644
+--- a/man/sa2.in
++++ b/man/sa2.in
+@@ -30,6 +30,11 @@ command daily, place the following entry in your root or adm crontab file:
+ This will generate a daily report called
+ .IR @SA_DIR@/sar dd
+ It will also remove reports more than one week old.
++.SS Debian note
++The Debian sysstat package has already placed such an entry in your system crontab.
++Please refer to the
++.I /usr/share/doc/sysstat/README.Debian
++file for details.
+ .SH FILES
+ .IR @SA_DIR@/sar dd
+ .RS
+-- 

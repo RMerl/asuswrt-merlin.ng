@@ -1,0 +1,94 @@
+# -*- text -*-
+#
+#  $Id$
+
+#  SMS One-time Password system.
+#
+#  This module will extend FreeRadius with a socks interface to create and
+#  validate One-Time-Passwords. The program for that creates the socket
+#  and interacts with this module is not included here.
+#
+#  The module does not check the User-Password, this should be done with
+#  the "pap" module.  See the example below.
+#
+#  The module must be used in the "authorize" section to set
+#  Auth-Type properly.  The first time through, the module is called
+#  in the "authenticate" section to authenticate the user password, and
+#  to send the challenge.  The second time through, it authenticates
+#  the response to the challenge. e.g.:
+#
+#  authorize {
+#	...
+#	smsotp
+#	...
+#  }
+#
+#  authenticate {
+#	...
+#	Auth-Type smsotp {
+#		pap
+#		smsotp
+#	}
+#
+#	Auth-Type smsotp-reply {
+#		smsotp
+#	}
+#	...
+#  }
+#
+smsotp {
+	#  The location of the socket.
+	socket = "/var/run/smsotp_socket"
+
+	#  Defines the challenge message that will be send to the
+	#  NAS. Default is "Enter Mobile PIN" }
+	challenge_message = "Enter Mobile PIN:"
+
+	#  Defines the Auth-Type section that is run for the response to
+	#  the challenge. Default is "smsotp-reply".
+	challenge_type = "smsotp-reply"
+
+	#  Control how many sockets are used to talk to the SMSOTPd
+	#
+	pool {
+		# Number of connections to start
+		start = 5
+
+		# Minimum number of connections to keep open
+		min = 4
+
+		# Maximum number of connections
+		#
+		# If these connections are all in use and a new one
+		# is requested, the request will NOT get a connection.
+		max = 10
+
+		# Spare connections to be left idle
+		#
+		# NOTE: Idle connections WILL be closed if "idle_timeout"
+		# is set.
+		spare = 3
+
+		# Number of uses before the connection is closed
+		#
+		# 0 means "infinite"
+		uses = 0
+
+		# The lifetime (in seconds) of the connection
+		lifetime = 0
+
+		# idle timeout (in seconds).  A connection which is
+		# unused for this length of time will be closed.
+		idle_timeout = 60
+
+		# NOTE: All configuration settings are enforced.  If a
+		# connection is closed because of "idle_timeout",
+		# "uses", or "lifetime", then the total number of
+		# connections MAY fall below "min".  When that
+		# happens, it will open a new connection.  It will
+		# also log a WARNING message.
+		#
+		# The solution is to either lower the "min" connections,
+		# or increase lifetime/idle_timeout.
+	}
+}

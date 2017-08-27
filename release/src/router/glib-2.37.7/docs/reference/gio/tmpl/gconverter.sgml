@@ -1,0 +1,83 @@
+<!-- ##### SECTION Title ##### -->
+GConverter
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GConverter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GConverterIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@convert: 
+@reset: 
+
+<!-- ##### ENUM GConverterResult ##### -->
+<para>
+
+</para>
+
+@G_CONVERTER_ERROR: 
+@G_CONVERTER_CONVERTED: 
+@G_CONVERTER_FINISHED: 
+@G_CONVERTER_FLUSHED: 
+
+<!-- ##### ENUM GConverterFlags ##### -->
+<para>
+
+</para>
+
+@G_CONVERTER_NO_FLAGS: 
+@G_CONVERTER_INPUT_AT_END: 
+@G_CONVERTER_FLUSH: 
+
+<!-- ##### FUNCTION g_converter_convert ##### -->
+<para>
+
+</para>
+
+@converter: 
+@inbuf: 
+@inbuf_size: 
+@outbuf: 
+@outbuf_size: 
+@flags: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_converter_reset ##### -->
+<para>
+
+</para>
+
+@converter: 
+
+

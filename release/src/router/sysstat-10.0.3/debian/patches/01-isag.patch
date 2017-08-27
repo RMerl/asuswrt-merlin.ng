@@ -1,0 +1,69 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 22:04:47 +0100
+Subject: 01-isag
+
+Fix paths and typos in isag script and man page.
+---
+ contrib/isag/README-isag |    2 +-
+ contrib/isag/isag.1      |    4 ++--
+ contrib/isag/isag.in     |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/contrib/isag/README-isag b/contrib/isag/README-isag
+index ab443da..7ca1b6c 100644
+--- a/contrib/isag/README-isag
++++ b/contrib/isag/README-isag
+@@ -9,7 +9,7 @@ isag is (C) 2000,2001 by David Doubrava <linux_monitor@volny.cz>.
+ Send bug reports to <linux_monitor@volny.cz>.
+ 
+ Note that the path to daily data files is hard coded in isag and
+-its value is "/var/log/sa".
++its value is "/var/log/sysstat".
+ Also isag assumes that sar is installed in /usr/bin directory.
+ Update isag script if sar is located elsewhere.
+ 
+diff --git a/contrib/isag/isag.1 b/contrib/isag/isag.1
+index 8281a7a..8d4c199 100644
+--- a/contrib/isag/isag.1
++++ b/contrib/isag/isag.1
+@@ -37,7 +37,7 @@
+ .\" real vertical bar.  \*(C+ will give a nicer C++.  Capital omega is used
+ .\" to do unbreakable dashes and therefore won't be available.  \*(C` and
+ .\" \*(C' expand to `' in nroff, nothing in troff, for use with C<>
+-.tr \(*W-|\(bv\*(Tr
++.\".tr \(*W-|\(bv\*(Tr
+ .ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+ .ie n \{\
+ .    ds -- \(*W-
+@@ -181,7 +181,7 @@ As mentioned above there is a config file. There are stored following values:
+ .Ip "y limits for each kind of graph" 2
+ .IX Item "y limits for each kind of graph"
+ .PP
+-It seems usefull, because new run doesn't need new settings to obtain same scale.
++It seems useful, because new run doesn't need new settings to obtain same scale.
+ .SH "PREREQUSITIES"
+ .IX Header "PREREQUSITIES"
+ Here is list of prerequsities including versioning and built-in features.
+diff --git a/contrib/isag/isag.in b/contrib/isag/isag.in
+index 5627fee..f7300ff 100644
+--- a/contrib/isag/isag.in
++++ b/contrib/isag/isag.in
+@@ -211,7 +211,7 @@ if {$tcl_version < $needed_version} {
+ set gnuplot	"/usr/bin/gnuplot"
+ set grep	"/bin/grep"
+ set sh		"/bin/sh"
+-set gunzip	"/usr/bin/gunzip"
++set gunzip	"/bin/gunzip"
+ set sed		"/bin/sed"
+ 
+ # default placement of config file
+@@ -278,7 +278,7 @@ set sar_data_path "@SA_DIR@"
+ set sar_data_mask "sa\[0-9\]\[0-9\]"
+ set prefix "@prefix@"
+ set exec_prefix "@exec_prefix@"
+-set sar "@bindir@/sar"
++set sar "@bindir@/sar.sysstat"
+ 
+ # following check added: Thu Mar 18 21:44:52 GMT+1 2004
+ if { 1 != [file executable $sar]} {
+-- 

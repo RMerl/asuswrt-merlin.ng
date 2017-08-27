@@ -1,0 +1,333 @@
+# Maltese translation for sysstat.
+# This file is distributed under the same license as the sysstat package.
+# NAME OF AUTHOR <michelbugeja@rabatmalta.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat-8.1.7\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2008-11-12 13:38+0100\n"
+"PO-Revision-Date: 2008-11-13 20:16+0100\n"
+"Last-Translator: Michel Bugeja <michelbugeja@rabatmalta.com>\n"
+"Language-Team: Maltese <translation-team-mt@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Language: Maltese\n"
+"X-Poedit-Country: Malta\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat Verżjoni %s\n"
+
+#: ioconf.c:479 iostat.c:509 rd_stats.c:69 rd_stats.c:1791 rd_stats.c:1898
+#: sa_common.c:1033 sadc.c:498 sadc.c:507 sadc.c:567
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Ma nistax niftaħ %s: %s\n"
+
+#: iostat.c:80 mpstat.c:83 pidstat.c:77 sar.c:88
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ]\n"
+msgstr "Użu: %s [ opzjonijiet ] [ <interval> [ <count> ] ]\n"
+
+#: iostat.c:83
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+msgstr ""
+"Opzjonijiet:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <apparat> [ ... ] | ALL ] [ -p [ <apparat> | ALL ] ]\n"
+
+#: iostat.c:1692
+#, c-format
+msgid "-x and -p options are mutually exclusive\n"
+msgstr "opzjonijiet -x u -p huma eskulissivi għal xulxin\n"
+
+#: mpstat.c:86
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -I { SUM | CPU | ALL } ] [ -u ] [ -P { <cpu> | ALL } ] [ -V ]\n"
+msgstr ""
+"Opzjonijiet:\n"
+"[ -A ] [ -I { SUM | CPU | ALL } ] [ -u ] [ -P { <cpu> | ALL } ] [ -V ]\n"
+
+#: mpstat.c:433 pidstat.c:1681 sar.c:333
+msgid "Average:"
+msgstr "Medja:"
+
+#: mpstat.c:742
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Mhux daqstant processors!\n"
+
+#: pidstat.c:80
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <command> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Opzjonijiet:\n"
+"[ -C <command> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:197 sar.c:943
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "L-attivita' rikjesti mhux disponibbli\n"
+
+#: rd_stats.c:1944
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Ma nistax inlaħħaq ma dawn il-processors kollha!\n"
+
+#: sa_common.c:847
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Problema waqt il-qari tal-fajl tal-attivita' tas-sistema: %s\n"
+
+#: sa_common.c:857
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Tmiem tal-fajl tal-attivita' tas-sistema bla mistenni\n"
+
+#: sa_common.c:875
+#, c-format
+msgid "File created using sar/sadc from sysstat version %d.%d.%d"
+msgstr "Fajl maħluq minn sar/sadc minn sysstat verżjoni %d.%d.%d"
+
+#: sa_common.c:906
+#, c-format
+msgid "Invalid system activity file: %s\n"
+msgstr "Fajl tal-attivita' tas-sistema mhux validu: %s\n"
+
+#: sa_common.c:913
+#, c-format
+msgid "Current sysstat version can no longer read the format of this file (%#x)\n"
+msgstr "Il-verżjoni kurrenti ta' sysstat mhux kapaċi taqra aktar format ta' dan il-fajl (%#x)\n"
+
+#: sa_common.c:1116
+#, c-format
+msgid "Requested activities not available in file %s\n"
+msgstr "Attivitajiet rikjesti mhux disponibbil fil-fajl %s\n"
+
+#: sadc.c:78
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+msgstr "Użu: %s [ opzjonijiet ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+
+#: sadc.c:81
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <comment> ] [ -S { INT | DISK | SNMP | ALL } ] [ -F ] [ -L ] [ -V ]\n"
+msgstr ""
+"Opzjonijiet:\n"
+"[ -C <kumment> ] [ -S { INT | DISK | SNMP | ALL } ] [ -F ] [ -L ] [ -V ]\n"
+
+#: sadc.c:107
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Ma nistax nikteb data fil-fajl tal-attivita' tas-sistema: %s\n"
+
+#: sadc.c:385
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Ma nistax nikteb it-titlu fir-ras tal-fajl tal-attivita' tas-sistema: %s\n"
+
+#: sadc.c:661
+#, c-format
+msgid "Cannot append data to that file (%s)\n"
+msgstr "Ma nistax inżid data ġo dak il-fajl (%s)\n"
+
+#: sadf.c:85
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+msgstr "Użu: %s [ opzjonijiet ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+
+#: sadf.c:88
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -d | -D | -H | -p | -x ] [ -h ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options...> ]\n"
+msgstr ""
+"Opzjonijiet:\n"
+"[ -d | -D | -H | -p | -x ] [ -h ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options...> ]\n"
+
+#: sadf.c:527
+#, c-format
+msgid "System activity data file: %s (%#x)\n"
+msgstr "Fajl tad-data tal-attivita' tas-sistema: %s (%#x)\n"
+
+#: sadf.c:536
+#, c-format
+msgid "Host: "
+msgstr "Host: "
+
+#: sadf.c:542
+#, c-format
+msgid "Size of a long int: %d\n"
+msgstr "Qis ta' long int: %d\n"
+
+#: sadf.c:544
+#, c-format
+msgid "List of activities:\n"
+msgstr "Lista ta' attivita':\n"
+
+#: sar.c:104
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -p ] [ -q ] [ -r ] [ -R ]\n"
+"[ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | IP | EIP | ICMP | EICMP | TCP | ETCP | UDP | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Opzjonijiet:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -p ] [ -q ] [ -r ] [ -R ]\n"
+"[ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | IP | EIP | ICMP | EICMP | TCP | ETCP | UDP | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:126
+#, c-format
+msgid ""
+"\n"
+"Main options and reports:\n"
+msgstr ""
+"\n"
+"Opzjonijiet prinċipali u rapporti:\n"
+
+#: sar.c:127
+#, c-format
+msgid "\t-b\tI/O and transfer rate statistics\n"
+msgstr "\t-b\tStatistika fuq I/O u rata ta' transferiment\n"
+
+#: sar.c:128
+#, c-format
+msgid "\t-B\tPaging statistics\n"
+msgstr "\t-B\tStatistika fuq Paging\n"
+
+#: sar.c:129
+#, c-format
+msgid "\t-d\tBlock device statistics\n"
+msgstr "\t-d\tStatistika fuq block device\n"
+
+#: sar.c:130
+#, c-format
+msgid ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tInterrupts statistics\n"
+msgstr ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tStatistika fuq Interrupts\n"
+
+#: sar.c:132
+#, c-format
+msgid ""
+"\t-n { DEV | EDEV | NFS | NFSD | SOCK |\n"
+"\t     IP | EIP | ICMP | EICMP | TCP | ETCP | UDP | ALL }\n"
+"\t\tNetwork statistics\n"
+msgstr ""
+"\t-n { DEV | EDEV | NFS | NFSD | SOCK |\n"
+"\t     IP | EIP | ICMP | EICMP | TCP | ETCP | UDP | ALL }\n"
+"\t\tStatistika fuq Network\n"
+
+#: sar.c:135
+#, c-format
+msgid "\t-q\tQueue length and load average statistics\n"
+msgstr "\t-q\tStatistika fuq Queue length and load average\n"
+
+#: sar.c:136
+#, c-format
+msgid "\t-r\tMemory utilization statistics\n"
+msgstr "\t-r\tStatistika fuq użu tal-memorja\n"
+
+#: sar.c:137
+#, c-format
+msgid "\t-R\tMemory statistics\n"
+msgstr "\t-R\tStatistika fuq Memorja\n"
+
+#: sar.c:138
+#, c-format
+msgid "\t-S\tSwap space utilization statistics\n"
+msgstr "\t-S\tStatistika fuq użu ta' Swap space\n"
+
+#: sar.c:139
+#, c-format
+msgid ""
+"\t-u [ ALL ]\n"
+"\t\tCPU utilization statistics\n"
+msgstr ""
+"\t-u [ ALL ]\n"
+"\t\tStatistika fuq użu ta' CPU\n"
+
+#: sar.c:141
+#, c-format
+msgid "\t-v\tKernel table statistics\n"
+msgstr "\t-v\tStatistika fuq Kernel table\n"
+
+#: sar.c:142
+#, c-format
+msgid "\t-w\tTask creation and system switching statistics\n"
+msgstr "\t-w\tStatistika fuq Task creation and system switching\n"
+
+#: sar.c:143
+#, c-format
+msgid "\t-W\tSwapping statistics\n"
+msgstr "\t-W\tStatistika fuq swapping\n"
+
+#: sar.c:144
+#, c-format
+msgid "\t-y\tTTY device statistics\n"
+msgstr "\t-y\tStatistika fuq apparat TTY\n"
+
+#: sar.c:189
+#, c-format
+msgid "End of data collecting unexpected\n"
+msgstr "Tmiem ta' ġbir tad-data bla mistenni\n"
+
+#: sar.c:749
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Format tad-data huwa nvalidu\n"
+
+#: sar.c:753
+#, c-format
+msgid "Using a wrong data collector from a different sysstat version\n"
+msgstr "Nuża data collector ħażin minn verżjoni differenti ta' sysstat\n"
+
+#: sar.c:773
+#, c-format
+msgid "Inconsistent input data\n"
+msgstr "Data mdaħħla mijhiex konsistenti\n"
+
+#: sar.c:1178
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "Opzjoni -f and -o huma esklussivi fil-konfront ta' xulxin\n"
+
+#: sar.c:1184
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Mhux naqra minn fajl ta' attivita tas-sistema (uża opzjoni -f)\n"
+
+#: sar.c:1285
+#, c-format
+msgid "Cannot find the data collector (%s)\n"
+msgstr "Ma nistax insib id-data collector (%s)\n"

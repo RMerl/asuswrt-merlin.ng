@@ -1,0 +1,181 @@
+<!-- ##### SECTION Title ##### -->
+GSocketListener
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSocketListener ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GSocketListener:listen-backlog ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_socket_listener_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_add_socket ##### -->
+<para>
+
+</para>
+
+@listener: 
+@socket: 
+@source_object: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_add_address ##### -->
+<para>
+
+</para>
+
+@listener: 
+@address: 
+@type: 
+@protocol: 
+@source_object: 
+@effective_address: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_add_inet_port ##### -->
+<para>
+
+</para>
+
+@listener: 
+@port: 
+@source_object: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_add_any_inet_port ##### -->
+<para>
+
+</para>
+
+@listener: 
+@source_object: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_accept ##### -->
+<para>
+
+</para>
+
+@listener: 
+@source_object: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_accept_async ##### -->
+<para>
+
+</para>
+
+@listener: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_socket_listener_accept_finish ##### -->
+<para>
+
+</para>
+
+@listener: 
+@result: 
+@source_object: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_accept_socket ##### -->
+<para>
+
+</para>
+
+@listener: 
+@source_object: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_accept_socket_async ##### -->
+<para>
+
+</para>
+
+@listener: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_socket_listener_accept_socket_finish ##### -->
+<para>
+
+</para>
+
+@listener: 
+@result: 
+@source_object: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_socket_listener_close ##### -->
+<para>
+
+</para>
+
+@listener: 
+
+
+<!-- ##### FUNCTION g_socket_listener_set_backlog ##### -->
+<para>
+
+</para>
+
+@listener: 
+@listen_backlog: 
+
+

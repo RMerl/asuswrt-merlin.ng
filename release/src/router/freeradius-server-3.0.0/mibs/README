@@ -1,0 +1,10 @@
+This directory contains the ASN.1 specification of the SNMP OIDs
+assigned to RADIUS MIB work by the IANA. The specifications in
+RADIUS-ACC-SERVER-MIB.txt and RADIUS-AUTH-SERVER-MIB.txt are
+extracted from RFCs 2621 and 2619 accordingly. The corresponding
+RFCs can be found in subdirectory doc/rfc of the package. Both
+RFCs allow unlimited distribution of the information contained
+therein.
+
+*.chart files contain the graphic representation of the corresponding
+MIB trees.

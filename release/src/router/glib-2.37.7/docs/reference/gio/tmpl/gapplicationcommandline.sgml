@@ -1,0 +1,149 @@
+<!-- ##### SECTION Title ##### -->
+gapplicationcommandline
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GApplicationCommandLine ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GApplicationCommandLineClass ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_application_command_line_get_arguments ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@argc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_get_cwd ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_get_environ ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_get_stdin ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_create_file_for_arg ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@arg: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_getenv ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_get_is_remote ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_get_platform_data ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_set_exit_status ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@exit_status: 
+
+
+<!-- ##### FUNCTION g_application_command_line_get_exit_status ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_application_command_line_print ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_application_command_line_printerr ##### -->
+<para>
+
+</para>
+
+@cmdline: 
+@format: 
+@...: 
+
+

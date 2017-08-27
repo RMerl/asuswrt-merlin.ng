@@ -1,0 +1,6 @@
+
+This is the directory where sadc, the system activity data
+collector called by sar, will be located (usually PREFIX/lib/sa).
+sa1 and sa2 shell scripts will also be saved in that directory.
+Letting ./configure guess the proper location for them should be a safe bet.
+

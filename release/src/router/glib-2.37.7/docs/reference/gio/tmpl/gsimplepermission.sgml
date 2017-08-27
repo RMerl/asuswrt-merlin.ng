@@ -1,0 +1,39 @@
+<!-- ##### SECTION Title ##### -->
+gsimplepermission
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSimplePermission ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_simple_permission_new ##### -->
+<para>
+
+</para>
+
+@allowed: 
+@Returns: 
+
+

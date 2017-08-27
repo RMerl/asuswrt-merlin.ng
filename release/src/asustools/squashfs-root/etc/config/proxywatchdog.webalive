@@ -1,0 +1,23 @@
+
+<fieldset>
+	<legend><% tran("alive.legend3"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("alive.sevr3"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="squid_watchdog_enable" <% nvram_checked("squid_watchdog_enable","1"); %> onclick="setPXY(this.value);show_layer_ext(this, 'idsquid_watchdog', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="squid_watchdog_enable" <% nvram_checked("squid_watchdog_enable","0"); %> onclick="setPXY(this.value);show_layer_ext(this, 'idsquid_watchdog', false)" /><% tran("share.disable"); %>
+	</div>
+	<div id="idsquid_watchdog">
+		<div class="setting">
+			<div class="label"><% tran("share.inter"); %></div>
+			<input size="4" maxLength="4" class="num" name="squid_watchdog_interval_sec" onblur="valid_range(this,0,9999,share.inter)" value="<% nvram_get("squid_watchdog_interval_sec"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("alive.IP2"); %></div>
+			<input size="15" maxLength="512" class="text" name="squid_proxy_server_ip" value="<% nvram_get("squid_proxy_server_ip"); %>" />
+		</div>
+		<div class="setting">
+			<div class="label"><% tran("alive.port"); %></div>
+			<input size="4" maxLength="4" class="num" name="squid_proxy_server_port" onblur="valid_range(this,0,9999,alive.port)" value="<% nvram_get("squid_proxy_server_port"); %>" />
+		</div>
+	</div>
+</fieldset><br/>

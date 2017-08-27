@@ -1,0 +1,46 @@
+`stress' TODO -- development roadmap
+Copyright (C) 2005 Amos Waterland.
+See the end for copying conditions.
+
+Please send `stress' bug reports, questions, and suggestions to
+<apw@rossby.metr.ou.edu>.
+
+Build easily without autoconf
+
+ * Define VERSION, among other things.
+
+Use a concept instead of an option
+
+ * Instead of explicit options like --vm-bytes, get rid of all --vm
+   options but one: --vm-pattern=webserver,database,raytracer etc.
+
+Barrier instead of backoff
+
+ * If you fork a sufficiently high number of children, the system will
+   become so overloaded that new children do not ever get a chance to
+   even start.  It is arguable whether stress should bother to deal
+   with this at all, but at present it does so by giving each child a
+   backoff timer.  Each child immediately goes to sleep upon entry,
+   and wakes up only after the backoff factor has expired.  This
+   allows the kernel to fork an absurd number of processes.  If we
+   decide this is a behavior we wish to preserve, we should move to a
+   model where each child just waits for a signal from the parent,
+   which it can send to its whole process group effeciently once it
+   finishes forking all the requested children.  This would allow us
+   to get rid of the `--backoff' option and reduce the associated code
+   complexity.
+
+----------------------------------------------------------------------
+Copyright information:
+
+Copyright (C) 2005 Amos Waterland
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.

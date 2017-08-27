@@ -1,0 +1,24 @@
+#! /bin/sh
+
+APPS_MOUNTED_PATH=`nvram get apps_mounted_path`
+APPS_INSTALL_FOLDER=`nvram get apps_install_folder`
+APPS_INSTALL_PATH=$APPS_MOUNTED_PATH/$APPS_INSTALL_FOLDER
+#CLOUD_PATH=`cat /opt/etc/Cloud.conf | awk -F , '{print $7}'`
+
+sleep 4
+
+app_remove.sh webdavclient
+sleep 2
+app_remove.sh asuswebstorage
+sleep 2
+app_remove.sh ftpclient
+sleep 2
+app_remove.sh dropboxclient
+sleep 2
+app_remove.sh sambaclient
+sleep 2
+app_remove.sh usbclient
+sleep 2
+app_remove.sh googleclient
+sleep 2
+app_remove.sh inotify

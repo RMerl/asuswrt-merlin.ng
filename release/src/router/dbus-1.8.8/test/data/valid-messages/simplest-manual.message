@@ -1,0 +1,30 @@
+## like simplest.message, but doesn't use VALID_HEADER
+## convenience command. mostly to test the test framework.
+
+LITTLE_ENDIAN
+BYTE 'l'
+BYTE 1
+BYTE 0
+BYTE 0
+LENGTH Header
+LENGTH Body
+## client serial
+INT32 7
+
+HEADER_FIELD PATH
+TYPE OBJECT_PATH
+OBJECT_PATH '/foo'
+HEADER_FIELD INTERFACE
+TYPE STRING
+STRING 'org.freedesktop.Foo'
+HEADER_FIELD MEMBER
+TYPE STRING
+STRING 'Bar'
+HEADER_FIELD SIGNATURE
+TYPE STRING
+STRING ''
+
+ALIGN 8
+END_LENGTH Header
+START_LENGTH Body
+END_LENGTH Body

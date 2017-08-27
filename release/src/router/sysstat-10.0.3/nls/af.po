@@ -1,0 +1,195 @@
+# NLS support for the sysstat package.
+# Copyright (C) 1999 Free Software Foundation, Inc.
+# Sébastien GODARD <sysstat [at] orange.fr>, 1999.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat 3.0\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2007-12-19 14:02+0100\n"
+"PO-Revision-Date: 2000-01-12 20:17\n"
+"Last-Translator: Gert Brits <webmaster@linuxhelp.za.net>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat weergawe %s\n"
+
+#: common.c:160 common.c:385 ioconf.c:459 mpstat.c:265 sa_common.c:601
+#: sadc.c:476 sadc.c:485 sadc.c:530 sadc.c:620
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Probleem met oopmaak van %s: %s\n"
+
+#: common.c:199
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Kan nie soveel proseseerders hanteer nie !\n"
+
+#: iostat.c:74
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+msgstr ""
+"Gebruik: %s [ opsies... ] [ <interval> [ <nommer> ] ]\n"
+"Opsies moontlik:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -k | -m ] [ -t ] [ -V ] [ -x ]\n"
+"[ <device> [ ... ] | ALL ] [ -p [ <device> | ALL ] ]\n"
+
+#: iostat.c:1119
+#, c-format
+msgid "Time: %s\n"
+msgstr "Tyd:  %s\n"
+
+#: iostat.c:1435
+#, c-format
+msgid "-x and -p options are mutually exclusive\n"
+msgstr "Opsies -x en -p is beide uitgesluit\n"
+
+#: mpstat.c:66
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -P { <cpu> | ALL } ] [ -V ]\n"
+msgstr ""
+"Gebruik: %s [ opsies... ] [ <interval> [ <nommer> ] ]\n"
+"Opsies moontlik:\n"
+"[ -P { <cpu> | ALL } ] [ -V ]\n"
+
+# sar.c:
+#: mpstat.c:226 pidstat.c:1148 sar.c:740
+msgid "Average:"
+msgstr "Gemideld:"
+
+#: mpstat.c:563 sar.c:157
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Nie soveel proseseerders nie !\n"
+
+#: pidstat.c:72
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -C <comm> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Gebruik: %s [ opsies... ] [ <interval> [ <nommer> ] ]\n"
+"Opsies moontlik:\n"
+"[ -C <comm> ] [ -d ] [ -I ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:166 sar.c:1419
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "Aangevraagte aktiviteite nie beskikbaar nie\n"
+
+#: sa_common.c:572
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Probleem gekry met die lees van die sisteem aktiviteit leer: %s\n"
+
+#: sa_common.c:581
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Einde van sisteem aktiviteit leer onbeplan geeindig\n"
+
+#: sa_common.c:608 sadc.c:549
+#, c-format
+msgid "Invalid system activity file: %s (%#x)\n"
+msgstr "Ongemagtige aktiviteit proses: %s (%#x)\n"
+
+#: sa_common.c:632
+#, c-format
+msgid "Requested activities not available in file\n"
+msgstr "Aangevraagte data is nie beskikbaar in leer nie\n"
+
+#: sadc.c:83
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+"Options are:\n"
+"[ -C <comment> ] [ -d ] [ -F ] [ -I ] [ -V ]\n"
+msgstr ""
+"Gebruik: %s [ opsies... ] [ <interval> [ <nommer> ] ] [ <uitleer> ]\n"
+"Opsies moontlik:\n"
+"[ -C <comment> ] [ -d ] [ -F ] [ -I ] [ -V ]\n"
+
+#: sadc.c:110
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Probleem met skryf van sisteem aktiviteit leer: %s\n"
+
+#: sadc.c:361
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Probleem met skryf van sisteem aktiviteit hoof: %s\n"
+
+#: sadc.c:568
+#, c-format
+msgid "Cannot append data to that file\n"
+msgstr "Kan nie data byskryf by die file nie\n"
+
+#: sadf.c:78
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+"Options are:\n"
+"[ -d | -D | -H | -p | -x ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options...> ]\n"
+msgstr ""
+"Gebruik: %s [ opsies... ] [ <interval> [ <nommer> ] ] [ <leer> ]\n"
+"Opsies moontlik:\n"
+"[ -d [ -D | -H | -p | -x ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_opsies...> ]\n"
+
+#: sar.c:76
+#, c-format
+msgid ""
+"Usage: %s [ options... ] [ <interval> [ <count> ] ]\n"
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -c ] [ -C ] [ -d ] [ -i <interval> ] [ -p ] [ -q ]\n"
+"[ -r ] [ -R ] [ -t ] [ -u ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <irq> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Gebruik: %s [ opsies... ] [ <interval> [ <nommer> ] ]\n"
+"Opsies moontlik:\n"
+"[ -A ] [ -b ] [ -B ] [ -c ] [ -C ] [ -d ] [ -i <interval> ] [ -p ] [ -q ]\n"
+"[ -r ] [ -R ] [ -t ] [ -u ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <irq> | SUM | ALL | XALL } ] [ -P { <cpu> | ALL } ]\n"
+"[ -n { DEV | EDEV | NFS | NFSD | SOCK | ALL } ]\n"
+"[ -o [ <leer> ] | -f [ <leer> ] ]\n"
+"[ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:149
+#, c-format
+msgid "Not an SMP machine...\n"
+msgstr "Nie 'n SMP rekenaar nie...\n"
+
+#: sar.c:1261
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Verkeerde data formaat\n"
+
+#: sar.c:1633
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "Opsies -f en -o is beide uitgesluit\n"
+
+#: sar.c:1639
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Kan nie van sisteem aktiviteit leer lees nie (gebruik opsie -f)\n"

@@ -1,0 +1,53 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  Write Chargeable-User-Identity to the database.
+#
+#  Schema	raddb/sql/cui/<DB>/schema.sql
+#  Queries	raddb/sql/cui/<DB>/queries.conf
+#
+sql cuisql {
+
+	# The dialect of SQL you want to use, this should usually match
+	# the driver below.
+	#
+	# If you're using rlm_sql_null, then it should be the type of
+	# database the logged queries are going to be executed against.
+	dialect = "sqlite"
+
+	# The sub-module to use to execute queries. This should match
+	# the database you're attempting to connect to.
+	#
+	# There are CUI queries available for:
+	#    * rlm_sql_mysql
+	#    * rlm_sql_postgresql
+	#    * rlm_sql_sqlite
+	#    * rlm_sql_null (log queries to disk)
+	#
+	driver = "rlm_sql_${dialect}"
+
+	sqlite {
+		filename = ${radacctdir}/cui.sqlite
+		bootstrap = ${modconfdir}/${..:name}/cui/sqlite/schema.sql
+	}
+
+	# Write CUI queries to a logfile. Useful for debugging.
+#	logfile = ${logdir}/cuilog.sql
+
+	pool {
+		start = 5
+		min = 4
+		max = 10
+		spare = 3
+		uses = 0
+		lifetime = 0
+		idle_timeout = 60
+	}
+
+	cui_table = "cui"
+	sql_user_name = "%{User-Name}"
+
+	$INCLUDE ${modconfdir}/${.:name}/cui/${dialect}/queries.conf
+}

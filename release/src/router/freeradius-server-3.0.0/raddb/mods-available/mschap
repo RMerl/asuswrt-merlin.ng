@@ -1,0 +1,97 @@
+# -*- text -*-
+#
+#  $Id$
+
+# Microsoft CHAP authentication
+#
+#  This module supports MS-CHAP and MS-CHAPv2 authentication.
+#  It also enforces the SMB-Account-Ctrl attribute.
+#
+mschap {
+	#
+	#  If you are using /etc/smbpasswd, see the 'passwd'
+	#  module for an example of how to use /etc/smbpasswd
+
+	# if use_mppe is not set to no mschap will
+	# add MS-CHAP-MPPE-Keys for MS-CHAPv1 and
+	# MS-MPPE-Recv-Key/MS-MPPE-Send-Key for MS-CHAPv2
+	#
+#	use_mppe = no
+
+	# if mppe is enabled require_encryption makes
+	# encryption moderate
+	#
+#	require_encryption = yes
+
+	# require_strong always requires 128 bit key
+	# encryption
+	#
+#	require_strong = yes
+
+	# The module can perform authentication itself, OR
+	# use a Windows Domain Controller.  This configuration
+	# directive tells the module to call the ntlm_auth
+	# program, which will do the authentication, and return
+	# the NT-Key.  Note that you MUST have "winbindd" and
+	# "nmbd" running on the local machine for ntlm_auth
+	# to work.  See the ntlm_auth program documentation
+	# for details.
+	#
+	# If ntlm_auth is configured below, then the mschap
+	# module will call ntlm_auth for every MS-CHAP
+	# authentication request.  If there is a cleartext
+	# or NT hashed password available, you can set
+	# "MS-CHAP-Use-NTLM-Auth := No" in the control items,
+	# and the mschap module will do the authentication itself,
+	# without calling ntlm_auth.
+	#
+	# Be VERY careful when editing the following line!
+	#
+	# You can also try setting the user name as:
+	#
+	#	... --username=%{mschap:User-Name} ...
+	#
+	# In that case, the mschap module will look at the User-Name
+	# attribute, and do prefix/suffix checks in order to obtain
+	# the "best" user name for the request.
+	#
+#	ntlm_auth = "/path/to/ntlm_auth --request-nt-key --username=%{%{Stripped-User-Name}:-%{%{User-Name}:-None}} --challenge=%{%{mschap:Challenge}:-00} --nt-response=%{%{mschap:NT-Response}:-00}"
+
+	passchange {
+		# This support MS-CHAPv2 (not v1) password change
+		# requests.  See doc/mschap.rst for more IMPORTANT
+		# information.
+		#
+		# Samba/ntlm_auth - if you are using ntlm_auth to
+		# validate passwords, you will need to use ntlm_auth
+		# to change passwords.  Uncomment the three lines
+		# below, and change the path to ntlm_auth.
+		#
+#		ntlm_auth = "/usr/bin/ntlm_auth --helper-protocol=ntlm-change-password-1"
+#		ntlm_auth_username = "username: %{mschap:User-Name}"
+#		ntlm_auth_domain = "nt-domain: %{mschap:NT-Domain}"
+
+		# To implement a local password change, you need to
+		# supply a string which is then expanded, so that the
+		# password can be placed somewhere.  e.g. passed to a
+		# script (exec), or written to SQL (UPDATE/INSERT).
+		# We give both examples here, but only one will be
+		# used.
+		#
+#		local_cpw = "%{exec:/path/to/script %{mschap:User-Name} %{MS-CHAP-New-Cleartext-Password}}"
+		#
+#		local_cpw = "%{sql:UPDATE radcheck set value='%{MS-CHAP-New-NT-Password}' where username='%{SQL-User-Name}' and attribute='NT-Password'}"
+	}
+
+	# For Apple Server, when running on the same machine as
+	# Open Directory.  It has no effect on other systems.
+	#
+#	use_open_directory = yes
+
+	# On failure, set (or not) the MS-CHAP error code saying
+	# "retries allowed".
+#	allow_retry = yes
+
+	# An optional retry message.
+#	retry_msg = "Re-enter (or reset) the password"
+}

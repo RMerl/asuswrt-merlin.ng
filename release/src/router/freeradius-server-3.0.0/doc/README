@@ -1,0 +1,252 @@
+1. INTRO
+
+  All code in this server was written for this project.
+
+  The server is mostly compatible with livingston radiusd-2.01
+  (no menus or s/key support though) but with more features, such as:
+
+    o Can limit the maximum number of simultaneous logins on a per-user basis!
+    o Multiple DEFAULT entries, that can optionally fall-through.
+    o In fact, every entry can fall-through
+    o Deny/permit access based on huntgroup users dials into
+    o Set certain parameters (such as static IP address) based on huntgroup
+    o Extra "hints" file that can select SLIP/PPP/rlogin based on
+      username pattern (Puser or user.ppp is PPP, plain "user" is rlogin etc).
+    o Can execute an external program when user has authenticated (for example
+      to run a sendmail queue).
+    o Can use `$INCLUDE filename' in radiusd.conf, users, and dictionary files
+    o Can act as a proxy server, relaying requests to a remote server
+    o Supports Vendor-Specific attributes
+    o Supports many different plug-in modules for authentication,
+      authorization, and accounting.
+    o No good documentation at all, just like the original radiusd 1.16!
+
+  Work on real manual pages is progressing slowly. For a large part you
+  can use the documentation of the Livingston 2.01 server. Just remember
+  that using Prefix and Suffix in both the "users" and the (FreeRadius
+  specific) "hints" file will give unpredictable results. Well actually
+  it will result in Prefix and Suffix probably not working in the "users"
+  file if you already stripped them off in the "hints" file.
+
+2. INSTALLATION
+
+   See the INSTALL file, in the parent directory.
+
+3. CONFIGURATION FILES
+
+  For every file there is a fully commented example file included, that
+  explains what is does, and how to use it. Read those sample files too!
+
+  Again, many of the configuration files are ONLY documented in the
+  comments included in the files.  Reading the configuration files is
+  REQUIRED to fully understand how to create complex configurations of
+  the server.
+
+3a. CLIENTS
+
+  Make sure the clients (portmasters, Linux with portslave etc) are set up to
+  use the host radiusd is running on as authentication and accounting host.
+  Configure these clients to use a "radius secret password". For every client,
+  also enter this "secret password" into the file /etc/raddb/clients.
+  See also the manual page for clients(5).
+
+3b. NASLIST
+
+  Every NAS (Network Access Server, also known as terminal server) should have
+  an entry in this file with an abbreviated name and the type of NAS it
+  is. Currently FreeRadius supports the following NAS types:
+
+  Terminal Server                       Type in naslist
+
+  3Com/USR Hiper Arc Total Control      usrhiper
+  3Com/USR NetServer                    netserver
+  3Com/USR TotalControl                 tc
+  Ascend Max 4000 family                max40xx
+  Cisco Access Server family            cisco
+  Cistron PortSlave                     portslave
+  Computone PowerRack                   computone
+  Cyclades PathRAS                      pathras
+  Livingston PortMaster                 livingston
+  Multitech CommPlete Server            multitech
+  Patton 2800 family                    patton
+
+  Usually this is the same list as in the "clients" file, but not every
+  NAS is a client and not every client is a NAS (this will start to make
+  sense if you use radius proxy servers).
+
+3c. NASPASSWD
+
+  If ``checkrad'' needs to login on your terminal server to check who
+  is online on a certain port (i.e. it's not possible to use SNMP or
+  finger) you need to define a loginname and password here.
+
+  This is normally ONLY needed for USR/3Com Total Control, NetServer and
+  Cyclades PathRAS terminal servers!
+
+3d. HINTS
+
+  Customize the /etc/raddb/hints file. This file is used to give users a
+  different login type based on a prefix/suffix of their loginname. For
+  example, logging in as "user" may result in a rlogin session to a Unix
+  system, and logging in as "Puser" could start a PPP session.
+
+3e. HUNTGROUPS
+
+  This is the /etc/raddb/huntgroups file. Here you can define different
+  huntgroups. These can be used to:
+
+    - restrict access to certain huntgroups to certain users/groups of
+      users (define this in the huntgroups file itself)
+    - match a loginname with a huntgroup in /etc/raddb/users. One use
+      for this is to give a user a static IP address based on the
+      huntgroup / Point of Presence  (s)he dials in to.
+
+3f. USERS
+
+  With the original RADIUS server, every user had to be defined in this
+  file. There could be one default entry, where you could for example
+  define that a user not in the radius file would be checked agains the
+  UNIX password file and on successful login would get a PPP connection.
+
+  In the new style file, you can define multiple DEFAULT entries. All
+  entries are processed in the order as they appear in the users file.
+  If an entry matches the username, radiusd will stop scanning the users
+  file unless the attribute "Fall-Through = Yes" is set.
+
+  You can uses spaces in usernames by escaping them with \ or by using
+  quotes. For example, "joe user" or joe\ user.
+
+  The FreeRadius server does not trim any spaces from a username received
+  from the portmaster (livingston does, in perl notation, $user =~ s/\s+.*//;)
+
+3g. NEW RADIUS ATTRIBUTES (to be used in the USERS file).
+
+  Name			Type		Descr.
+  ----			----		------
+  Simultaneous-Use	integer		Max. number of concurrent logins
+  Fall-Through		integer		Yes/No
+  Login-Time		string		Defines when user may login.
+  Current-Time		string		Allows you to perform time-based
+					checks when a request is received.
+
+  Login-Time defines the time span a user may login to the system. The
+  format of a so-called time string is like the format used by UUCP.
+  A time string may be a list of simple time strings separated by "|" or ",".
+
+  Each simple time string must begin with a day definition. That can be just
+  one day, multiple days, or a range of days separated by a hyphen. A
+  day is Mo, Tu, We, Th, Fr, Sa or Su, or Wk for Mo-Fr. "Any" or "Al"
+  means all days.
+
+  After that a range of hours follows in hhmm-hhmm format.
+
+  For example, "Wk2305-0855,Sa,Su2305-1655".
+
+  Radiusd calculates the number of seconds left in the time span, and
+  sets the Session-Timeout to that number of seconds. So if someones
+  Login-Time is "Al0800-1800" and she logs in at 17:30, Session-Timeout
+  is set to 1800 seconds so that she is kicked off at 18:00.
+
+4. LOG FILES
+
+4a. /var/log/radutmp
+
+  In this file the currently logged in users are held. The program "radwho"
+  reads this file and gives you a summary. Rogue sessions can be deleted
+  from this file with the "radzap" program.
+
+4b. /var/log/radwtmp
+
+  This file is "wtmp" compatible and keeps a history of all radius logins/
+  logouts. This file can be read with the "last" program, and other Unix
+  accounting programs (such as "ac" and "sac") can be used to produce a
+  summary.
+
+4c. /var/log/radius.log
+
+  All RADIUS informational. diagnostic and error messages are logged in
+  this file.  If radiusd has been started with the "-y" flag, all logins
+  attempts will be logged in this file. For failed logins, the wrong password
+  will also be logged.  With the "-z" flag, the passwords for successful
+  logins will be logged as well. That's pretty dangerous though in case
+  anyone unpriviliged ever manages to get access to this file!
+
+4d. /var/log/radacct/<terminal_server>/detail
+
+  This is the original radius logfile, as written by all the livingston
+  radius servers. It's only created if the directory /var/log/radacct exists.
+  The <terminal_server> name is the short name if one is defined in
+  /etc/raddb/naslist.
+
+  For more configuration options on the detail file please see
+  README.rlm_detail as it expands upon this greatly.
+
+5.  MORE INFO, SUPPORT
+
+  We know that the documentation provided is sparse. However it is not in
+  the scope of the radius server to provide a guide as to how terminal
+  servers works and how the RADIUS protocol works and is used.
+
+  The latest version of FreeRadius is always available through
+  anonymous CVS from cvs.freeradius.org - for more info, see
+  <URL: http://www.freeradius.org/>
+
+  There are two GNU Mailman mailing lists hosted by Cistron Internet Services:
+  a 'users' list, at:
+
+	http://lists.freeradius.org/pipermail/freeradius-users/
+
+  and a 'developers only' list, at
+
+	http://lists.freeradius.org/pipermail/freeradius-devel/
+
+6.  OTHER INFORMATION
+
+  The files in other directories are:
+
+  debian/	Files to build a "freeradius" Debian Linux package.
+
+  doc/		Various snippets of documentation
+  doc/rfc/	Copies of the RFC's.  If you have Perl, do a 'make' in
+		that directory, and look at the HTML output.
+
+  libltdl/	Libtool platform independent library system.
+
+  man/		Unix Manual pages for the server, configuration files,
+		and associated utilities.
+
+  mibs/		SNMP Mibs for the server.
+
+  raddb/	Sample configuration files for the server.
+
+  redhat/	Additional files for a RedHat Linux system.
+
+  scripts/	Sample scripts for startup and maintenance.
+
+  src/		Source code
+  src/main	source code for the daemon and associated utilities
+  src/lib	source code for the RADIUS library
+  src/include	header files
+  src/modules	dynamic plug-in modules
+
+  suse/		Aditional files for a SuSE (UnitedLinux) system.
+
+  todo/		TODO list and assorted files.
+
+
+  If you have ANY problems, concerns, or surprises when running the
+server, then run it in debugging mode, as root, from the command line:
+
+$ radiusd -X
+
+It will produce a large number of messages.  The answers to many
+questions, and the solution to many problems, can usually be found in
+these messages.
+
+  For further details, see:
+
+  http://www.freeradius.org/faq/
+
+  and the 'bugs' file, in this directory.
+
+$Date$

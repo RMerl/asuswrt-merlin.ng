@@ -1,0 +1,75 @@
+.TH RADTEST 1 "5 April 2010" "" "FreeRADIUS Daemon"
+.SH NAME
+radtest - send packets to a RADIUS server, show reply
+.SH SYNOPSIS
+.B radtest
+.RB [ \-d
+.IR raddb_directory ]
+.RB [ \-t
+.IR pap/chap/mschap ]
+.RB [ \-x
+.IR ]
+.RB [ \-4
+.IR ]
+.RB [ \-6
+.IR ]
+.I user password radius-server nas-port-number secret
+.RB [ ppphint ]
+.RB [ nasname ]
+.SH DESCRIPTION
+\fBradtest\fP is a frontend to \fBradclient\fP(1). It generates a
+list of attribute/value pairs based on the command line arguments,
+and feeds these into \fBradclient\fP. It's a fast and convenient
+way to test a radius server.
+
+.SH OPTIONS
+
+.IP "\-d \fIraddb_directory\fP"
+The directory that contains the RADIUS dictionary files. Defaults to
+\fI/etc/raddb\fP.
+
+.IP "\-t \fIpap/chap/mschap/eap-md5\fP"
+Choose the authentiction method to use.  e.g. "-t pap", "-t chap", "-t
+mschap", or "-t eap-md5",.  Defaults to "pap".  Using EAP-MD5 requires
+that the "radeapclient" program is installed.
+
+.IP "\-x"
+Enables debugging output for the RADIUS client.
+
+.IP "\-4"
+Use NAS-IP-Address for the NAS address (default)
+
+.IP "\-6"
+Use NAS-IPv6-Address for the NAS address (default)
+
+.IP user
+Username to send.
+
+.IP password
+Password of the user.
+
+.IP radius-server
+Hostname or IP address of the radius server. Optionally, you may specify a
+port by appending :port
+
+.IP nas-port-number
+The value of the NAS-Port attribute. Is an integer between 0 and 2^31,
+and it really doesn't matter what you put here. \fI10\fP will do fine.
+
+.IP secret
+The shared secret for this client.
+
+.IP ppphint
+If you put an integer > 0 here, radtest (or actually radclient) will
+add the attribute \fIFramed-Protocol = PPP\fP to the request packet.
+
+.IP nasname
+If present, this will be resolved to an IP address and added to
+the request packet as the \fINAS-IP-Address\fP attribute. If you
+don't specify it, the local hostname of the system will be used.
+
+.SH SEE ALSO
+radiusd(8),
+radclient(1).
+.SH AUTHOR
+Miquel van Smoorenburg, miquels@cistron.nl.

@@ -1,0 +1,493 @@
+HISTORY(3)                                                          HISTORY(3)
+
+
+
+NNAAMMEE
+       history - GNU History Library
+
+CCOOPPYYRRIIGGHHTT
+       The GNU History Library is Copyright (C) 1989-2011 by the Free Software
+       Foundation, Inc.
+
+DDEESSCCRRIIPPTTIIOONN
+       Many programs read input from the user a line at a time.  The GNU  His-
+       tory  library is able to keep track of those lines, associate arbitrary
+       data with each line, and utilize information  from  previous  lines  in
+       composing new ones.
+
+
+HHIISSTTOORRYY EEXXPPAANNSSIIOONN
+       The  history library supports a history expansion feature that is iden-
+       tical to the history expansion in bbaasshh..  This  section  describes  what
+       syntax features are available.
+
+       History expansions introduce words from the history list into the input
+       stream, making it easy to repeat commands, insert the  arguments  to  a
+       previous command into the current input line, or fix errors in previous
+       commands quickly.
+
+       History expansion is usually performed  immediately  after  a  complete
+       line  is read.  It takes place in two parts.  The first is to determine
+       which line from the history list to use during substitution.  The  sec-
+       ond  is  to select portions of that line for inclusion into the current
+       one.  The line selected from the history is the _e_v_e_n_t, and the portions
+       of  that  line  that  are  acted upon are _w_o_r_d_s.  Various _m_o_d_i_f_i_e_r_s are
+       available to manipulate the selected words.  The line  is  broken  into
+       words in the same fashion as bbaasshh does when reading input, so that sev-
+       eral words that would otherwise be separated are  considered  one  word
+       when  surrounded  by  quotes (see the description of hhiissttoorryy__ttookkeenniizzee(())
+       below).  History expansions are introduced by  the  appearance  of  the
+       history expansion character, which is !! by default.  Only backslash (\\)
+       and single quotes can quote the history expansion character.
+
+   EEvveenntt DDeessiiggnnaattoorrss
+       An event designator is a reference to a command line entry in the  his-
+       tory  list.   Unless  the reference is absolute, events are relative to
+       the current position in the history list.
+
+       !!      Start a history substitution, except when followed by  a  bbllaannkk,
+              newline, = or (.
+       !!_n     Refer to command line _n.
+       !!--_n    Refer to the current command minus _n.
+       !!!!     Refer to the previous command.  This is a synonym for `!-1'.
+       !!_s_t_r_i_n_g
+              Refer  to the most recent command preceding the current position
+              in the history list starting with _s_t_r_i_n_g.
+       !!??_s_t_r_i_n_g[[??]]
+              Refer to the most recent command preceding the current postition
+              in  the  history  list containing _s_t_r_i_n_g.  The trailing ?? may be
+              omitted if _s_t_r_i_n_g is followed immediately by a newline.
+       ^^_s_t_r_i_n_g_1^^_s_t_r_i_n_g_2^^
+              Quick substitution.  Repeat the last command, replacing  _s_t_r_i_n_g_1
+              with _s_t_r_i_n_g_2.  Equivalent to ``!!:s/_s_t_r_i_n_g_1/_s_t_r_i_n_g_2/'' (see MMoodd--
+              iiffiieerrss below).
+       !!##     The entire command line typed so far.
+
+   WWoorrdd DDeessiiggnnaattoorrss
+       Word designators are used to select desired words from the event.  A  ::
+       separates  the event specification from the word designator.  It may be
+       omitted if the word designator begins with a ^^, $$, **, --, or  %%.   Words
+       are  numbered from the beginning of the line, with the first word being
+       denoted by 0 (zero).  Words are inserted into the  current  line  sepa-
+       rated by single spaces.
+
+       00 ((zzeerroo))
+              The zeroth word.  For the shell, this is the command word.
+       _n      The _nth word.
+       ^^      The first argument.  That is, word 1.
+       $$      The last argument.
+       %%      The word matched by the most recent `?_s_t_r_i_n_g?' search.
+       _x--_y    A range of words; `-_y' abbreviates `0-_y'.
+       **      All  of  the words but the zeroth.  This is a synonym for `_1_-_$'.
+              It is not an error to use ** if there is just  one  word  in  the
+              event; the empty string is returned in that case.
+       xx**     Abbreviates _x_-_$.
+       xx--     Abbreviates _x_-_$ like xx**, but omits the last word.
+
+       If  a  word  designator is supplied without an event specification, the
+       previous command is used as the event.
+
+   MMooddiiffiieerrss
+       After the optional word designator, there may appear a sequence of  one
+       or more of the following modifiers, each preceded by a `:'.
+
+       hh      Remove a trailing file name component, leaving only the head.
+       tt      Remove all leading file name components, leaving the tail.
+       rr      Remove a trailing suffix of the form _._x_x_x, leaving the basename.
+       ee      Remove all but the trailing suffix.
+       pp      Print the new command but do not execute it.
+       qq      Quote the substituted words, escaping further substitutions.
+       xx      Quote the substituted words as with qq, but break into  words  at
+              bbllaannkkss and newlines.
+       ss//_o_l_d//_n_e_w//
+              Substitute  _n_e_w  for  the  first  occurrence of _o_l_d in the event
+              line.  Any delimiter can be used  in  place  of  /.   The  final
+              delimiter  is  optional if it is the last character of the event
+              line.  The delimiter may be quoted in _o_l_d and _n_e_w with a  single
+              backslash.   If & appears in _n_e_w, it is replaced by _o_l_d.  A sin-
+              gle backslash will quote the &.  If _o_l_d is null, it  is  set  to
+              the  last  _o_l_d substituted, or, if no previous history substitu-
+              tions took place, the last _s_t_r_i_n_g in a !!??_s_t_r_i_n_g[[??]]  search.
+       &&      Repeat the previous substitution.
+       gg      Cause changes to be applied over the entire event line.  This is
+              used  in  conjunction  with `::ss' (e.g., `::ggss//_o_l_d//_n_e_w//') or `::&&'.
+              If used with `::ss', any delimiter can be used in place of /,  and
+              the  final  delimiter is optional if it is the last character of
+              the event line.  An aa may be used as a synonym for gg.
+       GG      Apply the following `ss' modifier once to each word in the  event
+              line.
+
+PPRROOGGRRAAMMMMIINNGG WWIITTHH HHIISSTTOORRYY FFUUNNCCTTIIOONNSS
+       This  section  describes  how  to use the History library in other pro-
+       grams.
+
+   IInnttrroodduuccttiioonn ttoo HHiissttoorryy
+       The programmer using the History library has  available  functions  for
+       remembering  lines on a history list, associating arbitrary data with a
+       line, removing lines from the list, searching through the  list  for  a
+       line  containing  an arbitrary text string, and referencing any line in
+       the list directly.  In addition, a history _e_x_p_a_n_s_i_o_n function is avail-
+       able  which  provides  for a consistent user interface across different
+       programs.
+
+       The user using programs written with the History library has the  bene-
+       fit  of  a  consistent user interface with a set of well-known commands
+       for manipulating the text of previous lines and using that text in  new
+       commands.  The basic history manipulation commands are identical to the
+       history substitution provided by bbaasshh.
+
+       If the programmer desires, he  can  use  the  Readline  library,  which
+       includes some history manipulation by default, and has the added advan-
+       tage of command line editing.
+
+       Before declaring any functions  using  any  functionality  the  History
+       library  provides  in  other code, an application writer should include
+       the file  _<_r_e_a_d_l_i_n_e_/_h_i_s_t_o_r_y_._h_>  in  any  file  that  uses  the  History
+       library's  features.   It  supplies  extern declarations for all of the
+       library's public functions and variables, and declares all of the  pub-
+       lic data structures.
+
+
+   HHiissttoorryy SSttoorraaggee
+       The  history  list  is an array of history entries.  A history entry is
+       declared as follows:
+
+       _t_y_p_e_d_e_f _v_o_i_d _* hhiissttddaattaa__tt;;
+
+       typedef struct _hist_entry {
+         char *line;
+         char *timestamp;
+         histdata_t data;
+       } HIST_ENTRY;
+
+       The history list itself might therefore be declared as
+
+       _H_I_S_T___E_N_T_R_Y _*_* tthhee__hhiissttoorryy__lliisstt;;
+
+       The state of the History library is encapsulated into a  single  struc-
+       ture:
+
+       /*
+        * A structure used to pass around the current state of the history.
+        */
+       typedef struct _hist_state {
+         HIST_ENTRY **entries; /* Pointer to the entries themselves. */
+         int offset;           /* The location pointer within this array. */
+         int length;           /* Number of elements within this array. */
+         int size;             /* Number of slots allocated to this array. */
+         int flags;
+       } HISTORY_STATE;
+
+       If  the flags member includes HHSS__SSTTIIFFLLEEDD, the history has been stifled.
+
+HHiissttoorryy FFuunnccttiioonnss
+       This section describes the calling sequence for the  various  functions
+       exported by the GNU History library.
+
+   IInniittiiaalliizziinngg HHiissttoorryy aanndd SSttaattee MMaannaaggeemmeenntt
+       This  section  describes  functions  used  to initialize and manage the
+       state of the History library when you want to use the history functions
+       in your program.
+
+       _v_o_i_d uussiinngg__hhiissttoorryy (_v_o_i_d)
+       Begin  a  session  in  which the history functions might be used.  This
+       initializes the interactive variables.
+
+       _H_I_S_T_O_R_Y___S_T_A_T_E _* hhiissttoorryy__ggeett__hhiissttoorryy__ssttaattee (_v_o_i_d)
+       Return a structure describing the current state of the input history.
+
+       _v_o_i_d hhiissttoorryy__sseett__hhiissttoorryy__ssttaattee (_H_I_S_T_O_R_Y___S_T_A_T_E _*_s_t_a_t_e)
+       Set the state of the history list according to _s_t_a_t_e.
+
+
+   HHiissttoorryy LLiisstt MMaannaaggeemmeenntt
+       These functions manage individual entries on the history list,  or  set
+       parameters managing the list itself.
+
+       _v_o_i_d aadddd__hhiissttoorryy (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g)
+       Place _s_t_r_i_n_g at the end of the history list.  The associated data field
+       (if any) is set to NNUULLLL.
+
+       _v_o_i_d aadddd__hhiissttoorryy__ttiimmee (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g)
+       Change the time stamp associated with the most recent history entry  to
+       _s_t_r_i_n_g.
+
+       _H_I_S_T___E_N_T_R_Y _* rreemmoovvee__hhiissttoorryy (_i_n_t _w_h_i_c_h)
+       Remove  history  entry  at  offset _w_h_i_c_h from the history.  The removed
+       element is returned so you can free  the  line,  data,  and  containing
+       structure.
+
+       _h_i_s_t_d_a_t_a___t ffrreeee__hhiissttoorryy__eennttrryy (_H_I_S_T___E_N_T_R_Y _*_h_i_s_t_e_n_t)
+       Free  the  history  entry  _h_i_s_t_e_n_t and any history library private data
+       associated with it.   Returns  the  application-specific  data  so  the
+       caller can dispose of it.
+
+       _H_I_S_T___E_N_T_R_Y  _* rreeppllaaccee__hhiissttoorryy__eennttrryy (_i_n_t _w_h_i_c_h_, _c_o_n_s_t _c_h_a_r _*_l_i_n_e_, _h_i_s_t_-
+       _d_a_t_a___t _d_a_t_a)
+       Make the history entry at  offset  _w_h_i_c_h  have  _l_i_n_e  and  _d_a_t_a.   This
+       returns the old entry so the caller can dispose of any application-spe-
+       cific data.  In the case  of  an  invalid  _w_h_i_c_h,  a  NNUULLLL  pointer  is
+       returned.
+
+       _v_o_i_d cclleeaarr__hhiissttoorryy (_v_o_i_d)
+       Clear the history list by deleting all the entries.
+
+       _v_o_i_d ssttiiffllee__hhiissttoorryy (_i_n_t _m_a_x)
+       Stifle the history list, remembering only the last _m_a_x entries.
+
+       _i_n_t uunnssttiiffllee__hhiissttoorryy (_v_o_i_d)
+       Stop  stifling  the  history.   This returns the previously-set maximum
+       number of history entries (as set by  ssttiiffllee__hhiissttoorryy(())).   history  was
+       stifled.  The value is positive if the history was stifled, negative if
+       it wasn't.
+
+       _i_n_t hhiissttoorryy__iiss__ssttiifflleedd (_v_o_i_d)
+       Returns non-zero if the history is stifled, zero if it is not.
+
+
+   IInnffoorrmmaattiioonn AAbboouutt tthhee HHiissttoorryy LLiisstt
+       These functions return information about the  entire  history  list  or
+       individual list entries.
+
+       _H_I_S_T___E_N_T_R_Y _*_* hhiissttoorryy__lliisstt (_v_o_i_d)
+       Return  a  NNUULLLL  terminated  array of _H_I_S_T___E_N_T_R_Y _* which is the current
+       input history.  Element 0 of this list is the beginning  of  time.   If
+       there is no history, return NNUULLLL.
+
+       _i_n_t wwhheerree__hhiissttoorryy (_v_o_i_d)
+       Returns the offset of the current history element.
+
+       _H_I_S_T___E_N_T_R_Y _* ccuurrrreenntt__hhiissttoorryy (_v_o_i_d)
+       Return  the  history  entry  at  the current position, as determined by
+       wwhheerree__hhiissttoorryy(()).  If there is no entry there, return a NNUULLLL pointer.
+
+       _H_I_S_T___E_N_T_R_Y _* hhiissttoorryy__ggeett (_i_n_t _o_f_f_s_e_t)
+       Return the  history  entry  at  position  _o_f_f_s_e_t,  starting  from  hhiiss--
+       ttoorryy__bbaassee.   If  there  is no entry there, or if _o_f_f_s_e_t is greater than
+       the history length, return a NNUULLLL pointer.
+
+       _t_i_m_e___t hhiissttoorryy__ggeett__ttiimmee (_H_I_S_T___E_N_T_R_Y _*)
+       Return the time stamp associated with the history entry passed  as  the
+       argument.
+
+       _i_n_t hhiissttoorryy__ttoottaall__bbyytteess (_v_o_i_d)
+       Return  the number of bytes that the primary history entries are using.
+       This function returns the sum of the lengths of all the  lines  in  the
+       history.
+
+
+   MMoovviinngg AArroouunndd tthhee HHiissttoorryy LLiisstt
+       These functions allow the current index into the history list to be set
+       or changed.
+
+       _i_n_t hhiissttoorryy__sseett__ppooss (_i_n_t _p_o_s)
+       Set the current history offset to _p_o_s, an absolute index into the list.
+       Returns  1  on  success, 0 if _p_o_s is less than zero or greater than the
+       number of history entries.
+
+       _H_I_S_T___E_N_T_R_Y _* pprreevviioouuss__hhiissttoorryy (_v_o_i_d)
+       Back up the current history offset to the previous history  entry,  and
+       return  a pointer to that entry.  If there is no previous entry, return
+       a NNUULLLL pointer.
+
+       _H_I_S_T___E_N_T_R_Y _* nneexxtt__hhiissttoorryy (_v_o_i_d)
+       Move the current history offset forward to the next history entry,  and
+       return  the a pointer to that entry.  If there is no next entry, return
+       a NNUULLLL pointer.
+
+
+   SSeeaarrcchhiinngg tthhee HHiissttoorryy LLiisstt
+       These functions allow searching of the history list  for  entries  con-
+       taining a specific string.  Searching may be performed both forward and
+       backward  from  the  current  history  position.   The  search  may  be
+       _a_n_c_h_o_r_e_d,  meaning  that  the string must match at the beginning of the
+       history entry.
+
+       _i_n_t hhiissttoorryy__sseeaarrcchh (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g_, _i_n_t _d_i_r_e_c_t_i_o_n)
+       Search the history for _s_t_r_i_n_g, starting at the current history  offset.
+       If  _d_i_r_e_c_t_i_o_n  is  less  than  0,  then  the search is through previous
+       entries, otherwise through subsequent entries.   If  _s_t_r_i_n_g  is  found,
+       then  the  current  history index is set to that history entry, and the
+       value returned is the offset in the line of the entry where _s_t_r_i_n_g  was
+       found.  Otherwise, nothing is changed, and a -1 is returned.
+
+       _i_n_t hhiissttoorryy__sseeaarrcchh__pprreeffiixx (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g_, _i_n_t _d_i_r_e_c_t_i_o_n)
+       Search  the history for _s_t_r_i_n_g, starting at the current history offset.
+       The search is anchored: matching lines  must  begin  with  _s_t_r_i_n_g.   If
+       _d_i_r_e_c_t_i_o_n  is less than 0, then the search is through previous entries,
+       otherwise through subsequent entries.  If _s_t_r_i_n_g  is  found,  then  the
+       current  history index is set to that entry, and the return value is 0.
+       Otherwise, nothing is changed, and a -1 is returned.
+
+       _i_n_t hhiissttoorryy__sseeaarrcchh__ppooss (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g_, _i_n_t _d_i_r_e_c_t_i_o_n_, _i_n_t _p_o_s)
+       Search for _s_t_r_i_n_g in the history list, starting  at  _p_o_s,  an  absolute
+       index  into  the  list.   If _d_i_r_e_c_t_i_o_n is negative, the search proceeds
+       backward from _p_o_s, otherwise forward.  Returns the  absolute  index  of
+       the history element where _s_t_r_i_n_g was found, or -1 otherwise.
+
+
+   MMaannaaggiinngg tthhee HHiissttoorryy FFiillee
+       The  History  library can read the history from and write it to a file.
+       This section documents the functions for managing a history file.
+
+       _i_n_t rreeaadd__hhiissttoorryy (_c_o_n_s_t _c_h_a_r _*_f_i_l_e_n_a_m_e)
+       Add the contents of _f_i_l_e_n_a_m_e to the history list, a line at a time.  If
+       _f_i_l_e_n_a_m_e  is NNUULLLL, then read from _~_/_._h_i_s_t_o_r_y.  Returns 0 if successful,
+       or eerrrrnnoo if not.
+
+       _i_n_t rreeaadd__hhiissttoorryy__rraannggee (_c_o_n_s_t _c_h_a_r _*_f_i_l_e_n_a_m_e_, _i_n_t _f_r_o_m_, _i_n_t _t_o)
+       Read a range of lines from _f_i_l_e_n_a_m_e, adding them to the  history  list.
+       Start  reading  at  line _f_r_o_m and end at _t_o.  If _f_r_o_m is zero, start at
+       the beginning.  If _t_o is less than _f_r_o_m, then read until the end of the
+       file.   If  _f_i_l_e_n_a_m_e  is NNUULLLL, then read from _~_/_._h_i_s_t_o_r_y.  Returns 0 if
+       successful, or eerrrrnnoo if not.
+
+       _i_n_t wwrriittee__hhiissttoorryy (_c_o_n_s_t _c_h_a_r _*_f_i_l_e_n_a_m_e)
+       Write the current history to _f_i_l_e_n_a_m_e, overwriting _f_i_l_e_n_a_m_e  if  neces-
+       sary.   If _f_i_l_e_n_a_m_e is NNUULLLL, then write the history list to _~_/_._h_i_s_t_o_r_y.
+       Returns 0 on success, or eerrrrnnoo on a read or write error.
+
+
+       _i_n_t aappppeenndd__hhiissttoorryy (_i_n_t _n_e_l_e_m_e_n_t_s_, _c_o_n_s_t _c_h_a_r _*_f_i_l_e_n_a_m_e)
+       Append the last _n_e_l_e_m_e_n_t_s of the history list to _f_i_l_e_n_a_m_e.  If _f_i_l_e_n_a_m_e
+       is  NNUULLLL, then append to _~_/_._h_i_s_t_o_r_y.  Returns 0 on success, or eerrrrnnoo on
+       a read or write error.
+
+       _i_n_t hhiissttoorryy__ttrruunnccaattee__ffiillee (_c_o_n_s_t _c_h_a_r _*_f_i_l_e_n_a_m_e_, _i_n_t _n_l_i_n_e_s)
+       Truncate the history file _f_i_l_e_n_a_m_e, leaving only the last _n_l_i_n_e_s lines.
+       If  _f_i_l_e_n_a_m_e  is NNUULLLL, then _~_/_._h_i_s_t_o_r_y is truncated.  Returns 0 on suc-
+       cess, or eerrrrnnoo on failure.
+
+
+   HHiissttoorryy EExxppaannssiioonn
+       These functions implement history expansion.
+
+       _i_n_t hhiissttoorryy__eexxppaanndd (_c_h_a_r _*_s_t_r_i_n_g_, _c_h_a_r _*_*_o_u_t_p_u_t)
+       Expand _s_t_r_i_n_g, placing the result into _o_u_t_p_u_t, a pointer to  a  string.
+       Returns:
+              0      If  no  expansions  took place (or, if the only change in
+                     the text was the removal of escape  characters  preceding
+                     the history expansion character);
+              1      if expansions did take place;
+              -1     if there was an error in expansion;
+              2      if  the  returned  line should be displayed, but not exe-
+                     cuted, as with the ::pp modifier.
+       If an error ocurred in expansion, then _o_u_t_p_u_t  contains  a  descriptive
+       error message.
+
+       _c_h_a_r _* ggeett__hhiissttoorryy__eevveenntt (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g_, _i_n_t _*_c_i_n_d_e_x_, _i_n_t _q_c_h_a_r)
+       Returns  the  text  of the history event beginning at _s_t_r_i_n_g + _*_c_i_n_d_e_x.
+       _*_c_i_n_d_e_x is modified to point to after the event specifier.  At function
+       entry,  _c_i_n_d_e_x  points to the index into _s_t_r_i_n_g where the history event
+       specification begins.  _q_c_h_a_r is a character that is allowed to end  the
+       event  specification  in addition to the ``normal'' terminating charac-
+       ters.
+
+       _c_h_a_r _*_* hhiissttoorryy__ttookkeenniizzee (_c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g)
+       Return an array of tokens parsed out  of  _s_t_r_i_n_g,  much  as  the  shell
+       might.    The   tokens   are  split  on  the  characters  in  the  hhiiss--
+       ttoorryy__wwoorrdd__ddeelliimmiitteerrss  variable,  and  shell  quoting  conventions   are
+       obeyed.
+
+       _c_h_a_r _* hhiissttoorryy__aarrgg__eexxttrraacctt (_i_n_t _f_i_r_s_t_, _i_n_t _l_a_s_t_, _c_o_n_s_t _c_h_a_r _*_s_t_r_i_n_g)
+       Extract a string segment consisting of the _f_i_r_s_t through _l_a_s_t arguments
+       present in _s_t_r_i_n_g.  Arguments are split using hhiissttoorryy__ttookkeenniizzee(()).
+
+
+   HHiissttoorryy VVaarriiaabblleess
+       This section describes the externally-visible variables exported by the
+       GNU History Library.
+
+       _i_n_t hhiissttoorryy__bbaassee
+       The logical offset of the first entry in the history list.
+
+       _i_n_t hhiissttoorryy__lleennggtthh
+       The number of entries currently stored in the history list.
+
+       _i_n_t hhiissttoorryy__mmaaxx__eennttrriieess
+       The maximum number of history entries.  This must be changed using ssttii--
+       ffllee__hhiissttoorryy(()).
+
+       _i_n_t hhiissttoorryy__wwiittee__ttiimmeessttaammppss
+       If non-zero, timestamps are written to the history file, so they can be
+       preserved between sessions.  The default value is 0, meaning that time-
+       stamps are not saved.  The current timestamp format uses the  value  of
+       _h_i_s_t_o_r_y___c_o_m_m_e_n_t___c_h_a_r  to delimit timestamp entries in the history file.
+       If that variable does not have a value (the default),  timestamps  will
+       not be written.
+
+       _c_h_a_r hhiissttoorryy__eexxppaannssiioonn__cchhaarr
+       The character that introduces a history event.  The default is !!.  Set-
+       ting this to 0 inhibits history expansion.
+
+       _c_h_a_r hhiissttoorryy__ssuubbsstt__cchhaarr
+       The character that invokes word substitution if found at the start of a
+       line.  The default is ^^.
+
+       _c_h_a_r hhiissttoorryy__ccoommmmeenntt__cchhaarr
+       During  tokenization,  if this character is seen as the first character
+       of a word, then it and all subsequent characters up to  a  newline  are
+       ignored,  suppressing  history expansion for the remainder of the line.
+       This is disabled by default.
+
+       _c_h_a_r _* hhiissttoorryy__wwoorrdd__ddeelliimmiitteerrss
+       The  characters  that  separate  tokens  for  hhiissttoorryy__ttookkeenniizzee(()).   The
+       default value is "" \\tt\\nn(())<<>>;;&&||"".
+
+       _c_h_a_r _* hhiissttoorryy__nnoo__eexxppaanndd__cchhaarrss
+       The list of characters which inhibit history expansion if found immedi-
+       ately following hhiissttoorryy__eexxppaannssiioonn__cchhaarr.  The  default  is  space,  tab,
+       newline, \\rr, and ==.
+
+       _c_h_a_r _* hhiissttoorryy__sseeaarrcchh__ddeelliimmiitteerr__cchhaarrss
+       The  list  of  additional characters which can delimit a history search
+       string, in addition to space, tab, _: and _? in the case of  a  substring
+       search.  The default is empty.
+
+       _i_n_t hhiissttoorryy__qquuootteess__iinnhhiibbiitt__eexxppaannssiioonn
+       If non-zero, single-quoted words are not scanned for the history expan-
+       sion character.  The default value is 0.
+
+       _r_l___l_i_n_e_b_u_f___f_u_n_c___t _* hhiissttoorryy__iinnhhiibbiitt__eexxppaannssiioonn__ffuunnccttiioonn
+       This should be set to the address of a function that  takes  two  argu-
+       ments:  a  cchhaarr  **  (_s_t_r_i_n_g) and an iinntt index into that string (_i).  It
+       should return a non-zero value if the  history  expansion  starting  at
+       _s_t_r_i_n_g_[_i_]  should  not  be  performed;  zero if the expansion should be
+       done.  It is intended for use by applications like bbaasshh  that  use  the
+       history  expansion character for additional purposes.  By default, this
+       variable is set to NNUULLLL.
+
+FFIILLEESS
+       _~_/_._h_i_s_t_o_r_y
+              Default filename for reading and writing saved history
+
+SSEEEE AALLSSOO
+       _T_h_e _G_n_u _R_e_a_d_l_i_n_e _L_i_b_r_a_r_y, Brian Fox and Chet Ramey
+       _T_h_e _G_n_u _H_i_s_t_o_r_y _L_i_b_r_a_r_y, Brian Fox and Chet Ramey
+       _b_a_s_h(1)
+       _r_e_a_d_l_i_n_e(3)
+
+AAUUTTHHOORRSS
+       Brian Fox, Free Software Foundation
+       bfox@gnu.org
+
+       Chet Ramey, Case Western Reserve University
+       chet@ins.CWRU.Edu
+
+BBUUGG RREEPPOORRTTSS
+       If you find a bug in the hhiissttoorryy library, you should  report  it.   But
+       first,  you  should  make  sure  that  it  really is a bug, and that it
+       appears in the latest version of the hhiissttoorryy library that you have.
+
+       Once you have determined that a bug actually exists, mail a bug  report
+       to  _b_u_g_-_r_e_a_d_l_i_n_e@_g_n_u_._o_r_g.   If  you have a fix, you are welcome to mail
+       that as well!  Suggestions  and  `philosophical'  bug  reports  may  be
+       mailed  to  _b_u_g_-_r_e_a_d_l_i_n_e@_g_n_u_._o_r_g  or  posted  to  the  Usenet newsgroup
+       ggnnuu..bbaasshh..bbuugg.
+
+       Comments and bug reports concerning this manual page should be directed
+       to _c_h_e_t_@_i_n_s_._C_W_R_U_._E_d_u.
+
+
+
+GNU History 6.2                 2010 August 12                      HISTORY(3)

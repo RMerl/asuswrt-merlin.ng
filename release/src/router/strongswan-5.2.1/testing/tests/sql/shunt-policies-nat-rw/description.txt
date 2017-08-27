@@ -1,0 +1,7 @@
+The roadwarriors <b>alice</b> and <b>venus</b> sitting behind the NAT router <b>moon</b> set up
+tunnels to gateway <b>sun</b>. They tunnel all traffic to the gateway.  In order to prevent
+local traffic within the <b>10.1.0.0/16</b> subnet to enter the tunnel, both set up a <b>local-net</b>
+shunt policy with <b>type=pass</b>.
+<p/>
+In order to test the tunnel, the NAT-ed hosts <b>alice</b> and <b>venus</b>
+ping each other and the client <b>bob</b> behind the gateway <b>sun</b>.

@@ -1,0 +1,507 @@
+2010-03-19  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in, doc/version.texi: Up to version 1.0.4.
+
+	* src/stress.c: Fix unlink error reported by Farkas Levente.
+
+2010-03-17  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Make the error message on unlink fail more clear.
+
+2010-02-18  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS, doc/version.texi: Fix NEWS.
+
+	* configure.in, src/stress.c: Up to version 1.0.3.  Remove no-clean
+	option.
+
+2009-12-03  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS, configure.in, doc/version.texi: Up to version 1.0.2.
+
+	* src/Makefile.am: Remove Wall and Werror flags so we can build
+	on AIX with xlc.
+
+	* src/stress.c: Apply patch from Wilken Gottwalt to make tee
+	behave properly.
+
+2009-08-12  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS: Update the NEWS file.
+
+	* etc/deb/Makefile, etc/deb/debian/changelog, etc/deb/debian/control,
+	etc/deb/debian/rules: More changes for packaging.
+
+	* etc/deb/Makefile, etc/deb/debian/changelog, etc/deb/debian/control,
+	etc/deb/debian/rules: Changes for the purpose of packagin.
+
+	* doc/version.texi: Increase version.
+
+	* NEWS, configure.in: Up to version 1.0.1
+
+	* src/stress.c: Apply patch from Dileepa Prabhakar to randomize
+	slow writing.
+
+	* Makefile.am, src/Makefile.am: Small cleanups for automake.
+
+	* src/stress.c: Initialize pointer.
+
+2008-05-30  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* FAQ, README: Add FAQ and modify README.
+
+2007-12-17  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS, README, configure.in, doc/version.texi: Up to version 1.0.0.
+
+2007-12-15  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Add check for memory corruption.
+
+2007-01-25  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/deb/debian/control: Change priority from optional to extra.
+
+2007-01-23  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* TODO: Add build standalone.
+
+	* TODO: Add note about option directions.
+
+	* doc/version.texi, etc/deb/Makefile, etc/deb/debian/changelog:
+	Up to version 0.18.9
+
+2007-01-18  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in, etc/deb/Makefile, etc/deb/debian/changelog,
+	etc/deb/debian/control, etc/deb/debian/rules: Up to version 0.18.9.
+
+	* doc/Makefile.am: Make a better apropos message for manpage.
+
+2005-12-08  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS, doc/version.texi: Add entry for 0.18.8 release.
+
+	* configure.in: Up version to 0.18.8.
+
+	* src/stress.c: Apply patch from Richard Norton to fix calculation
+	of timeouts with year suffixes.
+
+	* AUTHORS: Add Richard Norton to list of patch contributors.
+
+2005-08-09  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/deb/Makefile, etc/deb/debian/changelog, etc/deb/debian/control:
+	Fixes for version 0.18.6.
+
+2005-07-03  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Apply modified patch from Bob Paulsen to add the
+	option to keep memory instead of freeing and reallocating it.
+
+2005-06-30  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS: Add note for version 0.18.6.
+
+2005-06-27  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Up to version 0.18.6.
+
+	* src/stress.c: Use less whitespace for help statement indents.
+	Fix help statement for --vm-hang option.
+
+	* configure.in: Increment to version 0.18.5.
+
+	* AUTHORS: Add Bob Paulsen.
+
+	* src/stress.c: Add option to stride through memory in increments
+	other than unity.  Modify option to hang after allocating memory
+	to support values other than infinity.
+
+2005-06-04  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Make message about using up time before all workers
+	dispatched a warning instead of a debug.
+
+2005-05-29  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* TODO: Explain about removing the --backoff option.
+
+	* TODO: Initial checkin.
+
+2005-04-08  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* NEWS: Add entry for version 0.18.4
+
+2005-03-10  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/deb/debian/changelog: Update to version 0.18.4-1.
+
+	* etc/deb/Makefile: Update to version 0.18.4.
+
+	* bootstrap: Do not specify version of autoconf.
+
+	* configure.in: Increment to version 0.18.4.
+
+	* doc/stress.texi: Move from the GFDL to the GPL.
+
+	* etc/deb/debian/control: Do not include sentence about autotools
+	and C.
+
+2005-02-26  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/deb/debian/rules: Follow Gaudenz Steinlin's suggestion of
+	removing commented-out rules.
+
+	* etc/deb/debian/copyright: Follow Gaudenz Steinlin's suggestion
+	of combining upstream author and debianizer.
+
+	* etc/deb/debian/control: Change standards version to 3.6.1.1.
+
+	* etc/deb/debian/changelog: Follow Gaudenz Steinlin's suggestion
+	of making initial upload have only one revision.
+
+	* etc/deb/Makefile: Update version to 0.18.3.
+
+	* bootstrap: We rely upon autoconf2.50.
+
+	* etc/deb/debian/control: Update standards version to 3.6.1.0.
+
+2005-02-10  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Add 2005 to copyright statement.
+
+	* src/stress.c: Change the --vm-hang usage statement to be symmetric
+	with that of --hdd-noclean.
+
+	* src/stress.c: Clarify --vm-hang usage explanation.
+
+2005-01-14  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Increment version to 0.18.3.
+
+	* src/stress.c: Indentation fixes.
+
+	* src/stress.c: Fix bug in which timeout under heavy load can wrap
+	to a negative value.  Also, print index of each worker type as it
+	is forked.
+
+2005-01-12  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Make suffix explanation in usage statement more
+	clear.
+
+2004-12-21  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: Change email address.  Update copyright years.
+
+	* doc/stress.texi, AUTHORS, NEWS, README: Change email address.
+
+	* doc/version.texi: Update to version 0.18.2
+
+	* src/stress.c: Do not print line number in debug messages.
+	Print more debugging messages during vm and hdd work.
+
+2004-11-18  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/rpm/Makefile, etc/rpm/SPECS/stress.spec: Increment version
+	to 0.18.2.
+
+	* bootstrap: Temporarily create a ChangeLog file to make automake
+	happy.
+
+	* NEWS: Add entry for version 0.18.2.
+
+2004-09-02  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/deb/debian/changelog: Add entry for 0.18.2.
+
+	* etc/deb/debian/control: Change version of debhelper required.
+
+	* Makefile.am: Add ChangeLog to EXTRA_DIST.
+
+	* etc/deb/Makefile: Increment version to 0.18.2
+
+	* Makefile.am: Use automatic generation scheme for ChangeLog.
+
+	* ChangeLog: Removing in favor of automatic generation scheme.
+
+	* configure.in: Increment version number to 0.18.2.
+
+2004-07-21  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* Makefile.am: Use cvs log to generate input to rcs2log.
+
+	* src/stress.c: Reword most of the usage statement.
+
+	* NEWS: Add release history by pulling from Freshmeat records.
+
+2003-11-25  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* ChangeLog, src/stress.c: Include b in list of valid suffixes.
+
+2003-08-04  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* ChangeLog: Add entries.
+
+	* etc/deb/Makefile: Update version number.
+
+	* etc/deb/debian/changelog: Updated package version.
+
+	* etc/deb/debian/files: Removed file.
+
+2003-07-31  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/rpm/Makefile, etc/rpm/SPECS/stress.spec: Change to 0.18.1.
+
+	* configure.in: Up version number.
+
+	* src/stress.c: Cast return of getpid in message printing to
+	long long.
+
+	* configure.in: Up version number.
+
+	* src/stress.c: Make parent reap all children as soon as any of
+	them have an error condition.
+
+	* src/stress.c: Make warn and fail messages appear in all caps,
+	print pid in all messages other than info class.
+
+	* src/stress.c: Make copyright in header include 2003.
+
+	* src/stress.c: Make all the rest of the syscalls print output of
+	strerror() if they fail.
+
+	* src/stress.c: Make all syscalls in hoghdd() print the output
+	of strerror() upon failure.  Change meaning of do_hdd_clean to
+	be intuitive.
+
+2003-07-14  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/deb/Makefile: Change clean rule.
+
+	* etc/deb/Makefile: Remove CVS dir.
+
+	* etc/deb/Makefile: Change tarball name.
+
+	* etc/deb/debian/control, etc/deb/debian/copyright,
+	etc/deb/debian/docs, etc/deb/debian/files, etc/deb/debian/info,
+	etc/deb/debian/rules, etc/deb/Makefile, etc/deb/debian/changelog:
+	Initial checkin.
+
+2003-07-08  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/rpm/SPECS/stress.spec: Up release.
+
+	* etc/rpm/SPECS/stress.spec, etc/rpm/Makefile: Changes.
+
+2003-07-07  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* etc/rpm/SPECS/stress.spec, etc/rpm/Makefile, etc/rpm/stress.spec:
+	Change organization.
+
+	* etc/rpm/stress.spec: Initial checkin.
+
+2003-06-17  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Up version.
+
+	* ChangeLog: Add entry.
+
+	* configure.in: Up version.
+
+	* src/stress.c: Use sscanf instead of atoll for portability.
+	Original patch contributed by David Ranch <dranch@juniper.net>.
+
+2003-05-25  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Up version.
+
+2003-05-08  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* doc/Makefile.am, doc/version.texi: Minor change.
+
+	* AUTHORS, README: Removed help2man hooks.
+
+	* doc/version.texi: Change.
+
+	* doc/stress.texi: Updates.
+
+	* configure.in: Up.
+
+	* ChangeLog: Minor.
+
+	* src/stress.c: Make worker return messages consistent.  Print value
+	of signal if worker killed abnormally.
+
+	* src/stress.c, ChangeLog: Make arguments check for invalid values.
+
+	* ChangeLog, doc/version.texi: Minor changes.
+
+2003-05-07  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* test/Makefile.am: Removed test.
+
+	* test/check_hogcpu: Minor change.
+
+	* ChangeLog: Note.
+
+	* src/stress.c: Major reworking.  Removed many options.  Moved to
+	round-robin dispatcher model.
+
+	* configure.in: Up version.
+
+2003-05-06  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* src/stress.c: (atoll_b) Use shift instead of multiply for speed.
+	Original patch contributed by Wes Hofmann <whofmann@yahoo.com>.
+
+	* ChangeLog, configure.in: Up version number.
+
+	* src/stress.c: Changed usage statement.
+
+	* doc/Makefile.am, doc/version.texi: Minor change.
+
+	* test/Makefile.am: Removed hoghdd test.
+
+	* configure.in: Up version number
+
+	* src/stress.c: Major rework.
+
+2003-04-12  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Uped version.
+
+	* configure.in, doc/stress.texi, doc/version.texi: Minor changes.
+
+2003-03-28  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Cleanup again as per glibc.
+
+	* doc/version.texi, configure.in: Cleaned up the --enable-static
+	option.
+
+	* configure.in: Added --enable-static-link.
+
+	* src/Makefile.am: Added -Werror.
+
+2003-01-16  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* configure.in: Minor change.
+
+2002-12-17  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* README: Minor changes.
+
+2002-12-14  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* README, configure.in: Minor changes.
+
+	* src/stress.c: Added --vm-hang.
+
+2002-12-13  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* AUTHORS, ChangeLog, doc/version.texi, configure.in: Minor changes.
+
+	* src/stress.c: Remove hard coding of 'stress' in usage,
+	version statements.  Original patch contributed by Manoj Iyer
+	<manjo@austin.ibm.com>.
+
+2002-12-11  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* README, doc/version.texi: Minor changes.
+
+	* src/stress.c: Minor bugfix.
+
+	* configure.in: Minor changes.	This is pre12 shipped to rcp.
+
+	* doc/Makefile.am, doc/stress.texi, doc/stress.1, Makefile.am,
+	configure.in, src/stress.c, test/Makefile.am, test/check_atoll_s,
+	test/check_hogcpu, test/check_hoghdd: Minor changes.
+
+	* src/stress.c: Added alarm for vm,hdd dispatchers.  Added kill
+	of process group at end of main.
+
+	* src/stress.c: Removed the hog prefix from switches.
+
+	* test/check_hogcpu: Minor chnages.
+
+	* src/stress.c: Removed bogus timeout > backoff stuff.
+
+	* test/check_hogcpu: Less forks.
+
+	* src/stress.c: Added timeout > backoff check.
+
+	* src/stress.c: stress.c
+
+	* test/check_hogcpu: Added a sleep.
+
+	* doc/Makefile.am: Minor changes.
+
+	* doc/Makefile.am, doc/stress.1, doc/version.texi: Readded file.
+
+	* src/stress.c: Removed kill of process group.
+
+	* test/Makefile.am, test/check_hogcpu, test/check_hoghdd: Minor
+	changes.
+
+2002-12-10  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* test/Makefile.am, test/check_hoghdd: Added file.
+
+	* doc/Makefile.am: Minor changes.
+
+	* COPYING, Makefile.am, src/Makefile.am, test/Makefile.am,
+	doc/Makefile.am: Added MAINTAINERCLEANFILES variable.
+
+	* test/Makefile.in, doc/texinfo.tex, src/Makefile.in, doc/fdl.texi,
+	doc/mdate-sh, doc/stress.1, doc/stress.texi, doc/Makefile.am,
+	doc/Makefile.in, install-sh, missing, mkinstalldirs, Makefile.in,
+	aclocal.m4, configure: Removed files.
+
+	* src/stress.c: Added backoff capability.
+
+	* configure, configure.in, doc/Makefile.am, doc/Makefile.in:
+	Minor changes.
+
+	* doc/stress.texi, doc/version.texi: Added quotes of options in
+	examples section.
+
+	* src/stress.c: Implemented ignore of non-critical errors.  Has the
+	kill each process leader timeout implementation.
+
+2002-12-08  Amos Waterland  <apw@rossby.metr.ou.edu>
+
+	* AUTHORS, ChangeLog, doc/stress.1, src/stress.c: Changed email
+	address.
+
+	* test/check_usage_return_code, test/check_version_return_code,
+	test/Makefile.am, test/Makefile.in, doc/Makefile.in, doc/mdate-sh,
+	doc/stress.texi, src/Makefile.in, src/stress.c, Makefile.in,
+	aclocal.m4, configure, configure.in, doc/Makefile.am: Minor changes.
+
+	* doc/version.texi, doc/fdl.texi, doc/stress.texi, doc/texinfo.tex:
+	Initial add.
+
+	* README: Minor wording change.
+
+	* src/stress.c: Initial import after a complete rewrite.
+	Contains ideas from Don Giuliano <guido@ou.edu> and Tobias Jahn
+	<jahn@in.tum.de>.
+
+	* COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README, bootstrap,
+	configure.in, doc/Makefile.am, doc/stress.1, install-sh, missing,
+	mkinstalldirs, src/Makefile.am, test/Makefile.am, test/check_atoll_s,
+	test/check_usage_return_code, test/check_version_return_code:
+	Initial import.
+
+	* COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README,
+	bootstrap, configure.in, doc/Makefile.am, doc/stress.1,
+	install-sh, missing, mkinstalldirs, src/Makefile.am, src/stress.c,
+	test/Makefile.am, test/check_atoll_s, test/check_usage_return_code,
+	test/check_version_return_code: New file.
+
+	* AUTHORS: Initial import.
+
+	* AUTHORS: New file.
+

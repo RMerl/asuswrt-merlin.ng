@@ -1,0 +1,23 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sun, 6 Feb 2011 15:44:52 +0100
+Subject: 09-format-warning
+
+Fix a warning given by gcc -Wformat.
+---
+ rndr_stats.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/rndr_stats.c b/rndr_stats.c
+index d280bf3..ad65f09 100644
+--- a/rndr_stats.c
++++ b/rndr_stats.c
+@@ -133,7 +133,7 @@ static void render(int isdb, char *pre, int rflags, const char *pptxt,
+ 			}
+ 		}
+ 		else {
+-			printf(txt[isdb]);	/* No args */
++			printf("%s", txt[isdb]);	/* No args */
+ 		}
+ 	}
+ 
+-- 

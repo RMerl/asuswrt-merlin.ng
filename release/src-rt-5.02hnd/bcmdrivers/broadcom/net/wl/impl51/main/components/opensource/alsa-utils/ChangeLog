@@ -1,0 +1,43 @@
+2005-08-13  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (EXTRA_DIST): Add config.rpath, mkinstalldirs.
+	* configure.in (AM_GNU_GETTEXT_VERSION): Bump to 0.14.4.
+
+0.0.7 -> 0.2.0
+
+* removed error message from alsamixer
+* fixes in alsactl program
+* version is now compatible with driver
+
+0.0.6 -> 0.0.7
+
+* added alsactl control program
+* updated alsamixer by Carl van Schaik <carl@dreamcoat.che.uct.ac.za>
+  - stereo record source select
+  - left/right route support
+
+0.0.5 -> 0.0.6
+
+* updates for new alsa-lib
+* fixed compilation problems with config.h header file
+* updated output 'aplay -l'
+
+0.0.3 -> 0.0.4
+
+* added check for alsa-lib package
+* added spec file for RPM
+
+0.0.2 -> 0.0.3
+
+* included great ncurses alsamixer from Tim Janik <timj@gtk.org>
+* enhanced Mixer from Andy Lo A Foe <arloafoe@cs.vu.nl> renamed to amixer
+
+0.0.1 -> 0.0.2
+
+* fixed small bug in aplay in command line parsing
+* fixed fragment size allocation for low rate files in aplay
+* a little bit corrected output from Mixer
+
+0.0.1
+
+* initial release (aplay, broken Mixer)

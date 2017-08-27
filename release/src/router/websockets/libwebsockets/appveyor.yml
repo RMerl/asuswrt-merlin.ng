@@ -1,0 +1,44 @@
+environment:
+  matrix:
+    - LWS_METHOD: default
+
+    - LWS_METHOD: noserver
+      CMAKE_ARGS: -DLWS_WITHOUT_SERVER=ON
+
+    - LWS_METHOD: noclient
+      CMAKE_ARGS: -DLWS_WITHOUT_CLIENT=ON
+
+    - LWS_METHOD: noext
+      CMAKE_ARGS: -DLWS_WITHOUT_EXTENSIONS=ON
+
+    - LWS_METHOD: nossl
+      CMAKE_ARGS: -DLWS_WITH_SSL=OFF
+install:
+  - appveyor DownloadFile https://libwebsockets.org/Win32OpenSSL-1_0_2d.exe
+  - Win32OpenSSL-1_0_2d.exe /silent /verysilent /sp- /suppressmsgboxes
+  - cinst -y nsis
+  - SET PATH=C:\Program Files\NSIS\;C:\Program Files (x86)\NSIS\;%PATH%
+build:
+
+build_script:
+  - md build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release %CMAKE_ARGS% ..
+  - cmake --build . --config Release
+
+# TODO: Keeps braking Windows build, should be rewritten using CPack properly instead...
+#after_build:
+#  - cd ..
+#  - cd win32port
+#  - makensis -DVERSION=%APPVEYOR_BUILD_VERSION% libwebsockets.nsi
+
+
+artifacts:
+  - name: Installer
+    path: 'win32port/libwebsockets-*-install.exe'
+
+cache:
+  - C:\OpenSSL-Win32
+
+matrix:
+  fast_finish: true

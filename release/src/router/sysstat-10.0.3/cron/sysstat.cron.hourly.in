@@ -1,0 +1,3 @@
+#!/bin/sh
+# Run system activity accounting tool every @CRON_INTERVAL@ minutes
+@SA_LIB_DIR@/sa1 @CRON_INTERVAL_SEC@ @CRON_COUNT@ &

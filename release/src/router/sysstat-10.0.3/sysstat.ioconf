@@ -1,0 +1,268 @@
+#
+# sysstat.ioconf
+#
+#  Copyright (C) 2004, Red Hat, Inc.
+#
+#  Maintained by Sebastien Godard (sysstat [at] orange.fr)
+#
+#  This file gives iostat and sadc a clue about how to find whole
+#   disk devices in /proc/partitions and /proc/diskstats
+#  Authoritative source is: linux/Documentation/devices.txt
+#
+# line format, general record:
+#   major:name:ctrlpre:ctrlno:devfmt:devcnt:partpre:partcnt:description
+#
+#  major:		major # for device
+#  name:		base of device name
+#  ctrlpre:		string to use in generating controller designators
+#			 eg: the c in c0d2p6, decimal formatting implied
+#			'*' means none or irrelevant
+#			'x': exception... record contains a specific name
+#                       for a specific minor #, stored in the ctrlno field
+#  ctrlno:		which controller of this type is this
+#  devfmt:		type of device naming convention
+#	a:		alpha: xxa, xxb, ... xxaa, xxab, ... xxzz
+#	%string:	string to use in generating drive designators,
+#			 eg: the 'd' in c0d2p6 , decimal formatting implied
+#	d:		no special translations (decimal formatting)
+#  devcnt:		how many whole devs per major number
+#  partpre:         	appended to whole dev before part designator
+#                        eg. the p in c0d2p6, decimal formatting implied
+#			 '*' means none
+#  partcnt:		number of partitions per volume
+#			 or minor # for exception records
+#  description:		informative text
+#
+# line format, indirect record:
+#   major:base_major:ctrlno[:[desc]]
+#
+#  major:		major number of the device
+#  base_major:		major number of the template for this type,
+#			 0 for not supported
+#  ctrlno:		controller number of this type
+#  desc:		controller-specific description
+#			if absent the desc from base_major will be
+#			 used in sprintf( buf, desc, ctrlno )
+
+
+1:ram:*:0:d:256:*:1:RAM disks (ram0..ram255)
+1:initrd:x:250:d:256:*:1:Initial RAM Disk (initrd)
+
+#2:0:0:Floppy Devices
+2:fd:*:0:d:4:*:1:Floppy Devices fd0,fd1,fd2,fd3
+
+3:hd:*:0:a:2:*:64:IDE - Controller %d
+22:3:1:
+33:3:2:
+34:3:3:
+56:3:4:
+57:3:5:
+88:3:6:
+89:3:7:
+90:3:8:
+91:3:9:
+
+#4:0:0:NODEV
+#5:0:0:NODEV
+#6:0:0:NODEV
+7:loop:*:0:d:256:*:1:Loop Devices 
+
+8:sd:*:0:a:16:*:16:SCSI - Controller %d
+65:8:1:
+66:8:2:
+67:8:3:
+68:8:4:
+69:8:5:
+70:8:6:
+71:8:7:
+128:8:8:
+129:8:9:
+130:8:10:
+131:8:11:
+132:8:12:
+133:8:13:
+134:8:14:
+135:8:15:
+
+9:md:*:0:d:256:*:1:Metadisk (Software RAID) devices  (md0..md255)
+
+#10:0:0:NODEV
+
+#11:sr:*:0:d:256:*:1:CDROM - CDROM (sr0..sr255) (deprecated)
+11:scd:*:0:d:256:*:1:CDROM - CDROM (scd0..scd255)
+
+#12:0:0:MSCDEX CD-ROM Callback
+
+13:xd:*:0:a:2:*:64:8-bit MFM/RLL/IDE controller (xda, xdb)
+
+#14:0:0:BIOS Hard Drive Callback
+#15:0:0:CDROM - Sony CDU-31A/CDU-33A
+#16:0:0:CDROM - Goldstar
+#17:0:0:CDROM - Optics Storage
+#18:0:0:CDROM - Sanyo
+
+19:double:*:0:d:256:*:1:Compressed Disk (double0..double255)
+
+#20:0:0:CDROM - Hitachi
+
+21:mfm:*:0:a:2:*:64:Acorn MFM Hard Drive (mfma, mfmb)
+
+# 22: see IDE, dev 3
+
+#23:0:0:CDROM - Mistumi Proprietary
+#24:0:0:CDROM - Sony CDU-535
+#25:0:0:CDROM - Matsushita (Panasonic/Soundblaster) #1
+#26:0:1:CDROM - Matsushita (Panasonic/Soundblaster) #2
+#27:0:2:CDROM - Matsushita (Panasonic/Soundblaster) #3
+#28:0:3:CDROM - Matsushita (Panasonic/Soundblaster) #4
+# 28:0:0:! ACSI (Atari) Disk Not Supported
+#29:0:0:CDROM - Aztech/Orchid/Okano/Wearnes
+#30:0:0:CDROM - Philips LMS CM-205
+#31:0:0:ROM/flash Memory Card
+#32:0:0:CDROM -  Phillips LMS CM-206
+
+# 33: See IDE, dev 3
+# 34: See IDE, dev 3
+
+#35:0:0:Slow Memory RAM Disk
+
+36:ed:*:0:a:2:*:64:MCA ESDI Hard Disk (eda, edb)
+
+#37:0:0:Zorro II Ram Disk
+#38:0:0:Reserved For Linux/AP+
+#39:0:0:Reserved For Linux/AP+
+#40:0:0:Syquest EZ135 Parallel Port Drive
+#41:0:0:CDROM -  MicroSolutions Parallel Port BackPack
+#42:0:0:For DEMO Use Only
+
+43:nb:*:0:d:256:*:1:Network Block devices (nb0..nb255)
+44:ftl:*:0:a:16:*:16:Flash Translation Layer (ftla..ftlp)
+45:pd:*:0:a:4:*:16:Parallel Port IDE (pda..pdd)
+
+#46:0:0:CDROM - Parallel Port ATAPI
+
+47:pf:*:0:d:256:*:1:Parallel Port ATAPI Disk Devices (pf0..pf255)
+
+48:rd:/c:0:%d:32:p:8:Mylex DAC960 RAID, Controller %d
+49:48:1:
+50:48:2:
+51:48:3:
+52:48:4:
+53:48:5:
+54:48:6:
+55:48:7:
+136:48:8:
+137:48:9:
+138:48:10:
+139:48:11:
+140:48:12:
+141:48:13:
+142:48:14:
+143:48:15:
+
+# 56, 57: see IDE, dev 3:
+
+58:lvm:*:0:d:256:*:1:Logical Volume Manager (lvm0..lvm255)
+
+#59:0:0:PDA Filesystem Device
+#60:0:0:Local/Experimental Use
+#61:0:0:Local/Experimental Use
+#62:0:0:Local/Experimental Use
+#63:0:0:Local/Experimental Use
+#64:0:0:NODEV
+
+# 65..71: See SCSI, dev 8:
+
+72:ida/:c:0:%d:16:p:16:Compaq Intelligent Drive Array - Controller %d
+73:72:1:
+74:72:2:
+75:72:3:
+76:72:4:
+77:72:5:
+78:72:6:
+79:72:7:
+
+80:i2o/hd:*:0:a:16:*:16:I2O Disk - Controller %d
+81:80:1:
+82:80:2:
+83:80:3:
+84:80:4:
+85:80:5:
+86:80:6:
+87:80:7:
+
+# 88..91: see IDE, dev 3:
+
+#92:0:0:PPDD Encrypted Disk
+#93:0:0:NAND Flash Translation Layer not supported
+
+94:dasd:*:0:a:64:*:4:IBM S/390 DASD Block Storage (dasda, dasdb, ...)
+
+#95:0:0:IBM S/390 VM/ESA Minidisk
+#96:0:0:NODEV
+#97:0:0:CD/DVD packed writing devices not supported
+
+98:ubd:*:0:d:256:*:1:User-mode Virtual Block Devices (ubd0..ubd256)
+
+#99:0:0:JavaStation Flash Disk
+#100:0:0:NODEV
+
+101:amiraid/ar:*:0:d:16:p:16:AMI HyperDisk RAID (amiraid/ar0 - amiraid/ar15)
+
+#102:0:0:Compressed Block Device
+#103:0:0:Audit Block Device
+
+104:cciss:/c:0:%d:16:p:16:HP SA 5xxx/6xxx (cciss) Controller %d
+105:104:1:
+106:104:2:
+107:104:3:
+108:104:4:
+109:104:5:
+110:104:6:
+111:104:7:
+
+112:iseries/vd:*:0:a:32:*:8:IBM iSeries Virtual Disk (.../vda - .../vdaf)
+
+#113:0:0:CDROM - IBM iSeries Virtual
+
+# 114..159 NODEV
+
+120:emcpower:*:0:a:16:*:16:EMC PowerPath Unit %d
+
+#160:sx8/:*:0:d:8:p:32:Promise SATA SX8 Unit %d
+#161:160:1:
+160:carmel/:*:0:d:8:p:32:Carmel 8-port SATA Disks (carmel/0 - carmel/7)
+161:160:1:
+
+# 162..198 UNUSED
+
+180:ub:*:0:a:32:p:8:USB block devices
+
+#199:0:0:Veritas Volume Manager (VxVM) Volumes
+#200:0:0:NODEV
+#201:0:0:Veritas VxVM Dynamic Multipathing Driver
+
+202:xvd:*:0:a:16:p:16:Xen Virtual Block Device
+
+# 203..230: UNUSED
+
+232:emcpower:*:0:a:16:*:16:EMC PowerPath Unit %d
+233:232:1:
+234:232:2:
+235:232:3:
+236:232:4:
+237:232:5:
+238:232:6:
+239:232:7:
+240:232:8:
+241:232:9:
+242:232:10:
+243:232:11:
+244:232:12:
+245:232:13:
+246:232:14:
+247:232:15:
+
+# 240..254: LOCAL/Experimental
+# 255: reserved for big dev_t expansion
+

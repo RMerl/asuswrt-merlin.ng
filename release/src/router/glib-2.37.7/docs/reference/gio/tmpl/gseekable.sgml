@@ -1,0 +1,94 @@
+<!-- ##### SECTION Title ##### -->
+GSeekable
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSeekable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT GSeekableIface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@tell: 
+@can_seek: 
+@seek: 
+@can_truncate: 
+@truncate_fn: 
+
+<!-- ##### FUNCTION g_seekable_tell ##### -->
+<para>
+
+</para>
+
+@seekable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_seekable_can_seek ##### -->
+<para>
+
+</para>
+
+@seekable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_seekable_seek ##### -->
+<para>
+
+</para>
+
+@seekable: 
+@offset: 
+@type: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_seekable_can_truncate ##### -->
+<para>
+
+</para>
+
+@seekable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_seekable_truncate ##### -->
+<para>
+
+</para>
+
+@seekable: 
+@offset: 
+@cancellable: 
+@error: 
+@Returns: 
+
+

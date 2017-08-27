@@ -1,0 +1,85 @@
+You can use this program to read/write to i2c-eeproms
+like the popular 24C16, 24C08, 24C04,.. In contrast to eeprommer
+which supports 24C256-type eeproms 24C16ss use 1-byte addresses!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!                                                                           !
+!!! This program should only be used on external busses such as i2c-pport.    !
+!!!                                                                           !
+!!! Your computer may contain i2c-eeproms for saving data vital to its       !
+!!! operation. If you are not careful you might overwrite this data with      !
+!!! this program and your computer may no longer boot!                        !
+!!!                                                                           !
+!!! An example are the EEPROMS on your SDRAM DIMMs, your computer may no      !
+!!! longer detect the RAM module rendering it essentially USELESS!            !
+!!!                                                                           !
+!!! IBM Thinkpads are said to store their configuration data in a eeprom,     !
+!!! if you manage to overwrite this eeprom you will have to send your         !
+!!! computer to the manufacturer for a costly repair!                         !
+!!!                                                                           !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+It has several options:
+
+	-d devicenode
+
+		set this to the device-node of the i2c-bus
+		you want to use like /dev/i2c-0.
+		Use /dev/i2c-1 for the second bus, i2c-2 for the third...
+
+		The default /dev/i2c-0 should work most of the time.
+
+	-a address
+
+		set this to the device-address of your
+		eeprom. For a 24C16 the address is hardcoded to
+		0x50, which is -you guessed it- the default.
+
+		For a 24C08 and smaller types you can choose which
+		addresses they occupy by forcing the address-pins
+		of the chip to High or Low so here the address may differ.
+
+	-p number_of_pages
+
+		set this to the number of pages you want to read
+		from or write to the eeprom. The 24C16 maps it's
+		pages to consecutive addresses on the i2c-bus so
+		we will try to read 256 bytes from every i2c
+		address between 'address' (inclusive) and
+		'address + number_of_pages' (exclusive)...
+
+		A 24C16 has 8 pages so that's the default for this
+		parameter.
+
+	-f filename
+
+		read data from this file (when writing to eeprom) or
+		write data to this file (when reading from eeprom).
+
+		When reading a file that's smaller than the
+		eeprom's storage size we will pad the eeprom
+		with zeroes.
+
+		If no file is given we will just read the
+		eeprom (while in read-mode) and test it's presence
+		this way. In write-mode we will just write zeroes
+		to the eeprom.
+
+	-w	When '-w' is present we will *write* to the eeprom.
+		If you do not specify '-w' we will read the contents
+		of the eeprom.
+
+	-y	This flag will suppress the warning when you write to the
+		eeprom. You will not be required to enter 'yes' so be careful
+		when using this switch!
+
+
+I wrote that program to clear a 24C16 eeprom that sit's in my crappy
+satellite receiver because sometimes its Z80 processor likes to
+write garbage to it and then crash....
+
+No further testing besides writing a long series of "The quick brown
+fox jumps over the lazy dog!" and reading it back has been done so
+of course this comes without any warranty.
+
+	Chris <chris@hedonism.cx>

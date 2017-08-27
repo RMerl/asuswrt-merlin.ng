@@ -1,0 +1,168 @@
+
+Radius Test Procedures
+
+0.  INTRODUCTION
+
+This document describes how to test your radius server authentication
+using random usernames and passwords with the 'radclient' program.
+
+1.  WHY TEST
+
+Many people want to see the difference in efficiency behind the various
+authentication methods, compilation methods, etc of their radius server.
+Before now, this was difficult to do efficiently across a large number
+of users.  However, with this document, you'll be able to test your
+radius server and determine the best options to use for your system.
+
+2.  GETTING STARTED
+
+First thing we have to do is generate a large number of users.  You'll
+want to do this even if you have a large passwd file you want to use
+from your system, because the create user script sets up other files
+you need for testing.  So head to the scripts/ directory, and do this:
+
+Make a tmp dir
+# mkdir tmp
+# cp create-users.pl tmp
+# cd tmp
+
+Run the script to create 10,000 (or however many you want) random users
+and passwords
+# ./create-users.pl 10000
+
+Output from the script will include several files:
+        passwd : A standard passwd file you can append to /etc/passwd
+        shadow : A standard shadow file you can append to /etc/shadow
+passwd.nocrypt : A file with *unencrypted* users & passes in form "user:pass"
+   radius.test : File you'll use as input for radclient
+  radius.users : A standard radius 'users' file
+
+So, equipped with lots of users and passwords, there's several methods of
+authentication you can test:
+
+  o  System users (Auth-Type:=System)
+  o  Local users (Auth-Type:=Local)
+  o  Cached system (passwd) users
+  o  Others
+
+NOTE:  Before moving on, you will probably want to add '/dev/null' to
+/etc/shells *temporarily* so that default system authentication will
+work.  REMEMBER TO TAKE IT OUT!
+
+3.  TEST PROCEDURES
+
+    A.  System (/etc/passwd) users testing
+
+        1.  Append the 'passwd' file from create-users.pl onto your
+            system passwd file:
+
+            # cat ./passwd >> /etc/passwd
+
+        2.  If you have shadow, append the shadow file onto /etc/shadow
+
+            # cat ./shadow >> /etc/shadow
+
+        3.  Make sure you have a DEFAULT user similar to the following
+            in your radius 'users' file:
+
+            DEFAULT Auth-Type:=System
+                    Reply-Message = "Success!"
+
+        4.  Start radiusd
+
+            # /usr/local/sbin/radiusd
+
+        5.  Run radclient with 'radius.test' as the input file.
+
+            NOTE:  First you need to setup a secret for your local
+            machine in the 'clients' file and use that secret below
+
+            # time /usr/local/bin/radclient -q -s -f radius.test \
+               <yourhostname> auth <secret>
+
+				NOTE:  The above is to be put all on one line.
+
+            NOTE:  Some systems do not have the 'time' command,
+            so you may need to break out the stopwatch instead :)
+
+            Take note of the output of radclient.  If there were lots of
+            failures, something is wrong.  All authentications should
+            succeed.
+
+        6.  Take note of the output from the above 'time' command.
+            The output format should be something similar to the
+            following (on linux, this for example only!):
+
+            1.72user 0.53system 5:11.34elapsed 0%CPU
+            (0avgtext+0avgdata 0maxresident)k 0inputs+0outputs
+            (340major+29minor)pagefaults 0swaps
+
+				This means it took 5:11 (311 seconds) to authenticate
+            10,000 users.  Simple division tells us this is:
+
+            10,000 auths / 311 seconds = 32.1543 auths/second
+
+    B.  Local users testing
+
+        1.  Copy the 'radius.users' file from the script over your 'users'
+            file.  Make sure you do NOT have a DEFAULT entry or you will
+            invalidate this test.
+
+        2.  Restart radiusd (kill and restart)
+
+        3.  Run radclient (See A-5 above for NOTES on this):
+
+            # time /usr/local/bin/radclient -q -s -f radius.test \
+               <yourhostname> auth <secret>
+
+        4.  Take note of the output from the above 'time' command, and
+            divide the number of auths (10,000 in this case) with the
+            number of seconds it took to complete.  See A6 above for
+            more info.
+
+	 C.  Cached system users
+
+        1.  Set 'cache=yes' in your radiusd.conf file
+
+        2.  Restart radiusd (ie, kill it and restart, not just a HUP)
+
+        3.  Perform the same steps outlined above for testing System users (A)
+
+    D.  Other methods
+
+        There is no reason why you can't use some of this to test modules
+        for PAM, SQL, LDAP, etc, but that will require a little extra
+        work on your end (ie, getting the users/passes you generated into
+        the corresponding database).  However, by now you should have a
+        good idea of how to test once you do that.
+
+        Also, play around with compile options like --with-thread,
+        --with-thread-pool, etc.  Run radiusd with '-s' so it runs
+        one process only, etc etc.  Play around with it.
+
+4.  CAVEATS
+
+The above test procedures make no allowances for users that login with
+incorrect usernames or passwords.  If you want a true test of performance,
+you should add in lots of bad usernames and passwords to the radius.test
+file and then re-run 'radclient' with that file as input.
+
+Additionally, these tests make no reference to how the pre-authenticate,
+post-authenticate, and accounting methods you choose could affect server
+performance.  For example, checking for simultaneous use after authenti-
+cating the user is obviously going to slow down authenticate performance.
+
+The numbers you get from this test are raw authentications/second in a
+perfect environment.  Do not expect this kind of result in the real world.
+However, having tested in this manner, you will have a good idea of which
+authentication methods and compilation options give you the best base to
+start from, which is key to an efficient server.
+
+5.  RESULTS
+
+I'd really rather not post results because they will vary tremendously
+with other system-specific configuration.  This is exactly the reason
+you should run tests of this nature, to find what's best for *your*
+system.  Good luck!
+
+

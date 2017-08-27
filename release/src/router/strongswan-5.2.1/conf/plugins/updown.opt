@@ -1,0 +1,7 @@
+charon.plugins.updown.dns_handler = no
+	Whether the updown script should handle assigned DNS servers (if enabled
+	they can't be handled by other plugins, like resolve).
+
+	Whether the updown script should handle DNS servers assigned via IKEv1 Mode
+	Config or IKEv2 Config Payloads (if enabled they can't be handled by other
+	plugins, like resolve)

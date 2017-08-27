@@ -1,0 +1,32 @@
+#
+#	This is the master dictionary file, which references the
+#	pre-defined dictionary files included with the server.
+#
+#	Any new/changed attributes MUST be placed in this file, as
+#	the pre-defined dictionaries SHOULD NOT be edited.
+#
+#	$Id$
+#
+
+#
+#	The filename given here should be an absolute path.
+#
+$INCLUDE	/usr/local/share/freeradius/dictionary
+
+#
+#	Place additional attributes or $INCLUDEs here.  They will
+#	over-ride the definitions in the pre-defined dictionaries.
+#
+#	See the 'man' page for 'dictionary' for information on
+#	the format of the dictionary files.
+
+#
+#	If you want to add entries to the dictionary file,
+#	which are NOT going to be placed in a RADIUS packet,
+#	add them here.  The numbers you pick should be between
+#	3000 and 4000.
+#
+
+#ATTRIBUTE	My-Local-String		3000	string
+#ATTRIBUTE	My-Local-IPAddr		3001	ipaddr
+#ATTRIBUTE	My-Local-Integer	3002	integer

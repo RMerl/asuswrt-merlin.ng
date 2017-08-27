@@ -1,0 +1,195 @@
+Radius DBM module
+
+0. INTRODUCTION
+
+  rlm_dbm uses a Berkeley or GDBM <** database to store use information. It
+  is a lot faster than the files and passwd modules, takes less memory than
+  the fastusers module and does not require additional server software as
+  the LDAP and SQL modules does. In addition it supports groups, and of
+  course multiple entries per user or group.
+
+1. WHAT DOES IT DO
+
+  Basically, it opens the file you specifies in radiusd.conf and authenticates
+  users out of it. The file has to be a Berkeley or GDBM <** file database,
+  and may be created by rlm_dbm_parse or by a custom program of your choice.
+
+2. HOW TO USE IT
+
+  Put the module declaration in your radiusd.conf. It should in general look
+  like this:
+
+  dbm {
+      usersfile = ${confdir}/users.db
+  }
+  Note: some dbm libraries add .db suffix by itself.
+
+  Then put "dbm" in the "authorize {}" section of your radiusd.conf:
+
+  authorize {
+      preprocess
+      realms
+      dbm
+    }
+
+3.  MODULE OPTIONS
+
+  The only option is "usersfile", which is the path and filename of the
+  database file you want rlm_dbm to look for users and groups in. This
+  file needs to be generated, either by the rlm_dbm_parse program or by
+  some custom program, for instance a Perl program using the DB_File or
+  GDBM_File <** modules.
+
+4.  EXTERNAL UTILITIES
+
+  rlm_dbm_cat
+
+    rlm_dbm_cat: [-f file] [-w] [-i number] [-l number] [-v] [username ...]
+
+    rlm_dbm_cat simply lists the definition(s) of the username(s) or group
+    name(s), or the entire database. It takes the following options:
+
+      -f <filename>
+
+      The file name of the database to list.
+
+      -w
+ 	Long lines should be wrapped
+
+      -i <number>
+Set the left margin then wrapped.
+      -l <number>
+How long line should be to be wrapped (wrap threshold)
+
+      -v
+
+      Print the version number and exit.
+
+    rlm_dbm_parse
+
+      rlm_dbm_parser [-c] [-d raddb] [-i inputfile] [-o outputfile] [-x]
+                     [-v] [-q] [username ...]
+
+      rlm_dbm_parses reads a file of the syntax defined below, and writes
+      a database file usable by rlm_dbm or edits current database.
+      It takes the following options:
+
+      -i <file>
+
+      Use <file> as the input file. If not defined then use standard input.
+
+      -o
+
+      Use <file> as the output file.
+
+      -c
+
+      Create a new database (empty output file before writing)
+
+      -x
+
+      Enable debug mode. 
+; Multiple x flag increase debug level
+
+      -q
+
+      Do not print statistics (quiet).
+
+      -v
+
+      Print the version and exit.
+
+      -r
+
+      Remove a username or group name from the database.
+
+5. INPUT FORMAT
+
+  rlm_dbm_parse reads a format similar to the one used by the files
+  module. In incomplete RFC2234 ABNF, it looks like this:
+
+  entries     = *entry
+  entry       = identifier TAB definition
+  identifier  = username / group-name
+  username    = +PCHAR
+  groupname   = +PCHAR
+  definition  = (check-item ",")* LF ( *( reply-item ",") / ";" ) LF
+  check-item  = AS IN FILES
+  reply-item  = AS IN FILES
+
+*** need definition of username and groupname ***
+
+  As an example, these are the standard files definitions (files module).
+
+---8<---
+  DEFAULT   Service-Type == Framed-User
+            Framed-IP-Address = 255.255.255.254,
+            Framed-MTU = 576,
+            Service-Type = Framed-User,
+            Fall-Through = Yes
+
+#except who call from number 555-666
+  DEFAULT   Auth-Type := Reject,Service-Type ==Framed-User,
+            Calling-Station-ID == "555-666"
+
+#or call number 555-667
+  DEFAULT   Auth-Type := Reject,Service-Type ==Framed-User,
+            Calling-Station-ID == "555-667"
+---8<---
+
+  To be a valid rlm_dbm input file, it should look like this:
+
+---8<---
+  DEFAULT   Service-Type == Framed-User                     # (1)
+            Framed-IP-Address = 255.255.255.254,            # comma, list cont'd
+            Framed-MTU = 576,
+            Service-Type = Framed-User,
+            Fall-Through =  Yes                             # \n, end of list
+            Auth-Type := Reject,Service-Type ==Framed-User, # (2)
+            Calling-Station-ID == "555-666"
+            ;                                               # ;, no reply items
+            Auth-Type := Reject,Service-Type ==Framed-User, # (3)
+            Calling-Station-ID == "555-667"
+            ;                                               # ditto
+---8<---
+
+  This user (the DEFAULT user) contains three entries, 1, 2 and 3. The
+  first entry has a list of reply items, terminated by a reply item
+  without a trailing comma. Entries 2 and 3 has empty reply lists, as
+  indicated by the semicolon. This is necessary to separate an empty
+  line (which is ignored) from the empty list.
+  Definition Fall-Through = Yes used in order to say module to check next
+  record. By default Fall-Through = Yes.
+
+  Groups
+
+  This is implemented with the special User-Category attribute. Simply
+  set this as a reply item, and rlm_dbm will include the groups definition
+  when evaluating the check and reply items of the user. The group defined
+  the same way as users. Here is a short example:
+
+---8<---
+# group definitions
+gendialup
+            Service-Type = Framed-User,
+            Cisco-AVPair += "ip:addr-pool=SANDY",
+            Framed-Protocol = PPP
+
+locked      Auth-Type := Reject
+            Reply-Message = "Your account has been disabled."
+
+# user definitions
+ssalex      Auth-Type := Local, Password == "passs"
+            User-Category = "GenDialup"
+
+ssmike      Auth-Type := Local, Password == "pass1"
+            User-Category = "Locked"
+---8<---
+
+6. ACKNOWLEDGMENTS
+
+     Author        - Andrei Koulik <rlm_dbm@agk.nnov.ru>
+     Documentation - Bjørn Nordbø  <bn@nextra.com>
+8. Bug reports:
+    rlm_dbm_bug@agk.nnov.ru	
+

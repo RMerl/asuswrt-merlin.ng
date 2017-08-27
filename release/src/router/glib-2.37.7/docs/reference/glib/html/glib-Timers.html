@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Reference Manual: Timers</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Lexical-Scanner.html" title="Lexical Scanner">
+<link rel="next" href="glib-Spawning-Processes.html" title="Spawning Processes">
+<meta name="generator" content="GTK-Doc V1.19.1 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left">
+<a href="#" class="shortcut">Top</a>
+                   | 
+                  <a href="#glib-Timers.description" class="shortcut">Description</a>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Lexical-Scanner.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Spawning-Processes.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Timers"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Timers.top_of_page"></a>Timers</span></h2>
+<p>Timers — keep track of elapsed time</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="glib-Timers.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;glib.h&gt;
+
+                    <a class="link" href="glib-Timers.html#GTimer" title="GTimer">GTimer</a>;
+<a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="returnvalue">GTimer</span></a> *            <a class="link" href="glib-Timers.html#g-timer-new" title="g_timer_new ()">g_timer_new</a>                         (<em class="parameter"><code><span class="type">void</span></code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Timers.html#g-timer-start" title="g_timer_start ()">g_timer_start</a>                       (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Timers.html#g-timer-stop" title="g_timer_stop ()">g_timer_stop</a>                        (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Timers.html#g-timer-continue" title="g_timer_continue ()">g_timer_continue</a>                    (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);
+<a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="returnvalue">gdouble</span></a>             <a class="link" href="glib-Timers.html#g-timer-elapsed" title="g_timer_elapsed ()">g_timer_elapsed</a>                     (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gulong" title="gulong"><span class="type">gulong</span></a> *microseconds</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Timers.html#g-timer-reset" title="g_timer_reset ()">g_timer_reset</a>                       (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="glib-Timers.html#g-timer-destroy" title="g_timer_destroy ()">g_timer_destroy</a>                     (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Timers.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> records a start time, and counts microseconds elapsed since
+that time. This is done somewhat differently on different platforms,
+and can be tricky to get exactly right, so <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> provides a
+portable/convenient interface.
+</p>
+</div>
+<div class="refsect1">
+<a name="glib-Timers.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="GTimer"></a><h3>GTimer</h3>
+<pre class="programlisting">typedef struct _GTimer GTimer;</pre>
+<p>
+Opaque datatype that records a start time.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-new"></a><h3>g_timer_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="returnvalue">GTimer</span></a> *            g_timer_new                         (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Creates a new timer, and starts timing (i.e. <a class="link" href="glib-Timers.html#g-timer-start" title="g_timer_start ()"><code class="function">g_timer_start()</code></a> is
+implicitly called for you).
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-start"></a><h3>g_timer_start ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_timer_start                       (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);</pre>
+<p>
+Marks a start time, so that future calls to <a class="link" href="glib-Timers.html#g-timer-elapsed" title="g_timer_elapsed ()"><code class="function">g_timer_elapsed()</code></a> will
+report the time since <a class="link" href="glib-Timers.html#g-timer-start" title="g_timer_start ()"><code class="function">g_timer_start()</code></a> was called. <a class="link" href="glib-Timers.html#g-timer-new" title="g_timer_new ()"><code class="function">g_timer_new()</code></a>
+automatically marks the start time, so no need to call
+<a class="link" href="glib-Timers.html#g-timer-start" title="g_timer_start ()"><code class="function">g_timer_start()</code></a> immediately after creating the timer.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>timer</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-stop"></a><h3>g_timer_stop ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_timer_stop                        (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);</pre>
+<p>
+Marks an end time, so calls to <a class="link" href="glib-Timers.html#g-timer-elapsed" title="g_timer_elapsed ()"><code class="function">g_timer_elapsed()</code></a> will return the
+difference between this end time and the start time.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>timer</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-continue"></a><h3>g_timer_continue ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_timer_continue                    (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);</pre>
+<p>
+Resumes a timer that has previously been stopped with
+<a class="link" href="glib-Timers.html#g-timer-stop" title="g_timer_stop ()"><code class="function">g_timer_stop()</code></a>. <a class="link" href="glib-Timers.html#g-timer-stop" title="g_timer_stop ()"><code class="function">g_timer_stop()</code></a> must be called before using this
+function.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>timer</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 2.4</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-elapsed"></a><h3>g_timer_elapsed ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="returnvalue">gdouble</span></a>             g_timer_elapsed                     (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gulong" title="gulong"><span class="type">gulong</span></a> *microseconds</code></em>);</pre>
+<p>
+If <em class="parameter"><code>timer</code></em> has been started but not stopped, obtains the time since
+the timer was started. If <em class="parameter"><code>timer</code></em> has been stopped, obtains the
+elapsed time between the time it was started and the time it was
+stopped. The return value is the number of seconds elapsed,
+including any fractional part. The <em class="parameter"><code>microseconds</code></em> out parameter is
+essentially useless.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>timer</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>microseconds</code></em> :</span></p></td>
+<td>return location for the fractional part of seconds
+elapsed, in microseconds (that is, the total number
+of microseconds elapsed, modulo 1000000), or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>seconds elapsed as a floating point value, including any
+fractional part.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-reset"></a><h3>g_timer_reset ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_timer_reset                       (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);</pre>
+<p>
+This function is useless; it's fine to call <a class="link" href="glib-Timers.html#g-timer-start" title="g_timer_start ()"><code class="function">g_timer_start()</code></a> on an
+already-started timer to reset the start time, so <a class="link" href="glib-Timers.html#g-timer-reset" title="g_timer_reset ()"><code class="function">g_timer_reset()</code></a>
+serves no purpose.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>timer</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-timer-destroy"></a><h3>g_timer_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                g_timer_destroy                     (<em class="parameter"><code><a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> *timer</code></em>);</pre>
+<p>
+Destroys a timer, freeing associated resources.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>timer</code></em> :</span></p></td>
+<td>a <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a> to destroy.</td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19.1</div>
+</body>
+</html>

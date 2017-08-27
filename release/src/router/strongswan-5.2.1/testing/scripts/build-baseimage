@@ -1,0 +1,87 @@
+#!/bin/bash
+
+echo "Building base image"
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+
+[ `id -u` -eq 0 ] || die "You must be root to run $0"
+running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
+
+check_commands debootstrap mkfs.ext3 partprobe qemu-img qemu-nbd sfdisk
+
+# package includes/excludes
+INC=automake,autoconf,libtool,bison,flex,gperf,pkg-config,gettext
+INC=$INC,build-essential,libgmp-dev,libldap2-dev,libcurl4-openssl-dev,ethtool
+INC=$INC,libxml2-dev,libtspi-dev,libsqlite3-dev,openssh-server,tcpdump,psmisc
+INC=$INC,openssl,vim,sqlite3,conntrack,gdb,cmake,libxerces-c2-dev,libltdl-dev
+INC=$INC,liblog4cxx10-dev,libboost-thread-dev,libboost-system-dev,git-core
+INC=$INC,less,acpid,acpi-support-base,libldns-dev,libunbound-dev,dnsutils,screen
+INC=$INC,gnat,gprbuild,libahven3-dev,libxmlada4.1-dev,libgmpada3-dev
+INC=$INC,libalog0.4.1-base-dev,hostapd,libsoup2.4-dev,ca-certificates,unzip
+INC=$INC,python,python-setuptools,python-dev,python-pip
+INC=$INC,libjson0-dev,libxslt1-dev,libapache2-mod-wsgi
+SERVICES="apache2 dbus isc-dhcp-server slapd bind9"
+INC=$INC,${SERVICES// /,}
+
+CACHEDIR=$BUILDDIR/cache
+APTCACHE=$LOOPDIR/var/cache/apt/archives
+
+mkdir -p $LOOPDIR
+mkdir -p $CACHEDIR
+mkdir -p $IMGDIR
+rm -f $BASEIMG
+
+echo "`date`, building $BASEIMG" >>$LOGFILE
+
+load_qemu_nbd
+
+log_action "Creating base image $BASEIMG"
+execute "qemu-img create -f $IMGEXT $BASEIMG ${BASEIMGSIZE}M"
+
+log_action "Connecting image to NBD device $NBDEV"
+execute "qemu-nbd -c $NBDEV $BASEIMG"
+do_on_exit qemu-nbd -d $NBDEV
+
+log_action "Partitioning disk"
+sfdisk /dev/nbd0 -D -uM >>$LOGFILE 2>&1 << EOF
+;
+EOF
+if [ $? != 0 ]
+then
+	log_status 1
+	exit 1
+else
+	log_status 0
+fi
+partprobe $NBDEV
+
+log_action "Creating ext3 filesystem"
+execute "mkfs.ext3 $NBDPARTITION"
+
+log_action "Mounting $NBDPARTITION to $LOOPDIR"
+execute "mount $NBDPARTITION $LOOPDIR"
+do_on_exit graceful_umount $LOOPDIR
+
+log_action "Using $CACHEDIR as archive for apt"
+mkdir -p $APTCACHE
+execute "mount -o bind $CACHEDIR $APTCACHE"
+do_on_exit graceful_umount $APTCACHE
+
+log_action "Running debootstrap ($BASEIMGSUITE, $BASEIMGARCH)"
+execute "debootstrap --arch=$BASEIMGARCH --include=$INC $BASEIMGSUITE $LOOPDIR $BASEIMGMIRROR"
+
+execute "mount -t proc none $LOOPDIR/proc" 0
+do_on_exit graceful_umount $LOOPDIR/proc
+
+for service in $SERVICES
+do
+	log_action "Stopping service $service"
+	execute_chroot "/etc/init.d/$service stop"
+	log_action "Disabling service $service"
+	execute_chroot "update-rc.d -f $service remove"
+done
+
+log_action "Disabling root password"
+execute_chroot "passwd -d root"

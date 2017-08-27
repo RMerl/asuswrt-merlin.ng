@@ -1,0 +1,22 @@
+charon.plugins.dhcp.force_server_address = no
+	Always use the configured server address.
+
+	Always use the configured server address. This might be helpful if the DHCP
+	server runs on the same host as strongSwan, and the DHCP daemon does not
+	listen on the loopback interface.  In that case the server cannot be reached
+	via unicast (or even 255.255.255.255) as that would be routed via loopback.
+	Setting this option to yes and configuring the local broadcast address (e.g.
+	192.168.0.255) as server address might work.
+
+charon.plugins.dhcp.identity_lease = no
+	Derive user-defined MAC address from hash of IKE identity.
+
+charon.plugins.dhcp.server = 255.255.255.255
+	DHCP server unicast or broadcast IP address.
+
+charon.plugins.dhcp.interface
+	Interface name the plugin uses for address allocation.
+
+	Interface name the plugin uses for address allocation. The default is to
+	bind to any (0.0.0.0) and let the system decide which way to route the
+	packets to the DHCP server.

@@ -1,0 +1,64 @@
+This is a list of additional programs, that may or may not be installed by
+`make install', and that can be found in the `prog' directory of
+this package.
+
+These programs are generally small utilities used for debugging,
+and installation of the lm_sensors package, and for demonstrating
+the use of the drivers and libraries in this package.
+For more elaborate programs (for example, GUI sensor displays),
+see http://www.lm-sensors.org/wiki/UsefulLinks.
+
+
+* prog/daemon/healthd.sh (written in bash, not installed)
+  An example of a very simple hardware health monitoring daemon.
+
+* prog/detect/sensors-detect (written in Perl, installed by 'make install')
+  This program tries to detect the available SMBus adapters and the chips
+  connected to them, as well as Super-I/O and misc chips. It also generates
+  modprobe lines and module options. This program is stand-alone (can be
+  run without installing lm-sensors) and interactive.
+
+* prog/dump/isadump (written in C, installed by 'make install')
+  This program dumps the registers of ISA or Super-I/O chips.
+  Usual syntax:
+     isadump 0x295 0x296
+     isadump -k 0x55 0x2e 0x2f
+
+* prog/hotplug/unhide_ICH_SMBus (shell script, not installed)
+  It unhides the ICH Intel SMBus for kernel 2.6.5 and later.
+
+* prog/init/lm_sensors.init (shell script, not installed)
+  A SysV init script to be installed in /etc/rc.d/init.d/
+  It inserts the bus and chip modules.
+
+* prog/init/sensord.init (shell script, not installed)
+  A SysV init script to be installed in /etc/rc.d/init.d/
+  It inserts the bus and chip modules and starts the sensord daemon.
+
+* prog/pwm/pwmconfig (shell script, installed by 'make install')
+  Formerly pwmtest, tests the pwm (pulse width modulation) outputs of sensors
+  for their effect on the fans and helps to setup the configfile for fancontrol.
+
+* prog/pwm/fancontrol (shell script, installed by 'make install')
+  Controls fanspeeds responding to changes on temperature sensors.
+  Configuration through pwmconfig.
+
+* prog/rrd/sens_update_rrd (written in bash, not installed)
+  This script gathers sensors data and adds it to a round robin database
+  (RRD). RRD is then used to display the graphed data in web pages.
+  See prog/rrd/README for more information.
+
+* prog/sensord/sensord (written in C, installed by `make install-prog-sensord')
+  This daemon can be used to periodically log sensor readings from
+  the sensors hardware to syslog, and to alert (using syslog level ALERT)
+  when a sensor alarm is signalled; for example, if a fan fails, a temperature
+  limit is exceeded, etc.
+
+* prog/sensors/sensors (written in C, installed by `make install')
+  This pretty-prints the information provided by the modules. It is a normal
+  console application, using stdout. It is essential, because
+  unlike the raw sysfs files, it takes your configuration file into account.
+
+* prog/tellerstats/gather.sh, tellerstats.sh (written in bash, not installed)
+  These scripts gather sensors data and graph the data for web pages.
+  See prog/tellerstats/README for more information.

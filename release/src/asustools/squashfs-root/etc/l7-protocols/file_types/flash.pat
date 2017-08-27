@@ -1,0 +1,2 @@
+flash
+[FC]WS[\x01-\x09]|FLV\x01\x05\x09

@@ -1,0 +1,221 @@
+<!-- ##### SECTION Title ##### -->
+Character Set Conversion
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION g_convert ##### -->
+<para>
+
+</para>
+
+@str: 
+@len: 
+@to_codeset: 
+@from_codeset: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_convert_with_fallback ##### -->
+<para>
+
+</para>
+
+@str: 
+@len: 
+@to_codeset: 
+@from_codeset: 
+@fallback: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### STRUCT GIConv ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_convert_with_iconv ##### -->
+<para>
+
+</para>
+
+@str: 
+@len: 
+@converter: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### MACRO G_CONVERT_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_iconv_open ##### -->
+<para>
+
+</para>
+
+@to_codeset: 
+@from_codeset: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_iconv ##### -->
+<para>
+
+</para>
+
+@converter: 
+@inbuf: 
+@inbytes_left: 
+@outbuf: 
+@outbytes_left: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_iconv_close ##### -->
+<para>
+
+</para>
+
+@converter: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_locale_to_utf8 ##### -->
+<para>
+
+</para>
+
+@opsysstring: 
+@len: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_to_utf8 ##### -->
+<para>
+
+</para>
+
+@opsysstring: 
+@len: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_from_utf8 ##### -->
+<para>
+
+</para>
+
+@utf8string: 
+@len: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_filename_charsets ##### -->
+<para>
+
+</para>
+
+@charsets: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_display_name ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_filename_display_basename ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_locale_from_utf8 ##### -->
+<para>
+
+</para>
+
+@utf8string: 
+@len: 
+@bytes_read: 
+@bytes_written: 
+@error: 
+@Returns: 
+
+
+<!-- ##### ENUM GConvertError ##### -->
+<para>
+
+</para>
+
+@G_CONVERT_ERROR_NO_CONVERSION: 
+@G_CONVERT_ERROR_ILLEGAL_SEQUENCE: 
+@G_CONVERT_ERROR_FAILED: 
+@G_CONVERT_ERROR_PARTIAL_INPUT: 
+@G_CONVERT_ERROR_BAD_URI: 
+@G_CONVERT_ERROR_NOT_ABSOLUTE_PATH: 
+
+<!-- ##### FUNCTION g_get_charset ##### -->
+<para>
+
+</para>
+
+@charset: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_get_codeset ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

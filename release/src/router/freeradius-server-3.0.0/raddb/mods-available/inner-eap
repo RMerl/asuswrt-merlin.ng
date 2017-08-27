@@ -1,0 +1,94 @@
+# -*- text -*-
+#
+#  $Id$
+
+#
+#  Sample configuration for an EAP module that occurs *inside*
+#  of a tunneled method.  It is used to limit the EAP types that
+#  can occur inside of the inner tunnel.
+#
+#  See also raddb/sites-available/inner-tunnel
+#
+#  See raddb/mods-available/eap for full documentation on the meaning of these
+#  configuration entries.
+#
+eap inner-eap {
+	# This is the best choice for PEAP.
+	default_eap_type = mschapv2
+
+	timer_expire     = 60
+
+	#  This should be the same as the outer eap "max sessions"
+	max_sessions = 2048
+
+	# Supported EAP-types
+	md5 {
+	}
+
+	gtc {
+		#  The default challenge, which many clients
+		#  ignore..
+		#challenge = "Password: "
+
+		auth_type = PAP
+	}
+
+	mschapv2 {
+		# See eap for documentation
+#		send_error = no
+	}
+
+	# No TTLS or PEAP configuration should be listed here.
+
+	## EAP-TLS
+	#
+	#  You SHOULD use different certificates than are used
+	#  for the outer EAP configuration!
+	#
+	#  Support for PEAP/TLS and RFC 5176 TLS/TLS is experimental.
+	#  It might work, or it might not.
+	#
+	tls {
+		private_key_password = whatever
+		private_key_file = ${certdir}/inner-server.pem
+
+		#  If Private key & Certificate are located in
+		#  the same file, then private_key_file &
+		#  certificate_file must contain the same file
+		#  name.
+		#
+		#  If ca_file (below) is not used, then the
+		#  certificate_file below MUST include not
+		#  only the server certificate, but ALSO all
+		#  of the CA certificates used to sign the
+		#  server certificate.
+		certificate_file = ${certdir}/inner-server.pem
+
+		#  You may want different CAs for inner and outer
+		#  certificates.  If so, edit this file.
+		ca_file = ${cadir}/ca.pem
+
+		cipher_list = "DEFAULT"
+
+		#  You may want to set a very small fragment size.
+		#  The TLS data here needs to go inside of the
+		#  outer EAP-TLS protocol.
+		#
+		#  Try values and see if they work...
+	#	fragment_size = 1024
+
+		#  Other needful things
+		dh_file = ${certdir}/dh
+		random_file = ${certdir}/random
+
+		#  CRL and OCSP things go here.  See the main "eap"
+		#  file for details.
+	#	check_crl = yes
+	#	ca_path = /path/to/directory/with/ca_certs/and/crls/
+
+		#
+		#  The session resumption / fast re-authentication
+		#  cache CANNOT be used for inner sessions.
+		#
+	}
+}

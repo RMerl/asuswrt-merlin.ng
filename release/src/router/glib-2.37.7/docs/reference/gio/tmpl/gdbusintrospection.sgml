@@ -1,0 +1,372 @@
+<!-- ##### SECTION Title ##### -->
+gdbusintrospection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDBusAnnotationInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@key: 
+@value: 
+@annotations: 
+
+<!-- ##### STRUCT GDBusArgInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@name: 
+@signature: 
+@annotations: 
+
+<!-- ##### STRUCT GDBusMethodInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@name: 
+@in_args: 
+@out_args: 
+@annotations: 
+
+<!-- ##### STRUCT GDBusSignalInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@name: 
+@args: 
+@annotations: 
+
+<!-- ##### ENUM GDBusPropertyInfoFlags ##### -->
+<para>
+
+</para>
+
+@G_DBUS_PROPERTY_INFO_FLAGS_NONE: 
+@G_DBUS_PROPERTY_INFO_FLAGS_READABLE: 
+@G_DBUS_PROPERTY_INFO_FLAGS_WRITABLE: 
+
+<!-- ##### STRUCT GDBusPropertyInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@name: 
+@signature: 
+@flags: 
+@annotations: 
+
+<!-- ##### STRUCT GDBusInterfaceInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@name: 
+@methods: 
+@signals: 
+@properties: 
+@annotations: 
+
+<!-- ##### STRUCT GDBusNodeInfo ##### -->
+<para>
+
+</para>
+
+@ref_count: 
+@path: 
+@interfaces: 
+@nodes: 
+@annotations: 
+
+<!-- ##### FUNCTION g_dbus_annotation_info_lookup ##### -->
+<para>
+
+</para>
+
+@annotations: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_lookup_method ##### -->
+<para>
+
+</para>
+
+@info: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_lookup_signal ##### -->
+<para>
+
+</para>
+
+@info: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_lookup_property ##### -->
+<para>
+
+</para>
+
+@info: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_cache_build ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_cache_release ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_generate_xml ##### -->
+<para>
+
+</para>
+
+@info: 
+@indent: 
+@string_builder: 
+
+
+<!-- ##### FUNCTION g_dbus_node_info_new_for_xml ##### -->
+<para>
+
+</para>
+
+@xml_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_node_info_lookup_interface ##### -->
+<para>
+
+</para>
+
+@info: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_node_info_generate_xml ##### -->
+<para>
+
+</para>
+
+@info: 
+@indent: 
+@string_builder: 
+
+
+<!-- ##### MACRO G_TYPE_DBUS_NODE_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DBUS_INTERFACE_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DBUS_METHOD_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DBUS_SIGNAL_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DBUS_PROPERTY_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DBUS_ARG_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO G_TYPE_DBUS_ANNOTATION_INFO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION g_dbus_node_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_method_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_signal_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_property_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_arg_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_annotation_info_ref ##### -->
+<para>
+
+</para>
+
+@info: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_dbus_node_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_interface_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_method_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_signal_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_property_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_arg_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+
+<!-- ##### FUNCTION g_dbus_annotation_info_unref ##### -->
+<para>
+
+</para>
+
+@info: 
+
+

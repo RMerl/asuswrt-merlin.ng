@@ -1,0 +1,94 @@
+#
+# Catalan translation for sysstat package.
+# Copyright © 2009 Robert Luberda.
+# This file is distributed under the same license as the sysstat package.
+#
+# Aleix Badia i Bosch, 2004
+# Jordà Polo <jorda@ettin.org>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 8.1.8-2\n"
+"Report-Msgid-Bugs-To: sysstat@packages.debian.org\n"
+"POT-Creation-Date: 2009-02-04 18:52+0100\n"
+"PO-Revision-Date: 2009-02-07 21:45+0100\n"
+"Last-Translator: Jordà Polo <jorda@ettin.org>\n"
+"Language-Team: Catalan <debian-l10n-catalan@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid "Remove old format statistics data files?"
+msgstr "Voleu suprimir els fitxers de dades estadístiques amb l'antic format?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"The format of daily data statistics files has changed in version "
+"${s_version} of sysstat and is not compatible with the previous one."
+msgstr ""
+"El format dels fitxers de dades estadístiques diàries ha canviat en la "
+"versió ${s_version} del sysstat i no és compatible amb el format anterior."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you choose this option, all existing data files in the /var/log/sysstat/ "
+"directory will be deleted."
+msgstr ""
+"Si trieu aquesta opció se suprimirà qualsevol fitxer de dades present al "
+"directori /var/log/sysstat."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:2001
+msgid ""
+"If you don't choose this option, the sar(1) command will not work properly "
+"until you remove the files manually."
+msgstr ""
+"Si no trieu aquesta opció, l'ordre sar(1) no funcionarà correctament fins "
+"que no suprimiu els fitxers manualment."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid "Activate sysstat's cron job?"
+msgstr "Voleu activar la tasca cron del sysstat?"
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If this option is enabled the sysstat package will monitor system activities "
+"and store the data in log files within /var/log/sysstat/."
+msgstr ""
+"Si activeu aquesta opció el paquet sysstat monitoritzarà les activitats del "
+"sistema i emmagatzemarà les dades en fitxers de registre a /var/log/sysstat."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"This data allows the sar(1) command to display system statistics for the "
+"whole day."
+msgstr ""
+"Aquestes dades permeten que l'ordre sar(1) mostri les estadístiques del "
+"sistema per tot el dia."
+
+#. Type: boolean
+#. Description
+#: ../sysstat.templates:3001
+msgid ""
+"If you don't enable this option, the sar(1) command will only show the "
+"current statistics."
+msgstr ""
+"Si no activeu aquesta opció, l'ordre sar(1) només mostrarà les estadístiques "
+"actuals."
+
+#~ msgid "Existing data files need to be deleted."
+#~ msgstr "Cal suprimir els fitxers de dades existents."

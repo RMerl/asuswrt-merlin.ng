@@ -1,0 +1,16 @@
+
+<fieldset>
+	<legend><% tran("service.radiooff_legend"); %></legend>
+	<div class="setting">
+		<div class="label"><% tran("service.radiooff_srv"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="radiooff_button" <% nvram_checked("radiooff_button","1"); %> onclick="show_layer_ext(this, 'idradiooff', true)" /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="radiooff_button" <% nvram_checked("radiooff_button","0"); %> onclick="show_layer_ext(this, 'idradiooff', false)" /><% tran("share.disable"); %>
+	</div>
+  <div id="idradiooff">
+	<div class="setting">
+		<div class="label"><% tran("service.radiooff_bootoff"); %></div>
+		<input class="spaceradio" type="radio" value="1" name="radiooff_boot_off" <% nvram_checked("radiooff_boot_off","1"); %> /><% tran("share.enable"); %>&nbsp;
+		<input class="spaceradio" type="radio" value="0" name="radiooff_boot_off" <% nvram_checked("radiooff_boot_off","0"); %> /><% tran("share.disable"); %>
+	</div>
+  </div>		
+</fieldset><br/>

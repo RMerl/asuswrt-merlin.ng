@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="libudev Reference Manual" link="index.html" author="" name="libudev" version="2" language="c">
+  <chapters>
+    <sub name="libudev" link="ch01.html">
+      <sub name="udev" link="libudev-udev.html"/>
+      <sub name="udev_list" link="libudev-udev-list.html"/>
+      <sub name="udev_device" link="libudev-udev-device.html"/>
+      <sub name="udev_monitor" link="libudev-udev-monitor.html"/>
+      <sub name="udev_enumerate" link="libudev-udev-enumerate.html"/>
+      <sub name="udev_queue" link="libudev-udev-queue.html"/>
+    </sub>
+    <sub name="API Index" link="api-index-full.html"/>
+  </chapters>
+  <functions>
+    <keyword type="struct" name="struct udev" link="libudev-udev.html#udev"/>
+    <keyword type="function" name="udev_ref ()" link="libudev-udev.html#udev-ref"/>
+    <keyword type="function" name="udev_unref ()" link="libudev-udev.html#udev-unref"/>
+    <keyword type="function" name="udev_new ()" link="libudev-udev.html#udev-new"/>
+    <keyword type="function" name="udev_set_log_fn ()" link="libudev-udev.html#udev-set-log-fn"/>
+    <keyword type="function" name="udev_get_log_priority ()" link="libudev-udev.html#udev-get-log-priority"/>
+    <keyword type="function" name="udev_set_log_priority ()" link="libudev-udev.html#udev-set-log-priority"/>
+    <keyword type="function" name="udev_get_sys_path ()" link="libudev-udev.html#udev-get-sys-path"/>
+    <keyword type="function" name="udev_get_dev_path ()" link="libudev-udev.html#udev-get-dev-path"/>
+    <keyword type="function" name="udev_get_run_path ()" link="libudev-udev.html#udev-get-run-path"/>
+    <keyword type="function" name="udev_get_userdata ()" link="libudev-udev.html#udev-get-userdata"/>
+    <keyword type="function" name="udev_set_userdata ()" link="libudev-udev.html#udev-set-userdata"/>
+    <keyword type="struct" name="struct udev_list_entry" link="libudev-udev-list.html#udev-list-entry"/>
+    <keyword type="function" name="udev_list_entry_get_next ()" link="libudev-udev-list.html#udev-list-entry-get-next"/>
+    <keyword type="function" name="udev_list_entry_get_by_name ()" link="libudev-udev-list.html#udev-list-entry-get-by-name"/>
+    <keyword type="function" name="udev_list_entry_get_name ()" link="libudev-udev-list.html#udev-list-entry-get-name"/>
+    <keyword type="function" name="udev_list_entry_get_value ()" link="libudev-udev-list.html#udev-list-entry-get-value"/>
+    <keyword type="macro" name="udev_list_entry_foreach()" link="libudev-udev-list.html#udev-list-entry-foreach"/>
+    <keyword type="struct" name="struct udev_device" link="libudev-udev-device.html#udev-device"/>
+    <keyword type="function" name="udev_device_ref ()" link="libudev-udev-device.html#udev-device-ref"/>
+    <keyword type="function" name="udev_device_unref ()" link="libudev-udev-device.html#udev-device-unref"/>
+    <keyword type="function" name="udev_device_get_udev ()" link="libudev-udev-device.html#udev-device-get-udev"/>
+    <keyword type="function" name="udev_device_new_from_syspath ()" link="libudev-udev-device.html#udev-device-new-from-syspath"/>
+    <keyword type="function" name="udev_device_new_from_devnum ()" link="libudev-udev-device.html#udev-device-new-from-devnum"/>
+    <keyword type="function" name="udev_device_new_from_subsystem_sysname ()" link="libudev-udev-device.html#udev-device-new-from-subsystem-sysname"/>
+    <keyword type="function" name="udev_device_new_from_environment ()" link="libudev-udev-device.html#udev-device-new-from-environment"/>
+    <keyword type="function" name="udev_device_get_parent ()" link="libudev-udev-device.html#udev-device-get-parent"/>
+    <keyword type="function" name="udev_device_get_parent_with_subsystem_devtype ()" link="libudev-udev-device.html#udev-device-get-parent-with-subsystem-devtype"/>
+    <keyword type="function" name="udev_device_get_devpath ()" link="libudev-udev-device.html#udev-device-get-devpath"/>
+    <keyword type="function" name="udev_device_get_subsystem ()" link="libudev-udev-device.html#udev-device-get-subsystem"/>
+    <keyword type="function" name="udev_device_get_devtype ()" link="libudev-udev-device.html#udev-device-get-devtype"/>
+    <keyword type="function" name="udev_device_get_syspath ()" link="libudev-udev-device.html#udev-device-get-syspath"/>
+    <keyword type="function" name="udev_device_get_sysname ()" link="libudev-udev-device.html#udev-device-get-sysname"/>
+    <keyword type="function" name="udev_device_get_sysnum ()" link="libudev-udev-device.html#udev-device-get-sysnum"/>
+    <keyword type="function" name="udev_device_get_devnode ()" link="libudev-udev-device.html#udev-device-get-devnode"/>
+    <keyword type="function" name="udev_device_get_is_initialized ()" link="libudev-udev-device.html#udev-device-get-is-initialized"/>
+    <keyword type="function" name="udev_device_get_devlinks_list_entry ()" link="libudev-udev-device.html#udev-device-get-devlinks-list-entry"/>
+    <keyword type="function" name="udev_device_get_properties_list_entry ()" link="libudev-udev-device.html#udev-device-get-properties-list-entry"/>
+    <keyword type="function" name="udev_device_get_tags_list_entry ()" link="libudev-udev-device.html#udev-device-get-tags-list-entry"/>
+    <keyword type="function" name="udev_device_get_property_value ()" link="libudev-udev-device.html#udev-device-get-property-value"/>
+    <keyword type="function" name="udev_device_get_driver ()" link="libudev-udev-device.html#udev-device-get-driver"/>
+    <keyword type="function" name="udev_device_get_devnum ()" link="libudev-udev-device.html#udev-device-get-devnum"/>
+    <keyword type="function" name="udev_device_get_action ()" link="libudev-udev-device.html#udev-device-get-action"/>
+    <keyword type="function" name="udev_device_get_sysattr_value ()" link="libudev-udev-device.html#udev-device-get-sysattr-value"/>
+    <keyword type="function" name="udev_device_get_sysattr_list_entry ()" link="libudev-udev-device.html#udev-device-get-sysattr-list-entry"/>
+    <keyword type="function" name="udev_device_get_seqnum ()" link="libudev-udev-device.html#udev-device-get-seqnum"/>
+    <keyword type="function" name="udev_device_get_usec_since_initialized ()" link="libudev-udev-device.html#udev-device-get-usec-since-initialized"/>
+    <keyword type="function" name="udev_device_has_tag ()" link="libudev-udev-device.html#udev-device-has-tag"/>
+    <keyword type="struct" name="struct udev_monitor" link="libudev-udev-monitor.html#udev-monitor"/>
+    <keyword type="function" name="udev_monitor_ref ()" link="libudev-udev-monitor.html#udev-monitor-ref"/>
+    <keyword type="function" name="udev_monitor_unref ()" link="libudev-udev-monitor.html#udev-monitor-unref"/>
+    <keyword type="function" name="udev_monitor_get_udev ()" link="libudev-udev-monitor.html#udev-monitor-get-udev"/>
+    <keyword type="function" name="udev_monitor_new_from_netlink ()" link="libudev-udev-monitor.html#udev-monitor-new-from-netlink"/>
+    <keyword type="function" name="udev_monitor_new_from_socket ()" link="libudev-udev-monitor.html#udev-monitor-new-from-socket"/>
+    <keyword type="function" name="udev_monitor_enable_receiving ()" link="libudev-udev-monitor.html#udev-monitor-enable-receiving"/>
+    <keyword type="function" name="udev_monitor_set_receive_buffer_size ()" link="libudev-udev-monitor.html#udev-monitor-set-receive-buffer-size"/>
+    <keyword type="function" name="udev_monitor_get_fd ()" link="libudev-udev-monitor.html#udev-monitor-get-fd"/>
+    <keyword type="function" name="udev_monitor_receive_device ()" link="libudev-udev-monitor.html#udev-monitor-receive-device"/>
+    <keyword type="function" name="udev_monitor_filter_add_match_subsystem_devtype ()" link="libudev-udev-monitor.html#udev-monitor-filter-add-match-subsystem-devtype"/>
+    <keyword type="function" name="udev_monitor_filter_add_match_tag ()" link="libudev-udev-monitor.html#udev-monitor-filter-add-match-tag"/>
+    <keyword type="function" name="udev_monitor_filter_update ()" link="libudev-udev-monitor.html#udev-monitor-filter-update"/>
+    <keyword type="function" name="udev_monitor_filter_remove ()" link="libudev-udev-monitor.html#udev-monitor-filter-remove"/>
+    <keyword type="struct" name="struct udev_enumerate" link="libudev-udev-enumerate.html#udev-enumerate"/>
+    <keyword type="function" name="udev_enumerate_ref ()" link="libudev-udev-enumerate.html#udev-enumerate-ref"/>
+    <keyword type="function" name="udev_enumerate_unref ()" link="libudev-udev-enumerate.html#udev-enumerate-unref"/>
+    <keyword type="function" name="udev_enumerate_get_udev ()" link="libudev-udev-enumerate.html#udev-enumerate-get-udev"/>
+    <keyword type="function" name="udev_enumerate_new ()" link="libudev-udev-enumerate.html#udev-enumerate-new"/>
+    <keyword type="function" name="udev_enumerate_add_match_subsystem ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-subsystem"/>
+    <keyword type="function" name="udev_enumerate_add_nomatch_subsystem ()" link="libudev-udev-enumerate.html#udev-enumerate-add-nomatch-subsystem"/>
+    <keyword type="function" name="udev_enumerate_add_match_sysattr ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-sysattr"/>
+    <keyword type="function" name="udev_enumerate_add_nomatch_sysattr ()" link="libudev-udev-enumerate.html#udev-enumerate-add-nomatch-sysattr"/>
+    <keyword type="function" name="udev_enumerate_add_match_property ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-property"/>
+    <keyword type="function" name="udev_enumerate_add_match_tag ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-tag"/>
+    <keyword type="function" name="udev_enumerate_add_match_parent ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-parent"/>
+    <keyword type="function" name="udev_enumerate_add_match_is_initialized ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-is-initialized"/>
+    <keyword type="function" name="udev_enumerate_add_match_sysname ()" link="libudev-udev-enumerate.html#udev-enumerate-add-match-sysname"/>
+    <keyword type="function" name="udev_enumerate_add_syspath ()" link="libudev-udev-enumerate.html#udev-enumerate-add-syspath"/>
+    <keyword type="function" name="udev_enumerate_scan_devices ()" link="libudev-udev-enumerate.html#udev-enumerate-scan-devices"/>
+    <keyword type="function" name="udev_enumerate_scan_subsystems ()" link="libudev-udev-enumerate.html#udev-enumerate-scan-subsystems"/>
+    <keyword type="function" name="udev_enumerate_get_list_entry ()" link="libudev-udev-enumerate.html#udev-enumerate-get-list-entry"/>
+    <keyword type="struct" name="struct udev_queue" link="libudev-udev-queue.html#udev-queue"/>
+    <keyword type="function" name="udev_queue_ref ()" link="libudev-udev-queue.html#udev-queue-ref"/>
+    <keyword type="function" name="udev_queue_unref ()" link="libudev-udev-queue.html#udev-queue-unref"/>
+    <keyword type="function" name="udev_queue_get_udev ()" link="libudev-udev-queue.html#udev-queue-get-udev"/>
+    <keyword type="function" name="udev_queue_new ()" link="libudev-udev-queue.html#udev-queue-new"/>
+    <keyword type="function" name="udev_queue_get_udev_is_active ()" link="libudev-udev-queue.html#udev-queue-get-udev-is-active"/>
+    <keyword type="function" name="udev_queue_get_queue_is_empty ()" link="libudev-udev-queue.html#udev-queue-get-queue-is-empty"/>
+    <keyword type="function" name="udev_queue_get_seqnum_is_finished ()" link="libudev-udev-queue.html#udev-queue-get-seqnum-is-finished"/>
+    <keyword type="function" name="udev_queue_get_seqnum_sequence_is_finished ()" link="libudev-udev-queue.html#udev-queue-get-seqnum-sequence-is-finished"/>
+    <keyword type="function" name="udev_queue_get_queued_list_entry ()" link="libudev-udev-queue.html#udev-queue-get-queued-list-entry"/>
+    <keyword type="function" name="udev_queue_get_failed_list_entry ()" link="libudev-udev-queue.html#udev-queue-get-failed-list-entry"/>
+    <keyword type="function" name="udev_queue_get_kernel_seqnum ()" link="libudev-udev-queue.html#udev-queue-get-kernel-seqnum"/>
+    <keyword type="function" name="udev_queue_get_udev_seqnum ()" link="libudev-udev-queue.html#udev-queue-get-udev-seqnum"/>
+  </functions>
+</book>

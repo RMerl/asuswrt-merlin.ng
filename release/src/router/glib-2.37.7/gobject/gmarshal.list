@@ -1,0 +1,32 @@
+# Note: This file used to generate gmarshal.[ch], but it doesn't any
+# longer; it is kept mainly for backward compatibility purposes. If
+# you find yourself in the need to add a marshaller in GObject, use
+# g_cclosure_marshal_generic() instead.
+#
+# Warning: The generated symbols are part of the GObject ABI.
+
+# standard VOID return marshallers
+VOID:VOID
+VOID:BOOLEAN
+VOID:CHAR
+VOID:UCHAR
+VOID:INT
+VOID:UINT
+VOID:LONG
+VOID:ULONG
+VOID:ENUM
+VOID:FLAGS
+VOID:FLOAT
+VOID:DOUBLE
+VOID:STRING
+VOID:PARAM
+VOID:BOXED
+VOID:POINTER
+VOID:OBJECT
+VOID:VARIANT
+
+# GRuntime specific marshallers
+VOID:UINT,POINTER
+BOOL:FLAGS
+STRING:OBJECT,POINTER
+BOOL:BOXED,BOXED

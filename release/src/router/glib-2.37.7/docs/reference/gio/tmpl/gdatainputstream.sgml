@@ -1,0 +1,319 @@
+<!-- ##### SECTION Title ##### -->
+GDataInputStream
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GDataInputStream ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG GDataInputStream:byte-order ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GDataInputStream:newline-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM GDataStreamByteOrder ##### -->
+<para>
+
+</para>
+
+@G_DATA_STREAM_BYTE_ORDER_BIG_ENDIAN: 
+@G_DATA_STREAM_BYTE_ORDER_LITTLE_ENDIAN: 
+@G_DATA_STREAM_BYTE_ORDER_HOST_ENDIAN: 
+
+<!-- ##### ENUM GDataStreamNewlineType ##### -->
+<para>
+
+</para>
+
+@G_DATA_STREAM_NEWLINE_TYPE_LF: 
+@G_DATA_STREAM_NEWLINE_TYPE_CR: 
+@G_DATA_STREAM_NEWLINE_TYPE_CR_LF: 
+@G_DATA_STREAM_NEWLINE_TYPE_ANY: 
+
+<!-- ##### FUNCTION g_data_input_stream_new ##### -->
+<para>
+
+</para>
+
+@base_stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_set_byte_order ##### -->
+<para>
+
+</para>
+
+@stream: 
+@order: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_get_byte_order ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_set_newline_type ##### -->
+<para>
+
+</para>
+
+@stream: 
+@type: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_get_newline_type ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_byte ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_int16 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_uint16 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_int32 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_uint32 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_int64 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_uint64 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_line ##### -->
+<para>
+
+</para>
+
+@stream: 
+@length: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_line_utf8 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@length: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_line_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_line_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_line_finish_utf8 ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_upto ##### -->
+<para>
+
+</para>
+
+@stream: 
+@stop_chars: 
+@stop_chars_len: 
+@length: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_upto_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@stop_chars: 
+@stop_chars_len: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_upto_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_until ##### -->
+<para>
+
+</para>
+
+@stream: 
+@stop_chars: 
+@length: 
+@cancellable: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_until_async ##### -->
+<para>
+
+</para>
+
+@stream: 
+@stop_chars: 
+@io_priority: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION g_data_input_stream_read_until_finish ##### -->
+<para>
+
+</para>
+
+@stream: 
+@result: 
+@length: 
+@error: 
+@Returns: 
+
+

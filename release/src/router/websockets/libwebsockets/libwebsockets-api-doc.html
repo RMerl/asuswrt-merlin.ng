@@ -1,0 +1,1380 @@
+<h2>lws_write - Apply protocol then write data to client</h2>
+<i>int</i>
+<b>lws_write</b>
+(<i>struct lws *</i> <b>wsi</b>,
+<i>unsigned char *</i> <b>buf</b>,
+<i>size_t</i> <b>len</b>,
+<i>enum lws_write_protocol</i> <b>protocol</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket instance (available from user callback)
+<dt><b>buf</b>
+<dd>The data to send.  For data being sent on a websocket
+connection (ie, not default http), this buffer MUST have
+LWS_SEND_BUFFER_PRE_PADDING bytes valid BEFORE the pointer
+and an additional LWS_SEND_BUFFER_POST_PADDING bytes valid
+in the buffer after (buf + len).  This is so the protocol
+header and trailer data can be added in-situ.
+<dt><b>len</b>
+<dd>Count of the data bytes in the payload starting from buf
+<dt><b>protocol</b>
+<dd>Use LWS_WRITE_HTTP to reply to an http connection, and one
+of LWS_WRITE_BINARY or LWS_WRITE_TEXT to send appropriate
+data on a websockets connection.  Remember to allow the extra
+bytes before and after buf if LWS_WRITE_BINARY or LWS_WRITE_TEXT
+are used.
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function provides the way to issue data back to the client
+for both http and websocket protocols.
+<p>
+In the case of sending using websocket protocol, be sure to allocate
+valid storage before and after buf as explained above.  This scheme
+allows maximum efficiency of sending data and protocol in a single
+packet while not burdening the user code with any protocol knowledge.
+<p>
+Return may be -1 for a fatal error needing connection close, or a
+positive number reflecting the amount of bytes actually sent.  This
+can be less than the requested number of bytes due to OS memory
+pressure at any given time.
+</blockquote>
+<hr>
+<h2>lws_http_transaction_completed - wait for new http transaction or close</h2>
+<i>int</i>
+<b>lws_http_transaction_completed</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>websocket connection
+</dl>
+<h3>Description</h3>
+<blockquote>
+Returns 1 if the HTTP connection must close now
+Returns 0 and resets connection to wait for new HTTP header /
+transaction if possible
+</blockquote>
+<hr>
+<h2>lws_serve_http_file - Send a file back to the client using http</h2>
+<i>int</i>
+<b>lws_serve_http_file</b>
+(<i>struct lws *</i> <b>wsi</b>,
+<i>const char *</i> <b>file</b>,
+<i>const char *</i> <b>content_type</b>,
+<i>const char *</i> <b>other_headers</b>,
+<i>int</i> <b>other_headers_len</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket instance (available from user callback)
+<dt><b>file</b>
+<dd>The file to issue over http
+<dt><b>content_type</b>
+<dd>The http content type, eg, text/html
+<dt><b>other_headers</b>
+<dd>NULL or pointer to header string
+<dt><b>other_headers_len</b>
+<dd>length of the other headers if non-NULL
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function is intended to be called from the callback in response
+to http requests from the client.  It allows the callback to issue
+local files down the http link in a single step.
+<p>
+Returning &lt;0 indicates error and the wsi should be closed.  Returning
+&gt;0 indicates the file was completely sent and
+<b>lws_http_transaction_completed</b> called on the wsi (and close if != 0)
+==0 indicates the file transfer is started and needs more service later,
+the wsi should be left alone.
+</blockquote>
+<hr>
+<h2>lws_return_http_status - Return simple http status</h2>
+<i>int</i>
+<b>lws_return_http_status</b>
+(<i>struct lws *</i> <b>wsi</b>,
+<i>unsigned int</i> <b>code</b>,
+<i>const char *</i> <b>html_body</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket instance (available from user callback)
+<dt><b>code</b>
+<dd>Status index, eg, 404
+<dt><b>html_body</b>
+<dd>User-readable HTML description &lt; 1KB, or NULL
+</dl>
+<h3>Description</h3>
+<blockquote>
+Helper to report HTTP errors back to the client cleanly and
+consistently
+</blockquote>
+<hr>
+<h2>lws_client_connect - Connect to another websocket server</h2>
+<i>struct lws *</i>
+<b>lws_client_connect</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>const char *</i> <b>address</b>,
+<i>int</i> <b>port</b>,
+<i>int</i> <b>ssl_connection</b>,
+<i>const char *</i> <b>path</b>,
+<i>const char *</i> <b>host</b>,
+<i>const char *</i> <b>origin</b>,
+<i>const char *</i> <b>protocol</b>,
+<i>int</i> <b>ietf_version_or_minus_one</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+<dt><b>address</b>
+<dd>Remote server address, eg, "myserver.com"
+<dt><b>port</b>
+<dd>Port to connect to on the remote server, eg, 80
+<dt><b>ssl_connection</b>
+<dd>0 = ws://, 1 = wss:// encrypted, 2 = wss:// allow self
+signed certs
+<dt><b>path</b>
+<dd>Websocket path on server
+<dt><b>host</b>
+<dd>Hostname on server
+<dt><b>origin</b>
+<dd>Socket origin name
+<dt><b>protocol</b>
+<dd>Comma-separated list of protocols being asked for from
+the server, or just one.  The server will pick the one it
+likes best.  If you don't want to specify a protocol, which is
+legal, use NULL here.
+<dt><b>ietf_version_or_minus_one</b>
+<dd>-1 to ask to connect using the default, latest
+protocol supported, or the specific protocol ordinal
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function creates a connection to a remote server
+</blockquote>
+<hr>
+<h2>lws_client_connect_extended - Connect to another websocket server</h2>
+<i>struct lws *</i>
+<b>lws_client_connect_extended</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>const char *</i> <b>address</b>,
+<i>int</i> <b>port</b>,
+<i>int</i> <b>ssl_connection</b>,
+<i>const char *</i> <b>path</b>,
+<i>const char *</i> <b>host</b>,
+<i>const char *</i> <b>origin</b>,
+<i>const char *</i> <b>protocol</b>,
+<i>int</i> <b>ietf_version_or_minus_one</b>,
+<i>void *</i> <b>userdata</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+<dt><b>address</b>
+<dd>Remote server address, eg, "myserver.com"
+<dt><b>port</b>
+<dd>Port to connect to on the remote server, eg, 80
+<dt><b>ssl_connection</b>
+<dd>0 = ws://, 1 = wss:// encrypted, 2 = wss:// allow self
+signed certs
+<dt><b>path</b>
+<dd>Websocket path on server
+<dt><b>host</b>
+<dd>Hostname on server
+<dt><b>origin</b>
+<dd>Socket origin name
+<dt><b>protocol</b>
+<dd>Comma-separated list of protocols being asked for from
+the server, or just one.  The server will pick the one it
+likes best.
+<dt><b>ietf_version_or_minus_one</b>
+<dd>-1 to ask to connect using the default, latest
+protocol supported, or the specific protocol ordinal
+<dt><b>userdata</b>
+<dd>Pre-allocated user data
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function creates a connection to a remote server
+</blockquote>
+<hr>
+<h2>lws_service_fd - Service polled socket with something waiting</h2>
+<i>int</i>
+<b>lws_service_fd</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>struct lws_pollfd *</i> <b>pollfd</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+<dt><b>pollfd</b>
+<dd>The pollfd entry describing the socket fd and which events
+happened.
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function takes a pollfd that has POLLIN or POLLOUT activity and
+services it according to the state of the associated
+struct lws.
+<p>
+The one call deals with all "service" that might happen on a socket
+including listen accepts, http files as well as websocket protocol.
+<p>
+If a pollfd says it has something, you can just pass it to
+<b>lws_service_fd</b> whether it is a socket handled by lws or not.
+If it sees it is a lws socket, the traffic will be handled and
+pollfd-&gt;revents will be zeroed now.
+<p>
+If the socket is foreign to lws, it leaves revents alone.  So you can
+see if you should service yourself by checking the pollfd revents
+after letting lws try to service it.
+</blockquote>
+<hr>
+<h2>lws_service - Service any pending websocket activity</h2>
+<i>int</i>
+<b>lws_service</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>int</i> <b>timeout_ms</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+<dt><b>timeout_ms</b>
+<dd>Timeout for poll; 0 means return immediately if nothing needed
+service otherwise block and service immediately, returning
+after the timeout if nothing needed service.
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function deals with any pending websocket traffic, for three
+kinds of event.  It handles these events on both server and client
+types of connection the same.
+<p>
+1) Accept new connections to our context's server
+<p>
+2) Call the receive callback for incoming frame data received by
+server or client connections.
+<p>
+You need to call this service function periodically to all the above
+functions to happen; if your application is single-threaded you can
+just call it in your main event loop.
+<p>
+Alternatively you can fork a new process that asynchronously handles
+calling this service in a loop.  In that case you are happy if this
+call blocks your thread until it needs to take care of something and
+would call it with a large nonzero timeout.  Your loop then takes no
+CPU while there is nothing happening.
+<p>
+If you are calling it in a single-threaded app, you don't want it to
+wait around blocking other things in your loop from happening, so you
+would call it with a timeout_ms of 0, so it returns immediately if
+nothing is pending, or as soon as it services whatever was pending.
+</blockquote>
+<hr>
+<h2>lws_frame_is_binary - </h2>
+<i>int</i>
+<b>lws_frame_is_binary</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>the connection we are inquiring about
+</dl>
+<h3>Description</h3>
+<blockquote>
+This is intended to be called from the LWS_CALLBACK_RECEIVE callback if
+it's interested to see if the frame it's dealing with was sent in binary
+mode.
+</blockquote>
+<hr>
+<h2>lws_remaining_packet_payload - Bytes to come before "overall" rx packet is complete</h2>
+<i>size_t</i>
+<b>lws_remaining_packet_payload</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket instance (available from user callback)
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function is intended to be called from the callback if the
+user code is interested in "complete packets" from the client.
+libwebsockets just passes through payload as it comes and issues a buffer
+additionally when it hits a built-in limit.  The LWS_CALLBACK_RECEIVE
+callback handler can use this API to find out if the buffer it has just
+been given is the last piece of a "complete packet" from the client --
+when that is the case <b>lws_remaining_packet_payload</b> will return
+0.
+<p>
+Many protocols won't care becuse their packets are always small.
+</blockquote>
+<hr>
+<h2>lws_get_peer_addresses - Get client address information</h2>
+<i>void</i>
+<b>lws_get_peer_addresses</b>
+(<i>struct lws *</i> <b>wsi</b>,
+<i>lws_sockfd_type</i> <b>fd</b>,
+<i>char *</i> <b>name</b>,
+<i>int</i> <b>name_len</b>,
+<i>char *</i> <b>rip</b>,
+<i>int</i> <b>rip_len</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Local struct lws associated with
+<dt><b>fd</b>
+<dd>Connection socket descriptor
+<dt><b>name</b>
+<dd>Buffer to take client address name
+<dt><b>name_len</b>
+<dd>Length of client address name buffer
+<dt><b>rip</b>
+<dd>Buffer to take client address IP dotted quad
+<dt><b>rip_len</b>
+<dd>Length of client address IP buffer
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function fills in <tt><b>name</b></tt> and <tt><b>rip</b></tt> with the name and IP of
+the client connected with socket descriptor <tt><b>fd</b></tt>.  Names may be
+truncated if there is not enough room.  If either cannot be
+determined, they will be returned as valid zero-length strings.
+</blockquote>
+<hr>
+<h2>lws_context_user - get the user data associated with the context</h2>
+<i>LWS_EXTERN void *</i>
+<b>lws_context_user</b>
+(<i>struct lws_context *</i> <b>context</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+</dl>
+<h3>Description</h3>
+<blockquote>
+This returns the optional user allocation that can be attached to
+the context the sockets live in at context_create time.  It's a way
+to let all sockets serviced in the same context share data without
+using globals statics in the user code.
+</blockquote>
+<hr>
+<h2>lws_callback_all_protocol - Callback all connections using the given protocol with the given reason</h2>
+<i>int</i>
+<b>lws_callback_all_protocol</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>const struct lws_protocols *</i> <b>protocol</b>,
+<i>int</i> <b>reason</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>protocol</b>
+<dd>Protocol whose connections will get callbacks
+<dt><b>reason</b>
+<dd>Callback reason index
+</dl>
+<hr>
+<h2>lws_set_timeout - marks the wsi as subject to a timeout</h2>
+<i>void</i>
+<b>lws_set_timeout</b>
+(<i>struct lws *</i> <b>wsi</b>,
+<i>enum pending_timeout</i> <b>reason</b>,
+<i>int</i> <b>secs</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket connection instance
+<dt><b>reason</b>
+<dd>timeout reason
+<dt><b>secs</b>
+<dd>how many seconds
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+You will not need this unless you are doing something special
+</blockquote>
+<hr>
+<h2>lws_get_socket_fd - returns the socket file descriptor</h2>
+<i>int</i>
+<b>lws_get_socket_fd</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket connection instance
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+You will not need this unless you are doing something special
+</blockquote>
+<hr>
+<h2>lws_rx_flow_control - Enable and disable socket servicing for received packets.</h2>
+<i>int</i>
+<b>lws_rx_flow_control</b>
+(<i>struct lws *</i> <b>wsi</b>,
+<i>int</i> <b>enable</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket connection instance to get callback for
+<dt><b>enable</b>
+<dd>0 = disable read servicing for this connection, 1 = enable
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+If the output side of a server process becomes choked, this allows flow
+control for the input side.
+</blockquote>
+<hr>
+<h2>lws_rx_flow_allow_all_protocol - Allow all connections with this protocol to receive</h2>
+<i>void</i>
+<b>lws_rx_flow_allow_all_protocol</b>
+(<i>const struct lws_context *</i> <b>context</b>,
+<i>const struct lws_protocols *</i> <b>protocol</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>protocol</b>
+<dd>all connections using this protocol will be allowed to receive
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+When the user server code realizes it can accept more input, it can
+call this to have the RX flow restriction removed from all connections using
+the given protocol.
+</blockquote>
+<hr>
+<h2>lws_canonical_hostname - returns this host's hostname</h2>
+<i>const char *</i>
+<b>lws_canonical_hostname</b>
+(<i>struct lws_context *</i> <b>context</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+This is typically used by client code to fill in the host parameter
+when making a client connection.  You can only call it after the context
+has been created.
+</blockquote>
+<hr>
+<h2>lws_set_proxy - Setups proxy to lws_context.</h2>
+<i>int</i>
+<b>lws_set_proxy</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>const char *</i> <b>proxy</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>pointer to struct lws_context you want set proxy to
+<dt><b>proxy</b>
+<dd>pointer to c string containing proxy in format address:port
+</dl>
+<h3>Description</h3>
+<blockquote>
+Returns 0 if proxy string was parsed and proxy was setup.
+Returns -1 if <tt><b>proxy</b></tt> is NULL or has incorrect format.
+<p>
+This is only required if your OS does not provide the http_proxy
+environment variable (eg, OSX)
+<p>
+IMPORTANT! You should call this function right after creation of the
+lws_context and before call to connect. If you call this
+function after connect behavior is undefined.
+This function will override proxy settings made on lws_context
+creation with <b>genenv</b> call.
+</blockquote>
+<hr>
+<h2>lws_get_protocol - Returns a protocol pointer from a websocket connection.</h2>
+<i>const struct lws_protocols *</i>
+<b>lws_get_protocol</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>pointer to struct websocket you want to know the protocol of
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+Some apis can act on all live connections of a given protocol,
+this is how you can get a pointer to the active protocol if needed.
+</blockquote>
+<hr>
+<h2>lws_set_log_level - Set the logging bitfield</h2>
+<i>void</i>
+<b>lws_set_log_level</b>
+(<i>int</i> <b>level</b>,
+<i>void (*</i><b>func</b>) <i>(int level, const char *line)</i>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>level</b>
+<dd>OR together the LLL_ debug contexts you want output from
+</dl>
+<h3>Description</h3>
+<blockquote>
+log level defaults to "err", "warn" and "notice" contexts enabled and
+emission on stderr.
+</blockquote>
+<hr>
+<h2>lws_is_ssl - Find out if connection is using SSL</h2>
+<i>int</i>
+<b>lws_is_ssl</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>websocket connection to check
+</dl>
+<h3>Description</h3>
+<blockquote>
+Returns 0 if the connection is not using SSL, 1 if using SSL and
+using verified cert, and 2 if using SSL but the cert was not
+checked (appears for client wsi told to skip check on connection)
+</blockquote>
+<hr>
+<h2>lws_partial_buffered - find out if lws buffered the last write</h2>
+<i>int</i>
+<b>lws_partial_buffered</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>websocket connection to check
+</dl>
+<h3>Description</h3>
+<blockquote>
+Returns 1 if you cannot use lws_write because the last
+write on this connection is still buffered, and can't be cleared without
+returning to the service loop and waiting for the connection to be
+writeable again.
+<p>
+If you will try to do &gt;1 lws_write call inside a single
+WRITEABLE callback, you must check this after every write and bail if
+set, ask for a new writeable callback and continue writing from there.
+<p>
+This is never set at the start of a writeable callback, but any write
+may set it.
+</blockquote>
+<hr>
+<h2>lws_get_library_version - </h2>
+<i>const char *</i>
+<b>lws_get_library_version</b>
+(<i></i> <b>void</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>void</b>
+<dd>no arguments
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+returns a const char * to a string like "1.1 178d78c"
+representing the library version followed by the git head hash it
+was built from
+</blockquote>
+<hr>
+<h2>lws_create_context - Create the websocket handler</h2>
+<i>struct lws_context *</i>
+<b>lws_create_context</b>
+(<i>struct lws_context_creation_info *</i> <b>info</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>info</b>
+<dd>pointer to struct with parameters
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function creates the listening socket (if serving) and takes care
+of all initialization in one step.
+<p>
+After initialization, it returns a struct lws_context * that
+represents this server.  After calling, user code needs to take care
+of calling <b>lws_service</b> with the context pointer to get the
+server's sockets serviced.  This must be done in the same process
+context as the initialization call.
+<p>
+The protocol callback functions are called for a handful of events
+including http requests coming in, websocket connections becoming
+established, and data arriving; it's also called periodically to allow
+async transmission.
+<p>
+HTTP requests are sent always to the FIRST protocol in <tt><b>protocol</b></tt>, since
+at that time websocket protocol has not been negotiated.  Other
+protocols after the first one never see any HTTP callack activity.
+<p>
+The server created is a simple http server by default; part of the
+websocket standard is upgrading this http connection to a websocket one.
+<p>
+This allows the same server to provide files like scripts and favicon /
+images or whatever over http and dynamic data over websockets all in
+one place; they're all handled in the user callback.
+</blockquote>
+<hr>
+<h2>lws_context_destroy - Destroy the websocket context</h2>
+<i>void</i>
+<b>lws_context_destroy</b>
+(<i>struct lws_context *</i> <b>context</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function closes any active connections and then frees the
+context.  After calling this, any further use of the context is
+undefined.
+</blockquote>
+<hr>
+<h2>lws_callback_on_writable - Request a callback when this socket becomes able to be written to without blocking</h2>
+<i>int</i>
+<b>lws_callback_on_writable</b>
+(<i>struct lws *</i> <b>wsi</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Websocket connection instance to get callback for
+</dl>
+<hr>
+<h2>lws_callback_on_writable_all_protocol - Request a callback for all connections using the given protocol when it becomes possible to write to each socket without blocking in turn.</h2>
+<i>int</i>
+<b>lws_callback_on_writable_all_protocol</b>
+(<i>const struct lws_context *</i> <b>context</b>,
+<i>const struct lws_protocols *</i> <b>protocol</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>lws_context
+<dt><b>protocol</b>
+<dd>Protocol whose connections will get callbacks
+</dl>
+<hr>
+<h2>lws_cancel_service - Cancel servicing of pending websocket activity</h2>
+<i>void</i>
+<b>lws_cancel_service</b>
+(<i>struct lws_context *</i> <b>context</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function let a call to <b>lws_service</b> waiting for a timeout
+immediately return.
+</blockquote>
+<hr>
+<h2>lws_cancel_service - Cancel servicing of pending websocket activity</h2>
+<i>void</i>
+<b>lws_cancel_service</b>
+(<i>struct lws_context *</i> <b>context</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function let a call to <b>lws_service</b> waiting for a timeout
+immediately return.
+</blockquote>
+<hr>
+<h2>lws_cancel_service - Cancel servicing of pending websocket activity</h2>
+<i>void</i>
+<b>lws_cancel_service</b>
+(<i>struct lws_context *</i> <b>context</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websocket context
+</dl>
+<h3>Description</h3>
+<blockquote>
+This function let a call to <b>lws_service</b> waiting for a timeout
+immediately return.
+<p>
+There is no <b>poll</b> in MBED3, he will fire callbacks when he feels like
+it.
+</blockquote>
+<hr>
+<h2>struct lws_plat_file_ops - Platform-specific file operations</h2>
+<b>struct lws_plat_file_ops</b> {<br>
+&nbsp; &nbsp; <i>lws_filefd_type (*</i><b>open</b>) <i>(struct lws *wsi, const char *filename,unsigned long *filelen, int flags)</i>;<br>
+&nbsp; &nbsp; <i>int (*</i><b>close</b>) <i>(struct lws *wsi, lws_filefd_type fd)</i>;<br>
+&nbsp; &nbsp; <i>unsigned long (*</i><b>seek_cur</b>) <i>(struct lws *wsi, lws_filefd_type fd,long offset_from_cur_pos)</i>;<br>
+&nbsp; &nbsp; <i>int (*</i><b>read</b>) <i>(struct lws *wsi, lws_filefd_type fd, unsigned long *amount,unsigned char *buf, unsigned long len)</i>;<br>
+&nbsp; &nbsp; <i>int (*</i><b>write</b>) <i>(struct lws *wsi, lws_filefd_type fd, unsigned long *amount,unsigned char *buf, unsigned long len)</i>;<br>
+};<br>
+<h3>Members</h3>
+<dl>
+<dt><b>open</b>
+<dd>Open file (always binary access if plat supports it)
+filelen is filled on exit to be the length of the file
+flags should be set to O_RDONLY or O_RDWR
+<dt><b>close</b>
+<dd>Close file
+<dt><b>seek_cur</b>
+<dd>Seek from current position
+<dt><b>read</b>
+<dd>Read fron file *amount is set on exit to amount read
+<dt><b>write</b>
+<dd>Write to file *amount is set on exit as amount written
+</dl>
+<h3>Description</h3>
+<blockquote>
+<p>
+These provide platform-agnostic ways to deal with filesystem access in the
+library and in the user code.
+</blockquote>
+<hr>
+<h2>callback - User server actions</h2>
+<i>LWS_EXTERN int</i>
+<b>callback</b>
+(<i>const struct lws *</i> <b>wsi</b>,
+<i>enum lws_callback_reasons</i> <b>reason</b>,
+<i>void *</i> <b>user</b>,
+<i>void *</i> <b>in</b>,
+<i>size_t</i> <b>len</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>wsi</b>
+<dd>Opaque websocket instance pointer
+<dt><b>reason</b>
+<dd>The reason for the call
+<dt><b>user</b>
+<dd>Pointer to per-session user data allocated by library
+<dt><b>in</b>
+<dd>Pointer used for some callback reasons
+<dt><b>len</b>
+<dd>Length set for some callback reasons
+</dl>
+<h3>Description</h3>
+<blockquote>
+This callback is the way the user controls what is served.  All the
+protocol detail is hidden and handled by the library.
+<p>
+For each connection / session there is user data allocated that is
+pointed to by "user".  You set the size of this user data area when
+the library is initialized with lws_create_server.
+<p>
+You get an opportunity to initialize user data when called back with
+LWS_CALLBACK_ESTABLISHED reason.
+</blockquote>
+<h3>LWS_CALLBACK_ESTABLISHED</h3>
+<blockquote>
+after the server completes a handshake with
+an incoming client.  If you built the library
+with ssl support, <tt><b>in</b></tt> is a pointer to the
+ssl struct associated with the connection or
+NULL.
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_CONNECTION_ERROR</h3>
+<blockquote>
+the request client connection has
+been unable to complete a handshake with the remote server.  If
+in is non-NULL, you can find an error string of length len where
+it points to.
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH</h3>
+<blockquote>
+this is the last chance for the
+client user code to examine the http headers
+and decide to reject the connection.  If the
+content in the headers is interesting to the
+client (url, etc) it needs to copy it out at
+this point since it will be destroyed before
+the CLIENT_ESTABLISHED call
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_ESTABLISHED</h3>
+<blockquote>
+after your client connection completed
+a handshake with the remote server
+</blockquote>
+<h3>LWS_CALLBACK_CLOSED</h3>
+<blockquote>
+when the websocket session ends
+</blockquote>
+<h3>LWS_CALLBACK_CLOSED_HTTP</h3>
+<blockquote>
+when a HTTP (non-websocket) session ends
+</blockquote>
+<h3>LWS_CALLBACK_RECEIVE</h3>
+<blockquote>
+data has appeared for this server endpoint from a
+remote client, it can be found at *in and is
+len bytes long
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_RECEIVE_PONG</h3>
+<blockquote>
+if you elected to see PONG packets,
+they appear with this callback reason.  PONG
+packets only exist in 04+ protocol
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_RECEIVE</h3>
+<blockquote>
+data has appeared from the server for the
+client connection, it can be found at *in and
+is len bytes long
+</blockquote>
+<h3>LWS_CALLBACK_HTTP</h3>
+<blockquote>
+an http request has come from a client that is not
+asking to upgrade the connection to a websocket
+one.  This is a chance to serve http content,
+for example, to send a script to the client
+which will then open the websockets connection.
+<tt><b>in</b></tt> points to the URI path requested and
+<b>lws_serve_http_file</b> makes it very
+simple to send back a file to the client.
+Normally after sending the file you are done
+with the http connection, since the rest of the
+activity will come by websockets from the script
+that was delivered by http, so you will want to
+return 1; to close and free up the connection.
+That's important because it uses a slot in the
+total number of client connections allowed set
+by MAX_CLIENTS.
+</blockquote>
+<h3>LWS_CALLBACK_HTTP_BODY</h3>
+<blockquote>
+the next <tt><b>len</b></tt> bytes data from the http
+request body HTTP connection is now available in <tt><b>in</b></tt>.
+</blockquote>
+<h3>LWS_CALLBACK_HTTP_BODY_COMPLETION</h3>
+<blockquote>
+the expected amount of http request
+body has been delivered
+</blockquote>
+<h3>LWS_CALLBACK_HTTP_WRITEABLE</h3>
+<blockquote>
+you can write more down the http protocol
+link now.
+</blockquote>
+<h3>LWS_CALLBACK_HTTP_FILE_COMPLETION</h3>
+<blockquote>
+a file requested to be send down
+http link has completed.
+</blockquote>
+<h3>LWS_CALLBACK_SERVER_WRITEABLE</h3>
+<blockquote>
+If you call
+<b>lws_callback_on_writable</b> on a connection, you will
+get one of these callbacks coming when the connection socket
+is able to accept another write packet without blocking.
+If it already was able to take another packet without blocking,
+you'll get this callback at the next call to the service loop
+function.  Notice that CLIENTs get LWS_CALLBACK_CLIENT_WRITEABLE
+and servers get LWS_CALLBACK_SERVER_WRITEABLE.
+</blockquote>
+<h3>LWS_CALLBACK_FILTER_NETWORK_CONNECTION</h3>
+<blockquote>
+called when a client connects to
+the server at network level; the connection is accepted but then
+passed to this callback to decide whether to hang up immediately
+or not, based on the client IP.  <tt><b>in</b></tt> contains the connection
+socket's descriptor. Since the client connection information is
+not available yet, <tt><b>wsi</b></tt> still pointing to the main server socket.
+Return non-zero to terminate the connection before sending or
+receiving anything. Because this happens immediately after the
+network connection from the client, there's no websocket protocol
+selected yet so this callback is issued only to protocol 0.
+</blockquote>
+<h3>LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED</h3>
+<blockquote>
+A new client just had
+been connected, accepted, and instantiated into the pool. This
+callback allows setting any relevant property to it. Because this
+happens immediately after the instantiation of a new client,
+there's no websocket protocol selected yet so this callback is
+issued only to protocol 0. Only <tt><b>wsi</b></tt> is defined, pointing to the
+new client, and the return value is ignored.
+</blockquote>
+<h3>LWS_CALLBACK_FILTER_HTTP_CONNECTION</h3>
+<blockquote>
+called when the request has
+been received and parsed from the client, but the response is
+not sent yet.  Return non-zero to disallow the connection.
+<tt><b>user</b></tt> is a pointer to the connection user space allocation,
+<tt><b>in</b></tt> is the URI, eg, "/"
+In your handler you can use the public APIs
+<b>lws_hdr_total_length</b> / <b>lws_hdr_copy</b> to access all of the
+headers using the header enums lws_token_indexes from
+libwebsockets.h to check for and read the supported header
+presence and content before deciding to allow the http
+connection to proceed or to kill the connection.
+</blockquote>
+<h3>LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION</h3>
+<blockquote>
+called when the handshake has
+been received and parsed from the client, but the response is
+not sent yet.  Return non-zero to disallow the connection.
+<tt><b>user</b></tt> is a pointer to the connection user space allocation,
+<tt><b>in</b></tt> is the requested protocol name
+In your handler you can use the public APIs
+<b>lws_hdr_total_length</b> / <b>lws_hdr_copy</b> to access all of the
+headers using the header enums lws_token_indexes from
+libwebsockets.h to check for and read the supported header
+presence and content before deciding to allow the handshake
+to proceed or to kill the connection.
+</blockquote>
+<h3>LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS</h3>
+<blockquote>
+if configured for
+including OpenSSL support, this callback allows your user code
+to perform extra <b>SSL_CTX_load_verify_locations</b> or similar
+calls to direct OpenSSL where to find certificates the client
+can use to confirm the remote server identity.  <tt><b>user</b></tt> is the
+OpenSSL SSL_CTX*
+</blockquote>
+<h3>LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS</h3>
+<blockquote>
+if configured for
+including OpenSSL support, this callback allows your user code
+to load extra certifcates into the server which allow it to
+verify the validity of certificates returned by clients.  <tt><b>user</b></tt>
+is the server's OpenSSL SSL_CTX*
+</blockquote>
+<h3>LWS_CALLBACK_OPENSSL_CONTEXT_REQUIRES_PRIVATE_KEY</h3>
+<blockquote>
+if configured for
+including OpenSSL support but no private key file has been specified
+(ssl_private_key_filepath is NULL), this callback is called to
+allow the user to set the private key directly via libopenssl
+and perform further operations if required; this might be useful
+in situations where the private key is not directly accessible by
+the OS, for example if it is stored on a smartcard
+<tt><b>user</b></tt> is the server's OpenSSL SSL_CTX*
+</blockquote>
+<h3>LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION</h3>
+<blockquote>
+if the
+libwebsockets context was created with the option
+LWS_SERVER_OPTION_REQUIRE_VALID_OPENSSL_CLIENT_CERT, then this
+callback is generated during OpenSSL verification of the cert
+sent from the client.  It is sent to protocol[0] callback as
+no protocol has been negotiated on the connection yet.
+Notice that the libwebsockets context and wsi are both NULL
+during this callback.  See
+</blockquote>
+<h3>http</h3>
+<blockquote>
+//www.openssl.org/docs/ssl/SSL_CTX_set_verify.html
+to understand more detail about the OpenSSL callback that
+generates this libwebsockets callback and the meanings of the
+arguments passed.  In this callback, <tt><b>user</b></tt> is the x509_ctx,
+<tt><b>in</b></tt> is the ssl pointer and <tt><b>len</b></tt> is preverify_ok
+Notice that this callback maintains libwebsocket return
+conventions, return 0 to mean the cert is OK or 1 to fail it.
+This also means that if you don't handle this callback then
+the default callback action of returning 0 allows the client
+certificates.
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER</h3>
+<blockquote>
+this callback happens
+when a client handshake is being compiled.  <tt><b>user</b></tt> is NULL,
+<tt><b>in</b></tt> is a char **, it's pointing to a char * which holds the
+next location in the header buffer where you can add
+headers, and <tt><b>len</b></tt> is the remaining space in the header buffer,
+which is typically some hundreds of bytes.  So, to add a canned
+cookie, your handler code might look similar to:
+<p>
+char **p = (char **)in;
+<p>
+if (len &lt; 100)
+return 1;
+<p>
+*p += sprintf(*p, "Cookie: a=b\x0d\x0a");
+<p>
+return 0;
+<p>
+Notice if you add anything, you just have to take care about
+the CRLF on the line you added.  Obviously this callback is
+optional, if you don't handle it everything is fine.
+<p>
+Notice the callback is coming to protocols[0] all the time,
+because there is no specific protocol handshook yet.
+</blockquote>
+<h3>LWS_CALLBACK_CONFIRM_EXTENSION_OKAY</h3>
+<blockquote>
+When the server handshake code
+sees that it does support a requested extension, before
+accepting the extension by additing to the list sent back to
+the client it gives this callback just to check that it's okay
+to use that extension.  It calls back to the requested protocol
+and with <tt><b>in</b></tt> being the extension name, <tt><b>len</b></tt> is 0 and <tt><b>user</b></tt> is
+valid.  Note though at this time the ESTABLISHED callback hasn't
+happened yet so if you initialize <tt><b>user</b></tt> content there, <tt><b>user</b></tt>
+content during this callback might not be useful for anything.
+Notice this callback comes to protocols[0].
+</blockquote>
+<h3>LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED</h3>
+<blockquote>
+When a client
+connection is being prepared to start a handshake to a server,
+each supported extension is checked with protocols[0] callback
+with this reason, giving the user code a chance to suppress the
+claim to support that extension by returning non-zero.  If
+unhandled, by default 0 will be returned and the extension
+support included in the header to the server.  Notice this
+callback comes to protocols[0].
+</blockquote>
+<h3>LWS_CALLBACK_PROTOCOL_INIT</h3>
+<blockquote>
+One-time call per protocol so it can
+do initial setup / allocations etc
+</blockquote>
+<h3>LWS_CALLBACK_PROTOCOL_DESTROY</h3>
+<blockquote>
+One-time call per protocol indicating
+this protocol won't get used at all after this callback, the
+context is getting destroyed.  Take the opportunity to
+deallocate everything that was allocated by the protocol.
+</blockquote>
+<h3>LWS_CALLBACK_WSI_CREATE</h3>
+<blockquote>
+outermost (earliest) wsi create notification
+</blockquote>
+<h3>LWS_CALLBACK_WSI_DESTROY</h3>
+<blockquote>
+outermost (latest) wsi destroy notification
+<p>
+The next five reasons are optional and only need taking care of if you
+will be integrating libwebsockets sockets into an external polling
+array.
+<p>
+For these calls, <tt><b>in</b></tt> points to a struct lws_pollargs that
+contains <tt><b>fd</b></tt>, <tt><b>events</b></tt> and <tt><b>prev_events</b></tt> members
+</blockquote>
+<h3>LWS_CALLBACK_ADD_POLL_FD</h3>
+<blockquote>
+libwebsocket deals with its <b>poll</b> loop
+internally, but in the case you are integrating with another
+server you will need to have libwebsocket sockets share a
+polling array with the other server.  This and the other
+POLL_FD related callbacks let you put your specialized
+poll array interface code in the callback for protocol 0, the
+first protocol you support, usually the HTTP protocol in the
+serving case.
+This callback happens when a socket needs to be
+</blockquote>
+<h3>added to the polling loop</h3>
+<blockquote>
+<tt><b>in</b></tt> points to a struct
+lws_pollargs; the <tt><b>fd</b></tt> member of the struct is the file
+descriptor, and <tt><b>events</b></tt> contains the active events.
+<p>
+If you are using the internal polling loop (the "service"
+callback), you can just ignore these callbacks.
+</blockquote>
+<h3>LWS_CALLBACK_DEL_POLL_FD</h3>
+<blockquote>
+This callback happens when a socket descriptor
+needs to be removed from an external polling array.  <tt><b>in</b></tt> is
+again the struct lws_pollargs containing the <tt><b>fd</b></tt> member
+to be removed.  If you are using the internal polling
+loop, you can just ignore it.
+</blockquote>
+<h3>LWS_CALLBACK_CHANGE_MODE_POLL_FD</h3>
+<blockquote>
+This callback happens when
+libwebsockets wants to modify the events for a connectiion.
+<tt><b>in</b></tt> is the struct lws_pollargs with the <tt><b>fd</b></tt> to change.
+The new event mask is in <tt><b>events</b></tt> member and the old mask is in
+the <tt><b>prev_events</b></tt> member.
+If you are using the internal polling loop, you can just ignore
+it.
+</blockquote>
+<h3>LWS_CALLBACK_UNLOCK_POLL</h3>
+<blockquote>
+These allow the external poll changes driven
+by libwebsockets to participate in an external thread locking
+scheme around the changes, so the whole thing is threadsafe.
+These are called around three activities in the library,
+- inserting a new wsi in the wsi / fd table (len=1)
+- deleting a wsi from the wsi / fd table (len=1)
+- changing a wsi's POLLIN/OUT state (len=0)
+Locking and unlocking external synchronization objects when
+len == 1 allows external threads to be synchronized against
+wsi lifecycle changes if it acquires the same lock for the
+duration of wsi dereference from the other thread context.
+</blockquote>
+<hr>
+<h2>extension_callback - Hooks to allow extensions to operate</h2>
+<i>LWS_EXTERN int</i>
+<b>extension_callback</b>
+(<i>struct lws_context *</i> <b>context</b>,
+<i>const struct lws_extension *</i> <b>ext</b>,
+<i>struct lws *</i> <b>wsi</b>,
+<i>enum lws_extension_callback_reasons</i> <b>reason</b>,
+<i>void *</i> <b>user</b>,
+<i>void *</i> <b>in</b>,
+<i>size_t</i> <b>len</b>)
+<h3>Arguments</h3>
+<dl>
+<dt><b>context</b>
+<dd>Websockets context
+<dt><b>ext</b>
+<dd>This extension
+<dt><b>wsi</b>
+<dd>Opaque websocket instance pointer
+<dt><b>reason</b>
+<dd>The reason for the call
+<dt><b>user</b>
+<dd>Pointer to per-session user data allocated by library
+<dt><b>in</b>
+<dd>Pointer used for some callback reasons
+<dt><b>len</b>
+<dd>Length set for some callback reasons
+</dl>
+<h3>Description</h3>
+<blockquote>
+Each extension that is active on a particular connection receives
+callbacks during the connection lifetime to allow the extension to
+operate on websocket data and manage itself.
+<p>
+Libwebsockets takes care of allocating and freeing "user" memory for
+each active extension on each connection.  That is what is pointed to
+by the <tt><b>user</b></tt> parameter.
+</blockquote>
+<h3>LWS_EXT_CALLBACK_CONSTRUCT</h3>
+<blockquote>
+called when the server has decided to
+select this extension from the list provided by the client,
+just before the server will send back the handshake accepting
+the connection with this extension active.  This gives the
+extension a chance to initialize its connection context found
+in <tt><b>user</b></tt>.
+</blockquote>
+<h3>LWS_EXT_CALLBACK_CLIENT_CONSTRUCT</h3>
+<blockquote>
+same as LWS_EXT_CALLBACK_CONSTRUCT
+but called when client is instantiating this extension.  Some
+extensions will work the same on client and server side and then
+you can just merge handlers for both CONSTRUCTS.
+</blockquote>
+<h3>LWS_EXT_CALLBACK_DESTROY</h3>
+<blockquote>
+called when the connection the extension was
+being used on is about to be closed and deallocated.  It's the
+last chance for the extension to deallocate anything it has
+allocated in the user data (pointed to by <tt><b>user</b></tt>) before the
+user data is deleted.  This same callback is used whether you
+are in client or server instantiation context.
+</blockquote>
+<h3>LWS_EXT_CALLBACK_PACKET_RX_PREPARSE</h3>
+<blockquote>
+when this extension was active on
+a connection, and a packet of data arrived at the connection,
+it is passed to this callback to give the extension a chance to
+change the data, eg, decompress it.  <tt><b>user</b></tt> is pointing to the
+extension's private connection context data, <tt><b>in</b></tt> is pointing
+to an lws_tokens struct, it consists of a char * pointer called
+token, and an int called token_len.  At entry, these are
+set to point to the received buffer and set to the content
+length.  If the extension will grow the content, it should use
+a new buffer allocated in its private user context data and
+set the pointed-to lws_tokens members to point to its buffer.
+</blockquote>
+<h3>LWS_EXT_CALLBACK_PACKET_TX_PRESEND</h3>
+<blockquote>
+this works the same way as
+LWS_EXT_CALLBACK_PACKET_RX_PREPARSE above, except it gives the
+extension a chance to change websocket data just before it will
+be sent out.  Using the same lws_token pointer scheme in <tt><b>in</b></tt>,
+the extension can change the buffer and the length to be
+transmitted how it likes.  Again if it wants to grow the
+buffer safely, it should copy the data into its own buffer and
+set the lws_tokens token pointer to it.
+</blockquote>
+<hr>
+<h2>struct lws_protocols - List of protocols and handlers server supports.</h2>
+<b>struct lws_protocols</b> {<br>
+&nbsp; &nbsp; <i>const char *</i> <b>name</b>;<br>
+&nbsp; &nbsp; <i>callback_function *</i> <b>callback</b>;<br>
+&nbsp; &nbsp; <i>size_t</i> <b>per_session_data_size</b>;<br>
+&nbsp; &nbsp; <i>size_t</i> <b>rx_buffer_size</b>;<br>
+&nbsp; &nbsp; <i>unsigned int</i> <b>id</b>;<br>
+&nbsp; &nbsp; <i>void *</i> <b>user</b>;<br>
+};<br>
+<h3>Members</h3>
+<dl>
+<dt><b>name</b>
+<dd>Protocol name that must match the one given in the client
+Javascript new WebSocket(url, 'protocol') name.
+<dt><b>callback</b>
+<dd>The service callback used for this protocol.  It allows the
+service action for an entire protocol to be encapsulated in
+the protocol-specific callback
+<dt><b>per_session_data_size</b>
+<dd>Each new connection using this protocol gets
+this much memory allocated on connection establishment and
+freed on connection takedown.  A pointer to this per-connection
+allocation is passed into the callback in the 'user' parameter
+<dt><b>rx_buffer_size</b>
+<dd>if you want atomic frames delivered to the callback, you
+should set this to the size of the biggest legal frame that
+you support.  If the frame size is exceeded, there is no
+error, but the buffer will spill to the user callback when
+full, which you can detect by using
+<b>lws_remaining_packet_payload</b>.  Notice that you
+just talk about frame size here, the LWS_SEND_BUFFER_PRE_PADDING
+and post-padding are automatically also allocated on top.
+<dt><b>id</b>
+<dd>ignored by lws, but useful to contain user information bound
+to the selected protocol.  For example if this protocol was
+called "myprotocol-v2", you might set id to 2, and the user
+code that acts differently according to the version can do so by
+switch (wsi-&gt;protocol-&gt;id), user code might use some bits as
+capability flags based on selected protocol version, etc.
+<dt><b>user</b>
+<dd>User provided context data at the protocol level.
+Accessible via lws_get_protocol(wsi)-&gt;user
+This should not be confused with wsi-&gt;user, it is not the same.
+The library completely ignores any value in here.
+</dl>
+<h3>Description</h3>
+<blockquote>
+This structure represents one protocol supported by the server.  An
+array of these structures is passed to <b>lws_create_server</b>
+allows as many protocols as you like to be handled by one server.
+<p>
+The first protocol given has its callback used for user callbacks when
+there is no agreed protocol name, that's true during HTTP part of the
+</blockquote>
+<h3>connection and true if the client did not send a Protocol</h3>
+<blockquote>
+header.
+</blockquote>
+<hr>
+<h2>struct lws_extension - An extension we know how to cope with</h2>
+<b>struct lws_extension</b> {<br>
+&nbsp; &nbsp; <i>const char *</i> <b>name</b>;<br>
+&nbsp; &nbsp; <i>extension_callback_function *</i> <b>callback</b>;<br>
+&nbsp; &nbsp; <i>size_t</i> <b>per_session_data_size</b>;<br>
+&nbsp; &nbsp; <i>void *</i> <b>per_context_private_data</b>;<br>
+};<br>
+<h3>Members</h3>
+<dl>
+<dt><b>name</b>
+<dd>Formal extension name, eg, "deflate-stream"
+<dt><b>callback</b>
+<dd>Service callback
+<dt><b>per_session_data_size</b>
+<dd>Libwebsockets will auto-malloc this much
+memory for the use of the extension, a pointer
+to it comes in the <tt><b>user</b></tt> callback parameter
+<dt><b>per_context_private_data</b>
+<dd>Optional storage for this extension that
+is per-context, so it can track stuff across
+all sessions, etc, if it wants
+</dl>
+<hr>
+<h2>struct lws_context_creation_info - </h2>
+<b>struct lws_context_creation_info</b> {<br>
+&nbsp; &nbsp; <i>int</i> <b>port</b>;<br>
+&nbsp; &nbsp; <i>const char *</i> <b>iface</b>;<br>
+&nbsp; &nbsp; <i>const struct lws_protocols *</i> <b>protocols</b>;<br>
+&nbsp; &nbsp; <i>const struct lws_extension *</i> <b>extensions</b>;<br>
+&nbsp; &nbsp; <i>const struct lws_token_limits *</i> <b>token_limits</b>;<br>
+&nbsp; &nbsp; <i>const char *</i> <b>ssl_cert_filepath</b>;<br>
+&nbsp; &nbsp; <i>const char *</i> <b>ssl_private_key_filepath</b>;<br>
+&nbsp; &nbsp; <i>const char *</i> <b>ssl_ca_filepath</b>;<br>
+&nbsp; &nbsp; <i>const char *</i> <b>ssl_cipher_list</b>;<br>
+&nbsp; &nbsp; <i>const char *</i> <b>http_proxy_address</b>;<br>
+&nbsp; &nbsp; <i>unsigned int</i> <b>http_proxy_port</b>;<br>
+&nbsp; &nbsp; <i>int</i> <b>gid</b>;<br>
+&nbsp; &nbsp; <i>int</i> <b>uid</b>;<br>
+&nbsp; &nbsp; <i>unsigned int</i> <b>options</b>;<br>
+&nbsp; &nbsp; <i>void *</i> <b>user</b>;<br>
+&nbsp; &nbsp; <i>int</i> <b>ka_time</b>;<br>
+&nbsp; &nbsp; <i>int</i> <b>ka_probes</b>;<br>
+&nbsp; &nbsp; <i>int</i> <b>ka_interval</b>;<br>
+#ifdef LWS_OPENSSL_SUPPORT<br>
+&nbsp; &nbsp; <i>void *</i> <b>provided_client_ssl_ctx</b>;<br>
+#else<br>
+&nbsp; &nbsp; <i>void *</i> <b>provided_client_ssl_ctx</b>;<br>
+#endif<br>
+};<br>
+<h3>Members</h3>
+<dl>
+<dt><b>port</b>
+<dd>Port to listen on... you can use CONTEXT_PORT_NO_LISTEN to
+suppress listening on any port, that's what you want if you are
+not running a websocket server at all but just using it as a
+client
+<dt><b>iface</b>
+<dd>NULL to bind the listen socket to all interfaces, or the
+interface name, eg, "eth2"
+<dt><b>protocols</b>
+<dd>Array of structures listing supported protocols and a protocol-
+specific callback for each one.  The list is ended with an
+entry that has a NULL callback pointer.
+It's not const because we write the owning_server member
+<dt><b>extensions</b>
+<dd>NULL or array of lws_extension structs listing the
+extensions this context supports.  If you configured with
+--without-extensions, you should give NULL here.
+<dt><b>token_limits</b>
+<dd>NULL or struct lws_token_limits pointer which is initialized
+with a token length limit for each possible WSI_TOKEN_***
+<dt><b>ssl_cert_filepath</b>
+<dd>If libwebsockets was compiled to use ssl, and you want
+to listen using SSL, set to the filepath to fetch the
+server cert from, otherwise NULL for unencrypted
+<dt><b>ssl_private_key_filepath</b>
+<dd>filepath to private key if wanting SSL mode;
+if this is set to NULL but sll_cert_filepath is set, the
+OPENSSL_CONTEXT_REQUIRES_PRIVATE_KEY callback is called to allow
+setting of the private key directly via openSSL library calls
+<dt><b>ssl_ca_filepath</b>
+<dd>CA certificate filepath or NULL
+<dt><b>ssl_cipher_list</b>
+<dd>List of valid ciphers to use (eg,
+"RC4-MD5:RC4-SHA:AES128-SHA:AES256-SHA:HIGH:!DSS:!aNULL"
+or you can leave it as NULL to get "DEFAULT"
+<dt><b>http_proxy_address</b>
+<dd>If non-NULL, attempts to proxy via the given address.
+If proxy auth is required, use format
+"username:password<tt><b>server</b></tt>:port"
+<dt><b>http_proxy_port</b>
+<dd>If http_proxy_address was non-NULL, uses this port at the address
+<dt><b>gid</b>
+<dd>group id to change to after setting listen socket, or -1.
+<dt><b>uid</b>
+<dd>user id to change to after setting listen socket, or -1.
+<dt><b>options</b>
+<dd>0, or LWS_SERVER_OPTION_DEFEAT_CLIENT_MASK
+<dt><b>user</b>
+<dd>optional user pointer that can be recovered via the context
+pointer using lws_context_user
+<dt><b>ka_time</b>
+<dd>0 for no keepalive, otherwise apply this keepalive timeout to
+all libwebsocket sockets, client or server
+<dt><b>ka_probes</b>
+<dd>if ka_time was nonzero, after the timeout expires how many
+times to try to get a response from the peer before giving up
+and killing the connection
+<dt><b>ka_interval</b>
+<dd>if ka_time was nonzero, how long to wait before each ka_probes
+attempt
+<dt><b>provided_client_ssl_ctx</b>
+<dd>If non-null, swap out libwebsockets ssl
+implementation for the one provided by provided_ssl_ctx.
+Libwebsockets no longer is responsible for freeing the context
+if this option is selected.
+<dt><b>provided_client_ssl_ctx</b>
+<dd>If non-null, swap out libwebsockets ssl
+implementation for the one provided by provided_ssl_ctx.
+Libwebsockets no longer is responsible for freeing the context
+if this option is selected.
+</dl>
+<hr>

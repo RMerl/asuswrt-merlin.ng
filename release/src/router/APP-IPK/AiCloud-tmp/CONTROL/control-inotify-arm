@@ -1,0 +1,13 @@
+Package: inotify
+Architecture: arm
+Priority: optional
+Section: net
+Version: 1.0.0.7.0.gbec8a39
+Maintainer: ASUS
+Source: http://127.0.0.1/
+URL:
+Description: watch dirs
+Depends: 
+Suggests: 
+Conflicts: 
+Enabled: yes

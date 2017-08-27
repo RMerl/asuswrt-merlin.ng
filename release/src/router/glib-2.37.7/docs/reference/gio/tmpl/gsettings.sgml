@@ -1,0 +1,606 @@
+<!-- ##### SECTION Title ##### -->
+GSettings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GSettings ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL GSettings::change-event ##### -->
+<para>
+
+</para>
+
+@gsettings: the object which received the signal.
+@arg1: 
+@arg2: 
+@Returns: 
+
+<!-- ##### SIGNAL GSettings::changed ##### -->
+<para>
+
+</para>
+
+@gsettings: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL GSettings::writable-change-event ##### -->
+<para>
+
+</para>
+
+@gsettings: the object which received the signal.
+@arg1: 
+@Returns: 
+
+<!-- ##### SIGNAL GSettings::writable-changed ##### -->
+<para>
+
+</para>
+
+@gsettings: the object which received the signal.
+@arg1: 
+
+<!-- ##### ARG GSettings:backend ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSettings:delay-apply ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSettings:has-unapplied ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSettings:path ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSettings:schema ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSettings:schema-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG GSettings:settings-schema ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION g_settings_new ##### -->
+<para>
+
+</para>
+
+@schema_id: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_new_with_path ##### -->
+<para>
+
+</para>
+
+@schema_id: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_new_with_backend ##### -->
+<para>
+
+</para>
+
+@schema_id: 
+@backend: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_new_with_backend_and_path ##### -->
+<para>
+
+</para>
+
+@schema_id: 
+@backend: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_new_full ##### -->
+<para>
+
+</para>
+
+@schema: 
+@backend: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_sync ##### -->
+<para>
+
+</para>
+
+@void: 
+
+
+<!-- ##### FUNCTION g_settings_get_value ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_value ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_is_writable ##### -->
+<para>
+
+</para>
+
+@settings: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_delay ##### -->
+<para>
+
+</para>
+
+@settings: 
+
+
+<!-- ##### FUNCTION g_settings_apply ##### -->
+<para>
+
+</para>
+
+@settings: 
+
+
+<!-- ##### FUNCTION g_settings_revert ##### -->
+<para>
+
+</para>
+
+@settings: 
+
+
+<!-- ##### FUNCTION g_settings_get_has_unapplied ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_child ##### -->
+<para>
+
+</para>
+
+@settings: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_reset ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+
+
+<!-- ##### FUNCTION g_settings_list_schemas ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_list_relocatable_schemas ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_list_keys ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_list_children ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_range ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_range_check ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION g_settings_set ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_boolean ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_boolean ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_int ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_int ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_uint ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_uint ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_double ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_double ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_string ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_string ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_strv ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_strv ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_enum ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_enum ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_flags ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_set_flags ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@value: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GSettingsGetMapping ##### -->
+<para>
+
+</para>
+
+@value: 
+@result: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_get_mapped ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@mapping: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### ENUM GSettingsBindFlags ##### -->
+<para>
+
+</para>
+
+@G_SETTINGS_BIND_DEFAULT: 
+@G_SETTINGS_BIND_GET: 
+@G_SETTINGS_BIND_SET: 
+@G_SETTINGS_BIND_NO_SENSITIVITY: 
+@G_SETTINGS_BIND_GET_NO_CHANGES: 
+@G_SETTINGS_BIND_INVERT_BOOLEAN: 
+
+<!-- ##### FUNCTION g_settings_bind ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@object: 
+@property: 
+@flags: 
+
+
+<!-- ##### FUNCTION g_settings_bind_with_mapping ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@object: 
+@property: 
+@flags: 
+@get_mapping: 
+@set_mapping: 
+@user_data: 
+@destroy: 
+
+
+<!-- ##### FUNCTION g_settings_bind_writable ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@object: 
+@property: 
+@inverted: 
+
+
+<!-- ##### FUNCTION g_settings_unbind ##### -->
+<para>
+
+</para>
+
+@object: 
+@property: 
+
+
+<!-- ##### USER_FUNCTION GSettingsBindSetMapping ##### -->
+<para>
+
+</para>
+
+@value: 
+@expected_type: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION GSettingsBindGetMapping ##### -->
+<para>
+
+</para>
+
+@value: 
+@variant: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_settings_create_action ##### -->
+<para>
+
+</para>
+
+@settings: 
+@key: 
+@Returns: 
+
+

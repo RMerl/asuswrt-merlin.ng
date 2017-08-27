@@ -1,0 +1,482 @@
+#!/usr/bin/perl -w -pi.old
+
+# Convert a sensors.conf file from the old (Linux 2.4, lm-sensors 2)
+# symbol names to the new (Linux 2.6 or 3, lm-sensors 3) symbol names.
+#
+# Copyright (C) 2007, 2011  Jean Delvare <jdelvare@suse.de>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+
+# Implemented conversions:
+# * The "algorithm name" part of bus statements is removed.
+# * Bus statements for the ISA bus are removed.
+# * Chip names containing dashes are removed.
+# * Label, ignore, set and compute statements referencing features
+#   which are not part of the new interface are removed.
+# * Label, ignore, set and compute statements referencing features
+#   which have been renamed are updated. This includes both general
+#   feature name changes and chip-specific feature name changes.
+#
+# Note that we have to look at the commented out lines too, so that
+# the user doesn't have a bad surprise when uncommenting them.
+
+use strict;
+use vars qw($debug $chip %trans @delete %chip_trans %chip_delete);
+
+BEGIN
+{
+	$debug = 0;
+
+	%trans = (
+		qr/\bvid\b/			=> sub { "cpu0_vid" },
+		qr/\bremote_temp\b/		=> sub { "temp2" },
+		qr/\bremote_temp_hyst\b/	=> sub { "temp2_max_hyst" },
+		qr/\bremote_temp_low\b/		=> sub { "temp2_min" },
+		qr/\bremote_temp_over\b/	=> sub { "temp2_max" },
+		qr/\btemp\b/			=> sub { "temp1" },
+		qr/\btemp_hyst\b/		=> sub { "temp1_max_hyst" },
+		qr/\btemp_low\b/		=> sub { "temp1_min" },
+		qr/\btemp_over\b/		=> sub { "temp1_max" },
+		qr/\btemp_high\b/		=> sub { "temp1_max" },
+		qr/\btemp_crit\b/		=> sub { "temp1_crit" },
+
+		qr/\bvin(\d+)_max\b/		=> sub { "in$1_max" },
+		qr/\bvin(\d+)_min\b/		=> sub { "in$1_min" },
+		qr/\bvin(\d+)\b/		=> sub { "in$1" },
+		qr/\btemp(\d+)_over\b/		=> sub { "temp$1_max" },
+		qr/\btemp(\d+)_hyst\b/		=> sub { "temp$1_max_hyst" },
+		qr/\btemp(\d+)_high\b/		=> sub { "temp$1_max" },
+		qr/\btemp(\d+)_low\b/		=> sub { "temp$1_min" },
+		qr/\bsensor(\d+)\b/		=> sub { "temp$1_type" },
+	);
+
+	@delete = (
+		qr/\balarms\b/,
+		qr/\bbeeps\b/,
+		qr/\bpwm\d*\b/,
+		qr/\bpwm\d+_enable\b/,
+		qr/\b(in|temp|fan)\d+_(state|status)\b/,
+		qr/\banalog_out\b/,
+		qr/\balarms_(in|temp|fan)\b/,
+	);
+
+	%chip_trans = (
+		"gl518sm" => {
+			qr/\bvdd\b/			=> sub { "in0" },
+			qr/\bvdd_min\b/			=> sub { "in0_min" },
+			qr/\bvdd_max\b/			=> sub { "in0_max" },
+		},
+		"gl520sm" => {
+			qr/\bvdd\b/			=> sub { "in0" },
+			qr/\bvdd_min\b/			=> sub { "in0_min" },
+			qr/\bvdd_max\b/			=> sub { "in0_max" },
+		},
+		"lm80" => {
+			qr/\btemp_hot_hyst\b/		=> sub { "temp1_max_hyst" },
+			qr/\btemp_hot_max\b/		=> sub { "temp1_max" },
+			qr/\btemp_os_hyst\b/		=> sub { "temp1_crit_hyst" },
+			qr/\btemp_os_max\b/		=> sub { "temp1_crit" },
+		},
+		"lm83" => {
+			qr/\btcrit\b/			=> sub { "temp3_crit" },
+		},
+		"lm90" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"adm1032" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"lm86" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"lm99" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"adt7461" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"max6657" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"max6680" => {
+			qr/\btcrit(\d)\b/		=> sub { "temp$1_crit" },
+			qr/\bhyst(\d)\b/		=> sub { "temp$1_crit_hyst" },
+		},
+		"lm93" => {
+			qr/\bvid([12])\b/			=> sub { "cpu".($1-1)."_vid" },
+		},
+		"adm9240" => {
+			qr/"2\.5V(|_min|_max)"/		=> sub { "in0$1" },
+			qr/\bVccp1(|_min|_max)\b/	=> sub { "in1$1" },
+			qr/"3\.3V(|_min|_max)"/		=> sub { "in2$1" },
+			qr/"5V(|_min|_max)"/		=> sub { "in3$1" },
+			qr/"12V(|_min|_max)"/		=> sub { "in4$1" },
+			qr/\bVccp2(|_min|_max)\b/	=> sub { "in5$1" },
+		},
+		"lm81" => {
+			qr/"2\.5V(|_min|_max)"/		=> sub { "in0$1" },
+			qr/\bVccp1(|_min|_max)\b/	=> sub { "in1$1" },
+			qr/"3\.3V(|_min|_max)"/		=> sub { "in2$1" },
+			qr/"5V(|_min|_max)"/		=> sub { "in3$1" },
+			qr/"12V(|_min|_max)"/		=> sub { "in4$1" },
+			qr/\bVccp2(|_min|_max)\b/	=> sub { "in5$1" },
+		},
+		"ds1780" => {
+			qr/"2\.5V(|_min|_max)"/		=> sub { "in0$1" },
+			qr/\bVccp1(|_min|_max)\b/	=> sub { "in1$1" },
+			qr/"3\.3V(|_min|_max)"/		=> sub { "in2$1" },
+			qr/"5V(|_min|_max)"/		=> sub { "in3$1" },
+			qr/"12V(|_min|_max)"/		=> sub { "in4$1" },
+			qr/\bVccp2(|_min|_max)\b/	=> sub { "in5$1" },
+		},
+		"adm1024" => {
+			qr/"2\.5V(|_min|_max)"/		=> sub { "in0$1" },
+			qr/\bVccp1(|_min|_max)\b/	=> sub { "in1$1" },
+			qr/"3\.3V(|_min|_max)"/		=> sub { "in2$1" },
+			qr/"5V(|_min|_max)"/		=> sub { "in3$1" },
+			qr/"12V(|_min|_max)"/		=> sub { "in4$1" },
+			qr/\bVccp2(|_min|_max)\b/	=> sub { "in5$1" },
+			qr/\btemp_hyst\b/		=> sub { "temp1_min" },
+			qr/\btemp(\d)\b/		=> sub { "temp".($1+1) },
+			qr/\btemp(\d)_hyst\b/		=> sub { "temp".($1+1)."_min" },
+			qr/\btemp(\d)_over\b/		=> sub { "temp".($1+1)."_max" },
+		},
+		"maxilife" => {
+			qr/\bvid(\d)(|_min|_max)\b/	=> sub { "in".($1-1).$2 },
+		},
+		"thmc50" => {
+			qr/\btemp_hyst\b/		=> sub { "temp1_min" },
+			qr/\bremote_temp_hyst\b/	=> sub { "temp2_min" },
+			qr/\bremote_temp2\b/		=> sub { "temp3" },
+			qr/\bremote_temp2_hyst\b/	=> sub { "temp3_min" },
+			qr/\bremote_temp2_over\b/	=> sub { "temp3_max" },
+		},
+		"adm1022" => {
+			qr/\btemp_hyst\b/		=> sub { "temp1_min" },
+			qr/\bremote_temp_hyst\b/	=> sub { "temp2_min" },
+			qr/\bremote_temp2\b/		=> sub { "temp3" },
+			qr/\bremote_temp2_hyst\b/	=> sub { "temp3_min" },
+			qr/\bremote_temp2_over\b/	=> sub { "temp3_max" },
+		},
+		"adm1026" => {
+			qr/\bfan(\d)(|_div|_min)\b/	=> sub { "fan".($1+1).$2 },
+			qr/\btemp(\d)_therm\b/		=> sub { "temp$1_crit" },
+		},
+		"via686a" => {
+			qr/"2\.0V"/			=> sub { "in0" },
+			qr/"2\.5V"/			=> sub { "in1" },
+			qr/"3\.3V"/			=> sub { "in2" },
+			qr/"5\.0V"/			=> sub { "in3" },
+			qr/"12V"/			=> sub { "in4" },
+		},
+		"lm87" => {
+			qr/"2\.5V(|_min|_max)"/		=> sub { "in0$1" },
+			qr/\bVccp1(|_min|_max)\b/	=> sub { "in1$1" },
+			qr/"3\.3V(|_min|_max)"/		=> sub { "in2$1" },
+			qr/"5V(|_min|_max)"/		=> sub { "in3$1" },
+			qr/"12V(|_min|_max)"/		=> sub { "in4$1" },
+			qr/\bVccp2(|_min|_max)\b/	=> sub { "in5$1" },
+			qr/\bAIN1(|_min|_max)\b/	=> sub { "in6$1" },
+			qr/\bAIN2(|_min|_max)\b/	=> sub { "in7$1" },
+			qr/\bCPU_Temp\b/		=> sub { "temp2" },
+		},
+		"fscpos" => {
+			qr/\bvolt12\b/			=> sub { "in0" },
+			qr/\bvolt5\b/			=> sub { "in1" },
+			qr/\bvoltbatt\b/		=> sub { "in2" },
+		},
+		"fscscy" => {
+			qr/\bvolt12\b/			=> sub { "in0" },
+			qr/\bvolt5\b/			=> sub { "in1" },
+			qr/\bvoltbatt\b/		=> sub { "in2" },
+		},
+		"pcf8591" => {
+			qr/\bch(\d)\b/			=> sub { "in$1" },
+		},
+		"smsc47m192" => {
+			qr/\btemp(\d)_input_fault\b/	=> sub { "temp$1_fault" },
+		},
+		"lm92" => {
+			qr/\btemp_hyst\b/		=> sub { "temp1_crit_hyst" },
+		},
+		"max1619" => {
+			qr/\btemp2_hyst\b/		=> sub { "temp2_crit_hyst" },
+		},
+		"lm78" => {
+			qr/\bin([56])_(min|max)\b/	=> sub { "in$1_".($2 eq "max" ? "min" : "max") },
+		},
+		"lm79" => {
+			qr/\bin([56])_(min|max)\b/	=> sub { "in$1_".($2 eq "max" ? "min" : "max") },
+		},
+		"w83781d" => {
+			qr/\bin([56])_(min|max)\b/	=> sub { "in$1_".($2 eq "max" ? "min" : "max") },
+		},
+		"as99127f" => {
+			qr/\bin([56])_(min|max)\b/	=> sub { "in$1_".($2 eq "max" ? "min" : "max") },
+		},
+	);
+
+	%chip_delete = (
+		"adm1021" => [
+			qr/\bdie_code\b/,
+		],
+		"lm84" => [
+			qr/\bdie_code\b/,
+		],
+		"gl523" => [
+			qr/\bdie_code\b/,
+		],
+		"thmc10" => [
+			qr/\bdie_code\b/,
+		],
+		"gl518sm" => [
+			qr/\bfan1_off\b/,
+			qr/\bfan1_off_pin\b/,
+			qr/\biterate\b/,
+		],
+		"gl520sm" => [
+			qr/\bfan1_off\b/,
+			qr/\btwo_temps\b/,
+		],
+		"w83792d" => [
+			qr/\bchassis\b/,
+		],
+		"w83793" => [
+			qr/\bchassis\b/,
+		],
+		"maxilife" => [
+			qr/\bpll(|_min|_max)\b/,
+		],
+		"thmc50" => [
+			qr/\banalog output\b/,
+			qr/\binterrupts\b/,
+			qr/\binterrupt mask\b/,
+			qr/\bdie_code\b/,
+		],
+		"adm1022" => [
+			qr/\banalog output\b/,
+			qr/\binterrupts\b/,
+			qr/\binterrupt mask\b/,
+			qr/\bdie_code\b/,
+		],
+		"adm1026" => [
+			qr/\balarm_mask\b/,
+			qr/\bgpio\b/,
+			qr/\bgpio_mask\b/,
+			qr/\bafc_pwm\b/,
+			qr/\bafc_analog_out\b/,
+			qr/\btemp\d_tmin\b/,
+		],
+		"lm85" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"lm85b" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"lm85c" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"emc6d100" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"emc6d102" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"adm1027" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"adt7473" => [
+			qr/\bpwm\d_(spinup|min|freq|min_ctl|zone|spinup_ctl)\b/,
+			qr/\bzone\d_(limit|hyst|range|critical|smooth)\b/,
+			qr/\bfan\d_(tach_mode|ppr)\b/,
+		],
+		"fscpos" => [
+			qr/\brev\b/,
+			qr/\bevent\b/,
+			qr/\bcontrol\b/,
+			qr/\bfan\d_ripple\b/,
+			qr/\bwdog_(preset|state|control)\b/,
+		],
+		"fscscy" => [
+			qr/\brev\b/,
+			qr/\bevent\b/,
+			qr/\bcontrol\b/,
+			qr/\btemp\d_lim\b/,
+			qr/\bfan\d_ripple\b/,
+			qr/\bwdog_(preset|state|control)\b/,
+		],
+		"fscher" => [
+			qr/\brev\b/,
+			qr/\bevent\b/,
+			qr/\bcontrol\b/,
+			qr/\bfan\d_ripple\b/,
+			qr/\bwdog_(preset|state|control)\b/,
+		],
+		"pcf8591" => [
+			qr/\bain_conf\b/,
+			qr/\baout_enable\b/,
+			qr/\baout\b/,
+		],
+		"vt1211" => [
+			qr/\bconfig\b/,
+		],
+		"vt8231" => [
+			qr/\bconfig\b/,
+		],
+		"max6650" => [
+			qr/\bspeed\b/,
+		],
+		"max6651" => [
+			qr/\bspeed\b/,
+		],
+		"applesmc" => [
+			qr/\bfan\d_(max|safe)\b/,
+		],
+	);
+
+	if (defined $ARGV[0] && ($ARGV[0] eq '-h' || $ARGV[0] eq '--help')) {
+		print "Convert sensors.conf from lm-sensors 2 format to lm-sensors 3 format\n",
+		      "Typical usage: sensors-conf-convert < /etc/sensors.conf > /etc/sensors3.conf\n";
+		exit 0;
+	}
+}
+
+if ($. == 1) {
+	print "# Converted by sensors-conf-convert on ".localtime()."\n";
+}
+
+sub substitute_line($$)
+{
+	my ($chip, $line) = @_;
+
+	# First the chip-specific ones
+	if ($chip && exists $chip_trans{$chip}) {
+		foreach my $t (keys %{$chip_trans{$chip}}) {
+			$line =~ s/$t/$chip_trans{$chip}->{$t}->()/ge;
+		}
+	}
+
+	# Then the general substitutions
+	foreach my $t (keys %trans) {
+		# Kudos to the nice folks in #perl on freenode :)
+		$line =~ s/$t/$trans{$t}->()/ge;
+	}
+
+	return $line;
+}
+
+sub delete_line($)
+{
+	my $feature = shift;
+
+	# First the general deletions
+	foreach my $t (@delete) {
+		return 1 if $feature =~ m/$t/;
+	}
+
+	# Then the chip-specific ones
+	if ($chip && exists $chip_delete{$chip}) {
+		foreach my $t (@{$chip_delete{$chip}}) {
+			return 1 if $feature =~ m/$t/;
+		}
+	}
+
+	return 0;
+}
+
+if (m/^# Converted by sensors-conf-convert/) {
+	print STDERR "WARNING: Converting an already converted file!\n";
+	print STDERR "         Result will be incorrect for some chip types.\n";
+}
+
+# Bus statements
+if (m/^([\s#]*bus\s+"?i2c-\d+"?\s+"([^"]+)")\s+"[^"]*"/) {
+	print STDERR "Processing bus statement: $2\n" if $debug;
+
+	if ($2 eq "ISA main adapter") {
+		$_ = '';	# Drop entirely 
+	} else {
+		$_ = "$1\n";	# Drop algorithm name
+	}
+}
+
+# Chip statements
+elsif (m/^[\s#]*chip\s+"([\w\d*-]+)"/) {
+	# We only remember the first chip name, assuming that all chips
+	# in a given "chip" statement need the same specific processing
+	$chip = $1;
+	$chip =~ s/-.*//;
+	undef $chip if $chip eq "*";
+
+	# Remove dashes from chip names, as this is no longer allowed
+	s/(\s+"lm78-)j-/$1/g;
+	s/(\s+"maxilife-)(cg|co|as|nba)-/$1/g;
+	# Simplify possible duplicates
+	s/("lm78-\*")(\s+"lm78-\*")+/$1/g;
+	s/("maxilife-\*")(\s+"maxilife-\*")+/$1/g;
+
+	# "*" is no longer a valid chip name
+	s/"\*"/"\*-\*"/g;
+
+	print STDERR "Processing chip section: $chip\n" if $chip and $debug;
+}
+
+# Drop references to lm78-j
+elsif (m/^\s*#+.*lm78-?j/i) {
+	s/(lm78), lm78-?j/$1/gi;
+	s/(lm78)-?j/$1/gi;
+}
+
+# Drop references to vrm
+elsif (m/^[\s#]*set\s+vrm\s/i
+    || m/^\s*#+\s*adjust this if your vid is wrong/i
+    || m/^\s*#+\s*Also, one should set vrm prior to using vid in any formula/) {
+	$_ = '';
+}
+
+# Drop references to pwm
+elsif (m/^\s*#+\s*PWM Output/i) {
+	$_ = '';
+}
+
+# Feature name substitution
+elsif (m/^[\s#]*(?:label|ignore|set|compute)\s+(\S+)\s/) {
+	if (delete_line($1)) {
+		# Delete references to features that are now gone
+		$_ = '';
+	} else {
+		# Substitute feature names
+		$_ = substitute_line($chip, $_);
+	}
+}

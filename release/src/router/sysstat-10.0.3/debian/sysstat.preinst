@@ -1,0 +1,21 @@
+#! /bin/sh
+# vim:ts=4:et
+# $Id: sysstat.preinst,v 1.1 2007-03-28 21:38:17 robert Exp $
+
+set -e
+
+SYSSTAT_CONF_DIR=/etc/sysstat
+
+# made the config file name match that one used by the upstream
+if [ "$1" = "upgrade" ] && 
+    [ -e ${SYSSTAT_CONF_DIR}/config ] && 
+    [ ! -e ${SYSSTAT_CONF_DIR}/sysstat ] &&
+    dpkg --compare-versions "$2" lt-nl "7.1.3-1"; then
+        mv -f ${SYSSTAT_CONF_DIR}/config ${SYSSTAT_CONF_DIR}/sysstat
+fi        
+
+
+#DEBHELPER#
+
+exit 0
+

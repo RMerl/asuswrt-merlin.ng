@@ -1,0 +1,12 @@
+*filter
+
+# default policy is DROP
+-P INPUT DROP
+-P OUTPUT DROP
+-P FORWARD DROP
+
+# allow ssh
+-A INPUT  -p tcp --dport 22 -j ACCEPT
+-A OUTPUT -p tcp --sport 22 -j ACCEPT
+
+COMMIT

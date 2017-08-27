@@ -1,0 +1,142 @@
+<!-- ##### SECTION Title ##### -->
+Relations and Tuples
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT GRelation ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION g_relation_new ##### -->
+<para>
+
+</para>
+
+@fields: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_relation_index ##### -->
+<para>
+
+</para>
+
+@relation: 
+@field: 
+@hash_func: 
+@key_equal_func: 
+
+
+<!-- ##### FUNCTION g_relation_insert ##### -->
+<para>
+
+</para>
+
+@relation: 
+@...: 
+
+
+<!-- ##### FUNCTION g_relation_exists ##### -->
+<para>
+
+</para>
+
+@relation: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_relation_count ##### -->
+<para>
+
+</para>
+
+@relation: 
+@key: 
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_relation_select ##### -->
+<para>
+
+</para>
+
+@relation: 
+@key: 
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_relation_delete ##### -->
+<para>
+
+</para>
+
+@relation: 
+@key: 
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION g_relation_destroy ##### -->
+<para>
+
+</para>
+
+@relation: 
+
+
+<!-- ##### FUNCTION g_relation_print ##### -->
+<para>
+
+</para>
+
+@relation: 
+
+
+<!-- ##### STRUCT GTuples ##### -->
+<para>
+
+</para>
+
+@len: 
+
+<!-- ##### FUNCTION g_tuples_destroy ##### -->
+<para>
+
+</para>
+
+@tuples: 
+
+
+<!-- ##### FUNCTION g_tuples_index ##### -->
+<para>
+
+</para>
+
+@tuples: 
+@index_: 
+@field: 
+@Returns: 
+
+

@@ -1,0 +1,5 @@
+*.o
+*.ko
+dhd.mod.c
+modules.builtin
+modules.order

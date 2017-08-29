@@ -48,3 +48,15 @@ src/proc_open
 src/versionstamp.h
 */Makefile.in
 libtool
+Makefile.in
+ar-lib
+compile
+config.guess
+config.h.in
+config.sub
+configure
+depcomp
+install-sh
+ltmain.sh
+m4/
+missing

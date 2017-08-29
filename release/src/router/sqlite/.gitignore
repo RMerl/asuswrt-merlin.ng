@@ -13,3 +13,4 @@ libtool
 sqlite3
 autom4te.cache
 configure
+*.pc

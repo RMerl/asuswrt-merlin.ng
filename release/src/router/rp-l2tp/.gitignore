@@ -9,3 +9,4 @@ l2tpd
 config.cache
 config.log
 config.status
+l2tp-control

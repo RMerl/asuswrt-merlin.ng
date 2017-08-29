@@ -1,0 +1,8 @@
+RC_INDEP
+asus/hwinfo
+asus/libbwdpi.so
+asus_sql/bwdpi_sqlite
+asus_sql/libbwdpi_sql.so
+include/tdts/tmcfg.h
+include/udb/tmcfg_udb.h
+

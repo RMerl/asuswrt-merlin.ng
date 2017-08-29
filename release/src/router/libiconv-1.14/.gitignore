@@ -20,6 +20,7 @@ Makefile
 po/Makefile.in
 po/POTFILES
 src/iconv_no_i18n
+src/iconv
 srclib/alloca.h
 srclib/arg-nonnull.h
 srclib/c++defs.h

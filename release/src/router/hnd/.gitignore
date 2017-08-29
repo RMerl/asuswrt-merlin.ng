@@ -1,0 +1,5 @@
+*.o
+*.ko
+hnd.mod.c
+modules.builtin
+modules.order

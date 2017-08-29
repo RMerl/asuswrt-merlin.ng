@@ -1,0 +1,5 @@
+*.o
+*.ko
+modules.builtin
+modules.order
+wl.mod.c

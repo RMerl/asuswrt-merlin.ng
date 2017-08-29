@@ -1,0 +1,5 @@
+*.o
+*.ko
+igs.mod.c
+modules.builtin
+modules.order

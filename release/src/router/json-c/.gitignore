@@ -1,6 +1,5 @@
 *.lo
 *.la
-tests/Makefile
 config.h
 config.status
 config.log
@@ -9,3 +8,5 @@ Makefile
 libtool
 .deps
 .libs
+json_config.h
+stamp-h2

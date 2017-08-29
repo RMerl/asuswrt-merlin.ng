@@ -1,0 +1,6 @@
+*.o
+*.ko
+emf.mod.c
+modules.builtin
+modules.order
+

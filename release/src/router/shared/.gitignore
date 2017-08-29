@@ -5,3 +5,5 @@
 version
 version.h
 rtconfig.h
+bbid.h
+defaults.prep

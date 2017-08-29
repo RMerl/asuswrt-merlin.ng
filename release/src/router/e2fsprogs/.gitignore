@@ -211,6 +211,7 @@ tests/test_one
 util/dirpaths.h
 util/gen-tarball
 util/install-symlink
+util/symlinks
 util/subst
 util/subst.conf
 Meta
@@ -218,3 +219,4 @@ e2fsprogs.spec
 *.o
 *.so
 *.so.*
+

@@ -84,15 +84,15 @@ endif
 
 export BRANCH := $(shell git branch)
 
-ifeq ($(BRANCH),)
-include ./router/extendno.conf
-else
-ifeq ($(EXTENDTYPE),)
-export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1)
-else
-export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1)-$(EXTENDTYPE)
-endif
-endif
+#ifeq ($(BRANCH),)
+#include ./router/extendno.conf
+#else
+#ifeq ($(EXTENDTYPE),)
+#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1)
+#else
+#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1)-$(EXTENDTYPE)
+#endif
+#endif
 
 ifeq ($(EXTENDNO),)
 export EXTENDNO := 0-g$(shell git log --pretty=format:'%h' -n 1)
@@ -122,6 +122,9 @@ ifeq ($(HND_ROUTER),y)
 export CONFIG_BCMWL5=y
 export CONFIG_LINUX26=y
 	# its multi-arch in 94908, specify ARCH in kbuild result bad
+endif
+ifneq ($(BUILDREV),)
+export BUILDREV := -g$(shell git log --pretty=format:'%h' -n 1)
 endif
 include ./platform.mak
 -include .config
@@ -196,9 +199,9 @@ KERN_SIZE_OPT ?= y
 endif
 
 ifeq ($(FAKEID),y)
-export IMGNAME := $(BUILD_NAME)_$(KERNEL_VER).$(FS_VER)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)
+export IMGNAME := $(BUILD_NAME)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)
 else
-export IMGNAME := $(BUILD_NAME)_$(KERNEL_VER).$(FS_VER)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)
+export IMGNAME := $(BUILD_NAME)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV)
 endif
 
 ifeq ($(BUILD_NAME),DSL-AC68U)
@@ -347,17 +350,17 @@ rt_ver:
 	@echo '#define RT_VERSION "$(KERNEL_VER).$(FS_VER)"' >> router/shared/version.h
 ifeq ($(FAKEID),y)
 	@echo '#define RT_SERIALNO "$(FORCE_SN)"' >> router/shared/version.h
-	@echo '#define RT_EXTENDNO "$(FORCE_EN)"' >> router/shared/version.h
+	@echo '#define RT_EXTENDNO "$(FORCE_EN)$(BUILDREV)"' >> router/shared/version.h
 else
 	@echo '#define RT_SERIALNO "$(SERIALNO)"' >> router/shared/version.h
-	@echo '#define RT_EXTENDNO "$(EXTENDNO)"' >> router/shared/version.h
+	@echo '#define RT_EXTENDNO "$(EXTENDNO)$(BUILDREV)"' >> router/shared/version.h
 endif
 	@echo '#define RT_SWPJVERNO "$(SWPJVERNO)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_NAME "$(BUILD_NAME)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_INFO "$(BUILD_TIME) $(BUILD_USER)@$(BUILD_INFO)"' >> router/shared/version.h
 	@echo '#endif' >> router/shared/version.h
-	@echo '$(BUILD_NAME)_$(KERNEL_VER).$(FS_VER) $(BUILD_TIME)' > router/shared/version
-	@echo 'EXTENDNO=$(EXTENDNO)' > router/extendno.conf
+	@echo '$(BUILD_NAME) $(SERIALNO)-$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
+	@echo 'EXTENDNO=$(EXTENDNO)$(BUILDREV)' > router/extendno.conf
 
 
 rt_ver_ntools:
@@ -642,7 +645,11 @@ else
 	ctools/trx -o image/linux-lzma.trx lzma-loader/loader.gz $(PLATFORMDIR)/vmlinuz-lzma $(PLATFORMDIR)/target.image
 endif
 ifneq ($(CONFIG_BCMWL5),)
+ifeq ($(FAKEHDR),y)
+	ctools/trx_asus -i image/linux-lzma.trx -r $(BUILD_NAME),$(KERNEL_VER).$(FS_VER),$(FORCE_SN),$(FORCE_EN),image/$(IMGNAME).trx
+else
 	ctools/trx_asus -i image/linux-lzma.trx -r $(BUILD_NAME),$(KERNEL_VER).$(FS_VER),$(SERIALNO),$(EXTENDNO),image/$(IMGNAME).trx
+endif
 else
 	ctools/trx_asus -i image/linux-lzma.trx -r $(BUILD_NAME),$(KERNEL_VER).$(FS_VER),image/$(IMGNAME).trx
 endif
@@ -654,7 +661,7 @@ ifeq ($(RTCONFIG_REALTEK),y)
 	asustools/mkimage -A mips -O linux -T kernel -C lzma -a 80c00000 -e $${ENTRY} -n $(BUILD_NAME) -V "$(KERNEL_VER)" "$(FS_VER)" "$(SERIALNO)" "$(EXTENDNO)" "0" "0" "0" "0" "0" "0" -d $(RSDKDIR)/image/fw.bin image/$(IMGNAME).trx
 	#@asustools/mkimage -A mips -O linux -d $(RSDKDIR)/image/fw.bin image/$(IMGNAME).trx
 endif
-	md5sum image/$(IMGNAME).trx > image/$(IMGNAME).md5
+	#md5sum image/$(IMGNAME).trx > image/$(IMGNAME).md5
 
 ifeq ($(DSL),y)
 	$(call dsl_genbintrx_epilog)
@@ -664,23 +671,23 @@ endif
 
 	md5sum image/$(DSLIMGNAME).trx > image/$(DSLIMGNAME).md5
 ifeq ($(HTTPS),y)
-ifneq ("$(wildcard $(SRC_ROOT)/../../buildtools/private.pem)","")
-	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(DSLIMGNAME)_rsa.zip image/$(DSLIMGNAME).trx
+ifneq ("$(wildcard $(SRC_ROOT)/../../../buildtools/private.pem)","")
+	openssl sha1 -sign $(SRC_ROOT)/../../../buildtools/private.pem -out image/$(DSLIMGNAME)_rsa.zip image/$(DSLIMGNAME).trx
 endif
 endif
 endif
 
 #general rsasign file
 ifeq ($(HTTPS),y)
-ifneq ("$(wildcard $(SRC_ROOT)/../../buildtools/private.pem)","")
-	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_rsa.zip image/$(IMGNAME).trx
+ifneq ("$(wildcard $(SRC_ROOT)/../../../buildtools/private.pem)","")
+	openssl sha1 -sign $(SRC_ROOT)/../../../buildtools/private.pem -out image/$(IMGNAME)_rsa.zip image/$(IMGNAME).trx
 endif
 endif
-	ln -sf $(IMGNAME).trx image/$(BUILD_NAME).trx
-ifeq ($(ARM),y)
-	ln -sf $(LINUXDIR)/vmlinux image/vmlinux
-	ln -sf $(LINUXDIR)/vmlinux.o image/vmlinux.o
-endif
+#	ln -sf $(IMGNAME).trx image/$(BUILD_NAME).trx
+#ifeq ($(ARM),y)
+#	ln -sf $(LINUXDIR)/vmlinux image/vmlinux
+#	ln -sf $(LINUXDIR)/vmlinux.o image/vmlinux.o
+#endif
 	@echo ""
 
 export_config:

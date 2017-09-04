@@ -5107,7 +5107,6 @@ static int ej_get_ascii_parameter(int eid, webs_t wp, int argc, char_t **argv){
 
 	if (buf != tmp)
 		free(buf);
-	free(str);
 	return ret;
 }
 

@@ -134,8 +134,13 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				char model[64];
 
 				tmp = strstr(buffer, "Processor");
+
 				if (tmp)
 					sscanf(tmp, "Processor  :  %[^\n]", model);
+				else {
+					tmp = buffer;
+					strcpy(model, "&lt;unknown&gt;");
+				}
 
 				while ( (tmp = strstr(tmp,"processor")) != NULL ) {
 					tmp++;

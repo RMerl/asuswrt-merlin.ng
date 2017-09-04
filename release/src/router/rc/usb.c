@@ -89,6 +89,8 @@ void tune_bdflush(void)
 }
 #endif // LINUX26
 
+#define NFS_EXPORT     "/etc/exports"
+
 #ifdef RTCONFIG_USB_PRINTER
 void
 start_lpd()
@@ -988,7 +990,7 @@ void stop_usb(int f_force)
 #endif
 		modprobe_r(USB30_MOD);
 	}
-#elif defined(RTCONFIG_XHCIMODE)
+#elif 0	//defined(RTCONFIG_XHCIMODE)
 	modprobe_r(USB30_MOD);
 #else
 	if (disabled || nvram_get_int("usb_usb3") != 1 || f_force) modprobe_r(USB30_MOD);
@@ -1544,6 +1546,11 @@ _dprintf("%s: stop_cloudsync.\n", __func__);
 		stop_usb_swap(mnt->mnt_dir);
 #endif	
 
+	run_custom_script_blocking("unmount", mnt->mnt_dir);
+
+	sync();
+	sleep(1);       // Give some time for buffers to be physically written to disk
+
 	for (count = 0; count < 35; count++) {
 		sync();
 		ret = umount(mnt->mnt_dir);
@@ -1724,6 +1731,8 @@ int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name,
 
 	find_label_or_uuid(dev_name, the_label, uuid);
 
+	run_custom_script_blocking("pre-mount", dev_name);
+
 	if (f_exists("/etc/fstab")) {
 		if (strcmp(type, "swap") == 0) {
 			_eval(swp_argv, NULL, 0, NULL);
@@ -1892,6 +1901,8 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 
 		if (nvram_get_int("usb_automount"))
 			run_nvscript("script_usbmount", mountpoint, 3);
+
+		run_custom_script_blocking("post-mount", mountpoint);
 
 #if defined(RTCONFIG_APP_PREINSTALLED) && defined(RTCONFIG_CLOUDSYNC)
 		char word[PATH_MAX], *next_word;
@@ -2369,6 +2380,7 @@ void write_ftpd_conf()
 {
 	FILE *fp;
 	char maxuser[16];
+	int passive_port;
 
 	/* write /etc/vsftpd.conf */
 	fp=fopen("/etc/vsftpd.conf", "w");
@@ -2398,14 +2410,33 @@ void write_ftpd_conf()
 #if (!defined(LINUX30) && LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36))
 	fprintf(fp, "use_sendfile=NO\n");
 #endif
+#ifndef RTCONFIG_BCMARM
+	fprintf(fp, "isolate=NO\n");	// 3.x: Broken for MIPS
+#endif
 
 #ifdef RTCONFIG_IPV6
-	fprintf(fp, "listen%s=YES\n", ipv6_enabled() ? "_ipv6" : "");
+	if (ipv6_enabled()) {
+		fprintf(fp, "listen_ipv6=YES\n");
+		// vsftpd 3.x can't use both listen at same time.  We don't specify an interface, so
+		// the listen_ipv6 directive will also make vsftpd listen to ipv4 IPs
+		fprintf(fp, "listen=NO\n");
+	} else {
+		fprintf(fp, "listen=YES\n");
+	}
+
 #else
 	fprintf(fp, "listen=YES\n");
 #endif
 	fprintf(fp, "pasv_enable=YES\n");
-	fprintf(fp, "ssl_enable=NO\n");
+	if (nvram_get_int("ftp_wanac")) {
+		passive_port = nvram_get_int("ftp_pasvport");
+		if (passive_port > 0) {
+			if (passive_port > 65505)
+				nvram_set_int("ftp_pasvport", 65505);
+			fprintf(fp, "pasv_min_port=%d\n", passive_port);
+			fprintf(fp, "pasv_max_port=%d\n", passive_port + 30);
+		}
+	}
 	fprintf(fp, "tcp_wrappers=NO\n");
 	strcpy(maxuser, nvram_safe_get("st_max_user"));
 	if ((atoi(maxuser)) > 0)
@@ -2437,7 +2468,23 @@ void write_ftpd_conf()
 		fprintf(fp, "xferlog_file=/var/log/vsftpd.log\n");
 	}
 
+	if(nvram_get_int("ftp_tls")){
+		fprintf(fp, "ssl_enable=YES\n");
+		fprintf(fp, "rsa_cert_file=/jffs/ssl/ftp.crt\n");
+		fprintf(fp, "rsa_private_key_file=/jffs/ssl/ftp.key\n");
+
+		if(!check_if_file_exist("/jffs/ssl/ftp.key")||!check_if_file_exist("/jffs/ssl/ftp.crt")){
+			eval("gencert.sh", "ftp");
+		}
+	} else {
+		fprintf(fp, "ssl_enable=NO\n");
+	}
+
+	append_custom_config("vsftpd.conf", fp);
 	fclose(fp);
+
+	use_custom_config("vsftpd.conf", "/etc/vsftpd.conf");
+	run_postconf("vsftpd", "/etc/vsftpd.conf");
 }
 
 /*
@@ -2481,7 +2528,7 @@ void stop_ftpd(void)
 
 	killall_tk("vsftpd");
 	unlink("/tmp/vsftpd.conf");
-	logmessage("FTP Server", "daemon is stoped");
+	logmessage("FTP Server", "daemon is stopped");
 }
 #endif	// RTCONFIG_FTP
 
@@ -2559,7 +2606,7 @@ void stop_tftpd(void)
 	}
 
 	killall_tk("in.tftpd");
-	logmessage("TFTP-HPA Server", "daemon is stoped");
+	logmessage("TFTP-HPA Server", "daemon is stopped");
 }
 #endif	/* RTCONFIG_TFTP_SERVER */
 
@@ -2804,6 +2851,7 @@ void tune_tso(void)
 }
 #endif
 
+#if 0
 int suit_double_quote(const char *output, const char *input, int outsize){
 	char *src = (char *)input;
 	char *dst = (char *)output;
@@ -2829,6 +2877,7 @@ int suit_double_quote(const char *output, const char *input, int outsize){
 
 	return dst-output;
 }
+#endif
 
 #if 0
 #ifdef RTCONFIG_BCMARM
@@ -2856,10 +2905,17 @@ start_samba(void)
 		return;
 	}
 
-	if (nvram_match("enable_samba", "0")) return;
-
-	if (!sd_partition_num() && !nvram_match("usb_debug", "1"))
+	if ((nvram_match("enable_samba", "0")) &&
+	    (nvram_match("smbd_master", "0")) &&
+	    (nvram_match("smbd_wins", "0"))) {
 		return;
+	}
+
+	if ((!sd_partition_num() && !nvram_match("usb_debug", "1")) &&
+            (nvram_match("smbd_master", "0")) &&
+            (nvram_match("smbd_wins", "0"))) {
+		return;
+	}
 
 #if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(2,6,36)
@@ -2914,12 +2970,12 @@ start_samba(void)
 		memset(char_user, 0, 64);
 		ascii_to_char_safe(char_user, follow_account->name, 64);
 		memset(suit_user, 0, 64);
-		suit_double_quote(suit_user, char_user, 64);
+		str_escape_quotes(suit_user, char_user, 64);
 
 		memset(char_passwd, 0, 64);
 		ascii_to_char_safe(char_passwd, follow_account->passwd, 64);
 		memset(suit_passwd, 0, 64);
-		suit_double_quote(suit_passwd, char_passwd, 64);
+		str_escape_quotes(suit_passwd, char_passwd, 64);
 
 		sprintf(cmd, "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 
@@ -2947,7 +3003,7 @@ start_samba(void)
 			memset(char_user, 0, 64);
 			ascii_to_char_safe(char_user, tmp_ascii_user, 64);
 			memset(suit_user, 0, 64);
-			suit_double_quote(suit_user, char_user, 64);
+			str_escape_quotes(suit_user, char_user, 64);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			char dec_passwd[64];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
@@ -2958,7 +3014,7 @@ start_samba(void)
 			ascii_to_char_safe(char_passwd, tmp_ascii_passwd, 64);
 
 			memset(suit_passwd, 0, 64);
-			suit_double_quote(suit_passwd, char_passwd, 64);
+			str_escape_quotes(suit_passwd, char_passwd, 64);
 			sprintf(cmd, "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 			system(cmd);
 
@@ -3025,7 +3081,7 @@ void stop_samba(void)
 
 	eval("rm", "-rf", "/var/run/samba");
 
-	logmessage("Samba Server", "smb daemon is stoped");
+	logmessage("Samba Server", "smb daemon is stopped");
 
 #if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
 	tweak_smp_affinity(0);
@@ -3047,7 +3103,7 @@ void stop_samba(void)
 #define MEDIA_SERVER_APP	"minidlna"
 
 /*
- * 1. if (dms_dbdir) exist and file.db there, use it
+ * 1. if (dms_dbdir) exist and files.db there, use it
  * 2. find the first and the largest write-able directory in /tmp/mnt
  * 3. /var/cache/minidlna
  */
@@ -3103,7 +3159,7 @@ void find_dms_dbdir(char *dbdir)
 
 	/* if previous dms_dbdir there, use it */
 	if(!strcmp(dbdir_t, nvram_default_get("dms_dbdir"))) {
-		sprintf(dbfile, "%s/file.db", dbdir_t);
+		sprintf(dbfile, "%s/files.db", dbdir_t);
 		if (check_if_file_exist(dbfile)) {
 			strcpy(dbdir, dbdir_t);
 			found = 1;
@@ -3197,10 +3253,13 @@ void start_dms(void)
 
 			nvram_set("dms_dbcwd", dbdir);
 
-			strcpy(serial, nvram_safe_get("lan_hwaddr"));
-			if (strlen(serial))
+			conv_mac2(get_lan_hwaddr(), serial);
+			if (strlen(serial)) {
 				for (i = 0; i < strlen(serial); i++)
 					serial[i] = tolower(serial[i]);
+			}
+			else
+				strcpy(serial, "554e4b4e4f57"); //default if no hwaddr
 
 			fprintf(f,
 				"network_interface=%s\n"
@@ -3277,9 +3336,15 @@ void start_dms(void)
 
 			fprintf(f,
 				"serial=%s\n"
-				"model_number=%s.%s\n",
+				"model_number=%s.%s\n"
+				//add explicit uuid based on mac(serial)
+				//since some recent change has resulted in a changing uuid at boot
+				"uuid=4d696e69-444c-164e-9d41-%s\n",
 				serial,
-				rt_version, rt_serialno);
+				rt_version, rt_serialno,
+				serial);
+
+			append_custom_config(MEDIA_SERVER_APP".conf",f);
 
 			fclose(f);
 		}
@@ -3289,6 +3354,9 @@ void start_dms(void)
 
 		if (nvram_get_int("dms_web"))
 			argv[index++] = "-W";
+
+		use_custom_config(MEDIA_SERVER_APP".conf","/etc/"MEDIA_SERVER_APP".conf");
+		run_postconf(MEDIA_SERVER_APP, "/etc/"MEDIA_SERVER_APP".conf");
 
 		/* start media server if it's not already running */
 		if (pidof(MEDIA_SERVER_APP) <= 0) {
@@ -3481,7 +3549,7 @@ stop_mt_daapd()
 	if (check_if_dir_exist(nvram_safe_get("daapd_dbdir")))
 		eval("rm", "-rf", nvram_safe_get("daapd_dbdir"));
 
-	logmessage("iTunes", "daemon is stoped");
+	logmessage("iTunes", "daemon is stopped");
 }
 #endif
 #endif	// RTCONFIG_MEDIA_SERVER
@@ -3543,16 +3611,11 @@ void write_webdav_server_pem()
 {
 	unsigned long long sn;
 	char t[32];
-#ifdef RTCONFIG_HTTPS
-	if(f_exists("/etc/server.pem"))
-		system("cp -f /etc/server.pem /tmp/lighttpd/");
-#endif
-	if(!f_exists("/tmp/lighttpd/server.pem")){
+
+	if(!f_exists("/etc/server.pem")){
 		f_read("/dev/urandom", &sn, sizeof(sn));
 		sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
 		eval("gencert.sh", t);
-
-		system("cp -f /etc/server.pem /tmp/lighttpd/");
 	}
 }
 
@@ -3605,7 +3668,7 @@ ifdef RTCONFIG_TUNNEL
 	write_webdav_permissions();
 
 	/* WebDav SSL support */
-	//write_webdav_server_pem();
+	write_webdav_server_pem();
 
 	/* write WebDav configure file*/
 	system("/sbin/write_webdav_conf");
@@ -3654,7 +3717,7 @@ void stop_webdav(void)
 		unlink("/tmp/lighttpd/lighttpd-arpping.pid");
 	}
 
-	logmessage("WEBDAV Server", "daemon is stoped");
+	logmessage("WEBDAV Server", "daemon is stopped");
 #endif
 
 /* Independent from AiCloud
@@ -3680,7 +3743,7 @@ void stop_all_webdav(void)
 		kill_pidfile_tk("/tmp/lighttpd/lighttpd-arpping.pid");
 		unlink("/tmp/lighttpd/lighttpd-arpping.pid");
 	}
-	logmessage("WEBDAV Server", "arpping daemon is stoped");
+	logmessage("WEBDAV Server", "arpping daemon is stopped");
 }
 #endif
 
@@ -3920,7 +3983,7 @@ void stop_cloudsync(int type)
 		if(pids("webdav_client"))
 			killall_tk("webdav_client");
 
-		logmessage("Webdav_client", "daemon is stoped");
+		logmessage("Webdav_client", "daemon is stopped");
 	}
 	else if(type == 2){
 		if(pids("inotify") && !pids("asuswebstorage") && !pids("dropbox_client") && !pids("webdav_client") && !pids("sambaclient") && !pids("usbclient")&& !pids("google_client"))
@@ -3929,7 +3992,7 @@ void stop_cloudsync(int type)
 		if(pids("ftpclient"))
 			killall_tk("ftpclient");
 
-		logmessage("ftp client", "daemon is stoped");
+		logmessage("ftp client", "daemon is stopped");
 	}
 	else if(type == 3){
 		if(pids("inotify") && !pids("asuswebstorage") && !pids("webdav_client") && !pids("ftpclient") && !pids("sambaclient") && !pids("usbclient")&& !pids("google_client"))
@@ -3938,7 +4001,7 @@ void stop_cloudsync(int type)
 		if(pids("dropbox_client"))
 			killall_tk("dropbox_client");
 
-		logmessage("dropbox_client", "daemon is stoped");
+		logmessage("dropbox_client", "daemon is stopped");
 	}
 	else if(type == 4){
 		if(pids("inotify") && !pids("asuswebstorage") && !pids("webdav_client") && !pids("ftpclient") && !pids("dropbox_client") && !pids("usbclient")&& !pids("google_client"))
@@ -3947,7 +4010,7 @@ void stop_cloudsync(int type)
 		if(pids("sambaclient"))
 			killall_tk("sambaclient");
 
-		logmessage("sambaclient", "daemon is stoped");
+		logmessage("sambaclient", "daemon is stopped");
 	}
 	else if(type == 5){
 		if(pids("inotify") && !pids("asuswebstorage") && !pids("webdav_client") && !pids("ftpclient") && !pids("dropbox_client") && !pids("sambaclient")&& !pids("google_client"))
@@ -3956,7 +4019,7 @@ void stop_cloudsync(int type)
 		if(pids("usbclient"))
 			killall_tk("usbclient");
 
-		logmessage("usbclient", "daemon is stoped");
+		logmessage("usbclient", "daemon is stopped");
 	}
 	else if(type == 6){
 
@@ -3968,24 +4031,12 @@ void stop_cloudsync(int type)
             killall_tk("google_client");
         }
 
-        logmessage("google_client", "daemon is stoped");
+        logmessage("google_client", "daemon is stopped");
 
     }
 	else if(type == 0){
 		if(pids("inotify") && !pids("webdav_client") && !pids("dropbox_client") && !pids("ftpclient") && !pids("sambaclient")  && !pids("usbclient")&& !pids("google_client"))
 			killall_tk("inotify");
-
-		if(pids("asuswebstorage"))
-			killall_tk("asuswebstorage");
-
-		logmessage("Cloudsync client", "daemon is stoped");
-	}
-	else{
-  	if(pids("inotify"))
-			killall_tk("inotify");
-
-  	if(pids("webdav_client"))
-			killall_tk("webdav_client");
 
 		if(pids("asuswebstorage"))
 			killall_tk("asuswebstorage");
@@ -4008,7 +4059,7 @@ void stop_cloudsync(int type)
               //system("killall google_client");
     }
 
-		logmessage("Cloudsync client and Webdav_client and dropbox_client ftp_client sambaclient usb_client google_client", "daemon is stoped");
+		logmessage("Cloudsync client and Webdav_client and dropbox_client ftp_client sambaclient usb_client google_client", "daemon is stopped");
 	}
 }
 //#endif
@@ -4055,6 +4106,11 @@ void start_nas_services(int force)
 		if(f_exists("/opt/etc/init.d/S50aicloud"))
 			system("sh /opt/etc/init.d/S50aicloud scan");
 #endif
+#ifdef RTCONFIG_SAMBASRV
+		if (nvram_get_int("smbd_master") || nvram_get_int("smbd_wins")) {
+			start_samba();
+		}
+#endif
 		return;
 	}
 
@@ -4066,7 +4122,9 @@ void start_nas_services(int force)
 #if defined(RTCONFIG_TFTP_SERVER)
 	start_tftpd();
 #endif
-
+#ifdef RTCONFIG_NFS
+	start_nfsd();
+#endif
 if (nvram_match("asus_mfg", "0")) {
 #ifdef RTCONFIG_FTP
 	start_ftpd();
@@ -4114,6 +4172,9 @@ void stop_nas_services(int force)
 #ifdef RTCONFIG_SAMBASRV
 	stop_samba();
 #endif
+#ifdef RTCONFIG_NFS
+	stop_nfsd();
+#endif
 #ifdef RTCONFIG_WEBDAV
 	//stop_webdav();
 #endif
@@ -4143,6 +4204,9 @@ void restart_sambaftp(int stop, int start)
 #ifdef RTCONFIG_SAMBASRV
 		stop_samba();
 #endif
+#ifdef RTCONFIG_NFS
+		stop_nfsd();
+#endif
 #ifdef RTCONFIG_FTP
 		stop_ftpd();
 #endif
@@ -4158,6 +4222,9 @@ void restart_sambaftp(int stop, int start)
 #ifdef RTCONFIG_SAMBA_SRV
 		setup_passwd();
 		start_samba();
+#endif
+#ifdef RTCONFIG_NFS
+		start_nfsd();
 #endif
 #ifdef RTCONFIG_FTP
 		start_ftpd();
@@ -5109,4 +5176,130 @@ void webdav_account_default(void)
 	}
 }
 //#endif
+
+#ifdef LINUX26
+int start_sd_idle(void) {
+	int ret = 0;
+	int idle_timeout = nvram_get_int("usb_idle_timeout");
+	char tmp[12], exclude2[6];
+	char *exclude = nvram_get("usb_idle_exclude");
+
+	if (idle_timeout != 0) {
+		sprintf(tmp,"%d",idle_timeout);
+
+		if (*exclude) {
+			strcpy(exclude2,"!");
+			strncat(exclude2, nvram_safe_get("usb_idle_exclude"), sizeof (exclude2) );
+		} else {
+			strcpy(exclude2,"");
+		}
+
+		ret = eval("/usr/sbin/sd-idle-2.6" , "-i" , tmp, *exclude ? "-d" : NULL,  exclude2, NULL);
+	}
+	return ret;
+}
+
+int stop_sd_idle(void) {
+	int ret = eval("killall","sd-idle-2.6");
+	return ret;
+}
+
+#endif
+
+#ifdef RTCONFIG_NFS
+void start_nfsd(void)
+{
+	struct stat	st_buf;
+	FILE 		*fp;
+        char *nv, *nvp, *b, *c;
+	char *dir, *access, *options;
+
+	if (nvram_match("nfsd_enable", "0")) return;
+
+	/* create directories/files */
+	mkdir_if_none("/var/lib");
+	mkdir_if_none("/var/lib/nfs");
+#ifdef LINUX26
+	mkdir_if_none("/var/lib/nfs/v4recovery");
+	mount("nfsd", "/proc/fs/nfsd", "nfsd", MS_MGC_VAL, NULL);
+#endif
+	unlink("/var/lib/nfs/etab");
+	unlink("/var/lib/nfs/xtab");
+	unlink("/var/lib/nfs/rmtab");
+	close(creat("/var/lib/nfs/etab", 0644));
+	close(creat("/var/lib/nfs/xtab", 0644));
+	close(creat("/var/lib/nfs/rmtab", 0644));
+
+	/* (re-)create /etc/exports */
+	if (stat(NFS_EXPORT, &st_buf) == 0)	{
+		unlink(NFS_EXPORT);
+	}
+
+	if ((fp = fopen(NFS_EXPORT, "w")) == NULL) {
+		perror(NFS_EXPORT);
+		return;
+	}
+
+	nv = nvp = strdup(nvram_safe_get("nfsd_exportlist"));
+	if (nv) {
+		while ((b = strsep(&nvp, "<")) != NULL) {
+			if ((vstrsep(b, ">", &dir, &access, &options) != 3))
+				continue;
+
+			fputs(dir, fp);
+
+			while ((c = strsep(&access, " ")) != NULL) {
+				fprintf(fp, " %s(no_root_squash%s%s)", c, ((strlen(options) > 0) ? "," : ""), options);
+			}
+			fputs("\n", fp);
+		}
+		free(nv);
+	}
+
+	append_custom_config("exports", fp);
+	fclose(fp);
+	run_postconf("exports", NFS_EXPORT);
+	if (!pids("portmap"))
+		eval("/usr/sbin/portmap");
+	eval("/usr/sbin/statd");
+
+	if (nvram_match("nfsd_enable_v2", "1")) {
+		eval("/usr/sbin/nfsd");
+		eval("/usr/sbin/mountd");
+	} else {
+		eval("/usr/sbin/nfsd", "-N 2");
+		eval("/usr/sbin/mountd", "-N 2");
+	}
+
+	sleep(1);
+	eval("/usr/sbin/exportfs", "-a");
+
+	return;
+}
+
+void restart_nfsd(void)
+{
+	//eval("/usr/sbin/exportfs", "-au");
+	//eval("/usr/sbin/exportfs", "-a");
+	eval("/usr/sbin/exportfs", "-r");
+
+	return;
+}
+
+void stop_nfsd(void)
+{
+	eval("/usr/sbin/exportfs", "-au");
+	killall_tk("mountd");
+	killall("nfsd", SIGKILL);
+	killall_tk("statd");
+//	killall_tk("portmap");
+
+#ifdef LINUX26
+	umount("/proc/fs/nfsd");
+#endif
+
+	return;
+}
+
+#endif
 

@@ -453,8 +453,13 @@ static int rctest_main(int argc, char *argv[])
 #endif
 			add_iQosRules(get_wan_ifname(wan_primary_ifunit()));
 #ifdef RTCONFIG_BWDPI
-				if (nvram_get_int("qos_type") == 1)
+				if (nvram_get_int("qos_type") == 1) {
 					start_dpi_engine_service();
+					// force to rebuild firewall to avoid some loopback issue
+					if (nvram_match("fw_nat_loopback", "2"))
+						start_firewall(wan_primary_ifunit(), 0);
+				}
+
 				else
 #endif
 				start_iQos();
@@ -776,6 +781,7 @@ static const applets_t applets[] = {
 	{ "usbled",			usbled_main			},
 #endif
 	{ "ddns_updated", 		ddns_updated_main		},
+	{ "ddns_custom_updated",	ddns_custom_updated_main	},
 	{ "radio",			radio_main			},
 	{ "ots",			ots_main			},
 	{ "udhcpc",			udhcpc_wan			},
@@ -836,7 +842,7 @@ static const applets_t applets[] = {
 #endif
 	{ "disk_remove",		diskremove_main			},
 #endif
-	{ "firmware_check",		firmware_check_main		},
+	{ "firmware_check",		firmware_check_main             },
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
 #endif
@@ -1646,7 +1652,10 @@ int main(int argc, char **argv)
 		return add_multi_routes();
 	}
 	else if (!strcmp(base, "led_ctrl")) {
-		return(led_control(atoi(argv[1]), atoi(argv[2])));
+		if (argc != 3)
+			return 0;
+
+		return(led_control_atomic(atoi(argv[1]), atoi(argv[2])));
 	}
 #ifdef HND_ROUTER
 	else if (!strcmp(base, "hnd-erase")) {

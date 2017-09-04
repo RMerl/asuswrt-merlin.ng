@@ -208,10 +208,10 @@ void format_mount_2nd_jffs2(void)
 	run_userfile(SECOND_JFFS2_PATH, ".asusrouter", SECOND_JFFS2_PATH, 3);
 }
 #endif
-
+/* */
 void start_jffs2(void)
 {
-	if (!nvram_match("jffs2_on", "1")) {
+	if (!nvram_match("jffs2_enable", "1")) {
 		notice_set("jffs", "");
 		return;
 	}
@@ -222,8 +222,17 @@ void start_jffs2(void)
 	int part;
 	const char *p;
 	int model = 0;
+	int i = 0;
 
-	if (!wait_action_idle(10)) return;
+        while(1) {
+		if (wait_action_idle(10)) break;
+		else i++;
+
+		if(i>=10) {
+			_dprintf("Mount jffs2 failed!");
+			return;
+		}
+	}
 
 	if (!mtd_getinfo(JFFS2_PARTITION, &part, &size)) return;
 
@@ -233,11 +242,11 @@ void start_jffs2(void)
 
 	if (nvram_match("jffs2_format", "1")) {
 		nvram_set("jffs2_format", "0");
-		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U || model==MODEL_RTAC1200G || model==MODEL_RTAC1200GP) ^ (!mtd_erase(JFFS2_MTD_NAME))){
+		nvram_commit_x();
+		if (mtd_erase(JFFS2_MTD_NAME)) {
 			error("formatting");
 			return;
 		}
-
 		format = 1;
 	}
 
@@ -267,7 +276,7 @@ void start_jffs2(void)
 	sprintf(s, MTD_BLKDEV(%d), part);
 
 	if (mount(s, "/jffs", JFFS_NAME, MS_NOATIME, "") != 0) {
-		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U || model==MODEL_RTAC1200G || model==MODEL_RTAC1200GP) ^ (!mtd_erase(JFFS2_MTD_NAME))){
+		if (mtd_erase(JFFS2_MTD_NAME)) {
 			jffs2_fail = 1;
 			error("formatting");
 			return;
@@ -328,6 +337,10 @@ void start_jffs2(void)
 		chdir("/");
 	}
 	run_userfile("/jffs", ".asusrouter", "/jffs", 3);
+
+	if (!check_if_dir_exist("/jffs/scripts/")) mkdir("/jffs/scripts/", 0755);
+	if (!check_if_dir_exist("/jffs/configs/")) mkdir("/jffs/configs/", 0755);
+	if (!check_if_dir_exist("/jffs/ssl/")) mkdir("/jffs/ssl/", 0755);
 }
 
 void stop_jffs2(int stop)
@@ -339,7 +352,7 @@ void stop_jffs2(int stop)
 
 	if (!wait_action_idle(10)) return;
 
-	if ((statfs("/jffs", &sf) == 0) && (sf.f_type != 0x73717368)) {
+	if ((statfs("/jffs", &sf) == 0) && (sf.f_type != 0x73717368) && (sf.f_type != 0x71736873)) {
 		// is mounted
 		run_userfile("/jffs", ".autostop", "/jffs", 5);
 		run_nvscript("script_autostop", "/jffs", 5);

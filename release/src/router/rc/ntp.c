@@ -42,7 +42,7 @@
 
 static char server[32];
 static int sig_cur = -1;
-static int server_idx = 0;
+
 
 static void ntp_service()
 {
@@ -60,6 +60,12 @@ static void ntp_service()
 			notify_rc_and_period_wait("restart_upnp", 25);
 #ifdef RTCONFIG_DISK_MONITOR
 		notify_rc("restart_diskmon");
+#endif
+
+#ifdef RTCONFIG_DNSSEC
+		if (nvram_get_int("dnssec_enable")) {
+			reload_dnsmasq();
+		}
 #endif
 	}
 }
@@ -156,6 +162,7 @@ int ntp_main(int argc, char *argv[])
 		if (sig_cur == SIGTSTP)
 			;
 		else if (is_router_mode() &&
+			!nvram_match("link_internet", "1") &&
 			!nvram_match("link_internet", "2"))
 		{
 			alarm(SECONDS_TO_WAIT);
@@ -176,14 +183,7 @@ int ntp_main(int argc, char *argv[])
 			sleep(SECONDS_TO_WAIT);
 
 			if (strlen(nvram_safe_get("ntp_server0")))
-			{
-				if (server_idx)
-					strlcpy(server, nvram_safe_get("ntp_server1"), sizeof(server));
-				else
-					strlcpy(server, nvram_safe_get("ntp_server0"), sizeof(server));
-
-				server_idx = (server_idx + 1) % 2;
-			}
+				strlcpy(server, nvram_safe_get("ntp_server0"), sizeof (server));
 			else if (strlen(nvram_safe_get("ntp_server1")))
 				strlcpy(server, nvram_safe_get("ntp_server1"), sizeof(server));
 			else

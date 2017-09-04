@@ -1831,6 +1831,7 @@ void start_lan(void)
 	char *lan_ifname;
 	struct ifreq ifr;
 	char *lan_ifnames, *ifname, *p;
+	char *hostname;
 	int sfd;
 	uint32 ip;
 	char eabuf[32];
@@ -1882,6 +1883,8 @@ void start_lan(void)
 		nvram_set("wlc_mode", "0");
 		nvram_set("btn_ez_radiotoggle", "0"); // reset to default
 	}
+
+	set_hostname();
 
 	convert_routes();
 
@@ -2499,10 +2502,13 @@ gmac3_no_swbr:
 			unlink("/tmp/udhcpc_lan");
 		}
 
+		hostname = nvram_safe_get("computer_name");
+
 		char *dhcp_argv[] = { "udhcpc",
 					"-i", "br0",
 					"-p", "/var/run/udhcpc_lan.pid",
 					"-s", "/tmp/udhcpc_lan",
+					(*hostname != 0 ? "-H" : NULL), (*hostname != 0 ? hostname : NULL),
 					NULL };
 		pid_t pid;
 
@@ -5149,7 +5155,7 @@ void lanaccess_wl(void)
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 	CP_lanaccess_wl();
 #endif
-
+	setup_leds();   // Refresh LED state if in Stealth Mode
 
 }
 
@@ -5531,6 +5537,10 @@ void start_lan_port(int dt)
 #else
 	lanport_ctrl(1);
 #endif
+
+#ifdef RTCONFIG_PORT_BASED_VLAN
+	vlan_lanaccess_wl();
+#endif
 }
 
 void stop_lan_port(void)
@@ -5704,6 +5714,7 @@ void stop_lan_wlc(void)
 }
 #endif //RTCONFIG_WIRELESSREPEATER
 
+
 #ifdef RTCONFIG_QTN
 int reset_qtn(int restart)
 {
@@ -5766,3 +5777,4 @@ int start_qtn(void)
 }
 
 #endif
+

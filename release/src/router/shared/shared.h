@@ -22,6 +22,15 @@
 #include <mntent.h>	// !!TB
 #endif
 
+/* index page defined for httpd and wanduck */
+#if defined(GTAC5300)
+#define INDEXPAGE "GameDashboard.asp"
+#else
+#define INDEXPAGE "index.asp"
+#endif
+
+#define NETWORKMAP_PAGE "index.asp"
+
 #ifdef RTCONFIG_TRAFFIC_LIMITER
 #include <tld_utils.h>
 #endif
@@ -672,6 +681,7 @@ extern int pidof(const char *name);
 extern int killall(const char *name, int sig);
 extern int process_exists(pid_t pid);
 extern int module_loaded(const char *module);
+extern int ppid(int pid);
 
 // files.c
 extern int check_if_dir_empty(const char *dirpath);
@@ -875,6 +885,13 @@ enum led_id {
 
 	LED_ID_MAX,	/* last item */
 };
+
+// Outside of enum to avoid conflicting with Asus's code
+enum led_merlin_id {
+	LED_SWITCH = LED_ID_MAX + 1,
+	LED_5G_FORCED,
+};
+
 
 enum led_fan_mode_id {
 	LED_OFF = 0,
@@ -1217,6 +1234,7 @@ extern int set_pwr_modem(int boolOn);
 #endif
 extern int button_pressed(int which);
 extern int led_control(int which, int mode);
+extern int led_control_atomic(int which, int mode);
 
 /* api-*.c */
 extern uint32_t gpio_dir(uint32_t gpio, int dir);
@@ -1383,6 +1401,8 @@ extern int ascii_to_char_safe(const char *output, const char *input, int outsize
 extern void ascii_to_char(const char *output, const char *input);
 extern const char *find_word(const char *buffer, const char *word);
 extern int remove_word(char *buffer, const char *word);
+extern int replace_char(char *str, const char from, const char to);
+extern int str_escape_quotes(const char *output, const char *input, int outsize);
 
 // file.c
 extern int check_if_file_exist(const char *file);
@@ -1509,6 +1529,17 @@ extern double traffic_limiter_get_realtime(int unit);
 #if defined(RTCONFIG_PORT_BASED_VLAN) || defined(RTCONFIG_TAGGED_BASED_VLAN)
 extern struct vlan_rules_s *get_vlan_rules(void);
 #endif
+// Temporary
+extern char *get_parsed_crt(const char *name, char *buf, size_t buf_len);
+
+/* scripts.c */
+#define xstart(args...) _xstart(args, NULL)
+extern int _xstart(const char *cmd, ...);
+extern void run_custom_script(char *name, char *args);
+extern void run_custom_script_blocking(char *name, char *args);
+extern void run_postconf(char *name, char *config);
+extern void use_custom_config(char *config, char *target);
+extern void append_custom_config(char *config, FILE *fp);
 
 /* mt7620.c */
 #if defined(RTCONFIG_RALINK_MT7620)

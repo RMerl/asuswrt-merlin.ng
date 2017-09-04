@@ -80,6 +80,7 @@ OBJS = httpd.o cgi.o ej.o
 OBJS += web.o common.o nvram_f.o 
 OBJS += aspbw.o initial_web_hook.o
 OBJS += apps.o
+OBJS += sysinfo.o data_arrays.o
 
 ifeq ($(CONFIG_REALTEK),y)
 OBJS += web-realtek.o
@@ -118,7 +119,7 @@ OBJS += vis_gui.o
 endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
-OBJS += $(if $(wildcard pwenc.c), pwenc.o, prebuild/pwenc.o)
+OBJS += pwenc.o
 endif
 
 OBJS += $(if $(wildcard web_hook.c), web_hook.o, prebuild/web_hook.o)
@@ -187,6 +188,10 @@ endif
 ifeq ($(RTCONFIG_GEOIP),y)
 CFLAGS += -I$(TOP)/GeoIP-1.6.2/libGeoIP
 LIBS += -L$(TOP)/GeoIP-1.6.2/libGeoIP/.libs -lGeoIP
+endif
+
+ifeq ($(RTCONFIG_EXT_RTL8365MB),y)
+CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8365mb
 endif
 
 ifeq ($(RTCONFIG_QCA),y)
@@ -267,13 +272,13 @@ size: httpd
 	mipsel-uclibc-nm --print-size --size-sort httpd
 
 # handle prebuilt object here
-ifneq ($(wildcard, ./prebuild),)
+ifneq ($(wildcard ./prebuild/),)
 ifeq ($(RTCONFIG_HTTPS),y)
 pwenc.o:
-	@-cp -f ./prebuild/pwenc.o .
+	@-cp -f ./prebuild/pwenc.o pwenc.o
 endif
 web_hook.o:
-	@-cp -f ./prebuild/web_hook.o .
+	@-cp -f ./prebuild/web_hook.o web_hook.o
 endif
 
 %.o: %.c .%.depend

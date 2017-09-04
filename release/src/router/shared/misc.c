@@ -2127,7 +2127,7 @@ int nvram_get_file(const char *key, const char *fname, int max)
 	}
 	return r;
 /*
-	char b[2048];
+	char b[3500];
 	int n;
 	char *p;
 
@@ -2164,8 +2164,8 @@ int nvram_set_file(const char *key, const char *fname, int max)
 	}
 	return r;
 /*
-	char a[2048];
-	char b[4096];
+	char a[3500];
+	char b[7000];
 	int n;
 
 	if (((n = f_read(fname, &a, sizeof(a))) > 0) && (n <= max)) {
@@ -2310,8 +2310,8 @@ char *get_productid(void)
 	return productid;
 }
 
-int backup_rx;
-int backup_tx;
+long backup_rx = 0;
+long backup_tx = 0;
 int backup_set = 0;
 
 unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2)		
@@ -2595,13 +2595,20 @@ _dprintf("%s: Finish.\n", __FUNCTION__);
 void logmessage_normal(char *logheader, char *fmt, ...){
   va_list args;
   char buf[512];
+  char logheader2[33];
+  int level;
 
   va_start(args, fmt);
 
   vsnprintf(buf, sizeof(buf), fmt, args);
 
-  openlog(logheader, 0, 0);
-  syslog(0, buf);
+  level = nvram_get_int("message_loglevel");
+  if (level > 7) level = 7;
+
+  strlcpy(logheader2, logheader, sizeof (logheader2));
+  replace_char(logheader2, ' ', '_');
+  openlog(logheader2, 0, 0);
+  syslog(level, buf);
   closelog();
   va_end(args);
 }
@@ -2790,6 +2797,73 @@ END:
 }
 #endif
 
+char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
+{
+	char *value;
+	int len, i;
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+	FILE *fp;
+	char tmpBuf[256] = {0};
+	char *p = buf;
+#endif
+
+	value = nvram_safe_get(name);
+	len = strlen(value);
+
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+	if(!check_if_dir_exist(OVPN_FS_PATH))
+		mkdir(OVPN_FS_PATH, S_IRWXU);
+	snprintf(tmpBuf, sizeof(tmpBuf) -1, "%s/%s", OVPN_FS_PATH, name);
+#endif
+
+	if(len) {
+		for (i=0; (i < len); i++) {
+			if (value[i] == '>')
+				buf[i] = '\n';
+			else
+				buf[i] = value[i];
+		}
+		buf[i] = '\0';
+
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+		//save to file and then clear nvram value
+		fp = fopen(tmpBuf, "w");
+		if(fp) {
+			chmod(tmpBuf, S_IRUSR|S_IWUSR);
+			fprintf(fp, "%s", buf);
+			fclose(fp);
+			nvram_set(name, "");
+		}
+#endif
+	}
+	else {
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+		//nvram value cleard, get from file
+		fp = fopen(tmpBuf, "r");
+		if(fp) {
+			while(fgets(buf, buf_len, fp)) {
+				if(!strncmp(buf, "-----BEGIN", 10) || !strncmp(buf, "none", 4))
+					break;
+			}
+			if(feof(fp) &&  strncmp(buf, "none", 4)) {
+				fclose(fp);
+				memset(buf, 0, buf_len);
+				return buf;
+			}
+			p += strlen(buf);
+			memset(tmpBuf, 0, sizeof(tmpBuf));
+			while(fgets(tmpBuf, sizeof(tmpBuf), fp)) {
+				strncpy(p, tmpBuf, strlen(tmpBuf));
+				p += strlen(tmpBuf);
+			}
+			fclose(fp);
+		}
+#endif
+		*p = '\0';
+	}
+	return buf;
+}
+
 #if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 int set_crt_parsed(const char *name, char *file_path)
 {
@@ -2811,6 +2885,9 @@ int set_crt_parsed(const char *name, char *file_path)
 	char buffer[4000] = {0};
 	char buffer2[256] = {0};
 	char *p = buffer;
+
+// TODO: Ensure that Asus's routine can handle CRLF too, otherwise revert to
+//       the code we currently use in httpd.
 
 	if(fp) {
 		while(fgets(buffer, sizeof(buffer), fp)) {

@@ -1175,6 +1175,10 @@ void set_radio(int on, int unit, int subunit)
 		if (on) eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", unit, 0)), "bss", "-C", tmp, "up");
 		else eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", unit, 0)), "bss", "-C", tmp, "down");
 
+		if (nvram_get_int("led_disable")==1) {
+			led_control(LED_2G, LED_OFF);
+			led_control(LED_5G, LED_OFF);
+		}
 		return;
 	}
 
@@ -1196,6 +1200,11 @@ void set_radio(int on, int unit, int subunit)
 		//led(LED_DIAG, 0);
 	}
 #endif
+
+	if (nvram_get_int("led_disable")==1) {
+		led_control(LED_2G, LED_OFF);
+		led_control(LED_5G, LED_OFF);
+	}
 }
 
 /* Return nvram variable name, e.g. et0macaddr, which is used to repented as LAN MAC.

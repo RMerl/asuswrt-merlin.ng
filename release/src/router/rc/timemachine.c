@@ -592,7 +592,7 @@ void stop_timemachine()
 	stop_afpd();
 	stop_cnid_metad();
 	restart_mdns();
-	logmessage("Timemachine", "daemon is stoped");
+	logmessage("Timemachine", "daemon is stopped");
 }
 
 

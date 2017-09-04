@@ -5,9 +5,8 @@
 
 */
 
-#include <sys/stat.h>
-#include <sys/types.h>
 #include "rc.h"
+#include <shared.h>
 
 static inline int check_host_key(const char *ktype, const char *nvname, const char *hkfn)
 {
@@ -23,16 +22,38 @@ static inline int check_host_key(const char *ktype, const char *nvname, const ch
 	return 0;
 }
 
+char *get_parsed_key(const char *name, char *buf)
+{
+	char *value;
+	int len, i;
+
+	value = nvram_safe_get(name);
+
+	len = strlen(value);
+	if (len > 3500) len = 3500;
+
+	for (i=0; (i < len); i++) {
+		if (value[i] == '>')
+			buf[i] = '\n';
+		else
+			buf[i] = value[i];
+	}
+
+	buf[i] = '\0';
+
+	return buf;
+}
+
 int start_sshd(void)
 {
-	char buf[sizeof("255.255.255.255:65535")], *port;
+	char buf[3500], *port;
 	char *dropbear_argv[] = { "dropbear",
 		"-p", buf,	/* -p [address:]port */
-		"-a",
 		NULL,		/* -s */
 		NULL, NULL,	/* -W receive_window_buffer */
+		NULL, NULL,	/* -a or -j -k */
 		NULL };
-	int index = 4;
+	int index = 3;
 
 	if (!nvram_get_int("sshd_enable"))
 		return 0;
@@ -45,7 +66,7 @@ int start_sshd(void)
 	mkdir("/etc/dropbear", 0700);
 	mkdir("/root/.ssh", 0700);
 
-	f_write_string("/root/.ssh/authorized_keys", nvram_safe_get("sshd_authkeys"), 0, 0700);
+	f_write_string("/root/.ssh/authorized_keys", get_parsed_key("sshd_authkeys", buf), 0, 0700);
 
 	if (check_host_key("rsa", "sshd_hostkey", "/etc/dropbear/dropbear_rsa_host_key") |
 	    check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key") |
@@ -63,6 +84,13 @@ int start_sshd(void)
 	if (nvram_get_int("sshd_rwb")) {
 		dropbear_argv[index++] = "-W";
 		dropbear_argv[index++] = nvram_safe_get("sshd_rwb");
+	}
+
+	if (nvram_get_int("sshd_forwarding")) {
+		dropbear_argv[index++] = "-a";
+	} else {
+		dropbear_argv[index++] = "-j";
+		dropbear_argv[index++] = "-k";
 	}
 
 	return _eval(dropbear_argv, NULL, 0, NULL);

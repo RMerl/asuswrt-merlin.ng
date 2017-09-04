@@ -278,6 +278,7 @@ GetPhyStatus(int verbose)
 		break;
 	case MODEL_RTN16:
 	case MODEL_RTN10U:
+	case MODEL_RTAC3200:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=0; ports[1]=4; ports[2]=3, ports[3]=2; ports[4]=1;
 		break;
@@ -302,7 +303,6 @@ GetPhyStatus(int verbose)
 
 	case MODEL_DSLAC68U:
 	case MODEL_RTAC68U:
-	case MODEL_RTAC3200:
 	case MODEL_RTN18U:
 	case MODEL_RTAC53U:
 	case MODEL_RTN66U:
@@ -1856,6 +1856,7 @@ int wlcscan_core(char *ofile, char *wif)
 	wl_scan_params_t *params;
 	int params_size = WL_SCAN_PARAMS_FIXED_SIZE + NUMCHANS * sizeof(uint16);
 	FILE *fp;
+	int scanmode;
 	int org_scan_time = 20, scan_time = 40;
 	int wait_time = 3;
 
@@ -1863,10 +1864,15 @@ int wlcscan_core(char *ofile, char *wif)
 	if (params == NULL)
 		return retval;
 
+	scanmode = nvram_get_int("wlc_scan_mode");
+	if ((scanmode != DOT11_SCANTYPE_ACTIVE) && (scanmode != DOT11_SCANTYPE_PASSIVE))
+		scanmode = DOT11_SCANTYPE_ACTIVE;
+
 	memset(params, 0, params_size);
 	params->bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->scan_type = -1;
+//	params->scan_type = -1;
+	params->scan_type = scanmode;
 	params->nprobes = -1;
 	params->active_time = -1;
 	params->passive_time = -1;

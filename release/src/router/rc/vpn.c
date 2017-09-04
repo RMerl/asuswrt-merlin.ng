@@ -220,8 +220,13 @@ void start_pptpd(void)
 		fprintf(fp, "bcrelay %s,%s\n",
 			nvram_safe_get("lan_ifname"), "ppp1[0-9].*");
 	}
+
+	append_custom_config("pptpd.conf", fp);
+
 	fclose(fp);
 
+	use_custom_config("pptpd.conf", "/tmp/pptpd/pptpd.conf");
+	run_postconf("pptpd", "/tmp/pptpd/pptpd.conf");
 	// Create ip-up and ip-down scripts that are unique to pptpd to avoid
 	// interference with pppoe and pptp
 	ip2bcast(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), bcast);

@@ -750,7 +750,7 @@ void setup_conntrack(void)
 		f_write_string("/sys/module/nf_conntrack/parameters/hashsize", p, 0, 0);
 	}
 	else if (f_read_string("/sys/module/nf_conntrack/parameters/hashsize", buf, sizeof(buf)) > 0) {
-		if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';	
+		if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
 		if (atoi(buf) > 0) nvram_set("ct_hashsize", buf);
 	}
 #endif
@@ -770,6 +770,7 @@ void setup_conntrack(void)
 		f_write_string("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", p, 0, 0);
 	}
 	else if (f_read_string("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", buf, sizeof(buf)) > 0) {
+		if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
 		if (atoi(buf) > 0) nvram_set("ct_max", buf);
 	}
 #endif
@@ -832,14 +833,14 @@ void setup_conntrack(void)
 
 void setup_pt_conntrack(void)
 {
-	if (!nvram_match("fw_pt_rtsp", "0")) {
+	if (nvram_match("fw_pt_rtsp", "1")) {
 		ct_modprobe("rtsp", "ports=554,8554");
 	}
 	else {
 		ct_modprobe_r("rtsp");
 	}
 
-	if (!nvram_match("fw_pt_h323", "0")) {
+	if (nvram_match("fw_pt_h323", "1")) {
 		ct_modprobe("h323");
 	}
 	else {
@@ -847,7 +848,7 @@ void setup_pt_conntrack(void)
 	}
 
 #ifdef LINUX26
-	if (!nvram_match("fw_pt_sip", "0")) {
+	if (nvram_match("fw_pt_sip", "1")) {
 		ct_modprobe("sip");
 	}
 	else {
@@ -1024,6 +1025,25 @@ void killall_tk(const char *name)
 	}
 }
 
+void killall_tk_period_wait(const char *name, int wait)
+{
+	int n;
+
+	if (killall(name, SIGTERM) == 0) {
+		n = wait;
+		while ((killall(name, 0) == 0) && (n-- > 0)) {
+			_dprintf("%s: waiting name=%s n=%d\n", __FUNCTION__, name, n);
+			sleep(1);
+		}
+		if (n < 0) {
+			n = wait;
+			while ((killall(name, SIGKILL) == 0) && (n-- > 0)) {
+				_dprintf("%s: SIGKILL name=%s n=%d\n", __FUNCTION__, name, n);
+				sleep(1);
+			}
+		}
+	}
+}
 void kill_pidfile_tk(const char *pidfile)
 {
 	FILE *fp;
@@ -1226,17 +1246,8 @@ is_invalid_char_for_hostname(char c)
 {
 	int ret = 0;
 
-	if (c < 0x20)
+	if (c <= 0x2c)				/* SPACE !"#$%&'()*+, */
 		ret = 1;
-#if 0
-	else if (c >= 0x21 && c <= 0x2c)	/* !"#$%&'()*+, */
-		ret = 1;
-#else	/* allow '+' */
-	else if (c >= 0x21 && c <= 0x2a)	/* !"#$%&'()* */
-		ret = 1;
-	else if (c == 0x2c)			/* , */
-		ret = 1;
-#endif
 	else if (c >= 0x2e && c <= 0x2f)	/* ./ */
 		ret = 1;
 	else if (c >= 0x3a && c <= 0x40)	/* :;<=>?@ */
@@ -1393,6 +1404,55 @@ int setup_dnsmq(int mode)
 	return 0;
 }
 #endif
+
+
+int
+is_invalid_char_for_volname(char c)
+{
+	int ret = 0;
+
+	if (c < 0x20)
+		ret = 1;
+#if 0
+	else if (c >= 0x21 && c <= 0x2c)
+		ret = 1;
+#else	/* allow '+' */
+	else if (c >= 0x21 && c <= 0x2a)	/* !"#$%&'()* */
+		ret = 1;
+	else if (c == 0x2c)			/* , */
+		ret = 1;
+#endif
+	else if (c >= 0x2e && c <= 0x2f)
+		ret = 1;
+	else if (c >= 0x3a && c <= 0x40)
+		ret = 1;
+	else if (c >= 0x5b && c <= 0x5e)
+		ret = 1;
+	else if (c == 0x60)
+		ret = 1;
+	else if (c >= 0x7b)
+		ret = 1;
+	return ret;
+}
+
+int
+is_valid_volname(const char *name)
+{
+	int len, i;
+
+	if (!name)
+		return 0;
+
+	len = strlen(name);
+	for (i = 0; i < len ; i++) {
+		if (is_invalid_char_for_volname(name[i])) {
+			len = 0;
+			break;
+		}
+	}
+	return len;
+}
+
 
 void stop_if_misc(void)
 {

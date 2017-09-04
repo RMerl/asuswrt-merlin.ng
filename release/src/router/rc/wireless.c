@@ -30,6 +30,8 @@
 #include "call_qcsapi.h"
 #endif
 
+void stop_nas(void);
+
 //	ref: http://wiki.openwrt.org/OpenWrtDocs/nas
 
 //	#define DEBUG_TIMING

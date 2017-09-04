@@ -6,6 +6,7 @@
 #define	VPN_UPLOAD_NEED_KEY			4
 #define	VPN_UPLOAD_NEED_STATIC		8
 #define VPN_UPLOAD_NEED_CRL			16
+#define VPN_UPLOAD_NEED_EXTRA		32
 
 #define MAX_PARMS 16
 

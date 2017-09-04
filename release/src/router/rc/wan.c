@@ -54,6 +54,7 @@
 
 #include <linux/types.h>
 #include <linux/ethtool.h>
+#include <linux/if_vlan.h>
 
 #ifdef RTCONFIG_USB
 #include <disk_io_tools.h>
@@ -448,7 +449,10 @@ start_igmpproxy(char *wan_ifname)
 		wan_ifname, *altnet ? altnet : "0.0.0.0/0",
 		nvram_get("lan_ifname") ? : "br0");
 
+	append_custom_config("igmpproxy.conf", fp);
 	fclose(fp);
+	use_custom_config("igmpproxy.conf", igmpproxy_conf);
+	run_postconf("igmpproxy", igmpproxy_conf);
 
 	eval("/usr/sbin/igmpproxy", igmpproxy_conf);
 #else
@@ -656,6 +660,10 @@ void update_wan_state(char *prefix, int state, int reason)
 		snprintf(tmp, sizeof(tmp), "/var/run/ppp-wan%d.status", unit);
 		unlink(tmp);
 	}
+        else if (state == WAN_STATE_CONNECTED) {
+		sprintf(tmp,"%c",prefix[3]);
+                run_custom_script("wan-start", tmp);
+        }
 
 #if defined(RTCONFIG_WANRED_LED)
 	switch (state) {
@@ -689,6 +697,7 @@ void update_wan6_state(char *prefix, int state, int reason)
 		// keep ip info if it is stopped from connected
 		nvram_set_int(strcat_r(prefix, "sbstate_t", tmp), reason);
 	}
+
 }
 #endif
 
@@ -1020,6 +1029,8 @@ start_wan_if(int unit)
 	char tmp2[100], prefix2[32];
 	char env_unit[32];
 #endif
+	int mtu;
+	struct vlan_ioctl_args ifv;
 
 	TRACE_PT("unit=%d.\n", unit);
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -1530,6 +1541,39 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			/* Bring up WAN interface */
 			ifconfig(wan_ifname, IFUP, ipaddr, netmask);
 
+			/* Increase WAN interface's MTU to allow pppoe MTU/MRU over 1492 (with 8 byte overhead) */
+			if (strcmp(wan_proto, "pppoe") == 0) {
+				/* Compute maximum required MTU by taking the maximum of the pppoe MRU and MTU values */
+				int mru = nvram_get_int(strcat_r(prefix, "pppoe_mru", tmp));
+				mtu = nvram_get_int(strcat_r(prefix, "pppoe_mtu", tmp));
+				if (mru > mtu)
+					mtu = mru;
+				if (mtu > 1492) {
+					if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
+						/* First set parent device if vlan was configured */
+						strncpy(ifv.device1, wan_ifname, IFNAMSIZ);
+						ifv.cmd = GET_VLAN_REALDEV_NAME_CMD;
+						if (ioctl(s, SIOCGIFVLAN, &ifv) >= 0) {
+							strncpy(ifr.ifr_name, ifv.u.device2, IFNAMSIZ);
+							ifr.ifr_mtu = mtu + 8;
+							if (ioctl(s, SIOCSIFMTU, &ifr)) {
+								perror(wan_ifname);
+								logmessage("start_wan_if()", "Error setting MTU on %s to %d", ifv.u.device2, mtu);
+							}
+						}
+
+						/* Set WAN device */
+						strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
+						ifr.ifr_mtu = mtu + 8;
+						if (ioctl(s, SIOCSIFMTU, &ifr)) {
+							perror(wan_ifname);
+							logmessage("start_wan_if()", "Error setting MTU on %s to %d", wan_ifname, mtu);
+						}
+						close(s);
+					}
+				}
+			}
+
 			/* launch dhcp client and wait for lease forawhile */
 			if (dhcpenable) {
 				start_udhcpc(wan_ifname, unit,
@@ -1640,6 +1684,24 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			dbG("ifup:%s\n", wan_ifname);
 			ifconfig(wan_ifname, IFUP, NULL, NULL);
 
+			/* MTU */
+			if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
+				mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
+				if (mtu < 576)
+					mtu = 576;
+
+				if (mtu > 9000)
+					mtu = 9000;	// Limit to a sane value
+
+				ifr.ifr_mtu = mtu;
+				strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
+				if (ioctl(s, SIOCSIFMTU, &ifr)) {
+					perror(wan_ifname);
+					logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
+				}
+				close(s);
+			}
+
 			/* Start pre-authenticator */
 			dbG("start auth:%d\n", unit);
 			start_auth(unit, 0);
@@ -1693,11 +1755,28 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 #ifdef RTCONFIG_DUALWAN
 			if (wan_type == WANS_DUALWAN_IF_DSL)
 #endif
-			{
+			(
 				if (nvram_match("dsl0_proto", "ipoa"))
 					start_ipoa();
-			}
 #endif
+
+			/* MTU */
+			if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
+				mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
+				if (mtu < 576)
+					mtu = 576;
+
+				if (mtu > 9000)
+					mtu = 9000;     // Limit to a sane value
+
+				ifr.ifr_mtu = mtu;
+				strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
+				if (ioctl(s, SIOCSIFMTU, &ifr)) {
+					perror(wan_ifname);
+					logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
+				}
+				close(s);
+			}
 
 			/* We are done configuration */
 			wan_up(wan_ifname);
@@ -1938,6 +2017,9 @@ int update_resolvconf(void)
 #ifdef RTCONFIG_YANDEXDNS
 	int yadns_mode = nvram_get_int("yadns_enable_x") ? nvram_get_int("yadns_mode") : YADNS_DISABLED;
 #endif
+#ifdef RTCONFIG_OPENVPN
+        int dnsstrict = 0;
+#endif
 #ifdef RTCONFIG_DUALWAN
 	int primary_unit = wan_primary_ifunit();
 #endif
@@ -1954,8 +2036,11 @@ int update_resolvconf(void)
 		goto error;
 	}
 
+/* Add DNS from VPN clients, others if non-exclusive */
 #ifdef RTCONFIG_OPENVPN
-	if (!write_ovpn_resolv(fp))
+	dnsstrict = write_ovpn_resolv(fp);
+	// If dns not set to exclusive
+	if (dnsstrict != 3)
 #endif
 	{
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++){
@@ -2085,7 +2170,12 @@ int update_resolvconf(void)
 	fclose(fp_servers);
 	file_unlock(lock);
 
-	reload_dnsmasq();
+#ifdef RTCONFIG_OPENVPN
+	if (dnsstrict == 2)
+		start_dnsmasq();	// add strict-order
+	else
+#endif
+		reload_dnsmasq();
 
 	return 0;
 
@@ -2552,7 +2642,7 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_OPENVPN
-	stop_ovpn_eas();
+	stop_ovpn_all();
 #endif
 
 #if 0 // unsure changes
@@ -2643,6 +2733,7 @@ wan_up(const char *pwan_ifname)
 				stop_dpi_engine_service(0);
 			}
 			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
+			set_codel_patch();
 			start_dpi_engine_service();
 			start_firewall(wan_unit, 0);
 		}

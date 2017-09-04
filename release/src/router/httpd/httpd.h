@@ -41,6 +41,8 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #endif
 
+#define IPV6_CLIENT_LIST        "/tmp/ipv6_client_list"
+
 /* Generic MIME type handler */
 struct mime_handler {
 	char *pattern;
@@ -70,6 +72,13 @@ extern struct useful_redirect_list useful_redirect_lists[];
 #define SERVER_PORT 80
 #define PROTOCOL "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
+
+#ifdef RTCONFIG_HTTPS
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#define JFFSKEY "/jffs/ssl/key.pem"
+#define JFFSCERT "/jffs/ssl/cert.pem"
+#endif
+#endif
 
 //asus token status for APP
 #define NOTOKEN		1
@@ -278,6 +287,7 @@ extern void logmessage(char *logheader, char *fmt, ...);
 extern int is_private_subnet(const char *ip);
 extern char* INET6_rresolve(struct sockaddr_in6 *sin6, int numeric);
 extern char *trim_r(char *str);
+extern void write_encoded_crt(char *name, char *value);
 extern int is_wlif_up(const char *ifname);
 extern void add_asus_token(char *token);
 extern int check_token_timeout_in_list(void);
@@ -285,6 +295,9 @@ extern int get_token_list_length(void);
 extern asus_token_t* search_timeout_in_list(asus_token_t **prev, int fromapp_flag);
 extern asus_token_t* add_token_to_list(char *token, int add_to_end);
 extern asus_token_t* create_list(char *token);
+extern void get_ipv6_client_info(void);
+extern void get_ipv6_client_list(void);
+extern int inet_raddr6_pton(const char *src, void *dst, void *buf);
 extern void set_referer_host(void);
 extern int check_xss_blacklist(char* para, int check_www);
 extern int check_cmd_whitelist(char* para);
@@ -296,6 +309,8 @@ extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
 extern int ej_wl_status_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wps_info_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wps_info(int eid, webs_t wp, int argc, char_t **argv);
+extern int ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit);
+extern int ej_wl_status_2g_array(int eid, webs_t wp, int argc, char_t **argv);
 
 /* web.c/web-*.c */
 extern char referer_host[64];

@@ -640,6 +640,9 @@ int
 udhcpc_wan(int argc, char **argv)
 {
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
+
+	run_custom_script("dhcpc-event", argv[1]);
+
 	if (!argv[1])
 		return EINVAL;
 	else if (strstr(argv[1], "deconfig"))
@@ -660,7 +663,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 {
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char pid[sizeof("/var/run/udhcpcXXXXXXXXXX.pid")];
-	char clientid[sizeof("61:") + (32+32+1)*2];
+	char clientid[sizeof("61:") + (128*2) + 1];
 #ifdef RTCONFIG_TR069
 	char vendorid[32+32+sizeof(" dslforum.org")];
 #ifdef RTCONFIG_TR181
@@ -695,6 +698,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		NULL, NULL,	/* -x 125:vivopts */
 #endif
 #endif
+		NULL, NULL,	/* -x 61:wan_clientid (non-DSL) */
 		NULL };
 	int index = 7;		/* first NULL */
 	int len, dr_enable;
@@ -913,6 +917,9 @@ int
 zcip_wan(int argc, char **argv)
 {
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
+
+        run_custom_script("zcip-event", argv[1]);
+
 	if (!argv[1])
 		return EINVAL;
 	else if (strstr(argv[1], "deconfig"))
@@ -1119,6 +1126,9 @@ int
 udhcpc_lan(int argc, char **argv)
 {
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
+
+        run_custom_script("dhcpc-event", argv[1]);
+
 	if (!argv[1])
 		return EINVAL;
 	else if (strstr(argv[1], "deconfig"))
@@ -1274,6 +1284,9 @@ skip:
 			bound ? "bound" : "informed",
 			*address ? "address " : "", address, *address ? ", " : "",
 			*prefix ? "prefix " : "", prefix);
+#ifdef RTCONFIG_IGD2
+		notify_rc("restart_upnp");
+#endif
 	}
 
 	return 0;
@@ -1311,6 +1324,9 @@ ra_updated6(char *wan_ifname)
 
 int dhcp6c_wan(int argc, char **argv)
 {
+
+	if (argv[2]) run_custom_script("dhcpc-event", argv[2]);
+
 	if (!argv[1] || !argv[2])
 		return EINVAL;
 	else if (strcmp(argv[2], "started") == 0 ||
@@ -1344,13 +1360,14 @@ start_dhcp6c(void)
 		NULL, NULL,	/* -rdns -rdomain */
 		NULL, NULL, 	/* -rsolmaxrt -r infmaxrt */
 		NULL,		/* -v */
+		NULL,		/* -k */
 		NULL,		/* interface */
 		NULL };
 	int index = 7;
 	struct duid duid;
 	char duid_arg[sizeof(duid)*2+1];
 	char prefix_arg[sizeof("128:xxxxxxxx")];
-	int service;
+	int service, i;
 
 	/* Check if enabled */
 	service = get_ipv6_service();
@@ -1379,7 +1396,12 @@ start_dhcp6c(void)
 			((unsigned long)(duid.ea[3] & 0x0f) << 16) |
 			((unsigned long)(duid.ea[4]) << 8) |
 			((unsigned long)(duid.ea[5])) : 1;
-		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", 0, iaid);
+#if 0
+		i = (nvram_get_int(ipv6_nvname("ipv6_prefix_length")) ? : 64);
+		if ((i < 0) || (i > 128))
+#endif
+			i = 0;
+		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", i, iaid);
 		dhcp6c_argv[index++] = "-FP";
 		dhcp6c_argv[index++] = prefix_arg;
 	}
@@ -1393,6 +1415,9 @@ start_dhcp6c(void)
 
 	if (nvram_get_int("ipv6_debug"))
 		dhcp6c_argv[index++] = "-v";
+
+	if (nvram_get_int(ipv6_nvname("ipv6_dhcp6c_release")) == 0)
+		dhcp6c_argv[index++] = "-k";
 
 	dhcp6c_argv[index++] = wan_ifname;
 

@@ -78,7 +78,7 @@ typedef unsigned int __u32;   // 1225 ham
 #define SIOCGETCPHYRD   0x89FE
 //#include "etioctl.h"
 
-#include <shutils.h>
+#include <sys/file.h>
 
 #ifdef RTCONFIG_HTTPS
 #include <syslog.h>
@@ -672,6 +672,7 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
     (void) fprintf( conn_fp, "Server: %s\r\n", SERVER_NAME );
     (void) fprintf( conn_fp, "x-frame-options: SAMEORIGIN\r\n");
     (void) fprintf( conn_fp, "x-xss-protection: 1; mode=block\r\n");
+
     if (fromapp != 0){
 	(void) fprintf( conn_fp, "Cache-Control: no-store\r\n");	
 	(void) fprintf( conn_fp, "Pragma: no-cache\r\n");
@@ -708,9 +709,9 @@ send_token_headers( int status, char* title, char* extra_header, char* mime_type
     memset(asus_token,0,sizeof(asus_token));
 
     if(nvram_match("x_Setting", "0") && strcmp( gen_token, "") != 0){
-        strncpy(asus_token, gen_token, sizeof(asus_token));
+        strlcpy(asus_token, gen_token, sizeof(asus_token));
     }else{
-	strncpy(asus_token, generate_token(), sizeof(asus_token));
+	strlcpy(asus_token, generate_token(), sizeof(asus_token));
         add_asus_token(asus_token);
     }
 
@@ -1417,7 +1418,7 @@ handle_request(void)
 				}
 #endif
 			}
-			if(!strstr(file, ".cgi") && !strstr(file, "syslog.txt") && !(strstr(file,"uploadIconFile.tar")) && !(strstr(file,"networkmap.tar")) && !(strstr(file,".CFG")) && !(strstr(file,".log")) && !check_if_file_exist(file)
+			if(!strstr(file, ".cgi") && !strstr(file, "syslog.txt") && !(strstr(file,"uploadIconFile.tar")) && !(strstr(file,"backup_jffs.tar")) && !(strstr(file,"networkmap.tar")) && !(strstr(file,".CFG")) && !(strstr(file,".log")) && !check_if_file_exist(file)
 #ifdef RTCONFIG_USB_MODEM
 					&& !strstr(file, "modemlog.txt")
 #endif
@@ -2348,30 +2349,57 @@ int main(int argc, char **argv)
 #ifdef RTCONFIG_HTTPS
 void save_cert(void)
 {
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+	eval("cp", "-p", "/etc/cert.pem", "/etc/key.pem", "/jffs/ssl/");
+#else
 	if (eval("tar", "-C", "/", "-czf", "/tmp/cert.tgz", "etc/cert.pem", "etc/key.pem") == 0) {
 		if (nvram_set_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
 			nvram_commit_x();
 		}
 	}
 	unlink("/tmp/cert.tgz");
+#endif
+
 }
 
 void erase_cert(void)
 {
 	unlink("/etc/cert.pem");
 	unlink("/etc/key.pem");
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+	unlink(JFFSCERT);
+	unlink(JFFSKEY);
+#else
 	nvram_unset("https_crt_file");
+#endif
 	//nvram_unset("https_crt_gen");
 	nvram_set("https_crt_gen", "0");
 }
 
 void start_ssl(void)
 {
-	int ok;
-	int save;
+	int lockfd;
+	int ok=0;
 	int retry;
 	unsigned long long sn;
-	char t[32];
+	int i;
+#if !defined(RTCONFIG_JFFS2) && !defined(RTCONFIG_BRCM_NAND_JFFS2) && !defined(RTCONFIG_UBIFS)
+        int save;
+
+	save = nvram_match("https_crt_save", "1");
+#endif
+
+	lockfd = open("/var/lock/sslinit.lock", O_CREAT | O_RDWR, 0666);
+
+	// Avoid collisions if another httpd instance is initializing SSL cert
+	for ( i = 1; i < 5; i++ ) {
+		if (flock(lockfd, LOCK_EX | LOCK_NB) < 0) {
+			//logmessage("httpd", "Conflict, waiting %d", i);
+			sleep(i*i);
+		} else {
+			i = 5;
+		}
+	}
 
 	//fprintf(stderr,"[httpd] start_ssl running!!\n");
 	//nvram_set("https_crt_gen", "1");
@@ -2381,11 +2409,20 @@ void start_ssl(void)
 	}
 
 	retry = 1;
+
 	while (1) {
-		save = nvram_match("https_crt_save", "1");
+
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+		if (f_exists(JFFSCERT) && f_exists(JFFSKEY)) {
+			eval("cp", "-p", JFFSKEY, JFFSCERT, "/etc/");
+			system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+			ok = 1;
+		}
+#endif
 
 		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))) {
 			ok = 0;
+#if !defined(RTCONFIG_JFFS2) && !defined(RTCONFIG_BRCM_NAND_JFFS2) && !defined(RTCONFIG_UBIFS)
 			if (save) {
 				fprintf(stderr, "Save SSL certificate...\n"); // tmp test
 				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
@@ -2402,27 +2439,40 @@ void start_ssl(void)
 					unlink("/tmp/cert.tgz");
 				}
 			}
+#endif
 			if (!ok) {
 				erase_cert();
-				syslog(LOG_NOTICE, "Generating SSL certificate...");
+				logmessage("httpd", "Generating SSL certificate...");
 				fprintf(stderr, "Generating SSL certificate...\n"); // tmp test
 				// browsers seems to like this when the ip address moves...	-- zzz
 				f_read("/dev/urandom", &sn, sizeof(sn));
 
-				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-				eval("gencert.sh", t);
+				eval("gencert.sh", "web");
 			}
 		}
 
-		if ((save) && (*nvram_safe_get("https_crt_file")) == 0) {
+		if ((!ok)
+#if !defined(RTCONFIG_JFFS2) && !defined(RTCONFIG_BRCM_NAND_JFFS2) && !defined(RTCONFIG_UBIFS)
+		    && (save)
+		    && (*nvram_safe_get("https_crt_file")) == 0
+#endif
+		    ){
 			save_cert();
 		}
 
-		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) return;
+		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
+			flock(lockfd, LOCK_UN);
+			return;
+		}
 
+		logmessage("httpd", "Failed to initialize SSL, generating new key/cert.");
 		erase_cert();
 
-		if (!retry) exit(1);
+		if (!retry) {
+			flock(lockfd, LOCK_UN);
+			logmessage("httpd", "Unable to start in SSL mode, exiting!");
+			exit(1);
+		}
 		retry = 0;
 	}
 }

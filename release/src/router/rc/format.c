@@ -7,6 +7,50 @@
 extern int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ver);
 #endif
 
+void adjust_merlin_config(void)
+{
+#ifdef RTCONFIG_OPENVPN
+	if(!nvram_is_empty("vpn_server_clientlist")) {
+		nvram_set("vpn_serverx_clientlist", nvram_safe_get("vpn_server_clientlist"));
+		nvram_unset("vpn_server_clientlist");
+	}
+#endif
+
+/* migrate dhcpc_options to wanxxx_clientid */
+	char *oldclientid = nvram_safe_get("wan0_dhcpc_options");
+	if (*oldclientid) {
+		nvram_set("wan0_clientid", oldclientid);
+		nvram_unset("wan0_dhcpc_options");
+	}
+
+	oldclientid = nvram_safe_get("wan1_dhcpc_options");
+	if (*oldclientid) {
+		nvram_set("wan1_clientid", oldclientid);
+		nvram_unset("wan1_dhcpc_options");
+	}
+
+/* Migrate to Asus's new tri-state sshd_enable to our dual nvram setup */
+	if (nvram_match("sshd_enable", "1")) {
+		if (nvram_match("sshd_wan", "0"))
+			nvram_set("sshd_enable", "2");  // LAN-only
+		// else stay WAN+LAN
+		nvram_unset("sshd_wan");
+	}
+
+/* Adjust automatic reboot count on failed radio - reduce from 3 to 1 reboot */
+	if (nvram_match("dev_fail_reboot", "3")) {
+		nvram_set("dev_fail_reboot", "1");
+	}
+
+/* We no longer support OpenVPN client units > 2 on RT-AC3200 */
+#if defined(RTAC3200)
+	if (nvram_get_int("vpn_client_unit") > 2) {
+		nvram_set_int("vpn_client_unit", 2);
+	}
+#endif
+
+}
+
 void adjust_url_urlelist(void)
 {
 	char *nv, *nvp, *b, *chk, *chkp = NULL;

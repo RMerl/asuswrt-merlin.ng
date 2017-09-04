@@ -2136,11 +2136,11 @@ ej_wl_status_5g(int eid, webs_t wp, int argc, char_t **argv)
 		return ret;
 
 	ret += websWrite(wp, "\n");
-	ret += websWrite(wp, "Stations List                           \n");
+	ret += websWrite(wp, "Stations  (flags: A=Associated, U=Authenticated)\n");
 	ret += websWrite(wp, "----------------------------------------\n");
 
-	ret += websWrite(wp, "%-18s%-11s%-11s%-8s%-8s%-8s%-12s\n",
-			     "MAC", "Associated", "Authorized", "   RSSI", "Tx rate", "Rx rate", "Connect Time");
+	ret += websWrite(wp, "%-18s%-16s%-16s%-8s%-15s%-10s%-5s\n",
+			     "MAC", "IP Address", "Name", "  RSSI", "  Rx/Tx Rate", "Connected", "Flags");
 
 	ret += ej_wl_status_qtn(eid, wp, argc, argv, WIFINAME);
 
@@ -2324,3 +2324,531 @@ ej_wl_auth_psta_qtn(int eid, webs_t wp, int argc, char_t **argv)
 ERROR:
 	return retval;
 }
+
+// Imported from httpd/web.c, as the QTN code resides in libshared
+// instead of in httpd like BCM code
+#ifdef RTCONFIG_IPV6
+#define DHCP_LEASE_FILE         "/var/lib/misc/dnsmasq.leases"
+#define IPV6_CLIENT_NEIGH	"/tmp/ipv6_neigh"
+#define IPV6_CLIENT_INFO	"/tmp/ipv6_client_info"
+#define	MAC			1
+#define	HOSTNAME		2
+#define	IPV6_ADDRESS		3
+#define BUFSIZE			8192
+
+static int compare_back(FILE *fp, int current_line, char *buffer);
+static int check_mac_previous(char *mac);
+static char *value(FILE *fp, int line, int token);
+static void find_hostname_by_mac(char *mac, char *hostname);
+static int total_lines = 0;
+
+/* Init File and clear the content */
+void init_file(char *file)
+{
+	FILE *fp;
+
+	if ((fp = fopen(file ,"w")) == NULL) {
+		_dprintf("can't open %s: %s", file,
+			strerror(errno));
+	}
+
+	fclose(fp);
+}
+
+void save_file(const char *file, const char *fmt, ...)
+{
+	char buf[BUFSIZE];
+	va_list args;
+	FILE *fp;
+
+	if ((fp = fopen(file ,"a")) == NULL) {
+		_dprintf("can't open %s: %s", file,
+			strerror(errno));
+	}
+
+	va_start(args, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, args);
+	va_end(args);
+	va_start(args, fmt);
+	fprintf(fp, "%s", buf);
+	va_end(args);
+
+	fclose(fp);
+}
+
+static char *get_stok(char *str, char *dest, char delimiter)
+{
+	char *p;
+
+	p = strchr(str, delimiter);
+	if (p) {
+		if (p == str)
+			*dest = '\0';
+		else
+			strlcpy(dest, str, p-str);
+
+		p++;
+	} else
+		strcpy(dest, str);
+
+	return p;
+}
+
+static char *value(FILE *fp, int line, int token)
+{
+	int i;
+	static char temp[BUFSIZE], buffer[BUFSIZE];
+	char *ptr;
+	int temp_len;
+
+	fseek(fp, 0, SEEK_SET);
+	for(i = 0; i < line; i++) {
+		memset(temp, 0, sizeof(temp));
+		fgets(temp, sizeof(temp), fp);
+		temp_len = strlen(temp);
+		if (temp_len && temp[temp_len-1] == '\n')
+			temp[temp_len-1] = '\0';
+	}
+	memset(buffer, 0, sizeof(buffer));
+	switch (token) {
+		case HOSTNAME:
+			get_stok(temp, buffer, ' ');
+			break;
+		case MAC:
+			ptr = get_stok(temp, buffer, ' ');
+			if (ptr)
+				get_stok(ptr, buffer, ' ');
+			break;
+		case IPV6_ADDRESS:
+			ptr = get_stok(temp, buffer, ' ');
+			if (ptr) {
+				ptr = get_stok(ptr, buffer, ' ');
+				if (ptr)
+					ptr = get_stok(ptr, buffer, ' ');
+			}
+			break;
+		default:
+			_dprintf("error option\n");
+			strcpy(buffer, "ERROR");
+			break;
+	}
+
+	return buffer;
+}
+
+static int check_mac_previous(char *mac)
+{
+	FILE *fp;
+	char temp[BUFSIZE];
+	memset(temp, 0, sizeof(temp));
+
+	if ((fp = fopen(IPV6_CLIENT_LIST, "r")) == NULL)
+	{
+		_dprintf("can't open %s: %s", IPV6_CLIENT_LIST,
+			strerror(errno));
+
+		return 0;
+	}
+
+	while (fgets(temp, BUFSIZE, fp)) {
+		if (strstr(temp, mac)) {
+			fclose(fp);
+			return 1;
+		}
+	}
+	fclose(fp);
+
+	return 0;
+}
+
+static int compare_back(FILE *fp, int current_line, char *buffer)
+{
+	int i = 0;
+	char mac[32], compare_mac[32];
+
+	buffer[strlen(buffer) -1] = '\0';
+	strcpy(mac, value(fp, current_line, MAC));
+
+	if (check_mac_previous(mac))
+		return 0;
+
+	for(i = 0; i<(total_lines - current_line); i++) {
+		strcpy(compare_mac, value(fp, current_line + 1 + i, MAC));
+		if (strcmp(mac, compare_mac) == 0) {
+			strcat(buffer, ",");
+			strcat(buffer, value(fp, current_line + 1 + i, IPV6_ADDRESS));
+		}
+	}
+	save_file(IPV6_CLIENT_LIST, "%s\n", buffer);
+
+	return 0;
+}
+
+static void find_hostname_by_mac(char *mac, char *hostname)
+{
+	FILE *fp;
+	unsigned int expires;
+	char *macaddr, *ipaddr, *host_name, *next;
+	char line[256];
+
+	if ((fp = fopen(DHCP_LEASE_FILE, "r")) == NULL)
+	{
+		_dprintf("can't open %s: %s", DHCP_LEASE_FILE,
+			strerror(errno));
+
+		goto END;
+	}
+
+	while ((next = fgets(line, sizeof(line), fp)) != NULL)
+	{
+		if (sscanf(next, "%u ", &expires) != 1)
+			continue;
+
+		strsep(&next, " ");
+		macaddr = strsep(&next, " ") ? : "";
+		ipaddr = strsep(&next, " ") ? : "";
+		host_name = strsep(&next, " ") ? : "";
+
+		if (strncasecmp(macaddr, mac, 17) == 0) {
+			fclose(fp);
+			strcpy(hostname, host_name);
+			return;
+		}
+
+		memset(macaddr, 0, sizeof(macaddr));
+		memset(ipaddr, 0, sizeof(ipaddr));
+		memset(host_name, 0, sizeof(host_name));
+	}
+	fclose(fp);
+END:
+	strcpy(hostname, "<unknown>");
+}
+
+void get_ipv6_client_info()
+{
+	FILE *fp;
+	char buffer[128], ipv6_addr[128], mac[32];
+	char *ptr_end, hostname[64];
+	doSystem("ip -f inet6 neigh show dev %s > %s", nvram_safe_get("lan_ifname"), IPV6_CLIENT_NEIGH);
+	usleep(1000);
+
+	if ((fp = fopen(IPV6_CLIENT_NEIGH, "r")) == NULL)
+	{
+		_dprintf("can't open %s: %s", IPV6_CLIENT_NEIGH,
+			strerror(errno));
+
+		return;
+	}
+
+	init_file(IPV6_CLIENT_INFO);
+	while (fgets(buffer, 128, fp)) {
+		int temp_len = strlen(buffer);
+		if (temp_len && buffer[temp_len-1] == '\n')
+			buffer[temp_len-1] = '\0';
+		if ((ptr_end = strstr(buffer, "lladdr")))
+		{
+			ptr_end = ptr_end - 1;
+			memset(ipv6_addr, 0, sizeof(ipv6_addr));
+			strncpy(ipv6_addr, buffer, ptr_end - buffer);
+			ptr_end = ptr_end + 8;
+			memset(mac, 0, sizeof(mac));
+			strncpy(mac, ptr_end, 17);
+			find_hostname_by_mac(mac, hostname);
+			if ( (ipv6_addr[0] == '2' || ipv6_addr[0] == '3')
+				&& ipv6_addr[0] != ':' && ipv6_addr[1] != ':'
+				&& ipv6_addr[2] != ':' && ipv6_addr[3] != ':')
+				save_file(IPV6_CLIENT_INFO, "%s %s %s\n", hostname, mac, ipv6_addr);
+		}
+
+		memset(buffer, 0, sizeof(buffer));
+	}
+	fclose(fp);
+}
+
+void get_ipv6_client_list(void)
+{
+	FILE *fp;
+	int line_index = 1;
+	char temp[BUFSIZE];
+	memset(temp, 0, sizeof(temp));
+	init_file(IPV6_CLIENT_LIST);
+
+	if ((fp = fopen(IPV6_CLIENT_INFO, "r")) == NULL)
+	{
+		_dprintf("can't open %s: %s", IPV6_CLIENT_INFO,
+			strerror(errno));
+
+		return;
+	}
+
+	total_lines = 0;
+	while (fgets(temp, BUFSIZE, fp))
+		total_lines++;
+	fseek(fp, 0, SEEK_SET);
+	memset(temp, 0, sizeof(temp));
+
+	while (fgets(temp, BUFSIZE, fp)) {
+		compare_back(fp, line_index, temp);
+		value(fp, line_index, MAC);
+		line_index++;
+	}
+	fclose(fp);
+
+	line_index = 1;
+}
+#endif
+
+int
+wl_status_5g_array(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int ret, retval = 0;
+	qcsapi_SSID ssid;
+	char ssidtmp[sizeof(qcsapi_SSID)*2];
+	qcsapi_unsigned_int channel;
+	qcsapi_unsigned_int bw;
+	char chspec_str[8];
+	int is_nctrlsb_lower;
+
+	if (!rpc_qtn_ready())
+		return 0;
+
+	memset(&ssid, 0, sizeof(qcsapi_SSID));
+	ret = rpc_qcsapi_get_SSID(WIFINAME, &ssid);
+	if (ret < 0) {
+		ret += websWrite(wp, "\"\",\"\",\"\",\"\",\"\",\"\",");
+		dbG("rpc_qcsapi_get_SSID %s error, return: %d\n", WIFINAME, ret);
+	}
+
+	if (str_escape_quotes(ssidtmp, ssid, sizeof(ssidtmp)) == 0 )
+		strncpy(ssidtmp, ssid, sizeof(ssidtmp));
+
+	retval += websWrite(wp, "\"%s\",", ssidtmp);
+
+	int rssi_by_chain[4], rssi;
+	qcsapi_wifi_get_rssi_by_chain(WIFINAME, 0, &rssi_by_chain[0]);
+	qcsapi_wifi_get_rssi_by_chain(WIFINAME, 1, &rssi_by_chain[1]);
+	qcsapi_wifi_get_rssi_by_chain(WIFINAME, 2, &rssi_by_chain[2]);
+	qcsapi_wifi_get_rssi_by_chain(WIFINAME, 3, &rssi_by_chain[3]);
+	rssi = (rssi_by_chain[0] + rssi_by_chain[1] + rssi_by_chain[2] + rssi_by_chain[3]) / 4;
+
+	retval += websWrite(wp, "\"%d\",", 0);
+
+	retval += websWrite(wp, "\"%d\",", rpc_qcsapi_get_snr());
+
+	retval += websWrite(wp, "\"%d\",", rssi);
+
+	ret = rpc_qcsapi_get_channel(&channel);
+	if (ret < 0) {
+		ret += websWrite(wp, "\"\",\"\",");
+		dbG("rpc_qcsapi_get_channel error, return: %d\n", ret);
+	}
+	ret = rpc_qcsapi_get_bw(&bw);
+	if (ret < 0) {
+		ret += websWrite(wp, "\"\",\"\",");
+		dbG("rpc_qcsapi_get_bw error, return: %d\n", ret);
+	}
+
+	if (bw == 80)
+		sprintf(chspec_str, "%d/%d", channel, bw);
+	else if (bw == 40)
+	{
+		is_nctrlsb_lower = ((channel == 36) || (channel == 44) || (channel == 52) || (channel == 60) || (channel == 100) || (channel == 108) || (channel == 116) || (channel == 124) || (channel == 132) || (channel == 149) || (channel == 157));
+		sprintf(chspec_str, "%d%c", channel, is_nctrlsb_lower ? 'l': 'u');
+	}
+	else
+		sprintf(chspec_str, "%d", channel);
+
+	retval += websWrite(wp, "\"%s\",", chspec_str);
+
+	qcsapi_mac_addr wl_mac_addr;
+	ret = rpc_qcsapi_interface_get_mac_addr(WIFINAME, &wl_mac_addr);
+	if (ret < 0) {
+		ret += websWrite(wp, "\"\",");
+		dbG("rpc_qcsapi_interface_get_mac_addr %s error, return: %d\n", WIFINAME, ret);
+	}
+	retval += websWrite(wp, "\"%s\",", wl_ether_etoa((struct ether_addr *) &wl_mac_addr));
+	return retval;
+}
+
+static int
+ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *ifname, int guest)
+{
+	int ret, retval = 0, i, rssi;
+	qcsapi_unsigned_int association_count = 0, tx_phy_rate, rx_phy_rate, time_associated;
+	qcsapi_mac_addr sta_address;
+	int hr, min, sec;
+	char *arplist = NULL, *arplistptr;
+	char *leaselist = NULL, *leaselistptr;
+	char *ipv6list = NULL, *ipv6listptr;
+	int found, foundipv6 = 0;
+	char ipentry[42], macentry[18];
+	char hostnameentry[32], tmp[16];
+
+	if (!rpc_qtn_ready())
+		return retval;
+
+	ret = qcsapi_wifi_get_count_associations(ifname, &association_count);
+	if (ret >= 0) {
+		for (i = 0; i < association_count; ++i) {
+			rssi = tx_phy_rate = rx_phy_rate = time_associated = 0;
+
+			ret = qcsapi_wifi_get_associated_device_mac_addr(ifname, i, (uint8_t *) &sta_address);
+			if (ret < 0) {
+				dbG("Qcsapi qcsapi_wifi_get_associated_device_mac_addr %s error, return: %d\n", ifname, ret);
+			}
+
+			ret= qcsapi_wifi_get_rssi_in_dbm_per_association(ifname, i, &rssi);
+			if (ret < 0) {
+				dbG("Qcsapi qcsapi_wifi_get_rssi_in_dbm_per_association %s error, return: %d\n", ifname, ret);
+			}
+
+			ret = qcsapi_wifi_get_tx_phy_rate_per_association(ifname, i, &tx_phy_rate);
+			if (ret < 0) {
+				dbG("Qcsapi qcsapi_wifi_get_tx_phy_rate_per_association %s error, return: %d\n", ifname, ret);
+			}
+
+			ret = qcsapi_wifi_get_rx_phy_rate_per_association(ifname, i, &rx_phy_rate);
+			if (ret < 0) {
+				dbG("Qcsapi qcsapi_wifi_get_rx_phy_rate_per_association %s error, return: %d\n", ifname, ret);
+			}
+
+			ret = qcsapi_wifi_get_time_associated_per_association(ifname, i, &time_associated);
+			if (ret < 0) {
+				dbG("Qcsapi qcsapi_wifi_get_time_associated_per_association %s error, return: %d\n", ifname, ret);
+			}
+
+			hr = time_associated / 3600;
+			min = (time_associated % 3600) / 60;
+			sec = time_associated - hr * 3600 - min * 60;
+
+			retval += websWrite(wp, "[\"%s\",", wl_ether_etoa((struct ether_addr *) &sta_address));
+
+			/* Obtain mac + IP list */
+			arplist = read_whole_file("/proc/net/arp");
+
+			/* Obtain lease list - we still need the arp list for
+			   cases where a device uses a static IP rather than DHCP */
+			leaselist = read_whole_file("/var/lib/misc/dnsmasq.leases");
+
+#ifdef RTCONFIG_IPV6
+			/* Obtain IPv6 info */
+			if (ipv6_enabled()) {
+				get_ipv6_client_info();
+				get_ipv6_client_list();
+				ipv6list = read_whole_file(IPV6_CLIENT_LIST);
+			}
+#endif
+
+			found = 0;
+			if (arplist) {
+				arplistptr = arplist;
+
+				while ((arplistptr < arplist+strlen(arplist)-2) && (sscanf(arplistptr,"%15s %*s %*s %17s",ipentry,macentry) == 2)) {
+					if (upper_strcmp(macentry, wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+						found = 1;
+						break;
+					} else {
+						arplistptr = strstr(arplistptr,"\n")+1;
+					}
+				}
+
+				if (found || !leaselist) {
+					retval += websWrite(wp, "\"%s\",", (found ? ipentry : ""));
+				}
+			} else {
+				retval += websWrite(wp, "\"<unknown>\",");
+			}
+
+			// Retrieve hostname from dnsmasq leases
+			if (leaselist) {
+				leaselistptr = leaselist;
+
+				while ((leaselistptr < leaselist+strlen(leaselist)-2) && (sscanf(leaselistptr,"%*s %17s %15s %15s %*s", macentry, ipentry, tmp) == 3)) {
+					if (upper_strcmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+						found += 2;
+						break;
+					} else {
+						leaselistptr = strstr(leaselistptr,"\n")+1;
+					}
+				}
+				if ((found) && (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 ))
+					strncpy(hostnameentry, tmp, sizeof(hostnameentry));
+
+				if (found == 0) {
+					// Not in arplist nor in leaselist
+					retval += websWrite(wp, "\"<not found>\",\"<not found>\",");
+				} else if (found == 1) {
+					// Only in arplist (static IP)
+					retval += websWrite(wp, "\"<not found>\",");
+				} else if (found == 2) {
+					// Only in leaselist (dynamic IP that has not communicated with router for a while)
+					retval += websWrite(wp, "\"%s\", \"%s\",", ipentry, hostnameentry);
+				} else if (found == 3) {
+					// In both arplist and leaselist (dynamic IP)
+					retval += websWrite(wp, "\"%s\",", hostnameentry);
+				}
+			} else {
+				retval += websWrite(wp, "\"<unknown>\",");
+			}
+
+#ifdef RTCONFIG_IPV6
+			// Retrieve IPv6
+			if (ipv6list) {
+				ipv6listptr = ipv6list;
+				foundipv6 = 0;
+				while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
+					if (upper_strcmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+						ret += websWrite(wp, "\"%s\",", ipentry);
+						foundipv6 = 1;
+						break;
+					} else {
+						ipv6listptr = strstr(ipv6listptr,"\n")+1;
+					}
+				}
+			}
+#endif
+
+			if (foundipv6 == 0) {
+				ret += websWrite(wp, "\"\",");
+			}
+
+			retval += websWrite(wp, "\"%d\",", rssi);
+			retval += websWrite(wp, "\"%d\",\"%d\",", tx_phy_rate, rx_phy_rate);
+			retval += websWrite(wp, "\"%3d:%02d:%02d\",", hr, min, sec);
+			retval += websWrite(wp, "\"A%s%s\",", !nvram_match("wl1_auth_mode_x", "open") ? "U" : "", (guest ? "G" : ""));
+			retval += websWrite(wp, "],");
+		}
+	}
+
+	if (arplist) free(arplist);
+	if (leaselist) free(leaselist);
+	if (ipv6list) free(ipv6list);
+	return retval;
+}
+
+int
+ej_wl_status_5g_array(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int ret = 0;
+	int i, unit = 1;
+	char prefix[] = "wlXXXXXXXXXX_", tmp[128];
+
+	if (!rpc_qtn_ready()) {
+		ret += websWrite(wp, "-1");
+		return ret;
+	}
+	ret += ej_wl_status_qtn_array(eid, wp, argc, argv, WIFINAME, 0);
+	if (nvram_get_int("sw_mode") == SW_MODE_REPEATER && nvram_get_int("wlc_band")) {
+		ret += websWrite(wp, "-1");
+		return ret;
+	}
+
+	for (i = 1; i < 4; i++) {
+		sprintf(prefix, "wl%d.%d_", unit, i);
+		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1"))
+			ret += ej_wl_status_qtn_array(eid, wp, argc, argv, wl_vifname_qtn(unit, i), 1);
+	}
+
+	return ret;
+}
+

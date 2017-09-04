@@ -1431,6 +1431,14 @@ padding-top:1px;
 	width:30px;
 	cursor: pointer;
 }
+.wifihwswstatuspartial{
+        background-image:url(images/wifi_hw_sw.png);
+        background-repeat:no-repeat;
+        background-position:2px -73px;
+        height:29px;
+        width:30px;
+        cursor: pointer;
+}
 .wifihwswstatusoff{
 	background-image:url(images/wifi_hw_sw.png);
 	background-repeat:no-repeat;	
@@ -1442,7 +1450,7 @@ padding-top:1px;
 
 .guestnetworkstatuson{
 	background-image:url(images/New_ui/multiplessidstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:29px;
 	width:30px;
@@ -1450,7 +1458,7 @@ padding-top:1px;
 }
 .guestnetworkstatusoff{
 	background-image:url(images/New_ui/multiplessidstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:29px;
 	width:30px;
@@ -1862,11 +1870,44 @@ padding-top:1px;
 	cursor:pointer;
 	display:block;
 }
-
 .navigation li dd:hover{
-	text-decoration:underline;
-	background-color:#065280;
+       text-decoration:underline;
+       background-color:#065280;
 }
+
+.vpnClientTitle_td_unclick{
+	background-color: #000;
+	height: 30px;
+	cursor: pointer;
+	border: 1px solid #222;
+}
+
+.vpnClientTitle_td_click{
+	background-color: #4D595D;
+	height: 30px;
+	cursor: pointer;
+	border: 1px solid #222;
+}
+
+.traffictable th{
+	height:30px;
+}
+
+.traffictable th:hover{
+        cursor:pointer;
+        text-decoration: underline;
+}
+
+.traffictable_footer td{
+	color: cyan;
+	background-color:#4d595d;
+}
+
+.traffictable_link:hover {
+	cursor:pointer;
+	text-decoration: underline;
+}
+
 .panel_folder{
 	font-family:Courier ;
 	width:500px;
@@ -2092,7 +2133,6 @@ padding-top:1px;
 	font-size:12px;
 	line-height:25px;
 }
-
 .single_wan_connected{
 	background-image:url(images/New_ui/networkmap/line_dualwan.png);
 	background-repeat:no-repeat;
@@ -2183,22 +2223,17 @@ padding-top:1px;
 	width:20px;
 }
 .textarea_ssh_table{
+        color: #FFFFFF;
+        background-color: #576D73;
+        border:2px ridge #777;
+        border-style:bevel;
+}
+.textarea_log_table{
 	color: #FFFFFF;
 	background-color: #475A5F;
-}
-
-.vpnClientTitle_td_unclick{
-	background-color: #000;
-	height: 30px;
-	cursor: pointer;
-	border: 1px solid #222;
-}
-
-.vpnClientTitle_td_click{
-	background-color: #4D595D;
-	height: 30px;
-	cursor: pointer;
-	border: 1px solid #222;
+        border:2px ridge #777;
+        border-style:bevel;
+	width:99%;
 }
 .link{
 	cursor:pointer !important;

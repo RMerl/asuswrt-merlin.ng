@@ -234,6 +234,7 @@ function setClientIP(ipaddr){
 	hideClients_Block();
 }
 
+
 function hideClients_Block(){
 	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 	document.getElementById('ClientList_Block_PC').style.display='none';
@@ -324,7 +325,7 @@ function Ctrl_LANIPList(obj){
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
 			<thead>
 			  	<tr>
-					<td colspan="6" id="GWStatic"><#RouterConfig_GWStatic_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;32)</td>
+					<td colspan="6" id="GWStatic"><#RouterConfig_GWStatic_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;64)</td>
 			  	</tr>
 			</thead>			
 				<tr>
@@ -356,7 +357,7 @@ function Ctrl_LANIPList(obj){
 				
 					<td width="12%">
 						<div> 
-							<input type="button" class="add_btn" onClick="addRow_Group(32);" value="">
+							<input type="button" class="add_btn" onClick="addRow_Group(64);" value="">
 						</div>
 					</td>
 			  </tr>

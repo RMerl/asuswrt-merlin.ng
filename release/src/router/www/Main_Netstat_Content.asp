@@ -68,6 +68,12 @@ function updateOptions(){
 var _responseLen;
 var noChange = 0;
 function checkCmdRet(){
+       
+	if (document.form.cmdMethod.value == "netstat-nat")
+		waitLimit = 90;
+	else
+		waitLimit = 10;
+
 	$.ajax({
 		url: '/cmdRet_check.htm',
 		dataType: 'html',
@@ -93,7 +99,7 @@ function checkCmdRet(){
 			else
 				noChange = 0;
 
-			if(noChange > 10){
+			if(noChange > waitLimit){
 				document.getElementById("loadingIcon").style.display = "none";
 				_cmdBtn.disabled = false;
 				_cmdBtn.style.color = "#FFF";

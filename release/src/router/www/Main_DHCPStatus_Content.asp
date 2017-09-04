@@ -11,15 +11,100 @@
 <title><#Web_Title#> - <#menu5_7_3#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="/js/table/table.css">
 
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-<script></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/table/table.js"></script>
+<style>
+p{
+	font-weight: bolder;
+}
+.tableApi_table th {
+       height: 20px;
+}
+.data_tr {
+       height: 30px;
+}
+</style>
+
+
+<script>
+<% get_leases_array(); %>
+
+overlib_str_tmp = "";
+overlib.isOut = true;
+
+function initial() {
+	show_menu();
+	show_leases();
+}
+
+function show_leases() {
+	var i, line;
+	var Days, Hours, Minutes, Seconds;
+	var tableStruct;
+
+	leasearray.pop();	// Remove last empty element
+
+	if (leasearray.length > 0) {
+		for (i = 0; i < leasearray.length; ++i) {
+			line = leasearray[i];
+			Days = Math.floor(line[0] / (60*60*24));
+			Hours = Math.floor((line[0] / 3600) % 24);
+			Minutes = Math.floor(line[0] % 3600 / 60);
+			Seconds = Math.floor(line[0] % 60);
+			leasearray[i][0] = Days + "d " + Hours + "h " + Minutes + "m "+ Seconds + "s";
+
+			overlib_str = "<p><#MAC_Address#>:</p>" + line[1];
+			leasearray[i][1] = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + line[1].toUpperCase() +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ line[1].toUpperCase() +'</span>';
+		}
+
+		tableStruct = {
+			data: leasearray,
+			container: "leaseblock",
+			title: "DHCP Leases",
+			header: [
+				{
+					"title" : "Time Left",
+					"width" : "20%",
+					"sort" : "str"
+				},
+				{
+					"title" : "MAC Address",
+					"width" : "20%",
+					"sort" : "str"
+				},
+				{
+					"title" : "IP Address",
+					"width" : "20%",
+					"sort" : "ip",
+					"defaultSort" : "increase"
+				},
+				{
+					"title" : "Hostname",
+					"width" : "40%",
+					"sort" : "str"
+				}
+			]
+		}
+
+		tableApi.genTableAPI(tableStruct);
+
+	} else {
+		document.getElementById("leaseblock").innerHTML = '<span style="color:#FFCC00;">No active leases.</span>';
+	}
+}
+
+
+</script>
 </head>
 
-<body onload="show_menu();">
+<body onload="initial();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 
@@ -56,18 +141,20 @@
 									<td valign="top">
 										<div>&nbsp;</div>
 										<div class="formfonttitle"><#System_Log#> - <#menu5_7_3#></div>
-										<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+										<div style="margin-lease:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 										<div class="formfontdesc"><#DHCPlease_title#></div>
-										<div style="margin-top:8px">   
-											<textarea cols="63" rows="25" readonly="readonly" wrap=off class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;"><% nvram_dump("leases.log", "leases.sh"); %></textarea>
+
+                                                                                <div style="margin-top:8px">
+											<div id="leaseblock"></div>
 										</div>
+										<br>
 										<div class="apply_gen">
 											<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
 										</div>
-									</td><!--==magic 2008.11 del name ,if there are name, when the form was sent, the textarea also will be sent==-->
+									</td>
 								</tr>
-								</tbody>		  
-							</table>	
+								</tbody>
+							</table>
 						</td>
 					</tr>
 				</table>

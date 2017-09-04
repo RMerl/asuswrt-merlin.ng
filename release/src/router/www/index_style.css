@@ -92,7 +92,7 @@ body {
 	filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=1, OffY=1, Color=#000000);
 }
 
-.menu_QIS_table {
+.menu_QIS_title {
 	width:185px;
 	height: 53px;
 	font-family:Verdana;
@@ -117,7 +117,7 @@ body {
 	border-right-color:#6D6D6D;
 }
 
-.menu_QIS_table:hover {
+.menu_QIS_title:hover {
 	background: #B9D8E6; /* Old browsers */
 	background: -moz-linear-gradient(top, #B9D8E6  0%, #699BBF 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#B9D8E6), color-stop(100%,#699BBF )); /* Chrome,Safari4+ */
@@ -806,6 +806,8 @@ width:122px;
 	text-align: center;
 	font-family: Verdana;
 	border-radius: 5px 5px 0px 0px;
+	font-weight: bold;
+	text-shadow: 1px 1px 0px black;
 }
 .menu_Index{
 	background: url(images/New_ui/icon_indexes.png);
@@ -1032,4 +1034,8 @@ width:122px;
 ._index{
   background: url(images/New_ui/icon_indexes.png);
   background-position: -0px -40px; width: 43px; height: 43px;
+}
+.menu_Tools{
+	background: url(images/New_ui/icon_indexes.png);
+	background-position: 0px -288px;
 }

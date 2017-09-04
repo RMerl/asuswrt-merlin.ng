@@ -794,7 +794,7 @@ function linkport(obj){
 						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px">
 							<thead>
 							<tr>
-								<td colspan="4" id="TriggerList" style="border-right:none;"><#BM_UserList_title#>&nbsp;(<#List_limit#>&nbsp;32)</td>
+								<td colspan="4" id="TriggerList" style="border-right:none;"><#BM_UserList_title#>&nbsp;(<#List_limit#>&nbsp;128)</td>
 								<td colspan="3" id="TriggerList" style="border-left:none;">
 									<div style="margin-top:0px;display:none" align="right">
 										<select id='qos_default_sel' name='qos_default_sel' class="input_option" onchange="change_wizard(this);"></select>
@@ -853,7 +853,7 @@ function linkport(obj){
 								</td>
 								
 								<td width="6%">
-									<input type="button" class="add_btn" onClick="addRow_Group(32);">
+									<input type="button" class="add_btn" onClick="addRow_Group(128);">
 								</td>
 							</tr>
 							</table>

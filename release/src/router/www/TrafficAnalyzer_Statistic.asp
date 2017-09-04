@@ -93,7 +93,6 @@ function initial(){
 		
 		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_note#>";	
 	}
-	
 	get_every_client_data("all", "detail", "24", date_second, date_string);		//get clients and find top 5 clients' traffic last 24 hours
 	setTimeout(function(){
 		get_wan_data("all", "hour", "24", date_second, date_string);	
@@ -1626,7 +1625,6 @@ function getClientCurrentName(_mac) {
 																					$("#agreement_panel").fadeIn(300);
 																					return false;
 																				}
-																					
 																					document.form.bwdpi_db_enable.value = 1;
 																					applyRule();
 																			},
@@ -1647,6 +1645,7 @@ function getClientCurrentName(_mac) {
 									<div style="margin-left:5px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 									<div style="margin-left:10px;">
 										<label style="font-size:16px;"><#Statistic_last_date#>:</label>
+
 										<input class="input_12_table" id="datepicker" value="">	
 										<div id="statistic_hint" style="text-align:right;margin-top:-21px;padding-right:15px;color:#FC0;font-size:14px;">* <#Traffic_Analyzer_note#></div>
 									</div>

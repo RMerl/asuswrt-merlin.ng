@@ -335,6 +335,24 @@ function change_ddns_setting(v){
 				document.form.ddns_regular_check.value = 0;
 				showhide("check_ddns_field", 0);
 				inputCtrl(document.form.ddns_regular_period, 0);
+				showhide("customnote", 0);
+				showhide("need_custom_scripts", 0);
+		}else if (v == "CUSTOM"){
+				document.form.ddns_hostname_x.parentNode.style.display = "";
+				document.form.DDNSName.parentNode.style.display = "none";
+				inputCtrl(document.form.ddns_username_x, 0);
+				inputCtrl(document.form.ddns_passwd_x, 0);
+				document.form.ddns_wildcard_x[0].disabled= 1;
+				document.form.ddns_wildcard_x[1].disabled= 1;
+				showhide("customnote", 1);
+				showhide("link", 0);
+				showhide("linkToHome", 0);
+				showhide("wildcard_field",0);
+				showhide("check_ddns_field", 0);
+				if (('<% nvram_get("jffs2_enable"); %>' != '1') || ('<% nvram_get("jffs2_scripts"); %>' != '1'))
+					showhide("need_custom_scripts", 1);
+				else
+					showhide("need_custom_scripts", 0);
 		}
 		else if( v == "WWW.ORAY.COM"){
 			document.getElementById("ddns_hostname_tr").style.display="none";
@@ -356,13 +374,14 @@ function change_ddns_setting(v){
 				document.form.DDNSName.parentNode.style.display = "none";
 				inputCtrl(document.form.ddns_username_x, 1);
 				inputCtrl(document.form.ddns_passwd_x, 1);
+				var disable_wild = 0;
 				if(v == "WWW.TUNNELBROKER.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
 					var disable_wild = 1;
 				else
 					var disable_wild = 0;
 				document.form.ddns_wildcard_x[0].disabled= disable_wild;
 				document.form.ddns_wildcard_x[1].disabled= disable_wild;
-				if(v == "WWW.ZONEEDIT.COM" || v == "DOMAINS.GOOGLE.COM"){
+				if(v == "WWW.ZONEEDIT.COM" || v == "DOMAINS.GOOGLE.COM" || v == "WWW.NAMECHEAP.COM"){
 					showhide("link", 0);
 					showhide("linkToHome", 1);
 				}
@@ -373,11 +392,18 @@ function change_ddns_setting(v){
 				
 				showhide("wildcard_field",!disable_wild);
 				showhide("check_ddns_field", 1);
+				showhide("customnote", 0);
+				showhide("need_custom_scripts", 0);
 				if(document.form.ddns_regular_check.value == 0)
 					inputCtrl(document.form.ddns_regular_period, 0);
 				else
 					inputCtrl(document.form.ddns_regular_period, 1);
 		}
+
+		if(v == "WWW.NAMECHEAP.COM")
+			document.getElementById("ddns_username_th").innerHTML = "Domain Name";
+		else
+			document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
 
 		if(letsencrypt_support){
 			document.getElementById("le_crypt").style.display = "";
@@ -419,6 +445,7 @@ function change_common_radio(o, s, v, r){
 				show_cert_settings(1);
 
 			change_ddns_setting(document.form.ddns_server_x.value);
+			inputCtrl(document.form.ddns_refresh_x, 1);
 		}else{
 			if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
 				document.form.DDNSName.parentNode.parentNode.parentNode.style.display = "none";
@@ -437,6 +464,7 @@ function change_common_radio(o, s, v, r){
 			document.form.ddns_regular_check.value = 0;
 			showhide("check_ddns_field", 0);
 			inputCtrl(document.form.ddns_regular_period, 0);
+			inputCtrl(document.form.ddns_refresh_x, 0);
 			
 			if(letsencrypt_support)
 				show_cert_settings(0);
@@ -550,6 +578,8 @@ function openLink(s){
 			tourl = "";
 		else if (document.form.ddns_server_x.value == 'WWW.NO-IP.COM')
 			tourl = "http://www.no-ip.com/newUser.php";
+		else if (document.form.ddns_server_x.value == 'WWW.NAMECHEAP.COM')
+			tourl = "https://www.namecheap.com";
 		else if (document.form.ddns_server_x.value == 'WWW.ORAY.COM')
 			tourl = "http://www.oray.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
@@ -1439,7 +1469,7 @@ function wl_auth_mode_change(isload){
 function showhide(element, sh)
 {
 	var status;
-	if (sh == 1){
+	if ((sh == 1) || (sh == true)){
 		status = "";
 	}
 	else{
@@ -1518,7 +1548,7 @@ function check_hwaddr_flag(obj){  //check_hwaddr() remove alert()
   		/*else if(!legal_hwaddr.test(obj.value))
     		return 2;*/
 		else
-			return 0;
+			 return 0;
   }
 }
 

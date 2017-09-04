@@ -13,6 +13,7 @@
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/aidisk/AiDisk_style.css">
 <script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
@@ -481,7 +482,7 @@ function onEvent(){
 		document.getElementById("createAccountBtn").onclick = function(){};
 		document.getElementById("createAccountBtn").onmouseover = function(){};
 		document.getElementById("createAccountBtn").onmouseout = function(){};
-		document.getElementById("createAccountBtn").title = (accounts.length < 6)?"<#AddAccountTitle#>":"<#account_overflow#>";
+		document.getElementById("createAccountBtn").title = (accounts.length < 11)?"<#AddAccountTitle#>":"<#account_overflow#>";
 	}
 	
 	if(this.accounts.length > 0 && this.selectedAccount != null && this.selectedAccount.length > 0 && this.accounts[0] != this.selectedAccount){
@@ -656,7 +657,13 @@ function applyRule(){
 }
 
 function validForm(){
-	
+
+	if(!validator.range(document.form.st_max_user, 1, 10)){
+			document.form.st_max_user.focus();
+			document.form.st_max_user.select();
+		return false;
+	}	
+
 	if(document.form.computer_name.value.length == 0){
 		showtext(document.getElementById("alert_msg1"), "<#JS_fieldblank#>");
 		document.form.computer_name.focus();
@@ -686,7 +693,7 @@ function validForm(){
 		return false;	
 	}
 	else{
-		var workgroup_check = new RegExp('^[a-zA-Z0-9][a-zA-Z0-9\-\_\.]+$','gi');	  	
+		var workgroup_check = new RegExp('^[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-\_\.]+$','gi');
   		if(!workgroup_check.test(document.form.st_samba_workgroup.value)){
 			alert("<#JS_validchar#>");               
 			document.form.st_samba_workgroup.focus();
@@ -738,7 +745,7 @@ function switchUserType(flag){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="action_mode" value="apply">
-<input type="hidden" name="action_script" value="restart_ftpsamba">
+<input type="hidden" name="action_script" value="restart_ftpsamba;restart_dnsmasq">
 <input type="hidden" name="action_wait" value="5">
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="current_page" value="Advanced_AiDisk_samba.asp">
@@ -822,6 +829,14 @@ function switchUserType(flag){
 				</tr>
 				<tr>
 					<th>
+						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,1);"><#ShareNode_MaximumLoginUser_itemname#></a>
+					</th>
+					<td>
+						<input type="text" name="st_max_user" class="input_3_table" maxlength="2" value="<% nvram_get("st_max_user"); %>" onKeyPress="return validator.isNumber(this, event);">
+					</td>
+				</tr>
+				<tr>
+					<th>
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,2);"><#ShareNode_DeviceName_itemname#></a>
 					</th>
 					<td>
@@ -833,7 +848,35 @@ function switchUserType(flag){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,3);"><#ShareNode_WorkGroup_itemname#></a>
 					</th>
 					<td>
-						<input type="text" name="st_samba_workgroup" class="input_32_table" maxlength="32" value="<% nvram_get("st_samba_workgroup"); %>" autocorrect="off" autocapitalize="off">
+						<input type="text" name="st_samba_workgroup" class="input_20_table" maxlength="16" value="<% nvram_get("st_samba_workgroup"); %>" autocorrect="off" autocapitalize="off">
+					</td>
+				</tr>
+				<tr>
+					<th>Enable SMB2 protocol (default: No)</th>
+					<td>
+						<input type="radio" name="smbd_enable_smb2" class="input" value="1" <% nvram_match_x("", "smbd_enable_smb2", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="smbd_enable_smb2" class="input" value="0" <% nvram_match_x("", "smbd_enable_smb2", "0", "checked"); %>><#checkbox_No#>
+					</td>
+                                </tr>
+				<tr>
+					<th>Simpler share naming<br><i>(without the disk name)</i></th>
+					<td>
+						<input type="radio" name="smbd_simpler_naming" class="input" value="1" <% nvram_match_x("", "smbd_simpler_naming", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="smbd_simpler_naming" class="input" value="0" <% nvram_match_x("", "smbd_simpler_naming", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Force as Master Browser</th>
+					<td>
+						<input type="radio" name="smbd_master" class="input" value="1" <% nvram_match_x("", "smbd_master", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="smbd_master" class="input" value="0" <% nvram_match_x("", "smbd_master", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+					<th>Set as WINS server</th>
+					<td>
+						<input type="radio" name="smbd_wins" class="input" value="1" <% nvram_match_x("", "smbd_wins", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="smbd_wins" class="input" value="0" <% nvram_match_x("", "smbd_wins", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 				<tr id="ntfs_sparse_files" style="">

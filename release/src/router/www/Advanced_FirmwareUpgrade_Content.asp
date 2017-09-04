@@ -93,6 +93,17 @@ var cfg_check = '<% nvram_get("cfg_check"); %>';
 var sig_ver_ori = '<% nvram_get("bwdpi_sig_ver"); %>';
 var sig_update_t = '<% nvram_get("sig_update_t"); %>';
 
+var download_srv = '<% nvram_get("firmware_server"); %>';
+if (download_srv == "") {
+	download_url = "https://asuswrt.lostrealm.ca/download";
+	download_url_alpha = download_url;
+	download_url_beta = download_url;
+} else {
+	download_url = download_srv + "/" + based_modelid;
+	download_url_alpha = download_srv + "/alpha";
+	download_url_beta = download_url + "/beta";
+}
+
 function initial(){
 	show_menu();
 	if(bwdpi_support){
@@ -111,22 +122,24 @@ function initial(){
 		else
 			document.getElementById("sig_update_date").innerHTML = "&nbsp;&nbsp;"+transferTimeFormat(sig_update_t*1000);
 	}
-
+	
 	if(webs_state_upgrade != "" && webs_state_upgrade != "1"){   //Show firmware is still downloading or fw upgrade loading bar if doing webs_upgrade.sh 
 		startDownloading();
 	}
 
 	if(no_update_support){
-		document.getElementById("update_div").style.display = "none";
-		document.getElementById("beta_firmware_path_span").style.display = "none";
+ 		document.getElementById("update_div").style.display = "none";
+ 		document.getElementById("beta_firmware_path_span").style.display = "none";
 		document.getElementById("linkpage_div").style.display = "none";
 	}
 	else{
-		if(!live_update_support || !HTTPS_support){
+		if(!live_update_support || !HTTPS_support || ("<% nvram_get("firmware_check_enable"); %>" != "1")){
 			document.getElementById("update_div").style.display = "none";
 			document.getElementById("beta_firmware_path_span").style.display = "none";
 			document.getElementById("linkpage_div").style.display = "";
-			helplink = get_helplink();
+			document.getElementById("linkpage").style.display = "";
+			document.getElementById("fw_check_link").style.display = "none";
+			helplink = download_url;
 			document.getElementById("linkpage").href = helplink;
 		} 
 		else{
@@ -144,7 +157,7 @@ function initial(){
 	}
 
 	/* Viz remarked 2016.06.17		
-	if(!live_update_support || !HTTPS_support || exist_firmver[0] == 9){
+	if(!live_update_support || !HTTPS_support || ("<% nvram_get("firmware_check_enable"); %>" != "1") || exist_firmver[0] == 9){
 		document.getElementById('auto_upgrade_setting').style.display = "none";
 	}
 	else{
@@ -177,6 +190,16 @@ function initial(){
 		inputCtrl(document.form.file, 1);
 		inputCtrl(document.form.upload, 1);
 	}
+
+	document.getElementById("fw_note3").style.display = "none";
+
+	var extendno = "<% nvram_get("extendno"); %>";
+	var firmver_info = "<% nvram_get("buildno"); %>";
+	if ((extendno != "") && (extendno != "0"))
+		firmver_info += "_" + extendno;
+	document.getElementById("firmver_div").innerHTML = firmver_info;
+
+	if ("<% nvram_get("jffs2_enable"); %>" == "1") document.getElementById("jffs_warning").style.display="";
 }
 
 var dead = 0;
@@ -191,7 +214,7 @@ function detect_firmware(flag){
 				setTimeout("detect_firmware();", 1000);
 			else{
   				document.getElementById('update_scan').style.display="none";
-  				document.getElementById('update_states').innerHTML="<#connect_failed#>";
+  				document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
 				document.getElementById('update').disabled = false;
 			}
 		},
@@ -207,15 +230,14 @@ function detect_firmware(flag){
 						document.getElementById('update_states').innerHTML="No beta firmware available now.";	/* untranslated */
 					}
 					else{
-						document.getElementById('update_states').innerHTML="<#connect_failed#>";
-					}
+						document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
+					}	
 					document.getElementById('update').disabled = false;
 				}
 				else if(webs_state_error == "3" || (lyra_hide_support && cfg_check == "4")){	//3: FW check/RSA check fail
 					document.getElementById('update_scan').style.display="none";
 					document.getElementById('update_states').innerHTML="<#FIRM_fail_desc#><br><#FW_desc1#>";
 					document.getElementById('update').disabled = false;
-
 				}
 				else{
 					document.getElementById('update_scan').style.display="none";
@@ -248,17 +270,20 @@ function do_show_confirm(FWVer, CheckPath, CurrentPath){
          					title: "Beta Firmware Available",
          					ribbon: "ribbon-red",
          					ribbon_wrapper: "ribbon-wrapper-red",
-         					contentA: "The beta firmware lets users try pre-release features. The feedback on quality and usability helps us identify issues and make firmware even better. Please note that beta firmware may contain errors or may not function as well as formally release firmware. Install only on devices that are not business critical. If you want to back to formally released version, please uncheck <b>get beta firmware</b> then click check button to get the formally released firmware. When changed to formally released firmware, some new features in beta firmware may lose.<br>",		/* untranslated */
-         					contentC: "<br><#ADSL_FW_note#> <#Main_alert_proceeding_desc5#>",
+         					contentA: "There is a new beta firmware available.  These are pre-release test versions made available to obtain early user feedback, or to address issues fixed since the last official release.  Please note that beta firmware may introduce new issues or may not function as well as a stable release. Install only on devices that are not business critical.<br>",		/* untranslated */
+         					contentC: "<br><#ADSL_FW_note#> Visit the download site to manually download and upgrade your router",
          					left_button: "<#CTL_Cancel#>",
          					left_button_callback: function(){confirm_cancel();},
          					left_button_args: {},
-         					right_button: "<#CTL_upgrade#>",
-							right_button_callback: function(){
-										document.start_update.action_mode.value="apply";
-										document.start_update.firmware_path.value=1;
-										document.start_update.action_script.value="start_webs_upgrade";
-										document.start_update.submit();
+         					right_button: "Visit download site",
+         					right_button_callback: function(){	
+							if (webs_state_info_beta.indexOf("alpha") != -1) {
+								window.open(download_url_alpha);
+							} else if (webs_state_info_beta.indexOf("beta") != -1) {
+								window.open(download_url_beta);
+							} else {
+								window.open(download_url);
+							}
 									},
          					right_button_args: {},
          					iframe: "get_release_note1.asp",
@@ -269,22 +294,20 @@ function do_show_confirm(FWVer, CheckPath, CurrentPath){
 						else{
 							confirm_asus({
          					title: "New Firmware Available",
-         					contentA: "<#exist_new#><br>",
-         					contentC: "<br><#ADSL_FW_note#> <#Main_alert_proceeding_desc5#>",
+         					contentA: "There is a newer firmware available.  For security reasons it is usually recommended to update to the latest version available.  Please review the release notes below.<br>",
+         					contentC: "<br><#ADSL_FW_note#> Visit the download site to manually download and upgrade your router",
          					left_button: "<#CTL_Cancel#>",
          					left_button_callback: function(){confirm_cancel();},
          					left_button_args: {},
-         					right_button: "<#CTL_upgrade#>",
+         					right_button: "Visit download site",
 							right_button_callback: function(){
-										if(lyra_hide_support){
-											cfgsync_firmware_upgrade();
-										}
-										else{
-											document.start_update.action_mode.value="apply";
-											document.start_update.action_script.value="start_webs_upgrade";
-											document.start_update.submit();
-										}
-									},
+								if(lyra_hide_support){
+									cfgsync_firmware_upgrade();
+								}
+								else{
+									window.open(download_url);
+								}
+							},
          					right_button_args: {},
          					iframe: "get_release_note0.asp",
          					margin: "100px 0px 0px 25px",
@@ -346,7 +369,7 @@ function detect_update(firmware_path){
 			document.start_update.submit();
 		}
 		document.getElementById('update_states').style.display="";
-		document.getElementById('update_states').innerHTML="<#check_proceeding#>";
+		document.getElementById('update_states').innerHTML="Contacting the update server...";
 		document.getElementById('update_scan').style.display="";
 		document.getElementById('update').disabled = true;
 	}
@@ -356,7 +379,7 @@ function detect_update(firmware_path){
 		document.start_update.action_mode.value="apply";
 		document.start_update.action_script.value="start_webs_update";
 		document.getElementById('update_states').style.display="";
-		document.getElementById('update_states').innerHTML="<#check_proceeding#>";
+		document.getElementById('update_states').innerHTML="Contacting the update server...";
 		document.getElementById('update_scan').style.display="";
 		document.getElementById('update').disabled = true;
 		document.start_update.submit();
@@ -364,7 +387,7 @@ function detect_update(firmware_path){
 	else{
 		document.getElementById('update_scan').style.display="none";
 		document.getElementById('update_states').style.display="";
-		document.getElementById('update_states').innerHTML="<#connect_failed#>";
+		document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
 		return false;	
 	}
 }
@@ -747,6 +770,7 @@ function transferTimeFormat(time){
 		  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		  <div class="formfontdesc"><strong><#FW_note#></strong>
 				<ol>
+					<li id="jffs_warning" style="display:none; color:#FFCC00;">WARNING: you have JFFS enabled.  Make sure you have a backup of its content, as upgrading your firmware MIGHT overwrite it!</li>
 					<li><#FW_n0#></li>
 					<li><#FW_n1#></li>
 					<li id="fw_note2"><#FW_n2#></li>
@@ -803,10 +827,15 @@ function transferTimeFormat(time){
 					</div>
 				</td>
 			</tr>
+
+			<tr id="fw_check_link">
+				<th>Scheduled new firmware check</th>
+				<td>Click <a href="Tools_OtherSettings.asp#fwcheck" style="text-decoration:underline;color:#FFCC00;">here</a> to toggle new firmware notification.</td>
+			</tr>
 			<tr>
 				<th><#FW_item2#></th>
 				<td>
-					<div style="height:33px;margin-top:5px;"><% nvram_get("firmver"); %>.<% nvram_get("buildno"); %>_<% nvram_get("extendno"); %></div>
+					<div id="firmver_div" style="height:33px;margin-top:5px;"></div>
 					<div id="update_div" style="margin-left:200px;margin-top:-38px;display:none;">
 						<input type="button" id="update" name="update" class="button_gen" onclick="detect_update(document.start_update.firmware_path.value);" value="<#liveupdate#>" />
 						<span id="beta_firmware_path_span" style="display:none;">
@@ -822,7 +851,7 @@ function transferTimeFormat(time){
 					</div>
 				</td>
 			</tr>
-			<tr id="manually_upgrade_tr">
+			<tr>
 				<th><#FW_item5#></th>
 				<td>
 					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 194px;">

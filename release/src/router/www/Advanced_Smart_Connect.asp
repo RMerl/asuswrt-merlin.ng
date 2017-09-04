@@ -810,6 +810,7 @@ function applyRule(){
 		}
 	}else
 		document.form['wl'+i+'_bsd_if_qualify_policy_x'].value = bsd_if_qualify_policy[i].toString().replace(/,/g,' ');
+
   }
 
 	bsd_bounce_detect[0] = document.form.windows_time_sec.value;

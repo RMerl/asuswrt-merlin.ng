@@ -16,9 +16,130 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/merlin.js"></script>
+
+<style>
+p{
+	font-weight: bolder;
+}
+</style>
+
+
+<script>
+
+<% ipv6_pinholes(); %>
+<% get_ipv6net_array(); %>
+
+overlib_str_tmp = "";
+overlib.isOut = true;
+
+function initial() {
+	show_menu();
+
+	show_ipv6config();
+	show_ipv6clients();
+
+	if (igd2_support)
+	{
+		document.getElementById("pinholesdiv").style.display="";
+		show_pinholes();
+	}
+}
+
+
+function show_ipv6config() {
+	var code, i, line
+
+	code = '<table width="100%" id="ipv6config" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">';
+	code += '<thead><tr><td colspan="2">IPv6 Configuration</td></tr></thead>';
+
+	if (ipv6cfgarray.length > 1) {
+		for (i = 0; i < ipv6cfgarray.length-1; ++i) {
+			line = ipv6cfgarray[i];
+                        code += '<tr><th>' + line[0] + '</th>';
+			code += '<td>' + line[1] + '</td>';
+			code += '</tr>';
+		}
+	} else {
+		code += '<tr><td colspan="2"><span>IPv6 Not enabled.</span></td></tr>';
+	}
+
+	code += '</tr></table>';
+	document.getElementById("ipv6configblock").innerHTML = code;
+}
+
+
+function show_ipv6clients() {
+	var code, i, line
+
+	code = '<table width="100%" id="ipv6clients" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
+	code += '<thead><tr><td colspan="3">IPv6 Clients</td></tr></thead>';
+
+	code += '<tr><th width="25%">Hostname</th>';
+	code += '<th width="25%">MAC</th>';
+	code += '<th width="50%">IP Address</th>';
+	code += '</tr>';
+
+	if (ipv6clientarray.length > 1) {
+		for (i = 0; i < ipv6clientarray.length-1; ++i) {
+			line = ipv6clientarray[i];
+			code += '<tr><td>' + line[0].tagescape() + '</td>';
+
+			overlib_str = "<p><#MAC_Address#>:</p>" + line[1];
+			code += '<td><span class="ClientName" onclick="oui_query_full_vendor(\'' + line[1].toUpperCase() +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ line[1].toUpperCase() +'</span></td>';
+
+			code += '<td>' + line[2] + '</td>';
+			code += '</tr>';
+                }
+	} else {
+		code += '<tr><td colspan="3"><span>No IPv6 clients.</span></td></tr>';
+	}
+	code += '</table>';
+	document.getElementById("ipv6clientsblock").innerHTML = code;
+}
+
+
+function show_pinholes() {
+	var code, i, rule
+
+	code = '<table width="100%" id="pinholes" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
+	code += '<thead><tr><td colspan="5">IPv6 pinhole rules opened in the firewall through UPnP/IGD2</td></tr></thead>';
+	code += '<th width=34%">Remote</th>';
+	code += '<th width=12%">Port</th>';
+	code += '<th width=34%">Local</th>';
+	code += '<th width=12%">Port</th>';
+	code += '<th width=8%">Proto</th>';
+	code += '</tr>';
+
+        if ("<% nvram_get("upnp_pinhole_enable"); %>" == "0") {
+                code += '<tr><td colspan="5">Pinhole support is currently disabled.</td></tr>';
+
+	} else if (pinholes.length > 1) {
+		for (i = 0; i < pinholes.length-1; ++i) {
+			rule = pinholes[i];
+			code += '<tr>';
+			code += '<td>' + rule[0] + '</td>';	// Remote IP
+			code += '<td>' + rule[1] + '</td>';	// Remote port
+			code += '<td>' + rule[2] + '</td>';	// Local IP
+			code += '<td>' + rule[3] + '</td>';	// Local Port
+			code += '<td>' + rule[4] + '</td>';	// Protocol
+			code += '</tr>';
+		}
+	} else {
+		code += '<tr><td colspan="5"><span>No pinhole configured.</span></td></tr>';
+	}
+
+	code += '</tr></table>';
+	document.getElementById("pinholesblock").innerHTML = code;
+}
+
+
+</script>
 </head>
 
-<body onload="show_menu();">
+<body onload="initial();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 
@@ -56,9 +177,19 @@
 										<div class="formfonttitle"><#System_Log#> - <#ipv6_info#></div>
 										<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 										<div class="formfontdesc"><#ipv6_info_desc#></div>
-										<div style="margin-top:8px">   
-											<textarea cols="63" rows="25" readonly="readonly" wrap="off" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;"><% nvram_dump("ipv6_network.log", "ipv6_network.sh"); %></textarea>
+                                                                        
+										<div style="margin-top:8px">
+											<div id="ipv6configblock"></div>
 										</div>
+										<br>
+                                                                        	<div style="margin-top:8px">
+											<div id="ipv6clientsblock"></div>
+										</div>
+										<br>
+										<div id="pinholesdiv" style="display:none;">
+											<div id="pinholesblock"></div>
+										</div>
+										<br><br>
 										<div class="apply_gen">
 											<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
 										</div>

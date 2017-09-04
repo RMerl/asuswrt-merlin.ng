@@ -1,1 +1,0 @@
-../../PL-N12/www/start_plcdet.asp

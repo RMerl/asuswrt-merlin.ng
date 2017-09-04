@@ -20,6 +20,7 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/merlin.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <style>
 .cancel{
@@ -50,6 +51,36 @@
 .all_disable{
 	border: 1px solid #999;
 	color: #999;
+}
+.contentM_upload{
+	position:absolute;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index:500;
+	background-color:#2B373B;
+	display:none;
+	margin-left: 30%;
+	top: 1200px;
+	width:650px;
+}
+
+
+.Upload_item{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	font-weight: bolder;
+	color: #FFFFFF;
+	margin-left: 15px;
+	margin-bottom: 15px;
+	margin-top: 15px;
+}
+
+.Upload_file{
+	background-color:#2B373B;
+	color:#FC0;
+	*color:#000;
+	border:0px;
 }
 </style>
 <script>
@@ -87,6 +118,9 @@ if(wan_unit == "0")
 	var wan_ipaddr = '<% nvram_get("wan0_ipaddr"); %>';
 else
 	var wan_ipaddr = '<% nvram_get("wan1_ipaddr"); %>';
+
+var httpd_cert_info = [<% httpd_cert_info(); %>][0];
+var uploaded_cert = false;
 
 function initial(){	
 	//parse nvram to array
@@ -148,6 +182,8 @@ function initial(){
 	}
 	else{
 		hide_https_lanport(document.form.http_enable.value);
+		hide_https_crt();
+		show_cert_details();
 	}
 
 	if(wifi_tog_btn_support || wifi_hw_sw_support || sw_mode == 2 || sw_mode == 4){		// wifi_tog_btn && wifi_hw_sw && hide WPS button behavior under repeater mode
@@ -211,6 +247,7 @@ function initial(){
 	
 	if(ssh_support){
 		check_sshd_enable('<% nvram_get("sshd_enable"); %>');
+		document.form.sshd_authkeys.value = document.form.sshd_authkeys.value.replace(/>/gm,"\r\n");
 	}
 	else{
 		document.getElementById('sshd_enable_tr').style.display = "none";
@@ -357,8 +394,14 @@ function applyRule(){
 				|| document.form.http_enable.value != '<% nvram_get("http_enable"); %>'
 				|| document.form.misc_httpport_x.value != '<% nvram_get("misc_httpport_x"); %>'
 				|| document.form.misc_httpsport_x.value != '<% nvram_get("misc_httpsport_x"); %>'
+				|| getRadioItemCheck(document.form.https_crt_gen) == "1"
+		                || uploaded_cert
+				|| document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>'
 			){
 			restart_httpd_flag = true;
+			if(document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>'){
+				document.form.https_crt_gen.value = "1";
+			}
 			if(document.form.http_enable.value == "0"){	//HTTP
 				if(isFromWAN)
 					document.form.flag.value = "http://" + location.hostname + ":" + document.form.misc_httpport_x.value;
@@ -548,9 +591,9 @@ function validForm(){
 		return false;
 
 	if (document.form.misc_http_x[0].checked) {
-		if (!validator.range(document.form.misc_httpport_x, 1024, 65535))
+		if (!validator.range(document.form.misc_httpport_x, 1, 65535))
 			return false;
-		if (HTTPS_support && !validator.range(document.form.misc_httpsport_x, 1024, 65535))
+		if (HTTPS_support && !validator.range(document.form.misc_httpsport_x, 1, 65535))
 			return false;
 	}
 	else{
@@ -568,7 +611,12 @@ function validForm(){
 
 	if(!validator.rangeAllowZero(document.form.shell_timeout_x, 10, 999, parseInt('<% nvram_get("shell_timeout"); %>')/60))
 		return false;
-	
+
+	if((document.form.sshd_enable.value != 0) && (document.form.sshd_authkeys.value.length == 0) && (!document.form.sshd_pass[0].checked)){
+		alert("You must configure at least one SSH authentication method!");
+		return false;
+	}
+
 	if(isPortConflict(document.form.misc_httpport_x.value)){
 		alert(isPortConflict(document.form.misc_httpport_x.value));
 		document.form.misc_httpport_x.focus();
@@ -834,6 +882,7 @@ function load_dst_w_Options(){
 		}		
 		
 	}	
+
 }
 
 function load_dst_d_Options(){
@@ -905,6 +954,15 @@ function hide_https_lanport(_value){
 	else{
 		document.getElementById("https_access_page").style.display = 'none';
 	}
+}
+
+function hide_https_crt(){
+	var protos = document.form.http_enable.value;
+
+	showhide("https_crt_san", (protos != "0" ? 1 : 0));
+	showhide("https_crt_gen", (protos != "0" ? 1 : 0));
+	showhide("https_cert", (protos != "0" ? 1 : 0));
+	showhide("cert_details", (protos != "0" ? 1 : 0));
 }
 
 // show clientlist
@@ -1172,24 +1230,18 @@ function clean_scorebar(obj){
 }
 
 function check_sshd_enable(obj_value){
-	if(obj_value != 0){
-		document.getElementById('sshd_port_tr').style.display = "";
-		//document.getElementById('remote_access_tr').style.display = "";		//hide remote access and remote forwarding temporally
-		//document.getElementById('remote_forwarding_tr').style.display = "";
-		//sshd_remote_access(document.form.sshd_remote);
-		//sshd_forward(document.form.sshd_forwarding);
-		document.getElementById('sshd_password_tr').style.display = "";
-		document.getElementById('auth_keys_tr').style.display = "";
-	}
-	else{
-		document.getElementById('sshd_port_tr').style.display = "none";
-		//document.getElementById('remote_access_tr').style.display = "none";		//hide remote access and remote forwarding temporally
-		//document.getElementById('remote_access_port_tr').style.display = "none";
-		//document.getElementById('remote_forwarding_tr').style.display = "none";
-		//document.getElementById('remote_forwarding_port_tr').style.display = "none";
-		document.getElementById('sshd_password_tr').style.display = "none";
-		document.getElementById('auth_keys_tr').style.display = "none";
-	}
+	var state;
+
+	if (obj_value != 0)
+		state = "";
+	else
+		state = "none";
+
+	document.getElementById("remote_forwarding_tr").style.display = state;
+	document.getElementById("auth_keys_tr").style.display = state;
+	document.getElementById("sshd_bfp_field").style.display = state;
+	document.getElementById("sshd_password_tr").style.display = state;
+	document.getElementById("sshd_port_tr").style.display = state;
 }
 
 /*function sshd_remote_access(obj_value){
@@ -1222,6 +1274,7 @@ function display_spec_IP(flag){
 		setTimeout("showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');", 1000);
 	}
 }
+
 
 function hide_reboot_option(flag){
 	document.getElementById("reboot_schedule_date_tr").style.display = (flag == 1) ? "" : "none";
@@ -1318,6 +1371,67 @@ function change_hddSpinDown(obj_value) {
 		$("#usb_idle_timeout_tr").css("display", "");
 	}
 }
+
+function open_upload_window(){
+	$("#upload_cert_window").fadeIn(300);
+}
+
+function hide_upload_window(){
+	$("#upload_cert_window").fadeOut(300);
+}
+
+function get_cert_info(){
+	$.ajax({
+		url: '/ajax_certinfo.asp',
+		dataType: 'script',
+		error: function(xhr){
+			setTimeout("get_cert_info();", 1000);
+		},
+		success: function(response){
+			show_cert_details();
+	   }
+	});
+}
+
+function show_cert_details(){
+	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
+	document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
+	document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
+	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
+}
+
+function check_filename(){
+	var key_file = document.upload_form.file_key.value;
+	var cert_file = document.upload_form.file_cert.value;
+	var key_subname = key_file.substring(key_file.indexOf('.') + 1);
+	var cert_subname = cert_file.substring(cert_file.indexOf('.') + 1);
+
+	if(key_subname != 'pem' && key_subname != 'key'){
+		alert("Please select correct private key file.");
+		document.upload_form.file_key.value = "";
+		document.upload_form.file_key.focus();
+		return false;
+	}
+
+	if(cert_subname != 'pem' && cert_subname != 'crt' && cert_subname != 'cer'){
+		alert("Please select correct SSL certificate file.");
+		document.upload_form.file_cert.value = "";
+		document.upload_form.file_cert.focus();
+		return false;
+	}
+
+	return true;
+}
+
+function upload_cert_key(){
+	if(check_filename()){
+		document.upload_form.submit();
+		hide_upload_window();
+		setTimeout("get_cert_info();", 3000);
+		uploaded_cert = true;
+	}
+}
+
 </script>
 </head>
 
@@ -1335,7 +1449,7 @@ function change_hddSpinDown(obj_value) {
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_wait" value="5">
-<input type="hidden" name="action_script" value="restart_time;restart_upnp">
+<input type="hidden" name="action_script" value="restart_time;restart_httpd;restart_upnp">
 <input type="hidden" name="first_time" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
@@ -1393,7 +1507,7 @@ function change_hddSpinDown(obj_value) {
 				<tr>
 					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><#PASS_new#></a></th>
 					<td>
-						<input type="password" autocomplete="off" name="http_passwd2" tabindex="2" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd');" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="16" onBlur="clean_scorebar(this);" autocorrect="off" autocapitalize="off"/>
+						<input type="password" autocomplete="new-password" name="http_passwd2" tabindex="2" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd');" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="16" onBlur="clean_scorebar(this);" autocorrect="off" autocapitalize="off"/>
 						&nbsp;&nbsp;
 						<div id="scorebarBorder" style="margin-left:180px; margin-top:-25px; display:none;" title="<#LANHostConfig_x_Password_itemSecur#>">
 							<div id="score"></div>
@@ -1404,10 +1518,31 @@ function change_hddSpinDown(obj_value) {
 				<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><#PASS_retype#></a></th>
 					<td>
-						<input type="password" autocomplete="off" name="v_password2" tabindex="3" onKeyPress="return validator.isString(this, event);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="16" autocorrect="off" autocapitalize="off"/>
+						<input type="password" autocomplete="new-password" name="v_password2" tabindex="3" onKeyPress="return validator.isString(this, event);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="16" autocorrect="off" autocapitalize="off"/>
 						<div style="margin:-25px 0px 5px 175px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.http_passwd2);pass_checked(document.form.v_password2);"><#QIS_show_pass#></div>
 						<span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
 					
+					</td>
+				</tr>
+			</table>
+			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<thead>
+					<tr>
+						<td colspan="2">Persistent JFFS2 partition</td>
+					</tr>
+				</thead>
+				<tr>
+					<th>Format JFFS partition at next boot</th>
+					<td>
+						<input type="radio" name="jffs2_format" value="1" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="jffs2_format" value="0" <% nvram_match("jffs2_format", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+				<tr>
+					<th>Enable JFFS custom scripts and configs</th>
+					<td>
+						<input type="radio" name="jffs2_scripts" value="1" <% nvram_match("jffs2_scripts", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 			</table>
@@ -1499,6 +1634,14 @@ function change_hddSpinDown(obj_value) {
 						<input type="radio" name="nat_redirect_enable" class="input" value="0" <% nvram_match_x("","nat_redirect_enable","0", "checked"); %> ><#checkbox_No#>
 					</td>
 				</tr>
+				<tr>
+					<th>Redirect webui access to router.asus.com</th>
+					<td>
+						<input type="radio" name="http_dut_redir" value="1" <% nvram_match_x("","http_dut_redir","1", "checked"); %> ><#checkbox_Yes#>
+						<input type="radio" name="http_dut_redir" value="0" <% nvram_match_x("","http_dut_redir","0", "checked"); %> ><#checkbox_No#>
+					</td>
+				</tr>
+
 				<tr id="btn_ez_radiotoggle_tr">
 					<th><#WPS_btn_behavior#></th>
 					<td>
@@ -1563,54 +1706,43 @@ function change_hddSpinDown(obj_value) {
 					<td>
 						<select name="sshd_enable" class="input_option" onchange="check_sshd_enable(this.value);">
 							<option value="0" <% nvram_match("sshd_enable", "0", "selected"); %>><#checkbox_No#></option>
-							<option value="1" <% nvram_match("sshd_enable", "1", "selected"); %>><#checkbox_Yes#></option>
+							<option value="1" <% nvram_match("sshd_enable", "1", "selected"); %>>LAN + WAN</option>
 							<option value="2" <% nvram_match("sshd_enable", "2", "selected"); %>>LAN only</option>
 						</select>
 					</td>
 				</tr>
-				<tr id="sshd_port_tr">
-					<th width="40%">SSH Port</th><!--untranslated-->
+				<tr id="remote_forwarding_tr">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,10);">Allow SSH Port Forwarding</a></th>
 					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
+						<input type="radio" name="sshd_forwarding" value="1" <% nvram_match("sshd_forwarding", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="sshd_forwarding" value="0" <% nvram_match("sshd_forwarding", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
-				<!--tr id="remote_access_tr" style="display:none">
-					<th>Remote Access</th>
+				<tr id="sshd_port_tr">
+					<th>SSH service port</th>
 					<td>
-						<input type="radio" name="sshd_remote" class="input" value="1" onclick="sshd_remote_access(this.value);" <% nvram_match("sshd_remote", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="sshd_remote" class="input" value="0" onclick="sshd_remote_access(this.value);" <% nvram_match("sshd_remote", "0", "checked"); %>><#checkbox_No#>
+						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 1, 65535)" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
 					</td>
-				</tr-->
-				<!--tr id="remote_access_port_tr" style="display:none">
-					<th>Remote Access Port</th>
-					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="sshd_rport" onKeyPress="return validator.isNumber(this,event);" value='<% nvram_get("sshd_rport"); %>' autocorrect="off" autocapitalize="off">
-					</td>
-				</tr-->
-				<!--tr id="remote_forwarding_tr" style="display:none">
-					<th>Remote Forwarding</th>
-					<td>
-						<input type="radio" name="sshd_forwarding" class="input" value="1" onclick="sshd_forward(this.value);" <% nvram_match("sshd_forwarding", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="sshd_forwarding" class="input" value="0" onclick="sshd_forward(this.value);" <% nvram_match("sshd_forwarding", "0", "checked"); %>><#checkbox_No#>
-					</td>
-				</tr-->
-				<!--tr id="remote_forwarding_port_tr" style="display:none">
-					<th>Remote Forwarding Port</th>
-					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="" onKeyPress="return validator.isNumber(this,event);" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
-					</td>
-				</tr-->
+				</tr>
 				<tr id="sshd_password_tr">
-					<th>Allow Password Login</th><!--untranslated-->
+					<th>Allow SSH Password Login</th><!--untranslated-->
 					<td>
 						<input type="radio" name="sshd_pass" class="input" value="1" <% nvram_match("sshd_pass", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="sshd_pass" class="input" value="0" <% nvram_match("sshd_pass", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
-				<tr id="auth_keys_tr">
-					<th>Authorized Keys</th><!--untranslated-->
+				<tr id="sshd_bfp_field">
+					<th>Enable SSH Brute Force Protection</th>
 					<td>
-						<textarea rows="5" cols="55" class="textarea_ssh_table"  name="sshd_authkeys" maxlength="2999"><% nvram_get("sshd_authkeys"); %></textarea>
+						<input type="radio" name="sshd_bfp" value="1" <% nvram_match("sshd_bfp", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="sshd_bfp" value="0" <% nvram_match("sshd_bfp", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="auth_keys_tr">
+					<th>SSH Authentication Keys</th><!--untranslated-->
+					<td>
+						<textarea rows="8" class="textarea_ssh_table" name="sshd_authkeys" style="width:95%;" maxlength="3499"><% nvram_clean_get("sshd_authkeys"); %></textarea>
+						<span id="ssh_alert_msg"></span>
 					</td>
 				</tr>
 				<tr>
@@ -1646,6 +1778,49 @@ function change_hddSpinDown(obj_value) {
 						<span id="https_access_page"></span>
 					</td>
 				</tr>
+                                <tr id="https_crt_gen">
+                                        <th>Generate a new certificate</th>
+                                        <td>
+						<input type="radio" name="https_crt_gen" class="input" value="1" onClick="hide_https_crt();" <% nvram_match_x("", "https_crt_gen", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="https_crt_gen" class="input" value="0" onClick="hide_https_crt();" <% nvram_match_x("", "https_crt_gen", "0", "checked"); %>><#checkbox_No#>
+                                        </td>
+                                </tr>
+				<tr id="https_crt_san">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
+					<td>
+						<input type="text" name="https_crt_cn" value="<% nvram_get("https_crt_cn"); %>" autocomplete="off" class="input_32_table" maxlength="64" autocorrect="off" autocapitalize="off">
+					</td>
+				</tr>
+
+				<tr id="https_cert" style="display:none;">
+					<th>Provide your own certificate</th>
+					<td>
+						<div id="cert_act" style="margin-top: 5px;"><div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div></div>
+					</td>
+				</tr>
+
+				<tr id="cert_details" style="display:none;">
+					<th>Installed Server Certificate</th>
+					<td>
+						<div style="display:table-row;">
+							<div style="display:table-cell;white-space: nowrap;">Issued to :</div>
+							<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
+						</div>
+						<div style="display:table-row;">
+							<div style="display:table-cell;white-space: nowrap">SAN :</div>
+							<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
+						</div>
+						<div style="display:table-row;">
+							<div style="display:table-cell;white-space: nowrap">Issued by :</div>
+							<div id="issueBy" style="display:table-cell; padding-left:10px;"></div>
+						</div>
+						<div style="display:table-row;">
+							<div style="display:table-cell;white-space: nowrap">Expires on :</div>
+							<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
+						</div>
+					</td>
+				</tr>
+
 			</table>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
@@ -1732,5 +1907,26 @@ function change_hddSpinDown(obj_value) {
 </table>
 
 <div id="footer"></div>
+<form method="post" name="upload_form" action="upload_cert_key.cgi" target="hidden_frame" enctype="multipart/form-data">
+<input type="hidden" name="action_mode" value="">
+<input type="hidden" name="action_script" value="">
+<input type="hidden" name="action_wait" value="">
+<div id="upload_cert_window"  class="contentM_upload" style="box-shadow: 1px 5px 10px #000;">
+	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;">Import your own certificate</div>
+	<div class="formfontdesc" style="margin-left: 15px;">Upload a certificate issued by a certification authority here. Your private key and SSL certificate is necessary.</div>
+	<div class="Upload_item">
+		<div style="display:table-cell; width: 45%;">Private Key :</div>
+		<div style="display:table-cell;"><input type="file" name="file_key" class="input Upload_file"></div>
+	</div>
+	<div class="Upload_item">
+		<div style="display:table-cell; width: 45%;">SSL Certificate :</div>
+		<div style="display:table-cell;"><input type="file" name="file_cert" class="input Upload_file"></div>
+	</div>
+	<div align="center" style="margin-top:30px; padding-bottom:15px;">
+		<div style="display:table-cell;"><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
+		<div style="display:table-cell; padding-left: 5px;"><input class="button_gen" type="button" onclick="upload_cert_key();" value="<#CTL_ok#>"></div>
+	</div>
+</div>
+</form>
 </body>
 </html>

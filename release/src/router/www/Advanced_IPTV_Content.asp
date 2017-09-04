@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -40,6 +40,8 @@
 
 var original_switch_stb_x = '<% nvram_get("switch_stb_x"); %>';
 var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
+var original_emf_enable = '<% nvram_get("emf_enable"); %>';
+var original_mr_enable = '<% nvram_get("mr_enable_x"); %>';
 var original_switch_wan0tagid = '<%nvram_get("switch_wan0tagid"); %>';
 var original_switch_wan0prio  = '<%nvram_get("switch_wan0prio"); %>';
 var original_switch_wan1tagid = '<%nvram_get("switch_wan1tagid"); %>';
@@ -74,6 +76,8 @@ function initial(){
 	}
 	
 	document.form.switch_stb_x.value = original_switch_stb_x;
+	document.form.emf_enable.value = original_emf_enable;
+	document.form.mr_enable_x.value = original_mr_enable;
 	control_wans_primary();
 
 	disable_udpxy();

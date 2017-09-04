@@ -21,7 +21,6 @@
 <script language="JavaScript" type="text/javascript" src="validator.js"></script>
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
-<script type="text/javascript" src="js/fire.js"></script>
 <style>
 #ClientList_Block_PC{
 	border:1px outset #FFF;
@@ -581,25 +580,25 @@ function show_rulelist(){
 				clientIP = "";
 			}
 			if(typeof(clientList[clientMac]) == "undefined") {
-				code += '<div class="clientIcon type0" onClick="popClientListEditTable(\'' + clientMac + '\', this, \'' + clientName + '\', \'' + clientIP + '\', \'WTFast\')"></div>';
+				code += '<div class="clientIcon type0" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
 			}
 			else {
 				if(usericon_support) {
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div style="width:80px;text-align:center;" onClick="popClientListEditTable(\'' + clientMac + '\', this, \'' + clientName + '\', \'' + clientIP + '\', \'WTFast\')"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					code += '<div style="width:80px;text-align:center;" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
 				}
 				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(\'' + clientMac + '\', this, \'' + clientName + '\', \'' + clientIP + '\', \'WTFast\')"></div>';
+					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
 				}
 				else if(deviceVender != "" ) {
 					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
 					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(\'' + clientMac + '\', this, \'' + clientName + '\', \'' + clientIP + '\', \'WTFast\')"></div>';
+						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
 					}
 					else {
-						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(\'' + clientMac + '\', this, \'' + clientName + '\', \'' + clientIP + '\', \'WTFast\')"></div>';
+						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
 					}
 				}
 			}
@@ -789,6 +788,7 @@ function show_login_page(show){
 		document.getElementById("WTFast_login_div").style.display = "";
 		document.getElementById("wtf_username").disabled = false;
 		document.getElementById("wtf_passwd").disabled = false;
+/*
 		if(isChrome){
 			showFire();
 			document.getElementById("fire_pic").style.display = "none";
@@ -800,11 +800,14 @@ function show_login_page(show){
 			}
 			document.getElementById("fire_pic").style.display = "";
 		}
+*/
 	}
 	else{
 		document.getElementById("WTFast_login_div").style.display = "none";
+/*
 		if(isChrome)
 			stopFire();
+*/
 	}
 }
 
@@ -831,7 +834,7 @@ function checkLoginStatus(){
 		update_server_list_visibilities($("server_1_list"));
 		create_server_list("");
 		create_game_list("");
-		stopFire();
+//		stopFire();
 	}
 	else{
 		if(typeof(wtfast_status.Error) != "undefined"){
@@ -1107,10 +1110,10 @@ function clean_macerr(){
 			</tr>
 		</table>
 		<div style="color:#ffffff; font-size:12px; text-align:center;"><#Manual_Setting_notice#> <#GB_management_note1#></div>
-		<div>
+		<!-- div>
 			<canvas id="fire" style="width:760px;height:430px; display:block;position:absolute; top:491px; z-index:-1;"></canvas>
 			<img id="fire_pic" style="position: absolute; top: 499px; z-index: -1; margin-left: 3px;display:none;" src="images/fire.jpg">
-		</div>
+		</div -->
 		<div style="color:#949393; font-size:12px; text-align:right; margin-top: 146px; margin-right: 20px;">Ver. 1.0.0.4_16.0105</div>
 		</div><!--WTFast_login_div-->
 

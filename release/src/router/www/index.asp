@@ -96,9 +96,10 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/disk_functions.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script>
-if(usb_support) addNewScript("/disk_functions.js");
+//if(usb_support) addNewScript("/disk_functions.js");
 
 var userIconBase64 = "NoIcon";
 var verderIcon = "";
@@ -403,8 +404,19 @@ function show_smart_connect_status(){
 
 function show_ddns_status(){
 	var ddns_enable = '<% nvram_get("ddns_enable_x"); %>';
-	var ddns_server_x = '<% nvram_get("ddns_server_x");%>';
-	var ddnsName = decodeURIComponent('<% nvram_char_to_ascii("", "ddns_hostname_x"); %>');
+	var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
+	var ddnsName;
+	var ddns_hostname_x = '<% nvram_get("ddns_hostname_x"); %>';
+	var ddns_username_x = '<% nvram_get("ddns_username_x"); %>';
+
+	switch (ddns_server_x){
+		case "WWW.NAMECHEAP.COM":
+			ddnsName = ddns_hostname_x + "." + ddns_username_x;
+			break;
+		
+		default:
+			ddnsName = ddns_hostname_x; 
+	}
 
 	document.getElementById("ddns_fail_hint").className = "notificationoff";
 	if( ddns_enable == '0')
@@ -1013,6 +1025,8 @@ function validForm(){
 					tmpArray[index] = document.getElementById("macaddr_field").value;
 					tmpArray[index] += ">";
 					tmpArray[index] += document.getElementById("ipaddr_field").value;
+					tmpArray[index] += ">";
+					tmpArray[index] += document.getElementById("hostname_field").value;
 					document.list_form.dhcp_staticlist.value = tmpArray.join("<");
 				}
 			});
@@ -1339,7 +1353,7 @@ function hideEditBlock(){
 function oui_query(mac){
 	var queryStr = mac.replace(/\:/g, "").splice(6,6,"");
 	$.ajax({
-	    url: 'https://services11.ieee.org/RST/standards-ra-web/rest/assignments/download/?registry=MA-L&format=html&text='+ queryStr,
+		url: 'https://services11.ieee.org/RST/standards-ra-web/rest/assignments/download/?registry=MA-L&format=html&text='+ queryStr,
 		type: 'GET',
 		success: function(response) {
 			if(document.getElementById("edit_client_block").style.display == "none") return true;
@@ -1479,6 +1493,8 @@ function popupEditBlock(clientObj){
 		document.getElementById('client_name').value = clientName;
 		document.getElementById('ipaddr_field_orig').value = clientObj.ip;
 		document.getElementById('ipaddr_field').value = clientObj.ip;
+
+		document.getElementById('hostname_field').value = clientObj.hostname;
 
 		document.getElementById('ipaddr_field').disabled = true;
 		$("#ipaddr_field").addClass("client_input_text_disabled");
@@ -1778,6 +1794,8 @@ function addToList(macAddr){
 		document.list_form.dhcp_staticlist.value += macAddr;
 		document.list_form.dhcp_staticlist.value += ">";
 		document.list_form.dhcp_staticlist.value += document.getElementById("ipaddr_field").value;
+		document.list_form.dhcp_staticlist.value += ">";
+		document.list_form.dhcp_staticlist.value += document.getElementById("hostname_field").value;
 	}
 }
 
@@ -2133,6 +2151,7 @@ function closeClientDetailView() {
 			<td style="vertical-align:top;width:280px;">
 				<div>	
 					<input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:275px;" autocorrect="off" autocapitalize="off">
+					<input id="hostname_field" type="hidden" value="">
 				</div>
 				<div style="margin-top:10px;">				
 					<input id="ipaddr_field_orig" type="hidden" value="" disabled="">
@@ -2499,7 +2518,7 @@ function closeClientDetailView() {
 						<script>
 							(function(){
 								setTimeout(function(){
-									document.getElementById("statusframe").src = "/device-map/router.asp";	
+									document.getElementById("statusframe").src = "/device-map/router_status.asp";	
 								}, 1);
 								
 								var $iframe = $("#statusframe");

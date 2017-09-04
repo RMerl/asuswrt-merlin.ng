@@ -18,6 +18,7 @@
 <script type="text/javascript" src="/disk_functions.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/disk_functions.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style type="text/css">
 .upnp_table{
@@ -99,6 +100,7 @@
 }
 </style>
 <script>
+
 var dms_status = <% dms_info(); %>;
 var _dms_dir = '<%nvram_get("dms_dir");%>';
 <% get_AiDisk_status(); %>
@@ -349,10 +351,6 @@ function get_tree_items(treeitems){
 			continue;					
 		}
 
-		//Specific folder 'Download2/Complete'
-		if( array_temp_split[j][0].match(/^Download2$/) ){
-			treeitems[j] = "Download2/Complete"+"#"+array_temp_split[j][1]+"#"+array_temp_split[j][2];
-		}		
 		array_temp.push(treeitems[j]);
 	}
 	this.Items = array_temp;	
@@ -957,6 +955,21 @@ function set_dms_dir(obj){
         	<td><span id="dmsStatus" style="margin-left:15px">Idle</span>
         	</td>
        	</tr>
+	<tr>
+		<th>Rebuild entire database at start</th>
+		<td>
+			<input type="radio" name="dms_rebuild" class="input" value="1" <% nvram_match_x("", "dms_rebuild", "1", "checked"); %>><#checkbox_Yes#>
+			<input type="radio" name="dms_rebuild" class="input" value="0" <% nvram_match_x("", "dms_rebuild", "0", "checked"); %>><#checkbox_No#>
+		</td>
+	</tr>
+	<tr>
+		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,17);">Enable status webpage</a</th>
+		<td>
+			<input type="radio" name="dms_web" class="input" value="1" <% nvram_match_x("", "dms_web", "1", "checked"); %>><#checkbox_Yes#>
+			<input type="radio" name="dms_web" class="input" value="0" <% nvram_match_x("", "dms_web", "0", "checked"); %>><#checkbox_No#>
+		</td>
+	</tr>
+
    			<tr>
         	<th><#DLNA_path_setting#></th>
         	<td>

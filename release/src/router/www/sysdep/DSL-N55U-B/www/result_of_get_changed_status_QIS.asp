@@ -1,1 +1,0 @@
-../../DSL-N55U/www/result_of_get_changed_status_QIS.asp

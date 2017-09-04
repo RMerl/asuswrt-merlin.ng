@@ -1,6 +1,18 @@
 ﻿
 var validator = {
 
+	ipv4cidr: function(obj){
+		var rangere_cidr=new RegExp("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$", "gi");
+		if(rangere_cidr.test(obj.value) || validator.ipAddr4(obj)) {
+			return true;
+		}else{
+			alert(obj.value+" is not valid.  Please enter a valid IP, which can optionally be in CIDR format (1.2.3.4/24).");
+			obj.focus();
+			obj.select();
+			return false;
+		}
+	},
+
 	account: function(string_obj, flag){
 		var invalid_char = "";
 
@@ -322,7 +334,7 @@ var validator = {
 	},
 
 	domainName: function (obj) { //support a-z, 0-9, "-", "_" , "."", The first character cannot be dash "-" or under line "_"
-		var re = new RegExp(/^(?:[a-z0-9](?:[a-z0-9-_]{0,61}[a-z0-9])?\.)*[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]$/);
+		var re = new RegExp(/^(?:[a-z0-9](?:[a-z0-9-_]{0,61}[a-z0-9])?\.)*[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]$/i);
 		if(re.test(obj.value)){
 			return "";
 		}
@@ -2129,12 +2141,17 @@ var validator = {
 		}
 	},
 
-	domainName: function(_value) {
-		//domin name
-		var domainNameFormat = /^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/; 
-		if(domainNameFormat.test(_value))
+	safeName: function(obj){
+		if (obj.value.length == 0) return true;
+
+		var re = new RegExp("^[a-zA-Z0-9a-zA-Z0-9\-\_ ]+$","gi");
+		if(re.test(obj.value)){
 			return true;
-		else
+		}else{
+			alert("Only letters, numbers, spaces, underscores and dashes are accepted.");
+			obj.focus();
+			obj.select();
 			return false;
+		}
 	}
 };

@@ -1,1 +1,0 @@
-../../4G-AC68U/www/ajax_scanIsp.asp

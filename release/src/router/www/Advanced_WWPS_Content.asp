@@ -425,7 +425,6 @@ function show_wsc_status(wps_infos){
 		if (wps_multiband_support)
 			document.getElementById("wps_band_word").innerHTML = "<del>" + document.getElementById("wps_band_word").innerHTML + "</del>";
 	};
-
 	// First filter whether turn on Wi-Fi or not
 	if(currentBand == 0 && radio_2 != "1") {	//2.4GHz
 		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#btn_go#></a>"

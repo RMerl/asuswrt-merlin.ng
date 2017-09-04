@@ -46,7 +46,7 @@ var tableStruct = {
 	{
 		title : Necessary, title text
 		width : Optional, defalut is average
-		sort : Optional, sort type, value is str/num, the default define at tableSorter
+		sort : Optional, sort type, value is str/num/ip, the default define at tableSorter
 		defaultSort : Optional, default sort index, this attribure is only, if not define will find fist define sort item
 	}
 	ex: 
@@ -214,6 +214,24 @@ var tableSorter = {
 		if(a[tableSorter.indexFlag].toString().toUpperCase() == b[tableSorter.indexFlag].toString().toUpperCase()) return 0;
 		else if(a[tableSorter.indexFlag].toString().toUpperCase() > b[tableSorter.indexFlag].toString().toUpperCase()) return -1;
 		else return 1;
+	},
+	"ip_increase" : function(a, b) {
+		var aa = a[tableSorter.indexFlag].split(".");
+		var bb = b[tableSorter.indexFlag].split(".");
+
+		var resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
+		var resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;
+
+		return parseInt(resulta) - parseInt(resultb);
+	},
+	"ip_decrease" : function(a, b) {
+		var aa = a[tableSorter.indexFlag].split(".");
+		var bb = b[tableSorter.indexFlag].split(".");
+
+		var resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
+		var resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;
+
+		return parseInt(resultb) - parseInt(resulta);
 	},
 	"drawBorder" : function(_clickIndex) {
 		var clickSortingMethod = tableSorter.sortingMethod;
@@ -832,9 +850,9 @@ var tableApi = {
 			.append(
 				tableApi.genTable_frame(tableApi._attr)
 					// thead
-					//.append(
-					//	tableApi.genThead_frame(tableApi._attr.title, tableApi._privateAttr.header_item_num)
-					//)
+					.append(
+						tableApi.genThead_frame(tableApi._attr.title, tableApi._privateAttr.header_item_num)
+					)
 					// title
 					.append(
 						tableApi.genTitle_frame(tableApi._attr.header, tableApi._privateAttr.header_item_width)

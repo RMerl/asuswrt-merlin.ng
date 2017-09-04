@@ -30,6 +30,7 @@ var PROTOCOL = "ftp";
 
 var NN_status = get_cifs_status();  // Network-Neighborhood
 var FTP_status = get_ftp_status(); // FTP
+var FTP_WAN_status = <% nvram_get("ftp_wanac"); %>;
 var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
 var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
 
@@ -307,10 +308,10 @@ function show_permissions_of_account(account_order, protocol){
 					permissions = get_account_permissions_in_pool(accountName, poolName);
 				}
 
-				for(var j = 1; j < permissions.length; ++j){
-					var folderBarCode = get_folderBarCode_in_pool(poolName, permissions[j][0]);
+				for(var k = 1; j < permissions.length; ++k){
+					var folderBarCode = get_folderBarCode_in_pool(poolName, permissions[k][0]);
 					if(protocol == "cifs")
-						showPermissionRadio(folderBarCode, permissions[j][1]);
+						showPermissionRadio(folderBarCode, permissions[k][1]);
 					else if(protocol == "ftp")
 						showPermissionRadio(folderBarCode, permissions[j][2]);
 					else{
@@ -469,9 +470,25 @@ function resultOfCreateAccount(){
 	refreshpage();
 }
 
+function switchWanStatus(state){
+
+	showLoading();
+	document.form.ftp_wanac.value = state;
+	document.form.action_script.value = "restart_firewall";
+	document.form.action_wait.value = "5";
+	document.form.flag.value = "nodetect";
+	document.form.action_mode.value = "apply";
+	document.form.submit();
+}
+
+function resultOfSwitchWanStatus(){
+        refreshpage(1);
+}
+
+
 function onEvent(){
 	// account action buttons
-	//if(get_manage_type(PROTOCOL) == 1 && accounts.length < 6){
+	//if(get_manage_type(PROTOCOL) == 1 && accounts.length < 11){
 		if(1){
 		changeActionButton(document.getElementById("createAccountBtn"), 'User', 'Add', 0);
 		
@@ -491,7 +508,7 @@ function onEvent(){
 		document.getElementById("createAccountBtn").onclick = function(){};
 		document.getElementById("createAccountBtn").onmouseover = function(){};
 		document.getElementById("createAccountBtn").onmouseout = function(){};
-		document.getElementById("createAccountBtn").title = (accounts.length < 6)?"<#AddAccountTitle#>":"<#account_overflow#>";
+		document.getElementById("createAccountBtn").title = (accounts.length < 11)?"<#AddAccountTitle#>":"<#account_overflow#>";
 	}
 	
 	if(this.accounts.length > 0 && this.selectedAccount != null && this.selectedAccount.length > 0 && this.accounts[0] != this.selectedAccount){
@@ -624,7 +641,7 @@ function onEvent(){
 		document.getElementById("deleteFolderBtn").onclick = function(){};
 		document.getElementById("deleteFolderBtn").onmouseover = function(){};
 		document.getElementById("deleteFolderBtn").onmouseout = function(){};
-		
+ 		
 		document.getElementById("modifyFolderBtn").onclick = function(){};
 		document.getElementById("modifyFolderBtn").onmouseover = function(){};
 		document.getElementById("modifyFolderBtn").onmouseout = function(){};
@@ -721,6 +738,8 @@ function switchUserType(flag){
 <input type="hidden" name="action_wait" value="5">
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="current_page" value="Advanced_AiDisk_ftp.asp">
+<input type="hidden" name="ftp_wanac" value="<% nvram_get("ftp_wanac"); %>">
+<input type="hidden" name="flag" value="">
 
 <table width="983" border="0" align="center" cellpadding="0" cellspacing="0" class="content">
   <tr>
@@ -798,13 +817,20 @@ function switchUserType(flag){
 							<span id="loginMethod" style="color:#FC0"></span>
 						</div>	
 					</td>
+				</tr>										
+				<tr>
+					<th>Enable TLS support</th>
+					<td>
+						<input type="radio" name="ftp_tls" class="input" value="1" <% nvram_match_x("", "ftp_tls", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="ftp_tls" class="input" value="0" <% nvram_match_x("", "ftp_tls", "0", "checked"); %>><#checkbox_No#>
+					</td>
 				</tr>
 				<tr>
 					<th>
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,1);"><#ShareNode_MaximumLoginUser_itemname#></a>
 					</th>
 					<td>
-						<input type="text" name="st_max_user" class="input_3_table" maxlength="1" value="<% nvram_get("st_max_user"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
+						<input type="text" name="st_max_user" class="input_3_table" maxlength="2" value="<% nvram_get("st_max_user"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
 					</td>
 				</tr>
 				<tr>
@@ -821,13 +847,33 @@ function switchUserType(flag){
 								<option value="CZ" <% nvram_match("ftp_lang", "CZ", "selected"); %>><#ShareNode_FTPLANG_optionname5#></option>
 						</select>
 					</td>
-				</tr>				
+				</tr>
+				<tr>
+				<th>Enable WAN access</th>
+					<td>
+						<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_wan_ftp_enable"></div>
+						<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
+							<script type="text/javascript">
+								$('#radio_wan_ftp_enable').iphoneSwitch(FTP_WAN_status,
+									function() {
+										switchWanStatus(1);
+									},
+									function() {
+										switchWanStatus(0);
+									},
+									{
+										switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
+									}
+								);
+							</script>
+						</div>
+					</td>
+				</tr>
 			</table>
-			
+
 			<div class="apply_gen">
 					<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
 			</div>
-			
 
 			<!-- The table of share. -->
 			<div id="shareStatus">

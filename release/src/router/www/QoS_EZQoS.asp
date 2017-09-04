@@ -24,6 +24,8 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
+<script type="text/javascript" src="merlin.js"></script>
+
 <style>
 .QISform_wireless{
 	width:600px;
@@ -261,6 +263,18 @@ var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 var qos_bw_rulelist = "<% nvram_get("qos_bw_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var select_all_checked = 0;
+var machine_name = '<% get_machine_name(); %>';
+var codel_support = (machine_name.search(/arm|aarch64/) == -1) ? false : true;
+
+/* ATM, overhead, label */
+var overhead_presets = [["0", "0", ""],
+			["0", "4", "Ethernet VLAN"],
+			["0", "18", "Cable (DOCSIS)"],
+			["0", "27", "PPPoE VDSL"],
+			["0", "19", "Bridged/IPoE VDSL"],
+			["1", "32", "RFC2684/RFC1483 Bridged LLC/Snap"],
+			["1", "32", "PPPoE VC/Mux</option"],
+			["1", "40", "PPPoE LLC/Snap"]];
 
 if(based_modelid == "RT-AC68A"){	//MODELDEP : Spec special fine tune
 	bwdpi_support = false;
@@ -350,7 +364,15 @@ function initial(){
 	else{
 		document.getElementById("manu").checked = true;
 	}
-	
+
+	if(codel_support){
+		free_options(document.form.qos_overhead_preset);
+		add_option(document.form.qos_overhead_preset, "Select preset:", 0, 1);
+		for(var i = 1; i < overhead_presets.length; i++) {
+			add_option(document.form.qos_overhead_preset, overhead_presets[i][2], i, 0);
+		}
+	}
+
 	var qos_type = document.form.qos_type.value;
 	if(document.form.qos_enable_orig.value == 1){
 		change_qos_type(qos_type);
@@ -386,6 +408,11 @@ function initial(){
 			else{		//Adaptive Type or else
 				document.getElementById('settingSelection').style.display = "none";	
 			}
+
+			if((codel_support) && (document.getElementById('qos_sched').value != "0")){
+				document.getElementById('qos_overhead_tr').style.display = "";
+			}
+
 		}
 		else{		// hide select option if qos disable
 			document.getElementById('settingSelection').style.display = "none";	
@@ -628,6 +655,8 @@ function submitQoS(){
 			show_tm_eula();
 		}
 		else{
+			document.form.qos_atm.value = (document.form.qos_atm_x.checked ? 1 : 0);
+
 			if(ctf_disable == 1){
 				document.form.action_script.value = "restart_qos;restart_firewall";
 			}
@@ -655,6 +684,8 @@ function submitQoS(){
 
 function change_qos_type(value){
 	/* MODELDEP */
+	document.form.qos_type.value = value;
+
 	if(value=="1" && (based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "BLUECAVE")){	//Force change to 0 
 		value = 0;
 	}
@@ -665,6 +696,10 @@ function change_qos_type(value){
 		document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
+		if (codel_support) {
+			document.getElementById('qos_sched_tr').style.display = "";
+			document.getElementById('qos_overhead_tr').style.display = "";
+		}
 		document.form.qos_bw_rulelist.disabled = true;
 		if(document.form.qos_type_orig.value == 0 && document.form.qos_enable_orig.value != 0){
 			document.form.action_script.value = "restart_qos;restart_firewall";
@@ -681,6 +716,10 @@ function change_qos_type(value){
 		document.getElementById('bw_limit_type').checked = false;
 		document.getElementById('bandwidth_setting_tr').style.display = "";
 		document.getElementById('list_table').style.display = "none";
+		if (codel_support) {
+			document.getElementById('qos_sched_tr').style.display = "";
+			change_scheduler(document.form.qos_sched.value);
+		}
 		document.form.qos_bw_rulelist.disabled = true;
 		if(document.getElementById("auto").checked){
 			show_up_down(0);
@@ -705,6 +744,10 @@ function change_qos_type(value){
 		document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(0);
 		document.getElementById('list_table').style.display = "block";
+		if (codel_support) {
+			document.getElementById('qos_sched_tr').style.display = "";
+			document.getElementById('qos_overhead_tr').style.display = "";
+		}
 		document.form.qos_bw_rulelist.disabled = false;
 		if(document.form.qos_type_orig.value == 2 && document.form.qos_enable_orig.value != 0)
 			document.form.action_script.value = "restart_qos;restart_firewall";
@@ -853,7 +896,7 @@ function cancel_priority_panel() {
 
 function save_priority(){
 	regen_priority(document.getElementById("category_list"));
-	document.PriorityForm.bwdpi_app_rulelist_edit.value = bwdpi_app_rulelist;	
+	document.getElementById("bwdpi_app_rulelist_edit").value = bwdpi_app_rulelist;
 	$("#priority_panel").fadeOut(300);	
 	setTimeout("change_qos_type(document.form.qos_type.value);", 300);
 }
@@ -1337,6 +1380,24 @@ function setGroup(name){
 	document.form.PC_devicename.value = name;
 	hideClients_Block();
 }
+
+function set_overhead(obj){
+	document.getElementById('qos_overhead').value = overhead_presets[obj.value][1];
+	document.getElementById('qos_atm_x').checked = (overhead_presets[obj.value][0] == "1" ? true : false);
+}
+
+function change_scheduler(value){
+	if (codel_support) {
+		if ((document.form.qos_type.value == "1") && (value == 0))	// Adaptive and sfq
+			var state = "none";
+		else
+			var state = "";
+
+		document.getElementById('qos_overhead_tr').style.display = state;
+		document.getElementById('qos_sched').value = value;
+	}
+}
+
 </script>
 </head>	
 <body onload="initial();" id="body_id" onunload="unload_body();" onClick="">	
@@ -1373,7 +1434,7 @@ function setGroup(name){
 					<input type="hidden" name="action_wait" value="1">
 					<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 					<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-					<input type="hidden" name="bwdpi_app_rulelist_edit" value="<% nvram_get("bwdpi_app_rulelist"); %>">
+					<input type="hidden" name="bwdpi_app_rulelist_edit" id="bwdpi_app_rulelist_edit" value="<% nvram_get("bwdpi_app_rulelist"); %>">
 					<tr>
 						<div class="description_down"><#Adaptive_QoS#></div>
 					</tr>
@@ -1441,6 +1502,8 @@ function setGroup(name){
 			<input type="hidden" name="qos_ibw1" value="<% nvram_get("qos_ibw1"); %>" disabled>
 			<input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>" disabled>
 			<input type="hidden" name="qos_bw_rulelist" value="">
+			<input type="hidden" name="qos_atm" id="qos_atm">
+			<input type="hidden" name="qos_sched" id="qos_sched" value="<% nvram_get("qos_sched"); %>">
 
 			<table width="95%" border="0" align="left" cellpadding="0" cellspacing="0" class="FormTitle" id="FormTitle" style="height:820px;">
 				<tr>
@@ -1507,6 +1570,10 @@ function setGroup(name){
 															 function() {
 																document.form.qos_enable.value = 1;
 																if(document.form.qos_enable_orig.value != 1){
+																	if (codel_support) {
+																		document.getElementById('qos_sched_tr').style.display = "";
+																		change_scheduler(getRadioValue(document.getElementById('qos_sched')));
+																	}
 																	if(document.getElementById('int_type').checked == true && bwdpi_support)
 																		document.form.next_page.value = "QoS_EZQoS.asp";
 																	else if(document.getElementById('trad_type').checked)		//Traditional QoS
@@ -1536,7 +1603,10 @@ function setGroup(name){
 																if(GN_with_BandwidthLimeter){
 																	alert("Guest Network > Bandwidth Limiter will be Disabled.");		/* Untranslated */
 																}
-	
+																if(codel_support) {
+																	document.getElementById('qos_sched_tr').style.display = "none";
+																	document.getElementById('qos_overhead_tr').style.display = "none";
+																}
 																if(bwdpi_support){																	
 																	
 																	document.getElementById('qos_enable_hint').style.display = "none";
@@ -1563,6 +1633,23 @@ function setGroup(name){
 												<input id="manu" name="bw_setting_name" onClick="bandwidth_setting();" type="radio"><label for="manu"><#Manual_Setting_btn#></label>
 											</td>
 										</tr>		
+										<tr id="qos_sched_tr" style="display:none">
+											<th>Queue Discipline</th>
+											<td colspan="2">
+												<input name="qos_sched_x" value="0" type="radio" onclick="change_scheduler(this.value);"<% nvram_match("qos_sched", "0","checked"); %>><label for="sfq">sfq</label>
+												<input name="qos_sched_x" value="1" type="radio" onclick="change_scheduler(this.value);" <% nvram_match("qos_sched", "1","checked"); %>><label for="codel">codel</label>
+												<input name="qos_sched_x" value="2" type="radio" onclick="change_scheduler(this.value);" <% nvram_match("qos_sched", "2","checked"); %>><label for="fq_codel">fq_codel</label>
+											</td>
+										</tr>
+										<tr id="qos_overhead_tr" style="display:none">
+											<th>WAN packet overhead</th>
+											<td colspan="2">
+												<select name="qos_overhead_preset" class="input_option" onchange="set_overhead(this);">
+												</select>
+												<input type="text" maxlength="4" class="input_6_table" name="qos_overhead" id="qos_overhead" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, -127, 128)" value="<% nvram_get("qos_overhead"); %>" style="margin-left:20px;">
+												<input type="checkbox" name="qos_atm_x" id="qos_atm_x" <% nvram_match("qos_atm", "1", "checked"); %>>ATM</input>
+											</td>
+										</tr>
 										<tr id="wan_1_tr" style="display:none">
 											<th colspan=3><#dualwan_primary#></th>
 										</tr>

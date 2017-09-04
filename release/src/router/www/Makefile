@@ -13,7 +13,7 @@ MODELS_HAVE_USB3 = AC2900 \
 	RT-N18U \
 	RP-AC68U
 
-MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AC86U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 DSL-AC68U RT-AC68U \
+MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AC86U AC2900 RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 DSL-AC68U RT-AC68U \
 	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U BRT-AC828 MAP-AC1300 MAP-AC2200 VRZ-AC1300 BLUECAVE
 
 all:
@@ -89,10 +89,10 @@ endif
 	echo " WWW FOR $(BUILD_NAME)"
 
 	rm -rf $(INSTALLDIR)/www/images/New_ui/asustitle_ie6.png
-ifneq ($(RTCONFIG_FANCTRL),y)
-	rm -rf $(INSTALLDIR)/www/Advanced_PerformanceTuning_Content.asp
-	rm -rf $(INSTALLDIR)/www/fan.svg
-endif
+#ifneq ($(RTCONFIG_FANCTRL),y)
+#	rm -rf $(INSTALLDIR)/www/Advanced_PerformanceTuning_Content.asp
+#	rm -rf $(INSTALLDIR)/www/fan.svg
+#endif
 ifeq ($(RTCONFIG_SFP),y)
 	rm -rf $(INSTALLDIR)/www/images/PrinterServer
 	rm -rf $(INSTALLDIR)/www/images/appinstall
@@ -337,19 +337,18 @@ ifeq ($(BUILD_NAME), RT-N12)
 endif
 
 ifeq ($(RTCONFIG_OPENVPN), y)
-	cd $(INSTALLDIR)/www && ln -sf ../etc/openvpn/server1/client.ovpn && cd $(TOP)/www
+	cd $(INSTALLDIR)/www && ln -sf ../etc/openvpn/server1/client.ovpn client1.ovpn && cd $(TOP)/www
+	cd $(INSTALLDIR)/www && ln -sf ../etc/openvpn/server2/client.ovpn client2.ovpn && cd $(TOP)/www
 else
-	rm -rf $(INSTALLDIR)/www/merlin.js
 	rm -rf $(INSTALLDIR)/www/ajax_openvpn_server.asp
-	rm -rf $(INSTALLDIR)/www/Advanced_VPN_OpenVPN.asp
 ifneq ($(RTCONFIG_ACCEL_PPTPD), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/vpnstatus.png
 	rm -rf $(INSTALLDIR)/www/Advanced_VPN_PPTP.asp
 endif
+endif
 ifneq ($(RTCONFIG_VPNC), y)	
 	rm -rf $(INSTALLDIR)/www/Advanced_VPNClient_Content.asp
 endif	
-endif
 ifneq ($(RTCONFIG_TIMEMACHINE),y)
 	rm -rf $(INSTALLDIR)/www/Advanced_TimeMachine.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/USBExt/time_machine_banner.png
@@ -541,6 +540,8 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/upgrade.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/upgrade_hover.svg	
 endif
+	rm -rf $(INSTALLDIR)/www/js/fire.js
+
 ifneq ($(RTCONFIG_IPSEC), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_VPN_IPSec.asp
 	rm -rf $(INSTALLDIR)/www/ajax_ipsec.asp

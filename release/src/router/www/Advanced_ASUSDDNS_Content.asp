@@ -209,7 +209,8 @@ function ddns_load_body(){
             else
                 document.getElementById("ddns_hostname_x").value = "<#asusddns_inputhint#>";
         }
-		
+	inputCtrl(document.form.ddns_refresh_x, 1);
+
         change_ddns_setting(document.form.ddns_server_x.value);
         if(letsencrypt_support){
             show_cert_settings(1);
@@ -232,6 +233,7 @@ function ddns_load_body(){
         inputCtrl(document.form.ddns_passwd_x, 0);
         document.form.ddns_wildcard_x[0].disabled= 1;
         document.form.ddns_wildcard_x[1].disabled= 1;
+	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
         if(letsencrypt_support)
             show_cert_settings(0);
@@ -302,7 +304,10 @@ function validForm(){
 
 				return true;
 			}
-		}else{		
+		}else{
+			if(!validator.numberRange(document.form.ddns_refresh_x, 0, 365))
+				return false;
+
 			if(document.form.ddns_server_x.value != "WWW.ORAY.COM" && document.form.ddns_hostname_x.value == ""){
 				alert("<#LANHostConfig_x_DDNS_alarm_14#>");
 				document.form.ddns_hostname_x.focus();
@@ -311,12 +316,25 @@ function validForm(){
 			}else if(!validator.string(document.form.ddns_hostname_x)){
 				return false;
 			}
+
+			if(document.form.ddns_server_x.value != "CUSTOM"){             // Not CUSTOM
+				if(document.form.ddns_username_x.value == ""){
+					alert("<#QKSet_account_nameblank#>");
+					document.form.ddns_username_x.focus();
+					document.form.ddns_username_x.select();
+					return false;
+				}else if(!validator.string(document.form.ddns_username_x)){
+					return false;
+				}
+				if(document.form.ddns_passwd_x.value == ""){
+					alert("<#File_Pop_content_alert_desc6#>");
+					document.form.ddns_passwd_x.focus();
+					document.form.ddns_passwd_x.select();
+					return false;
+				}else if(!validator.string(document.form.ddns_passwd_x)){
+					return false;
+				}
 			
-			if(document.form.ddns_username_x.value == ""){
-				alert("<#QKSet_account_nameblank#>");
-				document.form.ddns_username_x.focus();
-				document.form.ddns_username_x.select();
-				return false;
 			}else if(!validator.string(document.form.ddns_username_x)){
 				return false;
 			}
@@ -632,9 +650,12 @@ function upload_cert_key(){
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
+						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
 					</select>
 				<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
 				<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
+				<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>
+				<div id="need_custom_scripts" style="display:none;"><span>WARNING: you must enable both the JFFS2 partition and custom scripts support!<br>Click <a href="Advanced_System_Content.asp" style="text-decoration: underline;">HERE</a> to proceed.</span></div>
 				</td>
 			</tr>
 			<tr id="ddns_hostname_tr">
@@ -656,18 +677,24 @@ function upload_cert_key(){
 				<td id="ddns_hostname_x_value"><% nvram_get("ddns_hostname_x"); %></td>
 			</tr>
 			<tr>
-				<th><#LANHostConfig_x_DDNSUserName_itemname#></th>
+				<th id="ddns_username_th"><#LANHostConfig_x_DDNSUserName_itemname#></th>
 				<td><input type="text" maxlength="32" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr>
 				<th><#LANHostConfig_x_DDNSPassword_itemname#></th>
-				<td><input type="password" maxlength="64" class="input_25_table" name="ddns_passwd_x" value="<% nvram_get("ddns_passwd_x"); %>" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
+				<td><input type="password" maxlength="64" class="input_25_table" name="ddns_passwd_x" value="<% nvram_get("ddns_passwd_x"); %>" autocomplete="new-password" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr id="wildcard_field">
 				<th><#LANHostConfig_x_DDNSWildcard_itemname#></th>
 				<td>
 					<input type="radio" value="1" name="ddns_wildcard_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_wildcard_x', '1')" <% nvram_match("ddns_wildcard_x", "1", "checked"); %>><#checkbox_Yes#>
 					<input type="radio" value="0" name="ddns_wildcard_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_wildcard_x', '0')" <% nvram_match("ddns_wildcard_x", "0", "checked"); %>><#checkbox_No#>
+				</td>
+			</tr>
+			<tr style="display:none;">
+				<th>Forced refresh interval (in days)</th>
+				<td>
+					<input type="text" maxlength="3" name="ddns_refresh_x" class="input_3_table" value="<% nvram_get("ddns_refresh_x"); %>" onKeyPress="return validator.isNumber(this,event)">
 				</td>
 			</tr>
 			<tr id="check_ddns_field" style="display:none;">

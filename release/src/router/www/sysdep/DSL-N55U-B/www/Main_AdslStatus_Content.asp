@@ -1,1 +1,0 @@
-../../DSL-N55U/www/Main_AdslStatus_Content.asp

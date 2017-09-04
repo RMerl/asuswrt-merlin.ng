@@ -21,11 +21,11 @@ body{
 	background:#283437\9;
 }
 .title_name {
-	font-size: 40pt;
+	font-size: 30pt;
 	color:#93d2d9;
 }
 .prod_madelName{
-	font-size: 26pt;
+	font-size: 20pt;
 	color:#fff;
 	margin-left:78px;
 	margin-top: 10px;
@@ -37,7 +37,7 @@ body{
 	background-repeat: no-repeat;
 }
 .p1{
-	font-size: 16pt;
+	font-size: 12pt;
 	color:#fff;
 	width:480px;
 }
@@ -45,38 +45,40 @@ body{
 	background-color:#279FD9;
 	border-radius: 4px ;
 	transition: visibility 0s linear 0.218s,opacity 0.218s,background-color 0.218s;
-	height: 68px;
-	width: 300px;
-	font-size: 28pt;
+	height: 48px;
+	width: 200px;
+	font-size: 14pt;
 	color:#fff;
 	text-align: center;
 	float:right; 
-	margin:50px 0px 0px 78px;
-	line-height:68px;
+	margin:25px 79px 0px 39px;
+	line-height:48px;
+}
+.button:hover{
 	cursor:pointer;
 }
 .form_input{
 	background-color:rgba(255,255,255,0.2);
 	background-color:#576D73\9;
 	border-radius: 4px;
-	padding:23px 22px;
-	width: 480px;
+	padding:13px 11px;
+	width: 380px;
 	border: 0;
-	height:30px;
+	height:25px;
 	color:#fff;
-	font-size:28px;
+	font-size:18px;
 }
 .nologin{
 	margin:10px 0px 0px 78px;
 	background-color:rgba(255,255,255,0.2);
 	padding:20px;
-	line-height:36px;
+	line-height:18px;
 	border-radius: 5px;
-	width: 480px;
+	width: 380px;
 	border: 0;
 	color:#FFF;
 	color:#FFF\9; /* IE6 IE7 IE8 */
-	font-size:28px;
+	font-size:16px;
 }
 .div_table{
 	display:table;
@@ -100,7 +102,7 @@ body{
 .error_hint{
 	color: rgb(255, 204, 0);
 	margin:10px 0px -10px 78px; 
-	font-size: 18px;
+	font-size: 12px;
 }
 
 .error_hint1{
@@ -114,7 +116,7 @@ body{
 	margin:100px auto 0;
 }
 .warming_desc{
-	font-size: 16px;
+	font-size: 12px;
 	color:#FC0;
 	width: 600px;
 }
@@ -220,6 +222,8 @@ var remaining_time_sec;
 var remaining_time_show;
 var countdownid, rtime_obj;
 var redirect_page = login_info.page;
+
+if ('<% nvram_get("http_dut_redir"); %>' == '1') {
 var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
 
 var header_info = [<% get_header_info(); %>][0];
@@ -233,6 +237,7 @@ var chdom = function(){window.location.href=domainNameUrl};
 		}, 1);
 	}
 })();
+}
 
 <% login_state_hook(); %>
 
@@ -503,7 +508,9 @@ function checkTime(i){
 		<!-- Logout field -->
 		<div id="logout_field" style="display:none;">
 			<div class="p1 title_gap"></div>
-			<div class="nologin"><#logoutmessage#></div>		
+			<div class="nologin"><#logoutmessage#>
+				<br><br>Click <a style="color: #FFFFFF; font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_Login.asp">here</a> to log back in.
+			</div>
 		</div>
 	</div>
 </div>

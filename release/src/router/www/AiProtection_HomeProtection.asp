@@ -15,6 +15,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/disk_functions.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style>
 .weakness{
@@ -124,7 +125,7 @@
 }
 </style>
 <script>
-if(usb_support) addNewScript("/disk_functions.js");
+//if(usb_support) addNewScript("/disk_functions.js");
 window.onresize = function() {
 	if(document.getElementById("weakness_div").style.display == "block") {
 		cal_panel_block("weakness_div", 0.25);
@@ -307,7 +308,15 @@ function enable_whole_security(){
 	
 	var action_script_temp = "";
 	var wan0_upnp_enable = document.form.wan0_upnp_enable.value; 
-	var wan1_upnp_enable = document.form.wan1_upnp_enable.value; 
+	var wans_dualwan_orig = document.form.wans_dualwan.value;
+	if(wans_dualwan_orig.search(" ") == -1)
+		var wans_flag = 0;
+	else
+		var wans_flag = (wans_dualwan_orig.search("none") == -1) ? 1:0;
+	if (wans_flag == 1)
+		var wan1_upnp_enable = document.form.wan1_upnp_enable.value;
+	else
+		var wan1_upnp_enable = 0;
 	var wan_access_enable = document.form.misc_http_x.value;
 	var wan_ping_enable = document.form.misc_ping_x.value;
 	var port_trigger_enable = document.form.autofw_enable_x.value;
@@ -391,19 +400,19 @@ function enable_whole_security(){
 
 	if(wrs_cc_enable == 0){
 		document.form.wrs_cc_enable.value = 1;
-		restart_firewall = 1;
+//		restart_firewall = 1;
 		restart_wrs = 1;
 	}
 	
 	if(wrs_vp_enable == 0){
 		document.form.wrs_vp_enable.value = 1;
-		restart_firewall = 1;
+//		restart_firewall = 1;
 		restart_wrs = 1;
 	}
 
 	if(wrs_mals_enable == 0){
 		document.form.wrs_mals_enable.value = 1;
-		restart_firewall = 1;
+//		restart_firewall = 1;
 		restart_wrs = 1;
 	}
 	
@@ -1123,7 +1132,7 @@ function shadeHandle(flag){
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_wait" value="4">
 <input type="hidden" name="action_mode" value="apply">
-<input type="hidden" name="action_script" value="restart_wrs;restart_firewall">
+<input type="hidden" name="action_script" value="restart_wrs">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>" disabled>
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="wrs_mals_enable" value="<% nvram_get("wrs_mals_enable"); %>">
@@ -1131,6 +1140,7 @@ function shadeHandle(flag){
 <input type="hidden" name="wrs_vp_enable" value="<% nvram_get("wrs_vp_enable"); %>">
 <input type="hidden" name="wan0_upnp_enable" value="<% nvram_get("wan0_upnp_enable"); %>" disabled>
 <input type="hidden" name="wan1_upnp_enable" value="<% nvram_get("wan1_upnp_enable"); %>" disabled>
+<input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>" disabled>
 <input type="hidden" name="misc_http_x" value="<% nvram_get("misc_http_x"); %>" disabled>
 <input type="hidden" name="misc_ping_x" value="<% nvram_get("misc_ping_x"); %>" disabled>
 <input type="hidden" name="dmz_ip" value="<% nvram_get("dmz_ip"); %>" disabled>

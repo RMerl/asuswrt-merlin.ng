@@ -134,15 +134,15 @@ function change_wizard(o, id){
 					if(wItem[i][2] == "TCP")
 						document.form.filter_lw_proto_x_0.options[0].selected = 1;
 					else if(wItem[i][2] == "UDP")
-						document.form.filter_lw_proto_x_0.options[8].selected = 1;
+						document.form.filter_lw_proto_x_0.options[7].selected = 1;
 					
-					document.form.filter_wl_srcport_x_0.value = wItem[i][1];
+					document.form.filter_lw_srcport_x_0.value = wItem[i][1];
 				}
 				else{
 					if(wItem[i][2] == "TCP")
 						document.form.filter_lw_proto_x_0.options[0].selected = 1;
 					else if(wItem[i][2] == "UDP")
-						document.form.filter_lw_proto_x_0.options[8].selected = 1;
+						document.form.filter_lw_proto_x_0.options[7].selected = 1;
 					
 					document.form.filter_lw_dstport_x_0.value = wItem[i][1];
 				}
@@ -179,17 +179,10 @@ function addRow_Group(upper){
 					document.form.filter_lw_srcip_x_0.select();
 					return false;
 	}else{		
-					if(document.form.filter_lw_srcip_x_0.value.split("*").length >= 2){
-								if(!validator.ipSubnet(document.form.filter_lw_srcip_x_0))
-										return false;
-					}else if(!validator.validIPForm(document.form.filter_lw_srcip_x_0, 0))
-								return false;
-
-					if(document.form.filter_lw_dstip_x_0.value.split("*").length >= 2){
-								if(!validator.ipSubnet(document.form.filter_lw_dstip_x_0))
-										return false;
-					}else if(!validator.validIPForm(document.form.filter_lw_dstip_x_0, 0))
-								return false;		
+					if(!validator.ipv4cidr(document.form.filter_lw_srcip_x_0))
+                                                return false;
+					if(!validator.ipv4cidr(document.form.filter_lw_dstip_x_0))
+						return false;
 	}
 		
 	if(document.form.filter_lw_srcport_x_0.value != "" || document.form.filter_lw_dstport_x_0.value != "")
@@ -250,7 +243,7 @@ function check_duplicate(){
 		for(i=0; i<rule_num; i++){
 			if(entry_cmp(document.getElementById('filter_lwlist_table').rows[i].cells[0].innerHTML, document.form.filter_lw_srcip_x_0.value, 15)==0 
 				&& entry_cmp(document.getElementById('filter_lwlist_table').rows[i].cells[2].innerHTML, document.form.filter_lw_dstip_x_0.value, 15)==0 
-				&& entry_cmp(document.getElementById('filter_lwlist_table').rows[i].cells[4].innerHTML.toLowerCase(), document.form.filter_lw_proto_x_0.value.toLowerCase(), 8)==0 ){
+				&& entry_cmp(document.getElementById('filter_lwlist_table').rows[i].cells[4].innerHTML.toLowerCase(), document.form.filter_lw_proto_x_0.value.toLowerCase(), 7)==0 ){
 
 						if(portrange_min(document.form.filter_lw_srcport_x_0.value, 11) > portrange_max(document.getElementById('filter_lwlist_table').rows[i].cells[1].innerHTML, 11) 
 							|| portrange_max(document.form.filter_lw_srcport_x_0.value, 11) < portrange_min(document.getElementById('filter_lwlist_table').rows[i].cells[1].innerHTML, 11)
@@ -394,6 +387,7 @@ function updateDateTime(){
 		document.form.filter_lw_time2_x_endhour,
 		document.form.filter_lw_time2_x_endmin);	
 }
+
 </script>
 </head>
 
@@ -444,6 +438,7 @@ function updateDateTime(){
 		  				<div class="formfonttitle"><#menu5_5#> - <#menu5_5_4#></div>
 		  				<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		  				<div class="formfontdesc"><#FirewallConfig_display1_sectiondesc#></div>
+						<div class="formfontdesc">The IP address can be a simple IP (1.2.3.4), or use the CIDR format (1.2.3.4/24) to handle a whole subnet.</div>
 		  				<div class="formfontdesc"><#FirewallConfig_display3_sectiondesc#></div>
 		  				<div class="formfontdesc" style="color:#FFCC00;"><#FirewallConfig_display4_sectiondesc#></div>	
 		  				<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
@@ -530,26 +525,26 @@ function updateDateTime(){
    					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
 	  					<thead>
 	   					<tr>
-	   						<td colspan="6" id="filter_lwlist"><#FirewallConfig_LWFilterList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;32)</td>
+	   						<td colspan="6" id="filter_lwlist"><#FirewallConfig_LWFilterList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;128)</td>
 	   					</tr>
 	  					</thead>		  
           					<tr>
-          						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(18,3);"><#FirewallConfig_LanWanSrcIP_itemname#></a></th>
+          					<th><a class="hintstyle"><#FirewallConfig_LanWanSrcIP_itemname#></a></th>
             					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(18,2);"><#FirewallConfig_LanWanSrcPort_itemname#></a></th>
-            					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(18,3);"><#FirewallConfig_LanWanDstIP_itemname#></a></th>
+            					<th><a class="hintstyle"><#FirewallConfig_LanWanDstIP_itemname#></a></th>
             					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(18,2);"><#FirewallConfig_LanWanSrcPort_itemname#></a></th>
             					<th><#IPConnection_VServerProto_itemname#></th>
             					<th><#list_add_delete#></th>
           					</tr>
           					<tr>
-          						<td width="20%"><input type="text" maxlength="15" class="input_15_table" name="filter_lw_srcip_x_0" onKeyPress="return validator.isIPRange(this, event)" autocorrect="off" autocapitalize="off"></td>
+          						<td width="20%"><input type="text" maxlength="18" class="input_15_table" name="filter_lw_srcip_x_0" autocorrect="off" autocapitalize="off"></td>
             					<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_srcport_x_0" onKeyPress="return validator.isPortRange(this,event)" value="" autocorrect="off" autocapitalize="off"></td>
-            					<td width="20%"><input type="text" maxlength="15" class="input_15_table" name="filter_lw_dstip_x_0" onKeyPress="return validator.isIPRange(this, event)" autocorrect="off" autocapitalize="off"></td>
+            					<td width="20%"><input type="text" maxlength="18" class="input_15_table" name="filter_lw_dstip_x_0" autocorrect="off" autocapitalize="off"></td>
             					<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_dstport_x_0" onKeyPress="return validator.isPortRange(this,event)" value="" autocorrect="off" autocapitalize="off"></td>
             					<td width="15%">
 								<select name="filter_lw_proto_x_0" class="input_option">
 									<option value="TCP">TCP</option>
-									<option value="TCP ALL">TCP ALL</option>
+									<!-- <option value="TCP ALL">TCP ALL</option> -->
 									<option value="TCP SYN">TCP SYN</option>
 									<option value="TCP ACK">TCP ACK</option>
 									<option value="TCP FIN">TCP FIN</option>
@@ -560,7 +555,7 @@ function updateDateTime(){
 								</select>
 	    						</td>
 	    							<td width="15%">
-									<input type="button" class="add_btn" onClick="addRow_Group(32);" name="filter_lwlist2" value="">
+									<input type="button" class="add_btn" onClick="addRow_Group(128);" name="filter_lwlist2" value="">
 								</td>
 									
 							</tr>

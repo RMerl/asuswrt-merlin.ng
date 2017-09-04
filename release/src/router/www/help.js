@@ -1,4 +1,4 @@
-var Untranslated = {
+﻿var Untranslated = {
 	fw_size_higher_mem : 'Memory space is NOT enough to upgrade on internet. Please wait for rebooting.',
 	the_array_is_end : "end here.",
 	ASUSGATE_note9 : "Your DSL (Digital Suscriber Line) seems unstable. DLA (Dynamic Line Adjustment) enabled by default has modified the necessary setting to improve the network stability. If failed, please submit feedback to our support team.",
@@ -171,6 +171,16 @@ function qos_disable(){
 // Viz add 2013.04 for dsl sync status
 function gotoDSL_log(){
 	top.location.href = "/Main_AdslStatus_Content.asp";
+}
+
+function low_channel(a, b)
+{
+        return a < b ? a : b;
+}
+
+function high_channel(a, b)
+{
+        return a > b ? a : b;
 }
 
 function gotoModem(){
@@ -387,51 +397,55 @@ function overHint(itemNum){
 		}
 					
 		statusmenu += "<span>" + lineDesc + "</span>";		
+
 	}
+
+	var control_chan_arr = <% wl_control_channel(); %>;
+	var extent_chan_arr = <% wl_extent_channel(); %>;
+
 	// wifi hw switch
 	if(itemNum == 8){
 		statusmenu = "<div class='StatusHint'>Wi-Fi :</div>";
-		
-		if(wl_info.band5g_2_support){
-				if(wlan0_radio_flag == "0")
-						wifiDesc = "<b>2.4GHz -</b> <#btn_Disabled#>";
-				else
-						wifiDesc = "<b>2.4GHz -</b> <#btn_Enabled#>";
-				
-				if(wlan1_radio_flag == "0")
-						wifiDesc += "<br><br><b>5GHz-1 -</b> <#btn_Disabled#>";
-				else		
-						wifiDesc += "<br><br><b>5GHz-1 -</b> <#btn_Enabled#>";
-				
-				if(wlan2_radio_flag == "0")
-						wifiDesc += "<br><br><b>5GHz-2 -</b> <#btn_Disabled#>";
-				else		
-						wifiDesc += "<br><br><b>5GHz-2 -</b> <#btn_Enabled#>";						
-			
-				statusmenu += "<span>" + wifiDesc + "</span>";	
+		wifiDesc = "<b>&nbsp;2.4G:</b> ";
+		if ( wlan0_radio_flag == 1) {
+			if ((extent_chan_arr[0] == 0) || (extent_chan_arr[0] == undefined) || (extent_chan_arr[0] == control_chan_arr[0]))
+				wifiDesc += "Channel " + control_chan_arr[0];
+			else
+				wifiDesc += "Channel "+ low_channel(control_chan_arr[0],extent_chan_arr[0]) + "+" + high_channel(control_chan_arr[0],extent_chan_arr[0]);
+		} else {
+			wifiDesc += "<#btn_Disabled#>";
 		}
-		else if(wl_info.band5g_support){
-				if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0")
-						wifiDesc = "<b>2.4GHz -</b><br><#btn_Disabled#><br><br><b>5 GHz -</b><br><#btn_Disabled#>";
-				else if(wlan0_radio_flag == "1" && wlan1_radio_flag == "0")
-						wifiDesc = "<b>2.4GHz -</b><br><#btn_Enabled#><br><br><b>5 GHz -</b><br><#btn_Disabled#>";
-				else if(wlan0_radio_flag == "0" && wlan1_radio_flag == "1")
-						wifiDesc = "<b>2.4GHz -</b><br><#btn_Disabled#><br><br><b>5 GHz -</b><br><#btn_Enabled#>";
+
+		if (band5g_support){
+			if (wl_info.band5g_2_support)
+				wifiDesc += "<br><b>5G-1:</b> ";
+			else
+				wifiDesc += "<br><b>&nbsp;&nbsp;&nbsp;5G:</b> ";
+			if (wlan1_radio_flag == 1) {
+				if ((extent_chan_arr[1] == 0) || (extent_chan_arr[1] == undefined) || (extent_chan_arr[1] == control_chan_arr[1]))
+					wifiDesc += "Channel " + control_chan_arr[1];
 				else
-						wifiDesc = "<b>2.4GHz -</b><br><#btn_Enabled#><br><br><b>5 GHz -</b><br><#btn_Enabled#>";
-			
-				statusmenu += "<span>" + wifiDesc + "</span>";	
+					wifiDesc += "Channel "+ control_chan_arr[1] + "/" + extent_chan_arr[1] + " MHz";
+			} else {
+				wifiDesc += "<#btn_Disabled#>";
+			}
+
+			if (wl_info.band5g_2_support) {
+				wifiDesc += "<br><b>5G-2:</b> ";
+				if  ("<% nvram_get("wl2_radio"); %>" == 1) {
+					if ((extent_chan_arr[2] == 0) || (extent_chan_arr[2] == undefined) || (extent_chan_arr[2] == control_chan_arr[2]))
+						wifiDesc += "Channel " + control_chan_arr[2];
+					else
+						wifiDesc += "Channel "+ control_chan_arr[2] + "/" + extent_chan_arr[2] + " MHz";
+	                        } else {
+					wifiDesc += "<#btn_Disabled#>";
+				}
+                        }
+
 		}
-		else{
-				if(wlan0_radio_flag == "0")
-						wifiDesc = "<#btn_Disabled#>";
-				else
-						wifiDesc = "<#btn_Enabled#>";
-			
-				statusmenu += "<span>" + wifiDesc + "</span>";			
-		}
-	}
-	
+		statusmenu += "<span>" + wifiDesc + "</span>";
+	}	
+
 	// cooler
 	if(itemNum == 7){
 		statusmenu = "<div class='StatusHint'>Cooler:</div>";

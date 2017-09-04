@@ -22,7 +22,7 @@
 				"apps_fsck_ret" : [<% apps_fsck_ret(); %>][0],
 				"allUsbStatusArray" : [<% show_usb_path(); %>][0]
 			};
-				
+
 			var newDisk = function(){
 				this.usbPath = "";
 				this.deviceIndex = "";

@@ -1215,6 +1215,11 @@ obj-$(RTCONFIG_GEOIP) += GeoIP-1.6.2
 
 obj-$(RTCONFIG_TRANSMISSION) += Transmission curl-7.21.7 libevent-2.0.21
 
+# Begin merlin add-ons
+obj-$(RTCONFIG_NANO) += ncurses-6.0
+obj-$(RTCONFIG_NANO) += nano
+# End merlin add-ons
+
 ifeq ($(RTCONFIG_TOR),y)
 obj-y += openssl
 obj-y += zlib
@@ -6600,38 +6605,61 @@ libical-2.0.0-install:
 		ln -sf libicalvcal.so.2.0.0 libicalvcal.so.2
 
 ncurses-6.0/Makefile: ncurses-6.0/configure
-	cd ncurses-6.0 && $(CONFIGURE)\
-		--prefix=/usr --exec_prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib\
-		--sysconfdir=/etc --datadir=/usr/share --localstatedir=/var --mandir=/usr/man\
-		--without-normal --with-debug --with-shared\
-		--without-tests --without-progs --without-manpages \
-		CFLAGS="-I$(STAGEDIR)/usr/local/include"\
-		LDFLAGS="-L$(STAGEDIR)/usr/local/lib -ldl -lpthread"
+	cd ncurses-6.0 && $(CONFIGURE) \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
+		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(STAGEDIR)/usr/lib" \
+		$(if $(HND_ROUTER),CPPFLAGS="-P",) \
+		--prefix=/usr --without-cxx --without-cxx-binding \
+		--enable-echo --enable-const --enable-overwrite --disable-rpath --without-ada \
+		$(if $(RTCONFIG_BCMARM),--enable-widec,) \
+		--without-debug --without-manpages --without-profile --without-progs --without-tests \
+		--disable-home-terminfo --with-normal --with-shared --with-build-cppflags=-D_GNU_SOURCE \
+		--enable-pc-files \
+		--disable-termcap --disable-database --with-fallbacks="xterm,vt100,vt200,linux,ansi,xterm-256color"
+#		--with-default-terminfo-dir=/usr/share/terminfo --with-terminfo-dirs=/usr/share/terminfo
 
 ncurses-6.0: ncurses-6.0/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	@$(SEP)
+	cd ncurses-6.0 && $(MAKE) -C ncurses && $(MAKE) -C misc pc-files
 
 ncurses-6.0-clean:
 	[ ! -f ncurses-6.0/Makefile ] || $(MAKE) -C ncurses-6.0 distclean
 
 ncurses-6.0-install: ncurses-6.0
-	install -D ncurses-6.0/lib/libform.so.6.0 $(INSTALLDIR)/ncurses-6.0/usr/lib/libform.so.6.0
-	install -D ncurses-6.0/lib/libmenu.so.6.0 $(INSTALLDIR)/ncurses-6.0/usr/lib/libmenu.so.6.0
+ifeq ($(RTCONFIG_BCMARM),y)
+	install -D ncurses-6.0/lib/libncursesw.so.6.0 $(INSTALLDIR)/ncurses-6.0/usr/lib/libncursesw.so.6.0
+	cd $(INSTALLDIR)/ncurses-6.0/usr/lib && \
+		ln -sf libncursesw.so.6.0 libncursesw.so.6 &&\
+		ln -sf libncursesw.so.6.0 libncursesw.so
+else
 	install -D ncurses-6.0/lib/libncurses.so.6.0 $(INSTALLDIR)/ncurses-6.0/usr/lib/libncurses.so.6.0
-	install -D ncurses-6.0/lib/libpanel.so.6.0 $(INSTALLDIR)/ncurses-6.0/usr/lib/libpanel.so.6.0
-	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/libform.so.6.0
-	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/libmenu.so.6.0
-	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/libncurses.so.6.0
-	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/libpanel.so.6.0
 	cd $(INSTALLDIR)/ncurses-6.0/usr/lib && \
 		ln -sf libncurses.so.6.0 libncurses.so.6 &&\
-		ln -sf libncurses.so.6.0 libncurses.so &&\
-		ln -sf libform.so.6.0 libform.so.6 &&\
-		ln -sf libform.so.6.0 libform.so &&\
-		ln -sf libmenu.so.6.0 libmenu.so.6 &&\
-		ln -sf libmenu.so.6.0 libmenu.so &&\
-		ln -sf libpanel.so.6.0 libpanel.so.6 &&\
-		ln -sf libpanel.so.6.0 libpanel.so
+		ln -sf libncurses.so.6.0 libncurses.so
+endif
+	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/*.so.*
+
+nano/Makefile:
+	cd nano && \
+	autoreconf -i -f && $(CONFIGURE) --prefix=$(INSTALLDIR)/nano/usr \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/ncurses-6.0/include -ffunction-sections -fdata-sections" \
+		LDFLAGS="$(LDFLAGS) -L$(TOP)/ncurses-6.0/lib -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		PKG_CONFIG_LIBDIR="$(TOP)/ncurses-6.0/misc" PKG_CONFIG_PATH="$(TOP)/ncurses-6.0/misc" \
+		$(if $(RTCONFIG_BCMARM),ac_cv_lib_ncursesw_get_wch=yes --enable-utf8,ac_cv_lib_ncursesw_get_wch=no --enable-tiny) \
+		--disable-speller --disable-extra --disable-tabcomp --enable-wrapping --disable-glibtest \
+		--disable-libmagic --disable-nls
+
+nano-clean:
+	-@$(MAKE) -C nano distclean
+	@rm -f nano/Makefile
+
+nano-install:
+	@$(MAKE) -C nano install-exec INSTALLDIR=$(INSTALLDIR)/nano/usr/bin/nano
+	$(STRIP) $(INSTALLDIR)/nano/usr/bin/nano
+
+nano: ncurses-6.0 nano/Makefile
+	@$(SEP)
+	$(MAKE) -C $@
 
 readline-6.2/Makefile: readline-6.2/configure
 	cd readline-6.2 && $(CONFIGURE)\

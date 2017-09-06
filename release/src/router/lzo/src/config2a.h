@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -45,7 +33,7 @@
 
 
 #ifndef __LZO_CONFIG2A_H
-#define __LZO_CONFIG2A_H
+#define __LZO_CONFIG2A_H 1
 
 #include "lzo_conf.h"
 #include "lzo/lzo2a.h"
@@ -82,9 +70,9 @@
 ************************************************************************/
 
 #if 1
-#define N            8191           /* size of ring buffer */
+#define SWD_N        8191           /* size of ring buffer */
 #else
-#define N           16383           /* size of ring buffer */
+#define SWD_N       16383           /* size of ring buffer */
 #endif
 
 #define M1_MIN_LEN  2
@@ -95,7 +83,7 @@
 
 /* add a special code so that the decompressor can detect the
  * end of the compressed data block (overhead is 3 bytes per block) */
-#define LZO_EOF_CODE
+#define LZO_EOF_CODE 1
 
 #undef LZO_DETERMINISTIC
 
@@ -123,7 +111,7 @@
 
 /* Collect statistics */
 #if 0 && !defined(LZO_COLLECT_STATS)
-#  define LZO_COLLECT_STATS
+#  define LZO_COLLECT_STATS 1
 #endif
 
 
@@ -133,14 +121,14 @@
 
 /* get bits */
 #define _NEEDBITS \
-    { _NEEDBYTE; b |= ((lzo_uint32) _NEXTBYTE) << k; k += 8; assert(k <= 32); }
+    { _NEEDBYTE; b |= ((lzo_uint32_t) _NEXTBYTE) << k; k += 8; assert(k <= 32); }
 #define NEEDBITS(j)     { assert((j) < 8); if (k < (j)) _NEEDBITS }
 
 /* set bits */
-#define SETBITS(j,x)    { b |= (x) << k; k += (j); assert(k <= 32); }
+#define SETBITS(j,x)    { b |= ((lzo_uint32_t)(x)) << k; k += (j); assert(k <= 32); }
 
 /* access bits */
-#define MASKBITS(j)     (b & ((((lzo_uint32)1 << (j)) - 1)))
+#define MASKBITS(j)     (b & ((((lzo_uint32_t)1 << (j)) - 1)))
 
 /* drop bits */
 #define DUMPBITS(j)     { assert(k >= j); b >>= (j); k -= (j); }

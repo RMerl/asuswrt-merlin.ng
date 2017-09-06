@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -65,7 +53,7 @@ lzo1x_999_compress_internal ( const lzo_bytep in , lzo_uint  in_len,
                                     lzo_uint max_lazy,
                                     lzo_uint nice_length,
                                     lzo_uint max_chain,
-                                    lzo_uint32 flags );
+                                    lzo_uint32_t flags );
 
 LZO_EXTERN(int)
 lzo1y_999_compress_internal ( const lzo_bytep in , lzo_uint  in_len,
@@ -78,7 +66,7 @@ lzo1y_999_compress_internal ( const lzo_bytep in , lzo_uint  in_len,
                                     lzo_uint max_lazy,
                                     lzo_uint nice_length,
                                     lzo_uint max_chain,
-                                    lzo_uint32 flags );
+                                    lzo_uint32_t flags );
 
 #define USE_LZO1X 1
 #define USE_LZO1Y 1
@@ -87,9 +75,11 @@ lzo1y_999_compress_internal ( const lzo_bytep in , lzo_uint  in_len,
 
 
 /* portability layer */
+static const char *progname = NULL;
 #define WANT_LZO_MALLOC 1
 #define WANT_LZO_FREAD 1
 #define WANT_LZO_WILDARGV 1
+#define WANT_XMALLOC 1
 #include "examples/portab.h"
 
 
@@ -103,7 +93,7 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     int lazy;
     const int max_try_lazy = 5;
     const lzo_uint big = 65536L;    /* can result in very slow compression */
-    const lzo_uint32 flags = 0x1;
+    const lzo_uint32_t flags = 0x1;
 
     lzo_bytep in;
     lzo_uint in_len;
@@ -112,19 +102,18 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     lzo_uint out_bufsize;
     lzo_uint out_len = 0;
 
-    lzo_bytep wrkmem;
-    lzo_uint wrk_len;
+    lzo_voidp wrkmem;
+    lzo_uint wrkmem_size;
 
     lzo_uint best_len;
     int best_compress = -1;
     int best_lazy = -1;
 
     lzo_uint orig_len;
-    lzo_uint32 uncompressed_checksum;
-    lzo_uint32 compressed_checksum;
+    lzo_uint32_t uncompressed_checksum;
+    lzo_uint32_t compressed_checksum;
 
-    FILE *f;
-    const char *progname = NULL;
+    FILE *fp;
     const char *in_name = NULL;
     const char *out_name = NULL;
     long l;
@@ -134,7 +123,7 @@ int __lzo_cdecl_main main(int argc, char *argv[])
 
     printf("\nLZO real-time data compression library (v%s, %s).\n",
            lzo_version_string(), lzo_version_date());
-    printf("Copyright (C) 1996-2008 Markus Franz Xaver Johannes Oberhumer\nAll Rights Reserved.\n\n");
+    printf("Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer\nAll Rights Reserved.\n\n");
 
     progname = argv[0];
     if (argc < 2 || argc > 3)
@@ -151,23 +140,21 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     if (lzo_init() != LZO_E_OK)
     {
         printf("internal error - lzo_init() failed !!!\n");
-        printf("(this usually indicates a compiler bug - try recompiling\nwithout optimizations, and enable `-DLZO_DEBUG' for diagnostics)\n");
+        printf("(this usually indicates a compiler bug - try recompiling\nwithout optimizations, and enable '-DLZO_DEBUG' for diagnostics)\n");
         exit(1);
     }
 
 /*
  * Step 2: allocate the work-memory
  */
-    wrk_len = 1;
+    wrkmem_size = 1;
 #ifdef USE_LZO1X
-    if (wrk_len < LZO1X_999_MEM_COMPRESS)
-        wrk_len = LZO1X_999_MEM_COMPRESS;
+    wrkmem_size = (LZO1X_999_MEM_COMPRESS > wrkmem_size) ? LZO1X_999_MEM_COMPRESS : wrkmem_size;
 #endif
 #ifdef USE_LZO1Y
-    if (wrk_len < LZO1Y_999_MEM_COMPRESS)
-        wrk_len = LZO1Y_999_MEM_COMPRESS;
+    wrkmem_size = (LZO1Y_999_MEM_COMPRESS > wrkmem_size) ? LZO1Y_999_MEM_COMPRESS : wrkmem_size;
 #endif
-    wrkmem = (lzo_bytep) lzo_malloc(wrk_len);
+    wrkmem = (lzo_voidp) xmalloc(wrkmem_size);
     if (wrkmem == NULL)
     {
         printf("%s: out of memory\n", progname);
@@ -177,19 +164,19 @@ int __lzo_cdecl_main main(int argc, char *argv[])
 /*
  * Step 3: open the input file
  */
-    f = fopen(in_name,"rb");
-    if (f == NULL)
+    fp = fopen(in_name,"rb");
+    if (fp == NULL)
     {
         printf("%s: cannot open file %s\n", progname, in_name);
         exit(1);
     }
-    fseek(f,0,SEEK_END);
-    l = ftell(f);
-    fseek(f,0,SEEK_SET);
+    fseek(fp, 0, SEEK_END);
+    l = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
     if (l <= 0)
     {
         printf("%s: %s: empty file\n", progname, in_name);
-        fclose(f);
+        fclose(fp); fp = NULL;
         exit(1);
     }
     in_len = (lzo_uint) l;
@@ -199,16 +186,16 @@ int __lzo_cdecl_main main(int argc, char *argv[])
 /*
  * Step 4: allocate compression buffers and read the file
  */
-    in = (lzo_bytep) lzo_malloc(in_len);
-    out = (lzo_bytep) lzo_malloc(out_bufsize);
+    in = (lzo_bytep) xmalloc(in_len);
+    out = (lzo_bytep) xmalloc(out_bufsize);
     if (in == NULL || out == NULL)
     {
         printf("%s: out of memory\n", progname);
         exit(1);
     }
-    in_len = (lzo_uint) lzo_fread(f,in,in_len);
+    in_len = (lzo_uint) lzo_fread(fp, in, in_len);
     printf("%s: loaded file %s: %ld bytes\n", progname, in_name, (long) in_len);
-    fclose(f);
+    fclose(fp); fp = NULL;
 
 /*
  * Step 5: compute a checksum of the uncompressed data
@@ -217,7 +204,7 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     uncompressed_checksum = lzo_adler32(uncompressed_checksum,in,in_len);
 
 /*
- * Step 6a: compress from `in' to `out' with LZO1X-999
+ * Step 6a: compress from 'in' to 'out' with LZO1X-999
  */
 #ifdef USE_LZO1X
     for (lazy = 0; lazy <= max_try_lazy; lazy++)
@@ -244,7 +231,7 @@ int __lzo_cdecl_main main(int argc, char *argv[])
 #endif /* USE_LZO1X */
 
 /*
- * Step 6b: compress from `in' to `out' with LZO1Y-999
+ * Step 6b: compress from 'in' to 'out' with LZO1Y-999
  */
 #ifdef USE_LZO1Y
     for (lazy = 0; lazy <= max_try_lazy; lazy++)
@@ -297,7 +284,7 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     assert(out_len == best_len);
 
 /*
- * Step 9: optimize compressed data (compressed data is in `out' buffer)
+ * Step 9: optimize compressed data (compressed data is in 'out' buffer)
  */
 #if 1
     /* Optimization does not require any data in the buffer that will
@@ -339,13 +326,13 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     if (out_name && out_name[0])
     {
         printf("%s: writing to file %s\n", progname, out_name);
-        f = fopen(out_name,"wb");
-        if (f == NULL)
+        fp = fopen(out_name,"wb");
+        if (fp == NULL)
         {
             printf("%s: cannot open output file %s\n", progname, out_name);
             exit(1);
         }
-        if (lzo_fwrite(f,out,out_len) != out_len || fclose(f) != 0)
+        if (lzo_fwrite(fp, out, out_len) != out_len || fclose(fp) != 0)
         {
             printf("%s: write error !!\n", progname);
             exit(1);
@@ -391,7 +378,5 @@ int __lzo_cdecl_main main(int argc, char *argv[])
     return 0;
 }
 
-/*
-vi:ts=4:et
-*/
 
+/* vim:set ts=4 sw=4 et: */

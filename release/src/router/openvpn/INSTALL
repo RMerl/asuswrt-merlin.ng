@@ -12,10 +12,6 @@ QUICK START:
   Unix:
     ./configure && make && make-install
 
-  Cross-compile for Windows on Unix
-
-    See INSTALL-win32.txt
-
 *************************************************************************
 
 To download OpenVPN, go to:
@@ -30,9 +26,13 @@ To download easy-rsa go to:
 
     https://github.com/OpenVPN/easy-rsa
 
-To download tap-windows driver source code go to:
+To download tap-windows (NDIS 5) driver source code go to:
 
     https://github.com/OpenVPN/tap-windows
+
+To download tap-windows (NDIS 6) driver source code go to:
+
+    https://github.com/OpenVPN/tap-windows6
 
 To get the cross-compilation environment go to:
 
@@ -59,7 +59,8 @@ SUPPORTED PLATFORMS:
   (4) Mac OS X Darwin 10.5+
   (5) FreeBSD 7.4+
   (6) NetBSD 5.0+
-  (7) Windows (WinXP and higher)
+  (7) Windows Vista or later for OpenVPN 2.4
+  (8) Windows XP or later for OpenVPN 2.3
 
 SUPPORTED PROCESSOR ARCHITECTURES:
    In general, OpenVPN is word size and endian independent, so
@@ -87,6 +88,10 @@ OPTIONAL (for developers only):
       -- available from http://www.gnu.org/software/software.html
   (2) Dmalloc library
       -- available from http://dmalloc.com/
+  (3) If using t_client.sh test framework, fping/fping6 is needed
+      -- Available from http://www.fping.org/
+      Note: t_client.sh needs an external configured OpenVPN server.
+      See t_client.rc-sample for more info.
 
 *************************************************************************
 
@@ -169,8 +174,6 @@ OPTIONS for ./configure:
   --disable-server        disable server support only (but retain client
                           support) [default=yes]
   --disable-plugins       disable plug-in support [default=yes]
-  --disable-eurephia      disable support for the eurephia plug-in
-                          [default=yes]
   --disable-management    disable management server support [default=yes]
   --enable-pkcs11         enable pkcs11 support [default=no]
   --disable-socks         disable Socks support [default=yes]
@@ -208,14 +211,10 @@ ENVIRONMENT for ./configure:
   MAN2HTML    path to man2html utility
   GIT         path to git utility
   TAP_CFLAGS  C compiler flags for tap
-  OPENSSL_CRYPTO_CFLAGS
-              C compiler flags for OPENSSL_CRYPTO, overriding pkg-config
-  OPENSSL_CRYPTO_LIBS
-              linker flags for OPENSSL_CRYPTO, overriding pkg-config
-  OPENSSL_SSL_CFLAGS
-              C compiler flags for OPENSSL_SSL, overriding pkg-config
-  OPENSSL_SSL_LIBS
-              linker flags for OPENSSL_SSL, overriding pkg-config
+  OPENSSL_CFLAGS
+              C compiler flags for OpenSSL, overriding pkg-config
+  OPENSSL_LIBS
+              linker flags for OpenSSL, overriding pkg-config
   POLARSSL_CFLAGS
               C compiler flags for polarssl
   POLARSSL_LIBS
@@ -296,13 +295,13 @@ TUN/TAP Driver Configuration:
 
     http://www.whiteboard.ne.jp/~admin2/tuntap/
 
-* Windows XP/2003/Vista/7:
+* Windows
 
   OpenVPN on Windows needs a TUN/TAP kernel driver to work. OpenVPN installers
   include this driver, so installing it separately is not usually required.
-  The driver source code is available here:
-
-    https://github.com/OpenVPN/tap-windows
+  Windows XP/2003 must use the NDIS 5 (tap-windows) driver, whereas on more
+  recent Windows versions it is recommended to use the NDIS 6 driver
+  (tap-windows6) instead.
 
 *************************************************************************
 

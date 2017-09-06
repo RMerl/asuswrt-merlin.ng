@@ -5,4 +5,4 @@
 #
 
 export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" --initca $*
+"$EASY_RSA/pkitool" --interact --initca $*

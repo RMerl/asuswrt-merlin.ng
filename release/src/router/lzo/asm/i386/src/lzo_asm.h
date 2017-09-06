@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -52,17 +40,17 @@
 #else
    /* manual configuration - see defaults below */
 #  if defined(__ELF__)
-#    define MFX_ASM_HAVE_TYPE
-#    define MFX_ASM_NAME_NO_UNDERSCORES
+#    define MFX_ASM_HAVE_TYPE 1
+#    define MFX_ASM_NAME_NO_UNDERSCORES 1
 #  elif defined(__linux__)              /* Linux a.out */
-#    define MFX_ASM_ALIGN_PTWO
+#    define MFX_ASM_ALIGN_PTWO 1
 #  elif defined(__DJGPP__)
-#    define MFX_ASM_ALIGN_PTWO
+#    define MFX_ASM_ALIGN_PTWO 1
 #  elif defined(__GO32__)               /* djgpp v1 */
-#    define MFX_ASM_CANNOT_USE_EBP
+#    define MFX_ASM_CANNOT_USE_EBP 1
 #  elif defined(__EMX__)
-#    define MFX_ASM_ALIGN_PTWO
-#    define MFX_ASM_CANNOT_USE_EBP
+#    define MFX_ASM_ALIGN_PTWO 1
+#    define MFX_ASM_CANNOT_USE_EBP 1
 #  endif
 #endif
 #endif
@@ -123,7 +111,7 @@
 ************************************************************************/
 
 #if !defined(MFX_ASM_ALIGN_BYTES) && !defined(MFX_ASM_ALIGN_PTWO)
-#  define MFX_ASM_ALIGN_BYTES
+#  define MFX_ASM_ALIGN_BYTES 1
 #endif
 
 #if !defined(LZO_ASM_ALIGN)
@@ -145,10 +133,10 @@
 
 #if !defined(MFX_ASM_CANNOT_USE_EBP)
 #  if 1 && !defined(N_3_EBP) && !defined(N_255_EBP)
-#    define N_3_EBP
+#    define N_3_EBP 1
 #  endif
 #  if 0 && !defined(N_3_EBP) && !defined(N_255_EBP)
-#    define N_255_EBP
+#    define N_255_EBP 1
 #  endif
 #endif
 

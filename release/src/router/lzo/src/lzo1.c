@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -364,7 +352,7 @@ do_compress    ( const lzo_bytep in , lzo_uint  in_len,
         goto the_end;
 
     /* init dictionary */
-#if defined(LZO_DETERMINISTIC)
+#if (LZO_DETERMINISTIC)
     BZERO8_PTR(wrkmem,sizeof(lzo_dict_t),D_SIZE);
 #endif
 
@@ -374,7 +362,7 @@ do_compress    ( const lzo_bytep in , lzo_uint  in_len,
     DVAL_NEXT(dv,ip);
 
     do {
-        lzo_uint m_off;
+        LZO_DEFINE_UNINITIALIZED_VAR(lzo_uint, m_off, 0);
         lzo_uint dindex;
 
         DINDEX1(dindex,ip);
@@ -400,13 +388,13 @@ literal:
 
 match:
         UPDATE_I(dict,0,dindex,ip,in);
-#if !defined(NDEBUG) && defined(LZO_DICT_USE_PTR)
+#if !defined(NDEBUG) && (LZO_DICT_USE_PTR)
         m_pos_sav = m_pos;
 #endif
         m_pos += 3;
         {
     /* we have found a match (of at least length 3) */
-#if !defined(NDEBUG) && !defined(LZO_DICT_USE_PTR)
+#if !defined(NDEBUG) && !(LZO_DICT_USE_PTR)
             assert((m_pos_sav = ip - m_off) == (m_pos - 3));
 #endif
             /* 1) store the current literal run */
@@ -613,7 +601,7 @@ lzo1_compress ( const lzo_bytep in , lzo_uint  in_len,
     int r = LZO_E_OK;
 
     /* don't try to compress a block that's too short */
-    if (in_len <= 0)
+    if (in_len == 0)
         *out_len = 0;
     else if (in_len <= MIN_MATCH_LONG + DVAL_LEN + 1)
     {

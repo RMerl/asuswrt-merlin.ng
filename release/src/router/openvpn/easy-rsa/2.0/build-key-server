@@ -7,4 +7,4 @@
 # extension in the openssl.cnf file.
 
 export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" --server $*
+"$EASY_RSA/pkitool" --interact --server $*

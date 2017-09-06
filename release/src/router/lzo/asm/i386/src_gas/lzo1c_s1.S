@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -35,17 +23,29 @@
    Markus F.X.J. Oberhumer
    <markus@oberhumer.com>
    http://www.oberhumer.com/opensource/lzo/
-*/
+ */
 
 /***** DO NOT EDIT - GENERATED AUTOMATICALLY *****/
 
 #include "asminit.def"
-typef(_lzo1c_decompress_asm)
-typef(F(lzo1c_decompress_asm))
-global(_lzo1c_decompress_asm)
-global(F(lzo1c_decompress_asm))
-_lzo1c_decompress_asm:
-F(lzo1c_decompress_asm):
+#ifdef NAME1
+typef(NAME1(lzo1c_decompress_asm))
+#endif
+#ifdef NAME2
+typef(NAME2(lzo1c_decompress_asm))
+#endif
+#ifdef NAME1
+globalf(NAME1(lzo1c_decompress_asm))
+#endif
+#ifdef NAME2
+globalf(NAME2(lzo1c_decompress_asm))
+#endif
+#ifdef NAME1
+NAME1(lzo1c_decompress_asm):
+#endif
+#ifdef NAME2
+NAME2(lzo1c_decompress_asm):
+#endif
 db 85,87,86,83,81,82,131,236,12,252,139,116,36,40,139,124
 db 36,48,189,3,0,0,0,144,49,192,138,6,70,60,32,115
 db 15,8,192,116,51,137,193,243,164,138,6,70,60,32,114,72
@@ -64,5 +64,9 @@ db 149,192,139,84,36,40,3,84,36,44,57,214,119,38,114,29
 db 43,124,36,48,139,84,36,52,137,58,247,216,131,196,12,90
 db 89,91,94,95,93,195,184,1,0,0,0,235,227,184,8,0
 db 0,0,235,220,184,4,0,0,0,235,213,144,141,116,38,0
-size(_lzo1c_decompress_asm,.-_lzo1c_decompress_asm)
-size(F(lzo1c_decompress_asm),.-F(lzo1c_decompress_asm))
+#ifdef NAME1
+sizef(NAME1(lzo1c_decompress_asm),.-NAME1(lzo1c_decompress_asm))
+#endif
+#ifdef NAME2
+sizef(NAME2(lzo1c_decompress_asm),.-NAME2(lzo1c_decompress_asm))
+#endif

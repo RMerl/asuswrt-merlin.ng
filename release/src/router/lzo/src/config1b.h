@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -45,7 +33,7 @@
 
 
 #ifndef __LZO_CONFIG1B_H
-#define __LZO_CONFIG1B_H
+#define __LZO_CONFIG1B_H 1
 
 #include "lzo_conf.h"
 #include "lzo/lzo1b.h"
@@ -92,7 +80,7 @@
 
 /* add a special code so that the decompressor can detect the
  * end of the compressed data block (overhead is 3 bytes per block) */
-#define LZO_EOF_CODE
+#define LZO_EOF_CODE 1
 
 
 /***********************************************************************
@@ -118,7 +106,7 @@
 
 /* Collect statistics */
 #if 0 && !defined(LZO_COLLECT_STATS)
-#  define LZO_COLLECT_STATS
+#  define LZO_COLLECT_STATS 1
 #endif
 
 

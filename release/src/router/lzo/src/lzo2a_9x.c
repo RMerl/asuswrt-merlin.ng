@@ -2,19 +2,7 @@
 
    This file is part of the LZO real-time data compression library.
 
-   Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2014 Markus Franz Xaver Johannes Oberhumer
    All Rights Reserved.
 
    The LZO library is free software; you can redistribute it and/or
@@ -46,11 +34,11 @@
 //
 ************************************************************************/
 
-#define THRESHOLD       1           /* lower limit for match length */
-#define F            2048           /* upper limit for match length */
+#define SWD_THRESHOLD       1           /* lower limit for match length */
+#define SWD_F            2048           /* upper limit for match length */
 
 
-#define LZO2A
+#define LZO2A 1
 #define LZO_COMPRESS_T  lzo2a_999_t
 #define lzo_swd_t       lzo2a_999_swd_t
 #include "lzo_mchw.ch"
@@ -105,7 +93,7 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
     lzo_swd_p const swd = (lzo_swd_p) wrkmem;
     int r;
 
-    lzo_uint32 b = 0;       /* bit buffer */
+    lzo_uint32_t b = 0;     /* bit buffer */
     unsigned k = 0;         /* bits in bit buffer */
 
     /* sanity check */
@@ -130,17 +118,17 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
         return r;
     while (c->look > 0)
     {
-        int lazy_match_min_gain = 0;
-        int extra1 = 0;
-        int extra2 = 0;
+        lzo_uint lazy_match_min_gain = 0;
+#if (SWD_N >= 8192)
+        lzo_uint extra1 = 0;
+#endif
+        lzo_uint extra2 = 0;
         lzo_uint ahead = 0;
-
-        LZO_UNUSED(extra1);
 
         m_len = c->m_len;
         m_off = c->m_off;
 
-#if (N >= 8192)
+#if (SWD_N >= 8192)
         if (m_off >= 8192)
         {
             if (m_len < M3_MIN_LEN)
@@ -153,7 +141,9 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
         if (m_len >= M1_MIN_LEN && m_len <= M1_MAX_LEN && m_off <= 256)
         {
             lazy_match_min_gain = 2;
+#if (SWD_N >= 8192)
             extra1 = 3;
+#endif
             extra2 = 2;
         }
         else if (m_len >= 10)
@@ -161,7 +151,9 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
         else if (m_len >= 3)
         {
             lazy_match_min_gain = 1;
+#if (SWD_N >= 8192)
             extra1 = 1;
+#endif
         }
         else
             m_len = 0;
@@ -170,13 +162,13 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
         /* try a lazy match */
         if (lazy_match_min_gain > 0 && c->look > m_len)
         {
-            int lit = swd->b_char;
+            unsigned char lit = LZO_BYTE(swd->b_char);
 
             r = find_match(c,swd,1,0);
-            assert(r == 0);
+            assert(r == 0); LZO_UNUSED(r);
             assert(c->look > 0);
 
-#if (N >= 8192)
+#if (SWD_N >= 8192)
             if (m_off < 8192 && c->m_off >= 8192)
                 lazy_match_min_gain += extra1;
             else
@@ -193,7 +185,7 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
                     lazy_match_min_gain -= 1;
             }
 
-            if (lazy_match_min_gain < 1)
+            if ((lzo_int) lazy_match_min_gain < 1)
                 lazy_match_min_gain = 1;
 
             if (c->m_len >= m_len + lazy_match_min_gain)
@@ -225,13 +217,13 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
             putbyte(swd->b_char);
             c->lit_bytes++;
             r = find_match(c,swd,1,0);
-            assert(r == 0);
+            assert(r == 0); LZO_UNUSED(r);
         }
         else
         {
             assert(m_len >= M1_MIN_LEN);
             assert(m_off > 0);
-            assert(m_off <= N);
+            assert(m_off <= SWD_N);
 
             /* 2 - code match */
             if (m_len >= M1_MIN_LEN && m_len <= M1_MAX_LEN && m_off <= 256)
@@ -242,7 +234,7 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
                 putbyte(m_off - 1);
                 c->m1++;
             }
-#if (N >= 8192)
+#if (SWD_N >= 8192)
             else if (m_off >= 8192)
             {
                 unsigned len = m_len;
@@ -279,7 +271,7 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
                     lzo_uint len = m_len;
                     putbyte(m_off & 31);
                     putbyte(m_off >> 5);
-#if (N >= 8192)
+#if (SWD_N >= 8192)
                     putbit(0);
 #endif
                     len -= 10 - 1;
@@ -293,7 +285,7 @@ lzo2a_999_compress_callback ( const lzo_bytep in , lzo_uint  in_len,
                 }
             }
             r = find_match(c,swd,m_len,1+ahead);
-            assert(r == 0);
+            assert(r == 0); LZO_UNUSED(r);
         }
 
         c->codesize = pd(op, out);

@@ -10,7 +10,7 @@ openssl_conf		= openssl_init
 # Extra OBJECT IDENTIFIER info:
 #oid_file		= $ENV::HOME/.oid
 oid_section		= new_oids
-#engines			= engine_section
+engines			= engine_section
 
 # To use this configuration file with the "-extfile" option of the
 # "openssl x509" utility, name here the section containing the

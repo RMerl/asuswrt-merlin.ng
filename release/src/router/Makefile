@@ -5224,10 +5224,16 @@ fb_wifi-clean:
 curl-7.21.7: curl-7.21.7/Makefile
 	@$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libcurl.la
 
-curl-7.21.7/Makefile: curl-7.21.7/configure
-	@cd curl-7.21.7 && $(CONFIGURE) CC=$(CC) \
+curl-7.21.7/Makefile: curl/configure
+	@cd curl && $(CONFIGURE) CC=$(CC) \
+		CFLAGS="-Os -Wall -ffunction-sections -fdata-sections" \
 		--prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
-		--enable-http --with-ssl=$(TOP)/openssl LDFLAGS="-ldl $(EXTRALDFLAGS)" \
+		--enable-http --with-ssl=$(TOP)/openssl/ssl \
+		$(if $(RTCONFIG_IPV6),--enable-ipv6) \
+		--disable-gopher --disable-dict --disable-telnet \
+		--disable-proxy --disable-manual --disable-libcurl-option \
+		CPPFLAGS='-I$(TOP)/openssl/include' \
+		LDFLAGS='$(LDFLAGS) -L$(TOP)/openssl' LIBS='-lcrypto -lssl -ldl' \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
 
 curl-7.21.7-install: curl-7.21.7
@@ -5235,11 +5241,11 @@ curl-7.21.7-install: curl-7.21.7
 	install -D curl-7.21.7/lib/.libs/libcurl.so.4.2.0 $(INSTALLDIR)/curl-7.21.7/usr/lib/libcurl.so.4.2.0
 	$(STRIP) $(INSTALLDIR)/curl-7.21.7/usr/lib/libcurl.so.4.2.0
 	cd $(INSTALLDIR)/curl-7.21.7/usr/lib && ln -sf libcurl.so.4.2.0 libcurl.so && ln -sf libcurl.so.4.2.0 libcurl.so.4
-ifeq ($(RTCONFIG_SPEEDTEST),y)
+#ifeq ($(RTCONFIG_SPEEDTEST),y)
 	# for speedtest
 	install -D curl-7.21.7/src/.libs/curl $(INSTALLDIR)/curl-7.21.7/usr/sbin/curl
 	$(STRIP) $(INSTALLDIR)/curl-7.21.7/usr/sbin/curl
-endif
+#endif
 
 curl-7.21.7-clean:
 	[ ! -f curl-7.21.7/Makefile ] || $(MAKE) -C curl-7.21.7 clean

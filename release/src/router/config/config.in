@@ -327,6 +327,7 @@ config RTCONFIG_PARENTALCTRL
 
 config RTCONFIG_YANDEXDNS
 	bool "Yandex.DNS Support"
+	depends on !RTCONFIG_DNSFILTER
 	default n
 
 config RTCONFIG_DSL
@@ -1514,6 +1515,32 @@ config RTCONFIG_PERMISSION_MANAGEMENT
 
 config RTCONFIG_NANO
 	bool "nano text editor"
+	default n
+
+config RTCONFIG_TELENET
+	bool "TELENET"
+	default y
+
+config RTCONFIG_NFS
+	bool "NFS Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_IGD2
+	bool "UPNP: IGD2 support"
+	default n
+
+config RTCONFIG_DNSSEC
+	bool "dnsmasq: Enable DNSSEC support"
+	default n
+
+config RTCONFIG_MERLINUPDATE
+	bool "Check for new firmware version - Merlin-only"
+	default n
+
+config RTCONFIG_DNSFILTER
+	bool "DNS-based filtering Support"
+	depends on !RTCONFIG_YANDEXDNS
 	default n
 
 config RTCONFIG_LETSENCRYPT

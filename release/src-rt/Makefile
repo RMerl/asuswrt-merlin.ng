@@ -2322,6 +2322,10 @@ define RouterOptions
 		sed -i "/CONFIG_LIBBCM/d" $(1); \
 		echo "# CONFIG_LIBBCM is not set" >>$(1); \
         fi; \
+	if [ "$(NANO)" = "y" ]; then \
+		sed -i "/RTCONFIG_NANO/d" $(1); \
+		echo "RTCONFIG_NANO=y" >>$(1); \
+	fi; \
 	if [ "$(LETSENCRYPT)" = "y" ]; then \
 		sed -i "/RTCONFIG_LETSENCRYPT/d" $(1); \
 		echo "RTCONFIG_LETSENCRYPT=y" >>$(1); \

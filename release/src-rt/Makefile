@@ -1472,6 +1472,10 @@ define RouterOptions
 			sed -i "/RTCONFIG_USB_XHCI/d" $(1); \
 			echo "RTCONFIG_USB_XHCI=y" >>$(1); \
 		fi; \
+		if [ "$(NFS)" = "y" ]; then \
+			sed -i "/RTCONFIG_NFS/d" $(1); \
+			echo "RTCONFIG_NFS=y" >>$(1); \
+		fi; \
 	else \
 		sed -i "/RTCONFIG_USB\b/d" $(1); \
 		echo "# RTCONFIG_USB is not set" >>$(1); \
@@ -2321,10 +2325,26 @@ define RouterOptions
 	if [ "$(RALINK)" = "y" -o "$(QCA)" = "y" -o "$(REALTEK)" = "y" ]; then \
 		sed -i "/CONFIG_LIBBCM/d" $(1); \
 		echo "# CONFIG_LIBBCM is not set" >>$(1); \
-        fi; \
+	fi; \
 	if [ "$(NANO)" = "y" ]; then \
 		sed -i "/RTCONFIG_NANO/d" $(1); \
 		echo "RTCONFIG_NANO=y" >>$(1); \
+	fi; \
+	if [ "$(UPNPIGD2)" = "y" ]; then \
+		sed -i "/RTCONFIG_IGD2/d" $(1); \
+		echo "RTCONFIG_IGD2=y" >>$(1); \
+	fi; \
+	if [ "$(DNSSEC)" = "y" ]; then \
+		sed -i "/RTCONFIG_DNSSEC/d" $(1); \
+		echo "RTCONFIG_DNSSEC=y" >>$(1); \
+	fi; \
+	if [ "$(MERLINUPDATE)" = "y" ]; then\
+		sed -i "/RTCONFIG_MERLINUPDATE/d" $(1); \
+		echo "RTCONFIG_MERLINUPDATE=y" >>$(1); \
+	fi; \
+	if [ "$(DNSFILTER)" = "y" ]; then \
+		sed -i "/RTCONFIG_DNSFILTER/d" $(1); \
+		echo "RTCONFIG_DNSFILTER=y" >>$(1); \
 	fi; \
 	if [ "$(LETSENCRYPT)" = "y" ]; then \
 		sed -i "/RTCONFIG_LETSENCRYPT/d" $(1); \
@@ -2474,6 +2494,10 @@ define BusyboxOptions
 		fi; \
 	fi; \
 	if [ "$(USB)" = "USB" ]; then \
+		if [ "$(NFS)" = "y" ]; then \
+			sed -i "/CONFIG_FEATURE_MOUNT_NFS/d" $(1); \
+			echo "CONFIG_FEATURE_MOUNT_NFS=y" >>$(1); \
+		fi; \
 		if [ "$(DISK_MONITOR)" = "y" ]; then \
 			sed -i "/CONFIG_FSCK/d" $(1); \
 			echo "CONFIG_FSCK=y" >>$(1); \
@@ -2683,6 +2707,8 @@ define BusyboxOptions
 		else \
 			sed -i "/CONFIG_FEATURE_LS_COLOR\b/d" $(1); \
 			echo "CONFIG_FEATURE_LS_COLOR=y" >>$(1); \
+			sed -i "/CONFIG_SENDMAIL/d" $(1); \
+			echo "CONFIG_SENDMAIL=y" >>$(1); \
 			if [ "$(HND_MFG)" = "y" ]; then \
 				sed -i "/CONFIG_FEATURE_LS_COLOR_IS_DEFAULT/d" $(1); \
 				echo "# CONFIG_FEATURE_LS_COLOR_IS_DEFAULT is not set" >>$(1); \
@@ -3628,7 +3654,7 @@ fi; \
 		sed -i "/CONFIG_CRYPTO_SHA512 is not set/d" $(1); \
 		echo "CONFIG_CRYPTO_SHA512=y" >>$(1); \
 	fi; \
-	if [ "$(WTFAST)" = "y" ]; then \
+	if [ "$(ARM)" = "y" ]; then \
 		sed -i "/CONFIG_NETFILTER_TPROXY/d" $(1); \
 		echo "CONFIG_NETFILTER_TPROXY=m" >>$(1); \
 		sed -i "/CONFIG_NETFILTER_XT_MATCH_COMMENT/d" $(1); \

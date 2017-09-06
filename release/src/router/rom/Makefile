@@ -53,12 +53,12 @@ PKG_LIST += ncurses-base libiconv
 endif
 
 all:
-#	@echo "" >rom/etc/motd
-#	@echo "" >>rom/etc/motd
-#	@echo "ASUSWRT `cat ../shared/version`" >>rom/etc/motd
+	@echo "" >rom/etc/motd
+	@echo "" >>rom/etc/motd
+	@echo "ASUSWRT-Merlin `cat ../shared/version`" >>rom/etc/motd
 
 clean:
-#	rm -f rom/etc/motd
+	rm -f rom/etc/motd
 
 install:
 	mkdir -p $(INSTALLDIR)
@@ -136,6 +136,18 @@ ifeq ($(RTCONFIG_DSL),y)
 	cp -f webs_scripts/notif_update.sh $(INSTALLDIR)/usr/sbin/notif_update.sh
 endif
 	#install -m 0755 webs_scripts/*.sh $(INSTALLDIR)/usr/sbin
+
+ifeq ($(RTCONFIG_MERLINUPDATE),y)
+	cp -f webs_scripts/merlin_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
+ifeq ($(RTCONFIG_BWDPI),y)
+	cp -f webs_scripts/sig_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
+	cp -f webs_scripts/sig_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
+endif
+ifeq ($(RTCONFIG_HTTPS),y)
+	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
+endif
+
+else	#merlinupdate
 ifeq ($(RTCONFIG_AUTOLIVEUPDATE_ZIP),y)
 	cp -f webs_scripts/zip_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 	cp -f webs_scripts/zip_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
@@ -146,7 +158,7 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
 endif
-else
+else # autoliveupdate_zip
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/ssl_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 ifeq ($(RTCONFIG_CFGSYNC),y)
@@ -174,7 +186,8 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
 endif
-endif
+endif	#autoliveupdate_zip
+endif	#merlinupdate
 
 	# remove comments, compress whitespace
 	sed 's/#.*//g;s/[ \t]\+/ /g;s/^[ \t]*//;s/[ \t]*$$//;/^$$/d' < rom/etc/services > $(INSTALLDIR)/rom/etc/services
@@ -185,6 +198,10 @@ ifeq ($(RTCONFIG_HTTPS),y)
 	sed 's/#.*//g;s/[ \t]\+/ /g;s/^[ \t]*//;s/[ \t]*$$//;/^$$/d' < rom/etc/openssl.cnf > $(INSTALLDIR)/rom/etc/openssl.cnf
 else
 	rm -f $(INSTALLDIR)/rom/etc/openssl.cnf
+endif
+
+ifneq ($(RTCONFIG_BCMARM),y)
+	rm -f $(INSTALLDIR)/rom/etc/modprobe.conf
 endif
 
 ifeq ($(RTCONFIG_RALINK_RT3883),y)
@@ -223,7 +240,10 @@ ifeq ($(RTCONFIG_GETREALIP),y)
 	mkdir -p $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/getrealip.sh $(INSTALLDIR)/usr/sbin/getrealip.sh
 endif
-
+ifeq ($(RTCONFIG_OPENVPN),y)
+	mkdir -p $(INSTALLDIR)/usr/sbin
+	install -m 0755 apps_scripts/gettunnelip.sh $(INSTALLDIR)/usr/sbin/gettunnelip.sh
+endif
 	install -m 0755 webs_scripts/GoogleDNS_Update.sh $(INSTALLDIR)/usr/sbin
 
 ifeq ($(RTCONFIG_LETSENCRYPT),y)

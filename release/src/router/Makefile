@@ -2846,19 +2846,24 @@ iptables-1.4.x-clean:
 	@rm -f iptables-1.4.x/Makefile
 
 miniupnpd/config.h: shared/version.h
-	cd miniupnpd && ./genconfig.sh --vendorcfg --leasefile
+ifeq ($(RTCONFIG_IGD2),y)
+	cd miniupnpd && ./genconfig.sh --vendorcfg --leasefile $(if $(RTCONFIG_IPV6),--ipv6,) --igd2 --portinuse
+else
+	cd miniupnpd && ./genconfig.sh --vendorcfg --leasefile --portinuse
+endif
 
-miniupnpd: $(IPTABLES) miniupnpd/config.h
+miniupnpd: $(IPTABLES) e2fsprogs miniupnpd/config.h
 	@$(SEP)
-	PKG_CONFIG=false ARCH=$(PLATFORM_ARCH) \
-	$(MAKE) -C $@ -f Makefile.asus \
-		IPTABLESPATH=$(TOP)/$(IPTABLES) \
-		EXTRACFLAGS="-Os $(EXTRACFLAGS) -idirafter$(KERNEL_HEADER_DIR) -ffunction-sections -fdata-sections" \
-		LDFLAGS="$(EXTRALDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(IPTC_LIBDIR)" \
-		LDLIBS="-Wl,--as-needed $(IPTC_LIBS)"
+	cp -f ./shared/version.h miniupnpd$(MUVER)/.
+	PKG_CONFIG=false ARCH=$(PLATFORM) \
+	$(MAKE) -C $@ -f Makefile.merlin $(PARALLEL_BUILD) \
+	    IPTABLESPATH=$(TOP)/$(IPTABLES) \
+	    EXTRACFLAGS="-Os $(EXTRACFLAGS) -idirafter$(KERNEL_HEADER_DIR) -ffunction-sections -fdata-sections -I$(TOP)/e2fsprogs/lib" \
+	    LDFLAGS="$(EXTRALDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(IPTC_LIBDIR) -L$(TOP)/e2fsprogs/lib" \
+	    LDLIBS="-Wl,--as-needed $(IPTC_LIBS) -luuid"
 
 miniupnpd-clean:
-	-@$(MAKE) -C miniupnpd -f Makefile.asus clean
+	-@$(MAKE) -C miniupnpd -f Makefile.merlin clean
 	-@rm miniupnpd/config.h
 
 miniupnpd_1.4: $(IPTABLES) shared/version.h

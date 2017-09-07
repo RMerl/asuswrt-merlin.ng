@@ -1,7 +1,7 @@
-/* $Id: upnpsoap.c,v 1.135 2015/02/10 15:01:24 nanard Exp $ */
+/* $Id: upnpsoap.c,v 1.144 2016/02/12 12:35:03 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2015 Thomas Bernard
+ * (c) 2006-2016 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -30,6 +30,16 @@
 #include "getifstats.h"
 #include "getconnstatus.h"
 #include "upnpurns.h"
+
+/* utility function */
+static int is_numeric(const char * s)
+{
+	while(*s) {
+		if(*s < '0' || *s > '9') return 0;
+		s++;
+	}
+	return 1;
+}
 
 static void
 BuildSendAndCloseSoapResp(struct upnphttp * h,
@@ -65,21 +75,35 @@ BuildSendAndCloseSoapResp(struct upnphttp * h,
 }
 
 static void
-GetConnectionTypeInfo(struct upnphttp * h, const char * action)
+GetConnectionTypeInfo(struct upnphttp * h, const char * action, const char * ns)
 {
+#if 0
 	static const char resp[] =
 		"<u:GetConnectionTypeInfoResponse "
 		"xmlns:u=\"" SERVICE_TYPE_WANIPC "\">"
 		"<NewConnectionType>IP_Routed</NewConnectionType>"
 		"<NewPossibleConnectionTypes>IP_Routed</NewPossibleConnectionTypes>"
 		"</u:GetConnectionTypeInfoResponse>";
-	UNUSED(action);
+#endif
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"<NewConnectionType>IP_Routed</NewConnectionType>"
+		"<NewPossibleConnectionTypes>IP_Routed</NewPossibleConnectionTypes>"
+		"</u:%sResponse>";
+	char body[512];
+	int bodylen;
 
-	BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+	bodylen = snprintf(body, sizeof(body), resp,
+	         action, ns, action);
+	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
+/* maximum value for a UPNP ui4 type variable */
+#define UPNP_UI4_MAX (4294967295ul)
+
 static void
-GetTotalBytesSent(struct upnphttp * h, const char * action)
+GetTotalBytesSent(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -95,13 +119,17 @@ GetTotalBytesSent(struct upnphttp * h, const char * action)
 
 	r = getifstats(ext_if_name, &data);
 	bodylen = snprintf(body, sizeof(body), resp,
-	         action, "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",
+	         action, ns, /* was "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1" */
+#ifdef UPNP_STRICT
+             r<0?0:(data.obytes & UPNP_UI4_MAX), action);
+#else /* UPNP_STRICT */
              r<0?0:data.obytes, action);
+#endif /* UPNP_STRICT */
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetTotalBytesReceived(struct upnphttp * h, const char * action)
+GetTotalBytesReceived(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -116,14 +144,23 @@ GetTotalBytesReceived(struct upnphttp * h, const char * action)
 	struct ifdata data;
 
 	r = getifstats(ext_if_name, &data);
+	/* TotalBytesReceived
+	 * This variable represents the cumulative counter for total number of
+	 * bytes received downstream across all connection service instances on
+	 * WANDevice. The count rolls over to 0 after it reaching the maximum
+	 * value (2^32)-1. */
 	bodylen = snprintf(body, sizeof(body), resp,
-	         action, "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",
+	         action, ns, /* was "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1" */
+#ifdef UPNP_STRICT
+	         r<0?0:(data.ibytes & UPNP_UI4_MAX), action);
+#else /* UPNP_STRICT */
 	         r<0?0:data.ibytes, action);
+#endif /* UPNP_STRICT */
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetTotalPacketsSent(struct upnphttp * h, const char * action)
+GetTotalPacketsSent(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -139,13 +176,17 @@ GetTotalPacketsSent(struct upnphttp * h, const char * action)
 
 	r = getifstats(ext_if_name, &data);
 	bodylen = snprintf(body, sizeof(body), resp,
-	         action, "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",
+	         action, ns,/*"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",*/
+#ifdef UPNP_STRICT
+	         r<0?0:(data.opackets & UPNP_UI4_MAX), action);
+#else /* UPNP_STRICT */
 	         r<0?0:data.opackets, action);
+#endif /* UPNP_STRICT */
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetTotalPacketsReceived(struct upnphttp * h, const char * action)
+GetTotalPacketsReceived(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -161,13 +202,17 @@ GetTotalPacketsReceived(struct upnphttp * h, const char * action)
 
 	r = getifstats(ext_if_name, &data);
 	bodylen = snprintf(body, sizeof(body), resp,
-	         action, "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",
+	         action, ns, /* was "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1" */
+#ifdef UPNP_STRICT
+	         r<0?0:(data.ipackets & UPNP_UI4_MAX), action);
+#else /* UPNP_STRICT */
 	         r<0?0:data.ipackets, action);
+#endif /* UPNP_STRICT */
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetCommonLinkProperties(struct upnphttp * h, const char * action)
+GetCommonLinkProperties(struct upnphttp * h, const char * action, const char * ns)
 {
 	/* WANAccessType : set depending on the hardware :
 	 * DSL, POTS (plain old Telephone service), Cable, Ethernet */
@@ -200,7 +245,7 @@ GetCommonLinkProperties(struct upnphttp * h, const char * action)
 		status = "Down";
 	}
 	bodylen = snprintf(body, sizeof(body), resp,
-	    action, "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",
+	    action, ns, /* was "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1" */
 	    wan_access_type,
 	    upstream_bitrate, downstream_bitrate,
 	    status, action);
@@ -208,7 +253,7 @@ GetCommonLinkProperties(struct upnphttp * h, const char * action)
 }
 
 static void
-GetStatusInfo(struct upnphttp * h, const char * action)
+GetStatusInfo(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
@@ -229,14 +274,15 @@ GetStatusInfo(struct upnphttp * h, const char * action)
 	status = get_wan_connection_status_str(ext_if_name);
 	uptime = (time(NULL) - startup_time);
 	bodylen = snprintf(body, sizeof(body), resp,
-		action, SERVICE_TYPE_WANIPC,
+		action, ns, /*SERVICE_TYPE_WANIPC,*/
 		status, (long)uptime, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetNATRSIPStatus(struct upnphttp * h, const char * action)
+GetNATRSIPStatus(struct upnphttp * h, const char * action, const char * ns)
 {
+#if 0
 	static const char resp[] =
 		"<u:GetNATRSIPStatusResponse "
 		"xmlns:u=\"" SERVICE_TYPE_WANIPC "\">"
@@ -244,6 +290,15 @@ GetNATRSIPStatus(struct upnphttp * h, const char * action)
 		"<NewNATEnabled>1</NewNATEnabled>"
 		"</u:GetNATRSIPStatusResponse>";
 	UNUSED(action);
+#endif
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"<NewRSIPAvailable>0</NewRSIPAvailable>"
+		"<NewNATEnabled>1</NewNATEnabled>"
+		"</u:%sResponse>";
+	char body[512];
+	int bodylen;
 	/* 2.2.9. RSIPAvailable
 	 * This variable indicates if Realm-specific IP (RSIP) is available
 	 * as a feature on the InternetGatewayDevice. RSIP is being defined
@@ -252,11 +307,14 @@ GetNATRSIPStatus(struct upnphttp * h, const char * action)
 	 * applications that otherwise break if NAT is introduced
 	 * (e.g. IPsec-based VPNs).
 	 * A gateway that does not support RSIP should set this variable to 0. */
-	BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+	bodylen = snprintf(body, sizeof(body), resp,
+		action, ns, /*SERVICE_TYPE_WANIPC,*/
+		action);
+	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetExternalIPAddress(struct upnphttp * h, const char * action)
+GetExternalIPAddress(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
@@ -274,6 +332,7 @@ GetExternalIPAddress(struct upnphttp * h, const char * action)
 	if(use_ext_ip_addr)
 	{
 		strncpy(ext_ip_addr, use_ext_ip_addr, INET_ADDRSTRLEN);
+		ext_ip_addr[INET_ADDRSTRLEN - 1] = '\0';
 	}
 	else if(getifaddr(ext_if_name, ext_ip_addr, INET_ADDRSTRLEN, NULL, NULL) < 0)
 	{
@@ -295,7 +354,7 @@ GetExternalIPAddress(struct upnphttp * h, const char * action)
 	}
 #endif
 	bodylen = snprintf(body, sizeof(body), resp,
-	              action, SERVICE_TYPE_WANIPC,
+	              action, ns, /*SERVICE_TYPE_WANIPC,*/
 				  ext_ip_addr, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
@@ -303,14 +362,19 @@ GetExternalIPAddress(struct upnphttp * h, const char * action)
 /* AddPortMapping method of WANIPConnection Service
  * Ignored argument : NewEnabled */
 static void
-AddPortMapping(struct upnphttp * h, const char * action)
+AddPortMapping(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
-	static const char resp[] =
+	/*static const char resp[] =
 		"<u:AddPortMappingResponse "
-		"xmlns:u=\"" SERVICE_TYPE_WANIPC "\"/>";
+		"xmlns:u=\"" SERVICE_TYPE_WANIPC "\"/>";*/
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\"/>";
 
+	char body[512];
+	int bodylen;
 	struct NameValueParserData data;
 	char * int_ip, * int_port, * ext_port, * protocol, * desc;
 	char * leaseduration_str;
@@ -397,6 +461,13 @@ AddPortMapping(struct upnphttp * h, const char * action)
 	eport = (unsigned short)atoi(ext_port);
 	iport = (unsigned short)atoi(int_port);
 
+	if (strcmp(ext_port, "*") == 0 || eport == 0)
+	{
+		ClearNameValueList(&data);
+		SoapError(h, 716, "Wildcard not permited in ExtPort");
+		return;
+	}
+
 	leaseduration = leaseduration_str ? atoi(leaseduration_str) : 0;
 #ifdef IGD_V2
 	/* PortMappingLeaseDuration can be either a value between 1 and
@@ -415,14 +486,6 @@ AddPortMapping(struct upnphttp * h, const char * action)
 	       action, eport, int_ip, iport, protocol, desc, leaseduration,
 	       r_host ? r_host : "NULL");
 
-	/* TODO : be compliant with IGD spec for updating existing port mappings.
-	See "WANIPConnection:1 Service Template Version 1.01" 2.2.20.PortMappingDescription :
-	Overwriting Previous / Existing Port Mappings:
-	If the RemoteHost, ExternalPort, PortMappingProtocol and InternalClient are
-	exactly the same as an existing mapping, the existing mapping values for InternalPort,
-	PortMappingDescription, PortMappingEnabled and PortMappingLeaseDuration are
-	overwritten.
-	*/
 	r = upnp_redirect(r_host, eport, int_ip, iport, protocol, desc, leaseduration);
 
 	ClearNameValueList(&data);
@@ -444,14 +507,21 @@ AddPortMapping(struct upnphttp * h, const char * action)
              ExternalPort must be a wildcard and cannot be a specific port
              value (deprecated in IGD v2)
      * 728 - NoPortMapsAvailable
-             There are not enough free prots available to complete the mapping
+             There are not enough free ports available to complete the mapping
              (added in IGD v2)
 	 * 729 - ConflictWithOtherMechanisms (added in IGD v2) */
 	switch(r)
 	{
 	case 0:	/* success */
-		BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+		bodylen = snprintf(body, sizeof(body), resp,
+		                   action, ns/*SERVICE_TYPE_WANIPC*/);
+		BuildSendAndCloseSoapResp(h, body, bodylen);
 		break;
+	case -4:
+#ifdef IGD_V2
+		SoapError(h, 729, "ConflictWithOtherMechanisms");
+		break;
+#endif /* IGD_V2 */
 	case -2:	/* already redirected */
 	case -3:	/* not permitted */
 		SoapError(h, 718, "ConflictInMappingEntry");
@@ -463,7 +533,7 @@ AddPortMapping(struct upnphttp * h, const char * action)
 
 /* AddAnyPortMapping was added in WANIPConnection v2 */
 static void
-AddAnyPortMapping(struct upnphttp * h, const char * action)
+AddAnyPortMapping(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 	static const char resp[] =
@@ -509,6 +579,11 @@ AddAnyPortMapping(struct upnphttp * h, const char * action)
 
 	eport = (unsigned short)atoi(ext_port);
 	iport = (unsigned short)atoi(int_port);
+	if(iport == 0 || !is_numeric(ext_port)) {
+		ClearNameValueList(&data);
+		SoapError(h, 402, "Invalid Args");
+		return;
+	}
 #ifndef SUPPORT_REMOTEHOST
 #ifdef UPNP_STRICT
 	if (r_host && (strlen(r_host) > 0) && (0 != strcmp(r_host, "*")))
@@ -573,7 +648,7 @@ AddAnyPortMapping(struct upnphttp * h, const char * action)
 	{
 	case 0:	/* success */
 		bodylen = snprintf(body, sizeof(body), resp,
-		              action, SERVICE_TYPE_WANIPC,
+		              action, ns, /*SERVICE_TYPE_WANIPC,*/
 					  eport, action);
 		BuildSendAndCloseSoapResp(h, body, bodylen);
 		break;
@@ -589,7 +664,7 @@ AddAnyPortMapping(struct upnphttp * h, const char * action)
 }
 
 static void
-GetSpecificPortMappingEntry(struct upnphttp * h, const char * action)
+GetSpecificPortMappingEntry(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -639,6 +714,12 @@ GetSpecificPortMappingEntry(struct upnphttp * h, const char * action)
 #endif
 
 	eport = (unsigned short)atoi(ext_port);
+	if(eport == 0)
+	{
+		ClearNameValueList(&data);
+		SoapError(h, 402, "Invalid Args");
+		return;
+	}
 
 	/* TODO : add r_host as an input parameter ...
 	 * We prevent several Port Mapping with same external port
@@ -661,7 +742,7 @@ GetSpecificPortMappingEntry(struct upnphttp * h, const char * action)
 		       r_host ? r_host : "NULL", ext_port, protocol, int_ip,
 		       (unsigned int)iport, desc);
 		bodylen = snprintf(body, sizeof(body), resp,
-				action, SERVICE_TYPE_WANIPC,
+				action, ns/*SERVICE_TYPE_WANIPC*/,
 				(unsigned int)iport, int_ip, desc, leaseduration,
 				action);
 		BuildSendAndCloseSoapResp(h, body, bodylen);
@@ -671,15 +752,21 @@ GetSpecificPortMappingEntry(struct upnphttp * h, const char * action)
 }
 
 static void
-DeletePortMapping(struct upnphttp * h, const char * action)
+DeletePortMapping(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
-	static const char resp[] =
+	/*static const char resp[] =
 		"<u:DeletePortMappingResponse "
 		"xmlns:u=\"" SERVICE_TYPE_WANIPC "\">"
-		"</u:DeletePortMappingResponse>";
+		"</u:DeletePortMappingResponse>";*/
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"</u:%sResponse>";
 
+	char body[512];
+	int bodylen;
 	struct NameValueParserData data;
 	const char * ext_port, * protocol;
 	unsigned short eport;
@@ -716,6 +803,12 @@ DeletePortMapping(struct upnphttp * h, const char * action)
 #endif /* SUPPORT_REMOTEHOST */
 
 	eport = (unsigned short)atoi(ext_port);
+	if(eport == 0)
+	{
+		ClearNameValueList(&data);
+		SoapError(h, 402, "Invalid Args");
+		return;
+	}
 
 	syslog(LOG_INFO, "%s: external port: %hu, protocol: %s",
 		action, eport, protocol);
@@ -757,7 +850,9 @@ DeletePortMapping(struct upnphttp * h, const char * action)
 	}
 	else
 	{
-		BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+		bodylen = snprintf(body, sizeof(body), resp,
+		                   action, ns, action);
+		BuildSendAndCloseSoapResp(h, body, bodylen);
 	}
 
 	ClearNameValueList(&data);
@@ -765,13 +860,19 @@ DeletePortMapping(struct upnphttp * h, const char * action)
 
 /* DeletePortMappingRange was added in IGD spec v2 */
 static void
-DeletePortMappingRange(struct upnphttp * h, const char * action)
+DeletePortMappingRange(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r = -1;
-	static const char resp[] =
+	/*static const char resp[] =
 		"<u:DeletePortMappingRangeResponse "
 		"xmlns:u=\"" SERVICE_TYPE_WANIPC "\">"
-		"</u:DeletePortMappingRangeResponse>";
+		"</u:DeletePortMappingRangeResponse>";*/
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"</u:%sResponse>";
+	char body[512];
+	int bodylen;
 	struct NameValueParserData data;
 	const char * protocol;
 	const char * startport_s, * endport_s;
@@ -779,14 +880,14 @@ DeletePortMappingRange(struct upnphttp * h, const char * action)
 	/*int manage;*/
 	unsigned short * port_list;
 	unsigned int i, number = 0;
-	UNUSED(action);
 
 	ParseNameValue(h->req_buf + h->req_contentoff, h->req_contentlen, &data);
 	startport_s = GetValueFromNameValueList(&data, "NewStartPort");
 	endport_s = GetValueFromNameValueList(&data, "NewEndPort");
 	protocol = GetValueFromNameValueList(&data, "NewProtocol");
 	/*manage = atoi(GetValueFromNameValueList(&data, "NewManage"));*/
-	if(startport_s == NULL || endport_s == NULL || protocol == NULL) {
+	if(startport_s == NULL || endport_s == NULL || protocol == NULL ||
+	   !is_numeric(startport_s) || !is_numeric(endport_s)) {
 		SoapError(h, 402, "Invalid Args");
 		ClearNameValueList(&data);
 		return;
@@ -815,6 +916,7 @@ DeletePortMappingRange(struct upnphttp * h, const char * action)
 	{
 		SoapError(h, 730, "PortMappingNotFound");
 		ClearNameValueList(&data);
+		free(port_list);
 		return;
 	}
 
@@ -825,13 +927,15 @@ DeletePortMappingRange(struct upnphttp * h, const char * action)
 		       action, port_list[i], protocol, r < 0 ? "failed" : "ok");
 	}
 	free(port_list);
-	BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+	bodylen = snprintf(body, sizeof(body), resp,
+	                   action, ns, action);
+	BuildSendAndCloseSoapResp(h, body, bodylen);
 
 	ClearNameValueList(&data);
 }
 
 static void
-GetGenericPortMappingEntry(struct upnphttp * h, const char * action)
+GetGenericPortMappingEntry(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -852,7 +956,7 @@ GetGenericPortMappingEntry(struct upnphttp * h, const char * action)
 	unsigned short eport, iport;
 	const char * m_index;
 	char * endptr;
-	char protocol[4], iaddr[32];
+	char protocol[8], iaddr[32];
 	char desc[64];
 	char rhost[40];
 	unsigned int leaseduration = 0;
@@ -902,7 +1006,7 @@ GetGenericPortMappingEntry(struct upnphttp * h, const char * action)
 		int bodylen;
 		char body[2048];
 		bodylen = snprintf(body, sizeof(body), resp,
-			action, SERVICE_TYPE_WANIPC, rhost,
+			action, ns, /*SERVICE_TYPE_WANIPC,*/ rhost,
 			(unsigned int)eport, protocol, (unsigned int)iport, iaddr, desc,
 		    leaseduration, action);
 		BuildSendAndCloseSoapResp(h, body, bodylen);
@@ -913,7 +1017,7 @@ GetGenericPortMappingEntry(struct upnphttp * h, const char * action)
 
 /* GetListOfPortMappings was added in the IGD v2 specification */
 static void
-GetListOfPortMappings(struct upnphttp * h, const char * action)
+GetListOfPortMappings(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp_start[] =
 		"<u:%sResponse "
@@ -971,7 +1075,8 @@ GetListOfPortMappings(struct upnphttp * h, const char * action)
 	/*manage_s = GetValueFromNameValueList(&data, "NewManage");*/
 	number_s = GetValueFromNameValueList(&data, "NewNumberOfPorts");
 	if(startport_s == NULL || endport_s == NULL || protocol == NULL ||
-	   number_s == NULL) {
+	   number_s == NULL || !is_numeric(number_s) ||
+	   !is_numeric(startport_s) || !is_numeric(endport_s)) {
 		SoapError(h, 402, "Invalid Args");
 		ClearNameValueList(&data);
 		return;
@@ -1017,7 +1122,7 @@ http://www.upnp.org/schemas/gw/WANIPConnection-v2.xsd">
 		return;
 	}
 	bodylen = snprintf(body, bodyalloc, resp_start,
-	              action, SERVICE_TYPE_WANIPC);
+	              action, ns/*SERVICE_TYPE_WANIPC*/);
 	if(bodylen < 0)
 	{
 		SoapError(h, 501, "ActionFailed");
@@ -1091,12 +1196,18 @@ http://www.upnp.org/schemas/gw/WANIPConnection-v2.xsd">
 
 #ifdef ENABLE_L3F_SERVICE
 static void
-SetDefaultConnectionService(struct upnphttp * h, const char * action)
+SetDefaultConnectionService(struct upnphttp * h, const char * action, const char * ns)
 {
-	static const char resp[] =
+	/*static const char resp[] =
 		"<u:SetDefaultConnectionServiceResponse "
 		"xmlns:u=\"urn:schemas-upnp-org:service:Layer3Forwarding:1\">"
-		"</u:SetDefaultConnectionServiceResponse>";
+		"</u:SetDefaultConnectionServiceResponse>";*/
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"</u:%sResponse>";
+	char body[512];
+	int bodylen;
 	struct NameValueParserData data;
 	char * p;
 	ParseNameValue(h->req_buf + h->req_contentoff, h->req_contentlen, &data);
@@ -1116,7 +1227,9 @@ SetDefaultConnectionService(struct upnphttp * h, const char * action)
 #endif
 		{
 			syslog(LOG_INFO, "%s(%s) : Ignored", action, p);
-			BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+			bodylen = snprintf(body, sizeof(body), resp,
+			                   action, ns, action);
+			BuildSendAndCloseSoapResp(h, body, bodylen);
 		}
 	} else {
 		/* missing argument */
@@ -1126,12 +1239,16 @@ SetDefaultConnectionService(struct upnphttp * h, const char * action)
 }
 
 static void
-GetDefaultConnectionService(struct upnphttp * h, const char * action)
+GetDefaultConnectionService(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
-		"xmlns:u=\"urn:schemas-upnp-org:service:Layer3Forwarding:1\">"
+		"xmlns:u=\"%s\">"
+#ifdef IGD_V2
+		"<NewDefaultConnectionService>%s:WANConnectionDevice:2,"
+#else
 		"<NewDefaultConnectionService>%s:WANConnectionDevice:1,"
+#endif
 		SERVICE_ID_WANIPC "</NewDefaultConnectionService>"
 		"</u:%sResponse>";
 	/* example from UPnP_IGD_Layer3Forwarding 1.0.pdf :
@@ -1140,21 +1257,23 @@ GetDefaultConnectionService(struct upnphttp * h, const char * action)
 	char body[1024];
 	int bodylen;
 
+	/* namespace : urn:schemas-upnp-org:service:Layer3Forwarding:1 */
 	bodylen = snprintf(body, sizeof(body), resp,
-	                   action, uuidvalue_wcd, action);
+	                   action, ns, uuidvalue_wcd, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 #endif
 
 /* Added for compliance with WANIPConnection v2 */
 static void
-SetConnectionType(struct upnphttp * h, const char * action)
+SetConnectionType(struct upnphttp * h, const char * action, const char * ns)
 {
 #ifdef UPNP_STRICT
 	const char * connection_type;
 #endif /* UPNP_STRICT */
 	struct NameValueParserData data;
 	UNUSED(action);
+	UNUSED(ns);
 
 	ParseNameValue(h->req_buf + h->req_contentoff, h->req_contentlen, &data);
 #ifdef UPNP_STRICT
@@ -1173,17 +1292,19 @@ SetConnectionType(struct upnphttp * h, const char * action)
 
 /* Added for compliance with WANIPConnection v2 */
 static void
-RequestConnection(struct upnphttp * h, const char * action)
+RequestConnection(struct upnphttp * h, const char * action, const char * ns)
 {
 	UNUSED(action);
+	UNUSED(ns);
 	SoapError(h, 606, "Action not authorized");
 }
 
 /* Added for compliance with WANIPConnection v2 */
 static void
-ForceTermination(struct upnphttp * h, const char * action)
+ForceTermination(struct upnphttp * h, const char * action, const char * ns)
 {
 	UNUSED(action);
+	UNUSED(ns);
 	SoapError(h, 606, "Action not authorized");
 }
 
@@ -1196,7 +1317,7 @@ QueryStateVariable remains useful as a limited test tool but may not be
 part of some future versions of UPnP.
 */
 static void
-QueryStateVariable(struct upnphttp * h, const char * action)
+QueryStateVariable(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
         "<u:%sResponse "
@@ -1226,7 +1347,7 @@ QueryStateVariable(struct upnphttp * h, const char * action)
 
 		status = get_wan_connection_status_str(ext_if_name);
 		bodylen = snprintf(body, sizeof(body), resp,
-                           action, "urn:schemas-upnp-org:control-1-0",
+                           action, ns,/*"urn:schemas-upnp-org:control-1-0",*/
 		                   status, action);
 		BuildSendAndCloseSoapResp(h, body, bodylen);
 	}
@@ -1249,7 +1370,7 @@ QueryStateVariable(struct upnphttp * h, const char * action)
 		snprintf(strn, sizeof(strn), "%i",
 		         upnp_get_portmapping_number_of_entries());
 		bodylen = snprintf(body, sizeof(body), resp,
-                           action, "urn:schemas-upnp-org:control-1-0",
+                           action, ns,/*"urn:schemas-upnp-org:control-1-0",*/
 		                   strn, action);
 		BuildSendAndCloseSoapResp(h, body, bodylen);
 	}
@@ -1268,7 +1389,7 @@ QueryStateVariable(struct upnphttp * h, const char * action)
 #endif
 /* WANIPv6FirewallControl actions */
 static void
-GetFirewallStatus(struct upnphttp * h, const char * action)
+GetFirewallStatus(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
@@ -1281,7 +1402,7 @@ GetFirewallStatus(struct upnphttp * h, const char * action)
 	int bodylen;
 
 	bodylen = snprintf(body, sizeof(body), resp,
-		action, "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1",
+		action, ns, /*"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1",*/
 	    GETFLAG(IPV6FCFWDISABLEDMASK) ? 0 : 1,
 	    GETFLAG(IPV6FCINBOUNDDISALLOWEDMASK) ? 0 : 1,
 	    action);
@@ -1425,7 +1546,7 @@ PinholeVerification(struct upnphttp * h, char * int_ip, unsigned short int_port)
 }
 
 static void
-AddPinhole(struct upnphttp * h, const char * action)
+AddPinhole(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 	static const char resp[] =
@@ -1563,7 +1684,7 @@ AddPinhole(struct upnphttp * h, const char * action)
 		case 1:	        /* success */
 			bodylen = snprintf(body, sizeof(body),
 			                   resp, action,
-			                   "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1",
+			                   ns/*"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1"*/,
 			                   uid, action);
 			BuildSendAndCloseSoapResp(h, body, bodylen);
 			break;
@@ -1587,12 +1708,20 @@ clear_and_exit:
 }
 
 static void
-UpdatePinhole(struct upnphttp * h, const char * action)
+UpdatePinhole(struct upnphttp * h, const char * action, const char * ns)
 {
+#if 0
 	static const char resp[] =
 		"<u:UpdatePinholeResponse "
 		"xmlns:u=\"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1\">"
 		"</u:UpdatePinholeResponse>";
+#endif
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"</u:%sResponse>";
+	char body[512];
+	int bodylen;
 	struct NameValueParserData data;
 	const char * uid_str, * leaseTime;
 	char iaddr[INET6_ADDRSTRLEN];
@@ -1648,12 +1777,15 @@ UpdatePinhole(struct upnphttp * h, const char * action)
 		SoapError(h, 704, "NoSuchEntry");
 	else if(n < 0)
 		SoapError(h, 501, "ActionFailed");
-	else
-		BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+	else {
+		bodylen = snprintf(body, sizeof(body), resp,
+		                   action, ns, action);
+		BuildSendAndCloseSoapResp(h, body, bodylen);
+	}
 }
 
 static void
-GetOutboundPinholeTimeout(struct upnphttp * h, const char * action)
+GetOutboundPinholeTimeout(struct upnphttp * h, const char * action, const char * ns)
 {
 	int r;
 
@@ -1667,7 +1799,8 @@ GetOutboundPinholeTimeout(struct upnphttp * h, const char * action)
 	int bodylen;
 	struct NameValueParserData data;
 	char * int_ip, * int_port, * rem_host, * rem_port, * protocol;
-	int opt=0, proto=0;
+	int opt=0;
+	/*int proto=0;*/
 	unsigned short iport, rport;
 
 	if (GETFLAG(IPV6FCFWDISABLEDMASK))
@@ -1685,7 +1818,7 @@ GetOutboundPinholeTimeout(struct upnphttp * h, const char * action)
 
 	rport = (unsigned short)atoi(rem_port);
 	iport = (unsigned short)atoi(int_port);
-	proto = atoi(protocol);
+	/*proto = atoi(protocol);*/
 
 	syslog(LOG_INFO, "%s: retrieving timeout for outbound pinhole from [%s]:%hu to [%s]:%hu protocol %s", action, int_ip, iport,rem_host, rport, protocol);
 
@@ -1696,7 +1829,7 @@ GetOutboundPinholeTimeout(struct upnphttp * h, const char * action)
 	{
 		case 1:	/* success */
 			bodylen = snprintf(body, sizeof(body), resp,
-			                   action, "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1",
+			                   action, ns/*"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1"*/,
 			                   opt, action);
 			BuildSendAndCloseSoapResp(h, body, bodylen);
 			break;
@@ -1710,14 +1843,21 @@ GetOutboundPinholeTimeout(struct upnphttp * h, const char * action)
 }
 
 static void
-DeletePinhole(struct upnphttp * h, const char * action)
+DeletePinhole(struct upnphttp * h, const char * action, const char * ns)
 {
 	int n;
-
+#if 0
 	static const char resp[] =
 		"<u:DeletePinholeResponse "
 		"xmlns:u=\"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1\">"
 		"</u:DeletePinholeResponse>";
+#endif
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"</u:%sResponse>";
+	char body[512];
+	int bodylen;
 
 	struct NameValueParserData data;
 	const char * uid_str;
@@ -1772,13 +1912,15 @@ DeletePinhole(struct upnphttp * h, const char * action)
 		SoapError(h, 501, "ActionFailed");
 		return;
 	}
-	syslog(LOG_DEBUG, "%s: (inbound) pinhole with ID %d successfully removed",
+	syslog(LOG_INFO, "%s: (inbound) pinhole with ID %d successfully removed",
 	       action, uid);
-	BuildSendAndCloseSoapResp(h, resp, sizeof(resp)-1);
+	bodylen = snprintf(body, sizeof(body), resp,
+	                   action, ns, action);
+	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-CheckPinholeWorking(struct upnphttp * h, const char * action)
+CheckPinholeWorking(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
@@ -1827,7 +1969,7 @@ CheckPinholeWorking(struct upnphttp * h, const char * action)
 			return;
 		}
 		bodylen = snprintf(body, sizeof(body), resp,
-						action, "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1",
+						action, ns/*"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1"*/,
 						1, action);
 		BuildSendAndCloseSoapResp(h, body, bodylen);
 	}
@@ -1838,7 +1980,7 @@ CheckPinholeWorking(struct upnphttp * h, const char * action)
 }
 
 static void
-GetPinholePackets(struct upnphttp * h, const char * action)
+GetPinholePackets(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
@@ -1891,7 +2033,7 @@ GetPinholePackets(struct upnphttp * h, const char * action)
 #endif
 
 	bodylen = snprintf(body, sizeof(body), resp,
-			action, "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1",
+			action, ns/*"urn:schemas-upnp-org:service:WANIPv6FirewallControl:1"*/,
 			packets, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
@@ -1899,12 +2041,12 @@ GetPinholePackets(struct upnphttp * h, const char * action)
 
 #ifdef ENABLE_DP_SERVICE
 static void
-SendSetupMessage(struct upnphttp * h, const char * action)
+SendSetupMessage(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
 		"xmlns:u=\"%s\">"
-		"<NewOutMessage>%s</NewOutMessage>"
+		"<OutMessage>%s</OutMessage>"
 		"</u:%sResponse>";
 	char body[1024];
 	int bodylen;
@@ -1914,8 +2056,8 @@ SendSetupMessage(struct upnphttp * h, const char * action)
 	const char * OutMessage = "";	/* base64 */
 
 	ParseNameValue(h->req_buf + h->req_contentoff, h->req_contentlen, &data);
-	ProtocolType = GetValueFromNameValueList(&data, "NewProtocolType");	/* string */
-	InMessage = GetValueFromNameValueList(&data, "NewInMessage");	/* base64 */
+	ProtocolType = GetValueFromNameValueList(&data, "ProtocolType");	/* string */
+	InMessage = GetValueFromNameValueList(&data, "InMessage");	/* base64 */
 
 	if(ProtocolType == NULL || InMessage == NULL)
 	{
@@ -1933,19 +2075,19 @@ SendSetupMessage(struct upnphttp * h, const char * action)
 	/* TODO : put here code for WPS */
 
 	bodylen = snprintf(body, sizeof(body), resp,
-	                   action, "urn:schemas-upnp-org:service:DeviceProtection:1",
+	                   action, ns/*"urn:schemas-upnp-org:service:DeviceProtection:1"*/,
 	                   OutMessage, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 	ClearNameValueList(&data);
 }
 
 static void
-GetSupportedProtocols(struct upnphttp * h, const char * action)
+GetSupportedProtocols(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
 		"xmlns:u=\"%s\">"
-		"<NewProtocolList>%s</NewProtocolList>"
+		"<ProtocolList><![CDATA[%s]]></ProtocolList>"
 		"</u:%sResponse>";
 	char body[1024];
 	int bodylen;
@@ -1960,18 +2102,18 @@ GetSupportedProtocols(struct upnphttp * h, const char * action)
 		"</SupportedProtocols>";
 
 	bodylen = snprintf(body, sizeof(body), resp,
-	                   action, "urn:schemas-upnp-org:service:DeviceProtection:1",
+	                   action, ns/*"urn:schemas-upnp-org:service:DeviceProtection:1"*/,
 	                   ProtocolList, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
 
 static void
-GetAssignedRoles(struct upnphttp * h, const char * action)
+GetAssignedRoles(struct upnphttp * h, const char * action, const char * ns)
 {
 	static const char resp[] =
 		"<u:%sResponse "
 		"xmlns:u=\"%s\">"
-		"<NewRoleList>%s</NewRoleList>"
+		"<RoleList>%s</RoleList>"
 		"</u:%sResponse>";
 	char body[1024];
 	int bodylen;
@@ -1990,7 +2132,7 @@ GetAssignedRoles(struct upnphttp * h, const char * action)
 #endif
 
 	bodylen = snprintf(body, sizeof(body), resp,
-	                   action, "urn:schemas-upnp-org:service:DeviceProtection:1",
+	                   action, ns/*"urn:schemas-upnp-org:service:DeviceProtection:1"*/,
 	                   RoleList, action);
 	BuildSendAndCloseSoapResp(h, body, bodylen);
 }
@@ -2011,7 +2153,7 @@ GetAssignedRoles(struct upnphttp * h, const char * action)
 static const struct
 {
 	const char * methodName;
-	void (*methodImpl)(struct upnphttp *, const char *);
+	void (*methodImpl)(struct upnphttp *, const char *, const char *);
 }
 soapMethods[] =
 {
@@ -2068,11 +2210,15 @@ ExecuteSoapAction(struct upnphttp * h, const char * action, int n)
 	char * p;
 	char * p2;
 	int i, len, methodlen;
+	char namespace[256];
 
 	/* SoapAction example :
 	 * urn:schemas-upnp-org:service:WANIPConnection:1#GetStatusInfo */
 	p = strchr(action, '#');
 	if(p && (p - action) < n) {
+		for(i = 0; i < ((int)sizeof(namespace) - 1) && (action + i) < p; i++)
+			namespace[i] = action[i];
+		namespace[i] = '\0';
 		p++;
 		p2 = strchr(p, '"');
 		if(p2 && (p2 - action) <= n)
@@ -2085,14 +2231,14 @@ ExecuteSoapAction(struct upnphttp * h, const char * action, int n)
 			len = strlen(soapMethods[i].methodName);
 			if((len == methodlen) && memcmp(p, soapMethods[i].methodName, len) == 0) {
 #ifdef DEBUG
-				syslog(LOG_DEBUG, "Remote Call of SoapMethod '%s'",
-				       soapMethods[i].methodName);
+				syslog(LOG_DEBUG, "Remote Call of SoapMethod '%s' %s",
+				       soapMethods[i].methodName, namespace);
 #endif /* DEBUG */
-				soapMethods[i].methodImpl(h, soapMethods[i].methodName);
+				soapMethods[i].methodImpl(h, soapMethods[i].methodName, namespace);
 				return;
 			}
 		}
-		syslog(LOG_NOTICE, "SoapMethod: Unknown: %.*s", methodlen, p);
+		syslog(LOG_NOTICE, "SoapMethod: Unknown: %.*s %s", methodlen, p, namespace);
 	} else {
 		syslog(LOG_NOTICE, "cannot parse SoapAction");
 	}

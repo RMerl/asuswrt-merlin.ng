@@ -23,9 +23,9 @@
 #include "getifaddr.h"
 #if defined(USE_GETIFADDRS) || defined(ENABLE_IPV6) || defined(ENABLE_PCP)
 #include <ifaddrs.h>
+#endif
 #if defined(BCMARM)
 #include "ifaddrs.c"
-#endif
 #endif
 
 int
@@ -50,6 +50,7 @@ getifaddr(const char * ifname, char * buf, int len,
 		return -1;
 	}
 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+	ifr.ifr_name[IFNAMSIZ-1] = '\0';
 	if(ioctl(s, SIOCGIFFLAGS, &ifr, &ifrlen) < 0)
 	{
 		syslog(LOG_DEBUG, "ioctl(s, SIOCGIFFLAGS, ...): %m");

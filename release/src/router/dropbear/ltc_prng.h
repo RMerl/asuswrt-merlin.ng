@@ -4,7 +4,7 @@
 #include "options.h"
 #include "includes.h"
 
-#if DROPBEAR_LTC_PRNG
+#ifdef DROPBEAR_LTC_PRNG
 
 extern const struct ltc_prng_descriptor dropbear_prng_desc;
 

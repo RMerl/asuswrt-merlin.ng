@@ -48,7 +48,7 @@ void connect_set_writequeue(struct dropbear_progress_connection *c, struct Queue
 void packet_queue_to_iovec(struct Queue *queue, struct iovec *iov, unsigned int *iov_count);
 void packet_queue_consume(struct Queue *queue, ssize_t written);
 
-#if DROPBEAR_SERVER_TCP_FAST_OPEN
+#ifdef DROPBEAR_SERVER_TCP_FAST_OPEN
 /* Try for any Linux builds, will fall back if the kernel doesn't support it */
 void set_listen_fast_open(int sock);
 /* Define values which may be supported by the kernel even if the libc is too old */

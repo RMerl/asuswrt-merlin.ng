@@ -53,7 +53,7 @@ static void connect_try_next(struct dropbear_progress_connection *c) {
 	struct addrinfo *r;
 	int res = 0;
 	int fastopen = 0;
-#if DROPBEAR_CLIENT_TCP_FAST_OPEN
+#ifdef DROPBEAR_CLIENT_TCP_FAST_OPEN
 	struct msghdr message;
 #endif
 
@@ -70,7 +70,7 @@ static void connect_try_next(struct dropbear_progress_connection *c) {
 		set_sock_nodelay(c->sock);
 		setnonblocking(c->sock);
 
-#if DROPBEAR_CLIENT_TCP_FAST_OPEN
+#ifdef DROPBEAR_CLIENT_TCP_FAST_OPEN
 		fastopen = (c->writequeue != NULL);
 
 		if (fastopen) {
@@ -290,7 +290,7 @@ void set_sock_nodelay(int sock) {
 	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (void*)&val, sizeof(val));
 }
 
-#if DROPBEAR_SERVER_TCP_FAST_OPEN
+#ifdef DROPBEAR_SERVER_TCP_FAST_OPEN
 void set_listen_fast_open(int sock) {
 	int qlen = MAX(MAX_UNAUTH_PER_IP, 5);
 	if (setsockopt(sock, SOL_TCP, TCP_FASTOPEN, &qlen, sizeof(qlen)) != 0) {

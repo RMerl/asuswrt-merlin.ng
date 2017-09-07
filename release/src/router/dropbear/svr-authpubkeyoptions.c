@@ -47,7 +47,7 @@
 #include "signkey.h"
 #include "auth.h"
 
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
+#ifdef ENABLE_SVR_PUBKEY_OPTIONS
 
 /* Returns 1 if pubkey allows agent forwarding,
  * 0 otherwise */
@@ -95,6 +95,7 @@ void svr_pubkey_set_forced_command(struct ChanSess *chansess) {
 		if (chansess->cmd) {
 			/* original_command takes ownership */
 			chansess->original_command = chansess->cmd;
+			chansess->cmd = NULL;
 		} else {
 			chansess->original_command = m_strdup("");
 		}
@@ -108,6 +109,9 @@ void svr_pubkey_set_forced_command(struct ChanSess *chansess) {
 /* Free potential public key options */
 void svr_pubkey_options_cleanup() {
 	if (ses.authstate.pubkey_options) {
+		if (ses.authstate.pubkey_options->forced_command) {
+			m_free(ses.authstate.pubkey_options->forced_command);
+		}
 		m_free(ses.authstate.pubkey_options);
 		ses.authstate.pubkey_options = NULL;
 	}
@@ -143,14 +147,14 @@ int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filena
 			ses.authstate.pubkey_options->no_port_forwarding_flag = 1;
 			goto next_option;
 		}
-#if DROPBEAR_SVR_AGENTFWD
+#ifdef ENABLE_SVR_AGENTFWD
 		if (match_option(options_buf, "no-agent-forwarding") == DROPBEAR_SUCCESS) {
 			dropbear_log(LOG_WARNING, "Agent forwarding disabled.");
 			ses.authstate.pubkey_options->no_agent_forwarding_flag = 1;
 			goto next_option;
 		}
 #endif
-#if DROPBEAR_X11FWD
+#ifdef ENABLE_X11FWD
 		if (match_option(options_buf, "no-X11-forwarding") == DROPBEAR_SUCCESS) {
 			dropbear_log(LOG_WARNING, "X11 forwarding disabled.");
 			ses.authstate.pubkey_options->no_x11_forwarding_flag = 1;
@@ -200,8 +204,7 @@ next_option:
 
 bad_option:
 	ret = DROPBEAR_FAILURE;
-	m_free(ses.authstate.pubkey_options);
-	ses.authstate.pubkey_options = NULL;
+	svr_pubkey_options_cleanup();
 	dropbear_log(LOG_WARNING, "Bad public key options at %s:%d", filename, line_num);
 
 end:

@@ -1,3 +1,28 @@
+2017.75 - 18 May 2017
+
+- Security: Fix double-free in server TCP listener cleanup
+  A double-free in the server could be triggered by an authenticated user if
+  dropbear is running with -a (Allow connections to forwarded ports from any host)
+  This could potentially allow arbitrary code execution as root by an authenticated user.
+  Affects versions 2013.56 to 2016.74. Thanks to Mark Shepard for reporting the crash.
+
+- Security: Fix information disclosure with ~/.ssh/authorized_keys symlink.
+  Dropbear parsed authorized_keys as root, even if it were a symlink. The fix
+  is to switch to user permissions when opening authorized_keys
+
+  A user could symlink their ~/.ssh/authorized_keys to a root-owned file they
+  couldn't normally read. If they managed to get that file to contain valid
+  authorized_keys with command= options it might be possible to read other
+  contents of that file.
+  This information disclosure is to an already authenticated user.
+  Thanks to Jann Horn of Google Project Zero for reporting this.
+
+- Generate hostkeys with dropbearkey atomically and flush to disk with fsync
+  Thanks to Andrei Gherzan for a patch
+
+- Fix out of tree builds with bundled libtom
+  Thanks to Henrik Nordström and Peter Krefting for patches.
+
 2016.74 - 21 July 2016
 
 - Security: Message printout was vulnerable to format string injection.

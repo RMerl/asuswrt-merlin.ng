@@ -91,10 +91,6 @@ if 0 disables keepalives. If no response is received for 3 consecutive keepalive
 .B \-I \fIidle_timeout
 Disconnect the session if no traffic is transmitted or received for \fIidle_timeout\fR seconds.
 .TP
-.B \-c \fIforced_command
-Disregard the command provided by the user and always run \fIforced_command\fR. This also
-overrides any authorized_keys command= option.
-.TP
 .B \-V
 Print the version
 
@@ -133,7 +129,6 @@ same functionality with other means even if no-pty is set.
 .TP
 .B command=\fR"\fIforced_command\fR"
 Disregard the command provided by the user and always run \fIforced_command\fR.
-The -c command line option overrides this.
 
 The authorized_keys file and its containing ~/.ssh directory must only be
 writable by the user, otherwise Dropbear will not allow a login using public

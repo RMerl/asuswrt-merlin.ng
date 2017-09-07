@@ -24,7 +24,7 @@
 
 #include "includes.h"
 
-#if DROPBEAR_CLI_AGENTFWD
+#ifdef ENABLE_CLI_AGENTFWD
 
 #include "agentfwd.h"
 #include "session.h"

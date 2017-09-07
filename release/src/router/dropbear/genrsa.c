@@ -31,7 +31,7 @@
 
 #define RSA_E 65537
 
-#if DROPBEAR_RSA
+#ifdef DROPBEAR_RSA
 
 static void getrsaprime(mp_int* prime, mp_int *primeminus, 
 		mp_int* rsa_e, unsigned int size_bytes);

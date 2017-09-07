@@ -41,7 +41,7 @@ void svr_auth_password(void);
 void svr_auth_pubkey(void);
 void svr_auth_pam(void);
 
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
+#ifdef ENABLE_SVR_PUBKEY_OPTIONS
 int svr_pubkey_allows_agentfwd(void);
 int svr_pubkey_allows_tcpfwd(void);
 int svr_pubkey_allows_x11fwd(void);
@@ -119,12 +119,12 @@ struct AuthState {
 	char *pw_shell;
 	char *pw_name;
 	char *pw_passwd;
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
+#ifdef ENABLE_SVR_PUBKEY_OPTIONS
 	struct PubKeyOptions* pubkey_options;
 #endif
 };
 
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
+#ifdef ENABLE_SVR_PUBKEY_OPTIONS
 struct PubKeyOptions;
 struct PubKeyOptions {
 	/* Flags */

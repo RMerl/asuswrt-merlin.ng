@@ -35,13 +35,13 @@
 static void cli_dropbear_exit(int exitcode, const char* format, va_list param) ATTRIB_NORETURN;
 static void cli_dropbear_log(int priority, const char* format, va_list param);
 
-#if DROPBEAR_CLI_PROXYCMD
+#ifdef ENABLE_CLI_PROXYCMD
 static void cli_proxy_cmd(int *sock_in, int *sock_out, pid_t *pid_out);
 static void kill_proxy_sighandler(int signo);
 #endif
 
-#if defined(DBMULTI_dbclient) || !DROPBEAR_MULTI
-#if defined(DBMULTI_dbclient) && DROPBEAR_MULTI
+#if defined(DBMULTI_dbclient) || !defined(DROPBEAR_MULTI)
+#if defined(DBMULTI_dbclient) && defined(DROPBEAR_MULTI)
 int cli_main(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
@@ -74,7 +74,7 @@ int main(int argc, char ** argv) {
 	}
 
 	pid_t proxy_cmd_pid = 0;
-#if DROPBEAR_CLI_PROXYCMD
+#ifdef ENABLE_CLI_PROXYCMD
 	if (cli_opts.proxycmd) {
 		cli_proxy_cmd(&sock_in, &sock_out, &proxy_cmd_pid);
 		m_free(cli_opts.proxycmd);
@@ -151,7 +151,7 @@ static void exec_proxy_cmd(void *user_data_cmd) {
 	dropbear_exit("Failed to run '%s'\n", cmd);
 }
 
-#if DROPBEAR_CLI_PROXYCMD
+#ifdef ENABLE_CLI_PROXYCMD
 static void cli_proxy_cmd(int *sock_in, int *sock_out, pid_t *pid_out) {
 	char * ex_cmd = NULL;
 	size_t ex_cmdlen;
@@ -176,4 +176,4 @@ static void kill_proxy_sighandler(int UNUSED(signo)) {
 	kill_proxy_command();
 	_exit(1);
 }
-#endif /* DROPBEAR_CLI_PROXYCMD */
+#endif /* ENABLE_CLI_PROXYCMD */

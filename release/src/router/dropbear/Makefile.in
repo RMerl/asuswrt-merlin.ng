@@ -24,10 +24,6 @@ CFLAGS+=-I$(srcdir)/libtomcrypt/src/headers/
 LIBTOM_LIBS=$(STATIC_LTC) $(STATIC_LTM) 
 endif
 
-ifneq ($(wildcard localoptions.h),)
-CFLAGS+=-DLOCALOPTIONS_H_EXISTS
-endif
-
 COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		dss.o bignum.o \
 		signkey.o rsa.o dbrandom.o \
@@ -79,8 +75,6 @@ datarootdir = @datarootdir@
 bindir=@bindir@
 sbindir=@sbindir@
 mandir=@mandir@
-
-.DELETE_ON_ERROR:
 
 CC=@CC@
 AR=@AR@
@@ -161,6 +155,7 @@ inst_%: %
 
 inst_dropbearmulti: $(addprefix insmulti, $(PROGRAMS)) 
 
+
 # for some reason the rule further down doesn't like $($@objs) as a prereq.
 dropbear: $(dropbearobjs)
 dbclient: $(dbclientobjs)
@@ -200,18 +195,18 @@ link%:
 	-ln -s dropbearmulti$(EXEEXT) $*$(EXEEXT)
 
 $(STATIC_LTC): options.h
-	$(MAKE) -C libtomcrypt
+	cd libtomcrypt && $(MAKE)
 
 $(STATIC_LTM): options.h
-	$(MAKE) -C libtommath
+	cd libtommath && $(MAKE)
 
 .PHONY : clean sizes thisclean distclean tidy ltc-clean ltm-clean
 
 ltc-clean:
-	$(MAKE) -C libtomcrypt clean
+	cd libtomcrypt && $(MAKE) clean
 
 ltm-clean:
-	$(MAKE) -C libtommath clean
+	cd libtommath && $(MAKE) clean
 
 sizes: dropbear
 	objdump -t dropbear|grep ".text"|cut -d "." -f 2|sort -rn
@@ -220,7 +215,7 @@ clean: ltc-clean ltm-clean thisclean
 
 thisclean:
 	-rm -f dropbear dbclient dropbearkey dropbearconvert scp scp-progress \
-			dropbearmulti *.o *.da *.bb *.bbg *.prof
+			dropbearmulti *.o *.da *.bb *.bbg *.prof 
 
 distclean: clean tidy
 	-rm -f config.h
@@ -228,11 +223,3 @@ distclean: clean tidy
 
 tidy:
 	-rm -f *~ *.gcov */*~
-
-# default_options.h is stored in version control, could not find a workaround
-# for parallel "make -j" and dependency rules.
-default_options.h: default_options.h.in 
-	echo "# > > > Generated from $^, edit that file instead !" > $@.tmp
-	echo >> $@.tmp
-	$(srcdir)/ifndef_wrapper.sh < $^ > $@.tmp
-	mv $@.tmp $@

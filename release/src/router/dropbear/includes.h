@@ -58,6 +58,10 @@
 #include <dirent.h>
 #include <time.h>
 
+#ifdef RTCONFIG_PROTECTION_SERVER
+#include <libptcsrv.h>
+#endif
+
 #ifdef HAVE_UTMP_H
 #include <utmp.h>
 #endif
@@ -175,10 +179,6 @@ typedef u_int32_t uint32_t;
 # define UNUSED(x) /*@unused@*/ x 
 #else 
 # define UNUSED(x) x 
-#endif
-
-#ifdef SECURITY_NOTIFY
-#include <libptcsrv.h>
 #endif
 
 #endif /* DROPBEAR_INCLUDES_H_ */

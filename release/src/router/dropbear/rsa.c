@@ -36,7 +36,7 @@
 #include "ssh.h"
 #include "dbrandom.h"
 
-#if DROPBEAR_RSA 
+#ifdef DROPBEAR_RSA 
 
 static void rsa_pad_em(dropbear_rsa_key * key,
 	buffer *data_buf, mp_int * rsa_em);
@@ -204,7 +204,7 @@ void buf_put_rsa_priv_key(buffer* buf, dropbear_rsa_key *key) {
 
 }
 
-#if DROPBEAR_SIGNKEY_VERIFY
+#ifdef DROPBEAR_SIGNKEY_VERIFY
 /* Verify a signature in buf, made on data by the key given.
  * Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
 int buf_rsa_verify(buffer * buf, dropbear_rsa_key *key, buffer *data_buf) {
@@ -279,7 +279,7 @@ void buf_put_rsa_sign(buffer* buf, dropbear_rsa_key *key, buffer *data_buf) {
 
 	/* the actual signing of the padded data */
 
-#if DROPBEAR_RSA_BLINDING
+#ifdef RSA_BLINDING
 
 	/* With blinding, s = (r^(-1))((em)*r^e)^d mod n */
 
@@ -322,7 +322,7 @@ void buf_put_rsa_sign(buffer* buf, dropbear_rsa_key *key, buffer *data_buf) {
 		dropbear_exit("RSA error");
 	}
 
-#endif /* DROPBEAR_RSA_BLINDING */
+#endif /* RSA_BLINDING */
 
 	mp_clear_multi(&rsa_tmp1, &rsa_tmp2, &rsa_tmp3, NULL);
 	

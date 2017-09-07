@@ -79,7 +79,7 @@ void (*_dropbear_exit)(int exitcode, const char* format, va_list param) ATTRIB_N
 void (*_dropbear_log)(int priority, const char* format, va_list param)
 						= generic_dropbear_log;
 
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 int debug_trace = 0;
 #endif
 
@@ -149,7 +149,7 @@ void dropbear_log(int priority, const char* format, ...) {
 }
 
 
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 
 static double debug_start_time = -1;
 
@@ -262,7 +262,7 @@ int spawn_command(void(*exec_fn)(void *user_data), void *exec_data,
 		return DROPBEAR_FAILURE;
 	}
 
-#if DROPBEAR_VFORK
+#ifdef USE_VFORK
 	pid = vfork();
 #else
 	pid = fork();
@@ -371,7 +371,7 @@ void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
 	execv(usershell, argv);
 }
 
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 void printhex(const char * label, const unsigned char * buf, int len) {
 
 	int i;
@@ -465,7 +465,7 @@ out:
  * authkeys file.
  * Will return DROPBEAR_SUCCESS if data is read, or DROPBEAR_FAILURE on EOF.*/
 /* Only used for ~/.ssh/known_hosts and ~/.ssh/authorized_keys */
-#if DROPBEAR_CLIENT || DROPBEAR_SVR_PUBKEY_AUTH
+#if defined(DROPBEAR_CLIENT) || defined(ENABLE_SVR_PUBKEY_AUTH)
 int buf_getline(buffer * line, FILE * authfile) {
 
 	int c = EOF;
@@ -681,4 +681,21 @@ time_t monotonic_now() {
 	return time(NULL);
 }
 
+void fsync_parent_dir(const char* fn) {
+#ifdef HAVE_LIBGEN_H
+	char *fn_dir = m_strdup(fn);
+	char *dir = dirname(fn_dir);
+	int dirfd = open(dir, O_RDONLY);
 
+	if (dirfd != -1) {
+		if (fsync(dirfd) != 0) {
+			TRACE(("fsync of directory %s failed: %s", dir, strerror(errno)))
+		}
+		m_close(dirfd);
+	} else {
+		TRACE(("error opening directory %s for fsync: %s", dir, strerror(errno)))
+	}
+
+	free(fn_dir);
+#endif
+}

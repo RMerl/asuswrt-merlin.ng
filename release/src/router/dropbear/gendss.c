@@ -35,7 +35,7 @@
 
 /* This is just a test */
 
-#if DROPBEAR_DSS
+#ifdef DROPBEAR_DSS
 
 static void getq(dropbear_dss_key *key);
 static void getp(dropbear_dss_key *key, unsigned int size);

@@ -27,6 +27,12 @@
 #include <fbwifi.h>
 #endif
 
+#ifdef HND_ROUTER
+#define TCPATH "/bin/tc"
+#else
+#define TCPATH "/usr/sbin/tc"
+#endif
+
 /*
 	DEBUG DEFINE
 	QOSDBG  : normal debug
@@ -1685,7 +1691,7 @@ void set_codel_patch(void)
 	if (!f_exists("/var/lock/qostc") &&
 	    ((sched == 1) || (sched == 2))) {
 		eval("touch", "/var/lock/qostc");
-		mount("/usr/sbin/faketc", "/usr/sbin/tc", NULL, MS_BIND, NULL);
+		mount("/usr/sbin/faketc", TCPATH, NULL, MS_BIND, NULL);
 		logmessage("qos", "Applying codel patch");
 	}
 }
@@ -1693,7 +1699,7 @@ void set_codel_patch(void)
 void remove_codel_patch(void)
 {
 	if (f_exists("/var/lock/qostc")) {
-		umount("/usr/sbin/tc");
+		umount(TCPATH);
 		unlink("/var/lock/qostc");
 		logmessage("qos", "Removing codel patch");
 	}

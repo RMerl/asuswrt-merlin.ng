@@ -931,7 +931,8 @@ obj-$(RTCONFIG_EXT4FS) += e2fsprogs
 obj-y += libdisk
 
 #obj-y += dosfstools
-obj-$(RTCONFIG_FTP) += $(if $(RTCONFIG_QCA),vsftpd-3.x,vsftpd)
+#obj-$(RTCONFIG_FTP) += $(if $(RTCONFIG_QCA),vsftpd-3.x,vsftpd)
+obj-$(RTCONFIG_FTP) += vsftpd-3.x
 
 ifeq ($(CONFIG_LINUX26),y)
 ifeq ($(RTCONFIG_SAMBASRV),y)
@@ -2905,19 +2906,30 @@ ftp_dep=openssl
 else
 ftp_dep=
 endif
+
 vsftpd: nvram$(BCMEX)$(EX7) shared libdisk $(ftp_dep)
 	@$(SEP)
+ifeq ($(RTCONFIG_FTP_SSL),y)
+	-cp vsftpd/builddefs-ssl.h vsftpd/builddefs.h
+else
+	-cp vsftpd/builddefs-nossl.h vsftpd/builddefs.h
+endif
 	$(MAKE) -C vsftpd
 
 vsftpd-install:
 	install -D vsftpd/vsftpd $(INSTALLDIR)/vsftpd/usr/sbin/vsftpd
 	$(STRIP) -s $(INSTALLDIR)/vsftpd/usr/sbin/vsftpd
 
-vsftpd-3.x: $(ftp_dep)
+vsftpd-3.x: nvram$(BCMEX)$(EX7) shared libdisk $(ftp_dep)
 	@$(SEP)
+ifeq ($(RTCONFIG_FTP_SSL),y)
+	-cp vsftpd-3.x/builddefs-ssl.h vsftpd-3.x/builddefs.h
+else
+	-cp vsftpd-3.x/builddefs-nossl.h vsftpd-3.x/builddefs.h
+endif
 	$(MAKE) -C $@
 
-vsftpd-3.x-install: vsftpd-3.x
+vsftpd-3.x-install:
 	install -D vsftpd-3.x/vsftpd $(INSTALLDIR)/vsftpd-3.x/usr/sbin/vsftpd
 	$(STRIP) -s $(INSTALLDIR)/vsftpd-3.x/usr/sbin/vsftpd
 

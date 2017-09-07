@@ -149,7 +149,7 @@ drop_all_privs(void)
   struct mystr user_str = INIT_MYSTR;
   struct mystr dir_str = INIT_MYSTR;
   unsigned int option = VSF_SECUTIL_OPTION_CHROOT | VSF_SECUTIL_OPTION_NO_PROCS;
-  if (!tunable_ssl_enable && !tunable_enable_iconv)
+  if (!tunable_ssl_enable)
   {
     /* Unfortunately, can only enable this if we can be sure of not using SSL.
      * In the SSL case, we'll need to receive data transfer file descriptors.

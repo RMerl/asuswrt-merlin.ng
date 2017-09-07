@@ -1,8 +1,9 @@
-/* $Id: upnphttp.c,v 1.99 2014/12/09 17:25:30 nanard Exp $ */
+/* $Id: upnphttp.c,v 1.103 2015/12/16 10:21:49 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab */
 /* Project :  miniupnp
  * Website :  http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * Author :   Thomas Bernard
- * Copyright (c) 2005-2014 Thomas Bernard
+ * Copyright (c) 2005-2015 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file included in this distribution.
  * */
@@ -60,7 +61,7 @@ static int verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
 
 int init_ssl(void)
 {
-	SSL_METHOD *method;
+	const SSL_METHOD *method;
 	SSL_library_init();
 	SSL_load_error_strings();
 	method = TLSv1_server_method();
@@ -610,6 +611,21 @@ ProcessHTTPSubscribe_upnphttp(struct upnphttp * h, const char * path)
 	       h->req_CallbackLen, h->req_buf + h->req_CallbackOff,
 	       h->req_Timeout);
 	syslog(LOG_DEBUG, "SID '%.*s'", h->req_SIDLen, h->req_buf + h->req_SIDOff);
+#if defined(UPNP_STRICT) && (UPNP_VERSION_MAJOR > 1) || (UPNP_VERSION_MINOR > 0)
+	/*if(h->req_Timeout < 1800) {*/
+	if(h->req_Timeout == 0) {
+		/* Second-infinite is forbidden with UDA v1.1 and later :
+		 * (UDA 1.1 : 4.1.1 Subscription)
+		 * UPnP 1.1 control points MUST NOT subscribe using keyword infinite,
+		 * UPnP 1.1 devices MUST NOT set actual subscription durations to
+		 * "infinite". The presence of infinite in a request MUST be silently
+		 * ignored by a UPnP 1.1 device (the presence of infinite is handled
+		 * by the device as if the TIMEOUT header field in a request was not
+		 * present) . The keyword infinite MUST NOT be returned by a UPnP 1.1
+		 * device. */
+		h->req_Timeout = 1800;	/* default to 30 minutes */
+	}
+#endif /* UPNP_STRICT */
 	if((h->req_CallbackOff <= 0) && (h->req_SIDOff <= 0)) {
 		/* Missing or invalid CALLBACK : 412 Precondition Failed.
 		 * If CALLBACK header is missing or does not contain a valid HTTP URL,
@@ -663,15 +679,20 @@ with HTTP error 412 Precondition Failed. */
 			if(h->req_NTOff > 0) {
 				syslog(LOG_WARNING, "Both NT: and SID: in SUBSCRIBE");
 				BuildResp2_upnphttp(h, 400, "Incompatible header fields", 0, 0);
-			} else
-#endif
-			if(renewSubscription(h->req_buf + h->req_SIDOff, h->req_SIDLen,
-			                     h->req_Timeout) < 0) {
-				BuildResp2_upnphttp(h, 412, "Precondition Failed", 0, 0);
 			} else {
-				h->respflags = FLAG_TIMEOUT;
-				BuildResp_upnphttp(h, 0, 0);
+#endif /* UPNP_STRICT */
+				sid = upnpevents_renewSubscription(h->req_buf + h->req_SIDOff,
+				                                   h->req_SIDLen, h->req_Timeout);
+				if(!sid) {
+					BuildResp2_upnphttp(h, 412, "Precondition Failed", 0, 0);
+				} else {
+					h->respflags = FLAG_TIMEOUT | FLAG_SID;
+					h->res_SID = sid;
+					BuildResp_upnphttp(h, 0, 0);
+				}
+#ifdef UPNP_STRICT
 			}
+#endif /* UPNP_STRICT */
 		}
 		SendRespAndClose_upnphttp(h);
 	}
@@ -734,6 +755,7 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 	char * HttpVer;
 	char * p;
 	int i;
+
 	p = h->req_buf;
 	if(!p)
 		return;
@@ -754,8 +776,8 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 	for(i = 0; i<15 && *p != '\r'; i++)
 		HttpVer[i] = *(p++);
 	HttpVer[i] = '\0';
-	syslog(LOG_INFO, "HTTP REQUEST : %s %s (%s)",
-	       HttpCommand, HttpUrl, HttpVer);
+	syslog(LOG_INFO, "HTTP REQUEST from %s : %s %s (%s)",
+	       h->clientaddr_str, HttpCommand, HttpUrl, HttpVer);
 	ParseHttpHeaders(h);
 	if(h->req_HostOff > 0 && h->req_HostLen > 0) {
 		syslog(LOG_DEBUG, "Host: %.*s", h->req_HostLen, h->req_buf + h->req_HostOff);

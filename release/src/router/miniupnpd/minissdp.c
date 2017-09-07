@@ -1,7 +1,7 @@
-/* $Id: minissdp.c,v 1.73 2015/01/17 11:26:05 nanard Exp $ */
+/* $Id: minissdp.c,v 1.77 2015/08/26 07:36:52 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2015 Thomas Bernard
+ * (c) 2006-2016 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -35,29 +35,43 @@
 #define SL_SSDP_MCAST_ADDR "FF05::C"
 #define GL_SSDP_MCAST_ADDR "FF0E::C"
 
-/* maximum lenght of SSDP packets we are generating
- * (reception is done in a 1500byte buffer) */
-#ifdef ENABLE_HTTPS
-#define SSDP_PACKET_MAX_LEN 768
-#else
-#define SSDP_PACKET_MAX_LEN 512
-#endif
-
 /* AddMulticastMembership()
- * param s		socket
- * param ifaddr	ip v4 address
+ * param s			socket
+ * param lan_addr	lan address
  */
 static int
-AddMulticastMembership(int s, in_addr_t ifaddr)
+AddMulticastMembership(int s, struct lan_addr_s * lan_addr)
 {
+#ifndef HAVE_IP_MREQN
+	/* The ip_mreqn structure appeared in Linux 2.4. */
 	struct ip_mreq imr;	/* Ip multicast membership */
+#else	/* HAVE_IP_MREQN */
+	struct ip_mreqn imr;	/* Ip multicast membership */
+#endif	/* HAVE_IP_MREQN */
 
     /* setting up imr structure */
     imr.imr_multiaddr.s_addr = inet_addr(SSDP_MCAST_ADDR);
     /*imr.imr_interface.s_addr = htonl(INADDR_ANY);*/
-    imr.imr_interface.s_addr = ifaddr;	/*inet_addr(ifaddr);*/
+#ifndef HAVE_IP_MREQN
+	imr.imr_interface.s_addr = lan_addr->addr.s_addr;
+#else	/* HAVE_IP_MREQN */
+    imr.imr_address.s_addr = lan_addr->addr.s_addr;
+#ifndef MULTIPLE_EXTERNAL_IP
+#ifdef ENABLE_IPV6
+	imr.imr_ifindex = lan_addr->index;
+#else	/* ENABLE_IPV6 */
+    imr.imr_ifindex = if_nametoindex(lan_addr->ifname);
+#endif	/* ENABLE_IPV6 */
+#else	/* MULTIPLE_EXTERNAL_IP */
+    imr.imr_ifindex = 0;
+#endif	/* MULTIPLE_EXTERNAL_IP */
+#endif	/* HAVE_IP_MREQN */
 
+#ifndef HAVE_IP_MREQN
 	if (setsockopt(s, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *)&imr, sizeof(struct ip_mreq)) < 0)
+#else	/* HAVE_IP_MREQN */
+	if (setsockopt(s, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *)&imr, sizeof(struct ip_mreqn)) < 0)
+#endif	/* HAVE_IP_MREQN */
 	{
         syslog(LOG_ERR, "setsockopt(udp, IP_ADD_MEMBERSHIP): %m");
 		return -1;
@@ -155,6 +169,20 @@ OpenAndConfSSDPReceiveSocket(int ipv6)
 		       "OpenAndConfSSDPReceiveSocket");
 	}
 
+#if defined(SO_BINDTODEVICE) && !defined(MULTIPLE_EXTERNAL_IP)
+	/* One and only one LAN interface */
+	if(lan_addrs.lh_first != NULL && lan_addrs.lh_first->list.le_next == NULL
+	   && strlen(lan_addrs.lh_first->ifname) > 0)
+	{
+		if(setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE,
+		              lan_addrs.lh_first->ifname,
+		              strlen(lan_addrs.lh_first->ifname)) < 0)
+		    syslog(LOG_WARNING, "%s: setsockopt(udp%s, SO_BINDTODEVICE, %s): %m",
+			       "OpenAndConfSSDPReceiveSocket", ipv6 ? "6" : "",
+			       lan_addrs.lh_first->ifname);
+	}
+#endif /* defined(SO_BINDTODEVICE) && !defined(MULTIPLE_EXTERNAL_IP) */
+
 	if(bind(s, (struct sockaddr *)&sockname, sockname_len) < 0)
 	{
 		syslog(LOG_ERR, "%s: bind(udp%s): %m",
@@ -181,11 +209,11 @@ OpenAndConfSSDPReceiveSocket(int ipv6)
 	{
 		for(lan_addr = lan_addrs.lh_first; lan_addr != NULL; lan_addr = lan_addr->list.le_next)
 		{
-			if(AddMulticastMembership(s, lan_addr->addr.s_addr) < 0)
+			if(AddMulticastMembership(s, lan_addr) < 0)
 			{
 				syslog(LOG_WARNING,
 				       "Failed to add multicast membership for interface %s",
-				       lan_addr->str ? lan_addr->str : "NULL");
+				       strlen(lan_addr->str) ? lan_addr->str : "NULL");
 			}
 		}
 	}
@@ -268,6 +296,9 @@ OpenAndConfSSDPNotifySocketIPv6(unsigned int if_index)
 {
 	int s;
 	unsigned int loop = 0;
+	/* UDA 2.0 : The hop limit of each IP packet for a Site-Local scope
+	 * multicast message SHALL be configurable and SHOULD default to 10 */
+	int hop_limit = 10;
 	struct sockaddr_in6 sockname;
 
 	s = socket(PF_INET6, SOCK_DGRAM, 0);
@@ -285,6 +316,12 @@ OpenAndConfSSDPNotifySocketIPv6(unsigned int if_index)
 	if(setsockopt(s, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) < 0)
 	{
 		syslog(LOG_ERR, "setsockopt(udp_notify, IPV6_MULTICAST_LOOP): %m");
+		close(s);
+		return -1;
+	}
+	if(setsockopt(s, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &hop_limit, sizeof(hop_limit)) < 0)
+	{
+		syslog(LOG_ERR, "setsockopt(udp_notify, IPV6_MULTICAST_HOPS): %m");
 		close(s);
 		return -1;
 	}
@@ -469,14 +506,6 @@ SendSSDPResponse(int s, const struct sockaddr * addr,
 	}
 }
 
-#ifndef IGD_V2
-#define IGD_VER 1
-#define WANIPC_VER 1
-#else
-#define IGD_VER 2
-#define WANIPC_VER 2
-#endif
-
 static struct {
 	const char * s;
 	const int version;
@@ -484,23 +513,32 @@ static struct {
 } const known_service_types[] =
 {
 	{"upnp:rootdevice", 0, uuidvalue_igd},
-	{"urn:schemas-upnp-org:device:InternetGatewayDevice:", IGD_VER, uuidvalue_igd},
+#ifdef IGD_V2
+	{"urn:schemas-upnp-org:device:InternetGatewayDevice:", 2, uuidvalue_igd},
+	{"urn:schemas-upnp-org:device:WANConnectionDevice:", 2, uuidvalue_wcd},
+	{"urn:schemas-upnp-org:device:WANDevice:", 2, uuidvalue_wan},
+	{"urn:schemas-upnp-org:service:WANIPConnection:", 2, uuidvalue_wcd},
+	{"urn:schemas-upnp-org:service:DeviceProtection:", 1, uuidvalue_igd},
+#ifdef ENABLE_6FC_SERVICE
+	{"urn:schemas-upnp-org:service:WANIPv6FirewallControl:", 1, uuidvalue_wcd},
+#endif
+#else /* IGD_V2 */
+	/* IGD v1 */
+	{"urn:schemas-upnp-org:device:InternetGatewayDevice:", 1, uuidvalue_igd},
 	{"urn:schemas-upnp-org:device:WANConnectionDevice:", 1, uuidvalue_wcd},
 	{"urn:schemas-upnp-org:device:WANDevice:", 1, uuidvalue_wan},
+	{"urn:schemas-upnp-org:service:WANIPConnection:", 1, uuidvalue_wcd},
+#endif /* IGD_V2 */
 	{"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:", 1, uuidvalue_wan},
-	{"urn:schemas-upnp-org:service:WANIPConnection:", WANIPC_VER, uuidvalue_wcd},
-#ifndef UPNP_STRICT
+#ifdef ADVERTISE_WANPPPCONN
 	/* We use WAN IP Connection, not PPP connection,
 	 * but buggy control points may try to use WanPPPConnection
 	 * anyway */
 	{"urn:schemas-upnp-org:service:WANPPPConnection:", 1, uuidvalue_wcd},
-#endif
+#endif /* ADVERTISE_WANPPPCONN */
 #ifdef ENABLE_L3F_SERVICE
 	{"urn:schemas-upnp-org:service:Layer3Forwarding:", 1, uuidvalue_igd},
-#endif
-#ifdef ENABLE_6FC_SERVICE
-	{"url:schemas-upnp-org:service:WANIPv6FirewallControl:", 1, uuidvalue_wcd},
-#endif
+#endif /* ENABLE_L3F_SERVICE */
 /* we might want to support urn:schemas-wifialliance-org:device:WFADevice:1
  * urn:schemas-wifialliance-org:device:WFADevice:1
  * in the future */
@@ -592,10 +630,14 @@ SendSSDPNotifies(int s, const char * host, unsigned short http_port,
 {
 #ifdef ENABLE_IPV6
 	struct sockaddr_storage sockname;
+	/* UDA 1.1 AnnexA and UDA 2.0 only allow/define the use of
+	 * Link-Local and Site-Local multicast scopes */
 	static struct { const char * p1, * p2; } const mcast_addrs[] =
 		{ { LL_SSDP_MCAST_ADDR, "[" LL_SSDP_MCAST_ADDR "]" },	/* Link Local */
 		  { SL_SSDP_MCAST_ADDR, "[" SL_SSDP_MCAST_ADDR "]" },	/* Site Local */
+#ifndef UPNP_STRICT
 		  { GL_SSDP_MCAST_ADDR, "[" GL_SSDP_MCAST_ADDR "]" },	/* Global */
+#endif /* ! UPNP_STRICT */
 		  { NULL, NULL } };
 	int j;
 #else /* ENABLE_IPV6 */
@@ -796,8 +838,8 @@ ProcessSSDPData(int s, const char *bufr, int n,
 	lan_addr = get_lan_for_peer(sender);
 	if(lan_addr == NULL)
 	{
-		syslog(LOG_INFO, "SSDP packet sender %s not from a LAN, ignoring",
-		       sender_str);
+//		syslog(LOG_WARNING, "SSDP packet sender %s not from a LAN, ignoring",
+//		       sender_str);
 		return;
 	}
 
@@ -1084,7 +1126,7 @@ ProcessSSDPData(int s, const char *bufr, int n,
 	}
 	else
 	{
-		syslog(LOG_NOTICE, "Unknown udp packet received from %s", sender_str);
+		syslog(LOG_INFO, "Unknown udp packet received from %s", sender_str);
 	}
 }
 
@@ -1237,6 +1279,7 @@ SubmitServicesToMiniSSDPD(const char * host, unsigned short port) {
 	}
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path, minissdpdsocketpath, sizeof(addr.sun_path));
+	addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
 	if(connect(s, (struct sockaddr *)&addr, sizeof(struct sockaddr_un)) < 0) {
 		syslog(LOG_ERR, "connect(\"%s\"): %m", minissdpdsocketpath);
 		close(s);

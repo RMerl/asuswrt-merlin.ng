@@ -1,4 +1,73 @@
-$Id: Changelog.txt,v 1.398 2015/04/26 14:43:27 nanard Exp $
+$Id: Changelog.txt,v 1.428 2016/04/19 21:10:36 nanard Exp $
+
+VERSION 2.0 : released on 2016/04/19
+
+2016/04/18:
+  linux/netfilter: fix compile time detection of iptables version >= 1.4.3
+
+2016/03/08:
+  linux/netfilter: do not add MASQUERADE rule if ports are equals
+
+2016/02/19:
+  set IPv6 Hop limit to 10
+  fix HOST: header of event notifications in IPv6
+  be more compliant on 64bit machines : ui4 in [0;2^32-1]
+
+2016/02/16:
+  minor changes to follow UDA 1.1 more closely.
+  more argument checking in Soap methods.
+
+2016/02/12:
+  return error 729 - ConflictWithOtherMechanisms if IGD v2 is enabled.
+  add iptc_init() check in iptcrdr.c/init_redirect()
+  add update_portmapping() / update_portmapping_desc_timestamp() functions
+
+2016/02/11:
+  use Linux libuuid uuid_generate() / BSD uuid_create() API
+
+2016/01/28:
+  renamed iptables chain MINIUPNPD-PCP-PEER to MINIUPNPD-POSTROUTING
+  implemented "IGD2 Port Triggering" with netfilter/iptables
+
+2016/01/18:
+  fix pcpserver.c CreatePCPMap_FW() : check pinhole before adding
+
+2015/12/16:
+  improve syslog message for incoming HTTP requests
+
+2015/12/13:
+  --disable-pppconn to disable WanPPPConnection
+  more fixes in DeviceProtection service
+
+2015/12/12:
+  add commandline option to genconfig.sh to set UPnP (UDA) version
+  advertise correct service and device versions when IGDv2 is enabled
+  fix action arguments for DeviceProtection service
+  fix event subscription renewal (include SID in response)
+
+2015/11/16:
+  Fix bsd/getroute.c get_src_for_route_to() when args are NULL
+
+2015/11/02:
+  use LOG_INFO instead of LOG_ERR for PCP PEER and MAP success
+
+2015/10/30:
+  fix : properly call find_ipv6_addr() with the 1st LAN interface
+  use name server from query in SOAP responses (continued)
+
+2015/10/24:
+  move SSDP_PACKET_MAX_LEN definition to config.h. also set default to 1024.
+
+2015/09/22:
+  cleanup UPNP_VERSION macro / add UPNP_VERSION_MAJOR, UPNP_VERSION_MINOR
+  Dont use packed structs anymore to read/write PCP messages
+
+2015/09/15:
+  use name server from query in SOAP responses
+
+2015/08/25:
+  better bind socket to right interface(s),
+    using struct ip_mreqn, SO_BINDTODEVICE
 
 2015/04/30:
   Adding linux/nftables support

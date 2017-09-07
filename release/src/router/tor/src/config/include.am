@@ -1,0 +1,20 @@
+confdir = $(sysconfdir)/tor
+
+tordatadir = $(datadir)/tor
+
+EXTRA_DIST+= \
+	src/config/geoip \
+	src/config/geoip6 \
+	src/config/torrc.minimal.in \
+	src/config/torrc.sample.in \
+	src/config/README
+
+conf_DATA = src/config/torrc.sample
+
+tordata_DATA = src/config/geoip src/config/geoip6
+# fallback_consensus
+
+# If we don't have it, fake it.
+src_config_fallback-consensus:
+	touch src/config/fallback-consensus
+

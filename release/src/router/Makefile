@@ -964,12 +964,12 @@ ifneq ($(RTCONFIG_8M_SFP),y)
 #ifeq ($(HND_ROUTER),y)
 #obj-$(NEED_SAMBA3) += brcmssp_util
 #endif
-obj-$(NEED_SAMBA3) += samba-3.0.33
+obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba-3.0.33)
 else
 obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba3)
 endif
 else
-obj-$(NEED_SAMBA3) += samba3
+obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba3)
 endif
 
 ifeq ($(RTCONFIG_NTFS),y)
@@ -1220,6 +1220,7 @@ obj-$(RTCONFIG_NANO) += ncurses-6.0
 obj-$(RTCONFIG_NANO) += nano
 obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
+obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 # End merlin add-ons
 
 ifeq ($(RTCONFIG_TOR),y)
@@ -6647,6 +6648,7 @@ else
 endif
 	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/*.so.*
 
+# Start merlin components
 nano/Makefile:
 	cd nano && \
 	autoreconf -i -f && $(CONFIGURE) --prefix=$(INSTALLDIR)/nano/usr \
@@ -6686,6 +6688,10 @@ nettle-clean:
 	-@$(MAKE) -C nettle clean
 	@rm -f nettle/stamp-h1
 	@rm -rf nettle/include nettle/lib
+
+samba-3.6.x: libiconv-1.14
+	@$(MAKE) -C samba-3.6.x
+# End merlin components
 
 readline-6.2/Makefile: readline-6.2/configure
 	cd readline-6.2 && $(CONFIGURE)\

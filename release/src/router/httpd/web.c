@@ -5294,9 +5294,10 @@ static int get_cpu_temperature(int eid, webs_t wp, int argc, char_t **argv)
 	if ((fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r")) != NULL) {
 		fscanf(fp, "%d", &temperature);
 		fclose(fp);
+		return websWrite(wp, "%3.3f", (double) temperature / 1000);
+	} else {
+		return websWrite(wp, "");
 	}
-
-	return websWrite(wp, "%3.3f", (double) temperature / 1000);
 #else
 	FILE *fp;
 	int temperature = -1;

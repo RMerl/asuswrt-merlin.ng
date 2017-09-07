@@ -640,7 +640,7 @@ void kexdh_comb_key(struct kex_dh_param *param, mp_int *dh_pub_them,
 	finish_kexhashbuf();
 }
 
-#if DROPBEAR_ECDH
+#ifdef DROPBEAR_ECDH
 struct kex_ecdh_param *gen_kexecdh_param() {
 	struct kex_ecdh_param *param = m_malloc(sizeof(*param));
 	if (ecc_make_key_ex(NULL, dropbear_ltc_prng, 
@@ -692,7 +692,7 @@ void kexecdh_comb_key(struct kex_ecdh_param *param, buffer *pub_them,
 }
 #endif /* DROPBEAR_ECDH */
 
-#if DROPBEAR_CURVE25519
+#ifdef DROPBEAR_CURVE25519
 struct kex_curve25519_param *gen_kexcurve25519_param () {
 	/* Per http://cr.yp.to/ecdh.html */
 	struct kex_curve25519_param *param = m_malloc(sizeof(*param));
@@ -774,7 +774,7 @@ static void finish_kexhashbuf(void) {
 	hash_desc->done(&hs, buf_getwriteptr(ses.hash, hash_desc->hashsize));
 	buf_setlen(ses.hash, hash_desc->hashsize);
 
-#if (DEBUG_KEXHASH) && (DEBUG_TRACE)
+#if defined(DEBUG_KEXHASH) && defined(DEBUG_TRACE)
 	if (!debug_trace) {
 		printhex("kexhashbuf", ses.kexhashbuf->data, ses.kexhashbuf->len);
 		printhex("kexhash", ses.hash->data, ses.hash->len);
@@ -814,7 +814,7 @@ static void read_kex_algos() {
 	int allgood = 1; /* we AND this with each goodguess and see if its still
 						true after */
 
-#if DROPBEAR_KEXGUESS2
+#ifdef USE_KEXGUESS2
 	enum kexguess2_used kexguess2 = KEXGUESS2_LOOK;
 #else
 	enum kexguess2_used kexguess2 = KEXGUESS2_NO;

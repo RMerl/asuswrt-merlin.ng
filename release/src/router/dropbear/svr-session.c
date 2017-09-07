@@ -62,7 +62,7 @@ static const packettype svr_packettypes[] = {
 	{SSH_MSG_CHANNEL_FAILURE, ignore_recv_response},
 	{SSH_MSG_REQUEST_FAILURE, ignore_recv_response}, /* for keepalive */
 	{SSH_MSG_REQUEST_SUCCESS, ignore_recv_response}, /* client */
-#if DROPBEAR_LISTENERS
+#ifdef USING_LISTENERS
 	{SSH_MSG_CHANNEL_OPEN_CONFIRMATION, recv_msg_channel_open_confirmation},
 	{SSH_MSG_CHANNEL_OPEN_FAILURE, recv_msg_channel_open_failure},
 #endif
@@ -71,7 +71,7 @@ static const packettype svr_packettypes[] = {
 
 static const struct ChanType *svr_chantypes[] = {
 	&svrchansess,
-#if DROPBEAR_SVR_LOCALTCPFWD
+#ifdef ENABLE_SVR_LOCALTCPFWD
 	&svr_chan_tcpdirect,
 #endif
 	NULL /* Null termination is mandatory. */
@@ -83,9 +83,6 @@ svr_session_cleanup(void) {
 	svr_pubkey_options_cleanup();
 
 	m_free(svr_ses.addrstring);
-#ifdef SECURITY_NOTIFY
-	m_free(svr_ses.hoststring);
-#endif
 	m_free(svr_ses.remotehost);
 	m_free(svr_ses.childpids);
 	svr_ses.childpidsize = 0;
@@ -99,7 +96,7 @@ void svr_session(int sock, int childpipe) {
 
 	/* Initialise server specific parts of the session */
 	svr_ses.childpipe = childpipe;
-#if DROPBEAR_VFORK
+#ifdef USE_VFORK
 	svr_ses.server_pid = getpid();
 #endif
 	svr_authinitialise();
@@ -111,11 +108,7 @@ void svr_session(int sock, int childpipe) {
 	len = strlen(host) + strlen(port) + 2;
 	svr_ses.addrstring = m_malloc(len);
 	snprintf(svr_ses.addrstring, len, "%s:%s", host, port);
-#ifdef SECURITY_NOTIFY
-	svr_ses.hoststring = host;
-#else
 	m_free(host);
-#endif
 	m_free(port);
 
 	get_socket_address(ses.sock_in, NULL, NULL, 
@@ -179,7 +172,7 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 
 	dropbear_log(LOG_INFO, "%s", fullmsg);
 
-#if DROPBEAR_VFORK
+#ifdef USE_VFORK
 	/* For uclinux only the main server process should cleanup - we don't want
 	 * forked children doing that */
 	if (svr_ses.server_pid == getpid())
@@ -220,7 +213,7 @@ void svr_dropbear_log(int priority, const char* format, va_list param) {
 
 	/* if we are using DEBUG_TRACE, we want to print to stderr even if
 	 * syslog is used, so it is included in error reports */
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 	havetrace = debug_trace;
 #endif
 

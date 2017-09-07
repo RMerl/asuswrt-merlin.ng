@@ -6,7 +6,7 @@
 #include "ecdsa.h"
 #include "signkey.h"
 
-#if DROPBEAR_ECDSA
+#ifdef DROPBEAR_ECDSA
 
 int signkey_is_ecdsa(enum signkey_type type)
 {
@@ -16,17 +16,17 @@ int signkey_is_ecdsa(enum signkey_type type)
 }
 
 enum signkey_type ecdsa_signkey_type(ecc_key * key) {
-#if DROPBEAR_ECC_256
+#ifdef DROPBEAR_ECC_256
 	if (key->dp == ecc_curve_nistp256.dp) {
 		return DROPBEAR_SIGNKEY_ECDSA_NISTP256;
 	}
 #endif
-#if DROPBEAR_ECC_384
+#ifdef DROPBEAR_ECC_384
 	if (key->dp == ecc_curve_nistp384.dp) {
 		return DROPBEAR_SIGNKEY_ECDSA_NISTP384;
 	}
 #endif
-#if DROPBEAR_ECC_521
+#ifdef DROPBEAR_ECC_521
 	if (key->dp == ecc_curve_nistp521.dp) {
 		return DROPBEAR_SIGNKEY_ECDSA_NISTP521;
 	}
@@ -38,17 +38,17 @@ ecc_key *gen_ecdsa_priv_key(unsigned int bit_size) {
 	const ltc_ecc_set_type *dp = NULL; /* curve domain parameters */
 	ecc_key *new_key = NULL;
 	switch (bit_size) {
-#if DROPBEAR_ECC_256
+#ifdef DROPBEAR_ECC_256
 		case 256:
 			dp = ecc_curve_nistp256.dp;
 			break;
 #endif
-#if DROPBEAR_ECC_384
+#ifdef DROPBEAR_ECC_384
 		case 384:
 			dp = ecc_curve_nistp384.dp;
 			break;
 #endif
-#if DROPBEAR_ECC_521
+#ifdef DROPBEAR_ECC_521
 		case 521:
 			dp = ecc_curve_nistp521.dp;
 			break;
@@ -56,13 +56,13 @@ ecc_key *gen_ecdsa_priv_key(unsigned int bit_size) {
 	}
 	if (!dp) {
 		dropbear_exit("Key size %d isn't valid. Try "
-#if DROPBEAR_ECC_256
+#ifdef DROPBEAR_ECC_256
 			"256 "
 #endif
-#if DROPBEAR_ECC_384
+#ifdef DROPBEAR_ECC_384
 			"384 "
 #endif
-#if DROPBEAR_ECC_521
+#ifdef DROPBEAR_ECC_521
 			"521 "
 #endif
 			, bit_size);

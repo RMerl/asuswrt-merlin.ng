@@ -56,10 +56,10 @@ void svr_authinitialise() {
 static void authclear() {
 	
 	memset(&ses.authstate, 0, sizeof(ses.authstate));
-#if DROPBEAR_SVR_PUBKEY_AUTH
+#ifdef ENABLE_SVR_PUBKEY_AUTH
 	ses.authstate.authtypes |= AUTH_TYPE_PUBKEY;
 #endif
-#if DROPBEAR_SVR_PASSWORD_AUTH || DROPBEAR_SVR_PAM_AUTH
+#if defined(ENABLE_SVR_PASSWORD_AUTH) || defined(ENABLE_SVR_PAM_AUTH)
 	if (!svr_opts.noauthpass) {
 		ses.authstate.authtypes |= AUTH_TYPE_PASSWORD;
 	}
@@ -169,7 +169,7 @@ void recv_msg_userauth_request() {
 		}
 	}
 	
-#if DROPBEAR_SVR_PASSWORD_AUTH
+#ifdef ENABLE_SVR_PASSWORD_AUTH
 	if (!svr_opts.noauthpass &&
 			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
 		/* user wants to try password auth */
@@ -184,7 +184,7 @@ void recv_msg_userauth_request() {
 	}
 #endif
 
-#if DROPBEAR_SVR_PAM_AUTH
+#ifdef ENABLE_SVR_PAM_AUTH
 	if (!svr_opts.noauthpass &&
 			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
 		/* user wants to try password auth */
@@ -199,7 +199,7 @@ void recv_msg_userauth_request() {
 	}
 #endif
 
-#if DROPBEAR_SVR_PUBKEY_AUTH
+#ifdef ENABLE_SVR_PUBKEY_AUTH
 	/* user wants to try pubkey auth */
 	if (methodlen == AUTH_METHOD_PUBKEY_LEN &&
 			strncmp(methodname, AUTH_METHOD_PUBKEY,
@@ -215,10 +215,13 @@ void recv_msg_userauth_request() {
 #endif
 
 	/* nothing matched, we just fail with a delay */
-#ifdef SECURITY_NOTIFY
-	SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH,
-			RPT_FAIL, svr_ses.hoststring,
-			"From dropbear , ACCOUNT FAIL");
+#ifdef RTCONFIG_PROTECTION_SERVER
+		char ip[64];
+		char *addr;
+		strncpy(ip, svr_ses.addrstring, sizeof(ip)-1);
+		addr = strrchr(ip, ':');
+		*addr = '\0';
+		SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH, RPT_FAIL, ip, "From dropbear , ACCOUNT FAIL");
 #endif
 	send_msg_userauth_failure(0, 1);
 

@@ -27,7 +27,7 @@
 
 #include "dss.h"
 
-#if DROPBEAR_DSS
+#ifdef DROPBEAR_DSS
 
 dropbear_dss_key * gen_dss_priv_key(unsigned int size);
 

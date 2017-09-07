@@ -4,10 +4,10 @@
 #include "dbutil.h"
 #include "bignum.h"
 
-#if DROPBEAR_ECC
+#ifdef DROPBEAR_ECC
 
 /* .dp members are filled out by dropbear_ecc_fill_dp() at startup */
-#if DROPBEAR_ECC_256
+#ifdef DROPBEAR_ECC_256
 struct dropbear_ecc_curve ecc_curve_nistp256 = {
 	32,		/* .ltc_size	*/
 	NULL,		/* .dp		*/
@@ -15,7 +15,7 @@ struct dropbear_ecc_curve ecc_curve_nistp256 = {
 	"nistp256"	/* .name	*/
 };
 #endif
-#if DROPBEAR_ECC_384
+#ifdef DROPBEAR_ECC_384
 struct dropbear_ecc_curve ecc_curve_nistp384 = {
 	48,		/* .ltc_size	*/
 	NULL,		/* .dp		*/
@@ -23,7 +23,7 @@ struct dropbear_ecc_curve ecc_curve_nistp384 = {
 	"nistp384"	/* .name	*/
 };
 #endif
-#if DROPBEAR_ECC_521
+#ifdef DROPBEAR_ECC_521
 struct dropbear_ecc_curve ecc_curve_nistp521 = {
 	66,		/* .ltc_size	*/
 	NULL,		/* .dp		*/
@@ -33,13 +33,13 @@ struct dropbear_ecc_curve ecc_curve_nistp521 = {
 #endif
 
 struct dropbear_ecc_curve *dropbear_ecc_curves[] = {
-#if DROPBEAR_ECC_256
+#ifdef DROPBEAR_ECC_256
 	&ecc_curve_nistp256,
 #endif
-#if DROPBEAR_ECC_384
+#ifdef DROPBEAR_ECC_384
 	&ecc_curve_nistp384,
 #endif
-#if DROPBEAR_ECC_521
+#ifdef DROPBEAR_ECC_521
 	&ecc_curve_nistp521,
 #endif
 	NULL

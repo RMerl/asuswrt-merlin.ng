@@ -73,7 +73,7 @@ static const packettype cli_packettypes[] = {
 	{SSH_MSG_GLOBAL_REQUEST, recv_msg_global_request_cli},
 	{SSH_MSG_CHANNEL_SUCCESS, ignore_recv_response},
 	{SSH_MSG_CHANNEL_FAILURE, ignore_recv_response},
-#if DROPBEAR_CLI_REMOTETCPFWD
+#ifdef  ENABLE_CLI_REMOTETCPFWD
 	{SSH_MSG_REQUEST_SUCCESS, cli_recv_msg_request_success}, /* client */
 	{SSH_MSG_REQUEST_FAILURE, cli_recv_msg_request_failure}, /* client */
 #else
@@ -85,10 +85,10 @@ static const packettype cli_packettypes[] = {
 };
 
 static const struct ChanType *cli_chantypes[] = {
-#if DROPBEAR_CLI_REMOTETCPFWD
+#ifdef ENABLE_CLI_REMOTETCPFWD
 	&cli_chan_tcpremote,
 #endif
-#if DROPBEAR_CLI_AGENTFWD
+#ifdef ENABLE_CLI_AGENTFWD
 	&cli_chan_agent,
 #endif
 	NULL /* Null termination */
@@ -133,7 +133,7 @@ void cli_session(int sock_in, int sock_out, struct dropbear_progress_connection 
 
 }
 
-#if DROPBEAR_KEX_FIRST_FOLLOWS
+#ifdef USE_KEX_FIRST_FOLLOWS
 static void cli_send_kex_first_guess() {
 	send_msg_kexdh_init();
 }
@@ -165,7 +165,7 @@ static void cli_session_init(pid_t proxy_cmd_pid) {
 	cli_ses.lastprivkey = NULL;
 	cli_ses.lastauthtype = 0;
 
-#if DROPBEAR_NONE_CIPHER
+#ifdef DROPBEAR_NONE_CIPHER
 	cli_ses.cipher_none_after_auth = get_algo_usable(sshciphers, "none");
 	set_algo_usable(sshciphers, "none", 0);
 #else
@@ -182,7 +182,7 @@ static void cli_session_init(pid_t proxy_cmd_pid) {
 
 	ses.isserver = 0;
 
-#if DROPBEAR_KEX_FIRST_FOLLOWS
+#ifdef USE_KEX_FIRST_FOLLOWS
 	ses.send_kex_first_guess = cli_send_kex_first_guess;
 #endif
 
@@ -275,7 +275,7 @@ static void cli_sessionloop() {
 			}
 #endif
 
-#if DROPBEAR_NONE_CIPHER
+#ifdef DROPBEAR_NONE_CIPHER
 			if (cli_ses.cipher_none_after_auth)
 			{
 				set_algo_usable(sshciphers, "none", 1);
@@ -299,7 +299,7 @@ static void cli_sessionloop() {
 				}
 			}
 			
-#if DROPBEAR_CLI_NETCAT
+#ifdef ENABLE_CLI_NETCAT
 			if (cli_opts.netcat_host) {
 				cli_send_netcat_request();
 			} else 
@@ -308,10 +308,10 @@ static void cli_sessionloop() {
 				cli_send_chansess_request();
 			}
 
-#if DROPBEAR_CLI_LOCALTCPFWD
+#ifdef ENABLE_CLI_LOCALTCPFWD
 			setup_localtcp();
 #endif
-#if DROPBEAR_CLI_REMOTETCPFWD
+#ifdef ENABLE_CLI_REMOTETCPFWD
 			setup_remotetcp();
 #endif
 

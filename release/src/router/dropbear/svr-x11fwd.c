@@ -24,7 +24,7 @@
 
 #include "includes.h"
 
-#if DROPBEAR_X11FWD
+#ifndef DISABLE_X11FWD
 #include "x11fwd.h"
 #include "session.h"
 #include "ssh.h"

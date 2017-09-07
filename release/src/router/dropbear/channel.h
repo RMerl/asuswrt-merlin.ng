@@ -126,11 +126,11 @@ void recv_msg_channel_eof(void);
 void common_recv_msg_channel_data(struct Channel *channel, int fd, 
 		circbuffer * buf);
 
-#if DROPBEAR_CLIENT
+#ifdef DROPBEAR_CLIENT
 extern const struct ChanType clichansess;
 #endif
 
-#if DROPBEAR_LISTENERS || DROPBEAR_CLIENT
+#if defined(USING_LISTENERS) || defined(DROPBEAR_CLIENT)
 int send_msg_channel_open_init(int fd, const struct ChanType *type);
 void recv_msg_channel_open_confirmation(void);
 void recv_msg_channel_open_failure(void);

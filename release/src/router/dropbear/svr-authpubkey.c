@@ -65,7 +65,7 @@
 #include "packet.h"
 #include "algo.h"
 
-#if DROPBEAR_SVR_PUBKEY_AUTH
+#ifdef ENABLE_SVR_PUBKEY_AUTH
 
 #define MIN_AUTHKEYS_LINE 10 /* "ssh-rsa AB" - short but doesn't matter */
 #define MAX_AUTHKEYS_LINE 4200 /* max length of a line in authkeys */
@@ -146,10 +146,13 @@ void svr_auth_pubkey() {
 		dropbear_log(LOG_NOTICE,
 				"Pubkey auth succeeded for '%s' with key %s from %s",
 				ses.authstate.pw_name, fp, svr_ses.addrstring);
-#ifdef SECURITY_NOTIFY
-		SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH,
-				RPT_SUCCESS, svr_ses.hoststring,
-				"From dropbear , LOGIN SUCCESS(authpubkey)");
+#ifdef RTCONFIG_PROTECTION_SERVER
+		char ip[64];
+		char *addr;
+		strncpy(ip, svr_ses.addrstring, sizeof(ip)-1);
+		addr = strrchr(ip, ':');
+		*addr = '\0';
+		SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH, RPT_SUCCESS, ip, "From dropbear , LOGIN SUCCESS(authpubkey)");
 #endif
 		send_msg_userauth_success();
 	} else {
@@ -206,6 +209,8 @@ static int checkpubkey(char* algo, unsigned int algolen,
 	unsigned int len, pos;
 	buffer * options_buf = NULL;
 	int line_num;
+	uid_t origuid;
+	gid_t origgid;
 
 	TRACE(("enter checkpubkey"))
 
@@ -232,8 +237,21 @@ static int checkpubkey(char* algo, unsigned int algolen,
 	snprintf(filename, len + 22, "%s/.ssh/authorized_keys", 
 				ses.authstate.pw_dir);
 
-	/* open the file */
+	/* open the file as the authenticating user. */
+	origuid = getuid();
+	origgid = getgid();
+	if ((setegid(ses.authstate.pw_gid)) < 0 ||
+		(seteuid(ses.authstate.pw_uid)) < 0) {
+		dropbear_exit("Failed to set euid");
+	}
+
 	authfile = fopen(filename, "r");
+
+	if ((seteuid(origuid)) < 0 ||
+		(setegid(origgid)) < 0) {
+		dropbear_exit("Failed to revert euid");
+	}
+
 	if (authfile == NULL) {
 		goto out;
 	}

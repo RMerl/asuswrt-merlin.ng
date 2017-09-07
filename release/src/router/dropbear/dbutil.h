@@ -45,7 +45,7 @@ void dropbear_log(int priority, const char* format, ...) ATTRIB_PRINTF(2,3) ;
 
 void fail_assert(const char* expr, const char* file, int line) ATTRIB_NORETURN;
 
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 void dropbear_trace(const char* format, ...) ATTRIB_PRINTF(1,2);
 void dropbear_trace2(const char* format, ...) ATTRIB_PRINTF(1,2);
 void printhex(const char * label, const unsigned char * buf, int len);
@@ -88,5 +88,7 @@ a real-world clock */
 time_t monotonic_now(void);
 
 char * expand_homedir_path(const char *inpath);
+
+void fsync_parent_dir(const char* fn);
 
 #endif /* DROPBEAR_DBUTIL_H_ */

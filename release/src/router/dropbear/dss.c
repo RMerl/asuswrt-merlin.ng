@@ -37,7 +37,7 @@
  * See FIPS186 or the Handbook of Applied Cryptography for details of the
  * algorithm */
 
-#if DROPBEAR_DSS 
+#ifdef DROPBEAR_DSS 
 
 /* Load a dss key from a buffer, initialising the values.
  * The key will have the same format as buf_put_dss_key.
@@ -153,7 +153,7 @@ void buf_put_dss_priv_key(buffer* buf, dropbear_dss_key *key) {
 
 }
 
-#if DROPBEAR_SIGNKEY_VERIFY
+#ifdef DROPBEAR_SIGNKEY_VERIFY
 /* Verify a DSS signature (in buf) made on data by the key given. 
  * returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
 int buf_dss_verify(buffer* buf, dropbear_dss_key *key, buffer *data_buf) {

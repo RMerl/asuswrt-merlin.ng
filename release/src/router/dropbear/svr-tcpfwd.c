@@ -35,7 +35,7 @@
 #include "auth.h"
 #include "netio.h"
 
-#ifndef DROPBEAR_SVR_REMOTETCPFWD
+#ifndef ENABLE_SVR_REMOTETCPFWD
 
 /* This is better than SSH_MSG_UNIMPLEMENTED */
 void recv_msg_global_request_remotetcp() {
@@ -44,13 +44,13 @@ void recv_msg_global_request_remotetcp() {
 }
 
 /* */
-#endif /* !DROPBEAR_SVR_REMOTETCPFWD */
+#endif /* !ENABLE_SVR_REMOTETCPFWD */
 
 static int svr_cancelremotetcp(void);
 static int svr_remotetcpreq(void);
 static int newtcpdirect(struct Channel * channel);
 
-#if DROPBEAR_SVR_REMOTETCPFWD
+#ifdef ENABLE_SVR_REMOTETCPFWD
 static const struct ChanType svr_chan_tcpremote = {
 	1, /* sepfds */
 	"forwarded-tcpip",
@@ -199,7 +199,7 @@ static int svr_remotetcpreq() {
 	}
 	else
 	{
-		tcpinfo->listenaddr = request_addr;
+		tcpinfo->listenaddr = m_strdup(request_addr);
 	}
 
 	ret = listen_tcpfwd(tcpinfo);
@@ -215,9 +215,9 @@ out:
 	return ret;
 }
 
-#endif /* DROPBEAR_SVR_REMOTETCPFWD */
+#endif /* ENABLE_SVR_REMOTETCPFWD */
 
-#if DROPBEAR_SVR_LOCALTCPFWD
+#ifdef ENABLE_SVR_LOCALTCPFWD
 
 const struct ChanType svr_chan_tcpdirect = {
 	1, /* sepfds */
@@ -283,4 +283,4 @@ out:
 	return err;
 }
 
-#endif /* DROPBEAR_SVR_LOCALTCPFWD */
+#endif /* ENABLE_SVR_LOCALTCPFWD */

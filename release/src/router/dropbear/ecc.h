@@ -6,7 +6,7 @@
 
 #include "buffer.h"
 
-#if DROPBEAR_ECC
+#ifdef DROPBEAR_ECC
 
 struct dropbear_ecc_curve {
 	int ltc_size; /* to match the byte sizes in ltc_ecc_sets[] */

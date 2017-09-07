@@ -5,14 +5,14 @@
 #include "buffer.h"
 #include "signkey.h"
 
-#if DROPBEAR_ECDSA
+#ifdef DROPBEAR_ECDSA
 
 /* Prefer the larger size - it's fast anyway */
-#if DROPBEAR_ECC_521
+#if defined(DROPBEAR_ECC_521)
 #define ECDSA_DEFAULT_SIZE 521
-#elif DROPBEAR_ECC_384
+#elif defined(DROPBEAR_ECC_384)
 #define ECDSA_DEFAULT_SIZE 384
-#elif DROPBEAR_ECC_256
+#elif defined(DROPBEAR_ECC_256)
 #define ECDSA_DEFAULT_SIZE 256
 #else
 #define ECDSA_DEFAULT_SIZE 0

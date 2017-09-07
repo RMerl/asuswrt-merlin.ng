@@ -27,7 +27,7 @@
 
 #include "rsa.h"
 
-#if DROPBEAR_RSA
+#ifdef DROPBEAR_RSA
 
 dropbear_rsa_key * gen_rsa_priv_key(unsigned int size);
 

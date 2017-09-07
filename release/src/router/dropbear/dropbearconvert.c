@@ -53,8 +53,8 @@ static void printhelp(char * progname) {
 					progname);
 }
 
-#if defined(DBMULTI_dropbearconvert) || !DROPBEAR_MULTI
-#if defined(DBMULTI_dropbearconvert) && DROPBEAR_MULTI
+#if defined(DBMULTI_dropbearconvert) || !defined(DROPBEAR_MULTI)
+#if defined(DBMULTI_dropbearconvert) && defined(DROPBEAR_MULTI)
 int dropbearconvert_main(int argc, char ** argv) {
 #else 
 int main(int argc, char ** argv) {
@@ -67,7 +67,7 @@ int main(int argc, char ** argv) {
 	crypto_init();
 	seedrandom();
 
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 	/* It's hard for it to get in the way _too_ much */
 	debug_trace = 1;
 #endif

@@ -27,7 +27,7 @@
 
 #include "includes.h"
 
-#if DROPBEAR_SVR_AGENTFWD
+#ifdef ENABLE_SVR_AGENTFWD
 
 #include "agentfwd.h"
 #include "session.h"

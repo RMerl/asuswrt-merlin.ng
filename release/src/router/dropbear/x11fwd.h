@@ -23,7 +23,7 @@
  * SOFTWARE. */
 #ifndef DROPBEAR__X11FWD_H_
 #define DROPBEAR__X11FWD_H_
-#if DROPBEAR_X11FWD
+#ifndef DISABLE_X11FWD
 
 #include "includes.h"
 #include "chansession.h"

@@ -39,9 +39,7 @@
  * Caution: Don't use this in an unfriendly environment (ie unfirewalled),
  * since the printing may not sanitise strings etc. This will add a reasonable
  * amount to your executable size. */
-#ifndef DEBUG_TRACE
-#define DEBUG_TRACE 0
-#endif
+/*#define DEBUG_TRACE*/
 
 /* All functions writing to the cleartext payload buffer call
  * CHECKCLEARTOWRITE() before writing. This is only really useful if you're
@@ -63,7 +61,7 @@
 /*#define DEBUG_RSA*/
 
 /* you don't need to touch this block */
-#if DEBUG_TRACE
+#ifdef DEBUG_TRACE
 #define TRACE(X) dropbear_trace X;
 #define TRACE2(X) dropbear_trace2 X;
 #else /*DEBUG_TRACE*/

@@ -78,7 +78,7 @@ void chaninitialise(const struct ChanType *chantypes[]) {
 
 	ses.chantypes = chantypes;
 
-#if DROPBEAR_LISTENERS
+#ifdef USING_LISTENERS
 	listeners_initialise();
 #endif
 
@@ -255,7 +255,7 @@ void channelio(fd_set *readfds, fd_set *writefds) {
 		}
 	}
 
-#if DROPBEAR_LISTENERS
+#ifdef USING_LISTENERS
 	handle_listeners(readfds);
 #endif
 }
@@ -595,7 +595,7 @@ void setchannelfds(fd_set *readfds, fd_set *writefds, int allow_reads) {
 
 	} /* foreach channel */
 
-#if DROPBEAR_LISTENERS
+#ifdef USING_LISTENERS
 	set_listener_fds(readfds);
 #endif
 
@@ -1114,7 +1114,7 @@ static void close_chan_fd(struct Channel *channel, int fd, int how) {
 }
 
 
-#if (DROPBEAR_LISTENERS) || (DROPBEAR_CLIENT)
+#if defined(USING_LISTENERS) || defined(DROPBEAR_CLIENT)
 /* Create a new channel, and start the open request. This is intended
  * for X11, agent, tcp forwarding, and should be filled with channel-specific
  * options, with the calling function calling encrypt_packet() after
@@ -1210,7 +1210,7 @@ void recv_msg_channel_open_failure() {
 
 	remove_channel(channel);
 }
-#endif /* DROPBEAR_LISTENERS */
+#endif /* USING_LISTENERS */
 
 void send_msg_request_success() {
 	CHECKCLEARTOWRITE();

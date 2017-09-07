@@ -53,7 +53,9 @@ $(APP): check_config
 	$(MAKE) -C $(APP) ;
 	install -m 755 $(APP)/ip/ip  $(INSTALL_DIR)/bin/ip
 	install -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/bin/tc
+	install -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/usr/sbin/realtc
 	$(STRIP) $(INSTALL_DIR)/bin/tc
+	$(STRIP) $(INSTALL_DIR)/usr/sbin/realtc
 	$(STRIP) $(INSTALL_DIR)/bin/ip
 	@echo "Done building $(APP)"
 	
@@ -67,6 +69,7 @@ endif
 # entire directory to ensure consistency.
 clean:
 	rm -f $(INSTALL_DIR)/bin/tc
+	rm -f $(INSTALL_DIR)/usr/sbin/realtc
 	rm -f $(INSTALL_DIR)/bin/ip
 	$(MAKE) -C $(APP) clean
 	#rm -rf $(APP)

@@ -1,0 +1,105 @@
+--- write_smb_conf.c	2017-05-30 20:32:17.000000000 -0400
++++ write_smb_conf.c	2017-08-16 00:21:04.875766225 -0400
+@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
+ 
+ 	if (!nvram_get_int("stop_samba_speedup")) {
+ #if defined(RTCONFIG_SAMBA36X)
+-		fprintf(fp, "socket options = TCP_NODELAY SO_KEEPALIVE\n");
++		fprintf(fp, "socket options = IPTOS_LOWDELAY TCP_NODELAY SO_KEEPALIVE SO_RCVBUF=65536 SO_SNDBUF=65536\n");
+ #elif defined(RTCONFIG_BCMARM)
+ #ifdef RTCONFIG_BCM_7114
+ 		fprintf(fp, "socket options = IPTOS_LOWDELAY TCP_NODELAY SO_RCVBUF=131072 SO_SNDBUF=131072\n");
+@@ -361,28 +364,47 @@ int main(int argc, char *argv[])
+ 	fprintf(fp, "level2 oplocks = yes\n");
+ 	fprintf(fp, "kernel oplocks = no\n");
+ 
+-	fprintf(fp, "[ipc$]\n");
+-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN)
+-	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet);
+-#else
+-	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+-#endif
+-	fprintf(fp, "hosts deny = 0.0.0.0/0\n");
++	if (nvram_get_int("smbd_wins"))
++		fprintf(fp, "wins support = yes\n");
++
++	if (nvram_get_int("smbd_master")) {
++		fprintf(fp, "os level = 255\n");
++		fprintf(fp, "domain master = yes\n");
++		fprintf(fp, "local master = yes\n");
++		fprintf(fp, "preferred master = yes\n");
++	}
+ 
+ #if defined(RTCONFIG_SAMBA36X)
+ 	fprintf(fp, "enable core files = no\n");
+ 	fprintf(fp, "deadtime = 30\n");
+-	fprintf(fp, "local master = yes\n");
+-	fprintf(fp, "preferred master = yes\n");
++//	fprintf(fp, "local master = yes\n");
++//	fprintf(fp, "preferred master = yes\n");
+ 	fprintf(fp, "load printers = no\n");
+ 	fprintf(fp, "printable = no\n");
+-	fprintf(fp, "max protocol = SMB2\n");
++	if (nvram_get_int("smbd_enable_smb2"))
++		fprintf(fp, "max protocol = SMB2\n");
++	else
++		fprintf(fp, "max protocol = NT1\n");
+ 	fprintf(fp, "smb encrypt = disabled\n");
+ 	fprintf(fp, "min receivefile size = 16384\n");
+ 	fprintf(fp, "passdb backend = smbpasswd\n");
+ 	fprintf(fp, "smb passwd file = /etc/samba/smbpasswd\n");
+ #endif
+ 
++#if 0
++	fprintf(fp, "[ipc$]\n");
++#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN)
++	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subne$
++#else
++	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
++#endif
++	fprintf(fp, "hosts deny = 0.0.0.0/0\n");
++#endif // #if 0
++
++	// If we only want name services then skip share definition
++	if (nvram_match("enable_samba", "0"))
++		goto confpage;
++
+ 	disks_info = read_disk_data();
+ 	if (disks_info == NULL) {
+ 		usb_dbg("Couldn't get disk list when writing smb.conf!\n");
+@@ -461,7 +483,7 @@ int main(int argc, char *argv[])
+ 
+ 						if(samba_right > 0){
+ 							int count = get_list_strings_count(folder_list, sh_num, folder_list[n]);
+-							if (count <= 1)
++							if ((!strcmp(nvram_safe_get("smbd_simpler_naming"), "1")) && (count <= 1))
+ 								fprintf(fp, "[%s]\n", folder_list[n]);
+ 							else
+ 								fprintf(fp, "[%s (at %s)]\n", folder_list[n], mount_folder);
+@@ -515,7 +537,7 @@ int main(int argc, char *argv[])
+ 					}
+ 					else{
+ 						int count = get_list_strings_count(folder_list, sh_num, folder_list[n]);
+-						if (count <= 1)
++						if ((!strcmp(nvram_safe_get("smbd_simpler_naming"), "1")) && (count <= 1))
+ 							fprintf(fp, "[%s]\n", folder_list[n]);
+ 						else
+ 							fprintf(fp, "[%s (at %s)]\n", folder_list[n], mount_folder);
+@@ -532,7 +554,7 @@ int main(int argc, char *argv[])
+ 						if(n == -1)
+ 							samba_right = get_permission(account_list[i], follow_partition->mount_point, NULL, "cifs");
+ 						else
+-							samba_right = get_permission(account_list[i], follow_partition->mount_point, folder_list[n], "cifs");
++							samba_right = get_permission(account_list[i], follow_partition->mount_point, folder_list[n], "\cifs");
+ 						if (first == 1)
+ 							first = 0;
+ 						else
+@@ -635,7 +657,7 @@ int main(int argc, char *argv[])
+ 					int i, first;
+ 
+ 					int count = get_list_strings_count(folder_list, sh_num, folder_list[n]);
+-					if (count <= 1)
++					if ((!strcmp(nvram_safe_get("smbd_simpler_naming"), "1")) && (count <= 1))
+ 						fprintf(fp, "[%s]\n", folder_list[n]);
+ 					else
+ 						fprintf(fp, "[%s (at %s)]\n", folder_list[n], mount_folder);

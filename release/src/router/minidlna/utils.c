@@ -1,5 +1,5 @@
 /* MiniDLNA media server
- * Copyright (C) 2008-2009  Justin Maggard
+ * Copyright (C) 2008-2017  Justin Maggard
  *
  * This file is part of MiniDLNA.
  *
@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/sysinfo.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -62,7 +61,7 @@ ends_with(const char * haystack, const char * needle)
 
 	if( nlen > hlen )
 		return 0;
- 	end = haystack + hlen - nlen;
+	end = haystack + hlen - nlen;
 
 	return (strcasecmp(end, needle) ? 0 : 1);
 }
@@ -232,6 +231,20 @@ escape_tag(const char *tag, int force_alloc)
 }
 
 char *
+duration_str(int msec)
+{
+	char *str;
+
+	xasprintf(&str, "%d:%02d:%02d.%03d",
+			(msec / 3600000),
+			(msec / 60000 % 60),
+			(msec / 1000 % 60),
+			(msec % 1000));
+
+	return str;
+}
+
+char *
 strip_ext(char *name)
 {
 	char *period;
@@ -283,7 +296,7 @@ make_dir(char * path, mode_t mode)
 				return -1;
 			}
 		}
-	        if (!c)
+		if (!c)
 			return 0;
 
 		/* Remove any inserted nul from the path. */
@@ -385,8 +398,6 @@ is_video(const char * file)
 		ends_with(file, ".mts") || ends_with(file, ".m2ts")  ||
 		ends_with(file, ".m2t") || ends_with(file, ".mkv")   ||
 		ends_with(file, ".vob") || ends_with(file, ".ts")    ||
-		ends_with(file, ".tp")  ||
-		ends_with(file, ".rmvb")|| ends_with(file, ".rm")    ||
 		ends_with(file, ".flv") || ends_with(file, ".xvid")  ||
 #ifdef TIVO_SUPPORT
 		ends_with(file, ".TiVo") ||
@@ -527,10 +538,3 @@ resolve_unknown_type(const char * path, media_types dir_type)
 	return type;
 }
 
-long uptime(void)
-{
-	struct sysinfo info;
-	sysinfo(&info);
-
-	return info.uptime;
-}

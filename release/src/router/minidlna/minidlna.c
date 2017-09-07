@@ -101,10 +101,11 @@
 #include "process.h"
 #include "upnpevents.h"
 #include "scanner.h"
-#include "inotify.h"
+#include "monitor.h"
 #include "log.h"
 #include "tivo_beacon.h"
 #include "tivo_utils.h"
+#include "avahi.h"
 
 #if SQLITE_VERSION_NUMBER < 3005001
 # warning "Your SQLite3 library appears to be too old!  Please use 3.5.1 or newer."
@@ -145,7 +146,7 @@ OpenAndConfHTTPSocket(unsigned short port)
 		return -1;
 	}
 
-	if (listen(s, 6) < 0)
+	if (listen(s, 16) < 0)
 	{
 		DPRINTF(E_ERROR, L_GENERAL, "listen(http): %s\n", strerror(errno));
 		close(s);
@@ -189,7 +190,7 @@ sighup(int sig)
 static void
 set_startup_time(void)
 {
-#if 0
+#if 1
 	startup_time = time(NULL);
 #else
 	startup_time = uptime();
@@ -253,30 +254,6 @@ getfriendlyname(char *buf, int len)
 		}
 	}
 	fclose(info);
-#if PNPX
-	memcpy(pnpx_hwid+4, "01F2", 4);
-	if (strcmp(modelnumber, "NVX") == 0)
-		memcpy(pnpx_hwid+17, "0101", 4);
-	else if (strcmp(modelnumber, "Pro") == 0 ||
-	         strcmp(modelnumber, "Pro 6") == 0 ||
-	         strncmp(modelnumber, "Ultra 6", 7) == 0)
-		memcpy(pnpx_hwid+17, "0102", 4);
-	else if (strcmp(modelnumber, "Pro 2") == 0 ||
-	         strncmp(modelnumber, "Ultra 2", 7) == 0)
-		memcpy(pnpx_hwid+17, "0103", 4);
-	else if (strcmp(modelnumber, "Pro 4") == 0 ||
-	         strncmp(modelnumber, "Ultra 4", 7) == 0)
-		memcpy(pnpx_hwid+17, "0104", 4);
-	else if (strcmp(modelnumber+1, "100") == 0)
-		memcpy(pnpx_hwid+17, "0105", 4);
-	else if (strcmp(modelnumber+1, "200") == 0)
-		memcpy(pnpx_hwid+17, "0106", 4);
-	/* 0107 = Stora */
-	else if (strcmp(modelnumber, "Duo v2") == 0)
-		memcpy(pnpx_hwid+17, "0108", 4);
-	else if (strcmp(modelnumber, "NV+ v2") == 0)
-		memcpy(pnpx_hwid+17, "0109", 4);
-#endif
 #else
 	char * logname;
 	logname = getenv("LOGNAME");
@@ -508,9 +485,21 @@ static int strtobool(const char *str)
 static void init_nls(void)
 {
 #ifdef ENABLE_NLS
-	setlocale(LC_MESSAGES, "");
-	setlocale(LC_CTYPE, "en_US.utf8");
-	DPRINTF(E_DEBUG, L_GENERAL, "Using locale dir %s\n", bindtextdomain("minidlna", getenv("TEXTDOMAINDIR")));
+	const char *messages, *ctype, *locale_dir;
+
+	ctype = setlocale(LC_CTYPE, "");
+	if (!ctype || !strcmp(ctype, "C"))
+		ctype = setlocale(LC_CTYPE, "en_US.utf8");
+	if (!ctype)
+		DPRINTF(E_WARN, L_GENERAL, "Unset locale\n");
+	else if (!strstr(ctype, "utf8") && !strstr(ctype, "UTF8") &&
+		 !strstr(ctype, "utf-8") && !strstr(ctype, "UTF-8"))
+		DPRINTF(E_WARN, L_GENERAL, "Using unsupported non-utf8 locale '%s'\n", ctype);
+	messages = setlocale(LC_MESSAGES, "");
+	if (!messages)
+		messages = "unset";
+	locale_dir = bindtextdomain("minidlna", getenv("TEXTDOMAINDIR"));
+	DPRINTF(E_DEBUG, L_GENERAL, "Using locale dir '%s' and locale langauge %s/%s\n", locale_dir, messages, ctype);
 	textdomain("minidlna");
 #endif
 }
@@ -814,6 +803,14 @@ init(int argc, char **argv)
 		case MERGE_MEDIA_DIRS:
 			if (strtobool(ary_options[i].value))
 				SETFLAG(MERGE_MEDIA_DIRS_MASK);
+			break;
+		case WIDE_LINKS:
+			if (strtobool(ary_options[i].value))
+				SETFLAG(WIDE_LINKS_MASK);
+			break;
+		case TIVO_DISCOVERY:
+			if (strcasecmp(ary_options[i].value, "beacon") == 0)
+				CLEARFLAG(TIVO_BONJOUR_MASK);
 			break;
 		default:
 			DPRINTF(E_ERROR, L_GENERAL, "Unknown option in file %s\n",
@@ -1340,19 +1337,26 @@ main(int argc, char **argv)
 		ret = sqlite3_create_function(db, "tivorandom", 1, SQLITE_UTF8, NULL, &TiVoRandomSeedFunc, NULL, NULL);
 		if (ret != SQLITE_OK)
 			DPRINTF(E_ERROR, L_TIVO, "ERROR: Failed to add sqlite randomize function for TiVo!\n");
-		/* open socket for sending Tivo notifications */
-		sbeacon = OpenAndConfTivoBeaconSocket();
-		if(sbeacon < 0)
-			DPRINTF(E_FATAL, L_GENERAL, "Failed to open sockets for sending Tivo beacon notify "
-				"messages. EXITING\n");
-		tivo_bcast.sin_family = AF_INET;
-		tivo_bcast.sin_addr.s_addr = htonl(getBcastAddress());
-		tivo_bcast.sin_port = htons(2190);
+		if (GETFLAG(TIVO_BONJOUR_MASK))
+		{
+			tivo_bonjour_register();
+		}
+		else
+		{
+			/* open socket for sending Tivo notifications */
+			sbeacon = OpenAndConfTivoBeaconSocket();
+			if(sbeacon < 0)
+				DPRINTF(E_FATAL, L_GENERAL, "Failed to open sockets for sending Tivo beacon notify "
+					"messages. EXITING\n");
+			tivo_bcast.sin_family = AF_INET;
+			tivo_bcast.sin_addr.s_addr = htonl(getBcastAddress());
+			tivo_bcast.sin_port = htons(2190);
+		}
 	}
 #endif
 
 	reload_ifaces(0);
-#if 0
+#if 1
 	lastnotifytime.tv_sec = time(NULL) + runtime_vars.notify_interval;
 #else
 	lastnotifytime.tv_sec = uptime();
@@ -1363,7 +1367,7 @@ main(int argc, char **argv)
 	{
 		/* Check if we need to send SSDP NOTIFY messages and do it if
 		 * needed */
-#if 0
+#if 1
 		if (gettimeofday(&timeofday, 0) < 0)
 		{
 			DPRINTF(E_ERROR, L_GENERAL, "gettimeofday(): %s\n", strerror(errno));
@@ -1377,7 +1381,7 @@ main(int argc, char **argv)
 #endif
 		{
 			/* the comparison is not very precise but who cares ? */
-#if 0
+#if 1
 			if (timeofday.tv_sec >= (lastnotifytime.tv_sec + runtime_vars.notify_interval))
 #else
 			if (timeofday.tv_sec >= (lastnotifytime.tv_sec + NOTIFY_INTERVAL))
@@ -1386,7 +1390,7 @@ main(int argc, char **argv)
 				DPRINTF(E_DEBUG, L_SSDP, "Sending SSDP notifies\n");
 				for (i = 0; i < n_lan_addr; i++)
 				{
-#if 0
+#if 1
 					SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
 						runtime_vars.port, runtime_vars.notify_interval);
 #else
@@ -1395,7 +1399,7 @@ main(int argc, char **argv)
 #endif
 				}
 				memcpy(&lastnotifytime, &timeofday, sizeof(struct timeval));
-#if 0
+#if 1
 				timeout.tv_sec = runtime_vars.notify_interval;
 #else
 				timeout.tv_sec = NOTIFY_INTERVAL;
@@ -1404,7 +1408,7 @@ main(int argc, char **argv)
 			}
 			else
 			{
-#if 0
+#if 1
 				timeout.tv_sec = lastnotifytime.tv_sec + runtime_vars.notify_interval
 				                 - timeofday.tv_sec;
 #else
@@ -1589,10 +1593,6 @@ shutdown:
 	if (scanning && scanner_pid)
 		kill(scanner_pid, SIGKILL);
 
-	/* kill other child processes */
-	process_reap_children();
-	free(children);
-
 	/* close out open sockets */
 	while (upnphttphead.lh_first != NULL)
 	{
@@ -1619,6 +1619,10 @@ shutdown:
 
 	if (inotify_thread)
 		pthread_join(inotify_thread, NULL);
+
+	/* kill other child processes */
+	process_reap_children();
+	free(children);
 
 	sql_exec(db, "UPDATE SETTINGS set VALUE = '%u' where KEY = 'UPDATE_ID'", updateID);
 	sqlite3_close(db);

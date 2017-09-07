@@ -211,7 +211,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 		phdr_ex = (IBOX_COMM_PKT_HDR_EX *)pdubuf;	
 		
 		// Check Mac Address
-		if (memcpy(phdr_ex->MacAddress, mac, 6)==0)
+		if (memcmp(phdr_ex->MacAddress, mac, 6)==0)
 		{
 			_dprintf("Mac Error %2x%2x%2x%2x%2x%2x\n",
 				(unsigned char)phdr_ex->MacAddress[0],
@@ -457,6 +457,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 		     sendInfo(sockfd, pdubuf_res, send_port);
 		     return pdubuf_res;
 
+#if 0 // Vulenrable code
 		case NET_CMD_ID_MANU_CMD:
 		{
 		     if (!nvram_match("ateCommand_flag", "1")) return NULL;
@@ -575,6 +576,7 @@ fprintf(stderr, "3. NET_CMD_ID_MANU_CMD:\n");
 		     }
 	 	     return pdubuf_res;
 		}
+#endif // Disable vulnerable code
 #ifdef BTN_SETUP // This option can not co-exist with WCLIENT
 		case NET_CMD_ID_SETKEY_EX:
 		{

@@ -110,6 +110,10 @@ endif
 ifeq ($(RTCONFIG_BCMARM),y)
 LDFLAGS += -lgcc_s
 endif
+
+# Just copying what ASUS did here. This should be in Makefile.in instead.
+ez_ipupdate_OBJECTS += namecheap.o
+
 ifeq ($(RTCONFIG_QTN),y)
 CFLAGS += -I$(TOP)/libqcsapi_client -I$(TOP)/httpd -I./sysdeps/qtn
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client

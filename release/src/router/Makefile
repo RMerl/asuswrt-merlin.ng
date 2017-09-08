@@ -1224,6 +1224,13 @@ obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += cstats
+ifeq ($(RTCONFIG_BCMARM),y)
+obj-y += libnfnetlink
+obj-y += libmnl
+obj-y += ipset_arm
+else
+obj-y += ipset
+endif
 # End merlin add-ons
 
 ifeq ($(RTCONFIG_TOR),y)
@@ -6792,6 +6799,87 @@ nettle-clean:
 
 samba-3.6.x: libiconv-1.14
 	@$(MAKE) -C samba-3.6.x
+
+ipset:
+	$(MAKE) -C ipset binaries $(PARALLEL_BUILD)
+
+ipset-install:
+	install -D ipset/ipset $(INSTALLDIR)/ipset/usr/sbin/ipset
+	install -d $(INSTALLDIR)/ipset/usr/lib/
+	install ipset/*.so $(INSTALLDIR)/ipset/usr/lib/
+	$(STRIP) $(INSTALLDIR)/ipset/usr/lib/*.so
+	$(STRIP) $(INSTALLDIR)/ipset/usr/sbin/ipset
+
+libnfnetlink/stamp-h1:
+	cd $(TOP)/libnfnetlink && CC=$(CC) STRIP=$(STRIP) \
+		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		$(CONFIGURE) --prefix=/usr --enable-shared --enable-static
+	touch libnfnetlink/stamp-h1
+
+libnfnetlink: libnfnetlink/stamp-h1
+	@$(SEP)
+	$(MAKE) -C libnfnetlink
+
+libnfnetlink-install:
+	install -D libnfnetlink/src/.libs/libnfnetlink.so.0.2.0 $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
+	$(STRIP) -s $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
+	cd $(INSTALLDIR)/libnfnetlink/usr/lib/ && \
+		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so.0 && \
+		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so
+
+libmnl/stamp-h1:
+	cd $(TOP)/libmnl && CC=$(CC) STRIP=$(STRIP) \
+	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+	$(CONFIGURE) --prefix=/usr
+	touch libmnl/stamp-h1
+
+libmnl: libmnl/stamp-h1
+	$(MAKE) -C libmnl
+	$(MAKE) -C libmnl DESTDIR=$(TOP)/libmnl/staged install
+
+libmnl-install: libmnl
+	install -d $(INSTALLDIR)/libmnl/usr/lib/
+	install libmnl/src/.libs/libmnl.so.0.1.0 $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
+	$(STRIP) $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
+	cd $(INSTALLDIR)/libmnl/usr/lib/ && \
+		ln -sf libmnl.so.0.1.0 libmnl.so.0 && \
+		ln -sf libmnl.so.0.1.0 libmnl.so
+
+libmnl-clean:
+	-@$(MAKE) -C libmnl clean
+	-@rm -rf libmnl/staged
+
+ipset_arm/stamp-h1: libmnl
+	cd $(TOP)/ipset_arm && CC=$(CC) STRIP=$(STRIP) \
+	autoreconf -i -f && \
+	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+	libmnl_CFLAGS="-I$(TOP)/libmnl/staged/usr/include" \
+	libmnl_LIBS="-L$(TOP)/libmnl/staged/usr/lib -lmnl" \
+	$(CONFIGURE) --prefix=/usr --with-kmod=yes --with-kbuild=$(LINUXDIR)
+	touch ipset_arm/stamp-h1
+
+ipset_arm: ipset_arm/stamp-h1
+	$(MAKE) -C ipset_arm
+	$(MAKE) -C ipset_arm modules
+
+ipset_arm-install:
+	install -D ipset_arm/src/ipset $(INSTALLDIR)/ipset_arm/usr/sbin/ipset
+	install -d $(INSTALLDIR)/ipset_arm/usr/lib/
+	install ipset_arm/lib/.libs/libipset.so.3.6.0 $(INSTALLDIR)/ipset_arm/usr/lib/libipset.so.3.6.0
+	$(STRIP) $(INSTALLDIR)/ipset_arm/usr/lib/libipset.so.3.6.0
+	$(STRIP) $(INSTALLDIR)/ipset_arm/usr/sbin/ipset
+	cd $(INSTALLDIR)/ipset_arm/usr/lib/ && \
+		ln -sf libipset.so.3.6.0 libipset.so.3 && \
+		ln -sf libipset.so.3.6.0 libipset.so
+
+ipset_arm-clean:
+	-@$(MAKE) -C ipset_arm clean
+	-@$(MAKE) -C ipset_arm modules_clean
+	-@rm -rf ipset_arm/Makefile ipset_arm/stamp-h1
+
 # End merlin components
 
 readline-6.2/Makefile: readline-6.2/configure

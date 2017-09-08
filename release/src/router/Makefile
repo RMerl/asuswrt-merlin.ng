@@ -6858,7 +6858,7 @@ ipset_arm/stamp-h1: libmnl
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	libmnl_CFLAGS="-I$(TOP)/libmnl/staged/usr/include" \
 	libmnl_LIBS="-L$(TOP)/libmnl/staged/usr/lib -lmnl" \
-	$(CONFIGURE) --prefix=/usr --with-kmod=yes --with-kbuild=$(LINUXDIR)
+	$(CONFIGURE) --prefix=/usr --with-kmod=$(if $(HND_ROUTER),no,yes) --with-kbuild=$(LINUXDIR)
 	touch ipset_arm/stamp-h1
 
 ipset_arm: ipset_arm/stamp-h1

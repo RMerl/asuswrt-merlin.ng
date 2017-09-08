@@ -31,11 +31,18 @@ apps: .conf
 	mkdir -p $(srcdir)/bin
 	$(MAKE) -C $(srcdir) all
 
+ifeq ($(HND_ROUTER),y)
+LIB_RESOLV="yes"
+else
+DEF_FCNTL="-Dfcntl=fcntl64"
+LIB_RESOLV="no"
+endif
+
 .conf:
 	cd $(srcdir) && \
-	ac_cv_lib_resolv_dn_expand=no \
-	ac_cv_lib_resolv__dn_expand=no \
-	ac_cv_lib_resolv___dn_expand=no \
+	ac_cv_lib_resolv_dn_expand=$(LIB_RESOLV) \
+	ac_cv_lib_resolv__dn_expand=$(LIB_RESOLV) \
+	ac_cv_lib_resolv___dn_expand=$(LIB_RESOLV) \
 	ac_cv_func_prctl=no \
 	ac_cv_file__proc_sys_kernel_core_pattern=yes \
 	SMB_BUILD_CC_NEGATIVE_ENUM_VALUES=yes \
@@ -83,7 +90,7 @@ apps: .conf
 	samba_cv_SIZEOF_INO_T=yes \
 	samba_cv_SIZEOF_TIME_T=no \
 	samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
-	CPPFLAGS="-DNDEBUG -DSHMEM_SIZE=524288 -Dfcntl=fcntl64 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -D_LARGE_FILES=1" \
+	CPPFLAGS="-DNDEBUG -DSHMEM_SIZE=524288 $(DEF_FCNTL) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -D_LARGE_FILES=1" \
 	CFLAGS="$(SMBCFLAGS)" LDFLAGS="$(SMBLDFLAGS)" CC=$(CC) LD=$(LD) AR=$(AR) RANLIB=$(RANLIB) \
 	$(CONFIGURE) \
 		--prefix=/usr \

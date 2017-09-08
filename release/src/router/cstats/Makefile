@@ -1,9 +1,13 @@
 include ../common.mak
 
-CFLAGS = -Wall -Os $(EXTRACFLAGS)
+CFLAGS += -Wall -Os $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -idirafter$(LINUXDIR)/include
 #CFLAGS += -ffunction-sections -fdata-sections
-LDFLAGS	= -L../nvram$(BCMEX) -lnvram -L../shared -lshared $(LIBS)
+LDFLAGS	= -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared $(LIBS)
+
+ifeq ($(HND_ROUTER),y)
+LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 LIBS = -lgcc_s

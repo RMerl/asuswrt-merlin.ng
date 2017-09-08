@@ -1223,6 +1223,7 @@ obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
+obj-y += cstats
 # End merlin add-ons
 
 ifeq ($(RTCONFIG_TOR),y)

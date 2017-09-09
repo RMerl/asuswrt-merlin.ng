@@ -1911,7 +1911,7 @@ ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
 		memset(buf, 0, sizeof(buf));
 		memset(file_name, 0, sizeof(file_name));
 		sprintf(file_name, "vpn_crt_server%d_extra", idx);
-		get_parsed_crt(file_name, buf, sizeof(buf));
+		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_CA_EXTRA, buf, sizeof(buf));
 		websWrite(wp, "%s=['", file_name);
 		for (c = buf; *c; c++) {
 			if (isprint(*c) &&
@@ -2016,7 +2016,7 @@ ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
 		memset(buf, 0, sizeof(buf));
 		memset(file_name, 0, sizeof(file_name));
 		sprintf(file_name, "vpn_crt_client%d_extra", idx);
-		get_parsed_crt(file_name, buf, sizeof(buf));
+		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_CA_EXTRA, buf, sizeof(buf));
 		websWrite(wp, "%s=['", file_name);
 		for (c = buf; *c; c++) {
 			if (isprint(*c) &&
@@ -11243,9 +11243,7 @@ do_vpnupload_cgi(char *url, FILE *stream)
 			set_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_CRL, NULL, VPN_CLIENT_UPLOAD);
 		}
 		else if(!strcmp(filetype, "extra")) {
-			char nv[32] = {0};	// Tempo
-			sprintf(nv, "vpn_crt_client%s_extra", unit);
-			set_crt_parsed(nv, VPN_CLIENT_UPLOAD);
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA_EXTRA, NULL, VPN_CLIENT_UPLOAD);
 			state = nvram_get_int("vpn_upload_state");
 			nvram_set_int("vpn_upload_state", state & (~VPN_UPLOAD_NEED_EXTRA));
 		}
@@ -20197,7 +20195,6 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	websWrite(wp, "\"SAN\":\"");
 
 // Dump SANs
-	int success = 0;
 	GENERAL_NAMES* names = NULL;
 	unsigned char* utf8 = NULL;
 
@@ -20225,7 +20222,6 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 
 				if(utf8 && len1 && len2 && (len1 == len2)) {
 					websWrite(wp, "%s ", utf8);
-					success = 1;
 				}
 
 				if(utf8) {

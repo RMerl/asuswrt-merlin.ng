@@ -339,7 +339,7 @@ OBJS += snmpd.o
 endif
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -I$(TOP)/libvpn
-#LDFLAGS += -L$(TOP)/libvpn -lvpn
+LDFLAGS += -L$(TOP)/libvpn -lvpn
 OBJS += openvpn.o
 endif
 

@@ -10,7 +10,7 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 
 INSTALL = install
 
-OBJS = openvpn_config.o openvpn_control.o
+OBJS = openvpn_config.o #openvpn_control.o
 
 ifeq ($(wildcard ./*.c),)
 all:

@@ -58,7 +58,7 @@
 
 #ifdef RTCONFIG_OPENVPN
 #include "openvpn_config.h"
-#include "openvpn_control.h"
+//#include "openvpn_control.h"
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL

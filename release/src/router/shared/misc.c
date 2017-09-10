@@ -2797,73 +2797,6 @@ END:
 }
 #endif
 
-char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
-{
-	char *value;
-	int len, i;
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	FILE *fp;
-	char tmpBuf[256] = {0};
-	char *p = buf;
-#endif
-
-	value = nvram_safe_get(name);
-	len = strlen(value);
-
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	if(!check_if_dir_exist(OVPN_FS_PATH))
-		mkdir(OVPN_FS_PATH, S_IRWXU);
-	snprintf(tmpBuf, sizeof(tmpBuf) -1, "%s/%s", OVPN_FS_PATH, name);
-#endif
-
-	if(len) {
-		for (i=0; (i < len); i++) {
-			if (value[i] == '>')
-				buf[i] = '\n';
-			else
-				buf[i] = value[i];
-		}
-		buf[i] = '\0';
-
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		//save to file and then clear nvram value
-		fp = fopen(tmpBuf, "w");
-		if(fp) {
-			chmod(tmpBuf, S_IRUSR|S_IWUSR);
-			fprintf(fp, "%s", buf);
-			fclose(fp);
-			nvram_set(name, "");
-		}
-#endif
-	}
-	else {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		//nvram value cleard, get from file
-		fp = fopen(tmpBuf, "r");
-		if(fp) {
-			while(fgets(buf, buf_len, fp)) {
-				if(!strncmp(buf, "-----BEGIN", 10) || !strncmp(buf, "none", 4))
-					break;
-			}
-			if(feof(fp) &&  strncmp(buf, "none", 4)) {
-				fclose(fp);
-				memset(buf, 0, buf_len);
-				return buf;
-			}
-			p += strlen(buf);
-			memset(tmpBuf, 0, sizeof(tmpBuf));
-			while(fgets(tmpBuf, sizeof(tmpBuf), fp)) {
-				strncpy(p, tmpBuf, strlen(tmpBuf));
-				p += strlen(tmpBuf);
-			}
-			fclose(fp);
-		}
-#endif
-		*p = '\0';
-	}
-	return buf;
-}
-
 #if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 int set_crt_parsed(const char *name, char *file_path)
 {
@@ -2885,9 +2818,6 @@ int set_crt_parsed(const char *name, char *file_path)
 	char buffer[4000] = {0};
 	char buffer2[256] = {0};
 	char *p = buffer;
-
-// TODO: Ensure that Asus's routine can handle CRLF too, otherwise revert to
-//       the code we currently use in httpd.
 
 	if(fp) {
 		while(fgets(buffer, sizeof(buffer), fp)) {

@@ -1221,9 +1221,7 @@ extern void create_ovpn_passwd();
 extern int check_ovpn_server_enabled(int unit);
 extern int check_ovpn_client_enabled(int unit);
 extern void update_ovpn_routing(int unit);
-extern void reset_ovpn_settings(int type, int unit);
 extern void stop_ovpn_all();
-extern int ovpn_crt_is_empty(const char *name);
 #endif
 
 // wanduck.c

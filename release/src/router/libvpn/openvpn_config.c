@@ -184,6 +184,7 @@ char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *b
 		case OVPN_CLIENT_CA_EXTRA:
 		case OVPN_SERVER_CA_EXTRA:
 			keyStr = "extra";
+			break;
 		default:
 			buf[0] = '\0';
 			return buf;

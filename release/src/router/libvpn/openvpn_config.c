@@ -245,7 +245,7 @@ char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 			chmod(filename, S_IRUSR|S_IWUSR);
 			fprintf(fp, "%s", buf);
 			fclose(fp);
-			nvram_unset(name);
+			nvram_set(name, "");
 		}
 #endif
 	}
@@ -255,7 +255,7 @@ char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 		fp = fopen(filename, "r");
 		if(fp) {
 			while(fgets(buf, buf_len, fp)) {
-				if(!strncmp(buf, PEM_START_TAG, sizeof (PEM_START_TAG)) || !strncmp(buf, "none", 4))
+				if(!strncmp(buf, PEM_START_TAG, strlen(PEM_START_TAG)) || !strncmp(buf, "none", 4))
 					break;
 			}
 			if(feof(fp) &&  strncmp(buf, "none", 4)) {
@@ -340,7 +340,7 @@ int _set_crt_parsed(const char *name, char *file_path)
 
 	if(fp) {
 		while(fgets(buffer, sizeof(buffer), fp)) {
-			if(!strncmp(buffer, PEM_START_TAG, sizeof (PEM_START_TAG)))
+			if(!strncmp(buffer, PEM_START_TAG, strlen(PEM_START_TAG)))
 				break;
 		}
 		if(feof(fp)) {

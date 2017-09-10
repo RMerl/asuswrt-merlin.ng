@@ -704,7 +704,7 @@ ej_nvram_get(int eid, webs_t wp, int argc, char_t **argv)
 	int ret = 0;
 //	char sid_dummy = "",
 	int from_app = 0;
-	char dec_passwd[2048];
+	char dec_passwd[4096];
 
 	memset(dec_passwd, 0, sizeof(dec_passwd));
 
@@ -2584,7 +2584,7 @@ static int validate_apply(webs_t wp, json_object *root) {
 	char *value;
 	char name[64];
 	char tmp[3500], prefix[32];
-	char dec_passwd[1024];
+	char dec_passwd[4096];
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	char dec_passwd2[128];
 	char dec_passwd3[128];
@@ -2630,6 +2630,7 @@ static int validate_apply(webs_t wp, json_object *root) {
 			}
 		}
 		else {
+
 			memset(dec_passwd, 0, sizeof(dec_passwd));
 			if((ckn_ret = nvram_check(name, value, t, dec_passwd)) == 1) {
 				continue;
@@ -2644,7 +2645,6 @@ static int validate_apply(webs_t wp, json_object *root) {
 			if(strcmp(name, "custom_usericon"))
 #endif
 			_dprintf("value %s=%s\n", name, value);
-
 			// unit nvram should be in fron of each apply,
 			// seems not a good design
 
@@ -2795,11 +2795,17 @@ static int validate_apply(webs_t wp, json_object *root) {
 				}
 			}
 			else if(!strncmp(name, "vpn_crt", 7)) {
-				nvram_set(name, value);			// save to nvram
-				get_parsed_crt(name, tmp, sizeof (tmp));// then migrate to jffs
-				_dprintf("set %s=%s'n", name, value);
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+				if(strlen(value)) {
+					snprintf(tmp, sizeof(tmp), "%s/%s", OVPN_DIR_SAVE, name);
+					f_write(tmp, value, strlen(value), 0, 0);
+				}
+#else
+				nvram_set(name, value);
+#endif // JFFS2
+				_dprintf("set %s=%s\n", name, value);
 			}
-#endif
+#endif // OPENVPN
 			else if(!strncmp(name, "sshd_", 5)) {
 				write_encoded_crt(name, value);
 				nvram_modified = 1;

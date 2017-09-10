@@ -1529,8 +1529,6 @@ extern double traffic_limiter_get_realtime(int unit);
 #if defined(RTCONFIG_PORT_BASED_VLAN) || defined(RTCONFIG_TAGGED_BASED_VLAN)
 extern struct vlan_rules_s *get_vlan_rules(void);
 #endif
-// Temporary
-extern char *get_parsed_crt(const char *name, char *buf, size_t buf_len);
 
 /* scripts.c */
 #define xstart(args...) _xstart(args, NULL)

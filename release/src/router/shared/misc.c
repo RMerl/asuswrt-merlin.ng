@@ -2107,7 +2107,7 @@ int nvram_set_double(const char *key, double value)
 	return nvram_set(key, nvramstr);
 }
 
-#if defined(RTCONFIG_SSH) || defined(RTCONFIG_HTTPS)
+#if defined(RTCONFIG_HTTPS)
 int nvram_get_file(const char *key, const char *fname, int max)
 {
 	int n;

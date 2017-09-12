@@ -162,7 +162,10 @@ function show_etherstate(){
 	var wan_array;
 	var port_array= Array();
 
-	if ((based_modelid == "RT-N16") || (based_modelid == "RT-AC87U")
+	if (based_modelid == "RT-AC86U") {
+		show_etherstate_hnd();
+		return;
+	} else if ((based_modelid == "RT-N16") || (based_modelid == "RT-AC87U")
 	    || (based_modelid == "RT-AC3200") || (based_modelid == "RT-AC88U")
 	    || (based_modelid == "RT-AC3100"))
 		reversed = true;
@@ -179,7 +182,7 @@ function show_etherstate(){
 
 		if (line[0] == "Port") {
 			if (line[2] == "DOWN")
-				state2 = "Down";
+				state2 = "Unplugged";
 			else {
 				state = line[2].replace("FD"," Full Duplex");
 				state2 = state.replace("HD"," Half Duplex");
@@ -235,12 +238,13 @@ function show_etherstate(){
 
 	if (based_modelid == "RT-AC88U")
 	{
+		document.getElementById("rtk_warning").style.display="";
 		var rtkswitch = <% sysinfo("ethernet.rtk"); %>;
 
 		for (var i = 0; i < rtkswitch.length; i++) {
 			line = rtkswitch[i];
 			if (line[1] == "0")
-				state = "Down"
+				state = "Unplugged"
 			else
 				state = line[1] + " Mbps";
 
@@ -278,6 +282,48 @@ function show_etherstate(){
 	if(tableStruct.data.length) {
 		tableApi.genTableAPI(tableStruct);
 	}
+}
+
+
+function show_etherstate_hnd(){
+	var wanLanStatus = hndswitch;
+
+	var parseStrToArray = function(_array) {
+		var speedMapping = new Array();
+		speedMapping["M"] = "100 Mbps";
+		speedMapping["G"] = "1 Gbps";
+		speedMapping["X"] = "Unplugged";
+		var parseArray = [];
+		for (var prop in _array) {
+			if (_array.hasOwnProperty(prop)) {
+				var newRuleArray = new Array();
+				newRuleArray.push(prop);
+				newRuleArray.push(speedMapping[_array[prop]]);
+				parseArray.push(newRuleArray);
+			}
+		}
+		return parseArray;
+	};
+
+	var tableStruct = {
+		data: parseStrToArray(wanLanStatus),
+		container: "tableContainer",
+		header: [
+			{
+				"title" : "Port",
+				"width" : "50%"
+			},
+			{
+				"title" : "Link State",
+				"width" : "50%"
+			},
+		]
+	}
+
+	if(tableStruct.data.length) {
+		tableApi.genTableAPI(tableStruct);
+	}
+
 }
 
 
@@ -529,6 +575,7 @@ function update_sysinfo(e){
 					<tr>
 						<th>Ethernet Ports</th>
 						<td>
+							<span id="rtk_warning" style="display:none;">Note: not all information can be retrieved for Realtek ports.</span>
 							<div id="tableContainer" style="margin-top:-10px;"></div>
 						</td>
 					</tr>

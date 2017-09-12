@@ -1,5 +1,6 @@
 etherstate = "<% sysinfo("ethernet"); %>";
 rtkswitch = <% sysinfo("ethernet.rtk"); %>;
+hndswitch = <% get_wan_lan_status(); %>;
 
 wlc_24_arr = ["<% sysinfo("conn.wifi.0.assoc"); %>", "<% sysinfo("conn.wifi.0.autho"); %>", "<% sysinfo("conn.wifi.0.authe"); %>"];
 wlc_51_arr = ["<% sysinfo("conn.wifi.1.assoc"); %>", "<% sysinfo("conn.wifi.1.autho"); %>", "<% sysinfo("conn.wifi.1.authe"); %>"];

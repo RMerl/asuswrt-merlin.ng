@@ -1431,7 +1431,7 @@ extern char *get_syslog_fname(unsigned int idx);
 #ifdef RTCONFIG_USB_MODEM
 extern char *get_modemlog_fname(void);
 #endif
-#if defined(RTCONFIG_SSH) || defined(RTCONFIG_HTTPS)
+#if defined(RTCONFIG_HTTPS)
 extern int nvram_get_file(const char *key, const char *fname, int max);
 extern int nvram_set_file(const char *key, const char *fname, int max);
 #endif
@@ -1921,6 +1921,11 @@ extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
 #define ACME_CERTHOME	"/jffs/.le"
 #endif
 #endif
+
+#ifdef RTCONFIG_SSH
+#define SSHD_CERT_FOLDER	"/jffs/ssl"
+#endif
+
 
 #ifdef RTAC68U
 extern int is_ac66u_v2_series();

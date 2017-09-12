@@ -7,19 +7,26 @@
 
 #include "rc.h"
 #include <shared.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 static inline int check_host_key(const char *ktype, const char *nvname, const char *hkfn)
 {
+	char filename[64];
+
+	snprintf(filename, sizeof (filename), "%s/%s", SSHD_CERT_FOLDER, nvname);
+
 	unlink(hkfn);
 
-	if (!nvram_get_file(nvname, hkfn, 2048)) {
+	if (f_exists(filename)) {
+		eval("cp", filename, (char *)hkfn);
+		return 0;
+	} else {
 		eval("dropbearkey", "-t", (char *)ktype, "-f", (char *)hkfn);
-		if (nvram_set_file(nvname, hkfn, 2048)) {
-			return 1;
-		}
+		eval("cp", (char *)hkfn, filename);
+		return 1;
 	}
 
-	return 0;
 }
 
 char *get_parsed_key(const char *name, char *buf)
@@ -71,7 +78,7 @@ int start_sshd(void)
 	if (check_host_key("rsa", "sshd_hostkey", "/etc/dropbear/dropbear_rsa_host_key") |
 	    check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key") |
 	    check_host_key("ecdsa", "sshd_ecdsakey",  "/etc/dropbear/dropbear_ecdsa_host_key"))
-		nvram_commit_x();
+		logmessage("dropbear", "Generated SSH keys");
 
 	port = buf;
 	if (is_routing_enabled() && nvram_get_int("sshd_enable") != 1)

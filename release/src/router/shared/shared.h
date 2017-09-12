@@ -1964,7 +1964,7 @@ extern int init_enc_nvram(void);
 #endif
 
 enum {
-	CKN_STR_DEFAULT = 0,
+	CKN_STR_DEFAULT_ASUS = 0,
 	CKN_STR1,
 	CKN_STR2,
 	CKN_STR3,
@@ -1996,6 +1996,8 @@ enum {
 	CKN_STR4096 = 4096,
 	CKN_STR_MAX = 65535
 };
+
+#define CKN_STR_DEFAULT 32	// Otherwise a whole bunch of nvram can't be changed by webui
 
 enum {
 	CKN_TYPE_DEFAULT = 0

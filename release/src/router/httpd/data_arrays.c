@@ -800,6 +800,7 @@ void wo_iptbackup(char *url, webs_t wp)
 }
 #endif
 
+#if !defined(HND_ROUTER)
 int ej_iptmon(int eid, webs_t wp, int argc, char **argv) {
 
 	char comma;
@@ -1045,4 +1046,6 @@ void ctvbuf(FILE *f) {
 //		cprintf("setvbuf = %d\n", n);
 	}
 }
+
+#endif
 

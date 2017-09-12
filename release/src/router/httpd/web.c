@@ -20754,9 +20754,11 @@ struct ej_handler ej_handlers[] = {
 	{ "ctdump", ej_ctdump},
 	{ "netdev", ej_netdev},
 
+#if !defined(HND_ROUTER)
 	{ "iptraffic", ej_iptraffic},
 	{ "iptmon", ej_iptmon},
 	{ "ipt_bandwidth", ej_ipt_bandwidth},
+#endif
 
 	{ "bandwidth", ej_bandwidth},
 #ifdef RTCONFIG_DSL

@@ -480,14 +480,18 @@ void start_ovpn_client(int clientNum)
 		chmod(&buffer[0], S_IRUSR|S_IWUSR|S_IXUSR);
 		fprintf(fp, "#!/bin/sh\n");
 		fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", &iface[0]);
+#if !defined(HND_ROUTER)
 		fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), &iface[0]);
+#endif
 		if (nvram_match("ctf_disable", "0")) {
 			fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --set-mark 0x01/0x7\n", &iface[0]);
 		}
+#if !defined(HND_ROUTER)
 		// Setup traffic accounting
 		if (nvram_match("cstats_enable", "1")) {
 			ipt_account(fp, &iface[0]);
 		}
+#endif
 		if ( routeMode == NAT )
 		{
 			sscanf(nvram_safe_get("lan_ipaddr"), "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
@@ -1438,13 +1442,17 @@ void start_ovpn_server(int serverNum)
 		if ( !nvram_contains_word(&buffer[0], "external") )
 		{
 			fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", &iface[0]);
+#if !defined(HND_ROUTER)
 			fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), &iface[0]);
+#endif
 			if (nvram_match("ctf_disable", "0"))
 				fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --set-mark 0x01/0x7\n", &iface[0]);
 		}
+#if !defined(HND_ROUTER)
 		if (nvram_match("cstats_enable", "1")) {
 			ipt_account(fp, &iface[0]);
 		}
+#endif
 		fclose(fp);
 		vpnlog(VPN_LOG_EXTRA,"Done creating firewall rules");
 

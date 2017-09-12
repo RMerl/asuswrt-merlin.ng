@@ -2924,10 +2924,12 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	strcpy(macaccept, "");
 
 // Setup traffic accounting
+#if !defined(HND_ROUTER)
 	if (nvram_match("cstats_enable", "1")) {
 		fprintf(fp, ":ipttolan - [0:0]\n:iptfromlan - [0:0]\n");
 		ipt_account(fp, NULL);
 	}
+#endif
 
 #if defined(WEB_REDIRECT)
 	/* Below rules are supposed to be used if below conditions are true
@@ -6041,6 +6043,7 @@ void enable_ip_forward(void)
 #endif
 }
 
+#if !defined(HND_ROUTER)
 void ipt_account(FILE *fp, char *interface) {
 	struct in_addr ipaddr, netmask, network;
 	char netaddrnetmask[] = "255.255.255.255/255.255.255.255 ";
@@ -6070,4 +6073,6 @@ void ipt_account(FILE *fp, char *interface) {
 		}
 	}
 }
+
+#endif
 

@@ -88,6 +88,8 @@ function initial() {
 	hide_rstats_storage(document.form.rstats_location.value);
 	hide_cstats(getRadioValue(document.form.cstats_enable));
 	hide_cstats_ip(getRadioValue(document.form.cstats_all));
+	if (based_modelid == "RT-AC86U")
+		document.getElementById("cstats_enable_tr").style.display="none";
 	if (document.form.usb_idle_exclude.value.indexOf("a") != -1)
 		document.form.usb_idle_exclude_a.checked = true;
 	if (document.form.usb_idle_exclude.value.indexOf("b") != -1)
@@ -581,13 +583,15 @@ function applyRule(){
 	if ( (excluded != "<% nvram_get("usb_idle_exclude"); %>") ||  (document.form.usb_idle_timeout.value != <% nvram_get("usb_idle_timeout"); %>) )
                 document.form.action_script.value += ";restart_sdidle";
 
-	if (getRadioValue(document.form.cstats_enable) != "<% nvram_get("cstats_enable"); %>") {
-		if ( (getRadioValue(document.form.cstats_enable) == 1) && (<% nvram_get("ctf_disable"); %> == 0) )
-			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-		else
-			document.form.action_script.value += ";restart_firewall;restart_cstats";
-	} else {
-		document.form.action_script.value += ";restart_cstats";
+	if (based_modelid != "RT-AC86U") {
+		if (getRadioValue(document.form.cstats_enable) != "<% nvram_get("cstats_enable"); %>") {
+			if ( (getRadioValue(document.form.cstats_enable) == 1) && ("<% nvram_get("ctf_disable"); %>" == 0) )
+				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			else
+				document.form.action_script.value += ";restart_firewall;restart_cstats";
+		} else {
+			document.form.action_script.value += ";restart_cstats";
+		}
 	}
 
 	if (getRadioValue(document.form.dns_probe) == 0)
@@ -615,7 +619,7 @@ function update_filter(o,v) {
 
 function validate(){
 
-	if ((document.form.rstats_location.value == "2") && (getRadioValue(document.form.cstats_enable) == "1")) {
+	if ((based_modelid != "RT-AC86U") && (document.form.rstats_location.value == "2") && (getRadioValue(document.form.cstats_enable) == "1")) {
 		showhide('invalid_location', 1);
 		document.form.rstats_location.focus();
 

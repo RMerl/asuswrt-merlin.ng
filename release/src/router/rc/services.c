@@ -3703,7 +3703,9 @@ stop_misc(void)
 	stop_upnp();
 	stop_lltd();
 	stop_rstats();
+#if !defined(HND_ROUTER)
 	stop_cstats();
+#endif
 #ifdef RTCONFIG_DSL
 	stop_spectrum(); //Ren
 #endif //For DSL-N55U
@@ -7031,7 +7033,9 @@ start_services(void)
 
 	start_infosvr();
 	restart_rstats();
+#if !defined(HND_ROUTER)
 	restart_cstats();
+#endif
 #ifdef RTCONFIG_DSL
 	start_spectrum(); //Ren
 #endif
@@ -7299,7 +7303,9 @@ stop_services(void)
 	stop_psta_monitor();
 #endif
 #endif
+#if !defined(HND_ROUTER)
 	stop_cstats();
+#endif
 	stop_rstats();
 #ifdef RTCONFIG_DSL
 	stop_spectrum(); //Ren
@@ -11402,11 +11408,13 @@ check_ddr_done:
 		if(action & RC_SERVICE_STOP) stop_rstats();
 		if(action & RC_SERVICE_START) restart_rstats();
 	}
+#if !defined(HND_ROUTER)
         else if (strcmp(script, "cstats") == 0)
         {
                 if(action & RC_SERVICE_STOP) stop_cstats();
                 if(action & RC_SERVICE_START) restart_cstats();
         }
+#endif
 	else if (strcmp(script, "conntrack") == 0)
 	{
 		setup_conntrack();
@@ -12794,6 +12802,7 @@ void setup_leds()
 	}
 }
 
+#if !defined(HND_ROUTER)
 void stop_cstats(void)
 {
 	int n, m;
@@ -12848,6 +12857,7 @@ void restart_cstats(void)
                 start_cstats(0);
         }
 }
+#endif
 
 
 // Takes one argument:  0 = update failure

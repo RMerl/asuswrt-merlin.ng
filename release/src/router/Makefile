@@ -1223,7 +1223,11 @@ obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
+
+ifneq ($(HND_ROUTER),y)
 obj-y += cstats
+endif
+
 ifeq ($(RTCONFIG_BCMARM),y)
 obj-y += libnfnetlink
 obj-y += libmnl

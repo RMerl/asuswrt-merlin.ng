@@ -2891,10 +2891,10 @@ start_samba(void)
 {
 	int acc_num;
 	char cmd[256];
-#if defined(SMP) && !defined(HND_ROUTER)
+#if defined(SMP) && !defined(GTAC5300)
 	char *cpu_list = "1";
 #endif
-#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && defined(SMP) && !defined(HND_ROUTER)
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && defined(SMP) && !defined(GTAC5300)
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 	int taskset_ret = -1;
 #endif
@@ -3037,7 +3037,7 @@ start_samba(void)
 	snprintf(smbd_cmd, 32, "%s/smbd", "/usr/sbin");
 #endif
 
-#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && !defined(HND_ROUTER)
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && !defined(GTAC5300)
 #ifdef SMP
 #if 0
 	if(cpu_num > 1)

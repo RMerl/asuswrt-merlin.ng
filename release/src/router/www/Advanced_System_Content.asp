@@ -287,6 +287,25 @@ function initial(){
 		change_hddSpinDown($('select[name="usb_idle_enable"]').val());
 		$('select[name="usb_idle_enable"]').prop("disabled", false);
 		$('input[name="usb_idle_timeout"]').prop("disabled", false);
+
+		if (document.form.usb_idle_exclude.value.indexOf("a") != -1)
+			document.form.usb_idle_exclude_a.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("b") != -1)
+			document.form.usb_idle_exclude_b.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("c") != -1)
+			document.form.usb_idle_exclude_c.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("d") != -1)
+			document.form.usb_idle_exclude_d.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("e") != -1)
+			document.form.usb_idle_exclude_e.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("f") != -1)
+			document.form.usb_idle_exclude_f.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("g") != -1)
+			document.form.usb_idle_exclude_g.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("h") != -1)
+			document.form.usb_idle_exclude_h.checked = true;
+		if (document.form.usb_idle_exclude.value.indexOf("i") != -1)
+			document.form.usb_idle_exclude_i.checked = true;
 	}
 }
 
@@ -451,8 +470,33 @@ function applyRule(){
 		}
 
 		var action_script_tmp = "";
-		if(hdspindown_support)
+
+		if(hdspindown_support) {
+			var excluded = "";
+			if (document.form.usb_idle_exclude_a.checked)
+				excluded += "a";
+		        if (document.form.usb_idle_exclude_b.checked)
+		                excluded += "b";
+		        if (document.form.usb_idle_exclude_c.checked)
+		                excluded += "c";
+			if (document.form.usb_idle_exclude_d.checked)
+				excluded += "d";
+			if (document.form.usb_idle_exclude_e.checked)
+				excluded += "e";
+			if (document.form.usb_idle_exclude_f.checked)
+				excluded += "f";
+			if (document.form.usb_idle_exclude_g.checked)
+				excluded += "g";
+			if (document.form.usb_idle_exclude_h.checked)
+				excluded += "h";
+			if (document.form.usb_idle_exclude_i.checked)
+				excluded += "i";
+
+			document.form.usb_idle_exclude.value = excluded;
+
 			action_script_tmp += "restart_usb_idle;";
+		}
+
 		action_script_tmp += "restart_time;";
 		if(restart_httpd_flag)
 			action_script_tmp += "restart_httpd;";
@@ -1366,9 +1410,11 @@ function control_all_rule_status(obj) {
 function change_hddSpinDown(obj_value) {
 	if(obj_value == "0") {
 		$("#usb_idle_timeout_tr").css("display", "none");
+		$("#usb_idle_exclude_tr").css("display", "none");
 	}
 	else {
 		$("#usb_idle_timeout_tr").css("display", "");
+		$("#usb_idle_exclude_tr").css("display", "");
 	}
 }
 
@@ -1464,6 +1510,7 @@ function upload_cert_key(){
 <input type="hidden" name="btn_ez_mode" value="<% nvram_get("btn_ez_mode"); %>">
 <input type="hidden" name="reboot_schedule" value="<% nvram_get("reboot_schedule"); %>" disabled>
 <input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
+<input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -1566,9 +1613,24 @@ function upload_cert_key(){
 					<th width="40%">Time Period<!--untranslated--></th>
 					<td>
 						<input type="text" class="input_6_table" maxlength="4" name="usb_idle_timeout" onKeyPress="return validator.isNumber(this,event);" value='<% nvram_get("usb_idle_timeout"); %>' autocorrect="off" autocapitalize="off" disabled><#Second#>
-						<span>(<#Setting_factorydefault_value#> : 60) </span>
+						<span>(<#Setting_factorydefault_value#> : 300) </span>
 					</td>
 				</tr>
+				<tr id="usb_idle_exclude_tr">
+					<th>Exclude the following drives from spinning down</th>
+					<td>
+						<input type="checkbox" name="usb_idle_exclude_a">sda</input>
+						<input type="checkbox" name="usb_idle_exclude_b">sdb</input>
+						<input type="checkbox" name="usb_idle_exclude_c">sdc</input>
+						<input type="checkbox" name="usb_idle_exclude_d">sdd</input>
+						<input type="checkbox" name="usb_idle_exclude_e">sde</input>
+						<input type="checkbox" name="usb_idle_exclude_f">sdf</input>
+						<input type="checkbox" name="usb_idle_exclude_g">sdg</input>
+						<input type="checkbox" name="usb_idle_exclude_h">sdh</input>
+						<input type="checkbox" name="usb_idle_exclude_i">sdi</input>
+					</td>
+				</tr>
+
 			</table>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">

@@ -689,7 +689,6 @@ function done_validating(action){
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="ct_tcp_timeout" value="<% nvram_get("ct_tcp_timeout"); %>">
 <input type="hidden" name="ct_udp_timeout" value="<% nvram_get("ct_udp_timeout"); %>">
-<input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="dns_probe_content" value="<% nvram_get("dns_probe_content"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -810,27 +809,6 @@ function done_validating(action){
 							<input type="radio" name="webui_resolve_conn" class="input" value="0" <% nvram_match_x("", "webui_resolve_conn", "0", "checked"); %>><#checkbox_No#>
 						</td>
 	                                </tr>
-
-					<tr>
-						<th>Disk spindown idle time (in seconds)<br><i>0 = disable feature</i></th>
-						<td>
-							<input type="text" maxlength="6" class="input_12_table"name="usb_idle_timeout" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 0, 43200)"value="<% nvram_get("usb_idle_timeout"); %>">
-						</td>
-					</tr>
-					<tr>
-						<th>Exclude the following drives from spinning down</th>
-						<td>
-							<input type="checkbox" name="usb_idle_exclude_a">sda</input>
-							<input type="checkbox" name="usb_idle_exclude_b">sdb</input>
-							<input type="checkbox" name="usb_idle_exclude_c">sdc</input>
-							<input type="checkbox" name="usb_idle_exclude_d">sdd</input>
-							<input type="checkbox" name="usb_idle_exclude_e">sde</input>
-							<input type="checkbox" name="usb_idle_exclude_f">sdf</input>
-							<input type="checkbox" name="usb_idle_exclude_g">sdg</input>
-							<input type="checkbox" name="usb_idle_exclude_h">sdh</input>
-							<input type="checkbox" name="usb_idle_exclude_i">sdi</input>
-						</td>
-					</tr>
 					<tr>
 						<th>Stealth Mode (disable all LEDs)</th>
 						<td>

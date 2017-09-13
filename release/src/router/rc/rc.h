@@ -1165,11 +1165,6 @@ extern void remove_pool_error(const char *device, const char *flag);
 #endif
 extern int diskremove_main(int argc, char *argv[]);
 
-#ifdef LINUX26
-extern int start_sd_idle(void);
-extern int stop_sd_idle(void);
-#endif
-
 #ifdef RTCONFIG_CIFS
 extern void start_cifs(void);
 extern void stop_cifs(void);

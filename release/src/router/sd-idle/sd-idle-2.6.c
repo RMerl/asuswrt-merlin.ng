@@ -43,7 +43,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.00"
+#define VERSION "1.01"
 
 #define IDLETIME_DEFAULT 900
 //#define IDLETIME_MIN     300
@@ -100,7 +100,9 @@ static
 char
 _diskstats [ 26 ] [ 160 ];
 
+#if 0
 static void _check_linux_version ( void );
+#endif
 
 static void _parse_options ( int argc, char * argv [ ] );
 
@@ -115,7 +117,9 @@ main (
 {
 	openlog ( basename ( argv [ 0 ] ), LOG_PID, LOG_USER );
 
+#if 0
 	_check_linux_version();
+#endif
 
     _parse_options ( argc, argv );
 
@@ -147,6 +151,7 @@ _log (
 	va_end ( arg_list );
 }
 
+#if 0
 static
 void
 _check_linux_version (
@@ -169,6 +174,7 @@ _check_linux_version (
 		exit ( EXIT_FAILURE );
 	}
 }
+#endif
 
 static
 void

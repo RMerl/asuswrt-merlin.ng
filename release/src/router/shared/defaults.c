@@ -14,6 +14,14 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
+#ifdef RTCONFIG_OPENVPN
+#ifdef HND_ROUTER
+#define DEFAULT_NCP_CIPHERS "AES-256-GCM:AES-128-GCM:AES-256-CBC:AES-128-CBC"
+#else
+#define DEFAULT_NCP_CIPHERS "AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC"
+#endif
+#endif
+
 // stub for wlconf, etc.
 struct nvram_tuple router_defaults[] = {
 	// NVRAM for restore_defaults: system wide parameters
@@ -3274,15 +3282,15 @@ struct nvram_tuple router_defaults[] = {
 	{ "vpn_crt_client5_extra","", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0},
 #endif
 
-	{ "vpn_server_ncp_ciphers",	""		, CKN_STR255, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "vpn_server_ncp_ciphers",	DEFAULT_NCP_CIPHERS , CKN_STR255, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_ncp_enable",	"1"		, CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_digest",		"default"	, CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_userpass_auth",	"1"		, CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_server1_ncp_ciphers",	""		, CKN_STR255, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "vpn_server1_ncp_ciphers",	DEFAULT_NCP_CIPHERS, CKN_STR255, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server1_digest",		"default"	, CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server1_userpass_auth",	"1"		, CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server1_ncp_enable",	"1"		, CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_server2_ncp_ciphers",	""		, CKN_STR255, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "vpn_server2_ncp_ciphers",	DEFAULT_NCP_CIPHERS, CKN_STR255, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server2_digest",		"default"	, CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server2_userpass_auth",	"1"		, CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server2_ncp_enable",	"1"		, CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },

@@ -53,7 +53,6 @@
 #define SMIN	60
 #define	SHOUR	(60 * 60)
 #define	SDAY	(60 * 60 * 24)
-#define Y2K		946684800UL
 
 #define INTERVAL		30
 #if defined(RTCONFIG_WANPORT2)
@@ -971,7 +970,7 @@ loopagain:
 
 		// todo: split, delay
 
-		if (now > Y2K && strcmp(tmp->desc, "INTERNET")==0) {
+		if (nvram_get_int("ntp_ready") && strcmp(tmp->desc, "INTERNET")==0) {
 			/* Skip this if the time&date is not set yet */
 			/* Skip non-INTERNET interface only 	     */
 			tms = localtime(&now);

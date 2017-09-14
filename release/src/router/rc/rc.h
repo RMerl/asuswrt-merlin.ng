@@ -58,7 +58,7 @@
 
 #ifdef RTCONFIG_OPENVPN
 #include "openvpn_config.h"
-//#include "openvpn_control.h"
+#include "openvpn_control.h"
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL
@@ -1213,10 +1213,8 @@ extern int write_ovpn_resolv(FILE*);
 //static inline void start_ovpn_eas() { }
 //#define write_ovpn_resolv(f) (0)
 extern void create_ovpn_passwd();
-extern int check_ovpn_server_enabled(int unit);
-extern int check_ovpn_client_enabled(int unit);
-extern void update_ovpn_routing(int unit);
 extern void stop_ovpn_all();
+extern void update_ovpn_profie_remote();
 #endif
 
 // wanduck.c

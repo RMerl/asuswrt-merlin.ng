@@ -1,7 +1,7 @@
 #ifndef _OPENVPN_CONFIG_H
 #define _OPENVPN_CONFIG_H
 
-#define OVPN_SERVER_MAX	1
+#define OVPN_SERVER_MAX	2
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 
 #if defined(RTAC3200)
@@ -60,6 +60,7 @@ typedef enum ovpn_status{
 
 #define OVPN_ACCNT_MAX	15
 
+
 int _set_crt_parsed(const char *name, char *file_path);
 extern int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, char *path);
 extern char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, size_t buf_len);
@@ -69,4 +70,5 @@ extern void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_
 extern void reset_ovpn_setting(ovpn_type_t type, int unit);
 extern int ovpn_key_exists(ovpn_type_t type, int unit, ovpn_key_t key_type);
 extern int ovpn_crt_is_empty(const char *name);
+
 #endif

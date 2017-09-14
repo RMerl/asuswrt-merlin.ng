@@ -10,14 +10,9 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 
 INSTALL = install
 
-OBJS = openvpn_config.o #openvpn_control.o
+OBJS = openvpn_config.o openvpn_control.o
 
-ifeq ($(wildcard ./*.c),)
-all:
-	cp -f ./prebuild/libvpn.so .
-else
 all: libvpn.so
-endif
 
 libvpn.so: $(OBJS)
 	@echo " [libvpn] LD $@"
@@ -36,10 +31,6 @@ clean:
 %.o: %.c .%.depend
 	@echo " [libvpn] CC $@"
 	@$(CC) $(CFLAGS) -o $@ -c $<
-
-%.o: prebuild/%.o
-	@echo " [libvpn] cp $@"
-	@cp -f $< $@
 
 .depend: $(OBJS:%.o=%.c)
 	@$(CC) $(CFLAGS) -M $^ > .depend

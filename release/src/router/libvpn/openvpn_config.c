@@ -21,6 +21,8 @@
  * Provides some of the functions found in Asuswrt's
  * proprietary libvpn, either re-implemented, or
  * implemented as wrappers around AM's functions.
+ * Also includes additional functions developed
+ * for Asuswrt-Merlin.
  */
 
 #include <sys/types.h>

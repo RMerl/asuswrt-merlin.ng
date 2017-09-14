@@ -2351,6 +2351,7 @@ void save_cert(void)
 {
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 	eval("cp", "-p", "/etc/cert.pem", "/etc/key.pem", "/jffs/ssl/");
+	chmod("/jffs/ssl/key.pem", S_IRUSR|S_IWUSR);
 #else
 	if (eval("tar", "-C", "/", "-czf", "/tmp/cert.tgz", "etc/cert.pem", "etc/key.pem") == 0) {
 		if (nvram_set_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
@@ -2416,6 +2417,7 @@ void start_ssl(void)
 		if (f_exists(JFFSCERT) && f_exists(JFFSKEY)) {
 			eval("cp", "-p", JFFSKEY, JFFSCERT, "/etc/");
 			system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+			chmod("/etc/server.pem", S_IRUSR|S_IWUSR);
 			ok = 1;
 		}
 #endif
@@ -2428,6 +2430,7 @@ void start_ssl(void)
 				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
 					if (eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
 						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+						chmod("/etc/server.pem", S_IRUSR|S_IWUSR);
 						ok = 1;
 					}
 

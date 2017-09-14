@@ -426,11 +426,6 @@ static int get_custom_clientlist_info(struct json_object *json_object_ptr);
 
 void not_ej_initial_folder_var_file();
 
-#ifdef RTCONFIG_HTTPS
-#define END_KEY "END RSA PRIVATE KEY"
-#define END_CERT "END CERTIFICATE"
-#endif
-
 static void insert_hook_func(webs_t wp, char *fname, char *param)
 {
 	if (!wp || !fname) {

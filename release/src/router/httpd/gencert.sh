@@ -143,4 +143,7 @@ fi
 mv $KEYNAME.$PID $KEYNAME
 mv $CERTNAME.$PID $CERTNAME
 
+chmod 640 $KEYNAME
+chmod 640 $CERTNAME
+
 rm -f /tmp/cert.csr $OPENSSLCNF /var/run/gencert.pid

@@ -12743,7 +12743,11 @@ void setup_leds()
 	model = get_model();
 
 	if (nvram_get_int("led_disable") == 1) {
-		if ((model == MODEL_RTAC56U) || (model == MODEL_RTAC56S) || (model == MODEL_RTAC68U) || (model == MODEL_RTAC87U) || (model == MODEL_RTAC3200) || (model == MODEL_RTAC88U) || (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300)) {
+		if ((model == MODEL_RTAC56U) || (model == MODEL_RTAC56S) ||
+		    (model == MODEL_RTAC68U) || (model == MODEL_RTAC87U) ||
+		    (model == MODEL_RTAC3200) || (model == MODEL_RTAC88U) ||
+		    (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300) ||
+		    (model == MODEL_RTAC86U)) {
 			setAllLedOff();
 			if (model == MODEL_RTAC87U)
 				led_control_atomic(LED_5G, LED_OFF);
@@ -12768,6 +12772,25 @@ void setup_leds()
 		led_control_atomic(LED_ALL, LED_ON);
 #endif
 
+/* LAN */
+#if defined(HND_ROUTER) && defined(RTCONFIG_LAN4WAN_LED)
+		setLANLedOn();
+#endif
+
+/* WAN */
+#if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#ifndef HND_ROUTER
+		eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01ff");
+		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01ff");
+#else
+		led_control(LED_WAN_NORMAL, LED_ON);
+#endif
+#else
+		eval("et", "robowr", "0", "0x18", "0x01ff");
+		eval("et", "robowr", "0", "0x1a", "0x01ff");
+#endif
+
+/* Wifi */
 		if (nvram_match("wl1_radio", "1")
 #if defined(RTAC3200) || defined(RTAC5300)
 		    || nvram_match("wl2_radio", "1")

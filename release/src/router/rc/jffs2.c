@@ -340,7 +340,7 @@ void start_jffs2(void)
 
 	if (!check_if_dir_exist("/jffs/scripts/")) mkdir("/jffs/scripts/", 0755);
 	if (!check_if_dir_exist("/jffs/configs/")) mkdir("/jffs/configs/", 0755);
-	if (!check_if_dir_exist("/jffs/ssl/")) mkdir("/jffs/ssl/", 0755);
+	if (!check_if_dir_exist(UPLOAD_CERT_FOLDER)) mkdir(UPLOAD_CERT_FOLDER, 0600);
 }
 
 void stop_jffs2(int stop)

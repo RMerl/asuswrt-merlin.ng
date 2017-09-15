@@ -90,24 +90,6 @@ function initial() {
 	hide_cstats_ip(getRadioValue(document.form.cstats_all));
 	if (based_modelid == "RT-AC86U")
 		document.getElementById("cstats_enable_tr").style.display="none";
-	if (document.form.usb_idle_exclude.value.indexOf("a") != -1)
-		document.form.usb_idle_exclude_a.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("b") != -1)
-		document.form.usb_idle_exclude_b.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("c") != -1)
-		document.form.usb_idle_exclude_c.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("d") != -1)
-		document.form.usb_idle_exclude_d.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("e") != -1)
-		document.form.usb_idle_exclude_e.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("f") != -1)
-		document.form.usb_idle_exclude_f.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("g") != -1)
-		document.form.usb_idle_exclude_g.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("h") != -1)
-		document.form.usb_idle_exclude_h.checked = true;
-	if (document.form.usb_idle_exclude.value.indexOf("i") != -1)
-		document.form.usb_idle_exclude_i.checked = true;
 
 	if(!live_update_support)
 		document.getElementById("fwcheck").style.display="none";
@@ -557,31 +539,6 @@ function applyRule(){
 		document.form.tcp_last_ack.value +" 0";
 
 	document.form.ct_udp_timeout.value = document.form.udp_unreplied.value + " "+document.form.udp_assured.value;
-
-	excluded = "";
-	if (document.form.usb_idle_exclude_a.checked)
-		excluded += "a";
-        if (document.form.usb_idle_exclude_b.checked)
-                excluded += "b";
-        if (document.form.usb_idle_exclude_c.checked)
-                excluded += "c";
-	if (document.form.usb_idle_exclude_d.checked)
-		excluded += "d";
-	if (document.form.usb_idle_exclude_e.checked)
-		excluded += "e";
-	if (document.form.usb_idle_exclude_f.checked)
-		excluded += "f";
-	if (document.form.usb_idle_exclude_g.checked)
-		excluded += "g";
-	if (document.form.usb_idle_exclude_h.checked)
-		excluded += "h";
-	if (document.form.usb_idle_exclude_i.checked)
-		excluded += "i";
-
-	document.form.usb_idle_exclude.value = excluded;
-
-	if ( (excluded != "<% nvram_get("usb_idle_exclude"); %>") ||  (document.form.usb_idle_timeout.value != <% nvram_get("usb_idle_timeout"); %>) )
-                document.form.action_script.value += ";restart_sdidle";
 
 	if (based_modelid != "RT-AC86U") {
 		if (getRadioValue(document.form.cstats_enable) != "<% nvram_get("cstats_enable"); %>") {

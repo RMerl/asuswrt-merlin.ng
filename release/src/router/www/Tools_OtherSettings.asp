@@ -94,7 +94,7 @@ function initial() {
 	if(!live_update_support)
 		document.getElementById("fwcheck").style.display="none";
 
-	if (machine_name.search("arm") != -1) {
+	if ((machine_name.search("arm") != -1) || (machine_name.search("aarch64") != -1)) {
 		document.getElementById("ct_established_default").innerHTML = "Default: 2400";
 		showhide("memory_mgmt_tr" ,1);
 	}

@@ -2368,8 +2368,8 @@ void erase_cert(void)
 	unlink("/etc/cert.pem");
 	unlink("/etc/key.pem");
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	unlink(JFFSCERT);
-	unlink(JFFSKEY);
+	unlink(UPLOAD_CERT);
+	unlink(UPLOAD_KEY);
 #else
 	nvram_unset("https_crt_file");
 #endif
@@ -2414,8 +2414,8 @@ void start_ssl(void)
 	while (1) {
 
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		if (f_exists(JFFSCERT) && f_exists(JFFSKEY)) {
-			eval("cp", "-p", JFFSKEY, JFFSCERT, "/etc/");
+		if (f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
+			eval("cp", "-p", UPLOAD_KEY, UPLOAD_CERT, "/etc/");
 			system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
 			chmod("/etc/server.pem", S_IRUSR|S_IWUSR);
 			ok = 1;

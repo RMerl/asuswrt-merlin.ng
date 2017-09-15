@@ -243,7 +243,7 @@ void start_jffs2(void)
 	if (nvram_match("jffs2_format", "1")) {
 		nvram_set("jffs2_format", "0");
 		nvram_commit_x();
-		if (mtd_erase(JFFS2_MTD_NAME)) {
+		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U || model==MODEL_RTAC1200G || model==MODEL_RTAC1200GP) ^ (!mtd_erase(JFFS2_MTD_NAME))){
 			error("formatting");
 			return;
 		}
@@ -276,7 +276,7 @@ void start_jffs2(void)
 	sprintf(s, MTD_BLKDEV(%d), part);
 
 	if (mount(s, "/jffs", JFFS_NAME, MS_NOATIME, "") != 0) {
-		if (mtd_erase(JFFS2_MTD_NAME)) {
+		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U || model==MODEL_RTAC1200G || model==MODEL_RTAC1200GP) ^ (!mtd_erase(JFFS2_MTD_NAME))){
 			jffs2_fail = 1;
 			error("formatting");
 			return;

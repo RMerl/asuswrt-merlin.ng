@@ -99,6 +99,8 @@ function initial(){
 		document.form.wan_pppoe_passwd.value = pppoe_password;
 	}
 
+	change_nat(<% nvram_get("wan_nat_x"); %>);
+
 	if(yadns_support){
 		if(yadns_enable != 0 && yadns_mode != -1){
 			document.getElementById("yadns_hint").style.display = "";
@@ -837,6 +839,12 @@ function ppp_echo_control(flag){
 	inputCtrl(document.form.dns_delay_round, enable);
 }
 
+function change_nat(state) {
+	if (based_modelid == "RT-AC86U") {
+		document.getElementById("nat_type_tr").style.display = (state ? "" : "none");
+	}
+}
+
 </script>
 </head>
 
@@ -951,10 +959,19 @@ function ppp_echo_control(flag){
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,22);"><#Enable_NAT#></a></th>                 
 								<td>
-									<input type="radio" name="wan_nat_x" class="input" value="1" <% nvram_match("wan_nat_x", "1", "checked"); %>><#checkbox_Yes#>
-									<input type="radio" name="wan_nat_x" class="input" value="0" <% nvram_match("wan_nat_x", "0", "checked"); %>><#checkbox_No#>
+									<input type="radio" name="wan_nat_x" class="input" value="1" onclick="change_nat(1);" <% nvram_match("wan_nat_x", "1", "checked"); %>><#checkbox_Yes#>
+									<input type="radio" name="wan_nat_x" class="input" value="0" onclick="change_nat(0);" <% nvram_match("wan_nat_x", "0", "checked"); %>><#checkbox_No#>
 								</td>
 							</tr>				
+							<tr id="nat_type_tr" style="display:none;">
+								<th>NAT Type</th>
+								<td>
+									<select name="nat_type" class="input_option">
+										<option value="0" <% nvram_match("nat_type", "0", "selected"); %>>Symmetric</option>
+										<option value="1" <% nvram_match("nat_type", "1", "selected"); %>>Fullcone</option>
+									</select>
+								</td>
+							</tr>
 
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,23);"><#BasicConfig_EnableMediaServer_itemname#></a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">UPnP&nbspFAQ</a></th>

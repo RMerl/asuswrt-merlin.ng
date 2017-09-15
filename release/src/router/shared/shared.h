@@ -1914,9 +1914,9 @@ extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
 #ifdef RTCONFIG_HTTPS
 #define HTTPD_CERT	"/etc/cert.pem"
 #define HTTPD_KEY	"/etc/key.pem"
-#define UPLOAD_CERT_FOLDER	"/jffs/.cert"
-#define UPLOAD_CERT	"/jffs/.cert/cert.pem"
-#define UPLOAD_KEY	"/jffs/.cert/key.pem"
+#define UPLOAD_CERT_FOLDER	"/jffs/ssl"
+#define UPLOAD_CERT	"/jffs/ssl/cert.pem"
+#define UPLOAD_KEY	"/jffs/ssl/key.pem"
 #ifdef RTCONFIG_LETSENCRYPT
 #define ACME_CERTHOME	"/jffs/.le"
 #endif

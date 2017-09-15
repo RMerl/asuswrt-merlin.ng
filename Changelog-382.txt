@@ -1,0 +1,35 @@
+Asuswrt-Merlin 382 Changelog
+============================
+
+382.1 Beta (xx-xxx-2017)
+   - NOTE: For brievity:
+           AM380 = Asuswrt-Merlin 380.xxx
+           AM382 = Asuswrt-Merlin 382.xxx
+           Asus382 = Asus's GPL 3.0.0.4.382_xxx
+           For now only the RT-AC86U is supported by AM382.  Other
+           models will gradually be moved to AM382 as Asus upgrades
+           them to the 382 code base.
+
+   - NEW: Re-started from a clean Asus382_15098 GPL.  The code from AM380.68
+          was adapted and merged on top of it.  This means that old bugs might be
+          gone, but also new ones might be present in this release.
+
+          Highlights of the changes between Asus380 and Asus382:
+            - New Trend Micro DPI engine, with two-way IPS
+            - New networkmap service (now closed source)
+            - New OpenVPN implementation (now closed source)
+            - Numerous security enhancements throughout the code
+
+          This changelog will focus on changes that happened between AM380.68 and
+          AM382.1, or between Asus382_15098 and AM382.
+
+   - NEW: Added support for the RT-AC86U and its Broadcom HND 5.02 platform
+   - NEW: Added support for inline CRLs when importing an ovpn file
+   - NEW: Added support for fullcone NAT (RT-AC86U)
+   - CHANGED: Since Asus has now closed their OpenVPN source code, that
+              closed code was replaced with new code based om our
+              original implementation from AM380.  From now on, AM382's
+              OpenVPN development will be separate from Asus' own.
+   - CHANGED: SSH host keys are now stored in /jffs/ssl/ rather than nvram.
+   - CHANGED: SMB2 is enabled by default on RT-AC86U (no performance penalty
+              on that platform)

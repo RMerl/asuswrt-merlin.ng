@@ -719,7 +719,7 @@ int led_control_atomic(int which, int mode)
 					eval("wl", "ledbh", "10", "7");
 				else if (mode == LED_OFF)
 					eval("wl", "ledbh", "10", "0");
-			} else if ((model == MODEL_RTAC88U) || (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300)) {
+			} else if ((model == MODEL_RTAC88U) || (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300) || (model == MODEL_RTAC86U)) {
 				if (mode == LED_ON)
 					eval("wl", "ledbh", "9", "7");
 				else if (mode == LED_OFF)
@@ -740,6 +740,11 @@ int led_control_atomic(int which, int mode)
 					eval("wl", "-i", "eth2", "ledbh", "9", "7");
 				else if (mode == LED_OFF)
 					eval("wl", "-i", "eth2", "ledbh", "9", "0");
+			} else if (model == MODEL_RTAC86U) {
+				if (mode == LED_ON)
+					eval("wl", "-i", "eth6", "ledbh", "9", "7");
+				else if (mode == LED_OFF)
+					eval("wl", "-i", "eth6", "ledbh", "9", "0");
 			}
 			// Second 5 GHz radio
 			if (model == MODEL_RTAC5300) {

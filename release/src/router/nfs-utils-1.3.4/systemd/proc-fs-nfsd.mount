@@ -1,0 +1,7 @@
+[Unit]
+Description=NFSD configuration filesystem
+
+[Mount]
+What=nfsd
+Where=/proc/fs/nfsd
+Type=nfsd

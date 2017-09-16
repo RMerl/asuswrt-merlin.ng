@@ -1,0 +1,12 @@
+The nsm_client program is intended for testing statd. It has the ability
+to act as a synthetic NSM client for sending artificial NSM calls to any
+host you choose.
+
+It also has an NLM simulator that implements the call that statd uses to
+communicate with lockd. The daemon simulator will start itself up,
+register as an NLM service and listen for "downcalls" from statd. When
+it gets one, it will log a message.
+
+Note that lockd will need to be down when using the daemon simulator. It
+also does not implement the entire NLM protocol and is only really
+useful for testing statd's downcall.

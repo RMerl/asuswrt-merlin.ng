@@ -1,0 +1,10 @@
+[Unit]
+Description=RPC Pipe File System
+DefaultDependencies=no
+After=systemd-tmpfiles-setup.service
+Conflicts=umount.target
+
+[Mount]
+What=sunrpc
+Where=/var/lib/nfs/rpc_pipefs
+Type=rpc_pipefs

@@ -1,0 +1,71 @@
+
+Notes about systemd unit files for nfs-utils.
+
+The unit files provided here should be sufficient for systemd
+to manage all daemons and related services provides by nfs-utils.
+
+They do *not* include any unit files for separate services such as
+rpc.rquotad (in the 'quota' package) or rpcbind.
+
+There are 4 units that can be 'enabled' or 'disabled' by systemctl, or
+by a suitable 'preset' setting:
+
+ nfs-server.service
+    If enabled, nfs service is started together with dependencies
+    such as mountd, statd, rpc.idmapd
+    This is a "service" file rather than a "target" (which is the
+    normal grouping construct) so that
+        systemctl start nfs-server
+    can work (if no type is given, ".service" is assumed).
+
+ nfs-client.target
+    If enabled, daemons needs for an nfs client are enabled.
+    This does *not* include rpc.statd.  the rpc-statd.service unit
+    is started by /usr/sbin/start-statd which mount.nfs will run
+    if statd is needed.
+
+ nfs-blkmap.service
+    If enabled, then blkmapd will be run when nfs-client.target is
+    started.
+
+Another special unit is "nfs-utils.service".  This doesn't really do
+anything, but exists so that other units may declare themselves as
+"PartOf" nfs-utils.service.
+The effect of this is that
+     systemctl restart nfs-utils
+will restart all nfs-utils daemons as maybe be required during
+software update.  It isn't possible to make
+     systemctl try-restart nfs-server nfs-client.target
+do this as some daemon are included in both, and rpc.statd would
+not be restarted if nfs-server were not active (as nfs-client doesn't
+Want it - it is started by mount.nfs running start-statd).
+
+It is possible that we should have an nfs-statd.target which can
+selectively enable statd being stared by -server and sm-notify
+being started by -server or -client.  That way it could be disabled
+completely on V4-only configurations.  Currently statd is always
+started on the server and sm-notify is always run if server or
+client is enabled.
+
+Stopping nfs-server will also stop rpc.mountd, and rpc.svcgssd.
+It cannot stop rpc.statd or rpc.gssd as they may be in use by the
+client and systemd cannot specify is two-pronged reverse dependency.
+(i.e. stop this unit if none of these units are running)
+
+Distro specific commandline configuration can be provided by
+installing a script /usr/libexec/nfs-utils/nfs-utils_env.sh
+This should write /run/sysconfig/nfs-utils based on configuration
+information such as in /etc/sysconfig/nfs or /etc/defaults/nfs.
+It is run once by nfs-config.service.
+
+rpc.gssd and rpc.svcgssd are assumed to be needed if /etc/krb5.keytab
+is present.
+If a site needs this file present but does not want the gss daemons
+running, it should create
+   /etc/systemd/system/rpc-gssd.service.d/01-disable.conf
+and
+   /etc/systemd/system/rpc-svcgssd.service.d/01-disable.conf
+
+containing
+   [Unit]
+   ConditionNull=false

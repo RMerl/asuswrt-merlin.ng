@@ -5188,6 +5188,14 @@ void start_nfsd(void)
 
 	if (nvram_match("nfsd_enable", "0")) return;
 
+#ifdef HND_ROUTER
+	modprobe("exportfs");
+	modprobe("sunrpc");
+	modprobe("grace");
+	modprobe("lockd");
+	modprobe("nfsd");
+#endif
+
 	/* create directories/files */
 	mkdir_if_none("/var/lib");
 	mkdir_if_none("/var/lib/nfs");
@@ -5235,10 +5243,13 @@ void start_nfsd(void)
 		eval("/usr/sbin/portmap");
 	eval("/usr/sbin/statd");
 
+#ifdef HND_ROUTER
 	if (nvram_match("nfsd_enable_v2", "1")) {
 		eval("/usr/sbin/nfsd");
 		eval("/usr/sbin/mountd");
-	} else {
+	} else
+#endif
+	{
 		eval("/usr/sbin/nfsd", "-N 2");
 		eval("/usr/sbin/mountd", "-N 2");
 	}
@@ -5268,6 +5279,14 @@ void stop_nfsd(void)
 
 #ifdef LINUX26
 	umount("/proc/fs/nfsd");
+#endif
+
+#ifdef HND_ROUTER
+	modprobe_r("nfsd");
+	modprobe_r("lockd");
+	modprobe_r("grace");
+	modprobe_r("sunrpc");
+	modprobe_r("exportfs");
 #endif
 
 	return;

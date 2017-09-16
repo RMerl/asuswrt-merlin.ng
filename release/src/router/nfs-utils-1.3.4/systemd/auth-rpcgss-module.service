@@ -1,0 +1,16 @@
+# We want to start gss-proxy on kernels that support it and rpc.svcgssd
+# on those that don't.  Those services check for support by checking
+# for existence of the path /proc/net/rpc/use-gss-proxy.  Before they
+# can perform that check, they need this module loaded.  (Unless
+# rpcsec_gss support is built directly into the kernel, in which case this
+# unit will fail.  But that's OK.)
+[Unit]
+Description=Kernel Module supporting RPCSEC_GSS
+DefaultDependencies=no
+Before=gssproxy.service rpc-svcgssd.service rpc-gssd.service
+Wants=gssproxy.service rpc-svcgssd.service rpc-gssd.service
+ConditionPathExists=/etc/krb5.keytab
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/modprobe -q auth_rpcgss

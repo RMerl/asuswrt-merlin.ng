@@ -1,0 +1,16 @@
+[Unit]
+Description=NFS client services
+Before=remote-fs-pre.target
+Wants=remote-fs-pre.target
+
+# Note: we don't "Wants=rpc-statd.service" as "mount.nfs" will arrange to
+# start that on demand if needed.
+Wants=rpc-statd-notify.service
+
+# GSS services dependencies and ordering
+Wants=auth-rpcgss-module.service
+After=rpc-gssd.service rpc-svcgssd.service gssproxy.service
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=remote-fs.target

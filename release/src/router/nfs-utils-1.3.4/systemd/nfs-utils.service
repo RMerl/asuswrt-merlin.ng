@@ -1,0 +1,17 @@
+[Unit]
+Description=NFS server and client services
+# This service should never be stopped, only restarted.
+# When it is re-started, all other services which declare
+# themselves to be "PartOf" this service will also be
+# restarted. Thus
+#   systemctl restart nfs-utils
+# will restart all daemons which are part of nfs-utils
+# and which are running.  This is useful after a software
+# update.
+
+# This is a "service" rather than "target" so that we
+# don't need to say "systemctl restart nfs-utils.target".
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true

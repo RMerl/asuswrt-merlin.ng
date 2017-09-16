@@ -1,0 +1,94 @@
+.\"@(#)nfsmount.conf.5"
+.TH NFSMOUNT.CONF 5 "9 October 2012"
+.SH NAME
+nfsmount.conf - Configuration file for NFS mounts
+.SH SYNOPSIS
+Configuration file for NFS mounts that allows options
+to be set globally, per server or per mount point.
+.SH DESCRIPTION
+The configuration file is made up of multiple sections 
+followed by variables associated with that section.
+A section is defined by a string enclosed by 
+.BR [
+and 
+.BR ]
+branches.
+Variables are assignment statements that assign values 
+to particular variables using the  
+.BR = 
+operator, as in 
+.BR Proto=Tcp .
+The variables that can be assigned are exactly the set of NFS specific
+mount options listed in
+.BR nfs (5).
+.PP
+Sections are broken up into three basic categories:
+Global options, Server options and Mount Point options.
+.HP
+.B [ NFSMount_Global_Options ]
+- This statically named section
+defines all of the global mount options that can be 
+applied to every NFS mount.
+.HP
+.B [ Server \(lqServer_Name\(rq ] 
+- This section defines all the mount options that should 
+be used on mounts to a particular NFS server. The 
+.I \(lqServer_Name\(rq
+strings needs to be surrounded by '\(lq' and 
+be an exact match of the server name used in the 
+.B mount
+command. 
+.HP
+.B [ MountPoint \(lqMount_Point\(rq ]
+- This section defines all the mount options that 
+should be used on a particular mount point.
+The 
+.I \(lqMount_Point\(rq
+string needs to be surrounded by '\(lq' and be an 
+exact match of the mount point used in the 
+.BR mount 
+command.
+.SH EXAMPLES
+.PP
+These are some example lines of how sections and variables
+are defined in the configuration file.
+.PP
+[ NFSMount_Global_Options ]
+.br
+    Proto=Tcp
+.RS
+.HP
+The TCP/IPv4 protocol will be used on every NFS mount.
+.HP
+.RE
+[ Server \(lqnfsserver.foo.com\(rq ]
+.br
+    rsize=32k
+.br
+    wsize=32k
+.br
+    proto=udp6
+.HP
+.RS
+A 32k (32768 bytes) block size will be used as the read and write
+size on all mounts to the 'nfsserver.foo.com' server.  UDP/IPv6
+is the protocol to be used.
+.HP
+.RE
+.BR 
+[ MountPoint \(lq/export/home\(rq ]
+.br
+    Background=True
+.RS
+.HP
+All mounts to the '/export/home' export will be performed in
+the background (i.e. done asynchronously).
+.HP
+.SH FILES
+.TP 10n
+.I /etc/nfsmount.conf
+Default NFS mount configuration file
+.PD
+.SH SEE ALSO
+.BR nfs (5),
+.BR mount (8),

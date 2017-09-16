@@ -1,0 +1,98 @@
+.ie \nF \{\
+.    de IX
+.    tm Index:\\$1\t\\n%\t"\\$2"
+..
+.    nr % 0
+.    rr F
+.\}
+.el \{\
+.    de IX
+..
+.\}
+.IX Title "NFSDCLTRACK 8"
+.TH NFSDCLTRACK 8 "2012-10-24" "" ""
+.\" For nroff, turn off justification.  Always turn off hyphenation; it makes
+.\" way too many mistakes in technical documents.
+.if n .ad l
+.nh
+.SH "NAME"
+nfsdcltrack \- NFSv4 Client Tracking Callout Program
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+nfsdcltrack [\-d] [\-f] [\-s stable storage dir] <command> <args...>
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+nfsdcltrack is the NFSv4 client tracking callout program. It is not necessary
+to install this program on machines that are not acting as NFSv4 servers.
+.PP
+When a network partition is combined with a server reboot, there are
+edge conditions that can cause the server to grant lock reclaims when
+other clients have taken conflicting locks in the interim. A more detailed
+explanation of this issue is described in \s-1RFC\s0 3530, section 8.6.3
+and in \s-1RFC\s0 5661, section 8.4.3.
+.PP
+In order to prevent these problems, the server must track a small amount
+of per-client information on stable storage. This program provides the
+userspace piece of that functionality. When the kernel needs to manipulate
+the database that stores this info, it will execute this program to handle
+it.
+.SH "OPTIONS"
+.IX Header "OPTIONS"
+.IP "\fB\-d\fR, \fB\-\-debug\fR" 4
+.IX Item "-d, --debug"
+Enable debug level logging.
+.IP "\fB\-f\fR, \fB\-\-foreground\fR" 4
+.IX Item "-f, --foreground"
+Log to stderr instead of syslog.
+.IP "\fB\-s\fR \fIstoragedir\fR, \fB\-\-storagedir\fR=\fIstorage_dir\fR" 4
+.IX Item "-s storagedir, --storagedir=storage_dir"
+Directory where stable storage information should be kept. The default
+value is \fI/var/lib/nfs/nfsdcltrack\fR.
+.SH "COMMANDS"
+.IX Header "COMMANDS"
+nfsdcltrack requires a command for each invocation. Supported commands
+are:
+.IP "\fBinit\fR" 4
+.IX Item "init"
+Initialize the database. This command requires no argument.
+.IP "\fBcreate\fR" 4
+.IX Item "create"
+Create a new client record (or update the timestamp on an existing one). This command requires a hex-encoded nfs_client_id4 as an argument.
+.IP "\fBremove\fR" 4
+.IX Item "remove"
+Remove a client record from the database. This command requires a hex-encoded nfs_client_id4 as an argument.
+.IP "\fBcheck\fR" 4
+.IX Item "check"
+Check to see if a nfs_client_id4 is allowed to reclaim. This command requires a hex-encoded nfs_client_id4 as an argument.
+.IP "\fBgracedone\fR" 4
+.IX Item "gracedone"
+Remove any unreclaimed client records from the database. This command requires a epoch boot time as an argument.
+.SH "LEGACY TRANSITION MECHANISM"
+.IX Header "LEGACY TRANSITION MECHANISM"
+The Linux kernel NFSv4 server has historically tracked this information
+on stable storage by manipulating information on the filesystem
+directly, in the directory to which \fI/proc/fs/nfsd/nfsv4recoverydir\fR
+points. If the kernel passes the correct information, then nfsdcltrack
+can use it to allow a seamless transition from the old client tracking
+scheme to the new one.
+.PP
+On a \fBcheck\fR operation, if there is no record of the client in the
+database, nfsdcltrack will look to see if the \fB\s-1NFSDCLTRACK_LEGACY_RECDIR\s0\fR
+environment variable is set. If it is, then it will fetch that value and
+see if a directory exists by that name. If it does, then the check
+operation will succeed and the directory will be removed.
+.PP
+On a \fBgracedone\fR operation, nfsdcltrack will look to see if the
+\&\fB\s-1NFSDCLTRACK_LEGACY_TOPDIR\s0\fR environment variable is set. If it is, then
+it will attempt to clean out that directory prior to exiting.
+.PP
+Note that this transition is one-way. If the machine subsequently reboots
+back into an older kernel that does not support the nfsdcltrack upcall
+then the clients will not be able to recover their state.
+.SH "NOTES"
+.IX Header "NOTES"
+This program requires a kernel that supports the nfsdcltrack usermodehelper
+upcall. This support was first added to mainline kernels in 3.8.
+.SH "AUTHORS"
+.IX Header "AUTHORS"
+nfsdcltrack was developed by Jeff Layton <jlayton@redhat.com>.

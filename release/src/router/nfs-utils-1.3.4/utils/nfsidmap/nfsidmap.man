@@ -1,0 +1,150 @@
+.\"
+.\"@(#)nfsidmap(8) - The NFS idmapper upcall program
+.\"
+.\" Copyright (C) 2010 Bryan Schumaker <bjschuma@netapp.com>
+.TH nfsidmap 5 "1 October 2010"
+.SH NAME
+nfsidmap \- The NFS idmapper upcall program
+.SH SYNOPSIS
+.B "nfsidmap [-v] [-t timeout] key desc"
+.br
+.B "nfsidmap [-v] [-c]"
+.br
+.B "nfsidmap [-v] [-u|-g|-r user]"
+.br
+.B "nfsidmap -d"
+.br
+.B "nfsidmap -l"
+.br
+.B "nfsidmap -h"
+.SH DESCRIPTION
+The NFSv4 protocol represents the local system's UID and GID values
+on the wire as strings of the form
+.IR user@domain .
+The process of translating from UID to string and string to UID is
+referred to as "ID mapping."
+.PP
+The system derives the
+.I user
+part of the string by performing a password or group lookup.
+The lookup mechanism is configured in
+.IR /etc/idmapd.conf .
+.PP
+By default, the
+.I domain
+part of the string is the system's DNS domain name.
+It can also be specified in
+.I /etc/idmapd.conf
+if the system is multi-homed,
+or if the system's DNS domain name does
+not match the name of the system's Kerberos realm.
+.PP
+The
+.I /usr/sbin/nfsidmap
+program performs translations on behalf of the kernel.
+The kernel uses the request-key mechanism to perform
+an upcall.
+.I /usr/sbin/nfsidmap
+is invoked by /sbin/request-key, performs the translation,
+and initializes a key with the resulting information.
+The kernel then caches the translation results in the key.
+.PP
+.I nfsidmap
+can also clear cached ID map results in the kernel,
+or revoke one particular key.
+An incorrect cached key can result in file and directory ownership
+reverting to "nobody" on NFSv4 mount points.
+.PP
+In addition, the
+.B -d
+and
+.B -l
+options are available to help diagnose misconfigurations.
+They have no effect on the keyring containing ID mapping results.
+.SH OPTIONS
+.TP
+.B -c 
+Clear the keyring of all the keys.
+.TP
+.B -d
+Display the system's effective NFSv4 domain name on
+.IR stdout .
+.TP
+.B -g user
+Revoke the gid key of the given user.
+.TP
+.B -h
+Display usage message.
+.TP
+.B -l
+Display on
+.I stdout
+all keys currently in the keyring used to cache ID mapping results.
+These keys are visible only to the superuser.
+.TP
+.B -r user
+Revoke both the uid and gid key of the given user.
+.TP
+.B -t timeout
+Set the expiration timer, in seconds, on the key.
+The default is 600 seconds (10 mins).
+.TP
+.B -u user
+Revoke the uid key of the given user.
+.TP
+.B -v
+Increases the verbosity of the output to syslog 
+(can be specified multiple times).
+.SH CONFIGURING
+The file
+.I /etc/request-key.conf
+will need to be modified so
+.I /sbin/request-key
+can properly direct the upcall. The following line should be added before a call
+to keyctl negate:
+.PP
+create	id_resolver	*	*	/usr/sbin/nfsidmap -t 600 %k %d 
+.PP
+This will direct all id_resolver requests to the program
+.I /usr/sbin/nfsidmap.
+The 
+.B -t 600 
+defines how many seconds into the future the key will
+expire.  This is an optional parameter for
+.I /usr/sbin/nfsidmap
+and will default to 600 seconds when not specified.
+.PP
+The idmapper system uses four key descriptions:
+.PP
+	  uid: Find the UID for the given user
+.br
+	  gid: Find the GID for the given group
+.br
+	 user: Find the user name for the given UID
+.br
+	group: Find the group name for the given GID
+.PP
+You can choose to handle any of these individually, rather than using the
+generic upcall program.  If you would like to use your own program for a uid
+lookup then you would edit your request-key.conf so it looks similar to this:
+.PP
+create	id_resolver	uid:*	*	/some/other/program %k %d
+.br
+create	id_resolver	*		*	/usr/sbin/nfsidmap %k %d
+.PP
+Notice that the new line was added above the line for the generic program.
+request-key will find the first matching line and run the corresponding program.
+In this case, /some/other/program will handle all uid lookups, and
+/usr/sbin/nfsidmap will handle gid, user, and group lookups.
+.SH FILES
+.TP
+.I /etc/idmapd.conf
+ID mapping configuration file
+.TP
+.I /etc/request-key.conf
+Request key configuration file
+.SH "SEE ALSO"
+.BR idmapd.conf (5),
+.BR request-key (8)
+.SH AUTHOR
+Bryan Schumaker, <bjschuma@netapp.com>

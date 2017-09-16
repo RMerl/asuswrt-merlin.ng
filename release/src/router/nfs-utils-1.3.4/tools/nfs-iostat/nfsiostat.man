@@ -1,0 +1,126 @@
+.\"
+.\" nfsiostat(8)
+.\"
+.TH nfsiostat 8 "15 Apr 2010"
+.SH NAME
+nfsiostat \- Emulate iostat for NFS mount points using /proc/self/mountstats
+.SH SYNOPSIS
+.BI "nfsiostat [[" <interval> "] [" <count> "]] [" <options> "]["<mount_point> "]
+.SH DESCRIPTION
+The
+.B nfsiostat
+command displays NFS client per-mount statisitics. 
+.TP 
+<interval>
+specifies the amount of time in seconds between each report.
+The first report contains statistics for the time since each file
+system was mounted.  Each subsequent report contains statistics collected
+during the interval since the previous report.
+.TP
+<count>
+If the
+.I <count>
+parameter is
+specified, the value of 
+.I <count> 
+determines the number of reports generated at
+.I <interval> 
+seconds apart. if the interval parameter is 
+specified without the
+.I <count> 
+parameter, the command generates reports continuously.
+.TP
+<options>
+Define below
+.TP
+<mount_point>
+If one or more
+.I <mount point> 
+names are specified, statistics for only these mount points will
+be displayed.  Otherwise, all NFS mount points on the client are listed.
+.TP
+The meaning of each column of \fBnfsiostat\fR's output is the following:
+.RS 8
+- \fBop/s\fR
+.RS
+This is the number of operations per second.
+.RS
+.RE
+.RE
+.RE
+.RS 8
+- \fBrpc bklog\fR
+.RS
+This is the length of the backlog queue.
+.RE
+.RE
+.RE
+.RS 8
+- \fBkB/s\fR
+.RS
+This is the number of kB written/read per second.
+.RE
+.RE
+.RE
+.RS 8
+- \fBkB/op\fR
+.RS
+This is the number of kB written/read per each operation.
+.RE
+.RE
+.RE
+.RS 8
+- \fBretrans\fR
+.RS
+This is the number of retransmissions.
+.RE
+.RE
+.RE
+.RS 8
+- \fBavg RTT (ms)\fR
+.RS
+This is the duration from the time that client's kernel sends the RPC request until the time it receives the reply.
+.RE
+.RE
+.RE
+.RS 8
+- \fBavg exe (ms)\fR
+.RS
+This is the duration from the time that NFS client does the RPC request to its kernel until the RPC request is completed, this includes the RTT time above.
+.RE
+.RE
+.RE
+.TP
+Note that if an interval is used as argument to \fBnfsiostat\fR, then the diffrence from previous interval will be displayed, otherwise the results will be from the time that the share was mounted.
+
+.SH OPTIONS
+.TP
+.B \-a " or " \-\-attr
+displays statistics related to the attribute cache
+.TP
+.B \-d " or " \-\-dir 
+displays statistics related to directory operations
+.TP
+.B \-h " or " \-\-help 
+shows help message and exit
+.TP
+.B \-l LIST or " \-\-list=LIST 
+only print stats for first LIST mount points
+.TP
+.B \-p " or " \-\-page
+displays statistics related to the page cache
+.TP
+.B \-s " or " \-\-sort
+Sort NFS mount points by ops/second
+.TP
+.B \-\-version
+show program's version number and exit
+.SH FILES
+.TP
+.B /proc/self/mountstats
+.SH SEE ALSO
+.BR iostat (8),
+.BR mountstats (8),
+.BR nfsstat(8)
+.SH AUTHOR
+Chuck Lever <chuck.lever@oracle.com>

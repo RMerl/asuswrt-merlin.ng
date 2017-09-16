@@ -1235,6 +1235,12 @@ obj-y += ipset_arm
 else
 obj-y += ipset
 endif
+ifeq ($(HND_ROUTER),y)
+obj-$(RTCONFIG_NFS) += nfs-utils-1.3.4
+else
+obj-$(RTCONFIG_NFS) += nfs-utils
+endif
+obj-$(RTCONFIG_NFS) += portmap
 # End merlin add-ons
 
 ifeq ($(RTCONFIG_TOR),y)
@@ -6884,6 +6890,56 @@ ipset_arm-clean:
 	-@$(MAKE) -C ipset_arm modules_clean
 	-@rm -rf ipset_arm/Makefile ipset_arm/stamp-h1
 
+nfs-utils/stamp-h1:
+	cd nfs-utils && CPPFLAGS="$(EXTRACFLAGS) -Os" knfsd_cv_bsd_signals=no \
+	CC_FOR_BUILD=$(CC) $(CONFIGURE) --enable-nfsv3 --disable-nfsv4 --disable-ipv6 \
+	--disable-uuid --disable-gss --disable-mount --without-tcp-wrappers
+	@touch $@
+
+nfs-utils: nfs-utils/stamp-h1
+	$(MAKE) -C $@ $(PARALLEL_BUILD)
+
+nfs-utils-clean:
+	-@$(MAKE) -C nfs-utils distclean
+	@rm -f nfs-utils/stamp-h1
+
+nfs-utils-install:
+	install -D nfs-utils/utils/nfsd/nfsd $(INSTALLDIR)/nfs-utils/usr/sbin/nfsd
+	install -D nfs-utils/utils/mountd/mountd $(INSTALLDIR)/nfs-utils/usr/sbin/mountd
+	install -D nfs-utils/utils/exportfs/exportfs $(INSTALLDIR)/nfs-utils/usr/sbin/exportfs
+	install -D nfs-utils/utils/showmount/showmount $(INSTALLDIR)/nfs-utils/usr/sbin/showmount
+	install -D nfs-utils/utils/statd/statd $(INSTALLDIR)/nfs-utils/usr/sbin/statd
+	install -D nfs-utils/support/lib/libnfs.so $(INSTALLDIR)/nfs-utils/usr/lib/libnfs.so
+	$(STRIP) $(INSTALLDIR)/nfs-utils/usr/sbin/* $(INSTALLDIR)/nfs-utils/usr/lib/libnfs.so
+
+nfs-utils-1.3.4/stamp-h1:
+	cd nfs-utils-1.3.4 && CPPFLAGS="$(EXTRACFLAGS) -Os" knfsd_cv_bsd_signals=no \
+	CC_FOR_BUILD=$(CC) $(CONFIGURE) --enable-nfsv3 --disable-nfsv4 --disable-nfsv41 \
+	--disable-ipv6 --disable-tirpc --disable-nfsdcltrack \
+	--disable-uuid --disable-gss --disable-mount --without-tcp-wrappers
+	@touch $@
+
+nfs-utils-1.3.4: nfs-utils-1.3.4/stamp-h1
+	$(MAKE) -C $@
+
+nfs-utils-1.3.4-clean:
+	-@$(MAKE) -C nfs-utils distclean
+	@rm -f nfs-utils-1.3.4/stamp-h1
+
+nfs-utils-1.3.4-install:
+	install -D nfs-utils-1.3.4/utils/nfsd/nfsd $(INSTALLDIR)/nfs-utils-1.3.4/usr/sbin/nfsd
+	install -D nfs-utils-1.3.4/utils/mountd/mountd $(INSTALLDIR)/nfs-utils-1.3.4/usr/sbin/mountd
+	install -D nfs-utils-1.3.4/utils/exportfs/exportfs $(INSTALLDIR)/nfs-utils-1.3.4/usr/sbin/exportfs
+	install -D nfs-utils-1.3.4/utils/showmount/showmount $(INSTALLDIR)/nfs-utils-1.3.4/usr/sbin/showmount
+	install -D nfs-utils-1.3.4/utils/statd/statd $(INSTALLDIR)/nfs-utils-1.3.4/usr/sbin/statd
+	$(STRIP) $(INSTALLDIR)/nfs-utils-1.3.4/usr/sbin/*
+
+portmap: portmap/Makefile
+	$(MAKE) -C $@  EXTRACFLAGS="$(EXTRACFLAGS) -Os" NO_TCP_WRAPPER=y RPCUSER=nobody
+
+portmap-install:
+	install -D portmap/portmap $(INSTALLDIR)/portmap/usr/sbin/portmap
+	$(STRIP) $(INSTALLDIR)/portmap/usr/sbin/portmap
 # End merlin components
 
 readline-6.2/Makefile: readline-6.2/configure

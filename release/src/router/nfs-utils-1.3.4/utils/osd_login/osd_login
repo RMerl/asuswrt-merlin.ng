@@ -1,0 +1,118 @@
+#!/bin/bash
+#
+# osd_login : This script is part of the autologin feature
+#             mandated by the pnfs-objects standard.
+# It is called from objlayoutdriver.ko in the kernel.
+
+# Copyright (C) 2012, Sachin Bhamare <sbhamare@panasas.com>
+# Copyright (C) 2012, Boaz Harrosh <bharrosh@panasas.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA
+
+umask 022
+
+PATH="/sbin:/usr/sbin:/bin:/usr/bin"
+
+iscsiadm=/sbin/iscsiadm
+
+PARENT_PID=$BASHPID
+WATCHDOG_TIMEOUT=15
+
+protocol=""
+portal=""
+uri=""
+osdname=""
+systemid=""
+
+usage()
+{
+	echo "Usage: $0 -u <URI> -o <OSDNAME> -s <SYSTEMID>"
+	echo "Options:"
+	echo  "-u		target uri e.g. iscsi://<ip>:<port>"
+	echo  "-o		osdname of the target OSD"
+	echo  "-s		systemid of the target OSD"
+}
+
+parse_cmdline()
+{
+	argc=$#
+	if [ $# -lt 3 ]; then
+		usage
+		exit 1
+	fi
+
+	# parse the input arguments
+	while getopts "u:o:s:" options; do
+	    case $options in
+		u ) uri=$OPTARG;;
+		o ) osdname=$OPTARG;;
+		s ) systemid=$OPTARG;;
+		\? ) usage
+			exit 1;;
+		* )  usage
+			exit 1;;
+	    esac
+	done
+
+	echo "-u : $uri"
+	echo "-o : $osdname"
+	echo "-s : $systemid"
+
+	protocol=`echo $uri | awk -F ':' '{print $1}'`
+	portal=`echo $uri | awk -F '//' '{print $2}'`
+}
+
+watchdog()
+{
+	timeout=$1
+	portal=$2
+
+	sleep $timeout
+	if kill -9 $PARENT_PID; then
+	    echo "watchdog : Timed out (>$timeout seconds) while login into $portal" | logger -t "osd_login"
+	fi
+	echo "watchdog: exiting .."
+	exit 2
+}
+
+login_iscsi_osd()
+{
+	echo "login into: $1"
+	if ! $iscsiadm -m discovery -o nonpersistent -t sendtargets -p $1 --login; then
+		echo "$iscsiadm -m discovery -t sendtargets -p $1 --login returned error $? !"
+		sleep 1;
+	fi
+}
+
+echo "============= osd_login ========="
+echo "progname : $0"
+parse_cmdline "$@"
+echo "protocol: $protocol"
+echo "portal: $portal"
+
+watchdog $WATCHDOG_TIMEOUT $portal &
+watchdog_pid=$!
+
+case $protocol in
+iscsi)
+	login_iscsi_osd $portal |& logger -t "osd_login"
+	;;
+*)
+	echo "Error: protocol $protocol not supported !" | logger -t "osd_login"
+	;;
+esac
+
+kill -9 $watchdog_pid
+exit 0

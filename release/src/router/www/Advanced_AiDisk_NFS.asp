@@ -82,6 +82,9 @@ function initial(){
 
 	shownfsd_exportlist();
 
+	if(machine_name.search("aarch64") != -1)
+		document.getElementById("nfsd_v2_tr").style.display="none";
+
 	document.aidiskForm.protocol.value = PROTOCOL;
 	initial_dir();
 	check_dir_path();
@@ -160,14 +163,14 @@ function get_disk_tree(){
 }
 function get_layer_items(layer_order){
 	$.ajax({
-    		url: '/gettree.asp?layer_order='+layer_order,
-    		dataType: 'script',
-    		error: function(xhr){
-    			;
-    		},
-    		success: function(){
+		url: '/gettree.asp?layer_order='+layer_order,
+		dataType: 'script',
+		error: function(xhr){
+			;
+		},
+		success: function(){
 				get_tree_items(treeitems);
-  			}
+			}
 		});
 }
 function get_tree_items(treeitems){
@@ -218,9 +221,9 @@ function BuildTree(){
 		layer = get_layer(ItemBarCode.substring(1));
 		if(layer == 3){
 			if(ItemText.length > 21)
-		 		short_ItemText = ItemText.substring(0,30)+"...";
-		 	else
-		 		short_ItemText = ItemText;
+				short_ItemText = ItemText.substring(0,30)+"...";
+			else
+				short_ItemText = ItemText;
 		}
 		else
 			short_ItemText = ItemText;
@@ -325,7 +328,7 @@ function build_array(obj,layer){
 	var layer3_path ="";
 	if(obj.id.length>6){
 		if(layer ==3){
- 			layer3_path = "/" + obj.title;
+			layer3_path = "/" + obj.title;
 			while(layer3_path.indexOf("&nbsp;") != -1)
 				layer3_path = layer3_path.replace("&nbsp;"," ");
 
@@ -655,15 +658,15 @@ function check_dir_path(){
 											</td>
 										</tr>
 									</table>
-							  	</div>
+								</div>
 								<div style="margin:5px;"><img src="/images/New_ui/export/line_export.png"></div>
 								<div class="formfontdesc">Export directories from plugged USB disks over NFS.</div>
 
-					   			<table class="FormTable" width="100%" cellspacing="1">
-					   				<tr>
-						    	    	<th>Enable NFSD</th>
-						    	    	<td>
-					        				<div class="left" style="width:94px; position:relative; left:3%;" id="radio_nfsd_enable"></div>
+								<table class="FormTable" width="100%" cellspacing="1">
+									<tr>
+									<th>Enable NFSD</th>
+										<td>
+											<div class="left" style="width:94px; position:relative; left:3%;" id="radio_nfsd_enable"></div>
 											<div class="clear"></div>
 											<script type="text/javascript">
 												$('#radio_nfsd_enable').iphoneSwitch('<% nvram_get("nfsd_enable"); %>',
@@ -675,10 +678,10 @@ function check_dir_path(){
 													 }
 												);
 											</script>
-					        			</td>
+										</td>
 									</tr>
-									<tr>
-									<th>Enable legacy (NFS V2) support</th>
+									<tr id="nfsd_v2_tr">
+										<th>Enable legacy (NFS V2) support</th>
 										<td>
 											<input type="radio" name="nfsd_enable_v2" class="input" value="1" <% nvram_match_x("", "nfsd_enable_v2", "1", "checked"); %>><#checkbox_Yes#>
 											<input type="radio" name="nfsd_enable_v2" class="input" value="0" <% nvram_match_x("", "nfsd_enable_v2", "0", "checked"); %>><#checkbox_No#>
@@ -691,44 +694,48 @@ function check_dir_path(){
 									<br><b>Options:</b> Comma-separated list of options to apply to every hosts within that export.
 								</div>
 
-								<div><br><span id="NoUSB" style="display:none;color:#FFCC00;">You need to plug a USB disk to your router to be able to export folders!</span><br></div>
+								<div><br><span id="NoUSB" style="display:none;color:#FFCC00;">You need to plug a USB disk to your router to be able to export folders!<br></span></div>
 
-					   			<table class="FormTable" width="100%" cellspacing="1">
+								<table class="FormTable" width="100%" cellspacing="1">
 									<tr>
 										<table  width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
+											<thead>
+												<tr>
+													<td colspan="4">Exported filesystems (Max Limit : 64)</td>
+												</tr>
+											</thead>
 											<tr>
-									  			<th width="30%">Path</th>
+												<th width="30%">Path</th>
 												<th width="30%">Access list</th>
 												<th width="30%">Options</th>
 												<th width="10%">Add / Delete</th>
-										  	</tr>
-										  	<tr  id="EditExports">
+											</tr>
+											<tr  id="EditExports">
 												<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 
 												<td width="30%">
 													<input id="PATH" type="text" class="input_20_table" style="margin-left:15px;height:25px;" onclick="get_disk_tree();" readonly="readonly" name="nfsd_path_x_0">
 												</td>
-					        	    			<td width="30%">
-					        	    				<input type="text" class="input_20_table" maxlength="128" name="nfsd_accesslist_x_0">
-					        	    			</td>
-					        	    			<td width="30%">
+												<td width="30%">
+													<input type="text" class="input_20_table" maxlength="128" name="nfsd_accesslist_x_0">
+												</td>
+												<td width="30%">
 													<input type="text" class="input_20_table" maxlenght="64" name="nfsd_mountoptions_x_0">
 												</td>
 												<td width="10%">
 													<div>
-														<input type="button" class="add_btn" onClick="addRow_Group(128);" value="">
+														<input type="button" class="add_btn" onClick="addRow_Group(32);" value="">
 													</div>
-					        	    			</td>
-										  	</tr>
+												</td>
+											</tr>
 										</table>
 
 										<div id="nfsd_exportlist_Block"></div>
 
 										<!-- manually assigned the nfsd List end-->
-						    	       	<div class="apply_gen">
-						    	       		<input type="button" name="button" class="button_gen" onclick="apply();" value="<#CTL_apply#>"/>
-					        	    	</div>
-
+										<div class="apply_gen">
+											<input type="button" name="button" class="button_gen" onclick="apply();" value="<#CTL_apply#>"/>
+										</div>
 									</tr>
 								</table>
 							</td>

@@ -1,0 +1,13 @@
+[Unit]
+Description=Preprocess NFS configuration
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+# This service needs to run any time any nfs service
+# is started, so changes to local config files get
+# incorporated.  Having "RemainAfterExit=no" (the default)
+# ensures this happens.
+RemainAfterExit=no
+ExecStart=/usr/libexec/nfs-utils/nfs-utils_env.sh

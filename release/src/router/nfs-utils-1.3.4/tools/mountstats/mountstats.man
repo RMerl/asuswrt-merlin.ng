@@ -1,0 +1,146 @@
+.\"
+.\" mountstats(8)
+.\"
+.TH mountstats 8 "12 Dec 2014"
+.SH NAME
+mountstats \- Displays various NFS client per-mount statistics
+.SH SYNOPSIS
+.B mountstats
+.RB [ \-h | \-\-help ]
+.RB [ \-v | \-\-version ]
+.RB [ \-f | \-\-file
+.IR infile ]
+.RB [ \-S | \-\-since
+.IR sincefile ]
+.\" .RB [ \-n | \-\-nfs | \-r | \-\-rpc | \-R | \-\-raw ]
+[
+.RB [ \-n | \-\-nfs ]
+|
+.RB [ \-r | \-\-rpc ]
+|
+.RB  [ \-R | \-\-raw ]
+]
+.RI [ mountpoint ] ...
+.P
+.B mountstats iostat
+.RB [ \-h | \-\-help ]
+.RB [ \-v | \-\-version ]
+.RB [ \-f | \-\-file
+.IR infile ]
+.RB [ \-S | \-\-since
+.IR sincefile ]
+.RI [ interval ]
+.RI [ count ]
+.RI [ mountpoint ] ...
+.P
+.B mounstats nfsstat
+.RB [ \-h | \-\-help ]
+.RB [ \-v | \-\-version ]
+.RB [ \-f | \-\-file
+.IR infile ]
+.RB [ \-S | \-\-since
+.IR sincefile ]
+.RB [ \-3 ]
+.RB [ \-4 ]
+.RI [ mountpoint ] ...
+.P
+.SH DESCRIPTION
+.RB "The " mountstats " command displays various NFS client statisitics for each given"
+.IR mountpoint .
+.P
+.RI "If no " mountpoint " is given, statistics will be displayed for all NFS mountpoints on the client."
+.SS Sub-commands
+Valid
+.BR mountstats (8)
+subcommands are:
+.IP "\fBmountstats\fP"
+Display a combination of per-op RPC statistics, NFS event counts, and NFS byte counts.  This is the default sub-command that will be executed if no sub-command is given.
+.IP "\fBiostat\fP"
+Display iostat-like statistics.
+.IP "\fBnfsstat\fP"
+Display nfsstat-like statistics.
+.SH OPTIONS
+.SS Options valid for all sub-commands
+.TP
+.B \-h, \-\-help
+show the help message and exit
+.TP
+.B \-v, \-\-version
+show program's version number and exit
+.TP
+\fB\-f \fIinfile\fR, \fB\-\-file \fIinfile
+Read stats from
+.I infile
+instead of 
+.IR /proc/self/mountstats ".  " infile
+must be in the same format as 
+.IR /proc/self/mountstats .
+This may be used with the
+.BR \-S | \-\-since
+options to display the delta between two different points in time.
+This may not be used with the
+.IR interval " or " count
+options of the
+.B iostat
+sub-command.
+.TP
+\fB\-S \fIsincefile\fR, \fB\-\-since \fIsincefile
+Show difference between current stats and those in
+.IR sincefile ".  " sincefile
+must be in the same format as 
+.IR /proc/self/mountstats .
+This may be used with the
+.BR \-f | \-\-file
+options to display the delta between two different points in time.
+This may not be used with the
+.IR interval " or " count
+options of the
+.B iostat
+sub-command.
+.SS Options specific to the mountstats sub-command
+.B \-n, \-\-nfs
+Display only the NFS statistics
+.TP
+.B \-r, \-\-rpc
+Display only the RPC statistics
+.TP
+.B \-R, \-\-raw
+Display only the raw statistics.  This is intended for use with the
+.BR \-f | \-\-file
+and
+.BR \-S | \-\-since
+options.
+.SS Options specific to the iostat sub-command
+.IP "\fIinterval\fP"
+Specifies the amount of time in seconds between each report.  The first report contains statistics for the time since each file system was mounted.  Each subsequent report contains statistics collected during the interval since the previous report.  This may not be used with the
+.BR \-f | \-\-file
+or
+.BR \-S | \-\-since
+options.
+.P
+.IP "\fIcount\fP"
+Determines the number of reports generated at
+.I interval
+seconds apart.  If the
+.I interval
+parameter is specified without the
+.I count
+parameter, the command generates reports continuously.  This may not be used with the
+.BR \-f | \-\-file
+or
+.BR \-S | \-\-since 
+options.
+.SS Options specific to the nfsstat sub-command
+.IP "\fB\-3\fP"
+Show only NFS version 3 statistics.  The default is to show both version 3 and version 4 statistics.
+.IP "\fB\-4\fP"
+Show only NFS version 4 statistics.  The default is to show both version 3 and version 4 statistics.
+.SH FILES
+.TP
+.B /proc/self/mountstats
+.SH SEE ALSO
+.BR iostat (8),
+.BR nfsiostat (8),
+.BR nfsstat (8)
+.SH AUTHOR
+Chuck Lever <chuck.lever@oracle.com>

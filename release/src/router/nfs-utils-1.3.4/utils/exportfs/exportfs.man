@@ -1,0 +1,303 @@
+.\"@(#)exportfs.8"
+.\"
+.\" Copyright (C) 1995 Olaf Kirch <okir@monad.swb.de>
+.\" Modifications 1999-2003 Neil Brown <neilb@cse.unsw.edu.au>
+.\"
+.TH exportfs 8 "30 September 2013"
+.SH NAME
+exportfs \- maintain table of exported NFS file systems
+.SH SYNOPSIS
+.BI "/usr/sbin/exportfs [-avi] [-o " "options,.." "] [" "client:/path" " ..]
+.br
+.BI "/usr/sbin/exportfs -r [-v]"
+.br
+.BI "/usr/sbin/exportfs [-av] -u [" "client:/path" " ..]
+.br
+.BI "/usr/sbin/exportfs [-v]
+.br
+.BI "/usr/sbin/exportfs -f"
+.br
+.BI "/usr/sbin/exportfs -s"
+.br
+.SH DESCRIPTION
+An NFS server maintains a table of local physical file systems
+that are accessible to NFS clients.
+Each file system in this table is  referred to as an
+.IR "exported file system" ,
+or
+.IR export ,
+for short.
+.PP
+The
+.B exportfs
+command maintains the current table of exports for the NFS server.
+The master export table is kept in a file named
+.IR /var/lib/nfs/etab .
+This file is read by
+.B rpc.mountd
+when a client sends an NFS MOUNT request.
+.PP
+Normally the master export table is initialized with the contents of
+.I /etc/exports
+and files under
+.I /etc/exports.d
+by invoking
+.BR "exportfs -a" .
+However, a system administrator can choose to add or delete
+exports without modifying
+.I /etc/exports
+or files under
+.I /etc/exports.d
+by using the
+.B exportfs
+command.
+.PP
+.B exportfs
+and its partner program
+.B rpc.mountd
+work in one of two modes: a legacy mode which applies to 2.4 and
+earlier versions of the Linux kernel, and a new mode which applies to
+2.6 and later versions, providing the
+.B nfsd
+virtual filesystem has been mounted at
+.I /proc/fs/nfsd
+or
+.IR /proc/fs/nfs .
+On 2.6 kernels, if this filesystem is not mounted, the legacy mode is used.
+.PP
+In the new mode,
+.B exportfs
+does not give any information to the kernel, but provides it only to
+.B rpc.mountd
+through the
+.I /var/lib/nfs/etab
+file.
+.B rpc.mountd
+then manages kernel requests for information about exports, as needed.
+.PP
+In the legacy mode,
+exports which identify a specific host, rather than a subnet or netgroup,
+are entered directly into the kernel's export table,
+as well as being written to
+.IR /var/lib/nfs/etab .
+Further, exports listed in
+.I /var/lib/nfs/rmtab
+which match a non host-specific export request will cause an
+appropriate export entry for the host given in
+.I rmtab
+to be added to the kernel's export table.
+.SH OPTIONS
+.TP
+.B \-d kind " or " \-\-debug kind
+Turn on debugging. Valid kinds are: all, auth, call, general and parse.
+.TP
+.B -a
+Export or unexport all directories.
+.TP
+.BI "-o " options,...
+Specify a list of export options in the same manner as in
+.BR exports (5).
+.TP
+.B -i
+Ignore the
+.I /etc/exports
+file and files under
+.I /etc/exports.d
+directory.  Only default options and options given on the command line are used.
+.TP
+.B -r
+Reexport all directories, synchronizing
+.I /var/lib/nfs/etab
+with
+.IR /etc/exports 
+and files under 
+.IR /etc/exports.d .
+This option removes entries in
+.I /var/lib/nfs/etab
+which have been deleted from
+.I /etc/exports
+or files under
+.IR /etc/exports.d , 
+and removes any entries from the
+kernel export table which are no longer valid.
+.TP
+.B -u
+Unexport one or more directories.
+.TP
+.B -f
+If
+.I /proc/fs/nfsd
+or
+.I /proc/fs/nfs
+is mounted, flush everything out of the kernel's export table.
+Fresh entries for active clients are added to the kernel's export table by
+.B rpc.mountd
+when they make their next NFS mount request.
+.TP
+.B -v
+Be verbose. When exporting or unexporting, show what's going on. When
+displaying the current export list, also display the list of export
+options.
+.TP
+.B -s
+Display the current export list suitable for /etc/exports.
+.SH DISCUSSION
+.SS Exporting Directories
+The first synopsis shows how to invoke
+.B exportfs
+when adding new entries to the export table.  When using
+.BR "exportfs -a" ,
+all exports listed in
+.I /etc/exports
+and files under
+.I /etc/exports.d
+are added to
+.IR /var/lib/nfs/etab .
+The kernel's export table is also updated as needed.
+.PP
+The
+.I host:/path
+argument specifies a local directory to export,
+along with the client or clients who are permitted to access it.
+See
+.B exports(5)
+for a description of supported options and access list formats.
+.PP
+IPv6 presentation addresses contain colons, which are already used
+to separate the "host" and "path" command line arguments.
+When specifying a client using a raw IPv6 address,
+enclose the address in square brackets.
+For IPv6 network addresses, place the prefix just after the closing
+bracket.
+.PP
+To export a directory to the world, simply specify
+.IR :/path .
+.PP
+The export options for a particular host/directory pair derive from
+several sources.
+The default export options are
+.BR sync,ro,root_squash,wdelay .
+These can be overridden by entries in
+.IR /etc/exports 
+or files under
+.IR /etc/exports.d .
+.PP
+A system administrator may override options from these sources using the
+.B -o
+command-line option on
+.BR exportfs .
+This option takes a comma-separated list of options in the same fashion
+as one would specify them in
+.IR /etc/exports .
+In this way
+.B exportfs
+can be used to modify the export options of an already exported directory.
+.SS Unexporting Directories
+The third synopsis shows how to unexport a currently exported directory.
+When using
+.BR "exportfs -ua" ,
+all entries listed in
+.I /var/lib/nfs/etab
+are removed from the kernel export tables, and the file is cleared. This
+effectively shuts down all NFS activity.
+.PP
+To remove an export, specify a
+.I host:/path
+pair. This deletes the specified entry from
+.I /var/lib/nfs/etab
+and removes the corresponding kernel entry (if any).
+.PP
+.SS Dumping the Export Table
+Invoking
+.B exportfs
+without options shows the current list of exported file systems.
+Adding the
+.B -v
+option causes
+.B exportfs
+to display the export options for each export.
+.SH EXAMPLES
+The following adds all directories listed in
+.I /etc/exports
+and files under
+.I /etc/exports.d
+to
+.I /var/lib/nfs/etab
+and pushes the resulting export entries into the kernel:
+.PP
+.nf
+.B "# exportfs -a
+.fi
+.PP
+To export the
+.I /usr/tmp
+directory to host
+.BR django ,
+allowing insecure file locking requests from clients:
+.PP
+.nf
+.B "# exportfs -o insecure_locks django:/usr/tmp
+.fi
+.PP
+To unexport the
+.I /usr/tmp
+directory:
+.PP
+.nf
+.B "# exportfs -u django:/usr/tmp
+.fi
+.PP
+To unexport all exports listed in
+.IR /etc/exports 
+and files under
+.IR /etc/exports.d :
+.PP
+.nf
+.B "# exportfs -au
+.fi
+.PP
+To export the
+.I /usr/tmp
+directory to IPv6 link-local clients:
+.PP
+.nf
+.B "# exportfs [fe80::]/64:/usr/tmp
+.fi
+.SH USAGE NOTES
+Exporting to IP networks or DNS and NIS domains does not enable clients
+from these groups to access NFS immediately.
+Rather, these sorts of exports are hints to
+.BR rpc.mountd (8)
+to grant any mount requests from these clients.
+This is usually not a problem, because any existing mounts are preserved in
+.I rmtab
+across reboots.
+.PP
+When unexporting a network or domain entry, any current exports to members
+of this group will be checked against the remaining valid exports and
+if they themselves are no longer valid they will be removed.
+.SH FILES
+.TP 2.5i
+.I /etc/exports
+input file listing exports, export options, and access control lists
+.TP 2.5i
+.I /etc/exports.d
+directory where extra input files are stored.
+.B Note:
+only files that end with 
+.I .exports
+are used.
+.TP 2.5i
+.I /var/lib/nfs/etab
+master table of exports
+.TP 2.5i
+.I /var/lib/nfs/rmtab
+table of clients accessing server's exports
+.SH SEE ALSO
+.BR exports (5),
+.BR rpc.mountd (8),
+.BR netgroup (5)
+.SH AUTHORS
+Olaf Kirch <okir@monad.swb.de>
+.br
+Neil Brown <neilb@cse.unsw.edu.au>

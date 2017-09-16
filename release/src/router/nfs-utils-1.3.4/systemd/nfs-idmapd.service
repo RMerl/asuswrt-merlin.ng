@@ -1,0 +1,15 @@
+[Unit]
+Description=NFSv4 ID-name mapping service
+DefaultDependencies=no
+Requires=var-lib-nfs-rpc_pipefs.mount
+After=var-lib-nfs-rpc_pipefs.mount local-fs.target
+
+BindsTo=nfs-server.service
+
+Wants=nfs-config.service
+After=nfs-config.service
+
+[Service]
+EnvironmentFile=-/run/sysconfig/nfs-utils
+Type=forking
+ExecStart=/usr/sbin/rpc.idmapd $RPCIDMAPDARGS

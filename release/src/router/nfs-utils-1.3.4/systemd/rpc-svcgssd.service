@@ -1,0 +1,20 @@
+[Unit]
+Description=RPC security service for NFS server
+DefaultDependencies=no
+Requires=var-lib-nfs-rpc_pipefs.mount
+After=var-lib-nfs-rpc_pipefs.mount local-fs.target
+PartOf=nfs-server.service
+PartOf=nfs-utils.service
+
+After=gssproxy.service
+ConditionPathExists=|!/run/gssproxy.pid
+ConditionPathExists=|!/proc/net/rpc/use-gss-proxy
+ConditionPathExists=/etc/krb5.keytab
+
+Wants=nfs-config.service
+After=nfs-config.service
+
+[Service]
+EnvironmentFile=-/run/sysconfig/nfs-utils
+Type=forking
+ExecStart=/usr/sbin/rpc.svcgssd $SVCGSSDARGS

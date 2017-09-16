@@ -1,0 +1,92 @@
+.\"	$OpenBSD: mdoc.template,v 1.6 2001/02/03 08:22:44 niklas Exp $
+.\"
+.\" The following requests are required for all man pages.
+.Dd February 3, 2003
+.Dt RPC.IDMAPD 8
+.Os
+.Sh NAME
+.Nm rpc.idmapd
+.Nd NFSv4 ID <-> Name Mapper
+.Sh SYNOPSIS
+.\" For a program:  program [-abc] file ...
+.Nm rpc.idmapd
+.Op Fl h
+.Op Fl f
+.Op Fl v
+.Op Fl C
+.Op Fl S
+.Op Fl p Ar path
+.Op Fl c Ar path
+.Sh DESCRIPTION
+.Nm
+is the NFSv4 ID <-> name mapping daemon.  It provides functionality to
+the NFSv4 kernel client and server, to which it communicates via
+upcalls, by translating user and group IDs to names, and vice versa.
+.Pp
+Note that on more recent kernels only the NFSv4 server uses
+.Nm .
+The NFSv4 client instead uses
+.Xr nfsidmap 8 ,
+and only falls back to 
+.Nm 
+if there was a problem running the
+.Xr nfsidmap 8
+program.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds_imagedir
+.It Fl h
+Display usage message.
+.It Fl v
+Increases the verbosity level (can be specified multiple times).
+.It Fl f
+Runs
+.Nm
+in the foreground and prints all output to the terminal.
+.It Fl p Ar path
+Specifies the location of the RPC pipefs to be
+.Ar path .
+The default value is \&"/var/lib/nfs/rpc_pipefs\&".
+.It Fl c Ar path
+Use configuration file
+.Ar path .
+.It Fl C
+Client-only: perform no idmapping for any NFS server, even if one is detected.
+.It Fl S
+Server-only: perform no idmapping for any NFS client, even if one is detected.
+.El
+.Sh EXAMPLES
+.Cm rpc.idmapd -f -vvv
+.Pp
+Runs
+.Nm
+printing all
+messages to console, and with a verbosity level of 3.
+.\" This next request is for sections 2 and 3 function return values only.
+.\" .Sh RETURN VALUES
+.\" The next request is for sections 2 and 3 error and signal handling only.
+.\" .Sh ERRORS
+.\" This next request is for section 4 only.
+.\" .Sh DIAGNOSTICS
+.\" This next request is for sections 1, 6, 7 & 8 only.
+.\" .Sh ENVIRONMENT
+.Sh FILES
+.Pa /etc/idmapd.conf
+.Sh SEE ALSO
+.Xr idmapd.conf 5 ,
+.Xr nfsidmap 8
+.\".Sh SEE ALSO
+.\".Xr nylon.conf 4
+.\" .Sh COMPATIBILITY
+.\".Sh STANDARDS
+.\".Sh ACKNOWLEDGEMENTS
+.Sh AUTHORS
+The
+.Nm
+software has been developed by Marius Aamodt Eriksen
+.Aq marius@citi.umich.edu .
+.\" .Sh HISTORY
+.\".Sh BUGS
+.\"Please report any bugs to Marius Aamodt Eriksen
+.\".Aq marius@monkey.org .
+.\" .Sh CAVEATS

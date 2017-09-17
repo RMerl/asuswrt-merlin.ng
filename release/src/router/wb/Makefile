@@ -18,7 +18,7 @@ WSLIB_OBJS := $(WS_SOURCES:%.c=$(OUTPUT)/%.o)
 
 ifeq ($(wildcard $(TOP)/wb/ws_src/*.c),)
 all:
-	-cp -f $(TOP)/wb/prebuild/libws.so libws.so
+	-cp -f $(TOP)/wb/prebuild$(BCMEX)$(EXHND)/libws.so libws.so
 else
 all: $(WSLIB)
 endif

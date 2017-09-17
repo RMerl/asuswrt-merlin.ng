@@ -21,7 +21,7 @@ LIBS = -lpthread -lgcc_s
 
 ifeq ($(wildcard $(SRCBASE)/router/nt_center/actMail/*.c),)
 all: 
-	-cp -f prebuild/nt_actMail nt_actMail
+	-cp -f prebuild$(BCMEX)$(EXHND)/nt_actMail nt_actMail
 else
 all: nt_actMail
 endif

@@ -1,5 +1,5 @@
 all:
-	@cp -f prebuild/ftpclient ftpclient
+	@cp -f prebuild$(BCMEX)$(EXHND)/ftpclient ftpclient
 
 install:
 

@@ -43,7 +43,7 @@ all:
 	-cp -f prebuild$(BCMEX)$(EXHND)/nt_monitor nt_monitor
 	-cp -f lib/prebuild$(BCMEX)$(EXHND)/libnt.so lib
 	-cp -f lib/prebuild$(BCMEX)$(EXHND)/nt_db lib
-	-cp -f lib/prebuild$(BCMEX)$(EXHND)/*.h lib
+#	-cp -f lib/prebuild$(BCMEX)$(EXHND)/*.h lib
 
 else
 all: ntdir nt_center Notify_Event2NC  nt_monitor

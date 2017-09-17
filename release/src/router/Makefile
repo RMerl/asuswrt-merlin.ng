@@ -2825,9 +2825,9 @@ endif
 
 iptables-1.4.x: iptables-1.4.x/Makefile libnfnetlink
 	@$(SEP)
-	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE" \
-		CFLAGS="-Wall -Os -D_GNU_SOURCE $(EXTRACFLAGS) -I$(TOP)/libnfnetlink/include" \
-		LDFLAGS="-L$(TOP)/libnfnetlink/src/.libs -lnfnetlink"
+	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
+#		CFLAGS="-Wall -Os -D_GNU_SOURCE $(EXTRACFLAGS) -I$(TOP)/libnfnetlink/include" \
+#		LDFLAGS="-L$(TOP)/libnfnetlink/src/.libs -lnfnetlink"
 
 iptables-1.4.x-install:
 	install -D iptables-1.4.x/iptables/.libs/xtables-multi $(INSTALLDIR)/iptables-1.4.x/usr/sbin/xtables-multi

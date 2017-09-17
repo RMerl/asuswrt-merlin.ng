@@ -34,7 +34,7 @@ OBJS := dhd_monitor.o
 
 ifeq ($(wildcard $(SRCBASE)/router/dhd_monitor/*.c),)
 all:
-	-cp -f prebuilt/dhd_monitor dhd_monitor
+	-cp -f prebuilt$(EXHND)/dhd_monitor dhd_monitor
 else
 all: dhd_monitor
 endif
@@ -49,7 +49,7 @@ install: all
 
 ifeq ($(wildcard $(SRCBASE)/router/dhd_monitor/*.c),)
 dhd_monitor:
-	-cp -f prebuilt/dhd_monitor dhd_monitor
+	-cp -f prebuilt$(EXHND)/dhd_monitor dhd_monitor
 else
 dhd_monitor: $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS)

@@ -119,6 +119,7 @@ export BCMSRC=src-rt-5.02hnd
 export OLD_SRC=$(HND_SRC)/../src
 export BUILD_MFG := 0
 export EX7 := _94908hnd
+export EXHND := _hnd
 else ifeq ($(RTCONFIG_BCM_7114),y)
 export BCMSRC=src-rt-7.14.114.x/src
 export OLD_SRC=$(SRCBASE)/../../src
@@ -1137,7 +1138,7 @@ obj-$(RTCONFIG_JFFS2USERICON) += lltdc
 obj-$(RTCONFIG_TOAD) += toad
 ifeq ($(RTCONFIG_BCMARM),y)
 ifneq ($(RTCONFIG_QTN),y)
-obj-$(RTCONFIG_BCMBSD) += bsd$(BCMEX)
+obj-$(RTCONFIG_BCMBSD) += bsd
 #ifeq ($(HND_ROUTER),y)
 #obj-$(RTCONFIG_BCMBSD) += appeventd
 #export CFLAGS += -DBCM_APPEVENTD
@@ -4239,7 +4240,7 @@ zlib/stamp-h1:
 	touch $@
 
 zlib: zlib/stamp-h1
-	@$(MAKE) -C zlib CC=$(CC) AR="ar rc" RANLIB=$(RANLIB) LD=$(LD) all $(PARALLEL_BUILD) && $(MAKE) $@-stage
+	@$(MAKE) -C zlib CC=$(CC) AR="ar rc" RANLIB=$(RANLIB) LD=$(LD) all && $(MAKE) $@-stage
 
 zlib-clean:
 	-@$(MAKE) -C zlib clean

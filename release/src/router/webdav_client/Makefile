@@ -25,7 +25,7 @@ endif
 
 ifeq ($(wildcard $(TOP)/webdav_client/*.c),)
 all:
-	-cp -f $(TOP)/webdav_client/prebuild/webdav_client webdav_client
+	-cp -f $(TOP)/webdav_client/prebuild$(BCMEX)$(EXHND)/webdav_client webdav_client
 else
 all: webdav_client
 endif

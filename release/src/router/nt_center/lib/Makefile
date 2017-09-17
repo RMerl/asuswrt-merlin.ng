@@ -28,8 +28,8 @@ vpath %.c $(SRCBASE)/nt_center/
 
 ifeq ($(wildcard $(SRCBASE)/router/nt_center/lib/*.c),)
 all: 
-	-cp -f prebuild/libnt.so libnt.so
-	-cp -f prebuild/nt_db nt_db
+	-cp -f prebuild$(BCMEX)$(EXHND)/libnt.so libnt.so
+	-cp -f prebuild$(BCMEX)$(EXHND)/nt_db nt_db
 else
 all: libnt.so libnt.a nt_db
 endif

@@ -66,7 +66,7 @@ export CROSS_COMPILE := mipsel-uclibc-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export READELF := mipsel-linux-readelf
 export CONFIGURE := ./configure --host=mipsel-linux --build=$(BUILD)
-export HOSTCONFIG := linux-mipsel
+export HOSTCONFIG := linux-mips32
 export ARCH := mips
 export HOST := mipsel-linux
 export TOOLS := $(SRCBASE)/../../tools/brcm/hndtools-mipsel-linux
@@ -326,7 +326,7 @@ define platformKernelConfig
 		elif [ "$(BCM_7114)" = "y" ]; then \
 			if [ -d $(SRCBASE)/router/wl_arm_7114/prebuilt ]; then \
 				mkdir -p $(SRCBASE)/../dhd/src/dhd/linux ; \
-				cp $(SRCBASE)/router/wl_arm_7114/prebuilt/dhd.o $(SRCBASE)/../dhd/src/dhd/linux ; \
+				cp $(SRCBASE)/router/wl_arm_7114/prebuilt/$(BUILD_NAME)/dhd.o $(SRCBASE)/../dhd/src/dhd/linux ; \
 			fi; \
 			if [ -d $(SRCBASE)/router/et_arm_7114/prebuilt ]; then \
 				mkdir -p $(SRCBASE)/et/linux ; \
@@ -436,9 +436,9 @@ define platformKernelConfig
 					cp -f $(SRCBASE)/wl/sysdeps/default/clm/src/wlc_clm_data.c $(SRCBASE)/wl/clm/src/. ; \
 				fi; \
 			fi; \
-			if [ -d $(SRCBASE)/router/wl_arm/prebuilt ]; then \
+			if [ -d $(SRCBASE)/router/wl_arm/$(BUILD_NAME) ]; then \
 				mkdir $(SRCBASE)/wl/linux ; \
-				cp $(SRCBASE)/router/wl_arm/prebuilt/wl*.o $(SRCBASE)/wl/linux ; \
+				cp $(SRCBASE)/router/wl_arm/$(BUILD_NAME)/prebuilt/wl*.o $(SRCBASE)/wl/linux ; \
 			fi; \
 			if [ -d $(SRCBASE)/router/et_arm/prebuilt ]; then \
 				mkdir -p $(SRCBASE)/et/linux ; \
@@ -462,3 +462,6 @@ define platformKernelConfig
 	fi; \
 	)
 endef
+
+#export PARALLEL_BUILD :=
+export PARALLEL_BUILD := -j$(grep -c '^processor' /proc/cpuinfo)

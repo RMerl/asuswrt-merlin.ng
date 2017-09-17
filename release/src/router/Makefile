@@ -915,7 +915,7 @@ obj-$(RTCONFIG_USB_MULTIMODEM) += usb-modeswitch
 
 obj-$(RTCONFIG_USB_BECEEM) += madwimax-0.1.1 # for Samsung WiMAX
 obj-$(RTCONFIG_USB_BECEEM) += openssl-1.0.0q # for Beceem, GCT WiMAX
-obj-$(RTCONFIG_USB_BECEEM) += Beceem_BCMS250 # for Beceem WiMAX
+obj-$(RTCONFIG_USB_BECEEM) += Beceem_BCMS250$(BCMEX) # for Beceem WiMAX
 obj-$(RTCONFIG_USB_BECEEM) += wpa_supplicant-0.7.3 # for GCT WiMAX
 obj-$(RTCONFIG_USB_BECEEM) += zlib # for GCT WiMAX
 obj-$(RTCONFIG_USB_BECEEM) += gctwimax-0.0.3rc4 # for GCT WiMAX
@@ -1137,7 +1137,7 @@ obj-$(RTCONFIG_JFFS2USERICON) += lltdc
 obj-$(RTCONFIG_TOAD) += toad
 ifeq ($(RTCONFIG_BCMARM),y)
 ifneq ($(RTCONFIG_QTN),y)
-obj-$(RTCONFIG_BCMBSD) += bsd
+obj-$(RTCONFIG_BCMBSD) += bsd$(BCMEX)
 #ifeq ($(HND_ROUTER),y)
 #obj-$(RTCONFIG_BCMBSD) += appeventd
 #export CFLAGS += -DBCM_APPEVENTD
@@ -1456,9 +1456,9 @@ ifeq ($(RTCONFIG_RALINK),y)
 		$(MAKE) -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
 	fi
 else ifeq ($(RTCONFIG_QCA),y)
-	$(MAKE) -j 8 -C $(LINUXDIR) vmlinux CC=$(KERNELCC) LD=$(KERNELLD)
+	$(MAKE) $(PARALLEL_BUILD) -C $(LINUXDIR) vmlinux CC=$(KERNELCC) LD=$(KERNELLD)
 	if grep -q "CONFIG_MODULES=y" $(LINUXDIR)/.config ; then \
-	    $(MAKE) -j 8 -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
+	    $(MAKE) $(PARALLEL_BUILD) -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
 	fi
 ifeq ($(CONFIG_LINUX3_14),y)
 	$(MAKE) -C $(LINUXDIR) dtbs
@@ -2243,9 +2243,9 @@ oldconfig oldconf: koldconf roldconf bboldconf
 
 busybox busybox-1.17.4: dummy
 ifeq ($(HND_ROUTER),y)
-	$(MAKE) -C $(BUSYBOX_DIR) EXTRA_LDFLAGS="" EXTRA_CFLAGS="-fPIC $(PRIVATE_EXTRACFLAGS) -I$(TOOL_SYS_INCLUDE)"
+	$(MAKE) -C $(BUSYBOX_DIR) $(PARALLEL_BUILD) EXTRA_LDFLAGS="" EXTRA_CFLAGS="-fPIC $(PRIVATE_EXTRACFLAGS) -I$(TOOL_SYS_INCLUDE)"
 else
-	$(MAKE) -C $(BUSYBOX_DIR) EXTRA_CFLAGS="-fPIC $(EXTRACFLAGS) -idirafter $(KDIR)/include"
+	$(MAKE) -C $(BUSYBOX_DIR) $(PARALLEL_BUILD) EXTRA_CFLAGS="-fPIC $(EXTRACFLAGS) -idirafter $(KDIR)/include"
 endif
 # V=1
 
@@ -2272,7 +2272,7 @@ busybox-%-config:
 	$(MAKE) -C $(BUSYBOX_DIR) menuconfig
 
 busybox-1.24.1: dummy
-	$(MAKE) -C busybox-1.24.1
+	$(MAKE) -C busybox-1.24.1 $(PARALLEL_BUILD)
 
 infosvr: shared nvram${BCMEX}$(EX7)
 
@@ -2438,7 +2438,7 @@ openssl/Makefile:
 	cd openssl && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
-	shared $(OPENSSL_CIPHERS)
+	shared $(OPENSSL_CIPHERS) no-ssl2 no-ssl3
 #	no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
 #	no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
 #	no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
@@ -2478,10 +2478,10 @@ openssl: openssl/Makefile fsbuild
 else
 openssl: openssl/Makefile
 endif
-	$(MAKE) -j 8 -C openssl && $(MAKE) $@-stage
+	$(MAKE) -C openssl && $(MAKE) $@-stage
 
 openssl-clean:
-	[ ! -f openssl/Makefile ] || $(MAKE) -C openssl clean
+	[ ! -f openssl/Makefile ] || $(MAKE) -C openssl clean depend
 	@rm -f openssl/Makefile
 
 ifeq ($(HND_ROUTER),y)
@@ -2762,7 +2762,7 @@ iptables-1.4.21: iptables-1.4.21/Makefile
 	@$(SEP)
 	$(MAKE) -C $@ KERNEL_DIR=$(LINUXDIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
 
-iptables-1.4.21-install: iptables-1.4.21
+iptables-1.4.21-install:
 	install -D iptables-1.4.21/iptables/.libs/xtables-multi $(INSTALLDIR)/iptables-1.4.21/usr/sbin/xtables-multi
 	cd $(INSTALLDIR)/iptables-1.4.21/usr/sbin && \
 		ln -sf xtables-multi iptables-restore && \
@@ -2822,11 +2822,13 @@ else
 		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
 endif
 
-iptables-1.4.x: iptables-1.4.x/Makefile
+iptables-1.4.x: iptables-1.4.x/Makefile libnfnetlink
 	@$(SEP)
-	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
+	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE" \
+		CFLAGS="-Wall -Os -D_GNU_SOURCE $(EXTRACFLAGS) -I$(TOP)/libnfnetlink/include" \
+		LDFLAGS="-L$(TOP)/libnfnetlink/src/.libs -lnfnetlink"
 
-iptables-1.4.x-install: iptables-1.4.x
+iptables-1.4.x-install:
 	install -D iptables-1.4.x/iptables/.libs/xtables-multi $(INSTALLDIR)/iptables-1.4.x/usr/sbin/xtables-multi
 	cd $(INSTALLDIR)/iptables-1.4.x/usr/sbin && \
 		ln -sf xtables-multi iptables-restore && \
@@ -3272,7 +3274,7 @@ odhcp6c-clean:
 	-@$(MAKE) -C 6relayd clean
 
 e2fsprogs: e2fsprogs/Makefile
-	$(MAKE) -C e2fsprogs && $(MAKE) $@-stage
+	$(MAKE) -C e2fsprogs $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 e2fsprogs/Makefile:
 	$(MAKE) e2fsprogs-configure
@@ -3560,7 +3562,7 @@ quagga/stamp-h1:
 	@touch $@
 
 quagga: quagga/stamp-h1
-	@$(MAKE) -C quagga CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD)
+	@$(MAKE) -C quagga CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) $(PARALLEL_BUILD)
 
 quagga-clean:
 	-@$(MAKE) -C quagga clean
@@ -3897,7 +3899,7 @@ qca-lldpd.ipq40xx-clean:
 	@cd qca-lldpd.ipq40xx/libevent && make clean
 
 libevent-2.0.21: libevent-2.0.21/Makefile
-	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
+	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
 
 libevent-2.0.21/Makefile:
 	$(MAKE) libevent-2.0.21-configure
@@ -3917,7 +3919,7 @@ libevent-2.0.21-clean:
 
 tor: openssl zlib libevent-2.0.21 tor/Makefile
 	@$(SEP)
-	$(MAKE) -C $@
+	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 tor/Makefile:
 	(cd tor ; $(CONFIGURE) --enable-static-libevent --with-libevent-dir=$(STAGEDIR)/usr \
@@ -3936,7 +3938,7 @@ tor-clean:
 
 iproute2:
 	@$(SEP)
-	@$(MAKE) -C $@ KERNEL_INCLUDE=$(LINUX_INC_DIR)/include EXTRACFLAGS="$(EXTRACFLAGS) $(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6)"
+	@$(MAKE) -C $@ KERNEL_INCLUDE=$(LINUX_INC_DIR)/include EXTRACFLAGS="$(EXTRACFLAGS) $(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6)" $(PARALLEL_BUILD)
 
 iproute2-install: iproute2
 	install -D iproute2/tc/tc $(INSTALLDIR)/iproute2/usr/sbin/tc
@@ -4014,7 +4016,7 @@ dropbear/config.h: dropbear/config.h.in
 
 dropbear: dropbear/config.h
 	@$(SEP)
-	@$(MAKE) -j 8 -C $@ PROGRAMS="dropbear dbclient dropbearkey scp" MULTI=1
+	@$(MAKE) -C $@ PROGRAMS="dropbear dbclient dropbearkey scp" MULTI=1 $(PARALLEL_BUILD)
 
 dropbear-install:
 	install -D dropbear/dropbearmulti $(INSTALLDIR)/dropbear/usr/bin/dropbearmulti
@@ -4042,7 +4044,7 @@ wtfast-install:
 
 sqlite/stamp-h1:
 	cd sqlite && \
-	CC=$(CC) CFLAGS="-Os $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
+	CC=$(CC) CFLAGS="-O2 $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
 		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -lpthread -ldl" \
 		$(CONFIGURE) --prefix=/usr --enable-shared --enable-static \
 		--disable-readline --disable-dynamic-extensions --enable-threadsafe \
@@ -4126,7 +4128,7 @@ ffmpeg/stamp-h1: zlib
 	touch $@
 
 ffmpeg: ffmpeg/stamp-h1 zlib
-	$(MAKE) -C ffmpeg all
+	$(MAKE) -C ffmpeg all $(PARALLEL_BUILD)
 
 ffmpeg-clean:
 	-@$(MAKE) -C ffmpeg clean
@@ -4177,7 +4179,7 @@ flac/stamp-h1: libogg
 	touch $@
 
 flac: flac/stamp-h1 libogg
-	@$(MAKE) -C flac/src/libFLAC all
+	@$(MAKE) -C flac/src/libFLAC all $(PARALLEL_BUILD)
 
 flac-clean:
 	-@$(MAKE) -C flac clean
@@ -4196,13 +4198,13 @@ jpeg/stamp-h1:
 	touch $@
 
 jpeg: jpeg/stamp-h1
-	@$(MAKE) -C jpeg LIBTOOL="" O=o A=a CC=$(CC) AR2="touch" libjpeg.a libjpeg.so
+	@$(MAKE) -C jpeg LIBTOOL="" O=o A=a CC=$(CC) AR2="touch" libjpeg.a libjpeg.so $(PARALLEL_BUILD)
 
 jpeg-clean:
 	-@$(MAKE) -C jpeg clean
 	@rm -f jpeg/stamp-h1
 
-jpeg-install: jpeg
+jpeg-install:
 	@$(SEP)
 ifneq ($(MEDIA_SERVER_STATIC),y)
 	install -D jpeg/libjpeg.so $(INSTALLDIR)/jpeg/usr/lib/libjpeg.so
@@ -4217,7 +4219,7 @@ libexif/stamp-h1:
 	touch $@
 
 libexif: libexif/stamp-h1
-	@$(MAKE) -C libexif all
+	@$(MAKE) -C libexif all $(PARALLEL_BUILD)
 
 libexif-clean:
 	-@$(MAKE) -C libexif clean
@@ -4237,13 +4239,13 @@ zlib/stamp-h1:
 	touch $@
 
 zlib: zlib/stamp-h1
-	@$(MAKE) -C zlib CC=$(CC) AR="ar rc" RANLIB=$(RANLIB) LD=$(LD) all && $(MAKE) $@-stage
+	@$(MAKE) -C zlib CC=$(CC) AR="ar rc" RANLIB=$(RANLIB) LD=$(LD) all $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 zlib-clean:
 	-@$(MAKE) -C zlib clean
 	@rm -f zlib/stamp-h1
 
-zlib-install: zlib
+zlib-install:
 	@$(SEP)
 # commented out for mt-daapd-svn-1696
 ifneq ($(MEDIA_SERVER_STATIC),y)
@@ -4267,7 +4269,7 @@ libid3tag/stamp-h1: zlib
 	touch $@
 
 libid3tag: libid3tag/stamp-h1 zlib
-	@$(MAKE) -C libid3tag all
+	@$(MAKE) -C libid3tag all $(PARALLEL_BUILD)
 
 libid3tag-clean:
 	-@$(MAKE) -C libid3tag clean
@@ -4294,7 +4296,7 @@ libvorbis/stamp-h1: libogg
 	touch libvorbis/aclocal.m4
 
 libvorbis: libvorbis/stamp-h1
-	@$(MAKE) -C libvorbis/lib all
+	@$(MAKE) -C libvorbis/lib all $(PARALLEL_BUILD)
 
 libvorbis-clean:
 	-@$(MAKE) -C libvorbis clean
@@ -4366,7 +4368,7 @@ libgdbm-clean:
 	-@$(MAKE) -C libgdbm clean
 	@rm -f libgdbm/stamp-h1
 
-libgdbm-install: libgdbm
+libgdbm-install:
 	@$(SEP)
 ifneq ($(MEDIA_SERVER_STATIC),y)
 	install -D libgdbm/.libs/libgdbm.so.3.0.0 $(INSTALLDIR)/libgdbm/usr/lib/libgdbm.so.3.0.0
@@ -4378,7 +4380,7 @@ endif
 
 mt-daapd: zlib libid3tag libgdbm
 	@$(SEP)
-	@$(MAKE) -C mt-daapd CC=$(CC) $(if $(MEDIA_SERVER_STATIC),STATIC=1) all
+	@$(MAKE) -C mt-daapd CC=$(CC) $(if $(MEDIA_SERVER_STATIC),STATIC=1) all $(PARALLEL_BUILD)
 
 mt-daapd-svn-1696/stamp-h1: zlib libid3tag sqlite
 	cd mt-daapd-svn-1696 && $(CONFIGURE) --prefix=/usr \
@@ -4411,7 +4413,7 @@ mt-daapd-svn-1696-install:
 
 mDNSResponder:
 	@$(SEP)
-	@$(MAKE) -C mDNSResponder CC=$(CC) all
+	@$(MAKE) -C mDNSResponder CC=$(CC) all $(PARALLEL_BUILD)
 
 
 igmpproxy/Makefile:
@@ -4752,7 +4754,7 @@ EBK_INC=$(TOP)/kernel_header/include
 endif
 
 ebtables: kernel_header dummy
-	$(MAKE) -C ebtables $(if $(RTCONFIG_HND_ROUTER),CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld CURRENT_ARCH=aarch64,CC=$(CC) LD=$(LD)) \
+	$(MAKE) -C ebtables $(PARALLEL_BUILD) $(if $(RTCONFIG_HND_ROUTER),CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld CURRENT_ARCH=aarch64,CC=$(CC) LD=$(LD)) \
 	CFLAGS="-Os -Wall -Wunused $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
 	BINDIR="/usr/sbin" LIBDIR="/usr/lib/ebtables" KERNEL_INCLUDES=$(EBK_INC) $(if $(RTCONFIG_IPV6),DO_IPV6=1,) $(if $(OLD_QCA),USE_ARPNAT=1,)
 
@@ -4786,7 +4788,7 @@ lzo/stamp-h1:
 	touch $@
 
 lzo: lzo/stamp-h1
-	$(MAKE) -C lzo && $(MAKE) $@-stage
+	$(MAKE) -C lzo $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 lzo-clean:
 	-@$(MAKE) -C lzo clean
@@ -4798,7 +4800,7 @@ lzo-install:
 	cd $(INSTALLDIR)/lzo/usr/lib && ln -sf liblzo2.so.2 liblzo2.so
 
 openpam: openpam/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 openpam/Makefile:
 	$(MAKE) openpam-configure
@@ -4807,9 +4809,6 @@ openpam-configure:
 	( cd openpam ; \
 		LDFLAGS=-ldl \
 		$(CONFIGURE) \
-		--prefix=/usr \
-		--bindir=/usr/sbin \
-		--libdir=/usr/lib \
 		--without-doc --with-pam-unix \
 	)
 
@@ -4824,7 +4823,7 @@ openpam-clean:
 	@rm -f openpam/Makefile
 
 openvpn: shared openssl lzo openpam zlib openvpn/Makefile
-	$(MAKE) -j 8 -C $@
+	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 openvpn/Makefile:
 ifeq ($(HND_ROUTER),y)
@@ -5004,6 +5003,7 @@ endif
 	@touch $@
 
 lighttpd-1.4.39: shared nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl-7.21.7 $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) lighttpd-1.4.39/stamp-h1
+	$(MAKE) -C lighttpd-1.4.39 $(PARALLEL_BUILD)
 
 lighttpd-1.4.39-install:
 	if [ -f lighttpd-1.4.39/Makefile ] ; then \
@@ -5080,9 +5080,9 @@ libxml2/stamp-h1:
 	touch $@
 
 libxml2: libxml2/stamp-h1
-	$(MAKE) -j 8 -C libxml2 all
+	$(MAKE) -C libxml2 all $(PARALLEL_BUILD)
 
-libxml2-install: libxml2
+libxml2-install:
 	@$(SEP)
 	install -D libxml2/.libs/libxml2.so.2 $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
 	$(STRIP) $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
@@ -5101,7 +5101,7 @@ libiconv-1.14/stamp-h1:
 libiconv-1.14:libiconv-1.14/stamp-h1
 	@$(MAKE) -C $@ CFLAGS="$(CFLAGS) $(if $(filter-out y,$(HND_ROUTER)),-DHND_ROUTER,)" && $(MAKE) $@-stage
 
-libiconv-1.14-install: libiconv-1.14
+libiconv-1.14-install:
 	@$(SEP)
 	install -D libiconv-1.14/lib/.libs/libiconv.so.2.5.1 $(INSTALLDIR)/libiconv-1.14/usr/lib/libiconv.so.2.5.1
 	$(STRIP) $(INSTALLDIR)/libiconv-1.14/usr/lib/libiconv.so.2.5.1
@@ -5119,7 +5119,7 @@ libiconv-1.14-clean:
 smartsync_api:
 	$(MAKE) -C smartsync_api all
 
-smartsync_api-install: smartsync_api
+smartsync_api-install:
 	@$(SEP)
 	install -D smartsync_api/libsmartsync_api.so $(INSTALLDIR)/smartsync_api/usr/lib/libsmartsync_api.so
 	$(STRIP) $(INSTALLDIR)/smartsync_api/usr/lib/libsmartsync_api.so
@@ -5133,7 +5133,7 @@ ftpclient/stamp-h1:
 
 ftpclient:ftpclient/stamp-h1 libiconv-1.14
 
-ftpclient-install: ftpclient
+ftpclient-install:
 	@$(SEP)
 	install -D ftpclient/ftpclient $(INSTALLDIR)/ftpclient/usr/sbin/ftpclient
 	$(STRIP) $(INSTALLDIR)/ftpclient/usr/sbin/ftpclient
@@ -5157,7 +5157,7 @@ sambaclient/stamp-h1:
 sambaclient: sambaclient/stamp-h1
 	@$(MAKE) -C sambaclient
 
-sambaclient-install: sambaclient
+sambaclient-install:
 	@$(SEP)
 	install -D sambaclient/sambaclient $(INSTALLDIR)/sambaclient/usr/sbin/sambaclient
 	$(STRIP) $(INSTALLDIR)/sambaclient/usr/sbin/sambaclient
@@ -5182,7 +5182,7 @@ usbclient/stamp-h1:
 usbclient: usbclient/stamp-h1
 	@$(MAKE) -C usbclient
 
-usbclient-install: usbclient
+usbclient-install:
 	@$(SEP)
 	install -D usbclient/usbclient $(INSTALLDIR)/usbclient/usr/sbin/usbclient
 	$(STRIP) $(INSTALLDIR)/usbclient/usr/sbin/usbclient
@@ -5218,7 +5218,7 @@ strongswan-5.2.1/stamp-h1:
 	touch $@
 
 strongswan-5.2.1: strongswan-5.2.1/stamp-h1
-	$(MAKE) -j 8 -C strongswan-5.2.1
+	$(MAKE) $(PARALLEL_BUILD) -C strongswan-5.2.1
 
 strongswan-5.2.1-install: strongswan-5.2.1
 	@$(SEP)
@@ -5253,7 +5253,7 @@ neon/stamp-h1 neon/config.h:
 neon: libxml2 neon/stamp-h1 neon/config.h
 	$(MAKE) -C neon && $(MAKE) $@-stage
 
-neon-install: neon
+neon-install:
 	@$(SEP)
 	install -D neon/src/.libs/libneon.so.27.2.6 $(INSTALLDIR)/neon/usr/lib/libneon.so.27.2.6
 	$(STRIP) $(INSTALLDIR)/neon/usr/lib/libneon.so.27.2.6
@@ -5306,7 +5306,7 @@ fb_wifi-clean:
 #add by gauss
 #add install libcurl
 curl-7.21.7: curl-7.21.7/Makefile
-	@$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libcurl.la
+	@$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libcurl.la
 
 curl-7.21.7/Makefile: curl/configure
 	@cd curl && $(CONFIGURE) CC=$(CC) \
@@ -5394,7 +5394,7 @@ asuswebstorage/stamp-h1:
 asuswebstorage: asuswebstorage/stamp-h1
 	@$(MAKE) -C asuswebstorage
 
-asuswebstorage-install: asuswebstorage
+asuswebstorage-install:
 	@$(SEP)
 	install -D asuswebstorage/asuswebstorage $(INSTALLDIR)/asuswebstorage/usr/sbin/asuswebstorage
 	$(STRIP) $(INSTALLDIR)/asuswebstorage/usr/sbin/asuswebstorage
@@ -5410,7 +5410,7 @@ google_client/stamp-h1:
 google_client: google_client/stamp-h1
 	@$(MAKE) -C google_client
 
-google_client-install: google_client
+google_client-install:
 	@$(SEP)
 	install -D google_client/google_client $(INSTALLDIR)/google_client/usr/sbin/google_client
 	$(STRIP) $(INSTALLDIR)/google_client/usr/sbin/google_client
@@ -5426,7 +5426,7 @@ dropbox_client/stamp-h1:
 dropbox_client: dropbox_client/stamp-h1
 	@$(MAKE) -C dropbox_client
 
-dropbox_client-install: dropbox_client
+dropbox_client-install:
 	@$(SEP)
 	install -D dropbox_client/dropbox_client $(INSTALLDIR)/dropbox_client/usr/sbin/dropbox_client
 	$(STRIP) $(INSTALLDIR)/dropbox_client/usr/sbin/dropbox_client
@@ -5477,7 +5477,7 @@ libgpg-error-1.10: libgpg-error-1.10/stamp-h1
 	@$(SEP)
 	$(MAKE) -C libgpg-error-1.10
 
-libgpg-error-1.10-install: libgpg-error-1.10
+libgpg-error-1.10-install:
 	install -D libgpg-error-1.10/src/.libs/libgpg-error.so.0.8.0 $(INSTALLDIR)/libgpg-error-1.10/usr/lib/libgpg-error.so.0.8.0
 	$(STRIP) $(INSTALLDIR)/libgpg-error-1.10/usr/lib/libgpg-error.so.0.8.0
 	cd $(INSTALLDIR)/libgpg-error-1.10/usr/lib && ln -sf libgpg-error.so.0.8.0 libgpg-error.so.0
@@ -5497,7 +5497,7 @@ libgcrypt-1.5.1: libgcrypt-1.5.1/stamp-h1
 	@$(SEP)
 	@$(MAKE) -C libgcrypt-1.5.1
 
-libgcrypt-1.5.1-install: libgcrypt-1.5.1
+libgcrypt-1.5.1-install:
 	install -D libgcrypt-1.5.1/src/.libs/libgcrypt.so.11.8.0 $(INSTALLDIR)/libgcrypt-1.5.1/usr/lib/libgcrypt.so.11.8.0
 	$(STRIP) $(INSTALLDIR)/libgcrypt-1.5.1/usr/lib/libgcrypt.so.11.8.0
 	cd $(INSTALLDIR)/libgcrypt-1.5.1/usr/lib && ln -sf libgcrypt.so.11.8.0 libgcrypt.so.11
@@ -5538,9 +5538,9 @@ db-4.8.30/build_unix/stamp-h1:
 
 db-4.8.30: db-4.8.30/build_unix/stamp-h1
 	@$(SEP)
-	@$(MAKE) -C db-4.8.30/build_unix
+	@$(MAKE) -C db-4.8.30/build_unix $(PARALLEL_BUILD)
 
-db-4.8.30-install: db-4.8.30
+db-4.8.30-install:
 	install -D db-4.8.30/build_unix/.libs/libdb-4.8.so $(INSTALLDIR)/db-4.8.30/usr/lib/libdb-4.8.so
 	$(STRIP) $(INSTALLDIR)/db-4.8.30/usr/lib/libdb-4.8.so
 	cd $(INSTALLDIR)/db-4.8.30/usr/lib && ln -sf libdb-4.8.so libdb.so
@@ -5576,7 +5576,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 
 netatalk-3.0.5: netatalk-3.0.5/stamp-h1
 	@$(SEP)
-	@$(MAKE) -C netatalk-3.0.5
+	@$(MAKE) -C netatalk-3.0.5 $(PARALLEL_BUILD)
 
 netatalk-3.0.5-install:
 	if [ -f netatalk-3.0.5/Makefile ] ; then \
@@ -5629,10 +5629,10 @@ expat-2.0.1/stamp-h1:
 
 expat-2.0.1: expat-2.0.1/stamp-h1
 	@$(SEP)
-	@$(MAKE) -C expat-2.0.1 && $(MAKE) $@-stage
+	@$(MAKE) -C expat-2.0.1 $(PARALLEL_BUILD) && $(MAKE) $@-stage
 	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libexpat.la
 
-expat-2.0.1-install: expat-2.0.1
+expat-2.0.1-install:
 	install -D expat-2.0.1/.libs/libexpat.so.1.5.2 $(INSTALLDIR)/expat-2.0.1/usr/lib/libexpat.so.1.5.2
 	$(STRIP) $(INSTALLDIR)/expat-2.0.1/usr/lib/libexpat.so.1.5.2
 	cd $(INSTALLDIR)/expat-2.0.1/usr/lib && ln -sf libexpat.so.1.5.2 libexpat.so.1
@@ -5644,7 +5644,7 @@ expat-2.0.1-clean:
 #avahi-0.6.31
 avahi-0.6.31: shared nvram$(BCMEX)$(EX7) expat-2.0.1 libdaemon avahi-0.6.31/Makefile
 	@$(SEP)
-	@$(MAKE) -j 8 -C avahi-0.6.31
+	@$(MAKE) -C avahi-0.6.31 $(PARALLEL_BUILD)
 
 avahi-0.6.31/Makefile:
 	( cd avahi-0.6.31 ; $(CONFIGURE) LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS)" \
@@ -5786,7 +5786,7 @@ traffic_limiter-clean:
 traffic_limiter-install: traffic_limiter
 
 coovachilli: coovachilli/Makefile
-	@$(MAKE) -j 8 -C coovachilli
+	@$(MAKE) -C coovachilli $(PARALLEL_BUILD)
 
 coovachilli/Makefile:
 	$(MAKE) coovachilli-configure
@@ -6139,7 +6139,7 @@ Transmission-clean:
 	@rm -f Transmission/Makefile
 
 wget/Makefile:
-	cd wget && autoreconf -i -f && $(CONFIGURE) --with-ssl=openssl --with-libssl-prefix=$(TOP)/openssl --disable-opie --disable-ntlm --disable-debug --disable-nls --disable-iri --disable-dependency-tracking CFLAGS="$(EXTRACFLAGS) -I$(TOP)/openssl/include -I$(TOP)/zlib" LDFLAGS="-L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/zlib -lz"
+	cd wget && autoreconf -i -f && $(CONFIGURE) --with-ssl=openssl --with-libssl-prefix=$(TOP)/openssl --sysconfdir=/etc --disable-opie --disable-ntlm --disable-debug --disable-nls --disable-iri --disable-dependency-tracking CFLAGS="$(EXTRACFLAGS) -I$(TOP)/openssl/include -I$(TOP)/zlib" LDFLAGS="-L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/zlib -lz"
 
 wget: openssl zlib wget/Makefile
 	$(MAKE) -C wget CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -I$(TOP)/openssl/include -I$(TOP)/zlib"
@@ -6438,7 +6438,7 @@ ethtool-3.7-install: ethtool-3.7
 	$(STRIP) $(INSTALLDIR)/ethtool-3.7/usr/bin/ethtool
 
 libnl-bf:
-	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(PARALLEL_BUILD) $(MAKE) $@-stage
 
 i2c-tools-2013-12-15:
 	$(MAKE) -C $@
@@ -6799,7 +6799,7 @@ nettle/stamp-h1:
 
 nettle: nettle/stamp-h1
 	@$(SEP)
-	@$(MAKE) -C nettle
+	@$(MAKE) -C nettle $(PARALLEL_BUILD)
 	@$(MAKE) -C nettle install
 
 nettle-clean:
@@ -6808,7 +6808,9 @@ nettle-clean:
 	@rm -rf nettle/include nettle/lib
 
 samba-3.6.x: libiconv-1.14
-	@$(MAKE) -C samba-3.6.x
+	@$(MAKE) -C samba-3.6.x $(PARALLEL_BUILD)
+samba-3.5.8:
+	@$(MAKE) -C samba-3.5.8 $(PARALLEL_BUILD)
 
 ipset:
 	$(MAKE) -C ipset binaries $(PARALLEL_BUILD)
@@ -7165,7 +7167,7 @@ endif
 json-c: json-c/stamp-h1
 	$(MAKE) -C $@
 
-json-c-install: json-c
+json-c-install:
 	install -D json-c/.libs/libjson-c.so.2.0.2 $(INSTALLDIR)/json-c/usr/lib/libjson-c.so.2.0.2
 	$(STRIP) $(INSTALLDIR)/json-c/usr/lib/libjson-c.so.2.0.2
 	cd $(INSTALLDIR)/json-c/usr/lib && \
@@ -7194,7 +7196,7 @@ endif
 phddns: phddns/stamp-h1
 	$(MAKE) -C phddns
 
-phddns-install: phddns
+phddns-install:
 	install -D phddns/src/phddns $(INSTALLDIR)/phddns/usr/sbin/phddns
 	$(STRIP) $(INSTALLDIR)/phddns/usr/sbin/phddns
 

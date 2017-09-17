@@ -167,6 +167,7 @@ define(function(){
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
 					{url: "Advanced_WProxy_Content.asp", tabName: "Wi-Fi Proxy"},
 					{url: "Advanced_Wireless_Survey.asp", tabName: "Site Survey"},
+					{url: "WiFi_Insight.asp", tabName: "<#WiFi_radar#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -678,6 +679,13 @@ define(function(){
 				}
 				else{
 					retArray.push("Advanced_MobileBroadband_Content.asp");
+				}
+
+				if(based_modelid == 'RT-AC86U'){
+					retArray.push("Advanced_Wireless_Survey.asp");
+				}
+				else{
+					retArray.push("WiFi_Insight.asp");
 				}
 
 				if(lyra_hide_support){

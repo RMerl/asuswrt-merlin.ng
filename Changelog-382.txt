@@ -10,9 +10,10 @@ Asuswrt-Merlin 382 Changelog
            models will gradually be moved to AM382 as Asus upgrades
            them to the 382 code base.
 
-   - NEW: Re-started from a clean Asus382_15098 GPL.  The code from AM380.68
-          was adapted and merged on top of it.  This means that old bugs might be
-          gone, but also new ones might be present in this release.
+   - NEW: Re-started from a clean Asus382_15098 GPL.  The code from
+          AM380.68 was adapted and merged on top of it.  This means that
+          old bugs might be gone, but also new ones might be present
+          in this release.
 
           Highlights of the changes between Asus380 and Asus382:
             - New Trend Micro DPI engine, with two-way IPS
@@ -20,16 +21,24 @@ Asuswrt-Merlin 382 Changelog
             - New OpenVPN implementation (now closed source)
             - Numerous security enhancements throughout the code
 
-          This changelog will focus on changes that happened between AM380.68 and
-          AM382.1, or between Asus382_15098 and AM382.
+          This changelog will focus on changes that happened between
+          AM380.68 and AM382.1, or between Asus382_15098 and AM382.
 
-   - NEW: Added support for the RT-AC86U and its Broadcom HND 5.02 platform
+   - NEW: Added support for the RT-AC86U and its Broadcom HND platform.
+          Note that this new platform will be losing the following
+          features from previous models:
+            - Entware
+            - IPTraffic
    - NEW: Added support for inline CRLs when importing an ovpn file
    - NEW: Added support for fullcone NAT (RT-AC86U)
-   - CHANGED: Since Asus has now closed their OpenVPN source code, that
-              closed code was replaced with new code based om our
+   - NEW: Added WiFi Radar (Broadcom's Visualization app) under
+          Wireless (RT-AC86U)
+   - NEW: IPSEC Server and Client support (RT-AC86U)
+   - CHANGED: Since Asus has now closed their OpenVPN source code,
+              their code was replaced with new code based om our
               original implementation from AM380.  From now on, AM382's
               OpenVPN development will be separate from Asus' own.
-   - CHANGED: SSH host keys are now stored in /jffs/ssl/ rather than nvram.
-   - CHANGED: SMB2 is enabled by default on RT-AC86U (no performance penalty
-              on that platform)
+   - CHANGED: SSH host keys are now stored in /jffs/ssl/ rather
+              than nvram.
+   - CHANGED: SMB2 is enabled by default on RT-AC86U (no performance
+              penalty on that platform)

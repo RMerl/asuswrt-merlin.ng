@@ -61,7 +61,7 @@
 	background-color:#2B373B;
 	display:none;
 	margin-left: 30%;
-	top: 1200px;
+	top: 1400px;
 	width:650px;
 }
 

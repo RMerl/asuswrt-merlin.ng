@@ -5212,7 +5212,7 @@ strongswan-5.2.1/stamp-h1:
 	--disable-gmp --enable-openssl --enable-agent --enable-eap-peap \
 	--enable-eap-md5 --enable-eap-mschapv2 --enable-eap-identity \
 	--with-strongswan-conf=/etc/strongswan.conf --enable-md4 --enable-acert \
-	--enable-cmd --enable-eap-tls --enable-libipsec \
+	--enable-cmd --enable-eap-tls --enable-libipsec --disable-static \
 	CFLAGS='-I$(STAGEDIR)/usr/include -I$(TOP)/openssl/include' \
 	LDFLAGS='$(if $(RTCONFIG_HND_ROUTER), -L$(TOP)/strongswan-5.2.1, -L$(STAGEDIR)/usr/lib -L$(TOP)/openssl)' \
 	LIBS='-lssl -lcrypto -lpthread -ldl -lm' 
@@ -5224,6 +5224,24 @@ strongswan-5.2.1: strongswan-5.2.1/stamp-h1
 strongswan-5.2.1-install: strongswan-5.2.1
 	@$(SEP)
 	@$(MAKE) -C strongswan-5.2.1 install DESTDIR=$(INSTALLDIR)/strongswan-5.2.1/
+	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.la
+	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.la
+ifeq ($(HND_ROUTER),y)
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.so
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/stroke
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/scepclient
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/charon
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.so
+else
+	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.so
+	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter
+	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/stroke
+	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/scepclient
+	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/charon
+	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.so
+endif
+
 	mv $(INSTALLDIR)/strongswan-5.2.1/etc $(INSTALLDIR)/strongswan-5.2.1/usr/
 
 strongswan-5.2.1-clean:

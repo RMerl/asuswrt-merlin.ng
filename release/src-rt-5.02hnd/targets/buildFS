@@ -265,7 +265,7 @@ fi
 cd $MOD_DIR
 cp -a lib $TARGETS_DIR/$ROOTFS/.
 
-DMfiles="bin etc lib sbin share tmp usr include doc"
+DMfiles="bin etc lib sbin share tmp usr include doc var"
 
 for f in $DMfiles
 do

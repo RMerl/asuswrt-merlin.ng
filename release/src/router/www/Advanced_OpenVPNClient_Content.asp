@@ -226,9 +226,13 @@ var clientlist_array = '<% nvram_get("vpn_client_clientlist"); %>';
 function initial()
 {
 	show_menu();
-	if(vpnc_support && openvpnd_support) {
+
+	if(vpnc_support) {
+		var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["Others", "Advanced_VPNClient_Content.asp"]};
+		$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "OpenVPN"));
 		document.getElementById("divSwitchMenu").style.display = "";
 	}
+
 	showclientlist();
 	showLANIPList();
 
@@ -1054,16 +1058,7 @@ function defaultSettings() {
                 <td valign="top">
                 <div>&nbsp;</div>
                 <div class="formfonttitle">OpenVPN Client Settings</div>
-		<div id="divSwitchMenu" style="margin-top:-40px;float:right;display:none;">
-			<div style="width:173px;height:30px;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter">
-				<a href="Advanced_VPNClient_Content.asp">
-					<div class="block_filter_name">PPTP/L2TP</div>
-				</a>
-			</div>
-			<div style="width:172px;height:30px;margin:-32px 0px 0px 173px;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter_pressed">
-				<div style="text-align:center;padding-top:5px;color:#93A9B1;font-size:14px">OpenVPN</div>
-			</div>
-		</div>
+		<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
                 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		<div class="formfontdesc">
                         <p>Before starting the service make sure you properly configure it, including

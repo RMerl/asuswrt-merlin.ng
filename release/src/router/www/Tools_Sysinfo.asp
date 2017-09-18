@@ -35,11 +35,12 @@ p{
 <script type="text/javascript" src="/js/table/table.js"></script>
 <script>
 
-var hwacc = "<% nvram_get("ctf_disable"); %>";
-var hwacc_force = "<% nvram_get("ctf_disable_force"); %>";
+var ctf_dis = "<% nvram_get("ctf_disable"); %>";
+var ctf_dis_force = "<% nvram_get("ctf_disable_force"); %>";
 var etherstate = "<% sysinfo("ethernet"); %>";
 var odmpid = "<% nvram_get("odmpid");%>";
 var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
+var isHND = (machine_name.search("aarch64") != -1);
 
 overlib_str_tmp = "";
 overlib.isOut = true;
@@ -107,34 +108,64 @@ function update_temperatures(){
 
 
 function hwaccel_state(){
-	if (hwacc == "1") {
-		code = "Disabled";
-		if (hwacc_force == "1")
-			code += " <i>(by user)</i>";
-		else {
-			code += " <i> - incompatible with:<span>  ";	// Two trailing spaces
-			if ('<% nvram_get("cstats_enable"); %>' == '1') code += 'IPTraffic, ';
-			if (('<% nvram_get("qos_enable"); %>' == '1') && ('<% nvram_get("qos_type"); %>' == '0')) code += 'QoS, ';
-			if ('<% nvram_get("sw_mode"); %>' == '2') code += 'Repeater mode, ';
-			if ('<% nvram_get("ctf_disable_modem"); %>' == '1') code += 'USB modem, ';
+	var qos_enable = '<% nvram_get("qos_enable"); %>';
+	var qos_type = '<% nvram_get("qos_type"); %>';
 
-			// We're disabled but we don't know why
-			if (code.slice(-2) == "  ") code += "&lt;unknown&gt;, ";
+	if (isHND) {
+		code = "<span>Runner:</span> ";
 
-			// Trim two trailing chars, either "  " or ", "
-			code = code.slice(0,-2) + "</span></>";
+		if ('<% nvram_get("runner_disable"); %>' == '1') {
+			code += "Disabled";
+			if ('<% nvram_get("runner_disable_force"); %>' == '1') {
+				code += " <i>(by user)</i>";
+			} else {
+				if (qos_enable == '1')
+					code += " <i>(QoS)</i>";
+			}
+		} else {
+			code += "Enabled";
 		}
-	} else if (hwacc == "0") {
-		code = "<span>Enabled";
-		if (ctf_fa != "") {
-                        if (ctf_fa != "0")
-                                code += " (CTF + FA)";
-                        else
-                                code += " (CTF only)";
-                }
-		code += "</span>";
+
+		code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>Flow Cache:</span> ";
+		if ('<% nvram_get("fc_disable"); %>' == '1') {
+			code += "Disabled";
+			if ('<% nvram_get("fc_disable_force"); %>' == '1') {
+				code += " <i>(by user)</i>";
+			} else {
+				if ((qos_enable == '1') && (qos_type != '1'))
+					code += " <i>(QoS)</i>";
+			}
+		} else {
+			code += "Enabled";
+		}
 	} else {
-		code = "<span>N/A</span>";
+		if (ctf_dis == "1") {
+			code = "Disabled";
+			if (ctf_dis_force == "1")
+				code += " <i>(by user)</i>";
+			else {
+				code += " <i> - incompatible with:<span>  ";	// Two trailing spaces
+				if ('<% nvram_get("cstats_enable"); %>' == '1') code += 'IPTraffic, ';
+				if ((qos_enable == '1') && (qos_type == '0')) code += 'QoS, ';
+				if ('<% nvram_get("sw_mode"); %>' == '2') code += 'Repeater mode, ';
+				if ('<% nvram_get("ctf_disable_modem"); %>' == '1') code += 'USB modem, ';
+
+				// We're disabled but we don't know why
+				if (code.slice(-2) == "  ") code += "&lt;unknown&gt;, ";
+
+				// Trim two trailing chars, either "  " or ", "
+				code = code.slice(0,-2) + "</span></>";
+			}
+		} else if (ctf_dis == "0") {
+			code = "<span>Enabled";
+			if (ctf_fa != "") {
+				if (ctf_fa != "0")
+					code += " (CTF + FA)";
+				else
+					code += " (CTF only)";
+	                }
+			code += "</span>";
+		}
 	}
 
 	document.getElementById("hwaccel").innerHTML = code;

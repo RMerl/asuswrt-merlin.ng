@@ -65,4 +65,10 @@ else ifeq ($(RTAC85U)$(RPAC87),y)
 endif
 endif
 endif
+
+# Temporary fix for missing ld.so.cache
+ifeq ($(HND_ROUTER),y)
+	install ldconfig $(INSTALLDIR)/sbin/ldconfig
+endif
+
 clean:

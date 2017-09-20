@@ -8777,6 +8777,10 @@ static void sysinit(void)
 	unlink("/etc/resolv.conf");
 	symlink("/tmp/resolv.conf", "/etc/resolv.conf");
 
+#ifdef HND_ROUTER
+	system("/sbin/ldconfig &>/dev/null");
+#endif
+
 #if defined(RTAC55U) || defined(RTAC55UHP) || defined(RTAC58U) ||  defined(RTAC82U)
 	ratio = 20;
 #elif defined(RTCONFIG_SOC_IPQ8064)

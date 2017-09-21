@@ -509,7 +509,7 @@ void CSndQueue::init(const CChannel* c, const CTimer* t)
    this->m_iInstId = call->inst_id;
 	//natnl_stream *strm = (natnl_stream *)c->tnl_stream;
 	pj_thread_t *thread;
-	int status = pj_thread_create(call->tnl_stream->own_pool, "SndQ", &CSndQueue::worker, 
+	int status = pj_thread_create(call->tnl_stream->pool, "SndQ", &CSndQueue::worker, 
 			  this, 0, 0, &thread);
 	if(status)
 	 throw CUDTException(3, 1);
@@ -519,7 +519,8 @@ void CSndQueue::init(const CChannel* c, const CTimer* t)
 
 int PJ_THREAD_FUNC CSndQueue::worker(void *param)
 {
-   CSndQueue* self = (CSndQueue*)param;
+	CSndQueue* self = (CSndQueue*)param;
+	pjsua_call *call = (pjsua_call *)self->m_pChannel->m_call;
 
 #if 1
    pj_thread_desc desc;
@@ -530,6 +531,8 @@ int PJ_THREAD_FUNC CSndQueue::worker(void *param)
          throw CUDTException(3, 1);
    }
 #endif
+
+   pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
 
 #ifdef WIN32
    printf("CSndQueue::worker ThreadId=[%08X]\n", GetCurrentThreadId());
@@ -574,6 +577,8 @@ int PJ_THREAD_FUNC CSndQueue::worker(void *param)
          #endif
       }
    }
+   PJ_LOG(4, ("queue.cpp", "CSndQueue::worker end!!"));
+   pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 
    #ifndef WIN32
       return 0;
@@ -997,19 +1002,12 @@ void CRcvQueue::init(const int& qsize, const int& payload, const int& version, c
    this->m_iInstId = call->inst_id;
   //natnl_stream *strm = (natnl_stream *)m_pChannel->m_stream;
   pj_thread_t *thread;
-  int status = pj_thread_create(call->tnl_stream->own_pool, "RcvQ", &CRcvQueue::worker, 
+  int status = pj_thread_create(call->tnl_stream->pool, "RcvQ", &CRcvQueue::worker, 
 		      this, 0, 0, &thread);
   if(status)
 	  throw CUDTException(3, 1);
   // charles CHARLES mark
   // DEAN commented, for using pj_sem_trywait2
-#if 0
-  pj_thread_t *thread_tm_chk;
-  status = pj_thread_create(call->tnl_stream->own_pool, "TimerChecker", &CRcvQueue::timer_check_worker, 
-	  this, 0, 0, &thread_tm_chk);
-  if(status)
-	  throw CUDTException(3, 1);
-#endif
   m_WorkerThread = thread;
   // DEAN commented, for using pj_sem_trywait2
   //m_TimerThread  = thread_tm_chk;
@@ -1018,6 +1016,7 @@ void CRcvQueue::init(const int& qsize, const int& payload, const int& version, c
 int PJ_THREAD_FUNC CRcvQueue::worker(void *param)
 {
 	CRcvQueue* self = (CRcvQueue*)param;
+	pjsua_call *call = (pjsua_call *)self->m_pChannel->m_call;
 
 #if 1
    pj_thread_desc desc;
@@ -1033,6 +1032,8 @@ int PJ_THREAD_FUNC CRcvQueue::worker(void *param)
    sockaddr* addr = (AF_INET == self->m_UnitQueue.m_iIPversion) ? (sockaddr*) new sockaddr_in : (sockaddr*) new sockaddr_in6;
    CUDT* u = NULL;
    int32_t id;
+
+   pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
 
 #ifdef WIN32
    printf("CRcvQueue::worker ThreadId=[%08X]\n", GetCurrentThreadId());
@@ -1158,6 +1159,8 @@ TIMER_CHECK:
       // Check connection requests status for all sockets in the RendezvousQueue.
       self->m_pRendezvousQueue->updateConnStatus();
    }
+   PJ_LOG(4, ("queue.cpp", "CRcvQueue::worker end!!"));
+   pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 
    if (AF_INET == self->m_UnitQueue.m_iIPversion)
       delete (sockaddr_in*)addr;
@@ -1172,69 +1175,6 @@ TIMER_CHECK:
       return 0;
    #endif
 }
-
-int PJ_THREAD_FUNC CRcvQueue::timer_check_worker(void *param)
-{
-	CRcvQueue* self = (CRcvQueue*)param;
-	//struct natnl_stream *tnl_stream = (struct natnl_stream *)self->m_pChannel->get_tnl_stream();
-
-#if 1
-   pj_thread_desc desc;
-   pj_thread_t *thread = 0;
-   if (!pj_thread_is_registered(self->m_iInstId)) {
-      int status = pj_thread_register(self->m_iInstId, "RcvQ_timer_check", desc, &thread );
-      if (status != PJ_SUCCESS)
-         throw CUDTException(3, 1);
-
-   }
-#endif
-	while (!self->m_bClosing) {
-		// take care of the timing event for all UDT sockets
-		uint64_t currtime;
-		CTimer::rdtsc(currtime);
-
-		CRNode* ul = self->m_pRcvUList->m_pUList;
-		uint64_t ctime = currtime - 100000 * CTimer::getCPUFrequency();
-		while( (NULL != ul) && (ul->m_llTimeStamp < ctime))
-		{
-			CUDT* u = ul->m_pUDT;
-			
-			#ifdef NO_BUSY_WAITING
-				self->m_pTimer->tick();
-			#endif
-
-			if (u->m_bConnected && !u->m_bBroken && !u->m_bClosing)
-			{
-				u->checkTimers();
-				self->m_pRcvUList->update(u);
-			}
-			else
-			{
-				// the socket must be removed from Hash table first, then RcvUList
-				self->m_pHash->remove(u->m_SocketID);
-				self->m_pRcvUList->remove(u);
-				u->m_pRNode->m_bOnList = false;
-			}
-
-			ul = self->m_pRcvUList->m_pUList;
-
-		}
-		pj_thread_sleep(10);
-	}
-
-	// Check connection requests status for all sockets in the RendezvousQueue.
-	//self->m_pRendezvousQueue->updateConnStatus();
-	// To end prevent Channel::recvfrom thread for unlocking infinite semaphore wait
-	//pj_sem_post(tnl_stream->rbuff_sem);
-
-   #ifndef WIN32
-      return 0;
-   #else
-      SetEvent(self->m_TimerExitCond);
-      return 0;
-   #endif
-}
-
 
 int CRcvQueue::recvfrom(const int32_t& id, CPacket& packet)
 {

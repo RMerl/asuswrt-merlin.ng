@@ -49,11 +49,10 @@ var wlc_sbstate = '0';
 var wlc_scan_state = '0';
 var isDefault = false;
  
-function QKWireless_load_body(){	
+function QKWireless_load_body(){
 	parent.document.title = "<#Web_Title#> - <#QKSet_wireless_webtitle#>";
 	parent.set_step("t3");
-	check_pppoe_state();
-		/*To Handle copy, paste for mobile device*/
+	/*To Handle copy, paste for mobile device*/
 	if (document.getElementById("wl0_ssid").addEventListener){
 		document.getElementById("wl0_ssid").addEventListener("paste", function(e){setTimeout(function(){Sync_2ghz(2);},100);});
 		document.getElementById("wl0_wpa_psk").addEventListener("paste", function(e){setTimeout(function(){Sync_2ghz(2);},100);});
@@ -180,7 +179,7 @@ function QKWireless_load_body(){
 			document.getElementById("field_general").style.display = "";
 	}
 
-	if((parent.document.QKform.sw_mode.value == 1) && (is_TW_sku || is_CN_sku) && parent.flag_manual != 1){
+	if((parent.document.QKform.sw_mode.value == 1) && parent.flag_manual != 1){
 		check_wan_state();
 	}	
 
@@ -207,8 +206,6 @@ function QKWireless_load_body(){
 }
 
 function check_wan_state(){
-	if(parent.document.QKform.sw_mode.value != "1") return false;
-
 	$.ajax({
 		url: '/result_of_get_changed_status_QIS.asp',
 		dataType: 'script',		
@@ -217,18 +214,13 @@ function check_wan_state(){
 		},
 		success: function(response){
 			setTimeout("check_wan_state();", 1000);
-			if((wanstate  == 1 && wansbstate == 0 && wanauxstate == 0) || (wanstate  == 6 && wansbstate == 0 && wanauxstate == 0) || (wanstate  == 4 && wansbstate == 2 && wanauxstate == 0)){
-				if(!parent.flag_manual)
-					parent.pppoe_failed_flag = true;
+			if(wanstate == 4 && wansbstate == 2 && wanauxstate == 0){
+				parent.pppoe_failed_flag = true;
 			}
-			else if(wanstate == 4 && wansbstate == 4 && wanauxstate == 0){
+			else{
 				parent.pppoe_failed_flag = false;
-				parent.changeSubnet = true;
-			}
-			else{	
-				if(wanstate  == 2 && wansbstate == 0 && wanauxstate == 0){
-					parent.pppoe_failed_flag = false;
-				}
+				if(wanstate == 4 && wansbstate == 4 && wanauxstate == 0)
+					parent.changeSubnet = true;
 			}
 		}
 	});	
@@ -1335,28 +1327,6 @@ function detect_LANStatus(_flag){
 				setTimeout("detect_LANStatus('"+_flag+"');", 2000);
 		}
 	});
-}
-
-function check_pppoe_state(){
-	if(parent.document.QKform.sw_mode.value != "1") return false;
-
-	$.ajax({
-		url: '/result_of_get_changed_status_QIS.asp',
-		dataType: 'script',		
-		error: function(xhr){
-			check_pppoe_state();		
-		},
-		success: function(response){
-			setTimeout("check_pppoe_state();", 1000);
-			if((wanstate  == 1 && wansbstate == 0 && wanauxstate == 0) || (wanstate  == 1 && wansbstate == 0 && wanauxstate == 1) || (wanstate  == 6 && wansbstate == 0 && wanauxstate == 0) || (wanstate  == 4 && wansbstate == 2 && wanauxstate == 0)){
-				if(!parent.flag_manual)
-					parent.pppoe_failed_flag = true;				
-			}
-			else if(wanstate  == 2 && wansbstate == 0 && wanauxstate == 0){
-				parent.pppoe_failed_flag = false;
-			}	
-		}
-	});	
 }
 </script>
 </head>

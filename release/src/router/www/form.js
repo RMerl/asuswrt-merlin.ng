@@ -109,3 +109,7 @@ function adjust_TM_eula_height(_objID) {
 		document.getElementById("tm_eula_content").style.height = (tm_eula_content_height - Math.abs(tm_eula_visiable_height) - 20) + "px"; //content height - overflow height - margin top and margin bottom
 	}
 }
+function adjust_panel_block_top(_objID, _offsetHeight) {
+	var scrollTop = document.body.scrollTop;
+	document.getElementById(_objID).style.top = (scrollTop + _offsetHeight) + "px";
+}

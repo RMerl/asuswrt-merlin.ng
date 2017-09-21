@@ -30,6 +30,8 @@
  * Dependencies
  */
 #include "tdts/tmcfg.h"
+#include "tdts/version.h"
+
 
 #ifdef __KERNEL__
 #include <linux/types.h>

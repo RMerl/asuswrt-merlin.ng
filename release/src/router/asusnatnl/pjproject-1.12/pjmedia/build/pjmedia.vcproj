@@ -1863,7 +1863,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include;../../pjlib/include;&quot;../../pjlib-util/include&quot;;../../pjnath/include;../../third_party/portaudio/include;../../third_party/speex/include;../../third_party/build/srtp;../../third_party/srtp/include;../../third_party/srtp/crypto/include;../..;&quot;$(DXSDK_DIR)include&quot;;../../pjsip/include;../../third_party/bzip2;&quot;../../../openssl/libs/win-x86/include&quot;;../../third_party/usrsctp/usrsctplib"
-				PreprocessorDefinitions="SCTP_DEBUG;SCTP_SIMPLE_ALLOCATOR;SCTP_PROCESS_LEVEL_LOCKS;__Userspace__;__Userspace_os_Windows;_LIB"
+				PreprocessorDefinitions="SCTP_DEBUG;SCTP_SIMPLE_ALLOCATOR;SCTP_PROCESS_LEVEL_LOCKS;__Userspace__;__Userspace_os_Windows;_LIB;DISABLE_UMEM=1;PJMEDIA_DISABLE_SCTP=1"
 				RuntimeLibrary="0"
 				PrecompiledHeaderFile=""
 				DebugInformationFormat="3"

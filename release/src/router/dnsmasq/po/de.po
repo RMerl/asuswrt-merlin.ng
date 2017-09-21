@@ -9,10 +9,10 @@
 # Simon Kelley <simon@thekelleys.org.uk>, 2005.
 msgid ""
 msgstr ""
-"Project-Id-Version: dnsmasq 2.74\n"
+"Project-Id-Version: dnsmasq 2.77\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-06-18 12:24+0100\n"
-"PO-Revision-Date: 2015-07-22 23:07+0200\n"
+"PO-Revision-Date: 2017-05-11 19:45+0200\n"
 "Last-Translator: Conrad Kostecki <ck@conrad-kostecki.de>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.3\n"
+"X-Generator: Poedit 2.0.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: cache.c:513
@@ -387,9 +387,8 @@ msgid "Specify a SRV record."
 msgstr "SRV-Eintrag festlegen."
 
 #: option.c:405
-#, fuzzy
 msgid "Display this message. Use --help dhcp or --help dhcp6 for known DHCP options."
-msgstr "Diese Hilfe anzeigen. Benutzen Sie --help dhcp für bekannte DHCP-Optionen."
+msgstr "Diese Hilfe anzeigen. Benutzen Sie --help dhcp oder --help dhcp6 für bekannte DHCP-Optionen."
 
 #: option.c:406
 #, c-format
@@ -464,7 +463,7 @@ msgstr "Lease-Änderungs-Skript mit den Rechten dieses Nutzers ausführen."
 
 #: option.c:423
 msgid "Call dhcp-script with changes to local ARP table."
-msgstr ""
+msgstr "Rufe dhcp-script mit Änderungen an der lokalen ARP-Tabelle auf."
 
 #: option.c:424
 msgid "Read configuration from all the files in this directory."
@@ -522,9 +521,8 @@ msgid "Maximum number of conncurrent TFTP transfers (defaults to %s)."
 msgstr "Höchstzahl nebenläufiger TFTP-Übertragungen (%s voreingestellt)."
 
 #: option.c:437
-#, fuzzy
 msgid "Maximum MTU to use for TFTP transfers."
-msgstr "Höchstzahl nebenläufiger TFTP-Übertragungen (%s voreingestellt)."
+msgstr "Maximale MTU für TFTP-Übertragungen erreicht."
 
 #: option.c:438
 msgid "Disable the TFTP blocksize extension."
@@ -579,9 +577,8 @@ msgid "Specify lowest port available for DNS query transmission."
 msgstr "Niedrigsten verfügbaren Port für Übertragung von DNS-Anfragen festlegen."
 
 #: option.c:451
-#, fuzzy
 msgid "Specify highest port available for DNS query transmission."
-msgstr "Niedrigsten verfügbaren Port für Übertragung von DNS-Anfragen festlegen."
+msgstr "Höchsten verfügbaren Port für Übertragung von DNS-Anfragen festlegen."
 
 #: option.c:452
 msgid "Use only fully qualified domain names for DHCP clients."
@@ -618,17 +615,15 @@ msgstr "Konfigurationssyntax prüfen."
 
 #: option.c:460
 msgid "Add requestor's MAC address to forwarded DNS queries."
-msgstr "Anfragende MAC-Adresse in die weiterleitende DNS-Anfrage einfügen"
+msgstr "Anfragende MAC-Adresse in die weiterleitende DNS-Anfrage einfügen."
 
 #: option.c:461
-#, fuzzy
 msgid "Add specified IP subnet to forwarded DNS queries."
-msgstr "Füge das IP-Subnetz des Anfragenden in die weitergeleiteten DNS-Anfragen hinzu."
+msgstr "Füge spezifiziertes IP-Subnetz an weitergeleiteten DNS-Anfragen hinzu."
 
 #: option.c:462
-#, fuzzy
 msgid "Add client identification to forwarded DNS queries."
-msgstr "Füge das IP-Subnetz des Anfragenden in die weitergeleiteten DNS-Anfragen hinzu."
+msgstr "Füge Klient Identifikationan weitergeleiteten DNS-Anfragen hinzu."
 
 #: option.c:463
 msgid "Proxy DNSSEC validation results from upstream nameservers."
@@ -708,7 +703,7 @@ msgstr "Spezifiziere Vertrauensursprung (Trust Anchor) der Schlüssel-Prüfdaten
 
 #: option.c:482
 msgid "Disable upstream checking for DNSSEC debugging."
-msgstr "Deaktiviere die Überprüfung vorgelagerter Server für DNSSEC-Debugging"
+msgstr "Deaktiviere die Überprüfung vorgelagerter Server für DNSSEC-Debugging."
 
 #: option.c:483
 msgid "Ensure answers without DNSSEC are in unsigned zones."
@@ -743,14 +738,12 @@ msgid "Do not log RA."
 msgstr "RA nicht protokollieren."
 
 #: option.c:493
-#, fuzzy
 msgid "Accept queries only from directly-connected networks."
-msgstr "Akzeptiere nur Anfragen von direkt verbundenen Netzwerken"
+msgstr "Akzeptiere nur Anfragen von direkt verbundenen Netzwerken."
 
 #: option.c:494
-#, fuzzy
 msgid "Detect and remove DNS forwarding loops."
-msgstr "Erkennen und Entfernen von DNS-Weiterleitungsschleifen"
+msgstr "Erkennen und Entfernen von DNS-Weiterleitungsschleifen."
 
 #: option.c:495
 msgid "Ignore DNS responses containing ipaddr."
@@ -758,7 +751,7 @@ msgstr "Ignoriere DNS-Antworten, welche ipaddr enthalten."
 
 #: option.c:496
 msgid "Set TTL in DNS responses with DHCP-derived addresses."
-msgstr ""
+msgstr "Setzte TTL in DNS-Antworten mit DHCP-abgeleiteten Adressen."
 
 #: option.c:698
 #, c-format
@@ -781,7 +774,7 @@ msgstr "Gültige Optionen sind:\n"
 
 #: option.c:749 option.c:843
 msgid "bad address"
-msgstr "Fehlerhafte Adresse"
+msgstr "Fehlerhafte Adresse."
 
 #: option.c:773 option.c:777
 msgid "bad port"
@@ -812,9 +805,8 @@ msgid "bad IPv6 address"
 msgstr "Fehlerhafte IPv6-Adresse"
 
 #: option.c:1203
-#, fuzzy
 msgid "bad IPv4 address"
-msgstr "Fehlerhafte IPv6-Adresse"
+msgstr "Fehlerhafte IPv4-Adresse"
 
 #: option.c:1276 option.c:1370
 msgid "bad domain in dhcp-option"
@@ -876,7 +868,7 @@ msgstr "Neuübersetzung mit HAVE_SCRIPT nötig, um Lease-Änderungs-Skripte ausz
 
 #: option.c:1789
 msgid "recompile with HAVE_LUASCRIPT defined to enable Lua scripts"
-msgstr "Um Benutzerdefinierte Lua-Scripte zu ermöglichen, muss mit HAVE_LUASCRIPT neu kompiliert werden"
+msgstr "Um Benutzerdefinierte Lua-Skripte zu ermöglichen, muss mit HAVE_LUASCRIPT neu kompiliert werden"
 
 #: option.c:2041 option.c:2086 option.c:2142
 msgid "bad prefix"
@@ -973,7 +965,7 @@ msgstr "unzulässiger Alias-Bereich"
 
 #: option.c:3721
 msgid "bad TTL"
-msgstr ""
+msgstr "unzulässige TTL"
 
 #: option.c:3727
 msgid "bad CNAME"
@@ -1206,7 +1198,7 @@ msgstr "Schnittstelle %s konnte DHCPv6-Multicast-Gruppe nicht beitreten: %s"
 
 #: network.c:1106
 msgid "try increasing /proc/sys/net/core/optmem_max"
-msgstr ""
+msgstr "Versuche /proc/sys/net/core/optmem_max zu erhöhen"
 
 #: network.c:1302
 #, c-format
@@ -1225,7 +1217,7 @@ msgstr "ignoriere Namensserver %s - kann Socket nicht erzeugen/binden: %s"
 
 #: network.c:1520
 msgid "(no DNSSEC)"
-msgstr ""
+msgstr "(kein DNSSEC)"
 
 # FIXME: this isn't translatable - always provide full strings, do not assemble yourself! -- MA
 #: network.c:1523
@@ -1255,9 +1247,9 @@ msgid "using standard nameservers for %s %s"
 msgstr "Benutze standard Namensserver für %s %s"
 
 #: network.c:1534
-#, fuzzy, c-format
+#, c-format
 msgid "using nameserver %s#%d for %s %s %s"
-msgstr "Benutze Namensserver %s#%d für %s %s"
+msgstr "Benutze Namensserver %s#%d für %s %s %s"
 
 #: network.c:1538
 #, c-format
@@ -1275,18 +1267,17 @@ msgid "using nameserver %s#%d"
 msgstr "Benutze Namensserver %s#%d"
 
 #: network.c:1548
-#, fuzzy, c-format
+#, c-format
 msgid "using %d more nameservers"
-msgstr "Benutze Namensserver %s#%d"
+msgstr "Benutze %d mehr Namensserver"
 
 #: dnsmasq.c:166
 msgid "dhcp-hostsdir, dhcp-optsdir and hostsdir are not supported on this platform"
 msgstr "dhcp-hostsdir, dhcp-optsdir und hostsdir sind auf dieser Plattform nicht unterstüzt"
 
 #: dnsmasq.c:181
-#, fuzzy
 msgid "no root trust anchor provided for DNSSEC"
-msgstr "Keine Vertrauensursprünge (Trust Anchor) für DNSSEC verfügbar"
+msgstr "Keine Root-Vertrauensursprünge (Root Trust Anchor) für DNSSEC verfügbar"
 
 #: dnsmasq.c:184
 msgid "cannot reduce cache size from default when DNSSEC enabled"
@@ -1326,7 +1317,7 @@ msgstr "Loop-Erkennung nicht verfügbar, Aktiviere HAVE_LOOP in src/config.h"
 
 #: dnsmasq.c:227
 msgid "max_port cannot be smaller than min_port"
-msgstr ""
+msgstr "max_port darf nicht kleiner als min_port sein"
 
 #: dnsmasq.c:234
 msgid "zone serial must be configured in --auth-soa"
@@ -1618,7 +1609,7 @@ msgstr "APR-Cache Injektion fehlgeschlagen: %s"
 #: dhcp.c:460
 #, c-format
 msgid "Error sending DHCP packet to %s: %s"
-msgstr ""
+msgstr "Fehler beim Senden des DHCP-Pakets an %s: %s"
 
 #: dhcp.c:521
 #, c-format
@@ -2188,9 +2179,9 @@ msgid "%d addresses %s"
 msgstr "%d Adressen %s"
 
 #: inotify.c:62
-#, fuzzy, c-format
+#, c-format
 msgid "cannot access path %s: %s"
-msgstr "Kann auf %s nicht zugreifen: %s"
+msgstr "Kann auf Pfad %s nicht zugreifen: %s"
 
 #: inotify.c:95
 #, c-format
@@ -2200,7 +2191,7 @@ msgstr "Kann kein inotify erzeugen: %s"
 #: inotify.c:111
 #, c-format
 msgid "too many symlinks following %s"
-msgstr ""
+msgstr "Zu viele nachfolgende symbolische Links folgend %s"
 
 #: inotify.c:127
 #, c-format

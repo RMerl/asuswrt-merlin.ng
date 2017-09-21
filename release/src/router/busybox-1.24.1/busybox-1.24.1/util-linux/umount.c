@@ -30,6 +30,9 @@
 
 #include <mntent.h>
 #include <sys/mount.h>
+#ifndef MNT_DETACH
+# define MNT_DETACH 0x00000002
+#endif
 #include "libbb.h"
 
 #if defined(__dietlibc__)

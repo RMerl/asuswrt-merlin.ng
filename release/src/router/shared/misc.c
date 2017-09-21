@@ -1857,17 +1857,29 @@ int is_intf_up(const char* ifname)
 	return ret;
 }
 
+char *wl_nvprefix(char *prefix, int prefix_size, int unit, int subunit)
+{
+	if(unit < 0)
+		strcpy(prefix, "wl_");
+#ifdef RTCONFIG_LANTIQ
+	else if(client_mode() && unit == nvram_get_int("wlc_band"))
+		snprintf(prefix, prefix_size, "wl%d.%d_", unit, 1);
+#endif
+	else if(subunit > 0)
+		snprintf(prefix, prefix_size, "wl%d.%d_", unit, subunit);
+	else
+		snprintf(prefix, prefix_size, "wl%d_", unit);
+
+	return prefix;
+}
+
 char *wl_nvname(const char *nv, int unit, int subunit)
 {
 	static char tmp[128];
-	char prefix[] = "wlXXXXXXXXXX_";
+	char prefix[] = "wlXXXXXXXXXXXXX_";
 
-	if (unit < 0)
-		strcpy(prefix, "wl_");
-	else if (subunit > 0)
-		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-	else
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	wl_nvprefix(prefix, sizeof(prefix), unit, subunit);
+
 	return strcat_r(prefix, nv, tmp);
 }
 
@@ -2314,7 +2326,7 @@ long backup_rx = 0;
 long backup_tx = 0;
 int backup_set = 0;
 
-unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2)		
+unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2, char *nv_lan_ifname, char *nv_lan_ifnames)		
 {
 	char word[100], word1[100], *next, *next1;
 	char tmp[100];
@@ -2326,7 +2338,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, uns
 	bcmvlan_models(model, modelvlan);
 
 	// find in LAN interface
-	if(nvram_contains_word("lan_ifnames", ifname))
+	if(strstr(nv_lan_ifnames, ifname))
 	{
 		// find Wireless interface
 		i=0;
@@ -2429,7 +2441,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, uns
 		return 1;
 	}
 	// find bridge interface
-	else if(nvram_match("lan_ifname", ifname))
+	else if(!strcmp(nv_lan_ifname, ifname))
 	{
 		strcpy(ifname_desc, "BRIDGE");
 		return 1;
@@ -2541,7 +2553,7 @@ int free_caches(const char *clean_mode, const int clean_time, const unsigned int
 	char memdata[256] = {0};
 	unsigned int memfree = 0;
 
-#ifdef RTCONFIG_BCMARM
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_LANTIQ)
 	return 0;
 #endif
 
@@ -3324,11 +3336,21 @@ enum led_id get_wl_led_id(int band)
 
 	switch (band) {
 	case WL_2G_BAND:
+#if defined(PLN12)
+		led = LED_2G_RED;
+#elif defined(PLAC56)
+		led = LED_2G_GREEN;
+#else
 		led = LED_2G;
+#endif
 		break;
 #if defined(RTCONFIG_HAS_5G)
 	case WL_5G_BAND:
+#if defined(PLAC56)
+		led = LED_5G_GREEN;
+#else
 		led = LED_5G;
+#endif
 		break;
 #if defined(RTCONFIG_HAS_5G_2)
 	case WL_5G_2_BAND:

@@ -120,7 +120,7 @@ function initial(){
 	if(!printer_support || noprinter_support)
 		default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>")[0]);
 
-	if(sw_mode == 2 || sw_mode == 3 || sw_mode == 4 || !modem_support || nomodem_support || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
+	if(sw_mode == 2 || sw_mode == 3 || sw_mode == 4 || !modem_support || nomodem_support || based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
 		default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("3G/4G")[0]);
 
 	if(!timemachine_support)

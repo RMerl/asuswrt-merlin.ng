@@ -783,11 +783,8 @@ psta_monitor_main(int argc, char *argv[])
 	signal(SIGTERM, psta_monitor_exit);
 
 	/* turn off wireless led of other bands under psta mode */
-	if (is_psta(nvram_get_int("wlc_band"))
-#ifdef RTCONFIG_DPSTA
-		|| dpsta_mode()
-#endif
-	) setWlOffLed();
+	if (is_psta(nvram_get_int("wlc_band")))
+		setWlOffLed();
 
 	alarm(NORMAL_PERIOD);
 

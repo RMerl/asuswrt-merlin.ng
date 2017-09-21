@@ -4,11 +4,15 @@ GOBI_LIB_VER=00.00.05
 
 NET_USB_GOBI = $(INSTALLDIR)/lib/modules/$(LINUX_KERNEL)/kernel/drivers/net/usb/
 ifeq ($(RTCONFIG_BCMARM),y)
-GOBI_LIB_DIR=lib.broadcom_arm
+GOBI_LIB_DIR=lib/bcm.arm
 LIBSTDC=$(shell dirname $(shell which $(CXX)))/../arm-brcm-linux-uclibcgnueabi/lib/libstdc++.so.6
 NET_USB_GOBI = $(INSTALLDIR)/lib/modules/2.6.36.4brcmarm/kernel/drivers/net/usb/
 else # QCA
-GOBI_LIB_DIR=lib
+ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
+GOBI_LIB_DIR=lib/ipq40xx
+else
+GOBI_LIB_DIR=lib/qca95xx
+endif
 LIBSTDC=$(shell dirname $(shell which $(CXX)))/../lib/libstdc++.so.6
 endif
 LIBRT=$(shell dirname $(shell which $(CXX)))/../lib/librt.so.0

@@ -17,6 +17,33 @@ fi
 output=/tmp/wlan_wave/dbXml/output/
 release=/$wavePath/db/default/
 
+addSpecialDeviceInfo()
+{
+	local interface=$1
+	local file_name="${release}/${interface}/Device.DeviceInfo"
+	touch $file_name
+
+	echo "Object_0=Device.DeviceInfo" >> $file_name
+	echo "DeviceCategory_0=" >> $file_name
+	echo "Manufacturer_0=Intel Corporation" >> $file_name
+	echo "ModelName_0=" >> $file_name
+	echo "ModelNumber_0=" >> $file_name
+	echo "Description_0=TR069 Gateway" >> $file_name
+	echo "ProductClass_0=CPE" >> $file_name
+	echo "SerialNumber_0=" >> $file_name
+	echo "HardwareVersion_0=" >> $file_name
+	echo "SoftwareVersion_0=" >> $file_name
+	echo "AdditionalHardwareVersion_0=" >> $file_name
+	echo "AdditionalSoftwareVersion_0=" >> $file_name
+	echo "ProvisioningCode_0=YYYY.ZZZZ" >> $file_name
+	echo "UpTime_0=62" >> $file_name
+	echo "FirstUseDate_0=999-12-31T23:59:59Z" >> $file_name
+	echo "VendorLogFileNumberOfEntries_0=1" >> $file_name
+	echo "VendorConfigFileNumberOfEntries_0=2" >> $file_name
+	echo "ManufacturerOUI_0=" >> $file_name
+	echo "ManufacturerOUI_0=" >> $file_name	
+}
+
 addSpecialToInterface()
 {
 	local file_name=$1
@@ -75,10 +102,9 @@ prepareVap()
 	# Add attribute support for what to copy for VAP and remove workaround
 	rm -f $output/Device.WiFi.AccessPoint.AC*
 	rm -f $output/Device.WiFi.AccessPoint.X_LANTIQ_COM_Vendor.HS20.*
-	rm -f $output/Device.WiFi.AccessPoint.WPS
+	#rm -f $output/Device.WiFi.AccessPoint.WPS
 	mv $output/Device.WiFi.AccessPoint* ${release}/vap/
 	mv $output/Device.WiFi.SSID* ${release}/vap/
-	addSpecialToInterface "${release}/vap/Device.WiFi.Security_State"
 }
 
 patchPUMA()
@@ -103,5 +129,6 @@ mkdir -p $output/
 prepareRadio
 rm -rf $output/*
 prepareVap
+addSpecialDeviceInfo
 patchPUMA
 rm -rf $output/

@@ -77,7 +77,6 @@ var FromObject = "0";
 var lastClickedObj = 0;
 var disk_flag=0;
 var machine_name = '<% get_machine_name(); %>';
-var isHND = (machine_name.search("aarch64") != -1);
 
 window.onresize = cal_panel_block;
 
@@ -87,7 +86,7 @@ function initial() {
 	initConntrackValues()
 	set_rstats_location();
 	hide_rstats_storage(document.form.rstats_location.value);
-	if (isHND) {
+	if (hnd_support) {
 		document.getElementById("cstats_enable_tr").style.display="none";
 		hide_cstats(0);
 		hide_cstats_ip(0);
@@ -99,9 +98,9 @@ function initial() {
 	if(!live_update_support)
 		document.getElementById("fwcheck").style.display="none";
 
-	if ((machine_name.search("arm") != -1) || isHND) {
+	if ((machine_name.search("arm") != -1) || hnd_support) {
 		document.getElementById("ct_established_default").innerHTML = "Default: 2400";
-		if (!isHND) showhide("memory_mgmt_tr" ,1);
+		if (!hnd_support) showhide("memory_mgmt_tr" ,1);
 	}
 
 	if (document.form.dns_probe_content.value == "")

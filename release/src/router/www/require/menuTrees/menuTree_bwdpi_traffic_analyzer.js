@@ -70,6 +70,30 @@ define(function(){
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
+			{		//for without bwdpi model, RT-N66U_C1
+				menuName: "<#Menu_TrafficManager#>",
+				index: "menu_QoS", 
+				tab: [
+					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
+					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
+					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
+					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
+					{url: "Main_Spectrum_Content.asp", tabName: "Spectrum"},
+					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
+					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
+				] 
+			},
+			{		//for without bwdpi model, RT-N66U_C1
+				menuName: "<#Parental_Control#>",
+				index: "menu_ParentalControl", 
+				tab: [
+					{url: "ParentalControl.asp", tabName: "<#Parental_Control#>"},
+					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				] 
+			},
 			{
 				menuName: "<#Adaptive_QoS#>",
 				index: "menu_BandwidthMonitor", 
@@ -228,7 +252,7 @@ define(function(){
 					{url: "Advanced_VPN_OpenVPN.asp", tabName: "<#BOP_isp_heart_item#>"},
 					{url: "Advanced_VPN_PPTP.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_VPN_IPSec.asp", tabName: "__INHERIT__"},
-					{url: "Advanced_OpenVPNClient_Content.asp", tabName: (vpn_fusion_support) ? "VPN Fusion" : "<#vpnc_title#>"},
+					{url: "Advanced_VPNClient_Content.asp", tabName: (vpn_fusion_support) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"},
 					{url: "Advanced_VPNClient_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_TOR_Content.asp", tabName: "TOR"},
 					{url: "NULL", tabName: "__INHERIT__"}
@@ -241,8 +265,7 @@ define(function(){
 					{url: "Advanced_BasicFirewall_Content.asp", tabName: "<#menu5_1_1#>"},
 					{url: "Advanced_URLFilter_Content.asp", tabName: "<#menu5_5_2#>"},
 					{url: "Advanced_KeywordFilter_Content.asp", tabName: "<#menu5_5_5#>"},
-					{url: "Advanced_Firewall_Content.asp", tabName: "<#menu5_5_4#>"},
-					{url: "Advanced_Firewall_IPv6_Content.asp", tabName: "<#menu5_5_6#>"},			
+					{url: "Advanced_Firewall_Content.asp", tabName: "<#menu5_5_4#>"},		
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -317,6 +340,10 @@ define(function(){
 					retArray.push("menu_TrafficAnalyzer");
 					retArray.push("menu_BandwidthMonitor");
 				}
+				else{
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
+				}
 
 				if(!usb_support){
 					retArray.push("menu_APP");
@@ -363,6 +390,8 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
 
 					if(userRSSI_support){
 						retArray.push("menu_Wireless");
@@ -383,6 +412,8 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
 				}
 				else if(isSwMode("mb")){
 					retArray.push("menu_GuestNetwork");
@@ -397,6 +428,8 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
 				}
 
 				if(lyra_hide_support){
@@ -564,7 +597,6 @@ define(function(){
 
 				if(!IPv6_support){
 					retArray.push("Main_IPV6Status_Content.asp");
-					retArray.push("Advanced_Firewall_IPv6_Content.asp");
 				}
 
 				if(!fbwifi_support){
@@ -674,13 +706,6 @@ define(function(){
 					retArray.push("Advanced_IPTV_Content.asp");
 				}
 
-				if(based_modelid === '4G-AC55U' || based_modelid === '4G-AC68U'){
-					retArray.push("Advanced_Modem_Content.asp");
-				}
-				else{
-					retArray.push("Advanced_MobileBroadband_Content.asp");
-				}
-
 				if(based_modelid == 'RT-AC86U'){
 					retArray.push("Advanced_Wireless_Survey.asp");
 				}
@@ -701,6 +726,13 @@ define(function(){
 				return retArray;
 			}
 		}
+	}
+
+	if(odmpid == "RT-N66U_C1"){
+		menuTree.list.splice(7,2);
+	}
+	else{
+		menuTree.list.splice(5,2);
 	}
 
 	return menuTree;

@@ -79,26 +79,8 @@ static int wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
 #include <net/if.h>
 #include <linux/sockios.h>
 #include <net/if_arp.h>
-
 #include <dirent.h>
 
-const char *get_wifname(int band)
-{
-	if (band)
-		return WIF_5G;
-	else
-		return WIF_2G;
-}
-
-typedef struct _WPS_CONFIGURED_VALUE {
-	unsigned short 	Configured;	// 1:un-configured/2:configured
-	char		BSSID[18];
-	char 		SSID[32 + 1];
-	char		AuthMode[16];	// Open System/Shared Key/WPA-Personal/WPA2-Personal/WPA-Enterprise/WPA2-Enterprise
-	char 		Encryp[8];	// None/WEP/TKIP/AES
-	char 		DefaultKeyIdx;
-	char 		WPAKey[64 + 1];
-} WPS_CONFIGURED_VALUE;
 
 /* shared/sysdeps/api-qca.c */
 extern u_int ieee80211_mhz2ieee(u_int freq);
@@ -194,96 +176,9 @@ static char *iwpriv_get(const char *iface, char *cmd)
 	return result;
 }
 
-static void getWPSConfig(int unit, WPS_CONFIGURED_VALUE *result)
-{
-	char buf[128];
-	FILE *fp;
-
-	memset(result, 0, sizeof(result));
-
-	sprintf(buf, "hostapd_cli -i%s get_config", get_wifname(unit));
-	fp = popen(buf, "r");
-	if (fp) {
-		while (fgets(buf, sizeof(buf), fp) != NULL) {
-			char *pt1, *pt2;
-
-			chomp(buf);
-			//BSSID
-			if ((pt1 = strstr(buf, "bssid="))) {
-				pt2 = pt1 + strlen("bssid=");
-				strcpy(result->BSSID, pt2);
-			}
-			//SSID
-			if ((pt1 = strstr(buf, "ssid="))) {
-				pt2 = pt1 + strlen("ssid=");
-				strcpy(result->SSID, pt2);
-			}
-			//Configured
-			else if ((pt1 = strstr(buf, "wps_state="))) {
-				pt2 = pt1 + strlen("wps_state=");
-				if (!strcmp(pt2, "configured") ||
-				    (!strcmp(pt2, "disabled") && nvram_get_int("w_Setting"))
-				   )
-					result->Configured = 2;
-				else
-					result->Configured = 1;
-			}
-			//WPAKey
-			else if ((pt1 = strstr(buf, "passphrase="))) {
-				pt2 = pt1 + strlen("passphrase=");
-				strcpy(result->WPAKey, pt2);
-			}
-			//AuthMode
-			else if ((pt1 = strstr(buf, "key_mgmt="))) {
-				pt2 = pt1 + strlen("key_mgmt=");
-				strcpy(result->AuthMode, pt2);/* FIXME: NEED TRANSFORM CONTENT */
-			}
-			//Encryp
-			else if ((pt1 = strstr(buf, "rsn_pairwise_cipher="))) {
-				pt2 = pt1 + strlen("rsn_pairwise_cipher=");
-				if (!strcmp(pt2, "NONE"))
-					strcpy(result->Encryp, "None");
-				else if (!strncmp(pt2, "WEP", 3))
-					strcpy(result->Encryp, "WEP");
-				else if (!strcmp(pt2, "TKIP"))
-					strcpy(result->Encryp, "TKIP");
-				else if (!strncmp(pt2, "CCMP", 4))
-					strcpy(result->Encryp, "AES");
-			}
-		}
-		pclose(fp);
-	}
-	//dbg("%s: SSID[%s], Configured[%d], WPAKey[%s], AuthMode[%s], Encryp[%s]\n", __FUNCTION__, result->SSID, result->Configured, result->WPAKey, result->AuthMode, result->Encryp);
-}
-
-char *get_staifname(int band)
-{
-	return (char*) ((!band)? STA_2G:STA_5G);
-}
-
-char *get_vphyifname(int band)
-{
-	return (char*) ((!band)? VPHY_2G:VPHY_5G);
-}
-
-
-static char *__get_wlifname(int band, int subunit, char *buf)
-{
-	if (!buf)
-		return buf;
-
-	if (!subunit)
-		strcpy(buf, (!band)? WIF_2G:WIF_5G);
-	else
-		sprintf(buf, "%s%02d", (!band)? WIF_2G:WIF_5G, subunit);
-
-	return buf;
-}
-
 static int get_wlsubnet(int band, const char *ifname)
 {
 	int subnet, sidx;
-	char buf[32];
 
 	for (subnet = 0, sidx = 0; subnet < MAX_NO_MSSID; subnet++)
 	{
@@ -293,7 +188,7 @@ static int get_wlsubnet(int band, const char *ifname)
 			continue;
 		}
 
-		if(strcmp(ifname, __get_wlifname(band, sidx, buf)) == 0)
+		if(strcmp(ifname, wl_vifname_wave(band, sidx)) == 0)
 			return subnet;
 
 		sidx++;
@@ -371,58 +266,50 @@ char *getAPPhyModebyIface(const char *iface)
 
 char *getAPPhyMode(int unit)
 {
-	return getAPPhyModebyIface(get_wifname(unit));
+	return getAPPhyModebyIface(get_wififname(unit));
 }
 
 unsigned int getAPChannelbyIface(const char *ifname)
 {
-	char buf[8192];
-	FILE *fp;
-	int len, i = 0;
-	char *pt1, *pt2, ch_mhz[5];
+	int skfd;
+	struct iwreq		wrq;
+	struct iw_range	range;
+	double		freq;
+	int			channel;
+	char			buffer[128];	/* Temporary buffer */
+	char	vbuf[16];
 
-	if (!ifname || *ifname == '\0') {
-		dbg("%S: got invalid ifname %p\n", __func__, ifname);
-		return 0;
+  /* Create a channel to the NET kernel. */
+  if((skfd = iw_sockets_open()) < 0){
+      perror("socket");
+      return -1;
 	}
 
-	sprintf(buf, "iwconfig %s", ifname);
-	fp = popen(buf, "r");
-	if (fp) {
-		memset(buf, 0, sizeof(buf));
-		len = fread(buf, 1, sizeof(buf), fp);
-		pclose(fp);
-		if (len > 1) {
-			buf[len-1] = '\0';
-			pt1 = strstr(buf, "Frequency:");
-			if (pt1) {
-				pt2 = pt1 + strlen("Frequency:");
-				pt1 = strstr(pt2, " GHz");
-				if (pt1) {
-					*pt1 = '\0';
-					memset(ch_mhz, 0, sizeof(ch_mhz));
-					len = strlen(pt2);
-					for (i = 0; i < 5; i++) {
-						if (i < len) {
-							if (pt2[i] == '.')
-								continue;
-							sprintf(ch_mhz, "%s%c", ch_mhz, pt2[i]);
-						}
-						else
-							sprintf(ch_mhz, "%s0", ch_mhz);
-					}
-					//dbg("Frequency:%s MHz\n", ch_mhz);
-					return ieee80211_mhz2ieee((unsigned int)atoi(ch_mhz));
-				}
-			}
-		}
+  /* Get list of frequencies / channels */
+  if(iw_get_range_info(skfd, ifname, &range) < 0){
+      fprintf(stderr, "%-8.16s  no frequency information.\n\n", ifname);
 	}
-	return 0;
+
+	/* Get current frequency / channel and display it */
+	if(iw_get_ext(skfd, ifname, SIOCGIWFREQ, &wrq) >= 0){
+		/* remove IW_FREQ_FIXED */
+		wrq.u.freq.flags = wrq.u.freq.flags & 0xFE;
+	  freq = iw_freq2float(&(wrq.u.freq));
+		/* vbuf is channel */
+		iw_print_freq_value(vbuf, sizeof(vbuf), freq);
+	  channel = iw_freq_to_channel(freq, &range);
+	  iw_print_freq(buffer, sizeof(buffer),
+			freq, channel, wrq.u.freq.flags);
+	}
+	/* Close the socket. */
+	iw_sockets_close(skfd);
+
+	return atoi(vbuf);
 }
 
 unsigned int getAPChannel(int unit)
 {
-	return getAPChannelbyIface(get_wifname(unit));
+	return getAPChannelbyIface(get_wififname(unit));
 }
 
 /**
@@ -486,32 +373,6 @@ ej_wl_control_channel(int eid, webs_t wp, int argc, char_t **argv)
                 ret = websWrite(wp, "[\"%d\", \"%d\"]", channel_24, channel_50);
 	
         return ret;
-}
-
-long getSTAConnTime(char *ifname, char *bssid)
-{
-	char buf[8192];
-	FILE *fp;
-	int len;
-	char *pt1,*pt2;
-
-	sprintf(buf, "hostapd_cli -i%s sta %s", ifname, bssid);
-	fp = popen(buf, "r");
-	if (fp) {
-		memset(buf, 0, sizeof(buf));
-		len = fread(buf, 1, sizeof(buf), fp);
-		pclose(fp);
-		if (len > 1) {
-			buf[len-1] = '\0';
-			pt1 = strstr(buf, "connected_time=");
-			if (pt1) {
-				pt2 = pt1 + strlen("connected_time=");
-				chomp(pt2);
-				return atol(pt2);
-			}
-		}
-	}
-	return 0;
 }
 
 typedef struct _WLANCONFIG_LIST {
@@ -582,10 +443,10 @@ static int getSTAInfo(int unit, WIFI_STA_TABLE *sta_info)
 	char *p, *ifname;
 	char *wl_ifnames;
 	char line_buf[300];
-	char ms_char[11], rssi_char[5];
+	char rssi_char[5];
 
 	memset(sta_info, 0, sizeof(*sta_info));
-	unit_name = strdup(get_wifname(unit));
+	unit_name = strdup(get_wififname(unit));
 	if (!unit_name)
 		return ret;
 	wl_ifnames = strdup(nvram_safe_get("lan_ifnames"));
@@ -637,8 +498,8 @@ static int getSTAInfo(int unit, WIFI_STA_TABLE *sta_info)
 					}
 					convert_mac_string(r->addr);
 #if 0
-					dbg("[%s][%s][%s][%d][%s]\n",
-						r->addr, r->txrate, r->rxrate, r->rssi, r->conn_time);
+					dbg("[%s][%s][%s][%d]\n",
+						r->addr, r->txrate, r->rxrate, r->rssi);
 #endif
 				}
 			}
@@ -803,21 +664,21 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 	unsigned char mac_addr[ETHER_ADDR_LEN];
 	char tmpstr[1024], cmd[] = "iwconfig staXYYYYYY";
 	char *p, ap_bssid[] = "00:00:00:00:00:00XXX";
-  struct iwreq		wrq;
-  struct iw_range	range;
+	struct iwreq		wrq;
+	struct iw_range	range;
 	int skfd;
-  double		freq;
-  int			channel;
-  char			buffer[128];	/* Temporary buffer */
-  char	vbuf[16];
+	double	freq;
+	int		channel;
+	char	buffer[128];	/* Temporary buffer */
+	char	vbuf[16];
 
 	if (unit < 0 || !ifname || !op_mode)
 		return 0;
 
-  /* Create a channel to the NET kernel. */
-  if((skfd = iw_sockets_open()) < 0){
-      perror("socket");
-      return -1;
+	/* Create a channel to the NET kernel. */
+	if((skfd = iw_sockets_open()) < 0){
+		perror("socket");
+		return -1;
 	}
 
 	memset(&mac_addr, 0, sizeof(mac_addr));
@@ -837,26 +698,26 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 		ret += websWrite(wp, "BSSID		: %s\n", ap_bssid);
 	}
 	ret += websWrite(wp, "MAC address	: %02X:%02X:%02X:%02X:%02X:%02X\n",
-		mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+			mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 	*tmpstr = '\0';
 	strcpy(tmpstr, getAPPhyModebyIface(ifname));
 	ret += websWrite(wp, "Phy Mode	: %s\n", tmpstr);
 
-  /* Get list of frequencies / channels */
-  if(iw_get_range_info(skfd, ifname, &range) < 0){
-      fprintf(stderr, "%-8.16s  no frequency information.\n\n", ifname);
+	/* Get list of frequencies / channels */
+	if(iw_get_range_info(skfd, ifname, &range) < 0){
+		fprintf(stderr, "%-8.16s  no frequency information.\n\n", ifname);
 	}
 
 	/* Get current frequency / channel and display it */
 	if(iw_get_ext(skfd, ifname, SIOCGIWFREQ, &wrq) >= 0){
 		/* remove IW_FREQ_FIXED */
 		wrq.u.freq.flags = wrq.u.freq.flags & 0xFE;
-	  freq = iw_freq2float(&(wrq.u.freq));
+		freq = iw_freq2float(&(wrq.u.freq));
 		/* vbuf is channel */
  		iw_print_freq_value(vbuf, sizeof(vbuf), freq);
-	  channel = iw_freq_to_channel(freq, &range);
-	  iw_print_freq(buffer, sizeof(buffer),
-			freq, channel, wrq.u.freq.flags);
+		channel = iw_freq_to_channel(freq, &range);
+		iw_print_freq(buffer, sizeof(buffer),
+				freq, channel, wrq.u.freq.flags);
 	}
 	/* Close the socket. */
 	iw_sockets_close(skfd);
@@ -891,9 +752,7 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #if defined(RTCONFIG_WIRELESSREPEATER)
 		if (!unit && repeater_mode()) {
 			/* Show P-AP information first, if we are about to show 2.4G information in repeater mode. */
-			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
-			ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-			ret += show_wliface_info(wp, unit, ifname, "Repeater");
+			ret += show_wliface_info(wp, unit, get_staifname(nvram_get_int("wlc_band")), "Repeater");
 			ret += websWrite(wp, "\n");
 		}
 #endif
@@ -915,8 +774,8 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		}
 		if( strcmp(getSSIDbyIFace("wlan0"), "test_ssid") == 0 ||
 			strlen(getSSIDbyIFace("wlan0")) == 0 ||
-			strcmp(getSSIDbyIFace("wlan1"), "LSDK_5G") == 0 ||
-			strlen(getSSIDbyIFace("wlan1")) == 0){
+			strcmp(getSSIDbyIFace("wlan2"), "LSDK_5G") == 0 ||
+			strlen(getSSIDbyIFace("wlan2")) == 0){
 			ret += websWrite(wp, "%s radio is not ready\n",
 				nvram_match(strcat_r(prefix, "nband", tmp), "1") ? "5 GHz" : "2.4 GHz");
 			return ret;
@@ -935,8 +794,8 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		ret += websWrite(wp, "%-18s%-4s%-8s%-4s%-4s%-4s%-5s%-5s%-12s\n",
 				   "MAC", "PSM", "PhyMode", "BW", "MCS", "SGI", "STBC", "Rate", "Connect Time");
 #else
-		ret += websWrite(wp, "%-3s %-17s %-15s %-6s %-6s %-12s\n",
-			"idx", "MAC", "PhyMode", "TXRATE", "RXRATE", "Connect Time");
+		ret += websWrite(wp, "%-3s %-17s %-15s %-6s %-6s\n",
+			"idx", "MAC", "PhyMode", "TXRATE", "RXRATE");
 #endif
 
 		if ((sta_info = malloc(sizeof(*sta_info))) != NULL) {
@@ -945,13 +804,12 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				*subunit_str = '\0';
 				if (sta_info->Entry[i].subunit)
 					snprintf(subunit_str, sizeof(subunit_str), "%d", sta_info->Entry[i].subunit);
-				ret += websWrite(wp, "%3s %-17s %-15s %6s %6s %12s\n",
+				ret += websWrite(wp, "%3s %-17s %-15s %6s %6s\n",
 					subunit_str,
 					sta_info->Entry[i].addr,
 					sta_info->Entry[i].mode,
 					sta_info->Entry[i].txrate,
-					sta_info->Entry[i].rxrate,
-					sta_info->Entry[i].conn_time
+					sta_info->Entry[i].rxrate
 					);
 			}
 			free(sta_info);
@@ -1068,7 +926,7 @@ static int wl_stainfo_list(int unit, webs_t wp)
 		websWrite(wp, "\"%s\"", r->addr);
 		websWrite(wp, ", \"%s\"", r->txrate);
 		websWrite(wp, ", \"%s\"", r->rxrate);
-		websWrite(wp, ", \"%s\"", r->conn_time);
+		//websWrite(wp, ", \"%s\"", r->conn_time);
 		s = r->subunit;
 		if (s < 0 || s > 7)
 			s = 0;
@@ -1096,182 +954,162 @@ ej_wl_stainfo_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 }
 #endif	/* RTCONFIG_STAINFO */
 
-char *getWscStatus(int unit)
-{
-	char buf[512];
-	FILE *fp;
-	int len;
-	char *pt1,*pt2;
+int getWscStatusStr(int unit, char *buf, int buf_size){
+	int retVal = wlan_getWpsStatus(unit, buf);
 
-	sprintf(buf, "hostapd_cli -i%s wps_get_status", get_wifname(unit));
-	fp = popen(buf, "r");
-	if (fp) {
-		memset(buf, 0, sizeof(buf));
-		len = fread(buf, 1, sizeof(buf), fp);
-		pclose(fp);
-		if (len > 1) {
-			buf[len-1] = '\0';
-			pt1 = strstr(buf, "Last WPS result: ");
-			if (pt1) {
-				pt2 = pt1 + strlen("Last WPS result: ");
-				pt1 = strstr(pt2, "Peer Address: ");
-				if (pt1) {
-					*pt1 = '\0';
-					chomp(pt2);
-				}
-				return pt2;
-			}
-		}
-	}
-	return "";
+	memset(buf, 0, buf_size);
+	retVal = wlan_getWpsStatus(unit, buf);
+
+	if(retVal)
+		return -1;
+
+	return retVal;
 }
 
-char *getAPPIN(int unit)
-{
-	static char buffer[128];
-	char cmd[64];
-	FILE *fp;
-	int len;
+void getWPSAuthMode(int unit, char *ret_str){
+	char tmp[128], prefix[]="wlXXXXXXX_";
 
-	buffer[0] = '\0';
-	sprintf(cmd, "hostapd_cli -i%s wps_ap_pin get", get_wifname(unit));
-	fp = popen(cmd, "r");
-	if (fp) {
-		len = fread(buffer, 1, sizeof(buffer), fp);
-		pclose(fp);
-		if (len > 1) {
-			buffer[len] = '\0';
-			//dbg("%s: AP PIN[%s]\n", __FUNCTION__, buffer);
-			if(!strncmp(buffer,"FAIL",4))
-			   strcpy(buffer,nvram_get("secret_code"));
-			return buffer;
-		}
-	}
-	return "";
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+	if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "shared"))
+		strcpy(ret_str, "Shared Key");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "psk"))
+		strcpy(ret_str, "WPA-Personal");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "psk2"))
+		strcpy(ret_str, "WPA2-Personal");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "pskpsk2"))
+		strcpy(ret_str, "WPA-Auto-Personal");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "wpa"))
+		strcpy(ret_str, "WPA-Enterprise");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "wpa2"))
+		strcpy(ret_str, "WPA2-Enterprise");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "wpawpa2"))
+		strcpy(ret_str, "WPA-Auto-Enterprise");
+	else if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "radius"))
+		strcpy(ret_str, "802.1X");
+	else
+		strcpy(ret_str, "Open System");
 }
 
-int
-wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
+void getWPSEncrypType(int unit, char *ret_str){
+	char tmp[128], prefix[]="wlXXXXXXX_";
+
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+	if(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "open") && nvram_match(strcat_r(prefix, "wep_x", tmp), "0"))
+		strcpy(ret_str, "None");
+	else if((nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "open") && !nvram_match(strcat_r(prefix, "wep_x", tmp), "0"))
+			|| nvram_match("wl_auth_mode", "shared") || nvram_match("wl_auth_mode", "radius"))
+		strcpy(ret_str, "WEP");
+
+	if(nvram_match(strcat_r(prefix, "crypto", tmp), "tkip"))
+		strcpy(ret_str, "TKIP");
+	else if(nvram_match(strcat_r(prefix, "crypto", tmp), "aes"))
+		strcpy(ret_str, "AES");
+	else if(nvram_match(strcat_r(prefix, "crypto", tmp), "tkip+aes"))
+		strcpy(ret_str, "TKIP+AES");
+}
+
+int wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
-	int j = -1, u = unit;
-	char tmpstr[128];
-	WPS_CONFIGURED_VALUE result;
-	int retval=0;
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char tmpstr[256];
+	int retval = 0;
+	char tmp[128], prefix[]="wlXXXXXXX_";
 	char *wps_sta_pin;
-	char tag1[] = "<wps_infoXXXXXX>", tag2[] = "</wps_infoXXXXXX>";
 
-#if defined(RTCONFIG_WPSMULTIBAND)
-	for (j = -1; j < MAX_NR_WL_IF; ++j) {
-#endif
-		switch (j) {
-		case 0: /* fall through */
-		case 1:
-			u = j;
-			sprintf(tag1, "<wps_info%d>", j);
-			sprintf(tag2, "</wps_info%d>", j);
-			break;
-		case -1: /* fall through */
-		default:
-			u = unit;
-			strcpy(tag1, "<wps_info>");
-			strcpy(tag2, "</wps_info>");
-		}
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
-		snprintf(prefix, sizeof(prefix), "wl%d_", u);
+	retval += websWrite(wp, "<wps>\n");
 
-#if defined(RTCONFIG_WPSMULTIBAND)
-		if (!nvram_get(strcat_r(prefix, "ifname", tmp)))
-			continue;
-#endif
-
-		memset(&result, 0, sizeof(result));
-		getWPSConfig(u, &result);
-
-		if (j == -1)
-			retval += websWrite(wp, "<wps>\n");
-
-		//0. WSC Status
-		memset(tmpstr, 0, sizeof(tmpstr));
-		strcpy(tmpstr, getWscStatus(u));
-		retval += websWrite(wp, "%s%s%s\n", tag1, tmpstr, tag2);
-
-		//1. WPS Configured
-		if (result.Configured==2)
-			retval += websWrite(wp, "%s%s%s\n", tag1, "Yes", tag2);
-		else
-			retval += websWrite(wp, "%s%s%s\n", tag1, "No", tag2);
-
-		//2. WPS SSID
-		memset(tmpstr, 0, sizeof(tmpstr));
-		char_to_ascii(tmpstr, result.SSID);
-		retval += websWrite(wp, "%s%s%s\n", tag1, tmpstr, tag2);
-
-		//3. WPS AuthMode
-		retval += websWrite(wp, "%s%s%s\n", tag1, result.AuthMode, tag2);
-
-		//4. WPS Encryp
-		retval += websWrite(wp, "%s%s%s\n", tag1, result.Encryp, tag2);
-
-		//5. WPS DefaultKeyIdx
-		memset(tmpstr, 0, sizeof(tmpstr));
-		sprintf(tmpstr, "%d", result.DefaultKeyIdx);/* FIXME: TBD */
-		retval += websWrite(wp, "%s%s%s\n", tag1, tmpstr, tag2);
-
-		//6. WPS WPAKey
-#if 0	//hide for security
-		if (!strlen(result.WPAKey))
-			retval += websWrite(wp, "%sNone%s\n", tag1, tag2);
-		else
-		{
-			memset(tmpstr, 0, sizeof(tmpstr));
-			char_to_ascii(tmpstr, result.WPAKey);
-			retval += websWrite(wp, "%s%s%s\n", tag1, tmpstr, tag2);
-		}
-#else
-		retval += websWrite(wp, "%s%s\n", tag1, tag2);
-#endif
-		//7. AP PIN Code
-		memset(tmpstr, 0, sizeof(tmpstr));
-		strcpy(tmpstr, getAPPIN(u));
-		retval += websWrite(wp, "%s%s%s\n", tag1, tmpstr, tag2);
-
-		//8. Saved WPAKey
-#if 0	//hide for security
-		if (!strlen(nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp))))
-			retval += websWrite(wp, "%s%s%s\n", tag1, "None", tag2);
-		else
-		{
-			char_to_ascii(tmpstr, nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp)));
-			retval += websWrite(wp, "%s%s%s\n", tag1, tmpstr, tag2);
-		}
-#else
-		retval += websWrite(wp, "%s%s\n", tag1, tag2);
-#endif
-		//9. WPS enable?
-		if (!strcmp(nvram_safe_get(strcat_r(prefix, "wps_mode", tmp)), "enabled"))
-			retval += websWrite(wp, "%s%s%s\n", tag1, "None", tag2);
-		else
-			retval += websWrite(wp, "%s%s%s\n", tag1, nvram_safe_get("wps_enable"), tag2);
-
-		//A. WPS mode
-		wps_sta_pin = nvram_safe_get("wps_sta_pin");
-		if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000"))
-			retval += websWrite(wp, "%s%s%s\n", tag1, "1", tag2);
-		else
-			retval += websWrite(wp, "%s%s%s\n", tag1, "2", tag2);
-
-		//B. current auth mode
-		if (!strlen(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp))))
-			retval += websWrite(wp, "%s%s%s\n", tag1, "None", tag2);
-		else
-			retval += websWrite(wp, "%s%s%s\n", tag1, nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), tag2);
-
-		//C. WPS band
-		retval += websWrite(wp, "%s%d%s\n", tag1, u, tag2);
-#if defined(RTCONFIG_WPSMULTIBAND)
+	//0. WSC Status
+	if(nvram_get_int("wps_enable") != 0){
+		getWscStatusStr(unit, tmpstr, sizeof(tmpstr));
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
 	}
+	else
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "Not used");
+
+	//1. WPSConfigured
+#if 0
+	// TODO: temporarily cannot reset to OOB.
+	if (!wps_is_oob())
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "Yes");
+	else
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "No");
+#else
+	memset(tmpstr, 0, sizeof(tmpstr));
+	retval += wlan_getWpsConfigurationState(unit, tmpstr);
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", (!strcmp(tmpstr, "Configured")?"Yes":"No"));
 #endif
+
+	//2. WPSSSID
+	memset(tmpstr, 0, sizeof(tmpstr));
+	char_to_ascii(tmpstr, nvram_safe_get(strcat_r(prefix, "ssid", tmp)));
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+
+	//3. WPSAuthMode
+	memset(tmpstr, 0, sizeof(tmpstr));
+	getWPSAuthMode(unit, tmpstr);
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+
+	//4. EncrypType
+	memset(tmpstr, 0, sizeof(tmpstr));
+	getWPSEncrypType(unit, tmpstr);
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+
+	//5. DefaultKeyIdx
+	snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get(strcat_r(prefix, "key", tmp)));
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+
+	//6. WPAKey
+#if 0	//hide for security
+	if (!strlen(nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp))))
+		retval += websWrite(wp, "<wps_info>None</wps_info>\n");
+	else
+	{
+		memset(tmpstr, 0, sizeof(tmpstr));
+		char_to_ascii(tmpstr, nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp)));
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+	}
+#else
+	retval += websWrite(wp, "<wps_info></wps_info>\n");
+#endif
+
+	//7. AP PIN Code
+	snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get("secret_code"));
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+
+	//8. Saved WPAKey
+#if 0	//hide for security
+	if (!strlen(nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp))))
+	{
+		retval += websWrite(wp, "<wps_info>None</wps_info>\n");
+	}
+	else
+	{
+		memset(tmpstr, 0, sizeof(tmpstr));
+		char_to_ascii(tmpstr, nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp)));
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
+	}
+#else
+	retval += websWrite(wp, "<wps_info></wps_info>\n");
+#endif
+
+	//9. WPS enable?
+	retval += websWrite(wp, "<wps_info>%d</wps_info>\n", nvram_get_int("wps_enable"));
+
+	//A. WPS mode
+	wps_sta_pin = nvram_safe_get("wps_sta_pin");
+	if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000"))
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "1");
+	else
+		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "2");
+
+	//B. current auth mode
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)));
+
+	//C. WPS band
+	retval += websWrite(wp, "<wps_info>%d</wps_info>\n", nvram_get_int("wps_band_x"));
 
 	retval += websWrite(wp, "</wps>");
 
@@ -1305,7 +1143,7 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 	char *value;
 	int firstRow;
 	result = (WLANCONFIG_LIST *)malloc(sizeof(WLANCONFIG_LIST));
-	memset(result, 0, sizeof(result));
+	memset(result, 0, sizeof(WLANCONFIG_LIST));
 
 	wl_ifnames = strdup(nvram_safe_get("wl_ifnames"));
 	if (!wl_ifnames) 
@@ -1323,7 +1161,7 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 			//fseek(fp, 131, SEEK_SET);	// ignore header
 			fgets(line_buf, sizeof(line_buf), fp); // ignore header
 			while ( fgets(line_buf, sizeof(line_buf), fp) ) {
-				sscanf(line_buf, "%s%u%u%s%s%u%u%u%u%s%s%s%s%s%s%s%s%s", 
+				sscanf(line_buf, "%s%u%u%s%s%u%u%u%u%s%s%s%s%s%s%s%s", 
 							result->addr, 
 							&result->aid, 
 							&result->chan, 
@@ -1338,7 +1176,6 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 							result->erp, 
 							result->state_maxrate, 
 							result->wps, 
-							result->conn_time, 
 							result->rsn, 
 							result->wme,
 							result->mode);

@@ -328,7 +328,7 @@ int CalRead(const unsigned char *buf, int offset, int count)
 	/// TBD. MTDPartitionRead will fail...
 	return VVPartitionRead(CALDATA_MTD_NAME, buf, offset, count);
 }
-#endif	/* RTCONFIG_QCA && RTCONFIG_WIFI_QCA9557_QCA9882 */
+#endif	/* RTCONFIG_QCA && (RTCONFIG_WIFI_QCA9557_QCA9882 || RTCONFIG_QCA953X || RTCONFIG_QCA956X) */
 
 /**
  * Read data from Factory partition.

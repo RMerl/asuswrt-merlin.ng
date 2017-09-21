@@ -94,8 +94,11 @@
 #define WPS_WAIT		1		/* seconds */
 #define WPS_WAIT_COUNT		WPS_WAIT * 20	/* 20 times a second */
 #ifdef BLUECAVE
-#define WPS_WAIT_COUNT_DUMMY	WPS_WAIT * 15 * 20 /* 15 sec. */
-static int btn_count_setup_dummy;
+static int bc_wps_led = 0;
+#endif
+
+#ifdef AMAS
+#define AMESH_TIMEOUT_COUNT	30 * 20		/* 30 secnods */
 #endif
 
 #ifdef RTCONFIG_WPS_RST_BTN
@@ -199,7 +202,6 @@ static int wlonunit = -1;
 #endif
 
 extern int g_wsc_configured;
-extern int g_isEnrollee[MAX_NR_WL_IF];
 
 #define REGULAR_DDNS_CHECK	10 //10x30 sec
 static int ddns_check_count = 0;
@@ -304,7 +306,7 @@ extern int no_need_to_start_wps();
 void led_control_normal(void)
 {
 #ifdef BLUECAVE
-        if(nvram_match("bc_ledbh", "wps"))
+        if(nvram_match("bc_ledbh", "wps_done"))
                 kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR1);
         return;
 #endif
@@ -2388,7 +2390,7 @@ static inline void handle_eject_usb_button(void) { }
 
 void btn_check(void)
 {
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	pid_t pid;
 	char *argv[]={"/sbin/delay_exec","4","rc rc_service restart_allnet",NULL};
 #endif
@@ -2401,12 +2403,12 @@ void btn_check(void)
 	{
 #endif
 #ifndef RTCONFIG_N56U_SR2
-	if (button_pressed(BTN_RESET))
+		if (button_pressed(BTN_RESET))
 #else
-	if (0)
+		if (0)
 #endif
-	{
-		TRACE_PT("button RESET pressed\n");
+		{
+			TRACE_PT("button RESET pressed\n");
 
 	/*--------------- Add BTN_RST MFG test ------------------------*/
 #ifndef RTCONFIG_WPS_RST_BTN
@@ -2430,6 +2432,7 @@ void btn_check(void)
 				{
 					dbg("You can release RESET button now!\n");
 #ifdef BLUECAVE
+					system("ejusb -1");
 					if(btn_pressed == 1) {
 						nvram_set("bc_ledbh", "reset");
 						kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR1);
@@ -2483,10 +2486,10 @@ void btn_check(void)
 #endif
 				}
 			}
-	}
+		}
 #if defined(RTCONFIG_WIRELESS_SWITCH) && defined(RTCONFIG_DSL)
-	else if (button_pressed(BTN_WIFI_SW))
-	{
+		else if (button_pressed(BTN_WIFI_SW))
+		{
 		//TRACE_PT("button BTN_WIFI_SW pressed\n");
 			if (wlan_sw_init == 0)
 			{
@@ -2533,174 +2536,174 @@ void btn_check(void)
 					}
 				}
 			}
-	}
+		}
 #endif	/* RTCONFIG_WIRELESS_SWITCH && RTCONFIG_DSL */
-	else
-	{
-#ifdef RTCONFIG_WPS_RST_BTN
-		if (btn_pressed == 0)
-			;
-		else if (btn_count < WPS_RST_DO_RESTORE_COUNT)
+		else
 		{
-			if (btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT && nvram_match("btn_ez_radiotoggle", "1"))
+#ifdef RTCONFIG_WPS_RST_BTN
+			if (btn_pressed == 0)
+				;
+			else if (btn_count < WPS_RST_DO_RESTORE_COUNT)
 			{
-				radio_switch(0);
-			}
+				if (btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT && nvram_match("btn_ez_radiotoggle", "1"))
+				{
+					radio_switch(0);
+				}
 #ifdef RTCONFIG_WPS_ALLLED_BTN
-			else if (btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT && nvram_match("btn_ez_mode", "1"))
-			{
-				LED_status_on = nvram_get_int("AllLED");
+				else if (btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT && nvram_match("btn_ez_mode", "1"))
+				{
+					LED_status_on = nvram_get_int("AllLED");
 
 
-				if (LED_status_on)
-					nvram_set_int("AllLED", 0);
-				else
-					nvram_set_int("AllLED", 1);
-				LED_status_on = !LED_status_on;
+					if (LED_status_on)
+						nvram_set_int("AllLED", 0);
+					else
+						nvram_set_int("AllLED", 1);
+					LED_status_on = !LED_status_on;
 
-				if (LED_status_on) {
-					TRACE_PT("LED turn to normal\n");
-					led_control(LED_POWER  , LED_ON);
+					if (LED_status_on) {
+						TRACE_PT("LED turn to normal\n");
+						led_control(LED_POWER  , LED_ON);
 #if defined(RTN11P_B1)
-					system("reg s 0xB0000000; reg w 0x64 0x30015014");
-					system("reg s 0xB0000600; reg w 0x04 0x1C20; reg w 0x24 0x69CB");
-					led_control(LED_WAN  , LED_ON);
-					led_control(LED_LAN  , LED_ON);
-					led_control(LED_2G  , LED_ON);
+						system("reg s 0xB0000000; reg w 0x64 0x30015014");
+						system("reg s 0xB0000600; reg w 0x04 0x1C20; reg w 0x24 0x69CB");
+						led_control(LED_WAN  , LED_ON);
+						led_control(LED_LAN  , LED_ON);
+						led_control(LED_2G  , LED_ON);
 #endif
+					}
+					else {
+						TRACE_PT("LED turn off\n");
+						setAllLedOff();
+					}
+
+					/* check LED_WAN status */
+					kill_pidfile_s("/var/run/wanduck.pid", SIGUSR2);
 				}
-				else {
-					TRACE_PT("LED turn off\n");
-					setAllLedOff();
+#endif
+				if (btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT
+				   && !no_need_to_start_wps()
+				   && !wps_band_radio_off(get_radio_band(0))
+				   && !wps_band_ssid_broadcast_off(get_radio_band(0))
+				   && nvram_match("btn_ez_radiotoggle", "0")
+#ifdef RTCONFIG_WPS_ALLLED_BTN
+				   && nvram_match("btn_ez_mode", "0")
+#endif
+				   && !nvram_match("wps_ign_btn", "1")
+				)
+				{
+					btn_pressed_setup = BTNSETUP_DETECT;
+					btn_count_setup = WPS_WAIT_COUNT;	//to trigger WPS
+					alarmtimer(0, RUSHURGENT_PERIOD);
+				}
+				else
+				{
+					btn_pressed_setup = BTNSETUP_NONE;
+					btn_count_setup = 0;
+					alarmtimer(NORMAL_PERIOD, 0);
 				}
 
-				/* check LED_WAN status */
-				kill_pidfile_s("/var/run/wanduck.pid", SIGUSR2);
-			}
-#endif
-			if (btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT
-			   && !no_need_to_start_wps()
-			   && !wps_band_radio_off(get_radio_band(0))
-			   && !wps_band_ssid_broadcast_off(get_radio_band(0))
-			   && nvram_match("btn_ez_radiotoggle", "0")
 #ifdef RTCONFIG_WPS_ALLLED_BTN
-			   && nvram_match("btn_ez_mode", "0")
+				if (!(btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT && nvram_match("btn_ez_mode", "1")))
 #endif
-			   && !nvram_match("wps_ign_btn", "1")
-			)
-			{
-				btn_pressed_setup = BTNSETUP_DETECT;
-				btn_count_setup = WPS_WAIT_COUNT;	//to trigger WPS
-				alarmtimer(0, RUSHURGENT_PERIOD);
+				led_control(LED_POWER, LED_ON);
+
+				btn_count = 0;
+				btn_pressed = 0;
 			}
-			else
+			else if (btn_count >= WPS_RST_DO_RESTORE_COUNT)	// to do restore
+#else	/* ! RTCONFIG_WPS_RST_BTN */
+			if (btn_pressed == 1)
 			{
-				btn_pressed_setup = BTNSETUP_NONE;
-				btn_count_setup = 0;
+				btn_count = 0;
+				btn_pressed = 0;
+#if defined(RTCONFIG_LP5523)
+				lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
+#else
+				led_control(LED_POWER, LED_ON);
+#endif
 				alarmtimer(NORMAL_PERIOD, 0);
 			}
-
-#ifdef RTCONFIG_WPS_ALLLED_BTN
-			if (!(btn_count < WPS_RST_DO_RESTORE_COUNT && btn_count >= WPS_RST_DO_WPS_COUNT && nvram_match("btn_ez_mode", "1")))
-#endif
-			led_control(LED_POWER, LED_ON);
-
-			btn_count = 0;
-			btn_pressed = 0;
-		}
-		else if (btn_count >= WPS_RST_DO_RESTORE_COUNT)	// to do restore
-#else	/* ! RTCONFIG_WPS_RST_BTN */
-		if (btn_pressed == 1)
-		{
-			btn_count = 0;
-			btn_pressed = 0;
-#if defined(RTCONFIG_LP5523)
-			lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
-#else
-			led_control(LED_POWER, LED_ON);
-#endif
-			alarmtimer(NORMAL_PERIOD, 0);
-		}
-		else if (btn_pressed == 2)
+			else if (btn_pressed == 2)
 #endif	/* ! RTCONFIG_WPS_RST_BTN */
-		{
+			{
 #if defined(RTN11P_B1)
-		stop_wanduck();
-		//Set WLED_N(GPIO44) to GPIO Mode, and turn on.
-		system("reg s 0xB0000000; reg w 0x64 0x30015015");
-		system("reg s 0xB0000600; reg w 0x04 0x1C20; reg w 0x24 0x69CB");
-		led_control(LED_POWER  , LED_OFF);
-		led_control(LED_WAN  , LED_OFF);
-		led_control(LED_LAN  , LED_OFF);
-		led_control(LED_2G  , LED_OFF);
-		sleep(1);
-		led_control(LED_WAN  , LED_ON);
-		led_control(LED_LAN  , LED_ON);
-		led_control(LED_2G  , LED_ON);
-		sleep(1);
-		led_control(LED_WAN  , LED_OFF);
-		led_control(LED_LAN  , LED_OFF);
-		led_control(LED_2G  , LED_OFF);
-		sleep(1);
-		led_control(LED_POWER, LED_ON);
-		sleep(1);
+				stop_wanduck();
+				//Set WLED_N(GPIO44) to GPIO Mode, and turn on.
+				system("reg s 0xB0000000; reg w 0x64 0x30015015");
+				system("reg s 0xB0000600; reg w 0x04 0x1C20; reg w 0x24 0x69CB");
+				led_control(LED_POWER  , LED_OFF);
+				led_control(LED_WAN  , LED_OFF);
+				led_control(LED_LAN  , LED_OFF);
+				led_control(LED_2G  , LED_OFF);
+				sleep(1);
+				led_control(LED_WAN  , LED_ON);
+				led_control(LED_LAN  , LED_ON);
+				led_control(LED_2G  , LED_ON);
+				sleep(1);
+				led_control(LED_WAN  , LED_OFF);
+				led_control(LED_LAN  , LED_OFF);
+				led_control(LED_2G  , LED_OFF);
+				sleep(1);
+				led_control(LED_POWER, LED_ON);
+				sleep(1);
 #else
 #if defined(RTCONFIG_LP5523)
-			lp55xx_leds_proc(LP55XX_ORANGE_LEDS, LP55XX_ACT_BREATH_DOWN_011);
+				lp55xx_leds_proc(LP55XX_ORANGE_LEDS, LP55XX_ACT_BREATH_DOWN_011);
 #else
-			led_control(LED_POWER, LED_OFF);
+				led_control(LED_POWER, LED_OFF);
 #endif /* RTCONFIG_LP5523 */
 #endif
 #if (defined(PLN12) || defined(PLAC56))
-			set_wifiled(2);
+				set_wifiled(2);
 #endif
-			alarmtimer(0, 0);
-			nvram_set("restore_defaults", "1");
-			if (notify_rc_after_wait("resetdefault")) {
-				/* Send resetdefault rc_service failed. */
-				alarmtimer(NORMAL_PERIOD, 0);
+				alarmtimer(0, 0);
+				nvram_set("restore_defaults", "1");
+				if (notify_rc_after_wait("resetdefault")) {
+					/* Send resetdefault rc_service failed. */
+					alarmtimer(NORMAL_PERIOD, 0);
+				}
 			}
-		}
 #if defined(RTCONFIG_WIRELESS_SWITCH) && defined(RTCONFIG_DSL)
-		else
-		{
-			// no button is pressed or released
-			if (wlan_sw_init == 0)
-			{
-				wlan_sw_init = 1;
-				eval("iwpriv", "ra0", "set", "RadioOn=0");
-				eval("iwpriv", "rai0", "set", "RadioOn=0");
-				TRACE_PT("Radio Off\n");
-				nvram_set("wl0_radio", "0");
-				nvram_set("wl1_radio", "0");
-
-				nvram_set("wl0_HW_switch", "1");
-				nvram_set("wl1_HW_switch", "1");
-
-				nvram_commit();
-			}
 			else
 			{
-				if (nvram_match("wl0_radio", "1") || nvram_match("wl1_radio", "1")) {
+				// no button is pressed or released
+				if (wlan_sw_init == 0)
+				{
+					wlan_sw_init = 1;
 					eval("iwpriv", "ra0", "set", "RadioOn=0");
 					eval("iwpriv", "rai0", "set", "RadioOn=0");
 					TRACE_PT("Radio Off\n");
 					nvram_set("wl0_radio", "0");
 					nvram_set("wl1_radio", "0");
 
-					nvram_set("wl0_timesched", "0");
-					nvram_set("wl1_timesched", "0");
-				}
-
-				//indicate use switch HW slash manually.
-				if (nvram_match("wl0_HW_switch", "0") || nvram_match("wl1_HW_switch", "0")) {
 					nvram_set("wl0_HW_switch", "1");
 					nvram_set("wl1_HW_switch", "1");
+
+					nvram_commit();
+				}
+				else
+				{
+					if (nvram_match("wl0_radio", "1") || nvram_match("wl1_radio", "1")) {
+						eval("iwpriv", "ra0", "set", "RadioOn=0");
+						eval("iwpriv", "rai0", "set", "RadioOn=0");
+						TRACE_PT("Radio Off\n");
+						nvram_set("wl0_radio", "0");
+						nvram_set("wl1_radio", "0");
+
+						nvram_set("wl0_timesched", "0");
+						nvram_set("wl1_timesched", "0");
+					}
+
+					//indicate use switch HW slash manually.
+					if (nvram_match("wl0_HW_switch", "0") || nvram_match("wl1_HW_switch", "0")) {
+						nvram_set("wl0_HW_switch", "1");
+						nvram_set("wl1_HW_switch", "1");
+					}
 				}
 			}
-		}
 #endif	/* RTCONFIG_WIRELESS_SWITCH && RTCONFIG_DSL */
-	}
+		}
 
 #ifdef BTN_SETUP
 	}
@@ -3047,9 +3050,15 @@ void btn_check(void)
 #endif	/* RTCONFIG_LED_BTN */
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-	if (psta_exist() || psr_exist())
+	if ((psta_exist() || psr_exist())
+		&& !dpsr_mode()
+#ifdef RTCONFIG_DPSTA
+		&& !dpsta_mode()
+#endif
+	)
 		return;
 #endif
+
 	if (btn_pressed_setup < BTNSETUP_START)
 	{
 #ifdef RTCONFIG_WPS_RST_BTN
@@ -3070,7 +3079,9 @@ void btn_check(void)
 		{
 			if (nvram_match("wps_enable", "1")) {
 				TRACE_PT("button WPS pressed\n");
-
+#ifdef BLUECAVE
+				bc_wps_led = 0;
+#endif
 				if (btn_pressed_setup == BTNSETUP_NONE)
 				{
 					btn_pressed_setup = BTNSETUP_DETECT;
@@ -3086,7 +3097,7 @@ void btn_check(void)
 						btn_count_setup_second = 0;
 						nvram_set("wps_ign_btn", "1");
 #ifdef RTCONFIG_WIFI_CLONE
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 						if(((sw_mode() == SW_MODE_AP) && nvram_get_int("x_Setting")) || 
 						   ((sw_mode() == SW_MODE_ROUTER ) && !nvram_get_int("x_Setting"))) {  //Range extender
 							doSystem("killall wifimon_check");
@@ -3102,19 +3113,20 @@ void btn_check(void)
 
 #else
 						if (sw_mode() == SW_MODE_ROUTER
-									|| sw_mode() == SW_MODE_AP) {
+							|| sw_mode() == SW_MODE_AP) {
 #endif
 							nvram_set("wps_enrollee", "1");
 							nvram_set("wps_e_success", "0");
 						}
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 						else
 							nvram_set("wps_enrollee", "0");
 #endif
 #if (defined(PLN12) || defined(PLAC56))
 						set_wifiled(3);
 #endif
-#endif
+#endif // RTCONFIG_WIFI_CLONE
+
 #if 0
 						start_wps_pbc(0);	// always 2.4G
 #else
@@ -3137,8 +3149,7 @@ void btn_check(void)
 #endif
 					}
 				}
-			}
-			else {
+			} else {
 				TRACE_PT("button WPS pressed, skip\n");
 			}
 		}
@@ -3208,7 +3219,7 @@ void btn_check(void)
 				btn_count_setup = 0;
 				btn_count_setup_second = 0;
 #ifdef BLUECAVE
-				nvram_set("bc_ledbh", "wps");
+				nvram_set("bc_ledbh", "wps_done");
 #endif
 
 #if defined(RTCONFIG_LP5523)
@@ -3221,13 +3232,14 @@ void btn_check(void)
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 				nvram_set_int("led_status", LED_WPS_FAIL);
 #endif
+
 #ifdef RTCONFIG_WIFI_CLONE
 				if (nvram_match("wps_e_success", "1")) {
 #if (defined(PLN12) || defined(PLAC56))
 					set_wifiled(2);
 #endif
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
                               		if (sw_mode() == SW_MODE_ROUTER) //default
                                         {
                                        		_dprintf("=> switch router to ap mode.\n");
@@ -3265,27 +3277,27 @@ void btn_check(void)
 				{
 					if((sw_mode() == SW_MODE_AP) && nvram_get_int("x_Setting")) //Range extender
 					{
-							pid_t pid;
-							_dprintf("=>wifimon is back\n");
-							doSystem("killall wpa_supplicant");
-							char *wifimon[]={"wifimon_check",NULL};
-							if (!pids(wifimon[0]))
-							_eval(wifimon, NULL, 0, &pid);
+						pid_t pid;
+						_dprintf("=>wifimon is back\n");
+						doSystem("killall wpa_supplicant");
+						char *wifimon[]={"wifimon_check",NULL};
+						if (!pids(wifimon[0]))
+						_eval(wifimon, NULL, 0, &pid);
 					}
 				}
-
 #endif
+#endif // RTCONFIG_WIFI_CLONE
 
-#endif
-
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 #ifdef RTCONFIG_WPS_ENROLLEE
 				if (nvram_match("wps_enrollee", "0"))  //CAP
 #endif
 					uptime_wait(30); //CAP estimate time
 				//_dprintf("==> %s:wps_syncing stop\n",sw_mode()==SW_MODE_ROUTER?"CAP":"RE");
 				nvram_set("wps_syncing","0");
+#if !defined(MAPAC1800)
 				lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
+#endif
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
@@ -3309,31 +3321,21 @@ void btn_check(void)
 		}
 #else
 #ifdef BLUECAVE
-		if (button_pressed(BTN_WPS)) {
-			if (btn_count_setup == 1)
-				kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR2);
-
-			if(btn_count_setup_dummy >= WPS_WAIT_COUNT_DUMMY) {
-				btn_count_setup_dummy = 0;
-				wsc_timeout = 1;
-				nvram_set("bc_ledbh", "wps");
-			}
-			else {
-				btn_count_setup_dummy++;
-			}
+		if (!bc_wps_led) {
+			bc_wps_led = 1;
+			nvram_set("bc_ledbh", "wps");
+			kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR1);
 		}
-		else {
-			btn_count_setup_dummy = 0;
-		}
-#endif
+#else
 		if ((btn_count_setup % 2) == 0 && (btn_count_setup > 10))
 			wps_led_control(LED_ON);
 		else
 			wps_led_control(LED_OFF);
+#endif // BLUECAVE
 #endif // RTCONFIG_LP5523
 #if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_MTK_REP)
-			if(sw_mode() == SW_MODE_AP)
-				nvram_set_int("led_status", LED_AP_WPS_START);
+		if(sw_mode() == SW_MODE_AP)
+			nvram_set_int("led_status", LED_AP_WPS_START);
 #endif
 	}
 #endif	/* BTN_SETUP */
@@ -3746,6 +3748,11 @@ static void catch_sig(int sig)
 		btn_pressed_setup = BTNSETUP_START;
 		btn_count_setup = 0;
 		btn_count_setup_second = 0;
+#ifdef AMAS
+		if (nvram_get_int("amesh_led"))
+		wsc_timeout = AMESH_TIMEOUT_COUNT;
+		else
+#endif
 		wsc_timeout = WPS_TIMEOUT_COUNT;
 		alarmtimer(0, RUSHURGENT_PERIOD);
 
@@ -4259,6 +4266,7 @@ enum {
 	CASE_NONE = 0,
         CASE_INDICATOR_INIT,
         CASE_INDICATOR_WPS,
+	CASE_INDICATOR_WPS_DONE,
 	CASE_INDICATOR_RESET,
 };
 
@@ -4278,6 +4286,8 @@ void led_rush(int sig)
 		bh_case = CASE_INDICATOR_RESET;
 	else if(nvram_match("bc_ledbh", "wps"))
 		bh_case = CASE_INDICATOR_WPS;
+	else if(nvram_match("bc_ledbh", "wps_done"))
+		bh_case = CASE_INDICATOR_WPS_DONE;
 	else if(!nvram_match("x_Setting", "1"))
 		bh_case = CASE_INDICATOR_INIT;
 	else
@@ -4295,11 +4305,14 @@ void led_stop(int sig)
 {
 	bh_case = CASE_NONE;
 	indicator_rush_counts = -1;
-	if(indicator_no_internet_red_old)
-		led_control(LED_INDICATOR_SIG1, LED_ON); //keep solid RED led
+
+	led_control(LED_INDICATOR_SIG1, LED_OFF); //turn off RED led
+	if (!nvram_get_int("wave_ready"))
+		led_control(LED_INDICATOR_SIG2, LED_ON); //turn on BLUE led
 	else
-		led_control(LED_INDICATOR_SIG1, LED_OFF); //turn off RED led
-	led_control(LED_INDICATOR_SIG2, LED_OFF); //turn off BLUE led
+		led_control(LED_INDICATOR_SIG2, LED_OFF); //turn off BLUE led
+
+
 	if(!central_cycle) {
 		led_alarm_rush = 0;
 		alarmtimer(NORMAL_PERIOD, 0);
@@ -4308,11 +4321,13 @@ void led_stop(int sig)
 
 void bluecave_ledbh_central()
 {
+	if (!nvram_get_int("wave_ready"))
+		return;
 
 	if(!central_cycle && 
 	   central_rush_counts == -1 && 
 	   brightness_level == 2 && 
-	   get_gpio(nvram_get_int("led_ctl_sig2_gpio"))) { //workaround in case gpio was reset suddenly
+	   get_gpio(nvram_get_int("led_ctl_sig2_gpio"))) { // workaround for gpio was reset by mem xxx
 		return;
 	}
 
@@ -4331,21 +4346,11 @@ void bluecave_ledbh_central()
 
 void bluecave_ledbh_indicator()
 {
-	if(bh_case == CASE_NONE && indicator_rush_counts == -1) {
-		if(!nvram_match("link_internet", "2"))	indicator_no_internet_red  = 1;
-		else					indicator_no_internet_red  = 0;
+	int WpsLedBlink, WpsLedOff;
 
-		// Solid RED led if no internet ability
-		if(indicator_no_internet_red != indicator_no_internet_red_old) {
-			indicator_no_internet_red == 1 ? 
-				led_control(LED_INDICATOR_SIG1, LED_ON) : 
-				led_control(LED_INDICATOR_SIG1, LED_OFF);
-			led_control(LED_INDICATOR_SIG2, LED_OFF);
-			indicator_no_internet_red_old = indicator_no_internet_red;
-		}
-
+	if (!nvram_get_int("wave_ready") && bh_case != CASE_INDICATOR_RESET)
 		return;
-	}
+
 
 	/* indicator led control */
 	switch(bh_case) {
@@ -4353,29 +4358,48 @@ void bluecave_ledbh_indicator()
 		/* 0011100111 */
 		/* blink BLUE led util QIS is completed */
 		case CASE_INDICATOR_INIT:
-			indicator_rush_counts = (indicator_rush_counts + 1) % 40;
-			led_control(LED_INDICATOR_SIG1, LED_OFF); //turn off RED led
-			if (indicator_rush_counts == 0)
-				led_control(LED_INDICATOR_SIG2, LED_OFF);
-			if (indicator_rush_counts == 20)
-				led_control(LED_INDICATOR_SIG2, LED_ON);
 
+			if(indicator_rush_counts == -1) {
+				led_control(LED_INDICATOR_SIG1, LED_OFF); //turn off RED led
+				led_control(LED_INDICATOR_SIG2, LED_OFF); //turn off BLUE led
+				indicator_rush_counts++;
+			}
 
 			if(nvram_match("x_Setting", "1"))
 				kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR1);
 			break;
 
-		/* blink RED led for WPS complete/terminate */
 		case CASE_INDICATOR_WPS:
+			led_control(LED_INDICATOR_SIG1, LED_OFF);
+			indicator_rush_counts = (indicator_rush_counts + 1) % 20;
+                        if ((indicator_rush_counts % 2) == 0  && (indicator_rush_counts > 10))
+				led_control(LED_INDICATOR_SIG2, LED_ON);
+                        else
+				led_control(LED_INDICATOR_SIG2, LED_OFF);
+			break;
+
+		/* blink led for WPS complete/terminate */
+		case CASE_INDICATOR_WPS_DONE:
+
 			indicator_rush_counts++;
-			led_control(LED_INDICATOR_SIG2, LED_OFF); //turn off BLUE led
+			if(nvram_get_int("wps_success")) {	// blink BLUE LED
+				WpsLedBlink = LED_INDICATOR_SIG2;
+				WpsLedOff = LED_INDICATOR_SIG1;
+			}
+			else {					// blink RED LED
+				WpsLedBlink = LED_INDICATOR_SIG1;
+				WpsLedOff = LED_INDICATOR_SIG2;
+			}
+
+			led_control(WpsLedOff, LED_OFF);
 			if ((indicator_rush_counts % 10) < 2 || ((indicator_rush_counts % 10) > 4 && (indicator_rush_counts % 10) < 7))
-				led_control(LED_INDICATOR_SIG1, LED_OFF);
+				led_control(WpsLedBlink, LED_OFF);
 			else
-				led_control(LED_INDICATOR_SIG1, LED_ON);
+				led_control(WpsLedBlink, LED_ON);
 
 			if(indicator_rush_counts >= 20 * 6) {	// blink 6s then turn off
-				led_control(LED_INDICATOR_SIG1, LED_OFF);
+				led_control(WpsLedBlink, LED_OFF);
+				nvram_set("wps_success", "0");
 				kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR1);
 			}
 			break;
@@ -4396,6 +4420,23 @@ void bluecave_ledbh_indicator()
 
 		case CASE_NONE:
 		default:
+
+			// regular checking WAN status
+			if(!nvram_match("link_internet", "2"))	indicator_no_internet_red  = 1;
+			else					indicator_no_internet_red  = 0;
+
+			// Solid RED led if no internet ability
+			if((indicator_no_internet_red != indicator_no_internet_red_old) ||
+		  	   (indicator_no_internet_red && !get_gpio(nvram_get_int("led_idr_sig1_gpio")) ||
+			   (!indicator_no_internet_red) && get_gpio(nvram_get_int("led_idr_sig2_gpio")))) // WAR for gpio was reset by mem xxx 
+			{
+				indicator_no_internet_red == 1 ? 
+					led_control(LED_INDICATOR_SIG1, LED_ON) : 
+					led_control(LED_INDICATOR_SIG1, LED_OFF);
+				led_control(LED_INDICATOR_SIG2, LED_OFF);
+				indicator_no_internet_red_old = indicator_no_internet_red;
+			}
+
 			break;
 	}
 }
@@ -4970,12 +5011,20 @@ void httpd_check()
 #ifdef RTCONFIG_LANTIQ
 void wave_monitor_check()
 {
+	static int drop_caches_check = 0;
+
 	if (!pids("wave_monitor")){
 		nvram_set("wave_action", "3");
 		nvram_set("wave_CFG", "1");
 		logmessage("watchdog", "restart wave_monitor");
 		killall_tk("wave_monitor");
 		start_wave_monitor();
+	}
+	if(drop_caches_check < 2){
+		f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
+		drop_caches_check++;
+	}else{
+		drop_caches_check = 0;
 	}
 }
 #endif
@@ -5561,7 +5610,7 @@ static void link_pap_status()
 				int dist;
 				dist = nvram_get_int("lyra_re_dist");
 				if (dist==0) {
-					if (outpt=get_qca_iwpriv(0, "get_whc_dist")) {
+					if (outpt=get_qca_iwpriv(WIF_2G, "get_whc_dist")) {
 						dist = atoi(outpt);
 						free(outpt);
 					}
@@ -5591,7 +5640,7 @@ static void link_pap_status()
 						}
 						else {
 							if (nvram_match("wl1_country_code", "GB"))
-								link_pap_status = count_point + 120;
+								link_pap_status = count_point + 150;
 							else 
 								link_pap_status = count_point + 15;
 

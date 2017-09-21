@@ -16,7 +16,7 @@ helpcontent[0] = new Array("",
 			"<#WLANConfig11b_ChannelBW_itemdesc#><br/><#WLANConfig11b_Wireless_Speed_itemname_3#>",
 			"<#WLANConfig11b_EChannel_itemdesc#>",
 			"<#WLANConfig11b_TxPower_help1#>",
-			"<#WLANConfig11b_TxPower_help#>",
+			"",
 			"WEP-64bits: <#WLANConfig11b_WEPKey_itemtype1#><br/>WEP-128bits: <#WLANConfig11b_WEPKey_itemtype2#>",
 			"<#WLANConfig11b_WEPKey_itemtype1#><br/><#WLANConfig11b_WEPKey_itemtype2#>",
 			"<#WLANConfig11b_WEPKey_itemtype1#><br/><#WLANConfig11b_WEPKey_itemtype2#>",
@@ -72,7 +72,7 @@ helpcontent[3] = new Array("",
 							"<#WLANConfig11b_x_ReduceUSB3_desc#>",
 							"<#RTS_for_AMPDU#>",
 							"<#WLANConfig11b_x_roamingassit_desc#>",	//31
-							"Provide Airtime Fairness between multiple links",	/* untranslated */
+							"<#WLANConfig11b_x_Airtime_Fairness_itemdesc#>",
 							"<#WLANConfig11b_x_Auto#>",
 							"Enable/Disable Bluetooth Coexisistence. Data rate 1Mbps and 2 Mbps are not allowed in Pre-emptive mode. TX Bursting is also not allowed in Pre-emptive mode."
 							 );
@@ -135,7 +135,11 @@ helpcontent[7] = new Array("",
 							 "<#qis_pppoe_help1#>",
 							 "<#isp_profile#>",
 							 "<#PPPConnection_Authentication_itemdesc#>",
-							 "<#PPPConnection_Authentication_itemdesc2#>");
+							 "<#PPPConnection_Authentication_itemdesc2#>",
+							 "<b>PPP Echo:</b> Use Echo-Request and Echo-Reply message defined in PPP Link Control Protocol (LCP) to test the PPP connection. <b>DNS Probe:</b> Performs a DNS lookup request and resolved IP address to test DNS connection",	//31
+							 "Send an LCP Echo-Request frame to the peer every n seconds.",
+							 "Presume the peer to be dead if n LCP Echo-Requests are sent without receiving a valid LCP Echo-Reply. Use of this option requires a non-zero value for the Echo Interval parameter.",
+"If DNS resolution fails or returns the wrong address to n times, then it is assumed that the internet connection is completely unsuccessful");
 //Firewall
 helpcontent[8] = new Array("",
 						   "<#FirewallConfig_WanLanLog_itemdesc#>",
@@ -162,11 +166,11 @@ helpcontent[11] = new Array("",
 							"<#LANHostConfig_x_NTPServer_itemdesc#>",
 							"<#QIS_pass_desc2#> <#LANHostConfig_x_Password_itemdesc#>",
 							"<#QIS_pass_desc2#> <#File_Pop_content_alert_desc3#>",
-							"This feature allows browser to redirect to failed connection warning page when Internet is down, if disabled warning page would not appear.",	/* untranslated */
-							"To set your clock forward one hour in the spring when DST (Daylight Saving Time) starts",	/* untranslated */
-							"To set your clock back one hour in the fall when DST (Daylight Saving Time) ends",	/* untranslated */
+							"<#Enable_redirect_notice_desc#>",
+							"<#LANHostConfig_x_TimeZone_DSTStart_desc#>",
+							"<#LANHostConfig_x_TimeZone_DSTEnd_desc#>",
 							"For destination IP address, you can:<br/>(a) enter a specific IP address, such as \"192.168.1.2\"<br/>(b) enter IP addresses within one subnet or within the same IP pool, such as \"192.168.1.0/24\"",	/* untranslated */
-							"This feature allows you to restrict only specified IP address could access the wireless router via \"SSH\" / \"Telnet\" / \"Web Access from WAN\" (if Enabled) from WAN or LAN side.",		/* untranslated */
+							"This feature allows you to restrict only specified IP address could access the wireless router via \"Web UI\" / \"SSH\" / \"Telnet\" from WAN(if Enabled) or LAN side(Telnet LAN only).",		/* untranslated */
 							"USB hard disks will hibernate after being inactive for the configured time period."		/* untranslated */
 		);
 //Log
@@ -335,7 +339,7 @@ helpcontent[31] = new Array("",
 
 //VPN Fusion
 helpcontent[32] = new Array("",
-							"The client device which doesn't exist in the exception list will connect to default connection. You can set the default as VPN tunnel once VPN profile created. If the VPN tunnel setting as default is disconnected or deactivate, the client device will connect to Internet.",/*untranslated*/
+							"<#VPN_Fusion_Default_Cconnection#>",
 							"Enable this option allows VPN clients to access the subnet of your LAN",/*untranslated*/
 							"Enable this option allows VPN clients use the Internet from your router instead of the one at their location.",/*untranslated*/
 							"Virtual network device type. TUN devices encapsulate IPv4 or IPv6 (OSI Layer 3) while TAP devices encapsulate Ethernet 802.3 (OSI Layer 2).",/*untranslated*/
@@ -359,8 +363,15 @@ helpcontent[32] = new Array("",
 							"The Username / Common Name(CN) of client certificate.<br> If setting authenticated by username / password only, this field should be the username in the \"Username and Password\" table.",/*untranslated*/
 							"The Network Address of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
 							"The Network Mask of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
-							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\"."/*untranslated*/
+							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\".",/*untranslated*/
+							"The message digest algorithm which is used to authenticate packets with HMAC. HMAC usually adds 16 or 20 bytes per packet."/*untranslated*/
 							);
+
+//IPSec
+helpcontent[33] = new Array("",
+							"<#vpn_ipsec_Key_Retries_Hint#>"
+							);
+
 
 helpcontent[50] = new Array("",
 				"<#IPConnection_LocalIP_itemdesc#> or fixed Interface (Device) ID starting with ::<br/>A fixed Interface ID is commonly an EUI-64 address.",

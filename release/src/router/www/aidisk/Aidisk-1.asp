@@ -15,7 +15,7 @@
 var dummyShareway = '<% nvram_get("dummyShareway"); %>';
 var FTP_status = parent.get_ftp_status();  // FTP  0=disable 1=enable
 var FTP_mode = parent.get_share_management_status("ftp");  // if share by account. 1=no 2=yes
-var accounts = [<% get_all_accounts(); %>];
+var accounts = [<% get_all_accounts(); %>][0];
 var ddns_enable = '<% nvram_get("ddns_enable_x"); %>';
 var ddns_server = '<% nvram_get("ddns_server_x"); %>';
 var ddns_hostname = '<% nvram_get("ddns_hostname_x"); %>';

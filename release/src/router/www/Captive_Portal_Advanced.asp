@@ -261,7 +261,7 @@ function set_tab_and_action_btn() {
 function edit_cancel(_flag) {
 	var _confirm_flag = true;
 	if(_flag) {
-		_confirm_flag = confirm("The setting will not be saved, are you sure to closed?");/*untranslated*/
+		_confirm_flag = confirm("<#Captive_Portal_Profile_Exit#>");
 	}
 
 	if(_confirm_flag) {
@@ -326,8 +326,8 @@ function toolbar_unit_help(event) {
 
 	code += "<div id='help_step_1' class='help_step'>";
 	code += "<div class='help_frame step1'>";
-	code += "<div id='toolbar_template' title='Template' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_template' style='cursor:default;'>";
-	code += "<div class='splash_page_toolbar_unit_title'>Template</div>";/*untranslated*/
+	code += "<div id='toolbar_template' title='<#Captive_Portal_Template#>' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_template' style='cursor:default;'>";
+	code += "<div class='splash_page_toolbar_unit_title'><#Captive_Portal_Template#></div>";
 	code += "</div>";
 	code += "</div>";
 	code += "<div class='help_desc step1'>";
@@ -344,7 +344,7 @@ function toolbar_unit_help(event) {
 
 	code += "<div id='help_step_3' class='help_step' style='display:none;'>";
 	code += "<div class='help_frame step3'>";
-	code += "<div id='toolbar_unit_image' title='<#CTL_add#> Image' class='splash_page_toolbar_unit_bg_left splash_page_toolbar_unit_image' style='cursor:default;'></div>";
+	code += "<div id='toolbar_unit_image' title='<#CTL_add#> <#Captive_Portal_Image#>' class='splash_page_toolbar_unit_bg_left splash_page_toolbar_unit_image' style='cursor:default;'></div>";
 	code += "<div id='toolbar_unit_text' title='<#CTL_add#> Text' class='splash_page_toolbar_unit_bg_left splash_page_toolbar_unit_text' style='cursor:default;'></div>";
 	code += "<div id='toolbar_unit_account' title='<#CTL_add#> <#PPPConnection_Authentication_itemname#>' class='splash_page_toolbar_unit_bg_left splash_page_toolbar_unit_account' style='cursor:default;'></div>";
 	code += "<div id='toolbar_unit_eula' title='<#CTL_add#> Eula' class='splash_page_toolbar_unit_bg_left splash_page_toolbar_unit_eula' style='cursor:default;'></div>";
@@ -361,8 +361,8 @@ function toolbar_unit_help(event) {
 	code += "<div id='toolbar_background'  title='<#btn_Background#>' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_background' style='cursor:default;'>";
 	code += "<div class='splash_page_toolbar_unit_title'><#btn_Background#></div>";
 	code += "</div>";
-	code += "<div id='toolbar_editor' title='Editor' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_editor' style='cursor:default;'>";
-	code += "<div class='splash_page_toolbar_unit_title'>Editor</div>";/*untranslated*/
+	code += "<div id='toolbar_editor' title='<#Captive_Portal_Editor#>' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_editor' style='cursor:default;'>";
+	code += "<div class='splash_page_toolbar_unit_title'><#Captive_Portal_Editor#></div>";
 	code += "</div>";
 	code += "</div>";
 	code += "<div class='help_desc step4'>";
@@ -559,7 +559,7 @@ function gen_basic_settings() {
 	code += "</tr>";
 
 	code += "<tr>";
-	code += "<th>Maximum Download Speed Per Client</th>";/*untranslated*/
+	code += "<th><#Captive_Portal_DL_Speed#></th>";
 	code += "<td>";
 	code += "<input type='radio' name='cpa_bw_dl' id='cpa_bw_dl_limited'>";
 	code += "<input name='cpa_bw_dl_set' class='input_15_table' value='1' type='text' maxlength='12' autocorrect='off' autocapitalize='off' onKeyPress='return validator.bandwidth_code(this, event);'>";
@@ -569,7 +569,7 @@ function gen_basic_settings() {
 	code += "</tr>";
 
 	code += "<tr>";
-	code += "<th>Maximum Upload Speed Per Client</th>";/*untranslated*/
+	code += "<th><#Captive_Portal_UL_Speed#></th>";
 	code += "<td>";
 	code += "<input type='radio' name='cpa_bw_ul' id='cpa_bw_ul_limited'>";
 	code += "<input name='cpa_bw_ul_set' class='input_15_table' value='1' type='text' maxlength='12' autocorrect='off' autocapitalize='off' onKeyPress='return validator.bandwidth_code(this, event);'>";
@@ -582,7 +582,7 @@ function gen_basic_settings() {
 	code += "<th><#FreeWiFi_LandingPage#> (<#FreeWiFi_RedirectPage#>)</th>";
 	code += "<td>";
 	code += "<input style='margin-left:0px;' type='text' name='cpa_landing_page' value='' class='input_25_table' maxlength='64' autocomplete='off' autocorrect='off' autocapitalize='off'>";
-	code += "<span style='margin-left:5px;'>ex. http or https ://www.asus.com</span>";
+	code += "<span style='margin-left:5px;'>ex. http <#Captive_Portal_OR#> https ://www.asus.com</span>";
 	code += "</td>";
 	code += "</tr>";
 
@@ -918,16 +918,16 @@ function edit_component_eula() {
 	var code = "";
 	$("#splash_page_container_edit").html(code);
 
-	code += "<div class='edit_component_item_title'>Text Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_eula_label_color_set' id='edit_eula_label_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='C9C9C9' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
 	code += "<div class='captive_portal_adv_line'></div>";
 
-	code += "<div class='edit_component_item_title'>Service Terms <span>(* This will be a dialog)</span></div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Terms_Service#> <span>(* <#Captive_Portal_Terms_Dialog#>)</span></div>";
 	code += "<div class='edit_component_item_content'>";
-	code += "<div class='edit_component_item_title' style='margin-top:5px;'>Terms of service title</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title' style='margin-top:5px;'><#Captive_Portal_Terms_Service#> title</div>";/*untranslated*/
 	code += "<input name='edit_eula_terms_service_title' class='input_30_table auto_add_onblur' value='Welcome to Captive Portal Wi-Fi!' type='text' maxlength='128' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
@@ -938,12 +938,12 @@ function edit_component_eula() {
 	code += "</textarea>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>Text Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_eula_terms_color_set' id='edit_eula_terms_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='E8E8E8' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>This Dialog color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Dialog_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_eula_terms_background_color_set' id='edit_eula_terms_background_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='232E32' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
@@ -1040,12 +1040,12 @@ function edit_component_account() {
 	$("#splash_page_container_edit").html(code);
 
 	code += "<div id='edit_account_accpwd_bg'>";
-	code += "<div class='edit_component_item_title'>Username Hint Text</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Username_Hint#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_account_username_label' class='input_30_table auto_add_onblur' value='Enter Account' type='text' maxlength='32' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>Password Hint Text</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Password_Hint#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_account_password_label' class='input_30_table auto_add_onblur' value='Enter Password' type='text' maxlength='32' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
@@ -1053,12 +1053,12 @@ function edit_component_account() {
 
 	code += "<div class='captive_portal_adv_line'></div>";
 
-	code += "<div class='edit_component_item_title'>Input Text Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Input_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_account_label_color_set' id='edit_account_label_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='000000' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>Input box Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Input_Box_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_account_box_color_set' id='edit_account_box_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='FFFFFF' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
@@ -1155,17 +1155,17 @@ function edit_component_button() {
 	var code = "";
 	$("#splash_page_container_edit").html(code);
 
-	code += "<div class='edit_component_item_title'>Button Label</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Button_Label#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_button_label' class='input_30_table auto_add_onblur' value='Connect' type='text' maxlength='16' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>Button Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Button_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_button_color_set' id='edit_button_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='00b0ff' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>Button Text Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Button_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_button_label_color_set' id='edit_button_label_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='ffffff' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
@@ -1174,12 +1174,12 @@ function edit_component_button() {
 
 	code += "<div class='captive_portal_adv_line'></div>";
 
-	code += "<div class='edit_component_item_title'>Work In Progress Text</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Work_Text#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_button_work_progress' class='input_30_table auto_add_onblur' value='Connecting, please be patient.' type='text' maxlength='128' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'>Denied Text</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Denied_Text#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_button_denied' class='input_30_table auto_add_onblur' value='Error: Invalid credentials. please contact your system administrator' type='text' maxlength='128' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
@@ -1321,7 +1321,7 @@ function edit_update_content_image(_component_id) {
 			}
 		}
 		else {
-			if(!validator.domainName(image_walled_garden)) {
+			if(!validator.domainName_flag(image_walled_garden)) {
 				add_hint_msg($('input[name="edit_image_walled_garden"]'), "" + image_walled_garden + " is invalid Domain Name");/*untranslated*/
 				$("input[name=edit_image_walled_garden]").focus();
 				return;
@@ -1450,11 +1450,11 @@ function edit_component_background() {
 	code += "<div id='edit_background_image_bg' class='edit_background_bg'>";
 	if(isSupportFileReader() && isSupportCanvas()) {
 		code += "<div id='edit_drag_drop_bg' class='edit_drag_drop_bg' onclick='edit_upload_file_trigger(\"background\");'>";
-		code += "<div class='edit_drag_drop_text' >Drag the Image here to use<br>or<br>Click here to select Image</div>";/*untranslated*/
+		code += "<div class='edit_drag_drop_text'><#Captive_Portal_Upload_Image#><br><#Captive_Portal_OR#><br><#Captive_Portal_Click_Image#></div>";
 		code += "</div>";
 		code += "<div class='edit_drag_drop_hint'><#FreeWiFi_ImageSize#>: < 10MB</div>";
 		code += "<div class='edit_drag_drop_hint'><#FreeWiFi_RecommendType#>: jpg, png</div>";
-		code += "<div class='edit_drag_drop_hint'><#FreeWiFi_RecommendResolution#>: 1152 x 864 px or above</div>";
+		code += "<div class='edit_drag_drop_hint'><#FreeWiFi_RecommendResolution#>: 1152 x 864 px <#Captive_Portal_OR#> above</div>";
 	}
 	else {
 		code += "<div id='edit_drag_drop_bg' class='edit_drag_drop_bg'>";
@@ -1529,8 +1529,8 @@ function edit_component_image(_idx) {
 	$("#splash_page_container_edit").html(code);
 
 	code += "<div class='edit_component_item_title'>";
-	code += "<input type='radio' name='edit_image_type' id='edit_image_image' value='image' onclick='showHideImageType();' checked><label for='edit_image_image'>Image</label>";/*untranslated*/
-	code += "<input type='radio' name='edit_image_type' id='edit_image_color' value='color' onclick='showHideImageType();'><label for='edit_image_color'>Color</label>";/*untranslated*/
+	code += "<input type='radio' name='edit_image_type' id='edit_image_image' value='image' onclick='showHideImageType();' checked><label for='edit_image_image'><#Captive_Portal_Image#></label>";
+	code += "<input type='radio' name='edit_image_type' id='edit_image_color' value='color' onclick='showHideImageType();'><label for='edit_image_color'><#Captive_Portal_Color#></label>";
 	code += "</div>";
 
 	code += "<div class='captive_portal_adv_line'></div>";
@@ -1538,7 +1538,7 @@ function edit_component_image(_idx) {
 	code += "<div id='edit_image_bg' class='edit_background_bg'>";
 	if(isSupportFileReader() && isSupportCanvas()) {
 		code += "<div id='edit_drag_drop_bg' class='edit_drag_drop_bg edit_drag_drop_bg_for_image' onclick='edit_upload_file_trigger(\"image_" + _idx + "\");'>";
-		code += "<div class='edit_drag_drop_text edit_drag_drop_text_for_image' >Drag the Image here to use<br>or<br>Click here to select Image</div>";/*untranslated*/
+		code += "<div class='edit_drag_drop_text edit_drag_drop_text_for_image'><#Captive_Portal_Upload_Image#><br><#Captive_Portal_OR#><br><#Captive_Portal_Click_Image#></div>";
 		code += "</div>";
 	}
 	else {
@@ -1555,9 +1555,9 @@ function edit_component_image(_idx) {
 		code += "<div class='edit_component_item_content'><input name='edit_image_color_set' id='edit_image_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='FFFFFF' type='text' maxlength='6' autocorrect='off' autocapitalize='off'></div>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'><a style='cursor:help;color:#D0D6D8' href='javascript:void(0);' onClick='openHint(31, 5);'>Web Address Link</a></div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><a style='cursor:help;color:#D0D6D8' href='javascript:void(0);' onClick='openHint(31, 5);'><#Captive_Portal_Web_Address#></a></div>";
 	code += "<div class='edit_component_item_content'>";
-	code += "<input name='edit_image_walled_garden' class='input_30_table auto_add_onblur' value='' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>";
+	code += "<span class='edit_component_item_title'>http://</span><input name='edit_image_walled_garden' class='input_30_table auto_add_onblur' style='width:284px' value='' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>";
 	code += "<span class='input_item_hint'>ex. www.asus.com</span>";
 
 	code += gen_slider("image");
@@ -1632,7 +1632,7 @@ function edit_update_content_text(_component_id) {
 			}
 		}
 		else {
-			if(!validator.domainName(text_walled_garden)) {
+			if(!validator.domainName_flag(text_walled_garden)) {
 				add_hint_msg($('input[name="edit_text_walled_garden"]'), "" + text_walled_garden + " is invalid Domain Name");/*untranslated*/
 				$("input[name=edit_text_walled_garden]").focus();
 				return;
@@ -1704,7 +1704,7 @@ function edit_component_text(_idx) {
 	$("#splash_page_container_edit").html(code);
 
 	code += "<div class='edit_component_item_title'>";
-	code += "Font Style";/*untranslated*/
+	code += "<#Captive_Portal_Font_Style#>";
 	code += "</div>";
 
 	code += "<div class='edit_component_item_content'>";
@@ -1730,12 +1730,12 @@ function edit_component_text(_idx) {
 	code += "<textarea id='edit_text_content' class='edit_text_content auto_add_onblur' onkeyup='edit_update_content_text(\"" + _idx + "\");' maxlength='1024'></textarea>";
 	code += "</div>";
 
-	code += "<div class='edit_component_item_title'><a style='cursor:help;color:#D0D6D8' href='javascript:void(0);' onClick='openHint(31, 5);'>Web Address Link</a></div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><a style='cursor:help;color:#D0D6D8' href='javascript:void(0);' onClick='openHint(31, 5);'><#Captive_Portal_Web_Address#></a></div>";
 	code += "<div class='edit_component_item_content'>";
-	code += "<input name='edit_text_walled_garden' class='input_30_table auto_add_onblur' value='' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>";
+	code += "<span class='edit_component_item_title'>http://</span><input name='edit_text_walled_garden' class='input_30_table auto_add_onblur' style='width:284px' value='' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>";
 	code += "<span class='input_item_hint'>ex. www.asus.com</span>";
 
-	code += "<div class='edit_component_item_title'>Text Color</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_text_color_set' id='edit_text_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='000000' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
@@ -1794,7 +1794,7 @@ function gen_splash_page_component(_component, _idx) {
 			break;
 		case "image" :
 			code += "<div id='component_image_" + _idx + "' class='component_bg multi_image' style='left:10px;top:10px;position:absolute;height:100px;width:320px;min-width:60px;min-height:60px;z-index:1;' onclick='edit_component_image(" + _idx + ");'>";
-			code += "<div class='component_title'><span>Image</span></div>";/*untranslated*/
+			code += "<div class='component_title'><span><#Captive_Portal_Image#></span></div>";
 			code += "<div class='component_del' onclick='edit_del_component(\"image_" + _idx + "\" , event);' title='Delete this pattern.'></div>";/*untranslated*/
 			code += "</div>";
 			break;
@@ -1944,7 +1944,7 @@ function edit_component_help() {
 	code += "<div class='edit_component_item_title'>Introduce</div>";/*untranslated*/
 	code += "<div class='edit_component_item_title'>The page will be pop up once the client successful access the Wi-Fi network you designated in the previous step. ASUS BERT-AC828 provide you plenty of pre-customized template.</div>";/*untranslated*/
 
-	code += "<div class='edit_component_item_title'>Editor</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Editor#></div>";
 	code += "<div class='edit_component_item_title'>EThe splash editor allows you to build a self-defined HTML web page with easiest way. The editor supports several web components, which includes Image, Text, EULA and Authentication unit. Just have few of clicks and fill the retired content. At the left hand size, the field is the mobile view that allow user directly position the unit of the web page. After the unit be pitched, you can edit the contents at the right hand size editing field.</div>";/*untranslated*/
 
 	code += "<div class='edit_component_item_title'>Notice</div>";/*untranslated*/
@@ -2335,14 +2335,14 @@ function gen_splash_page() {
 
 	//toolbar right
 	code += "<div class='splash_page_toolbar_bg_right' onclick='stop_propagation(event);'>";
-	code += "<div id='toolbar_template' title='Template' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_template' onclick='edit_component_template();'>";
-	code += "<div class='splash_page_toolbar_unit_title'>Template</div>";/*untranslated*/
+	code += "<div id='toolbar_template' title='<#Captive_Portal_Template#>' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_template' onclick='edit_component_template();'>";
+	code += "<div class='splash_page_toolbar_unit_title'><#Captive_Portal_Template#></div>";
 	code += "</div>";
 	code += "<div id='toolbar_background'  title='<#btn_Background#>' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_background' onclick='edit_component_background();'>";
 	code += "<div class='splash_page_toolbar_unit_title'><#btn_Background#></div>";
 	code += "</div>";
-	code += "<div id='toolbar_editor' title='Editor' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_editor' onclick='edit_component_editor();'>";
-	code += "<div class='splash_page_toolbar_unit_title'>Editor</div>";/*untranslated*/
+	code += "<div id='toolbar_editor' title='<#Captive_Portal_Editor#>' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_editor' onclick='edit_component_editor();'>";
+	code += "<div class='splash_page_toolbar_unit_title'><#Captive_Portal_Editor#></div>";
 	code += "</div>";
 	//code += "<div id='toolbar_customized' title='Customized' class='splash_page_toolbar_unit_bg_right splash_page_toolbar_unit_customized' onclick='edit_component_customized();'>";
 	//code += "<div class='splash_page_toolbar_unit_title'>Customized</div>";/*untranslated*/
@@ -2377,11 +2377,11 @@ function gen_account_settings() {
 	code += "<table width='100%' border='1' align='center' cellpadding='4' cellspacing='0' bordercolor='#6b8fa3' class='FormTable' style='margin-top:15px;'>";
 	code += "<thead>";
 	code += "<tr>";
-	code += "<td colspan='2'>Account Server</td>";/*untranslated*/
+	code += "<td colspan='2'><#FreeWiFi_AccountSetting_Server#></td>";
 	code += "</tr>";
 	code += "</thead>";
 	code += "<tr>";
-	code += "<th><#FreeWiFi_AccountSetting_varification#></th>";
+	code += "<th><#FreeWiFi_AccountSetting_Verification#></th>";
 	code += "<td>";
 	code += "<input type='radio' name='cpa_verification' id='cpa_verification_local' value='0' onclick='showHideVerification();' checked><label for='cpa_verification_local'>Local</label>";/*untranslated*/
 	code += "<input type='radio' name='cpa_verification' id='cpa_verification_radius' value='1' onclick='showHideVerification();'><label for='cpa_verification_radius'>RADIUS</label>";/*untranslated*/
@@ -3968,7 +3968,8 @@ function finishRule(flag) {
 			}
 		}
 		captive_portal_adv_local_clientlist = adv_local_clientlist_temp;
-
+		if(captive_portal_adv_local_clientlist == "")
+			captive_portal_adv_local_clientlist = "<" + profile_id + ">";
 	}
 
 	if(gn_overwrite_hint != "")
@@ -3978,13 +3979,13 @@ function finishRule(flag) {
 	document.form.force_change.value++;
 	document.form.action_script.value = "set_captive_portal_adv_wl;restart_wireless;restart_CP;restart_uam_srv";
 
-	if(based_modelid == "BRT-AC828") {
+	//if(based_modelid == "BRT-AC828") {
 		var captive_portal_adv_enable_ori = '<% nvram_get("captive_portal_adv_enable"); %>';
 		if(captive_portal_adv_enable_ori == "off") {
-			cookie.set("captive_portal_gn_idx", get_captive_portal_wl_idx("captivePortal"), 1);
+			cookie.set("captive_portal_gn_idx", get_captive_portal_wl_idx("captivePortal") + ">captivePortal", 1);
 			document.form.next_page.value = "Guest_network.asp";
 		}
-	}
+	//}
 
 	document.form.captive_portal_adv_wl_en.value = rc_service_wl_en;
 	document.form.captive_portal_adv_wl_dis.value = rc_service_wl_dis;
@@ -4584,10 +4585,10 @@ function update_connect_status() {
 function exportConnectEventLog() {
 	var data = [];
 	if(event_log_mode) {
-		data = [["MAC Address", "IP Address", "User Name", "Authentication", "Connection Timeout", "Idle Timeout", "Start Time", "Recevied Bytes", "Transmitted Bytes"]];
+		data = [["<#MAC_Address#>", "<#IPConnection_ExternalIPAddress_itemname#>", "<#Username#>", "<#PPPConnection_Authentication_itemname#>", "<#FreeWiFi_timeout#>", "<#FreeWiFi_Idle#>", "<#Captive_Portal_Start_Time#>", "<#Captive_Portal_Recevied_Bytes#>", "<#Captive_Portal_Transmitted_Bytes#>"]];
 	}
 	else {
-		data = [["MAC Address", "IP Address", "User Name", "Authentication", "Failure Time"]];
+		data = [["<#MAC_Address#>", "<#IPConnection_ExternalIPAddress_itemname#>", "<#Username#>", "<#PPPConnection_Authentication_itemname#>", "Failure Time"]];
 	}
 	var tempArray = new Array();
 	var setArray = function(array) {
@@ -4668,18 +4669,18 @@ function show_event_log() {
 
 	code += "<div id='auth_pass_block' class='auth_block' style='display:none;'>";
 	code += "<table width='100%' align='center' cellpadding='0' cellspacing='0' class='FormTable_table'>";
-	code += "<thead><tr style='height:30px;'><td colspan='10'>This is the history log of active connections.";/*untranslated*/
+	code += "<thead><tr style='height:30px;'><td colspan='10'><#Captive_Portal_Connected_Clients#>";
 	code += "</td></tr></thead>";
 	code += "<tr id='tr_auth_pass' style='cursor:pointer;height:40px;'>";
 	code += "<th id='th_macAddress_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");' style='cursor:pointer;'><#PPPConnection_x_MacAddressForISP_itemname#></th>";
 	code += "<th id='th_ipAddress_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#IPConnection_ExternalIPAddress_itemname#></th>";
-	code += "<th id='th_userName_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'>User Name</th>";/*untranslated*/
+	code += "<th id='th_userName_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#Username#></th>";
 	code += "<th id='th_auth_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#PPPConnection_Authentication_itemname#></th>";
 	code += "<th id='th_session_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#FreeWiFi_timeout#></th>";
 	code += "<th id='th_awayTimeout_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#FreeWiFi_Idle#></th>";
-	code += "<th id='th_startTime_pass' width='20%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'>Start Time</th>";/*untranslated*/
-	code += "<th id='th_receviedBytes_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'>Recevied Bytes</th>";/*untranslated*/
-	code += "<th id='th_transmittedBytes_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'>Transmitted Bytes</th>";/*untranslated*/
+	code += "<th id='th_startTime_pass' width='20%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#Captive_Portal_Start_Time#></th>";
+	code += "<th id='th_receviedBytes_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#Captive_Portal_Recevied_Bytes#></th>";
+	code += "<th id='th_transmittedBytes_pass' width='10%' onclick='connect_status_sorter.addBorder(\"pass\", this);connect_status_sorter.doSorter(\"pass\");'><#Captive_Portal_Transmitted_Bytes#></th>";
 	code += "</tr>";
 	code += "</table>";
 	code += "<div id='connect_client_auth_pass_block'></div>";
@@ -4688,12 +4689,12 @@ function show_event_log() {
 	code += "<div id='auth_failed_block' class='auth_block' style='display:none;'>";
 
 	code += "<table width='100%' border='1' align='center' cellpadding='0' cellspacing='0' class='FormTable_table' style='margin-top:0px;'>";
-	code += "<thead><tr style='height:30px;'><td colspan='5'>This is the history log of active connections.";/*untranslated*/
+	code += "<thead><tr style='height:30px;'><td colspan='5'><#Captive_Portal_Connected_Clients#>";
 	code += "</td></tr></thead>";
 	code += "<tr id='tr_auth_failed' style='cursor:pointer;height:40px;'>";
 	code += "<th id='th_macAddress_failed' width='20%' onclick='connect_status_sorter.addBorder(\"failed\", this);connect_status_sorter.doSorter(\"failed\");'><#PPPConnection_x_MacAddressForISP_itemname#></th>";
 	code += "<th id='th_ipAddress_failed' width='20%' onclick='connect_status_sorter.addBorder(\"failed\", this);connect_status_sorter.doSorter(\"failed\");'><#IPConnection_ExternalIPAddress_itemname#></th>";
-	code += "<th id='th_userName_failed' width='20%' onclick='connect_status_sorter.addBorder(\"failed\", this);connect_status_sorter.doSorter(\"failed\");'>User Name</th>";/*untranslated*/
+	code += "<th id='th_userName_failed' width='20%' onclick='connect_status_sorter.addBorder(\"failed\", this);connect_status_sorter.doSorter(\"failed\");'><#Username#></th>";
 	code += "<th id='th_auth_failed' width='20%' onclick='connect_status_sorter.addBorder(\"failed\", this);connect_status_sorter.doSorter(\"failed\");'><#PPPConnection_Authentication_itemname#></th>";
 	code += "<th id='th_startTime_failed' width='20%' onclick='connect_status_sorter.addBorder(\"failed\", this);connect_status_sorter.doSorter(\"failed\");'>Failure Time</th>";/*untranslated*/
 	code += "</tr>";
@@ -4788,7 +4789,7 @@ function register_slider(_component_type) {
 }
 function gen_slider(_component_type) {
 	var code = "";
-	code += "<div class='edit_component_item_title'>Opacity</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'><#Captive_Portal_Opacity#></div>";
 	code += "<div id='edit_" + _component_type + "_opacity' class='slider' title='100'></div>";
 	code += "<div id='edit_" + _component_type + "_opacity_text' class='slider_text'>100%</div>";
 	code += "<div style='clear:both;'></div>";
@@ -4814,7 +4815,7 @@ function edit_sort_level(_component_id, _method) {
 }
 function gen_sort_level(_component_id) {
 	var code = "";
-	code += "<div class='edit_component_item_title' style='margin-bottom:8px;'>Layer: <span id='edit_component_level' class='edit_component_level'>" + $("#"+ _component_id + "").css("z-index") + "</span></div>";/*untranslated*/
+	code += "<div class='edit_component_item_title' style='margin-bottom:8px;'><#Captive_Portal_Layer#>: <span id='edit_component_level' class='edit_component_level'>" + $("#"+ _component_id + "").css("z-index") + "</span></div>";/*untranslated*/
 	code += "<div class='edit_level edit_level_up' title='increase' onclick='edit_sort_level(\"" + _component_id + "\", \"increase\");'></div>";
 	code += "<div class='edit_level edit_level_down' title='decrease' onclick='edit_sort_level(\"" + _component_id + "\", \"decrease\");'></div>";
 	code += "<div style='clear:both;'></div>";
@@ -5027,7 +5028,7 @@ function remove_hint_msg() {
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(31, 1);"><#Captive_Portal_timeout#></a></th>
 											<td>
 												<input type="text" maxlength="3" class="input_6_table" id="captive_portal_adv_idle_timeout" name="captive_portal_adv_idle_timeout" value="<% nvram_get("captive_portal_adv_idle_timeout"); %>" onkeypress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off">
-												<span style="color:#FFCC00;">(Range: 60 - 800, <#Setting_factorydefault_value#>: 300 <#Second#>)</span>
+												<span style="color:#FFCC00;">(<#Captive_Portal_Range#>: 60 - 800, <#Setting_factorydefault_value#>: 300 <#Second#>)</span>
 											</td>
 										</tr>
 										<tr id="tr_event_log">
@@ -5047,7 +5048,7 @@ function remove_hint_msg() {
 										<table width="100%" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
 											<thead>
 											<tr>
-												<td id="td_profile_table_title" colspan="5">Captive Profile &nbsp;(<#List_limit#>&nbsp;1)<!--untranslated--></td>
+												<td id="td_profile_table_title" colspan="5"><#Captive_Portal_Profile#> &nbsp;(<#List_limit#>&nbsp;1)</td>
 											</tr>
 											</thead>
 											<tr>

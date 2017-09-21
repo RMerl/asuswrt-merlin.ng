@@ -1,4 +1,7 @@
 #include <pjnath/natnl_tnl_cache.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 
 // global natnl_tnl_cache list

@@ -35,6 +35,9 @@
 #include <pj/rand.h>
 #include <pj/sock_select.h>
 #include <pj/string.h>	    /* memcpy() */
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 
 #define THIS_FILE			"stream.c"
@@ -1568,7 +1571,7 @@ static void on_rx_rtp(void *data,
 
     if (rb == NULL) {
 #if 1
-        rb = PJ_POOL_ZALLOC_T(call->tnl_stream->own_pool, recv_buff);
+        rb = PJ_POOL_ZALLOC_T(call->tnl_stream->pool, recv_buff);
 #else
 		rb = malloc(sizeof(recv_buff));
 #endif

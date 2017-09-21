@@ -238,7 +238,7 @@ function detect_httpd(){
 												<th align="right">
 													<a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,2)"><#Setting_save_itemname#></a>
 												</th>
-												<td><input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#CTL_onlysave#>" name="action2" /><span id="transfer_ddns_field" style="display:none"><input id="transfer_ddns" type="checkbox">Transfer ASUS DDNS name</span>
+												<td><input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#CTL_onlysave#>" name="action2" /><span id="transfer_ddns_field" style="display:none"><input id="transfer_ddns" type="checkbox"><#DDNS_transfer#></span>
 												</td>
 											</tr>
 											<tr>

@@ -2,7 +2,7 @@ Package: ftpclient
 Architecture: i686
 Priority: optional
 Section: net
-Version: 1.0.0.3.0.g9de3a23
+Version: 1.0.0.4.0.gc2102d5
 Maintainer: ASUS
 Source: http://127.0.0.1/
 URL: http://www.asusnetwork.net/cloud_sync.asp

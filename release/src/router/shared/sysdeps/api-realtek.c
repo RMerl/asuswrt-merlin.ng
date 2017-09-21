@@ -2369,4 +2369,30 @@ char *get_2g_hwaddr(void)
         return get_wan_hwaddr();
 }
 
+char *get_label_mac()
+{
+	return get_2g_hwaddr();
+}
+
+int get_channel_list_via_country(int unit, const char *country_code, char *buffer, int len)
+{
+	//TODO
+	return -1;
+}
+
+int get_channel_list_via_driver(int unit, char *buffer, int len)
+{
+	//TODO
+	return -1;
+}
+
+char *get_wififname(int band)
+{
+	const char *wif[] = { WIF_2G, WIF_5G };
+	if (band < 0 || band >= ARRAY_SIZE(wif)) {
+		rtk_printf("%s: Invalid wl%d band!\n", __func__, band);
+		band = 0;
+	}
+	return (char*) wif[band];
+}
 

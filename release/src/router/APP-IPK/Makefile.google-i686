@@ -8,7 +8,7 @@ CROSS_COMPILE := i686-cm-linux-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure --host=i686-cm-linux --build=$(BUILD)
 export TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/.. && pwd)
-export IPKG_TOOLS := /home/alan/arm/optware/mbwe-bluering/toolchain/ipkg-utils-1.7
+export IPKG_TOOLS := ~/toolchain/ipkg-utils-1.7
 #export LD_DIR := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../../../../staging && pwd)
 
 export CC := $(CROSS_COMPILE)gcc
@@ -69,7 +69,7 @@ libxml2/stamp-h1:
 		touch stamp-h1;	
 
 libxml2: libxml2/stamp-h1
-	cd $(CURRENT)/libxml2 && \
+	cd $(CURRENT)/libxml2 && autoreconf -i -f && \
 	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) CPPFLAGS="-O2   -pipe  -I$(SRCBASE)/opt/include " LDFLAGS=" -L$(SRCBASE)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib " \
 	./configure --build=i386-pc-linux-gnu --host=i686-cm-linux --target=i686-cm-linux --prefix=$(SRCBASE)/opt --without-python --disable-dependency-tracking --without-zlib
 	@$(MAKE) -C $(CURRENT)/libxml2 all

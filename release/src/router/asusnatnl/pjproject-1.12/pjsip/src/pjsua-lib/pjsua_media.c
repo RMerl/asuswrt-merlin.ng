@@ -22,6 +22,9 @@
 #include <pjmedia/transport_sctp.h>
 #include <pjsua-lib/pjsua.h>
 #include <pjsua-lib/pjsua_internal.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 
 #define THIS_FILE		"pjsua_media.c"
@@ -1821,7 +1824,6 @@ pj_status_t pjsua_media_channel_init(pjsua_inst_id inst_id,
 #endif
 		/* Always create DTLS transport */
 		pjmedia_dtls_setting_default(&dtls_opt);
-		dtls_opt.close_member_tp = PJ_FALSE;
 		if (use_custom_med_tp)
 			custom_med_tp_flags |= PJSUA_MED_TP_CLOSE_MEMBER;
 		/* If media session has been ever established, let's use remote's 
@@ -2568,7 +2570,7 @@ static pj_status_t audio_channel_update(pjsua_inst_id inst_id,
 
 	// 2013-10-20 DEAN, we must create natnl stream before creating media session.
 	// Because media session must know the pointer value of natnl stream.
-	status = pjmedia_natnl_stream_create(pjsua_var[inst_id].pool, call, si, &call->tnl_stream);
+	status = pjmedia_natnl_stream_create( pjsua_var[inst_id].med_endpt, call, si, &call->tnl_stream);
 	if (status != PJ_SUCCESS)
 		return status;
     

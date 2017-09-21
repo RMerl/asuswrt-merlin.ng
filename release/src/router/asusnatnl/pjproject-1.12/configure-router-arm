@@ -36,6 +36,7 @@ if [ "$ALPINE" = "y" ]; then
 fi
 
 GDB_CFLAGS=-g
+export CONFIGURE_FLAGS="--disable-sctp --disable-umem"
 export LIBS="$LIBS $OPENSSL_LDLIBS $UMEM_LDLIBS $SHARED_LIBS $NVRAM_LIBS -lstdc++"
 export CFLAGS="$OPENSSL_CFLAGS $UMEM_CFLAGS $GDB_CFLAGS -O2 -fPIC -DROUTER=1 "
 export LDFLAGS="$OPENSSL_LDFLAGS $UMEM_LDFLAGS $SHARED_LDFLAGS $NVRAM_LDFLAGS $EXTRA_LDFLAGS"
@@ -45,4 +46,4 @@ mkdir -p pjsip/lib
 mkdir -p pjsip-apps/lib
 mkdir -p pjmedia/lib
 mkdir -p pjnath/lib
-./configure --prefix=$CUR_DIR/_inst --host=arm-linux --target=arm-linux
+./configure $CONFIGURE_FLAGS --prefix=$CUR_DIR/_inst --host=arm-linux --target=arm-linux

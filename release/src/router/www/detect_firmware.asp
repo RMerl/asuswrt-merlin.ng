@@ -9,4 +9,7 @@ sig_state_update = '<% nvram_get("sig_state_update"); %>';
 sig_state_upgrade = '<% nvram_get("sig_state_upgrade"); %>';
 sig_state_error = '<% nvram_get("sig_state_error"); %>';
 sig_ver = '<% nvram_get("bwdpi_sig_ver"); %>';
-cfg_check = '<% nvram_get("cfg_check"); %>';
+if(cfg_sync_support){
+	cfg_check = '<% nvram_get("cfg_check"); %>';
+	cfg_upgrade = '<% nvram_get("cfg_upgrade"); %>';
+}

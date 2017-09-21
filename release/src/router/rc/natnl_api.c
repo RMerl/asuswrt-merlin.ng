@@ -3,6 +3,9 @@
 #ifdef RTCONFIG_TUNNEL
 void start_aae()
 {
+	if(nvram_get_int("aae_disable_force"))
+		return;
+
 	if( getpid()!=1 ) {
 		notify_rc("start_aae");
 		return;
@@ -37,6 +40,9 @@ void start_mastiff()
 	if (IS_ATE_FACTORY_MODE())
 #endif
 	return;
+
+	if(nvram_get_int("aae_disable_force"))
+		return;
 
 	stop_aae();
 	

@@ -28,8 +28,10 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "tdts/tmcfg.h"
 #include "udb/tmcfg_udb.h"
 
 #include "udb/ioctl/udb_ioctl_common.h"
@@ -64,8 +66,8 @@
 	(uint8_t) o[12], (uint8_t) o[13], (uint8_t) o[14], (uint8_t) o[15]
 
 #define DBG(fmt, args...)
-//#define DBG(fmt, args...) 	fprintf(stderr, "[%s(%d)]: " fmt, __func__, __LINE__, ##args);
-#define ERR(fmt, args...) 	fprintf(stderr, "[%s(%d)]: " fmt, __func__, __LINE__, ##args);
+//#define DBG(fmt, args...) 	fprintf(stderr, fmt, ##args);
+#define ERR(fmt, args...) 	fprintf(stderr, "Error: " fmt, ##args);
 
 #define PRT_DEVID(_name, _val) \
 do { \
@@ -83,18 +85,28 @@ struct delegate
 {
 	int action;
 	char *name;
-	char *desc;	// reserved
+	void (*show_help)(char *base);
+	int (*parse_arg)(int, char **);
 	action_cb_t cb;
 };
 
 #define CMD_OPTIONS_MAX 16
 #define CMD_OPTS_STR_MAX 32
 
+#define OPTS_IDX_INC(__i) \
+do { \
+	if ((__i) >= CMD_OPTIONS_MAX) \
+	{ \
+		ERR("exceed max command options\n"); \
+		return -1; \
+	} \
+	(__i)++; \
+} while (0)
+
 struct cmd_option
 {
 	struct delegate opts[CMD_OPTIONS_MAX];
 	char *help;
-	int (*parse_arg)(int, char **, int);
 };
 
 #define ERR_UNKNOWN_ARGS(_i, _c, _v) \
@@ -185,8 +197,6 @@ typedef struct qos_app_stat
 	qos_tc_cls_t *tc_ul_cls;
 } qos_app_stat_t;
 
-#define ENV_SHN_HOME_DIR "SHN_HOME_DIR"
-
 int init_app_inf(struct list_head *head);
 void free_app_inf(struct list_head *head);
 char* search_app_inf(struct list_head *head, unsigned cat_id, unsigned app_id);
@@ -202,6 +212,4 @@ dev_os_t* search_dev_os(struct list_head *head
 	, unsigned vendor_id, unsigned os_id, unsigned class_id
 	, unsigned type_id, unsigned dev_id
 	, unsigned family_id);
-
-char *shn_path(const char *path);
 #endif /* __CONF_APP_H__ */

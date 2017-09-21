@@ -99,6 +99,11 @@ function setScenerion(mode){
 		parent.localAP_support = false;		
 		$("#Senario").attr("src", "/images/New_ui/mb.jpg");
 		$("#Senario").attr("style", "height:170px");
+
+		if(!band5g_11ac_support || no_vht_support){			
+			pstaDesc = replaceAll(pstaDesc, " 802\.11ac","");
+			pstaDesc = replaceAll(pstaDesc, " 802\.11AC","");
+		}
 		$("#mode_desc").html(pstaDesc);
 		document.form.sw_mode_radio[3].focus();
 		document.form.sw_mode_radio[3].checked = true;

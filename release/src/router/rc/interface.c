@@ -184,6 +184,21 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	struct ifreq ifr;
 	struct in_addr in_addr, in_netmask, in_broadaddr;
 
+#ifdef RTCONFIG_LANTIQ
+	if(strcmp(name, "wlan0") == 0 ||
+		strcmp(name, "wlan2") == 0){
+		_dprintf("[%s][%d]skip name:[%s]\n", __func__, __LINE__, name);
+		return -1;
+	}
+	if(strcmp(name, "eth0_1") == 0 ||
+		strcmp(name, "eth0_2") == 0 ||
+		strcmp(name, "eth0_3") == 0 ||
+		strcmp(name, "eth0_4") == 0){
+		set_hwaddr(name, get_lan_hwaddr());
+		if(flags == 0) return -1;
+	}
+#endif
+
 	_dprintf("%s: name=%s flags=%04x %s addr=%s netmask=%s\n", __FUNCTION__, name ? : "", 
 		flags, (flags & IFUP) ? "IFUP" : "", addr ? : "", netmask ? : "");
 
@@ -436,7 +451,7 @@ int ipv6_mapaddr4(struct in6_addr *addr6, int ip6len, struct in_addr *addr4, int
 /* configure/start vlan interface(s) based on nvram settings */
 int start_vlan(void)
 {
-#ifndef HND_ROUTER
+#if !defined(HND_ROUTER) && !defined(BLUECAVE)
 	int s;
 	struct ifreq ifr;
 	int i, j;
@@ -444,11 +459,12 @@ int start_vlan(void)
 
 	if ((strtoul(nvram_safe_get("boardflags"), NULL, 0) & BFL_ENETVLAN) == 0) return 0;
 #endif
-	
+#if !defined(BLUECAVE)
 	/* set vlan i/f name to style "vlan<ID>" */
 	eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
+#endif
 
-#ifndef HND_ROUTER
+#if !defined(HND_ROUTER) && !defined(BLUECAVE)
 	/* create vlan interfaces */
 	if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0)
 		return errno;
@@ -563,9 +579,15 @@ int start_vlan(void)
 #endif
 #endif
 
-#ifdef HND_ROUTER
+#if defined(HND_ROUTER)
 	if(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")&&!nvram_match("switch_wantag", "hinet")) {
 		char *wan_base_if = "eth0";
+		ifconfig(wan_base_if, IFUP, NULL, NULL);
+		set_wan_tag(wan_base_if);
+	}
+#elif defined(BLUECAVE)
+	if(!nvram_match("switch_wantag", "")) {
+		char *wan_base_if = "eth1";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);
 	}
@@ -576,7 +598,7 @@ int start_vlan(void)
 /* stop/rem vlan interface(s) based on nvram settings */
 int stop_vlan(void)
 {
-#ifndef HND_ROUTER
+#if !defined(HND_ROUTER) && !defined(BLUECAVE)
 	int i;
 	char nvvar_name[16];
 	char vlan_id[16];

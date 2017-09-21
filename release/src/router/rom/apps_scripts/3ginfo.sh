@@ -78,6 +78,8 @@ for modem_unit in 0 1; do
 	echo "${prefix}act_pid=$str"
 	str=`nvram get ${prefix}act_sim`
 	echo "${prefix}act_sim=$str"
+	str=`nvram get ${prefix}act_simdetect`
+	echo "${prefix}act_simdetect=$str"
 	str=`nvram get ${prefix}act_signal`
 	echo "${prefix}act_signal=$str"
 	str=`nvram get ${prefix}act_band`

@@ -200,16 +200,57 @@ int update_failover_led(void)
 static inline int update_failover_led(void);
 #endif
 
+void set_link_internet(int wan_unit, int link_internet){
+	nvram_set_int("link_internet", link_internet);
+#if defined(RTCONFIG_LANWAN_LED)
+	update_wan_leds(wan_unit);
+#endif
+}
+
 #if defined(RTCONFIG_LANWAN_LED)
 int update_wan_leds(int wan_unit)
 {
+	int link_internet = nvram_get_int("link_internet");
+
 #if defined(RTCONFIG_WANRED_LED)
 #ifdef RTCONFIG_WPS_ALLLED_BTN
 	if (nvram_match("AllLED", "1"))
 #endif
 		if (nvram_get_int("led_disable"))
 			update_wan_led_and_wanred_led(wan_unit);
+
 #else	/* !RTCONFIG_WANRED_LED */
+
+#ifdef RT4GAC68U
+	int other_wan = 0;
+	char *wans_mode = nvram_safe_get("wans_mode");
+
+	if(strcmp(wans_mode, "lb") && wan_unit != wan_primary_ifunit())
+		return 0;
+
+	// let WAN's LED be on always during the load-balance mode.
+	if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_USB || get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_LAN
+#ifdef RTCONFIG_DUALWAN
+			|| !strcmp(wans_mode, "lb")
+#endif
+			)
+		other_wan = 1;
+
+	if(link_internet == 2){
+		if(other_wan){
+			eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x1");
+			eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x0");
+		}
+		else{
+			eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x1");
+			eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x1");
+		}
+	}
+	else{
+		eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x0");
+		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x0");
+	}
+#else
 	/* Turn on/off WAN LED in accordance with link status of WAN port */
 	if (link_wan[wan_unit]
 			&& !nvram_get_int("led_disable")
@@ -219,9 +260,11 @@ int update_wan_leds(int wan_unit)
 	) {
 		led_control(LED_WAN, LED_ON);
 	} else {
-		if(nvram_get_int("link_internet") != 2)
+		if(link_internet != 2)
 			led_control(LED_WAN, LED_OFF);
 	}
+#endif
+
 #endif	/* RTCONFIG_WANRED_LED */
 
 	update_failover_led();
@@ -290,6 +333,11 @@ void get_related_nvram(){
 
 	boot_end = nvram_get_int("success_start_service");
 
+#if defined(RTAC58U)
+	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+		isFirstUse = 0;
+	else
+#endif
 	if(nvram_match("x_Setting", "1"))
 		isFirstUse = 0;
 	else
@@ -905,15 +953,15 @@ int detect_internet(int wan_unit)
 	/* Set no DNS state even if connected for WEB UI */
 	if(link_internet == DISCONN || !dns_ret){
 		if(nvram_get_int("web_redirect") & WEBREDIRECT_FLAG_NOINTERNET)
-			nvram_set_int("link_internet", 1);
+			set_link_internet(wan_unit, 1);
 		else{
-			nvram_set_int("link_internet", 2);
+			set_link_internet(wan_unit, 2);
 			link_internet = CONNED;
 		}
 		record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NO_INTERNET_ACTIVITY);
 	}
 	else{
-		nvram_set_int("link_internet", 2);
+		set_link_internet(wan_unit, 2);
 		record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
 	}
 
@@ -1510,7 +1558,7 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 		else
 			usb_if[0] = '\0';
 
-		if(strlen(usb_if) > 0 && !got_modem_info){
+		if(strlen(usb_if) > 0){
 			if(strlen(nvram_safe_get(strcat_r(prefix2, "act_imei", tmp2))) <= 0)
 				eval("/usr/sbin/modem_status.sh", "imei");
 			if(got_modem_info < 3
@@ -1638,8 +1686,6 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 if(test_log)
 _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state=%d.\n", wan_unit, !isFirstUse, link_wan[wan_unit], sim_state);
 
-		update_wan_leds(wan_unit);
-
 		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
 			nvram_set_int(wired_link_nvram, link_wan[wan_unit]);
@@ -1684,18 +1730,6 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 
 		// check wan port.
 		link_wan[wan_unit] = get_wanports_status(wan_unit);
-
-		if (get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_WAN
-#if defined(RTCONFIG_WANPORT2)
-		    || get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_WAN2
-#endif
-#if defined(RTCONFIG_WANRED_LED)
-		    || get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_LAN
-#endif
-		   )
-		{
-			update_wan_leds(wan_unit);
-		}
 
 		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
@@ -1824,7 +1858,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			if(strcmp(dualwan_mode, "lb"))
 #endif
 			{
-				nvram_set_int("link_internet", 1);
+				set_link_internet(wan_unit, 1);
 				link_internet = 1;
 			}
 
@@ -1862,7 +1896,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		}
 #else
 		if(link_internet != 2){
-			nvram_set_int("link_internet", 2);
+			set_link_internet(wan_unit, 2);
 			link_internet = 2;
 		}
 
@@ -1881,7 +1915,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 	else{ // sw_mode == SW_MODE_REPEATER, SW_MODE_HOTSPOT.
 		if(!link_ap){
 			if(link_internet != 1){
-				nvram_set_int("link_internet", 1);
+				set_link_internet(wan_unit, 1);
 				link_internet = 1;
 			}
 
@@ -1900,7 +1934,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		{
 			if(nvram_match("lan_proto", "dhcp") && nvram_get_int("lan_state_t") != LAN_STATE_CONNECTED){
 				if(link_internet != 1){
-					nvram_set_int("link_internet", 1);
+					set_link_internet(wan_unit, 1);
 					link_internet = 1;
 				}
 
@@ -1908,7 +1942,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			}
 			else{
 				if(link_internet != 2){
-					nvram_set_int("link_internet", 2);
+					set_link_internet(wan_unit, 2);
 					link_internet = 2;
 				}
 
@@ -1967,10 +2001,10 @@ int if_wan_connected(int wan_unit){
 	int link_internet;
 
 	if(chk_proto(wan_unit) != CONNED) {
-#if defined(MAPAC2200) || defined(MAPAC1300) || defined(VRZAC1300)
+#if defined(MAPAC2200) || defined(MAPAC1300) || defined(VRZAC1300) || defined(MAPAC1800)
 		if ((nvram_get_int("link_internet") == 2) && (nvram_match("x_Setting", "1"))) {
 			logmessage("WAN Connection", "WAN stopped...");
-			nvram_set_int("link_internet", 1);
+			set_link_internet(wan_unit, 1);
 		}
 #endif
 		return DISCONN;
@@ -3681,10 +3715,6 @@ _dprintf("wanduck(%d) fail-back: state %d, state_old %d, changed %d, wan_state %
 			current_state[current_wan_unit] = nvram_get_int(nvram_state[current_wan_unit]);
 
 			if(current_state[current_wan_unit] == WAN_STATE_DISABLED){
-				//record_wan_state_nvram(current_wan_unit, WAN_STATE_STOPPED, WAN_STOPPED_REASON_MANUAL, -1);
-				// mark here, because had executed update_wan_leds() at if_wan_phyconnected().
-				//update_wan_leds(current_wan_unit);
-
 				disconn_case[current_wan_unit] = CASE_OTHERS;
 				conn_state[current_wan_unit] = DISCONN;
 				set_disconn_count(current_wan_unit, S_IDLE);
@@ -3700,13 +3730,6 @@ _dprintf("wanduck(%d): detect the modem to be reset...\n", current_wan_unit);
 			}
 #endif
 			else{
-// mark here, because had executed update_wan_leds() at if_wan_phyconnected().
-//#if defined(RTAC58U)
-//				update_wan_leds(current_wan_unit);
-// mark here, because had executed if_wan_phyconnected() before.
-//#elif !defined(RTN14U) && !defined(RTAC1200GP) && !defined(RTAC1200) && !defined(RTAC82U) && !defined(MAPAC1300) && !defined(MAPAC2200) && !defined(VRZAC1300)
-//				conn_state[current_wan_unit] = if_wan_phyconnected(current_wan_unit);
-//#endif
 				if(conn_state[current_wan_unit] == CONNED){
 #ifdef RTCONFIG_USB_MODEM
 					if(!(dualwan_unit__usbif(current_wan_unit) && current_state[current_wan_unit] == WAN_STATE_INITIALIZING))

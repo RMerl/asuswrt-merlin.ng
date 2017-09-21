@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Fri Dec 30 15:05:52 2016
+ * Date: Wed May  3 14:25:59 2017
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GT_AC5300_GPL_382_7224_fc/release/src-rt-5.02hnd/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswgt_AC5300_GPL_382_8165_fc/release/src-rt-5.02hnd/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm64"
 #define TMCFG_CPU_32BITS 0 // n
 #define TMCFG_CPU_64BITS 1 // y
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/aarch64-linux-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/aarch64-linux-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -98,6 +98,7 @@
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
+#define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190
 
 /*
  * ******
@@ -105,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "_r2974221"
+#define TMCFG_E_LOCAL_VER "r3273244"
 
 /*
  * Engine core
@@ -141,6 +142,13 @@
 #define TMCFG_E_CORE_TCP_CHECKSUM 0 // n
 #define TMCFG_E_CORE_RULE_FORMAT_NK 0 // n
 #define TMCFG_E_CORE_RULE_FORMAT_FM 1 // y
+
+/*
+ * Rule Limits
+ */
+#define TMCFG_E_CORE_CONFIG_POLICY_NUM 12000
+#define TMCFG_E_CORE_CONFIG_CONTENT_NUM 26100
+#define TMCFG_E_CORE_CONFIG_TOTAL_CONTENT_LENGTH 290000
 #define TMCFG_E_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_CORE_RULE_BINDING 1 // y
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_CHIPSET_PROVIDER 0 // n
@@ -156,13 +164,14 @@
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_TPLINK 0 // n
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_BUFFALO 0 // n
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_BELKIN 0 // n
+#define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_LENOVO 0 // n
 #define TMCFG_E_CORE_IP6 1 // y
 #define TMCFG_E_CORE_TCP_STREAM_REASM 0 // n
 #define TMCFG_E_CORE_FINE_GRAIN_TCP_LOCK 0 // n
 #define TMCFG_E_CORE_CONFIG_TCP_CHAIN_LAYOUT 3
 #define TMCFG_E_CORE_CONFIG_TCP_CONN_NUM 8
 #define TMCFG_E_CORE_CONFIG_TCP_HASH_SIZE 1
-#define TMCFG_E_CORE_CONFIG_TCP_REASM_FLOW_NUM 1
+#define TMCFG_E_CORE_CONFIG_TCP_TURBO_MODE 0 // n
 #define TMCFG_E_CORE_UDP_FLOW_TRACKING 1 // y
 #define TMCFG_E_CORE_CONFIG_UDP_FLOW_NUM 4
 #define TMCFG_E_CORE_CONFIG_UDP_HASH_SIZE 1
@@ -222,6 +231,7 @@
  */
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
+#define TMCFG_APP_K_TDTS_NFFW_INTERNAL 0 // n
 #define TMCFG_APP_K_TEMPLATE 0 // n
 
 /*
@@ -231,7 +241,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/toolchains/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/arm-buildroot-linux-gnueabi-"
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/arm-buildroot-linux-gnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

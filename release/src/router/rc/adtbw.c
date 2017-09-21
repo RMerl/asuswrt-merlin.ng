@@ -98,6 +98,9 @@ int adtbw_main(int argc, char *argv[])
 	FILE *fp;
 	sigset_t sigs_to_catch;
 
+	if (!adtbw_enable())
+		return 0;
+
 	if ((fp = fopen("/var/run/adtbw.pid", "w")) != NULL)
 	{
 		fprintf(fp, "%d", getpid());
@@ -115,8 +118,7 @@ int adtbw_main(int argc, char *argv[])
 	signal(SIGALRM, adtbw_monitor);
 	signal(SIGTERM, adtbw_exit);
 
-	if(adtbw_enable())
-		alarmtimer(ADTBW_TIMER, 0);
+	alarmtimer(ADTBW_TIMER, 0);
 
 	while (1)
 	{

@@ -32,6 +32,9 @@
 
 #include <dngl_stats.h>
 #include <dhd.h>
+
+#define DHD_BLOG_SKIP(skb, reason) blog_skip((skb));
+
 struct dhd_pub;
 
 #if defined(BCM_WFD)

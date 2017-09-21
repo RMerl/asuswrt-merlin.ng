@@ -57,12 +57,12 @@ typedef struct list {
 
 #define LIST_LEN(l) ((l)->num_objs)
 
-list_t *list_create(int inst_id, 
+list_t *list_create(int inst_id, int call_id, 
 					int obj_sz,
                     int (*obj_cmp)(const void *, const void *, size_t),
                     void* (*obj_copy)(void *, const void *, size_t),
 					void (*obj_free)(void **), int sort);
-list_t *list_create2(int inst_id, 
+list_t *list_create2(int inst_id, int call_id, 
 					 int obj_sz,
 					int (*obj_cmp)(const void *, const void *, size_t),
 					void* (*obj_copy)(void *, const void *, size_t),
@@ -72,7 +72,7 @@ void *list_add2(list_t *list, void *obj, int copy, int check_exists);
 void *list_get(list_t *list, void *obj);
 void *list_get_at(list_t *list, int i);
 int list_get_index(list_t *list, void *obj);
-list_t *list_copy(int inst_id, list_t *src);
+list_t *list_copy(int inst_id, int call_id, list_t *src);
 void list_action(list_t *list, void (*action)(void *));
 void list_delete(list_t *list, void *obj);
 void list_delete_at(list_t *list, int i);

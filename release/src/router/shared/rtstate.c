@@ -262,13 +262,17 @@ int get_wan_unit(char *ifname)
 				
 		}
 		else if(nvram_match(strcat_r(prefix, "ifname", tmp), ifname)) {
-			
+
 			if (model == MODEL_RTN65U && !nvram_match(strcat_r(prefix, "proto", tmp), "l2tp") && !nvram_match(strcat_r(prefix, "proto", tmp), "pptp"))
 					return unit;
 			
 			if (!nvram_match(strcat_r(prefix, "proto", tmp), "pppoe") && !nvram_match(strcat_r(prefix, "proto", tmp), "l2tp") && !nvram_match(strcat_r(prefix, "proto", tmp), "pptp") && nvram_match(strcat_r(prefix, "gw_ifname", tmp), ifname))
 					return unit;						
-		}   
+		}
+		else if (model == MODEL_BLUECAVE){
+			if (nvram_get_int("switch_stb_x") > 0 && !strcmp(ifname, "eth1"))
+				return unit;
+		}
 	}
 
 	return -1;
@@ -735,6 +739,8 @@ int get_wans_dualwan(void)
 	{
 #ifdef RTCONFIG_DSL
 		caps =  WANSCAP_DSL;
+#elif defined(RTCONFIG_INTERNAL_GOBI) && defined(RTCONFIG_NO_WANPORT)
+		caps = WANSCAP_USB;
 #else
 		caps = WANSCAP_WAN;
 #endif
@@ -1051,10 +1057,15 @@ char ssid2[64] = { 0 };
  */
 char *get_default_ssid(int unit, int subunit)
 {
+	int rev3 = 0;
 	const int band_num = num_of_wl_if();
 	char ssidbase[16], *macp = NULL;
 	unsigned char mac_binary[6];
 	const char *post_5g = "-1", *post_5g2 = "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
+
+#ifdef RTCONFIG_NEWSSID_REV2
+	rev3 = 1;
+#endif
 
 	if (unit < 0 || unit >= WL_NR_BANDS || subunit < 0) {
 		dbg("%s: invalid parameter. (unit %d, subunit %d)\n",
@@ -1075,16 +1086,8 @@ char *get_default_ssid(int unit, int subunit)
 
 
 	memset(ssid, 0x0, sizeof(ssid));
-#if defined(RTCONFIG_NEWSSID_REV2)
-	macp = get_2g_hwaddr();
-	ether_atoe(macp, mac_binary);
-#if defined(RTAC58U)
-	if (!strncmp(nvram_safe_get("territory_code"), "SP", 2))
-		sprintf((char *)ssidbase, "Spirit_%02X", mac_binary[5]);
-	else
-#endif
-		sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
-#elif defined(RTCONFIG_SINGLE_SSID)
+
+#ifdef RTCONFIG_SINGLE_SSID
 	macp = get_2g_hwaddr();
 	ether_atoe(macp, mac_binary);
 #if defined(RTCONFIG_SSID_AMAPS)
@@ -1093,9 +1096,24 @@ char *get_default_ssid(int unit, int subunit)
 	sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 #endif /* RTCONFIG_SSID_AMAPS */
 #else
-	macp = get_lan_hwaddr();
-	ether_atoe(macp, mac_binary);
-	sprintf((char *)ssidbase, "%s_%02X", get_productid(), mac_binary[5]);
+	if (rev3
+#ifdef RTAC68U
+		&& is_ssid_rev3_series()
+#endif
+	) {
+		macp = get_2g_hwaddr();
+		ether_atoe(macp, mac_binary);
+#if defined(RTAC58U)
+		if (!strncmp(nvram_safe_get("territory_code"), "SP", 2))
+			sprintf((char *)ssidbase, "Spirit_%02X", mac_binary[5]);
+		else
+#endif
+			sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
+	} else {
+		macp = get_lan_hwaddr();
+		ether_atoe(macp, mac_binary);
+		sprintf((char *)ssidbase, "%s_%02X", get_productid(), mac_binary[5]);
+	}
 #endif
 
 	strlcpy(ssid, ssidbase, sizeof(ssid));
@@ -1141,6 +1159,5 @@ char *get_default_ssid(int unit, int subunit)
 			strlcpy(ssid, ssid2, sizeof(ssid));
 		}
 	}
-	fprintf(stderr,"###### Default ssid = %s\n", ssid);
 	return ssid;
 }

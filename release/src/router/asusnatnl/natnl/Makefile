@@ -26,7 +26,7 @@ CFLAGS += -g -I$(NATBASE) -I$(NATBASE)/msvc_prjs/asusnatnl
 CFLAGS += -DTUNNEL_V=\"$(VERSION)\"
 CFLAGS += -I$(UDTBASE) -I$(SCTPBASE)
 #CFLAGS += -Wall
-CPPFLAGS += -fPIC $(CFLAGS)
+CPPFLAGS += -fPIC $(CFLAGS) 
 
 ifeq ($(AR),)
 AR=ar

@@ -42,7 +42,7 @@
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
+PLATFORM_ROUTER:=
 
 export HND_ROUTER := $(shell pwd | sed 's/.*hnd/y/g')
 # declare the init var here. Don't include router's arch related var here due to it will break the multi-arch rules
@@ -88,9 +88,9 @@ export BRANCH := $(shell git branch)
 #include ./router/extendno.conf
 #else
 #ifeq ($(EXTENDTYPE),)
-#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1)
+#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
 #else
-#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1)-$(EXTENDTYPE)
+#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")-$(EXTENDTYPE)
 #endif
 #endif
 
@@ -113,7 +113,7 @@ export SWPJEXTENDNO := $(shell git describe --match swpj_$(SWPJNAME)_$(SWPJVERNO
 ifneq ($(SWPJEXTENDNO),)
 export EXTENDNO := $(SWPJEXTENDNO)
 else
-export EXTENDNO := 0-g$(shell git log --pretty=format:'%h' -n 1)
+export EXTENDNO := 0-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
 endif
 endif
 
@@ -126,8 +126,12 @@ endif
 ifneq ($(BUILDREV),)
 export BUILDREV := -g$(shell git log --pretty=format:'%h' -n 1)
 endif
-include ./platform.mak
 -include .config
+#
+# include platform.mak after include .config
+# some definitions in platform.mak may be defined as different value, if .config exist.
+include ./platform.mak
+
 -include ./dsl.mak
 
 ifeq ($(HND_ROUTER),y)
@@ -188,7 +192,7 @@ uppercase_B = $(shell echo $(BUILD_NAME) | tr a-z  A-Z)
 lowercase_B = $(shell echo $(BUILD_NAME) | tr A-Z a-z)
 BUILD_TIME := $(shell LC_ALL=C date -u)
 BUILD_USER ?= $(shell whoami)
-BUILD_INFO := $(shell git log --pretty="%h" -n 1)
+BUILD_INFO := $(shell git log --pretty="%h" -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
 
 ifeq ($(CONFIG_LINUX26),y)
 mips_rev = $(if $(filter $(MIPS32),r2),MIPSR2,MIPSR1)
@@ -217,6 +221,9 @@ ifeq ($(PBDIR),)
 export PBDIR   := ../../../asuswrt.prebuilt/$(BUILD_NAME).$(KERNEL_VER).$(FS_VER).$(SERIALNO).$(EXTENDNO)
 endif
 
+# If platform specific software packages exist, PLATFORM_ROUTER should be defined in platform.mak
+export PLATFORM_ROUTER
+
 define bluecave_mkimage_extra_checks
 $(if $(CONFIG_UBOOT_CONFIG_LTQ_IMAGE_EXTRA_CHECKS), \
 	-B $(CONFIG_UBOOT_CONFIG_VENDOR_NAME) \
@@ -229,20 +236,20 @@ $(if $(CONFIG_UBOOT_CONFIG_LTQ_IMAGE_EXTRA_CHECKS), \
 endef
 
 define build_bluecave_image
-	mips-openwrt-linux-uclibc-objcopy -O binary -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.102/vmlinux ./vmlinux
-	mips-openwrt-linux-uclibc-objcopy -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.102/vmlinux ./vmlinux.elf
-	cp -fpR linux/linux-3.10.102/vmlinux ./vmlinux.debug
+	mips-openwrt-linux-uclibc-objcopy -O binary -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.104/vmlinux ./vmlinux
+	mips-openwrt-linux-uclibc-objcopy -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.104/vmlinux ./vmlinux.elf
+	cp -fpR linux/linux-3.10.104/vmlinux ./vmlinux.debug
 	cp ./vmlinux ./vmlinux-easy350_anywan_router_800m
 	tools/dtc -O dtb -o ./easy350_anywan_router_800m.dtb ./proprietary/dts/easy350_anywan_router_800m.dts
 	tools/host/bin/patch-dtb ./vmlinux-easy350_anywan_router_800m ./easy350_anywan_router_800m.dtb 32768
 	tools/host/bin/lzma e ./vmlinux-easy350_anywan_router_800m ./vmlinux-easy350_anywan_router_800m.lzma
 	mv ./vmlinux-easy350_anywan_router_800m.lzma ./vmlinux.lzma
-	tools/host/bin/mkimage -A mips -O linux -T kernel -a 0x80002000 -C lzma -e 0x80002000 -n 'MIPS OpenWrt Linux-3.10.102' -d ./vmlinux.lzma ./uImage
+	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel -a 0x80002000 -C lzma -e 0x80002000 -n 'MIPS OpenWrt Linux-3.10.104' -d ./vmlinux.lzma ./uImage
 	len2=`wc -c ./vmlinux.lzma | awk '{ printf $$1 }'` ; \
 	echo "Raymond: $$len2"
 	len=`wc -c ./vmlinux.lzma | awk '{ printf $$1 }'`; pad=`expr  131072 - $$len %  131072`; pad=`expr $$pad %  131072`; pad=`expr $$pad -  64`; [ $$pad -lt 0 ] && pad=0; echo pad is $$pad; echo len is $$len; cat ./vmlinux.lzma > ./vmlinux.lzma.padded; dd if=/dev/zero of=./vmlinux.lzma.padded bs=1 count=$$pad seek=$$len
-	load_addr=0x$(shell grep -w _text linux/linux-3.10.102/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
-	entry_addr=0x$(shell grep -w kernel_entry linux/linux-3.10.102/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
+	load_addr=0x$(shell grep -w _text linux/linux-3.10.104/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
+	entry_addr=0x$(shell grep -w kernel_entry linux/linux-3.10.104/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
 	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel \
 		-a $(s_load_addr) -C $(compression_type) -e $(s_entry_addr) \
 	-n '$(image_header)' $(call bluecave_mkimage_extra_checks) \
@@ -387,21 +394,21 @@ endif
 	echo ""
 	echo ""
 
-ifneq ($(HND_ROUTER),y)
-	@-mkdir image
-else
+ifeq ($(HND_ROUTER),y)
 	@rm -rf image
 	@ln -sf targets/94908HND image
-endif
 
-ifneq ($(HND_ROUTER),y)
-	$(MAKE) -C router all
-	$(MAKE) -C router install
-endif
-
-ifeq ($(HND_ROUTER),y)
 	$(MAKE) buildimage
 else
+	@-mkdir image
+
+	$(MAKE) -C router all
+ifneq ($(PLATFORM_ROUTER),)
+	$(MAKE) -C $(PLATFORM_ROUTER) all
+	$(MAKE) -C $(PLATFORM_ROUTER) install
+endif
+	$(MAKE) -C router install
+
 	@$(MAKE) image
 endif
 
@@ -696,14 +703,14 @@ export_config:
 
 kernel_patch:
 ifeq ($(CONFIG_LANTIQ),y)
-	cd proprietary; rm -rf ltq_eip97_1.2.24; tar zxf ltq_eip97_1.2.24.tgz
-	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq.tgz -C ${SRCBASE}/router/
-	rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
-	rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
-	rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
-	rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
-	cd proprietary; cp -R rom_lantiq_patch/* ${SRCBASE}/router/rom_lantiq/
-	cp -f proprietary/linux-3.10.102/firmware/lantiq/phy11g_ip_BE.bin linux/linux-3.10.102/firmware/lantiq/phy11g_ip_BE.bin
+	cd proprietary; rm -rf ltq_eip97_1.2.25; tar zxf ltq_eip97_1.2.25.tar.gz
+	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.61.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.61 ${SRCBASE}/router/rom_lantiq/
+	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
+	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
+	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
+	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
+	cd proprietary; cp -rf rom_lantiq_05.04.00.61_patch/* ${SRCBASE}/router/rom_lantiq/
+	# cp -f proprietary/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin linux/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin
 endif
 
 prepare_toolchain:
@@ -711,7 +718,11 @@ prepare_toolchain:
 		cd ${SRCBASE}/tools; tar zxf ${TOOLCHAIN_NAME}.tgz ; \
 	fi
 	if [ ! -d "${SRCBASE}/tools/${TOOLCHAIN_HOST_NAME}" ] ; then \
-		cd ${SRCBASE}/tools; tar zxf ${TOOLCHAIN_HOST_NAME}.tgz ; \
+		if [ "`uname -m`" = "x86_64" ] ; then \
+			cd ${SRCBASE}/tools; tar zxf ${TOOLCHAIN_HOST_NAME}_64bit.tgz ; \
+		else \
+			cd ${SRCBASE}/tools; tar zxf ${TOOLCHAIN_HOST_NAME}.tgz ; \
+		fi \
 	fi
 ifeq ($(CONFIG_LANTIQ),y)
 	if [ ! -f "${SRCBASE}/tools/${TOOLCHAIN_NAME}/.patched" ] ; then \
@@ -776,6 +787,9 @@ endif
 
 ifneq ($(HND_ROUTER),y)
 clean: rtk_clean_img rtk_clean_linux
+ifneq ($(PLATFORM_ROUTER),)
+	$(MAKE) -C $(PLATFORM_ROUTER) $@
+endif
 	@touch router/.config
 	@rm -f router/config_[a-z]
 	@rm -f router/$(BUSYBOX)/config_[a-z]
@@ -1317,13 +1331,22 @@ define RouterOptions
 		if [ "$(NTFS)" != "" ]; then \
 			sed -i "/RTCONFIG_NTFS/d" $(1); \
 			echo "RTCONFIG_NTFS=y" >>$(1); \
-			if [ "$(NTFS)" = "open" ]; then \
+			if [ "$(findstring open, $(NTFS))" = "open" ]; then \
 				sed -i "/RTCONFIG_OPEN_NTFS3G/d" $(1); \
 				echo "RTCONFIG_OPEN_NTFS3G=y" >>$(1); \
-			elif [ "$(NTFS)" = "paragon" ]; then \
+				if [ "$(findstring paragon, $(NTFS))" = "paragon" ]; then \
+					sed -i "/RTCONFIG_OPENPLUSPARAGON_NTFS/d" $(1); \
+					echo "RTCONFIG_OPENPLUSPARAGON_NTFS=y" >>$(1); \
+				elif [ "$(findstring tuxera, $(NTFS))" = "tuxera" ]; then \
+					sed -i "/RTCONFIG_OPENPLUSTUXERA_NTFS/d" $(1); \
+					echo "RTCONFIG_OPENPLUSTUXERA_NTFS=y" >>$(1); \
+				fi; \
+			fi; \
+			if [ "$(findstring paragon, $(NTFS))" = "paragon" ]; then \
 				sed -i "/RTCONFIG_PARAGON_NTFS/d" $(1); \
 				echo "RTCONFIG_PARAGON_NTFS=y" >>$(1); \
-			elif [ "$(NTFS)" = "tuxera" ]; then \
+			fi; \
+			if [ "$(findstring tuxera, $(NTFS))" = "tuxera" ]; then \
 				sed -i "/RTCONFIG_TUXERA_NTFS/d" $(1); \
 				echo "RTCONFIG_TUXERA_NTFS=y" >>$(1); \
 			fi; \
@@ -1331,13 +1354,22 @@ define RouterOptions
 		if [ "$(HFS)" != "" ]; then \
 			sed -i "/RTCONFIG_HFS/d" $(1); \
 			echo "RTCONFIG_HFS=y" >>$(1); \
-			if [ "$(HFS)" = "open" ]; then \
+			if [ "$(findstring open, $(HFS))" = "open" ]; then \
 				sed -i "/RTCONFIG_KERNEL_HFSPLUS/d" $(1); \
 				echo "RTCONFIG_KERNEL_HFSPLUS=y" >>$(1); \
-			elif [ "$(HFS)" = "paragon" ]; then \
+				if [ "$(findstring paragon, $(HFS))" = "paragon" ]; then \
+					sed -i "/RTCONFIG_OPENPLUSPARAGON_HFS/d" $(1); \
+					echo "RTCONFIG_OPENPLUSPARAGON_HFS=y" >>$(1); \
+				elif [ "$(findstring tuxera, $(HFS))" = "tuxera" ]; then \
+					sed -i "/RTCONFIG_OPENPLUSTUXERA_HFS/d" $(1); \
+					echo "RTCONFIG_OPENPLUSTUXERA_HFS=y" >>$(1); \
+				fi; \
+			fi; \
+			if [ "$(findstring paragon, $(HFS))" = "paragon" ]; then \
 				sed -i "/RTCONFIG_PARAGON_HFS/d" $(1); \
 				echo "RTCONFIG_PARAGON_HFS=y" >>$(1); \
-			elif [ "$(HFS)" = "tuxera" ]; then \
+			fi; \
+			if [ "$(findstring tuxera, $(HFS))" = "tuxera" ]; then \
 				sed -i "/RTCONFIG_TUXERA_HFS/d" $(1); \
 				echo "RTCONFIG_TUXERA_HFS=y" >>$(1); \
 			fi; \
@@ -1551,7 +1583,7 @@ define RouterOptions
 		sed -i "/RTCONFIG_IPV6/d" $(1); \
 		echo "RTCONFIG_IPV6=y" >>$(1); \
 	fi; \
-        if [ "$(IPSEC)" = "y" ] || \
+	if [ "$(IPSEC)" = "y" ] || \
 	   [ "$(IPSEC)" = "QUICKSEC" ] || \
 	   [ "$(IPSEC)" = "STRONGSWAN" ] ; then \
 		sed -i "/RTCONFIG_IPSEC/d" $(1); \
@@ -2194,13 +2226,17 @@ define RouterOptions
 		sed -i "/RTCONFIG_QUAGGA/d" $(1); \
 		echo "RTCONFIG_QUAGGA=y" >>$(1); \
 	fi; \
-	if [ "$(ASMPD)" = "y" ]; then \
+	if [ "$(ASPMD)" = "y" ]; then \
 		sed -i "/RTCONFIG_BCMASPMD/d" $(1); \
 		echo "RTCONFIG_BCMASPMD=y" >>$(1); \
 	fi; \
 	if [ "$(BCMEVENT)" = "y" ]; then \
 		sed -i "/RTCONFIG_BCMEVENTD/d" $(1); \
 		echo "RTCONFIG_BCMEVENTD=y" >>$(1); \
+	fi; \
+	if [ "$(BCM_MEVENT)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCM_MEVENT/d" $(1); \
+		echo "RTCONFIG_BCM_MEVENT=y" >>$(1); \
 	fi; \
 	if [ "$(WLCLMLOAD)" = "y" ]; then \
 		sed -i "/RTCONFIG_WLCLMLOAD/d" $(1); \
@@ -2422,6 +2458,10 @@ define RouterOptions
 	if [ "$(TXBF_BAND3ONLY)" = "y" ]; then \
 		sed -i "/RTCONFIG_TXBF_BAND3ONLY/d" $(1); \
 		echo "RTCONFIG_TXBF_BAND3ONLY=y" >>$(1); \
+	fi; \
+	if [ "$(SW_HW_AUTH)" = "y" ]; then \
+		sed -i "/RTCONFIG_SW_HW_AUTH\>/d" $(1); \
+		echo "RTCONFIG_SW_HW_AUTH=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))
@@ -3298,7 +3338,7 @@ fi; \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG=y" >>$(1); \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR=0x01810000" >>$(1); \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN=0x2000" >>$(1); \
-		elif [ "$(BCM_7114)" = "y" ]; then \
+		elif [ "$(BCM_7114)" = "y" ] || [ "$(BCM7)" = "y" ]; then \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG=y" >>$(1); \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR=0x80000000" >>$(1); \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN=0x3000" >>$(1); \
@@ -3971,12 +4011,39 @@ install gen_target:
 ifeq ($(RTCONFIG_REALTEK),y)
 	@$(MAKE) -C router gen_kernelrelease
 endif
+ifneq ($(PLATFORM_ROUTER),)
+	$(MAKE) -C $(PLATFORM_ROUTER) $@
+endif
 	$(MAKE) -C router $@
 
 gen_prebuilt:
 	-mkdir -p $(PBDIR)
 	$(MAKE) -f upb.mak PBDIR=${PBDIR}
 	@if [ -f .gpl_excludes_router ]; then cp -f .gpl_excludes_router ${PBDIR}/release/.; fi
+
+#
+# Generic rules for platform specific software packages.
+#
+
+ifneq ($(PLATFORM_ROUTER),)
+$(PLATFORM_ROUTER)/%: dummy
+	@[ ! -d $(PLATFORM_ROUTER)/$* ] || $(MAKE) -C $(PLATFORM_ROUTER) $*
+
+$(PLATFORM_ROUTER)/%-clean: dummy
+	@-[ ! -d $(PLATFORM_ROUTER)/$* ] || $(MAKE) -C $(PLATFORM_ROUTER) $*-clean
+
+$(PLATFORM_ROUTER)/%-install: dummy
+	@[ ! -d $(PLATFORM_ROUTER)/$* ] || $(MAKE) -C $(PLATFORM_ROUTER) $* $*-install
+
+$(PLATFORM_ROUTER)/%-stage: dummy
+	@[ ! -d $(PLATFORM_ROUTER)/$* ] || $(MAKE) -C $(PLATFORM_ROUTER) $* $*-stage
+
+$(PLATFORM_ROUTER)/%-build: dummy
+	$(MAKE) $(PLATFORM_ROUTER)/$*-clean $(PLATFORM_ROUTER)/$*
+
+$(PLATFORM_ROUTER)/%-tags: dummy
+	[ ! -d $(PLATFORM_ROUTER)/$* ] || ctags -a -R $(CTAGS_EXCLUDE_OPT) $(PLATFORM_ROUTER)/$*
+endif
 
 #
 # Generic rules

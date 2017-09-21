@@ -25,6 +25,9 @@
 #include <pj/log.h>
 #include <pj/pool.h>
 #include <pj/ioqueue.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 enum
 {
@@ -231,11 +234,12 @@ static void turn_sock_on_destroy(void *comp)
     pj_turn_sock *turn_sock = (pj_turn_sock*) comp;
 
     if (turn_sock->pool) {
-	pj_pool_t *pool = turn_sock->pool;
-	PJ_LOG(4,(turn_sock->obj_name, "TURN socket destroyed"));
-	turn_sock->pool = NULL;
-	pj_pool_release(pool);
-    }
+		pj_pool_t *pool = turn_sock->pool;
+		turn_sock->pool = NULL;
+		PJ_LOG(4, (turn_sock->obj_name, " turn_sock->pool released"));
+		pj_pool_release(pool);
+	}
+	PJ_LOG(4, (THIS_FILE, "TURN socket destroyed"));
 }
 
 static void destroy(pj_turn_sock *turn_sock)
@@ -790,7 +794,7 @@ static pj_status_t turn_on_send_pkt(pj_turn_session *sess,
 		is_tnl_data = (((pj_uint8_t*)pkt)[pkt_len] == 1);
 
     if(is_stun || !is_tnl_data) {
-        pj_ioqueue_op_key_t *op_key = (pj_ioqueue_op_key_t*)pj_mem_alloc(sizeof(pj_ioqueue_op_key_t));
+        pj_ioqueue_op_key_t *op_key = (pj_ioqueue_op_key_t*)malloc(sizeof(pj_ioqueue_op_key_t));
         pj_ioqueue_op_key_init(op_key, sizeof(pj_ioqueue_op_key_t));
 	    status = pj_activesock_send(turn_sock->active_sock, op_key,
 			        pkt, &len, PJ_IOQUEUE_URGENT_DATA);

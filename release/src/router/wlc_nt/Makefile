@@ -28,6 +28,10 @@ LDFLAGS += -lpthread
 endif
 endif
 
+ifeq ($(RTCONFIG_SW_HW_AUTH),y)
+CFLAGS  += -I$(TOP)/sw-hw-auth
+endif
+
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
 
 ifeq ($(wildcard $(SRCBASE)/router/wlc_nt/*.c),)

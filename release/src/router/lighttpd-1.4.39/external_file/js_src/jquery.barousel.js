@@ -325,9 +325,9 @@ www.juliendecaudin.com
 		                	"upload2facebook": {
 								name: settings.stringTable.getString("title_facebook")
 							},
-							"upload2flickr": {
-								name: settings.stringTable.getString("title_flickr")
-							},
+							//"upload2flickr": {
+							//	name: settings.stringTable.getString("title_flickr")
+							//},
 							"upload2picasa": {
 								name: settings.stringTable.getString("title_picasa")
 							},

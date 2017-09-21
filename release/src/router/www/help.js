@@ -14,12 +14,7 @@
 var clicked_help_string = "<#Help_init_word1#> <a class=\"hintstyle\" style=\"background-color:#7aa3bd\"><#Help_init_word2#></a> <#Help_init_word3#>";
 
 var rc_support = '<% nvram_get("rc_support"); %>';
-function isSupport(_ptn){
-	return (rc_support.search(_ptn) == -1) ? false : true;
-}
-
-
-var gobi_support = isSupport("gobi");
+var gobi_support = (rc_support.search("gobi") == -1) ? false : true;
 
 /* convert some special character for shown string */
 function handle_show_str(show_str)

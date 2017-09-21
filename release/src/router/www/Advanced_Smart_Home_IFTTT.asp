@@ -259,7 +259,7 @@ function clipboard(ID_value)
 														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“If my daughter comes home, then send me and email, text, or phone call”</p>
 														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“If my wifi comes home, then play my favorite song”</p>
 														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“If I am playing game, then boost the game speed”</p>
-														<p style="font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;">More Applets</p>
+														<a style="font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" href="https://ifttt.com/asusrouter" target="_blank">More Applets</a>
 													</div>
 													<div style="text-align:center;padding-top:60px;font-family:Arial, Helvetica, sans-serif;font-style:italic;font-weight:lighter;font-size:18px;">
 														Start a automation life with ASUS Router and IFTTT!

@@ -26,6 +26,9 @@
 #include <pj/log.h>
 #include <pj/pool.h>
 #include <pj/ioqueue.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 #define THIS_FILE "tcp_sock.c"
 
@@ -983,7 +986,7 @@ static pj_status_t tcp_on_send_pkt(pj_tcp_session *sess,
 			(pkt[TCP_SESS_MSG_TYPE_INDEX] == 5 || pkt[TCP_SESS_MSG_TYPE_INDEX] == 6));
 
 	if (!is_tnl_data) { 
-			pj_ioqueue_op_key_t *op_key = (pj_ioqueue_op_key_t*)pj_mem_alloc(sizeof(pj_ioqueue_op_key_t));
+			pj_ioqueue_op_key_t *op_key = (pj_ioqueue_op_key_t*)malloc(sizeof(pj_ioqueue_op_key_t));
 			pj_ioqueue_op_key_init(op_key, sizeof(pj_ioqueue_op_key_t));
 			status = pj_activesock_send(*asock, op_key,
 				pkt, &len, PJ_IOQUEUE_URGENT_DATA);
@@ -1145,7 +1148,7 @@ static pj_status_t tcp_client_on_send_pkt(pj_tcp_session *sess,
 		(pkt[TCP_SESS_MSG_TYPE_INDEX] == 5 || pkt[TCP_SESS_MSG_TYPE_INDEX] == 6));
 	//dump_bin(pkt, len);
 	if (!is_tnl_data) { 
-		pj_ioqueue_op_key_t *op_key = (pj_ioqueue_op_key_t*)pj_mem_alloc(sizeof(pj_ioqueue_op_key_t));
+		pj_ioqueue_op_key_t *op_key = (pj_ioqueue_op_key_t*)malloc(sizeof(pj_ioqueue_op_key_t));
 		pj_ioqueue_op_key_init(op_key, sizeof(pj_ioqueue_op_key_t));
 		status = pj_activesock_send(*asock, op_key,
 			pkt, &len, PJ_IOQUEUE_URGENT_DATA);

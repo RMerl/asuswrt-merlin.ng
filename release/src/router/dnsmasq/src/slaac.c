@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2016 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ void slaac_add_addrs(struct dhcp_lease *lease, time_t now, int force)
 	    slaac->backoff = 1;
 	    slaac->addr = addr;
 	    /* Do RA's to prod it */
-	    ra_start_unsolicted(now, context);
+	    ra_start_unsolicited(now, context);
 	  }
 	
 	if (slaac)

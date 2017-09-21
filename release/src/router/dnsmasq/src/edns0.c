@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2016 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -304,7 +304,7 @@ static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source)
   /* http://tools.ietf.org/html/draft-vandergaast-edns-client-subnet-02 */
   
   int len;
-  void *addrp;
+  void *addrp = NULL;
   int sa_family = source->sa.sa_family;
 
   opt->source_netmask = 0;
@@ -344,7 +344,7 @@ static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source)
   
   len = 0;
   
-  if (opt->source_netmask != 0)
+  if (addrp && opt->source_netmask != 0)
     {
       len = ((opt->source_netmask - 1) >> 3) + 1;
       memcpy(opt->addr, addrp, len);

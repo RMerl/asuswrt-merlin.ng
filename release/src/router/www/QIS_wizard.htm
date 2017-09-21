@@ -362,7 +362,7 @@ function QIS_load_body(){
 	document.getElementById("language_menu").innerHTML = '<% shown_language_css(); %>';
 	show_selected_language();
 	
-	if((based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U") && sim_state == "1" && modem_autoapn == "1" && usb_modem_auto_spn.length == 0)
+	if((based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U") && sim_state == "1" && modem_autoapn == "1" && usb_modem_auto_spn.length == 0)
 		update_apn_progress();
 	else
 		document.getElementById("apn_div").style.display = "none";	
@@ -516,6 +516,10 @@ function QIS_load_body(){
 			case "lanip":
 				document.QKform.sw_mode.value = "3";
 				action = "/qis/QIS_lanip.htm";
+				submit();
+				break;
+			case "sim":
+				action = "/qis/QIS_detect.htm?flag=sim";
 				submit();
 				break;
 			default:

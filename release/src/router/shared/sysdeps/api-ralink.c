@@ -700,6 +700,11 @@ char *get_2g_hwaddr(void)
         return get_wan_hwaddr();
 }
 
+char *get_label_mac()
+{
+	return get_2g_hwaddr();
+}
+
 char *get_lan_hwaddr(void)
 {
 	/* TODO: handle exceptional model */

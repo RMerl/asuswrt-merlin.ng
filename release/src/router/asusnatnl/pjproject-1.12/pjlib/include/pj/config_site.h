@@ -1,6 +1,12 @@
 
 #define PJ_DEBUG 1
-//#define PJ_SAFE_POOL 1
+//#define ENABLE_MEMWATCH 1
+
+//#define PJ_THREAD_ALLOCATE_STACK 1
+#ifdef HND_ROUTER
+#define PJ_THREAD_SET_STACK_SIZE 1
+#define PJ_THREAD_DEFAULT_STACK_SIZE 0x51200
+#endif
 
 //#define HTTP_DEBUG 1
 #define TURN_FLAG_USE_RESPECTIVE_TURN 1
@@ -68,7 +74,7 @@
 #elif defined(PJ_ANDROID)
 #define PJSUA_MAX_INSTANCES	64
 #else
-#define PJSUA_MAX_INSTANCES	4
+#define PJSUA_MAX_INSTANCES	2
 #endif
 
 #define PJ_LOG_MAX_LEVEL		 6

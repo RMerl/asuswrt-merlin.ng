@@ -41,16 +41,35 @@ enum
 	ACT_COMMON_SET_WPR_CONF,	/* set_wpr_conf */
 	ACT_COMMON_SET_WPR_ON,		/* set_wpr_on */
 	ACT_COMMON_SET_WPR_OFF,		/* set_wpr_off */
+	ACT_COMMON_SET_REDIRECT_URL,	/* set_redirect_url */
+	ACT_COMMON_SET_META_DATA,	/* internal: set_meta_data */
+	ACT_COMMON_DISABLE_FEEDBACK,	/* internal: disable_feedback */
+	ACT_COMMON_ENABLE_FEEDBACK,	/* internal: enable_feedback */
+	ACT_COMMON_SET_EULA_AGREED,	/* internal: set_eula_agreed */
+	ACT_COMMON_SET_EULA_DISAGREED,	/* internal: set_eula_disagreed */
 	ACT_COMMON_MAX
 };
 
-int run_ioctl(const char *path, unsigned long int req, void *arg);
+#define IOC_SHIFT_LEN_SAFE(len, siz, max) \
+({ \
+	uint8_t ok = 1; \
+	if ((len) + (siz) > (max)) { \
+		ok = 0; \
+		DBG("len (%d) exceed max (%d)!\n", (len) + (siz), (max)); \
+	} \
+	else { \
+		(len) += (siz); \
+	} \
+	ok; \
+})
+
+int run_ioctl(const char *path, int req, void *arg);
 int get_fw_user_list(udb_ioctl_entry_t **output, uint32_t *used_len);
 
 unsigned long get_build_date(void);
 unsigned long get_build_number(void);
 
-int internal_options_init(struct cmd_option *cmd);
+int parse_single_str_arg(int argc, char **argv, char opt, char *buf, int buf_len);
 
 int common_options_init(struct cmd_option *cmd);
 

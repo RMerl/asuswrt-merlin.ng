@@ -60,6 +60,8 @@ char dh_group[DH_GROUP_MAX_NUM][SZ_MIN] = {
 };
 
 static ipsec_samba_t samba_prof;
+static ipsec_samba_t pre_samba_prof;
+
 static ipsec_prof_t prof[2][MAX_PROF_NUM];
 static pki_ca_t ca_tab[CA_FILES_MAX_NUM];
 
@@ -185,22 +187,22 @@ void ipsec_samba_prof_fill(char *p_data)
     /*DNS1*/
     p_tmp = &(samba_prof.dns1[0]);
     ipsec_profile_str_parse(p_end, p_tmp, &i);
-DBG(("dns1:%s\n", samba_prof.dns1));
+//DBG(("dns1:%s\n", samba_prof.dns1));
     p_end += i;/*to shifft next '>'*/
     /*DNS2*/
     p_tmp = &(samba_prof.dns2[0]);
     ipsec_profile_str_parse(p_end, p_tmp, &i);
-DBG(("dns2:%s\n", samba_prof.dns2));
+//DBG(("dns2:%s\n", samba_prof.dns2));
     p_end += i ;/*to shifft next '>'*/
     /*NBIOS1*/
     p_tmp = &(samba_prof.nbios1[0]);
     ipsec_profile_str_parse(p_end, p_tmp, &i);
-DBG(("nbios1:%s\n", samba_prof.nbios1));
+//DBG(("nbios1:%s\n", samba_prof.nbios1));
     p_end += i;/*to shifft next '>'*/
     /*NBIOS2*/
     p_tmp = &(samba_prof.nbios2[0]);
     ipsec_profile_str_parse(p_end, p_tmp, &i);
-DBG(("nbios2:%s\n", samba_prof.nbios2));
+//DBG(("nbios2:%s\n", samba_prof.nbios2));
     //p_end += i;
     return;
 }
@@ -397,7 +399,6 @@ int pre_ipsec_prof_set()
 	        	sprintf(&buf[0], "ipsec_profile_%d", i);
 			else if(PROF_CLI == prof_count)
 				sprintf(&buf[0], "ipsec_profile_client_%d", i);
-				
 	        if(NULL != nvram_safe_get(&buf[0])){
 	            strcpy(p_tmp, nvram_safe_get(&buf[0]));
 	            /*to avoid nvram that it has not been inited ready*/
@@ -426,7 +427,7 @@ int pre_ipsec_samba_prof_set()
 		if((0 != strcmp(prof[PROF_SVR][i].samba_settings, "null")) && IPSEC_CONN_EN_UP == prof[PROF_SVR][i].ipsec_conn_en
 			&& VPN_TYPE_HOST_NET == prof[PROF_SVR][i].vpn_type){
 				strcpy(p_tmp, prof[PROF_SVR][i].samba_settings);
-        DBG(("pre_ipsec_samba_prof_set#%s\n", p_tmp));
+        //DBG(("pre_ipsec_samba_prof_set#%s\n", p_tmp));
         if('\0' != *p_tmp){
             ipsec_samba_prof_fill(p_tmp);
             rc = 1;
@@ -434,9 +435,9 @@ int pre_ipsec_samba_prof_set()
 				break;
 		}
     }
-    DBG(("ipsec_samba#%s[p_tmp]\n", p_tmp));
-	DBG(("dns1:%s\n, dns2:%s\n, nbns1=%s\n, nbns2=%s\n",
-     samba_prof.dns1, samba_prof.dns2, samba_prof.nbios1, samba_prof.nbios2));
+    //DBG(("ipsec_samba#%s[p_tmp]\n", p_tmp));
+	/*DBG(("dns1:%s\n, dns2:%s\n, nbns1=%s\n, nbns2=%s\n",
+     samba_prof.dns1, samba_prof.dns2, samba_prof.nbios1, samba_prof.nbios2));*/
     return rc;
 }
 
@@ -474,7 +475,7 @@ void rc_strongswan_conf_set()
     FILE *fp = NULL;
 
     rc = pre_ipsec_samba_prof_set();
-DBG(("ipsec_samba#\n"));
+//DBG(("ipsec_samba#\n"));
     fp = fopen("/tmp/etc/strongswan.conf", "w");
     fprintf(fp, "# strongswan.conf - strongSwan configuration file\n#\n"
                 "# Refer to the strongswan.conf(5) manpage for details\n#\n"
@@ -508,8 +509,8 @@ DBG(("ipsec_samba#\n"));
     if(NULL != fp){
         fclose(fp);
     }
-DBG(("[%d]strongswan.conf:\n dns1:%s\n dns2:%s\n wins1=%s\n wins2=%s\n",
-      rc, samba_prof.dns1, samba_prof.dns2, samba_prof.nbios1, samba_prof.nbios2));
+/*DBG(("[%d]strongswan.conf:\n dns1:%s\n dns2:%s\n wins1=%s\n wins2=%s\n",
+      rc, samba_prof.dns1, samba_prof.dns2, samba_prof.nbios1, samba_prof.nbios2));*/
     return;
 }
 
@@ -584,7 +585,7 @@ void rc_ipsec_restart(FILE *fp)
     if(NULL != fp){
         /*to do this command after ipsec reload command has been exec*/
         fprintf(fp, "ipsec restart > /dev/null 2>&1\n"
-        		"sleep 1 > /dev/null 2>&1\n");
+        		"sleep 3 > /dev/null 2>&1\n");
     }
     return;
 }
@@ -1244,54 +1245,56 @@ void rc_ipsec_topology_set()
 	            prof[prof_count][i].ipsec_conn_en = IPSEC_CONN_EN_DEFAULT;
 	            continue;
 	        }
-		        if(VPN_TYPE_NET_NET_SVR == prof[prof_count][i].vpn_type){
-	            fprintf(fp,"#Net-to-Net VPN SVR[prof#%d]:%s\n\n", i, s_tmp);
-		        }
-				else if(VPN_TYPE_NET_NET_CLI == prof[prof_count][i].vpn_type){
-	            fprintf(fp,"#Net-to-Net VPN CLI[prof#%d]:%s\n\n", i, s_tmp);
-		        }
-				else if(VPN_TYPE_NET_NET_PEER == prof[prof_count][i].vpn_type){
-	            fprintf(fp,"#Net-to-Net PEER[prof#%d]:%s\n\n", i, s_tmp);
-		        }
-				else if(VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type){
-	            fprintf(fp,"#Host-to-NET[prof#%d]:%s\n\n", i, s_tmp);
-		        } 
-				else {
-	            continue;
+	        if(VPN_TYPE_NET_NET_SVR == prof[prof_count][i].vpn_type){
+            	fprintf(fp,"#Net-to-Net VPN SVR[prof#%d]:%s\n\n", i, s_tmp);
 	        }
-		        fprintf(fp,"\nconn %s\n", prof[prof_count][i].profilename);
-		        if(VPN_TYPE_HOST_NET != prof[prof_count][i].vpn_type){
-	            fprintf(fp,"##enforced UDP encapsulation (forceencaps=yes)\n"
-		                       "  keyingtries=%d\n  type=%s\n", prof[prof_count][i].keyingtries
-		                      , prof[prof_count][i].tun_type);
+			else if(VPN_TYPE_NET_NET_CLI == prof[prof_count][i].vpn_type){
+            	fprintf(fp,"#Net-to-Net VPN CLI[prof#%d]:%s\n\n", i, s_tmp);
 	        }
-		        if(IKE_TYPE_AUTO == prof[prof_count][i].ike){
-	            fprintf(fp,"  keyexchange=ikev1\n");
-		        }
-				else{
-		            fprintf(fp,"  keyexchange=%s\n", ikev[prof[prof_count][i].ike]);
+			else if(VPN_TYPE_NET_NET_PEER == prof[prof_count][i].vpn_type){
+            	fprintf(fp,"#Net-to-Net PEER[prof#%d]:%s\n\n", i, s_tmp);
 	        }
-			    if(IKE_AGGRESSIVE_MODE == prof[prof_count][i].exchange){
-	            fprintf(fp,"  aggressive=yes\n");
+			else if(VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type){
+            	fprintf(fp,"#Host-to-NET[prof#%d]:%s\n\n", i, s_tmp);
+	        } 
+			else {
+            	continue;
+        	}
+	        fprintf(fp,"\nconn %s\n", prof[prof_count][i].profilename);
+	        if(VPN_TYPE_HOST_NET != prof[prof_count][i].vpn_type){
+            fprintf(fp,"##enforced UDP encapsulation (forceencaps=yes)\n"
+                       "  keyingtries=%d\n  type=%s\n", prof[prof_count][i].keyingtries
+                      , prof[prof_count][i].tun_type);
+        	}
+	        if(IKE_TYPE_AUTO == prof[prof_count][i].ike){
+            	fprintf(fp,"  keyexchange=ikev1\n");
 	        }
-				
-		        ipsec_conf_local_set(fp, i, prof_count);
-		        ipsec_conf_remote_set(fp, i, prof_count);
-				
-		        if(VPN_TYPE_HOST_NET != prof[prof_count][i].vpn_type){
-		            ipsec_conf_phase1_set(fp, i, prof_count);
-		            ipsec_conf_phase2_set(fp, i, prof_count);
-	        }
-				if(DPD_CLEAR == prof[prof_count][i].dead_peer_detection)
-					fprintf(fp,"  dpdaction=clear\n");
-				else if(DPD_HOLD == prof[prof_count][i].dead_peer_detection)
-					fprintf(fp,"  dpdaction=hold\n");
-				else if(DPD_RESTART == prof[prof_count][i].dead_peer_detection)
-					fprintf(fp,"  dpdaction=restart\n");
-				
-				if(DPD_NONE != prof[prof_count][i].dead_peer_detection)
-					fprintf(fp,"  dpddelay=%ds\n", prof[prof_count][i].ipsec_dpd);
-				
+			else{
+	            fprintf(fp,"  keyexchange=%s\n", ikev[prof[prof_count][i].ike]);
+        	}
+		    if(IKE_AGGRESSIVE_MODE == prof[prof_count][i].exchange){
+            	fprintf(fp,"  aggressive=yes\n");
+        	}
+			
+	        ipsec_conf_local_set(fp, i, prof_count);
+	        ipsec_conf_remote_set(fp, i, prof_count);
+			
+	        if(VPN_TYPE_HOST_NET != prof[prof_count][i].vpn_type){
+	            ipsec_conf_phase1_set(fp, i, prof_count);
+	            ipsec_conf_phase2_set(fp, i, prof_count);
+        	}
+			else	{
+				fprintf(fp,"  dpdtimeout=30s\n");	
+			}
+			if(DPD_CLEAR == prof[prof_count][i].dead_peer_detection)
+				fprintf(fp,"  dpdaction=clear\n");
+			else if(DPD_HOLD == prof[prof_count][i].dead_peer_detection)
+				fprintf(fp,"  dpdaction=hold\n");
+			else if(DPD_RESTART == prof[prof_count][i].dead_peer_detection)
+				fprintf(fp,"  dpdaction=restart\n");
+			
+			if(DPD_NONE != prof[prof_count][i].dead_peer_detection)
+				fprintf(fp,"  dpddelay=%ds\n", prof[prof_count][i].ipsec_dpd);
 	        fprintf(fp,"  auto=add\n");
 	    }
 	}
@@ -1307,6 +1310,7 @@ void rc_ipsec_config_init()
     memset((ipsec_samba_t *)&samba_prof, 0, sizeof(ipsec_samba_t));
     memset((ipsec_prof_t *)&prof[0][0], 0, sizeof(ipsec_prof_t) * MAX_PROF_NUM);
     memset((pki_ca_t *)&ca_tab[0], 0, sizeof(pki_ca_t) * CA_FILES_MAX_NUM);
+	memset((ipsec_samba_t *)&pre_samba_prof, 0, sizeof(ipsec_samba_t));
     system("cp -rf /usr/etc/* /tmp/etc/");
     mkdir("/jffs/ca_files", 0777);
     /*ipsec.conf init*/    
@@ -1762,6 +1766,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	uint32_t cur_bitmap_en_p[2]={0};
 	char *local_subnet, *local_subnet_total;
 	int prof_i = 0, is_duplicate = 0;
+	char tmpStr[20];
 
 	argv[0] = "/bin/sh";
 	argv[1] = FILE_PATH_IPSEC_SH;
@@ -1783,7 +1788,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 		return;
 	}
 		
-#if 0
+//#if 0
     if(FALSE == ipsec_start_en){
         rc_ipsec_start(fp);
         ipsec_start_en = TRUE;
@@ -1791,7 +1796,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
             fprintf(fp, "\nsleep 7 > /dev/null 2>&1 \n");
         }
     }
-#endif
+//#endif
     //cur_bitmap_en = cur_bitmap_en_scan();
 	get_bitmap_scan(cur_bitmap_en_p);
 	//DBG(("rc_ipsec_down_stat>>>> 0x%x, 0x%x\n", cur_bitmap_en_p[0], cur_bitmap_en_p[1]));
@@ -1801,9 +1806,16 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	else
 		nvram_set_int("ipsec_client_enable",0);
 	
-	if(FALSE == ipsec_start_en && (nvram_get_int("ipsec_server_enable") == 1 || nvram_get_int("ipsec_client_enable") == 1 )){
-		rc_ipsec_start(fp);
-		ipsec_start_en = TRUE;
+	if((nvram_get_int("ipsec_server_enable") == 1 || nvram_get_int("ipsec_client_enable") == 1 )){
+		/*if(IPSEC_INIT == conn_status){
+			if (!pids("starter") && !pids("charon"))
+				rc_ipsec_start(fp);
+			else	{
+				rc_ipsec_stop(fp);
+				rc_ipsec_start(fp);
+			}
+		}
+		ipsec_start_en = TRUE;*/
 #if defined(RTCONFIG_QUICKSEC)		
 		modprobe("ah4");
 		modprobe("esp4");
@@ -1811,20 +1823,31 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 		modprobe("xfrm4_tunnel");
 		modprobe("xfrm_user");
 #endif
+		/* ipsec must be restart if strongswan.conf changed, or it will not apply the new settings. */
+		if((TRUE == ipsec_start_en) && (IPSEC_INIT != conn_status)&& (0 != strcmp(pre_samba_prof.dns1, samba_prof.dns1) || 0 != strcmp(pre_samba_prof.dns2, samba_prof.dns2) || 
+				0 != strcmp(pre_samba_prof.nbios1, samba_prof.nbios1) || 0 != strcmp(pre_samba_prof.nbios2, samba_prof.nbios2))){
+			pre_samba_prof = samba_prof;
+			fprintf(fp, "\nsleep 2 > /dev/null 2>&1 \n");
+			rc_ipsec_restart(fp);
+		}
+		else{
+			rc_ipsec_rereadall(fp);
+			rc_ipsec_reload(fp);
+		}
 	}
 	
-	rc_ipsec_rereadall(fp);
-	rc_ipsec_reload(fp);
+	//rc_ipsec_rereadall(fp);
+	//rc_ipsec_reload(fp);
 
 	for(prof_count = PROF_CLI; prof_count < PROF_ALL; prof_count++){
 		DBG(("rc_ipsec_down_stat>>>> 0x%x,prof_count=%d\n", pre_bitmap_en[prof_count],prof_count));
     	for(i = 0; i < MAX_PROF_NUM; i++){
 			if(0 != strlen(prof[prof_count][i].profilename)) {
 				if(strcmp(prof[prof_count][i].local_public_interface,"wan") == 0){
-					strcpy(interface,get_wan_ifname(0));
+					strcpy(interface,nvram_safe_get("wan0_gw_ifname"));
 				}
 				else if(strcmp(prof[prof_count][i].local_public_interface,"wan2") == 0){
-					strcpy(interface,get_wan_ifname(1));
+					strcpy(interface,nvram_safe_get("wan1_gw_ifname"));
 				}
 				else if(strcmp(prof[prof_count][i].local_public_interface,"lan") == 0) 
 				strcpy(interface,"br0");
@@ -1837,40 +1860,64 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 					}
 					strcpy(interface,get_wan_ifname(unit));
 				}
-
 				if(IPSEC_CONN_EN_UP == prof[prof_count][i].ipsec_conn_en){
 					if(0 != strcmp(interface,"")){
-						fprintf(fp1, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I INPUT -i %s --protocol esp -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I INPUT -i %s --protocol ah -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-						fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
 						if(VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type){
-							fprintf(fp1, "iptables -D INPUT -i %s -s %s -j ACCEPT\n",interface, prof[prof_count][i].virtual_subnet);
-							fprintf(fp1, "iptables -I INPUT -i %s -s %s -j ACCEPT\n",interface, prof[prof_count][i].virtual_subnet);
+							for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
+								sprintf(tmpStr,"wan%d_gw_ifname",unit);
+								if(0 != strlen(nvram_safe_get(tmpStr)))
+									strcpy(interface,nvram_safe_get(tmpStr));
+								fprintf(fp1, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I INPUT -i %s --protocol esp -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I INPUT -i %s --protocol ah -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D INPUT -i %s -s %s -j ACCEPT\n",interface, prof[prof_count][i].virtual_subnet);
+								fprintf(fp1, "iptables -I INPUT -i %s -s %s -j ACCEPT\n",interface, prof[prof_count][i].virtual_subnet);
 #ifdef RTCONFIG_BCMARM
-							/* mark connect to bypass CTF */
-							if (nvram_match("ctf_disable", "0")){
-								fprintf(fp1, "iptables -t mangle -D FORWARD -i %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
-								fprintf(fp1, "iptables -t mangle -A FORWARD -i %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
-								fprintf(fp1, "iptables -t mangle -D FORWARD -o %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
-								fprintf(fp1, "iptables -t mangle -A FORWARD -o %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
-								
+								/* mark connect to bypass CTF */
+								if (nvram_match("ctf_disable", "0")){
+									fprintf(fp1, "iptables -t mangle -D FORWARD -i %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
+									fprintf(fp1, "iptables -t mangle -A FORWARD -i %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
+									fprintf(fp1, "iptables -t mangle -D FORWARD -o %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
+									fprintf(fp1, "iptables -t mangle -A FORWARD -o %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
+								}
+#endif
 							}
-#endif							
+							/* to fix host-to-net some android device can't access some website. ex. www.sogi.com.tw */
+							fprintf(fp1, "iptables -t mangle -D FORWARD -m policy --pol ipsec --dir in -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360\n");
+							fprintf(fp1, "iptables -t mangle -D FORWARD -m policy --pol ipsec --dir out -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360\n");
+							fprintf(fp1, "iptables -t mangle -A FORWARD -m policy --pol ipsec --dir in -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360\n");
+							fprintf(fp1, "iptables -t mangle -A FORWARD -m policy --pol ipsec --dir out -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360\n");
 						}
 						else{
+							fprintf(fp1, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I INPUT -i %s --protocol esp -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I INPUT -i %s --protocol ah -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
 							local_subnet_total = strdup(prof[prof_count][i].local_subnet);
 							while((local_subnet = strsep(&local_subnet_total, ",")) != NULL){
 								fprintf(fp1, "iptables -t nat -D POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);
@@ -1883,7 +1930,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 									fprintf(fp1, "iptables -t mangle -D FORWARD -o %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].local_subnet);
 									fprintf(fp1, "iptables -t mangle -A FORWARD -o %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].local_subnet);
 								}
-#endif									
+#endif
 						    }
 						}
 						
@@ -1896,7 +1943,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 						//cur_bitmap_en = cur_bitmap_en_scan();
 						get_bitmap_scan(cur_bitmap_en_p);
 						if(0 != strcmp(interface,"")){
-							fprintf(fp, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
+							/*fprintf(fp, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 							fprintf(fp, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
 							fprintf(fp, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
 							fprintf(fp, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
@@ -1911,34 +1958,34 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 							fprintf(fp, "iptables -I OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
 							fprintf(fp, "iptables -I OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
 							fprintf(fp, "iptables -I OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-							fprintf(fp, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+							fprintf(fp, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);*/
 
 						if(VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type){
-							fprintf(fp, "iptables -D INPUT -i %s -s %s -j ACCEPT\n",interface,prof[prof_count][i].virtual_subnet);
-							fprintf(fp, "iptables -I INPUT -i %s -s %s -j ACCEPT\n",interface,prof[prof_count][i].virtual_subnet);
+							/*fprintf(fp, "iptables -D INPUT -i %s -s %s -j ACCEPT\n",interface,prof[prof_count][i].virtual_subnet);
+							fprintf(fp, "iptables -I INPUT -i %s -s %s -j ACCEPT\n",interface,prof[prof_count][i].virtual_subnet);*/
 #ifdef RTCONFIG_BCMARM
 							/* mark connect to bypass CTF */
-							if (nvram_match("ctf_disable", "0")){
+							/*if (nvram_match("ctf_disable", "0")){
 								fprintf(fp, "iptables -t mangle -D FORWARD -i %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
 								fprintf(fp, "iptables -t mangle -A FORWARD -i %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
 								fprintf(fp, "iptables -t mangle -D FORWARD -o %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
 								fprintf(fp, "iptables -t mangle -A FORWARD -o %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].virtual_subnet);
-							}
+							}*/
 #endif							
 						}
 						else{
 							local_subnet_total = strdup(prof[prof_count][i].local_subnet);
 							while((local_subnet = strsep(&local_subnet_total, ",")) != NULL){
-								fprintf(fp, "iptables -t nat -D POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);
-								fprintf(fp, "iptables -t nat -I POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);
+								/*fprintf(fp, "iptables -t nat -D POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);
+								fprintf(fp, "iptables -t nat -I POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);*/
 #ifdef RTCONFIG_BCMARM
 								/* mark connect to bypass CTF */
-								if (nvram_match("ctf_disable", "0")){
+								/*if (nvram_match("ctf_disable", "0")){
 									fprintf(fp, "iptables -t mangle -D FORWARD -i %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].local_subnet);
 									fprintf(fp, "iptables -t mangle -A FORWARD -i %s -d %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].local_subnet);
 									fprintf(fp, "iptables -t mangle -D FORWARD -o %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].local_subnet);
 									fprintf(fp, "iptables -t mangle -A FORWARD -o %s -s %s -j MARK --set-mark 0x01/0x7\n", interface, prof[prof_count][i].local_subnet);
-								}
+								}*/
 #endif									
 						    }
 							
@@ -1958,14 +2005,14 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 						}
     				}
 					if(0 == is_duplicate){
-						fprintf(fp, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
+						/*fprintf(fp, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 						fprintf(fp, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
 						fprintf(fp, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
 						fprintf(fp, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface); 
 						fprintf(fp, "iptables -D OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
 						fprintf(fp, "iptables -D OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
 						fprintf(fp, "iptables -D OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-						fprintf(fp, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+						fprintf(fp, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);*/
 					}
 					rc_ipsec_down(fp, i, prof_count);
 				}
@@ -1994,13 +2041,14 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	
     if(NULL != fp){
         fclose(fp);
-#if defined(RTCONFIG_SOC_IPQ8064)		
-		reinit_ecm(-1);
-#endif
-        DBG(("rc_ipsec_down_stat<<<< CLI: 0x%x, SVR: 0x%x\n", cur_bitmap_en_p[PROF_CLI],cur_bitmap_en_p[PROF_SVR]));
-		chmod(FILE_PATH_IPSEC_SH, 0777);
-		_eval(argv, NULL, 0, NULL);
-       	DBG(("rc_ipsec_down_stat<<<< CLI: 0x%x, SVR: 0x%x\n", cur_bitmap_en_p[PROF_CLI],cur_bitmap_en_p[PROF_SVR]));
     }
+#if defined(RTCONFIG_SOC_IPQ8064)		
+	reinit_ecm(-1);
+#endif
+	DBG(("rc_ipsec_down_stat<<<< CLI: 0x%x, SVR: 0x%x\n", cur_bitmap_en_p[PROF_CLI],cur_bitmap_en_p[PROF_SVR]));
+	chmod(FILE_PATH_IPSEC_SH, 0777);
+	_eval(argv, NULL, 0, NULL);
+	DBG(("rc_ipsec_down_stat<<<< CLI: 0x%x, SVR: 0x%x\n", cur_bitmap_en_p[PROF_CLI],cur_bitmap_en_p[PROF_SVR]));
+	run_ipsec_firewall_scripts();
     return;
 }

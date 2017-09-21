@@ -2153,5 +2153,14 @@ var validator = {
 			obj.select();
 			return false;
 		}
-	}
+	},
+
+        domainName_flag: function(_value) {
+                //domin name
+                var domainNameFormat = /^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/; 
+                if(domainNameFormat.test(_value))
+                        return true;
+                else
+                        return false;
+        }
 };

@@ -61,7 +61,10 @@ _get_wdm_by_usbnet(){
 	i=0
 	while [ $i -lt 5 ]; do
 		ver_head=`echo -n $kernel_version |awk 'BEGIN{FS="."}{print $1}'`
+		ver_2nd=`echo -n $kernel_version |awk 'BEGIN{FS="."}{print $2}'`
 		if [ "$ver_head" -ge "4" ]; then
+			rp2=`readlink -f /sys/class/usbmisc/cdc-wdm$i/device 2>/dev/null`
+		elif [ "$ver_head" -eq "3" ] && [ "$ver_2nd" -ge "10" ]; then # ex: BlueCave
 			rp2=`readlink -f /sys/class/usbmisc/cdc-wdm$i/device 2>/dev/null`
 		else
 			rp2=`readlink -f /sys/class/usb/cdc-wdm$i/device 2>/dev/null`

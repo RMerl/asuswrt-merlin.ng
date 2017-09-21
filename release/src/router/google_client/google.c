@@ -302,7 +302,7 @@ filename=>server
                 curl_easy_setopt(curl, CURLOPT_USERAGENT, "asus-google-drive/0.1");
                 curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
                 curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
-                curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+                //curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
 
                 curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
                 curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
@@ -5014,7 +5014,7 @@ int get_request_token(){
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
-        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+        //curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
         curl_easy_setopt(curl,CURLOPT_URL,"https://api.google.com/1/oauth/request_token");
         CURL_DEBUG;
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);

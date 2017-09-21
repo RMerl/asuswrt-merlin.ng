@@ -22,11 +22,7 @@
 
 #define NAWDS_SH_FMT	"/etc/Wireless/sh/nawds_%s.sh"
 
-extern const char WIF_2G[];
-extern const char WIF_5G[];
-extern const char WDSIF_5G[];
-extern const char STA_2G[];
-extern const char STA_5G[];
+extern char *wlan_name[4];
 extern const char VPHY_2G[];
 extern const char VPHY_5G[];
 #define URE	"apcli0"

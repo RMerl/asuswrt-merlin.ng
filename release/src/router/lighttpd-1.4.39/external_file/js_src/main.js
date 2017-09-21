@@ -63,12 +63,15 @@ function openLoginWindow(open_url){
 	g_modal_url = '';
 	g_modal_window_width = 380;
 	g_modal_window_height = 120;
-						
+	
+	var username_input_max_length = 20;
+
 	if(open_url=='/')
 		$('#jqmTitleText').text(m.getString('title_login') + " - AiCloud");
 	else{
 		var url = mydecodeURI(open_url);
 		$('#jqmTitleText').text(m.getString('title_login') + " - " + url.substring(0, 35));
+		username_input_max_length = 64;
 	}
 			
 	if(css_display == "block"){
@@ -86,7 +89,7 @@ function openLoginWindow(open_url){
 	login_html += '<div id="main">';
 	login_html += '<table>';
 	login_html += '<tr>';
-	login_html += '<td><label id="username">' + m.getString('title_username') + ':</label></td><td><input name="username" class="dialog_text_input" type="text" id="username" autocapitalize="off" maxlength="20" style="width:290px"></td>';
+	login_html += '<td><label id="username">' + m.getString('title_username') + ':</label></td><td><input name="username" class="dialog_text_input" type="text" id="username" autocapitalize="off" maxlength="' + username_input_max_length + '" style="width:290px"></td>';
 	login_html += '</tr>';
 	login_html += '<tr>';
 	login_html += '<td><label id="password">' + m.getString('title_password') + ':</label></td><td><input name="password" class="dialog_text_input" type="password" id="password" maxlength="16" style="width:290px"></td>';
@@ -1224,7 +1227,7 @@ function openSelItem(item){
 	var fileExt = getFileExt(loc);
 	
 	var webdav_mode = g_storage.get('webdav_mode');
-						
+	
 	if( fileExt=="mp4" ||
 		fileExt=="m4v" ||
 		fileExt=="wmv" ||
@@ -1239,7 +1242,57 @@ function openSelItem(item){
 		    
 		//- webdav_mode=0-->enable http, webdav_mode=2-->both enable http and https
 		if( webdav_mode==0 || webdav_mode==2 ){
-			  
+				
+			if( fileExt=="mp4" || (isIE() && getInternetExplorerVersion() > 8) ){
+				
+				var $modalWindow = $("div#modalWindow");
+						
+				this_file_name = myencodeURI(this_file_name);		
+				this_url = this_full_url.substring(0, this_full_url.lastIndexOf('/'));
+						
+				var media_hostName = g_storage.get('request_host_url');
+					
+				if(media_hostName.indexOf("://")!=-1){
+				   media_hostName = media_hostName.substr(media_hostName.indexOf("://")+3);	
+				}
+					
+				if(media_hostName.indexOf(":")!=-1){
+					media_hostName = media_hostName.substring(0, media_hostName.indexOf(":"));
+				}
+				media_hostName = "http://" + media_hostName + ":" + g_storage.get("http_port") + "/";
+					
+				g_webdav_client.OPENSTREAMINGPORT("/", 1, function(error, content, statusstring){				
+					if(error==200){							
+						var matadatatitle = item.attr("matadatatitle");
+					
+						g_webdav_client.GSL(this_url, this_url, this_file_name, 0, 0, function(error, content, statusstring){
+							if(error==200){
+								var data = parseXml(statusstring);
+								var srt_share_link = "";
+								var share_link = $(data).find('sharelink').text();
+									
+								var open_url = "";							
+								open_url = '/smb/css/vlc_video.html?v=' + media_hostName + share_link + '&u=' + this_url;
+								open_url += '&t=' + matadatatitle;
+								open_url += '&showbutton=1';
+									
+								g_modal_url = open_url;
+								g_modal_window_width = 655;
+								g_modal_window_height = 580;
+								$('#jqmMsg').css("display", "none");
+								$('#jqmTitleText').text(m.getString('title_videoplayer'));
+								if($modalWindow){
+									$modalWindow.jqmShow();
+								}
+							}
+						});
+					}
+				});
+				
+				return;
+			}
+			
+			/*
 			if( isWinOS() ){
 				if( isIE() && getInternetExplorerVersion() <= 8 ){
 					//- The VLC Plugin doesn't support IE 8 or less
@@ -1272,6 +1325,7 @@ function openSelItem(item){
 									var data = parseXml(statusstring);
 									var srt_share_link = "";
 									var share_link = $(data).find('sharelink').text();
+									
 									var open_url = "";							
 									open_url = '/smb/css/vlc_video.html?v=' + media_hostName + share_link + '&u=' + this_url;
 									open_url += '&t=' + matadatatitle;
@@ -1290,7 +1344,6 @@ function openSelItem(item){
 						}
 					});
 					
-					/*
 					var matadatatitle = item.attr("matadatatitle");
 					
 					g_webdav_client.GSL(this_url, this_url, this_file_name, 0, 0, function(error, content, statusstring){
@@ -1313,11 +1366,10 @@ function openSelItem(item){
 							}
 						}
 					});
-					*/
 					
 					return;
 				}
-			}
+			}*/
 		}
 		
 	}
@@ -1798,20 +1850,16 @@ $(document).ready(function(){
 		var array_download_folder = new Array();
 		
 		for(var i=0; i < g_select_array.length; i++){			  
-			var this_file_name = g_select_array[i].title;
 			var this_full_url = g_select_array[i].uhref;
 			var this_isdir = g_select_array[i].isdir;
-			var this_url = g_storage.get('request_host_url');
 			
-			var full_url = this_url + "/" + this_file_name;	
-            	
 			if(this_isdir==1){
-				array_download_folder.push(full_url);
+				array_download_folder.push(this_full_url);
 				continue;
 			}
 			
 			//- Download file
-			download_file(full_url);
+			download_file(this_full_url);
 		}
 		
 		//- Download folder
@@ -2633,9 +2681,9 @@ $(document).ready(function(){
                 	"upload2facebook": {
 						name: m.getString("title_facebook")
 					},
-					"upload2flickr": {
-						name: m.getString("title_flickr")
-					},
+					//"upload2flickr": {
+					//	name: m.getString("title_flickr")
+					//},
 					"upload2picasa": {
 						name: m.getString("title_picasa")
 					},
@@ -2703,20 +2751,30 @@ $(document).ready(function(){
         }
     });
     
-	$.contextMenu({
-        selector: 'div#btnUpload', 
-		trigger: 'left',
-		callback: function(key, options) {
-			if(key=="uploadfile")
-				open_uploadfile_window();
-			else if(key=="uploadfolder")
-				open_uploadfolder_window();
-        },
-        items: {
-            "uploadfile": {name: m.getString("title_upload_file")},
-			"uploadfolder": {name: m.getString("title_upload_folder")}
-        }
-    });
+    if(isBrowser("chrome")){
+		$.contextMenu({
+	        selector: 'div#btnUpload', 
+			trigger: 'left',
+			callback: function(key, options) {
+				if(key=="uploadfile")
+					open_uploadfile_window();
+				else if(key=="uploadfolder")
+					open_uploadfolder_window();
+	        },
+	        items: {
+	            "uploadfile": {name: m.getString("title_upload_file")},
+				"uploadfolder": {
+					name: m.getString("title_upload_folder"),
+					disabled: !isBrowser("chrome")
+				}
+	        }
+	    });
+	}
+	else{
+		$('div#btnUpload').click(function(){
+			open_uploadfile_window();
+		});
+	}
 	
 	$.contextMenu({
         selector: 'div#btnAiMusicPopupMenu', 
@@ -2916,9 +2974,9 @@ $(document).ready(function(){
                 	"upload2facebook": {
 						name: m.getString("title_facebook")
 					},
-					"upload2flickr": {
-						name: m.getString("title_flickr")
-					},
+					//"upload2flickr": {
+					//	name: m.getString("title_flickr")
+					//},
 					"upload2picasa": {
 						name: m.getString("title_picasa")
 					},

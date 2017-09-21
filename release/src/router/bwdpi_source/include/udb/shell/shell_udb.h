@@ -38,45 +38,34 @@
 #if TMCFG_USER_SPACE
 
 #elif TMCFG_KERN_SPACE
-unsigned long shell_get_seconds(void);
-void * shell_timer_list_alloc(void);
-void shell_timer_list_free(void *timer_list_ptr);
-void shell_timer_setup(void *timer_list_ptr, void (*function)(unsigned long),
-		unsigned long data);
-int shell_timer_mod(void *timer_list_ptr, unsigned long period);
-int shell_timer_del(void *timer_list_ptr);
-int shell_bitop_find_first_zero_bit(const void * p, unsigned long size);
-void shell_bitop_set_bit(int bit, unsigned long *p);
-void shell_bitop_clear_bit(int bit, unsigned long * p);
-void shell_bitop_bitmap_zero(unsigned long *dst, int nbits);
-int shell_bitop_test_bit(int nr, const unsigned long *addr);
-int shell_find_next_bit(const unsigned long *p, int size, int offset);
-unsigned long shell_find_next_zero_bit(const unsigned long *addr, unsigned long size, unsigned long offset);
 
-//--------------------------------------------------------------------------------------
 void udb_shell_init_pkt_parameter(tdts_pkt_parameter_t *param, uint16_t req_flag, tdts_hook_t hook);
 
 tdts_res_t udb_shell_do_fastpath_action(tdts_udb_param_t *fw_param);
 tdts_res_t udb_shell_do_ford_action(tdts_pkt_parameter_t *param, int dpi_ret, tdts_udb_param_t *fw_param);
 tdts_res_t udb_shell_do_lin_action(tdts_pkt_parameter_t *param, int dpi_ret, tdts_udb_param_t *fw_param);
 tdts_res_t udb_shell_do_lout_action(tdts_pkt_parameter_t *param, int dpi_ret, tdts_udb_param_t *fw_param);
-tdts_act_t udb_shell_get_action(tdts_udb_param_t *fw_param, tdts_hook_t hook);
-uint16_t udb_shell_get_req_flag(tdts_udb_param_t *fw_param, tdts_hook_t hook);
+tdts_act_t udb_shell_get_action(tdts_udb_param_t *fw_param);
+tdts_res_t udb_shell_policy_match(tdts_udb_param_t *fw_param);
 
-int udb_shell_is_skb_upload(struct sk_buff *skb, uint8_t *smac);
 int udb_shell_udb_init(void);
 void udb_shell_udb_exit(void);
 
 int udb_shell_usr_msg_handler(uint8_t *msg, int size, int pid, int type);
-int udb_shell_update_devid_un_http_ua(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
-int udb_shell_update_devid_un_bootp(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
-int udb_shell_update_dns_reply(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
+int udb_shell_update_devid_un_http_ua(uint8_t uid, uint8_t ip_ver, uint8_t *data);
+int udb_shell_update_devid_un_bootp(uint8_t uid, uint8_t ip_ver, uint8_t *data);
+int udb_shell_update_dns_reply(uint8_t uid, uint8_t ip_ver, uint8_t *data);
 int udb_shell_update_upnp_data(uint8_t *data, uint32_t index, void *cb);
+
+int udb_shell_wan_detection(uint8_t *dev_name, uint32_t len);
 
 int udb_shell_anomaly_init(void);
 void udb_shell_anomaly_exit(void);
 int udb_shell_anomaly_setup(tdts_pkt_parameter_t *param);
-tdts_res_t udb_shell_policy_match(tdts_udb_param_t *fw_param);
+
+int udb_shell_memtrack_init(void);
+void udb_shell_memtrack_exit(void);
+
 #else
 #error "Unknown running space."
 #endif

@@ -28,6 +28,7 @@
 
 /* autoconf */
 #include "tdts/tmcfg.h"
+#include "tdts/version.h"
 
 /* core */
 #include "tdts/core/core.h"

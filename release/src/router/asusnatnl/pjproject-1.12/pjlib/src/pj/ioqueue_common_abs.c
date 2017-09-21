@@ -27,6 +27,9 @@
  * This file will be included by the appropriate ioqueue implementation.
  * This file is NOT supposed to be compiled as stand-alone source.
  */
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 #define THIS_FILE "ioq_common_abs.c"
 
@@ -378,8 +381,7 @@ void ioqueue_dispatch_write_event(pj_ioqueue_t *ioqueue, pj_ioqueue_key_t *h)
 		if (write_op->buf && 
 			write_op->written == (pj_ssize_t)write_op->size) 
 		{
-			//free(write_op->buf);
-			pj_mem_free(write_op->buf, write_op->size);
+			free(write_op->buf);
 			write_op->buf = NULL;
 		}
 #endif
@@ -429,8 +431,7 @@ void ioqueue_dispatch_write_event(pj_ioqueue_t *ioqueue, pj_ioqueue_key_t *h)
 	    }
 
 		if (urgent) {
-			//free(write_op);
-			pj_mem_free(write_op, sizeof(pj_ioqueue_op_key_t));
+			free(write_op);
 		}
 
         } else {
@@ -902,8 +903,7 @@ PJ_DEF(pj_status_t) pj_ioqueue_send( pj_ioqueue_key_t *key,
             /* Success! */
             *length = sent;
 			if (urgent) {
-                //free(op_key);
-				pj_mem_free(op_key, sizeof(pj_ioqueue_op_key_t));
+                free(op_key);
 			}
             return PJ_SUCCESS;
         } else {
@@ -957,8 +957,7 @@ PJ_DEF(pj_status_t) pj_ioqueue_send( pj_ioqueue_key_t *key,
 	//	free(write_op->buf);
 	//	write_op->buf = NULL;
 	//}
-	//write_op->buf = malloc(*length);
-	write_op->buf = pj_mem_alloc(*length);
+	write_op->buf = malloc(*length);
 	pj_memcpy(write_op->buf, data, *length);
 #endif
     write_op->size = *length;
@@ -1045,8 +1044,7 @@ retry_on_restart:
             /* Success! */
 			*length = sent;
 			if (urgent) {
-				//free(op_key);
-				pj_mem_free(op_key, sizeof(pj_ioqueue_op_key_t));
+				free(op_key);
 			}
             return PJ_SUCCESS;
         } else {
@@ -1120,8 +1118,7 @@ retry_on_restart:
 	//	free(write_op->buf);
 	//	write_op->buf = NULL;
 	//}
-	//write_op->buf = malloc(*length);
-	write_op->buf = pj_mem_alloc(*length);
+	write_op->buf = malloc(*length);
 	pj_memcpy(write_op->buf, data, *length);
 #endif
     write_op->size = *length;

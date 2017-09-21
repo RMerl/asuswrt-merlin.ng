@@ -67,7 +67,7 @@
 	-webkit-transform:rotate(-123deg);
     -moz-transform:rotate(-123deg);
     -o-transform:rotate(-123deg);
-    msTransform:rotate(-123deg);
+    ms-transform:rotate(-123deg);
     transform:rotate(-123deg);
 }
 .divUserIcon{
@@ -116,6 +116,12 @@
 	background: linear-gradient(to bottom, #A21717 0%,#B71010 70%,#FF4848 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#A21717', endColorstr='#FF4848',GradientType=0 ); /* IE6-9 */
 }
+.speed-meter-1000{
+	background-image:url('images/New_ui/speedmeter_2.png');
+}
+.speed-meter-100{
+	background-image:url('images/New_ui/speedmeter.png');
+}
 </style>
 <script>
 // disable auto log out
@@ -128,6 +134,10 @@ window.onresize = function() {
 } 
 var qos_rulelist = "<% nvram_get("qos_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var curState = '<% nvram_get("apps_analysis"); %>';
+
+if(cookie.get('maxBandwidth') == "" || cookie.get('maxBandwidth') == undefined){
+	cookie.set("maxBandwidth", "100");
+}
 
 function register_event(){
 	var color_array = ["#F01F09", "#F08C09", "#F3DD09", "#7A797A", "#58CCED", "inherit"];
@@ -156,14 +166,23 @@ function register_event(){
 		});
 	});
 } 
-
+var scale = [1, 5, 10, 20, 30, 50, 75, 100];
+var download_maximum = 100 * 1024;
+var upload_maximum = 100 * 1024;
 function initial(){
+	if(cookie.get('maxBandwidth') == '1000'){
+		scale = [10, 50, 100, 200, 350, 500, 750, 1000];
+		$('#upload_speed_meter_bg').attr("class", "speed-meter-1000");
+		$('#download_speed_meter_bg').attr("class", "speed-meter-1000");
+		download_maximum = 1000 * 1024;
+		upload_maximum = 1000 * 1024;
+	}
+
 	show_menu();
 	show_clients();
 }
 
-var download_maximum = 100 * 1024;
-var upload_maximum = 100 * 1024;
+
 function redraw_unit(){
 	var upload_node = document.getElementById('upload_unit').children;
 	var download_node = document.getElementById('download_unit').children;
@@ -253,36 +272,45 @@ function calculate_router_traffic(traffic){
 	var angle = 0;
 	var rotate = "";
 /* angle mapping table: [0M: -123deg, 1M: -90deg, 5M: -58deg, 10M: -33deg, 20M: -1deg, 30M: 30deg, 50M: 58deg, 75M: 88deg, 100M: 122deg]*/
+	if(cookie.get('maxBandwidth') == "100"){
+		if(tx_mb > 100 || rx_mb > 100){
+			cookie.set('maxBandwidth', '1000');
+			scale = [10, 50, 100, 200, 350, 500, 750, 1000];
+			$('#upload_speed_meter_bg').attr("class", "speed-meter-1000");
+			$('#download_speed_meter_bg').attr("class", "speed-meter-1000");
+			download_maximum = 1000 * 1024;
+			upload_maximum = 1000 * 1024;
+		}
+	}
 
 	if(router_traffic_old.length != 0){	
 		//angle = (tx_mb - lower unit)/(upper unit - lower unit)*(degree in the range) + (degree of previous scale) + (degree of 0M)
 		document.getElementById('upload_speed').innerHTML = tx_mb.toFixed(2);
-		if(tx_mb <= 1){
-			angle = (tx_mb*33) + (-123);
+		if(tx_mb <= scale[0]){
+			angle = ((tx_mb/scale[0])*33) + (-123);
 		}
-		else if(tx_mb > 1 && tx_mb <= 5){
-			angle = ((tx_mb-1)/4)*32 + 33 +(-123);
-					
+		else if(tx_mb > scale[0] && tx_mb <= scale[1]){
+			angle = ((tx_mb-scale[0])/(scale[1] - scale[0]))*32 + 33 +(-123);
 		}
-		else if(tx_mb > 5 && tx_mb <= 10){
-			angle = ((tx_mb - 5)/5)*25 + (33 + 32) + (-123);
+		else if(tx_mb > scale[1] && tx_mb <= scale[2]){
+			angle = ((tx_mb - scale[1])/(scale[2]-scale[1]))*25 + (33 + 32) + (-123);
 		}
-		else if(tx_mb > 10 && tx_mb <= 20){
-			angle = ((tx_mb - 10)/10)*32 + (33 + 32 + 25) + (-123)
+		else if(tx_mb > scale[2] && tx_mb <= scale[3]){
+			angle = ((tx_mb - scale[2])/(scale[3] - scale[2]))*32 + (33 + 32 + 25) + (-123)
 		}
-		else if(tx_mb > 20 && tx_mb <= 30){
-			angle = ((tx_mb - 20)/10)*31 + (33 + 32 + 25 + 32) + (-123);	
+		else if(tx_mb > scale[3] && tx_mb <= scale[4]){
+			angle = ((tx_mb - scale[3])/(scale[4] - scale[3]))*31 + (33 + 32 + 25 + 32) + (-123);	
 		}
-		else if(tx_mb > 30 && tx_mb <= 50){
-			angle = ((tx_mb - 30)/20)*28 + (33 + 32 + 25 + 32 + 31) + (-123);	
+		else if(tx_mb > scale[4] && tx_mb <= scale[5]){
+			angle = ((tx_mb - scale[4])/(scale[5] - scale[4]))*28 + (33 + 32 + 25 + 32 + 31) + (-123);	
 		}
-		else if(tx_mb > 50 && tx_mb <= 75){
-			angle = ((tx_mb - 50)/25)*30 + (33 + 32 + 25 + 32 + 31 + 28) + (-123);
+		else if(tx_mb > scale[5] && tx_mb <= scale[6]){
+			angle = ((rx_mb - scale[5])/(scale[6] - scale[5]))*30 + (33 + 32 + 25 + 32 + 31 + 28) + (-123);
 		}
-		else if(tx_mb >75 && tx_mb <= 100){
-			angle = ((tx_mb - 75)/25)*34 + 	(33 + 32 + 25 + 32 + 31 + 28 + 30) + (-123);
+		else if(tx_mb > scale[6] && tx_mb <= scale[7]){
+			angle = ((tx_mb - scale[6])/(scale[7] -scale[6]))*34 + (33 + 32 + 25 + 32 + 31 + 28 + 30) + (-123);
 		}
-		else{		// exception case temporally, upload traffic exceed 100Mb.
+		else{		// exception case temporally, download traffic exceed 100 Mb or 1000 Mb.
 			angle = 123;		
 		}
 
@@ -297,32 +325,31 @@ function calculate_router_traffic(traffic){
 		
 		//angle = (rx_mb - lower unit)/(upper unit - lower unit)*(degree in the range) + (degree of previous scale) + (degree of 0M)
 		document.getElementById('download_speed').innerHTML = rx_mb.toFixed(2);
-		if(rx_mb <= 1){
-			angle = (rx_mb*33) + (-123);
+		if(rx_mb <= scale[0]){
+			angle = ((rx_mb/scale[0])*33) + (-123);
 		}
-		else if(rx_mb > 1 && rx_mb <= 5){
-			angle = ((rx_mb-1)/4)*32 + 33 +(-123);
-					
+		else if(rx_mb > scale[0] && rx_mb <= scale[1]){
+			angle = ((rx_mb-scale[0])/(scale[1] - scale[0]))*32 + 33 +(-123);
 		}
-		else if(rx_mb > 5 && rx_mb <= 10){
-			angle = ((rx_mb - 5)/5)*25 + (33 + 32) + (-123);
+		else if(rx_mb > scale[1] && rx_mb <= scale[2]){
+			angle = ((rx_mb - scale[1])/(scale[2]-scale[1]))*25 + (33 + 32) + (-123);
 		}
-		else if(rx_mb > 10 && rx_mb <= 20){
-			angle = ((rx_mb - 10)/10)*32 + (33 + 32 + 25) + (-123)
+		else if(rx_mb > scale[2] && rx_mb <= scale[3]){
+			angle = ((rx_mb - scale[2])/(scale[3] - scale[2]))*32 + (33 + 32 + 25) + (-123)
 		}
-		else if(rx_mb > 20 && rx_mb <= 30){
-			angle = ((rx_mb - 20)/10)*31 + (33 + 32 + 25 + 32) + (-123);	
+		else if(rx_mb > scale[3] && rx_mb <= scale[4]){
+			angle = ((rx_mb - scale[3])/(scale[4] - scale[3]))*31 + (33 + 32 + 25 + 32) + (-123);	
 		}
-		else if(rx_mb > 30 && rx_mb <= 50){
-			angle = ((rx_mb - 30)/20)*28 + (33 + 32 + 25 + 32 + 31) + (-123);	
+		else if(rx_mb > scale[4] && rx_mb <= scale[5]){
+			angle = ((rx_mb - scale[4])/(scale[5] - scale[4]))*28 + (33 + 32 + 25 + 32 + 31) + (-123);	
 		}
-		else if(rx_mb > 50 && rx_mb <= 75){
-			angle = ((rx_mb - 50)/25)*30 + (33 + 32 + 25 + 32 + 31 + 28) + (-123);
+		else if(rx_mb > scale[5] && rx_mb <= scale[6]){
+			angle = ((rx_mb - scale[5])/(scale[6] - scale[5]))*30 + (33 + 32 + 25 + 32 + 31 + 28) + (-123);
 		}
-		else if(rx_mb >75 && rx_mb <= 100){
-			angle = ((rx_mb - 75)/25)*34 + 	(33 + 32 + 25 + 32 + 31 + 28 + 30) + (-123);
+		else if(rx_mb > scale[6] && rx_mb <= scale[7]){
+			angle = ((rx_mb - scale[6])/(scale[7] -scale[6]))*34 + (33 + 32 + 25 + 32 + 31 + 28 + 30) + (-123);
 		}
-		else{		// exception case temporally, download traffic exceed 100Mb.
+		else{		// exception case temporally, download traffic exceed 100 Mb or 1000 Mb.
 			angle = 123;		
 		}
 
@@ -1327,7 +1354,7 @@ function cancel(){
 												<div style="position:absolute;margin:121px 0px 0px 296px;font-size:16px;display:none;"></div>
 												<div style="position:absolute;margin:150px 0px 0px 275px;font-size:16px;display:none;"></div>
 												<div id="upload_speed" style="position:absolute;margin:147px 0px 0px 187px;font-size:24px;width:60px;text-align:center;">0.00</div>
-												<div style="background-image:url('images/New_ui/speedmeter.png');height:188px;width:270px;background-repeat:no-repeat;margin:-10px 0px 0px 70px"></div>
+												<div id="upload_speed_meter_bg" class="speed-meter-100" style="height:188px;width:270px;background-repeat:no-repeat;margin:-10px 0px 0px 70px"></div>
 												<div id="indicator_upload" class="transition_style" style="background-image:url('images/New_ui/indicator.png');position:absolute;height:100px;width:50px;background-repeat:no-repeat;margin:-110px 0px 0px 194px;"></div>
 											</td>
 											<td id="download_unit">	
@@ -1338,7 +1365,7 @@ function cancel(){
 												<div style="position:absolute;margin:120px 0px 0px 270px;font-size:16px;display:none;"></div>
 												<div style="position:absolute;margin:150px 0px 0px 250px;font-size:16px;display:none;"></div>
 												<div id="download_speed" style="position:absolute;margin:147px 0px 0px 130px;font-size:24px;text-align:center;width:60px;">0.00</div>
-												<div style="background-image:url('images/New_ui/speedmeter.png');height:188px;width:270px;background-repeat:no-repeat;margin:-10px 0px 0px 10px"></div>
+												<div id="download_speed_meter_bg" class="speed-meter-100" style="height:188px;width:270px;background-repeat:no-repeat;margin:-10px 0px 0px 10px"></div>
 												<div id="indicator_download" class="transition_style" style="background-image:url('images/New_ui/indicator.png');position:absolute;height:100px;width:50px;background-repeat:no-repeat;margin:-110px 0px 0px 133px;"></div>		
 											</td>
 										</tr>

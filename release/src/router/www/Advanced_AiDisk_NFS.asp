@@ -82,7 +82,7 @@ function initial(){
 
 	shownfsd_exportlist();
 
-	if(machine_name.search("aarch64") != -1)
+	if (hnd_support)
 		document.getElementById("nfsd_v2_tr").style.display="none";
 
 	document.aidiskForm.protocol.value = PROTOCOL;

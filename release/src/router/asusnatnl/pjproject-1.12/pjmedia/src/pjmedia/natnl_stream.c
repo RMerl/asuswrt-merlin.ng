@@ -1,24 +1,23 @@
 #include <pjmedia/natnl_stream.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 #define THIS_FILE "natnl_stream.c"
 
-PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
-                                        pjsua_call *call,
+static void stream_on_destroy(void *obj);
+
+PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pjmedia_endpt *med_endpt,
+												pjsua_call *call,
                                         pjmedia_stream_info *si,
                                         natnl_stream **stream)
 {
     pj_status_t status = PJ_SUCCESS;
     unsigned strm_idx = 0;
-    strm_idx = call->index;
+	pj_pool_t *pool = NULL;
+	strm_idx = call->index;
 
-        /* TODO:
-         *   - Create and start your media stream based on the parameters
-         *     in si
-         */
-
-    PJ_ASSERT_RETURN(pool, PJ_EINVAL);
-
-    PJ_LOG(4,(THIS_FILE,"natnl audio channel update..strm_idx=%d", strm_idx));
+	PJ_LOG(4,(THIS_FILE,"natnl audio channel update..strm_idx=%d", strm_idx));
 
     /* Check if no media is active */
     if (si->dir != PJMEDIA_DIR_NONE) {
@@ -33,7 +32,7 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
 		pj_mutex_lock(call->tnl_stream_lock2);
 		pj_mutex_lock(call->tnl_stream_lock3);
 		pj_mutex_lock(call->tnl_stream_lock4);
-        // DEAN don't re-create natnl stream
+        /*// DEAN don't re-create natnl stream
         if (call->tnl_stream) {
 			*stream = call->tnl_stream;
 			pj_mutex_unlock(call->tnl_stream_lock4);
@@ -41,13 +40,28 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
             pj_mutex_unlock(call->tnl_stream_lock2);
             pj_mutex_unlock(call->tnl_stream_lock);
             return PJ_SUCCESS;
-		}
+		}*/
 
-        call->tnl_stream = *stream = PJ_POOL_ZALLOC_T(pool, natnl_stream);
+		/* Create natnl pool */
+		pool = pjmedia_endpt_create_pool(med_endpt, "nattp%p", 512, 512);
+
+        *stream = PJ_POOL_ZALLOC_T(pool, natnl_stream);
         PJ_ASSERT_RETURN(*stream != NULL, PJ_ENOMEM);
         (*stream)->call = call;
-        (*stream)->own_pool = pool;
+        (*stream)->pool = pool;
 		(*stream)->med_tp = call->med_tp;
+
+		status = pj_grp_lock_create(pool, NULL, &(*stream)->grp_lock);
+		if (status != PJ_SUCCESS) {
+			pj_pool_release(pool);
+			return status;
+		}
+
+		pj_grp_lock_add_ref((*stream)->grp_lock);
+		pj_grp_lock_add_handler((*stream)->grp_lock, pool, (*stream),
+			&stream_on_destroy);
+
+		pj_grp_lock_acquire((*stream)->grp_lock);
 		pj_memcpy(&(*stream)->rem_addr, &si->rem_addr, sizeof(pj_sockaddr));
 		pj_list_init(&(*stream)->rbuff);
 		pj_list_init(&(*stream)->no_ctl_rbuff);
@@ -68,7 +82,8 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
         status = pj_mutex_create_simple(pool, NULL, &(*stream)->rbuff_mutex);
         if (status != PJ_SUCCESS) {
             //pj_pool_t *tmp_pool = (*stream)->own_pool;
-            (*stream)->own_pool = NULL;
+			pj_pool_release((*stream)->pool);
+            (*stream)->pool = NULL;
             //pj_pool_release(tmp_pool);
             goto on_return;
 		}
@@ -77,37 +92,40 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
 		status = pj_mutex_create_simple(pool, NULL, &(*stream)->no_ctl_rbuff_mutex);
 		if (status != PJ_SUCCESS) {
 			//pj_pool_t *tmp_pool = (*stream)->own_pool;
-			(*stream)->own_pool = NULL;
+			pj_pool_release((*stream)->pool);
+			(*stream)->pool = NULL;
 			//pj_pool_release(tmp_pool);
 			goto on_return;
 		}
 
         status = pj_mutex_create_simple(pool, NULL, &(*stream)->gcbuff_mutex);
-        if (status != PJ_SUCCESS) {
-            (*stream)->own_pool = NULL;
+		if (status != PJ_SUCCESS) {
+			pj_pool_release((*stream)->pool);
+            (*stream)->pool = NULL;
             goto on_return;
         }
 
         /* Create semaphore */
         status = pj_sem_create(pool, "client", 0, 65535, &(*stream)->rbuff_sem);
-        if (status != PJ_SUCCESS) {
-            (*stream)->own_pool = NULL;
+		if (status != PJ_SUCCESS) {
+			pj_pool_release((*stream)->pool);
+            (*stream)->pool = NULL;
             goto on_return;
         }
 
 		/* Create semaphore */
 		status = pj_sem_create(pool, "client2", 0, 65535, &(*stream)->no_ctl_rbuff_sem);
 		if (status != PJ_SUCCESS) {
-			(*stream)->own_pool = NULL;
+			pj_pool_release((*stream)->pool);
+			(*stream)->pool = NULL;
 			goto on_return;
 		}
 
         // +Roger - Create Send buffer Mutex
         status = pj_mutex_create_simple(pool, NULL, &(*stream)->sbuff_mutex);
         if (status != PJ_SUCCESS) {
-            //pj_pool_t *tmp_pool = (*stream)->own_pool;
-            (*stream)->own_pool = NULL;
-            //pj_pool_release(tmp_pool);
+			pj_pool_release((*stream)->pool);
+            (*stream)->pool = NULL;
             goto on_return;
         }
         //------------------------------------//
@@ -120,15 +138,78 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
                                           &aud_rtp_cb, &aud_rtcp_cb);
 #endif
 
+		PJ_LOG(4, (THIS_FILE, "NATNL stream %p created", (*stream)));
     }
 
 on_return:
+	pj_grp_lock_release((*stream)->grp_lock);
 	pj_mutex_unlock(call->tnl_stream_lock4);
 	pj_mutex_unlock(call->tnl_stream_lock3);
     pj_mutex_unlock(call->tnl_stream_lock2);
-    pj_mutex_unlock(call->tnl_stream_lock);
+	pj_mutex_unlock(call->tnl_stream_lock);
 
     return status;
+}
+
+
+/* REALLY destroy stream */
+static void stream_on_destroy(void *obj)
+{
+	natnl_stream *stream = (natnl_stream*)obj;
+	pj_pool_t *pool;
+	recv_buff *rb = NULL;
+
+	// Free the data are still in the list.
+	/*while (!pj_list_empty(&stream->rbuff)) {
+		rb = stream->rbuff.next;
+		stream->rbuff_cnt--;
+		pj_list_erase(rb);
+		free(rb);
+	}*/
+
+	/* Free mutex */
+	if (stream->gcbuff_mutex) {
+		pj_mutex_destroy(stream->gcbuff_mutex);
+		stream->gcbuff_mutex = NULL;
+	}
+
+	if (stream->rbuff_mutex) {
+		pj_mutex_destroy(stream->rbuff_mutex);
+		stream->rbuff_mutex = NULL;
+	}
+
+	if (stream->no_ctl_rbuff_mutex) {
+		pj_mutex_destroy(stream->no_ctl_rbuff_mutex);
+		stream->no_ctl_rbuff_mutex = NULL;
+	}
+
+	if (stream->sbuff_mutex) {
+		pj_mutex_destroy(stream->sbuff_mutex);
+		stream->sbuff_mutex = NULL;
+	}
+
+	if (stream->rx_band) {
+		free(stream->rx_band);
+		stream->rx_band = NULL;
+	}
+
+	if (stream->tx_band) {
+		free(stream->tx_band);
+		stream->tx_band = NULL;
+	}
+
+	// free stream;
+	stream->call->tnl_stream = NULL;
+
+	/* Done */
+	if (stream->pool) {
+		pool = stream->pool;
+		stream->pool = NULL;
+		PJ_LOG(4, (THIS_FILE, " natnl_stream->pool released"));
+		pj_pool_release(pool);
+	}
+
+	PJ_LOG(4, (THIS_FILE, "NATNL stream %p destroyed", stream));
 }
 
 /*
@@ -137,7 +218,7 @@ on_return:
 PJ_DEF(pj_status_t) pjmedia_natnl_stream_destroy( natnl_stream *stream )
 {
     PJ_ASSERT_RETURN(stream != NULL, PJ_EINVAL);
-
+#if 0
     /**
      * don't need to destroy mutex here, 
      * after stream destroy, the mutex will also be freed 
@@ -165,12 +246,6 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_destroy( natnl_stream *stream )
         stream->sbuff_mutex = NULL;
     }
 #endif
-#if 1 // DEAN don't release pool hear, let pjsip to release it.
-    if (stream->own_pool) {
-        //pj_pool_release(stream->own_pool);
-        stream->own_pool = NULL;
-    }
-#endif
 
 	if (stream->rx_band) {
 		free(stream->rx_band);
@@ -181,6 +256,16 @@ PJ_DEF(pj_status_t) pjmedia_natnl_stream_destroy( natnl_stream *stream )
 		free(stream->tx_band);
 		stream->tx_band = NULL;
 	}
+
+#if 1 // DEAN don't release pool hear, let pjsip to release it.
+	if (stream->pool) {
+		//pj_pool_t *pool = stream->pool;
+		//stream->pool = NULL;
+		//pj_pool_release(pool);
+	}
+#endif
+#endif
+	pj_grp_lock_dec_ref(stream->grp_lock);
 
     return PJ_SUCCESS;
 }

@@ -398,6 +398,7 @@ function enable_whole_security(){
 		restart_samba = 1;
 	}
 
+	document.form.wrs_protect_enable.value = 1;
 	if(wrs_cc_enable == 0){
 		document.form.wrs_cc_enable.value = 1;
 //		restart_firewall = 1;

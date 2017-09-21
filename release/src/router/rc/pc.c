@@ -522,6 +522,7 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 		if (!strcmp(follow_pc->mac, "")) continue;
 #endif
+
 		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
 			if(follow_e->start_day != follow_e->end_day && follow_e->end_day == 0)
 				follow_e->end_day = 7;

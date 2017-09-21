@@ -300,17 +300,20 @@ function genClientList(){
 
 			if(typeof clientList[thisClientMacAddr] == "undefined") {
 				var thisClientType = (typeof thisClient.type == "undefined") ? "0" : thisClient.type;
+				var thisClientDefaultType = (typeof thisClient.defaultType == "undefined") ? thisClientType : thisClient.defaultType;
 				var thisClientName = (typeof thisClient.name == "undefined") ? thisClientMacAddr : (thisClient.name.trim() == "") ? thisClientMacAddr : thisClient.name.trim();
+				var thisClientNickName = (typeof thisClient.nickName == "undefined") ? "" : (thisClient.nickName.trim() == "") ? "" : thisClient.nickName.trim();
 
 				clientList.push(thisClientMacAddr);
 				clientList[thisClientMacAddr] = new setClientAttr();
 				clientList[thisClientMacAddr].from = "nmpClient";
 				if(!downsize_4m_support) {
 					clientList[thisClientMacAddr].type = thisClientType;
-					clientList[thisClientMacAddr].defaultType = thisClientType;
+					clientList[thisClientMacAddr].defaultType = thisClientDefaultType;
 				}
 				clientList[thisClientMacAddr].mac = thisClientMacAddr;
 				clientList[thisClientMacAddr].name = thisClientName;
+				clientList[thisClientMacAddr].nickName = thisClientNickName;
 				clientList[thisClientMacAddr].vendor = thisClient.vendor.trim();
 				nmpCount++;
 			}
@@ -990,6 +993,7 @@ function card_show_custom_image(flag) {
 		}
 	}
 }
+var card_custom_name = decodeURIComponent('<% nvram_char_to_ascii("", "custom_clientlist"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
 function card_confirm(callBack) {
 	var validClientListForm = function() {
 		document.getElementById("card_client_name").value = document.getElementById("card_client_name").value.trim();
@@ -1012,7 +1016,7 @@ function card_confirm(callBack) {
 		}
 		return true;
 	};
-	var custom_name = decodeURIComponent('<% nvram_char_to_ascii("", "custom_clientlist"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
+
 	if(validClientListForm()){
 		document.card_clientlist_form.custom_clientlist.disabled = false;
 		// customize device name
@@ -1028,7 +1032,7 @@ function card_confirm(callBack) {
 				clientTypeNum = "0";
 			}
 		}
-		originalCustomListArray = custom_name.split('<');
+		originalCustomListArray = card_custom_name.split('<');
 		onEditClient[0] = document.getElementById("card_client_name").value.trim();
 		onEditClient[1] = document.getElementById("client_macaddr_field").value;
 		onEditClient[2] = 0;
@@ -1047,8 +1051,8 @@ function card_confirm(callBack) {
 		}
 
 		originalCustomListArray.push(onEditClient.join('>'));
-		custom_name = originalCustomListArray.join('<');
-		document.card_clientlist_form.custom_clientlist.value = custom_name;
+		card_custom_name = originalCustomListArray.join('<');
+		document.card_clientlist_form.custom_clientlist.value = card_custom_name;
 
 		// handle user image
 		document.card_clientlist_form.custom_usericon.disabled = true;
@@ -1072,13 +1076,43 @@ function card_confirm(callBack) {
 		setTimeout(function() {
 			var updateClientListObj = function () {
 				$.ajax({
-					url: '/update_clients.asp',
+					url: '/update_customList.asp',
 					dataType: 'script', 
 					error: function(xhr) {
 						setTimeout("updateClientListObj();", 1000);
 					},
 					success: function(response){
 						genClientList();
+
+						for(var i = 0; i < custom_clientlist_array.length; i += 1) {
+							var thisClient = custom_clientlist_array[i].split(">");
+							var thisClientMacAddr = (typeof thisClient[1] == "undefined") ? false : thisClient[1].toUpperCase();
+
+							if(!thisClientMacAddr || thisClient.length != 6){
+								continue;
+							}
+
+							if(typeof clientList[thisClientMacAddr] == "undefined"){
+								clientList.push(thisClientMacAddr);
+								clientList[thisClientMacAddr] = new setClientAttr();
+								clientList[thisClientMacAddr].from = "customList";
+							}
+
+							clientList[thisClientMacAddr].mac = thisClient[1].toUpperCase();
+							clientList[thisClientMacAddr].group = thisClient[2];
+							clientList[thisClientMacAddr].type = thisClient[3];
+							clientList[thisClientMacAddr].callback = thisClient[4];
+
+							if(thisClient[0] == "New device") {
+								if(clientList[thisClientMacAddr].name == "") {
+									clientList[thisClientMacAddr].nickName = thisClient[0];
+								}
+							}
+							else {
+								clientList[thisClientMacAddr].nickName = thisClient[0];
+							}
+						}
+
 						switch(callBack) {
 							case "DNSFilter" :
 								showDropdownClientList('setclientmac', 'name>mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');

@@ -220,6 +220,13 @@ ifeq ($(RTAC68U),y)
 	cp -rf cfe/mtd-write $(INSTALLDIR)/rom/cfe/
 endif
 
+ifeq ($(RTAC3200),y)
+	mkdir -p $(INSTALLDIR)/rom/cfe
+	cp -rf cfe/cfe_rt-ac3200_1.0.1.7_128k.bin $(INSTALLDIR)/rom/cfe
+	cp -rf cfe/cfe_rt-ac3200_2.0.0.4_128k.bin $(INSTALLDIR)/rom/cfe
+	cp -rf cfe/mtd-write $(INSTALLDIR)/rom/cfe/
+endif
+
 ifeq ($(RTCONFIG_MEDIA_SERVER),y)
 	mkdir -p $(INSTALLDIR)/rom/dlna
 ifeq ($(BUILD_NAME), RT-AC68U)
@@ -248,4 +255,9 @@ endif
 
 ifeq ($(RTCONFIG_LETSENCRYPT),y)
 	install -m 0644 rom/etc/ssl/certs/DST_Root_CA_X3.pem $(INSTALLDIR)/rom/etc/ssl/certs/letsencrypt.pem
+endif
+
+ifeq ($(HND_ROUTER),y)
+	mkdir -p $(INSTALLDIR)/usr/share/zoneinfo
+	cp -rf zoneinfo/* $(INSTALLDIR)/usr/share/zoneinfo/
 endif

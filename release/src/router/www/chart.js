@@ -905,6 +905,9 @@ var pie_flag;
 			if (ChartElements.length > 0){
 				// If we have multiple datasets, show a MultiTooltip for all of the data points at that index
 				//if (this.datasets && this.datasets.length > 1) {
+				if(this.datasets == undefined)
+					return true;
+
 				if (this.datasets[0].bars) {
 					var dataArray,
 						dataIndex;
@@ -2598,12 +2601,20 @@ var pie_flag;
 
 				helpers.each(dataset.data,function(dataPoint,index){
 					//Add a new point for each piece of data, passing any required data to draw.
+					var label_string = "";
+					if(data.labels[index-1] != undefined){
+						label_string = data.labels[index-1] +"-" + data.labels[index];
+					}
+					else{
+						label_string = data.labels[index]
+					}
+
 					datasetObject.points.push(new this.PointClass({
 						//year : "2055",
 						unit : dataset.unit[index],
 						displayValue : dataset.displayValue[index],
 						value : dataPoint,
-						label : data.labels[index],
+						label : label_string,
 						datasetLabel: dataset.label,
 						strokeColor : dataset.pointStrokeColor,
 						fillColor : dataset.pointColor,
@@ -2611,6 +2622,7 @@ var pie_flag;
 						highlightStroke : dataset.pointHighlightStroke || dataset.pointStrokeColor
 					}));
 				},this);
+
 
 				this.buildScale(data.labels);
 

@@ -11,12 +11,19 @@ body{
 	overflow: hidden;
 	background: #e8e8e8;
 }
-#errorpage{
-	background-image:url('vlc_bg_img.jpg');
+.section{
+	float:left;
 	width:100%;
-	height:100%;
 }
-
+video{
+	background:#000;
+}
+#errorpage{
+	position:relative;
+}
+#errorpage_bg{
+	position:absolute;
+}
 .movie_overview{
 	padding:10px;
 }
@@ -67,15 +74,15 @@ padding-bottom: 4px;
 text-align: left;
 }
 a.allowDefCtxMenu{
-	color: #E9E4F2;
+color: #E9E4F2;
 text-decoration: underline;
 cursor: pointer;
 }
 .x-form-display-title-field{
-	font-size: 16px;
-	font-weight: bold;
-	color:#F90;
-	padding-bottom:15px;
+font-size: 16px;
+font-weight: bold;
+color:#F90;
+padding-bottom:15px;
 }
 .toolbar{
 padding: 6px 20px 0 20px;
@@ -86,28 +93,28 @@ background-color: #000;
 .x-btn-ctrl{
 cursor:pointer;
 }
-.play{
+#btn_play{
 width:40px !important;
 height:40px !important;
 background-position: 0 0;
 }
-.play:hover{
+#btn_play:hover{
 background-position: 0 -40px;
 }
-.pause{
+#btn_pause{
 width:40px !important;
 height:40px !important;
 background-position: -40px 0;
 }
-.pause:hover{
+#btn_pause:hover{
 background-position: -40px -40px;
 }
-.stop{
+#btn_stop{
 width:34px !important;
 height:34px !important;
 background-position: 0 -130px;
 }
-.stop:hover{
+#btn_stop:hover{
 background-position: 0 -164px;
 }
 /*------------------------------------*/

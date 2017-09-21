@@ -40,7 +40,7 @@ endif
 #endif
 
 #ifdef BCM_MEVENT
-ifeq ($(CONFIG_BCM_MEVENT),y)
+ifeq ($(RTCONFIG_BCM_MEVENT),y)
 OBJS += mevent_eap.o
 OBJS += bcmevent.o
 CFLAGS += -DBCM_MEVENT

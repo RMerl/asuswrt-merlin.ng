@@ -72,6 +72,10 @@ CFLAGS += -I$(TOP)/traffic_limiter
 CFLAGS += -I$(TOP)/sqlite
 endif
 
+ifeq ($(RTCONFIG_SW_HW_AUTH), y)
+CFLAGS += -I$(TOP)/sw-hw-auth
+endif
+
 ifeq ($(or $(RTAC68A),$(RT4GAC68U)),y)
 CFLAGS += -DRTAC68U
 endif

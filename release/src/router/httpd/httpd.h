@@ -84,6 +84,8 @@ extern struct useful_redirect_list useful_redirect_lists[];
 #define ISLOGOUT	8
 #define NOLOGIN		9
 
+#define LOCKTIME 60*5
+
 /* image path for app */
 #define IMAGE_MODEL_PRODUCT	"/images/Model_product.png"
 #define IMAGE_WANUNPLUG		"/images/WANunplug.png"
@@ -269,6 +271,7 @@ extern char *generate_token(void);
 extern int match( const char* pattern, const char* string );
 extern int match_one( const char* pattern, int patternlen, const char* string );
 extern void send_page( int status, char* title, char* extra_header, char* text , int fromapp);
+extern void send_content_page( int status, char* title, char* extra_header, char* text , int fromapp);
 extern char *get_referrer(char *referer);
 
 /* web.c */
@@ -310,23 +313,25 @@ extern char referer_host[64];
 extern char host_name[64];
 extern char user_agent[1024];
 extern int check_user_agent(char* user_agent);
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 extern void add_ifttt_flag(void);
 #endif
 
 #ifdef RTCONFIG_HTTPS
 extern int check_model_name(void);
+extern char *pwenc(const char *input, char *output);
 #endif
 
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 extern char ifttt_stoken[128];
 extern char ifttt_query_string[2048];
 extern time_t ifttt_timestamp;
 extern char *gen_IFTTTPincode(char *pincode);
-extern char *gen_IFTTTtoken(char* stoken, char* token);
+extern int gen_IFTTTtoken(char* stoken, char* token);
 extern char* gen_IFTTT_inviteCode(char* inviteCode);
 extern int check_ifttt_token(char* asus_token);
 extern void ifttt_log(char* url, char* file);
+extern int alexa_block_internet(int block);
 #endif
 
 extern char* ipisdomain(char* hostname, char* str);
@@ -334,5 +339,7 @@ extern int referer_check(char* referer, int fromapp_flag);
 extern int check_noauth_referrer(char* referer, int fromapp_flag);
 extern char current_page_name[128];
 extern int gen_guestnetwork_pass(char *key, size_t size);
-
+extern int alexa_pause_internet(int pause);
+extern int httpd_sw_hw_check(void);
+extern int ej_get_ui_support(int eid, webs_t wp, int argc, char **argv);
 #endif /* _httpd_h_ */

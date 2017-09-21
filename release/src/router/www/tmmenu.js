@@ -1742,9 +1742,55 @@ function genStdRefresh(spin, min, exec)
 function _tabCreate(tabs)
 {
 	var buf = [];
+	var wireless_tabs = [];
+	var wireless_tab = 0;
+	var internet_tabs = [];
+	var internet_tab = 0;
+
+	for(var i = 0; i < arguments.length; i++){
+		if(arguments[i][0].indexOf("WIRELESS") != -1){
+			wireless_tabs.push(arguments[i]);
+		}
+		else if(arguments[i][0].indexOf("INTERNET") != -1){
+			internet_tabs.push(arguments[i]);
+		}
+	}
+
 	buf.push('<ul id="tabs" class="tabs">');
-	for (var i = 0; i < arguments.length; ++i)
+	for (var i = 0; i < arguments.length; ++i){
+		if(arguments[i][0].indexOf("WIRELESS") != -1){
+			if(wireless_tabs.length > 1){
+				if(!wireless_tab){
+					buf.push('<li><a style="margin-right: 3px;" href="#" id="wireless_tabs"><#menu5_1#></a>');
+					buf.push('<ul>');
+					for(var j = 0; j < wireless_tabs.length; j++){
+						buf.push('<li><a href="javascript:tabSelect(\'' + wireless_tabs[j][0] +'\')" id="' + wireless_tabs[j][0] + '">' + wireless_tabs[j][1] + '</a></li>');
+					}
+					buf.push('</ul></li>');
+					wireless_tab = 1;
+				}
+			}
+			else
+				buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + arguments[i][1] + '</a></li>');
+		}
+		else if(arguments[i][0].indexOf("INTERNET") != -1){
+			if(internet_tabs.length > 1){
+				if(!internet_tab){
+					buf.push('<li><a style="margin-right: 3px;" href="#" id="internet_tabs"><#menu5_3_1#></a>');
+					buf.push('<ul>');
+					for(var j = 0; j < internet_tabs.length; j++){
+						buf.push('<li><a href="javascript:tabSelect(\'' + internet_tabs[j][0] +'\')" id="' + internet_tabs[j][0] + '">' + internet_tabs[j][1] + '</a></li>');
+					}
+					buf.push('</ul></li>');
+					internet_tab = 1;
+				}
+			}
+			else
+				buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + '<#menu5_3_1#> (' + arguments[i][1] + ')</a></li>');
+		}
+		else
 		buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + arguments[i][1] + '</a>');
+	}
 	buf.push('</ul><div id="tabs-bottom"></div>');
 	return buf.join('');
 }

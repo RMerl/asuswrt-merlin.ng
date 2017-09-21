@@ -69,6 +69,9 @@ function initial(){
 		genWANSoption();
 
 	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "IPv6"]);
+
+	if(based_modelid == "BRT-AC828")
+		document.getElementById("wan_sel_tr").style.display = "";
 }
 
 function showInputfield(v){
@@ -1017,7 +1020,7 @@ function genWANSoption(){
 						<td colspan="2"><#t2BC#></td>
 				  </tr>
 				  </thead>		
-					<tr>
+					<tr id="wan_sel_tr" style="display: none;">
 						<th>WAN Selection</th>
 		     		<td>
 		     			<select name="wan_selection" class="input_option" onchange="changeWANUnit(this);">

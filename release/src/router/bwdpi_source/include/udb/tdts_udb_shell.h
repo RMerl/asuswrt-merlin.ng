@@ -29,7 +29,6 @@
 /*
  * Dependencies
  */
-#include "tdts/tmcfg.h"
 #include "udb/tmcfg_udb.h"
 
 #ifdef __KERNEL__

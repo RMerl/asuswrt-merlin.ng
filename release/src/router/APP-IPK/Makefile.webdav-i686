@@ -9,7 +9,7 @@ CROSS_COMPILER := $(CROSS_COMPILE)
 CONFIGURE := ./configure --host=i686-cm-linux --build=$(BUILD)
 TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/.. && pwd)
 #IPKG_TOOLS := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))../../../ipkg-utils-1.7 && pwd)
-IPKG_TOOLS := /home/tina/arm/optware/mbwe-bluering/toolchain/ipkg-utils-1.7
+IPKG_TOOLS := ~/toolchain/ipkg-utils-1.7
 #LD_DIR := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))../../../../staging && pwd)
 LD_DIR := $(TOOLCHAIN)
 
@@ -87,7 +87,7 @@ libxml2/stamp-h1:
 	touch stamp-h1
 
 libxml2: libxml2/stamp-h1
-	cd $(CURRENT)/libxml2 && \
+	cd $(CURRENT)/libxml2 && autoreconf -i -f && \
 	AR=$(TOOLCHAIN)/bin/i686-cm-linux-ar AS=$(TOOLCHAIN)/bin/i686-cm-linux-as LD=$(TOOLCHAIN)/bin/i686-cm-linux-ld NM=$(TOOLCHAIN)/bin/i686-cm-linux-nm CC=$(TOOLCHAIN)/bin/i686-cm-linux-gcc CPP="$(TOOLCHAIN)/bin/i686-cm-linux-gcc -E" GCC=$(TOOLCHAIN)/bin/i686-cm-linux-gcc CXX=$(TOOLCHAIN)/bin/i686-cm-linux-g++ RANLIB=$(TOOLCHAIN)/bin/i686-cm-linux-ranlib STRIP=$(TOOLCHAIN)/bin/i686-cm-linux-strip CPPFLAGS="-O2   -pipe  -I$(TOOLCHAIN)/include " LDFLAGS=" -L$(LD_DIR)/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(LD_DIR)/lib " \
 	./configure --build=i386-pc-linux-gnu --host=i686-cm-linux --target=i686-cm-linux --prefix=/opt --disable-nls --disable-static --enable-shared --without-python
 	@$(MAKE) -C $(CURRENT)/libxml2 all

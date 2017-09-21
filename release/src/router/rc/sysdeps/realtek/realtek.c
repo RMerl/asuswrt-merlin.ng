@@ -3024,7 +3024,15 @@ if(is_root)
 		pmib->gbwcEntry.GBWCThrd_rx = 0;
 		
 	}
-		
+
+	// The setting is for ASUS ATE sku test.
+	if (is_root && band == 1) {
+		if (nvram_match("dfsdbgmode", "1")) {
+			doSystem("iwpriv wl%d set_mib dfsdbgmode=1", band);
+			sleep(1);
+		}
+	}
+
 	return 0;
 }
 
@@ -3985,7 +3993,7 @@ int wlcscan_core(char *ofile, char *wif)
 		}else{
 			for (i = 0; i < ap_count; i++){
 				/*if(apinfos[i].ctl_ch < 0 ){
-					fprintf(fp, "\"ERR_BNAD\",");
+					fprintf(fp, "\"ERR_BAND\",");
 				}else */if( apinfos[i].ctl_ch > 0 &&
 							 apinfos[i].ctl_ch < 14){
 					fprintf(fp, "\"2G\",");
@@ -3993,7 +4001,7 @@ int wlcscan_core(char *ofile, char *wif)
 							 apinfos[i].ctl_ch < 166){
 					fprintf(fp, "\"5G\",");
 				}else{
-					fprintf(fp, "\"ERR_BNAD\",");
+					fprintf(fp, "\"ERR_BAND\",");
 				}
 
 				if (strlen(apinfos[i].SSID) == 0){

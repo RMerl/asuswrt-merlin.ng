@@ -635,6 +635,44 @@ wl_wscPincheck(char *pin_string)
 	return 1;    // Invalid
 }
 
+static char *get_macaddr(void)
+{
+	int model = get_model();
+	char *mac = get_lan_hwaddr();
+
+	/* Some model use LAN MAC address to register ASUSDDNS account.
+	 * To keep consistency, don't use get_wan_hwaddr() to rewrite below code.
+	 */
+	switch (model) {
+	case MODEL_RTN56U:
+		mac = nvram_get("et1macaddr");
+		break;
+#if defined(RTCONFIG_QCA)
+	/* Below models has 380 firmwares which use et0macaddr to register ddns name.
+	 * To compatible with 380 firmware, we mustn't use get_lan_hwaddr() on those
+	 * QCA-based models due to it returns value of et1macaddr.
+	 * For newer QCA-based models, which already use get_lan_hwaddr(), e.g.,
+	 * RP-AC51, RT-ACRH17 (RT-AC82U), Lyra series, and VRZ-AC1300, don't append
+	 * model name to below list and just use return value of get_lan_hwaddr().
+	 */
+	case MODEL_RTAC55U:
+	case MODEL_RTAC55UHP:
+	case MODEL_RT4GAC55U:
+	case MODEL_PLN12:
+	case MODEL_PLAC56:
+	case MODEL_PLAC66U:
+	case MODEL_RPAC66:
+	case MODEL_RTAC58U:
+	case MODEL_BRTAC828:
+		mac = nvram_get("et0macaddr");
+		break;
+#endif
+	}
+
+
+	return mac;
+}
+
 
 // Generate password according to MAC address
 int asus_private(void)
@@ -653,14 +691,7 @@ int asus_private(void)
 	memset (user, 0, sizeof (user));
 	memset (bin_pwd, 0, sizeof (bin_pwd));
 
-	/* Some model use LAN MAC address to register ASUSDDNS account.
-	 * To keep consistency, don't use get_wan_hwaddr() to rewrite below code.
-	 */
-	if (get_model() == MODEL_RTN56U)
-		p = nvram_get ("et1macaddr");
-	else
-		p = get_lan_hwaddr();
-
+	p = get_macaddr();
 	if (p == NULL)	{
 		PRINT ("ERROR: %s() can not take MAC address from et0macaddr\n");
 		return -1;

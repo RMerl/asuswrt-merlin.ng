@@ -131,7 +131,7 @@ function collectInfo(data){
 		var hit = data[i][1];
 		var name = "";
 		if(clientList[mac]){
-			name = clientList[mac].name;
+			name = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
 			ip = clientList[mac].ip;
 		}
 		else{

@@ -40,6 +40,7 @@ else
 	fi
 fi	
 
+model=`nvram get productid`
 if [ "$?" != "0" ]; then	#download failure
 	echo "---- Download and mv trf Failure ----"
 	echo "---- Download and mv trf Failure ----" >> /tmp/sig_upgrade.log
@@ -72,6 +73,13 @@ else
 			mv /tmp/rule.trf /jffs/signature/rule.trf
 		fi
 		if [ "$1" == "" ];then
+			# special case for bluecave
+			if [ "$model" == "BLUECAVE" ]; then
+				echo "stop_wrs_force and free memory"
+				echo "stop_wrs_force and free memory" >> /tmp/sig_upgrade.log
+				rc rc_service stop_wrs_force
+				echo 1 > /proc/sys/vm/drop_caches
+			fi
 			echo "Do restart_wrs"
 			echo "Do restart_wrs" >> /tmp/sig_upgrade.log
 			rc rc_service restart_wrs

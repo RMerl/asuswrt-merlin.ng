@@ -37,6 +37,10 @@ struct nvram_header {
 struct nvram_tuple {
 	char *name;
 	char *value;
+	unsigned short len;
+	unsigned short type;
+	unsigned short acc_level;
+	unsigned short enc;
 	struct nvram_tuple *next;
 };
 

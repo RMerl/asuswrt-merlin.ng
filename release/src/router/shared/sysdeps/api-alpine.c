@@ -1186,6 +1186,11 @@ char *get_lan_mac_name(void)
 	return mac_name;
 }
 
+char *get_label_mac()
+{
+	return get_2g_hwaddr();
+}
+
 /* Return nvram variable name, e.g. et0macaddr, which is used to repented as WAN MAC.
  * @return:
  */

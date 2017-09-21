@@ -43,6 +43,7 @@ clean:
 	@$(MAKE) -C $(CURRENT)/zlib clean
 	@$(MAKE) -C $(CURRENT)/curl-7.21.7 clean
 	@$(MAKE) -C $(CURRENT)/libiconv-1.14 clean
+	rm -rf Ftpclient-ipk/CONTROL/preinst
 	@rm -rf Ftpclient-ipk/opt/tmp/bin/*
 	rm -rf ftpclient_*.ipk
 
@@ -70,7 +71,7 @@ libxml2/stamp-h1:
 		touch stamp-h1;	
 
 libxml: libxml2/stamp-h1
-	cd $(CURRENT)/libxml2 && \
+	cd $(CURRENT)/libxml2 && autoreconf -i -f && \
 	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) CPPFLAGS="-O2   -pipe  -I$(SRCBASE)/opt/include " LDFLAGS=" -L$(SRCBASE)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib " \
 	./configure --build=i386-pc-linux-gnu --host=mipsel-linux --target=mipsel-linux --prefix=$(SRCBASE)/opt --without-python --disable-dependency-tracking --without-zlib
 	@$(MAKE) -C $(CURRENT)/libxml2 all

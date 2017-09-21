@@ -2,7 +2,7 @@ Package: asuswebstorage
 Architecture: i686
 Priority: optional
 Section: net
-Version: 1.0.0.14.0.g0bb531f
+Version: 1.0.0.15.0.gc2102d5
 Maintainer: ASUS
 Source: http://127.0.0.1/
 URL: http://www.asusnetwork.net/cloud_sync.asp

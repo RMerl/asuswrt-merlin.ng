@@ -1,4 +1,4 @@
-export IPKG_TOOLS := /home/tina/arm/optware/mbwe-bluering/toolchain/ipkg-utils-1.7
+export IPKG_TOOLS := ~/toolchain/ipkg-utils-1.7
 
 all:
 	cp -rf AiCloud-tmp/CONTROL/control-smartsync-i686 smartsync-pkg-1.0/CONTROL/control

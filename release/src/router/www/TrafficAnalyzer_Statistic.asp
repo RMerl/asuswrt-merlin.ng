@@ -297,17 +297,7 @@ function get_client_info(list_info, type){
 	top5_client_array = [];
 	top5_app_array = [];
 
-	for(i=0;i<list_info.length;i++){
-		/*if(i<6){
-			if(type == "router")
-				top5_client_array[i] = all_client_traffic[i][0];	
-			else
-				top5_app_array[i] = all_app_traffic[i][0];
-		}*/	
-		
-		//total_client_tx += all_client_traffic[i][1];
-		//total_client_rx += all_client_traffic[i][2];	
-		
+	for(i=0;i<list_info.length;i++){		
 		if(type == "router"){
 			for(j=0;j<clientList.length;j++){
 				if(all_client_traffic[i][0] == clientList[j]){
@@ -377,7 +367,6 @@ function get_client_info(list_info, type){
 	else
 		draw_pie_chart(list_info, top5_app_array, type);	//list_info : all_app_traffic
 	
-	//draw_pie_chart();
 	document.getElementById('client_option').innerHTML = code;
 }
 
@@ -471,6 +460,7 @@ function get_app_data(client, mode, dura, time, date_string){
 		},
 		success: function(response){
 			all_client_traffic = array_statistics;
+			draw_flow(date_string, array_statistics);
 		}
 	});
 }
@@ -789,11 +779,7 @@ function register_event(){
 			document.getElementById('apps').className = "block_filter";
 			document.getElementById('graphical_info_block').style.display = "";
 			document.getElementById('detail_info_block').style.display = "none";
-			document.getElementById('top5_info_block').style.backgroundColor = color[0];
-			/*setTimeout(function(){		
-				get_client_info();
-				get_client_used_app_data(top5_client_array[0], "detail", duration, date_second, date_string);
-			}, 3000);*/		
+			document.getElementById('top5_info_block').style.backgroundColor = color[0];	
 		}
 	 });
 	 
@@ -911,15 +897,6 @@ function switch_date_type(obj){
 	get_wan_data("all", mode, duration, date_second, date_string);
 	document.getElementById('graphical_info_block').style.display = "block";
 	document.getElementById('detail_info_block').style.display = "none";
-	
-	//get_client_info();		//generate Top 5 clients' select option
-	/*setTimeout(function (){
-		get_client_info();
-	},1000);
-	setTimeout(function (){
-		get_client_used_app_data(top5_client_array[0], "detail", duration, date_second, date_string);
-	},3000);*/
-
 	document.getElementById('top5_info_block').style.backgroundColor = color[0];
 }
 
@@ -1643,6 +1620,7 @@ function getClientCurrentName(_mac) {
 										</table>								
 									</div>
 									<div style="margin-left:5px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div class="formfontdesc">Traffic Analyzer is to analyze the network traffic and present the results in a visual graph, which shows how your network is used and by which client devices or apps. The network traffic will be recorded every hour on the hour and displayed by clients or apps.</div>
 									<div style="margin-left:10px;">
 										<label style="font-size:16px;"><#Statistic_last_date#>:</label>
 

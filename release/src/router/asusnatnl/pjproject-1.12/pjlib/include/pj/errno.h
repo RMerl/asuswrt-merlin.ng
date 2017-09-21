@@ -432,6 +432,11 @@ PJ_DECL(pj_status_t) pj_register_strerror(pj_status_t start_code,
  * Object no longer exists
  */
 #define PJ_EGONE	    (PJ_ERRNO_START_STATUS + 23)/* 70023 */
+/**
+ * @hideinitializer
+ * Socket is stopped
+ */
+#define PJ_ESOCKETSTOP	    (PJ_ERRNO_START_STATUS + 24)/* 70024 */
 
 /** @} */   /* pj_errnum */
 

@@ -297,6 +297,7 @@ static const COUNTRY_IE_ELEMENT countryIEArray[] =
 	{218,"EC", 3, 3}, /*ECUADOR*/
 	{818,"EG", 3, 3}, /*EGYPT*/
 	{221,"EU", 3, 3}, /*EU*/	
+	{142,"AA", 3, 3}, /*AA*/	
 	{222,"SV", 3, 3}, /*EL SALVADOR*/
 	{233,"EE", 3, 3}, /*ESTONIA*/
 	{246,"FI", 3, 3}, /*FINLAND*/
@@ -1046,6 +1047,7 @@ static const reg_domain_t reg_domain[] = {
 	{ "US", DOMAIN_FCC,  DOMAIN_FCC,  0  },
 	{ "CA", DOMAIN_FCC,  DOMAIN_FCC,  3  },
 	{ "EU", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
+	{ "AA", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
 //	{ "TW", DOMAIN_NCC,  DOMAIN_NCC,  0  },
 	{ "TW", DOMAIN_FCC,  DOMAIN_FCC,  0  },
 	{ "SG", DOMAIN_SG,   DOMAIN_SG,   0  },

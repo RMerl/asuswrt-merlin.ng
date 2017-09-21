@@ -216,7 +216,7 @@ function tryParseJSON (jsonString){
 var login_info =  tryParseJSON('<% login_error_info(); %>');
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
-var remaining_time = 300 - login_info.lock_time;
+var remaining_time = login_info.lock_time;
 var remaining_time_min;
 var remaining_time_sec;
 var remaining_time_show;
@@ -258,7 +258,7 @@ function initial(){
 		document.getElementById("error_status_field").style.display ="";
 
 		if(flag == 3){
-			document.getElementById("error_status_field").innerHTML ="* Invalid username or password";
+			document.getElementById("error_status_field").innerHTML ="* <#JS_validLogin#>";
 		}
 		else if(flag == 7){
 			document.getElementById("error_status_field").innerHTML ="You have entered an incorrect username or password 5 times. Please try again after "+"<span id='rtime'></span>"+" seconds.";

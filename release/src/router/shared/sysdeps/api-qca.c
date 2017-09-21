@@ -142,6 +142,9 @@ const char WSUP_DRV_60G[] = "xxx";
 #endif
 
 #define GPIOLIB_DIR	"/sys/class/gpio"
+#ifdef RTCONFIG_LEDS_CLASS
+#define LEDSLIB_DIR	"/sys/class/leds"
+#endif
 
 /* Export specified GPIO
  * @return:
@@ -201,7 +204,11 @@ uint32_t set_gpio(uint32_t gpio, uint32_t value)
 	char path[PATH_MAX], val_str[10];
 
 	snprintf(val_str, sizeof(val_str), "%d", !!value);
+#ifdef RTCONFIG_LEDS_CLASS
+	snprintf(path, sizeof(path), "%s/led%d/brightness", LEDSLIB_DIR, gpio);
+#else
 	snprintf(path, sizeof(path), "%s/gpio%d/value", GPIOLIB_DIR, gpio);
+#endif
 	f_write_string(path, val_str, 0, 0);
 
 	return 0;
@@ -1214,11 +1221,15 @@ char *get_lan_mac_name(void)
 	case MODEL_RT4GAC55U:	/* fall-through */
 	case MODEL_BRTAC828:	/* fall-through */
 	case MODEL_RTAD7200:	/* fall-through */
+	case MODEL_GTAX6000:	/* fall-through */
+	case MODEL_GTAX6000N:	/* fall-through */
+	case MODEL_GTAX6000S:	/* fall-through */
 	case MODEL_RTAC88S:	/* fall-through */
 	case MODEL_RTAC88N:	/* fall-through */
 	case MODEL_RPAC51:	/* fall-through */
         case MODEL_MAPAC1300:
         case MODEL_VRZAC1300:
+        case MODEL_MAPAC1800:
         case MODEL_MAPAC2200:
 		/* Use 5G MAC address as LAN MAC address. */
 		mac_name = "et1macaddr";
@@ -1249,6 +1260,9 @@ char *get_wan_mac_name(void)
 	case MODEL_RT4GAC55U:	/* fall-through */
 	case MODEL_BRTAC828:	/* fall-through */
 	case MODEL_RTAD7200:	/* fall-through */
+	case MODEL_GTAX6000:	/* fall-through */
+	case MODEL_GTAX6000N:	/* fall-through */
+	case MODEL_GTAX6000S:	/* fall-through */
 	case MODEL_RTAC88S:	/* fall-through */
 	case MODEL_RTAC88N:	/* fall-through */
 	case MODEL_RPAC51:	/* fall-through */
@@ -1281,6 +1295,11 @@ char *get_2g_hwaddr(void)
         return nvram_safe_get(get_wan_mac_name());
 #endif
 #endif
+}
+
+char *get_label_mac()
+{
+	return get_2g_hwaddr();
 }
 
 char *get_lan_hwaddr(void)
@@ -1484,6 +1503,53 @@ cprintf("## %s(): ret(%d) ap_addr(%02x:%02x:%02x:%02x:%02x:%02x)\n", __func__, r
 		return -1;	// Invalid
 
 	return 1;
+}
+
+int get_ch(int freq)
+{
+#define IS_CHAN_IN_PUBLIC_SAFETY_BAND(_c) ((_c) > 4940 && (_c) < 4990)
+	if (freq < 2412)
+		return 0;
+	if (freq == 2484)
+		return 14;
+	if (freq < 2484)
+		return (freq - 2407) / 5;
+	if (freq < 5000) {
+		if (IS_CHAN_IN_PUBLIC_SAFETY_BAND(freq)) {
+			return ((freq * 10) +
+				(((freq % 5) == 2) ? 5 : 0) - 49400)/5;
+		} else if (freq > 4900) {
+			return (freq - 4000) / 5;
+		} else {
+			return 15 + ((freq - 2512) / 20);
+		}
+	}
+	return (freq - 5000) / 5;
+}
+
+#ifndef pow
+#define pow(v,e) ({double d=1; int i; for(i=0;i<e;i++) d*=v; d;})
+#endif
+
+int get_channel(const char *ifname)
+{
+	struct iwreq wrq;
+	const iwfreq *fr;
+	double frd;
+	int freq;
+
+	if(wl_ioctl(ifname, SIOCGIWFREQ, &wrq))
+		return -1;
+
+	fr = &(wrq.u.freq);
+	frd = ((double) fr->m) * pow(10,fr->e);
+	if(frd < 1e3)
+		return (int)frd;
+	else if(frd < 1e9)
+		return -2;
+
+	freq = (int)(frd / 1e6);
+	return get_ch(freq);
 }
 
 

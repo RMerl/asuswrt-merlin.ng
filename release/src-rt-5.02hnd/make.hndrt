@@ -1027,6 +1027,8 @@ ifneq ($(findstring _$(strip $(BRCM_KERNEL_ROOTFS))_,_all_ _squashfs_),)
 	    @echo -e "Done! Image $(PROFILE) has been built in $(PROFILE_DIR)."
 endif
 endif
+	md5sum $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w > $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.md5
+	md5sum $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w > $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.md5
 ifneq ("$(wildcard $(SRC_ROOT)/../../buildtools/private.pem)","")
 	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w
 	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_cferom_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w

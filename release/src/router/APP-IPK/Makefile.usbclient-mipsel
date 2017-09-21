@@ -48,7 +48,7 @@ usbclient/stamp-h1:
 	touch stamp-h1
 
 usbclient: usbclient/stamp-h1
-	@$(MAKE) -C $(CURRENT)/usbclient -f Makefile.ipk
+	@$(MAKE) -C $(CURRENT)/usbclient -f Makefile.ipk OLEG_MIPSEL_D=1
 	cp -rf $(CURRENT)/usbclient/usbclient Usbclient-ipk/opt/tmp/bin/
 
 

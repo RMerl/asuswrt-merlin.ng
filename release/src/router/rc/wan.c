@@ -378,8 +378,8 @@ stop_igmpproxy()
 {
 	if (pids("udpxy"))
 		killall_tk("udpxy");
-#if defined(HND_ROUTER) && defined(MCPD_PROXY)
-	stop_mcpd_proxy();
+#ifdef BLUECAVE
+	stop_mcast_proxy();
 #else
 	if (pids("igmpproxy"))
 		killall_tk("igmpproxy");
@@ -389,7 +389,7 @@ stop_igmpproxy()
 void	// oleg patch , add
 start_igmpproxy(char *wan_ifname)
 {
-#if !(defined(HND_ROUTER) && defined(MCPD_PROXY))
+#if !defined(HND_ROUTER) && !defined(MCPD_PROXY) && !defined(BLUECAVE)
 	FILE *fp;
 	static char *igmpproxy_conf = "/tmp/igmpproxy.conf";
 	char *altnet, buf[32];
@@ -432,7 +432,7 @@ start_igmpproxy(char *wan_ifname)
 
 	_dprintf("start igmpproxy [%s]\n", wan_ifname);
 
-#if !(defined(HND_ROUTER) && defined(MCPD_PROXY))
+#if !defined(HND_ROUTER) && !defined(MCPD_PROXY) && !defined(BLUECAVE)
 	if ((fp = fopen(igmpproxy_conf, "w")) == NULL) {
 		perror(igmpproxy_conf);
 		return;
@@ -457,7 +457,11 @@ start_igmpproxy(char *wan_ifname)
 	eval("/usr/sbin/igmpproxy", igmpproxy_conf);
 #else
 	nvram_set("igmp_ifname", wan_ifname);
+#ifndef BLUECAVE
 	start_mcpd_proxy();
+#else
+	start_mcast_proxy();
+#endif
 #endif
 }
 
@@ -1281,7 +1285,10 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			nvram_set(strcat_r(prefix, "dnsenable_x", tmp), "1");
 
 			// Android phone, RNDIS, QMI interface, Gobi.
-			if(!strncmp(wan_ifname, "usb", 3) || !strncmp(wan_ifname, "wwan", 4)){
+			if(!strncmp(wan_ifname, "usb", 3) || !strncmp(wan_ifname, "wwan", 4)
+					// RNDIS devices should always be named "lte%d" in LTQ platform
+					|| !strncmp(wan_ifname, "lte", 3)
+					){
 				if(nvram_get_int("stop_conn_3g") != 1){
 #ifdef RTCONFIG_TCPDUMP
 					char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", wan_ifname, "-nnXw", "/tmp/udhcpc.pcap", NULL};
@@ -1710,6 +1717,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			nvram_set(strcat_r(prefix, "clientid_type", tmp), nvram_safe_get("dslx_dhcp_clientid_type"));
 			nvram_set(strcat_r(prefix, "clientid", tmp), nvram_safe_get("dslx_dhcp_clientid"));
 			nvram_set(strcat_r(prefix, "vendorid", tmp), nvram_safe_get("dslx_dhcp_vendorid"));
+			nvram_set(strcat_r(prefix, "hostname", tmp), nvram_safe_get("dslx_dhcp_hostname"));
 #endif
 			/* Start dhcp daemon */
 			dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
@@ -1790,6 +1798,13 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 #endif
 
 	_dprintf("%s(): End.\n", __FUNCTION__);
+
+#ifdef RTCONFIG_IPSEC
+	if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")){
+		rc_ipsec_config_init();
+		start_dnsmasq();
+	}
+#endif
 }
 
 void
@@ -2423,10 +2438,12 @@ wan_up(const char *pwan_ifname)
 #ifdef RTCONFIG_LANTIQ
 	char ppa_cmd[255] = {0};
 #endif
+	FILE *fp;
+	char wan_mac[18], upper_mac[18];
+	int i;
 
 	/* Value of pwan_ifname can be modfied after do_dns_detect */
 	strlcpy(wan_ifname, pwan_ifname, 16);
-	_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
 
 	/* Figure out nvram variable name prefix for this i/f */
 	if ((wan_unit = wan_ifunit(wan_ifname)) < 0)
@@ -2434,6 +2451,7 @@ wan_up(const char *pwan_ifname)
 		/* called for dhcp+ppp */
 		if ((wan_unit = wanx_ifunit(wan_ifname)) < 0)
 			return;
+	_dprintf("%s_x(%s)\n", __FUNCTION__, wan_ifname);
 
 		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 		snprintf(prefix_x, sizeof(prefix_x), "wan%d_x", wan_unit);
@@ -2497,8 +2515,17 @@ wan_up(const char *pwan_ifname)
 		if (wan_unit == wan_primary_ifunit())
 			start_igmpproxy(wan_ifname);
 
+#ifdef RTCONFIG_LANTIQ
+		snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd delwan -i %s", wan_ifname);
+		_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
+		system(ppa_cmd);
+#endif
+		_dprintf("%s_x(%s): done.\n", __FUNCTION__, wan_ifname);
+
 		return;
 	}
+
+	_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 
@@ -2592,7 +2619,7 @@ wan_up(const char *pwan_ifname)
 	update_wan_state(prefix, WAN_STATE_CONNECTED, 0);
 
 #if defined(RTCONFIG_QCA) || \
-    (defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
+		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(wan_unit);
 #endif
 
@@ -2693,13 +2720,18 @@ wan_up(const char *pwan_ifname)
 		start_vpnc();
 #endif
 #endif
-#ifdef RTCONFIG_IPSEC
-	rc_ipsec_config_init();
-#endif
+
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	if (nvram_get_int("pptpd_enable")) {
 		stop_pptpd();
 		start_pptpd();
+	}
+#endif
+
+#ifdef RTCONFIG_IPSEC
+	if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")) {
+		rc_ipsec_config_init();
+		start_dnsmasq();
 	}
 #endif
 
@@ -2784,12 +2816,35 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_LANTIQ
+	snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd delwan -i %s", wan_ifname);
+	_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
+	system(ppa_cmd);
+
 	if(ppa_support(wan_unit) == 1){
+		sleep(1);
 		snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd addwan -i %s", wan_ifname);
 		_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
 		system(ppa_cmd);
 	}
 #endif
+
+	snprintf(tmp, sizeof(tmp), "arping -w 1 -I %s %s", wan_ifname, gateway);
+	if((fp = popen(tmp, "r")) != NULL){
+		while(fgets(tmp, sizeof(tmp), fp) != NULL){
+			memset(wan_mac, 0, sizeof(wan_mac));
+			if(sscanf(tmp, "Unicast reply from %*s [%s] %*s", wan_mac) == 1){
+				wan_mac[17] = 0;
+				memset(upper_mac, 0, sizeof(upper_mac));
+				for(i = 0; wan_mac[i]; ++i)
+					upper_mac[i] = toupper(wan_mac[i]);
+				nvram_set(strcat_r(prefix, "gw_mac", tmp), upper_mac);
+				_dprintf("%s: wan_mac=%s.\n", __func__, upper_mac);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
 
@@ -2803,6 +2858,9 @@ wan_down(char *wan_ifname)
 #ifdef RTCONFIG_INTERNAL_GOBI
 	int modem_unit;
 	char tmp2[100], prefix2[32];
+#endif
+#ifdef RTCONFIG_LANTIQ
+        char ppa_cmd[255] = {0};
 #endif
 
 	_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
@@ -2890,6 +2948,11 @@ wan_down(char *wan_ifname)
 		nvram_set(strcat_r(prefix, "realip_state", tmp), "0");
 		nvram_set(strcat_r(prefix, "realip_ip", tmp), "");
 	}
+#endif
+#ifdef RTCONFIG_LANTIQ
+	snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd delwan -i %s", wan_ifname);
+	_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
+	system(ppa_cmd);
 #endif
 }
 
@@ -3278,12 +3341,9 @@ start_wan(void)
 #endif
 //	symlink("/dev/null", "/tmp/ppp/connect-errors");
 
-#ifndef CONFIG_BCMWL5
+#if defined(RTCONFIG_QCA) || \
+		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(-1);
-#endif
-
-#ifdef HND_ROUTER
-	fc_init();
 #endif
 
 #ifdef HND_ROUTER

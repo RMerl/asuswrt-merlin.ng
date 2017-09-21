@@ -45,6 +45,10 @@ CFLAGS  += -I$(TOP)/cfg_mnt
 LDFLAGS += -L$(TOP)/cfg_mnt -lcfgmnt
 endif
 
+ifeq ($(RTCONFIG_SW_HW_AUTH), y)
+CFLAGS += -I$(TOP)/sw-hw-auth
+endif
+
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
 
 ifeq ($(wildcard $(SRCBASE)/router/wlceventd/*.c),)

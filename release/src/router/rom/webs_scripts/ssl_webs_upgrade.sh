@@ -16,12 +16,16 @@ update_url=`cat /tmp/update_url`
 
 # current firmware information
 firmware_path=`nvram get firmware_path`
-get_productid=`nvram get productid`
+productid=`nvram get productid`
+if [ "$productid" == "BLUECAVE" ]; then
+       rc rc_service stop_wrs_force
+fi
+
+get_productid=`echo $productid | sed s/+/plus/;`    #replace 'plus' to '+' for one time
 odmpid_support=`nvram get webs_state_odm`
 if [ "$odmpid_support" == "1" ]; then
 	get_productid=`nvram get odmpid`
 fi
-get_productid=`echo $get_productid | sed s/+/plus/;`	#replace 'plus' to '+' for one time
 
 if [ "$firmware_path" = "1" ]; then
 	firmware_file=`echo $get_productid`_`nvram get webs_state_info_beta`_un.zip
@@ -108,6 +112,9 @@ else
 	else
 		echo "---- fw check error ----" >> /tmp/webs_upgrade.log
 		nvram set webs_state_error=3	# wrong fw
+		if [ "$productid" == "BLUECAVE" ]; then
+			rc rc_service start_wrs
+		fi
 	fi
 fi
 

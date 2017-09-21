@@ -2360,10 +2360,12 @@ static pj_status_t transport_destroy(pjmedia_transport *tp)
     }
 
     if (tp_ice->pool) {
-	pj_pool_t *pool = tp_ice->pool;
-	tp_ice->pool = NULL;
-	pj_pool_release(pool);
-    }
+		pj_pool_t *pool = tp_ice->pool;
+		tp_ice->pool = NULL;
+		PJ_LOG(4, (tp->name, " tp_ice->pool released"));
+		pj_pool_release(pool);
+	}
+	PJ_LOG(4, (THIS_FILE, "ICE media transport destroyed"));
 
     return PJ_SUCCESS;
 }

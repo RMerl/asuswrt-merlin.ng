@@ -618,11 +618,13 @@ function tab_reset(v){
 		
 		document.getElementById("t1").style.display = "none";
 		document.getElementById("t2").style.display = "none";				
+		document.getElementById("t3").style.display = "none";
 		document.getElementById("t0").style.width = (tab_width*wl_info.wl_if_total+10) +'px';
 	}
 	else if(v == 2){ //5GHz Smart Connect
 		document.getElementById("span0").innerHTML = "2.4GHz";
 		document.getElementById("span1").innerHTML = "5GHz-1 and 5GHz-2";
+		document.getElementById("t3").style.display = "none";
 		document.getElementById("t2").style.display = "none";	
 		document.getElementById("t1").style.width = "148px";
 		document.getElementById("span1").style.padding = "5px 4px 5px 9px";

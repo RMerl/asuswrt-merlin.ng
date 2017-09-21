@@ -236,12 +236,6 @@ function form_show(v){
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
 
-		if(document.form.wans_mode.value == "lb")
-			document.getElementById("wans_mode_option").value = "lb";
-		else{
-			document.getElementById("wans_mode_option").value = "fo";
-		}
-
 		if(gobi_support){
 			if(document.form.wans_mode.value != "lb" && (document.form.wans_primary.value == "usb" || document.form.wans_second.value == "usb")){
 				document.getElementById("wans_standby_tr").style.display = "";
@@ -435,7 +429,7 @@ function applyRule(){
 	if (document.form.wans_primary.value == "dsl") document.form.next_page.value = "Advanced_DSL_Content.asp";
 	if (document.form.wans_primary.value == "lan") document.form.next_page.value = "Advanced_WAN_Content.asp";
 	if (document.form.wans_primary.value == "usb"){
-		if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
+		if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
 			document.form.next_page.value = "Advanced_MobileBroadband_Content.asp";
 		else			
 			document.form.next_page.value = "Advanced_Modem_Content.asp";
@@ -507,7 +501,7 @@ function addWANOption(obj, wanscapItem){
 				wanscapName = "Ethernet WAN";
 			else if(wanscapName == "LAN")
 				wanscapName = "Ethernet LAN";
-			else if(wanscapName == "USB" && (based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
+			else if(wanscapName == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 				wanscapName = "<#Mobile_title#>";
 			obj.options[i] = new Option(wanscapName, wanscapItem[i]);
 		}	
@@ -941,7 +935,7 @@ function add_option_count(obj, obj_t, selected_flag){
 				
 				free_options(obj_t);
 				for(var i=1; i<100; i++){
-						if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
+						if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
 							str0= i;
 						else
 							str0 = i*parseInt(obj.value);
@@ -983,7 +977,7 @@ function update_consume_bytes(){
     var consume_bytes;
     var MBytes = 1024*1024;
 
-    if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+    if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
     consume_bytes = 86400/interval_value*128*30;
 	consume_bytes = Math.ceil(consume_bytes/MBytes);
     consume_warning_str = "<#Detect_consume_warning1#> "+consume_bytes+" <#Detect_consume_warning2#>";

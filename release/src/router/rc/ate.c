@@ -591,22 +591,22 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setAllLedOff();
 #endif
 	}
-#if defined(RPAC53) || defined(RT4GAC68U)
+#if defined(RPAC53) || defined(RT4GAC68U) || defined(RPAC66)
 	else if (!strcmp(command, "Set_AllOrangeLedOn")) {
 		return setAllOrangeLedOn();
 	}
 #endif
-#if defined(RPAC51) || defined(RPAC55)
+#if defined(RPAC51) || defined(RPAC55) || defined(RPAC66)
 	else if (!strcmp(command, "Set_AllBlueLedOn"))  {
 		return setAllBlueLedOn();
 	}
 #endif
-#ifdef RPAC53
+#if defined(RPAC53) || defined(RPAC66)
 	else if (!strcmp(command, "Set_AllGreenLedOn"))  {
 		return setAllGreenLedOn();
 	}
 #endif
-#if defined(RPAC53) || defined(RPAC51) || defined(RPAC55)
+#if defined(RPAC53) || defined(RPAC51) || defined(RPAC55) || defined(RPAC66)
 	else if (!strcmp(command, "Set_AllRedLedOn"))  {
 		return setAllRedLedOn();
 	}
@@ -1529,7 +1529,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 #endif
 #ifdef RTCONFIG_QCA
-#if defined(RTCONFIG_WIFI_QCA9557_QCA9882)
+#if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
 #if 0
 	else if (!strcmp(command, "Set_ART2")) {
 		Set_ART2();
@@ -1941,6 +1941,10 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 	else if (!strcmp(command, "Get_FwUpgradeState")) {
 		ate_get_fw_upgrade_state();
+		return 0;
+	}
+	else if (!strcmp(command, "Get_LabelMacAddr")) {
+		puts(get_label_mac());
 		return 0;
 	}
 	else

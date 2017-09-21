@@ -142,9 +142,10 @@ foreach my $module (keys %$dep) {
     $mod->{$module} = {};
     foreach (@{$dep->{$module}}) {
         if( $exp->{$_} ) {
-            warn "resolved symbol $_ in file $exp->{$_}\n" if $verbose;
-            next if $exp->{$_} =~ /vmlinux/;
-            $mod->{$module}{$exp->{$_}} = 1;
+            my $name = $exp->{$_}[0];
+            warn "resolved symbol $_ in file $name\n" if $verbose;
+            next if $name =~ /vmlinux/;
+            $mod->{$module}{$name} = 1;
         } else {
             warn "unresolved symbol $_ in file $module\n";
         }
@@ -232,7 +233,7 @@ sub build_ref_tables
             / ${symprefix}__ksymtab_(.*)$/ and do {
                 my $sym = ${symprefix} . $1;
                 warn "sym = $sym\n" if $verbose;
-                $exp->{$sym} = $name;
+                unshift @{$exp->{$sym}}, $name;
             };
         }
 	} else {
@@ -240,7 +241,7 @@ sub build_ref_tables
         foreach ( @$sym_ar ) {
             / [ABCDGRSTW] (.*)$/ and do {
                 warn "syma = $1\n" if $verbose;
-                $exp->{$1} = $name;
+                push @{$exp->{$1}}, $name;
             };
         }
 	}

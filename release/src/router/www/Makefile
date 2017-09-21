@@ -7,7 +7,7 @@ MODELS_HAVE_USB3 = AC2900 \
 	BRT-AC828 RT-AD7200 \
 	DSL-AC68U \
 	RT-AC5300 GT-AC5300 GT-AC9600 RT-AC95U RT-AC3100 RT-AC3200 \
-	RT-AC55U RT-AC55UHP RT-AC58U RT-AC82U RT-AC88Q \
+	RT-AC55U RT-AC55UHP RT-AC58U 4G-AC53U RT-AC82U RT-AC88Q \
 	RT-AC86U RT-AC88U RT-AC87U RT-AC85U RT-AC68U RT-AC68A 4G-AC68U RT-AC65U RT-AC56S RT-AC56U \
 	RT-N65U \
 	RT-N18U \
@@ -252,7 +252,6 @@ ifneq ($(RTCONFIG_IPV6),y)
 	rm -rf $(INSTALLDIR)/www/Main_IPV6Status_Content.asp
 	rm -rf $(INSTALLDIR)/www/Advanced_IPv6_Content.asp
 	rm -rf $(INSTALLDIR)/www/update_IPv6state.asp
-	rm -rf $(INSTALLDIR)/www/Advanced_Firewall_IPv6_Content.asp
 endif
 
 ifeq ($(RTCONFIG_NO_USBSTORAGE),y)
@@ -425,6 +424,7 @@ endif
 ifneq ($(RTCONFIG_ROG),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/indicator.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter_2.png
 endif
 endif
 ifneq ($(RTCONFIG_ADBLOCK),y)
@@ -489,8 +489,7 @@ ifneq ($(RTCONFIG_KEY_GUARD), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/Key-Guard.png
 endif
 
-#ifeq ($(BUILD_NAME),4G-AC55U)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), 4G-AC55U 4G-AC68U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), 4G-AC53U 4G-AC55U 4G-AC68U))
 	rm -rf $(INSTALLDIR)/www/Advanced_Modem_Content.asp
 endif
 
@@ -594,13 +593,14 @@ ifneq ($(RTCONFIG_ALEXA), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Home_Alexa.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_asus_router.png
 endif
-ifneq ($(RTCONFIG_IFTTT)$(RTCONFIG_ALEXA),y)
+ifneq ($(or $(RTCONFIG_IFTTT),$(RTCONFIG_ALEXA)),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_1.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_2.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_2_text.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_3.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_3_acclink.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_4_flow.png
+	rm -rf $(INSTALLDIR)/www/ifttt_style.css
 endif
 
 ifneq ($(RTCONFIG_PORT_BASED_VLAN), y)
@@ -658,6 +658,13 @@ endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), BRT-AC828))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/M2.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/M2_default.png
+endif
+
+ifeq ($(BUILD_NAME),BLUECAVE)
+	rm -rf $(INSTALLDIR)/www/images/qis
+	rm -rf $(INSTALLDIR)/www/qis
+	rm -rf $(INSTALLDIR)/www/qis_m
+	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
 
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC5300 GT-AC9600))

@@ -53,7 +53,7 @@ $(APP): check_config
 	$(MAKE) -C $(APP) ;
 	install -m 755 $(APP)/ip/ip  $(INSTALL_DIR)/bin/ip
 	install -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/bin/tc
-	install -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/usr/sbin/realtc
+	install -D -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/usr/sbin/realtc
 	$(STRIP) $(INSTALL_DIR)/bin/tc
 	$(STRIP) $(INSTALL_DIR)/usr/sbin/realtc
 	$(STRIP) $(INSTALL_DIR)/bin/ip

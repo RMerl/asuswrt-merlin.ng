@@ -36,6 +36,7 @@ enum
 	ACT_WRS_CLR_USR_DOMAIN,		/* clear_user_domain */
 	ACT_WRS_GET_USR_DOMAIN_CLEAR,	/* get_user_domain_clear */
 	ACT_WRS_GET_WRS_URL,		/* get_wrs_url */
+	ACT_WRS_SET_WRED_CONF,		/* internal: set_wred_conf */
 	ACT_WRS_MAX
 };
 

@@ -1,4 +1,14 @@
-﻿2017-07-04: 2.1.0.119
+﻿2017-08-21: 2.1.0.122
+==> SDK : 1. Update (ANT). Disable sctp for all platforms.
+          2. BugFix (ANT). Fix crash issue when trigger natnl_make_call before natnl_lib_init called.
+
+2017-07-21: 2.1.0.121
+==> SDK : 1. BugFix (ANT). Fix the deadlock issue that app deinit lib when tunnel is UDP and netwowk is down.
+
+2017-07-19: 2.1.0.120
+==> SDK : 1. BugFix (ANT). Fix the memory leak issue.
+
+2017-07-04: 2.1.0.119
 ==> SDK : 1. Update (ANT). Add one day timer for connecting to default SIP.
           2. Update (ANT). Modify header file to meet iOS compiler.
           3. Update (ANT). Enlarge the length limit of im mssage from 1024 bytes to 13000 bytes.

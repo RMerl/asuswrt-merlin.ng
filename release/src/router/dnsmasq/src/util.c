@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2016 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,7 +24,9 @@
 #include <sys/times.h>
 #endif
 
-#if defined(LOCALEDIR) || defined(HAVE_IDN)
+#if defined(HAVE_LIBIDN2)
+#include <idn2.h>
+#elif defined(HAVE_IDN)
 #include <idna.h>
 #endif
 
@@ -109,6 +111,7 @@ u64 rand64(void)
   return (u64)out[outleft+1] + (((u64)out[outleft]) << 32);
 }
 
+/* returns 2 if names is OK but contains one or more underscores */
 static int check_name(char *in)
 {
   /* remove trailing . 
@@ -116,6 +119,7 @@ static int check_name(char *in)
   size_t dotgap = 0, l = strlen(in);
   char c;
   int nowhite = 0;
+  int hasuscore = 0;
   
   if (l == 0 || l > MAXDNAME) return 0;
   
@@ -134,18 +138,22 @@ static int check_name(char *in)
       else if (isascii((unsigned char)c) && iscntrl((unsigned char)c)) 
 	/* iscntrl only gives expected results for ascii */
 	return 0;
-#if !defined(LOCALEDIR) && !defined(HAVE_IDN)
+#if !defined(HAVE_IDN) && !defined(HAVE_LIBIDN2)
       else if (!isascii((unsigned char)c))
 	return 0;
 #endif
       else if (c != ' ')
-	nowhite = 1;
+	{
+	  nowhite = 1;
+	  if (c == '_')
+	    hasuscore = 1;
+	}
     }
 
   if (!nowhite)
     return 0;
 
-  return 1;
+  return hasuscore ? 2 : 1;
 }
 
 /* Hostnames have a more limited valid charset than domain names
@@ -190,36 +198,48 @@ int legal_hostname(char *name)
 char *canonicalise(char *in, int *nomem)
 {
   char *ret = NULL;
-#if defined(LOCALEDIR) || defined(HAVE_IDN)
   int rc;
-#endif
-
+  
   if (nomem)
     *nomem = 0;
   
-  if (!check_name(in))
+  if (!(rc = check_name(in)))
     return NULL;
   
-#if defined(LOCALEDIR) || defined(HAVE_IDN)
-  if ((rc = idna_to_ascii_lz(in, &ret, 0)) != IDNA_SUCCESS)
+#if defined(HAVE_IDN) || defined(HAVE_LIBIDN2)
+  /* libidn2 strips underscores, so don't do IDN processing
+     if the name has an underscore (check_name() returned 2) */
+  if (rc != 2)
     {
-      if (ret)
-	free(ret);
-
-      if (nomem && (rc == IDNA_MALLOC_ERROR || rc == IDNA_DLOPEN_ERROR))
-	{
-	  my_syslog(LOG_ERR, _("failed to allocate memory"));
-	  *nomem = 1;
-	}
-    
-      return NULL;
-    }
+#ifdef HAVE_LIBIDN2
+      rc = idn2_to_ascii_lz(in, &ret, IDN2_NONTRANSITIONAL);
+      if (rc == IDN2_DISALLOWED)
+	rc = idn2_to_ascii_lz(in, &ret, IDN2_TRANSITIONAL);
 #else
+      rc = idna_to_ascii_lz(in, &ret, 0);
+#endif
+      if (rc != IDNA_SUCCESS)
+	{
+	  if (ret)
+	    free(ret);
+	  
+	  if (nomem && (rc == IDNA_MALLOC_ERROR || rc == IDNA_DLOPEN_ERROR))
+	    {
+	      my_syslog(LOG_ERR, _("failed to allocate memory"));
+	      *nomem = 1;
+	    }
+	  
+	  return NULL;
+	}
+      
+      return ret;
+    }
+#endif
+  
   if ((ret = whine_malloc(strlen(in)+1)))
     strcpy(ret, in);
   else if (nomem)
     *nomem = 1;    
-#endif
 
   return ret;
 }
@@ -329,7 +349,7 @@ int hostname_isequal(const char *a, const char *b)
   
   return 1;
 }
-    
+
 time_t dnsmasq_time(void)
 {
 #ifdef HAVE_BROKEN_RTC
@@ -379,7 +399,7 @@ int is_same_net6(struct in6_addr *a, struct in6_addr *b, int prefixlen)
   return 0;
 }
 
-/* return least signigicant 64 bits if IPv6 address */
+/* return least significant 64 bits if IPv6 address */
 u64 addr6part(struct in6_addr *addr)
 {
   int i;
@@ -445,13 +465,13 @@ void prettyprint_time(char *buf, unsigned int t)
     {
       unsigned int x, p = 0;
        if ((x = t/86400))
-	p += sprintf(&buf[p], "%dd", x);
+	p += sprintf(&buf[p], "%ud", x);
        if ((x = (t/3600)%24))
-	p += sprintf(&buf[p], "%dh", x);
+	p += sprintf(&buf[p], "%uh", x);
       if ((x = (t/60)%60))
-	p += sprintf(&buf[p], "%dm", x);
+	p += sprintf(&buf[p], "%um", x);
       if ((x = t%60))
-	p += sprintf(&buf[p], "%ds", x);
+	p += sprintf(&buf[p], "%us", x);
     }
 }
 
@@ -503,9 +523,14 @@ int parse_hex(char *in, unsigned char *out, int maxlen,
 			  sav = in[(j+1)*2];
 			  in[(j+1)*2] = 0;
 			}
+		      /* checks above allow mix of hexdigit and *, which
+			 is illegal. */
+		      if (strchr(&in[j*2], '*'))
+			return -1;
 		      out[i] = strtol(&in[j*2], NULL, 16);
 		      mask = mask << 1;
-		      i++;
+		      if (++i == maxlen)
+			break; 
 		      if (j < bytes - 1)
 			in[(j+1)*2] = sav;
 		    }

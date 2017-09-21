@@ -43,7 +43,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.01"
+#define VERSION "1.00"
 
 #define IDLETIME_DEFAULT 900
 //#define IDLETIME_MIN     300
@@ -100,9 +100,7 @@ static
 char
 _diskstats [ 26 ] [ 160 ];
 
-#if 0
 static void _check_linux_version ( void );
-#endif
 
 static void _parse_options ( int argc, char * argv [ ] );
 
@@ -118,6 +116,7 @@ main (
 	openlog ( basename ( argv [ 0 ] ), LOG_PID, LOG_USER );
 
 #if 0
+	//check linux version will let linux kernel version 3.x or 4.x cannot execute sd-idle
 	_check_linux_version();
 #endif
 
@@ -125,7 +124,7 @@ main (
 
     daemon ( 0, 0 );
 
-    _log ( LOG_INFO, "initialized" );
+    printf("initialized");
 
     _manage ( );
 
@@ -151,7 +150,6 @@ _log (
 	va_end ( arg_list );
 }
 
-#if 0
 static
 void
 _check_linux_version (
@@ -161,7 +159,7 @@ _check_linux_version (
 
 	if ( 0 > uname ( &name ) )
 	{
-		_log ( LOG_ERR, "Failure to get linux version number: %s", strerror ( errno ) );
+		printf("Failure to get linux version number: %s", strerror ( errno ) );
 		exit ( EXIT_FAILURE );
 	}
 
@@ -170,11 +168,10 @@ _check_linux_version (
 	case '6':
 		return;
 	default:
-		_log ( LOG_ERR, "Wrong linux version: %s; must be 2.6; exiting", name.release );
+		printf("Wrong linux version: %s; must be 2.6; exiting", name.release );
 		exit ( EXIT_FAILURE );
 	}
 }
-#endif
 
 static
 void
@@ -184,21 +181,21 @@ _usage (
 {
 	progname = basename ( progname );
 
-    _log ( LOG_INFO, "Usage: ( runs as a daemon )\n" );
-    _log ( LOG_INFO, "  %s [ -d devices ] [ -i idletime ] [ -c checktime ] [ -h --help ] [ -v --version ]\n", progname);
-    _log ( LOG_INFO, "    -d  [a-z]+   include where a => /dev/sda, b => /dev/sdb (default is all disks)\n" );
-    _log ( LOG_INFO, "       ![a-z]+   exclude\n" );
-    _log ( LOG_INFO, "    -i n         n seconds a disk must be idle to spin it down (default %d, min %d)\n",
+    printf("Usage: ( runs as a daemon )\n" );
+    printf("  %s [ -d devices ] [ -i idletime ] [ -c checktime ] [ -h --help ] [ -v --version ]\n", progname);
+    printf("    -d  [a-z]+   include where a => /dev/sda, b => /dev/sdb (default is all disks)\n" );
+    printf("       ![a-z]+   exclude\n" );
+    printf("    -i n         n seconds a disk must be idle to spin it down (default %d, min %d)\n",
                             IDLETIME_DEFAULT, IDLETIME_MIN );
-    _log ( LOG_INFO, "    -c n         n seconds to sleep between idle checks (default %d, min %d)\n",
+    printf("    -c n         n seconds to sleep between idle checks (default %d, min %d)\n",
                             CHECKTIME_DEFAULT, CHECKTIME_MIN);
-    _log ( LOG_INFO, "    -h --help    usage\n" );
-    _log ( LOG_INFO, "    -v --version version\n" );
-    _log ( LOG_INFO, "  for example:\n" );
-    _log ( LOG_INFO, "    %s        will manage all disks with default times\n", progname );
-    _log ( LOG_INFO, "    %s -d bc  will manage /dev/sdb, /dev/sdc with default times\n", progname );
-    _log ( LOG_INFO, "    %s -d !bc will manage all disks except /dev/sdb, /dev/sdc with default times\n", progname );
-    _log ( LOG_INFO, "    %s -i 600 will manage all disks spinning down after 600 seconds or 10 minutes\n", progname );
+    printf("    -h --help    usage\n" );
+    printf("    -v --version version\n" );
+    printf("  for example:\n" );
+    printf("    %s        will manage all disks with default times\n", progname );
+    printf("    %s -d bc  will manage /dev/sdb, /dev/sdc with default times\n", progname );
+    printf("    %s -d !bc will manage all disks except /dev/sdb, /dev/sdc with default times\n", progname );
+    printf("    %s -i 600 will manage all disks spinning down after 600 seconds or 10 minutes\n", progname );
 
     exit ( exit_status );
 }
@@ -213,7 +210,7 @@ _get_param (
 {
     if ( a < argc )
         return argv [ a ];
-    _log ( LOG_ERR, "Missing parameter for option: %s; exiting", option );
+    printf("Missing parameter for option: %s; exiting", option );
     exit ( EXIT_FAILURE );
 }
 
@@ -241,7 +238,7 @@ _set_disks (
     {
         if ( ( *disks < 'a' ) || ( 'z' < *disks ) )
         {
-            _log ( LOG_WARNING, "Invalid disk: %c; must be among [a-z]; ignoring", *disks );
+            printf("Invalid disk: %c; must be among [a-z]; ignoring", *disks );
             continue;
         }
         if ( include )
@@ -252,7 +249,7 @@ _set_disks (
 
     if ( 0 == _managing )
     {
-        _log ( LOG_ERR, "No disks specified to be managed; exiting" );
+        printf("No disks specified to be managed; exiting" );
         exit ( 1 );
     }
 }
@@ -269,14 +266,14 @@ _set_idletime (
     {
         if ( _idletime < IDLETIME_MIN )
         {
-            _log ( LOG_WARNING, "IDLETIME set too small which is bad for disks: %d; setting to minimum %d",
+            printf("IDLETIME set too small which is bad for disks: %d; setting to minimum %d",
                     _idletime, IDLETIME_MIN );
             _idletime = IDLETIME_MIN;
         }
         return;
     }
 
-    _log ( LOG_WARNING, "Invalid idletime: %s; using default %d", idletime, IDLETIME_DEFAULT );
+    printf("Invalid idletime: %s; using default %d", idletime, IDLETIME_DEFAULT );
     _idletime = IDLETIME_DEFAULT;
 }
 
@@ -291,14 +288,14 @@ _set_checktime (
     {
         if ( _checktime < CHECKTIME_MIN )
         {
-            _log ( LOG_WARNING, "CHECKTIME set too small: %d; setting to minimum %d",
+            printf("CHECKTIME set too small: %d; setting to minimum %d",
                     _checktime, CHECKTIME_MIN );
             _checktime = CHECKTIME_MIN;
         }
         return;
     }
 
-    _log ( LOG_WARNING, "Invalid checktime: %s; using default %d", checktime, CHECKTIME_DEFAULT );
+    printf("Invalid checktime: %s; using default %d", checktime, CHECKTIME_DEFAULT );
     _checktime = CHECKTIME_DEFAULT;
 }
 
@@ -321,7 +318,7 @@ _parse_options (
         if ( !strcmp ( "-v", argv [ a ] ) || !strcmp ( "--version", argv [ a ] ) )
         {
         	_log_stdout = 1;
-        	_log ( LOG_INFO, "%s version %s\n", basename ( argv [ 0 ] ), VERSION );
+        	printf("%s version %s\n", basename ( argv [ 0 ] ), VERSION );
             exit ( EXIT_SUCCESS );
         }
     }
@@ -344,7 +341,7 @@ _parse_options (
             continue;
         }
 
-        _log ( LOG_ERR, "Unknown option: %s; exiting", argv [ a ] );
+        printf("Unknown option: %s; exiting", argv [ a ] );
         _usage ( argv [ 0 ], EXIT_FAILURE );
     }
 }
@@ -376,18 +373,18 @@ _disk_stop (
 
     if ( 0 > (fd = open ( device, O_RDONLY ) ) )
     {
-        _log ( LOG_WARNING, "Failure to open %s for spinning down: %s", device, strerror ( errno ) );
+        printf("Failure to open %s for spinning down: %s", device, strerror ( errno ) );
         return;
     }
 
     if ( 0 > ioctl ( fd, SG_IO, &sg_io_hdr ) )
     {
-        _log ( LOG_WARNING, "Failure to spin down %s: %s", device, strerror ( errno ) );
-        _log ( LOG_WARNING, "Sense data: %s", sense_data );
+        printf("Failure to spin down %s: %s", device, strerror ( errno ) );
+        printf("Sense data: %s", sense_data );
     }
 
     if ( 0 != sg_io_hdr.status )
-        _log ( LOG_WARNING, "Non-zero status spinning down %s: %d", device, sg_io_hdr.status );
+        printf("Non-zero status spinning down %s: %d", device, sg_io_hdr.status );
 
     close ( fd );
 }
@@ -442,7 +439,7 @@ _disk_idle (
     if ( _is_bit_clear ( _spinning, disk ) || ( _idletime > _idletimes [ disk ] ) )
         return;
 
-    _log ( LOG_INFO, "%s", _transition_message ( disk, "down", msg_buf ) );
+    printf("%s", _transition_message ( disk, "down", msg_buf ) );
 
     _disk_stop ( disk );
 
@@ -460,7 +457,7 @@ _disk_active (
     // if was not spinning, inform spinning up
     if ( _is_bit_clear ( _spinning, disk ) )
     {
-        _log ( LOG_INFO, "%s", _transition_message ( disk, "up", msg_buf ) );
+        printf("%s", _transition_message ( disk, "up", msg_buf ) );
         _bit_set ( _spinning, disk );
     }
 
@@ -489,7 +486,7 @@ _manage_diskstats_line (
 
     if ( strlen ( diskstats_line ) >= sizeof ( _diskstats [ 0 ] ) )
     {
-        _log ( LOG_WARNING, "/proc/diskstats line too long: %s; ignoring", diskstats_line );
+        printf("/proc/diskstats line too long: %s; ignoring", diskstats_line );
         return;
     }
 
@@ -500,7 +497,7 @@ _manage_diskstats_line (
     for ( i = 0, io = diskstats_line; ( i < 8 ) && ( NULL != ( io = strchr ( ++io, ' ' ) ) ); i++ );
     if ( NULL == io )
     {
-        _log ( LOG_WARNING, "Missing I/O in progress stat for device: sd%c", 'a' + disk );
+        printf("Missing I/O in progress stat for device: sd%c", 'a' + disk );
         return;
     }
 
@@ -525,7 +522,7 @@ _manage (
         proc_diskstats = fopen ( "/proc/diskstats", "r" );
         if ( NULL == proc_diskstats )
         {
-            _log ( LOG_ERR, "Failure to open /proc/diskstats: %d - %s", errno, strerror ( errno ) );
+            printf("Failure to open /proc/diskstats: %d - %s", errno, strerror ( errno ) );
             exit ( EXIT_FAILURE );
         }
 

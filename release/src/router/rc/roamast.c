@@ -90,7 +90,7 @@ void rast_init_bssinfo(void)
 
 		for(idxList=0; idxList < MAX_SUBIF_NUM; idxList++) bssinfo[idx].assoclist[idxList] = NULL;
 
-#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK))
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_LANTIQ))
 		if (idx >= MAX_NR_WL_IF) {
 			break;
 		}
@@ -112,6 +112,7 @@ void rast_init_bssinfo(void)
 			bssinfo[idx].user_low_rssi = nvram_get_int(strcat_r(bssinfo[idx].prefix, "user_rssi", usr_rssi));
 		}
 		RAST_DBG("[%s]: WI[%s], idx[%d] \n", __FUNCTION__, bssinfo[idx].wlif_name, idx);
+
 #else
 		int ret, unit;
 
@@ -131,11 +132,12 @@ void rast_init_bssinfo(void)
 		else if (is_psta(idx) || is_psr(idx))
 			bssinfo[idx].upstream_if = 1;
 #endif
+		else if ((dpsr_mode() && find_in_list(nvram_safe_get("sta_ifnames"), bssinfo[idx].wlif_name))
 #ifdef RTCONFIG_DPSTA
-		else if ((dpsta_mode() && find_in_list(nvram_safe_get("dpsta_ifnames"), bssinfo[idx].wlif_name)) ||
-			(dpsr_mode() && find_in_list(nvram_safe_get("sta_ifnames"), bssinfo[idx].wlif_name)))
-			bssinfo[idx].upstream_if = 1;
+			|| (dpsta_mode() && find_in_list(nvram_safe_get("dpsta_ifnames"), bssinfo[idx].wlif_name))
 #endif
+		)
+			bssinfo[idx].upstream_if = 1;
 		else
 			bssinfo[idx].upstream_if = 0;
 
@@ -153,7 +155,7 @@ rast_sta_info_t *rast_add_to_assoclist(int bssidx, int vifidx, struct ether_addr
 	sta = bssinfo[bssidx].assoclist[vifidx];
 	while(sta) {
 		/* find sta in assoclist */
-#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA))
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ))
 		if(memcmp(&(sta->addr), addr, ETHER_ADDR_STR_LEN/3) == 0) {
 #else
 		if(eacmp(&(sta->addr), addr) == 0) {
@@ -176,7 +178,7 @@ rast_sta_info_t *rast_add_to_assoclist(int bssidx, int vifidx, struct ether_addr
 		sta->timestamp = uptime();
 		sta->active = uptime();
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_RALINK) || defined(RTCONFIG_LANTIQ)
 		sta->last_txrx_bytes = 0;
 		sta->rssi = 0;
 #else
@@ -216,7 +218,7 @@ rast_sta_info_t *rast_remove_from_assoclist(int bssidx, int vifidx, struct ether
 	}
 
 	/* found at 1st element, update pointer */
-#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA))
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ))
       	if(memcmp(&(assoclist->addr), addr, ETHER_ADDR_STR_LEN/3) == 0) {
 #else
 	if(eacmp(&(assoclist->addr), addr) == 0) {
@@ -234,7 +236,7 @@ rast_sta_info_t *rast_remove_from_assoclist(int bssidx, int vifidx, struct ether
 		assoclist = prev->next;
 
 		while(assoclist) {
-#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA))
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ))
 		       	if(memcmp(&(assoclist->addr), addr, ETHER_ADDR_STR_LEN/3) == 0) {
 #else
 			if(eacmp(&(assoclist->addr), addr) == 0) {
@@ -264,7 +266,7 @@ rast_sta_info_t *rast_remove_from_assoclist(int bssidx, int vifidx, struct ether
 
 void rast_deauth_sta(int bssidx, int vifidx, rast_sta_info_t *sta)
 {
-#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK))
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_LANTIQ))
 	char wlif_name[32];
 	char cmd[128];
 
@@ -284,6 +286,9 @@ void rast_deauth_sta(int bssidx, int vifidx, rast_sta_info_t *sta)
 #elif defined(RTCONFIG_REALTEK)
 	RAST_INFO("DEAUTHENTICATE ["MACF"] from %s\n", ETHER_TO_MACF(sta->addr), wlif_name);
 	sprintf(cmd, "iwpriv %s del_sta %02x%02x%02x%02x%02x%02x", wlif_name, ETHER_TO_MACF(sta->addr));
+#elif defined(RTCONFIG_LANTIQ)
+	RAST_INFO("DEAUTHENTICATE ["MACF"] from %s\n", ETHER_TO_MACF(sta->addr), wlif_name);
+	sprintf(cmd, "hostapd_cli -i %s disassociate %s "MACF, wlif_name, wlif_name, ETHER_TO_MACF(sta->addr));
 #endif
 	system(cmd);
 #else /* BCM */
@@ -322,9 +327,10 @@ void rast_check_criteria(int bssidx, int vifidx)
 			if(sta->rssi_hit_count >= RAST_COUNT_RSSI)
 				flag_rssi = 1;
 		}
-#if defined(RTCONFIG_RALINK)
-		else     sta->rssi_hit_count = 0;
-#endif
+		else {
+			sta->rssi_hit_count = 0;
+		}
+
 		if(sta->datarate < bssinfo[bssidx].idle_rate) {
 			if(!sta->idle_state) {
 				sta->idle_state = 1;
@@ -332,9 +338,6 @@ void rast_check_criteria(int bssidx, int vifidx)
 			}
 			if((now - sta->idle_start) >= RAST_COUNT_IDLE)
 				flag_idle = 1;
-#if defined(RTCONFIG_RALINK)
-			else	flag_idle = 0;
-#endif
 		}
 		else {
 			sta->idle_state = 0;
@@ -366,7 +369,7 @@ void rast_check_criteria(int bssidx, int vifidx)
 	return;
 }
 
-#if !(defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK))
+#if !(defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_LANTIQ))
 void rast_retrieve_bs_data(int bssidx, int vifidx)
 {
 	int ret;
@@ -444,7 +447,7 @@ void rast_timeout_sta(int bssidx, int vifidx)
 
 void rast_update_sta_info(int bssidx, int vifidx)
 {
-#if defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_LANTIQ)
 
 		get_stainfo(bssidx, vifidx);
 
@@ -605,7 +608,7 @@ void rast_update_sta_info(int bssidx, int vifidx)
 	rast_timeout_sta(bssidx, vifidx);
 	rast_check_criteria(bssidx, vifidx);
 
-#if !defined(RTCONFIG_RALINK) && !defined(RTCONFIG_QCA)
+#if !defined(RTCONFIG_RALINK) && !defined(RTCONFIG_QCA) && !defined(RTCONFIG_LANTIQ)
 exit:
 	if(mac_list) free(mac_list);
 #endif
@@ -619,7 +622,11 @@ static void rast_watchdog(int sig)
 	char prefix[32];
 	char tmp[32];
 
+#ifndef RTCONFIG_LANTIQ
 	if(!nvram_get_int("wlready"))
+#else
+	if(!nvram_get_int("wave_ready"))
+#endif
 		return;
 
 	if(init) {
@@ -628,7 +635,7 @@ static void rast_watchdog(int sig)
 	}
 
 	for(idx=0; idx < wlif_count; idx++) {
-#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK))
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_LANTIQ))
 		if(!bssinfo[idx].user_low_rssi) continue;
 
 #if defined(RTCONFIG_REALTEK)

@@ -136,7 +136,7 @@ fi
 #./aconfigure --host=arm-apple-darwin9 --disable-floating-point --disable-sound $*
 #./aconfigure --host=arm-apple-darwin9 --target=arm-apple-darwin9 --disable-floating-point --disable-sound $*
 echo ${CROSS_TYPE}
-./aconfigure --host=${CROSS_TYPE} --target=${CROSS_TYPE}
+./aconfigure ${CONFIGURE_FLAGS} --host=${CROSS_TYPE} --target=${CROSS_TYPE}
 
 if test "$?" = "0"; then
   echo "Done configuring for `basename $SDKPATH`"

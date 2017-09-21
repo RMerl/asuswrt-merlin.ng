@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2016 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ void netlink_init(void)
     }
   
   if (daemon->netlinkfd == -1 || 
-      getsockname(daemon->netlinkfd, (struct sockaddr *)&addr, &slen) == 1)
+      getsockname(daemon->netlinkfd, (struct sockaddr *)&addr, &slen) == -1)
     die(_("cannot create netlink socket: %s"), NULL, EC_MISC);
    
   /* save pid assigned by bind() and retrieved by getsockname() */ 

@@ -48,7 +48,6 @@
 #define TDTS_SHELL_IOCTL_CHRDEV_PATH "/dev/" TDTS_SHELL_IOCTL_CHRDEV_NAME //!< The device node path in system.
 #define TDTS_SHELL_IOCTL_CHRDEV_MAJOR TMCFG_E_KMOD_IOCTL_DEV_MAJ
 #define TDTS_SHELL_IOCTL_CHRDEV_MINOR TMCFG_E_KMOD_IOCTL_DEV_MIN
-#define TDTS_SHELL_IOCTL_MAGIC 0x5F
 
 #ifdef SHN_LICENSE_CONTROL
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ 191
@@ -56,7 +55,6 @@
 #define UDB_SHELL_IOCTL_CHRDEV_NAME TMCFG_E_UDB_SHELL_IOCTL_DEV_NAME
 #define UDB_SHELL_IOCTL_CHRDEV_PATH "/dev/" UDB_SHELL_IOCTL_CHRDEV_NAME //!< The device node path in system.
 #define UDB_SHELL_IOCTL_CHRDEV_MAJOR TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ
-#define UDB_SHELL_IOCTL_MAGIC 0x60
 #endif
 
 /*!
@@ -129,13 +127,13 @@ typedef struct eudb_shell_ioctl
 } eudb_shell_ioctl_t;
 #endif
 
-#define _IOCTL_CMD_R(_nr) _IOR(TDTS_SHELL_IOCTL_MAGIC, _nr, tdts_shell_ioctl_t)
-#define _IOCTL_CMD_W(_nr) _IOW(TDTS_SHELL_IOCTL_MAGIC, _nr, tdts_shell_ioctl_t)
-#define _IOCTL_CMD_WR(_nr) _IOWR(TDTS_SHELL_IOCTL_MAGIC, _nr, tdts_shell_ioctl_t)
+#define _IOCTL_CMD_R(_nr) _IOR(TMCFG_E_KMOD_IOCTL_DEV_MAGIC, _nr, tdts_shell_ioctl_t)
+#define _IOCTL_CMD_W(_nr) _IOW(TMCFG_E_KMOD_IOCTL_DEV_MAGIC, _nr, tdts_shell_ioctl_t)
+#define _IOCTL_CMD_WR(_nr) _IOWR(TMCFG_E_KMOD_IOCTL_DEV_MAGIC, _nr, tdts_shell_ioctl_t)
 
 #ifdef SHN_LICENSE_CONTROL
 //SHN for License control
-#define _UDB_IOCTL_CMD_WR(_nr) _IOWR(UDB_SHELL_IOCTL_MAGIC, _nr, eudb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_WR(_nr) _IOWR(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, eudb_shell_ioctl_t)
 #endif
 
 enum
@@ -213,6 +211,13 @@ typedef enum
 	TDTS_SHELL_IOCTL_TYPE_RAW, //!< type is raw data, length must be specified correctly.
 	TDTS_SHELL_IOCTL_TYPE_MAX
 } tdts_shell_ioctl_type_t;
+
+/*! magic */
+#define TDTS_SHELL_IOCTL_MAGIC TMCFG_E_KMOD_IOCTL_DEV_MAGIC
+#ifdef SHN_LICENSE_CONTROL
+//SHN License control
+#define UDB_SHELL_IOCTL_MAGIC UDB_SHELL_IOCTL_CHRDEV_MAJOR
+#endif
 
 /*!@}*/
 

@@ -589,8 +589,8 @@ function update_wanip(e) {
 				parent.show_ddns_status();
 			}, 1);
 		
-			if(wanlink_ipaddr == '0.0.0.0' || wanlink_ipaddr == '')
-				document.getElementById("wanIP_div").style.display = "none";
+			if(wanip == '0.0.0.0' || wanip == '')
+				parent.document.getElementById("wanIP_div").style.display = "none";
 		}
 
 		if(old_link_internet == -1)
@@ -668,8 +668,16 @@ function goToWAN(){
 	else{
 		if(dsl_support)
 			parent.location.href = '/Advanced_DSL_Content.asp';
-		else
-			parent.location.href = '/Advanced_WAN_Content.asp';
+		else{
+			if(wans_dualwan != "" && wans_dualwan.split(" ")[0].toUpperCase() == "USB"){
+				if(gobi_support)
+					parent.location.href = '/Advanced_MobileBroadband_Content.asp';
+				else
+					parent.location.href = '/Advanced_Modem_Content.asp';
+			}
+			else
+				parent.location.href = '/Advanced_WAN_Content.asp';
+		}
 	}
 }
 

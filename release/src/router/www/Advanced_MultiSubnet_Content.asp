@@ -191,7 +191,7 @@ function del_subnet(r){
 
 	var vlan_rule_index = get_vlan_rule_index(subnet_list_table.rows[index].cells[0].innerHTML);
 	if(vlan_rule_index != -1){
-		alert("The subnet is used by VLAN and can't be deleted!"); //untranslated
+		alert("<#MSubnet_Warning#>");
 		return;
 	}
 
@@ -371,6 +371,10 @@ function change_subnet_rule(){
 	}
 }
 
+var alertMsg = function (type, ipAddr, netStart, netEnd) {
+		alert("*Conflict with " + type + " IP: " + ipAddr + ",\n" + "Network segment is " + netStart + " ~ " + netEnd);
+};
+
 function validSubnetForm() {
 	var re = new RegExp('^[a-zA-Z0-9][a-zA-Z0-9\.\-]*[a-zA-Z0-9]$','gi');
 	if((!re.test(document.form.tLan_domain.value) || document.form.tLan_domain.value.indexOf("asuscomm.com") > 0) && document.form.tLan_domain.value != ""){
@@ -410,6 +414,19 @@ function validSubnetForm() {
 
 	if(!validator.numberRange(document.form.tLeaseTime, 120, 604800)) {
 		return false;
+	}
+
+	/* Check overlap of DHCP Range with other subnets */
+	var lanIPAddr = document.form.tGatewayIP.value;
+	var lanNetMask = document.form.tSubnetMask.value;
+	for(var i = 0; i < subnet_rulelist_array.length; i++) {
+		if( i != selected_row){
+			var ipConflict = checkIPConflict("", lanIPAddr, lanNetMask, subnet_rulelist_array[i][0], subnet_rulelist_array[i][1]);
+			if(ipConflict.state) {
+				alertMsg("Subnet", ipConflict.ipAddr, ipConflict.netLegalRangeStart, ipConflict.netLegalRangeEnd);
+				return false;
+			}
+		}
 	}
 
 	return true;
@@ -508,9 +525,6 @@ function checkGatewayIP() {
 	var lanIPAddr = document.form.tGatewayIP.value;
 	var lanNetMask = document.form.tSubnetMask.value;
 	var ipConflict;
-	var alertMsg = function (type, ipAddr, netStart, netEnd) {
-		alert("*Conflict with " + type + " IP: " + ipAddr + ",\n" + "Network segment is " + netStart + " ~ " + netEnd);
-	};
 
 	//1.check Wan IP
 	ipConflict = checkIPConflict("WAN", lanIPAddr, lanNetMask);
@@ -519,9 +533,9 @@ function checkGatewayIP() {
 		return false;
 	}
 
-	//2.check Lan IP
+	//2.check Lan IP  Default Subnet is subnet_rulelist_array[0]
 	if(selected_row != 0){
-		ipConflict = checkIPConflict("LAN", lanIPAddr, lanNetMask);
+		ipConflict = checkIPConflict("", lanIPAddr, lanNetMask, subnet_rulelist_array[0][0], subnet_rulelist_array[0][1]);
 		if(ipConflict.state) {
 			alertMsg("LAN", ipConflict.ipAddr, ipConflict.netLegalRangeStart, ipConflict.netLegalRangeEnd);
 			return false;
@@ -546,12 +560,14 @@ function checkGatewayIP() {
 		}
 	}
 
-	//5.check existed Subnet IP address
-	for(var i = 1; i < subnet_rulelist_array.length; i++) { //skip default subnet, because it's checked in 'LAN' case.
-		ipConflict = checkIPConflict("SUBNET", lanIPAddr, lanNetMask, subnet_rulelist_array[i][0], subnet_rulelist_array[i][1]);
-		if(ipConflict.state) {
-			alertMsg("Subnet", ipConflict.ipAddr, ipConflict.netLegalRangeStart, ipConflict.netLegalRangeEnd);
-			return false;
+	//5.check existed Subnet IP address except default subnet (LAN)
+	for(var i = 1; i < subnet_rulelist_array.length; i++) {
+		if( i != selected_row){
+			ipConflict = checkIPConflict("", lanIPAddr, lanNetMask, subnet_rulelist_array[i][0], subnet_rulelist_array[i][1]);
+			if(ipConflict.state) {
+				alertMsg("Subnet", ipConflict.ipAddr, ipConflict.netLegalRangeStart, ipConflict.netLegalRangeEnd);
+				return false;
+			}
 		}
 	}
 
@@ -821,7 +837,7 @@ function pullLANIPList(obj){
 	<table border="0" align="center" cellpadding="5" cellspacing="5">
 		<tr>
 			<td align="left">
-			<span class="formfonttitle">Subnet Profile Edit</span>
+			<span class="formfonttitle"><#TBVLAN_EditSubnetProfile#></span>
 			<div style="width:630px; height:15px;overflow:hidden;position:relative;top:5px;"><img src="images/New_ui/export/line_export.png"></div>
 			</td>
 		</tr>
@@ -830,7 +846,7 @@ function pullLANIPList(obj){
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Configuration</td>
+							<td colspan="2"><#t2BC#></td>
 						</tr>
 					</thead>
 					<tr>
@@ -975,11 +991,11 @@ function pullLANIPList(obj){
 							<div>&nbsp;</div>
 							<div class="formfonttitle"><#menu5_2#> - <#Subnet#></div>
 							<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="images/New_ui/export/line_export.png"></div>
-							<div class="formfontdesc">Configure the subnets.</div>
-							<div style="margin-left:8px; margin-bottom:7px;"> <div style="font-size:12px; font-weight:800;display:table-cell;vertical-align:bottom;">Subnet Configuration (Max Limit : 8)</div><div style="display:table-cell;padding-left:6px;"><input id="add_subnet_btn" type="button" class="add_btn" onClick="add_subnet();" value=""></div></div>
+							<div class="formfontdesc"><#MSubnet_desc#></div>
+							<div style="margin-left:8px; margin-bottom:7px;"> <div style="font-size:12px; font-weight:800;display:table-cell;vertical-align:bottom;"><#MSubnet_ConfigTable_Title#>&nbsp;(<#List_limit#>&nbsp;8)</div><div style="display:table-cell;padding-left:6px;"><input id="add_subnet_btn" type="button" class="add_btn" onClick="add_subnet();" value=""></div></div>
 							<table width="98%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" id="subnet_table" style="margin-top:5px;">
 				    			<tr>
-				    				<th style="width:19%">Gateway IP Address</th>
+									<th style="width:19%"><#RouterConfig_GWStaticGW_itemname#></th>
 				      				<th style="width:19%"><#IPConnection_x_ExternalSubnetMask_itemname#></th>
 				      				<th style="width:19%"><#LANHostConfig_MinAddress_itemname#></th>
 				      				<th style="width:19%"><#LANHostConfig_MaxAddress_itemname#></th>

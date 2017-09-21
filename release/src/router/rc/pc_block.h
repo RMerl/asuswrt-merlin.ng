@@ -23,7 +23,3 @@ int serv_socket, max_fd;
 fd_set allsets, rdset;
 int clients[MAX_CONN];
 int fd_idx, fd_cur;
-
-extern pc_s *get_all_pc_list(pc_s **pc_list);
-extern pc_s *match_enabled_pc_list(pc_s *pc_list, pc_s **target_list, int enabled);
-extern void free_pc_list(pc_s **target_list);

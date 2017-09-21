@@ -1,29 +1,29 @@
 #
 # aspmd Makefile
 #
-# Copyright (C) 2015, Broadcom Corporation
+# Broadcom Proprietary and Confidential. Copyright (C) 2017,
 # All Rights Reserved.
 # 
-# This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
+# This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom;
 # the contents of this file may not be disclosed to third parties, copied
 # or duplicated in any form, in whole or in part, without the prior
-# written permission of Broadcom Corporation.
+# written permission of Broadcom.
 #
 # $Id: $
 #
 
-CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall -Werror
+CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall
 CFLAGS += $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
 CFLAGS += -s -O2
 
 
-LDFLAGS += -L$(TOP)/nvram${BCMEX} -L$(INSTALLDIR)/nvram/usr/lib -lnvram
+LDFLAGS += -L$(TOP)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram ${EXTRA_NV_LDFLAGS}
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += -lgcc_s
 
-ifeq ($(wildcard $(SRCBASE)/aspmd/*.c),)
+ifeq ($(wildcard $(SRCBASE)/router/aspmd/*.c),)
 all:
-	-cp -f $(SRCBASE)/router/aspmd/prebuilt/aspmd aspmd
+	-cp -f prebuilt/aspmd aspmd
 else
 all: aspmd
 endif

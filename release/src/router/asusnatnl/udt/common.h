@@ -55,6 +55,9 @@ written by
 #endif
 #include <cstdlib>
 #include "udt.h"
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 
 #ifdef WIN32

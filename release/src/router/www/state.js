@@ -13,6 +13,11 @@ String.prototype.repeat = function(times) {
    return (new Array(times + 1)).join(this);
 };
 
+/* String replace all function */
+function replaceAll(txt, replace, with_this) {
+   return txt.replace(new RegExp(replace, 'g'),with_this);
+}
+
 /* Internet Explorer lacks this array method */
 if (!('indexOf' in Array.prototype)) {
 	Array.prototype.indexOf = function(find, i) {
@@ -256,8 +261,8 @@ var wlc_express = '<% nvram_get("wlc_express"); %>';
 var isSwMode = function(mode){
 	var ui_sw_mode = "rt";
 	var sw_mode = '<% nvram_get("sw_mode"); %>';
-	var wlc_psta = '<% nvram_get("wlc_psta"); %>';
-	var wlc_express = '<% nvram_get("wlc_express"); %>';
+	var wlc_psta = '<% nvram_get("wlc_psta"); %>' == '' ? 0 : '<% nvram_get("wlc_psta"); %>';
+	var wlc_express = '<% nvram_get("wlc_express"); %>' == '' ? 0 : '<% nvram_get("wlc_express"); %>';
 
 	if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){	// Repeater
 		ui_sw_mode = "re";
@@ -383,6 +388,15 @@ var wl_info = {
 };
 //wireless end
 
+function uiSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+
+	if(ui_support[_ptn])
+		return ui_support[_ptn];
+	else
+		return false;
+}
+
 // parsing rc_support
 var rc_support = '<% nvram_get("rc_support"); %>';
 function isSupport(_ptn){
@@ -418,10 +432,12 @@ function isSupport(_ptn){
 		return true;
 	}
 	else if(_ptn == "11AC"){
+		if(based_modelid == "RT-N600")		//UK , remove 80MHz(11ac) for MODELDEP: RT-N600
+			return false;
 		if(Rawifi_support || Qcawifi_support)
 			return (rc_support.search(_ptn) == -1) ? false : true;
 		else
-			return ('<% nvram_get("wl_phytype"); %>' == 'v' ? true : false)
+			return ('<% nvram_get("wl1_phytype"); %>' == 'v' ? true : false)
 	}
 	else if(_ptn == "wlopmode"){
 		return ('<% nvram_get("wlopmode"); %>' == 7 ? true : false)
@@ -434,6 +450,19 @@ function isSupport(_ptn){
 	}
 	else if(_ptn == "concurrep"){
 		return (based_modelid.search("RP-") != -1) ? true : false;
+	}
+	else if(_ptn == "usbPortMax"){
+		return rc_support.charAt(rc_support.indexOf("usbX")+4);
+	}
+	else if(_ptn == "yadns"){
+		return (rc_support.search("yadns_hideqis") != -1 || rc_support.search("yadns") != -1) ? true : false;
+	}
+	else if(_ptn == "hnd"){
+		var machine_name = '<% get_machine_name(); %>';
+		return (machine_name.search("aarch64") != -1)? true : false;
+	}
+	else if(_ptn == "rrsut"){
+		return (sw_mode == 1 && (rc_support.search(_ptn) != -1))? true : false;
 	}
 	else if(_ptn == "traffic_analyzer"){
 		if(!bwdpi_support) return false;
@@ -448,7 +477,17 @@ function isSupport(_ptn){
 		}
 
 		return false;
-	}	
+	}
+	else if(_ptn == "meoVoda"){
+		var meoVoda_support_models = ["RT-N14U", "BRT-AC828", "RT-AD7200", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC86U", "AC2900", "RT-AC87U", 
+							  "RT-AC68U", "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE"];
+		return (meoVoda_support_models.indexOf(based_modelid) >= 0)? true : false;
+	}
+	else if(_ptn == "movistarTriple"){
+		var movistarTriple_support_models = ["BRT-AC828", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC87U", "RT-AC68U", 
+									 "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE"];
+		return (movistarTriple_support_models.indexOf(based_modelid) >= 0)? true : false;
+	}
 	else
 		return (rc_support.search(_ptn) == -1) ? false : true;
 }
@@ -467,9 +506,6 @@ var live_update_support = isSupport("update");
 var no_update_support = isSupport("noupdate");
 var cooler_support = isSupport("fanctrl");
 var power_support = isSupport("pwrctrl");
-if(is_US_sku)
-	power_support = false;
-
 var repeater_support = isSupport("repeater");
 var concurrep_support = isSupport("concurrep");
 var psta_support = isSupport("psta");
@@ -479,10 +515,7 @@ var no_finiwl_support = isSupport("no_finiwl");
 var Rawifi_support = isSupport("rawifi");
 var Qcawifi_support = isSupport("qcawifi");
 var Rtkwifi_support = isSupport("rtkwifi");
-var lantiq_support = false;
-if(based_modelid == "BLUECAVE")
-	lantiq_support = true;
-	
+var lantiq_support = isSupport("lantiq");
 var wifi_logo_support = isSupport("wifilogo");
 var vht80_80_support = isSupport("vht80_80");
 var vht160_support = isSupport("vht160");
@@ -490,6 +523,7 @@ var SwitchCtrl_support = isSupport("switchctrl");
 var dsl_support = isSupport("dsl");
 var vdsl_support = isSupport("vdsl");
 var dualWAN_support = isSupport("dualwan");
+var noWAN_support = isSupport("nowan");
 var mtwancfg_support = isSupport("mtwancfg");
 var ruisp_support = isSupport("ruisp");
 var ssh_support = isSupport("ssh");
@@ -502,7 +536,7 @@ var default_psk_support = isSupport("defpsk");
 var location_list_support = isSupport("loclist");
 var cfg_wps_btn_support = isSupport("cfg_wps_btn");
 var usb_support = isSupport("usbX");
-var usbPortMax = rc_support.charAt(rc_support.indexOf("usbX")+4);
+var usbPortMax = isSupport("usbPortMax");
 var printer_support = isSupport("printer"); 
 var noprinter_support = isSupport("noprinter");
 var appbase_support = isSupport("appbase");
@@ -516,7 +550,7 @@ var cloudsync_support = isSupport("cloudsync");
 var nocloudsync_support = isSupport("nocloudsync");
 var aicloudipk_support = isSupport("aicloudipk");
 var yadns_hideqis = isSupport("yadns_hideqis");
-var yadns_support = yadns_hideqis || isSupport("yadns");
+var yadns_support = isSupport("yadns");
 var manualstb_support = isSupport("manual_stb"); 
 var wps_multiband_support = isSupport("wps_multiband");
 var modem_support = isSupport("modem"); 
@@ -538,8 +572,6 @@ var diskUtility_support = isSupport("diskutility");
 var networkTool_support = isSupport("nwtool");
 var band5g_11ac_support = isSupport("11AC");
 var no_vht_support = isSupport("no_vht");	//Hide 11AC/80MHz from GUI
-if(based_modelid == "RT-N600")		//UK , remove 80MHz(11ac) for MODELDEP: RT-N600
-	band5g_11ac_support = false;
 var optimizeXbox_support = isSupport("optimize_xbox");
 var spectrum_support = isSupport("spectrum");
 var mediareview_support = isSupport("wlopmode");
@@ -558,19 +590,6 @@ var ipsec_srv_support = isSupport("ipsec_srv");
 var ipsec_cli_support = isSupport("ipsec_cli");
 //var traffic_analyzer_support = isSupport("traffic_analyzer");
 var traffic_analyzer_support = bwdpi_support;
-/* MODELDEP */
-if(based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
-	noiTunes_support = true;
-	cloudsync_support = false;
-	aicloudipk_support = false;
-	dualWAN_support = false;
-	ssh_support = false;
-	pptpd_support = false;
-	openvpnd_support = false;
-	vpnc_support = false;
-	feedback_support = false;
-	traffic_analyzer_support = false;
-}
 var traffic_limiter_support = isSupport("traffic_limiter");
 var force_upgrade_support = isSupport("fupgrade");
 
@@ -578,7 +597,7 @@ var adBlock_support = isSupport("adBlock");
 var keyGuard_support = isSupport("keyGuard");
 var rog_support = isSupport("rog");
 var smart_connect_support = isSupport("smart_connect");
-var rrsut_support = (sw_mode == 1)? isSupport("rrsut") : false;
+var rrsut_support = isSupport("rrsut");
 var gobi_support = isSupport("gobi");
 var findasus_support = isSupport("findasus");
 var usericon_support = isSupport("usericon");
@@ -598,7 +617,7 @@ var cp_advanced_support = isSupport("cp_advanced");
 var fbwifi_support = isSupport("fbwifi");
 var noiptv_support = isSupport("noiptv");
 var nz_isp_support = isSupport("nz_isp");
-var app_support = false;
+var app_support = isSupport("app");
 var letsencrypt_support = isSupport("letsencrypt");
 var pm_support = isSupport("permission_management");
 var hive_hide_support = isSupport("hive_hide");
@@ -607,32 +626,12 @@ var lyra_hide_support = isSupport("lyra_hide");
 var hdspindown_support = isSupport("hdspindown");
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
-var hnd_support = false;
-var machine_name = '<% get_machine_name(); %>';
-if(machine_name.search("aarch64") != -1){		//HND router
-	hnd_support = true;
-}
-
-if( based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || 
-	based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC87R" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || 
-	based_modelid == "4G-AC68U" || based_modelid == "RT-AC68R" || based_modelid == "RT-AC68P" || based_modelid == "RT-AC68W" || based_modelid == "RT-AC66U" || 
-	based_modelid == "RT-AC66R" || based_modelid == "RT-AC56U" || based_modelid == "RT-N66U" || based_modelid == "RT-N66R" || based_modelid == "RT-N66W"){
-	app_support = true;
- }
-
+var hnd_support = isSupport("hnd");
 var tagged_based_vlan = isSupport("tagged_based_vlan");
 var vpn_fusion_support = isSupport("vpn_fusion");
-
-var meoVoda_support_models = ["RT-N14U", "BRT-AC828", "RT-AD7200", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC86U", "AC2900", "RT-AC87U", 
-							  "RT-AC68U", "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC51U", "RT-N66U", "RT-N18U"];
-var movistarTriple_support_models = ["BRT-AC828", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC87U", "RT-AC68U", 
-									 "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N18U"];
-var meoVoda_support = false;
-var movistarTriple_support = false;
-if(meoVoda_support_models.indexOf(based_modelid) >= 0)
-	meoVoda_support = true;
-if(movistarTriple_support_models.indexOf(based_modelid) >= 0)
-	movistarTriple_support = true;
+var cfg_sync_support = isSupport("cfg_sync");
+var meoVoda_support = isSupport("meoVoda");
+var movistarTriple_support = isSupport("movistarTriple");
 
 var QISWIZARD = "QIS_wizard.htm";
 
@@ -644,8 +643,6 @@ var sdk_7 = sdk_version_array[0] == 7 ? true : false;
 var sdk_5 = sdk_version_array[0] == 5 ? true : false;
 var bcm_mumimo_support = isSupport("mumimo");		//Broadcom MU-MIMOs
 var nt_center_support = isSupport("nt_center");
-if(nt_center_support && based_modelid != "")
-	nt_center_support = false;
 
 if(nt_center_support)
 	document.write('<script type="text/javascript" src="/client_function.js"></script>');
@@ -1325,6 +1322,81 @@ function addOnlineHelp(obj, keywordArray){
 	}
 }
 
+function set_FAQ_link(_objID, _faqNum, _name) {
+	var faqLang = {
+		EN : "/",
+		TW : "/",
+		CN : "/",
+		CZ : "/",
+		PL : "/",
+		RU : "/",
+		DE : "/",
+		FR : "/",
+		TR : "/",
+		TH : "/",
+		MS : "/",
+		NO : "/",
+		FI : "/",
+		DA : "/",
+		SV : "/",
+		BR : "/",
+		PT : "/",
+		JP : "/",
+		ES : "/",
+		IT : "/",
+		UK : "/",
+		HU : "/",
+		RO : "/",
+		KR : "/",
+		SL : "/",
+		NL : "/"
+	};
+
+	switch(_name) {
+		case "privateIP" :
+			faqLang.TW = "/tw/";
+			faqLang.CN = ".cn/";
+			break;
+		case "IPSec" :
+			faqLang.TW = "/tw/";
+			faqLang.CN = ".cn/";
+			break;
+		case "IPSecAdv" :
+			break;
+		case "OpenVPN" :
+			faqLang.TW = "/TW/";
+			faqLang.CN = "/CN/";
+			faqLang.CZ = "/CZ/";
+			faqLang.PL = "/PL/";
+			faqLang.RU = "/RU/";
+			faqLang.DE = "/DE/";
+			faqLang.FR = "/FR/";
+			faqLang.TR = "/TR/";
+			faqLang.TH = "/TH/";
+			faqLang.PT = "/PT/";
+			faqLang.KR = "/KR/";
+			faqLang.ES = "/ES/";
+			faqLang.IT = "/IT/";
+			faqLang.UK = "/UK/";
+			faqLang.HU = "/HU/";
+			faqLang.RO = "/RO/";
+			break;
+		default :
+			break;
+	}
+
+	var preferredLang = "";
+	preferredLang = faqLang.<% nvram_get("preferred_lang"); %>;
+	if(preferredLang == undefined)
+		preferredLang = "/";
+
+	var faqURL = "";
+	faqURL = "https://www.asus.com" + preferredLang;
+	faqURL += "support/FAQ/";
+	faqURL += _faqNum;
+	$("#" + _objID + "").attr("href", faqURL);
+}
+
 function Block_chars(obj, keywordArray){
 	// bolck ascii code 32~126 first
 	var invalid_char = "";		
@@ -1508,6 +1580,9 @@ function showMenuTree(menuList, menuExclude){
 				else if(dualWAN_support && based_modelid != "BRT-AC828" && current_url.indexOf("Advanced_Modem_Content") == 0){
 					tab_code += (j == 0 || j == 3) ? 'tabClicked' : 'tab';	// Show fist tab css as class 'tabClicked'
 				}
+				else if(dualWAN_support && based_modelid != "BRT-AC828" && current_url.indexOf("Advanced_Modem_Content") == 0) {
+					tab_code += (j == 0 || j == 3) ? 'tabClicked' : 'tab';	// Show fist tab css as class 'tabClicked'
+				}
 				else{
 					tab_code += (j == clickedItem.tab) ? 'tabClicked' : 'tab';
 				}
@@ -1563,6 +1638,10 @@ function showMenuTree(menuList, menuExclude){
 		for(var j=0; j<curMenu.tab.length; j++){
 			if(current_url === curMenu.tab[j].url){
 				clickedItem.menu = i;
+
+				if(curMenu.tab[j].url.indexOf("Advanced_MobileBroadband_Content") == 0 && dualwan_enabled){
+					curMenu.tab[j].tabName = "__INHERIT__";
+				}
 
 				if(curMenu.tab[j].tabName !== "__INHERIT__"){
 					clickedItem.tab = j;
@@ -2847,10 +2926,32 @@ function refreshStatus(xhr){
 		}
 
 		(function(){
+			var wans_mode = '<%nvram_get("wans_mode");%>';
 			var NM_connect_obj = function(_link_status, _link_sbstatus, _link_auxstatus, unit){
-				this.hint = "<#Disconnected#>";
-				this.link = "/" + QISWIZARD + "?flag=detect";
-				this.className = "_disconnected";
+				if(dualwan_enabled && active_wan_unit != unit && (wans_mode == "fo" || wans_mode == "fb")){
+					this.hint = "Cold-<#Status_Standby#>";
+					this.className = "_standby";
+				}
+				else{
+					this.hint = "<#Disconnected#>";
+					this.className = "_disconnected";
+				}
+
+				if(!dualWAN_support)
+					this.link = "/" + QISWIZARD + "?flag=detect";
+				else{
+					if(dualwan_enabled)
+						this.link = "gotoWAN";
+					else if(wans_dualwan_array[unit] == "usb"){
+						if(gobi_support)
+							this.link="/Advanced_MobileBroadband_Content.asp";
+						else
+							this.link="/Advanced_Modem_Content.asp";
+					}
+					else
+						this.link="/Advanced_WAN_Content.asp";
+				}
+
 				this.hasInternet = false;
 
 				if(_link_auxstatus == "1"){
@@ -2861,9 +2962,8 @@ function refreshStatus(xhr){
 				else if(_link_status == "2"){
 					this.link = "";
 
-					var wans_mode = '<%nvram_get("wans_mode");%>';
 					if(dualwan_enabled && active_wan_unit != unit && (wans_mode == "fo" || wans_mode == "fb")){	
-						this.hint = "<#Status_Standby#>";
+						this.hint = "<#Standby_str#>";
 						this.className = "_standby";
 					}
 					else{
@@ -2923,17 +3023,21 @@ function refreshStatus(xhr){
 				};
 
 				if(document.getElementById("primary_status")){
-					if(first_link_status == "2")
-						document.getElementById('primary_status').innerHTML = NM_connect_status.primary.hint;
-					else
+					if(NM_connect_status.primary.link == "gotoWAN")
+						document.getElementById('primary_status').innerHTML = '<a style="color:#FFF;text-decoration:underline; cursor:pointer;" onclick="goToWAN(0);">' + NM_connect_status.primary.hint + '</a>';
+					else if(NM_connect_status.primary.link != "")
 						document.getElementById('primary_status').innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="'+ NM_connect_status.primary.link +'">' + NM_connect_status.primary.hint + '</a>';
+					else
+						document.getElementById('primary_status').innerHTML = NM_connect_status.primary.hint;
 					document.getElementById('primary_line').className = "primary_wan" + NM_connect_status.primary.className;
 				}
 				if(document.getElementById("secondary_status")){
-					if(secondary_link_status == "2")
-						document.getElementById('secondary_status').innerHTML = NM_connect_status.secondary.hint;
-					else
+					if(NM_connect_status.secondary.link == "gotoWAN")
+						document.getElementById('secondary_status').innerHTML = '<a style="color:#FFF;text-decoration:underline; cursor:pointer;" onclick="goToWAN(1);">' + NM_connect_status.secondary.hint + '</a>';
+					else if(NM_connect_status.secondary.link != "")
 						document.getElementById('secondary_status').innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="'+ NM_connect_status.secondary.link +'">' + NM_connect_status.secondary.hint + '</a>';
+					else
+						document.getElementById('secondary_status').innerHTML = NM_connect_status.secondary.hint;
 					document.getElementById('secondary_line').className = "secondary_wan" + NM_connect_status.secondary.className;
 				}
 				document.getElementById("connect_status").className = (NM_connect_status.primary.hasInternet || NM_connect_status.secondary.hasInternet) ? "connectstatuson" : "connectstatusoff";
@@ -2942,9 +3046,18 @@ function refreshStatus(xhr){
 			else{
 				var NM_connect_status = new NM_connect_obj(link_status, link_sbstatus, link_auxstatus, 0);
 				if(document.getElementById("NM_connect_status")){
-					document.getElementById("NM_connect_status").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="'+ NM_connect_status.link +'">' + NM_connect_status.hint + '</a>';
+					if(NM_connect_status.link != "")
+						document.getElementById("NM_connect_status").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="'+ NM_connect_status.link +'">' + NM_connect_status.hint + '</a>';
+					else
+						document.getElementById('NM_connect_status').innerHTML = NM_connect_status.hint;
 					document.getElementById('single_wan').className = "single_wan" + NM_connect_status.className;
 					document.getElementById("wanIP_div").style.display = NM_connect_status.hasInternet ? "" : "none";
+					if(NM_connect_status.hasInternet){
+						if(active_wan_unit == "0")
+							document.getElementById("index_status").innerHTML = '<span style="word-break:break-all;">' + wan0_ipaddr + '</span>';
+						else if(active_wan_unit == "1")
+							document.getElementById("index_status").innerHTML = '<span style="word-break:break-all;">' + wan1_ipaddr + '</span>';
+					}
 					document.getElementById("ddnsHostName_div").style.display = NM_connect_status.hasInternet ? "" : "none";
 				}
 				document.getElementById("connect_status").className = NM_connect_status.hasInternet ? "connectstatuson" : "connectstatusoff";
@@ -3731,6 +3844,9 @@ function checkIPConflict(CompareItem, sourceIP, sourceMask, compareIP, compareMa
 				}
 			}
 			setIPConflictValue(gatewayIP, netMask, sourceIP, sourceMask);
+			break;
+		default:
+			setIPConflictValue(compareIP, compareMask, sourceIP, sourceMask);
 			break;
 	}
 

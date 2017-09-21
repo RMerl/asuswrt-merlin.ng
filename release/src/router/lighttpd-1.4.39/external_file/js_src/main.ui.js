@@ -315,7 +315,7 @@ function createLayout(){
 	  	//layout_html += "<dd><a id='test_func'>" + m.getString('title_test') + "</a></dt>";
 		//layout_html += "<dd><a id='test_func2'>" + m.getString('title_test') + "</a></dt>";
 	  
-	  	layout_html += "<dd class='nav_option'><a id='web_help' href='http://aicloud-faq.asuscomm.com/aicloud-faq/' target='_blank'>" + m.getString('title_help') + "</a></dd>";
+	  	layout_html += "<dd class='nav_option'><a id='web_help' href='https://www.asus.com/us/support/faq/1010005/' target='_blank'>" + m.getString('title_help') + "</a></dd>";
 		layout_html += "<dd class='nav_option'><a id='web_feedback' href='https://vip.asus.com/VIP2/Services/QuestionForm/TechQuery' target='_blank'>" + m.getString('title_feedback') + "</a></dd>";
 	  	layout_html += "<dd class='nav_option'><a id='version'>" + m.getString('title_version') + "</a></dd>";		
 	  	layout_html += "<dd class='nav_option'><a id='crt'>" + m.getString('title_crt') + "</a></dd>";
@@ -902,6 +902,7 @@ function adjustLayout(){
 	var h = main_right_region_height - $("#main_right_region #infobar").height() - $('#main_region #button_panel').height();
 	if($("#main_right_container #hintbar").css("display")=="block") h -= $("#main_right_container #hintbar").height();
 	$("#fileview").css("height", h);
+	$("#upload_panel").css("height", h);
 		
 	$("#function_help").css("left", $("#main_left_region").width());
 	

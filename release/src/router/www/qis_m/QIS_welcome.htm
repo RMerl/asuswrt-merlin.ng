@@ -125,7 +125,7 @@ function QKinternettype_load_body(){
 	}
 
 	// Need to check
-	if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+	if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 		document.getElementById("main_manual").style.display = "none";
 		document.getElementById("lte_manual").style.display = "";
 	}
@@ -166,7 +166,7 @@ function detect_if_wan_plug(flag){
 			document.getElementById("btn_next_step").style.display = "";
 			document.getElementById("loadingIcon").style.display = "none";
 			if(autodet_state == "4"){// ethernet did not plug
-				if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 					if( sim_state == "-1")
 						redirect_page("unplug_ethsim");
 					else

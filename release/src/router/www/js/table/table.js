@@ -37,6 +37,7 @@ var tableStruct = {
 		del: Optional, whether to allow delete the rule, value is true/false
 		clickEdit: Optional, data raw click will change edit mode, value is true/false
 		hover: Optional, data raw hover will change color, value is true/false
+		before_del_callBackFun : Optional, before delete call back function
 		del_callBackFun : Optional, delete call back function
 	},
 
@@ -132,6 +133,7 @@ var tableStruct = {
 	2.select : edit select
 		editMode : Necessary, edit type is select
 		option : Necessary, the select option, value format is {"text" : "value", ... }
+		before_edit_callBackFun: Optional, before edit call back function
 	3.callBack : call back function
 		editMode : Necessary, edit type is callBack
 		callBackFun : Call back function name
@@ -164,7 +166,8 @@ var tableStruct = {
 				"editMode" : "select",
 				"option" : {"TCP" : "TCP", "UDP" : "UDP"},
 				"className" : "PingStatus",
-				"styleList" : {"cursor":"pointer", "font-size":"20px"}
+				"styleList" : {"cursor":"pointer", "font-size":"20px"},
+				"before_edit_callBackFun" : call back function name
 			},
 			{
 				"editMode" : "callBack",
@@ -1229,6 +1232,13 @@ var tableApi = {
 		$editItemHtml.val(_dataArray[_colIdx][_rowIdx]);
 		$editItemHtml.change(
 			function() {
+				if(_dataObj.hasOwnProperty("before_edit_callBackFun")) {
+					if(!_dataObj.before_edit_callBackFun(_dataArray[_colIdx])) {
+						$editItemHtml.val(_dataArray[_colIdx][_rowIdx]);
+						return;
+					}
+				}
+
 				var validDuplicateFlag = true;
 				var originalEditRuleArray = [];
 				var currentEditRuleArray = [];
@@ -1291,6 +1301,12 @@ var tableApi = {
 					event.stopPropagation();
 					var delRawIdx = $(this).closest("*[row_tr_idx]").attr( "row_tr_idx" );
 					var delRawArray = tableApi._attr.data.slice(delRawIdx, (delRawIdx + 1))[0];
+					
+					if(tableApi._attr.capability.hasOwnProperty("before_del_callBackFun")) {
+						if(!tableApi._attr.capability.before_del_callBackFun(delRawArray))
+							return;
+					}
+
 					tableApi._attr.data.splice(delRawIdx,1);
 					if(tableSorter.sortFlag)
 						tableSorter.sortData(tableSorter.indexFlag, tableSorter.sortingType, "tableApi._jsonObj.data");

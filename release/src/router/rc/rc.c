@@ -576,10 +576,10 @@ static int rctest_main(int argc, char *argv[])
 }
 #endif
 
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1800)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1800)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -694,7 +694,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1800)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -765,7 +765,7 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
-#if defined(AMAS) && defined(RTCONFIG_BCMWL6)
+#if defined(AMAS) && defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
 	{ "obd",			obd_main			},
 #endif
 #ifdef RTCONFIG_IPERF
@@ -984,7 +984,7 @@ int main(int argc, char **argv)
 	}
 
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
         if(!strcmp(base, "hive_cap")){
                 if(nvram_get_int("sw_mode")==SW_MODE_ROUTER) {
                         printf("start central ap...\n");
@@ -1458,8 +1458,6 @@ int main(int argc, char **argv)
 			update_client_event(argv[1], argv[2], atoi(argv[3]));
 		return 0;
 	}
-#endif
-#ifdef RTCONFIG_LANTIQ
 	else if(!strcmp(base, "restart_bluetoothd")) {
 		system("killall bluetoothd");
 		system("hciconfig hci0 down");
@@ -1477,6 +1475,10 @@ int main(int argc, char **argv)
 	else if(!strcmp(base, "set_usb2_to_usb3")) {
 		set_usb2_to_usb3();
 		puts("1");
+		return 0;
+	}
+	else if (!strcmp(base, "start_repeater")) {
+		start_repeater();
 		return 0;
 	}
 #endif
@@ -1603,7 +1605,7 @@ int main(int argc, char **argv)
 #if defined(CONFIG_BCMWL5) \
 		|| (defined(RTCONFIG_RALINK) && defined(RTCONFIG_WIRELESSREPEATER)) \
 		|| defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) \
-		|| defined(RTCONFIG_QSR10G)
+		|| defined(RTCONFIG_QSR10G) || defined(RTCONFIG_LANTIQ)
 	else if (!strcmp(base, "wlcscan")) {
 		return wlcscan_main();
 	}

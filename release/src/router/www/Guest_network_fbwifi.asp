@@ -348,7 +348,7 @@ function fbwifiShowAndHide(flag) {
 
 function configure_fbwifi() {
 	var url = "https://www.facebook.com/wifiauth/config?gw_id=" + fbwifi_id;
-	window.open(url, '_blank', 'toolbar=no, location=no, menubar=no, top=0, left=0, width=700, height=600');
+	window.open(url, '_blank', 'toolbar=no, location=no, menubar=no, top=0, left=0, width=700, height=600, scrollbars=1');
 }
 
 function checkFBWiFiID() {

@@ -242,8 +242,16 @@ config RTCONFIG_TOAD
 	bool "Traffic Ordering Agent Daemon"
 	default n
 
+config RTCONFIG_BCM_MEVENT
+	bool "Support user space to receive BRCM event"
+	default n
+
+config RTCONFIG_BCMEVENTD
+	bool "Brcm Eventd Selection (for 802.11K)"
+	default n
+
 config RTCONFIG_BCM_APPEVENTD
-	bool "bcm appeventd"
+	bool "Wireless Application Event Service"
 	default n
 
 config RTCONFIG_HSPOT
@@ -511,6 +519,16 @@ config RTCONFIG_OPEN_NTFS3G
 	depends on RTCONFIG_NTFS
 	default n
 
+config RTCONFIG_OPENPLUSPARAGON_NTFS
+	bool "NTFS-3G + Paragon Support"
+	depends on RTCONFIG_OPEN_NTFS3G
+	default n
+
+config RTCONFIG_OPENPLUSTUXERA_NTFS
+	bool "NTFS-3G + Tuxera Support"
+	depends on RTCONFIG_OPEN_NTFS3G
+	default n
+
 config RTCONFIG_HFS
 	bool "HFS Support"
 	depends on RTCONFIG_USB
@@ -529,6 +547,16 @@ config RTCONFIG_TUXERA_HFS
 config RTCONFIG_KERNEL_HFSPLUS
 	bool "Kernel HFSPLUS support"
 	depends on RTCONFIG_HFS
+	default n
+
+config RTCONFIG_OPENPLUSPARAGON_HFS
+	bool "Kernel HFSPLUS + Paragon support"
+	depends on RTCONFIG_KERNEL_HFSPLUS
+	default n
+
+config RTCONFIG_OPENPLUSTUXERA_HFS
+	bool "Kernel HFSPLUS + Tuxera support"
+	depends on RTCONFIG_KERNEL_HFSPLUS
 	default n
 
 config RTCONFIG_UFSD_DEBUG
@@ -691,6 +719,16 @@ config RTCONFIG_NSS_IPSEC
 	depends on RTCONFIG_SOC_IPQ8064
 	default n
 
+config RTCONFIG_PCIE_QCA9880
+	bool "Qualcomm Atheros QCA9880 WiFi chip"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_PCIE_QCA9882
+	bool "Qualcomm Atheros QCA9882 WiFi chip"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_PCIE_QCA9984
 	bool "Qualcomm Atheros QCA9994 WiFi chip (Cascade)"
 	depends on RTCONFIG_QCA
@@ -848,6 +886,11 @@ config CONFIG_LIBUPNP
 config RTCONFIG_WPS
 	bool "WPS Support"
 	default y
+
+config RTCONFIG_NFC
+	bool "WPS NFC Support"
+	depends on RTCONFIG_WPS
+	default n
 
 config RTCONFIG_WPS_ENROLLEE
 	bool "WPS Enrolle Support"
@@ -1074,6 +1117,10 @@ config RTCONFIG_KYIVSTAR
 	bool "KYIVSTAR specified"
 	default n
 
+config RTCONFIG_NO_WANPORT
+	bool "No WAN port"
+	default n
+
 config RTCONFIG_WANPORT2
 	bool "2-nd WAN port"
 	default n
@@ -1124,6 +1171,10 @@ config RTCONFIG_SATA_LED
 
 config RTCONFIG_BLINK_LED
 	bool "Blink LED(s)"
+	default n
+
+config RTCONFIG_LEDS_CLASS
+	bool "Need to enable this configuration if enable CONFIG_NEW_LEDS of kernel"
 	default n
 
 config RTCONFIG_EJUSB_BTN
@@ -1384,15 +1435,15 @@ config RTCONFIG_TUXERA_SMBD
 	default n
 
 config RTCONFIG_BCMASPMD
-	bool "bcm aspmd"
+	bool "ASPM (Active State Power Management) daemon"
 	default n
 
 config RTCONFIG_FBT
-	bool "bcm fbt"
+	bool "FAST BSS Transition (802.11r FBT) support"
 	default n
 
 config RTCONFIG_WLCLMLOAD
-	bool "bcm clm specefic-load"
+	bool "WL CLMLOAD"
 	default n
 
 config RTCONFIG_MUMIMO
@@ -1580,8 +1631,8 @@ config RTCONFIG_FBWIFI
 	default n
 
 config RTCONFIG_WLCSCAN_RSSI
-       bool "Sitesurvey for specific SSID rssi"
-       default n
+	bool "Sitesurvey for specific SSID rssi"
+	default n
 
 config RTCONFIG_VISUALIZATION
 	bool "Visualization Application"
@@ -1636,8 +1687,8 @@ config RTCONFIG_HD_SPINDOWN
 	default n
 
 config RTCONFIG_MASTER_DET
-        bool "Master detection"
-        default n
+	bool "Master detection"
+	default n
 
 config RTCONFIG_ADTBW
 	bool "ADTBW"
@@ -1647,3 +1698,6 @@ config RTCONFIG_TXBF_BAND3ONLY
 	bool "Tx beamforming works only in BAND3."
 	default n
 
+config RTCONFIG_SW_HW_AUTH
+	bool "protectt ASUS own binary and tools"
+	default n

@@ -347,6 +347,30 @@ make_new_session(
 		free(hostname);
 	}
 
+	if (ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV) {
+		len_and_sockaddr *lsa = get_peer_lsa(sock);
+		if (lsa) {
+			char *host, *addr, *port;
+#if ENABLE_FEATURE_IPV6
+			/* Correct ::ffff:xxx.xxx.xxx.xxx form */
+			if (lsa->u.sa.sa_family == AF_INET6 &&
+			    IN6_IS_ADDR_V4MAPPED(&lsa->u.sin6.sin6_addr)) {
+				lsa->len = sizeof(lsa->u.sin);
+				lsa->u.sa.sa_family = AF_INET;
+				lsa->u.sin.sin_addr.s_addr = lsa->u.sin6.sin6_addr.s6_addr32[3];
+			}
+#endif
+			host = xmalloc_sockaddr2dotted_noport(&lsa->u.sa);
+			addr = xasprintf("%s=%s", "TELNET_ADDR", host);
+			port = xasprintf("%s=%d", "TELNET_PORT",
+					htons(get_nport(&lsa->u.sa)));
+			putenv(addr);
+			putenv(port);
+			free(host);
+			free(lsa);
+		}
+	}
+
 	/* Make new session and process group */
 	setsid();
 
@@ -521,6 +545,10 @@ int telnetd_main(int argc UNUSED_PARAM, char **argv)
 		openlog(applet_name, LOG_PID, LOG_DAEMON);
 		logmode = LOGMODE_SYSLOG;
 	}
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV
+	unsetenv("TELNET_ADDR");
+	unsetenv("TELNET_PORT");
+#endif
 #if ENABLE_FEATURE_TELNETD_STANDALONE
 	if (IS_INETD) {
 		G.sessions = make_new_session(0);

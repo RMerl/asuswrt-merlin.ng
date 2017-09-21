@@ -150,38 +150,19 @@ function initial(){
 		while(document.ipsec_form.ipsec_local_public_interface.options.length > 0){
 			document.ipsec_form.ipsec_local_public_interface.remove(0);
 		}
-		var wans_cap = '<% nvram_get("wans_cap"); %>'.split(" ");
 		var wan_type_list = [];
-		for(var i = 0; i < wans_cap.length; i += 1) {
-			var option_value = "";
-			var option_text = "";
-			option_value = wans_cap[i];
-			
-			switch(wans_cap[i]) {
-				case "wan" :
-					option_text = "<#menu5_3#>";
-					break;
-				case "wan2" :
-					option_text = wans_cap[i].toUpperCase();
-					break;
-				case "usb" :
-					option_text = wans_cap[i].toUpperCase();
-					break;
-				case "lan" :
-					option_text = "Ethernet LAN";
-					break;
-			}
-
-			var option = [option_value, option_text];
+		var option = ["wan", "<#dualwan_primary#>"];
+		wan_type_list.push(option);
+		if(dualWAN_support) {
+			option = ["wan2", "<#dualwan_secondary#>"];
 			wan_type_list.push(option);
 		}
-		var selectobject = document.ipsec_form.ipsec_local_public_interface;
 
 		for(var i = 0; i < wan_type_list.length; i += 1) {
 			var option = document.createElement("option");
 			option.value = wan_type_list[i][0];
 			option.text = wan_type_list[i][1];
-			selectobject.add(option);
+			document.ipsec_form.ipsec_local_public_interface.add(option);
 		}
 	}
 }
@@ -635,7 +616,7 @@ function tabclickhandler(_type){
 	}
 	else if(_type == 3){
 		if(!control_profile_flag) {
-			alert("Please Deactivate all profile.");
+			alert("<#VPN_Fusion_Deactivate_Editor_Alert#>");
 			return true;
 		}
 		save_flag = "IPSec";		
@@ -1171,7 +1152,7 @@ function Edit_Row(rowdata, flag){
 }
 
 function del_Row(rowdata, flag){
-	if(!confirm("Are you sure to delete this profile?"))/*untranslated*/
+	if(!confirm("<#VPN_Fusion_Delete_Alert#>"))
 		return false;
 
 	var idx = rowdata.parentNode.parentNode.rowIndex;
@@ -1555,7 +1536,7 @@ function initialIPSecProfile() {
 function editIPSecProfile(mode) {
 	add_profile_flag = false;
 	if(!control_profile_flag) {
-		alert("Please Deactivate all profile.");
+		alert("<#VPN_Fusion_Deactivate_Editor_Alert#>");
 		return true;
 	}
 	gen_vpnc_tab_list("ipsec");
@@ -1604,11 +1585,11 @@ function editIPSecProfile(mode) {
 }
 function del_profile_list(obj) {
 	if(!control_profile_flag) {
-		alert("Please Deactivate all profile.");
+		alert("<#VPN_Fusion_Deactivate_Delete_Alert#>");
 		return true;
 	}
 
-	if(!confirm("Are you sure to delete this profile?"))/*untranslated*/
+	if(!confirm("<#VPN_Fusion_Delete_Alert#>"))
 		return false;
 	
 	var delRowID = obj.parentNode.parentNode.id;
@@ -1783,7 +1764,7 @@ function save_ipsec_profile_panel() {
 			}
 		}
 		else if(getRadioItemCheck(document.ipsec_form.ipsec_remote_gateway_method) == "1") {
-			if(!validator.domainName(document.ipsec_form.ipsec_remote_gateway.value)) {
+			if(!validator.domainName_flag(document.ipsec_form.ipsec_remote_gateway.value)) {
 				document.ipsec_form.ipsec_remote_gateway.focus();
 				alert(document.ipsec_form.ipsec_remote_gateway.value + " is invalid Domain Name");/*untranslated*/
 				return false;
@@ -1862,8 +1843,8 @@ function save_ipsec_profile_panel() {
 
 					var subnetIP = existSubnetObj.value.split("/")[0];
 					var maskCIDR = parseInt(existSubnetObj.value.split("/")[1], 10);
-					if (isNaN(maskCIDR) || maskCIDR != 24){
-						alert("Mask address must be 24.");/*untranslated*/
+					if (isNaN(maskCIDR) || (maskCIDR != 24 && maskCIDR != 23)){
+						alert("Mask address must be 23 or 24.");/*untranslated*/
 						existSubnetObj.focus();
 						existSubnetObj.select();
 						return false;
@@ -1936,6 +1917,7 @@ function save_ipsec_profile_panel() {
 		remote_subnet_list = get_subnet_list("remote");
 
 		var local_public_ip = "";
+		/*
 		var wans_dualwan_array = '<% nvram_get("wans_dualwan"); %>'.split(" ");
 		var wans_index = 0;
 		for(var i = 0; i < wans_dualwan_array.length; i += 1) {
@@ -1954,6 +1936,7 @@ function save_ipsec_profile_panel() {
 				local_public_ip = secondary_wanlink_ipaddr();
 				break;
 		}
+		*/
 
 		var auth_method_vaule = document.ipsec_form.ipsec_preshared_key.value;
 		var ipsec_profilename = document.ipsec_form.ipsec_profilename.value + "_c" + profile_idx;
@@ -2219,7 +2202,7 @@ function changeRemoteGatewayMethod() {
 								<option value="+mppe-128">MPPE 128</option>
 							</select>
 							<div id="pptpOptionHint" style="display:none;">
-								<span><#PPTPOptions_OpenVPN_hint#><!--untranslated--></span>
+								<span><#PPTPOptions_OpenVPN_hint#></span>
 							</div>
 						</td>	
 					</tr>		 
@@ -2354,7 +2337,7 @@ function changeRemoteGatewayMethod() {
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 					<tr>
-						<td colspan="2">Quick Select<!--untranslated--></td>
+						<td colspan="2"><#vpn_ipsec_Quick_Select#></td>
 					</tr>
 					</thead>
 					<tr id="tr_SettingsMode">
@@ -2376,47 +2359,47 @@ function changeRemoteGatewayMethod() {
 					</tr>
 					</thead>
 					<tr>
-						<th>VPN Profile Name<!--untranslated--></th>
+						<th><#vpn_ipsec_VPN_Profile_Name#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_profilename">
 						</td>
 					</tr>
 					<tr id="tr_remote_gateway_method">
-						<th>Remote Gateway Method<!--untranslated--></th>
+						<th><#vpn_ipsec_Remote_Gateway_Type#></th>
 						<td>
 							<input type="radio" name="ipsec_remote_gateway_method" id="ipsec_remote_gateway_ip" class="input" value="0" onchange="changeRemoteGatewayMethod()" checked>
-							<label for='ipsec_remote_gateway_ip' id="ipsec_remote_gateway_ip_label">Static IP Address<!--untranslated--></label>
+							<label for='ipsec_remote_gateway_ip' id="ipsec_remote_gateway_ip_label"><#vpn_ipsec_Static_IP#></label>
 							<input type="radio" name="ipsec_remote_gateway_method" id="ipsec_remote_gateway_ddns" class="input" value="1" onchange="changeRemoteGatewayMethod()">
 							<label for='ipsec_remote_gateway_ddns' id="ipsec_remote_gateway_ddns_label"><#LANHostConfig_x_LDNSServer1_itemname#></label>
 						</td>
 					</tr>
 					<tr id="tr_remote_gateway">
-						<th>Remote Gateway<!--untranslated--></th>
+						<th><#vpn_ipsec_Remote_Gateway#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_remote_gateway" id="ipsec_remote_gateway" autocorrect="off" autocapitalize="off">
 						</td>
 					</tr>
 					<tr>
-						<th>Local Public Interface</th>
+						<th><#vpn_ipsec_Local_Interface#></th>
 						<td>
 							<select name="ipsec_local_public_interface" class="input_option"></select>
 						</td>
 					</tr>
 					<tr id="tr_presharedKey">
-						<th>Preshared Key<!--untranslated--></th>
+						<th><#vpn_ipsec_PreShared_Key#></th>
 						<td>
-							<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="Enter Preshared Key"><!--untranslated-->
+							<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>">
 						</td>
 					</tr>
 					<tr id="tr_adv_local_id">
-						<th>Local Identity<!--untranslated--></th>
+						<th><#vpn_ipsec_Local_ID#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_local_id">
 							<span style="color:#FC0">(Optional)<!--untranslated--></span>
 						</td>
 					</tr>
 					<tr id="tr_adv_remote_id">
-						<th>Remote Identity<!--untranslated--></th>
+						<th><#vpn_ipsec_Remote_ID#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_remote_id">
 							<span style="color:#FC0">(Optional)<!--untranslated--></span>
@@ -2432,22 +2415,22 @@ function changeRemoteGatewayMethod() {
 					</tr>
 					</thead>
 					<tr id="tr_net_local_private_subnet">
-						<th>Local Private Subnet<!--untranslated--></th>
+						<th><#vpn_ipsec_Local_Subnet#></th>
 						<td id="td_net_local_private_subnet"></td>
 					</tr>
 					<tr id="tr_net_local_port">
-						<th>Local Port number<!--untranslated--></th>
+						<th><#vpn_ipsec_Local_Port#></th>
 						<td>
 							<input type="text" class="input_6_table" name="ipsec_local_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)">
 							<span style="color:#FC0">(0-65535)</span>
 						</td>
 					</tr>
 					<tr id="tr_net_remote_private_subnet">
-						<th>Remote Private Subnet<!--untranslated--></th>
+						<th><#vpn_ipsec_Remote_Subnet#></th>
 						<td id="td_net_remote_private_subnet"></td>
 					</tr>
 					<tr id="tr_net_remote_port">
-						<th>Remote Port number<!--untranslated--></th>
+						<th><#vpn_ipsec_Remote_Port#></th>
 						<td>
 							<input type="text" class="input_6_table" name="ipsec_remote_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)">
 							<span style="color:#FC0">(0-65535)</span>
@@ -2456,7 +2439,7 @@ function changeRemoteGatewayMethod() {
 					<tr id="tr_net_transport">
 						<th><#DSL_Mode#></th>
 						<td>
-							Tunnel<!--untranslated-->
+							<#vpn_ipsec_Tunnel#>
 							<!--select name="ipsec_transport" class="input_option">
 								<option value="tunnel">Tunnel</option>
 								<option value="transport">Transport</option>
@@ -2474,11 +2457,11 @@ function changeRemoteGatewayMethod() {
 					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:15px;">
 						<thead>
 						<tr>
-							<td colspan="2">Advanced Settings - Phase 1 Negotiations<!--untranslated--></td>
+							<td colspan="2">Advanced Settings - <#vpn_ipsec_Phase_1_Negotiations#></td>
 						</tr>
 						</thead>
 						<tr id="tr_adv_ike_version">
-							<th>IKE version<!--untranslated--></th>
+							<th><#vpn_ipsec_IKE_Version#></th>
 							<td>
 								<input type="radio" name="ipsec_ike" id="ipsec_ike_v1" class="input" value="1" onchange="changeIKEVersion()" checked>
 								<label for='ipsec_ike_v1' id="ipsec_ike_v1_label">v1<!--untranslated--></label>
@@ -2487,7 +2470,7 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 						<tr id="tr_adv_encryption_p1">
-							<th>Encryption<!--untranslated--></th>
+							<th><#vpn_ipsec_Encryption#></th>
 							<td>
 								<select name="ipsec_encryption_p1" class="input_option">
 									<option value="auto"><#Auto#></option>
@@ -2500,7 +2483,7 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 						<tr id="tr_adv_hash_p1">
-							<th>Hash</th>
+							<th><#vpn_ipsec_Hash#></th>
 							<td>
 								<select name="ipsec_hash_p1" class="input_option">
 									<option value="auto"><#Auto#></option>
@@ -2513,15 +2496,15 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 							<tr id="tr_adv_exchange_mode">
-							<th>Exchange Mode<!--untranslated--></th>
+							<th><#vpn_ipsec_Exchange_Mode#></th>
 							<td>
 								<input type="radio" name="ipsec_exchange" class="input" value="1" onchange="changeExchangeMode();"><#DHCPaggressive#>
-								<input type="radio" name="ipsec_exchange" class="input" value="0" onchange="changeExchangeMode();" checked>Main Mode<!--untranslated-->
-								<div id="exchange_mode_hint" style="color:#FC0;margin:5px 0px;">When you're using IKEv1 Aggressive mode, the authentication hash, PSK is transmitted as response to the initial packet of the VPN client that wants to establish an IPSec Tunnel. The hash PSK is not encrypted. An attacker can do offline dictionary and brute-force attacks on it to recover the PSK. Please try to avoid Aggressive Mode.<!--untranslated--></div>
+								<input type="radio" name="ipsec_exchange" class="input" value="0" onchange="changeExchangeMode();" checked><#vpn_ipsec_Main_Mode#>
+								<div id="exchange_mode_hint" style="color:#FC0;margin:5px 0px;"><#vpn_ipsec_Exchange_Mode_Hint#></div>
 							</td>
 						</tr>
 						<tr id="tr_adv_keylife_time_p1">
-							<th>IKE keylife time<!--untranslated--></th>
+							<th><#vpn_ipsec_IKE_Key_Lifetime#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_keylife_p1" maxlength="6" value="86400" onKeyPress="return validator.isNumber(this,event)">
 								<span style="color:#FC0">(120~172800) <#Second#></span>
@@ -2540,20 +2523,20 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 						<tr id="tr_adv_dead_peer_detection">
-							<th>Dead Peer Detection<!--untranslated--></th>
+							<th><#vpn_ipsec_DPD#></th>
 							<td>
 								<input type="radio" name="ipsec_dead_peer_detection" id="ipsec_dead_peer_detection_dis" class="input" value="0" onchange="changeAdvDeadPeerDetection(this)">
 								<label for='ipsec_dead_peer_detection_dis' id="ipsec_dead_peer_detection_dis_label"><#btn_disable#></label>
 								<input type="radio" name="ipsec_dead_peer_detection" id="ipsec_dead_peer_detection_clear" class="input" value="1" onchange="changeAdvDeadPeerDetection(this)">
 								<label for='ipsec_dead_peer_detection_clear' id="ipsec_dead_peer_detection_clear_label"><#CTL_clear#></label>
 								<input type="radio" name="ipsec_dead_peer_detection" id="ipsec_dead_peer_detection_hold" class="input" value="2" onchange="changeAdvDeadPeerDetection(this)">
-								<label for='ipsec_dead_peer_detection_hold' id="ipsec_dead_peer_detection_hold_label">Hold<!--untranslated--></label>
+								<label for='ipsec_dead_peer_detection_hold' id="ipsec_dead_peer_detection_hold_label"><#vpn_ipsec_Suspend#></label>
 								<input type="radio" name="ipsec_dead_peer_detection" id="ipsec_dead_peer_detection_restart" class="input" value="3" onchange="changeAdvDeadPeerDetection(this)">
-								<label for='ipsec_dead_peer_detection_restart' id="ipsec_dead_peer_detection_restart_label">Restart<!--untranslated--></label>
+								<label for='ipsec_dead_peer_detection_restart' id="ipsec_dead_peer_detection_restart_label"><#vpn_ipsec_Restart#></label>
 							</td>
 						</tr>
 						<tr id="tr_adv_dpd_interval">
-							<th>DPD checking interval<!--untranslated--></th>
+							<th><#vpn_ipsec_DPD_Checking_Interval#></th>
 							<td>
 								<input type="text" class="input_3_table" name="ipsec_dpd" maxlength="3" value="10" onKeyPress="return validator.isNumber(this,event)">
 								<span style="color:#FC0">(10~900) <#Second#></span>
@@ -2563,11 +2546,11 @@ function changeRemoteGatewayMethod() {
 					<table id="tb_adv_phase2" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:15px;">
 						<thead>
 						<tr>
-							<td colspan="2">Advanced Settings - Phase 2 Negotiations<!--untranslated--></td>
+							<td colspan="2">Advanced Settings - <#vpn_ipsec_Phase_2_Negotiations#></td>
 						</tr>
 						</thead>
 						<tr id="tr_adv_encryption_p2">
-							<th>Encryption<!--untranslated--></th>
+							<th><#vpn_ipsec_Encryption#></th>
 							<td>
 								<select name="ipsec_encryption_p2" class="input_option">
 									<option value="auto"><#Auto#></option>
@@ -2580,7 +2563,7 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 						<tr id="tr_adv_hash_p2">
-							<th>Hash<!--untranslated--></th>
+							<th><#vpn_ipsec_Hash#></th>
 							<td>
 								<select name="ipsec_hash_p2" class="input_option">
 									<option value="auto"><#Auto#></option>
@@ -2593,20 +2576,20 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 						<tr id="tr_adv_keylife_time_p2">
-							<th>Keylife time<!--untranslated--></th>
+							<th><#vpn_ipsec_Key_Lifetime#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_keylife_p2" maxlength="6" value="3600" onKeyPress="return validator.isNumber(this,event)">
 								<span style="color:#FC0">(120~172800) <#Second#></span>
 							</td>
 						</tr>
 						<tr id="tr_adv_keyingtries_p2">
-							<th>Keyingtries<!--untranslated--></th>
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(33,1);"><#vpn_ipsec_Key_Retries#></a></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_keyingtries" maxlength="2" value="3" onKeyPress="return validator.isNumber(this,event)">
 							</td>
 						</tr>
 					</table>
-					<div style="color:#FC0;margin:10px 0px;">Note: ASUS <#Web_Title2#> pre-configure the Diffie Hellman (DH) key change Group of phase 1 and phase 2 in auto mode, which support 2, 5, 14, 15, 16 and 18.<!--untranslated--></div>
+					<div style="color:#FC0;margin:10px 0px;"><#vpn_ipsec_Default_DH_Hint#></div>
 				</div>
 				<!-- Advanced Settings table end-->
 

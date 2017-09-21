@@ -40,7 +40,6 @@ var ctf_dis_force = "<% nvram_get("ctf_disable_force"); %>";
 var etherstate = "<% sysinfo("ethernet"); %>";
 var odmpid = "<% nvram_get("odmpid");%>";
 var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
-var isHND = (machine_name.search("aarch64") != -1);
 
 overlib_str_tmp = "";
 overlib.isOut = true;
@@ -111,7 +110,7 @@ function hwaccel_state(){
 	var qos_enable = '<% nvram_get("qos_enable"); %>';
 	var qos_type = '<% nvram_get("qos_type"); %>';
 
-	if (isHND) {
+	if (hnd_support) {
 		code = "<span>Runner:</span> ";
 
 		if ('<% nvram_get("runner_disable"); %>' == '1') {

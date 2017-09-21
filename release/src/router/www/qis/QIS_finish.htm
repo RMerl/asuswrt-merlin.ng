@@ -89,6 +89,17 @@ var webs_state_info = '<% nvram_get("webs_state_info"); %>';
 var PPPOEFAILREASON = "<#qis_fail_desc9#>";
 var delayTimeout = 500;
 
+var sim_state = '<% nvram_get("usb_modem_act_sim"); %>';
+var modem_spn = '<% nvram_get("modem_spn"); %>';
+
+var first_wanstate = -1;
+var first_wansbstate = -1;
+var first_wanauxstate = -1;
+var second_wanstate = -1;
+var second_wansbstate = -1;
+var second_wanauxstate = -1;
+<% dual_wanstate(); %>
+
 if(parent.tmo_support)
         var theUrl = "cellspot.router"; 
 else
@@ -383,7 +394,7 @@ function restartService(){
 		if(parent.restartWireless){
 			actionScriptArray.push("restart_wireless");
 			document.restartForm.action_wait.value = 6;
-			if(parent.based_modelid == "RT-AC82U" || parent.based_modelid == "RT-AC58U")
+			if(parent.based_modelid == "RT-AC82U" || parent.based_modelid == "RT-AC58U" || parent.based_modelid == "4G-AC53U")
 				delayTimeout = 20000;
 		}
 		if(parent.restartTime){
@@ -392,10 +403,6 @@ function restartService(){
 		}
 
 		document.restartForm.action_script.value = actionScriptArray.join(";");
-	}	
-
-	if((parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && wans_mode == "lb"){
-		document.restartForm.wans_mode.disabled = false;
 	}
 
 	document.restartForm.submit();
@@ -430,12 +437,6 @@ function checkIsNewFirmware(){
 		}
 	}
 	else{
-		if((parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && parent.wan_autodet_state == "4" && parent.usb_connected == 1 && wans_dualwan_orig == "wan usb"){
-			document.restartForm.wans_dualwan.disabled = false;
-			document.restartForm.wans_dualwan.value = "usb wan";
-			parent.sysReboot = true;
-		}
-
 		if(parent.sysReboot){
 			document.getElementById('loadingIcon').style.display = '';
 			restartService();
@@ -1264,7 +1265,10 @@ function QKfinish_load_body(){
 				}
 				else{
 					document.getElementById("wanip").style.display = "none";
-					document.getElementById("wanstatus1").innerHTML = "<#Status_Inactive#>";
+					if((parent.ewan_index == 0 && first_wanstate == "1" && first_wansbstate == "0" && first_wanauxstate == "0") || (parent.usb_index == 0 && sim_state == "1" && modem_spn != ""))
+						document.getElementById("wanstatus1").innerHTML = "<#Connecting_str#>";
+					else
+						document.getElementById("wanstatus1").innerHTML = "<#Status_Inactive#>";
 				}
 				
 				if(parent.wans_dualwan_array[1] != "none"){
@@ -1281,7 +1285,10 @@ function QKfinish_load_body(){
 					}
 					else{
 						document.getElementById("wanip2").style.display = "none";
-						document.getElementById("wanstatus2").innerHTML = "<#Status_Inactive#>";
+						if((parent.ewan_index == 1 && second_wanstate == "1" && second_wansbstate == "0" && second_wanauxstate == "0") || (parent.usb_index == 1 && sim_state == "1" && modem_spn != ""))
+							document.getElementById("wanstatus2").innerHTML = "<#Connecting_str#>";
+						else
+							document.getElementById("wanstatus2").innerHTML = "<#Status_Inactive#>";
 					}
 				}
 			}
@@ -1833,7 +1840,6 @@ var startQuery = function(){
 	<input type="hidden" name="action_wait" value="0">
 	<input type="hidden" name="x_Setting" value="1">
 	<input type="hidden" name="force_change" value="<% nvram_get("force_change"); %>">
-	<input type="hidden" name="wans_mode" value="fo" disabled>
 	<input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>" disabled>
 	<!--USB Modem-->
 	<input type="hidden" name="modem_enable" value="<% nvram_get("modem_enable"); %>" disabled>

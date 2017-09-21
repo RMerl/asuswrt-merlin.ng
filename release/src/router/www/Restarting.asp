@@ -17,7 +17,50 @@ var reboot_needed_time = <% get_default_reboot_time(); %>;
 var action_mode = '<% get_parameter("action_mode"); %>';
 function redirect(){
 	parent.stopFlag = 1;
-	setTimeout("redirect1();", reboot_needed_time*1000);
+	setTimeout("check_httpd();", reboot_needed_time*1000);
+}
+
+function check_httpd(){
+	var httpRequest;
+
+	if(window.XMLHttpRequest){ // Mozilla, Safari, ...
+		httpRequest = new XMLHttpRequest();
+		if(httpRequest.overrideMimeType){
+			httpRequest.overrideMimeType('text/xml');
+		}
+	}
+	else if(window.ActiveXObject){ // IE
+	try{
+		httpRequest = new ActiveXObject("Msxml2.XMLHTTP");
+	}
+	catch(e){
+		try{
+			httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		catch(e){}
+	}
+	}
+
+	if(!httpRequest){
+		return false;
+	}
+
+	httpRequest.onreadystatechange = function() { handleResponse(httpRequest); };
+	httpRequest.open('GET', "/httpd_check.xml", true);
+	httpRequest.send('');
+}
+
+function handleResponse(httpRequest){
+
+	if(httpRequest.readyState == 4){
+		if(httpRequest.status == 200){
+			redirect1();
+		}
+		else{
+			setTimeout("check_httpd();", 1000);
+		}
+	}
+
 }
 
 function redirect1(){

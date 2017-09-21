@@ -87,7 +87,7 @@
 #define USB20_MOD	"ehci-hcd"
 #endif
 
-#if defined(RTAC58U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
 #define USB_DWC3	"dwc3"
 #define USB_DWC3_IPQ	"dwc3-ipq40xx"
 #define USB_PHY1	"phy-qca-baldur"
@@ -410,7 +410,7 @@ extern void hexdump(unsigned char *pt, unsigned short len);
 extern void setCTL(const char *);
 extern int verify_ctl_table(void);
 extern char *getStaMAC(void);
-extern char *get_qca_iwpriv(int unit, char *command);
+extern char *get_qca_iwpriv(char *name, char *command);
 extern unsigned int getPapState(int unit);
 extern unsigned int getStaXRssi(int unit);
 #if RTCONFIG_CONCURRENTREPEATER
@@ -418,7 +418,7 @@ extern unsigned int get_conn_link_quality(int unit);
 #endif
 typedef unsigned int	u_int;
 extern u_int ieee80211_mhz2ieee(u_int freq);
-#if defined(RTCONFIG_WIFI_QCA9557_QCA9882)
+#if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
 extern void Set_ART2(void);
 extern void Get_EEPROM_X(char *command);
 extern void Get_CalCompare(void);
@@ -469,11 +469,17 @@ extern u_int ieee80211_mhz2ieee(u_int freq);
 
 /* board API under sysdeps/lantiq/lantiq.c */
 #if defined(RTCONFIG_LANTIQ)
+extern int start_repeater(void);
+extern int set_wps_enable(int unit);
+extern int set_all_wps_config(int configured);
+extern void wps_oob(void);
+extern void stop_wsc(void);
 extern int FWRITE(const char *da, const char* str_hex);
 extern int FREAD(unsigned int addr_sa, int len);
 extern int gen_ath_config(int band, int is_iNIC,int subnet);
 extern int __need_to_start_wps_band(char *prefix);
 extern int need_to_start_wps_band(int wps_band);
+extern int getWscStatusStr(int unit, char *buf, int buf_size);
 extern int getEEPROM(unsigned char *outbuf, unsigned short *lenpt, char *area);
 extern void hexdump(unsigned char *pt, unsigned short len);
 extern void setCTL(const char *);
@@ -486,6 +492,8 @@ extern char *getStaMAC(void);
 extern unsigned int getPapState(int unit);
 typedef unsigned int	u_int;
 extern u_int ieee80211_mhz2ieee(u_int freq);
+extern int ppa_support(int wan_unit);
+extern void usb_pwr_ctl(int onoff);
 #endif
 /* board API under sysdeps/qca/ctl.c */
 #if defined(RTCONFIG_QCA)
@@ -564,6 +572,7 @@ extern void update_cfe();
 #endif
 #ifdef RTAC3200
 extern void update_cfe_ac3200();
+extern void update_cfe_ac3200_128k();
 extern void bsd_defaults(void);
 #endif
 #ifdef HND_ROUTER
@@ -587,7 +596,7 @@ extern int hw_vht_cap();
 #endif
 
 #if defined(RTCONFIG_QCA)
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 extern int start_cap(int c);
 extern void start_re(int c);
 #ifdef RTCONFIG_ETHBACKHAUL
@@ -738,10 +747,6 @@ extern void start_lan_wl(void);
 extern void restart_wl(void);
 extern void lanaccess_mssid_ban(const char *ifname_in);
 extern void lanaccess_wl(void);
-#if defined(RTCONFIG_BT_CONN)
-extern void start_bluetooth_service(void);
-extern void stop_bluetooth_service(void);
-#endif  /* RTCONFIG_BT_CONN */	
 #ifdef RTCONFIG_FBWIFI
 extern void stop_fbwifi_check();
 extern void start_fbwifi_check();
@@ -1013,7 +1018,10 @@ extern int qtn_monitor_main(int argc, char *argv[]);
 #endif
 
 #ifdef RTCONFIG_LANTIQ
-extern int wave_monitor_main(int init);
+extern int wave_monitor_main(int argc, char *argv[]);
+extern int start_wave_monitor(void);
+extern void start_mcast_proxy(void);
+extern void stop_mcast_proxy(void);
 #endif
 
 #ifdef RTCONFIG_QSR10G
@@ -1350,6 +1358,7 @@ extern void stop_mcpd_proxy(void);
 extern void restart_mcpd_proxy(void);
 #endif
 #endif
+
 extern int start_nat_rules(void);
 extern int stop_nat_rules(void);
 extern void stop_syslogd(void);
@@ -1463,7 +1472,7 @@ extern int firmware_check_main(int argc, char *argv[]);
 #ifdef RTCONFIG_HTTPS
 extern int rsasign_check_main(int argc, char *argv[]);
 extern int rsarootca_check_main(int argc, char *argv[]);
-extern char *pwdec(const char *input);
+extern char *pwdec(const char *input, char *output);
 extern char *pwdec_dsl(char *input);
 #endif
 extern int service_main(int argc, char *argv[]);
@@ -1547,7 +1556,7 @@ int get_invoke_later(void);
 #if defined(CONFIG_BCMWL5) \
 		|| (defined(RTCONFIG_RALINK) && defined(RTCONFIG_WIRELESSREPEATER)) \
 		|| defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) \
-		|| defined(RTCONFIG_QSR10G)
+		|| defined(RTCONFIG_QSR10G) || defined(RTCONFIG_LANTIQ)
 void start_wlcscan(void);
 void stop_wlcscan(void);
 #endif
@@ -1603,6 +1612,9 @@ extern void PMS_Init_Database();
 extern void start_bluetooth_service(void);
 extern void stop_bluetooth_service(void);
 #endif	/* RTCONFIG_BT_CONN */
+#if defined (RTCONFIG_DETWAN)
+extern int string_remove(char *string, const char *match);
+#endif
 #ifdef RTCONFIG_CFGSYNC
 extern void stop_cfgsync(void);
 extern int start_cfgsync(void);

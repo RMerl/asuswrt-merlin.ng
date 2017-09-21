@@ -96,7 +96,6 @@ endif
 
 include $(SRCBASE)/.config
 
-#CFLAGS += -DPROTOCOL_QUERY
 CFLAGS += -DNMP_DB
 CFLAGS += -DBTN_SETUP
 ifeq ($(HND_ROUTER),y)

@@ -131,11 +131,18 @@ static const struct led_btn_table_s {
 	{ "reset_qtn_gpio",	&led_gpio_table[BTN_QTN_RESET] },
 #endif
 #ifdef RTCONFIG_INTERNAL_GOBI
+#if defined(RT4GAC53U)
+	{ "led_lteoff_gpio",	&led_gpio_table[LED_LTE_OFF] },
+#else
 	{ "led_3g_gpio",	&led_gpio_table[LED_3G] },
 	{ "led_lte_gpio",	&led_gpio_table[LED_LTE] },
+#endif
 	{ "led_sig1_gpio",	&led_gpio_table[LED_SIG1] },
 	{ "led_sig2_gpio",	&led_gpio_table[LED_SIG2] },
 	{ "led_sig3_gpio",	&led_gpio_table[LED_SIG3] },
+#if defined(RT4GAC53U)
+	{ "led_sig4_gpio",	&led_gpio_table[LED_SIG4] },
+#endif
 #endif
 
 #ifdef BLUECAVE
@@ -399,7 +406,9 @@ int init_gpio(void)
 #endif
 
 		disable = (use_gpio&GPIO_ACTIVE_LOW)==0 ? 0: 1;
+#ifndef RTCONFIG_LEDS_CLASS
 		gpio_dir(gpio_pin, GPIO_DIR_OUT);
+#endif
 
 #if defined(RTCONFIG_WANPORT2)
 		/* Turn on WAN RED LED at system start-up if and only if coresponding WAN unit is enabled. */
@@ -1029,7 +1038,6 @@ int lanport_ctrl(int ctrl)
 	doSystem(cmd);
 	return 1;
 #elif defined(RTCONFIG_ALPINE)
-
 	if(ctrl)
 		rtkswitch_LanPort_linkUp();
 	else
@@ -1037,7 +1045,20 @@ int lanport_ctrl(int ctrl)
 	return 1;
 
 #elif defined(RTCONFIG_LANTIQ)
-	fprintf(stderr, "skip lanport_ctrl()\n");
+	if(ctrl){
+		fprintf(stderr, "start_lan_port: power on the LAN ports...\n");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=2 nAddressReg=0 nData=0x1040");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=3 nAddressReg=0 nData=0x1040");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=4 nAddressReg=0 nData=0x1040");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1040");
+	}
+	else{
+		fprintf(stderr, "stop_lan_port: power off the LAN ports...\n");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=2 nAddressReg=0 nData=0x1c00");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=3 nAddressReg=0 nData=0x1c00");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=4 nAddressReg=0 nData=0x1c00");
+		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
+	}
 	return 1;
 #else
 	char word[100], *next;

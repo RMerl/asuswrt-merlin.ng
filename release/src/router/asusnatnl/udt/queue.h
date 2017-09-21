@@ -456,7 +456,6 @@ public:
 
 private:
 	static int PJ_THREAD_FUNC worker(void *param);
-	static int PJ_THREAD_FUNC timer_check_worker(void *param);
 
 	pj_thread_t *m_WorkerThread;
 	// charles CHARLES mark

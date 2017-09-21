@@ -1256,6 +1256,11 @@ char *get_wan_mac_name(void)
 	return "et0macaddr";
 }
 
+char *get_label_mac()
+{
+	return get_2g_hwaddr();
+}
+
 char *get_lan_hwaddr(void)
 {
 	return nvram_safe_get(get_lan_mac_name());

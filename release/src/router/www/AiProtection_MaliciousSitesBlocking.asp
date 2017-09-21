@@ -131,7 +131,7 @@ function collectInfo(data){
 		var hit = data[i][1];
 		var name = "";
 		if(clientList[mac]){
-			name = clientList[mac].name;
+			name = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
 			ip = clientList[mac].ip;
 		}
 		else{
@@ -412,7 +412,7 @@ function deleteHover(flag){
 			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0" >
 				<tr>
 					<td valign="top" >		
-						<table width="730px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle" >
+						<table width="730px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 							<tbody>
 							<tr>
 								<td class="content_bg" valign="top">

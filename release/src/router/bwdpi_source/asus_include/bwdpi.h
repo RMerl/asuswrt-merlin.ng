@@ -57,6 +57,8 @@
 #define WRS_CONF        nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/wred.conf" : "/tmp/bwdpi/wred.conf"
 #define APP_SET_CONF    nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/app_patrol.conf" : "/tmp/bwdpi/app_patrol.conf"
 #define TMP_BWDPI       nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/" : "/tmp/bwdpi/"
+#define LD_PATH         nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/" : "/usr/lib/"
+#define SHN_LIB         nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/" : "/tmp/bwdpi/libshn_pctrl.so"
 #define DPI_CERT        nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/ntdasus2014.cert" : "/tmp/bwdpi/ntdasus2014.cert"
 #define DCD_EULA        nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/dcd.conf" : "/tmp/bwdpi/dcd.conf"
 
@@ -123,6 +125,19 @@ struct bwdpi_client{
 	char device_name[100];
 };
 
+/* dpi_support index */
+enum{
+	INDEX_ALL = 0,
+	INDEX_MALS = 1,
+	INDEX_VP,
+	INDEX_CC,
+	INDEX_ADAPTIVE_QOS,
+	INDEX_TRAFFIC_ANALYZER,
+	INDEX_WEBS_FILTER,
+	INDEX_APPS_FILTER,
+	INDEX_WEB_HISTORY,        // NOTE: will remove in the future, replaced by web_mon
+	INDEX_BANDWIDTH_MONITOR
+};
 
 //wrs.c
 void free_id_list(cid_s **target_list);

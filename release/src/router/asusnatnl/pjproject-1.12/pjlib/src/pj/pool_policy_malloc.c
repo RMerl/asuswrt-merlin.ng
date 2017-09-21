@@ -26,6 +26,9 @@
 #include <umem.h>
 #include <umem_impl.h>
 #endif
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 #if !PJ_HAS_POOL_ALT_API
 

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2016 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ int in_arpa_name_2_addr(char *namein, struct all_addr *addrp)
   if (hostname_isequal(lastchunk, "arpa") && hostname_isequal(penchunk, "in-addr"))
     {
       /* IP v4 */
-      /* address arives as a name of the form
+      /* address arrives as a name of the form
 	 www.xxx.yyy.zzz.in-addr.arpa
 	 some of the low order address octets might be missing
 	 and should be set to zero. */
@@ -206,7 +206,7 @@ int in_arpa_name_2_addr(char *namein, struct all_addr *addrp)
          Address arrives as 0.1.2.3.4.5.6.7.8.9.a.b.c.d.e.f.ip6.[int|arpa]
     	 or \[xfedcba9876543210fedcba9876543210/128].ip6.[int|arpa]
       
-	 Note that most of these the various reprentations are obsolete and 
+	 Note that most of these the various representations are obsolete and 
 	 left-over from the many DNS-for-IPv6 wars. We support all the formats
 	 that we can since there is no reason not to.
       */
@@ -336,7 +336,7 @@ unsigned char *skip_section(unsigned char *ansp, int count, struct dns_header *h
 }
 
 /* CRC the question section. This is used to safely detect query 
-   retransmision and to detect answers to questions we didn't ask, which 
+   retransmission and to detect answers to questions we didn't ask, which 
    might be poisoning attacks. Note that we decode the name rather 
    than CRC the raw bytes, since replies might be compressed differently. 
    We ignore case in the names for the same reason. Return all-ones
@@ -425,6 +425,19 @@ int private_net(struct in_addr addr, int ban_localhost)
     ((ip_addr & 0xFFFFFF00) == 0xCB007100)  /* 203.0.113.0/24 (test-net) */ ||
     ((ip_addr & 0xFFFFFFFF) == 0xFFFFFFFF)  /* 255.255.255.255/32 (broadcast)*/ ;
 }
+
+#ifdef HAVE_IPV6
+static int private_net6(struct in6_addr *a)
+{
+  return 
+    IN6_IS_ADDR_UNSPECIFIED(a) || /* RFC 6303 4.3 */
+    IN6_IS_ADDR_LOOPBACK(a) ||    /* RFC 6303 4.3 */
+    IN6_IS_ADDR_LINKLOCAL(a) ||   /* RFC 6303 4.5 */
+    ((unsigned char *)a)[0] == 0xfd ||   /* RFC 6303 4.4 */
+    ((u32 *)a)[0] == htonl(0x20010db8); /* RFC 6303 4.6 */
+}
+#endif
+
 
 static unsigned char *do_doctor(unsigned char *p, int count, struct dns_header *header, size_t qlen, char *name, int *doctored)
 {
@@ -1184,7 +1197,7 @@ static unsigned long crec_ttl(struct crec *crecp, time_t now)
   if (crecp->flags & F_IMMORTAL)
     return crecp->ttd;
 
-  /* Return the Max TTL value if it is lower then the actual TTL */
+  /* Return the Max TTL value if it is lower than the actual TTL */
   if (daemon->max_ttl == 0 || ((unsigned)(crecp->ttd - now) < daemon->max_ttl))
     return crecp->ttd - now;
   else
@@ -1440,20 +1453,48 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 			      anscount++;
 		    }
 		}
-	      else if (is_arpa == F_IPV4 && 
-		       option_bool(OPT_BOGUSPRIV) && 
-		       private_net(addr.addr.addr4, 1))
+	      else if (option_bool(OPT_BOGUSPRIV) && (
+#ifdef HAVE_IPV6
+		       (is_arpa == F_IPV6 && private_net6(&addr.addr.addr6)) ||
+#endif
+		       (is_arpa == F_IPV4 && private_net(addr.addr.addr4, 1))))
 		{
-		  /* if not in cache, enabled and private IPV4 address, return NXDOMAIN */
-		  ans = 1;
-		  sec_data = 0;
-		  nxdomain = 1;
-		  if (!dryrun)
-		    log_query(F_CONFIG | F_REVERSE | F_IPV4 | F_NEG | F_NXDOMAIN, 
-			      name, &addr, NULL);
+		  struct server *serv;
+		  unsigned int namelen = strlen(name);
+		  char *nameend = name + namelen;
+
+		  /* see if have rev-server set */
+		  for (serv = daemon->servers; serv; serv = serv->next)
+		    {
+		      unsigned int domainlen;
+		      char *matchstart;
+
+		      if ((serv->flags & (SERV_HAS_DOMAIN | SERV_NO_ADDR)) != SERV_HAS_DOMAIN)
+		        continue;
+
+		      domainlen = strlen(serv->domain);
+		      if (domainlen == 0 || domainlen > namelen)
+		        continue;
+
+		      matchstart = nameend - domainlen;
+		      if (hostname_isequal(matchstart, serv->domain) &&
+		          (namelen == domainlen || *(matchstart-1) == '.' ))
+			break;
+		    }
+
+		  /* if no configured server, not in cache, enabled and private IPV4 address, return NXDOMAIN */
+		  if (!serv)
+		    {
+		      ans = 1;
+		      sec_data = 0;
+		      nxdomain = 1;
+		      if (!dryrun)
+			log_query(F_CONFIG | F_REVERSE | is_arpa | F_NEG | F_NXDOMAIN,
+				  name, &addr, NULL);
+		    }
 		}
 	    }
-	    
+	  
 	  for (flag = F_IPV4; flag; flag = (flag == F_IPV4) ? F_IPV6 : 0)
 	    {
 	      unsigned short type = T_A;
@@ -1516,9 +1557,24 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 	      if (intr)
 		{
 		  struct addrlist *addrlist;
-		  int gotit = 0;
+		  int gotit = 0, localise = 0;
 
 		  enumerate_interfaces(0);
+		    
+		  /* See if a putative address is on the network from which we received
+		     the query, is so we'll filter other answers. */
+		  if (local_addr.s_addr != 0 && option_bool(OPT_LOCALISE) && type == T_A)
+		    for (intr = daemon->int_names; intr; intr = intr->next)
+		      if (hostname_isequal(name, intr->name))
+			for (addrlist = intr->addr; addrlist; addrlist = addrlist->next)
+#ifdef HAVE_IPV6
+			  if (!(addrlist->flags & ADDRLIST_IPV6))
+#endif
+			    if (is_same_net(*((struct in_addr *)&addrlist->addr), local_addr, local_netmask))
+			      {
+				localise = 1;
+				break;
+			      }
 		  
 		  for (intr = daemon->int_names; intr; intr = intr->next)
 		    if (hostname_isequal(name, intr->name))
@@ -1528,6 +1584,10 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 			  if (((addrlist->flags & ADDRLIST_IPV6) ? T_AAAA : T_A) == type)
 #endif
 			    {
+			      if (localise && 
+				  !is_same_net(*((struct in_addr *)&addrlist->addr), local_addr, local_netmask))
+				continue;
+
 #ifdef HAVE_IPV6
 			      if (addrlist->flags & ADDRLIST_REVONLY)
 				continue;
@@ -1557,7 +1617,7 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 		{
 		  int localise = 0;
 		  
-		  /* See if a putative address is on the network from which we recieved
+		  /* See if a putative address is on the network from which we received
 		     the query, is so we'll filter other answers. */
 		  if (local_addr.s_addr != 0 && option_bool(OPT_LOCALISE) && flag == F_IPV4)
 		    {
@@ -1833,7 +1893,7 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
   /* set RA flag */
   header->hb4 |= HB4_RA;
    
-  /* authoritive - only hosts and DHCP derived names. */
+  /* authoritative - only hosts and DHCP derived names. */
   if (auth)
     header->hb3 |= HB3_AA;
   

@@ -830,7 +830,7 @@ int timematch_conv2(char *mstr, int mstr_size, char *nv_date, char *nv_time, cha
 			snprintf(datetime[6].start, sizeof(datetime[6].start), "%s00", timestart2);
 			strncpy(datetime[6].stop, "235959", 6);
 			snprintf(datetime[0].tmpstop, sizeof(datetime[0].tmpstop), "%s59", timestop2);
-		}		
+		}
 	}
 
 	for(i=0;i<7;i++)
@@ -1919,7 +1919,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 		//Log
 		//if (nvram_match("misc_natlog_x", "1"))
 		//	fprintf(fp, "-A PREROUTING -i %s -j LOG --log-prefix ALERT --log-level 4\n", wan_if);
-		
+
 #ifdef RTCONFIG_IPSEC
 		if(is_nat_enabled() && dmz_enabled()) {
 			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 500 -j REDIRECT --to-port 500\n", wan_if);
@@ -2354,7 +2354,7 @@ static void write_access_restriction(FILE *fp)
 	int  cnt = 0;
 	char webports[16];
 	char sshport[8];
-	
+
 	if (nvram_match("enable_acc_restriction", "1"))
 	{
 #ifdef RTCONFIG_HTTPS
@@ -2489,7 +2489,7 @@ start_default_filter(int lanunit)
 	/* Write input rule for vlan */
 	vlan_subnet_filter_input(fp);
 #endif
-	
+
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 	/* Deny none br0 to access br0 subnet */
 	vlan_subnet_deny_input(fp);
@@ -2571,7 +2571,7 @@ start_default_filter(int lanunit)
 
 	fprintf(fp, "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n");
 	fprintf(fp, "-A INPUT -m state --state INVALID -j DROP\n");
-	
+
 	/* Specific IP access restriction */
 	write_access_restriction(fp);
 
@@ -2648,7 +2648,7 @@ start_default_filter(int lanunit)
 #endif
 }
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 void reset_filter(void)
 {
 	const char *filter_rules = "/tmp/hive_filter.default";
@@ -2762,7 +2762,7 @@ static void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdr
 		{
 			if ((b = strsep(&nvp, "<")) == NULL) break;
 			if ((vstrsep(b, ">", &enable, &addr, &url)) != 3) continue;
-			if (!strcmp(enable, "0")) 
+			if (!strcmp(enable, "0"))
 				continue;
 
 			// Handle source type format
@@ -2822,7 +2822,7 @@ static void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdr
 #ifdef RTCONFIG_IPV6
 		if(ipv6_enabled())
 		{
-			fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -m string --string \"asus\" --algo bm -j ACCEPT\n", 
+			fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -m string --string \"asus\" --algo bm -j ACCEPT\n",
 			chain, lan_if);
 			fprintf(fp_ipv6, "-A %s -i br0 -p udp --dport 53 -j DROP\n", chain);
 		}
@@ -3017,29 +3017,32 @@ TRACE_PT("writing Parental Control\n");
 				nvram_get_int("https_lanport") ? : 443);
 	}
 #endif
+
 #if 0 //def RTCONFIG_IPSEC
 		fprintf(fp, "-A INPUT -i %s --protocol esp -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A INPUT -i %s --protocol ah -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A INPUT -i %s -p udp --dport 500 -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A INPUT -i %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A INPUT -i %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s --protocol esp -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s --protocol ah -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", wan_if);
-#ifdef RTCONFIG_IPV6		
+		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
+#endif
+
+// RFC-6092, sec. 3.2.4
+#ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
 			fprintf(fp_ipv6, "-A INPUT -i %s --protocol esp -j ACCEPT\n", wan_if);
 			fprintf(fp_ipv6, "-A INPUT -i %s --protocol ah -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --dport 500 -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 			fprintf(fp_ipv6, "-A OUTPUT -o %s --protocol esp -j ACCEPT\n", wan_if);
 			fprintf(fp_ipv6, "-A OUTPUT -o %s --protocol ah -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 		}
-#endif			
 #endif
-		
+
 #ifdef RTCONFIG_FREERADIUS
 		if (nvram_get_int("radius_serv_enable")) {
 			fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p udp -d %s --dport %d -j ACCEPT\n", lan_ip, 1812);
@@ -3069,7 +3072,7 @@ TRACE_PT("writing Parental Control\n");
 		/* Filter known SPI state */
 		fprintf(fp, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 		fprintf(fp, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
-		
+
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 		/* Deny none brX to access brX subnet */
 		vlan_subnet_deny_input(fp);
@@ -3077,11 +3080,11 @@ TRACE_PT("writing Parental Control\n");
 
 		/* Specific IP access restriction */
 		write_access_restriction(fp);
-		
+
 #ifdef RTCONFIG_PROTECTION_SERVER
 		if (nvram_get_int("telnetd_enable") != 0
 #ifdef RTCONFIG_SSH
-    		    || nvram_get_int("sshd_enable") != 0
+		    || nvram_get_int("sshd_enable") != 0
 #endif
    		) {
 			fprintf(fp, "-A INPUT ! -i %s -j %sWAN\n", lan_if, PROTECT_SRV_RULE_CHAIN);
@@ -3092,10 +3095,10 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()) {
-			fprintf(fp_ipv6, "-A INPUT -m rt --rt-type 0 -j %s\n", logdrop);
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
+			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
 
@@ -3303,10 +3306,8 @@ TRACE_PT("writing Parental Control\n");
 	{
 		if (nvram_match("ipv6_fw_enable", "1"))
 		{
-			fprintf(fp_ipv6, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
 			fprintf(fp_ipv6, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
 		}
-		fprintf(fp_ipv6,"-A FORWARD -m rt --rt-type 0 -j DROP\n");
 	}
 #endif
 
@@ -3436,7 +3437,6 @@ TRACE_PT("writing Parental Control\n");
 	{
 #if 0
 		fprintf(fp_ipv6,
-			"-A INPUT -m rt --rt-type 0 -j %s\n"
 			/* "-A INPUT -m state --state INVALID -j DROP\n" */
 			"-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n",
 			logaccept);
@@ -3479,7 +3479,6 @@ TRACE_PT("writing Parental Control\n");
 		}
 #endif
 
-		fprintf(fp_ipv6, "-A OUTPUT -m rt --rt-type 0 -j %s\n", logdrop);
 		// IPv6 firewall - allowed traffic
 		if (nvram_match("ipv6_fw_enable", "1")) {
 			nvp = nv = strdup(nvram_safe_get("ipv6_fw_rulelist"));
@@ -3654,7 +3653,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp, "-I INPUT -i tun22 -m state --state NEW -j ACCEPT\n");
 		fprintf(fp, "-I FORWARD -i tun22 -m state --state NEW -j ACCEPT\n");
 		fprintf(fp, "-I FORWARD -i tun22 -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
-	}	
+	}
 	if (nvram_match("cp_enable", "1") || nvram_match("hotss_enable", "1"))
 	{
 		fprintf(fp, "-I INPUT -i tun23 -m state --state NEW -j ACCEPT\n");
@@ -4082,34 +4081,37 @@ TRACE_PT("writing Parental Control\n");
 	}
 #endif
 
-#if 0 //def RTCONFIG_IPSEC
 	for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; unit++) {
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 		if (nvram_get_int(strcat_r(prefix, "state_t", tmp)) != WAN_STATE_CONNECTED)
 			continue;
 		wan_if = get_wan_ifname(unit);
+#if 0 //def RTCONFIG_IPSEC
 		fprintf(fp, "-A INPUT -i %s --protocol esp -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A INPUT -i %s --protocol ah -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A INPUT -i %s -p udp --dport 500 -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A INPUT -i %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A INPUT -i %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s --protocol esp -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s --protocol ah -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", wan_if);
-#ifdef RTCONFIG_IPV6		
+		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
+#endif
+
+// RFC-6092, sec. 3.2.4
+#ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
 			fprintf(fp_ipv6, "-A INPUT -i %s --protocol esp -j ACCEPT\n", wan_if);
 			fprintf(fp_ipv6, "-A INPUT -i %s --protocol ah -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --dport 500 -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A INPUT -i %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 			fprintf(fp_ipv6, "-A OUTPUT -o %s --protocol esp -j ACCEPT\n", wan_if);
 			fprintf(fp_ipv6, "-A OUTPUT -o %s --protocol ah -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", wan_if);
-			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
+			fprintf(fp_ipv6, "-A OUTPUT -o %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 		}
-#endif					
-	}
 #endif
+	}
+
 #ifdef RTCONFIG_FREERADIUS
 		if (nvram_get_int("radius_serv_enable")) {
 			fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p udp -d %s --dport %d -j ACCEPT\n", lan_ip, 1812);
@@ -4133,7 +4135,7 @@ TRACE_PT("writing Parental Control\n");
 				if (ip && *ip && inet_addr_(ip) != INADDR_ANY)
 					fprintf(fp, "-A INPUT -i %s ! -s %s -p icmp --icmp-type 8 -j %s\n", wan_if, ip, logdrop);
 				else
-#endif				
+#endif
 				fprintf(fp, "-A INPUT -i %s -p icmp --icmp-type 8 -j %s\n", wan_if, logdrop);
 
 			}
@@ -4148,19 +4150,19 @@ TRACE_PT("writing Parental Control\n");
 		/* Filter known SPI state */
 		fprintf(fp, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 		fprintf(fp, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
-		
+
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 		/* Deny none brX to access brX subnet */
 		vlan_subnet_deny_input(fp);
-#endif		
+#endif
 
 		/* Specific IP access restriction */
 		write_access_restriction(fp);
-		
+
 #ifdef RTCONFIG_PROTECTION_SERVER
 		if (nvram_get_int("telnetd_enable") != 0
 #ifdef RTCONFIG_SSH
-    		    || nvram_get_int("sshd_enable") != 0
+		    || nvram_get_int("sshd_enable") != 0
 #endif
    		) {
 			fprintf(fp, "-A INPUT ! -i %s -j %sWAN\n", lan_if, PROTECT_SRV_RULE_CHAIN);
@@ -4171,10 +4173,10 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()) {
-			fprintf(fp_ipv6, "-A INPUT -m rt --rt-type 0 -j %s\n", logdrop);
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
+			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
 
@@ -4344,10 +4346,8 @@ TRACE_PT("writing Parental Control\n");
 	{
 		if (nvram_match("ipv6_fw_enable", "1"))
 		{
-			fprintf(fp_ipv6, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
 			fprintf(fp_ipv6, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
 		}
-		fprintf(fp_ipv6,"-A FORWARD -m rt --rt-type 0 -j DROP\n");
 	}
 #endif
 
@@ -4413,8 +4413,8 @@ TRACE_PT("writing Parental Control\n");
 		wanx_ip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
 
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
-       /* Write forward rule for vlan */
-       vlan_subnet_filter_forward(fp, wan_if);
+	/* Write forward rule for vlan */
+	vlan_subnet_filter_forward(fp, wan_if);
 #endif
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
@@ -4432,9 +4432,9 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, logdrop);
 	}
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
-       /* Write forward rule for deny lan */
-       vlan_subnet_deny_forward(fp);
-#endif	
+	/* Write forward rule for deny lan */
+	vlan_subnet_deny_forward(fp);
+#endif
 
 // oleg patch ~
 	/* Drop the wrong state, INVALID, packets */
@@ -4480,7 +4480,6 @@ TRACE_PT("writing Parental Control\n");
 	{
 #if 0
 		fprintf(fp_ipv6,
-			"-A INPUT -m rt --rt-type 0 -j %s\n"
 			/* "-A INPUT -m state --state INVALID -j DROP\n" */
 			"-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n",
 			logaccept);
@@ -4517,8 +4516,6 @@ TRACE_PT("writing Parental Control\n");
 		// if logging
 		fprintf(fp_ipv6, "-A INPUT -j %s\n", logdrop);
 
-
-		fprintf(fp_ipv6, "-A OUTPUT -m rt --rt-type 0 -j %s\n", logdrop);
 		// IPv6 firewall allowed traffic
 		if (nvram_match("ipv6_fw_enable", "1")) {
 			nvp = nv = strdup(nvram_safe_get("ipv6_fw_rulelist"));
@@ -4733,7 +4730,7 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-I %s -i %s -o %s -p 51 -j %s\n", chain, lan_if, wan_if, "DROP");
 		}
 	}
-        //Filter chilli
+	//Filter chilli
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 	if (nvram_match("chilli_enable", "1") || nvram_match("hotss_enable", "1"))
 	{
@@ -6000,7 +5997,8 @@ int start_firewall(int wanunit, int lanunit)
 		modprobe_r("xt_hl");
 	}
 #ifdef RTCONFIG_IPSEC
-	run_ipsec_firewall_scripts();
+	if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable"))
+		run_ipsec_firewall_scripts();
 #endif
 #ifdef RTCONFIG_LETSENCRYPT
 	run_le_fw_script();

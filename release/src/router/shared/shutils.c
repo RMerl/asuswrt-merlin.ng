@@ -229,6 +229,7 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 	int n;
 	const char *p;
 	char s[256];
+	int debug_logeval = atoi(nvram_safe_get("debug_logeval"));
 	//char *cpu0_argv[32] = { "taskset", "-c", "0"};
 	//char *cpu1_argv[32] = { "taskset", "-c", "1"};
 
@@ -241,6 +242,11 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 		chld = signal(SIGCHLD, SIG_DFL);
 	}
 
+#ifdef HND_ROUTER
+	p = nvram_safe_get("env_path");
+	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
+	setenv("PATH", s, 1);
+#endif
 	pid = fork();
 	if (pid == -1) {
 		perror("fork");
@@ -292,7 +298,7 @@ EXIT:
 	open("/dev/null", O_WRONLY);
 	open("/dev/null", O_WRONLY);
 
-	if (nvram_match("debug_logeval", "1")) {
+	if (debug_logeval == 1) {
 		pid = getpid();
 
 		cprintf("_eval +%ld pid=%d ", uptime(), pid);
@@ -341,10 +347,11 @@ EXIT:
 	}
 
 	// execute command
-
+#ifndef HND_ROUTER
 	p = nvram_safe_get("env_path");
 	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
 	setenv("PATH", s, 1);
+#endif
 
 	alarm(timeout);
 #if 1
@@ -380,7 +387,7 @@ int _cpu_eval(int *ppid, char *cmds[])
 {
         int ncmds=0, n=0, i;
         int maxn = get_cmds_size(cmds)
-#if defined (SMP) || defined(RTCONFIG_ALPINE)
+#if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
                 + 4;
 #else
                 +1;
@@ -390,13 +397,13 @@ int _cpu_eval(int *ppid, char *cmds[])
         for(i=0; i<maxn; ++i)
                 cpucmd[i]=NULL;
 
-#if defined (SMP) || defined(RTCONFIG_ALPINE)
+#if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
         cpucmd[ncmds++]="taskset";
         cpucmd[ncmds++]="-c";
         if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)) {
                 cpucmd[ncmds++]=cmds[n++];
         } else
-#if defined(RTCONFIG_ALPINE)
+#if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
                 cpucmd[ncmds++]=cmds[n++];;
 #else
                 cpucmd[ncmds++]=CPU0;

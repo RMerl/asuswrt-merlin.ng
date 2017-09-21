@@ -114,7 +114,7 @@ int is_wps_stopped(void)
 			continue;
 		}
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 #ifndef RTCONFIG_DUAL_BACKHAUL
 		if(i==0)
 		{	

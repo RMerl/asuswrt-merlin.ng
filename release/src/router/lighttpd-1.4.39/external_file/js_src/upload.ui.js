@@ -322,7 +322,7 @@ function refreshUploadLayout(){
 }
 
 function adjustUploadLayout(){	
-	var h = $("#upload_panel").height() - 50;
+	var h = $("#upload_panel").height() - 20;
 	$("#main_table").css("height", h);
 	$("#uploadRegion").css("height", h-120);
 	$("#upload-file-list-container").css("height", h-144);
@@ -335,12 +335,17 @@ function traverseFileTree(item, path) {
     	// Get file
     	item.file(function(file) {
     		//console.log("File:", path + file.name);
+    		
+    		/*
       		var oObject = new Object();
 			oObject.id = "upload_" + ( this_upload_files.length + 1);
 			oObject.status = "Init";
 			oObject.thepath = path;
 			oObject.thefile = file;
 			this_upload_files.push(oObject);
+			*/
+			
+			add_to_upload_files(path, file);
 				
 			outputUploadResult();
     	});
@@ -406,12 +411,16 @@ function handleFileSelect(evt) {
 			path = String(s.webkitRelativePath).replace(s.name,"");
 		}
 		
+		/*
 		var oObject = new Object();
 		oObject.id = "upload_" + ( this_upload_files.length + 1);
 		oObject.status = "Init";
 		oObject.thepath = path;			
 		oObject.thefile = s;
 		this_upload_files.push(oObject);
+		*/
+		
+		add_to_upload_files(path, s);
 	}
 		
 	$("#upload-container").hide();
@@ -432,12 +441,14 @@ function outputUploadResult(){
 		var file_size = size_format(f.thefile.size);
 		var file_name = f.thefile.name;
 		var li_id = String(f.id);
-
+		var path = f.thepath;
+		var name = f.thefile.name;
+		
 		if(g_storage.get('isOnUploadFile')==1)
-    		output.push('<li><strong>', f.thepath + f.thefile.name, '</strong> ', ' - ',
+    		output.push('<li><strong>', path + name, '</strong> ', ' - ',
                 file_size, m.getString('upload_item'), ' [ <span id=\"status\">', m.getString(f.status), '</span> ] ', '</li>');
     	else
-    		output.push('<li id="', li_id, '"><strong>', f.thepath + f.thefile.name, '</strong> ', ' - ',
+    		output.push('<li id="', li_id, '"><strong>', path + name, '</strong> ', ' - ',
                	  file_size, m.getString('upload_item'), ' [ <span id=\"status\">', m.getString(f.status), '</span> ]', '<span class="ui-icon" id="delete_item" item="', li_id, '"></span></li>');
     }
     
@@ -552,4 +563,21 @@ function confirmCancelUploadFile(){
 	}
 	
 	return 1;
+}
+
+function add_to_upload_files(path, file){
+	var file_name = file.name;
+	
+	if( file_name.indexOf("<")>0 || 
+	    file_name.indexOf(">")>0 ){
+	  	alert("The file name can not contain '>' or '<' characters.");	
+		return;
+	}
+	
+	var oObject = new Object();
+	oObject.id = "upload_" + ( this_upload_files.length + 1);
+	oObject.status = "Init";
+	oObject.thepath = path;
+	oObject.thefile = file;
+	this_upload_files.push(oObject);
 }

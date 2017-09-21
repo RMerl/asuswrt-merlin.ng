@@ -145,10 +145,11 @@
  * 1.	bit 28~31:	Load-balance rule, IPTABLES_MARK_LB_*
  * 2.	bit 26~27:	Facebook Wi-Fi, FBWIFI_MARK_*
  * 3.	bit  0~5 :	QoS (T.QoS: bit 0~2, BWLIT: bit 0~5)
+ * 4.   bit 31~8 :	TrendMicro adaptive QoS needs bit 8~31.
  */
 #define IPTABLES_MARK_LB_SET(x)	((((x)&0xFU)|0x8)<<28)			/* mark for load-balance, bit 28~31, bit31 is always 1. */
 #define IPTABLES_MARK_LB_MASK	IPTABLES_MARK_LB_SET(0xf)
-#define FBWIFI_MARK_SET(x)	(((x)&0x3U)<<26)			/* Facebook Wi-Fi: bit 26~27 */
+#define FBWIFI_MARK_SET(x)	(((x)&0x3U)<<6)				/* Facebook Wi-Fi: bit 6~7 */
 #define FBWIFI_MARK_MASK	FBWIFI_MARK_SET(0x3)
 #define FBWIFI_MARK_INV_MASK	(~(FBWIFI_MARK_SET(0x3)))
 #define QOS_MASK		(0x3F)
@@ -269,11 +270,24 @@ enum {
 #define IPV6_MASK (RTF_GATEWAY|RTF_HOST|RTF_DEFAULT|RTF_ADDRCONF|RTF_CACHE)
 #endif
 
+#ifdef RTCONFIG_LANTIQ
+enum {
+	WAVE_FLAG_NORMAL=0,
+	WAVE_FLAG_QIS,
+	WAVE_FLAG_ACL,
+	WAVE_FLAG_WPS,
+	WAVE_FLAG_WDS,
+	WAVE_FLAG_ADV,
+	WAVE_FLAG_VAP
+};
+
+#endif
+
 #define GIF_LINKLOCAL  0x0001  /* return link-local addr */
 #define GIF_PREFIXLEN  0x0002  /* return prefix length */
 #define GIF_PREFIX     0x0004  /* return prefix, not addr */
 
-#define EXTEND_AIHOME_API_LEVEL		11
+#define EXTEND_AIHOME_API_LEVEL		12
 #define EXTEND_HTTPD_AIHOME_VER		0
 
 #define EXTEND_ASSIA_API_LEVEL		1
@@ -445,8 +459,17 @@ extern const char *_getifaddr(const char *ifname, int family, int flags, char *b
 extern const char *getifaddr(const char *ifname, int family, int flags);
 extern long uptime(void);
 extern float uptime2(void);
+extern char *wl_nvprefix(char *prefix, int prefix_size, int unit, int subunit);
 extern char *wl_nvname(const char *nv, int unit, int subunit);
 extern char *wl_nband_name(const char *nband);
+extern int wl_wave_unit(int wps_band);
+extern char *wl_vifname_wave(int unit, int subunit);
+#ifdef RTCONFIG_LANTIQ
+extern int wl_client_unit(int unit);
+extern char *get_staifname(int unit);
+extern int get_wifname_band(char *name);
+extern char *get_wififname(int band);
+#endif
 extern unsigned int get_radio_status(char *ifname);
 extern int get_radio(int unit, int subunit);
 extern void set_radio(int on, int unit, int subunit);
@@ -538,10 +561,12 @@ enum {
 	MODEL_PLAC56,
 	MODEL_PLAC66U,
 	MODEL_RTAC58U,
+	MODEL_RT4GAC53U,
 	MODEL_RTAC82U,
 	MODEL_MAPAC1300,
 	MODEL_MAPAC2200,
 	MODEL_VRZAC1300,
+	MODEL_MAPAC1800,
 	MODEL_RTN36U3,
 	MODEL_RTN56U,
 	MODEL_RTN65U,
@@ -599,6 +624,9 @@ enum {
 	MODEL_GTAC9600,
 	MODEL_BLUECAVE,
 	MODEL_RTAD7200,
+	MODEL_GTAX6000,
+	MODEL_GTAX6000N,
+	MODEL_GTAX6000S,
 };
 
 /* NOTE: Do not insert new entries in the middle of this enum,
@@ -625,11 +653,7 @@ enum {
 	SWITCH_RTL8370M,
 };
 
-#ifndef RTCONFIG_NVRAM_ENCRYPT
 #define RTCONFIG_NVRAM_VER "1"
-#else
-#define RTCONFIG_NVRAM_VER "2"
-#endif
 
 /* NOTE: Do not insert new entries in the middle of this enum,
  * always add them to the end! The numeric Hardware ID value is
@@ -807,11 +831,18 @@ enum led_id {
 	LED_ALL,
 #endif
 #ifdef RTCONFIG_INTERNAL_GOBI
+#if defined(RT4GAC53U)
+	LED_LTE_OFF,
+#else
 	LED_3G,
 	LED_LTE,
+#endif
 	LED_SIG1,
 	LED_SIG2,
 	LED_SIG3,
+#if defined(RT4GAC53U)
+	LED_SIG4,
+#endif
 #endif
 #if (defined(PLN12) || defined(PLAC56))
 	PLC_WAKE,
@@ -1090,12 +1121,12 @@ static inline int dpsta_mode()
 {
 	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_dpsta") == 1));
 }
+#endif
 
 static inline int dpsr_mode()
 {
 	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_dpsta") == 2));
 }
-#endif
 
 static inline int get_wps_multiband(void)
 {
@@ -1225,6 +1256,23 @@ static inline int guest_wlif(char *ifname)
 
 	return 1;
 }
+#elif defined RTCONFIG_ALPINE
+#define GUEST_IF_NUM 6
+static inline int guest_wlif(char *ifname)
+{
+	char *p = ifname + 5;
+	int i;
+
+	char *guest_wlif_name[GUEST_IF_NUM] = {
+		"wifi2_1", "wifi2_2", "wifi2_3",
+		"wifi0_1", "wifi0_2", "wifi0_3"};
+
+	for( i = 0 ; i < GUEST_IF_NUM; ++i){
+		if(strcmp(ifname, guest_wlif_name[i]) == 0) return 1;
+	}
+
+	return 0;
+}
 #endif
 
 extern int init_gpio(void);
@@ -1255,6 +1303,7 @@ extern char *get_wan_mac_name(void);
 extern char *get_2g_hwaddr(void);
 extern char *get_lan_hwaddr(void);
 extern char *get_wan_hwaddr(void);
+extern char *get_label_mac(void);
 #if defined(RTCONFIG_QCA)
 extern char *__get_wlifname(int band, int subunit, char *buf);
 extern int get_wlsubnet(int band, const char *ifname);
@@ -1266,6 +1315,8 @@ extern int get_ap_mac(const char *ifname, struct iwreq *pwrq);
 #endif
 extern int chk_assoc(const char *ifname);
 extern int match_radio_status(int unit, int status);
+extern int get_ch(int freq);
+extern int get_channel(const char *ifname);
 #endif
 extern char *get_wlifname(int unit, int subunit, int subunit_x, char *buf);
 extern char *get_wlxy_ifname(int x, int y, char *buf);
@@ -1479,7 +1530,7 @@ extern int psta_exist_except(int unit);
 extern int psr_exist(void);
 extern int psr_exist_except(int unit);
 #endif
-extern unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2);
+extern unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2, char *nv_lan_ifname, char *nv_lan_ifnames);
 extern void disable_dpi_engine_setting(void);
 extern int get_iface_hwaddr(char *name, unsigned char *hwaddr);
 #if defined(RTCONFIG_SOC_IPQ8064)
@@ -1626,15 +1677,10 @@ static inline int __wps_led_control(int onoff)
 #else
 static inline int wps_led_control(int onoff)
 {
-#ifdef BLUECAVE
-	led_control(LED_INDICATOR_SIG1, LED_OFF); //RED
-	return led_control(LED_INDICATOR_SIG2, onoff);	//BLUE
-#else
 	if (nvram_get_int("led_pwr_gpio") != nvram_get_int("led_wps_gpio"))
 		return led_control(LED_WPS, onoff);
 	else
 		return led_control(LED_POWER, onoff);
-#endif
 }
 
 /* If individual WPS LED absents, don't do anything. */
@@ -1929,8 +1975,9 @@ extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
 
 #ifdef RTAC68U
 extern int is_ac66u_v2_series();
+extern int is_n66u_v2();
+extern int is_ssid_rev3_series();
 #endif
-
 
 /* rtstate.c */
 extern char *get_default_ssid(int unit, int subunit);

@@ -684,8 +684,14 @@ void start_usb(int orig)
 #ifdef RTCONFIG_NTFS
 			if(nvram_get_int("usb_fs_ntfs")){
 #ifdef RTCONFIG_TUXERA_NTFS
+#if defined(RTCONFIG_OPENPLUSTUXERA_NTFS)
+				if(nvram_match("usb_ntfs_mod", "tuxera"))
+#endif
 				modprobe("tntfs");
 #elif defined(RTCONFIG_PARAGON_NTFS)
+#if defined(RTCONFIG_OPENPLUSPARAGON_NTFS)
+				if(nvram_match("usb_ntfs_mod", "paragon"))
+#endif
 #ifdef RTCONFIG_UFSD_DEBUG
 				modprobe("ufsd_debug");
 #else
@@ -697,8 +703,14 @@ void start_usb(int orig)
 #ifdef RTCONFIG_HFS
 			if(nvram_get_int("usb_fs_hfs")){
 #ifdef RTCONFIG_TUXERA_HFS
+#if defined(RTCONFIG_OPENPLUSTUXERA_HFS)
+				if(nvram_match("usb_hfs_mod", "tuxera"))
+#endif
 				modprobe("thfsplus");
 #elif defined(RTCONFIG_PARAGON_HFS)
+#if defined(RTCONFIG_OPENPLUSPARAGON_HFS)
+				if(nvram_match("usb_hfs_mod", "paragon"))
+#endif
 #ifdef RTCONFIG_UFSD_DEBUG
 				modprobe("ufsd_debug");
 #else
@@ -730,7 +742,7 @@ void start_usb(int orig)
 	}
 }
 
-#if defined(RTAC58U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
 void remove_dakota_usb_modules(void)
 {
 	modprobe_r(USB_DWC3);
@@ -768,8 +780,15 @@ void remove_usb_storage_module(void)
 #endif
 #ifdef RTCONFIG_NTFS
 #ifdef RTCONFIG_TUXERA_NTFS
+#if defined(RTCONFIG_OPENPLUSTUXERA_NTFS)
+	if(nvram_match("usb_ntfs_mod", "tuxera"))
+#endif
 	modprobe_r("tntfs");
 #elif defined(RTCONFIG_PARAGON_NTFS)
+#if defined(RTCONFIG_OPENPLUSPARAGON_NTFS)
+	if(nvram_match("usb_ntfs_mod", "paragon"))
+#endif
+	{
 #ifdef RTCONFIG_UFSD_DEBUG
 	modprobe_r("ufsd_debug");
 	modprobe_r("jnl_debug");
@@ -777,12 +796,20 @@ void remove_usb_storage_module(void)
 	modprobe_r("ufsd");
 	modprobe_r("jnl");
 #endif
+	}
 #endif
 #endif
 #ifdef RTCONFIG_HFS
 #ifdef RTCONFIG_TUXERA_HFS
+#if defined(RTCONFIG_OPENPLUSTUXERA_HFS)
+	if(nvram_match("usb_hfs_mod", "tuxera"))
+#endif
 	modprobe_r("thfsplus");
 #elif defined(RTCONFIG_PARAGON_HFS)
+#if defined(RTCONFIG_OPENPLUSPARAGON_HFS)
+	if(nvram_match("usb_hfs_mod", "paragon"))
+#endif
+	{
 #ifdef RTCONFIG_UFSD_DEBUG
 	modprobe_r("ufsd_debug");
 	modprobe_r("jnl_debug");
@@ -790,6 +817,7 @@ void remove_usb_storage_module(void)
 	modprobe_r("ufsd");
 	modprobe_r("jnl");
 #endif
+	}
 #endif
 #endif
 	modprobe_r("fuse");
@@ -872,7 +900,7 @@ void remove_usb_module(void)
 	remove_usb_led_module();
 	remove_usb_host_module();
 
-#if defined(RTAC58U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
 	remove_dakota_usb_modules();
 #endif
 }
@@ -1028,7 +1056,7 @@ void stop_usb(int f_force)
 		}
 	}
 
-#if defined(RTAC58U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
 	if(disabled)remove_dakota_usb_modules();
 #endif
 #endif // HND_ROUTER
@@ -1264,14 +1292,27 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 			if (ret != 0 && strncmp(type, "ntfs", 4) == 0) {
 				if (nvram_get_int("usb_fs_ntfs")) {
 #ifdef RTCONFIG_OPEN_NTFS3G
+#if defined(RTCONFIG_OPENPLUSPARAGON_NTFS) || defined(RTCONFIG_OPENPLUSTUXERA_NTFS)
+					if(nvram_match("usb_ntfs_mod", "open"))
+#endif
 					ret = eval("ntfs-3g", "-o", options, mnt_dev, mnt_dir);
-#elif defined(RTCONFIG_TUXERA_NTFS)
+#endif
+#if defined(RTCONFIG_TUXERA_NTFS)
+#if defined(RTCONFIG_OPENPLUSTUXERA_NTFS)
+					else
+#endif
 					ret = eval("mount", "-t", "tntfs", "-o", options, mnt_dev, mnt_dir);
-#elif defined(RTCONFIG_PARAGON_NTFS)
+#endif
+#if defined(RTCONFIG_PARAGON_NTFS)
+#if defined(RTCONFIG_OPENPLUSPARAGON_NTFS)
+					else
+#endif
+					{
 					if(nvram_get_int("usb_fs_ntfs_sparse"))
 						ret = eval("mount", "-t", "ufsd", "-o", options, "-o", "force", "-o", "sparse", mnt_dev, mnt_dir);
 					else
 						ret = eval("mount", "-t", "ufsd", "-o", options, "-o", "force", mnt_dev, mnt_dir);
+					}
 #endif
 				}
 			}
@@ -1282,11 +1323,24 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 			if(ret != 0 && !strncmp(type, "hfs", 3)){
 				if (nvram_get_int("usb_fs_hfs")) {
 #ifdef RTCONFIG_KERNEL_HFSPLUS
+#if defined(RTCONFIG_OPENPLUSPARAGON_HFS) || defined(RTCONFIG_OPENPLUSTUXERA_HFS)
+					if(nvram_match("usb_hfs_mod", "open"))
+#endif
+					{
 					eval("fsck.hfsplus", "-f", mnt_dev);//Scan
 					ret = eval("mount", "-t", "hfsplus", "-o", options, mnt_dev, mnt_dir);
-#elif defined(RTCONFIG_TUXERA_HFS)
+					}
+#endif
+#if defined(RTCONFIG_TUXERA_HFS)
+#if defined(RTCONFIG_OPENPLUSTUXERA_HFS)
+					else
+#endif
 					ret = eval("mount", "-t", "thfsplus", "-o", options, mnt_dev, mnt_dir);
-#elif defined(RTCONFIG_PARAGON_HFS)
+#endif
+#if defined(RTCONFIG_PARAGON_HFS)
+#if defined(RTCONFIG_OPENPLUSPARAGON_HFS)
+					else
+#endif
 					ret = eval("mount", "-t", "ufsd", "-o", options, mnt_dev, mnt_dir);
 #endif
 				}
@@ -2512,8 +2566,13 @@ start_ftpd(void)
 
 	killall("vsftpd", SIGHUP);
 
+#ifdef RTCONFIG_LANTIQ
+	if (!pids("vsftpd"))
+		cpu_eval(NULL, "2", "vsftpd", "/etc/vsftpd.conf");
+#else
 	if (!pids("vsftpd"))
 		_eval(vsftpd_argv, NULL, 0, &pid);
+#endif
 
 	if (pids("vsftpd"))
 		logmessage("FTP server", "daemon is started");
@@ -3058,6 +3117,8 @@ start_samba(void)
 #endif
 #ifdef RTCONFIG_ALPINE
 		cpu_eval(NULL, "3", smbd_cmd, "-D", "-s", "/etc/smb.conf");
+#elif defined(RTCONFIG_LANTIQ)
+		cpu_eval(NULL, "2", smbd_cmd, "-D", "-s", "/etc/smb.conf");
 #else
 		xstart(smbd_cmd, "-D", "-s", "/etc/smb.conf");
 #endif

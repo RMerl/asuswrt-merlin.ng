@@ -26,16 +26,18 @@
 #ifndef __UDB_QOS_H__
 #define __UDB_QOS_H__
 
+#ifdef __KERNEL__
 extern int udb_core_update_qos_data(tdts_pkt_parameter_t *param, uint8_t *paid_info, uint8_t *bndwth_info, tdts_udb_param_t *fw_param);
 extern int udb_core_qos_init(char *wan, char *lan);
 extern void udb_core_qos_exit(void);
-extern int tdts_core_ioctl_iqos_config(char *tbl, uint32_t tbl_len);
-extern int tdts_core_ioctl_iqos_switch(int32_t flag);
-extern int tdts_core_ioctl_iqos_get_config(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
-extern int tdts_core_ioctl_iqos_get_app_info(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int ioctl_iqos_op_config(char *buf, uint32_t buf_len);
+extern int ioctl_iqos_op_switch(int32_t flag);
+extern int ioctl_iqos_op_get_config(char *buf, uint32_t buf_len, uint32_t *buf_used_len);
+extern int ioctl_iqos_op_get_app_info(char *buf, uint32_t buf_len, uint32_t *buf_used_len);
 extern int udb_core_register_qos_ops(int (*cb)(char *));
 extern void udb_core_qos_unregister_qos_ops(void);
 extern void udb_core_qos_set_dbg_level(int level);
 extern void udb_core_qos_get_dbg_level(int *level);
+#endif // __KERNEL__
 
 #endif // __UDB_QOS_H__

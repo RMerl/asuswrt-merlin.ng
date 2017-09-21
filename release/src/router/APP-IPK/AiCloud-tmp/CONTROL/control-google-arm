@@ -2,7 +2,7 @@ Package: googleclient
 Architecture: arm
 Priority: optional
 Section: net
-Version: 1.0.0.2.0.g31e81df
+Version: 1.0.0.3.0.gc2102d5
 Maintainer: ASUS
 Source: http://127.0.0.1/
 URL: http://www.asusnetwork.net/cloud_sync.asp

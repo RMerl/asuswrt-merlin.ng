@@ -8,9 +8,7 @@ CROSS_COMPILE := i686-cm-linux-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure --host=i686-cm-linux --build=$(BUILD)
 export TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/.. && pwd)
-#export IPKG_TOOLS := /home/sherry/toolchain/oleg/optware4.1.1/toolchain/ipkg-utils-1.7
-export IPKG_TOOLS := /home/tina/arm/optware/mbwe-bluering/toolchain/ipkg-utils-1.7
-#export LD_DIR := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))../../../../staging && pwd)
+export IPKG_TOOLS := ~/toolchain/ipkg-utils-1.7
 export LD_DIR := $(TOOLCHAIN)
 
 export CC := $(CROSS_COMPILE)gcc
@@ -126,7 +124,7 @@ libxml2/stamp-h1:
 		touch stamp-h1;	
 
 libxml2: libxml2/stamp-h1
-	cd $(CURRENT)/libxml2 && \
+	cd $(CURRENT)/libxml2 && autoreconf -i -f && \
 	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) CPPFLAGS="-O2   -pipe  -I$(SRCBASE)/opt/include " LDFLAGS=" -L$(SRCBASE)/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib " \
 	./configure --build=i386-pc-linux-gnu --host=i686-cm-linux --target=i686-cm-linux --prefix=$(SRCBASE)/opt --without-python --disable-dependency-tracking --without-zlib
 	@$(MAKE) -C $(CURRENT)/libxml2 all
@@ -212,9 +210,9 @@ lighttpd/stamp-h1:
 		touch stamp-h1;
 
 lighttpd:lighttpd/stamp-h1
-	cd $(CURRENT)/lighttpd-1.4.39 && \
-	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
-	./configure --host=i686-cm-linux --build=i386-pc-linux-gnu --prefix=$(SRCBASE)/opt --with-pcre PCRECONFIG="$(SRCBASE)/pcre-8.31/pcre-config" --with-smbdav-props --with-openssl=$(SRCBASE)/openssl-ipk --with-openssl-includes=$(SRCBASE)/openssl-ipk/include/openssl --with-openssl-libs=$(SRCBASE)/openssl-ipk/ --with-webdav-props --with-smbdav-locks=yes --with-libsmbclient=$(SRCBASE)/samba-3.5.8/source3 --without-zlib --without-bzip2 --enable-shared --disable-static CFLAGS="-I$(SRCBASE)/pcre-8.31 -I$(SRCBASE)/curl-7.21.7 -I$(TOOLCHAIN)/include -I$(SRCBASE)/sqlite  -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1 -DAPP_IPKG=1 -DI686=1" LIBS="-L$(TOOLCHAIN)/lib -ldl   -L$(SRCBASE)/opt/lib -lxml2 -lcurl -lssl -lcrypto" LDFLAGS="-Wl,-rpath,$(SRCBASE)/opt/lib -Wl,-rpath,$(SRCBASE)/pcre-8.31/.libs -Wl,-rpath,$(SRCBASE)/libxml2/.libs -Wl,-rpath,$(SRCBASE)/openssl-ipk   -Wl,-rpath,$(SRCBASE)/curl-7.21.7/lib/.libs -Wl,-rpath,/opt/lib" CURL_CFLAGS="-I$(SRCBASE)/curl-7.21.7" CURL_LIBS="-L$(SRCBASE)/curl-7.21.7/lib/.libs -lcurl" XML_CFLAGS="-I$(SRCBASE)/libxml2/include" XML_LIBS="-L$(SRCBASE)/libxml2/.libs -lxml2 -Wl,-rpath,/opt/lib" SQLITE_CFLAGS="-I$(SRCBASE)/sqlite" SQLITE_LIBS="-L$(SRCBASE)/sqlite/.libs -lsqlite3" PCRE_LIB="-L$(SRCBASE)/pcre-8.31/.libs -lpcre" PCRECONFIG="$(SRCBASE)/pcre-8.31/pcre-config" SSL_LIB="-L$(SRCBASE)/openssl-ipk -lcrypto -lssl -Wl,-rpath,/opt/lib"  --no-create --no-recursion
+	cd $(CURRENT)/lighttpd-1.4.39 && ./autogen.sh \
+	#AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) \
+	./configure --host=i686-cm-linux --build=i386-pc-linux-gnu --prefix=/opt --with-pcre PCRECONFIG="$(SRCBASE)/pcre-8.31/pcre-config" --with-smbdav-props --with-openssl=$(SRCBASE)/openssl-ipk --with-openssl-includes=$(SRCBASE)/openssl-ipk/include/openssl --with-openssl-libs=$(SRCBASE)/openssl-ipk/ --with-webdav-props --with-smbdav-locks=yes --with-libsmbclient=$(SRCBASE)/samba-3.5.8/source3 --without-zlib --without-bzip2 --enable-shared --disable-static CFLAGS="-I$(SRCBASE)/pcre-8.31 -I$(SRCBASE)/curl-7.21.7 -I$(TOOLCHAIN)/include -I$(SRCBASE)/sqlite  -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1 -DAPP_IPKG=1 -DI686=1" LIBS="-L$(TOOLCHAIN)/lib -ldl   -L$(SRCBASE)/opt/lib -lxml2 -lcurl -lssl -lcrypto -lcrypt" LDFLAGS="-Wl,-rpath,$(SRCBASE)/opt/lib -Wl,-rpath,$(SRCBASE)/pcre-8.31/.libs -Wl,-rpath,$(SRCBASE)/libxml2/.libs -Wl,-rpath,$(SRCBASE)/openssl-ipk   -Wl,-rpath,$(SRCBASE)/curl-7.21.7/lib/.libs -Wl,-rpath,/opt/lib" CURL_CFLAGS="-I$(SRCBASE)/curl-7.21.7" CURL_LIBS="-L$(SRCBASE)/curl-7.21.7/lib/.libs -lcurl" XML_CFLAGS="-I$(SRCBASE)/libxml2/include" XML_LIBS="-L$(SRCBASE)/libxml2/.libs -lxml2 -Wl,-rpath,/opt/lib" SQLITE_CFLAGS="-I$(SRCBASE)/sqlite" SQLITE_LIBS="-L$(SRCBASE)/sqlite/.libs -lsqlite3" PCRE_LIB="-L$(SRCBASE)/pcre-8.31/.libs -lpcre" PCRECONFIG="$(SRCBASE)/pcre-8.31/pcre-config" SSL_LIB="-L$(SRCBASE)/openssl-ipk -lcrypto -lssl -Wl,-rpath,/opt/lib"  --no-create --no-recursion
 	cd $(CURRENT)/lighttpd-1.4.39 && /bin/sh ./config.status	
 	@$(MAKE) -C $(CURRENT)/lighttpd-1.4.39 
 	cp -rf $(CURRENT)/lighttpd-1.4.39/src/lighttpd AiCloud-ipk/opt/tmp/bin/

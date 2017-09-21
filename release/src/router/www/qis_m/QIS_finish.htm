@@ -1105,7 +1105,7 @@ function goto_index(){
 	document.restartForm.force_change.value++;
 	document.restartForm.action_wait.value = 0;
 
-	if((parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && parent.wan_autodet_state == "4" && parent.usb_connected == 1 && wans_dualwan_orig == "wan usb"){
+	if((parent.based_modelid == "4G-AC53U" || parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && parent.wan_autodet_state == "4" && parent.usb_connected == 1 && wans_dualwan_orig == "wan usb"){
 		document.restartForm.wans_dualwan.disabled = false;
 		document.restartForm.wans_dualwan.value = "usb wan";
 		parent.sysReboot = true;
@@ -1141,7 +1141,7 @@ function goto_index(){
 		//document.getElementById('qisFinish_div').style.display = '';
 	}
 
-	if((parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && wans_mode == "lb"){
+	if((parent.based_modelid == "4G-AC53U" || parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && wans_mode == "lb"){
 		document.restartForm.wans_mode.disabled = false;
 	}
 

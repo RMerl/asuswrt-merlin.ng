@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Captive Portal<!--untranslated--></title>
+<title><#Web_Title#> - Free Wi-Fi<!--untranslated--></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
@@ -361,7 +361,7 @@ function previewSplashImage(_obj) {
 			if( (fileReader.total != undefined) && (!isNaN(fileReader.total)) )
 				source_image_size = fileReader.total;
 			if(Math.round(source_image_size / 1024) > 10240) {
-				alert('Warning: The upload file size exceeds the allowable 10MB limit. Please select another image.');/*untranslated*/
+				alert("<#FreeWiFi_Image_Size_Alert#>");
 				return false;
 			}
 
@@ -375,7 +375,7 @@ function previewSplashImage(_obj) {
 				ctx.drawImage(img, 0, 0, 1152, 864);
 				var dataURL = canvas.toDataURL(mimeType);
 				if(Math.round(dataURL.length / 1024) > 2048) {
-					alert('Warning: The upload file size exceeds the allowable 2MB limit. Please select another image.\nNote: Sometime the smaller PNG image will take fewer megabytes and exceed 2MB limit after resizing the image.');/*untranslated*/
+					alert("<#FreeWiFi_Image_Size_Compressed_Alert#>");
 					return false;
 				}
 				else {
@@ -444,13 +444,13 @@ function gen_splash_page() {
 		code += "<div class='splash_image_size_content'>";
 		code += "<select id='splash_image_size' name='splash_image_size' class='input_option' onchange='splash_image_size_change();'>";
 		code += "<option value='center'><#FreeWiFi_center#></option>";
-		code += "<option value='extend'>Extend</option>";/*untranslated*/
+		code += "<option value='extend'><#FreeWiFi_Extend#></option>";
 		code += "</select>";
 		code += "</div>";
 		code += "<div id='splash_image_conent' class='splash_image_conent'>";
 			if(isSupportFileReader() && isSupportCanvas()) {
-				code += "<div id='splash_image_default' class='splash_image_default' onclick='splash_upload_image();' title='Drag and Drop Image File or Choose File'>";
-				code += "<div class='splash_image_text'>Drag and Drop Image File or Choose File</div>";/*untranslated*/
+				code += "<div id='splash_image_default' class='splash_image_default' onclick='splash_upload_image();' title='<#FreeWiFi_Upload_Image#>'>";
+				code += "<div class='splash_image_text'><#FreeWiFi_Upload_Image#></div>";
 			}
 			else {
 				code += "<div id='splash_image_default' class='splash_image_default'>";
@@ -458,14 +458,14 @@ function gen_splash_page() {
 			}
 				code += "</div>";
 
-			code += "<div id='splash_image_canvas_content' class='splash_image_canvas_content' style='display:none;' onclick='preview_splash_page();' title='Drag and Drop Image File or Choose File'>";
+			code += "<div id='splash_image_canvas_content' class='splash_image_canvas_content' style='display:none;' onclick='preview_splash_page();' title='<#FreeWiFi_Upload_Image#>'>";
 				code += "<canvas id='splash_canvas' width='1152px;' height='864px;' style='display:none;'></canvas>";
 				code += "<div id='splash_template_content' class='splash_template_content'>";
 					code += "<div class='splash_template_icon'>";
 					code += "</div>";
 					code += "<div class='splash_template_title'>Welcome to";
 					code += "</div>";
-					code += "<div id='splash_template_brand_name' class='splash_template_brand_name'><#FreeWiFi_BrandName#>";
+					code += "<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name";
 					code += "</div>";
 					code += "<input id='splash_template_passcode' name='splash_template_passcode' class='splash_template_passcode' value='Please enter Passcode' type='text' maxlength='64' autocorrect='off' autocapitalize='off' disabled=true;>";
 					code += "<div id='splash_template_terms_service' class='splash_template_terms_service'>";
@@ -512,9 +512,9 @@ function gen_splash_page() {
 		}
 
 		code += "<div class='splash_item_content'>";
-			code += "<div class='splash_item_title'>Passcode</div>";/*untranslated*/
+			code += "<div class='splash_item_title'><#FreeWiFi_Passcode#></div>";
 			code += "<input type='checkbox' name='cb_passcode' id='cb_passcode' onchange='update_passcode();'>";
-			code += "Option: Add your own Passcode";/*untranslated*/
+			code += "<#FreeWiFi_Option_Add_Passcode#>";
 			code += "<input name='passcode' class='input_25_table' value='' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>";
 		code += "</div>";
 
@@ -575,7 +575,7 @@ function gen_splash_page() {
 					if( (file.size != undefined) && (!isNaN(file.size)) )
 						source_image_size = file.size;
 					if(Math.round(source_image_size / 1024) > 10240) {
-						alert('Warning: The upload file size exceeds the allowable 10MB limit. Please select another image.');/*untranslated*/
+						alert("<#FreeWiFi_Image_Size_Alert#>");
 						return false;
 					}
 					var reader = new FileReader();
@@ -590,7 +590,7 @@ function gen_splash_page() {
 							ctx.drawImage(img, 0, 0, 1152, 864);
 							var dataURL = canvas.toDataURL(mimeType);
 							if(Math.round(dataURL.length / 1024) > 2048) {
-								alert('Warning: The upload file size exceeds the allowable 2MB limit. Please select another image.\nNote: Sometime the smaller PNG image will take fewer megabytes and exceed 2MB limit after resizing the image.');/*untranslated*/
+								alert("<#FreeWiFi_Image_Size_Compressed_Alert#>");
 								return false;
 							}
 							else {
@@ -635,7 +635,7 @@ function apply() {
 
 		var validForm = function() {
 			if(splash_image_base64 == "") {
-				alert("splash page image file can not be null.");/*untranslated*/
+				alert("<#FreeWiFi_Image_Empty_Alert#>");
 				return false;
 			}
 			if(!validator.isEmpty($("input[name=brand_name]")[0]))
@@ -761,6 +761,8 @@ function apply() {
 
 					document.form.captive_portal_2g_if.value = "wl0." + empty_wl_idx;
 				}
+				else
+					document.form.captive_portal_2g_if.value = "off";
 				if(wl_info.band5g_support) {
 					if($("#cb_wl_1").prop("checked")) {
 						if(!check_gn_if_status(empty_wl_idx, gn_array_5g) && document.form.captive_portal_5g_if.value == "off")
@@ -768,6 +770,8 @@ function apply() {
 
 						document.form.captive_portal_5g_if.value = "wl1." + empty_wl_idx;
 					}
+					else
+						document.form.captive_portal_5g_if.value = "off";
 				}
 				if(wl_info.band5g_2_support) {
 					if($("#cb_wl_2").prop("checked")) {
@@ -776,6 +780,8 @@ function apply() {
 
 						document.form.captive_portal_5g_2_if.value = "wl2." + empty_wl_idx;
 					}
+					else
+						document.form.captive_portal_5g_2_if.value = "off";
 				}
 
 				if(gn_overwrite_hint != "")
@@ -848,13 +854,13 @@ function call_back_to_save_config(_splash_page_status) {
 		if(wl_info.band5g_2_support)
 			document.form.captive_portal_5g_2.value = $("input[name=wl_2]").val().trim();
 
-		if(based_modelid == "BRT-AC828") {
+		//if(based_modelid == "BRT-AC828") {
 			var captive_portal_enable_ori = '<% nvram_get("captive_portal_enable"); %>';
 			if(captive_portal_enable_ori == "off") {
-				cookie.set("captive_portal_gn_idx", get_captive_portal_wl_idx("freeWiFi"), 1);
+				cookie.set("captive_portal_gn_idx", get_captive_portal_wl_idx("freeWiFi") + ">freeWiFi", 1);
 				document.form.next_page.value = "Guest_network.asp";
 			}
-		}
+		//}
 
 		document.form.captive_portal_passcode.value = passcode;
 		document.form.submit();
@@ -1349,7 +1355,7 @@ function save_splash_page_content() {
 		html_landing += "</g>\n";
 		html_landing += "</svg>\n";
 		html_landing += "<div id='splash_template_title' class='splash_template_title'>Welcome to</div>\n";
-		html_landing += "<div id='splash_template_brand_name' class='splash_template_brand_name'><#FreeWiFi_BrandName#></div>\n";
+		html_landing += "<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name</div>\n";
 		if(passcode_status) {
 			html_landing += "<input id='splash_template_passcode' name='splash_template_passcode' class='splash_template_passcode' value='' placeHolder='Please enter Passcode' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>\n";
 		}

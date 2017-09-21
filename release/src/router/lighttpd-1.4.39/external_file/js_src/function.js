@@ -228,28 +228,6 @@ function open_uploadfile_window(){
 function open_uploadfolder_window(){
 	if( isBrowser("chrome") ){
 		openUploadPanel(2);
-		/*
-		g_upload_mode = 1;
-					
-		$("div#btnNewDir").css("display", "none");
-		$("div#btnUpload").css("display", "none");
-		$("div#btnPlayImage").css("display", "none");
-		$("div#boxSearch").css("display", "none");
-		$("div#btnListView").css("display", "none");
-		$("div#btnThumbView").css("display", "none");
-							
-		$("#upload_panel").css("display", "block");
-			
-		$("#upload_panel").css("left", '1999px');		
-		$("#upload_panel").animate({left:"0px"},"slow");
-					
-		var this_url = addPathSlash(g_storage.get('openurl'));		
-		$("#upload_panel iframe").attr( 'src', '/smb/css/upload.html?u=' + this_url +'&d=2' );
-						
-		$("#function_help").text(m.getString('msg_uploadmode_help'));
-			
-		adjustLayout();
-		*/
 	}
 	else{
 		var $modalWindow = $("div#modalWindow");

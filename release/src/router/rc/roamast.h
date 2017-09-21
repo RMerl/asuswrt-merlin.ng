@@ -24,7 +24,7 @@
         } while (0)
 
 #if defined(RTCONFIG_RALINK)
-#elif defined(RTCONFIG_QCA)
+#elif defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ)
 #define MACF	"%02x:%02x:%02x:%02x:%02x:%02x"
 #define ETHERP_TO_MACF(ea)	((struct ether_addr *) (ea))->ether_addr_octet[0], \
 				((struct ether_addr *) (ea))->ether_addr_octet[1], \
@@ -97,6 +97,8 @@ typedef struct rast_sta_info {
 	int32 last_txrx_bytes; /* bytes */
 #elif defined(RTCONFIG_REALTEK)
 	unsigned long long last_txrx_bytes;
+#elif defined(RTCONFIG_LANTIQ)
+	unsigned long last_txrx_bytes;
 #else
 #endif
 }rast_sta_info_t;
@@ -120,6 +122,10 @@ extern rast_sta_info_t *rast_add_to_assoclist(int bssidx, int vifidx, struct eth
 
 #if defined(RTCONFIG_RALINK)
 extern int check_rssi_threshold(int bssidx, int vifidx);
+extern void get_stainfo(int bssidx, int vifidx);
+#endif
+
+#if defined(RTCONFIG_LANTIQ)
 extern void get_stainfo(int bssidx, int vifidx);
 #endif
 

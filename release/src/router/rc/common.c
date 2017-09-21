@@ -1138,11 +1138,143 @@ int gettzoffset(char *tzstr, char *tzstr1, int size1)
 }
 #endif
 
+
+#ifdef HND_ROUTER
+#define LOCALTIME_FILE "/etc/localtime"
+#define ZONEINFO_PATH "/rom/usr/share/zoneinfo/"
+typedef struct zoneinfo {
+	char *tz_name;
+	char *timezone;
+}zoneinfo_t;
+
+const zoneinfo_t tz_list[] = {
+	{"UTC12",	"Etc/GMT+12"},		// (GMT-12:00) Eniwetok, Kwajalein
+	{"UTC11",	"US/Samoa"},		// (GMT-11:00) Midway Island, Samoa
+	{"UTC10",	"US/Hawaii"},		// (GMT-10:00) Hawaii
+       	{"NAST9DST",	"US/Alaska"},		// (GMT-09:00) Alaska
+        {"PST8DST",	"US/Pacific"},		// (GMT-08:00) Pacific Time (US & Canada)
+        {"MST7DST_1",	"US/Mountain"},		// (GMT-07:00) Mountain Time (US & Canada)
+        {"MST7_2",	"US/Arizona"},		// (GMT-07:00) Arizona
+	{"MST7DST_3",	"America/Chihuahua"},	// (GMT-07:00) Chihuahua, La Paz, Mazatlan
+        {"CST6_2",	"Canada/Saskatchewan"},	// (GMT-06:00) Saskatchewan
+        {"CST6DST_3",	"Mexico/General"},	// (GMT-06:00) Guadalajara, Mexico City
+        {"CST6DST_3_1",	"America/Monterrey"},	// (GMT-06:00) Monterrey
+        {"UTC6DST",	"US/Central"},		// (GMT-06:00) Central Time (US & Canada)
+        {"EST5DST",	"US/Eastern"},		// (GMT-05:00) Eastern Time (US & Canada)
+        {"UTC5_1",	"US/East-Indiana"},	// (GMT-05:00) Indiana (East)    US Eastern
+        {"UTC5_2",	"America/Bogota"},	// (GMT-05:00) Bogota, Lima, Quito   SA Pacific 
+        {"UTC4.30",	"America/Caracas"},	// (GMT-04:30) Caracas
+        {"AST4DST",	"Canada/Atlantic"},	// (GMT-04:00) Atlantic Time (Canada)
+        {"UTC4_1",	"America/Manaus"},	// (GMT-04:00) La Paz
+        {"UTC4DST_2",	"America/Santiago"},	// (GMT-04:00) Santiago
+        {"NST3.30DST",	"Canada/Newfoundland"},	// (GMT-03:30) Newfoundland
+        {"EBST3DST_1",	"America/Araguaina"},	// (GMT-03:00) Brasilia
+        {"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
+        {"EBST3DST_2",	"America/Godthab"},	// (GMT-03:00) Greenland
+        {"NORO2DST",    "Atlantic/South_Georgia"},	// (GMT-02:00) Mid-Atlantic
+        {"EUT1DST",     "Atlantic/Azores"},	// (GMT-01:00) Azores
+        {"UTC1",        "Atlantic/Cape_Verde"},	// (GMT-01:00) Cape Verde Is.
+        {"GMT0",        "GMT"},			// (GMT+00:00) Greenwich Mean Time
+        {"GMT0DST_1",   "Europe/Dublin"},	// (GMT+00:00) Dublin, Edinburg, Lisbon, London
+        {"GMT0DST_2",   "Africa/Casablanca"},	// (GMT+00:00) Casablanca
+        {"GMT0_2",      "Africa/Monrovia"},	// (GMT+00:00) Monrovia
+        {"UTC-1DST_1",  "Europe/Belgrade"},	// (GMT+01:00) Belgrade, Bratislava, Budapest
+        {"UTC-1DST_1_1","Europe/Ljubljana"},	// (GMT+01:00) Ljubljana, Prague
+        {"UTC-1_2",     "Europe/Sarajevo"},	// (GMT+01:00) Sarajevo, Skopje
+        {"UTC-1DST_2",  "Europe/Warsaw"},	// (GMT+01:00) Warsaw, Zagreb
+	{"MET-1DST",    "Europe/Copenhagen"},	// (GMT+01:00) Copenhagen, Stockholm, Oslo
+        {"MET-1DST_1",  "Europe/Madrid"},	// (GMT+01:00) Madrid, Paris
+        {"MEZ-1DST",    "Europe/Amsterdam"},	// (GMT+01:00) Amsterdam, Berlin, Brussels
+        {"MEZ-1DST_1",  "Europe/Rome"},		// (GMT+01:00) Rome, Vienna, Bern
+        {"UTC-1_3",     "Africa/Lagos"},	// (GMT+01:00) West Central Africa
+        {"UTC-2DST",    "Europe/Vilnius"},	// (GMT+02:00) Vilnus, Bucharest, sofija
+        {"UTC-2DST_3",  "Europe/Helsinki"},	// (GMT+02:00) Helsiki
+        {"EST-2DST",    "Africa/Cairo"},	// (GMT+02:00) Cairo
+        {"UTC-2DST_4",  "Europe/Riga"},		// (GMT+02:00) Riga, Tallinn
+        {"UTC-2DST_2",  "Europe/Athens"},	// (GMT+02:00) Athens
+        {"IST-2DST",    "Asia/Jerusalem"},	// (GMT+02:00) Jerusalem
+        {"EET-2DST",    "Europe/Kiev"},		// (GMT+02:00) Kiev
+        {"UTC-2_1",     "Europe/Kaliningrad"},	// (GMT+02:00) Kaliningrad
+        {"SAST-2",      "Africa/Harare"},	// (GMT+02:00) Harare
+        {"UTC-3_1",     "Asia/Kuwait"},		// (GMT+03:00) Kuwait, Riyadh
+        {"UTC-3_2",     "Africa/Nairobi"},	// (GMT+03:00) Nairobi
+        {"UTC-3_3",     "Europe/Minsk"},	// (GMT+03:00) Minsk
+        {"UTC-3_4",     "Europe/Moscow"},	// (GMT+03:00) Moscow, St. Petersburg
+        {"UTC-3_5",     "Europe/Volgograd"},	// (GMT+03:00) Volgograd
+        {"IST-3",       "Asia/Baghdad"},	// (GMT+03:00) Baghdad
+        {"UTC-3_6",     "Asia/Istanbul"},	// (GMT+03:00) Istanbul
+        {"UTC-3.30DST", "Asia/Tehran"},		// (GMT+03:00) Tehran        
+        {"UTC-4_1",     "Asia/Muscat"},		// (GMT+04:00) Abu Dhabi, Muscat
+        {"UTC-4_5",     "Europe/Samara"},	// (GMT+04:00) Izhevsk, Samara
+        {"UTC-4_4",     "Asia/Tbilisi"},	// (GMT+04:00) Tbilisi, Yerevan
+        {"UTC-4DST_2",  "Asia/Baku"},		// (GMT+04:00) Baku
+        {"UTC-4.30",    "Asia/Kabul"},		// (GMT+04:30) Kabul
+        {"UTC-5",       "Asia/Karachi"},	// (GMT+05:00) Islamabad, Karachi, Tashkent
+        {"UTC-5_1",     "Asia/Yekaterinburg"},	// (GMT+05:00) Yekaterinburg
+        {"UTC-5.30_2",  "Asia/Kolkata"},	// (GMT+05:00) Kolkata, Chennai
+        {"UTC-5.30_1",  "Asia/Calcutta"},	// (GMT+05:30) Mumbai, New Delhi
+        {"UTC-5.30",    "Asia/Calcutta"},	// (GMT+05:30) Sri Jayawardenepura
+	{"UTC-5.45",    "Asia/Kathmandu"},	// (GMT+05:45) Kathmandu
+        {"RFT-6",       "Asia/Almaty"},		// (GMT+06:00) Almaty
+        {"UTC-6",       "Asia/Dhaka"},		// (GMT+06:00) Astana, Dhaka
+        {"UTC-6_2",     "Asia/Novosibirsk"},	// (GMT+06:00) Novosibirsk
+        {"UTC-6.30",    "Asia/Yangon"},		// (GMT+06:30) Yangon
+        {"UTC-7",       "Asia/Bangkok"},	// (GMT+07:00) Bangkok, Hanoi, Jakarta
+        {"UTC-7_2",     "Asia/Krasnoyarsk"},	// (GMT+07:00) Krasnoyarsk
+        {"CST-8",       "Asia/Shanghai`"},	// (GMT+08:00) Beijing, Hong Kong 
+        {"CST-8_1",     "Asia/Chongqing"},	// (GMT+08:00) Chongqing, Urumqi
+        {"SST-8",       "Asia/Kuala_Lumpur"},	// (GMT+08:00) Kuala_Lumpur, Singapore
+        {"CCT-8",       "Asia/Taipei"},		// (GMT+08:00) Taipei
+        {"WAS-8",       "Australia/Perth"},	// (GMT+08:00) Perth
+        {"UTC-8",       "Asia/Irkutsk"},	// (GMT+08:00) Ulaan Baatar
+        {"UTC-8_1",     "Asia/Irkutsk"},	// (GMT+08:00) Irkutsk
+        {"UTC-9_1",     "Asia/Seoul"},		// (GMT+09:00) Seoul
+        {"UTC-9_3",     "Asia/Yakutsk"},	// (GMT+09:00) Yakutsk
+        {"JST",         "Asia/Tokyo"},		// (GMT+09:00) Osaka, Sapporo, Tokyo
+        {"CST-9.30",    "Australia/Darwin"},	// (GMT+09:30) Darwin
+        {"UTC-9.30DST", "Australia/Adelaide"},	// (GMT+09:30) Adelaide
+        {"UTC-10DST_1", "Australia/Canberra"},	// (GMT+10:00) Canberra, Melbourne, Sydney
+        {"UTC-10_2",    "Australia/Brisbane"},	// (GMT+10:00) Brisbane"
+        {"UTC-10_4",    "Asia/Vladivostok"},	// (GMT+10:00) Vladivostok
+        {"UTC-10_5",    "Asia/Magadan"},	// (GMT+10:00) Asia/Magadan
+        {"TST-10TDT",   "Australia/Hobart"},	// (GMT+10:00) Australia/Hobart
+        {"UTC-10_6",    "Pacific/Guam"},	// (GMT+10:00) Guam, Port Moresby
+        {"UTC-11",      "Pacific/Noumea"},	// (GMT+11:00) Solomon Is.
+        {"UTC-11_1",    "Pacific/Noumea"},	// (GMT+11:00) New Caledonia
+        {"UTC-11_3",    "Asia/Srednekolymsk"},	// (GMT+11:00) Chokurdakh, Srednekolymsk
+        {"UTC-12",      "Pacific/Fiji"},	// (GMT+12:00) Fiji, Marshall IS.
+        {"UTC-12_2",	"Asia/Anadyr"},		// (GMT+12:00) Anadyr, Petropavlovsk-Kamchatsky
+        {"NZST-12DST",  "Pacific/Auckland"},	// (GMT+12:00) Auckland, Wellington
+        {"UTC-13",      "Pacific/Tongatapu"},	// (GMT+13:00) Nuku'alofa
+	{ NULL }
+};
+#endif
+
 void time_zone_x_mapping(void)
 {
 	FILE *fp;
 	char tmpstr[32];
 	char *ptr;
+
+#ifdef HND_ROUTER
+	int idx;
+	char cmd[128];
+	const zoneinfo_t *pzlist = tz_list;
+
+	if(pzlist) {
+		for (idx = 0; pzlist[idx].tz_name; idx++) {
+			if (nvram_match("time_zone", pzlist[idx].tz_name)) {
+				snprintf(cmd, sizeof(cmd), "ln -s %s%s %s",
+						ZONEINFO_PATH,
+						pzlist[idx].timezone,
+						LOCALTIME_FILE);
+				unlink(LOCALTIME_FILE);
+				system(cmd);
+				break;
+			}
+		}
+	}
+#endif
 
 	/* pre mapping */
 	if (nvram_match("time_zone", "KST-9KDT"))

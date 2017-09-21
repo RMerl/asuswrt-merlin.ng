@@ -231,6 +231,8 @@ function resetWPS(){
 	}
 
 	var sec = 5;
+	if(based_modelid == "BLUECAVE")
+		sec = 30;
 	if (Qcawifi_support)
 		sec += 7;
 	showLoading(sec);

@@ -14,6 +14,10 @@
 	1. traditaional qos
 	2. bandwdith limiter (also for guest network)
 	3. facebook wifi
+
+	NOTE:
+	qos mark bit 8~31 : TrendMicro adaptive qos usage, so ASUS only can use bit 0~7 for different applications
+	ex. Traditional qos / bandwidth limiter / Facebook wifi
 */
 
 #include <sys/mount.h>
@@ -296,13 +300,14 @@ static unsigned calc(unsigned bw, unsigned pct)
 	return (n < 2) ? 2 : n;
 }
 
-#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
 void del_EbtablesRules(void)
 {
 	/* Flush all rules in nat table of ebtable*/
 	eval("ebtables", "-t", "nat", "-F");
 	etable_flag = 0;
 }
+
+#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
 
 #ifdef RTCONFIG_FBWIFI
 static void set_fbwifi_mark(void)
@@ -392,9 +397,7 @@ void del_iQosRules(void)
 	eval("ip", "link", "set", "imq0", "down");
 #endif
 
-#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
 	del_EbtablesRules(); // flush ebtables nat table
-#endif
 
 	/* Flush all rules in mangle table */
 	eval("iptables", "-t", "mangle", "-F");
@@ -421,7 +424,7 @@ static int add_qos_rules(char *pcWANIF)
 	int down_class_num=6; 	// for download class_num = 0x6 / 0x106
 	int i, inuse;
 	char q_inuse[32]; 	// for inuse
-	char dport[192], saddr_1[192], proto_1[8], proto_2[8],conn[256], end[256], end2[256];
+	char dport[256], saddr_1[192], proto_1[8], proto_2[8],conn[256], end[256], end2[256];
 	//int method;
 	int gum;
 	int sticky_enable;
@@ -550,44 +553,42 @@ static int add_qos_rules(char *pcWANIF)
 		char addr_new[40];
 		int addr_type;
 		memset(addr_new, 0, sizeof(addr_new));
-		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
 
-		if (addr_type == TYPE_IP){
-			snprintf(saddr_1, sizeof(saddr_1), "-s %s", addr_new);
+		if(strcmp(addr, "")) {
+			/* if addr != "", it needs to check the addr_type */
+			address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
+
+			if (addr_type == TYPE_IP) {
+				snprintf(saddr_1, sizeof(saddr_1), "-s %s", addr_new);
+			}
+			else if (addr_type == TYPE_MAC) {
+				snprintf(saddr_1, sizeof(saddr_1), "-m mac --mac-source %s", addr_new);
+			}
+			else if (addr_type == TYPE_IPRANGE) {
+				snprintf(saddr_1, sizeof(saddr_1), "-m iprange --src-range %s", addr_new);
+			}
+			else if (addr_type == TYPE_UNKNOWN) {
+				QOSDBG("[qos] addr is TYPE_UKNOWN!\n");
+				continue;
+			}
+			QOSLOG("[qos] addr_type=%d, saddr_1=%s", addr_type, saddr_1);
 		}
-		else if (addr_type == TYPE_MAC){
-			snprintf(saddr_1, sizeof(saddr_1), "-m mac --mac-source %s", addr_new);
+		else {
+			strncpy(saddr_1, "", sizeof(saddr_1));
 		}
-		else if (addr_type == TYPE_IPRANGE){
-			snprintf(saddr_1, sizeof(saddr_1), "-m iprange --src-range %s", addr_new);
-		}
-		else if (addr_type == TYPE_UNKNOWN){
-			QOSDBG("[qos] addr is TYPE_UKNOWN!\n");
-			continue;
-		}
-		QOSLOG("[qos] addr_type=%d, saddr_1=%s", addr_type, saddr_1);
 
 		/*************************************************/
 		/*                      port                     */
 		/*            single port or multi-ports         */
 		/*************************************************/
-		char tmp[40];
-		char *tmp_port, *q_leave;
-
-		snprintf(tmp, sizeof(tmp), "%s", port);
-		tmp_port = tmp;
-		q_leave = tmp_port;
-
-		if(strcmp(port, "") == 0 ){
-			snprintf(dport, sizeof(dport), "%s", "");
+		if(strcmp(port, "") == 0 ) {
+			strncpy(dport, "", sizeof(dport));
 		}
 		else{
-			if(q_leave != NULL)
-				snprintf(dport, sizeof(dport), "-m multiport --dport %s", port); // multi port
-			else
-				snprintf(dport, sizeof(dport), "--dport %s", port); // single port
+			/* note : max number of multiple port in iptables is 15 */
+			snprintf(dport, sizeof(dport), "-m multiport --dport %s", port);
 		}
-		QOSLOG("[qos] tmp=%s, q_leave=%s, port=%s", tmp, q_leave, port);
+		QOSLOG("[qos] port=%s, dport=%s", port, dport);
 
 		/*************************************************/
 		/*                   transferred                 */
@@ -595,6 +596,7 @@ static int add_qos_rules(char *pcWANIF)
  		/*   --connbytes-dir (original/reply/both)       */
  		/*   --connbytes-mode (packets/bytes/avgpkt)     */
 		/*************************************************/
+		char tmp[40];
 		char *tmp_trans, *q_min, *q_max;
 		long min = 0, max =0;
 

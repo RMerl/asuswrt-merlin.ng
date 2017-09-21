@@ -255,7 +255,7 @@ function del_Row(r){
 
 	if(vpn_fusion_support) {
 		if(manually_dhcp_list_array_ori[delIP] != undefined) {
-			if(!confirm("Delete this policy will also remove the exception policy setting in VPN Fusion feature. Are you sure want to delete?"))/*untranslated*/
+			if(!confirm("Remove the client's IP binding will also delete the client's policy in the exception list of <#VPN_Fusion#>. Are you sure you want to delete?"))/*untranslated*/
 				return false;
 		}
 	}

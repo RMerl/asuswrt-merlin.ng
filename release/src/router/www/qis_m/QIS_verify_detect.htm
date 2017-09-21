@@ -37,7 +37,7 @@ var based_modelid = '<% nvram_get("productid"); %>';
 
 function QKDetect_load_body(){
 	setTimeout("getWANStatus();", 3000);
-	if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+	if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 		for(var i = 0; i < wans_dualwan.length; i++){
 			if (wans_dualwan[i] == 'wan')
 				ewan_index = i;
@@ -86,7 +86,7 @@ function getWANStatus(){
 		},
 		success: function(response){
 			RetryCountDown_fail = 5;
-			if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+			if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 				getDualWANState();			
 			}
 
@@ -128,7 +128,7 @@ function getWANStatus(){
 				if(wanauxstate != 1 && wanstate == 2){ //success case
 					successcase++;
 					if(successcase > 1){
-						if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+						if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 							if(usb_wanstate == 2 && usb_wansbstate == 0 && usb_wanauxstate == 0){
 								redirect_page("wireless");
 							}

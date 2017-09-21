@@ -1926,7 +1926,7 @@ ERROR:
 static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
 	int i, retval = 0;
-	char tmp[256], tmp1[256], tmpx[256], tmp2[256], prefix[] = "wlXXXXXXXXXX_";
+	char tmp[1024], tmp1[1024], tmp2[1024], tmpx[1024], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
 	char word[256], *next;
 	int unit_max = 0, count = 0;
@@ -1993,14 +1993,13 @@ static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit
 	for (i = 0; i < count; i++) {
 		c = (chanspec_t)dtoh32(list->element[i]);
 		wf_chspec_ntoa(c, chanbuf);
-		dbg("chanspec: %s\n", chanbuf);
 
 		if (i == 0)
 		{
 			sprintf(tmp1, "[\"%s\",", chanbuf);
 			sprintf(tmp2, "%s", chanbuf);
 		}
-		else if (i == (dtoh32(list->count) - 1))
+		else if (i == (count - 1))
 		{
 			sprintf(tmpx,  "%s \"%s\"]", tmp1, chanbuf);
 			strlcpy(tmp1, tmpx, sizeof(tmp1));

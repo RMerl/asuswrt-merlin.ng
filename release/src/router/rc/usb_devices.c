@@ -4033,7 +4033,10 @@ int asus_tty(const char *device_name, const char *action)
 					return 0;
 				}
 
-				if(strncmp(act_dev, "usb", 3) && strncmp(act_dev, "wwan", 4) && strncmp(act_dev, "eth", 3)){
+				if(strncmp(act_dev, "usb", 3) && strncmp(act_dev, "wwan", 4) && strncmp(act_dev, "eth", 3)
+						// RNDIS devices should always be named "lte%d" in LTQ platform
+						&& strncmp(act_dev, "lte", 3)
+						){
 					snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 					nvram_unset(strcat_r(prefix, "_act", tmp));
 					nvram_unset(strcat_r(prefix, "_act_def", tmp));

@@ -46,9 +46,7 @@ enum
 	UDB_IOCTL_COMMON_OP_SET_WPR_CONF,
 	UDB_IOCTL_COMMON_OP_SET_WPR_ENABLE,
 	UDB_IOCTL_COMMON_OP_SET_WPR_DISABLE,
-//	UDB_IOCTL_COMMON_OP_GET_APP_META_CNT,
-	UDB_IOCTL_COMMON_OP_GET_APP_META,
-	UDB_IOCTL_COMMON_OP_GET_DEV_META,
+	UDB_IOCTL_COMMON_OP_SET_REDIRECT_URL,
 	UDB_IOCTL_COMMON_OP_MAX
 };
 
@@ -68,13 +66,13 @@ enum
 #define AVAILABLE	(uint8_t)1
 #define NOT_AVAILABLE	(uint8_t)0
 
-#define MAX_WPR_PAGE_URL_LEN 512
+#define MAX_REDIRECT_URL_LEN 512
 
 typedef struct wpr_config
 {
 	uint8_t period_min;
 	uint8_t max_num;
-	uint8_t url[MAX_WPR_PAGE_URL_LEN];
+	uint8_t url[MAX_REDIRECT_URL_LEN];
 } wpr_config_t;
 
 #define DEVID_MAX_USER 253
@@ -104,6 +102,7 @@ typedef struct udb_ioc_os
 
 #define UDB_ENTRY_HOST_NAME_SIZE 32
 
+#define MAX_WRS_CAT_NUM 128
 typedef struct udb_ioc_entry
 {
 	uint8_t uid;
@@ -124,6 +123,9 @@ typedef struct udb_ioc_entry
 #endif
 #if TMCFG_E_UDB_CORE_SHN_QUERY
 	shnagent_nl_upnp_ioctl upnp_data;
+#endif
+#if TMCFG_E_UDB_CORE_URL_QUERY
+	uint32_t wrs_stat[MAX_WRS_CAT_NUM];
 #endif
 	uint8_t available;
 } udb_ioctl_entry_t;

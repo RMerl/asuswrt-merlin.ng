@@ -832,7 +832,7 @@ function change_apn_mode(){
 						<th width="40%"><#APN_configuration#></th>
 						<td>
 							<select name="modem_autoapn" id="modem_autoapn" class="input_option" onchange="change_apn_mode();">
-								<option value="1" <% nvram_match("modem_autoapn", "1","selected"); %>>Automatic</option><!--untranslated-->
+								<option value="1" <% nvram_match("modem_autoapn", "1","selected"); %>><#Auto#></option>
 								<option value="0" <% nvram_match("modem_autoapn", "0","selected"); %>><#Manual_Setting_btn#></option>
 							</select>
 						</td>

@@ -779,6 +779,11 @@ static enum if_id desc_to_id(char *desc)
 
 }
 
+#ifdef RTCONFIG_LANTIQ
+#define RS_PPACMD_WAN_PATH "/tmp/rs_ppacmd_getwan"
+#define RS_PPACMD_LAN_PATH "/tmp/rs_ppacmd_getlan"
+#define RS_PPACMD_TRAFFIC_PATH "/tmp/rs_ppacmd_traffic"
+#endif
 static void calc(void)
 {
 	FILE *f;
@@ -807,49 +812,70 @@ static void calc(void)
 #ifdef RTCONFIG_ISP_METER
         char traffic[64];
 #endif
+	char *nv_lan_ifname;
+	char *nv_lan_ifnames;
 
 #ifdef RTCONFIG_QTN
 	qcsapi_unsigned_int l_counter_value;
+#endif
+#ifdef RTCONFIG_LANTIQ
+	char ifname_buf[10];
 #endif
 
 	rx2 = 0;
 	tx2 = 0;
 	now = time(0);
 	exclude = nvram_safe_get("rstats_exclude");
-#ifndef RTCONFIG_LANTIQ
-	if ((f = fopen("/proc/net/dev", "r")) == NULL) return;
-	fgets(buf, sizeof(buf), f);	// header
-	fgets(buf, sizeof(buf), f);	// "
-	memset(tmp_speed, 0, sizeof(tmp_speed));
-	while (fgets(buf, sizeof(buf), f)) {
-		if ((p = strchr(buf, ':')) == NULL) continue;
-			//_dprintf("\n=== %s\n", buf);
-		*p = 0;
-		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
-			else ++ifname;
-		if ((strcmp(ifname, "lo") == 0) || (find_word(exclude, ifname))) continue;
+	nv_lan_ifname = nvram_safe_get("lan_ifname");
+	nv_lan_ifnames = nvram_safe_get("lan_ifnames");
 
-		// <rx bytes, packets, errors, dropped, fifo errors, frame errors, compressed, multicast><tx ...>
-		if (sscanf(p + 1, "%llu%*u%*u%*u%*u%*u%*u%*u%llu", &counter[0], &counter[1]) != 2) continue;
-#else
-	#define RS_PPACMD_WAN_PATH "/tmp/rs_ppacmd_getwan"
-	#define RS_PPACMD_LAN_PATH "/tmp/rs_ppacmd_getlan"
-	#define RS_PPACMD_TRAFFIC_PATH "/tmp/rs_ppacmd_traffic"
-	char ifname_buf[10];
-	if(nvram_get_int("wave_ready") == 0 ||
-		nvram_get_int("wave_action") != 0 ) return;
+#ifdef RTCONFIG_LANTIQ
+	if (nvram_get_int("switch_stb_x") == 0) {
+		if(nvram_get_int("wave_ready") == 0 ||
+			nvram_get_int("wave_action") != 0 ) return;
+		memset(tmp_speed, 0, sizeof(tmp_speed));
+		doSystem("ppacmd getwan > %s", RS_PPACMD_WAN_PATH);
+		doSystem("ppacmd getlan > %s", RS_PPACMD_LAN_PATH);
+		doSystem("cat %s %s > %s", RS_PPACMD_WAN_PATH, RS_PPACMD_LAN_PATH, RS_PPACMD_TRAFFIC_PATH);
+		f = fopen(RS_PPACMD_TRAFFIC_PATH, "r");
+	}
+	else
+#endif
+		f = fopen("/proc/net/dev", "r");
+
+	if (!f) return;
+#ifdef RTCONFIG_LANTIQ
+	if (nvram_get_int("switch_stb_x") > 0)
+#endif
+	{
+		fgets(buf, sizeof(buf), f);	// header
+		fgets(buf, sizeof(buf), f);	// "
+	}
 	memset(tmp_speed, 0, sizeof(tmp_speed));
-	doSystem("ppacmd getwan > %s", RS_PPACMD_WAN_PATH);
-	doSystem("ppacmd getlan > %s", RS_PPACMD_LAN_PATH);
-	doSystem("cat %s %s > %s", RS_PPACMD_WAN_PATH, RS_PPACMD_LAN_PATH, RS_PPACMD_TRAFFIC_PATH);
-	if ((f = fopen(RS_PPACMD_TRAFFIC_PATH, "r")) == NULL) return;
 	while (fgets(buf, sizeof(buf), f)) {
-		if ((p = strchr(buf, '[')) == NULL || strstr(buf, "errno")) continue;
-		if (sscanf(buf, "%*s%*s%s%*s%*s%llu", ifname_buf, &counter[0]) != 2) continue;
-		if ((p = strchr(buf, ':')) == NULL) continue;
-		sscanf(p + 1, "%llu", &counter[1]);
-		ifname = &ifname_buf;
-		//_dprintf("%s, rx: %llu, tx: %llu\n", ifname, counter[0], counter[1]);
+#ifdef RTCONFIG_LANTIQ
+		if (nvram_get_int("switch_stb_x") > 0) {
+#endif
+			if ((p = strchr(buf, ':')) == NULL) continue;
+				//_dprintf("\n=== %s\n", buf);
+			*p = 0;
+			if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
+				else ++ifname;
+			if ((strcmp(ifname, "lo") == 0) || (find_word(exclude, ifname))) continue;
+
+			// <rx bytes, packets, errors, dropped, fifo errors, frame errors, compressed, multicast><tx ...>
+			if (sscanf(p + 1, "%llu%*u%*u%*u%*u%*u%*u%*u%llu", &counter[0], &counter[1]) != 2) continue;
+#ifdef RTCONFIG_LANTIQ
+		}
+		else
+		{
+			if ((p = strchr(buf, '[')) == NULL || strstr(buf, "errno")) continue;
+			if (sscanf(buf, "%*s%*s%s%*s%*s%llu", ifname_buf, &counter[0]) != 2) continue;
+			if ((p = strchr(buf, ':')) == NULL) continue;
+			sscanf(p + 1, "%llu", &counter[1]);
+			ifname = &ifname_buf;
+			//_dprintf("%s, rx: %llu, tx: %llu\n", ifname, counter[0], counter[1]);
+		}
 #endif
 //TODO: like httpd/web.c ej_netdev()
 #ifdef RTCONFIG_BCM5301X_TRAFFIC_MONITOR
@@ -858,7 +884,7 @@ static void calc(void)
 		}
 #endif
 
-		if (!netdev_calc(ifname, ifname_desc, (unsigned long*) &counter[0], (unsigned long*) &counter[1], ifname_desc2, (unsigned long*) &rx2, (unsigned long*) &tx2))
+		if (!netdev_calc(ifname, ifname_desc, (unsigned long*) &counter[0], (unsigned long*) &counter[1], ifname_desc2, (unsigned long*) &rx2, (unsigned long*) &tx2, nv_lan_ifname, nv_lan_ifnames))
 			continue;
 		//_dprintf(">>> %s, %s, %llu, %llu, %s, %llu, %llu <<<\n",ifname, ifname_desc, counter[0], counter[1], ifname_desc2, rx2, tx2);
 #ifdef RTCONFIG_QTN		
@@ -900,9 +926,11 @@ loopagain:
 #endif
 	}
 #ifdef RTCONFIG_LANTIQ
-	unlink(RS_PPACMD_WAN_PATH);
-	unlink(RS_PPACMD_LAN_PATH);
-	unlink(RS_PPACMD_TRAFFIC_PATH);
+	if (nvram_get_int("switch_stb_x") == 0) {
+		unlink(RS_PPACMD_WAN_PATH);
+		unlink(RS_PPACMD_LAN_PATH);
+		unlink(RS_PPACMD_TRAFFIC_PATH);
+	}
 #endif
 	fclose(f);
 

@@ -34,7 +34,7 @@ var FTP_WAN_status = <% nvram_get("ftp_wanac"); %>;
 var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
 var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
 
-var accounts = [<% get_all_accounts(); %>];
+var accounts = [<% get_all_accounts(); %>][0];
 var groups = [<% get_all_groups(); %>];
 
 var lastClickedAccount = 0;
@@ -327,7 +327,7 @@ function show_permissions_of_account(account_order, protocol){
 	}
 }
 
-function get_permission_of_folder(accountName, poolName, folderName, protocol, flag){
+function get_permission_of_folder(accountName, poolName, folderName, protocol){
 
 	if(select_flag == "group"){
 		var permissions = get_group_permissions_in_pool(accountName, poolName);
@@ -402,9 +402,9 @@ function submitChangePermission(protocol){
 						continue;
 
 					if(target_account == "guest")
-						orig_permission = get_permission_of_folder(null, usbPartitionMountPoint, target_folder, PROTOCOL, falg);
+						orig_permission = get_permission_of_folder(null, usbPartitionMountPoint, target_folder, PROTOCOL);
 					else
-						orig_permission = get_permission_of_folder(target_account, usbPartitionMountPoint, target_folder, PROTOCOL, flag);
+						orig_permission = get_permission_of_folder(target_account, usbPartitionMountPoint, target_folder, PROTOCOL);
 
 					if(changedPermissions[target_account][usbPartitionMountPoint][target_folder] == orig_permission)
 						continue;
@@ -491,9 +491,15 @@ function onEvent(){
 	//if(get_manage_type(PROTOCOL) == 1 && accounts.length < 11){
 		if(1){
 		changeActionButton(document.getElementById("createAccountBtn"), 'User', 'Add', 0);
-		
+
+		var accounts_length = this.accounts.length;
 		document.getElementById("createAccountBtn").onclick = function(){
-				popupWindow('OverlayMask','/aidisk/popCreateAccount.asp');
+				if(accounts_length >= 6) {
+					alert("<#JS_itemlimit1#> 6 <#JS_itemlimit2#>");
+					return false;
+				}
+				else
+					popupWindow('OverlayMask','/aidisk/popCreateAccount.asp');
 			};
 		document.getElementById("createAccountBtn").onmouseover = function(){
 				changeActionButton(this, 'User', 'Add', 1);

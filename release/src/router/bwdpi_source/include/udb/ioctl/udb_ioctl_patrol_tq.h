@@ -41,8 +41,8 @@ enum
 	UDB_IOCTL_PATROL_TQ_OP_MAX
 };
 
-#define MAX_PATROL_TQ_GRP		(16)
-#define MAX_PATROL_TQ_DEV		(6)
+#define MAX_PATROL_TQ_GRP TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM
+#define MAX_PATROL_TQ_DEV TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM
 #define MAX_PATROL_TQ_SIZE (sizeof(patrol_ioc_tq_t) + (sizeof(patrol_ioc_tq_grp_t) * MAX_PATROL_TQ_GRP) \
 	+ (sizeof(patrol_ioc_tq_dev_t)* MAX_PATROL_TQ_GRP * MAX_PATROL_TQ_DEV))
 
@@ -63,18 +63,18 @@ typedef struct patrol_ioc_tq_grp
 	uint16_t time_quota; /*profile category limited(Minutes)*/
 	uint32_t used_time;      /*During-time (Second)*/
 	uint64_t bit_cat_id; /*unsigned long per-bit [cat-id 1~64]*/
-	unsigned long down_quota_pkt;   /*Reserve it */
-	unsigned long up_quota_pkt;             /*Reserve it */
-	unsigned long down_recent_pkt;  /*Reserve it */
-	unsigned long up_recent_pkt;    /*Reserve it */
-	unsigned long last_uptime;   /*only for kernel*/
+	uint64_t down_quota_pkt;   /*Reserve it */
+	uint64_t up_quota_pkt;             /*Reserve it */
+	uint64_t down_recent_pkt;  /*Reserve it */
+	uint64_t up_recent_pkt;    /*Reserve it */
+	uint64_t last_uptime;   /*only for kernel*/
 } patrol_ioc_tq_grp_t;
 
 typedef struct patrol_ioc_tq
 {
 	uint16_t grp_cnt;
 	uint16_t rsv;
-	unsigned long up_time; /*Only for User space checked */
+	uint64_t up_time; /*Only for User space checked */
 } patrol_ioc_tq_t;
 
 /* log */
@@ -84,7 +84,7 @@ typedef struct patrol_tq_list_ioc_entry
         uint8_t mac[6];
         uint8_t cat_id;
         uint16_t app_id;
-        unsigned long time;
+        uint64_t time;
         uint8_t flag;
         uint16_t grp_id;
         uint8_t available;

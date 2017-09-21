@@ -168,7 +168,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_country_code", DEF_COUNTRY_CODE, CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl_HT_GI", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
-//	{ "wl_country_code", "", 0 },		/* Country Code (default obtained from driver) */
+//	{ "wl_country_code", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Country Code (default obtained from driver) */
 #ifdef CONFIG_BCMWL5
 	{ "wl_country_rev", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Regrev Code (default obtained from driver) */
 #endif
@@ -177,9 +177,8 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_ap_isolate", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* AP isolate mode */
 
 	{ "wl_igs", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* BCM: wl_wmf_bss_enable Ralink: IGMPSnEnable */
-
 #ifdef CONFIG_BCMWL5
-	{ "wl_wmf_bss_enable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* WMF Enable/Disable */
+	{ "wl_wmf_bss_enable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* WMF Enable/Disable */
 	{ "wl_mcast_regen_bss_enable", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* MCAST REGEN Enable/Disable */
 
 	/* operational capabilities required for stations to associate to the BSS */
@@ -243,7 +242,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_mrate_x", "0", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Mcast Auto rate */
 #if !defined(RTCONFIG_WIFILOGO) && !defined(RTCONFIG_QCA)
 	{ "wl_frameburst", "on", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* BRCM Frambursting mode (off|on) */
-	{ "wl_frameburst_override", "on", 0 },  /* BRCM frameburst override to enable/disable
+	{ "wl_frameburst_override", "on", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },  /* BRCM frameburst override to enable/disable
 						 * dynamic framebursting default on
 						 */
 #else
@@ -284,7 +283,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_wme_bss_disable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* WME BSS disable advertising (off|on) */
 	{ "wl_antdiv", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Antenna Diversity (-1|0|1|3) */
 	{ "wl_infra", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Network Type (BSS/IBSS) */
-//	{ "wl_interfmode", "2", 0 },		/* Interference mitigation mode (2/3/4) */
+//	{ "wl_interfmode", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Interference mitigation mode (2/3/4) */
 #ifndef RTCONFIG_BCMWL6
 	{ "wl_nbw_cap", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* BW Cap; def 20inB and 40inA */
 #else
@@ -346,7 +345,7 @@ struct nvram_tuple router_defaults[] = {
 #elif defined(RTCONFIG_QCA)
 	{ "wl_mimo_preamble", "mm", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #elif defined(RTCONFIG_BCMWL6)
-//	{ "wl_mimo_preamble", "gfbcm", 0 },	/* Mimo PrEamble: mm/gf/auto/gfbcm */
+//	{ "wl_mimo_preamble", "gfbcm", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Mimo PrEamble: mm/gf/auto/gfbcm */
 #endif
 #ifdef CONFIG_BCMWL5
 #if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM9) || defined(HND_ROUTER)
@@ -375,7 +374,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_turbo_qam", "2", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "wl_turbo_qam", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#if !defined(RTCONFIG_BCM9) && !defined(RTAC56U) && !defined(RTAC56S) && !defined(RTCONFIG_BCM_7114) && !defined(HND_ROUTER)
+#if !defined(RTCONFIG_BCM9) && !defined(RTAC56U) && !defined(RTAC56S)
 	{ "wl0_turbo_qam", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #endif
@@ -414,7 +413,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_wps_mode", "enabled", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* enabled wps */
 	{ "wl_wps_config_state", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* config state unconfiged */
 #endif
-//	{ "wps_device_pin", "12345670", 0 },	// it is mapped to secret_code
+//	{ "wps_device_pin", "12345670", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	// it is mapped to secret_code
 #if 0
 	{ "wps_modelname", "RT_BUILD_NAME", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
@@ -539,13 +538,15 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_mumimo", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #elif defined(RTCONFIG_QTN) || defined(RTCONFIG_MUMIMO_2G) || defined(RTCONFIG_MUMIMO_5G)
 	{ "wl_mumimo", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#elif defined(RTCONFIG_LANTIQ)
+	{ "wl1_mumimo", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #if defined(RTCONFIG_REALTEK) && defined(RTCONFIG_MUMIMO_5G)
 	{ "wl1_mumimo", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #if defined(RTCONFIG_QCA)
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_SOC_IPQ40XX)
-	{ "wl_turbo_qam", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "wl_turbo_qam", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl_turbo_qam_brcm_intop", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl_txbf", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl_mumimo", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -605,6 +606,9 @@ struct nvram_tuple router_defaults[] = {
 	{ "wlc_auth_mode", "", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wlc_crypto", "", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wlc_wpa_psk", "", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#ifdef RTCONFIG_LANTIQ
+	{ "wlc_ap_mac", "", CKN_STR17, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 #ifndef RTCONFIG_BCMWL6
 	{ "wlc_nbw_cap", "", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
@@ -723,7 +727,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_maclist_x", "", CKN_STR2048, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* xxxxxxxxxxxx...xxxxxxxxxxx */
 
 #if defined(RTCONFIG_WIFI_QCA9994_QCA9994)
-	{ "wl_hwol", "0", 0 }, 			/* Hardware WiFi Offloading */
+	{ "wl_hwol", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, 			/* Hardware WiFi Offloading */
 #endif
 	{ "acs_band1", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "acs_band3", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -790,8 +794,16 @@ struct nvram_tuple router_defaults[] = {
 #endif
 
 	/* acsd setting */
+#ifndef  HND_ROUTER
 	{ "wl_acs_fcs_mode", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* acsd disable FCS mode */
+#else
+	{ "wl_acs_fcs_mode", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* acsd disable FCS mode */
+#endif
+#ifndef  HND_ROUTER
 	{ "wl_dcs_csa_unicast", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* disable unicast csa */
+#else
+	{ "wl_dcs_csa_unicast", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* disable unicast csa */
+#endif
 	{ "wl_acs_excl_chans", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* acsd exclude chanspec list */
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM9) || defined(HND_ROUTER)
 	{ "wl_acs_dfs", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* acsd fcs disable init DFS chan */
@@ -838,7 +850,7 @@ struct nvram_tuple router_defaults[] = {
 #endif
 
 #ifdef RTCONFIG_BCMARM
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM9) && defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM9) || defined(HND_ROUTER)
 	{ "wl_pspretend_retry_limit", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable PsPretend */
 #else
 	{ "wl_pspretend_retry_limit", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable PsPretend */
@@ -848,6 +860,10 @@ struct nvram_tuple router_defaults[] = {
 #else
 #endif
 	{ "wl_taf_enable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Disable TAF */
+#ifdef	HND_ROUTER
+	{ "wl_cal_period", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* Disable periodic cal */
+	{ "wl_psta_inact", "600", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* PSTA inactivity timer */
+#endif
 #endif
 #ifdef BCM_BSD
 	{ "bsd_role", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Disable Band Steer Daemon */
@@ -994,9 +1010,6 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_tpc_db", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* TPC Mitigation (db) */
 	{ "dhd_msg_level", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
-#ifdef HND_ROUTER
-	{ "wl0_custom_oui", "ff:ff:ff", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* scheme for forcing AC mode */
-#endif
 #ifdef __CONFIG_VISUALIZATION__
 	{ "vis_dcon_ipaddr", "127.0.0.1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* Visualization Dcon IP address */
 	{ "vis_do_remote_dcon", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Visualization remote debugging enabled flag */
@@ -1004,6 +1017,9 @@ struct nvram_tuple router_defaults[] = {
 	{ "vis_disable_animate", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0},	/* Visualization site survey animation on or off */
 	{ "wl_rrm", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0},			/* Set rrm caps per interface */
 #endif /* __CONFIG_VISUALIZATION__ */
+#ifdef RTCONFIG_BCMASPMD
+	{ "aspm_config", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 #endif
 
 	// make sure its purpose
@@ -1011,6 +1027,11 @@ struct nvram_tuple router_defaults[] = {
 	{ "ct_tcp_timeout", "", CKN_STR100, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "ct_udp_timeout", "30 180", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "ct_timeout", "", CKN_STR20, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+
+#ifdef RTCONFIG_LANTIQ
+	{ "ctf_disable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "ctf_disable_force", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 
 #ifdef CONFIG_BCMWL5
 #ifdef HND_ROUTER
@@ -1197,7 +1218,7 @@ struct nvram_tuple router_defaults[] = {
 	 * LAN and WAN interface temporarilly.
 	 * GRO is not turn on if WAN is PPPoE, PPTP, L2TP, USB
 	 */
-	{ "qca_gro", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "qca_gro", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 
 #if defined(RTCONFIG_SOC_QCA9557)
@@ -1301,13 +1322,15 @@ struct nvram_tuple router_defaults[] = {
 	{ "upnp_clean_threshold", "20", CKN_STR5, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
 #ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
-#if (defined(RTCONFIG_INTERNAL_GOBI) || defined(RTCONFIG_WANPORT2)) && !defined(RTAD7200)
+#if (defined(RTCONFIG_INTERNAL_GOBI) || defined(RTCONFIG_WANPORT2)) && !defined(RTAD7200) && !defined(RTCONFIG_NO_WANPORT)
 	{ "wans_mode", "lb", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "wans_mode", "fo", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* off/failover/failback/loadbance(off/fo/fb/lb) */
 #endif
 #ifdef RTCONFIG_DSL
 	{ "wans_dualwan", "dsl " DEF_SECOND_WANIF, CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#elif (defined(RTCONFIG_INTERNAL_GOBI) && defined(RTCONFIG_NO_WANPORT))
+	{ "wans_dualwan", DEF_SECOND_WANIF " none", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "wans_dualwan", "wan " DEF_SECOND_WANIF, CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
@@ -1382,6 +1405,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "dslx_dhcp_clientid_type", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* 0: MAC 1: Node-specific RFC4361 */
 	{ "dslx_dhcp_clientid", "", CKN_STR65, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Required by some ISP using RFC 1483 MER. */
 	{ "dslx_dhcp_vendorid", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* DHCP option 60 */
+	{ "dslx_dhcp_hostname", "", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* DHCP option 12 */
 	{ "dslx_ipaddr", "0.0.0.0", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* IP address */
 	{ "dslx_netmask", "0.0.0.0", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* netmask */
 	{ "dslx_gateway", "0.0.0.0", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* gateway */
@@ -1947,7 +1971,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "captive_portal_adv_enable",		"off", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "captive_portal_adv_idle_timeout",		"300", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "captive_portal_adv_profile",		"", CKN_STR1024, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "captive_portal_adv_local_clientlist",	"", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "captive_portal_adv_local_clientlist",	"", CKN_STR_MAX, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "captive_portal_adv_wl_en",	"", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "captive_portal_adv_wl_dis",	"", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "captive_portal_adv_2g_ssid",			"", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -1999,6 +2023,7 @@ struct nvram_tuple router_defaults[] = {
 	{"chilli_bandwidth", "", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{"chilli_bandwidthMaxUp", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{"chilli_bandwidthMaxDown", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"chilli_lease", "600", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
 	/* for captive portal */
 	{"cp_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -2027,6 +2052,7 @@ struct nvram_tuple router_defaults[] = {
 	{"cp_authport", "http", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{"cp_bandwidthMaxUp", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{"cp_bandwidthMaxDown", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"cp_lease", "600", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
         /* for hotspotsystem nvram*/
        	{"hotss_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -2453,6 +2479,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "vpn_server_crypt", "tls", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_comp", "adaptive", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_cipher", "AES-128-CBC", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "vpn_server_digest", "SHA1", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_dhcp", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_r1", "192.168.1.50", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_r2", "192.168.1.55", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -2482,15 +2509,6 @@ struct nvram_tuple router_defaults[] = {
 	{ "vpn_crt_server_client_key", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_crt_server_dh", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_crt_server_crl", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_static", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_ca", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_ca_key", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_crt", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_key", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_client_crt", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_client_key", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_dh", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_crt_server1_crl", "", CKN_STR3999, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
 	{ "vpn_client_unit", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_clientx_eas", "", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -2508,6 +2526,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "vpn_client_crypt", "tls", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_client_comp", "-1", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_client_cipher", "default", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "vpn_client_digest", "SHA1", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_client_local", "10.8.0.2", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_client_remote", "10.8.0.1", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_client_nm", "255.255.255.0", CKN_STR15, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -2824,6 +2843,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "rast_idlrt", "20", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* roaming assistant idle rate (Kbps) */
 #endif
 	{ "custom_clientlist", "", CKN_STR_MAX, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* for customize device name */
+	{ "asus_device_list", "", CKN_STR_MAX, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "nmp_client_list", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "ttl_inc_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* enable TTL increment */
 	{ "ttl_spoof_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* enable TTL spoofing */
@@ -3353,7 +3373,11 @@ struct nvram_tuple router_defaults[] = {
 
 /* End of Merlin-specific settings */
 
-	{ NULL, NULL }
+#ifdef RTCONFIG_TUNNEL
+	{ "aae_disable_force", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
+
+	{ 0, 0, 0, 0, 0, 0, 0 }
 }; // router_defaults
 
 // nvram for system control state
@@ -3769,7 +3793,7 @@ struct nvram_tuple router_state_defaults[] = {
 	{ "ddns_last_wan_unit", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "reboot_time", "70", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
-	{ NULL, NULL }
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 
 #ifdef REMOVE
@@ -3783,7 +3807,7 @@ const defaults_t if_generic[] = {
 	{ "wan_ifname", "eth1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wan_ifnames", "eth1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
-	{ NULL, NULL }
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 
 const defaults_t if_vlan[] = {
@@ -3791,441 +3815,441 @@ const defaults_t if_vlan[] = {
 	{ "lan_ifnames", "vlan0 eth1 eth2 eth3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wan_ifname", "vlan1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wan_ifnames", "vlan1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ NULL, NULL }
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif
 
 #ifdef RTCONFIG_BCMWL6
 #ifndef RTCONFIG_BCMARM
 struct nvram_tuple bcm4360ac_defaults[] = {
-	{ "pci/2/1/aa2g", "0", 0 },
-	{ "pci/2/1/aa5g", "7", 0 },
-	{ "pci/2/1/aga0", "0", 0 },
-	{ "pci/2/1/aga1", "0", 0 },
-	{ "pci/2/1/aga2", "0", 0 },
-	{ "pci/2/1/agbg0", "0", 0 },
-	{ "pci/2/1/agbg1", "0", 0 },
-	{ "pci/2/1/agbg2", "0", 0 },
-	{ "pci/2/1/antswitch", "0", 0 },
-	{ "pci/2/1/cckbw202gpo", "0", 0 },
-	{ "pci/2/1/cckbw20ul2gpo", "0", 0 },
-	{ "pci/2/1/dot11agofdmhrbw202gpo", "0", 0 },
-	{ "pci/2/1/femctrl", "3", 0 },
-	{ "pci/2/1/papdcap2g", "0", 0 },
-	{ "pci/2/1/tworangetssi2g", "0", 0 },
-	{ "pci/2/1/pdgain2g", "4", 0 },
-	{ "pci/2/1/epagain2g", "0", 0 },
-	{ "pci/2/1/tssiposslope2g", "1", 0 },
-	{ "pci/2/1/gainctrlsph", "0", 0 },
-	{ "pci/2/1/papdcap5g", "0", 0 },
-	{ "pci/2/1/tworangetssi5g", "0", 0 },
-	{ "pci/2/1/pdgain5g", "4", 0 },
-	{ "pci/2/1/epagain5g", "0", 0 },
-	{ "pci/2/1/tssiposslope5g", "1", 0 },
-	{ "pci/2/1/maxp2ga0", "76", 0 },
-	{ "pci/2/1/maxp2ga1", "76", 0 },
-	{ "pci/2/1/maxp2ga2", "76", 0 },
-	{ "pci/2/1/mcsbw202gpo", "0", 0 },
-	{ "pci/2/1/mcsbw402gpo", "0", 0 },
-	{ "pci/2/1/measpower", "0x7f", 0 },
-	{ "pci/2/1/measpower1", "0x7f", 0 },
-	{ "pci/2/1/measpower2", "0x7f", 0 },
-	{ "pci/2/1/noiselvl2ga0", "31", 0 },
-	{ "pci/2/1/noiselvl2ga1", "31", 0 },
-	{ "pci/2/1/noiselvl2ga2", "31", 0 },
-	{ "pci/2/1/noiselvl5gha0", "31", 0 },
-	{ "pci/2/1/noiselvl5gha1", "31", 0 },
-	{ "pci/2/1/noiselvl5gha2", "31", 0 },
-	{ "pci/2/1/noiselvl5gla0", "31", 0 },
-	{ "pci/2/1/noiselvl5gla1", "31", 0 },
-	{ "pci/2/1/noiselvl5gla2", "31", 0 },
-	{ "pci/2/1/noiselvl5gma0", "31", 0 },
-	{ "pci/2/1/noiselvl5gma1", "31", 0 },
-	{ "pci/2/1/noiselvl5gma2", "31", 0 },
-	{ "pci/2/1/noiselvl5gua0", "31", 0 },
-	{ "pci/2/1/noiselvl5gua1", "31", 0 },
-	{ "pci/2/1/noiselvl5gua2", "31", 0 },
-	{ "pci/2/1/ofdmlrbw202gpo", "0", 0 },
-	{ "pci/2/1/pa2ga0", "0xfe72,0x14c0,0xfac7", 0 },
-	{ "pci/2/1/pa2ga1", "0xfe80,0x1472,0xfabc", 0 },
-	{ "pci/2/1/pa2ga2", "0xfe82,0x14bf,0xfad9", 0 },
-	{ "pci/2/1/pcieingress_war", "15", 0 },
-	{ "pci/2/1/phycal_tempdelta", "255", 0 },
-	{ "pci/2/1/rawtempsense", "0x1ff", 0 },
-	{ "pci/2/1/rxchain", "7", 0 },
-	{ "pci/2/1/rxgainerr2g", "0xffff", 0 },
-	{ "pci/2/1/rxgainerr5g", "0xffff,0xffff,0xffff,0xffff", 0 },
-	{ "pci/2/1/rxgains2gelnagaina0", "0", 0 },
-	{ "pci/2/1/rxgains2gelnagaina1", "0", 0 },
-	{ "pci/2/1/rxgains2gelnagaina2", "0", 0 },
-	{ "pci/2/1/rxgains2gtrelnabypa0", "0", 0 },
-	{ "pci/2/1/rxgains2gtrelnabypa1", "0", 0 },
-	{ "pci/2/1/rxgains2gtrelnabypa2", "0", 0 },
-	{ "pci/2/1/rxgains2gtrisoa0", "0", 0 },
-	{ "pci/2/1/rxgains2gtrisoa1", "0", 0 },
-	{ "pci/2/1/rxgains2gtrisoa2", "0", 0 },
-	{ "pci/2/1/sar2g", "18", 0 },
-	{ "pci/2/1/sar5g", "15", 0 },
-	{ "pci/2/1/sromrev", "11", 0 },
-	{ "pci/2/1/subband5gver", "0x4", 0 },
-	{ "pci/2/1/tempcorrx", "0x3f", 0 },
-	{ "pci/2/1/tempoffset", "255", 0 },
-	{ "pci/2/1/temps_hysteresis", "15", 0 },
-	{ "pci/2/1/temps_period", "15", 0 },
-	{ "pci/2/1/tempsense_option", "0x3", 0 },
-	{ "pci/2/1/tempsense_slope", "0xff", 0 },
-	{ "pci/2/1/tempthresh", "255", 0 },
-	{ "pci/2/1/txchain", "7", 0 },
-	{ "pci/2/1/ledbh10", "7", 0 },
+	{ "pci/2/1/aa2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/aa5g", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/aga0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/aga1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/aga2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/agbg0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/agbg1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/agbg2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/antswitch", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/cckbw202gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/cckbw20ul2gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/dot11agofdmhrbw202gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/femctrl", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/papdcap2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tworangetssi2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/pdgain2g", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/epagain2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tssiposslope2g", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/gainctrlsph", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/papdcap5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tworangetssi5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/pdgain5g", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/epagain5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tssiposslope5g", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/maxp2ga0", "76", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/maxp2ga1", "76", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/maxp2ga2", "76", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/mcsbw202gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/mcsbw402gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/measpower", "0x7f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/measpower1", "0x7f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/measpower2", "0x7f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl2ga0", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl2ga1", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl2ga2", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gha0", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gha1", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gha2", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gla0", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gla1", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gla2", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gma0", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gma1", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gma2", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gua0", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gua1", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/noiselvl5gua2", "31", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/ofdmlrbw202gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/pa2ga0", "0xfe72,0x14c0,0xfac7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/pa2ga1", "0xfe80,0x1472,0xfabc", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/pa2ga2", "0xfe82,0x14bf,0xfad9", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/pcieingress_war", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/phycal_tempdelta", "255", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rawtempsense", "0x1ff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgainerr2g", "0xffff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgainerr5g", "0xffff,0xffff,0xffff,0xffff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gelnagaina0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gelnagaina1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gelnagaina2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gtrelnabypa0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gtrelnabypa1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gtrelnabypa2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gtrisoa0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gtrisoa1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/rxgains2gtrisoa2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/sar2g", "18", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/sar5g", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/sromrev", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/subband5gver", "0x4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tempcorrx", "0x3f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tempoffset", "255", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/temps_hysteresis", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/temps_period", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tempsense_option", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tempsense_slope", "0xff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/tempthresh", "255", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/txchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "pci/2/1/ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
-	{ 0, 0, 0 }
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 #else
 #ifdef RTAC3200
 struct nvram_tuple bcm4360ac_defaults[] = {
-	{ "devpath1", "pcie/1/4", 0 },
-	{ "1:devpath1", "sb/1/", 0 },
-	{ "1:boardrev", "0x1421", 0 },
-	{ "1:boardvendor", "0x14e4", 0 },
-	{ "1:devid", "0x43bb", 0 },
-	{ "1:sromrev", "11", 0 },
-	{ "1:boardflags", "0x20001000", 0 },
-	{ "1:boardflags2", "0x00100002", 0 },
-	{ "1:venvid", "0x14e4", 0 },
-	{ "1:boardflags3", "0x4000005", 0 },
-	{ "1:aa2g", "7", 0 },
-	{ "1:agbg0", "0x0", 0 },
-	{ "1:agbg1", "0x0", 0 },
-	{ "1:agbg2", "0x0", 0 },
-	{ "1:txchain", "7", 0 },
-	{ "1:rxchain", "7", 0 },
-	{ "1:antswitch", "0", 0 },
-	{ "1:femctrl", "3", 0 },
-	{ "1:tssiposslope2g", "1", 0 },
-	{ "1:epagain2g", "0", 0 },
-	{ "1:pdgain2g", "21", 0 },
-	{ "1:tworangetssi2g", "0", 0 },
-	{ "1:papdcap2g", "0", 0 },
-	{ "1:gainctrlsph", "0", 0 },
-	{ "1:tempthresh", "120", 0 },
-	{ "1:tempoffset", "255", 0 },
-	{ "1:rawtempsense", "0x1ff", 0 },
-	{ "1:tempsense_slope", "0xff", 0 },
-	{ "1:tempcorrx", "0x3f", 0 },
-	{ "1:tempsense_option", "0x3", 0 },
-	{ "1:xtalfreq", "40000", 0 },
-	{ "1:phycal_tempdelta", "15", 0 },
-	{ "1:temps_period", "5", 0 },
-	{ "1:temps_hysteresis", "5", 0 },
-	{ "1:pdoffset2g40ma0", "15", 0 },
-	{ "1:pdoffset2g40ma1", "15", 0 },
-	{ "1:pdoffset2g40ma2", "15", 0 },
-	{ "1:pdoffset2g40mvalid", "1", 0 },
-	{ "1:pdoffset40ma0", "0", 0 },
-	{ "1:pdoffset40ma1", "0", 0 },
-	{ "1:pdoffset40ma2", "0", 0 },
-	{ "1:pdoffset80ma0", "0", 0 },
-	{ "1:pdoffset80ma1", "0", 0 },
-	{ "1:pdoffset80ma2", "0", 0 },
-	{ "1:cckbw202gpo", "0", 0 },
-	{ "1:cckbw20ul2gpo", "0", 0 },
-	{ "1:dot11agofdmhrbw202gpo", "0x2000", 0 },
-	{ "1:ofdmlrbw202gpo", "0", 0 },
-	{ "1:dot11agduphrpo", "0", 0 },
-	{ "1:dot11agduplrpo", "0", 0 },
-	{ "1:maxp2ga0", "102", 0 },
-	{ "1:rxgains2gelnagaina0", "4", 0 },
-	{ "1:rxgains2gtrisoa0", "7", 0 },
-	{ "1:rxgains2gtrelnabypa0", "1", 0 },
-	{ "1:maxp2ga1", "102", 0 },
-	{ "1:rxgains2gelnagaina1", "4", 0 },
-	{ "1:rxgains2gtrisoa1", "7", 0 },
-	{ "1:rxgains2gtrelnabypa1", "1", 0 },
-	{ "1:maxp2ga2", "102", 0 },
-	{ "1:rxgains2gelnagaina2", "4", 0 },
-	{ "1:rxgains2gtrisoa2", "7", 0 },
-	{ "1:rxgains2gtrelnabypa2", "1", 0 },
-	{ "1:ledbh10", "7", 0 },
-	{ "devpath0", "pcie/1/3", 0 },
-	{ "0:devpath0", "sb/1/", 0 },
-	{ "0:boardrev", "0x1421", 0 },
-	{ "0:boardvendor", "0x14e4", 0 },
-	{ "0:devid", "0x43bc", 0 },
-	{ "0:sromrev", "11", 0 },
-	{ "0:boardflags", "0x30040000", 0 },
-	{ "0:boardflags2", "0x00220102", 0 },
-	{ "0:venid", "0x14e4", 0 },
-	{ "0:boardflags3", "0x0", 0 },
-	{ "0:aa5g", "7", 0 },
-	{ "0:aga0", "0x0", 0 },
-	{ "0:aga1", "0x0", 0 },
-	{ "0:aga2", "0x0", 0 },
-	{ "0:txchain", "7", 0 },
-	{ "0:rxchain", "7", 0 },
-	{ "0:antswitch", "0", 0 },
-	{ "0:femctrl", "3", 0 },
-	{ "0:tssiposslope5g", "1", 0 },
-	{ "0:epagain5g", "0", 0 },
-	{ "0:pdgain5g", "4", 0 },
-	{ "0:tworangetssi5g", "0", 0 },
-	{ "0:papdcap5g", "0", 0 },
-	{ "0:gainctrlsph", "0", 0 },
-	{ "0:tempthresh", "125", 0 },
-	{ "0:tempoffset", "255", 0 },
-	{ "0:rawtempsense", "0x1ff", 0 },
-	{ "0:tempsense_slope", "0xff", 0 },
-	{ "0:tempcorrx", "0x3f", 0 },
-	{ "0:tempsense_option", "0x3", 0 },
-	{ "0:xtalfreq", "40000", 0 },
-	{ "0:phycal_tempdelta", "15", 0 },
-	{ "0:temps_period", "5", 0 },
-	{ "0:temps_hysteresis", "5", 0 },
-	{ "0:pdoffset40ma0", "4369", 0 },
-	{ "0:pdoffset40ma1", "4369", 0 },
-	{ "0:pdoffset40ma2", "4369", 0 },
-	{ "0:pdoffset80ma0", "0", 0 },
-	{ "0:pdoffset80ma1", "0", 0 },
-	{ "0:pdoffset80ma2", "0", 0 },
-	{ "0:subband5gver", "0x4", 0 },
-	{ "0:mcsbw1605glpo", "0", 0 },
-	{ "0:mcsbw1605gmpo", "0", 0 },
-	{ "0:mcsbw1605ghpo", "0", 0 },
-	{ "0:mcslr5glpo", "0", 0 },
-	{ "0:mcslr5gmpo", "0", 0 },
-	{ "0:mcslr5ghpo", "0", 0 },
-	{ "0:dot11agduphrpo", "0", 0 },
-	{ "0:dot11agduplrpo", "0", 0 },
-	{ "0:rxgains5gmelnagaina0", "2", 0 },
-	{ "0:rxgains5gmtrisoa0", "5", 0 },
-	{ "0:rxgains5gmtrelnabypa0", "1", 0 },
-	{ "0:rxgains5ghelnagaina0", "2", 0 },
-	{ "0:rxgains5ghtrisoa0", "5", 0 },
-	{ "0:rxgains5ghtrelnabypa0", "1", 0 },
-	{ "0:rxgains5gelnagaina0", "2", 0 },
-	{ "0:rxgains5gtrisoa0", "5", 0 },
-	{ "0:rxgains5gtrelnabypa0", "1", 0 },
-	{ "0:maxp5ga0", "94,94,90,90", 0 },
-	{ "0:rxgains5gmelnagaina1", "2", 0 },
-	{ "0:rxgains5gmtrisoa1", "5", 0 },
-	{ "0:rxgains5gmtrelnabypa1", "1", 0 },
-	{ "0:rxgains5ghelnagaina1", "2", 0 },
-	{ "0:rxgains5ghtrisoa1", "5", 0 },
-	{ "0:rxgains5ghtrelnabypa1", "1", 0 },
-	{ "0:rxgains5gelnagaina1", "2", 0 },
-	{ "0:rxgains5gtrisoa1", "5", 0 },
-	{ "0:rxgains5gtrelnabypa1", "1", 0 },
-	{ "0:maxp5ga1", "94,94,90,90", 0 },
-	{ "0:rxgains5gmelnagaina2", "2", 0 },
-	{ "0:rxgains5gmtrisoa2", "5", 0 },
-	{ "0:rxgains5gmtrelnabypa2", "1", 0 },
-	{ "0:rxgains5ghelnagaina2", "2", 0 },
-	{ "0:rxgains5ghtrisoa2", "5", 0 },
-	{ "0:rxgains5ghtrelnabypa2", "1", 0 },
-	{ "0:rxgains5gelnagaina2", "2", 0 },
-	{ "0:rxgains5gtrisoa2", "5", 0 },
-	{ "0:rxgains5gtrelnabypa2", "1", 0 },
-	{ "0:maxp5ga2", "94,94,90,90", 0 },
-	{ "0:ledbh10", "7", 0 },
-	{ "devpath2", "pcie/2/1", 0 },
-	{ "2:devpath2", "sb/1/", 0 },
-	{ "2:boardrev", "0x1421", 0 },
-	{ "2:boardvendor", "0x14e4", 0 },
-	{ "2:devid", "0x43bc", 0 },
-	{ "2:sromrev", "11", 0 },
-	{ "2:boardflags", "0x30040000", 0 },
-	{ "2:boardflags2", "0x00220102", 0 },
-	{ "2:venid", "0x14e4", 0 },
-	{ "2:boardflags3", "0x0", 0 },
-	{ "2:aa5g", "7", 0 },
-	{ "2:aga0", "0x0", 0 },
-	{ "2:aga1", "0x0", 0 },
-	{ "2:aga2", "0x0", 0 },
-	{ "2:txchain", "7", 0 },
-	{ "2:rxchain", "7", 0 },
-	{ "2:antswitch", "0", 0 },
-	{ "2:femctrl", "3", 0 },
-	{ "2:tssiposslope5g", "1", 0 },
-	{ "2:epagain5g", "0", 0 },
-	{ "2:pdgain5g", "4", 0 },
-	{ "2:tworangetssi5g", "0", 0 },
-	{ "2:papdcap5g", "0", 0 },
-	{ "2:gainctrlsph", "0", 0 },
-	{ "2:tempthresh", "120", 0 },
-	{ "2:tempoffset", "255", 0 },
-	{ "2:rawtempsense", "0x1ff", 0 },
-	{ "2:tempsense_slope", "0xff", 0 },
-	{ "2:tempcorrx", "0x3f", 0 },
-	{ "2:tempsense_option", "0x3", 0 },
-	{ "2:xtalfreq", "40000", 0 },
-	{ "2:phycal_tempdelta", "15", 0 },
-	{ "2:temps_period", "5", 0 },
-	{ "2:temps_hysteresis", "5", 0 },
-	{ "2:pdoffset40ma0", "4369", 0 },
-	{ "2:pdoffset40ma1", "4369", 0 },
-	{ "2:pdoffset40ma2", "4369", 0 },
-	{ "2:pdoffset80ma0", "0", 0 },
-	{ "2:pdoffset80ma1", "0", 0 },
-	{ "2:pdoffset80ma2", "0", 0 },
-	{ "2:subband5gver", "0x4", 0 },
-	{ "2:mcsbw1605glpo", "0", 0 },
-	{ "2:mcsbw1605gmpo", "0", 0 },
-	{ "2:mcsbw1605ghpo", "0", 0 },
-	{ "2:mcslr5glpo", "0", 0 },
-	{ "2:mcslr5gmpo", "0", 0 },
-	{ "2:mcslr5ghpo", "0", 0 },
-	{ "2:dot11agduphrpo", "0", 0 },
-	{ "2:dot11agduplrpo", "0", 0 },
-	{ "2:rxgains5gmelnagaina0", "2", 0 },
-	{ "2:rxgains5gmtrisoa0", "5", 0 },
-	{ "2:rxgains5gmtrelnabypa0", "1", 0 },
-	{ "2:rxgains5ghelnagaina0", "2", 0 },
-	{ "2:rxgains5ghtrisoa0", "5", 0 },
-	{ "2:rxgains5ghtrelnabypa0", "1", 0 },
-	{ "2:rxgains5gelnagaina0", "2", 0 },
-	{ "2:rxgains5gtrisoa0", "5", 0 },
-	{ "2:rxgains5gtrelnabypa0", "1", 0 },
-	{ "2:maxp5ga0", "90,90,106,106", 0 },
-	{ "2:rxgains5gmelnagaina1", "2", 0 },
-	{ "2:rxgains5gmtrisoa1", "5", 0 },
-	{ "2:rxgains5gmtrelnabypa1", "1", 0 },
-	{ "2:rxgains5ghelnagaina1", "2", 0 },
-	{ "2:rxgains5ghtrisoa1", "5", 0 },
-	{ "2:rxgains5ghtrelnabypa1", "1", 0 },
-	{ "2:rxgains5gelnagaina1", "2", 0 },
-	{ "2:rxgains5gtrisoa1", "5", 0 },
-	{ "2:rxgains5gtrelnabypa1", "1", 0 },
-	{ "2:maxp5ga1", "90,90,106,106", 0 },
-	{ "2:rxgains5gmelnagaina2", "2", 0 },
-	{ "2:rxgains5gmtrisoa2", "5", 0 },
-	{ "2:rxgains5gmtrelnabypa2", "1", 0 },
-	{ "2:rxgains5ghelnagaina2", "2", 0 },
-	{ "2:rxgains5ghtrisoa2", "5", 0 },
-	{ "2:rxgains5ghtrelnabypa2", "1", 0 },
-	{ "2:rxgains5gelnagaina2", "2", 0 },
-	{ "2:rxgains5gtrisoa2", "5", 0 },
-	{ "2:rxgains5gtrelnabypa2", "1", 0 },
-	{ "2:maxp5ga2", "90,90,106,106", 0 },
-	{ "2:ledbh10", "7", 0 },
-	{ 0, 0, 0 }
+	{ "devpath1", "pcie/1/4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:devpath1", "sb/1/", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:boardrev", "0x1421", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:boardvendor", "0x14e4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:devid", "0x43bb", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:sromrev", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:boardflags", "0x20001000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:boardflags2", "0x00100002", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:venvid", "0x14e4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:boardflags3", "0x4000005", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:aa2g", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:agbg0", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:agbg1", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:agbg2", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:txchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:antswitch", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:femctrl", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tssiposslope2g", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:epagain2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdgain2g", "21", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tworangetssi2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:papdcap2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:gainctrlsph", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempthresh", "120", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempoffset", "255", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rawtempsense", "0x1ff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempsense_slope", "0xff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempcorrx", "0x3f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempsense_option", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:xtalfreq", "40000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:phycal_tempdelta", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset2g40ma0", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset2g40ma1", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset2g40ma2", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset2g40mvalid", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset40ma0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset40ma1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset40ma2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset80ma0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset80ma1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:pdoffset80ma2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:cckbw202gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:cckbw20ul2gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:dot11agofdmhrbw202gpo", "0x2000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:ofdmlrbw202gpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:dot11agduphrpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:dot11agduplrpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:maxp2ga0", "102", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gelnagaina0", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gtrisoa0", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:maxp2ga1", "102", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gelnagaina1", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gtrisoa1", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:maxp2ga2", "102", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gelnagaina2", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gtrisoa2", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:rxgains2gtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "devpath0", "pcie/1/3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:devpath0", "sb/1/", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:boardrev", "0x1421", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:boardvendor", "0x14e4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:devid", "0x43bc", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:sromrev", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:boardflags", "0x30040000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:boardflags2", "0x00220102", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:venid", "0x14e4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:boardflags3", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:aa5g", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:aga0", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:aga1", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:aga2", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:txchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:antswitch", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:femctrl", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tssiposslope5g", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:epagain5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdgain5g", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tworangetssi5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:papdcap5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:gainctrlsph", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempthresh", "125", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempoffset", "255", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rawtempsense", "0x1ff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempsense_slope", "0xff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempcorrx", "0x3f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempsense_option", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:xtalfreq", "40000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:phycal_tempdelta", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdoffset40ma0", "4369", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdoffset40ma1", "4369", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdoffset40ma2", "4369", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdoffset80ma0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdoffset80ma1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdoffset80ma2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:subband5gver", "0x4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:mcsbw1605glpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:mcsbw1605gmpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:mcsbw1605ghpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:mcslr5glpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:mcslr5gmpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:mcslr5ghpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:dot11agduphrpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:dot11agduplrpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmelnagaina0", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmtrisoa0", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghelnagaina0", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghtrisoa0", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gelnagaina0", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gtrisoa0", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:maxp5ga0", "94,94,90,90", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmelnagaina1", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghelnagaina1", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gelnagaina1", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:maxp5ga1", "94,94,90,90", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmelnagaina2", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmtrisoa2", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gmtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghelnagaina2", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghtrisoa2", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5ghtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gelnagaina2", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gtrisoa2", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxgains5gtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:maxp5ga2", "94,94,90,90", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "devpath2", "pcie/2/1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:devpath2", "sb/1/", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:boardrev", "0x1421", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:boardvendor", "0x14e4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:devid", "0x43bc", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:sromrev", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:boardflags", "0x30040000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:boardflags2", "0x00220102", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:venid", "0x14e4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:boardflags3", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:aa5g", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:aga0", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:aga1", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:aga2", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:txchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxchain", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:antswitch", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:femctrl", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tssiposslope5g", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:epagain5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdgain5g", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tworangetssi5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:papdcap5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:gainctrlsph", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tempthresh", "120", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tempoffset", "255", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rawtempsense", "0x1ff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tempsense_slope", "0xff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tempcorrx", "0x3f", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:tempsense_option", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:xtalfreq", "40000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:phycal_tempdelta", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdoffset40ma0", "4369", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdoffset40ma1", "4369", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdoffset40ma2", "4369", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdoffset80ma0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdoffset80ma1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:pdoffset80ma2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:subband5gver", "0x4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:mcsbw1605glpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:mcsbw1605gmpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:mcsbw1605ghpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:mcslr5glpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:mcslr5gmpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:mcslr5ghpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:dot11agduphrpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:dot11agduplrpo", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmelnagaina0", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmtrisoa0", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghelnagaina0", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghtrisoa0", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gelnagaina0", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gtrisoa0", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:maxp5ga0", "90,90,106,106", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmelnagaina1", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghelnagaina1", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gelnagaina1", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:maxp5ga1", "90,90,106,106", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmelnagaina2", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmtrisoa2", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gmtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghelnagaina2", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghtrisoa2", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5ghtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gelnagaina2", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gtrisoa2", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:rxgains5gtrelnabypa2", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:maxp5ga2", "90,90,106,106", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "2:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 #elif defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(GTAC5300) || defined(RTAC86U) || defined(AC2900)
 struct nvram_tuple bcm4360ac_defaults[] = {
-	{ 0, 0, 0 }
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 #elif defined(RTAC1200G) || defined(RTAC1200GP)
 struct nvram_tuple bcm4360ac_defaults[] = {
-	{ "0:xtalfreq", "20000", 0 },
-	{ "0:opo", "68", 0 },
-	{ "0:aa2g", "0x3", 0 },
-	{ "0:ag0", "0x2", 0 },
-	{ "0:ag1", "0x2", 0 },
-	{ "0:ag2", "0xff", 0 },
-	{ "0:ag3", "0xff", 0 },
-	{ "0:bxa2g", "0x0", 0 },
-	{ "0:rssisav2g", "0x0", 0 },
-	{ "0:rssismc2g", "0x0", 0 },
-	{ "0:rssismf2g", "0x0", 0 },
-	{ "0:tri2g", "0x0", 0 },
-	{ "0:rxpo2g", "0x0", 0 },
-	{ "0:txchain", "0x3", 0 },
-	{ "0:rxchain", "0x3", 0 },
-	{ "0:antswitch", "0x0", 0 },
-	{ "0:tssipos2g", "0x1", 0 },
-//	{ "0:extpagain2g", "0x0", 0 },
-	{ "0:pdetrange2g", "0x3", 0 },
-	{ "0:triso2g", "0x4", 0 },
-	{ "0:antswctl2g", "0x0", 0 },
-	{ "0:elna2g", "0x2", 0 },
-	{ "0:itt2ga0", "0x20", 0 },
-	{ "0:itt2ga1", "0x20", 0 },
-	{ "0:ledbh0", "11", 0 },
-	{ "0:ledbh1", "11", 0 },
-	{ "0:ledbh2", "11", 0 },
-	{ "0:ledbh3", "7", 0 },
-	{ "0:leddc", "0xFFFF", 0 },
-	{ "0:temps_period", "5", 0 },
-	{ "0:tempthresh", "120", 0 },
-	{ "0:temps_hysteresis", "5", 0 },
-	{ "0:phycal_tempdelta", "0", 0 },
-	{ "0:tempoffset", "0", 0 },
-	{ "sb/1/aa2g", "0", 0 },
-	{ "sb/1/aa5g", "3", 0 },
-	{ "sb/1/aga0", "0", 0 },
-	{ "sb/1/aga1", "0", 0 },
-	{ "sb/1/aga2", "0", 0 },
-	{ "sb/1/txchain", "3", 0 },
-	{ "sb/1/rxchain", "3", 0 },
-	{ "sb/1/antswitch", "0", 0 },
-	{ "sb/1/femctrl", "15", 0 },
-	{ "sb/1/subband5gver", "4", 0 },
-	{ "sb/1/gainctrlsph", "0", 0 },
-	{ "sb/1/papdcap5g", "0", 0 },
-	{ "sb/1/tworangetssi5g", "0", 0 },
-	{ "sb/1/pdgain5g", "0", 0 },
-//	{ "sb/1/epagain5g", "0", 0 },
-	{ "sb/1/tssiposslope5g", "1", 0 },
-	{ "sb/1/AvVmid_c0", "2,135,2,135,2,135,2,135,2,135", 0 },
-	{ "sb/1/AvVmid_c1", "2,145,2,145,2,145,2,145,2,145", 0 },
-	{ "sb/1/paparambwver", "3", 0 },
-	{ "paparambwver", "3", 0 },
-	{ "sb/1/pdoffset5gsubbanda0", "0x0000", 0 },
-	{ "sb/1/pdoffset5gsubbanda1", "0x0000", 0 },
-	{ "sb/1/rxgains5gelnagaina0", "3", 0 },
-	{ "sb/1/rxgains5gtrelnabypa0", "1", 0 },
-//	{ "sb/1/rxgains5gtrisoa0", "8", 0 },
-	{ "sb/1/rxgains5gmelnagaina0", "3", 0 },
-	{ "sb/1/rxgains5gmtrelnabypa0", "1", 0 },
-//	{ "sb/1/rxgains5gmtrisoa0", "8", 0 },
-	{ "sb/1/rxgains5ghelnagaina0", "3", 0 },
-	{ "sb/1/rxgains5ghtrelnabypa0", "1", 0 },
-//	{ "sb/1/rxgains5ghtrisoa0", "8", 0 },
-	{ "sb/1/rxgains5gelnagaina1", "3", 0 },
-	{"sb/1/rxgains5gtrelnabypa1", "1", 0 },
-//	{"sb/1/rxgains5gtrisoa1", "8", 0 },
-	{"sb/1/rxgains5gmelnagaina1", "3", 0 },
-	{"sb/1/rxgains5gmtrelnabypa1", "1", 0 },
-//	{"sb/1/rxgains5gmtrisoa1", "8", 0 },
-	{"sb/1/rxgains5ghelnagaina1", "3", 0 },
-	{"sb/1/rxgains5ghtrelnabypa1", "1", 0 },
-//	{"sb/1/rxgains5ghtrisoa1", "5", 0 },
-	{"sb/1/rssi_delta_5gl_c0", "-3,0,-5,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gml_c0", "-4,0,-5,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gmu_c0", "-4,0,-5,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gh_c0", "-4,0,-6,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gl_c1", "-3,0,-5,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gml_c1", "-4,0,-5,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gmu_c1", "-4,0,-5,0,-5,0", 0 },
-	{"sb/1/rssi_delta_5gh_c1", "-4,0,-6,0,-5,0", 0 },
-	{"sb/1/rssi_delta_2g_c0", "4,5,4,5", 0 },
-	{"sb/1/rssi_delta_2g_c1", "2,3,2,3", 0 },
-	{"sb/1/ledbh0", "11", 0 },
-	{"sb/1/ledbh1", "11", 0 },
-	{"sb/1/ledbh2", "11", 0 },
-	{"sb/1/ledbh3", "11", 0 },
-	{"sb/1/ledbh11", "0x7", 0 },
-	{"sb/1/leddc", "0xFFFF", 0 },
-	{"sb/1/temps_period", "5", 0 },
-	{"sb/1/tempthresh", "120", 0 },
-	{"sb/1/temps_hysteresis", "5", 0 },
-	{"sb/1/phycal_tempdelta", "15", 0 },
-	{"sb/1/tempoffset", "0", 0 },
+	{ "0:xtalfreq", "20000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:opo", "68", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:aa2g", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ag0", "0x2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ag1", "0x2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ag2", "0xff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ag3", "0xff", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:bxa2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rssisav2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rssismc2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rssismf2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tri2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxpo2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:txchain", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:rxchain", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:antswitch", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tssipos2g", "0x1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{ "0:extpagain2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:pdetrange2g", "0x3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:triso2g", "0x4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:antswctl2g", "0x0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:elna2g", "0x2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:itt2ga0", "0x20", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:itt2ga1", "0x20", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ledbh0", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ledbh1", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ledbh2", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:ledbh3", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:leddc", "0xFFFF", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempthresh", "120", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:phycal_tempdelta", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempoffset", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/aa2g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/aa5g", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/aga0", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/aga1", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/aga2", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/txchain", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxchain", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/antswitch", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/femctrl", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/subband5gver", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/gainctrlsph", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/papdcap5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/tworangetssi5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/pdgain5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{ "sb/1/epagain5g", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/tssiposslope5g", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/AvVmid_c0", "2,135,2,135,2,135,2,135,2,135", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/AvVmid_c1", "2,145,2,145,2,145,2,145,2,145", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/paparambwver", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "paparambwver", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/pdoffset5gsubbanda0", "0x0000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/pdoffset5gsubbanda1", "0x0000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5gelnagaina0", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5gtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{ "sb/1/rxgains5gtrisoa0", "8", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5gmelnagaina0", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5gmtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{ "sb/1/rxgains5gmtrisoa0", "8", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5ghelnagaina0", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5ghtrelnabypa0", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{ "sb/1/rxgains5ghtrisoa0", "8", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "sb/1/rxgains5gelnagaina1", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rxgains5gtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{"sb/1/rxgains5gtrisoa1", "8", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rxgains5gmelnagaina1", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rxgains5gmtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{"sb/1/rxgains5gmtrisoa1", "8", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rxgains5ghelnagaina1", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rxgains5ghtrelnabypa1", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+//	{"sb/1/rxgains5ghtrisoa1", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gl_c0", "-3,0,-5,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gml_c0", "-4,0,-5,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gmu_c0", "-4,0,-5,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gh_c0", "-4,0,-6,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gl_c1", "-3,0,-5,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gml_c1", "-4,0,-5,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gmu_c1", "-4,0,-5,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_5gh_c1", "-4,0,-6,0,-5,0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_2g_c0", "4,5,4,5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/rssi_delta_2g_c1", "2,3,2,3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/ledbh0", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/ledbh1", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/ledbh2", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/ledbh3", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/ledbh11", "0x7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/leddc", "0xFFFF", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/tempthresh", "120", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/phycal_tempdelta", "15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{"sb/1/tempoffset", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{0, 0, 0 }
 };
 #else
 struct nvram_tuple bcm4360ac_defaults[] = {
-	{ "0:ledbh10", "7", 0 },
-	{ "1:ledbh10", "7", 0 },
-	{ "0:temps_period", "5", 0 },
-	{ "0:tempthresh", "120", 0 },
-	{ "0:temps_hysteresis", "5", 0 },
-	{ "0:phycal_tempdelta", "0", 0 },
-	{ "0:tempoffset", "0", 0 },
-	{ "1:temps_period", "5", 0 },
-	{ "1:tempthresh", "120", 0 },
-	{ "1:temps_hysteresis", "5", 0 },
-	{ "1:phycal_tempdelta", "0", 0 },
-	{ "1:tempoffset", "0", 0 },
-	{ 0, 0, 0 }
+	{ "0:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempthresh", "120", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:phycal_tempdelta", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "0:tempoffset", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:temps_period", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempthresh", "120", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:temps_hysteresis", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:phycal_tempdelta", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "1:tempoffset", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif
 #endif
@@ -4234,76 +4258,76 @@ struct nvram_tuple bcm4360ac_defaults[] = {
 #if defined(CONFIG_BCMWL5)
 /* nvram override default setting for Media Router */
 struct nvram_tuple router_defaults_override_type1[] = {
-	{ "router_disable", "1", 0 },		/* lan_proto=static lan_stp=0 wan_proto=disabled */
-	{ "lan_stp", "0", 0 },			/* LAN spanning tree protocol */
-	{ "wl_wmf_bss_enable", "1", 0 },	/* WMF Enable for IPTV Media or WiFi+PLC */
-	{ "wl_reg_mode", "h", 0 },		/* Regulatory: 802.11H(h) */
+	{ "router_disable", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* lan_proto=static lan_stp=0 wan_proto=disabled */
+	{ "lan_stp", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* LAN spanning tree protocol */
+	{ "wl_wmf_bss_enable", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* WMF Enable for IPTV Media or WiFi+PLC */
+	{ "wl_reg_mode", "h", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Regulatory: 802.11H(h) */
 #ifndef RTCONFIG_BCM7
-	{ "wl_taf_enable", "1", 0 },		/* Enable TAF */
-	{ "wl_taf_rule", "0x15", 0 },		/* Default TAF rule on SSID, RATE and AID */
+	{ "wl_taf_enable", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Enable TAF */
+	{ "wl_taf_rule", "0x15", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Default TAF rule on SSID, RATE and AID */
 
 	/* EBOS feature Media router default */
-	{ "wl_ebos_enable", "0", 0 },		/* EBOS feature on */
-	{ "wl_ebos_flags", "0x68", 0 },		/* 104(0x68) video links */
-	{ "wl_ebos_transit", "-1", 0 },		/* transit limit for video links */
-	{ "wl_ebos_prr_flags", "0xa41", 0 },	/* pseudo-round robin data links */
-	{ "wl_ebos_prr_threshold", "0x0f000000", 0 },	/* pseudo-round robin threshold */
-	{ "wl_ebos_prr_transit", "-1", 0 },	/* pseudo-round robin transit limit */
+	{ "wl_ebos_enable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* EBOS feature on */
+	{ "wl_ebos_flags", "0x68", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* 104(0x68) video links */
+	{ "wl_ebos_transit", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* transit limit for video links */
+	{ "wl_ebos_prr_flags", "0xa41", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* pseudo-round robin data links */
+	{ "wl_ebos_prr_threshold", "0x0f000000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* pseudo-round robin threshold */
+	{ "wl_ebos_prr_transit", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* pseudo-round robin transit limit */
 
 	/* Airtime fairness */
-	{ "wl_atf", "0", 0 },			/* ATF feature on */
+	{ "wl_atf", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* ATF feature on */
 #else
-	{ "wl_taf_enable", "0", 0 },		/* Disable TAF */
+	{ "wl_taf_enable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Disable TAF */
 #endif
 #ifdef __CONFIG_EMF__
-	{ "emf_enable", "1", 0 },		/* Enable EMF by default */
-	{ "wl_wmf_ucigmp_query", "1", 0 },	/* Enable Converting IGMP Query to ucast */
+	{ "emf_enable", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Enable EMF by default */
+	{ "wl_wmf_ucigmp_query", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable Converting IGMP Query to ucast */
 #ifdef RTCONFIG_BCMARM
-	{ "wl_wmf_ucast_upnp", "1", 0 },	/* Enable upnp to ucast conversion */
-	{ "wl_wmf_igmpq_filter", "1", 0 },	/* Enable igmp query filter */
+	{ "wl_wmf_ucast_upnp", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable upnp to ucast conversion */
+	{ "wl_wmf_igmpq_filter", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable igmp query filter */
 #endif
 #endif
-	{ "wl_frameburst", "on", 0 },		/* BRCM Frambursting mode (off|on) */
-	{ "wl_frameburst_override", "on", 0 },  /* BRCM frameburst override to enable/disable
+	{ "wl_frameburst", "on", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* BRCM Frambursting mode (off|on) */
+	{ "wl_frameburst_override", "on", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* BRCM frameburst override to enable/disable
 						 * dynamic framebursting default on
 						 */
 #ifdef RTCONFIG_BCMWL6
-	{ "wl_acs_fcs_mode", "1", 0 },		/* Enable acsd fcs mode */
+	{ "wl_acs_fcs_mode", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable acsd fcs mode */
 #ifndef RTCONFIG_BCM7
-	{ "wl_acs_dfs", "2", 0 },		/* Enable first DFS chan Selection */
+	{ "wl_acs_dfs", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Enable first DFS chan Selection */
 #endif
-	{ "wl_dcs_csa_unicast", "1", 0 },	/* Enable unicast CSA */
+	{ "wl_dcs_csa_unicast", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Enable unicast CSA */
 	/* Exclude ACSD to select 140l, 144u, 140/80, 144/80 to compatible with Ducati 11N */
-	{ "wl_acs_excl_chans", "0xd98e,0xd88e,0xe28a,0xe38a", 0 },
+	{ "wl_acs_excl_chans", "0xd98e,0xd88e,0xe28a,0xe38a", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #ifdef RTCONFIG_BCMARM
 #ifndef RTCONFIG_BCM7
-	{ "frameburst_dyn", "0", 0 },		/* Frameburst controlled dynamically if on */
+	{ "frameburst_dyn", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Frameburst controlled dynamically if on */
 #endif
-	{ "wl_pspretend_retry_limit", "5", 0 }, /* Enable PsPretend */
+	{ "wl_pspretend_retry_limit", "5", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* Enable PsPretend */
 #ifndef RTCONFIG_BCM7
-	{ "wl_pspretend_threshold", "0", 0 },	/* Disable PsPretend Threshold */
+	{ "wl_pspretend_threshold", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* Disable PsPretend Threshold */
 #endif
 #endif
 #endif
 #ifdef HND_ROUTER
-	{ "wl_cal_period", "-1", 0 },		/* Disable periodic cal */
+	{ "wl_cal_period", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Disable periodic cal */
 #else
-	{ "wl_cal_period", "0", 0 },		/* Disable periodic cal */
+	{ "wl_cal_period", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Disable periodic cal */
 #endif
-	{ "wl_amsdu", "off", 0 },		/* Default IPTV AMSDU setting */
+	{ "wl_amsdu", "off", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Default IPTV AMSDU setting */
 #ifdef RTCONFIG_BCMARM
 #if !defined(RTCONFIG_BCM_7114) && !defined(HND_ROUTER)
-	{ "wl_rx_amsdu_in_ampdu", "off", 0 },	/* Media RX AMSDU In AMPDU setting */
+	{ "wl_rx_amsdu_in_ampdu", "off", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },/* Media RX AMSDU In AMPDU setting */
 #endif
 #ifdef HND_ROUTER
-	{ "wl_psta_inact", "600", 0 },		/* PSTA inactivity timer */
+	{ "wl_psta_inact", "600", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* PSTA inactivity timer */
 #else
-	{ "wl_psta_inact", "0", 0 },		/* PSTA inactivity timer */
+	{ "wl_psta_inact", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* PSTA inactivity timer */
 #endif
-	{ "wl_srl", "11", 0},			/* Short Retry Limit */
-	{ "wl_lrl", "11", 0},			/* Long Retry Limit */
+	{ "wl_srl", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Short Retry Limit */
+	{ "wl_lrl", "11", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* Long Retry Limit */
 #endif
-	{ 0, 0, 0 }
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif	/* CONFIG_BCMWL5 */
 

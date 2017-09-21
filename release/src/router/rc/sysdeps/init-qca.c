@@ -49,7 +49,7 @@ static struct load_wifi_kmod_seq_s {
 	unsigned int load_sleep;
 	unsigned int remove_sleep;
 } load_wifi_kmod_seq[] = {
-#if defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_SOC_IPQ40XX) || defined(MAPAC1800)
 	{ "mem_manager", 1, 0, 0 },	/* If QCA WiFi configuration file has WIFI_MEM_MANAGER_SUPPORT=1 */
 	{ "asf", 0, 0, 0 },
 	{ "qdf", 0, 0, 0 },
@@ -60,7 +60,9 @@ static struct load_wifi_kmod_seq_s {
 	{ "ath_rate_atheros", 0, 0, 0 },
 	{ "hst_tx99", 0, 0, 0 },
 	{ "ath_dev", 0, 0, 0 },
-	/* { "qca_da", 0, 0, 0 }, */
+#if defined(MAPAC1800)
+	{ "qca_da", 0, 0, 0 },
+#endif
 	{ "qca_ol", 0, 0, 0 },
 #elif defined(RPAC51)
 	{ "mem_manager", 1, 0, 0 },	/* If QCA WiFi configuration file has WIFI_MEM_MANAGER_SUPPORT=1 */
@@ -140,7 +142,7 @@ void init_devs(void)
 #endif
 #if (defined(PLN12) || defined(PLAC56) || defined(PLAC66U) || defined(RPAC66) || defined(RPAC51))
 	eval("ln", "-sf", "/dev/mtdblock2", "/dev/caldata");	/* mtdblock2 = SPI flash, Factory MTD partition */
-#elif (defined(RTAC58U) || defined(RTAC82U))
+#elif (defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U))
 	eval("ln", "-sf", "/dev/mtdblock3", "/dev/caldata");	/* mtdblock3 = cal in NAND flash, Factory MTD partition */
 #else
 	eval("ln", "-sf", "/dev/mtdblock3", "/dev/caldata");	/* mtdblock3 = Factory MTD partition */
@@ -229,6 +231,9 @@ static void init_switch_qca(void)
 #if defined(RTCONFIG_BT_CONN)
 		"hyfi_qdisc", "hyfi-bridging",
 #endif	/* RTCONFIG_BT_CONN */
+#elif defined(MAPAC1800)
+		"qca-ssdk",
+		"hyfi_qdisc", "hyfi-bridging",
 #endif
 #if defined(RTCONFIG_STRONGSWAN) ||  defined(RTCONFIG_QUICKSEC)
 		"tunnel4",
@@ -267,7 +272,7 @@ static void init_switch_qca(void)
 				*v++ = "page_mode=1";
 			}
 
-#if defined(RTAC58U) /* for RAM 128MB */
+#if defined(RTAC58U) || defined(RT4GAC53U) /* for RAM 128MB */
 			if (get_meminfo_item("MemTotal") <= 131072)
 				*v++ = "reduce_rx_ring_size=1";
 #endif
@@ -464,9 +469,11 @@ void config_switch(void)
 	case MODEL_RTAC55UHP:	/* fall through */
 	case MODEL_RT4GAC55U:	/* fall through */
 	case MODEL_RTAC58U:	/* fall through */
+	case MODEL_RT4GAC53U:	/* fall through */
 	case MODEL_RTAC82U:	/* fall through */
 	case MODEL_MAPAC1300:	/* fall through */
 	case MODEL_VRZAC1300:	/* fall through */
+	case MODEL_MAPAC1800:	/* fall through */
 	case MODEL_MAPAC2200:	/* fall through */
 	case MODEL_RTAC88N:	/* fall through */
 		merge_wan_port_into_lan_ports = 1;
@@ -1019,7 +1026,7 @@ static void __load_wifi_driver(int testmode)
 		*v++ = p->kmod_name;
 		*param = '\0';
 		s = &param[0];
-#if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
+#if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || (defined(RTCONFIG_QCA956X) && !defined(MAPAC1800))
 		if (!strcmp(p->kmod_name, "ath_hal")) {
 			int ce_level = nvram_get_int("ce_level");
 			if (ce_level <= 0)
@@ -1091,7 +1098,7 @@ static void __load_wifi_driver(int testmode)
 #endif
 		}
 
-#if defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_SOC_IPQ40XX) || defined(MAPAC1800)
 		if (!strcmp(p->kmod_name, "qca_ol")) {
 			if (!testmode) {
 				for (up = &umac_params[0]; *up != NULL; up++) {
@@ -1349,7 +1356,7 @@ void init_wl(void)
 #endif
 #endif
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 		if(sw_mode() != SW_MODE_ROUTER || nvram_match("wps_e_success", "1"))
 		{
 			if(nvram_get_int("x_Setting"))
@@ -1371,7 +1378,7 @@ void init_wl(void)
 #endif
 	}
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	int i;
 	if(sw_mode() == SW_MODE_AP) //router->ap
 	{
@@ -1472,7 +1479,7 @@ void fini_wl(void)
 		}      
 #endif
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	if(sw_mode() != SW_MODE_ROUTER || nvram_match("wps_e_success", "1"))
 	{
 		if(nvram_get_int("x_Setting"))
@@ -1539,7 +1546,7 @@ void init_syspara(void)
 	char pin[9];
 	char productid[13];
 	char fwver[8];
-	char blver[20];
+	char blver[32];
 #ifdef RTCONFIG_ODMPID
 #ifdef RTCONFIG_32BYTES_ODMPID
 	char modelname[32];
@@ -1870,7 +1877,7 @@ void reinit_sfe(int unit)
 #endif
 	}
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	if(sw_mode() != SW_MODE_ROUTER) /* maybe we should determin by wan0_nat_x, just override */
 		act = 0;
 #endif
@@ -1990,17 +1997,10 @@ int ecm_selection(void)
 		act = 0;
 
 	/* If QoS is enabled, disable ecm.
-	 * Including AiProtection due to BWDPI dep. module
-	 * doesn't compatible to IPQ806x NSS NAT acceleration.
+	 * Including AiProtection due to BWDPI dep. module is compatible to IPQ806x NSS NAT acceleration.
 	 */
-	if (nvram_get_int("qos_enable") == 1)
+	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)
 		act = 0;
-
-#if defined(RTCONFIG_BWDPI)
-	/* If there is any TrendMicro related function enabled, disable ecm. */
-	if (check_bwdpi_nvram_setting())
-		act = 0;
-#endif
 
 	/* If IPSec is enabled, disable ecm. */
 	if (nvram_get_int("ipsec_server_enable") == 1 || nvram_get_int("ipsec_client_enable") == 1)
@@ -2042,32 +2042,33 @@ void init_ecm(void)
 // in restart_wireless for wlx_mrate_x, etc
 void reinit_ecm(int unit)
 {
-	int i, act;
+	int i, act, r1, r2;
+	char val[4] = "0";
 	struct load_nat_accel_kmod_seq_s *p = &load_nat_accel_kmod_seq[0];
 
-	act = ecm_selection();
+	act = !!ecm_selection();
+
+	/* Always load ecm and related kernel modules.
+	 * If hardware NAT should not enabled, stop ecm instead.
+	 */
+	for (i = 0, p = &load_nat_accel_kmod_seq[i]; i < ARRAY_SIZE(load_nat_accel_kmod_seq); ++i, ++p) {
+		if (module_loaded(p->kmod_name))
+			continue;
+
+		dbg("%s: Load %s\n", __func__, p->kmod_name);
+		modprobe(p->kmod_name);
+		if (p->load_sleep)
+			sleep(p->load_sleep);
+	}
+	snprintf(val, sizeof(val), "%d", !act);
+	/* resume/stop ecm. */
+	r1 = f_write_string("/sys/kernel/debug/ecm/ecm_nss_ipv4/stop", val, 0, 0);
+	r2 = f_write_string("/sys/kernel/debug/ecm/ecm_nss_ipv6/stop", val, 0, 0);
 	if (!act) {
-		/* remove ecm */
-		for (i = ARRAY_SIZE(load_nat_accel_kmod_seq) - 1, p = &load_nat_accel_kmod_seq[i]; i >= 0; --i, --p) {
-			if (!module_loaded(p->kmod_name))
-				continue;
-
-			dbg("%s: Remove %s\n", __func__, p->kmod_name);
-			modprobe_r(p->kmod_name);
-			if (p->remove_sleep)
-				sleep(p->load_sleep);
-		}
-	} else {
-		/* load ecm */
-		for (i = 0, p = &load_nat_accel_kmod_seq[i]; i < ARRAY_SIZE(load_nat_accel_kmod_seq); ++i, ++p) {
-			if (module_loaded(p->kmod_name))
-				continue;
-
-			dbg("%s: Load %s\n", __func__, p->kmod_name);
-			modprobe(p->kmod_name);
-			if (p->load_sleep)
-				sleep(p->load_sleep);
-		}
+		f_write_string("/sys/kernel/debug/ecm/ecm_db/defunct_all", "1", 0, 0);
+	}
+	if (r1 <= 0 || r2 <= 0) {
+		dbg("%s ecm failed. (return %d/%d)\n", act? "Resume" : "Stop", r1, r2);
 	}
 
 	post_ecm();
@@ -2155,6 +2156,7 @@ set_wan_tag(char *interface) {
 	case MODEL_RTAC55UHP:
 	case MODEL_RT4GAC55U:
 	case MODEL_RTAC58U:
+	case MODEL_RT4GAC53U:
 	case MODEL_RTAC82U:
 	case MODEL_RTAC88N:
 		ifconfig(interface, IFUP, 0, 0);

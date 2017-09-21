@@ -229,6 +229,10 @@ CFLAGS += -I$(TOP)/cfg_mnt
 LDFLAGS += -L$(TOP)/cfg_mnt -lcfgmnt
 endif
 
+ifeq ($(RTCONFIG_SW_HW_AUTH), y)
+CFLAGS += -I$(TOP)/sw-hw-auth
+endif
+
 OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o
 OBJS += watchdog.o ntp.o btnsetup.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
@@ -261,7 +265,7 @@ OBJS += init-ralink-dsl.o
 endif
 else ifeq ($(RTCONFIG_QCA),y)
 OBJS += init-qca.o wps-qca.o qca.o ate-qca.o $(if $(wildcard sysdeps/qca/ctl.c),ctl.obj,prebuild/ctl.obj)
-ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300)),y)
+ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300),$(MAPAC1800)),y)
 OBJS += repacd.o
 endif
 else ifeq ($(RTCONFIG_ALPINE),y)
@@ -270,7 +274,7 @@ else ifeq ($(RTCONFIG_LANTIQ),y)
 OBJS += init-lantiq.o wps-lantiq.o lantiq.o ate-lantiq.o lantiq-wave.o
 else
 OBJS += init-broadcom.o wps-broadcom.o broadcom.o ate-broadcom.o
-ifeq ($(BUILD_NAME), RT-AC68U)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200))
 OBJS += cfe.o
 endif
 ifeq ($(RTCONFIG_ADTBW),y)
@@ -494,6 +498,9 @@ OBJS += roamast.o
 ifeq ($(RTCONFIG_RALINK),y)
 OBJS += roamast-ralink.o
 endif
+ifeq ($(RTCONFIG_LANTIQ),y)
+OBJS += roamast-lantiq.o
+endif
 endif
 
 ifeq ($(RTCONFIG_TCODE),y)
@@ -622,6 +629,7 @@ ifeq ($(RTCONFIG_LANTIQ),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc set_usb3_to_usb2
 	@cd $(INSTALLDIR)/sbin && ln -sf rc set_usb2_to_usb3
 	@cd $(INSTALLDIR)/sbin && ln -sf rc update_client
+	@cd $(INSTALLDIR)/sbin && ln -sf rc start_repeater
 endif
 ifneq ($(RTCONFIG_QCA)$(RTCONFIG_RALINK)$(RTCONFIG_ALPINE)$(RTCONFIG_LANTIQ),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc watchdog02
@@ -744,7 +752,7 @@ endif
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
 
-ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300)),y)
+ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300),$(MAPAC1800)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_cap 
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_re
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wifimon_check
@@ -921,11 +929,11 @@ else
 ifeq ($(RTCONFIG_HTTPS),y)
 ifeq ($(RTCONFIG_PUSH_EMAIL),y)
 dsl_fb.o:dsl_fb.c
-	@echo "encrypt dsl password"
-	./dsl_fb_enc.sh
-	@$(CC) $(CFLAGS) -c dsl_fb.c
-	@echo "decrypt dsl password"
-	./dsl_fb_dec.sh
+#	@echo "encrypt dsl password"
+#	./dsl_fb_enc.sh
+#	@$(CC) $(CFLAGS) -c dsl_fb.c
+#	@echo "decrypt dsl password"
+#	./dsl_fb_dec.sh
 endif
 endif
 endif
@@ -982,7 +990,7 @@ ifneq ($(wildcard ./prebuild/ate.o),)
 ate.o:
 	@-cp -f ./prebuild/ate.o .
 endif
-ifeq ($(BUILD_NAME), RT-AC68U)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200))
 ifneq ($(wildcard ./prebuild/cfe.o),)
 cfe.o:
 	@-cp -f ./prebuild/cfe.o .
@@ -1080,6 +1088,10 @@ endif
 ifneq ($(wildcard ./prebuild/lantiq-wave.o),)
 lantiq-wave.o:
 	@-cp -f ./prebuild/lantiq-wave.o .
+endif
+ifneq ($(wildcard ./prebuild/client.o),)
+client.o:
+	@-cp -f ./prebuild/client.o .
 endif
 endif
 

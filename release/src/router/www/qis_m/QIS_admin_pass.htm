@@ -17,7 +17,7 @@
 var wanstate = -1;
 var wansbstate = -1;
 var wanauxstate = -1;
-var accounts = [<% get_all_accounts(); %>];
+var accounts = [<% get_all_accounts(); %>][0];
 <% wanstate(); %>
 var autodet_state = '<% nvram_get("autodet_state"); %>';
 var autodet_auxstate = '<% nvram_get("autodet_auxstate"); %>';

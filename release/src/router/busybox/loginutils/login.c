@@ -128,6 +128,10 @@ static const struct pam_conv conv = {
 };
 #endif
 
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV && defined(SECURITY_NOTIFY)
+#include <libptcsrv.h>
+#endif
+
 enum {
 	TIMEOUT = 60,
 	EMPTY_USERNAME_COUNT = 10,
@@ -357,6 +361,10 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 #if ENABLE_LOGIN_SESSION_AS_CHILD
 	pid_t child_pid;
 #endif
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV
+	char *telnet_addr;
+	char *telnet_port;
+#endif
 
 	INIT_G();
 
@@ -404,6 +412,16 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 	} else {
 		fromhost = xasprintf(" on '%s'", short_tty);
 	}
+
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV
+	telnet_addr = xstrdup(getenv("TELNET_ADDR"));
+	telnet_port = xstrdup(getenv("TELNET_PORT"));
+	/* telnetd can't use login with -p, so why bother?
+	if (opt & LOGIN_OPT_p) {
+		unsetenv("TELNET_ADDR");
+		unsetenv("TELNET_PORT");
+	} */
+#endif
 
 	/* Was breaking "login <username>" from shell command line: */
 	/*bb_setpgrp();*/
@@ -482,6 +500,13 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 			failed_msg = "setcred";
 			goto pam_auth_failed;
 		}
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV && defined(SECURITY_NOTIFY)
+		if (telnet_addr) {
+			SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET,
+				RPT_SUCCESS, telnet_addr,
+				"(PAM) From busybox telnet , LOGIN SUCCESS");
+		}
+#endif
 		break; /* success, continue login process */
 
  pam_auth_failed:
@@ -514,14 +539,29 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 		 * Note that reads (in no-echo mode) trash tty attributes.
 		 * If we get interrupted by SIGALRM, we need to restore attrs.
 		 */
-		if (ask_and_check_password(pw) > 0)
+		if (ask_and_check_password(pw) > 0) {
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV && defined(SECURITY_NOTIFY)
+			if (telnet_addr) {
+				SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET,
+					RPT_SUCCESS, telnet_addr,
+					"(NOT PAM) From busybox telnet , LOGIN SUCCESS");
+			}
+#endif
 			break;
+		}
 #endif /* ENABLE_PAM */
  auth_failed:
 		opt &= ~LOGIN_OPT_f;
 		bb_do_delay(LOGIN_FAIL_DELAY);
 		/* TODO: doesn't sound like correct English phrase to me */
 		puts("Login incorrect");
+#if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV && defined(SECURITY_NOTIFY)
+		if (telnet_addr) {
+			SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET,
+				RPT_FAIL, telnet_addr,
+				"From busybox telnet , LOGIN FAIL");
+		}
+#endif
 		if (++count == 3) {
 			syslog(LOG_WARNING, "invalid password for '%s'%s",
 						username, fromhost);
@@ -572,6 +612,10 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 	setup_environment(pw->pw_shell,
 			(!(opt & LOGIN_OPT_p) * SETUP_ENV_CLEARENV) + SETUP_ENV_CHANGEENV,
 			pw);
+	IF_FEATURE_TELNETD_CLIENT_TO_ENV({
+		char *env = xasprintf("%s=%s %s", "TELNET_CLIENT", telnet_addr, telnet_port);
+		putenv(env);
+	})
 
 #if ENABLE_PAM
 	/* Modules such as pam_env will setup the PAM environment,

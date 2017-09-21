@@ -272,7 +272,7 @@ function clipboard(ID_value)
 														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“Alexa, ask ASUS ROUTER to turn on Guest Network for two hours”</p>
 														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“Alexa, ask ASUS ROUTER to turn off Guest Network”</p>
 														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“Alexa, ask ASUS ROUTER to pause the Internet”</p>
-														<p style="font-family:Arial, Helvetica, sans-serif;font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;">More Skills</p>
+														<a style="font-family:Arial, Helvetica, sans-serif;font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" href="https://www.asus.com/us/support/FAQ/1033393" target="_blank">More Skills</a>
 														<p id="network_services_Remind" style="font-size:13px;padding-top: 10px;font-style:italic;color:#FFCC00;font-size:13px;display: none;">
 														Remind : The policy of network services filter you are using in firewall will be covered once you saying “Alexa, ask ASUS Router to block devices from internet access”
 														</p>
@@ -304,7 +304,7 @@ function clipboard(ID_value)
 																			</div>
 																			<div class="div_td" style="vertical-align:middle;">
 																				<div style="text-align:right;">
-																			<input class="button_gen_short" type="button" onclick="window.open('http://alexa.amazon.com/spa/index.html#skills/beta/amzn1.ask.skill.ea91f4d4-81a2-463a-bbba-8ac4b4506401');" value="GO">
+																			<input class="button_gen_short" type="button" onclick="window.open('http://alexa.amazon.com/spa/index.html#skills/dp/B07285G1RK');" value="GO">
 																				</div>
 																			</div>
 																		</div>

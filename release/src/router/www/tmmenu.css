@@ -119,11 +119,20 @@ select {
 	padding: 0;
 	margin: 0;
 }
+
 #tabs li {
 	display: inline;
 	list-style: none;
 	background-color: #1F2D35;
+	position: relative;
+	float:left;
 }
+
+#tabs li li a{
+	min-width: 220px;
+	white-space:nowrap;
+}
+
 #tabs a {
 	padding-top: 3px;
 	padding-bottom: 10px;
@@ -154,16 +163,38 @@ select {
 	border-width: 2px;
 	background: #1F2D35 url(/images/svg_th_hover.png) repeat-x;
 }
+
 #tabs a.active {
 	color: #FFFFFF;
 	font-weight: bold;
 	border-width: 2px;
 	background: #1F2D35 url(images/svg_th_hover.png) repeat-x;
 }
+
 #tabs a:hover {
 	background: url(/images/svg_th_hover.png) repeat-x;
 	color: #FFFFFF;
 	font-weight: bold;
+}
+
+#tabs li:hover > a {
+	background: url(/images/svg_th_hover.png) repeat-x;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+#tabs ul{
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	position: absolute;
+	top: 28px;
+	display: none;
+}
+
+#tabs li:hover ul{
+	display: block;
+	z-index: 9999;
 }
 
 .section-title {

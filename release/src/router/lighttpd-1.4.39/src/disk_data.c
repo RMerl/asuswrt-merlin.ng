@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
+#define _XOPEN_SOURCE /* See feature_test_macros(7) */
 #include <unistd.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -3300,3 +3301,74 @@ extern int add_account(const char *const account, const char *const password){
 
     return 0;
 }
+
+//==========================================================================================================================
+// shared/misc.c
+int upper_strncmp(const char *const str1, const char *const str2, int count){
+	char *upper_str1, *upper_str2;
+	int ret;
+
+	if(str1 == NULL || str2 == NULL)
+		return -1;
+
+	if(get_upper_str(str1, &upper_str1) == NULL)
+		return -1;
+
+	if(get_upper_str(str2, &upper_str2) == NULL){
+		free(upper_str1);
+		return -1;
+	}
+
+	ret = strncmp(upper_str1, upper_str2, count);
+	free(upper_str1);
+	free(upper_str2);
+
+	return ret;
+}
+//==========================================================================================================================
+// libpasswd/passwd.c
+#include <shadow.h>
+//#include <crypt.h>
+int compare_passwd_in_shadow(const char *username, const char *passwd)
+{
+	char *salt, *correct, *p, *supplied;
+	struct spwd *shadow_entry;
+	
+	if(!username || !passwd)
+		return 0;
+
+	shadow_entry = getspnam(username);
+
+	if(!shadow_entry)
+		return 0;
+
+	correct = shadow_entry->sp_pwdp;
+	
+	salt = strdup(correct);
+
+	if (salt == NULL) 
+		goto ERROR;
+	
+	p = strchr(salt + 1, '$');
+	if (p == NULL) 
+		goto ERROR;
+	
+	p = strchr(p + 1, '$');
+	if (p == NULL) 
+		goto ERROR;
+	p[1] = 0;	
+
+	supplied = crypt(passwd, salt);
+	
+	if (supplied == NULL) 
+		goto ERROR;
+
+	free(salt);
+	return !strcmp(supplied, correct);
+	
+ERROR:
+	if(salt)
+		free(salt);
+	return 0;
+}
+

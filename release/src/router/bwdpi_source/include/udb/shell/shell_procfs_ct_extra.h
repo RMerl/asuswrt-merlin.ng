@@ -30,6 +30,8 @@
 
 int cte_stat_proc_show(struct seq_file *m, void *v);
 int cte_stat_proc_open(struct inode *inode, struct file *file);
+int cte_dump_proc_show(struct seq_file *m, void *v);
+int cte_dump_proc_open(struct inode *inode, struct file *file);
 
 #endif /* _UDB_SHELL_PROCFS_CT_EXTRA_H_ */
 

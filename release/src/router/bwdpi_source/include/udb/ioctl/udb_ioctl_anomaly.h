@@ -39,6 +39,47 @@ enum
 	UDB_IOCTL_ANOMALY_OP_MAX
 };
 
+#ifndef UDB_IPS_EVENT
+#define UDB_IPS_EVENT
+
+#define GET_IPS_DIR(is_reply, is_up) \
+({ \
+	uint8_t d = 0; \
+	if (!(is_reply)) \
+		d |= IPS_DIR_C2S; \
+	if (is_up) \
+		d |= IPS_DIR_UL; \
+	d; \
+})
+
+#define IPS_ROLE_ATT	1
+#define IPS_ROLE_VIC	2
+
+#define IPS_DIR_UL	(1 << 0)
+#define IPS_DIR_C2S	(1 << 1)
+
+typedef struct
+{
+	uint32_t rule_id;	//!< key
+	uint64_t time;		//!< Record event begin time, timestamp. Ex. get_second()
+	uint32_t hit_cnt;	//!< event hit count
+	uint8_t role;		//!< 0 is unknown, 1 is attacker, 2 is victim
+	uint8_t dir; 		//!< 1st bit is upload/download, 2nd bit is c2s/s2c
+	uint8_t ip_ver;
+	uint8_t proto;
+	uint16_t peer_port;
+	uint16_t local_port;
+	uint8_t peer_ip[16];	//IP_ADDR_LEN
+	uint8_t local_ip[16];	//IP_ADDR_LEN
+	uint8_t action;		//!< the pkt action, 0 means accept, 1 means block
+	uint8_t severity;
+	int8_t hook;
+	char in_dev[IFACE_NAME_SIZE];
+	char out_dev[IFACE_NAME_SIZE];
+} ips_event_entry_t;
+
+#endif // UDB_IPS_EVENT
+
 typedef struct udb_ano_ioc_entry
 {
 	uint64_t time;
@@ -55,28 +96,34 @@ typedef struct udb_ano_ioc_entry_list
 	udb_ano_ioc_entry_t entry[0];
 } udb_ano_ioc_entry_list_t;
 
-typedef struct udb_ano_ioc_entry_v2
+typedef struct
 {
-	uint64_t time;
-	uint32_t rule_id;
+	uint8_t src_mac[ETH_ALEN];
+	ips_event_entry_t event;
+} anomaly_ioc_v2_entry_t;
 
-	uint32_t hit_cnt;
-	uint8_t action; //0 means accept, 1 means block
-	uint8_t mac[6];
-	
-	uint8_t role; //!< 1 is attacker, 0 is victim
-	uint16_t sport;
-	uint16_t dport;
-	uint8_t ip_ver;	
-	uint8_t dip[16];	//IP_ADDR_LEN
-	uint8_t sip[16];
-} udb_ano_ioc_entry_v2_t;
-
-typedef struct udb_ano_ioc_entry_list_v2
+typedef struct
 {
-	uint32_t cnt;
-	udb_ano_ioc_entry_v2_t entry[0];
-} udb_ano_ioc_entry_list_v2_t;
+	uint8_t uid;
+	uint8_t mac[ETH_ALEN];
+	uint8_t ipv4[4];
+	uint8_t ipv6[16];
+	uint16_t ent_cnt;
+	anomaly_ioc_v2_entry_t entry[0];
+} anomaly_ioc_v2_mac_hdr_t;
+
+typedef struct
+{
+	uint32_t ent_cnt;
+	anomaly_ioc_v2_entry_t entry[0];
+} anomaly_ioc_v2_rt_hdr_t;
+
+typedef struct
+{
+	uint32_t mac_cnt;
+	anomaly_ioc_v2_mac_hdr_t mac_entry[0];
+	anomaly_ioc_v2_rt_hdr_t rt_entry[0];
+} anomaly_ioc_v2_hdr_t;
 
 #ifdef __KERNEL__
 int udb_ioctl_anomaly_op_copy_out(uint8_t op, void *buf, uint32_t buf_len, uint32_t *buf_used_len);

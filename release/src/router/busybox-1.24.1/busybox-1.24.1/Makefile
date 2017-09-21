@@ -616,7 +616,7 @@ quiet_cmd_busybox__ ?= LINK    $@
       "$(LDFLAGS) $(EXTRA_LDFLAGS)" \
       "$(core-y)" \
       "$(libs-y)" \
-      "$(LDLIBS)"
+      "$(LDLIBS) $(EXTRA_LDLIBS)"
 
 # Generate System.map
 quiet_cmd_sysmap = SYSMAP

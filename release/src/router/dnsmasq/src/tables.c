@@ -20,9 +20,7 @@
 
 #if defined(HAVE_IPSET) && defined(HAVE_BSD_NETWORK)
 
-#ifndef __FreeBSD__
 #include <string.h>
-#endif
 
 #include <sys/types.h>
 #include <sys/ioctl.h>

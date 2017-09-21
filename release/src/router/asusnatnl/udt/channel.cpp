@@ -354,19 +354,24 @@ int CChannel::sendto(const sockaddr* addr, CPacket& packet) const
       pjsua_call *call = (pjsua_call *)m_call;
 	  if(call == NULL) return -1;
 
+	  pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
+
 	  // DEAN, prevent assert fail while garbage collector remove UDT socket on multiple instance. 
 	  if (!pj_thread_is_registered(call->inst_id)) {
 		  int status = pj_thread_register(call->inst_id, "CChannel::sendto", desc, &thread );
-		  if (status != PJ_SUCCESS)
+		  if (status != PJ_SUCCESS) {
+        pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 			  return -1;
+      }
 	  }
 
 	  pj_mutex_lock(call->tnl_stream_lock2);
 
 	  natnl_stream *stream = (natnl_stream *)call->tnl_stream;
 	  if(stream == NULL) {
-	     pj_mutex_unlock(call->tnl_stream_lock2);
-	     return -1;
+        pj_mutex_unlock(call->tnl_stream_lock2);
+        pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
+        return -1;
 	  }
 
      size = CPacket::m_iPktHdrSize + packet.getLength() + sizeof(natnl_hdr);
@@ -397,7 +402,9 @@ resend:
 	      goto resend;   
       }
 #endif
-      pj_mutex_unlock(call->tnl_stream_lock2);
+	  pj_mutex_unlock(call->tnl_stream_lock2);
+
+	  pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
    }
    res = (0 == res) ? size : -1;
 
@@ -433,15 +440,21 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
     if (m_iSocket == -1) {
         pjsua_call *call = (pjsua_call *)m_call;
         if(call == NULL)
-                return -1;
+            return -1;
 		if(call->tnl_stream==NULL)
 			return -1;
+    
+    //PJ_LOG(4, ("channel.cpp", "UDT::CChannel::recvfrom. grp_lock_ref_cnt=%d", pj_grp_lock_get_ref(call->tnl_stream->grp_lock)));
+
+		pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
 
 		// DEAN, prevent assert fail while garbage collector remove UDT socket on multiple instance. 
 		if (!pj_thread_is_registered(call->inst_id)) {
 			int status = pj_thread_register(call->inst_id, "CChannel::recvfrom", desc, &thread );
-			if (status != PJ_SUCCESS)
+			if (status != PJ_SUCCESS) {
+				pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 				return -1;
+			}
 		}
 
 		pj_mutex_lock(call->tnl_stream_lock3);
@@ -451,6 +464,7 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
 		//get data from rBuff
 		if (stream == NULL) {
 			pj_mutex_unlock(call->tnl_stream_lock3);
+			pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 			return -1;
 		}
 		// charles CHARLES
@@ -500,6 +514,8 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
 #endif
 		}
 		pj_mutex_unlock(call->tnl_stream_lock3);
+
+		pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
     }
 
    if (res <= 0)

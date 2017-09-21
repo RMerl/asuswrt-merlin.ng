@@ -141,7 +141,7 @@ function initial(){
 				else
 					document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a style=\"font-weight: bolder;text-decoration: underline;word-break:break-all;\" href=\"https://"+ ddns_hostname + ":"+ https_port +"\" target=\"_blank\">https://"+ ddns_hostname +":"+ https_port +"</a><br />";
 				
-				document.getElementById("accessMethod").innerHTML += "To modify the ddns name, please click <a style=\"font-weight: bolder;text-decoration: underline;\" href=\"/Advanced_ASUSDDNS_Content.asp?af=DDNSName\" target=\"_blank\">here</a>.";
+				document.getElementById("accessMethod").innerHTML += '<#aicloud_disk_case12#>';
 			}
 			else{
 				if(https_port == 443) // if the port number of https is 443, hide it
@@ -151,7 +151,7 @@ function initial(){
                                 	document.getElementById('cloud_url').href = "https://"+ theUrl +":" + https_port;
 	                                document.getElementById('cloud_url').innerHTML = "https://"+ theUrl +":" + https_port;
 				}	
-				document.getElementById("accessMethod").innerHTML += "<br/>Register for an ASUS DDNS <a style=\"font-weight: bolder;text-decoration: underline;\" href=\"/Advanced_ASUSDDNS_Content.asp\" target=\"_blank\">here</a> to access the cloud disk online.";
+				document.getElementById("accessMethod").innerHTML += '<br/><#aicloud_disk_case22#>';
 			}
 			break;
 	}

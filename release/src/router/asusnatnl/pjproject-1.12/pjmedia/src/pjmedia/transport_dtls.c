@@ -46,6 +46,9 @@
 #include <openssl/err.h>
 #include <openssl/x509v3.h>
 #include <openssl/rand.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 //#define BYPASS 1
 //#define DUMP_PACKET 1
@@ -199,7 +202,7 @@ typedef struct ssl_buff
  */
 
 static void *ssl_alloc(size_t size) {
-	//ssl_buff *buf = pj_mem_alloc(sizeof(ssl_buff));
+	//ssl_buff *buf = malloc(sizeof(ssl_buff));
 	//pj_list_push_back(&call->tnl_stream->no_ctl_rbuff, buf);
 	void *buff = malloc(size);
 	PJ_LOG(4, (THIS_FILE, "ssl_alloc		buff=[%p],	size=[%d]", buff, size));

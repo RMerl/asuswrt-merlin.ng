@@ -518,17 +518,17 @@ function gen_lantowanTable(client){
 	redraw_selected_time(MULTIFILTER_MACFILTER_DAYTIME_col);
 	
 	var code_temp = "";
-	code_temp = '<table style="width:350px;margin-left:-200px;"><tr>';
-	code_temp += "<td><div style=\"width:95px;font-family:Arial,sans-serif,Helvetica;font-size:18px;\"><#Clock_Format#></div></td>";
+	code_temp = '<table><tr>';
+	code_temp += "<td><div style=\"font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px\"><#Clock_Format#></div></td>";
 	code_temp += '<td><div>';
 	code_temp += '<select id="clock_type_select" class="input_option" onchange="change_clock_type(this.value);">';
 	code_temp += '<option value="0" >12-hour</option>';
 	code_temp += '<option value="1" >24-hour</option>';
 	code_temp += '</select>';
 	code_temp += '</div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Allow</div></td>';
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px"><#ParentalCtrl_allow#></div></td>';
 	code_temp += '<td><div style="width:90px;height:20px;background:#9CB2BA;"></div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Deny</div></td>';
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px"><#ParentalCtrl_deny#></div></td>';
 	code_temp += '<td><div style="width:90px;height:20px;border:solid 1px #000"></div></td>';
 	code_temp += '</tr></table>';
 	document.getElementById('hintBlock').innerHTML = code_temp;

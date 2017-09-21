@@ -37,7 +37,6 @@
 #include <string.h> // memset
 #endif
 
-#include "tdts/tmcfg.h"
 #include "udb/tmcfg_udb.h"
 
 #ifdef __KERNEL___
@@ -54,6 +53,9 @@
 #define UDB_SHELL_IOCTL_CHRDEV_PATH "/dev/" UDB_SHELL_IOCTL_CHRDEV_NAME //!< The device node path in system.
 #define UDB_SHELL_IOCTL_CHRDEV_MAJOR TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ
 #define UDB_SHELL_IOCTL_CHRDEV_MINOR TMCFG_E_UDB_SHELL_IOCTL_DEV_MIN
+
+/*! magic */
+#define UDB_SHELL_IOCTL_MAGIC TMCFG_E_UDB_SHELL_IOCTL_DEV_MAGIC
 
 /*!
  * \brief tdts_shell ioctl.
@@ -89,15 +91,16 @@ typedef struct udb_shell_ioctl
 	uint8_t rsv2[16]; //!< Reserve for future use
 } udb_shell_ioctl_t;
 
-#define _UDB_IOCTL_CMD_R(_nr) _IOR(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, udb_shell_ioctl_t)
-#define _UDB_IOCTL_CMD_W(_nr) _IOW(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, udb_shell_ioctl_t)
-#define _UDB_IOCTL_CMD_WR(_nr) _IOWR(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, udb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_R(_nr) _IOR(UDB_SHELL_IOCTL_MAGIC, _nr, udb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_W(_nr) _IOW(UDB_SHELL_IOCTL_MAGIC, _nr, udb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_WR(_nr) _IOWR(UDB_SHELL_IOCTL_MAGIC, _nr, udb_shell_ioctl_t)
 
 #define UDB_SHELL_IOCTL_CMD_NA		0x00 //!< N/A. Do not use
 #define UDB_SHELL_IOCTL_CMD_INTERNAL 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_INTERNAL)
 #define UDB_SHELL_IOCTL_CMD_COMMON 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_COMMON)
 #define UDB_SHELL_IOCTL_CMD_PATROL_TQ 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_PATROL_TQ)
 #define UDB_SHELL_IOCTL_CMD_WRS 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_WRS)
+#define UDB_SHELL_IOCTL_CMD_WBL 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_WBL)
 #define UDB_SHELL_IOCTL_CMD_IQOS 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_IQOS)
 #define UDB_SHELL_IOCTL_CMD_VP 		_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_VP)
 #define UDB_SHELL_IOCTL_CMD_ANOMALY 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_ANOMALY)
@@ -111,9 +114,6 @@ typedef enum
 	UDB_SHELL_IOCTL_TYPE_RAW, //!< type is raw data, length must be specified correctly.
 	UDB_SHELL_IOCTL_TYPE_MAX
 } udb_shell_ioctl_type_t;
-
-/*! magic */
-#define UDB_SHELL_IOCTL_MAGIC UDB_SHELL_IOCTL_CHRDEV_MAJOR
 
 /*!@}*/
 

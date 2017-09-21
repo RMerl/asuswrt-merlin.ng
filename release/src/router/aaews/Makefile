@@ -13,6 +13,9 @@ SHARED_DIR=$(TOP)/shared
 WB_DIR=$(TOP)/wb
 QCSAPI_DIR=$(TOP)/libqcsapi_client
 NT_CENTER_DIR=$(TOP)/nt_center
+ifeq ($(RTCONFIG_SW_HW_AUTH),y)
+SW_HW_AUTH_DIR=$(TOP)/sw-hw-auth
+endif
 
 NATNL_DIR=$(TOP)/asusnatnl/natnl
 ASUSNATNL_CFLAGS=-I$(NATNL_DIR)
@@ -58,8 +61,14 @@ LDFLAGS += -L$(LIBDIR) -lm
 endif
 
 ifeq ($(HND_ROUTER),y)
+CFLAGS += -DPTHREAD_STACK_SIZE=0x51200
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -lgcc_s
 endif
+
+ifeq ($(RTCONFIG_SW_HW_AUTH),y)
+CFLAGS += -I$(SW_HW_AUTH_DIR) -DSW_HW_AUTH
+endif
+
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 $(DOG):
 	-cp -f $(TOP)/aaews/prebuild$(BCMEX)$(EXHND)/mastiff mastiff

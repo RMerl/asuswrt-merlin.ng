@@ -20,6 +20,7 @@
 #define BWDPI_SQLITE_DELOG      "/tmp/BWSQL_LOG"
 #define BWDPI_MON_DEBUG         "/tmp/BWMON_DEBUG"
 #define BWDPI_MON_DELOG         "/tmp/BWMON_LOG"
+#define BWDPI_SUP_DEBUG         "/tmp/BWSUP_DEBUG"
 
 /* DEBUG FUNCTION */
 #define BWDPI_DBG(fmt,args...) \
@@ -54,6 +55,11 @@
 		char info[1024]; \
 		snprintf(info, sizeof(info), "echo \"[BWMON]"fmt"\" >> /tmp/BWMON.log", ##args); \
 		system(info); \
+	}
+
+#define BWSUP_DBG(fmt,args...) \
+	if(f_exists(BWDPI_SUP_DEBUG) > 0) { \
+		dbg("[BWSUP][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
 // signature check
@@ -135,3 +141,6 @@ extern int data_collect_main(char *cmd, char *path);
 extern void auto_sig_check();
 extern void sqlite_db_check();
 extern void tm_eula_check();
+
+//dpi_support.c
+extern int dump_dpi_support(int index);

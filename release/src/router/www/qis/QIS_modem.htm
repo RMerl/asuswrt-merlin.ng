@@ -175,7 +175,7 @@ function submitForm(){
 		document.form.modem_isp.options[0] = new Option(valueStr, valueStr, false, true);
 	}
 
-	if((parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && parent.flag_manual){
+	if((parent.based_modelid == "4G-AC53U" || parent.based_modelid == "4G-AC55U" || parent.based_modelid == "4G-AC68U") && parent.flag_manual){
 		document.form.flag.value = "manual";
 	}
 
@@ -861,7 +861,7 @@ function select_usb_device(obj){
 			<th width="40%"><#APN_configuration#></th>
 			<td>
 				<select name="modem_autoapn" id="modem_autoapn" class="input_option" onchange="change_apn_mode();">
-					<option value="1" <% nvram_match("modem_autoapn", "1","selected"); %>>Automatic</option><!--untranslated-->
+					<option value="1" <% nvram_match("modem_autoapn", "1","selected"); %>><#Auto#></option>
 					<option value="0" <% nvram_match("modem_autoapn", "0","selected"); %>><#Manual_Setting_btn#></option>
 				</select>
 			</td>

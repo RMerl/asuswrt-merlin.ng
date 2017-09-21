@@ -4,6 +4,10 @@
 PREFIX	?= /usr
 MAN1DIR	?= $(PREFIX)/man/man1
 BINDIR	?= $(PREFIX)/bin
+
+CFLAGS += $(if $(STAGING_DIR),--sysroot=$(STAGING_DIR))
+LDFLAGS += $(if $(STAGING_DIR),--sysroot=$(STAGING_DIR))
+
 CFLAGS	+= -g -W -Wall -DHAVE_CONFIG_H
 OBJS 	 = acctproc.o \
 	   base64.o \

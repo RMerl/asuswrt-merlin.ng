@@ -499,6 +499,9 @@ function initial(){
 				else if(getflag == "pppoe_fail"){
 					return;
 				}
+				else if(getflag == "sim"){
+					qis_delay_redirect('/qis/QIS_detect.htm?flag=sim');
+				}
 				else{
 					if(isMobile())
 						setTimeout("qis_delay_redirect('/qis_m/QIS_verify_detect.htm');", restart_time*1000);

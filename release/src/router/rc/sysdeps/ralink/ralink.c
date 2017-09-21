@@ -393,6 +393,10 @@ int getCountryRegion5G(const char *countryCode, int *warning, int IEEE80211H)
 		if (nvram_contains_word("rc_support", "loclist") && !strcasecmp(countryCode, "AU"))
 			return 9;
 #endif
+#if defined(RTAC53)
+		if (nvram_contains_word("rc_support", "loclist") && !strcasecmp(countryCode, "SG"))
+			return 18;
+#endif
 		return 0;
 	}
 	else if (
@@ -1365,8 +1369,30 @@ int gen_ralink_config(int band, int is_iNIC)
 #else
 			&& wlc_band == band
 #endif
-			) 
+			)
+		{ 
 			fprintf(fp, "AutoChannelSelect=%d\n", 1);
+#ifdef RTCONFIG_RALINK_DFS
+			if(band){
+					snprintf(prefix_mssid, sizeof(prefix_mssid), "wl%d.1_", band);
+					if(nvram_get_int(strcat_r(prefix_mssid, "channel", tmp)) == 0){
+						memset(tmpstr, 0x0, sizeof(tmpstr));
+						if ((nvram_get_int(strcat_r(prefix_mssid, "bw", tmp)) == 1) || (nvram_get_int(strcat_r(prefix_mssid, "bw", tmp)) == 3)){
+							if(band && IEEE80211H){
+								sprintf(tmpstr,"%d;%d;%d;%d;%d",165,116,132,136,140);
+								fprintf(fp,"AutoChannelSkipList=%s\n",tmpstr);
+							}
+						}
+						else if (nvram_get_int(strcat_r(prefix_mssid, "bw", tmp)) == 2){
+							if(band && IEEE80211H){
+								sprintf(tmpstr,"%d;%d;%d",165,116,140);
+								fprintf(fp,"AutoChannelSkipList=%s\n",tmpstr);
+							}
+						}
+					}
+				}
+#endif	/* RTCONFIG_RALINK_DFS */
+		}
 		else if (str && strlen(str))
 		{
 			if (atoi(str) == 0)
@@ -1387,8 +1413,14 @@ int gen_ralink_config(int band, int is_iNIC)
 					sprintf(tmpstr,"%d",165);// skip 165 in A band when bw setting to 20/40Mhz or 40Mhz.
 
 #ifdef RTCONFIG_RALINK_DFS
-					if(band && IEEE80211H)
-						sprintf(tmpstr,"%s;%d",tmpstr,116);	//skip 116 when BW > 20MHz
+					if(band && IEEE80211H){
+						if((nvram_get_int(strcat_r(prefix, "bw", tmp))==1) || (nvram_get_int(strcat_r(prefix, "bw", tmp))==3)){
+							sprintf(tmpstr,"%s;%d;%d;%d;%d",tmpstr,116,132,136,140);	//skip 116 132 136 140 under auto mode					
+						}
+						else if(nvram_get_int(strcat_r(prefix, "bw", tmp))==2){
+							sprintf(tmpstr,"%s;%d;%d",tmpstr,116,140);	//skip 116 132 136 140 under auto mode					
+						}
+					}
 #endif	/* RTCONFIG_RALINK_DFS */
 				}
 
@@ -3949,7 +3981,7 @@ getSiteSurvey(int band,char* ofile)
 				for (i = 0; i < apCount; i++){
 					if(atoi(ssap->SiteSurvey[i].channel) < 0 )
 					{
-						fprintf(fp, "\"ERR_BNAD\",");
+						fprintf(fp, "\"ERR_BAND\",");
 					}else if( atoi(ssap->SiteSurvey[i].channel) > 0 && atoi(ssap->SiteSurvey[i].channel) < 14)
 					{
 						fprintf(fp, "\"2G\",");
@@ -3958,7 +3990,7 @@ getSiteSurvey(int band,char* ofile)
 						fprintf(fp, "\"5G\",");
 					}
 					else{
-						fprintf(fp, "\"ERR_BNAD\",");
+						fprintf(fp, "\"ERR_BAND\",");
 					}
 
 					if (strlen(ssap->SiteSurvey[i].ssid) == 0){

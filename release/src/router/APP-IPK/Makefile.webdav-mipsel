@@ -87,7 +87,7 @@ libxml2/stamp-h1:
 	touch stamp-h1
 
 libxml2: libxml2/stamp-h1
-	cd $(CURRENT)/libxml2 && \
+	cd $(CURRENT)/libxml2 && autoreconf -i -f && \
 	AR=$(AR) AS=$(AS) LD=$(LD) NM=$(NM) CC=$(CC) CPP="$(CC) -E" GCC=$(CC) CXX=$(CXX) RANLIB=$(RANLIB) STRIP=$(STRIP) CPPFLAGS="-O2   -pipe  -I$(TOOLCHAIN)/include " LDFLAGS=" -L$(LD_DIR)/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(LD_DIR)/lib " \
 	./configure --build=i386-pc-linux-gnu --host=mipsel-linux --target=mipsel-linux --prefix=/opt --disable-nls --disable-static --enable-shared --without-python
 	@$(MAKE) -C $(CURRENT)/libxml2 all

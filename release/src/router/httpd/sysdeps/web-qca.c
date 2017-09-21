@@ -2261,6 +2261,9 @@ ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int i, status = 1, retval = 0;
 	struct nat_accel_kmod_s *p = &nat_accel_kmod[0];
+#if defined(RTCONFIG_SOC_IPQ8064)
+	int s1, s2;
+#endif
 
 	for (i = 0, p = &nat_accel_kmod[i]; status && i < ARRAY_SIZE(nat_accel_kmod); ++i, ++p) {
 		if (module_loaded(p->kmod_name))
@@ -2268,6 +2271,19 @@ ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv)
 
 		status = 0;
 	}
+
+#if defined(RTCONFIG_SOC_IPQ8064)
+	/* Hardware NAT can be stopped via set non-zero value to below files.
+	 * Don't claim hardware NAT is enabled if one of them is non-zero value.
+	 */
+	if (status) {
+		s1 = safe_atoi(file2str("/sys/kernel/debug/ecm/ecm_nss_ipv4/stop"));
+		s2 = safe_atoi(file2str("/sys/kernel/debug/ecm/ecm_nss_ipv6/stop"));
+
+		if (s1 != 0 || s2 != 0)
+			status = 0;
+	}
+#endif
 
 	retval += websWrite(wp, "%d", status);
 

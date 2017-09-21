@@ -6648,6 +6648,13 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			filename = ds->value;
 			buffer_urldecode_path(filename);
+
+			//- Check paramter
+			if( filename->used <= 1 ||
+				string_starts_with(filename->ptr, "../") ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6656,6 +6663,12 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TITLE"))) {
 			title = ds->value;
 			buffer_urldecode_path(title);
+
+			//- Check paramter
+			if( title->used > 20000 ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6663,6 +6676,14 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TOKEN"))) {
 			auth_token = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(auth_token) ||
+				auth_token->used > 255 ||
+				auth_token->used <= 1 ){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6670,6 +6691,15 @@ propmatch_cleanup:
 
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "ALBUM"))) {
 			album = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(album) ||
+				!is_string_encode_as_integer(album->ptr) ||
+				album->used > 30 ||
+				album->used <= 1){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6844,6 +6874,13 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			filename = ds->value;
 			buffer_urldecode_path(filename);
+
+			//- Check paramter
+			if( filename->used <= 1 ||
+				string_starts_with(filename->ptr, "../") ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6852,6 +6889,12 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TITLE"))) {
 			title = ds->value;
 			buffer_urldecode_path(title);
+
+			//- Check paramter
+			if( title->used > 20000 ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6859,6 +6902,15 @@ propmatch_cleanup:
 
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "UID"))) {
 			user_id = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(user_id) ||
+				!is_string_encode_as_integer(user_id->ptr) ||
+				user_id->used > 30 ||
+				user_id->used <= 1){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6866,6 +6918,15 @@ propmatch_cleanup:
 
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "AID"))) {
 			album_id = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(album_id) ||
+				!is_string_encode_as_integer(album_id->ptr) ||
+				album_id->used > 30 ||
+				album_id->used <= 1){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -6873,6 +6934,13 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TOKEN"))) {
 			auth_token = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(auth_token) ||
+				auth_token->used <= 1 ){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -7140,6 +7208,13 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			filename = ds->value;
 			buffer_urldecode_path(filename);
+
+			//- Check paramter
+			if( filename->used <= 1 ||
+				string_starts_with(filename->ptr, "../") ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -7148,6 +7223,12 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TITLE"))) {
 			title = ds->value;
 			buffer_urldecode_path(title);
+
+			//- Check paramter
+			if( title->used > 20000 ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -7155,6 +7236,13 @@ propmatch_cleanup:
 			
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TOKEN"))) {
 			auth_token = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(auth_token) ||
+				auth_token->used <= 1 ){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -7362,6 +7450,13 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			filename = ds->value;
 			buffer_urldecode_path(filename);
+
+			//- Check paramter
+			if( filename->used <= 1 ||
+				string_starts_with(filename->ptr, "../") ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -7370,6 +7465,12 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TITLE"))) {
 			title = ds->value;
 			buffer_urldecode_path(title);
+
+			//- Check paramter
+			if( title->used > 20000 ){
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -7377,6 +7478,13 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TOKEN"))) {
 			auth_token = ds->value;
+
+			//- Check paramter
+			if( buffer_is_empty(auth_token) ||
+				auth_token->used <= 1 ){				
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;

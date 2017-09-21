@@ -144,7 +144,7 @@ function show_nt_event_list(nt_page, sort){
 				if(notification.find_nc_setting_type(ntdb_obj.event_id.trim()) == notification.TYPE_OF_TIPS){
 					txt += '<div class="noti_type_select_check"></div>';
 				}
-				txt += '</div></div><div class="noti_type_word" title="General notification related to new function introduce or application suggestion.">Tips</div></div>';
+				txt += '</div></div><div class="noti_type_word" title="General notification related to new function introduce or application suggestion."><#QIS_finish_Tips#></div></div>';
 				txt += '<div style="padding-bottom:3px;height:30px;cursor: pointer;" onclick="notification.change_type('+ntdb_obj.event_id+',1,update_setting_type)"><div style="display: table-cell;"><div class="noti_type_select_turnoff">';
 				if(notification.find_nc_setting_type(ntdb_obj.event_id.trim()) == notification.TYPE_OF_TURN_OFF){
 					txt += '<div class="noti_type_select_check"></div>';

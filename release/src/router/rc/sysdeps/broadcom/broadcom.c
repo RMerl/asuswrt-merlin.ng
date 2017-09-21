@@ -2300,7 +2300,7 @@ next_info:
 				}
 #endif
 				/*if (apinfos[i].ctl_ch < 0 ) {
-					fprintf(fp, "\"ERR_BNAD\",");
+					fprintf(fp, "\"ERR_BAND\",");
 				} else */if (apinfos[i].ctl_ch > 0 &&
 							 apinfos[i].ctl_ch < 14) {
 					fprintf(fp, "\"2G\",");
@@ -2308,7 +2308,7 @@ next_info:
 							 apinfos[i].ctl_ch < 166) {
 					fprintf(fp, "\"5G\",");
 				} else {
-					fprintf(fp, "\"ERR_BNAD\",");
+					fprintf(fp, "\"ERR_BAND\",");
 				}
 
 				if (strlen(apinfos[i].SSID) == 0) {
@@ -2987,7 +2987,7 @@ next_info:
 		} else {
 			for (i = 0; i < ap_count; i++) {
 				/*if (apinfos[i].ctl_ch < 0 ) {
-					fprintf(fp, "\"ERR_BNAD\",");
+					fprintf(fp, "\"ERR_BAND\",");
 				} else */if (apinfos[i].ctl_ch > 0 &&
 							 apinfos[i].ctl_ch < 14) {
 					fprintf(fp, "\"2G\",");
@@ -2995,7 +2995,7 @@ next_info:
 							 apinfos[i].ctl_ch < 166) {
 					fprintf(fp, "\"5G\",");
 				} else {
-					fprintf(fp, "\"ERR_BNAD\",");
+					fprintf(fp, "\"ERR_BAND\",");
 				}
 
 				if (strlen(apinfos[i].SSID) == 0) {
@@ -3879,6 +3879,11 @@ GEN_CONF:
 			else
 				eval("wl", "-i", ifname, "bus:ffsched_flr_rst_delay", FFSCHED_FLOW_RING_RESET_DELAY);	// driver default setting
 		}
+
+#if defined(RTAC5300)
+		if(!strcmp(ifname, "eth1"))
+			eval("wl", "-i", ifname, "txcore", "-k", "0x7");
+#endif
 #endif
 
 #endif /* RTCONFIG_BCMARM */
@@ -4038,6 +4043,16 @@ void wlconf_post(const char *ifname)
 #ifdef RTCONFIG_BCMWL6
 	if (is_ure(unit))
 		eval("wl", "-i", (char *) ifname, "allmulti", "1");
+#endif
+
+#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+	char tmp[100];
+	if (nvram_match(strcat_r(prefix, "vhtmode", tmp), "0"))
+	{
+		eval("wl", "-i", (char *) ifname, "down");
+		eval("wl", "-i", (char *) ifname, "vhtmode", "0");
+		eval("wl", "-i", (char *) ifname, "up");
+	}
 #endif
 }
 

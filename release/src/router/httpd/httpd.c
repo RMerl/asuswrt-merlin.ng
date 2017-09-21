@@ -98,7 +98,7 @@ typedef union {
 #define MAX_CONN_ACCEPT 64
 #define MAX_CONN_TIMEOUT 60
 
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 #define IFTTTUSERAGENT	"asusrouter-Windows-IFTTT-1.0"
 #define GETIFTTTCGI	"get_IFTTTPincode.cgi"
 #define GETIFTTTOKEN "get_IFTTTtoken.cgi"
@@ -244,7 +244,7 @@ void send_login_page(int fromapp_flag, int error_status, char* url, char* file, 
 void __send_login_page(int fromapp_flag, int error_status, char* url, char* file, int lock_time);
 void page_default_redirect(int fromapp_flag, char* url);
 int check_user_agent(char* user_agent);
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 void add_ifttt_flag(void);
 #endif
 
@@ -401,6 +401,7 @@ void
 send_login_page(int fromapp_flag, int error_status, char* url, char* file, int lock_time)
 {
 	char inviteCode[256]={0};
+	char buf[128] = {0};
 	//char url_tmp[64]={0};
 	char *cp, *file_var=NULL;
 
@@ -427,6 +428,10 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 		snprintf(inviteCode, sizeof(inviteCode), "<script>top.location.href='/Main_Login.asp';</script>");
 	}else{
 		snprintf(inviteCode, sizeof(inviteCode), "\"error_status\":\"%d\"", error_status);
+		if(error_status == LOGINLOCK){
+			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\"", LOCKTIME - login_dt);
+			strcat(inviteCode, buf);
+		}
 	}
 	send_page( 200, "OK", (char*) 0, inviteCode, fromapp_flag);
 }
@@ -437,14 +442,16 @@ __send_login_page(int fromapp_flag, int error_status, char* url, char* file, int
 	if(!cur_login_ip_type)
 	{
 		++login_try;
-		last_login_timestamp = login_timestamp_tmp;
+		if(error_status != LOGINLOCK)
+			last_login_timestamp = login_timestamp_tmp;
 	}
 	else
 	{
 		++login_try_wan;
-		last_login_timestamp_wan= login_timestamp_tmp_wan;
+		if(error_status != LOGINLOCK)
+			last_login_timestamp_wan= login_timestamp_tmp_wan;
 	}	
-		
+
 	send_login_page(fromapp_flag, error_status, url, file, lock_time);
 }
 
@@ -539,7 +546,6 @@ auth_check( char* dirname, char* authorization, char* url, char* file, char* coo
 //#endif
 		}
 	}
-	
 	/* Is this directory unprotected? */
 	if ( !strlen(auth_passwd) ){
 		/* Yes, let the request go through. */
@@ -573,12 +579,12 @@ auth_check( char* dirname, char* authorization, char* url, char* file, char* coo
 	/* form based authorization info? */
 
 	if(search_token_in_list(asustoken, NULL) != NULL
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 	 || check_ifttt_token(asustoken)
 #endif
 	){
 		//_dprintf("asus token auth_check: the right user and password\n");
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 		if(strncmp(url, GETIFTTTCGI, strlen(GETIFTTTCGI))==0 || strncmp(url, GETIFTTTOKEN, strlen(GETIFTTTOKEN))==0) add_ifttt_flag();
 #endif
 		if(!cur_login_ip_type)
@@ -662,6 +668,14 @@ send_page( int status, char* title, char* extra_header, char* text , int fromapp
     (void) fflush( conn_fp );
 }
 //#endif
+
+void
+send_content_page( int status, char* title, char* extra_header, char* text , int fromapp){
+	(void) fprintf( conn_fp, "<HTML><HEAD>");
+	(void) fprintf( conn_fp, "%s\n", text );
+	(void) fprintf( conn_fp, "</HEAD></HTML>\n" );
+	(void) fflush( conn_fp );
+}
 
 static void
 send_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp)
@@ -836,7 +850,7 @@ int check_user_agent(char* user_agent){
 	return fromapp;
 }
 
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 void add_ifttt_flag(void){
 
 	memset(user_agent, 0, sizeof(user_agent));
@@ -926,6 +940,38 @@ char detect_timestampstr[32];
 #define APPLYROGSTR     "api.asp"
 #endif
 
+
+#ifdef RTCONFIG_LANTIQ
+int wave_handle_flag(char *url)
+{
+	int ret = 0;
+
+	if(strcmp(url, "qis/QIS_wireless.htm") == 0 ||
+		strcmp(url, "QIS_wizard.htm") == 0){
+		_dprintf("httpd_handle_request:[%s] from QIS\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_QIS);
+	}else if(strcmp(url, "Advanced_Wireless_Content.asp") == 0){
+		_dprintf("httpd_handle_request:[%s] from wireless\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_NORMAL);
+	}else if(strcmp(url, "Advanced_WWPS_Content.asp") == 0){
+		_dprintf("httpd_handle_request:[%s] for WPS\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_WPS);
+	}else if(strcmp(url, "Advanced_WMode_Content.asp") == 0){
+		_dprintf("httpd_handle_request:[%s] for WDS\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_WDS);
+	}else if(strcmp(url, "Advanced_ACL_Content.asp") == 0){
+		_dprintf("httpd_handle_request:[%s] for mac filter\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_ACL);
+	}else if(strcmp(url, "Advanced_WAdvanced_Content.asp") == 0){
+		_dprintf("httpd_handle_request:[%s] for advanced wireless\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_ADV);
+	}else if(strcmp(url, "Guest_network.asp") == 0){
+		_dprintf("httpd_handle_request:[%s] for guest network\n", url);
+		nvram_set_int("wave_flag", WAVE_FLAG_VAP);
+	}
+	return ret;
+}
+#endif
 
 static void
 handle_request(void)
@@ -1192,7 +1238,7 @@ handle_request(void)
 	}
 // 2007.11 James. }
 
-	if( (strstr(url, ".asp") || strstr(url, ".htm")) && !strstr(url, "update_networkmapd.asp") && !strstr(url, "update_clients.asp") ) {
+	if( (strstr(url, ".asp") || strstr(url, ".htm")) && !strstr(url, "update_networkmapd.asp") && !strstr(url, "update_clients.asp") && !strstr(url, "update_customList.asp") ) {
 		memset(current_page_name, 0, sizeof(current_page_name));
 		snprintf(current_page_name, sizeof(current_page_name), "%s", url);
 	}
@@ -1217,7 +1263,7 @@ handle_request(void)
 
 	fromapp = check_user_agent(useragent);
 
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 	ifttt_log(url, file);
 #endif
 
@@ -1246,7 +1292,7 @@ handle_request(void)
 				lock_flag &= ~(LOCK_LOGIN_LAN);
 				login_error_status = 0;
 			}else{
-				if((strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == 7)|| strstr(url, ".png")){
+				if((strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == LOGINLOCK)|| strstr(url, ".png")){
 				}else{
 					send_login_page(fromapp, LOGINLOCK, url, NULL, login_dt);
 					return;
@@ -1262,7 +1308,7 @@ handle_request(void)
 				lock_flag &= ~(LOCK_LOGIN_WAN);
 				login_error_status = 0;
 			}else{
-				if((strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == 7)|| strstr(url, ".png")){
+				if((strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == LOGINLOCK)|| strstr(url, ".png")){
 				}else{
 					send_login_page(fromapp, LOGINLOCK, url, NULL, login_dt);
 					return;
@@ -1300,6 +1346,9 @@ handle_request(void)
 #endif
 		if (match(handler->pattern, url))
 		{
+#ifdef RTCONFIG_LANTIQ
+			wave_handle_flag(url);
+#endif
 			nvram_set("httpd_handle_request", url);
 			nvram_set_int("httpd_handle_request_fromapp", fromapp);
 			if(login_state==3 && !fromapp) { // few pages can be shown even someone else login
@@ -1318,10 +1367,8 @@ handle_request(void)
 					//skip_auth=1;
 				}
 #if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
-				else if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&nvram_match("qis_Setting", "0")) {
-					// pass
-				}else if(!fromapp && !nvram_match("sw_mode", "1") && strcmp(nvram_safe_get("hive_ui"), "") == 0){
-					snprintf(inviteCode, sizeof(inviteCode), "<script>top.location.href='/message.htm';</script>");
+				else if(!fromapp && !nvram_match("sw_mode", "1") && strcmp(nvram_safe_get("hive_ui"), "") == 0){
+					snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; url=message.htm\">\r\n");
 					send_page( 200, "OK", (char*) 0, inviteCode, 0);
 				}
 #endif
@@ -1349,7 +1396,7 @@ handle_request(void)
 							if (handler->input) {
 								handler->input(file, conn_fp, cl, boundary);
 							}
-							send_login_page(fromapp, auth_result, NULL, NULL, 0);
+							send_login_page(fromapp, auth_result, NULL, NULL, login_dt);
 						}
 						//if(!fromapp) http_logout(login_ip_tmp, cookies);
 						return;
@@ -1428,7 +1475,7 @@ handle_request(void)
 #ifdef RTCONFIG_IPSEC
 					&& !strstr(file, "ipsec.log")
 #endif
-#ifdef RTCONFIG_IFTTT
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 					&& !strstr(file, "asustitle.png")
 #endif
 					){
@@ -1668,6 +1715,11 @@ int is_auth(void)
 
 int is_firsttime(void)
 {
+#if defined(RTAC58U)
+	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+		return 0;
+	else
+#endif
 	if (strcmp(nvram_get("x_Setting"), "1")==0)
 		return 0;
 	else
@@ -2137,6 +2189,9 @@ int main(int argc, char **argv)
 
 	do_ssl = 0; // default
 
+#if defined(RTCONFIG_SW_HW_AUTH)
+	//if(!httpd_sw_hw_check()) return 0;
+#endif
 	// usage : httpd -s -p [port]
 	while ((c = getopt(argc, argv, "sp:i:")) != -1) {
 		switch (c) {
@@ -2194,7 +2249,12 @@ int main(int argc, char **argv)
 	/* Initialize listen socket */
 	for (i = 0; i < ARRAY_SIZE(listen_fd); i++)
 		listen_fd[i] = -1;
-	if ((listen_fd[0] = initialize_listen_socket(&usa, http_ifname)) < 2) {
+#ifdef RTCONFIG_AIHOME_TUNNEL
+	if (nvram_get_int("http_enable") == 1 && http_port == SERVER_PORT){
+		//httpd listen lo 80 port for tunnel but unused ifname in https only
+	}else
+#endif
+	if ((listen_fd[0] = initialize_listen_socket(&usa, http_ifname)) < 2){
 		fprintf(stderr, "can't bind to %s address\n", http_ifname ? : "any");
 		exit(errno);
 	}

@@ -77,12 +77,24 @@ ieee80211_mhz2ieee(u_int freq)
 /////////////
 
 #if defined(RTCONFIG_LANTIQ)
-const char WIF_5G[] = "wlan1";
-const char WIF_2G[] = "wlan0";
-const char STA_5G[] = "wifi2_0";
-const char STA_2G[] = "wifi0_0";
 const char VPHY_5G[] = "wifi2_0";
 const char VPHY_2G[] = "wifi0_0";
+
+/* enum to decide configuration in 2.4G or 5G band */
+typedef enum {
+	LTQ_WIFI_BAND_2G_AP_IF = 0,
+	LTQ_WIFI_BAND_2G_EP_IF,
+	LTQ_WIFI_BAND_5G_AP_IF,
+	LTQ_WIFI_BAND_5G_EP_IF
+} LTQ_WIFI_BAND;
+
+char *wlan_name[4] = {
+	"wlan0" /* 2G */,
+	"wlan1" /* 2G client */,
+	"wlan2" /* 5G */,
+	"wlan3" /* 5G client */
+};
+
 #else
 #error Define WiFi 2G/5G interface name!
 #endif
@@ -364,24 +376,55 @@ int wl_ioctl(const char *ifname, int cmd, struct iwreq *pwrq)
 	return ret;
 }
 
+int wl_wave_unit(int unit){
+	if(unit == 1)
+		return 2;	/* 5G */
+	else
+		return 0;	/* 2G */
+}
+
 char *wl_vifname_wave(int unit, int subunit)
 {
 	static char tmp[128];
-	int wave_unit;
+	int wave_unit = wl_wave_unit(unit);
 
-	if(unit == 0)
-		wave_unit=0;	/* 2G */
-	else if(unit ==1)
-		wave_unit=1;	/* 5G */
-
-	if ((subunit > 0) && (subunit < 4))
-	{
+	if(!client_mode() && (subunit > 0) && (subunit < 4)){
 		sprintf(tmp, "wlan%d_%d", wave_unit, subunit);
 		return strdup(tmp);
-	}else{
+	}
+	else{
 		sprintf(tmp, "wlan%d", wave_unit);
 		return strdup(tmp);
 	}
+}
+
+int wl_client_unit(int unit){
+	if(unit == 1)
+		return LTQ_WIFI_BAND_5G_EP_IF;	/* 5G */
+	else
+		return LTQ_WIFI_BAND_2G_EP_IF;	/* 2G */
+}
+
+char *get_staifname(int unit){
+	if(unit == 1)
+		return wlan_name[LTQ_WIFI_BAND_5G_EP_IF];	/* 5G */
+	else
+		return wlan_name[LTQ_WIFI_BAND_2G_EP_IF];	/* 2G */
+}
+
+int get_wifname_band(char *name){
+	if(!strcmp(name, wlan_name[LTQ_WIFI_BAND_5G_AP_IF]) || !strcmp(name, wlan_name[LTQ_WIFI_BAND_5G_EP_IF]))
+		return 1;
+	else
+		return 0;
+}
+
+char *get_wififname(int band)
+{
+	if(band == 1)
+		return wlan_name[LTQ_WIFI_BAND_5G_AP_IF];	/* 5G */
+	else
+		return wlan_name[LTQ_WIFI_BAND_2G_AP_IF];	/* 2G */
 }
 
 unsigned int get_radio_status(char *ifname)
@@ -440,7 +483,7 @@ void set_radio(int on, int unit, int subunit)
 			eval("ifconfig", athfix, on? "up" : "down");
 
 		/* Reconnect to peer WDS AP */
-		sprintf(path, NAWDS_SH_FMT, unit? WIF_5G : WIF_2G);
+		sprintf(path, NAWDS_SH_FMT, get_wififname(unit));
 		if (!subunit && !nvram_match(strcat_r(prefix, "mode_x", tmp), "0") && f_exists(path))
 			doSystem(path);
 	}
@@ -1217,6 +1260,11 @@ char *get_lan_hwaddr(void)
 char *get_2g_hwaddr(void)
 {
 	return nvram_safe_get(get_lan_mac_name());
+}
+
+char *get_label_mac()
+{
+	return get_2g_hwaddr();
 }
 
 char *get_wan_hwaddr(void)

@@ -28,6 +28,9 @@
 #include <pjlib.h>
 #include <pj/errno.h>
 #include <pj/sock.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 
 #ifdef __cplusplus

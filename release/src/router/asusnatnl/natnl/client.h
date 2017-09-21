@@ -202,7 +202,7 @@ client_t *client_create(uint16_t id, socket_t *tcp_sock, pjmedia_transport *tp,
 client_t *client_copy(client_t *dst, client_t *src, size_t len);
 int client_cmp(client_t *c1, client_t *c2, size_t len);
 void client_free(client_t **c);
-void disconnect_and_remove_client(uint16_t id, list_t *clients,
+void disconnect_and_remove_client(client_t *c, list_t *clients,
 								  fd_set *fds, int full_disconnect, int type);
 void mutex_free(pj_mutex_t **c);
 int client_connect_tcp(client_t *c);

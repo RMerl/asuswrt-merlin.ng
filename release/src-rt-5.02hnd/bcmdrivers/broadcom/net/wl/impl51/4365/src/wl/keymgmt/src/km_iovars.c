@@ -343,7 +343,7 @@ km_doiovar(void *ctx, const bcm_iovar_t *vi, uint32 actionid,
 		if (wl_key.iv_initialized) {
 			uint8 seq[DOT11_IV_MAX_LEN];
 			size_t seq_len;
-
+			
 			seq_len = wlc_key_pn_to_seq(seq, sizeof(seq),
 				wl_key.rxiv.lo, wl_key.rxiv.hi);
 			err = wlc_key_set_seq(key, seq, seq_len,

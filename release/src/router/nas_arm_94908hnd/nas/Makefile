@@ -1,4 +1,16 @@
+#
 # 802.1x Authenticator (Network Access Server) Embedded Linux Build Makefile
+#
+# Broadcom Proprietary and Confidential. Copyright (C) 2016,
+# All Rights Reserved.
+# 
+# This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom;
+# the contents of this file may not be disclosed to third parties, copied
+# or duplicated in any form, in whole or in part, without the prior
+# written permission of Broadcom.
+#
+# $Id: Makefile 403251 2013-05-20 05:15:55Z $
+#
 
 include ../../.config
 

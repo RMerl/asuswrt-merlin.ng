@@ -31,6 +31,9 @@
 #include <pj/rand.h>
 #include <pj/string.h>
 #include <pj/compat/socket.h>
+#if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
+#include <memwatch.h>
+#endif
 
 #define THIS_FILE "ice_strans.c"
 
@@ -1075,24 +1078,30 @@ static void destroy_ice_st(pj_ice_strans *ice_st)
 				pj_turn_sock_destroy(ice_st->comp[i]->turn_sock);
 				ice_st->comp[i]->turn_sock = NULL;
 			}
+			if (ice_st->comp[i]->turn_tcp_sock) {
+				PJ_LOG(4, ("ice_strans.c", "!!! TURN DEALLOCATE !!! in destroy_ice_st() destroy turn_tcp_sock."));
+				pj_turn_sock_set_user_data(ice_st->comp[i]->turn_tcp_sock, NULL);
+				pj_turn_sock_destroy(ice_st->comp[i]->turn_tcp_sock);
+				ice_st->comp[i]->turn_tcp_sock = NULL;
+			}
 			if (ice_st->comp[i]->tcp_sock) {
 				pj_tcp_sock_set_user_data(ice_st->comp[i]->tcp_sock, NULL);
 				pj_tcp_sock_destroy(ice_st->comp[i]->tcp_sock);
 				ice_st->comp[i]->tcp_sock = NULL;
 			}
 		}
-    }
-
-    ice_st->comp_cnt = 0;
-    pj_grp_lock_dec_ref(ice_st->grp_lock);
-    pj_grp_lock_release(ice_st->grp_lock);
+	}
 
 	// 2013-11-04 DEAN, free dest_uri pointer
 	if (ice_st->dest_uri.ptr)
 		free(ice_st->dest_uri.ptr);
 
-    /* Done */
-    //pj_pool_release(ice_st->pool);
+    ice_st->comp_cnt = 0;
+    pj_grp_lock_dec_ref(ice_st->grp_lock);
+    pj_grp_lock_release(ice_st->grp_lock);
+
+	/* Done */
+	//pj_pool_release(ice_st->pool);
 }
 
 /* Get ICE session state. */
@@ -2278,8 +2287,11 @@ PJ_DEF(pj_status_t) pj_ice_strans_sendto( pj_ice_strans *ice_st,
 		    PJ_SUCCESS : status;
 	}
 
-    } else
-	return PJ_EINVALIDOP;
+    } else {
+    	PJ_LOG(4, (ice_st->obj_name, "pj_ice_strans_sendto PJ_EINVALIDOP."));
+		pj_grp_lock_release(ice_st->grp_lock);
+		return PJ_EINVALIDOP;
+	}
 }
 
 /*
@@ -3106,6 +3118,7 @@ static void turn_on_state(pj_turn_sock *turn_sock, pj_turn_state_t old_state,
 	pj_grp_lock_release(comp->ice_st->grp_lock);
 
 	if (!cand) {
+		pj_grp_lock_dec_ref(comp->ice_st->grp_lock);
 		return;
 	}
 
@@ -3118,6 +3131,7 @@ static void turn_on_state(pj_turn_sock *turn_sock, pj_turn_state_t old_state,
 			pj_turn_sock_destroy(comp->turn_tcp_sock);
 			comp->turn_tcp_sock = NULL;
 		}
+		pj_grp_lock_dec_ref(comp->ice_st->grp_lock);
 		return;
 	} else if (cand->status == PJ_SUCCESS && 
 		pj_turn_sock_get_conn_type(turn_sock) == PJ_TURN_TP_UDP) {
@@ -3332,8 +3346,10 @@ static void tcp_on_state(pj_tcp_sock *tcp_sock, pj_tcp_state_t old_state,
 
 	pj_grp_lock_release(comp->ice_st->grp_lock);
 
-	if (!cand)
+	if (!cand) {
+    	pj_grp_lock_dec_ref(comp->ice_st->grp_lock);
 		return;
+	}
 #if 0
 	/* Update candidate */
 	pj_sockaddr_cp(&cand->addr, &rel_info.relay_addr);

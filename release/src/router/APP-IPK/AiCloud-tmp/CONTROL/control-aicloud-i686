@@ -2,7 +2,7 @@ Package: aicloud
 Architecture: i686
 Priority: optional
 Section: net
-Version: 2.0.2.4.0.gf919572
+Version: 2.0.2.5.0.gc2102d5
 Maintainer: ASUS
 Source: http://nw-dlcdnet.asus.com/asusware/i686/stable
 URL: https://192.168.1.1:443

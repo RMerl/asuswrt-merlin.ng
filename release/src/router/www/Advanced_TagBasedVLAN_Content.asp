@@ -179,10 +179,7 @@ function check_duplicate_subnet(){
 		return true;
 	else{
 		var duplicate_subnets_string = duplicate_subnets.join(', ');
-		if(duplicate_subnets.length == 1)
-			alert("Subnet '"+ duplicate_subnets_string + "' is used by more than one VLANs. Please change the settings.");
-		else
-			alert("Subnets '"+ duplicate_subnets_string + "' are used by more than one VLANs. Please change the settings.");
+		alert("<#Subnet#>: "+ duplicate_subnets_string + "\n" +"<#TBVLAN_DupSubnet_Warning#>");
 		return false;
 	}
 }
@@ -421,7 +418,7 @@ function show_binding_list(){
 	code +='<table width="97%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="binding_inf_table">';
 	
 	if(bind_interface_array.length == 0)
-		code +='<tr><td style="color:#FFCC00;" colspan="3">No binding interface<!--untranslated--></td>';
+		code +='<tr><td style="color:#FFCC00;" colspan="3"><#TBVLAN_NoBindingInf#></td>';
 	else{
 		Object.keys(bind_interface_array).forEach(function(key){
 			code +='<tr id="row'+key+'">';
@@ -441,7 +438,7 @@ function validSettings(change_index){
 
 	if(change_index != 0){
 		if(document.form.subnet_list.value == "new"){
-			alert("Please use subnet edit button to add a new subnet.");
+			alert("<#TBVLAN_AddSubnet_Warning#>");
 			return false;
 		}
 		
@@ -457,7 +454,7 @@ function validSettings(change_index){
 			return false;
 		}
 		else if(vid_used){
-			alert("The VID is used before. Please change it.");
+			alert("<#TBVLAN_VID_Warning#>");
 			document.form.vlan_id.focus();
 			return false;
 		}
@@ -472,7 +469,7 @@ function validSettings(change_index){
 			return false;
 	}
 	if(bind_interface_array.length == 0){
-		alert("Please add binding interfaces.");
+		alert("<#TBVLAN_BindingInf_Hint#>");
 		return false;
 	}
 
@@ -632,14 +629,14 @@ function show_vlan_rulelist(){
 									if(isUntagged){
 										wired_inf = wired_inf + "<span style='color:#2F3A3E;' title='";
 										if(is_iptv_port)
-											wired_inf += "This port is used by IPTV and is disabled in this VLAN.'>"; /*untranslated*/
+											wired_inf += "<#TBVLAN_IPTVPort_Hint#>'>";
 										else if(is_wan_port)
-											wired_inf += "This port is used by WAN and is disabled in this VLAN.'>"; /*untranslated*/
+											wired_inf += "<#TBVLAN_IPTVPort_Hint#>'>";
 
 										wired_inf += htmlEncode_decodeURI(Interface_Text_Value[wan_num+k].if_text) + "<sup>U</sup></span>";
 									}	
 									else
-										wired_inf = wired_inf + "<span style='color:#2F3A3E;' title='This port is used by IPTV and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num+k].if_text) + "<sup>T</sup></span>"; /*untranslated*/
+										wired_inf = wired_inf + "<span style='color:#2F3A3E;' title='<#TBVLAN_IPTVPort_Hint#>'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num+k].if_text) + "<sup>T</sup></span>";
 								}
 								else{
 									if(isUntagged)
@@ -1634,9 +1631,9 @@ function set_pvid_list(){
 	<table border="0" align="center" cellpadding="5" cellspacing="5">
 		<tr>
 			<td align="left">
-			<span class="formfonttitle">Subnet Profile Edit</span>
+			<span class="formfonttitle"><#TBVLAN_EditSubnetProfile#></span>
 			<div style="width:630px; height:15px;overflow:hidden;position:relative;top:5px;"><img src="images/New_ui/export/line_export.png"></div>
-			<div style="margin-left:5px;">Select the Subnet you want to setup and fill out gateway information for IP assignment if you enable DHCP server.</div>
+			<div style="margin-left:5px;"><#TBVLAN_Subnet_desc#></div>
 			</td>
 		</tr>
 		<tr>
@@ -1644,7 +1641,7 @@ function set_pvid_list(){
 				<table id="tbVLANGroup" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Configuration</td>
+							<td colspan="2"><#t2BC#></td>
 						</tr>
 					</thead>
 					<tr>
@@ -1654,14 +1651,14 @@ function set_pvid_list(){
 							</select>
 						</td>
 					<tr>
-						<th>Enable the DHCP Server</th>
+						<th><#LANHostConfig_DHCPServerConfigurable_itemname#></th>
 						<td>
 							<input type="radio" value="1" name="radioDHCPEnable" class="content_input_fd" checked><#checkbox_Yes#>
 							<input type="radio" value="0" name="radioDHCPEnable" class="content_input_fd"><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>
-						<th>Gateway IP Address</th>
+						<th><#RouterConfig_GWStaticGW_itemname#></th>
 						<td>
 							<input type="text" maxlength="15" class="input_25_table" name="tGatewayIP" onchange="checkIPLegality();" onKeyPress="return validator.isIPAddr(this,event);">
 						</td>
@@ -1673,13 +1670,13 @@ function set_pvid_list(){
 						</td>
 					</tr>
 					<tr>
-						<th>IP Pool Starting Address</th>
+						<th><#LANHostConfig_MinAddress_itemname#></th>
 						<td>
 							<input type="text" maxlength="15" class="input_25_table" name="tDHCPStart"  onKeyPress="return validator.isIPAddr(this,event);">
 						</td>
 					</tr>
 					<tr>
-						<th>IP Pool Ending Address</th>
+						<th><#LANHostConfig_MaxAddress_itemname#></th>
 						<td>
 							<input type="text" maxlength="15" class="input_25_table" name="tDHCPEnd"  onKeyPress="return validator.isIPAddr(this,event);">
 						</td>
@@ -1707,7 +1704,7 @@ function set_pvid_list(){
 			</tr>
 		</thead>
 		<tr id="vlan_id_tr">
-			<th width="30%">VLAN ID</th>
+			<th width="30%"><#WANVLANIDText#></th>
 			<td id="vlan_id">
 				<input type="text" name="vlan_id" class="input_6_table" maxlength="4" value="" onKeyPress="return validator.isNumber(this, event);">
 			</td>
@@ -1733,12 +1730,12 @@ function set_pvid_list(){
  	<table width="97%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="margin-top:10px;">
 		<thead>
 			<tr>
-	   			<td colspan="3" id="binding_inf_head">Binding Interface</td><!--untranslated-->
+				<td colspan="3" id="binding_inf_head"><#TBVLAN_BindingInf#></td>
 	   		</tr>
 	  	</thead>
         <tr>
         	<th width="40%"><#wan_interface#></th>
-        	<th width="40%">Type</th><!--untranslated-->
+			<th width="40%"><#vpn_openvpn_interface#></th>
             <th width="20%"><#list_add_delete#></th>
 		</tr>
 		<tr id="addInterface_tr">
@@ -1753,7 +1750,7 @@ function set_pvid_list(){
 	<div id="binding_inflist_Block"></div>
 	<div class="apply_gen" style="margin-top:20px;margin-bottom:10px;background-color: #2B373B;" id="applyDiv">
 		<input name="cancelBtn" type="button" class="button_gen" onclick="showSettingTable(0);" value="<#CTL_Cancel#>"/>
-		<input id="addRuleBtn" name="addRuleBtn" type="button" class="button_gen" onclick="add_vlan_rule()" value="<#CTL_ok#>"/> <!--untranslated-->
+		<input id="addRuleBtn" name="addRuleBtn" type="button" class="button_gen" onclick="add_vlan_rule()" value="<#CTL_ok#>"/>
 	</div>
 </div>
 
@@ -1778,7 +1775,7 @@ function set_pvid_list(){
 					<tr>
 						<td bgcolor="#4D595D" valign="top"  >
 							<div>&nbsp;</div>
-							<div class="formfonttitle">VLAN -  Tag-based VLAN</div>
+							<div class="formfonttitle">VLAN - <#TBVLAN_Title#></div>
 							<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 							<div class="formfontdesc"><#VLAN_desc#></div>
 							<table width="98%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:20px;">
@@ -1788,7 +1785,7 @@ function set_pvid_list(){
 								</tr>
 							</thead>
 							<tr>
-								<th>Enable VLAN</th>
+								<th><#TBVLAN_EnableVLAN#></th>
 								<td>
 									<div class="left" style="width:94px; float:left; cursor:pointer;" id="vlan_enable"></div>
 									<div class="clear">
@@ -1823,7 +1820,7 @@ function set_pvid_list(){
 
 							</tr>
 							<tr>
-								<th>PVID Configuration</th>
+								<th><#TBVLAN_PVID#></th>
 								<td>
 								<div id="pvid_config_div" style="width: 310px; margin: 30px 8px 0px auto; display:table-cell;">
 									<div style="height: 168px; margin-top: -5px; margin-bottom: -45px; background-image: url('images/New_ui/pvid.png'); background-repeat: no-repeat; background-position: center;">
@@ -1872,21 +1869,21 @@ function set_pvid_list(){
 							</table>
 							<div style="width:97%; display:table; margin-top:30px; margin-left:8px; font-size:12px; font-weight:800; font-weight:800;">
 								<div style="width:50%; display:table-cell;">
-									<div style="display:table-cell; vertical-align:bottom;">Layer 2 VLAN network (Max Limit : 8)</div><!--untranslated-->
+									<div style="display:table-cell; vertical-align:bottom;"><#TBVLAN_Layer2VLAN#>&nbsp;(<#List_limit#>&nbsp;8)</div>
 									<div style="display:table-cell;"><input id="add_vlan_btn" type="button" class="add_btn" onClick="showSettingTable(1);" value=""></div>
 								</div>
 								<div style="width:50%; display:table-cell;">
-									<div style="display:table-cell; vertical-align:bottom; padding-left:120px;">U : Untagged Port</div>
-									<div style="color:#00c6ff; display:table-cell; vertical-align:bottom; padding-left:10px;">T : Tagged Port</div>
+									<div style="display:table-cell; vertical-align:bottom; padding-left:120px;">U&nbsp;:&nbsp;<#TBVLAN_UPort#></div>
+									<div style="color:#00c6ff; display:table-cell; vertical-align:bottom; padding-left:10px;">T&nbsp;:&nbsp;<#TBVLAN_TPort#></div>
 								</div>
 							</div>
 							<table width="98%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" id="vlan_list_table" style="margin-top:5px;">
 				    			<tr>
-				    				<th style="width:12%"><#WLANConfig11b_WirelessCtrl_button1name#>/ <#WLANConfig11b_WirelessCtrl_buttonname#></th>
+								<th style="width:12%"><#WLANConfig11b_WirelessCtrl_button1name#>/&nbsp;<#WLANConfig11b_WirelessCtrl_buttonname#></th>
 				      				<th style="width:7%"><#WANVLANIDText#></th>
 				    				<th style="width:7%"><#BM_UserList4#></th>
 				      				<th><#Wired_Interface#></th>
-				      				<th style="width:21%">Wireless</th>
+									<th style="width:21%"><#TBVLAN_WirelessInf#></th>
 				      				<th style="width:19%"><#Subnet#></th>
 				      				<th style="width:7%"><#pvccfg_edit#></th>
 				      				<th style="width:7%"><#CTL_del#></th>

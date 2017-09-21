@@ -13,7 +13,7 @@ typedef struct natnl_stream {
     pjmedia_transport	        *med_tp;		/* +Roger - Current media transport.   */
 	//pjmedia_stream_info *si;
 	pj_sockaddr		rem_addr;   /**< Remote RTP address		    */
-    pj_pool_t		    *own_pool;	    /**< Only created if not given  */
+    pj_pool_t		    *pool;	    /**< Only created if not given  */
 	pj_mutex_t		    *rbuff_mutex;
 	pj_mutex_t		    *no_ctl_rbuff_mutex;
 	recv_buff            rbuff;             //used buffer list
@@ -27,6 +27,7 @@ typedef struct natnl_stream {
 
 	pj_sem_t        *rbuff_sem;
 	pj_sem_t        *no_ctl_rbuff_sem;
+	pj_grp_lock_t	    *grp_lock;  /**< Group lock.		*/
 
 	//pj_thread_t         *tcp_send_thread;            /**< Thread handle.        */
 	//pj_thread_t         *tcp_recv_thread;            /**< Thread handle.        */
@@ -50,8 +51,8 @@ typedef struct natnl_stream {
 
 } natnl_stream;
 
-PJ_DECL(pj_status_t) pjmedia_natnl_stream_create(pj_pool_t *pool,
-												pjsua_call *call,
+PJ_DECL(pj_status_t) pjmedia_natnl_stream_create(pjmedia_endpt *med_endpt,
+												 pjsua_call *call,
 												pjmedia_stream_info *si,
 												natnl_stream **stream);
 

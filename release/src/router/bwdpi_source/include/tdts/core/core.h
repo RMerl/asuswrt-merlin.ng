@@ -606,6 +606,7 @@ extern int tdts_core_appid_get_nr_appid(void *buf, uint32_t buf_len, uint32_t *b
 extern int tdts_core_appid_get_all_appid(void *buf, uint32_t buf_len, uint32_t *buf_used_len);
 
 extern int tdts_core_get_eng_ver(uint32_t *maj, uint32_t *mid, uint32_t *min, char *local, unsigned local_len);
+extern int tdts_core_get_core_ver(uint32_t *maj, uint32_t *mid, uint32_t *min, char *local, unsigned local_len);
 extern int tdts_core_ready_check(void);
 
 extern int tdts_core_get_bndwth_num(void *buf);

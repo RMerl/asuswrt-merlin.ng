@@ -229,7 +229,7 @@ start_emf(char *lan_ifname)
 	char word[256], *next;
 	char *mgrp, *ifname;
 
-#if defined(HND_ROUTER) && defined(MCPD_PROXY)
+#if (defined(HND_ROUTER) && defined(MCPD_PROXY)) || defined(BLUECAVE) 
 	/* Disable EMF.
 	 * Since Runner is involved in Ethernet side when MCPD is enabled
 	 */
@@ -482,6 +482,18 @@ void start_wl(void)
 	if (is_client)
 		xstart("radio", "join");
 
+#if defined(RTCONFIG_IPV6) && defined(CONFIG_BCMWL5) && !defined(RTCONFIG_BCM7) && !defined(RTCONFIG_BCM_7114) && !defined(HND_ROUTER)
+	if (is_routing_enabled()) {
+		if (ipv6_enabled() && (get_ipv6_service() == IPV6_PASSTHROUGH)) {
+			eval("wl", "pktc", "0");
+			eval("et", "pktc", "0");
+		} else {
+			eval("wl", "pktc", "1");
+			eval("et", "pktc", "1");
+		}
+	}
+#endif
+
 #ifdef RTCONFIG_PORT_BASED_VLAN
 	start_vlan_wl();
 #endif
@@ -553,7 +565,7 @@ del_lan_routes(char *lan_ifname)
 	return del_routes("lan_", "route", lan_ifname);
 }
 
-#if defined(RTCONFIG_QCA)||defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_QCA)||defined(RTCONFIG_RALINK) || defined(RTCONFIG_LANTIQ)
 char *get_hwaddr(const char *ifname)
 {
 	int s = -1;
@@ -635,7 +647,7 @@ qca_wif_up(const char* wif)
 #endif
 }
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 void hyfi_process(void)
 {
 	if(nvram_get_int("x_Setting"))
@@ -845,16 +857,17 @@ gen_qca_wifi_cfgs(void)
 #endif
 #if defined(PLN12)
 		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_2G, LED_2G_RED, led_onoff[0]);
-		set_wifiled(1);
 #elif defined(PLAC56)
 		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_2G, LED_2G_GREEN, led_onoff[0]);
-		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_5G, LED_5G_GREEN, led_onoff[0]);
-		set_wifiled(1);
 #else
 		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_2G, LED_2G, led_onoff[0]);
 #endif
 #if defined(RTCONFIG_HAS_5G)
+#if defined(PLAC56)
+		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_5G, LED_5G_GREEN, led_onoff[1]);
+#else
 		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_5G, LED_5G, led_onoff[1]);
+#endif
 #if defined(RTCONFIG_HAS_5G_2)
 		fprintf(fp2, "[ -e /sys/class/net/%s ] && led_ctrl %d %d\n", WIF_5G2, LED_5G2, led_onoff[2]);
 #endif
@@ -890,7 +903,7 @@ gen_qca_wifi_cfgs(void)
 	fprintf(fp2, "weventd &\n");
 #endif
 
-#if defined(RTAC58U) /* for RAM 128MB */
+#if defined(RTAC58U) || defined(RT4GAC53U) /* for RAM 128MB */
 	if (get_meminfo_item("MemTotal") <= 131072) {
 		fprintf(fp2, "iwpriv wifi1 fc_buf_max 4096\n");
 		fprintf(fp2, "iwpriv wifi1 fc_q_max 512\n");
@@ -1840,7 +1853,7 @@ void start_lan(void)
 	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
 	int i;
 	char hwaddr[ETHER_ADDR_LEN];
-#ifdef RTCONFIG_WIRELESSREPEATER
+#if defined(RTCONFIG_WIRELESSREPEATER) && !defined(RTCONFIG_LANTIQ)
 	char domain_mapping[64];
 #endif
 #ifdef CONFIG_BCMWL5
@@ -2168,7 +2181,7 @@ void start_lan(void)
 						sprintf(var_name, "detwan_name_%d", idx);
 						if(nvram_match(var_name, ifname)) {
 							eval("ifconfig", ifname, "hw", "ether", get_lan_hwaddr());
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 							if(!strcmp("eth1",ifname) && sw_mode() == SW_MODE_AP)
 								eval("ifconfig", ifname, "hw", "ether", nvram_safe_get("et0macaddr"));
 #endif
@@ -2419,7 +2432,7 @@ gmac3_no_swbr:
 
 #ifdef RTCONFIG_QCA
 	gen_qca_wifi_cfgs();
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	hyfi_process();
 #endif
 #endif
@@ -2482,7 +2495,7 @@ gmac3_no_swbr:
 	set_et_qos_mode();
 #endif
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 #ifdef RTCONFIG_ETHBACKHAUL
 	if(sw_mode()==SW_MODE_AP)
 		ifconfig("eth1", 0, NULL, NULL);
@@ -2581,8 +2594,8 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 	set_acs_ifnames();
 #endif
 
-#ifdef RTCONFIG_WIRELESSREPEATER
-	if(sw_mode()==SW_MODE_REPEATER
+#if defined(RTCONFIG_WIRELESSREPEATER) && !defined(RTCONFIG_LANTIQ)
+	if(sw_mode() == SW_MODE_REPEATER
 #ifdef RTCONFIG_REALTEK
 		|| (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1)
 #endif
@@ -2738,7 +2751,7 @@ void stop_lan(void)
 		eval("ebtables", "-F");
 		eval("ebtables", "-t", "broute", "-F");
 	}
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	reset_filter();
 	goto skip_br;
 #endif
@@ -2877,7 +2890,7 @@ gmac3_no_swbr:
 		eval("wl", "-i", lan_ifname, "radio", "off");
 #endif
 	}
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 skip_br:
 #endif
 #ifdef RTCONFIG_PORT_BASED_VLAN
@@ -3083,6 +3096,8 @@ NEITHER_WDS_OR_PSTA:
 	// Android phone, RNDIS interface, NCM, qmi_wwan.
 	else if(!strncmp(interface, "usb", 3)
 			|| !strncmp(interface, "wwan", 4)
+			// RNDIS devices should always be named "lte%d" in LTQ platform
+			|| !strncmp(interface, "lte", 3)
 			) {
 		if(sw_mode() != SW_MODE_ROUTER
 #ifdef RTCONFIG_MODEM_BRIDGE
@@ -3986,10 +4001,11 @@ lan_up(char *lan_ifname)
 	// wlcconnect often set the wlc_state too late.
 #ifdef RTCONFIG_REALTEK
 /* [MUST]: Need to discuss to add new mode for Media Bridge  */
-	if((repeater_mode() || mediabridge_mode()) && nvram_get_int("wlc_mode") == 1) {
+	if((repeater_mode() || mediabridge_mode()) && nvram_get_int("wlc_mode") == 1)
 #else
-	if(sw_mode() == SW_MODE_REPEATER && nvram_get_int("wlc_mode") == 1) {
+	if(sw_mode() == SW_MODE_REPEATER && nvram_get_int("wlc_mode") == 1)
 #endif
+	{
 		repeater_nat_setting();
 		nvram_set_int("wlc_state", WLC_STATE_CONNECTED);
 
@@ -4144,7 +4160,7 @@ void stop_lan_wl(void)
 #ifdef RTCONFIG_DPSTA
 	int dpsta = 0;
 #endif
-#if defined(MAPAC1300)|| defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300)|| defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	int dbg=nvram_get_int("hive_dbg");
 #endif
 
@@ -4249,7 +4265,9 @@ void stop_lan_wl(void)
 			if (nvram_match("gmac3_enable", "1") && find_in_list(nvram_get("fwd_wlandevs"), ifname))
 				goto gmac3_no_swbr;
 #endif
+#ifndef RTCONFIG_LANTIQ
 			eval("brctl", "delif", lan_ifname, ifname);
+#endif
 #ifdef RTCONFIG_GMAC3
 gmac3_no_swbr:
 #endif
@@ -4302,7 +4320,7 @@ gmac3_no_swbr:
 #endif
 
 #if defined(RTCONFIG_QCA)
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	
 	if(nvram_get_int("x_Setting"))
 		stop_hyfi();
@@ -4358,7 +4376,7 @@ void start_lan_wl(void)
 	dpsta_enable_info_t info = { 0 };
 	char name[80];
 #endif
-#if defined(MAPAC1300)|| defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300)|| defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	int dbg=nvram_get_int("hive_dbg");
 #endif
 #ifdef __CONFIG_DHDAP__
@@ -4372,6 +4390,16 @@ void start_lan_wl(void)
 	if (!is_routing_enabled())
 		fc_init();
 #endif /* HND_ROUTER */
+
+#if defined (RTCONFIG_WLMODULE_MT7615E_AP)
+#if !defined(RTCONFIG_CONCURRENTREPEATER)
+	if(strcmp(nvram_safe_get("lan_ifnames"),nvram_safe_get("lan_ifnames_guess"))){
+		if (module_loaded("mt_wifi_7615E"))
+			modprobe_r("mt_wifi_7615E");
+		nvram_set("lan_ifnames_guess", nvram_safe_get("lan_ifnames"));
+	}
+#endif
+#endif
 
 #if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_QSR10G)
 	init_wl();
@@ -4601,9 +4629,9 @@ void start_lan_wl(void)
 						sprintf(var_name, "detwan_name_%d", idx);
 						if(nvram_match(var_name, ifname)) {
 							eval("ifconfig", ifname, "hw", "ether", get_lan_hwaddr());
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
-                                                        if(!strcmp("eth1",ifname) && sw_mode() == SW_MODE_AP)
-                                                                eval("ifconfig", ifname, "hw", "ether", nvram_safe_get("et0macaddr"));
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
+							if(!strcmp("eth1",ifname) && sw_mode() == SW_MODE_AP)
+								eval("ifconfig", ifname, "hw", "ether", nvram_safe_get("et0macaddr"));
 #endif
 						}
 					}
@@ -4751,8 +4779,8 @@ void start_lan_wl(void)
 				if (!match)
 				{
 #ifdef RTCONFIG_CAPTIVE_PORTAL
-                                       if(is_add_if(ifname))
-                                           eval("brctl", "addif", lan_ifname, ifname);
+					if(is_add_if(ifname))
+						eval("brctl", "addif", lan_ifname, ifname);
 #else
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 #if defined(RTCONFIG_RALINK)
@@ -4842,7 +4870,7 @@ gmac3_no_swbr:
 #endif
 
 #if defined(RTCONFIG_QCA)
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	if(nvram_get_int("x_Setting"))
 		start_hyfi();
 	else
@@ -4928,6 +4956,18 @@ void restart_wl(void)
 
 	if (is_client)
 		xstart("radio", "join");
+
+#if defined(RTCONFIG_IPV6) && defined(CONFIG_BCMWL5) && !defined(RTCONFIG_BCM7) && !defined(RTCONFIG_BCM_7114) && !defined(HND_ROUTER)
+	if (is_routing_enabled()) {
+		if (ipv6_enabled() && (get_ipv6_service() == IPV6_PASSTHROUGH)) {
+			eval("wl", "pktc", "0");
+			eval("et", "pktc", "0");
+		} else {
+			eval("wl", "pktc", "1");
+			eval("et", "pktc", "1");
+		}
+	}
+#endif
 
 #ifdef RTCONFIG_PORT_BASED_VLAN
 	restart_vlan_wl();
@@ -5188,7 +5228,7 @@ void restart_wireless(void)
 #endif
 	int lock = file_lock("wireless");
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
 	if (nvram_get_int("sw_mode")==SW_MODE_ROUTER && nvram_get_int("x_Setting") && start_cap(1)==0) {
 		file_unlock(lock);
 		return;
@@ -5201,12 +5241,21 @@ void restart_wireless(void)
 
 	nvram_set_int("wlready", 0);
 
+#ifdef RTCONFIG_LANTIQ
+	_dprintf("[%s][%d] call wave_monitor()-04\n", __func__, __LINE__);
+	nvram_set("wave_action", "3");
+	kill_pidfile_s("/var/run/wave_monitor.pid", SIGUSR1);
+	_dprintf("[%s][%d] call wave_monitor()-05\n", __func__, __LINE__);
+#endif
 #ifdef RTCONFIG_BCMWL6
 #ifdef AMAS
 	stop_obd();
 #endif
 #ifdef RTCONFIG_PROXYSTA
 	stop_psta_monitor();
+#endif
+#ifdef BCM_ASPMD
+	stop_aspmd();
 #endif
 	stop_acsd();
 #ifdef BCM_BSD
@@ -5270,7 +5319,8 @@ void restart_wireless(void)
 
 	start_lan_wl();
 
-#ifndef CONFIG_BCMWL5
+#if defined(RTCONFIG_QCA) || \
+		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(-1);
 #endif
 
@@ -5296,6 +5346,9 @@ void restart_wireless(void)
 	start_ssd();
 #endif
 	start_acsd();
+#ifdef BCM_ASPMD
+	start_aspmd();
+#endif
 #ifdef RTCONFIG_PROXYSTA
 	start_psta_monitor();
 #endif
@@ -5321,10 +5374,11 @@ void restart_wireless(void)
 	// wlcconnect often set the wlc_state too late.
 #ifdef RTCONFIG_REALTEK
 /* [MUST]: Need to discuss to add new mode for Media Bridge  */
-	if((repeater_mode() || mediabridge_mode()) && nvram_get_int("wlc_mode") == 1) {
+	if((repeater_mode() || mediabridge_mode()) && nvram_get_int("wlc_mode") == 1)
 #else
-	if(sw_mode() == SW_MODE_REPEATER && nvram_get_int("wlc_mode") == 1) {
+	if(sw_mode() == SW_MODE_REPEATER && nvram_get_int("wlc_mode") == 1)
 #endif
+	{
 		repeater_nat_setting();
 		nvram_set_int("wlc_state", WLC_STATE_CONNECTED);
 
@@ -5411,12 +5465,6 @@ void restart_wireless(void)
 		qtn_monitor_main();
 	}
 #endif
-#ifdef RTCONFIG_LANTIQ
-	_dprintf("[%s][%d] call wave_monitor()-04\n", __func__, __LINE__);
-	nvram_set("wave_action", "3");
-	kill_pidfile_s("/var/run/wave_monitor.pid", SIGUSR1);
-	_dprintf("[%s][%d] call wave_monitor()-05\n", __func__, __LINE__);
-#endif
 
 #ifdef RTAC88U
 	if (ipv6_enabled() && is_routing_enabled()) {
@@ -5462,6 +5510,9 @@ void stop_wl_bcm(void)
 #endif
 #ifdef RTCONFIG_PROXYSTA
 	stop_psta_monitor();
+#endif
+#ifdef BCM_ASPMD
+	stop_aspmd();
 #endif
 	stop_acsd();
 #ifdef BCM_BSD

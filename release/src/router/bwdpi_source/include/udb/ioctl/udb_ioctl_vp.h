@@ -39,25 +39,50 @@ enum
 	UDB_IOCTL_VP_OP_GET_LOG_RESET,
 	UDB_IOCTL_VP_OP_GET_USER_LOG,
 	UDB_IOCTL_VP_OP_GET_META,
-	UDB_IOCTL_VP_OP_GET_USER_LOG_FIX_ROLE_DIR,
+	UDB_IOCTL_VP_OP_RSV,
 	UDB_IOCTL_VP_OP_MAX
 };
 
-#define GET_VP_DIR(p) \
+#ifndef UDB_IPS_EVENT
+#define UDB_IPS_EVENT
+
+#define GET_IPS_DIR(is_reply, is_up) \
 ({ \
 	uint8_t d = 0; \
-	if (!IS_CT_REPLY(p->ct_flag)) \
-		d |= VP_DIR_C2S; \
-	if (IS_SKB_UPLOAD(p->skb_flag)) \
-		d |= VP_DIR_UL; \
+	if (!(is_reply)) \
+		d |= IPS_DIR_C2S; \
+	if (is_up) \
+		d |= IPS_DIR_UL; \
 	d; \
 })
 
-#define VP_ROLE_ATT	1
-#define VP_ROLE_VIC	2
+#define IPS_ROLE_ATT	1
+#define IPS_ROLE_VIC	2
 
-#define VP_DIR_UL	(1 << 0)
-#define VP_DIR_C2S	(1 << 1)
+#define IPS_DIR_UL	(1 << 0)
+#define IPS_DIR_C2S	(1 << 1)
+
+typedef struct
+{
+	uint32_t rule_id;	//!< key
+	uint64_t time;		//!< Record event begin time, timestamp. Ex. get_second()
+	uint32_t hit_cnt;	//!< event hit count
+	uint8_t role;		//!< 0 is unknown, 1 is attacker, 2 is victim
+	uint8_t dir; 		//!< 1st bit is upload/download, 2nd bit is c2s/s2c
+	uint8_t ip_ver;
+	uint8_t proto;
+	uint16_t peer_port;
+	uint16_t local_port;
+	uint8_t peer_ip[16];	//IP_ADDR_LEN
+	uint8_t local_ip[16];	//IP_ADDR_LEN
+	uint8_t action;		//!< the pkt action, 0 means accept, 1 means block
+	uint8_t severity;
+	int8_t hook;
+	char in_dev[IFACE_NAME_SIZE];
+	char out_dev[IFACE_NAME_SIZE];
+} ips_event_entry_t;
+
+#endif // UDB_IPS_EVENT
 
 typedef struct udb_vp_ioc_entry
 {
@@ -80,29 +105,6 @@ typedef struct udb_vp_ioc_entry
 	uint8_t action;		//!< the pkt action, 0 means accept, 1 means block
 	uint8_t severity;
 } udb_vp_ioc_entry_t;
-
-typedef struct
-{
-	uint64_t btime; 	//!< Record event begin time, timestamp. Ex. get_second()
-	uint32_t rule_id;
-
-	uint32_t hit_cnt;	//!< event hit count
-	uint8_t role;		//!< 0 is unknown, 1 is attacker, 2 is victim
-	uint8_t dir; 		//!< 1st bit is upload/download, 2nd bit is c2s/s2c
-	uint8_t mac[6];
-
-	uint8_t ip_ver;
-	uint8_t proto;
-
-	uint16_t sport;
-	uint16_t dport;
-
-	uint8_t dip[16];	//IP_ADDR_LEN
-	uint8_t sip[16];	//IP_ADDR_LEN
-
-	uint8_t action;		//!< the pkt action, 0 means accept, 1 means block
-	uint8_t severity;
-} udb_vp_ioc_entry_fix_t;
 
 typedef struct vp_ioc_mac
 {

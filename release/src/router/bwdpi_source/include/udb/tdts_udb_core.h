@@ -27,7 +27,6 @@
 #define TDTS_UDB_CORE_H_
 
 /* autoconf */
-#include "tdts/tmcfg.h"
 #include "udb/tmcfg_udb.h"
 
 /*
@@ -45,8 +44,8 @@
 #define TMCFG_E_UDB_CORE_DC_FULL_URL 0
 #endif
 
-#ifndef TMCFG_E_UDB_CORE_DC_META_EXTRACT
-#define TMCFG_E_UDB_CORE_DC_META_EXTRACT 0
+#ifndef TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0
 #endif
 
 #ifndef TMCFG_E_UDB_CORE_DC_FULL_URL
@@ -57,8 +56,8 @@
 #define TMCFG_E_UDB_CORE_DC_DNS_REPLY 0
 #endif
 
-#ifndef TMCFG_E_UDB_CORE_WB_LIST
-#define TMCFG_E_UDB_CORE_WB_LIST 0
+#ifndef TMCFG_E_UDB_CORE_WBL
+#define TMCFG_E_UDB_CORE_WBL 0
 #endif
 
 #ifndef TMCFG_E_UDB_CORE_HWNAT
@@ -73,8 +72,56 @@
 #define TMCFG_E_UDB_CORE_HWQOS 0
 #endif
 
-#if TMCFG_E_UDB_CORE_DC_META_EXTRACT && !TMCFG_E_CORE_METADATA_EXTRACT
-#error "TMCFG_E_UDB_CORE_DC_META_EXTRACT depends on TMCFG_E_CORE_METADATA_EXTRACT, which is not enabled!"
+#ifndef TMCFG_E_UDB_CORE_PROG_LIC_CTRL
+#define TMCFG_E_UDB_CORE_PROG_LIC_CTRL 0
+#endif
+
+#ifndef TMCFG_E_UDB_CORE_PROG_LIC_CTRL_STAGE_2
+#define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_STAGE_2 0
+#endif
+
+#if !TMCFG_E_CORE_APPID
+#error "TMCFG_E_CORE_APPID is not enabled!"
+#endif
+
+#if !TMCFG_E_CORE_DEVID
+#error "TMCFG_E_CORE_DEVID is not enabled!"
+#endif
+
+#if !TMCFG_E_CORE_DNS_DECODE
+#warning "TMCFG_E_CORE_DNS_DECODE is not enabled!"
+#endif
+
+#if !TMCFG_E_CORE_APP_SET_BY_DNS
+#warning "TMCFG_E_CORE_APP_SET_BY_DNS is not enabled!"
+#endif
+
+#if !TMCFG_E_CORE_SIP_DECODE
+#warning "TMCFG_E_CORE_SIP_DECODE is not enabled!"
+#endif
+
+#if !TMCFG_E_CORE_STREAMING_DECODE
+#warning "TMCFG_E_CORE_STREAMING_DECODE is not enabled!"
+#endif
+
+#if !TMCFG_E_CORE_TLS_DECODE
+#warning "TMCFG_E_CORE_TLS_DECODE is not enabled!"
+#endif
+
+#if TMCFG_E_UDB_CORE_VIRTUAL_PATCH && !TMCFG_E_CORE_IPS
+#error "TMCFG_E_UDB_CORE_VIRTUAL_PATCH depends on TMCFG_E_CORE_IPS, which is not enabled!"
+#endif
+
+#if TMCFG_E_UDB_CORE_ANOMALY_PREVENT && !TMCFG_E_CORE_PORT_SCAN_DETECTION
+#error "TMCFG_E_UDB_CORE_ANOMALY_PREVENT depends on TMCFG_E_CORE_PORT_SCAN_DETECTION, which is not enabled!"
+#endif
+
+#if TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID && !TMCFG_E_CORE_METADATA_EXTRACT
+#error "TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID depends on TMCFG_E_CORE_METADATA_EXTRACT, which is not enabled!"
+#endif
+
+#if TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID && !TMCFG_E_CORE_DEVID_COLLECT_UN
+#error "TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID depends on TMCFG_E_CORE_DEVID_COLLECT_UN, which is not enabled!"
 #endif
 
 #if TMCFG_E_UDB_CORE_RULE_FORMAT_V2 && !TMCFG_E_CORE_RULE_FORMAT_V2
@@ -93,6 +140,10 @@
 
 #if TMCFG_E_UDB_CORE_URL_QUERY
 #include "udb/core/udb_wrs.h"
+#endif
+
+#if TMCFG_E_UDB_CORE_WBL
+#include "udb/core/udb_wbl.h"
 #endif
 
 #if TMCFG_E_UDB_CORE_IQOS_SUPPORT

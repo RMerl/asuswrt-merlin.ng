@@ -100,11 +100,17 @@ int lteled_main(int argc, char **argv)
 					state = STATE_SIM_NOT_READY;
 					percent = 0;
 					old_percent = -100;
+#if defined(RT4GAC53U)
+					led_control(LED_LTE_OFF, LED_ON);
+#else
 					led_control(LED_LTE, LED_OFF);
+#endif
 					led_control(LED_SIG1, LED_OFF);
 					led_control(LED_SIG2, LED_OFF);
 					led_control(LED_SIG3, LED_OFF);
-#ifdef RT4GAC68U
+#if defined(RT4GAC53U)
+					led_control(LED_SIG4, LED_OFF);
+#elif defined(RT4GAC68U)
 					led_control(LED_3G, LED_OFF);
 #endif
 				}
@@ -121,6 +127,9 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_SIG1, LED_OFF);
 					led_control(LED_SIG2, LED_OFF);
 					led_control(LED_SIG3, LED_OFF);
+#if defined(RT4GAC53U)
+					led_control(LED_SIG4, LED_OFF);
+#endif
 				}
 			}
 			else
@@ -132,17 +141,30 @@ int lteled_main(int argc, char **argv)
 				}
 				else{
 					led_control(LED_3G, LED_ON);
-					led_control(LED_LTE, LED_OFF);
+					led_control(LED_LTE, LED_ON);
 				}
 #endif
 
 				if (state != STATE_CONNECTED)
 				{
 					state = STATE_CONNECTED;
-#ifdef RT4GAC55U
+#if defined(RT4GAC53U)
+					led_control(LED_LTE_OFF, LED_OFF);
+#elif defined(RT4GAC68U)
+#else /* 4G-AC55U */
 					led_control(LED_LTE, LED_ON);
 #endif
 				}
+#if defined(RT4GAC53U)
+				if ((percent/20) != (old_percent/20))
+				{
+					led_control(LED_SIG1, (percent >= 20)? LED_ON : LED_OFF);
+					led_control(LED_SIG2, (percent >= 40)? LED_ON : LED_OFF);
+					led_control(LED_SIG3, (percent >= 60)? LED_ON : LED_OFF);
+					led_control(LED_SIG4, (percent >= 80)? LED_ON : LED_OFF);
+					old_percent = percent;
+				}
+#else /* 4G-AC55U || 4G-AC68U */
 				if ((percent/25) != (old_percent/25))
 				{
 					led_control(LED_SIG1, (percent > 0)? LED_ON : LED_OFF);
@@ -150,6 +172,7 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_SIG3, (percent > 75)? LED_ON : LED_OFF);
 					old_percent = percent;
 				}
+#endif
 			}
 
 			if (old_state != state)
@@ -213,9 +236,11 @@ int lteled_main(int argc, char **argv)
 				}
 				else{
 					led_control(LED_3G, ((cnt % 5) < 3)? LED_ON : LED_OFF);
-					led_control(LED_LTE, LED_OFF);
+					led_control(LED_LTE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 				}
-#else
+#elif defined(RT4GAC53U)
+				;
+#else /* 4G-AC55U */
 				led_control(LED_LTE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 #endif
 			}

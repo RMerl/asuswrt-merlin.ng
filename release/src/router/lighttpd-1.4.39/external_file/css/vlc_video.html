@@ -8,97 +8,98 @@
 <script type='text/javascript' src='/smb/js/tools.js'></script>
 <script type="text/javascript" src="/smb/js/davclient_tools.js"></script>
 <script src="/smb/js/vlc_video.min.js"></script>
-</head>
-<body width='100%' height='100%' style='margin:0px;padding:0px'>
-<div>
-<div class="videoplayer">
 <script>
 init();
 </script>
-</div>
-<div class="subtitle srt" data-srt=""></div>
-<div class="toolbar" style="display:none">
-<table cellspacing="0" class="toolbar-ct">
-	<tbody>
-		<tr>
-			<td class="toolbar-left" align="left">
-				<table>
-					<tbody>
-						<tr class="toolbar-left-row">
-							<td class="toolbar-cell">
-								<div class="x-btn-ctrl play" style="display:none"></div>
-                                <div class="x-btn-ctrl pause" style="display:none"></div>
-							</td>
-							<td class="toolbar-cell">
-                            	<div class="x-btn-ctrl stop"></div>
-                            </td>
-                            <td class="x-toolbar-cell">
-                            	<div class="xtb-text currTime" style="width:55px;text-align:right;"></div>
-                            </td>
-                            <td class="x-toolbar-cell">
-                            	<div class="x-slider x-slider-horz seekbar x-item-disabled" style="width:300px;">
-                                	<div class="x-slider-end">
-                                    	<div class="slider-inner playbar">
-                                        	<div class="slider-tracker"></div>
-                                        	<div class="slider-progress"></div>
-                                            <div class="x-btn-ctrl slider-thumb"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                        	</td>
-						</tr>
-					</tbody>
-				</table>
-			</td>
-			<td class="toolbar-right" align="right">
-            	<table>
-					<tbody>
-						<tr class="toolbar-left-row">
-							<td class="x-toolbar-cell">
-                            	<div class="xtb-text totalTime" style="width:55px;"></div>
-                            </td>
-                            <td class="x-toolbar-cell">
-                            	<div class="x-slider x-slider-horz volbar">
-                                	<div class="x-slider-end">
-                                    	<div class="slider-inner volumebar">
-                                        	<div class="slider-progress" style="width: 24px;"></div>
-                                            <div class="x-btn-ctrl slider-thumb" style="left: 16.04px; z-index: 10000;"></div>
-                                         </div>
-                                     </div>
-                                 </div>
-                             </td>
-						</tr>
-					</tbody>
-				</table>            	
-            </td>
-		</tr>
-	</tbody>
-</table>
+</head>
+<body width='100%' height='100%' style='margin:0px;padding:0px'>
+	
+	<div id="video_player_section" class="section"></div>
+	
+	<div class="subtitle srt section" data-srt=""></div>
+	
+	<div class="toolbar section" style="display:none">
+		<table cellspacing="0" class="toolbar-ct">
+			<tbody>
+				<tr>
+					<td class="toolbar-left" align="left">
+						<table>
+							<tbody>
+								<tr class="toolbar-left-row">
+									<td class="toolbar-cell">
+										<div id="btn_play" class="x-btn-ctrl" style="display:none"></div>
+		                                <div id="btn_pause" class="x-btn-ctrl" style="display:none"></div>
+									</td>
+									<td class="toolbar-cell">
+		                            	<div id="btn_stop" class="x-btn-ctrl"></div>
+		                            </td>
+		                            <td class="x-toolbar-cell">
+		                            	<div class="xtb-text currTime" style="width:55px;text-align:right;"></div>
+		                            </td>
+		                            <td class="x-toolbar-cell">
+		                            	<div class="x-slider x-slider-horz seekbar x-item-disabled" style="width:300px;">
+		                                	<div class="x-slider-end">
+		                                    	<div class="slider-inner playbar">
+		                                        	<div class="slider-tracker"></div>
+		                                        	<div class="slider-progress"></div>
+		                                            <div class="x-btn-ctrl slider-thumb"></div>
+		                                        </div>
+		                                    </div>
+		                                </div>
+		                        	</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+					<td class="toolbar-right" align="right">
+		            	<table>
+							<tbody>
+								<tr class="toolbar-left-row">
+									<td class="x-toolbar-cell">
+		                            	<div class="xtb-text totalTime" style="width:55px;"></div>
+		                            </td>
+		                            <td class="x-toolbar-cell">
+		                            	<div class="x-slider x-slider-horz volbar">
+		                                	<div class="x-slider-end">
+		                                    	<div class="slider-inner volumebar">
+		                                        	<div class="slider-progress" style="width: 24px;"></div>
+		                                            <div class="x-btn-ctrl slider-thumb" style="left: 16.04px; z-index: 10000;"></div>
+		                                         </div>
+		                                     </div>
+		                                 </div>
+		                             </td>
+								</tr>
+							</tbody>
+						</table>            	
+		            </td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
-</div>
-
-<div class="footer" style="display:none;width:100%">
-	<table style="width:100%;table-layout:fixed;color:#000;">
-    	<tbody>
-        	<tr>
-            	<td style="width:300px">
-                	<div class='subtitle-ctrl' style='display:none'>
-                    	<label id='label_subtitle'>Subtitle:</label>
-	 			  	 	<select id='select_subtitle'></select>
-                    </div>
-                </td>
-                <td>
-                	<span id="info" style="display:none"></span>
-                </td>
-                <td style="width:50px">
-                	<button id='btnClose' onclick='parent.closeJqmWindow(0);'>Close</button> 
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-  
-</div>
+	<div class="footer section" style="display:none;width:100%">
+		<table style="width:100%;table-layout:fixed;color:#000;">
+	    	<tbody>
+	        	<tr>
+	            	<td style="width:300px">
+	                	<div class='subtitle-ctrl' style='display:none'>
+	                    	<label id='label_subtitle'>Subtitle:</label>
+		 			  	 	<select id='select_subtitle'></select>
+	                    </div>
+	                </td>
+	                <!--
+	                <td>
+	                	<span id="info" style="display:none"></span>
+	                </td>
+	                -->
+	                <td style="width:50px">
+	                	<button id='btnClose' onclick='parent.closeJqmWindow(0);'>Close</button> 
+	                </td>
+	            </tr>
+	        </tbody>
+	    </table>
+	</div>
+	
 </body>
 
 </html>

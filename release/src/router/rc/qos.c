@@ -1615,12 +1615,14 @@ static int start_bandwidth_limiter(void)
 int add_iQosRules(char *pcWANIF)
 {
 	int status = 0;
+
+	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 1)
+		set_codel_patch();
+
 	if (pcWANIF == NULL || nvram_get_int("qos_enable") != 1 || nvram_get_int("qos_type") == 1) return -1;
 	
 	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0)
 		status = add_qos_rules(pcWANIF);
-	else if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 1)
-		set_codel_patch();
 	else if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 2)
 		status = add_bandwidth_limiter_rules(pcWANIF);
 	

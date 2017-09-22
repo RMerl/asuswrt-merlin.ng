@@ -37,7 +37,9 @@ endif
 
 # Entware setup script
 	install -m 0700 entware-setup.sh $(INSTALLDIR)/usr/sbin
-	install -m 0700 entware_install.sh $(INSTALLDIR)/usr/sbin
+ifeq ($(HND_ROUTER),y)
+	install -m 0700 entware_install_K3.sh $(INSTALLDIR)/usr/sbin
+endif
 
 # Postconf helper script
 	install -m 0755 helper.sh $(INSTALLDIR)/usr/sbin

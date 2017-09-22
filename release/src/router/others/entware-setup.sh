@@ -123,5 +123,8 @@ if [ "$(nvram get jffs2_scripts)" != "1" ] ; then
   nvram commit
 fi
 
-#wget -qO - $INST_URL | sh	# Temporary
-/usr/sbin/entware_install.sh
+if [ $(uname -m) == "aarch64" ] ; then
+  /usr/sbin/entware_install_K3.sh
+else
+  wget -qO - $INST_URL | sh
+fi

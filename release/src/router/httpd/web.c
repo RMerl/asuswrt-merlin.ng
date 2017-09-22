@@ -2562,6 +2562,9 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				else if(!strcmp(name+15, "dh")) {
 					key_type = OVPN_SERVER_DH;
 				}
+				else if(!strcmp(name+15, "extra")) {
+					key_type = OVPN_SERVER_CA_EXTRA;
+				}
 				else {
 					continue;
 				}
@@ -2610,6 +2613,9 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				}
 				else if(!strcmp(name+15, "crl")) {
 					key_type = OVPN_CLIENT_CRL;
+				}
+				else if(!strcmp(name+15, "extra")) {
+					key_type = OVPN_CLIENT_CA_EXTRA;
 				}
 				else {
 					continue;
@@ -2925,6 +2931,8 @@ static int validate_apply(webs_t wp, json_object *root) {
 					_dprintf("set %s=%s\n", tmp, value);
 				}
 			}
+#endif
+#ifdef RTCONFIG_OPENVPN
 			else if(!strncmp(name, "vpn_crt_server_", 15) && unit!=-1) {
 				ovpn_key_t key_type;
 				char buf[4096];
@@ -2949,6 +2957,9 @@ static int validate_apply(webs_t wp, json_object *root) {
 				}
 				else if(!strcmp(name+15, "dh")) {
 					key_type = OVPN_SERVER_DH;
+				}
+				else if(!strcmp(name+15, "extra")) {
+					key_type = OVPN_SERVER_CA_EXTRA;
 				}
 				else {
 					_dprintf("unknown key type %s\n", name);
@@ -2985,6 +2996,9 @@ static int validate_apply(webs_t wp, json_object *root) {
 				else if(!strcmp(name+15, "crl")) {
 					key_type = OVPN_CLIENT_CRL;
 				}
+				else if(!strcmp(name+15, "extra")) {
+					key_type = OVPN_CLIENT_CA_EXTRA;
+				}
 				else {
 					_dprintf("unknown key type %s\n", name);
 					continue;
@@ -2998,8 +3012,6 @@ static int validate_apply(webs_t wp, json_object *root) {
 					_dprintf("set %s=%s\n", tmp, value);
 				}
 			}
-#endif
-#ifdef RTCONFIG_OPENVPN
 			else if(!strncmp(name, "vpn_server_", 11) && unit!=-1) {
 				snprintf(prefix, sizeof(prefix), "vpn_server%d_", unit);
 				(void)strcat_r(prefix, name+11, tmp);
@@ -3020,18 +3032,7 @@ static int validate_apply(webs_t wp, json_object *root) {
 					_dprintf("set %s=%s\n", tmp, value);
 				}
 			}
-			else if(!strncmp(name, "vpn_crt", 7)) {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-				if(strlen(value)) {
-					snprintf(tmp, sizeof(tmp), "%s/%s", OVPN_DIR_SAVE, name);
-					f_write(tmp, value, strlen(value), 0, 0);
-				}
-#else
-				nvram_set(name, value);
-#endif // JFFS2
-				_dprintf("set %s=%s\n", name, value);
-			}
-#endif // OPENVPN
+#endif
 			else if(!strncmp(name, "sshd_", 5)) {
 				write_encoded_crt(name, value);
 				nvram_modified = 1;

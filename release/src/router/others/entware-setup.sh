@@ -27,6 +27,10 @@ case $(uname -m) in
     PART_TYPES='ext2|ext3'
     INST_URL='http://pkg.entware.net/binaries/mipsel/installer/installer.sh'
     ;;
+  aarch64)
+    PART_TYPES='ext2|ext3|ext4'
+    INST_URL='http://pkg.entware.net/binaries/armv7/installer/entware_install.sh'
+    ;;
   *)
     echo "This is unsupported platform, sorry."
     ;;
@@ -119,4 +123,5 @@ if [ "$(nvram get jffs2_scripts)" != "1" ] ; then
   nvram commit
 fi
 
-wget -qO - $INST_URL | sh
+#wget -qO - $INST_URL | sh	# Temporary
+/usr/sbin/entware_install.sh

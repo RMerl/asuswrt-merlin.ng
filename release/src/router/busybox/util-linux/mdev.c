@@ -543,8 +543,7 @@ static char *build_alias(char *alias, const char *device_name)
 
 /* mknod in /dev based on a path like "/sys/block/hda/hda1"
  * NB1: path parameter needs to have SCRATCH_SIZE scratch bytes
- * after NUL, but we promise to not mangle (IOW: to restore NUL if needed)
- * path string.
+ * after NUL, but we promise to not mangle it (IOW: to restore NUL if needed).
  * NB2: "mdev -s" may call us many times, do not leak memory/fds!
  *
  * device_name = $DEVNAME (may be NULL)
@@ -810,22 +809,47 @@ static void make_device(char *device_name, char *path, int operation)
 	} /* for (;;) */
 }
 
-/* File callback for /sys/ traversal */
+/* File callback for /sys/ traversal.
+ * We act only on "/sys/.../dev" (pseudo)file
+ */
 static int FAST_FUNC fileAction(const char *fileName,
 		struct stat *statbuf UNUSED_PARAM,
 		void *userData,
 		int depth UNUSED_PARAM)
 {
 	size_t len = strlen(fileName) - 4; /* can't underflow */
-	char *scratch = userData;
+	char *path = userData;	/* char array[PATH_MAX + SCRATCH_SIZE] */
+	char subsys[PATH_MAX];
+	int res;
 
-	/* len check is for paranoid reasons */
-	if (strcmp(fileName + len, "/dev") != 0 || len >= PATH_MAX)
-		return FALSE;
+	/* Is it a ".../dev" file? (len check is for paranoid reasons) */
+	if (strcmp(fileName + len, "/dev") != 0 || len >= PATH_MAX - 32)
+		return FALSE; /* not .../dev */
 
-	strcpy(scratch, fileName);
-	scratch[len] = '\0';
-	make_device(/*DEVNAME:*/ NULL, scratch, OP_add);
+	strcpy(path, fileName);
+	path[len] = '\0';
+
+	/* Read ".../subsystem" symlink in the same directory where ".../dev" is */
+	strcpy(subsys, path);
+	strcpy(subsys + len, "/subsystem");
+	res = readlink(subsys, subsys, sizeof(subsys)-1);
+	if (res > 0) {
+		subsys[res] = '\0';
+		free(G.subsystem);
+		if (G.subsys_env) {
+			bb_unsetenv_and_free(G.subsys_env);
+			G.subsys_env = NULL;
+		}
+		/* Set G.subsystem and $SUBSYSTEM from symlink's last component */
+		G.subsystem = strrchr(subsys, '/');
+		if (G.subsystem) {
+			G.subsystem = xstrdup(G.subsystem + 1);
+			G.subsys_env = xasprintf("%s=%s", "SUBSYSTEM", G.subsystem);
+			putenv(G.subsys_env);
+		}
+	}
+
+	make_device(/*DEVNAME:*/ NULL, path, OP_add);
 
 	return TRUE;
 }
@@ -836,22 +860,6 @@ static int FAST_FUNC dirAction(const char *fileName UNUSED_PARAM,
 		void *userData UNUSED_PARAM,
 		int depth)
 {
-	/* Extract device subsystem -- the name of the directory
-	 * under /sys/class/ */
-	if (1 == depth) {
-		free(G.subsystem);
-		if (G.subsys_env) {
-			bb_unsetenv_and_free(G.subsys_env);
-			G.subsys_env = NULL;
-		}
-		G.subsystem = strrchr(fileName, '/');
-		if (G.subsystem) {
-			G.subsystem = xstrdup(G.subsystem + 1);
-			G.subsys_env = xasprintf("%s=%s", "SUBSYSTEM", G.subsystem);
-			putenv(G.subsys_env);
-		}
-	}
-
 	return (depth >= MAX_SYSFS_DEPTH ? SKIP : TRUE);
 }
 
@@ -872,8 +880,9 @@ static void load_firmware(const char *firmware, const char *sysfs_path)
 	int firmware_fd, loading_fd;
 
 	/* check for /lib/firmware/$FIRMWARE */
-	xchdir("/lib/firmware");
-	firmware_fd = open(firmware, O_RDONLY); /* can fail */
+	firmware_fd = -1;
+	if (chdir("/lib/firmware") == 0)
+		firmware_fd = open(firmware, O_RDONLY); /* can fail */
 
 	/* check for /sys/$DEVPATH/loading ... give 30 seconds to appear */
 	xchdir(sysfs_path);
@@ -1065,25 +1074,10 @@ int mdev_main(int argc UNUSED_PARAM, char **argv)
 
 		putenv((char*)"ACTION=add");
 
-		/* ACTION_FOLLOWLINKS is needed since in newer kernels
-		 * /sys/block/loop* (for example) are symlinks to dirs,
-		 * not real directories.
-		 * (kernel's CONFIG_SYSFS_DEPRECATED makes them real dirs,
-		 * but we can't enforce that on users)
-		 */
-		if (access("/sys/class/block", F_OK) != 0) {
-			/* Scan obsolete /sys/block only if /sys/class/block
-			 * doesn't exist. Otherwise we'll have dupes.
-			 * Also, do not complain if it doesn't exist.
-			 * Some people configure kernel to have no blockdevs.
-			 */
-			recursive_action("/sys/block",
-				ACTION_RECURSE | ACTION_FOLLOWLINKS | ACTION_QUIET,
-				fileAction, dirAction, temp, 0);
-		}
-		recursive_action("/sys/class",
-			ACTION_RECURSE | ACTION_FOLLOWLINKS,
-			fileAction, dirAction, temp, 0);
+		/* Create all devices from /sys/dev hierarchy */
+		recursive_action("/sys/dev",
+				 ACTION_RECURSE | ACTION_FOLLOWLINKS,
+				 fileAction, dirAction, temp, 0);
 	} else {
 		char *fw;
 		char *seq;

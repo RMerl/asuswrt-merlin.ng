@@ -36,9 +36,8 @@ ifeq ($(RTCONFIG_OPENVPN),y)
 endif
 
 # Entware setup script
-ifneq ($(HND_ROUTER),y)
 	install -m 0700 entware-setup.sh $(INSTALLDIR)/usr/sbin
-endif
+	install -m 0700 entware_install.sh $(INSTALLDIR)/usr/sbin
 
 # Postconf helper script
 	install -m 0755 helper.sh $(INSTALLDIR)/usr/sbin

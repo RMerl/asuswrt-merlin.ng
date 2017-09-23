@@ -230,6 +230,7 @@ function formShowAndHide(server_enable, server_type) {
 	if(server_enable == 1){
 		document.getElementById("trVPNServerMode").style.display = "";
 		document.getElementById("selSwitchMode").value = "1";
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "";
 		document.getElementById('openvpn_export').style.display = "";	
 		document.getElementById('OpenVPN_setting').style.display = "";
 		document.getElementById("divAdvanced").style.display = "none";
@@ -249,10 +250,12 @@ function formShowAndHide(server_enable, server_type) {
 		openvpnd_connected_status();
 		check_vpn_server_state();
 		document.getElementById("divApply").style.display = "";
+		updateVpnServerClientAccess();
 	}
 	else{
 		document.getElementById("trVPNServerMode").style.display = "none";
 		document.getElementById("openvpn_export").style.display = "none";
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "none";
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "none";
 		//if(vpn_server_mode != "openvpn") {
@@ -812,12 +815,14 @@ function switchMode(mode){
 		else{
 			document.getElementById("openvpn_export").style.display = "none";
 		}
-		
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "";	
 		document.getElementById("divAdvanced").style.display = "none";
+		updateVpnServerClientAccess();
 	}	
 	else{
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("openvpn_export").style.display = "none";
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "";
 	}
 }
@@ -1118,6 +1123,46 @@ function update_cipher() {
 		$("#cipher_hint").css("display", "");
 }
 
+function vpnServerClientAccess() {
+	var vpn_server_client_access = getRadioValue(document.form.vpn_server_client_access);
+	switch(parseInt(vpn_server_client_access)) {
+		case 0 :
+			setRadioValue(document.form.vpn_server_plan, 1);
+			setRadioValue(document.form.vpn_server_rgw, 0);
+			setRadioValue(document.form.vpn_server_x_dns, 0);
+			setRadioValue(document.form.vpn_server_pdns, 0);
+			$(".client_access_custom").css("display", "none");
+			break;
+		case 1 :
+			setRadioValue(document.form.vpn_server_plan, 1);
+			setRadioValue(document.form.vpn_server_rgw, 1);
+			setRadioValue(document.form.vpn_server_x_dns, 1);
+			setRadioValue(document.form.vpn_server_pdns, 1);
+			$(".client_access_custom").css("display", "none");
+			break;
+	}
+	update_visibility();
+}
+
+function updateVpnServerClientAccess() {
+	var vpn_server_plan = getRadioValue(document.form.vpn_server_plan);
+	var vpn_server_rgw = getRadioValue(document.form.vpn_server_rgw);
+	var vpn_server_x_dns = getRadioValue(document.form.vpn_server_x_dns);
+	var vpn_server_pdns = getRadioValue(document.form.vpn_server_pdns);
+	if(vpn_server_plan == "1" && vpn_server_rgw == "0" && vpn_server_x_dns == "0" && vpn_server_pdns == "0") {
+		setRadioValue(document.form.vpn_server_client_access, 0);
+		$(".client_access_custom").css("display", "none");
+	}
+	else if(vpn_server_plan == "1" && vpn_server_rgw == "1" && vpn_server_x_dns == "1" && vpn_server_pdns == "1") {
+		setRadioValue(document.form.vpn_server_client_access, 1);
+		$(".client_access_custom").css("display", "none");
+	}
+	else {
+		setRadioValue(document.form.vpn_server_client_access, 2);
+		$(".client_access_custom").css("display", "");
+	}
+}
+
 </script>
 </head>
 <body onload="initial();">
@@ -1305,6 +1350,17 @@ function update_cipher() {
 													<option value="2"><#menu5#></option>									
 												</select>		
 											</td>											
+										</tr>
+										<tr id="trClientWillUseVPNToAccess">
+											<th>Client will use VPN to access<!--untranslated--></th>
+											<td>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_local" class="input" value="0" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_local">Local network only<!--untranslated--></label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_both" class="input" value="1" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_both">Internet and local network<!--untranslated--></label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_custom" class="input client_access_custom" value="2" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_custom" class="client_access_custom"><#Custom#></label>
+											</td>
 										</tr>
 										<tr id="openvpn_export" style="display:none;">
 											<th><#vpn_export_ovpnfile#></th>

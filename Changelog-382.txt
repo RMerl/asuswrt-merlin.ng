@@ -15,7 +15,7 @@ Asuswrt-Merlin 382 Changelog
           old bugs might be gone, but also new ones might be present
           in this release.
 
-          Highlights of the changes between Asus380 and Asus382:
+          Some of the most important changes between Asus380 and Asus382:
             - New Trend Micro DPI engine, with two-way IPS
             - New networkmap service (now closed source)
             - New OpenVPN implementation (now closed source)
@@ -24,16 +24,15 @@ Asuswrt-Merlin 382 Changelog
           This changelog will focus on changes that happened between
           AM380.68 and AM382.1, or between Asus382_15098 and AM382.
 
+   - NEW: Merged with GPL 382_16466 (RT-AC86U).
    - NEW: Added support for the RT-AC86U and its Broadcom HND platform.
-          Note that this new platform will be losing the following
-          features from previous models:
-            - Entware
-            - IPTraffic
+          Note that this new platform will be losing the iptraffic
+          feature from other models due to its newer kernel.
    - NEW: Added support for inline CRLs when importing an ovpn file
    - NEW: Added support for fullcone NAT (RT-AC86U)
    - NEW: Added WiFi Radar (Broadcom's Visualization app) under
           Wireless (RT-AC86U)
-   - NEW: IPSEC Server and Client support (RT-AC86U)
+   - NEW: Switch to Entware-NG-3x for the RT-AC86U.
    - CHANGED: Since Asus has now closed their OpenVPN source code,
               their code was replaced with new code based om our
               original implementation from AM380.  From now on, AM382's

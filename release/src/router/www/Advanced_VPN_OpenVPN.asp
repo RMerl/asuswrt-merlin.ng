@@ -106,34 +106,15 @@ var ciphersarray = [
 		["SEED-CBC"]
 ];
 
-var digestsarray = [
-		["DSA"],
-		["DSA-SHA"],
-		["DSA-SHA1"],
-		["DSA-SHA1-old"],
-		["ecdsa-with-SHA1"],
-		["MD4"],
-		["MD5"],
-		["MDC2"],
-		["RIPEMD160"],
-		["RSA-MD4"],
-		["RSA-MD5"],
-		["RSA-MDC2"],
-		["RSA-RIPEMD160"],
-		["RSA-SHA"],
-		["RSA-SHA1"],
-		["RSA-SHA1-2"],
-		["RSA-SHA224"],
-		["RSA-SHA256"],
-		["RSA-SHA384"],
-		["RSA-SHA512"],
-		["SHA"],
-		["SHA1"],
-		["SHA224"],
-		["SHA256"],
-		["SHA384"],
-		["SHA512"],
-		["whirlpool"]
+var hmacarray = [
+        ["MD 5", "MD5"],
+        ["SHA 1", "SHA1"],
+        ["SHA 224", "SHA224"],
+        ["SHA 256", "SHA256"],
+        ["SHA 384", "SHA384"],
+        ["SHA 512", "SHA512"],
+        ["RIPEMD 160", "RIPEMD160"],
+        ["RSA MD4", "RSA-MD4"]
 ];
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
@@ -164,8 +145,8 @@ function initial(){
 	//generate select option of auth digests list
 	add_option(document.form.vpn_server_digest, "Default","default",(currentdigest == "default"));
 	add_option(document.form.vpn_server_digest, "None","none",(currentdigest == "none"));
-	for(var i = 0; i < digestsarray.length; i += 1){
-		add_option(document.form.vpn_server_digest, digestsarray[i][0], digestsarray[i][0], (currentdigest == digestsarray[i][0]));
+	for(var i = 0; i < hmacarray.length; i += 1){
+		add_option(document.form.vpn_server_digest, hmacarray[i][0], hmacarray[i][0], (currentdigest == hmacarray[i][0]));
 	}
 
 	// We don't use the global switch, so set it to current instance state instead

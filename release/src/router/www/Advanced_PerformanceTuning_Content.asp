@@ -8,7 +8,7 @@
 <meta name="svg.render.forceflash" content="false" />	
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Performance tuning</title>
+<title><#Web_Title#> - Temperature</title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <script src='svg.js' data-path="/svghtc/" data-debug="false"></script>	
@@ -128,7 +128,7 @@ function changeTempUnit(num){
 								<tr bgcolor="#4D595D" style="height:10px">
 								  <td valign="top">
 									  <div>&nbsp;</div>
-									  <div class="formfonttitle"><#menu5_6#> - Performance tuning</div>
+									  <div class="formfonttitle"><#menu5_6#> - Temperature</div>
 									  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 									  <!--div class="formfontdesc"><#PerformaceTuning_desc#></div-->
 									</td>

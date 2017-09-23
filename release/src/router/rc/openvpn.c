@@ -61,7 +61,7 @@ void start_ovpn_client(int clientNum)
 	char buffer2[4000];
 	char *argv[6];
 	int argc = 0;
-	enum { TLS, SECRET, CUSTOM } cryptMode = CUSTOM;
+	enum { TLS, SECRET } cryptMode = TLS;
 	enum { TAP, TUN } ifType = TUN;
 	enum { BRIDGE, NAT, NONE } routeMode = NONE;
 	int nvi, ip[4], nm[4];
@@ -119,8 +119,6 @@ void start_ovpn_client(int clientNum)
 		cryptMode = TLS;
 	else if ( nvram_contains_word(&buffer[0], "secret") )
 		cryptMode = SECRET;
-	else if ( nvram_contains_word(&buffer[0], "custom") )
-		cryptMode = CUSTOM;
 	else
 	{
 		vpnlog(VPN_LOG_ERROR,"Invalid encryption mode, %.6s", nvram_safe_get(&buffer[0]));
@@ -652,7 +650,7 @@ void start_ovpn_server(int serverNum)
 	int argc = 0;
 	int c2c = 0;
 	enum { TAP, TUN } ifType = TUN;
-	enum { TLS, SECRET, CUSTOM } cryptMode = CUSTOM;
+	enum { TLS, SECRET } cryptMode = TLS;
 	int nvi, ip[4], nm[4];
 	long int nvl;
 	int pid;
@@ -713,8 +711,6 @@ void start_ovpn_server(int serverNum)
 		cryptMode = TLS;
 	else if ( nvram_contains_word(&buffer[0], "secret") )
 		cryptMode = SECRET;
-	else if ( nvram_contains_word(&buffer[0], "custom") )
-		cryptMode = CUSTOM;
 	else
 	{
 		vpnlog(VPN_LOG_ERROR,"Invalid encryption mode, %.6s", nvram_safe_get(&buffer[0]));
@@ -1162,7 +1158,8 @@ void start_ovpn_server(int serverNum)
 				fprintf(fp, "export GREP=\"grep\"\n");
 				fprintf(fp, "export KEY_CONFIG=\"/rom/easy-rsa/openssl-1.0.0.cnf\"\n");
 				fprintf(fp, "export KEY_DIR=\"/etc/openvpn/server%d\"\n", serverNum);
-				fprintf(fp, "export KEY_SIZE=1024\n");
+				sprintf(&buffer[0], "vpn_server%d_tls_keysize", serverNum);
+				fprintf(fp, "export KEY_SIZE=%d\n", (nvram_get_int(&buffer[0]) ? 2048 : 1024));
 				fprintf(fp, "export CA_EXPIRE=3650\n");
 				fprintf(fp, "export KEY_EXPIRE=3650\n");
 				fprintf(fp, "export KEY_COUNTRY=\"TW\"\n");
@@ -1493,7 +1490,7 @@ void start_ovpn_server(int serverNum)
 		vpnlog(VPN_LOG_EXTRA,"Done adding cron job");
 	}
 
-	if ( cryptMode == SECRET || cryptMode == CUSTOM)
+	if ( cryptMode == SECRET )
 	{
 		sprintf(&buffer[0], "vpn_server%d_state", serverNum);
 		nvram_set(&buffer[0], "2");	//running

@@ -358,8 +358,6 @@ function update_visibility(){
 
 	showhide("client_userauth", (auth == "tls"));
 	showhide("client_hmac", (auth == "tls"));
-	showhide("client_custom_crypto_text", (auth == "custom"));
-	showhide("client_tls_crypto_text", (auth != "custom"));         //add by Viz
 
 	showhide("client_username", userauth);
 	showhide("client_password", userauth);
@@ -1187,10 +1185,8 @@ function defaultSettings() {
 							<select name="vpn_client_crypt" class="input_option" onclick="update_visibility();">
 								<option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %> >TLS</option>
 								<option value="secret" <% nvram_match("vpn_client_crypt","secret","selected"); %> >Static Key</option>
-								<option value="custom" <% nvram_match("vpn_client_crypt","custom","selected"); %> >Custom</option>
 							</select>
 							<span id="client_tls_crypto_text" onclick="edit_Keys();" style="text-decoration:underline;cursor:pointer;">Content modification of Keys &amp; Certificates.</span>
-							<span id="client_custom_crypto_text">(Must be manually configured!)</span>
 						</td>
 					</tr>
 

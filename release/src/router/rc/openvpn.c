@@ -365,8 +365,7 @@ void start_ovpn_client(int clientNum)
 			sprintf(buffer, "/etc/openvpn/client%d/ca.crt", clientNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
-			sprintf(buffer, "vpn_crt_client%d_ca", clientNum);
-			fprintf(fp, "%s", get_parsed_crt(buffer, buffer2, sizeof(buffer2)));
+			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CA, buffer2, sizeof(buffer2)));
 			fclose(fp);
 		}
 
@@ -377,8 +376,7 @@ void start_ovpn_client(int clientNum)
 				sprintf(buffer, "/etc/openvpn/client%d/client.key", clientNum);
 				fp = fopen(buffer, "w");
 				chmod(buffer, S_IRUSR|S_IWUSR);
-				sprintf(buffer, "vpn_crt_client%d_key", clientNum);
-				fprintf(fp, "%s", get_parsed_crt(buffer, buffer2, sizeof(buffer2)));
+				fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_KEY, buffer2, sizeof(buffer2)));
 				fclose(fp);
 			}
 
@@ -387,8 +385,7 @@ void start_ovpn_client(int clientNum)
 				sprintf(buffer, "/etc/openvpn/client%d/client.crt", clientNum);
 				fp = fopen(buffer, "w");
 				chmod(buffer, S_IRUSR|S_IWUSR);
-				sprintf(buffer, "vpn_crt_client%d_crt", clientNum);
-				fprintf(fp, "%s", get_parsed_crt(buffer, buffer2, sizeof(buffer2)));
+				fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CERT, buffer2, sizeof(buffer2)));
 				fclose(fp);
 			}
 		}
@@ -407,8 +404,7 @@ void start_ovpn_client(int clientNum)
 			sprintf(buffer, "/etc/openvpn/client%d/crl.pem", clientNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
-			sprintf(buffer, "vpn_crt_client%d_crl", clientNum);
-			fprintf(fp, "%s", get_parsed_crt(buffer, buffer2, sizeof(buffer2)));
+			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CRL, buffer2, sizeof(buffer2)));
 			fclose(fp);
 		}
 
@@ -417,8 +413,7 @@ void start_ovpn_client(int clientNum)
 			sprintf(buffer, "/etc/openvpn/client%d/extra.pem", clientNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
-			sprintf(buffer, "vpn_crt_client%d_extra", clientNum);
-			fprintf(fp, "%s", get_parsed_crt(buffer, buffer2, sizeof(buffer2)));
+			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CA_EXTRA, buffer2, sizeof(buffer2)));
 			fclose(fp);
 		}
 	}
@@ -429,8 +424,7 @@ void start_ovpn_client(int clientNum)
 			sprintf(buffer, "/etc/openvpn/client%d/static.key", clientNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
-			sprintf(buffer, "vpn_crt_client%d_static", clientNum);
-			fprintf(fp, "%s", get_parsed_crt(buffer, buffer2, sizeof(buffer2)));
+			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_STATIC, buffer2, sizeof(buffer2)));
 			fclose(fp);
 		}
 	}
@@ -1049,9 +1043,7 @@ void start_ovpn_server(int serverNum)
 		fprintf(fp_client, "remote-cert-tls server\n");
 		//if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA))
 			fprintf(fp, "ca ca.crt\n");
-		sprintf(buffer, "vpn_crt_server%d_dh", serverNum);
-//TODO Replace with new function call
-		if ( !strncmp(get_parsed_crt(buffer, buffer2, sizeof(buffer2)), "none", 4))
+		if ( !strncmp( get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH, buffer2, sizeof(buffer2)), "none", 4))
 			fprintf(fp, "dh none\n");
 		else
 			fprintf(fp, "dh dh.pem\n");

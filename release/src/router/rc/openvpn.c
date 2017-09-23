@@ -70,6 +70,9 @@ void start_ovpn_client(int clientNum)
 	int userauth, useronly;
 	int taskset_ret;
 	int i;
+	char prefix[16];
+
+	snprintf(prefix, sizeof(prefix), "vpn_client%d_", clientNum);
 
 	sprintf(&buffer[0], "start_vpnclient%d", clientNum);
 	if (getpid() != 1) {
@@ -91,12 +94,9 @@ void start_ovpn_client(int clientNum)
 		return;
 	}
 
-	sprintf(&buffer[0], "vpn_client%d_state", clientNum);
-	nvram_set(&buffer[0], "1");	//initializing
-	sprintf(&buffer[0], "vpn_client%d_errno", clientNum);
-	nvram_set(&buffer[0], "0");
-	sprintf(&buffer[0], "vpn_client%d_rip", clientNum);
-	nvram_set(&buffer[0], "");
+	nvram_pf_set(prefix, "state", "1");	// Initializing
+	nvram_pf_set(prefix, "errno", "0");
+	nvram_pf_set(prefix, "rip", "");
 
 	// Determine interface
 	sprintf(&buffer[0], "vpn_client%d_if", clientNum);
@@ -126,13 +126,11 @@ void start_ovpn_client(int clientNum)
 	}
 
 	// Determine if we should bridge the tunnel
-	sprintf(&buffer[0], "vpn_client%d_bridge", clientNum);
-	if ( ifType == TAP && nvram_get_int(&buffer[0]) == 1 )
+	if ( ifType == TAP && nvram_pf_get_int(prefix, "bridge") == 1 )
 		routeMode = BRIDGE;
 
 	// Determine if we should NAT the tunnel
-	sprintf(&buffer[0], "vpn_client%d_nat", clientNum);
-	if ( (ifType == TUN || routeMode != BRIDGE) && nvram_get_int(&buffer[0]) == 1 )
+	if ( (ifType == TUN || routeMode != BRIDGE) && nvram_pf_get_int(prefix, "nat") == 1 )
 		routeMode = NAT;
 
 	// Make sure openvpn directory exists
@@ -189,10 +187,8 @@ void start_ovpn_client(int clientNum)
 		}
 	}
 
-	sprintf(&buffer[0], "vpn_client%d_userauth", clientNum);
-	userauth = nvram_get_int(&buffer[0]);
-	sprintf(&buffer[0], "vpn_client%d_useronly", clientNum);
-	useronly = userauth && nvram_get_int(&buffer[0]);
+	userauth = nvram_pf_get_int(prefix, "userauth");
+	useronly = userauth && nvram_pf_get_int(prefix, "useronly");
 
 	// Build and write config file
 	vpnlog(VPN_LOG_EXTRA,"Writing config file");
@@ -204,31 +200,23 @@ void start_ovpn_client(int clientNum)
 	if ( cryptMode == TLS )
 		fprintf(fp, "client\n");
 	fprintf(fp, "dev %s\n", &iface[0]);
-	sprintf(&buffer[0], "vpn_client%d_proto", clientNum);
-	fprintf(fp, "proto %s\n", nvram_safe_get(&buffer[0]));
-	sprintf(&buffer[0], "vpn_client%d_addr", clientNum);
-	fprintf(fp, "remote %s ", nvram_safe_get(&buffer[0]));
-	sprintf(&buffer[0], "vpn_client%d_port", clientNum);
-	fprintf(fp, "%d\n", nvram_get_int(&buffer[0]));
+	fprintf(fp, "proto %s\n", nvram_pf_safe_get(prefix, "proto"));
+	fprintf(fp, "remote %s ", nvram_pf_safe_get(prefix, "addr"));
+	fprintf(fp, "%d\n", nvram_pf_get_int(prefix, "port"));
 	if ( cryptMode == SECRET )
 	{
 		if ( ifType == TUN )
 		{
-			sprintf(&buffer[0], "vpn_client%d_local", clientNum);
-			fprintf(fp, "ifconfig %s ", nvram_safe_get(&buffer[0]));
-			sprintf(&buffer[0], "vpn_client%d_remote", clientNum);
-			fprintf(fp, "%s\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp, "ifconfig %s ", nvram_pf_safe_get(prefix, "local"));
+			fprintf(fp, "%s\n", nvram_pf_safe_get(prefix, "remote"));
 		}
 		else if ( ifType == TAP )
 		{
-			sprintf(&buffer[0], "vpn_client%d_local", clientNum);
-			fprintf(fp, "ifconfig %s ", nvram_safe_get(&buffer[0]));
-			sprintf(&buffer[0], "vpn_client%d_nm", clientNum);
-			fprintf(fp, "%s\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp, "ifconfig %s ", nvram_pf_safe_get(prefix, "local"));
+			fprintf(fp, "%s\n", nvram_pf_safe_get(prefix, "nm"));
 		}
 	}
-	sprintf(&buffer[0], "vpn_client%d_retry", clientNum);
-	if ( (nvi = nvram_get_int(&buffer[0])) >= 0 )
+	if ( (nvi = nvram_pf_get_int(prefix, "retry")) >= 0 )
 		fprintf(fp, "resolv-retry %d\n", nvi);
 	else
 		fprintf(fp, "resolv-retry infinite\n");
@@ -236,8 +224,7 @@ void start_ovpn_client(int clientNum)
 	fprintf(fp, "persist-key\n");
 	fprintf(fp, "persist-tun\n");
 
-	sprintf(&buffer[0], "vpn_client%d_comp", clientNum);
-	strlcpy(buffer2, nvram_safe_get(&buffer[0]), sizeof (buffer2));
+	strlcpy(buffer2, nvram_pf_safe_get(prefix, "comp"), sizeof (buffer2));
 	if (strcmp(buffer2, "-1")) {
 		if (!strcmp(buffer2, "lz4")) {
 			fprintf(fp, "compress lz4\n");
@@ -251,10 +238,8 @@ void start_ovpn_client(int clientNum)
 	}
 
 	if ( cryptMode == TLS ) {
-		sprintf(&buffer[0], "vpn_client%d_ncp_enable", clientNum);
-		nvi = nvram_get_int(&buffer[0]);
-		sprintf(&buffer[0], "vpn_client%d_ncp_ciphers", clientNum);
-		strlcpy(buffer2, nvram_safe_get(&buffer[0]), sizeof (buffer2));
+		nvi = nvram_pf_get_int(prefix, "ncp_enable");
+		strlcpy(buffer2, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (buffer2));
 		if ((nvi > 0) && (buffer2[0] != '\0')) {
 			fprintf(fp, "ncp-ciphers %s\n", buffer2);
 		} else {
@@ -274,13 +259,11 @@ void start_ovpn_client(int clientNum)
 	sprintf(&buffer[0], "vpn_client%d_digest", clientNum);
 	if ( !nvram_contains_word(&buffer[0], "default") )
 		fprintf(fp, "auth %s\n", nvram_safe_get(&buffer[0]));
-	sprintf(&buffer[0], "vpn_client%d_rgw", clientNum);
-	nvi = nvram_get_int(&buffer[0]);
+	nvi = nvram_pf_get_int(prefix, "rgw");
 	if (nvi == 1)
 	{
-		sprintf(&buffer[0], "vpn_client%d_gw", clientNum);
-		if ( ifType == TAP && nvram_safe_get(&buffer[0])[0] != '\0' )
-			fprintf(fp, "route-gateway %s\n", nvram_safe_get(&buffer[0]));
+		if ( ifType == TAP && nvram_pf_safe_get(prefix, "gw")[0] != '\0' )
+			fprintf(fp, "route-gateway %s\n", nvram_pf_safe_get(prefix, "gw"));
 		fprintf(fp, "redirect-gateway def1\n");
 	}
 
@@ -302,12 +285,10 @@ void start_ovpn_client(int clientNum)
 
 	if ( cryptMode == TLS )
 	{
-		sprintf(&buffer[0], "vpn_client%d_reneg", clientNum);
-		if ( (nvl = atol(nvram_safe_get(&buffer[0]))) >= 0 )
+		if ( (nvl = atol(nvram_pf_safe_get(prefix, "reneg"))) >= 0 )
 			fprintf(fp, "reneg-sec %ld\n", nvl);
 
-		sprintf(&buffer[0], "vpn_client%d_adns", clientNum);
-		if ( nvram_get_int(&buffer[0]) > 0 )
+		if ( nvram_pf_get_int(prefix, "adns") > 0 )
 		{
 			sprintf(&buffer[0], "/etc/openvpn/client%d/updown.sh", clientNum);
 			symlink("/usr/sbin/updown.sh", &buffer[0]);
@@ -315,8 +296,7 @@ void start_ovpn_client(int clientNum)
 			fprintf(fp, "down updown.sh\n");
 		}
 
-		sprintf(&buffer[0], "vpn_client%d_hmac", clientNum);
-		nvi = nvram_get_int(&buffer[0]);
+		nvi = nvram_pf_get_int(prefix, "hmac");
 		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_STATIC) && (nvi >= 0))
 		{
 			if (nvi == 3)
@@ -339,11 +319,9 @@ void start_ovpn_client(int clientNum)
 			if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_KEY))
 				fprintf(fp, "key client.key\n");
 		}
-		sprintf(&buffer[0], "vpn_client%d_tlsremote", clientNum);
-		if (nvram_get_int(&buffer[0]))
+		if (nvram_pf_get_int(prefix, "tlsremote"))
 		{
-			sprintf(&buffer[0], "vpn_client%d_cn", clientNum);
-			fprintf(fp, "verify-x509-name \"%s\" name\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp, "verify-x509-name \"%s\" name\n", nvram_pf_safe_get(prefix, "cn"));
 		}
 		if (userauth)
 			fprintf(fp, "auth-user-pass up\n");
@@ -373,8 +351,7 @@ void start_ovpn_client(int clientNum)
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");
 	fprintf(fp, "\n# Custom Configuration\n");
-	sprintf(&buffer[0], "vpn_client%d_custom", clientNum);
-	fprintf(fp, "%s", nvram_safe_get(&buffer[0]));
+	fprintf(fp, "%s", nvram_pf_safe_get(prefix, "custom"));
 	fclose(fp);
 
 	vpnlog(VPN_LOG_EXTRA,"Done writing config file");
@@ -420,10 +397,8 @@ void start_ovpn_client(int clientNum)
 			sprintf(&buffer[0], "/etc/openvpn/client%d/up", clientNum);
 			fp = fopen(&buffer[0], "w");
 			chmod(&buffer[0], S_IRUSR|S_IWUSR);
-			sprintf(&buffer[0], "vpn_client%d_username", clientNum);
-			fprintf(fp, "%s\n", nvram_safe_get(&buffer[0]));
-			sprintf(&buffer[0], "vpn_client%d_password", clientNum);
-			fprintf(fp, "%s\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp, "%s\n", nvram_pf_safe_get(prefix, "username"));
+			fprintf(fp, "%s\n", nvram_pf_safe_get(prefix, "password"));
 			fclose(fp);
 		}
 
@@ -447,8 +422,7 @@ void start_ovpn_client(int clientNum)
 			fclose(fp);
 		}
 	}
-	sprintf(&buffer[0], "vpn_client%d_hmac", clientNum);
-	if ( cryptMode == SECRET || (cryptMode == TLS && nvram_get_int(&buffer[0]) >= 0) )
+	if ( cryptMode == SECRET || (cryptMode == TLS && nvram_pf_get_int(prefix, "hmac") >= 0) )
 	{
 		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_STATIC))
 		{
@@ -524,8 +498,7 @@ void start_ovpn_client(int clientNum)
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
 
 	// Set up cron job
-	sprintf(&buffer[0], "vpn_client%d_poll", clientNum);
-	if ( (nvi = nvram_get_int(&buffer[0])) > 0 )
+	if ( (nvi = nvram_pf_get_int(prefix, "poll")) > 0 )
 	{
 		vpnlog(VPN_LOG_EXTRA,"Adding cron job");
 		argv[0] = "cru";
@@ -659,6 +632,9 @@ void start_ovpn_server(int serverNum)
 	int valid = 0;
 	int userauth = 0, useronly = 0;
 	int i, len;
+	char prefix[16];
+
+	snprintf(prefix, sizeof (prefix), "vpn_server%d_", serverNum);
 
 	sprintf(&buffer[0], "start_vpnserver%d", serverNum);
 	if (getpid() != 1) {
@@ -680,10 +656,8 @@ void start_ovpn_server(int serverNum)
 		return;
 	}
 
-	sprintf(&buffer[0], "vpn_server%d_state", serverNum);
-	nvram_set(&buffer[0], "1");	//initializing
-	sprintf(&buffer[0], "vpn_server%d_errno", serverNum);
-	nvram_set(&buffer[0], "0");
+	nvram_pf_set(prefix, "state", "1");	//initializing
+	nvram_pf_set(prefix, "errno", "0");
 
 	// Determine interface type
 	sprintf(&buffer[0], "vpn_server%d_if", serverNum);
@@ -787,24 +761,19 @@ void start_ovpn_server(int serverNum)
 		if ( ifType == TUN )
 		{
 			fprintf(fp, "topology subnet\n");
-			sprintf(&buffer[0], "vpn_server%d_sn", serverNum);
-			fprintf(fp, "server %s ", nvram_safe_get(&buffer[0]));
-			sprintf(&buffer[0], "vpn_server%d_nm", serverNum);
-			fprintf(fp, "%s\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp, "server %s ", nvram_pf_safe_get(prefix, "sn"));
+			fprintf(fp, "%s\n", nvram_pf_safe_get(prefix, "nm"));
 			fprintf(fp_client, "dev tun\n");
 		}
 		else if ( ifType == TAP )
 		{
 			fprintf(fp, "server-bridge");
-			sprintf(&buffer[0], "vpn_server%d_dhcp", serverNum);
-			if ( nvram_get_int(&buffer[0]) == 0 )
+			if ( nvram_pf_get_int(prefix, "dhcp") == 0 )
 			{
 				fprintf(fp, " %s ", nvram_safe_get("lan_ipaddr"));
 				fprintf(fp, "%s ", nvram_safe_get("lan_netmask"));
-				sprintf(&buffer[0], "vpn_server%d_r1", serverNum);
-				fprintf(fp, "%s ", nvram_safe_get(&buffer[0]));
-				sprintf(&buffer[0], "vpn_server%d_r2", serverNum);
-				fprintf(fp, "%s", nvram_safe_get(&buffer[0]));
+				fprintf(fp, "%s ", nvram_pf_safe_get(prefix, "r1"));
+				fprintf(fp, "%s", nvram_pf_safe_get(prefix, "r2"));
 			}
 			else
 			{
@@ -827,16 +796,12 @@ void start_ovpn_server(int serverNum)
 
 		if ( ifType == TUN )
 		{
-			sprintf(&buffer[0], "vpn_server%d_local", serverNum);
-			fprintf(fp, "ifconfig %s ", nvram_safe_get(&buffer[0]));
-			sprintf(&buffer[0], "vpn_server%d_remote", serverNum);
-			fprintf(fp, "%s\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp, "ifconfig %s ", nvram_pf_safe_get(prefix, "local"));
+			fprintf(fp, "%s\n", nvram_pf_safe_get(prefix, "remote"));
 
 			fprintf(fp_client, "dev tun\n");
-			sprintf(&buffer[0], "vpn_server%d_remote", serverNum);
-			fprintf(fp_client, "ifconfig %s ", nvram_safe_get(&buffer[0]));
-			sprintf(&buffer[0], "vpn_server%d_local", serverNum);
-			fprintf(fp_client, "%s\n", nvram_safe_get(&buffer[0]));
+			fprintf(fp_client, "ifconfig %s ", nvram_pf_safe_get(prefix, "remote"));
+			fprintf(fp_client, "%s\n", nvram_pf_safe_get(prefix, "local"));
 		}
 		else if ( ifType == TAP )
 		{
@@ -844,16 +809,15 @@ void start_ovpn_server(int serverNum)
 		}
 	}
 	//protocol
-	sprintf(&buffer[0], "vpn_server%d_proto", serverNum);
-	fprintf(fp, "proto %s\n", nvram_safe_get(&buffer[0]));
-	if(!strcmp(nvram_safe_get(&buffer[0]), "udp"))
-		fprintf(fp_client, "proto %s\n", nvram_safe_get(&buffer[0]));
+	strlcpy(&buffer[0], nvram_pf_safe_get(prefix, "proto"), sizeof (buffer));
+	fprintf(fp, "proto %s\n", &buffer[0]);
+	if(!strcmp(&buffer[0], "udp"))
+		fprintf(fp_client, "proto %s\n", &buffer[0]);
 	else
 		fprintf(fp_client, "proto tcp-client\n");
 
 	//port
-	sprintf(&buffer[0], "vpn_server%d_port", serverNum);
-	fprintf(fp, "port %d\n", nvram_get_int(&buffer[0]));
+	fprintf(fp, "port %d\n", nvram_pf_get_int(prefix, "port"));
 
 	if(nvram_get_int("ddns_enable_x"))
 	{
@@ -873,10 +837,8 @@ void start_ovpn_server(int serverNum)
 
 	//cipher
 	if ( cryptMode == TLS ) {
-		sprintf(&buffer[0], "vpn_server%d_ncp_enable", serverNum);
-		nvi = nvram_get_int(&buffer[0]);
-		sprintf(&buffer[0], "vpn_server%d_ncp_ciphers", serverNum);
-		strlcpy(buffer2, nvram_safe_get(&buffer[0]), sizeof (buffer2));
+		nvi = nvram_pf_get_int(prefix, "ncp_enable");
+		strlcpy(buffer2, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (buffer2));
 		if ((nvi > 0) && (buffer2[0] != '\0')) {
 			fprintf(fp, "ncp-ciphers %s\n", buffer2);
 			fprintf(fp_client, "ncp-ciphers %s\n", buffer2);
@@ -903,20 +865,19 @@ void start_ovpn_server(int serverNum)
 	}
 
 	//compression
-	sprintf(&buffer[0], "vpn_server%d_comp", serverNum);
-	strlcpy(buffer2, nvram_safe_get(&buffer[0]), sizeof (buffer2));
+	strlcpy(&buffer[0], nvram_pf_safe_get(prefix, "comp"), sizeof (buffer));
 
-	if (strcmp(buffer2, "-1")) {
-		if (!strcmp(buffer2, "lz4")) {
+	if (strcmp(&buffer[0], "-1")) {
+		if (!strcmp(&buffer[0], "lz4")) {
 			fprintf(fp, "compress lz4\n");
 			fprintf(fp_client, "compress lz4\n");
-		} else if (!strcmp(buffer2, "yes")) {
+		} else if (!strcmp(&buffer[0], "yes")) {
 			fprintf(fp, "compress lzo\n");
 			fprintf(fp_client, "comp-lzo yes\n");
-		} else if (!strcmp(buffer2, "adaptive")) {
+		} else if (!strcmp(&buffer[0], "adaptive")) {
 			fprintf(fp, "comp-lzo adaptive\n");
 			fprintf(fp_client, "comp-lzo adaptive\n");
-		} else if (!strcmp(buffer2, "no")) {
+		} else if (!strcmp(&buffer[0], "no")) {
 			fprintf(fp, "compress\n");	// Disable, but client can override if desired
 			fprintf(fp_client, "comp-lzo no\n");
 		}
@@ -936,14 +897,12 @@ void start_ovpn_server(int serverNum)
 	if ( cryptMode == TLS )
 	{
 		//TLS Renegotiation Time
-		sprintf(&buffer[0], "vpn_server%d_reneg", serverNum);
-		if ( (nvl = atol(nvram_safe_get(&buffer[0]))) >= 0 ) {
+		if ( (nvl = atol(nvram_pf_safe_get(prefix, "reneg"))) >= 0 ) {
 			fprintf(fp, "reneg-sec %ld\n", nvl);
 			fprintf(fp_client, "reneg-sec %ld\n", nvl);
 		}
 
-		sprintf(&buffer[0], "vpn_server%d_plan", serverNum);
-		if ( ifType == TUN && nvram_get_int(&buffer[0]) )
+		if ( ifType == TUN && nvram_pf_get_int(prefix, "plan") )
 		{
 			sscanf(nvram_safe_get("lan_ipaddr"), "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
 			sscanf(nvram_safe_get("lan_netmask"), "%d.%d.%d.%d", &nm[0], &nm[1], &nm[2], &nm[3]);
@@ -952,17 +911,14 @@ void start_ovpn_server(int serverNum)
 				nvram_safe_get("lan_netmask"), PUSH_LAN_METRIC);
 		}
 
-		sprintf(&buffer[0], "vpn_server%d_ccd", serverNum);
-		if ( nvram_get_int(&buffer[0]) )
+		if ( nvram_pf_get_int(prefix, "ccd") )
 		{
 			fprintf(fp, "client-config-dir ccd\n");
 
-			sprintf(&buffer[0], "vpn_server%d_c2c", serverNum);
-			if ( (c2c = nvram_get_int(&buffer[0])) )
+			if ( (c2c = nvram_pf_get_int(prefix, "c2c")) )
 				fprintf(fp, "client-to-client\n");
 
-			sprintf(&buffer[0], "vpn_server%d_ccd_excl", serverNum);
-			if ( nvram_get_int(&buffer[0]) )
+			if ( nvram_pf_get_int(prefix, "ccd_excl") )
 				fprintf(fp, "ccd-exclusive\n");
 			else
 				fprintf(fp, "duplicate-cn\n");
@@ -971,8 +927,7 @@ void start_ovpn_server(int serverNum)
 			mkdir(&buffer[0], 0700);
 			chdir(&buffer[0]);
 
-			sprintf(&buffer[0], "vpn_server%d_ccd_val", serverNum);
-			strcpy(&buffer[0], nvram_safe_get(&buffer[0]));
+			strcpy(&buffer[0], nvram_pf_safe_get(prefix, "ccd_val"));
 			chp = strtok(&buffer[0],"<");
 			while ( chp != NULL )
 			{
@@ -1045,24 +1000,21 @@ void start_ovpn_server(int serverNum)
 		else
 			fprintf(fp, "duplicate-cn\n");
 
-		sprintf(&buffer[0], "vpn_server%d_pdns", serverNum);
-		if ( nvram_get_int(&buffer[0]) )
+		if ( nvram_pf_get_int(prefix, "pdns") )
 		{
 			if ( nvram_safe_get("wan_domain")[0] != '\0' )
 				fprintf(fp, "push \"dhcp-option DOMAIN %s\"\n", nvram_safe_get("wan_domain"));
 			fprintf(fp, "push \"dhcp-option DNS %s\"\n", nvram_safe_get("lan_ipaddr"));
 		}
 
-		sprintf(&buffer[0], "vpn_server%d_rgw", serverNum);
-		if ( nvram_get_int(&buffer[0]) )
+		if ( nvram_pf_get_int(prefix, "rgw") )
 		{
 			if ( ifType == TAP )
 				fprintf(fp, "push \"route-gateway %s\"\n", nvram_safe_get("lan_ipaddr"));
 			fprintf(fp, "push \"redirect-gateway def1\"\n");
 		}
 
-		sprintf(&buffer[0], "vpn_server%d_hmac", serverNum);
-		nvi = nvram_get_int(&buffer[0]);
+		nvi = nvram_pf_get_int(prefix, "hmac");
 		//if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_STATIC))
 		if ( nvi >= 0 )
 		{
@@ -1077,10 +1029,8 @@ void start_ovpn_server(int serverNum)
 		}
 
 		// Enable username/pass authentication (for Asus's PAM support)
-		sprintf(&buffer[0], "vpn_server%d_userpass_auth", serverNum);
-		userauth = nvram_get_int(&buffer[0]);
-		sprintf(&buffer[0], "vpn_server%d_igncrt", serverNum);
-		useronly = userauth && nvram_get_int(&buffer[0]);
+		userauth = nvram_pf_get_int(prefix, "userpass_auth");
+		useronly = userauth && nvram_pf_get_int(prefix, "igncrt");
 
 		if ( userauth ) {
 			//authentication
@@ -1132,8 +1082,7 @@ void start_ovpn_server(int serverNum)
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");
 	fprintf(fp, "\n# Custom Configuration\n");
-	sprintf(&buffer[0], "vpn_server%d_custom", serverNum);
-	fprintf(fp, "%s", nvram_safe_get(&buffer[0]));
+	fprintf(fp, "%s", nvram_pf_safe_get(prefix, "custom"));
 	fclose(fp);
 
 	vpnlog(VPN_LOG_EXTRA,"Done writing server config file");
@@ -1158,8 +1107,7 @@ void start_ovpn_server(int serverNum)
 				fprintf(fp, "export GREP=\"grep\"\n");
 				fprintf(fp, "export KEY_CONFIG=\"/rom/easy-rsa/openssl-1.0.0.cnf\"\n");
 				fprintf(fp, "export KEY_DIR=\"/etc/openvpn/server%d\"\n", serverNum);
-				sprintf(&buffer[0], "vpn_server%d_tls_keysize", serverNum);
-				fprintf(fp, "export KEY_SIZE=%d\n", (nvram_get_int(&buffer[0]) ? 2048 : 1024));
+				fprintf(fp, "export KEY_SIZE=%d\n", (nvram_pf_get_int(prefix, "tls_keysize") ? 2048 : 1024));
 				fprintf(fp, "export CA_EXPIRE=3650\n");
 				fprintf(fp, "export KEY_EXPIRE=3650\n");
 				fprintf(fp, "export KEY_COUNTRY=\"TW\"\n");
@@ -1349,8 +1297,8 @@ void start_ovpn_server(int serverNum)
 		}
 	}
 
-	sprintf(&buffer[0], "vpn_server%d_hmac", serverNum);
-	if ( cryptMode == SECRET || (cryptMode == TLS && nvram_get_int(&buffer[0]) >= 0) )
+	nvi = nvram_pf_get_int(prefix, "hmac");
+	if ( cryptMode == SECRET || (cryptMode == TLS && nvi >= 0) )
 	{
 		if (ovpn_key_exists(OVPN_TYPE_CLIENT, serverNum, OVPN_SERVER_STATIC) )
 		{
@@ -1368,8 +1316,6 @@ void start_ovpn_server(int serverNum)
 			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_STATIC, NULL, fpath);
 		}
 
-		sprintf(&buffer[0], "vpn_server%d_hmac", serverNum);
-		nvi = nvram_get_int(&buffer[0]);
 		if(cryptMode == TLS)
 			if (nvi == 3)
 				fprintf(fp_client, "<tls-crypt>\n");
@@ -1424,23 +1370,21 @@ void start_ovpn_server(int serverNum)
 		fp = fopen(&buffer[0], "w");
 		chmod(&buffer[0], S_IRUSR|S_IWUSR|S_IXUSR);
 		fprintf(fp, "#!/bin/sh\n");
-		sprintf(&buffer[0], "vpn_server%d_proto", serverNum);
-		strncpy(&buffer[0], nvram_safe_get(&buffer[0]), BUF_SIZE);
+		strlcpy(&buffer[0], nvram_pf_safe_get(prefix, "proto"), BUF_SIZE);
 		fprintf(fp, "iptables -t nat -I PREROUTING -p %s ", strtok(&buffer[0], "-"));
-		sprintf(&buffer[0], "vpn_server%d_port", serverNum);
-		fprintf(fp, "--dport %d -j ACCEPT\n", nvram_get_int(&buffer[0]));
-		sprintf(&buffer[0], "vpn_server%d_proto", serverNum);
-		strncpy(&buffer[0], nvram_safe_get(&buffer[0]), BUF_SIZE);
+		fprintf(fp, "--dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
+		strncpy(&buffer[0], nvram_pf_safe_get(prefix, "proto"), BUF_SIZE);
 		fprintf(fp, "iptables -I INPUT -p %s ", strtok(&buffer[0], "-"));
-		sprintf(&buffer[0], "vpn_server%d_port", serverNum);
-		fprintf(fp, "--dport %d -j ACCEPT\n", nvram_get_int(&buffer[0]));
+		fprintf(fp, "--dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
 		sprintf(&buffer[0], "vpn_server%d_firewall", serverNum);
 		if ( !nvram_contains_word(&buffer[0], "external") )
 		{
 			fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", &iface[0]);
 			fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), &iface[0]);
+#if !defined(HND_ROUTER)
 			if (nvram_match("ctf_disable", "0"))
 				fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --set-mark 0x01/0x7\n", &iface[0]);
+#endif
 		}
 #if !defined(HND_ROUTER)
 		if (nvram_match("cstats_enable", "1")) {
@@ -1475,8 +1419,7 @@ void start_ovpn_server(int serverNum)
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
 
 	// Set up cron job
-	sprintf(&buffer[0], "vpn_server%d_poll", serverNum);
-	if ( (nvi = nvram_get_int(&buffer[0])) > 0 )
+	if ( (nvi = nvram_pf_get_int(prefix, "poll")) > 0 )
 	{
 		vpnlog(VPN_LOG_EXTRA,"Adding cron job");
 		argv[0] = "cru";
@@ -1492,10 +1435,8 @@ void start_ovpn_server(int serverNum)
 
 	if ( cryptMode == SECRET )
 	{
-		sprintf(&buffer[0], "vpn_server%d_state", serverNum);
-		nvram_set(&buffer[0], "2");	//running
-		sprintf(&buffer[0], "vpn_server%d_errno", serverNum);
-		nvram_set(&buffer[0], "0");
+		nvram_pf_set(prefix, "state", "2");	//running
+		nvram_pf_set(prefix, "errno", "0");
 	}
 
 #ifdef LINUX26
@@ -1587,10 +1528,9 @@ void stop_ovpn_server(int serverNum)
 //	try_enabling_fastnat();
 #endif
 
-	sprintf(&buffer[0], "vpn_server%d_state", serverNum);
-	nvram_set(&buffer[0], "0");
-	sprintf(&buffer[0], "vpn_server%d_errno", serverNum);
-	nvram_set(&buffer[0], "0");
+	sprintf(&buffer[0], "vpn_server%d_", serverNum);
+	nvram_pf_set(&buffer[0], "state", "0");
+	nvram_pf_set(&buffer[0], "errno", "0");
 
 	vpnlog(VPN_LOG_INFO,"VPN GUI server backend stopped.");
 }
@@ -1820,7 +1760,6 @@ int write_ovpn_resolv(FILE* f)
 	int strictlevel = 0, ch2, level;
 
 	if ( chdir("/etc/openvpn/dns") )
-
 		return 0;
 
 	dir = opendir("/etc/openvpn/dns");
@@ -1835,12 +1774,12 @@ int write_ovpn_resolv(FILE* f)
 
 		if ( sscanf(fn, "client%c.resol%c", &num, &ch) == 2 )
 		{
-			snprintf(&buf[0], sizeof(buf), "vpn_client%c_adns", num);
-			level = nvram_get_int(&buf[0]);
+			snprintf(&buf[0], sizeof(buf), "vpn_client%c_", num);
+
+			level = nvram_pf_get_int(&buf[0], "adns");
 
 			// Don't modify dnsmasq if policy routing is enabled and dns mode set to "Exclusive"
-			snprintf(&buf[0], sizeof(buf), "vpn_client%c_rgw", num);
-			if ((nvram_get_int(&buf[0]) >= 2 ) && (level == 3))
+			if ((nvram_pf_get_int(&buf[0], "rgw") >= 2 ) && (level == 3))
 				continue;
 
 			if ( (dnsf = fopen(fn, "r")) == NULL )
@@ -1855,8 +1794,6 @@ int write_ovpn_resolv(FILE* f)
 			}
 
 			fclose(dnsf);
-
-			snprintf(&buf[0], sizeof(buf), "vpn_client%c_adns", num);
 
 			// Only return the highest active level, so one exclusive client
 			// will override a relaxed client.

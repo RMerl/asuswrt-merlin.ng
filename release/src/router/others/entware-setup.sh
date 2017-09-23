@@ -124,7 +124,7 @@ if [ "$(nvram get jffs2_scripts)" != "1" ] ; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-  /usr/sbin/entware_install_K3.sh
+  /usr/sbin/entware_install.sh
 else
   wget -qO - $INST_URL | sh
 fi

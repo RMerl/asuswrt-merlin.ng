@@ -120,7 +120,7 @@ function initial(){
 	show_menu();
 
 	if(openvpnd_support) {
-		var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["Others", "Advanced_VPNClient_Content.asp"]};
+		var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"]};
 		$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "PPTP"));
 		document.getElementById("divSwitchMenu").style.display = "";
 	}

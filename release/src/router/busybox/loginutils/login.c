@@ -555,6 +555,7 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 		bb_do_delay(LOGIN_FAIL_DELAY);
 		/* TODO: doesn't sound like correct English phrase to me */
 		puts("Login incorrect");
+
 #if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV && defined(SECURITY_NOTIFY)
 		if (telnet_addr) {
 			SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET,
@@ -612,10 +613,10 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 	setup_environment(pw->pw_shell,
 			(!(opt & LOGIN_OPT_p) * SETUP_ENV_CLEARENV) + SETUP_ENV_CHANGEENV,
 			pw);
-	IF_FEATURE_TELNETD_CLIENT_TO_ENV({
+	if (ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV) {
 		char *env = xasprintf("%s=%s %s", "TELNET_CLIENT", telnet_addr, telnet_port);
 		putenv(env);
-	})
+	}
 
 #if ENABLE_PAM
 	/* Modules such as pam_env will setup the PAM environment,

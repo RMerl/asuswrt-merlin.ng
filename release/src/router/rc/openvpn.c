@@ -440,7 +440,11 @@ void start_ovpn_client(int clientNum)
 		fprintf(fp, "#!/bin/sh\n");
 		fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", iface);
 		fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), iface);
+#ifdef HND_ROUTER
+		if (nvram_match("fc_disable", "0")) {
+#else
 		if (nvram_match("ctf_disable", "0")) {
+#endif
 			fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --set-mark 0x01/0x7\n", iface);
 		}
 #if !defined(HND_ROUTER)
@@ -1342,10 +1346,13 @@ void start_ovpn_server(int serverNum)
 		{
 			fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", iface);
 			fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), iface);
-#if !defined(HND_ROUTER)
-			if (nvram_match("ctf_disable", "0"))
-				fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --set-mark 0x01/0x7\n", iface);
+#ifdef HND_ROUTER
+			if (nvram_match("fc_disable", "0")) {
+#else
+			if (nvram_match("ctf_disable", "0")) {
 #endif
+				fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --set-mark 0x01/0x7\n", iface);
+			}
 		}
 #if !defined(HND_ROUTER)
 		if (nvram_match("cstats_enable", "1")) {

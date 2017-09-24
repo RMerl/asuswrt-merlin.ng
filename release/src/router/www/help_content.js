@@ -356,7 +356,7 @@ helpcontent[32] = new Array("",
 							"Response the DNS query from clients.",/*untranslated*/
 							"In server mode, provide DNS information to clients.",/*untranslated*/
 							"The cipher algorithm to encrypt packets in transmission. AES-128-CBC is recommendation.",/*untranslated*/
-							"Use fast LZO compression. It may add up to 1 byte per packet for incompressible data.",/*untranslated*/
+							"Use fast LZO (or LZ4 with OpenVPN 2.4 clients)  compression. It may add up to 1 byte per packet for incompressible data.",/*untranslated*/
 							"This option can be used on both the client and server, and whichever uses the lower value will be the one to trigger the renegotiation. Renegotiate data channel key after n seconds (default=3600), 0 to disable.",/*untranslated*/
 							"When this option is enabled, each client can view the other clients which are currently connected. Otherwise, each client will only see the server.",/*untranslated*/	//20
 							"Only the client in the \"Allowed Clients\" table could be authenticated.",/*untranslated*/

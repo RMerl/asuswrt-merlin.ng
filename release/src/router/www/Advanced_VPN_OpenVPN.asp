@@ -1372,7 +1372,7 @@ function updateVpnServerClientAccess() {
 											</td>											
 										</tr>
 										<tr id="trRSAEncryptionBasic">
-											<th>RSA Encryption<!--untranslated--></th>
+											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,8);">RSA Encryption<!--untranslated--></a></th>
 											<td>
 												<input type="radio" name="vpn_server_tls_keysize_basic" id="vpn_server_tls_keysize_basic_0" class="input" value="0" <% nvram_match_x("", "vpn_server_tls_keysize", "0", "checked"); %> onchange="vpnServerTlsKeysize(this);">
 												<label for='vpn_server_tls_keysize_basic_0'>1024 bit<!--untranslated--></label>
@@ -1502,7 +1502,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th><#vpn_openvpn_interface#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 												<td>
 													<select name="vpn_server_if" class="input_option" onChange="update_visibility();">
 														<option value="tap" <% nvram_match("vpn_server_if","tap","selected"); %> >TAP</option>
@@ -1511,7 +1511,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th><#IPConnection_VServerProto_itemname#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><#IPConnection_VServerProto_itemname#></a></th>
 												<td>
 													<select name="vpn_server_proto" class="input_option">
 														<option value="tcp-server" <% nvram_match("vpn_server_proto","tcp-server","selected"); %> >TCP</option>
@@ -1520,7 +1520,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th>Server Port</th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,6);">Server Port</a></th>
 												<td>
 													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_port"); %>" autocorrect="off" autocapitalize="off">
 													<span style="color:#FC0">(<#Setting_factorydefault_value#> : 1194)</span>
@@ -1537,7 +1537,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th><#vpn_openvpn_Auth#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 												<td>
 													<select name="vpn_server_crypt" class="input_option" onChange="update_visibility();">
 														<option value="tls" <% nvram_match("vpn_server_crypt","tls","selected"); %> >TLS</option>
@@ -1555,7 +1555,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr id="server_igncrt">
-												<th><#vpn_openvpn_AuthOnly#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,9);"><#vpn_openvpn_AuthOnly#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_igncrt" class="input" value="1" onchange="enable_server_igncrt(this.value);" <% nvram_match_x("", "vpn_server_igncrt", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_igncrt" class="input" value="0" onchange="enable_server_igncrt(this.value);" <% nvram_match_x("", "vpn_server_igncrt", "0", "checked"); %>><#checkbox_No#>
@@ -1572,7 +1572,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr id="server_authhmac">
-												<th>TLS control channel security<br><i>(tls-auth / tls-crypt)</i></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,10);">TLS control channel security<br><i>(tls-auth / tls-crypt)</i></a></th>
 												<td>
 													<select name="vpn_server_hmac" onclick="update_visibility();" class="input_option">
 														<option value="-1" <% nvram_match("vpn_server_hmac","-1","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1584,35 +1584,35 @@ function updateVpnServerClientAccess() {
 													<span id="tlscrypt_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
 												</td>
 											</tr>
-                                                                                        <tr>
+											<tr>
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,26);">HMAC Authentication<!--untranslated--></a></th>
-                                                                                                <td>
-                                                                                                        <select name="vpn_server_digest" class="input_option"></select>
-                                                                                                </td>
-                                                                                        </tr>
+												<td>
+													<select name="vpn_server_digest" class="input_option"></select>
+												</td>
+											</tr>
 											<tr id="server_snnm">
-												<th><#vpn_openvpn_SubnetMsak#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,11);"><#vpn_openvpn_SubnetMsak#></a></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_sn" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_sn"); %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_nm"); %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_dhcp">
-												<th><#vpn_openvpn_dhcp#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,13);"><#vpn_openvpn_dhcp#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_dhcp" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_server_dhcp", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_dhcp" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_server_dhcp", "0", "checked"); %>><#checkbox_No#>
 												</td>
 											</tr>
 											<tr id="server_range">
-												<th><#vpn_openvpn_ClientPool#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,14);"><#vpn_openvpn_ClientPool#></a></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_r1" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_r1"); %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_r2" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_r2"); %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_local">
-												<th><#vpn_openvpn_LocalRemote_IP#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,12);"><#vpn_openvpn_LocalRemote_IP#></a></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_local" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_local"); %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_remote"); %>" autocorrect="off" autocapitalize="off">
@@ -1626,28 +1626,28 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr id="server_plan">
-												<th><#vpn_openvpn_PushLAN#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,2);"><#vpn_openvpn_PushLAN#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_plan" class="input" value="1" <% nvram_match_x("", "vpn_server_plan", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_plan" class="input" value="0" <% nvram_match_x("", "vpn_server_plan", "0", "checked"); %>><#checkbox_No#>
 												</td>
 											</tr>
 											<tr>
-												<th><#vpn_openvpn_RedirectInternet#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,3);"><#vpn_openvpn_RedirectInternet#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_rgw" class="input" value="1" <% nvram_match_x("", "vpn_server_rgw", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_rgw" class="input" value="0" <% nvram_match_x("", "vpn_server_rgw", "0", "checked"); %>><#checkbox_No#>
 												</td>
 											</tr>
 											<tr>
-												<th><#vpn_openvpn_ResponseDNS#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,15);"><#vpn_openvpn_ResponseDNS#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_x_dns" class="input" value="1" onclick="update_visibility();"><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_x_dns" class="input" value="0" onclick="update_visibility();"><#checkbox_No#>
 												</td>
 											</tr>
 											<tr id="server_pdns">
-												<th><#vpn_openvpn_AdvDNS#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,16);"><#vpn_openvpn_AdvDNS#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_pdns" class="input" value="1" <% nvram_match_x("", "vpn_server_pdns", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_pdns" class="input" value="0" <% nvram_match_x("", "vpn_server_pdns", "0", "checked"); %>><#checkbox_No#>
@@ -1671,14 +1671,14 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr id="server_cipher">
-												<th>Legacy/fallback cipher</th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Legacy/fallback cipher</a></th>
 												<td>
 													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
 													<span id="cipher_hint" style="color:#FC0">(Default : BF-CBC)</span>
 												</td>
 											</tr>
 											<tr>
-												<th><#vpn_openvpn_Compression#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,18);"><#vpn_openvpn_Compression#></a></th>
 												<td>
 													<select name="vpn_server_comp" class="input_option" onclick="update_visibility();">
 														<option value="-1" <% nvram_match("vpn_server_comp","-1","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1691,7 +1691,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr id="server_reneg">
-												<th><#vpn_openvpn_TLSTime#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);"><#vpn_openvpn_TLSTime#></a></th>
 												<td>
 													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_reneg" value="<% nvram_get("vpn_server_reneg"); %>" autocorrect="off" autocapitalize="off"> <#Second#>
 													<span style="color:#FC0">(<#Setting_factorydefault_value#> : -1)</span>
@@ -1712,14 +1712,14 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr id="server_c2c">
-												<th><#vpn_openvpn_ClientMutual#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,20);"><#vpn_openvpn_ClientMutual#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_c2c" class="input" value="1" <% nvram_match_x("", "vpn_server_c2c", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_c2c" class="input" value="0" <% nvram_match_x("", "vpn_server_c2c", "0", "checked"); %>><#checkbox_No#>
 												</td>
 											</tr>
 											<tr id="server_ccd_excl">
-												<th><#vpn_openvpn_ClientSpecified#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,21);"><#vpn_openvpn_ClientSpecified#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_ccd_excl" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_server_ccd_excl", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_ccd_excl" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_server_ccd_excl", "0", "checked"); %>><#checkbox_No#>

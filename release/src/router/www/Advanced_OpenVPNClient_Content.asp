@@ -1143,7 +1143,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th><#vpn_openvpn_interface#></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 						<td>
 							<select name="vpn_client_if_x"  onclick="update_rgw_options();update_visibility();" class="input_option">
 							</select>
@@ -1151,7 +1151,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th><#IPConnection_VServerProto_itemname#></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><#IPConnection_VServerProto_itemname#></a></th>
 						<td>
 							<select name="vpn_client_proto" class="input_option">
 								<option value="tcp-client" <% nvram_match("vpn_client_proto","tcp-client","selected"); %> >TCP</option>
@@ -1179,7 +1179,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th><#vpn_openvpn_Auth#></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 						<td>
 							<select name="vpn_client_crypt" class="input_option" onclick="update_visibility();">
 								<option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %> >TLS</option>
@@ -1211,7 +1211,7 @@ function defaultSettings() {
 						</td>
 					</tr>
 					<tr id="client_useronly">
-						<th><#vpn_openvpn_AuthOnly#><br><i>(Must define certificate authority)</i></th>
+						<th><#vpn_openvpn_AuthOnly#></th>
 						<td>
 							<input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "0", "checked"); %>><#checkbox_No#>
@@ -1220,7 +1220,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr id="client_hmac">
-						<th>TLS control channel security<br><i>(tls-auth / tls-crypt)</i></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,10);">TLS control channel security<br><i>(tls-auth / tls-crypt)</i></a></th>
 						<td>
 							<select name="vpn_client_hmac" class="input_option">
 								<option value="-1" <% nvram_match("vpn_client_hmac","-1","selected"); %> >Disabled</option>
@@ -1233,7 +1233,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th>Auth digest</th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,26);">Auth digest</a></th>
 						<td>
 							<select name="vpn_client_digest" class="input_option">
 								<option value="<% nvram_get("vpn_client_digest"); %>" selected><% nvram_get("vpn_client_digest"); %></option>
@@ -1351,7 +1351,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr id="client_reneg">
-						<th>TLS Renegotiation Time<br><i>(in seconds, -1 for default)</th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time<br><i>(in seconds, -1 for default)</a></th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" onblur="validator.numberRange(this, -1, 2147483647)" value="<% nvram_get("vpn_client_reneg"); %>">
 						</td>

@@ -174,6 +174,8 @@ char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *b
 			keyStr = "crl";
 			break;
 		case OVPN_SERVER_CA_KEY:
+			keyStr = "ca_key";
+			break;
 		case OVPN_SERVER_DH:
 			keyStr = "dh";
 			break;

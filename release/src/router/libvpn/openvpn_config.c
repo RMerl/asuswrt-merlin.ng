@@ -299,8 +299,12 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 		return -1;
 	}
 
-	data = strstr(buf, PEM_START_TAG);
-	if (!data) return -1;
+	if ((key_type == OVPN_SERVER_DH) && !strncmp(buf, "none", 4)) {
+		data = buf;
+	} else {
+		data = strstr(buf, PEM_START_TAG);
+		if (!data) return -1;
+	}
 
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, varname);

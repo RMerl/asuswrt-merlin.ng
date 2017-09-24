@@ -1254,19 +1254,19 @@ function updateVpnServerClientAccess() {
 									</td>
 								</tr>
 								<tr id="edit_tls4">
-									<th><#vpn_openvpn_KC_DH#><br>(enter "none" to disable)</th>
+									<th><#vpn_openvpn_KC_DH#><br><br><i>(Enter "none" to disable)</i></th>
 									<td>
 										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_dh" name="edit_vpn_crt_server_dh" cols="65" maxlength="3999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls5">
-									<th>Certificate Revocation List (Optional)</th>
+									<th>Certificate Revocation List<br><br><i>(Optional)</i></th>
 									<td>
 										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_crl" name="edit_vpn_crt_server_crl" cols="65" maxlength="3999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls6">
-									<th>Extra Chain Certificates (Optional)</th>
+									<th>Extra Chain Certificates<br><br><i>(Optional)</i></th>
 										<td><textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_extra" name="edit_vpn_crt_server_extra" cols="65" maxlength="3999"></textarea>
 									</td>
 								</tr>

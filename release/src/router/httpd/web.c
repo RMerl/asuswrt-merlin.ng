@@ -5539,7 +5539,7 @@ static int get_cpu_temperature(int eid, webs_t wp, int argc, char_t **argv)
 		fclose(fp);
 		return websWrite(wp, "%3.3f", (double) temperature / 1000);
 	} else {
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 	}
 #else
 	FILE *fp;
@@ -14432,10 +14432,6 @@ struct mime_handler mime_handlers[] = {
 	{ "upnpc_xml.log", "application/force-download", NULL, NULL, do_upnpc_xml_file, do_auth },
 	{ "mDNSNetMonitor.log", "application/force-download", NULL, NULL, do_dnsnet_file, do_auth },
 	{ "ftpServerTree.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ftpServerTree_cgi, do_auth },//andi
-	{ "aidisk/create_account.asp", CHECK_REFERER},
-#if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_CONCURRENTREPEATER)
-	{ "apscan.asp", CHECK_REFERER},
-#endif
 	{ "**.ovpn", "application/force-download", NULL, NULL, do_prf_ovpn_file, do_auth },
 	{ "QIS_default.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_qis_default, do_auth },
 	{ "page_default.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_page_default, do_auth },
@@ -14510,9 +14506,7 @@ struct mime_handler mime_handlers[] = {
 	{ "athX_state.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_athX_state_cgi, do_auth },
 #endif
 #endif
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2))
-	{ "jffsupload.cgi", MIME_EXCEPTION_NOAUTH_FIRST},
-#endif
+
 #ifdef RTCONFIG_NETOOL
 	{ "netool.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_netool_cgi, do_auth },
 #endif

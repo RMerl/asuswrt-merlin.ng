@@ -432,7 +432,7 @@ static
 int INET6_displayroutes_array(webs_t wp)
 {
 	FILE *fp;
-	char buf[256], *str, *dev, *sflags, *route;
+	char buf[256], *str, *dev, *sflags;
 	char sdest[INET6_ADDRSTRLEN], snexthop[INET6_ADDRSTRLEN], ifname[16];
 	struct in6_addr dest, nexthop;
 	int flags, ref, use, metric, prefix;
@@ -476,7 +476,6 @@ again:
 		inet_ntop(AF_INET6, &nexthop, snexthop, sizeof(snexthop));
 
 		/* Format addresses, reuse buf */
-		route = str;
 		i = snprintf(str, buf + sizeof(buf) - str, ((flags & RTF_NONEXTHOP) ||
 			     IN6_IS_ADDR_UNSPECIFIED(&nexthop)) ? "%s" : "%s via %s",
 			     sdest, snexthop);

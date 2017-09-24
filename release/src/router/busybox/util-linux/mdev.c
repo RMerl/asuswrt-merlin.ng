@@ -543,7 +543,8 @@ static char *build_alias(char *alias, const char *device_name)
 
 /* mknod in /dev based on a path like "/sys/block/hda/hda1"
  * NB1: path parameter needs to have SCRATCH_SIZE scratch bytes
- * after NUL, but we promise to not mangle it (IOW: to restore NUL if needed).
+ * after NUL, but we promise to not mangle (IOW: to restore NUL if needed)
+ * path string.
  * NB2: "mdev -s" may call us many times, do not leak memory/fds!
  *
  * device_name = $DEVNAME (may be NULL)
@@ -809,53 +810,22 @@ static void make_device(char *device_name, char *path, int operation)
 	} /* for (;;) */
 }
 
-/* File callback for /sys/ traversal.
- * We act only on "/sys/.../dev" (pseudo)file
- */
+/* File callback for /sys/ traversal */
 static int FAST_FUNC fileAction(const char *fileName,
 		struct stat *statbuf UNUSED_PARAM,
 		void *userData,
 		int depth UNUSED_PARAM)
 {
 	size_t len = strlen(fileName) - 4; /* can't underflow */
-	char *path = userData;	/* char array[PATH_MAX + SCRATCH_SIZE] */
-	char subsys[PATH_MAX];
-	int res;
+	char *scratch = userData;
 
-	/* Is it a ".../dev" file? (len check is for paranoid reasons) */
+	/* len check is for paranoid reasons */
 	if (strcmp(fileName + len, "/dev") != 0 || len >= PATH_MAX)
-		return FALSE; /* not .../dev */
+		return FALSE;
 
-	strcpy(path, fileName);
-
-	/* Read ".../subsystem" symlink in the same directory where ".../dev" is */
-	strcpy(path + len, "/subsystem");
-	res = readlink(path, subsys, sizeof(subsys)-1);
-	if (res > 0) {
-		subsys[res] = '\0';
-		free(G.subsystem);
-		if (G.subsys_env) {
-			bb_unsetenv_and_free(G.subsys_env);
-			G.subsys_env = NULL;
-		}
-		/* Set G.subsystem and $SUBSYSTEM from symlink's last component */
-		G.subsystem = strrchr(subsys, '/');
-		if (G.subsystem) {
-			G.subsystem = xstrdup(G.subsystem + 1);
-			G.subsys_env = xasprintf("%s=%s", "SUBSYSTEM", G.subsystem);
-			putenv(G.subsys_env);
-		}
-	}
-
-	path[len] = '\0';
-
-	/* Use real path of /sys/block/... symlinks
-	 * to differ partitions from parent bus/char devices
-	 */
-	if (strncmp(path, "/sys/block", 10) == 0 && realpath(path, subsys) != NULL)
-		strcpy(path, subsys);
-
-	make_device(/*DEVNAME:*/ NULL, path, OP_add);
+	strcpy(scratch, fileName);
+	scratch[len] = '\0';
+	make_device(/*DEVNAME:*/ NULL, scratch, OP_add);
 
 	return TRUE;
 }
@@ -866,6 +836,22 @@ static int FAST_FUNC dirAction(const char *fileName UNUSED_PARAM,
 		void *userData UNUSED_PARAM,
 		int depth)
 {
+	/* Extract device subsystem -- the name of the directory
+	 * under /sys/class/ */
+	if (1 == depth) {
+		free(G.subsystem);
+		if (G.subsys_env) {
+			bb_unsetenv_and_free(G.subsys_env);
+			G.subsys_env = NULL;
+		}
+		G.subsystem = strrchr(fileName, '/');
+		if (G.subsystem) {
+			G.subsystem = xstrdup(G.subsystem + 1);
+			G.subsys_env = xasprintf("%s=%s", "SUBSYSTEM", G.subsystem);
+			putenv(G.subsys_env);
+		}
+	}
+
 	return (depth >= MAX_SYSFS_DEPTH ? SKIP : TRUE);
 }
 
@@ -886,9 +872,8 @@ static void load_firmware(const char *firmware, const char *sysfs_path)
 	int firmware_fd, loading_fd;
 
 	/* check for /lib/firmware/$FIRMWARE */
-	firmware_fd = -1;
-	if (chdir("/lib/firmware") == 0)
-		firmware_fd = open(firmware, O_RDONLY); /* can fail */
+	xchdir("/lib/firmware");
+	firmware_fd = open(firmware, O_RDONLY); /* can fail */
 
 	/* check for /sys/$DEVPATH/loading ... give 30 seconds to appear */
 	xchdir(sysfs_path);
@@ -1080,28 +1065,25 @@ int mdev_main(int argc UNUSED_PARAM, char **argv)
 
 		putenv((char*)"ACTION=add");
 
-		if (access("/sys/dev", F_OK) != 0) {
-			/* Scan /sys/class only if /sys/dev doesn't exist
-			 * on pre-2.6.26 kernels.
+		/* ACTION_FOLLOWLINKS is needed since in newer kernels
+		 * /sys/block/loop* (for example) are symlinks to dirs,
+		 * not real directories.
+		 * (kernel's CONFIG_SYSFS_DEPRECATED makes them real dirs,
+		 * but we can't enforce that on users)
+		 */
+		if (access("/sys/class/block", F_OK) != 0) {
+			/* Scan obsolete /sys/block only if /sys/class/block
+			 * doesn't exist. Otherwise we'll have dupes.
+			 * Also, do not complain if it doesn't exist.
+			 * Some people configure kernel to have no blockdevs.
 			 */
-			if (access("/sys/class/block", F_OK) != 0) {
-				/* Scan obsolete /sys/block only if /sys/class/block
-				 * doesn't exist. Otherwise we'll have dupes.
-				 * Also, do not complain if it doesn't exist.
-				 * Some people configure kernel to have no blockdevs.
-				 */
-				recursive_action("/sys/block",
-					 ACTION_RECURSE | ACTION_FOLLOWLINKS | ACTION_QUIET,
-					 fileAction, dirAction, temp, 0);
-			}
-			recursive_action("/sys/class",
-				 ACTION_RECURSE | ACTION_FOLLOWLINKS,
-				 fileAction, dirAction, temp, 0);
-		} else
-		/* Create all devices from /sys/dev hierarchy */
-		recursive_action("/sys/dev",
-				 ACTION_RECURSE | ACTION_FOLLOWLINKS,
-				 fileAction, dirAction, temp, 0);
+			recursive_action("/sys/block",
+				ACTION_RECURSE | ACTION_FOLLOWLINKS | ACTION_QUIET,
+				fileAction, dirAction, temp, 0);
+		}
+		recursive_action("/sys/class",
+			ACTION_RECURSE | ACTION_FOLLOWLINKS,
+			fileAction, dirAction, temp, 0);
 	} else {
 		char *fw;
 		char *seq;

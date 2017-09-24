@@ -90,7 +90,6 @@ struct globals {
 	G.issuefile = "/etc/issue.net"; \
 } while (0)
 
-
 /*
    Remove all IAC's from buf1 (received IACs are ignored and must be removed
    so as to not be interpreted by the terminal).  Make an uninterrupted

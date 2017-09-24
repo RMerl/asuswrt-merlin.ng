@@ -2,42 +2,71 @@ Asuswrt-Merlin 382 Changelog
 ============================
 
 382.1 Beta (xx-xxx-2017)
-   - NOTE: For brievity:
-           AM380 = Asuswrt-Merlin 380.xxx
-           AM382 = Asuswrt-Merlin 382.xxx
-           Asus382 = Asus's GPL 3.0.0.4.382_xxx
-           For now only the RT-AC86U is supported by AM382.  Other
-           models will gradually be moved to AM382 as Asus upgrades
-           them to the 382 code base.
+    Asuswrt-Merlin 382 was rebuilt from a clean 3.0.0.4.382_15098
+    GPL archive, as merging the new 382 codebase on top of the existing
+    one was proving too difficult.  This means some new issues might
+    have been introduced, while other existing ones might have
+    been fixed.
 
-   - NEW: Re-started from a clean Asus382_15098 GPL.  The code from
-          AM380.68 was adapted and merged on top of it.  This means that
-          old bugs might be gone, but also new ones might be present
-          in this release.
+    For simplicity, the following abbreviations are used below:
+       AM380 = Asuswrt-Merlin 380.xxx
+       AM382 = Asuswrt-Merlin 382.xxx
+       Asus380 = Asus's previous GPL 3.0.0.4.380_xxxx
+       Asus382 = Asus's GPL 3.0.0.4.382_xxxx
 
-          Some of the most important changes between Asus380 and Asus382:
+   AM382.1 is based on AM380.68_2.
+
+   At this time, only the RT-AC86U is supported by AM382.  Other
+   models will gradually be moved to AM382 as Asus upgrades
+   them to the new 382 code base.
+
+   Also note that since Asus' OpenVPN code is now closed source
+   starting with Asus382, it was decided to fork away from their
+   OpenVPN code, so we can retain our existing features, and
+   continue to further develop the OpenVPN support.  This means
+   that a lot of the OpeNVPN code had to be rewritten or modified
+   to work within the new 382 codebase.
+
+
+   This changelog will focus on changes that happened between
+    AM380.68 and AM382.1, or between Asus382_15098 and AM382.
+
+   - NEW: Moved to Asus382 codebase.  Some of the most important
+          changes between Asus380 and Asus382:
             - New Trend Micro DPI engine, with two-way IPS
             - New networkmap service (now closed source)
-            - New OpenVPN implementation (now closed source)
+            - New OpenVPN implementation (now closed source,
+              not used by AM382)
             - Numerous security enhancements throughout the code
-
-          This changelog will focus on changes that happened between
-          AM380.68 and AM382.1, or between Asus382_15098 and AM382.
 
    - NEW: Merged with GPL 382_16466 (RT-AC86U).
    - NEW: Added support for the RT-AC86U and its Broadcom HND platform.
-          Note that this new platform will be losing the iptraffic
-          feature from other models due to its newer kernel.
+          Note that IPTraffic is not supported by this model due to
+          its newer Linux kernel.
    - NEW: Added support for inline CRLs when importing an ovpn file
    - NEW: Added support for fullcone NAT (RT-AC86U)
-   - NEW: Added WiFi Radar (Broadcom's Visualization app) under
-          Wireless (RT-AC86U)
-   - NEW: Switch to Entware-NG-3x for the RT-AC86U.
-   - CHANGED: Since Asus has now closed their OpenVPN source code,
-              their code was replaced with new code based om our
-              original implementation from AM380.  From now on, AM382's
-              OpenVPN development will be separate from Asus' own.
+   - NEW: Added WiFi Radar (Broadcom's Visualization app) in the
+          Wireless section (RT-AC86U)
+   - NEW: Added option to disable the Asus NAT tunnel service under
+          Other Settings -> Tweak.  Not quite sure what this
+          partly closed source service is for, but it eats a
+          fair amount of CPU and RAM.
+   - NEW: Webui options on OpenVPN Server page to quickly choose
+          between pushing LAN or LAN + Internet access (ported
+          from Asus382)
+   - NEW: Option to select the bitsize to use (1024 or 2048) when
+          automatically generating the OpenVPN server key/certs
+          (ported from Asus382)
    - CHANGED: SSH host keys are now stored in /jffs/ssl/ rather
               than nvram.
    - CHANGED: SMB2 is enabled by default on RT-AC86U (no performance
               penalty on that platform)
+   - CHANGED: Moved UPnP Secure Mode setting from the Tweaks section
+              to the WAN page, next to other UPnP settings.
+   - FIXED: Some LAN clients couldn't be added to the TOR redirected
+            client list.
+   - REMOVED: Obsolete/exotic HMAC digests for OpenVPN servers (to
+              match with Asus' own supported list)
+   - REMOVED: "Custom" OpenVPN authentication mode (which probably
+              nobody used or even understood).
+

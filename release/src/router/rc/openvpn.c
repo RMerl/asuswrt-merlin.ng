@@ -1230,7 +1230,7 @@ void start_ovpn_server(int serverNum)
 
 		valid = 0;
 
-		if ( ovpn_key_exists(OVPN_TYPE_CLIENT, serverNum, OVPN_SERVER_DH))
+		if ( ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH))
 		{
 			sprintf(buffer, "/etc/openvpn/server%d/dh.pem", serverNum);
 			fp = fopen(buffer, "w");

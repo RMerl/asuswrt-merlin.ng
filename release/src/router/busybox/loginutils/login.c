@@ -555,7 +555,6 @@ int login_main(int argc UNUSED_PARAM, char **argv)
 		bb_do_delay(LOGIN_FAIL_DELAY);
 		/* TODO: doesn't sound like correct English phrase to me */
 		puts("Login incorrect");
-
 #if ENABLE_FEATURE_TELNETD_CLIENT_TO_ENV && defined(SECURITY_NOTIFY)
 		if (telnet_addr) {
 			SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET,

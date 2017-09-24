@@ -1,5 +1,5 @@
-asuswrt-merlin version 382
-==========================
+asuswrt-merlin version 382.xx
+=============================
 
 #### Please do not use Github's Issue tracker for support requests.  Use the support forums at [SNBForums](https://www.snbforums.com/forums/asuswrt-merlin.42/) instead.  The issue tracker is for development/bug tracking purposes only!
 
@@ -20,7 +20,3 @@ have been migrated to the new 382 code base.
 Please consult the Wiki for an up-to-date list of supported models:
 
 https://github.com/RMerl/asuswrt-merlin/wiki/Supported-Devices
-
-
-This new branch is still in heavy development, there are no builds 
-available for download yet.

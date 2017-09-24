@@ -112,6 +112,8 @@ Networking:
    - DNSSEC support
    - fq_codel queue discipline for QoS (ARM-based models only)
    - Full cone NAT support (RT-AC86U only)
+   - Detailed wireless troubleshooting information (RT-AC86U only)
+
 
 Web interface:
    - Performance improvements
@@ -192,9 +194,12 @@ https://github.com/RMerl/asuswrt-merlin/wiki
 
 Source code
 -----------
-The buildable source code can be found on Github, at:
+The buildable source code can be found on Github.
 
+Original branch:
 https://github.com/RMerl/asuswrt-merlin
+
+New 382 branch:
 https://github.com/RMerl/asuswrt-merlin.382
 
    
@@ -202,14 +207,15 @@ Contact information
 -------------------
 SmallNetBuilder forums (preferred method: http://www.snbforums.com/forums/asuswrt-merlin.42/ as RMerlin)
 Website: https://asuswrt.lostrealm.ca/
-Github: https://github.com/RMerl/asuswrt-merlin
+Github: https://github.com/RMerl
 Email: rmerl@lostrealm.ca
 Twitter: https://twitter.com/RMerlinDev
 IRC: #asuswrt on DALnet
 Download: https://asuswrt.lostrealm.ca/download
 
-Development news will be posted on Twitter.  You can also keep a closer 
-eye on development as it happens, through the Github code repository.
+Development news will be posted on Twitter and the support forums.  
+You can also keep a closer eye on development as it happens, through 
+the Github code repository.
 
 For support questions, please use the SmallNetBuilder forums whenever 
 possible.  There's a dedicated Asuswrt-Merlin sub-forum there, under 

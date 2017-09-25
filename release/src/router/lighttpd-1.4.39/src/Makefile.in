@@ -183,6 +183,14 @@ mod_aicloud_sharelink_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(mod_aicloud_sharelink_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+mod_aicloud_sharelink_parser_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_mod_aicloud_sharelink_parser_la_OBJECTS = mod_aicloud_sharelink_parser.lo
+mod_aicloud_sharelink_parser_la_OBJECTS =  \
+	$(am_mod_aicloud_sharelink_parser_la_OBJECTS)
+mod_aicloud_sharelink_parser_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(mod_aicloud_sharelink_parser_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 mod_aidisk_access_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(sql_libadd)
 am_mod_aidisk_access_la_OBJECTS = mod_aidisk_access.lo \
@@ -404,6 +412,7 @@ SOURCES = $(liblightcomp_la_SOURCES) $(liblightsql_la_SOURCES) \
 	$(mod_access_la_SOURCES) $(mod_aicloud_auth_la_SOURCES) \
 	$(mod_aicloud_invite_la_SOURCES) \
 	$(mod_aicloud_sharelink_la_SOURCES) \
+	$(mod_aicloud_sharelink_parser_la_SOURCES) \
 	$(mod_aidisk_access_la_SOURCES) $(mod_alias_la_SOURCES) \
 	$(mod_auth_la_SOURCES) $(mod_compress_la_SOURCES) \
 	$(mod_create_captcha_image_la_SOURCES) \
@@ -420,6 +429,7 @@ DIST_SOURCES = $(am__liblightcomp_la_SOURCES_DIST) \
 	$(mod_aicloud_auth_la_SOURCES) \
 	$(mod_aicloud_invite_la_SOURCES) \
 	$(mod_aicloud_sharelink_la_SOURCES) \
+	$(mod_aicloud_sharelink_parser_la_SOURCES) \
 	$(mod_aidisk_access_la_SOURCES) $(mod_alias_la_SOURCES) \
 	$(mod_auth_la_SOURCES) $(mod_compress_la_SOURCES) \
 	$(mod_create_captcha_image_la_SOURCES) \
@@ -770,7 +780,7 @@ lib_LTLIBRARIES = $(am__append_1) mod_webdav.la mod_staticfile.la mod_userdir.la
 	mod_dirlisting.la mod_indexfile.la mod_alias.la mod_access.la \
 	mod_compress.la mod_auth.la liblightsql.la mod_aicloud_auth.la \
 	mod_aidisk_access.la mod_smbdav.la mod_aicloud_sharelink.la \
-	mod_create_captcha_image.la mod_query_field_json.la \
+	mod_aicloud_sharelink_parser.la mod_create_captcha_image.la mod_query_field_json.la \
 	mod_aicloud_invite.la
 @NO_RDYNAMIC_TRUE@liblightcomp_la_SOURCES = $(common_src)
 @NO_RDYNAMIC_TRUE@liblightcomp_la_CFLAGS = $(AM_CFLAGS) $(LIBEV_CFLAGS)
@@ -842,6 +852,9 @@ mod_smbdav_la_LIBADD = $(common_libadd) $(XML_LIBS) $(SQLITE_LIBS) $(UUID_LIBS) 
 mod_aicloud_sharelink_la_SOURCES = mod_aicloud_sharelink.c
 mod_aicloud_sharelink_la_LDFLAGS = -module -export-dynamic -avoid-version
 mod_aicloud_sharelink_la_LIBADD = $(common_libadd)
+mod_aicloud_sharelink_parser_la_SOURCES = mod_aicloud_sharelink_parser.c
+mod_aicloud_sharelink_parser_la_LDFLAGS = -module -export-dynamic -avoid-version
+mod_aicloud_sharelink_parser_la_LIBADD = $(common_libadd)
 mod_create_captcha_image_la_SOURCES = mod_create_captcha_image.c
 mod_create_captcha_image_la_LDFLAGS = -module -export-dynamic -avoid-version
 mod_create_captcha_image_la_LIBADD = $(common_libadd)
@@ -961,6 +974,8 @@ mod_aicloud_invite.la: $(mod_aicloud_invite_la_OBJECTS) $(mod_aicloud_invite_la_
 	$(AM_V_CCLD)$(mod_aicloud_invite_la_LINK) -rpath $(libdir) $(mod_aicloud_invite_la_OBJECTS) $(mod_aicloud_invite_la_LIBADD) $(LIBS)
 mod_aicloud_sharelink.la: $(mod_aicloud_sharelink_la_OBJECTS) $(mod_aicloud_sharelink_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(mod_aicloud_sharelink_la_LINK) -rpath $(libdir) $(mod_aicloud_sharelink_la_OBJECTS) $(mod_aicloud_sharelink_la_LIBADD) $(LIBS)
+mod_aicloud_sharelink_parser.la: $(mod_aicloud_sharelink_parser_la_OBJECTS) $(mod_aicloud_sharelink_parser_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(mod_aicloud_sharelink_parser_la_LINK) -rpath $(libdir) $(mod_aicloud_sharelink_parser_la_OBJECTS) $(mod_aicloud_sharelink_parser_la_LIBADD) $(LIBS)
 mod_aidisk_access.la: $(mod_aidisk_access_la_OBJECTS) $(mod_aidisk_access_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(mod_aidisk_access_la_LINK) -rpath $(libdir) $(mod_aidisk_access_la_OBJECTS) $(mod_aidisk_access_la_LIBADD) $(LIBS)
 mod_alias.la: $(mod_alias_la_OBJECTS) $(mod_alias_la_DEPENDENCIES) 
@@ -1162,6 +1177,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_aicloud_auth.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_aicloud_invite.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_aicloud_sharelink.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_aicloud_sharelink_parser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_aidisk_access.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_alias.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_auth.Plo@am__quote@

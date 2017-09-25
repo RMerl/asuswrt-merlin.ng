@@ -105,12 +105,12 @@ void start_ovpn_client(int clientNum)
 		ifType = TUN;
 	else
 	{
-		vpnlog(VPN_LOG_ERROR, "Invalid interface type, %.3s", nvram_safe_get(buffer));
+		vpnlog(VPN_LOG_ERROR, "Invalid interface type, %.3s", buffer);
 		return;
 	}
 
 	// Build interface name
-	snprintf(iface, sizeof (iface), "%s%d", nvram_safe_get(buffer), clientNum+CLIENT_IF_START);
+	snprintf(iface, sizeof (iface), "%s%d", buffer, clientNum+CLIENT_IF_START);
 
 	// Determine encryption mode
 	strlcpy(buffer, nvram_pf_safe_get(prefix, "crypt"), sizeof(buffer) );
@@ -121,7 +121,7 @@ void start_ovpn_client(int clientNum)
 		cryptMode = SECRET;
 	else
 	{
-		vpnlog(VPN_LOG_ERROR,"Invalid encryption mode, %.6s", nvram_safe_get(buffer));
+		vpnlog(VPN_LOG_ERROR,"Invalid encryption mode, %.6s", buffer);
 		return;
 	}
 
@@ -642,14 +642,13 @@ void start_ovpn_server(int serverNum)
 		ifType = TUN;
 	else
 	{
-		vpnlog(VPN_LOG_ERROR,"Invalid interface type, %.3s", nvram_safe_get(buffer));
+		vpnlog(VPN_LOG_ERROR,"Invalid interface type, %.3s", buffer);
 		return;
 	}
 
 	// Build interface name
-	snprintf(iface, sizeof (iface), "%s%d", nvram_safe_get(buffer), serverNum+SERVER_IF_START);
+	snprintf(iface, sizeof (iface), "%s%d", buffer, serverNum+SERVER_IF_START);
 
-	//
 	if(is_intf_up(iface) && ifType == TAP) {
 		eval("brctl", "delif", nvram_safe_get("lan_ifname"), iface);
 	}
@@ -663,7 +662,7 @@ void start_ovpn_server(int serverNum)
 		cryptMode = SECRET;
 	else
 	{
-		vpnlog(VPN_LOG_ERROR,"Invalid encryption mode, %.6s", nvram_safe_get(buffer));
+		vpnlog(VPN_LOG_ERROR,"Invalid encryption mode, %.6s", buffer);
 		return;
 	}
 
@@ -793,20 +792,21 @@ void start_ovpn_server(int serverNum)
 		fprintf(fp_client, "proto tcp-client\n");
 
 	//port
-	fprintf(fp, "port %d\n", nvram_pf_get_int(prefix, "port"));
+	nvi = nvram_pf_get_int(prefix, "port");
+	fprintf(fp, "port %d\n", nvi);
 
 	if(nvram_get_int("ddns_enable_x"))
 	{
 		if (nvram_match("ddns_server_x","WWW.NAMECHEAP.COM"))
-			fprintf(fp_client, "remote %s.%s %s\n", nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_username_x"), nvram_safe_get(buffer));
+			fprintf(fp_client, "remote %s.%s %d\n", nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_username_x"), nvi);
 		else
-			fprintf(fp_client, "remote %s %s\n",
+			fprintf(fp_client, "remote %s %d\n",
 			    (strlen(nvram_safe_get("ddns_hostname_x")) ? nvram_safe_get("ddns_hostname_x") : nvram_safe_get("wan0_ipaddr")),
-			    nvram_safe_get(buffer));
+			    nvi);
 	}
 	else
 	{
-		fprintf(fp_client, "remote %s %s\n", nvram_safe_get("wan0_ipaddr"), nvram_safe_get(buffer));
+		fprintf(fp_client, "remote %s %d\n", nvram_safe_get("wan0_ipaddr"), nvi);
 	}
 	fprintf(fp_client, "float\n");
 	fprintf(fp, "dev %s\n", iface);

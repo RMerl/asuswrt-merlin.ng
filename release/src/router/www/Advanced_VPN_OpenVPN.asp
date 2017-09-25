@@ -880,7 +880,7 @@ function update_visibility(){
 	showhide("server_pdns", ((auth == "tls") && (dns == 1)));
 	showhide("server_dhcp",((auth == "tls") && (iface == "tap")));
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
-	showhide("server_tls_crypto_text", ((auth == "tls") || (auth == "secret")));		//add by Viz
+	showhide("server_tls_crypto_tr", ((auth == "tls") || (auth == "secret")));		//add by Viz
 	showhide("server_igncrt", (userpass == 1));
 	showhide("server_cipher", (ncp != 2));
 	showhide("ncp_enable", (auth == "tls"));
@@ -892,7 +892,7 @@ function update_visibility(){
 	showhide("tlscrypt_24_warn", (hmac == 3));
 }
 
-function set_Keys() {
+function edit_Keys() {
 	cal_panel_block("tlsKey_panel", 0.15);
 	$("#tlsKey_panel").fadeIn(300);
 }
@@ -1544,7 +1544,12 @@ function updateVpnServerClientAccess() {
 														<option value="secret" <% nvram_match("vpn_server_crypt","secret","selected"); %> >Static Key</option>
 													</select>
 													<span id="Fixed_tls_crypto" style="color:#FFFFFF;display:none;">TLS</span>
-													<span id="server_tls_crypto_text" onclick="set_Keys();" style="text-decoration:underline;cursor:pointer;"><#vpn_openvpn_ModifyKeys#></span>
+												</td>
+											</tr>
+											<tr id="server_tls_crypto_tr">
+												<th>Keys and Certificates</th>
+												<td>
+													<input type="button" onclick="edit_Keys();" value="Edit..."</td>
 												</td>
 											</tr>
 											<tr>

@@ -97,10 +97,11 @@ void start_ovpn_client(int clientNum)
 	nvram_pf_set(prefix, "rip", "");
 
 	// Determine interface
-	sprintf(buffer, "vpn_client%d_if", clientNum);
-	if ( nvram_contains_word(buffer, "tap") )
+	strlcpy(buffer, nvram_pf_safe_get(prefix, "if"), sizeof (buffer));
+
+	if ( !strcmp(buffer, "tap") )
 		ifType = TAP;
-	else if ( nvram_contains_word(buffer, "tun") )
+	else if ( !strcmp(buffer, "tun") )
 		ifType = TUN;
 	else
 	{
@@ -112,10 +113,11 @@ void start_ovpn_client(int clientNum)
 	snprintf(iface, sizeof (iface), "%s%d", nvram_safe_get(buffer), clientNum+CLIENT_IF_START);
 
 	// Determine encryption mode
-	sprintf(buffer, "vpn_client%d_crypt", clientNum);
-	if ( nvram_contains_word(buffer, "tls") )
+	strlcpy(buffer, nvram_pf_safe_get(prefix, "crypt"), sizeof(buffer) );
+
+	if ( !strcmp(buffer, "tls") )
 		cryptMode = TLS;
-	else if ( nvram_contains_word(buffer, "secret") )
+	else if ( !strcmp(buffer, "secret") )
 		cryptMode = SECRET;
 	else
 	{
@@ -249,14 +251,15 @@ void start_ovpn_client(int clientNum)
 	}
 
 	if (nvi != 2) {
-		sprintf(buffer, "vpn_client%d_cipher", clientNum);
-		if ( !nvram_contains_word(buffer, "default") )
-			fprintf(fp, "cipher %s\n", nvram_safe_get(buffer));
+		strlcpy(buffer, nvram_pf_safe_get(prefix, "cipher"), sizeof(buffer));
+		if ( strcmp(buffer,"default") )
+			fprintf(fp, "cipher %s\n", buffer);
 	}
 
-	sprintf(buffer, "vpn_client%d_digest", clientNum);
-	if ( !nvram_contains_word(buffer, "default") )
-		fprintf(fp, "auth %s\n", nvram_safe_get(buffer));
+	strlcpy(buffer, nvram_pf_safe_get(prefix, "digest"), sizeof(buffer));
+	if ( strcmp(buffer, "default"))
+		fprintf(fp, "auth %s\n", buffer);
+
 	nvi = nvram_pf_get_int(prefix, "rgw");
 	if (nvi == 1)
 	{
@@ -428,8 +431,7 @@ void start_ovpn_client(int clientNum)
 	run_postconf(buffer, buffer2);
 
 	// Handle firewall rules if appropriate
-	sprintf(buffer, "vpn_client%d_firewall", clientNum);
-	if ( !nvram_contains_word(buffer, "custom") )
+	if ( !nvram_pf_match(prefix, "firewall", "custom") )
 	{
 		// Create firewall rules
 		vpnlog(VPN_LOG_EXTRA,"Creating firewall rules");
@@ -633,10 +635,10 @@ void start_ovpn_server(int serverNum)
 	nvram_pf_set(prefix, "errno", "0");
 
 	// Determine interface type
-	sprintf(buffer, "vpn_server%d_if", serverNum);
-	if ( nvram_contains_word(buffer, "tap") )
+	strlcpy(buffer, nvram_pf_safe_get(prefix, "if"), sizeof (buffer) );
+	if ( !strcmp(buffer, "tap") )
 		ifType = TAP;
-	else if ( nvram_contains_word(buffer, "tun") )
+	else if ( !strcmp(buffer, "tun") )
 		ifType = TUN;
 	else
 	{
@@ -653,10 +655,11 @@ void start_ovpn_server(int serverNum)
 	}
 
 	// Determine encryption mode
-	sprintf(buffer, "vpn_server%d_crypt", serverNum);
-	if ( nvram_contains_word(buffer, "tls") )
+	strlcpy(buffer, nvram_pf_safe_get(prefix, "crypt"), sizeof (buffer) );
+
+	if ( !strcmp(buffer, "tls") )
 		cryptMode = TLS;
-	else if ( nvram_contains_word(buffer, "secret") )
+	else if ( !strcmp(buffer, "secret") )
 		cryptMode = SECRET;
 	else
 	{
@@ -823,23 +826,22 @@ void start_ovpn_server(int serverNum)
 		nvi = 0;
 	}
 	if (nvi != 2) {
-		sprintf(buffer, "vpn_server%d_cipher", serverNum);
-		if ( !nvram_contains_word(buffer, "default") ) {
-			fprintf(fp, "cipher %s\n", nvram_safe_get(buffer));
-			fprintf(fp_client, "cipher %s\n", nvram_safe_get(buffer));
+		strlcpy(buffer, nvram_pf_safe_get(prefix, "cipher"), sizeof (buffer));
+		if ( strcmp(buffer, "default") ) {
+			fprintf(fp, "cipher %s\n", buffer);
+			fprintf(fp_client, "cipher %s\n", buffer);
 		}
 	}
 
 	//digest
-	sprintf(buffer, "vpn_server%d_digest", serverNum);
-	if ( !nvram_contains_word(buffer, "default") ) {
-		fprintf(fp, "auth %s\n", nvram_safe_get(buffer));
-		fprintf(fp_client, "auth %s\n", nvram_safe_get(buffer));
+	strlcpy(buffer, nvram_pf_safe_get(prefix, "digest"), sizeof (buffer));
+	if ( strcmp(buffer, "default") ) {
+		fprintf(fp, "auth %s\n", buffer);
+		fprintf(fp_client, "auth %s\n", buffer);
 	}
 
 	//compression
 	strlcpy(buffer, nvram_pf_safe_get(prefix, "comp"), sizeof (buffer));
-
 	if (strcmp(buffer, "-1")) {
 		if (!strcmp(buffer, "lz4")) {
 			fprintf(fp, "compress lz4\n");
@@ -1235,7 +1237,6 @@ void start_ovpn_server(int serverNum)
 			sprintf(buffer, "/etc/openvpn/server%d/dh.pem", serverNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
-/* TODO: check that get)_ovpn_key() properly returns "none" when empty */
 			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH, buffer2, sizeof(buffer2)));
 			fclose(fp);
 			valid = 1;	// Tentative state
@@ -1325,8 +1326,7 @@ void start_ovpn_server(int serverNum)
 	run_postconf(buffer, buffer2);
 
 	// Handle firewall rules if appropriate
-	sprintf(buffer, "vpn_server%d_firewall", serverNum);
-	if ( !nvram_contains_word(buffer, "custom") )
+	if ( !nvram_pf_match(prefix, "firewall", "custom") )
 	{
 		// Create firewall rules
 		vpnlog(VPN_LOG_EXTRA,"Creating firewall rules");
@@ -1341,8 +1341,7 @@ void start_ovpn_server(int serverNum)
 		strlcpy(buffer, nvram_pf_safe_get(prefix, "proto"), sizeof (buffer));
 		fprintf(fp, "iptables -I INPUT -p %s ", strtok(buffer, "-"));
 		fprintf(fp, "--dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
-		sprintf(buffer, "vpn_server%d_firewall", serverNum);
-		if ( !nvram_contains_word(buffer, "external") )
+		if ( !nvram_pf_match(prefix, "firewall", "external") )
 		{
 			fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", iface);
 			fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), iface);

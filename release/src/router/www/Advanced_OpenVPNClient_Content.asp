@@ -1185,10 +1185,14 @@ function defaultSettings() {
 								<option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %> >TLS</option>
 								<option value="secret" <% nvram_match("vpn_client_crypt","secret","selected"); %> >Static Key</option>
 							</select>
-							<span id="client_tls_crypto_text" onclick="edit_Keys();" style="text-decoration:underline;cursor:pointer;">Content modification of Keys &amp; Certificates.</span>
 						</td>
 					</tr>
-
+					<tr>
+						<th>Keys and Certificates</th>
+						<td>
+							<input type="button" onclick="edit_Keys();" value="Edit..."></td>
+						</td>
+					</tr>
 					<tr id="client_userauth">
 						<th>Username/Password Authentication</th>
 						<td>

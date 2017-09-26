@@ -5028,7 +5028,7 @@ libdisk: $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis)
 
 lighttpd-1.4.39/Makefile:
 	@$(SEP)
-	cd lighttpd-1.4.39 && ./autogen.sh
+#	cd lighttpd-1.4.39 && ./autogen.sh
 
 lighttpd-1.4.39/stamp-h1: lighttpd-1.4.39/Makefile
 ifeq ($(HND_ROUTER),y)

@@ -63,6 +63,9 @@ Asuswrt-Merlin 382 Changelog
               penalty on that platform)
    - CHANGED: Moved UPnP Secure Mode setting from the Tweaks section
               to the WAN page, next to other UPnP settings.
+   - CHANGED: Moved "Modify key and certs" link to its own dedicated
+              row and made it a button for improved visibility
+              (OpenVPN client & server pages)
    - FIXED: Some LAN clients couldn't be added to the TOR redirected
             client list.
    - REMOVED: Obsolete/exotic HMAC digests for OpenVPN servers (to

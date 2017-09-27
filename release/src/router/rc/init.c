@@ -9609,6 +9609,10 @@ static void sysinit(void)
 	init_wl(); // for system dependent part
 	klogctl(8, NULL, nvram_get_int("console_loglevel"));
 
+	// Enable rate report for tc classes (QoS stats)
+#ifdef HND_ROUTER
+	f_write_string("/sys/module/sch_htb/parameters/htb_rate_est", "1", 0, 0);
+#endif
 	setup_conntrack();
 	setup_timezone();
 	if (!noconsole) xstart("console");

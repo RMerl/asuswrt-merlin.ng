@@ -2,7 +2,7 @@ PREFIX?=/usr
 # brcm: modify the LIBDIR, SBINDIR
 LIBDIR?=$(PREFIX)/lib
 SBINDIR=$(INSTALL_DIR)/bin
-CONFDIR=$(INSTALL_DIR)/etc/iproute2
+CONFDIR=/etc/iproute2
 DATADIR?=$(PREFIX)/share
 DOCDIR?=$(DATADIR)/doc/iproute2
 MANDIR?=$(DATADIR)/man

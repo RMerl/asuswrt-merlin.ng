@@ -147,7 +147,7 @@ function initial(){
 	add_option(document.form.vpn_server_digest, "Default","default",(currentdigest == "default"));
 	add_option(document.form.vpn_server_digest, "None","none",(currentdigest == "none"));
 	for(var i = 0; i < hmacarray.length; i += 1){
-		add_option(document.form.vpn_server_digest, hmacarray[i][0], hmacarray[i][0], (currentdigest == hmacarray[i][0]));
+		add_option(document.form.vpn_server_digest, hmacarray[i][0], hmacarray[i][1], (currentdigest == hmacarray[i][1]));
 	}
 
 	// We don't use the global switch, so set it to current instance state instead

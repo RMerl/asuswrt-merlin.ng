@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef RTCONFIG_OPENVPN
+#include <openvpn_config.h>
+#endif
 #if defined(RTCONFIG_VPN_FUSION)
 #include <vpnc_fusion.h>
 extern int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ver);
@@ -10,9 +13,31 @@ extern int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int 
 void adjust_merlin_config(void)
 {
 #ifdef RTCONFIG_OPENVPN
+	int unit;
+	char varname_ori[32];
+#endif
+
+#ifdef RTCONFIG_OPENVPN
 	if(!nvram_is_empty("vpn_server_clientlist")) {
 		nvram_set("vpn_serverx_clientlist", nvram_safe_get("vpn_server_clientlist"));
 		nvram_unset("vpn_server_clientlist");
+	}
+
+/* Convert ASCII custom into base64 custom2 */
+	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+		sprintf(varname_ori,"vpn_server%d_custom", unit);
+		if(!nvram_is_empty(varname_ori)) {
+			set_ovpn_custom(OVPN_TYPE_SERVER, unit, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
+		}
+	}
+
+	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+		sprintf(varname_ori,"vpn_client%d_custom", unit);
+		if(!nvram_is_empty(varname_ori)) {
+			set_ovpn_custom(OVPN_TYPE_CLIENT, unit, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
+		}
 	}
 #endif
 

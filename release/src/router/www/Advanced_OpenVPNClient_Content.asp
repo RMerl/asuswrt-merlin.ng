@@ -278,6 +278,8 @@ function initial()
 	document.form.vpn_client_rgw.value = policy_ori;
 	update_visibility();
 
+	document.getElementById("vpn_client_custom_x").value = window.atob(document.form.vpn_client_custom2.value);
+
 	setTimeout("getConnStatus()", 1000);
 }
 
@@ -568,6 +570,8 @@ function applyRule(manual_switch){
 	     (policy_ori != document.form.vpn_client_rgw.value)) &&
 	    (client_state == 0) && (manual_switch == 0))
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
+
+	document.form.vpn_client_custom2.value = window.btoa(document.getElementById("vpn_client_custom_x").value);
 
 	document.form.submit();
 }
@@ -1038,6 +1042,7 @@ function defaultSettings() {
 <input type="hidden" name="vpn_client_if" value="<% nvram_get("vpn_client_if"); %>">
 <input type="hidden" name="vpn_client_local" value="<% nvram_get("vpn_client_local"); %>">
 <input type="hidden" name="vpn_client_clientlist" value="<% nvram_clean_get("vpn_client_clientlist"); %>">
+<input type="hidden" name="vpn_client_custom2" value="<% nvram_get("vpn_client_custom2"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -1441,7 +1446,7 @@ function defaultSettings() {
 					</thead>
 					<tr>
 						<td>
-							<textarea rows="8" class="textarea_ssh_table" style="width:99%;" name="vpn_client_custom" cols="55" maxlength="15000"><% nvram_clean_get("vpn_client_custom"); %></textarea>
+							<textarea rows="8" class="textarea_ssh_table" style="width:99%;" id="vpn_client_custom_x" cols="55" maxlength="2047"></textarea>
 						</td>
 					</tr>
 					</table>

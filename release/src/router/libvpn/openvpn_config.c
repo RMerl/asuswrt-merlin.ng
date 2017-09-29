@@ -423,3 +423,76 @@ int ovpn_crt_is_empty(const char *name)
 		return 0;
 	}
 }
+
+
+char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
+{
+	char varname[32];
+	char *nvcontent;
+	char *typeStr;
+	int datalen, declen;
+
+	buffer[0] = '\0';
+
+	switch (type) {
+		case OVPN_TYPE_SERVER:
+			typeStr = "server";
+			break;
+		case OVPN_TYPE_CLIENT:
+			typeStr = "client";
+			break;
+                default:
+			return buffer;
+        }
+
+	snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
+	nvcontent = nvram_safe_get(varname);
+	datalen = strlen(nvcontent);
+
+	if (datalen) {
+		if (datalen >= bufferlen) datalen = bufferlen-1;
+		declen = base64_decode(nvcontent, (unsigned char *) buffer, datalen);
+		buffer[declen] = '\0';
+	}
+
+	return buffer;
+}
+
+
+int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
+{
+	char varname[32];
+	char *encbuffer;
+	char *typeStr;
+	int datalen, enclen;
+
+	switch (type) {
+		case OVPN_TYPE_SERVER:
+			typeStr = "server";
+			break;
+		case OVPN_TYPE_CLIENT:
+			typeStr = "client";
+			break;
+                default:
+			return -1;
+        }
+
+	datalen = strlen(buffer);
+
+	if (datalen) {
+		encbuffer = malloc(base64_encoded_len(datalen) + 1);
+		if (encbuffer) {
+			enclen = base64_encode(buffer, encbuffer, datalen);
+			encbuffer[enclen] = '\0';
+
+			snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
+			nvram_set(varname, encbuffer);
+
+			free(encbuffer);
+			return 0;
+		}
+	}
+
+	return -1;
+}
+

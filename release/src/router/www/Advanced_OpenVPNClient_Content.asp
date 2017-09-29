@@ -526,7 +526,31 @@ function cal_panel_block(){
 }
 
 
+function validForm(){
+	var addrobj = document.form.vpn_client_addr;
+	var alert_str = validator.domainName(addrobj);
+	if ((addrobj.value != "") && (alert_str != "") && (!validator.ipv4_addr(addrobj.value))) {
+		alert("Invalid remote server address!");
+		addrobj.focus();
+		return false;
+	}
+
+	if (!validator.safeName(document.form.vpn_client_desc) ||
+	    !validator.numberRange(document.form.vpn_client_verb, 0, 6) ||
+	    !validator.numberRange(document.form.vpn_client_poll, 0, 60) ||
+	    !validator.numberRange(document.form.vpn_client_reneg, -1, 2147483647) ||
+	    !validator.numberRange(document.form.vpn_client_retry, -1, 32767) ||
+	    !validator.numberRange(document.form.vpn_client_port, 1, 65535))
+		return false;
+
+	return true;
+}
+
 function applyRule(manual_switch){
+	if (!validForm()){
+		return false;
+	}
+
 	if (manual_switch == 0) {
 		showLoading();
 		if (client_state != 0) {
@@ -710,6 +734,9 @@ function addRow_Group(upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
 		return false;
 	}
+
+	if (!validator.safeName(document.form.clientlist_deviceName))
+		return false;
 
 	if(document.form.clientlist_ipAddr.value=="")
 		document.form.clientlist_ipAddr.value="0.0.0.0";
@@ -1136,7 +1163,7 @@ function defaultSettings() {
 					<tr>
 						<th>Description</th>
 						<td>
-							<input type="text" maxlength="25" class="input_25_table" name="vpn_client_desc" onBlur="validator.string(this);" value="<% nvram_get("vpn_client_desc"); %>">
+							<input type="text" maxlength="25" class="input_25_table" name="vpn_client_desc" value="<% nvram_get("vpn_client_desc"); %>">
 						</td>
 					</tr>
 					<tr>
@@ -1169,7 +1196,7 @@ function defaultSettings() {
 						<th>Server Address and Port</th>
 						<td>
 							<label>Address:</label><input type="text" maxlength="128" class="input_25_table" name="vpn_client_addr" value="<% nvram_get("vpn_client_addr"); %>">
-							<label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 1, 65535)" value="<% nvram_get("vpn_client_port"); %>" >
+							<label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_port"); %>" >
 						</td>
 					</tr>
 
@@ -1296,14 +1323,14 @@ function defaultSettings() {
 					<tr>
 						<th>Log verbosity<br><i>(0-6, default=3)</i></th>
 						<td>
-							<input type="text" maxlength="2" class="input_6_table" name="vpn_client_verb" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 0, 6)" value="<% nvram_get("vpn_client_verb"); %>">
+							<input type="text" maxlength="2" class="input_6_table" name="vpn_client_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_verb"); %>">
 						</td>
 					</tr>
 
 					<tr>
 						<th><#vpn_openvpn_PollInterval#><br><i>( <#zero_disable#> )</i></th>
 						<td>
-							<input type="text" maxlength="4" class="input_6_table" name="vpn_client_poll" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 0, 60)" value="<% nvram_get("vpn_client_poll"); %>">
+							<input type="text" maxlength="4" class="input_6_table" name="vpn_client_poll" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_poll"); %>">
 						</td>
 					</tr>
 
@@ -1362,14 +1389,14 @@ function defaultSettings() {
 					<tr id="client_reneg">
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time<br><i>(in seconds, -1 for default)</a></th>
 						<td>
-							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" onblur="validator.numberRange(this, -1, 2147483647)" value="<% nvram_get("vpn_client_reneg"); %>">
+							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" value="<% nvram_get("vpn_client_reneg"); %>">
 						</td>
 					</tr>
 
 					<tr>
 						<th>Connection Retry<br><i>(in seconds, -1 for infinite)</th>
 						<td>
-							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_retry" onblur="validator.numberRange(this, -1, 32767)" value="<% nvram_get("vpn_client_retry"); %>">
+							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_retry" value="<% nvram_get("vpn_client_retry"); %>">
 						</td>
 					</tr>
 

@@ -294,13 +294,11 @@ function openvpnd_connected_status(){
 
 function applyRule(){
 	var validForm = function() {
-		if(!validator.numberRange(document.form.vpn_server_port, 1, 65535)) {
-			return false;
-		}
-		if(!validator.numberRange(document.form.vpn_server_poll, 0, 60)) {
-			return false;
-		}
-		if(!validator.numberRange(document.form.vpn_server_reneg, -1, 2147483647)) {
+		if (!validator.numberRange(document.form.vpn_server_port, 1, 65535) ||
+		    !validator.numberRange(document.form.vpn_server_poll, 0, 60) ||
+		    !validator.numberRange(document.form.vpn_server_verb, 0, 6) ||
+		    !validator.numberRange(document.form.vpn_server_reneg, -1, 2147483647))
+		{
 			return false;
 		}
 		return true;
@@ -1710,7 +1708,7 @@ function updateVpnServerClientAccess() {
 											<tr>
 												<th>Log verbosity</th>
 												<td>
-													<input type="text" maxlength="2" class="input_6_table"name="vpn_server_verb" onKeyPress="return validator.isNumber(this,event);"onblur="validate_number_range(this, 0, 6)" value="<% nvram_get("vpn_server_verb"); %>">
+													<input type="text" maxlength="2" class="input_6_table"name="vpn_server_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_verb"); %>">
 													<span style="color:#FC0">(Between 0 and 6. Default: 3)</span>
 												</td>
 											</tr>

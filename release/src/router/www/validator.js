@@ -2144,11 +2144,11 @@ var validator = {
 	safeName: function(obj){
 		if (obj.value.length == 0) return true;
 
-		var re = new RegExp("^[a-zA-Z0-9a-zA-Z0-9\-\_ ]+$","gi");
+		var re = new RegExp("^[a-zA-Z0-9a-zA-Z0-9\-\_\. ]+$","gi");
 		if(re.test(obj.value)){
 			return true;
 		}else{
-			alert("Only letters, numbers, spaces, underscores and dashes are accepted.");
+			alert("Only letters, numbers, spaces, underscores, periods and dashes are accepted.");
 			obj.focus();
 			obj.select();
 			return false;

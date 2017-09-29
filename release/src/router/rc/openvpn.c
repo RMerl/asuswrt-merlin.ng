@@ -346,7 +346,7 @@ void start_ovpn_client(int clientNum)
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");
 	fprintf(fp, "\n# Custom Configuration\n");
-	fprintf(fp, "%s", nvram_pf_safe_get(prefix, "custom"));
+	fprintf(fp, "%s", get_ovpn_custom(OVPN_TYPE_CLIENT, clientNum, buffer2, sizeof (buffer2) ));
 	fclose(fp);
 
 	vpnlog(VPN_LOG_EXTRA,"Done writing config file");
@@ -1049,7 +1049,7 @@ void start_ovpn_server(int serverNum)
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");
 	fprintf(fp, "\n# Custom Configuration\n");
-	fprintf(fp, "%s", nvram_pf_safe_get(prefix, "custom"));
+	fprintf(fp, "%s", get_ovpn_custom(OVPN_TYPE_SERVER, serverNum, buffer2, sizeof (buffer2) ));
 	fclose(fp);
 
 	vpnlog(VPN_LOG_EXTRA,"Done writing server config file");

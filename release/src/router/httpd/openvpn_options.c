@@ -12,8 +12,8 @@
 #include <shutils.h>
 #include <bcmnvram.h>
 #include "httpd.h"
-#include "openvpn_options.h"
-#include "openvpn_config.h"
+#include <openvpn_options.h>
+#include <openvpn_config.h>
 
 struct buffer
 alloc_buf (size_t size)
@@ -338,7 +338,7 @@ void
 add_custom(int unit, char *p[])
 {
 	char nv[32];
-	char *custom;
+	char custom[2048];
 	char *param = NULL;
 	char *final_custom = NULL;
 	int i = 0, size = 0, sizeParam = 0;
@@ -366,23 +366,21 @@ add_custom(int unit, char *p[])
 		i++;
 	}
 
-	snprintf(nv, sizeof(nv), "vpn_client%d_custom", unit);
-	custom = nvram_safe_get(nv);
-	if(custom) {
-		final_custom = calloc(strlen(custom) + strlen(param) + 2, sizeof(char));
-		sizeParam = (strlen(custom) + strlen(param) + 2)*sizeof(char);
-		if(final_custom) {
-			if(*custom) {
-				strlcat(final_custom, custom, sizeParam);
-				strlcat(final_custom, "\n", sizeParam);
-			}
-			strlcat(final_custom, param, sizeParam);
-			nvram_set(nv, final_custom);
-			free(final_custom);
+	get_ovpn_custom(OVPN_TYPE_CLIENT, unit, custom, sizeof (custom));
+
+	sizeParam = (strlen(custom) + strlen(param) + 2)*sizeof(char);
+	final_custom = calloc(strlen(custom) + strlen(param) + 2, sizeof(char));
+
+	if(final_custom) {
+		if(*custom) {
+			strlcat(final_custom, custom, sizeParam);
+			strlcat(final_custom, "\n", sizeParam);
 		}
+		strlcat(final_custom, param, sizeParam);
+
+		set_ovpn_custom(OVPN_TYPE_CLIENT, unit, final_custom);
+		free(final_custom);
 	}
-	else
-		nvram_set(nv, param);
 
 	free(param);
 }

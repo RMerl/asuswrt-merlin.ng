@@ -119,6 +119,7 @@ var hmacarray = [
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
 
+
 function initial(){
 	var current_server_igncrt = "<% nvram_get("vpn_server_igncrt"); %>";
 	var currentcipher = "<% nvram_get("vpn_server_cipher"); %>";
@@ -182,6 +183,7 @@ function initial(){
 	set_FAQ_link("faq_iPhone", "1004471", "OpenVPN");
 	set_FAQ_link("faq_android", "1004466", "OpenVPN");
 
+	document.getElementById("vpn_server_custom_x").value = window.atob(document.form.vpn_server_custom2.value);
 	updateVpnServerClientAccess();
 }
 
@@ -321,6 +323,8 @@ function applyRule(){
 		var vpnSubnet = document.form.vpn_server_sn;
 		var pool_start = '<% nvram_get("dhcp_start"); %>';
 		var pool_subnet = pool_start.split(".")[0]+"."+pool_start.split(".")[1]+"."+pool_start.split(".")[2]+".";
+
+		document.form.vpn_server_custom2.value = window.btoa(document.getElementById("vpn_server_custom_x").value);
 
 		if(document.form.vpn_server_if.value == 'tun'){ 	
 			if(vpnSubnet.value == ""){
@@ -1305,6 +1309,7 @@ function updateVpnServerClientAccess() {
 <input type="hidden" name="vpn_serverx_dns" value="<% nvram_get("vpn_serverx_dns"); %>">
 <input type="hidden" name="vpn_server_ccd_val" value="">
 <input type="hidden" name="vpn_server_tls_keysize" value="<% nvram_get("vpn_server_tls_keysize"); %>">
+<input type="hidden" name="vpn_server_custom2" value="<% nvram_get("vpn_server_custom2"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>		
@@ -1781,7 +1786,7 @@ function updateVpnServerClientAccess() {
 
 											<tr>
 												<td>
-													<textarea rows="8" class="textarea_ssh_table" style="width:99%;" name="vpn_server_custom" cols="55" maxlength="15000"><% nvram_clean_get("vpn_server_custom"); %></textarea>
+													<textarea rows="8" class="textarea_ssh_table" style="width:99%;" id="vpn_server_custom_x" cols="55" maxlength="2047"></textarea>
 												</td>
 											</tr>
 										</table>

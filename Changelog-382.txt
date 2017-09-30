@@ -25,7 +25,8 @@ Asuswrt-Merlin 382 Changelog
    OpenVPN code, so we can retain our existing features, and
    continue to further develop the OpenVPN support.  This means
    that a lot of the OpeNVPN code had to be rewritten or modified
-   to work within the new 382 codebase.
+   to work within the new 382 codebase.  The new code is under
+   a GPL licence.
 
 
    This changelog will focus on changes that happened between

@@ -38,6 +38,7 @@ p{
 var ctf_dis = "<% nvram_get("ctf_disable"); %>";
 var ctf_dis_force = "<% nvram_get("ctf_disable_force"); %>";
 var etherstate = "<% sysinfo("ethernet"); %>";
+var rtkswitch = <% sysinfo("ethernet.rtk"); %>;
 var odmpid = "<% nvram_get("odmpid");%>";
 var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
 
@@ -269,7 +270,6 @@ function show_etherstate(){
 	if (based_modelid == "RT-AC88U")
 	{
 		document.getElementById("rtk_warning").style.display="";
-		var rtkswitch = <% sysinfo("ethernet.rtk"); %>;
 
 		for (var i = 0; i < rtkswitch.length; i++) {
 			line = rtkswitch[i];

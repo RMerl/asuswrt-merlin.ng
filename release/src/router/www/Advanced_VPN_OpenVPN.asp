@@ -183,7 +183,7 @@ function initial(){
 	set_FAQ_link("faq_iPhone", "1004471", "OpenVPN");
 	set_FAQ_link("faq_android", "1004466", "OpenVPN");
 
-	document.getElementById("vpn_server_custom_x").value = window.atob(document.form.vpn_server_custom2.value);
+	document.getElementById("vpn_server_custom_x").value = Base64.decode(document.form.vpn_server_custom2.value);
 	updateVpnServerClientAccess();
 }
 
@@ -322,9 +322,9 @@ function applyRule(){
 		var pool_start = '<% nvram_get("dhcp_start"); %>';
 		var pool_subnet = pool_start.split(".")[0]+"."+pool_start.split(".")[1]+"."+pool_start.split(".")[2]+".";
 
-		document.form.vpn_server_custom2.value = window.btoa(document.getElementById("vpn_server_custom_x").value);
+		document.form.vpn_server_custom2.value = Base64.encode(document.getElementById("vpn_server_custom_x").value);
 
-		if(document.form.vpn_server_if.value == 'tun'){ 	
+		if(document.form.vpn_server_if.value == 'tun'){
 			if(vpnSubnet.value == ""){
 				alert("<#JS_fieldblank#>");
 				vpnSubnet.focus();

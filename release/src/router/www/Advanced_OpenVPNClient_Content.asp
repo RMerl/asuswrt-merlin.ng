@@ -278,7 +278,7 @@ function initial()
 	document.form.vpn_client_rgw.value = policy_ori;
 	update_visibility();
 
-	document.getElementById("vpn_client_custom_x").value = window.atob(document.form.vpn_client_custom2.value);
+	document.getElementById("vpn_client_custom_x").value = Base64.decode(document.form.vpn_client_custom2.value);
 
 	setTimeout("getConnStatus()", 1000);
 }
@@ -595,7 +595,7 @@ function applyRule(manual_switch){
 	    (client_state == 0) && (manual_switch == 0))
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
 
-	document.form.vpn_client_custom2.value = window.btoa(document.getElementById("vpn_client_custom_x").value);
+	document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
 
 	document.form.submit();
 }

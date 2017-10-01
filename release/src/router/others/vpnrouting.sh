@@ -10,7 +10,7 @@ fi
 my_logger(){
 	if [ "$VPN_LOGGING" -gt "3" ]
 	then
-		logger -t "openvpn-routing" "$1"
+		/usr/bin/logger -t "openvpn-routing" "$1"
 	fi
 }
 
@@ -80,8 +80,8 @@ purge_client_list(){
 run_custom_script(){
 	if [ -f /jffs/scripts/openvpn-event ]
 	then
-		logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $PARAM)"
-		sh /jffs/scripts/openvpn-event $PARAM
+		/usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $PARAM)"
+		/bin/sh /jffs/scripts/openvpn-event $PARAM
 	fi
 }
 
@@ -188,7 +188,7 @@ then
 	exit 0
 fi
 
-logger -t "openvpn-routing" "Configuring policy rules for client $VPN_UNIT"
+/usr/bin/logger -t "openvpn-routing" "Configuring policy rules for client $VPN_UNIT"
 
 if [ $script_type == "route-pre-down" ]
 then
@@ -196,7 +196,7 @@ then
 
 	if [ $VPN_FORCE == "1" -a $VPN_REDIR -ge "2" ]
 	then
-		logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
+		/usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
 		ip route change prohibit default table $VPN_TBL
 		create_client_list
 	else
@@ -233,14 +233,14 @@ then
 	then
 		if [ "$VPN_FORCE" == "1" ]
 		then
-			logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
+			/usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
 		fi
 		if [ "$route_net_gateway" != "" ]
 		then
 			ip route del default table $VPN_TBL
 			ip route add default via $route_vpn_gateway table $VPN_TBL
 		else
-			logger -t "openvpn-routing" "WARNING: no VPN gateway provided, routing might not work properly!"
+			/usr/bin/logger -t "openvpn-routing" "WARNING: no VPN gateway provided, routing might not work properly!"
 		fi
 	fi
 

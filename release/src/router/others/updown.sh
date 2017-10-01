@@ -28,11 +28,11 @@ create_client_list(){
 			TARGET_ROUTE=$(echo $ENTRY | cut -d ">" -f 4)
 			if [ "$TARGET_ROUTE" = "VPN" ]
 			then
-				echo iptables -t nat -A DNSVPN$instance -s $VPN_IP -j DNAT --to-destination $server >> $dnsscript
-				logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
+				echo /usr/sbin/iptables -t nat -A DNSVPN$instance -s $VPN_IP -j DNAT --to-destination $server >> $dnsscript
+				/usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
 			else
-				echo iptables -t nat -I DNSVPN$instance -s $VPN_IP -j RETURN >> $dnsscript
-				logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
+				echo /usr/sbin/iptables -t nat -I DNSVPN$instance -s $VPN_IP -j RETURN >> $dnsscript
+				/usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
 			fi
 		fi
 	done
@@ -46,7 +46,8 @@ if [ -f $resolvfile ]; then rm $resolvfile; fileexists=1; fi
 
 if [ $script_type == 'up' ]
 then
-	echo iptables -t nat -N DNSVPN$instance >> $dnsscript
+	echo "#!/bin/sh" >> $dnsscript
+	echo /usr/sbin/iptables -t nat -N DNSVPN$instance >> $dnsscript
 
 	if [ $instance != 0 -a $(nvram get vpn_client$(echo $instance)_rgw) -ge 2 -a $(nvram get vpn_client$(echo $instance)_adns) == 3 ]
 	then
@@ -73,8 +74,8 @@ then
 
 	if [ $setdns == 1 ]
 	then
-		echo iptables -t nat -A PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
-		echo iptables -t nat -A PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
+		echo /usr/sbin/iptables -t nat -A PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
+		echo /usr/sbin/iptables -t nat -A PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
 	fi
 fi
 
@@ -92,13 +93,13 @@ then
 	if [ $script_type == 'up' ] ; then
 		if [ -f $dnsscript ]
 		then
-			sh $dnsscript
+			/bin/sh $dnsscript
 		fi
-		service updateresolv
+		/sbin/service updateresolv
 	elif [ $script_type == 'down' ]; then
 		rm $dnsscript
-		service updateresolv # also restarts or reloads dnsmasq as necessary
-#		service restart_dnsmasq
+		/sbin/service updateresolv # also restarts or reloads dnsmasq as necessary
+#		/sbin/service restart_dnsmasq
 	fi
 fi
 
@@ -107,8 +108,9 @@ rmdir /etc/openvpn
 
 if [ -f /jffs/scripts/openvpn-event ]
 then
-	logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
-	sh /jffs/scripts/openvpn-event $*
+	/usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
+	/bin/sh /jffs/scripts/openvpn-event $*
 fi
 
 exit 0
+

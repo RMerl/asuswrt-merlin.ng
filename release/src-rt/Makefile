@@ -60,7 +60,7 @@ export SRC_ROOT := $(SRCBASE)/../../src
 else
 export SRC_ROOT := $(SRCBASE)/../src
 endif
-export BUSYBOX := busybox-1.17.4
+export BUSYBOX := busybox
 export BUSYBOX_DIR := $(SRCBASE)/router/$(BUSYBOX)
 endif
 export SRCBASEDIR := $(shell pwd | sed 's/.*release\///g')

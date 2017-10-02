@@ -326,7 +326,7 @@ define platformKernelConfig
 				mkdir -p $(SRCBASE)/../dhd/src/dhd/linux ; \
 				cp $(SRCBASE)/router/wl_arm_7114/prebuilt/$(BUILD_NAME)/dhd.o $(SRCBASE)/../dhd/src/dhd/linux ; \
                                 mkdir -p $(SRCBASE)/../dhd24/src/dhd/linux ; \
-                                cp $(SRCBASE)/router/wl_arm_7114/prebuilt/dhd24.o $(SRCBASE)/../dhd24/src/dhd/linux ; \
+                                cp $(SRCBASE)/router/wl_arm_7114/prebuilt/$(BUILD_NAME)/dhd24.o $(SRCBASE)/../dhd24/src/dhd/linux ; \
 			fi; \
 			if [ -d $(SRCBASE)/router/et_arm_7114/prebuilt ]; then \
 				mkdir -p $(SRCBASE)/et/linux ; \

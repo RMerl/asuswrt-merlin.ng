@@ -52,8 +52,8 @@ endif
 
 ifeq ($(wildcard $(SRCBASE)/router/bwdpi_source/asus_sql/*.c),)
 all:
-	-cp -f prebuild$(BCMEX)$(EXHND)/bwdpi_sqlite bwdpi_sqlite
-	-cp -f prebuild$(BCMEX)$(EXHND)/libbwdpi_sql.so libbwdpi_sql.so
+	-cp -f prebuild$(BCMEX)$(EX7)/bwdpi_sqlite bwdpi_sqlite
+	-cp -f prebuild$(BCMEX)$(EX7)/libbwdpi_sql.so libbwdpi_sql.so
 else
 all: bwdpi_sqlite libbwdpi_sql.so
 endif

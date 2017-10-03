@@ -119,11 +119,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
   struct cname *a, *candidate;
   unsigned int wclen;
   
-  /* Clear buffer beyond request to avoid risk of
-     information disclosure. */
-  memset(((char *)header) + qlen, 0, 
-	 (limit - ((char *)header)) - qlen);
-  
   if (ntohs(header->qdcount) == 0 || OPCODE(header) != QUERY )
     return 0;
 

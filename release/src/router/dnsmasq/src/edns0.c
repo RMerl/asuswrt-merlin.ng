@@ -144,7 +144,7 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
 	  GETSHORT(len, p);
 	  
 	  /* malformed option, delete the whole OPT RR and start again. */
-	  if (i + len > rdlen)
+	  if (i + 4 + len > rdlen)
 	    {
 	      rdlen = 0;
 	      is_last = 0;
@@ -159,7 +159,7 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
 	      /* delete option if we're to replace it. */
 	      p -= 4;
 	      rdlen -= len + 4;
-	      memcpy(p, p+len+4, rdlen - i);
+	      memmove(p, p+len+4, rdlen - i);
 	      PUTSHORT(rdlen, lenp);
 	      lenp -= 2;
 	    }
@@ -192,7 +192,15 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
 	  !(p = skip_section(p, 
 			     ntohs(header->ancount) + ntohs(header->nscount) + ntohs(header->arcount), 
 			     header, plen)))
+      {
+	free(buff);
 	return plen;
+      }
+      if (p + 11 > limit)
+      {
+        free(buff);
+        return plen; /* Too big */
+      }
       *p++ = 0; /* empty name */
       PUTSHORT(T_OPT, p);
       PUTSHORT(udp_sz, p); /* max packet length, 512 if not given in EDNS0 header */
@@ -204,11 +212,19 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
       /* Copy back any options */
       if (buff)
 	{
+          if (p + rdlen > limit)
+          {
+            free(buff);
+            return plen; /* Too big */
+          }
 	  memcpy(p, buff, rdlen);
 	  free(buff);
 	  p += rdlen;
 	}
-      header->arcount = htons(ntohs(header->arcount) + 1);
+      
+      /* Only bump arcount if RR is going to fit */ 
+      if (((ssize_t)optlen) <= (limit - (p + 4)))
+	header->arcount = htons(ntohs(header->arcount) + 1);
     }
   
   if (((ssize_t)optlen) > (limit - (p + 4)))
@@ -217,8 +233,12 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
   /* Add new option */
   if (optno != 0 && replace != 2)
     {
+      if (p + 4 > limit)
+       return plen; /* Too big */
       PUTSHORT(optno, p);
       PUTSHORT(optlen, p);
+      if (p + optlen > limit)
+       return plen; /* Too big */
       memcpy(p, opt, optlen);
       p += optlen;  
       PUTSHORT(p - datap, lenp);

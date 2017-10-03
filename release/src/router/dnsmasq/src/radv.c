@@ -198,6 +198,9 @@ void icmp6_packet(time_t now)
       /* look for link-layer address option for logging */
       if (sz >= 16 && packet[8] == ICMP6_OPT_SOURCE_MAC && (packet[9] * 8) + 8 <= sz)
 	{
+	  if ((packet[9] * 8 - 2) * 3 - 1 >= MAXDNAME) {
+	    return;
+	  }
 	  print_mac(daemon->namebuff, &packet[10], (packet[9] * 8) - 2);
 	  mac = daemon->namebuff;
 	}

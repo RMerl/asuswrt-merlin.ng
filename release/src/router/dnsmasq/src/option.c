@@ -1415,7 +1415,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 		    }
 		  
 		  p = newp;
-		  end = do_rfc1035_name(p + len, dom);
+		  end = do_rfc1035_name(p + len, dom, NULL);
 		  *end++ = 0;
 		  len = end - p;
 		  free(dom);

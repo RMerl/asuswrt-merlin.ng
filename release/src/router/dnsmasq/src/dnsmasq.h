@@ -16,6 +16,12 @@
 
 #define COPYRIGHT "Copyright (c) 2000-2017 Simon Kelley"
 
+/* We do defines that influence behavior of stdio.h, so complain
+   if included too early. */
+#ifdef _STDIO_H
+#  error "Header file stdio.h included too early!"
+#endif 
+
 #ifndef NO_LARGEFILE
 /* Ensure we can use files >2GB (log files may grow this big) */
 #  define _LARGEFILE_SOURCE 1
@@ -1179,7 +1185,7 @@ u32 rand32(void);
 u64 rand64(void);
 int legal_hostname(char *name);
 char *canonicalise(char *in, int *nomem);
-unsigned char *do_rfc1035_name(unsigned char *p, char *sval);
+unsigned char *do_rfc1035_name(unsigned char *p, char *sval, char *limit);
 void *safe_malloc(size_t size);
 void safe_pipe(int *fd, int read_noblock);
 void *whine_malloc(size_t size);

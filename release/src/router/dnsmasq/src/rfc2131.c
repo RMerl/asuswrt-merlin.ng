@@ -157,7 +157,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	  for (offset = 0; offset < (len - 5); offset += elen + 5)
 	    {
 	      elen = option_uint(opt, offset + 4 , 1);
-	      if (option_uint(opt, offset, 4) == BRDBAND_FORUM_IANA)
+	      if (option_uint(opt, offset, 4) == BRDBAND_FORUM_IANA && offset + elen + 5 <= len)
 		{
 		  unsigned char *x = option_ptr(opt, offset + 5);
 		  unsigned char *y = option_ptr(opt, offset + elen + 5);
@@ -2452,10 +2452,10 @@ static void do_options(struct dhcp_context *context,
 
 	      if (fqdn_flags & 0x04)
 		{
-		  p = do_rfc1035_name(p, hostname);
+		  p = do_rfc1035_name(p, hostname, NULL);
 		  if (domain)
 		    {
-		      p = do_rfc1035_name(p, domain);
+		      p = do_rfc1035_name(p, domain, NULL);
 		      *p++ = 0;
 		    }
 		}

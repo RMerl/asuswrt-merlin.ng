@@ -17,7 +17,73 @@ version 2.78
 	--strict-order active. Thanks to Hans Dedecker
 	for the patch
 
-	
+	Fix regression in 2.77, ironically added as a security
+	improvement, which resulted in a crash when a DNS
+	query exceeded 512 bytes (or the EDNS0 packet size,
+	if different.) Thanks to Christian Kujau, Arne Woerner
+	Juan Manuel Fernandez and Kevin Darbyshire-Bryant for
+	chasing this one down.  CVE-2017-13704 applies.
+
+	Fix heap overflow in DNS code. This is a potentially serious
+	security hole. It allows an attacker who can make DNS
+	requests to dnsmasq, and who controls the contents of
+	a domain, which is thereby queried, to overflow
+	(by 2 bytes) a heap buffer and either crash, or
+	even take control of, dnsmasq.
+	CVE-2017-14491 applies.
+	Credit to Felix Wilhelm, Fermin J. Serna, Gabriel Campana
+	Kevin Hamacher and Ron Bowes of the Google Security Team for
+	finding this.
+
+	Fix heap overflow in IPv6 router advertisement code.
+	This is a potentially serious security hole, as a
+	crafted RA request can overflow a buffer and crash or
+	control dnsmasq. Attacker must be on the local network.
+	CVE-2017-14492 applies.
+        Credit to Felix Wilhelm, Fermin J. Serna, Gabriel Campana
+	and Kevin Hamacher of the Google Security Team for
+	finding this.
+
+	Fix stack overflow in DHCPv6 code. An attacker who can send
+	a DHCPv6 request to dnsmasq can overflow the stack frame and
+	crash or control dnsmasq.
+	CVE-2017-14493 applies.
+	Credit to Felix Wilhelm, Fermin J. Serna, Gabriel Campana
+	Kevin Hamacher and Ron Bowes of the Google Security Team for
+	finding this.
+
+	Fix information leak in DHCPv6. A crafted DHCPv6 packet can
+	cause dnsmasq to forward memory from outside the packet
+	buffer to a DHCPv6 server when acting as a relay.
+	CVE-2017-14494 applies.
+	Credit to Felix Wilhelm, Fermin J. Serna, Gabriel Campana
+	Kevin Hamacher and Ron Bowes of the Google Security Team for
+	finding this.
+
+	Fix DoS in DNS. Invalid boundary checks in the
+	add_pseudoheader function allows a memcpy call with negative
+	size An attacker which can send malicious DNS queries
+	to dnsmasq can trigger a DoS remotely.
+	dnsmasq is vulnerable only if one of the following option is
+	specified: --add-mac, --add-cpe-id or --add-subnet.
+	CVE-2017-14496 applies.
+	Credit to Felix Wilhelm, Fermin J. Serna, Gabriel Campana
+	Kevin Hamacher and Ron Bowes of the Google Security Team for
+	finding this.
+
+	Fix out-of-memory Dos vulnerability. An attacker which can
+	send malicious DNS queries to dnsmasq can trigger memory
+	allocations in the add_pseudoheader function
+	The allocated memory is never freed which leads to a DoS
+	through memory exhaustion. dnsmasq is vulnerable only
+	if one of the following option is specified:
+	--add-mac, --add-cpe-id or --add-subnet.
+	CVE-2017-14495 applies.
+	Credit to Felix Wilhelm, Fermin J. Serna, Gabriel Campana
+	Kevin Hamacher and Ron Bowes of the Google Security Team for
+	finding this.
+
+
 version 2.77
 	Generate an error when configured with a CNAME loop,
 	rather than a crash. Thanks to George Metz for

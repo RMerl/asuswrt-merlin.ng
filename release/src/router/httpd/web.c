@@ -2650,10 +2650,12 @@ int nvram_check(char *name, char *value, struct nvram_tuple *t, char *output)
 		set_enc_nvram(name, value, output);
 		ret=2;
 	}
+#ifdef HND_ROUTER	// GPL hack
 #elif defined(RTCONFIG_HTTPS)
 	else if(!strcmp(name, "PM_SMTP_AUTH_PASS")){
 		pwenc(value, output);
 	}
+#endif
 #endif
 	return ret;
 }
@@ -21471,7 +21473,9 @@ struct ej_handler ej_handlers[] = {
 	{ "get_wifi_probe_status", ej_get_wifi_probe_status},
 	{ "get_encrypt_wifi_result", ej_get_encrypt_wifi_result},
 	{ "get_lan_hwaddr", ej_get_lan_hwaddr},
+#ifdef HND_ROUTER	// GPL hack
 	{ "get_ui_support", ej_get_ui_support},
+#endif
 	{ NULL, NULL }
 };
 

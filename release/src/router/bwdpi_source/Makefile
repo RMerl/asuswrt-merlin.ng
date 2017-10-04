@@ -1,6 +1,6 @@
 include ../common.mak
 
-ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild$(BCMEX)$(EXHND)/*),)
+ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild$(BCMEX)$(EX7)/*),)
 pre_build:
 ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp include/tdts/sysdeps/ipq806x-tmcfg.h include/tdts/tmcfg.h -f                     # ipq806x
@@ -94,7 +94,7 @@ asus_sql_build:
 
 all: pre_build asus_build asus_sql_build
 
-ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild$(BCMEX)$(EXHND)/*),)
+ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild$(BCMEX)$(EX7)/*),)
 install: all
 	# asus function here
 	@cd asus/ && $(MAKE) install
@@ -161,7 +161,7 @@ install:
 	@cd asus_sql/ && $(MAKE) install
 	# [INSTALL] prebuild into RC_INDEP
 	-@mkdir RC_INDEP
-	-@cp -f prebuild$(BCMEX)$(EXHND)/* RC_INDEP/
+	-@cp -f prebuild$(BCMEX)$(EX7)/* RC_INDEP/
 ifeq ($(HND_ROUTER),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
@@ -180,7 +180,7 @@ ifeq ($(HND_ROUTER),y)
 endif
 endif
 
-ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild$(BCMEX)$(EXHND)/*),)
+ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild$(BCMEX)$(EX7)/*),)
 clean:
 	# asus function here
 	@cd asus && $(MAKE) clean

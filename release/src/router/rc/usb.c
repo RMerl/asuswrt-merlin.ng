@@ -5304,7 +5304,7 @@ void start_nfsd(void)
 		eval("/usr/sbin/portmap");
 	eval("/usr/sbin/statd");
 
-#ifdef HND_ROUTER
+#ifndef HND_ROUTER
 	if (nvram_match("nfsd_enable_v2", "1")) {
 		eval("/usr/sbin/nfsd");
 		eval("/usr/sbin/mountd");

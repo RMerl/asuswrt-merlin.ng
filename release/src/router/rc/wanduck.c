@@ -216,7 +216,7 @@ int update_wan_leds(int wan_unit)
 #ifdef RTCONFIG_WPS_ALLLED_BTN
 	if (nvram_match("AllLED", "1"))
 #endif
-		if (nvram_get_int("led_disable"))
+		if (!nvram_get_int("led_disable"))
 			update_wan_led_and_wanred_led(wan_unit);
 
 #else	/* !RTCONFIG_WANRED_LED */
@@ -4169,7 +4169,8 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 		else if(conn_changed_state[current_wan_unit] == D2C || conn_changed_state[current_wan_unit] == CONNED){
 			if(rule_setup && !isFirstUse){
 #if defined(RTCONFIG_WPS_ALLLED_BTN)
-				if(nvram_match("AllLED", "1"))
+				if(nvram_match("AllLED", "1")
+				   && !nvram_get_int("led_disable"))
 					led_control(LED_WAN, LED_ON);
 				else
 					led_control(LED_WAN, LED_OFF);

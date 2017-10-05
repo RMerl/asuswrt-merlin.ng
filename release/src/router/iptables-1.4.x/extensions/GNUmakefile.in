@@ -52,6 +52,8 @@ ifneq ($(HND_ROUTER),y)
 pfx_build_mod := $(filter-out DC, ${pfx_build_mod})
 pfx_build_mod := $(filter-out layer7, ${pfx_build_mod})
 pfx_build_mod := $(filter-out SKIPLOG, ${pfx_build_mod})
+else
+pf4_build_mod := $(filter-out account, ${pf4_build_mod})
 endif
 pf4_build_mod := $(filter-out webmon, ${pf4_build_mod})
 pf6_build_mod := $(filter-out webmon, ${pf6_build_mod})

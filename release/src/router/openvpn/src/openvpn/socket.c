@@ -496,7 +496,7 @@ openvpn_getaddrinfo(unsigned int flags,
                 goto done;
             }
 
-            openvpn_sleep(fail_wait_interval);
+            management_sleep(fail_wait_interval);
         }
 
         ASSERT(res);
@@ -1193,7 +1193,7 @@ socket_listen_accept(socket_descriptor_t sd,
 
         if (status <= 0)
         {
-            openvpn_sleep(1);
+            management_sleep(1);
             continue;
         }
 
@@ -1228,7 +1228,7 @@ socket_listen_accept(socket_descriptor_t sd,
                 break;
             }
         }
-        openvpn_sleep(1);
+        management_sleep(1);
     }
 
     if (!nowait && openvpn_close_socket(sd))
@@ -1297,11 +1297,9 @@ socket_bind(socket_descriptor_t sd,
     }
     if (bind(sd, cur->ai_addr, cur->ai_addrlen))
     {
-        const int errnum = openvpn_errno();
-        msg(M_FATAL, "%s: Socket bind failed on local address %s: %s",
+        msg(M_FATAL | M_ERRNO, "%s: Socket bind failed on local address %s",
             prefix,
-            print_sockaddr_ex(local->ai_addr, ":", PS_SHOW_PORT, &gc),
-            strerror_ts(errnum, &gc));
+            print_sockaddr_ex(local->ai_addr, ":", PS_SHOW_PORT, &gc));
     }
     gc_free(&gc);
 }
@@ -1376,7 +1374,7 @@ openvpn_connect(socket_descriptor_t sd,
 #endif
                     break;
                 }
-                openvpn_sleep(1);
+                management_sleep(1);
                 continue;
             }
 
@@ -1433,7 +1431,7 @@ set_actual_address(struct link_socket_actual *actual, struct addrinfo *ai)
 
 }
 
-void
+static void
 socket_connect(socket_descriptor_t *sd,
                const struct sockaddr *dest,
                const int connect_timeout,
@@ -1475,10 +1473,8 @@ socket_connect(socket_descriptor_t *sd,
     if (status)
     {
 
-        msg(D_LINK_ERRORS,
-            "TCP: connect to %s failed: %s",
-            print_sockaddr(dest, &gc),
-            strerror_ts(status, &gc));
+        msg(D_LINK_ERRORS, "TCP: connect to %s failed: %s",
+            print_sockaddr(dest, &gc), strerror(status));
 
         openvpn_close_socket(*sd);
         *sd = SOCKET_UNDEFINED;
@@ -1790,6 +1786,8 @@ link_socket_init_phase1(struct link_socket *sock,
         ASSERT(sock->info.proto == PROTO_TCP_SERVER);
         ASSERT(!sock->inetd);
         sock->sd = accept_from->sd;
+        /* inherit (possibly guessed) info AF from parent context */
+        sock->info.af = accept_from->info.af;
     }
 
     /* are we running in HTTP proxy mode? */
@@ -3888,12 +3886,11 @@ socket_bind_unix(socket_descriptor_t sd,
 
     if (bind(sd, (struct sockaddr *) local, sizeof(struct sockaddr_un)))
     {
-        const int errnum = openvpn_errno();
-        msg(M_FATAL, "%s: Socket bind[%d] failed on unix domain socket %s: %s",
+        msg(M_FATAL | M_ERRNO,
+            "%s: Socket bind[%d] failed on unix domain socket %s",
             prefix,
             (int)sd,
-            sockaddr_unix_name(local, "NULL"),
-            strerror_ts(errnum, &gc));
+            sockaddr_unix_name(local, "NULL"));
     }
 
 #ifdef HAVE_UMASK

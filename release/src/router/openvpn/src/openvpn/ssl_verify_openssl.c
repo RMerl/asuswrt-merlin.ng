@@ -129,8 +129,7 @@ extract_x509_extension(X509 *cert, char *fieldname, char *out, int size)
     if (!x509_username_field_ext_supported(fieldname))
     {
         msg(D_TLS_ERRORS,
-            "ERROR: --x509-alt-username field 'ext:%s' not supported",
-            fieldname);
+            "ERROR: --x509-username-field 'ext:%s' not supported", fieldname);
         return false;
     }
 
@@ -203,8 +202,8 @@ extract_x509_field_ssl(X509_NAME *x509, const char *field_name, char *out,
 {
     int lastpos = -1;
     int tmp = -1;
-    X509_NAME_ENTRY *x509ne = 0;
-    ASN1_STRING *asn1 = 0;
+    X509_NAME_ENTRY *x509ne = NULL;
+    ASN1_STRING *asn1 = NULL;
     unsigned char *buf = NULL;
     ASN1_OBJECT *field_name_obj = OBJ_txt2obj(field_name, 0);
 

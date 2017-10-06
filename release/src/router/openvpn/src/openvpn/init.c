@@ -95,6 +95,94 @@ context_clear_all_except_first_time(struct context *c)
 }
 
 /*
+ * Pass tunnel endpoint and MTU parms to a user-supplied script.
+ * Used to execute the up/down script/plugins.
+ */
+static void
+run_up_down(const char *command,
+            const struct plugin_list *plugins,
+            int plugin_type,
+            const char *arg,
+#ifdef _WIN32
+            DWORD adapter_index,
+#endif
+            const char *dev_type,
+            int tun_mtu,
+            int link_mtu,
+            const char *ifconfig_local,
+            const char *ifconfig_remote,
+            const char *context,
+            const char *signal_text,
+            const char *script_type,
+            struct env_set *es)
+{
+    struct gc_arena gc = gc_new();
+
+    if (signal_text)
+    {
+        setenv_str(es, "signal", signal_text);
+    }
+    setenv_str(es, "script_context", context);
+    setenv_int(es, "tun_mtu", tun_mtu);
+    setenv_int(es, "link_mtu", link_mtu);
+    setenv_str(es, "dev", arg);
+    if (dev_type)
+    {
+        setenv_str(es, "dev_type", dev_type);
+    }
+#ifdef _WIN32
+    setenv_int(es, "dev_idx", adapter_index);
+#endif
+
+    if (!ifconfig_local)
+    {
+        ifconfig_local = "";
+    }
+    if (!ifconfig_remote)
+    {
+        ifconfig_remote = "";
+    }
+    if (!context)
+    {
+        context = "";
+    }
+
+    if (plugin_defined(plugins, plugin_type))
+    {
+        struct argv argv = argv_new();
+        ASSERT(arg);
+        argv_printf(&argv,
+                    "%s %d %d %s %s %s",
+                    arg,
+                    tun_mtu, link_mtu,
+                    ifconfig_local, ifconfig_remote,
+                    context);
+
+        if (plugin_call(plugins, plugin_type, &argv, NULL, es) != OPENVPN_PLUGIN_FUNC_SUCCESS)
+        {
+            msg(M_FATAL, "ERROR: up/down plugin call failed");
+        }
+
+        argv_reset(&argv);
+    }
+
+    if (command)
+    {
+        struct argv argv = argv_new();
+        ASSERT(arg);
+        setenv_str(es, "script_type", script_type);
+        argv_parse_cmd(&argv, command);
+        argv_printf_cat(&argv, "%s %d %d %s %s %s", arg, tun_mtu, link_mtu,
+                        ifconfig_local, ifconfig_remote, context);
+        argv_msg(M_INFO, &argv);
+        openvpn_run_script(&argv, es, S_FATAL, "--up/--down");
+        argv_reset(&argv);
+    }
+
+    gc_free(&gc);
+}
+
+/*
  * Should be called after options->ce is modified at the top
  * of a SIGUSR1 restart.
  */
@@ -151,7 +239,7 @@ management_callback_proxy_cmd(void *arg, const char **p)
         else if (streq(p[1], "SOCKS"))
         {
             ce->socks_proxy_server = string_alloc(p[2], gc);
-            ce->socks_proxy_port = p[3];
+            ce->socks_proxy_port = string_alloc(p[3], gc);
             ret = true;
         }
     }
@@ -611,6 +699,7 @@ init_port_share(struct context *c)
 
 #endif /* if PORT_SHARE */
 
+
 bool
 init_static(void)
 {
@@ -620,8 +709,20 @@ init_static(void)
     crypto_init_dmalloc();
 #endif
 
-    init_random_seed();         /* init random() function, only used as
-                                 * source for weak random numbers */
+
+    /*
+     * Initialize random number seed.  random() is only used
+     * when "weak" random numbers are acceptable.
+     * SSL library routines are always used when cryptographically
+     * strong random numbers are required.
+     */
+    struct timeval tv;
+    if (!gettimeofday(&tv, NULL))
+    {
+        const unsigned int seed = (unsigned int) tv.tv_sec ^ tv.tv_usec;
+        srandom(seed);
+    }
+
     error_reset();              /* initialize error.c */
     reset_check_status();       /* initialize status check code in socket.c */
 
@@ -1907,7 +2008,7 @@ do_close_tun(struct context *c, bool force)
 }
 
 void
-tun_abort()
+tun_abort(void)
 {
     struct context *c = static_context;
     if (c)
@@ -1972,7 +2073,7 @@ do_up(struct context *c, bool pulled_options, unsigned int option_types_found)
                 /* if so, close tun, delete routes, then reinitialize tun and add routes */
                 msg(M_INFO, "NOTE: Pulled options changed on restart, will need to close and reopen TUN/TAP device.");
                 do_close_tun(c, true);
-                openvpn_sleep(1);
+                management_sleep(1);
                 c->c2.did_open_tun = do_open_tun(c);
                 update_time();
             }
@@ -2266,7 +2367,7 @@ socket_restart_pause(struct context *c)
     if (sec)
     {
         msg(D_RESTART, "Restart pause, %d second(s)", sec);
-        openvpn_sleep(sec);
+        management_sleep(sec);
     }
 }
 

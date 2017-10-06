@@ -485,7 +485,7 @@ multi_instance_string(const struct multi_instance *mi, bool null, struct gc_aren
     }
 }
 
-void
+static void
 generate_prefix(struct multi_instance *mi)
 {
     struct gc_arena gc = gc_new();
@@ -2355,7 +2355,7 @@ multi_process_post(struct multi_context *m, struct multi_instance *mi, const uns
             }
             else
             {
-                msg(M_NONFATAL, "MULTI: inotify_add_watch error: %s", strerror(errno));
+                msg(M_NONFATAL | M_ERRNO, "MULTI: inotify_add_watch error");
             }
         }
 #endif
@@ -2967,7 +2967,7 @@ gremlin_flood_clients(struct multi_context *m)
 }
 #endif /* ifdef ENABLE_DEBUG */
 
-bool
+static bool
 stale_route_check_trigger(struct multi_context *m)
 {
     struct timeval null;

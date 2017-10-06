@@ -347,7 +347,7 @@ tls_init_control_channel_frame_parameters(const struct frame *data_channel_frame
 }
 
 void
-init_ssl_lib()
+init_ssl_lib(void)
 {
     tls_init_lib();
 
@@ -355,7 +355,7 @@ init_ssl_lib()
 }
 
 void
-free_ssl_lib()
+free_ssl_lib(void)
 {
     crypto_uninit_lib();
     prng_uninit();
@@ -616,6 +616,11 @@ init_ssl(const struct options *options, struct tls_root_ctx *new_ctx)
         tls_ctx_client_new(new_ctx);
     }
 
+    /* Allowable ciphers */
+    /* Since @SECLEVEL also influces loading of certificates, set the
+     * cipher restrictions before loading certificates */
+    tls_ctx_restrict_ciphers(new_ctx, options->cipher_list);
+
     tls_ctx_set_options(new_ctx, options->ssl_flags);
 
     if (options->pkcs12_file)
@@ -707,9 +712,6 @@ init_ssl(const struct options *options, struct tls_root_ctx *new_ctx)
     {
         tls_ctx_load_ecdh_params(new_ctx, options->ecdh_curve);
     }
-
-    /* Allowable ciphers */
-    tls_ctx_restrict_ciphers(new_ctx, options->cipher_list);
 
 #ifdef ENABLE_CRYPTO_MBEDTLS
     /* Personalise the random by mixing in the certificate */
@@ -1532,7 +1534,7 @@ read_control_auth(struct buffer *buf,
     }
     else if (ctx->mode == TLS_WRAP_CRYPT)
     {
-        struct buffer tmp = alloc_buf(buf_forward_capacity_total(buf));
+        struct buffer tmp = alloc_buf_gc(buf_forward_capacity_total(buf), &gc);
         if (!tls_crypt_unwrap(buf, &tmp, &ctx->opt))
         {
             msg(D_TLS_ERRORS, "TLS Error: tls-crypt unwrapping failed from %s",
@@ -1541,7 +1543,7 @@ read_control_auth(struct buffer *buf,
         }
         ASSERT(buf_init(buf, buf->offset));
         ASSERT(buf_copy(buf, &tmp));
-        free_buf(&tmp);
+        buf_clear(&tmp);
     }
 
     if (ctx->mode == TLS_WRAP_NONE || ctx->mode == TLS_WRAP_AUTH)
@@ -1605,7 +1607,7 @@ key_source2_print(const struct key_source2 *k)
  * @param out           Output buffer
  * @param olen          Length of the output buffer
  */
-void
+static void
 tls1_P_hash(const md_kt_t *md_kt,
             const uint8_t *sec,
             int sec_len,
@@ -1838,20 +1840,8 @@ generate_key_expansion(struct key_ctx_bi *key,
     }
 
     /* Initialize OpenSSL key contexts */
-
-    ASSERT(server == true || server == false);
-
-    init_key_ctx(&key->encrypt,
-                 &key2.keys[(int)server],
-                 key_type,
-                 OPENVPN_OP_ENCRYPT,
-                 "Data Channel Encrypt");
-
-    init_key_ctx(&key->decrypt,
-                 &key2.keys[1-(int)server],
-                 key_type,
-                 OPENVPN_OP_DECRYPT,
-                 "Data Channel Decrypt");
+    int key_direction = server ? KEY_DIRECTION_INVERSE : KEY_DIRECTION_NORMAL;
+    init_key_ctx_bi(key, &key2, key_direction, key_type, "Data Channel");
 
     /* Initialize implicit IVs */
     key_ctx_update_implicit_iv(&key->encrypt, key2.keys[(int)server].hmac,
@@ -1859,7 +1849,6 @@ generate_key_expansion(struct key_ctx_bi *key,
     key_ctx_update_implicit_iv(&key->decrypt, key2.keys[1-(int)server].hmac,
                                MAX_HMAC_KEY_LENGTH);
 
-    key->initialized = true;
     ret = true;
 
 exit:
@@ -1976,6 +1965,11 @@ tls_session_update_crypto_params(struct tls_session *session,
     {
         msg(D_HANDSHAKE, "Data Channel: using negotiated cipher '%s'",
             options->ciphername);
+        if (options->keysize)
+        {
+            msg(D_HANDSHAKE, "NCP: overriding user-set keysize with default");
+            options->keysize = 0;
+        }
     }
 
     init_key_type(&session->opt->key_type, options->ciphername,
@@ -2186,16 +2180,6 @@ read_string_alloc(struct buffer *buf)
     }
     str[len-1] = '\0';
     return str;
-}
-
-void
-read_string_discard(struct buffer *buf)
-{
-    char *data = read_string_alloc(buf);
-    if (data)
-    {
-        free(data);
-    }
 }
 
 /*

@@ -323,6 +323,10 @@ void init_key_ctx(struct key_ctx *ctx, struct key *key,
 
 void free_key_ctx(struct key_ctx *ctx);
 
+void init_key_ctx_bi(struct key_ctx_bi *ctx, const struct key2 *key2,
+                     int key_direction, const struct key_type *kt,
+		     const char *name);
+
 void free_key_ctx_bi(struct key_ctx_bi *ctx);
 
 
@@ -459,7 +463,7 @@ void prng_init(const char *md_name, const int nonce_secret_len_parm);
  */
 void prng_bytes(uint8_t *output, int len);
 
-void prng_uninit();
+void prng_uninit(void);
 
 void test_crypto(struct crypto_options *co, struct frame *f);
 

@@ -30,6 +30,10 @@
 # the client "up" script will run fine, but the "down" script
 # will require the use of the OpenVPN "down-root" plugin
 # which is in the plugins/ directory of the OpenVPN source tree
+# The config example above would have to be changed to:
+#   client
+#   up /etc/openvpn/client.up
+#   plugin openvpn-plugin-down-root.so "/etc/openvpn/client.down"
 
 # A horrid work around, from a security perspective,
 # is to run OpenVPN as root. THIS IS NOT RECOMMENDED. You have
@@ -37,7 +41,7 @@
 PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin
 
 if type resolvconf >/dev/null 2>&1; then
-  resolvconf -d "${1}" -f
+  resolvconf -d "${dev}" -f
 elif [ -e /etc/resolv.conf.ovpnsave ] ; then
   # cp + rm rather than mv in case it's a symlink
   cp /etc/resolv.conf.ovpnsave /etc/resolv.conf

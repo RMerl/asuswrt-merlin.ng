@@ -895,6 +895,26 @@ init_key_ctx(struct key_ctx *ctx, struct key *key,
 }
 
 void
+init_key_ctx_bi(struct key_ctx_bi *ctx, const struct key2 *key2,
+                int key_direction, const struct key_type *kt, const char *name)
+{
+    char log_prefix[128] = { 0 };
+    struct key_direction_state kds;
+
+    key_direction_state_init(&kds, key_direction);
+
+    openvpn_snprintf(log_prefix, sizeof(log_prefix), "Outgoing %s", name);
+    init_key_ctx(&ctx->encrypt, &key2->keys[kds.out_key], kt,
+                 OPENVPN_OP_ENCRYPT, log_prefix);
+
+    openvpn_snprintf(log_prefix, sizeof(log_prefix), "Incoming %s", name);
+    init_key_ctx(&ctx->decrypt, &key2->keys[kds.in_key], kt,
+                 OPENVPN_OP_DECRYPT, log_prefix);
+
+    ctx->initialized = true;
+}
+
+void
 free_key_ctx(struct key_ctx *ctx)
 {
     if (ctx->cipher)
@@ -1184,7 +1204,6 @@ crypto_read_openvpn_key(const struct key_type *key_type,
 {
     struct key2 key2;
     struct key_direction_state kds;
-    char log_prefix[128] = { 0 };
 
     if (key_inline)
     {
@@ -1209,13 +1228,7 @@ crypto_read_openvpn_key(const struct key_type *key_type,
     must_have_n_keys(key_file, opt_name, &key2, kds.need_keys);
 
     /* initialize key in both directions */
-    openvpn_snprintf(log_prefix, sizeof(log_prefix), "Outgoing %s", key_name);
-    init_key_ctx(&ctx->encrypt, &key2.keys[kds.out_key], key_type,
-                 OPENVPN_OP_ENCRYPT, log_prefix);
-    openvpn_snprintf(log_prefix, sizeof(log_prefix), "Incoming %s", key_name);
-    init_key_ctx(&ctx->decrypt, &key2.keys[kds.in_key], key_type,
-                 OPENVPN_OP_DECRYPT, log_prefix);
-
+    init_key_ctx_bi(ctx, &key2, key_direction, key_type, key_name);
     secure_memzero(&key2, sizeof(key2));
 }
 
@@ -1284,7 +1297,7 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
         fd = platform_open(file, O_RDONLY, 0);
         if (fd == -1)
         {
-            msg(M_ERR, "Cannot open file key file '%s'", file);
+            msg(M_ERR, "Cannot open key file '%s'", file);
         }
         size = read(fd, in.data, in.capacity);
         if (size < 0)
@@ -1676,6 +1689,11 @@ read_key(struct key *key, const struct key_type *kt, struct buffer *buf)
         goto read_err;
     }
 
+    if (cipher_length != kt->cipher_length || hmac_length != kt->hmac_length)
+    {
+        goto key_len_err;
+    }
+
     if (!buf_read(buf, key->cipher, cipher_length))
     {
         goto read_err;
@@ -1683,11 +1701,6 @@ read_key(struct key *key, const struct key_type *kt, struct buffer *buf)
     if (!buf_read(buf, key->hmac, hmac_length))
     {
         goto read_err;
-    }
-
-    if (cipher_length != kt->cipher_length || hmac_length != kt->hmac_length)
-    {
-        goto key_len_err;
     }
 
     return 1;
@@ -1716,7 +1729,7 @@ static int nonce_secret_len = 0; /* GLOBAL */
 
 /* Reset the nonce value, also done periodically to refresh entropy */
 static void
-prng_reset_nonce()
+prng_reset_nonce(void)
 {
     const int size = md_kt_size(nonce_md) + nonce_secret_len;
 #if 1 /* Must be 1 for real usage */
@@ -1795,7 +1808,7 @@ prng_bytes(uint8_t *output, int len)
 
 /* an analogue to the random() function, but use prng_bytes */
 long int
-get_random()
+get_random(void)
 {
     long int l;
     prng_bytes((unsigned char *)&l, sizeof(l));

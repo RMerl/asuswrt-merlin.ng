@@ -172,7 +172,7 @@ send_control(const socket_descriptor_t fd, int code)
 }
 
 static int
-cmsg_size()
+cmsg_size(void)
 {
     return CMSG_SPACE(sizeof(socket_descriptor_t));
 }
@@ -922,7 +922,7 @@ port_share_open(const char *host,
         openvpn_close_socket(fd[1]);
 
         exit(0);
-        return 0; /* NOTREACHED */
+        return NULL; /* NOTREACHED */
     }
 
 error:

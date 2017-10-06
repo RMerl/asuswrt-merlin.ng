@@ -266,7 +266,7 @@ void msg_forked(void);
 
 void open_syslog(const char *pgmname, bool stdio_to_null);
 
-void close_syslog();
+void close_syslog(void);
 
 /* log file output */
 void redirect_stdout_stderr(const char *file, bool append);

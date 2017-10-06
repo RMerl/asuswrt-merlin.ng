@@ -99,13 +99,6 @@ AC_ARG_ENABLE(
 )
 
 AC_ARG_ENABLE(
-	[multi],
-	[AS_HELP_STRING([--disable-multi], [disable client/server support (--mode server + client mode) @<:@default=yes@:>@])],
-	,
-	[enable_multi="yes"]
-)
-
-AC_ARG_ENABLE(
 	[server],
 	[AS_HELP_STRING([--disable-server], [disable server support only (but retain client support) @<:@default=yes@:>@])],
 	,
@@ -237,7 +230,7 @@ AC_ARG_ENABLE(
 
 AC_ARG_ENABLE(
 	[werror],
-	[AS_HELP_STRING([--enable-werror], [promote compiler warnings to errors, will cause builds to fail is the compiler issues warnings (debugging option) @<:@default=no@:>@])],
+	[AS_HELP_STRING([--enable-werror], [promote compiler warnings to errors, will cause builds to fail if the compiler issues warnings (debugging option) @<:@default=no@:>@])],
 	,
 	[enable_werror="no"]
 )
@@ -662,7 +655,7 @@ AC_FUNC_FORK
 
 AC_CHECK_FUNCS([ \
 	daemon chroot getpwnam setuid nice system getpid dup dup2 \
-	getpass strerror syslog openlog mlockall getgrnam setgid \
+	getpass syslog openlog mlockall getgrnam setgid \
 	setgroups stat flock readv writev time gettimeofday \
 	ctime memset vsnprintf strdup \
 	setsid chdir putenv getpeername unlink \
@@ -899,12 +892,9 @@ if test "${enable_crypto}" = "yes" -a "${with_crypto_library}" = "openssl"; then
 
 	AC_CHECK_FUNCS(
 		[ \
-			EVP_CIPHER_CTX_new \
-			EVP_CIPHER_CTX_free \
 			HMAC_CTX_new \
 			HMAC_CTX_free \
 			HMAC_CTX_reset \
-			HMAC_CTX_init \
 			EVP_MD_CTX_new \
 			EVP_MD_CTX_free \
 			EVP_MD_CTX_reset \
@@ -917,6 +907,7 @@ if test "${enable_crypto}" = "yes" -a "${with_crypto_library}" = "openssl"; then
 			EVP_PKEY_id \
 			EVP_PKEY_get0_RSA \
 			EVP_PKEY_get0_DSA \
+			EVP_PKEY_get0_EC_KEY \
 			RSA_set_flags \
 			RSA_bits \
 			RSA_get0_key \
@@ -932,6 +923,7 @@ if test "${enable_crypto}" = "yes" -a "${with_crypto_library}" = "openssl"; then
 			RSA_meth_set_init \
 			RSA_meth_set_finish \
 			RSA_meth_set0_app_data \
+			EC_GROUP_order_bits
 		]
 	)
 
@@ -1076,37 +1068,67 @@ dnl
 AC_ARG_VAR([LZ4_CFLAGS], [C compiler flags for lz4])
 AC_ARG_VAR([LZ4_LIBS], [linker flags for lz4])
 if test "$enable_lz4" = "yes" && test "$enable_comp_stub" = "no"; then
-    AC_CHECKING([for LZ4 Library and Header files])
-    havelz4lib=1
-
-    # if LZ4_LIBS is set, we assume it will work, otherwise test
-    if test -z "${LZ4_LIBS}"; then
-	AC_CHECK_LIB(lz4, LZ4_compress,
-	    [ LZ4_LIBS="-llz4" ],
-	    [
-	        AC_MSG_RESULT([LZ4 library not found.])
-	        havelz4lib=0
-	    ])
+    if test -z "${LZ4_CFLAGS}" -a -z "${LZ4_LIBS}"; then
+	# if the user did not explicitly specify flags, try to autodetect
+	PKG_CHECK_MODULES([LZ4],
+			  [liblz4 >= 1.7.1],
+			  [have_lz4="yes"],
+			  [] # If this fails, we will do another test next
+	)
     fi
 
     saved_CFLAGS="${CFLAGS}"
+    saved_LIBS="${LIBS}"
     CFLAGS="${CFLAGS} ${LZ4_CFLAGS}"
-    AC_CHECK_HEADERS(lz4.h,
-       ,
-       [
-	   AC_MSG_RESULT([LZ4 headers not found.])
-	   havelz4lib=0
-       ])
+    LIBS="${LIBS} ${LZ4_LIBS}"
 
-    if test $havelz4lib = 0 ; then
-	AC_MSG_RESULT([LZ4 library or header not found, using version in src/compat/compat-lz4.*])
+    # If pkgconfig check failed or LZ4_CFLAGS/LZ4_LIBS env vars
+    # are used, check the version directly in the LZ4 include file
+    if test "${have_lz4}" != "yes"; then
+	AC_CHECK_HEADERS([lz4.h],
+			 [have_lz4h="yes"],
+			 [])
+
+	if test "${have_lz4h}" = "yes" ; then
+	    AC_MSG_CHECKING([additionally if system LZ4 version >= 1.7.1])
+	    AC_COMPILE_IFELSE(
+		[AC_LANG_PROGRAM([[
+#include <lz4.h>
+				 ]],
+				 [[
+/* Version encoding: MMNNPP (Major miNor Patch) - see lz4.h for details */
+#if LZ4_VERSION_NUMBER < 10701L
+#error LZ4 is too old
+#endif
+				 ]]
+				)],
+		[
+		    AC_MSG_RESULT([ok])
+		    have_lz4="yes"
+		],
+		[AC_MSG_RESULT([system LZ4 library is too old])]
+	    )
+	fi
+    fi
+
+    # if LZ4_LIBS is set, we assume it will work, otherwise test
+    if test -z "${LZ4_LIBS}"; then
+	AC_CHECK_LIB([lz4],
+		     [LZ4_compress],
+		     [LZ4_LIBS="-llz4"],
+		     [have_lz4="no"])
+    fi
+
+    if test "${have_lz4}" != "yes" ; then
+	AC_MSG_RESULT([		usuable LZ4 library or header not found, using version in src/compat/compat-lz4.*])
 	AC_DEFINE([NEED_COMPAT_LZ4], [1], [use copy of LZ4 source in compat/])
 	LZ4_LIBS=""
     fi
     OPTIONAL_LZ4_CFLAGS="${LZ4_CFLAGS}"
     OPTIONAL_LZ4_LIBS="${LZ4_LIBS}"
-    AC_DEFINE(ENABLE_LZ4, 1, [Enable LZ4 compression library])
+    AC_DEFINE(ENABLE_LZ4, [1], [Enable LZ4 compression library])
     CFLAGS="${saved_CFLAGS}"
+    LIBS="${saved_LIBS}"
 fi
 
 
@@ -1178,7 +1200,6 @@ if test "${enable_x509_alt_username}" = "yes"; then
 fi
 
 test "${ac_cv_header_sys_uio_h}" = "yes" && AC_DEFINE([HAVE_IOVEC], [1], [struct iovec needed for IPv6 support])
-test "${enable_multi}" = "yes" && AC_DEFINE([ENABLE_CLIENT_SERVER], [1], [Enable client/server capability])
 test "${enable_server}" = "no" && AC_DEFINE([ENABLE_CLIENT_ONLY], [1], [Enable client capability only])
 test "${enable_management}" = "yes" && AC_DEFINE([ENABLE_MANAGEMENT], [1], [Enable management server capability])
 test "${enable_multihome}" = "yes" && AC_DEFINE([ENABLE_MULTIHOME], [1], [Enable multi-homed UDP server capability])

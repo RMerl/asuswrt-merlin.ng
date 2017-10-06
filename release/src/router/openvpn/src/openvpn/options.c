@@ -415,8 +415,9 @@ static const char usage_message[] =
     "                  client instance.\n"
     "--ifconfig-pool start-IP end-IP [netmask] : Set aside a pool of subnets\n"
     "                  to be dynamically allocated to connecting clients.\n"
-    "--ifconfig-pool-linear : Use individual addresses rather than /30 subnets\n"
-    "                  in tun mode.  Not compatible with Windows clients.\n"
+    "--ifconfig-pool-linear : (DEPRECATED) Use individual addresses rather \n"
+    "                  than /30 subnets\n in tun mode.  Not compatible with\n"
+    "                  Windows clients.\n"
     "--ifconfig-pool-persist file [seconds] : Persist/unpersist ifconfig-pool\n"
     "                  data to file, at seconds intervals (default=600).\n"
     "                  If seconds=0, file will be treated as read-only.\n"
@@ -434,7 +435,7 @@ static const char usage_message[] =
     "                  Only valid in a client-specific config file.\n"
     "--disable       : Client is disabled.\n"
     "                  Only valid in a client-specific config file.\n"
-    "--client-cert-not-required : Don't require client certificate, client\n"
+    "--client-cert-not-required : (DEPRECATED) Don't require client certificate, client\n"
     "                  will authenticate using username/password.\n"
     "--verify-client-cert [none|optional|require] : perform no, optional or\n"
     "                  mandatory client certificate verification.\n"
@@ -455,7 +456,7 @@ static const char usage_message[] =
     "                  with those of the server will be disconnected.\n"
     "--auth-user-pass-optional : Allow connections by clients that don't\n"
     "                  specify a username/password.\n"
-    "--no-name-remapping : Allow Common Name and X509 Subject to include\n"
+    "--no-name-remapping : (DEPRECATED) Allow Common Name and X509 Subject to include\n"
     "                      any printable character.\n"
     "--client-to-client : Internally route client-to-client traffic.\n"
     "--duplicate-cn  : Allow multiple clients with the same common name to\n"
@@ -539,13 +540,13 @@ static const char usage_message[] =
     "--prng alg [nsl] : For PRNG, use digest algorithm alg, and\n"
     "                   nonce_secret_len=nsl.  Set alg=none to disable PRNG.\n"
 #ifdef HAVE_EVP_CIPHER_CTX_SET_KEY_LENGTH
-    "--keysize n     : Size of cipher key in bits (optional).\n"
+    "--keysize n     : (DEPRECATED) Size of cipher key in bits (optional).\n"
     "                  If unspecified, defaults to cipher-specific default.\n"
 #endif
 #ifndef ENABLE_CRYPTO_MBEDTLS
     "--engine [name] : Enable OpenSSL hardware crypto engine functionality.\n"
 #endif
-    "--no-replay     : Disable replay protection.\n"
+    "--no-replay     : (DEPRECATED) Disable replay protection.\n"
     "--mute-replay-warnings : Silence the output of replay warnings to log file.\n"
     "--replay-window n [t]  : Use a replay protection sliding window of size n\n"
     "                         and a time window of t seconds.\n"
@@ -564,7 +565,7 @@ static const char usage_message[] =
     "(These options are meaningful only for TLS-mode)\n"
     "--tls-server    : Enable TLS and assume server role during TLS handshake.\n"
     "--tls-client    : Enable TLS and assume client role during TLS handshake.\n"
-    "--key-method m  : Data channel key exchange method.  m should be a method\n"
+    "--key-method m  : (DEPRECATED) Data channel key exchange method.  m should be a method\n"
     "                  number, such as 1 (default), 2, etc.\n"
     "--ca file       : Certificate authority file in .pem format containing\n"
     "                  root certificate.\n"
@@ -961,7 +962,7 @@ pull_filter_type_name(int type)
 
 #endif
 
-void
+static void
 setenv_connection_entry(struct env_set *es,
                         const struct connection_entry *e,
                         const int i)
@@ -1441,7 +1442,7 @@ rol_check_alloc(struct options *options)
     }
 }
 
-void
+static void
 rol6_check_alloc(struct options *options)
 {
     if (!options->routes_ipv6)
@@ -1872,7 +1873,7 @@ parse_http_proxy_override(const char *server,
     }
 }
 
-void
+static void
 options_postprocess_http_proxy_override(struct options *o)
 {
     const struct connection_list *l = o->connection_list;
@@ -1989,7 +1990,7 @@ alloc_pull_filter(struct options *o, const int msglevel)
     return f;
 }
 
-void
+static void
 connection_entry_load_re(struct connection_entry *ce, const struct remote_entry *re)
 {
     if (re->remote)
@@ -2493,6 +2494,16 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
     if (!options->use_iv)
     {
         msg(M_WARN, "WARNING: --no-iv is deprecated and will be removed in 2.5");
+    }
+
+    if (options->keysize)
+    {
+        msg(M_WARN, "WARNING: --keysize is DEPRECATED and will be removed in OpenVPN 2.6");
+    }
+
+    if (!options->replay)
+    {
+        msg(M_WARN, "WARNING: --no-replay is DEPRECATED and will be removed in OpenVPN 2.5");
     }
 
     /*
@@ -3016,6 +3027,13 @@ options_postprocess_mutate(struct options *o)
             o->dh_file = NULL;
         }
     }
+    else if (o->dh_file)
+    {
+        /* DH file is only meaningful in a tls-server context. */
+        msg(M_WARN, "WARNING: Ignoring option 'dh' in tls-client mode, please only "
+                    "include this in your server configuration");
+        o->dh_file = NULL;
+    }
 
     /* cipher negotiation (NCP) currently assumes --pull or --mode server */
     if (o->ncp_enabled
@@ -3148,8 +3166,7 @@ check_file_access(const int type, const char *file, const int mode, const char *
     /* Scream if an error is found */
     if (errcode > 0)
     {
-        msg(M_NOPREFIX|M_OPTERR, "%s fails with '%s': %s",
-            opt, file, strerror(errno));
+        msg(M_NOPREFIX | M_OPTERR | M_ERRNO, "%s fails with '%s'", opt, file);
     }
 
     /* Return true if an error occured */
@@ -6198,7 +6215,7 @@ add_option(struct options *options,
     else if (streq(p[0], "max-routes") && !p[2])
     {
         msg(M_WARN, "DEPRECATED OPTION: --max-routes option ignored."
-            "The number of routes is unlimited as of version 2.4. "
+            "The number of routes is unlimited as of OpenVPN 2.4. "
             "This option will be removed in a future version, "
             "please remove it from your configuration.");
     }
@@ -6582,6 +6599,7 @@ add_option(struct options *options,
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
         options->topology = TOP_P2P;
+        msg(M_WARN, "DEPRECATED OPTION: --ifconfig-pool-linear, use --topology p2p instead");
     }
     else if (streq(p[0], "ifconfig-ipv6-pool") && p[1] && !p[2])
     {
@@ -7028,7 +7046,7 @@ add_option(struct options *options,
         VERIFY_PERMISSION(OPT_P_GENERAL);
         if (streq(p[1], "env"))
         {
-            msg(M_INFO, "NOTE: --win-sys env is default from OpenVPN v2.3.	 "
+            msg(M_INFO, "NOTE: --win-sys env is default from OpenVPN 2.3.	 "
                 "This entry will now be ignored.  "
                 "Please remove this entry from your configuration file.");
         }
@@ -7874,7 +7892,7 @@ add_option(struct options *options,
             msg(msglevel, "you cannot use --compat-names with --verify-x509-name");
             goto err;
         }
-        msg(M_WARN, "DEPRECATED OPTION: --compat-names, please update your configuration. This will be removed in OpenVPN v2.5.");
+        msg(M_WARN, "DEPRECATED OPTION: --compat-names, please update your configuration. This will be removed in OpenVPN 2.5.");
         compat_flag(COMPAT_FLAG_SET | COMPAT_NAMES);
 #if P2MP_SERVER
         if (p[1] && streq(p[1], "no-remapping"))
@@ -7890,7 +7908,7 @@ add_option(struct options *options,
             msg(msglevel, "you cannot use --no-name-remapping with --verify-x509-name");
             goto err;
         }
-        msg(M_WARN, "DEPRECATED OPTION: --no-name-remapping, please update your configuration. This will be removed in OpenVPN v2.5.");
+        msg(M_WARN, "DEPRECATED OPTION: --no-name-remapping, please update your configuration. This will be removed in OpenVPN 2.5.");
         compat_flag(COMPAT_FLAG_SET | COMPAT_NAMES);
         compat_flag(COMPAT_FLAG_SET | COMPAT_NO_NAME_REMAPPING);
 #endif

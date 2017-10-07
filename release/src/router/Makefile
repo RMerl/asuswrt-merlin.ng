@@ -4872,7 +4872,7 @@ ifeq ($(HND_ROUTER),y)
 		$(CONFIGURE) --enable-shared --bindir=/usr/sbin --libdir=/usr/lib \
 			--disable-debug --enable-management --disable-small \
 			--disable-selinux --disable-socks \
-			--enable-plugin-auth-pam \
+			--enable-plugin-auth-pam --enable-iproute2 \
 			ac_cv_lib_resolv_gethostbyname=no \
 	)
 	#cd openvpn; sed -i 's/build_libtool_libs=no/build_libtool_libs=yes/g' libtool;
@@ -4889,7 +4889,7 @@ else
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 			--disable-debug --enable-management --disable-small \
 			--disable-selinux --disable-socks \
-			--enable-plugin-auth-pam \
+			--enable-plugin-auth-pam --enable-iproute2 \
 			ac_cv_lib_resolv_gethostbyname=no \
 	)
 endif

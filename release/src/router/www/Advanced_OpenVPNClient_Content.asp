@@ -1287,7 +1287,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr id="client_nat">
-						<th>Create NAT on tunnel<br><i>(Router must be configured manually)</i></th>
+						<th>Create NAT on tunnel</th>
 						<td>
 							<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>><#checkbox_No#>
@@ -1328,7 +1328,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th><#vpn_openvpn_PollInterval#><br><i>( <#zero_disable#> )</i></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,21);"><#vpn_openvpn_PollInterval#></a></th>
 						<td>
 							<input type="text" maxlength="4" class="input_6_table" name="vpn_client_poll" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_poll"); %>">
 						</td>

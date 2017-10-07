@@ -1135,7 +1135,6 @@ function enable_server_igncrt(flag){
 function vpnServerTlsKeysize(_obj) {
 	document.form.vpn_server_tls_keysize.value = _obj.value;
 	setRadioValue(document.form.vpn_server_tls_keysize_basic, _obj.value);
-	setRadioValue(document.form.vpn_server_tls_keysize_adv, _obj.value);
 }
 
 function update_cipher() {
@@ -1570,15 +1569,6 @@ function updateVpnServerClientAccess() {
 													<span id="Hint_fixed_tls_crypto" style="display:none;">Authorization Mode fixes on TLS</span><!--untranslated-->
 												</td>
 											</tr>
-											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,8);">RSA Encryption</a><!--untranslated--></th>
-												<td>
-													<input type="radio" name="vpn_server_tls_keysize_adv" id="vpn_server_tls_keysize_adv_0" class="input" value="0" <% nvram_match_x("", "vpn_server_tls_keysize", "0", "checked"); %> onchange="vpnServerTlsKeysize(this);">
-													<label for='vpn_server_tls_keysize_adv_0'>1024 bit<!--untranslated--></label>
-													<input type="radio" name="vpn_server_tls_keysize_adv" id="vpn_server_tls_keysize_adv_1" class="input" value="1" <% nvram_match_x("", "vpn_server_tls_keysize", "1", "checked"); %> onchange="vpnServerTlsKeysize(this);">
-													<label for='vpn_server_tls_keysize_adv_1'>2048 bit<!--untranslated--></label>
-												</td>
-											</tr>
 											<tr id="server_authhmac">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,10);">TLS control channel security<br><i>(tls-auth / tls-crypt)</i></a></th>
 												<td>
@@ -1586,7 +1576,7 @@ function updateVpnServerClientAccess() {
 														<option value="-1" <% nvram_match("vpn_server_hmac","-1","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 														<option value="2" <% nvram_match("vpn_server_hmac","2","selected"); %> >Bi-directional Auth</option>
 														<option value="0" <% nvram_match("vpn_server_hmac","0","selected"); %> >Incoming Auth (0)</option>
-														<option value="1" <% nvram_match("vpn_server_hmac","1","selected"); %> >Incoming Auth (1)</option>
+														<option value="1" <% nvram_match("vpn_server_hmac","1","selected"); %> >Outgoing Auth (1)</option>
 														<option value="3" <% nvram_match("vpn_server_hmac","3","selected"); %> >Encrypt channel</option>
 													</select>
 													<span id="tlscrypt_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
@@ -1627,7 +1617,7 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th><#vpn_openvpn_PollInterval#></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,21);"><#vpn_openvpn_PollInterval#></a></th>
 												<td>
 													<input type="text" maxlength="4" class="input_6_table" name="vpn_server_poll" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_poll"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
 													<span style="color:#FC0">(<#zero_disable#>)</span>

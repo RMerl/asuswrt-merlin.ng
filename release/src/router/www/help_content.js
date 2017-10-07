@@ -393,8 +393,8 @@ helpcontent[50] = new Array("",
 				"MiniDLNA can offer a web page showing the number of indexed media files and a list of DLNA clients.  Default address is http://router.asus.com:8200/",
 				"Wanduck sends DNS queries every few seconds to check for the WAN state.  You can disable this behaviour here.  DO NOT disable those probes if using Dual WAN, especially in failover mode.",
 				"You can redirect your Internet traffic through the tunnel.  Select between \"All\" traffic, or only traffic based on your own rules.  Strict mode will take extra steps to ensure that only routes going through the VPN tunnel get used for your tunnelled clients.",
-				"unused",
-				"unused",
+				"How to handle DNS servers provided by the VPN server.<br><br>Disabled: do not use them.<br>Relaxed: accept them, but with no particular preference.<br>Strict: use them, but tell dnsmasq to use them first.<br>Exclusive: any clients using the tunnel will only use the servers provided by the VPN server (recommended).",
+				"Regularly check that the service is working, if not then restart it.  Frequency is in minutes (max = 60, 0 = disabled)",
 				"When using a self-generated certificate, you can specify other hostnames to use in addition to the built-in ones, separated by a space",
 				"Restrict this rule to a specific source IP address");
 // Last: 50,23

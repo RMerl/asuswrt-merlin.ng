@@ -85,7 +85,7 @@ function show_ipv6clients() {
 	if (ipv6clientarray.length > 1) {
 		for (i = 0; i < ipv6clientarray.length-1; ++i) {
 			line = ipv6clientarray[i];
-			code += '<tr><td>' + line[0].tagescape() + '</td>';
+			code += '<tr><td>' + htmlEnDeCode.htmlEncode(line[0]) + '</td>';
 
 			overlib_str = "<p><#MAC_Address#>:</p>" + line[1];
 			code += '<td><span class="ClientName" onclick="oui_query_full_vendor(\'' + line[1].toUpperCase() +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ line[1].toUpperCase() +'</span></td>';

@@ -32,18 +32,6 @@ function getYMD(n) {
 	return [(((n >> 16) & 0xFF) + 1900), ((n >>> 8) & 0xFF), (n & 0xFF)];
 }
 
-String.prototype.tagescape = function() {
-	var tagsToReplace = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;'
-	};
-	return this.replace(/[&<>]/g, function(tag) {
-		return tagsToReplace[tag] || tag;
-	});
-};
-
-
 
 /**
 *

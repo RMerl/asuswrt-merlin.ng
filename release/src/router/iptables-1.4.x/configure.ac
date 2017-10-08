@@ -1,10 +1,11 @@
 
-AC_INIT([iptables], [1.4.12.2])
+AC_INIT([iptables], [1.4.14])
 
 # See libtool.info "Libtool's versioning system"
 libxtables_vcurrent=7
 libxtables_vage=0
 
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_INSTALL
@@ -57,6 +58,15 @@ AX_CHECK_LINKER_FLAGS([-Wl,--no-as-needed],
 	[libiptc_LDFLAGS2="-Wl,--no-as-needed"])
 AC_SUBST([libiptc_LDFLAGS2])
 
+AC_MSG_CHECKING([whether $LD knows -Wl,--no-undefined])
+saved_LDFLAGS="$LDFLAGS";
+LDFLAGS="-Wl,--no-undefined";
+AC_LINK_IFELSE([AC_LANG_SOURCE([int main(void) {}])],
+	[noundef_LDFLAGS="$LDFLAGS"; AC_MSG_RESULT([yes])],
+	[AC_MSG_RESULT([no])]
+)
+LDFLAGS="$saved_LDFLAGS";
+
 blacklist_modules="";
 
 AC_CHECK_HEADERS([linux/dccp.h linux/ip_vs.h linux/magic.h linux/proc_fs.h])
@@ -98,6 +108,7 @@ pkgdatadir='${datadir}/xtables';
 
 AC_SUBST([regular_CFLAGS])
 AC_SUBST([regular_CPPFLAGS])
+AC_SUBST([noundef_LDFLAGS])
 AC_SUBST([kinclude_CPPFLAGS])
 AC_SUBST([kbuilddir])
 AC_SUBST([ksourcedir])

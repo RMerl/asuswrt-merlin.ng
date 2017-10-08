@@ -1,5 +1,3 @@
-/* Javascript functions for Asuswrt-Merlin */
-
 /**
 *
 *  Base64 encode / decode
@@ -142,5 +140,3 @@ var Base64 = {
 	}
 
 }
-
-/* End of Base64 code */

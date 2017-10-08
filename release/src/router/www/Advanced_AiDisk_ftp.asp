@@ -804,6 +804,27 @@ function switchUserType(flag){
 						</div>	
 					</td>
 				</tr>										
+				<tr>
+				<th>Enable WAN access</th>
+					<td>
+						<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_wan_ftp_enable"></div>
+						<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
+							<script type="text/javascript">
+								$('#radio_wan_ftp_enable').iphoneSwitch(FTP_WAN_status,
+									function() {
+										switchWanStatus(1);
+									},
+									function() {
+										switchWanStatus(0);
+									},
+									{
+										switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
+									}
+								);
+							</script>
+						</div>
+					</td>
+				</tr>
 
 				<tr id="radio_anonymous_enable_tr" style="height: 60px;">
 				<th><#AiDisk_Anonymous_Login#></th>
@@ -852,27 +873,6 @@ function switchUserType(flag){
 								<option value="RU" <% nvram_match("ftp_lang", "RU", "selected"); %>><#ShareNode_FTPLANG_optionname4#></option>
 								<option value="CZ" <% nvram_match("ftp_lang", "CZ", "selected"); %>><#ShareNode_FTPLANG_optionname5#></option>
 						</select>
-					</td>
-				</tr>
-				<tr>
-				<th>Enable WAN access</th>
-					<td>
-						<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_wan_ftp_enable"></div>
-						<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
-							<script type="text/javascript">
-								$('#radio_wan_ftp_enable').iphoneSwitch(FTP_WAN_status,
-									function() {
-										switchWanStatus(1);
-									},
-									function() {
-										switchWanStatus(0);
-									},
-									{
-										switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
-									}
-								);
-							</script>
-						</div>
 					</td>
 				</tr>
 			</table>

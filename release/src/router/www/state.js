@@ -3887,11 +3887,11 @@ var isNewFW = function(FWVer, check_path, current_path){	//path> 0:stable, 1:bet
 				var Latest_buildno = parseInt(Latest_firmver[1]);
 				var Latest_extendno = parseInt(Latest_firmver[2].split("-g")[0].replace(/^[0-9]$/,"10$&").replace(/alpha/gi,"1").replace(/beta/gi,"5"));
 
-				current_firm = parseInt('<% nvram_get("firmver"); %>'.replace(/[.]/gi,""));
-				current_buildno = parseInt('<% nvram_get("buildno"); %>'.replace(/[.]/gi,""));
+				current_firm = parseInt('<% nvram_get("buildno"); %>'.split(".")[0].replace(/[.]/gi,""));
+				current_buildno = parseInt('<% nvram_get("buildno"); %>'.split(".")[1].replace(/[.]/gi,""));
 				current_extendno = parseInt('<% nvram_get("extendno"); %>'.split("-g")[0].replace(/^[0-9]$/,"10$&").replace(/alpha/gi,"1").replace(/beta/gi,"5"));
-				if((current_buildno < Latest_buildno) || 
-						(current_firm < Latest_firm && current_buildno == Latest_buildno) ||
+				if((current_firm < Latest_firm) ||
+						(current_buildno < Latest_buildno && current_firm == Latest_firm) ||
 						(current_extendno < Latest_extendno && current_buildno == Latest_buildno && current_firm == Latest_firm))
 				{
 					return true;

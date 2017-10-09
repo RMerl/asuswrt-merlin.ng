@@ -302,8 +302,12 @@ function detect_firmware(flag){
 						else{
 							note_display=0;
 						}
+						var new_fw_found = do_show_confirm(check_webs_state_info, document.start_update.firmware_path.value, current_firmware_path);
 
-						do_show_confirm(check_webs_state_info, document.start_update.firmware_path.value, current_firmware_path);
+						if (!new_fw_found && current_firmware_path == 1) {	// No beta? check release too
+							note_display = 0;
+							do_show_confirm(webs_state_info, 0, current_firmware_path);
+						}
 					}
 				}
 			}
@@ -316,8 +320,7 @@ function do_show_confirm(FWVer, CheckPath, CurrentPath){
 					if(isNewFW(FWVer, CheckPath, CurrentPath)){	//check_path, current_path
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').style.display="none";													
-						if(CheckPath==1){	//for beta							
-								
+						if(CheckPath==1 && FWVer.search(/alpha|beta/) != -1){	//for beta
 								confirm_asus({
          					title: "Beta Firmware Available",
          					ribbon: "ribbon-red",
@@ -366,6 +369,7 @@ function do_show_confirm(FWVer, CheckPath, CurrentPath){
          					note_display_flag: note_display
      					});
 						}     		     				
+					return 1;
 					}
 					else{
 						document.getElementById('update_scan').style.display="none";
@@ -378,6 +382,7 @@ function do_show_confirm(FWVer, CheckPath, CurrentPath){
 							document.getElementById('update_states').style.display="";
 							document.getElementById('update_states').innerHTML="<#is_latest#>";
 						}
+						return 0;
 					}
 
 }

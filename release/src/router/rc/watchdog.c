@@ -5524,7 +5524,7 @@ static void auto_firmware_check()
 				memset(revision, 0, sizeof(revision));
 				memset(build, 0, sizeof(build));
 
-				sscanf(nvram_safe_get("webs_state_info"), "%*[0-9]_%3s%2s_%15s", version, revision, build);
+				sscanf(nvram_safe_get("webs_state_info"), "%3s_%2s_%15s", version, revision, build);
 				logmessage("watchdog", "New firmware version %s.%s_%s is available.", version, revision, build);
 				run_custom_script("update-notification", NULL);
 			}

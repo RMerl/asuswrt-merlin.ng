@@ -871,22 +871,32 @@ function showConnStatus() {
 		case "1":
 			client_state = vpnc_state_t1;
 			client_errno = vpnc_errno_t1;
+			localip = vpn_client1_ip;
+			remoteip = vpn_client1_rip;
 			break;
 		case "2":
 			client_state = vpnc_state_t2;
 			client_errno = vpnc_errno_t2;
+			localip = vpn_client2_ip;
+			remoteip = vpn_client2_rip;
 			break;
 		case "3":
 			client_state = vpnc_state_t3;
 			client_errno = vpnc_errno_t3;
+			localip = vpn_client3_ip;
+			remoteip = vpn_client3_rip;
 			break;
 		case "4":
 			client_state = vpnc_state_t4;
 			client_errno = vpnc_errno_t4;
+			localip = vpn_client4_ip;
+			remoteip = vpn_client4_rip;
 			break;
 		case "5":
 			client_state = vpnc_state_t5;
 			client_errno = vpnc_errno_t5;
+			localip = vpn_client5_ip;
+			remoteip = vpn_client5_rip;
 			break;
 	}
 
@@ -896,7 +906,7 @@ function showConnStatus() {
 			setTimeout("getConnStatus()",2000);
 			break;
 		case "2":	// COnnected
-			code = "Connected";
+			code = "Connected (Local: "+ localip + " - Public: " + remoteip + ")";
 			break;
 		case "-1":
 			switch (client_errno) {

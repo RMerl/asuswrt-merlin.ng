@@ -11,14 +11,15 @@ Asuswrt-Merlin 382 Changelog
     For simplicity, the following abbreviations are used below:
        AM380 = Asuswrt-Merlin 380.xxx
        AM382 = Asuswrt-Merlin 382.xxx
-       Asus380 = Asus's previous GPL 3.0.0.4.380_xxxx
+       Asus380 = Asus's GPL 3.0.0.4.380_xxxx
        Asus382 = Asus's GPL 3.0.0.4.382_xxxx
 
-   AM382.1 is based on AM380.68_2.
+   AM382.1 is based on AM380.68_4.
 
    At this time, only the RT-AC86U is supported by AM382.  Other
    models will gradually be moved to AM382 as Asus upgrades
-   them to the new 382 code base.
+   them to the new 382 code base (and they release working GPL
+   drops for them).
 
    Also note that since Asus' OpenVPN code is now closed source
    starting with Asus382, it was decided to fork away from their
@@ -30,7 +31,7 @@ Asuswrt-Merlin 382 Changelog
 
 
    This changelog will focus on changes that happened between
-    AM380.68 and AM382.1, or between Asus382_15098 and AM382.
+    AM380.68 and AM382.1, or between Asus382_16466 and AM382.
 
    - NEW: Moved to Asus382 codebase.  Some of the most important
           changes between Asus380 and Asus382:
@@ -47,7 +48,9 @@ Asuswrt-Merlin 382 Changelog
    - NEW: Added support for inline CRLs when importing an ovpn file
    - NEW: Added support for fullcone NAT (RT-AC86U)
    - NEW: Added WiFi Radar (Broadcom's Visualization app) in the
-          Wireless section (RT-AC86U)
+          Wireless section (RT-AC86U).  You must enable data
+          collection on its Configuration page for all charts to
+          work properly.
    - NEW: Added option to disable the Asus NAT tunnel service under
           Other Settings -> Tweak.  Not quite sure what this
           partly closed source service is for, but it eats a
@@ -67,10 +70,18 @@ Asuswrt-Merlin 382 Changelog
    - CHANGED: Moved "Modify key and certs" link to its own dedicated
               row and made it a button for improved visibility
               (OpenVPN client & server pages)
-   - FIXED: Some LAN clients couldn't be added to the TOR redirected
-            client list.
+   - CHANGED: Updated OpenVPN to 2.4.4.
+   - CHANGED: The firmware version check behaviour was slightly changed.
+              The "Get Beta" checkbox will now check both the Beta
+              and the Release channels for new version availability.
+              Automatic scheduled checks will still only check
+              the Release channel.
+   - CHANGED: Layout improvements to the SNMP, Login, and
+              Operation Mode pages (patches by Alin Trăistaru)
+   - CHANGED: Report both the local IP client IP as well as the public/visible
+              IP on the OpenVPN client page once a client is connected (same info
+              that was already available on the VPN Status page).
    - REMOVED: Obsolete/exotic HMAC digests for OpenVPN servers (to
               match with Asus' own supported list)
    - REMOVED: "Custom" OpenVPN authentication mode (which probably
               nobody used or even understood).
-

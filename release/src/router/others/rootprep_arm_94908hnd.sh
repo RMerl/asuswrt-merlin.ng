@@ -11,7 +11,6 @@ mkdir -p -m 0755 cifs2
 mkdir -p -m 0755 sysroot
 mkdir -p -m 0755 var
 ln -sf tmp/opt opt
-ln -sf rom/scripts tmp/opt/scripts
 
 # tmp
 mkdir -p -m 0755 tmp

@@ -259,5 +259,6 @@ endif
 
 ifeq ($(HND_ROUTER),y)
 	mkdir -p $(INSTALLDIR)/usr/share/zoneinfo
+	mkdir -p $(INSTALLDIR)/rom/scripts
 	cp -rf zoneinfo/* $(INSTALLDIR)/usr/share/zoneinfo/
 endif

@@ -2495,7 +2495,7 @@ fsbuild:
 	-mkdir -p $(INSTALL_DIR)/lib/public
 	-mkdir -p $(INSTALL_DIR)/lib/private
 	-mkdir -p $(INSTALL_DIR)/lib/aarch64
-	-mkdir -p $(INSTALL_DIR)/opt
+	#-mkdir -p $(INSTALL_DIR)/opt
 	-mkdir -p $(INSTALL_DIR)/sbin
 	-mkdir -p $(INSTALL_DIR)/usr
 	-mkdir -p $(INSTALL_DIR)/var

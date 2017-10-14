@@ -123,8 +123,4 @@ if [ "$(nvram get jffs2_scripts)" != "1" ] ; then
   nvram commit
 fi
 
-if [ $(uname -m) == "aarch64" ] ; then
-  /usr/sbin/entware_install.sh
-else
-  wget -qO - $INST_URL | sh
-fi
+wget -qO - $INST_URL | sh

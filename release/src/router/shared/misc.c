@@ -2119,7 +2119,6 @@ int nvram_set_double(const char *key, double value)
 	return nvram_set(key, nvramstr);
 }
 
-#if 0	// Unused for now, handled by vpnrouting.sh and Javascript
 #ifdef HND_ROUTER
 /**
  *
@@ -2130,16 +2129,17 @@ char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst)
 	char nvname[64];
 	int i;
 
-	strlcpy(buffer, nvram_safe_get(key), sizeof(buffer));
+	strlcpy(buffer, nvram_safe_get(key), maxlen);
 
 	for (i=1; i <= maxinst; ++i) {
 		snprintf(nvname, sizeof (nvname), "%s%d", key, i);
-		strlcat(buffer, nvram_safe_get(key), sizeof(buffer));
+		strlcat(buffer, nvram_safe_get(nvname), maxlen);
 	}
 
 	return buffer;
 }
 
+#if 0	// Unused for now
 int nvram_split_set(const char *key, char *value, int size, int maxinst)
 {
 	char nvname[64];

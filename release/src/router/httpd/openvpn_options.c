@@ -337,7 +337,6 @@ check_inline_file_via_fp (FILE *fp, char *p[])
 void
 add_custom(int unit, char *p[])
 {
-	char nv[32];
 	char custom[2048];
 	char *param = NULL;
 	char *final_custom = NULL;

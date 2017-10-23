@@ -27,6 +27,14 @@
 <% login_state_hook(); %>
 
 var dnsfilter_rule_list = '<% nvram_get("dnsfilter_rulelist"); %>'.replace(/&#60/g, "<");
+if (isSupport("hnd")) {
+	dnsfilter_rule_list += '<% nvram_get("dnsfilter_rulelist1"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist2"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist3"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist4"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist5"); %>'.replace(/&#60/g, "<");
+}
+
 var dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 
 
@@ -174,10 +182,23 @@ function show_dnsfilter_list(){
 }
 
 function applyRule(){
-	document.form.dnsfilter_rulelist.value = dnsfilter_rule_list.replace(/&#62/g, ">") ;
+	if (isSupport("hnd"))
+		split_clientlist(dnsfilter_rule_list.replace(/&#62/g, ">"));
+	else
+		document.form.dnsfilter_rulelist.value = dnsfilter_rule_list.replace(/&#62/g, ">") ;
 
 	showLoading();
 	document.form.submit();
+}
+
+function split_clientlist(clientlist){
+	document.form.dnsfilter_rulelist.value = clientlist.substring(0,255)
+
+	document.form.dnsfilter_rulelist1.value = clientlist.substring(255,510);
+	document.form.dnsfilter_rulelist2.value = clientlist.substring(510,765);
+	document.form.dnsfilter_rulelist3.value = clientlist.substring(765,1020);
+	document.form.dnsfilter_rulelist4.value = clientlist.substring(1020,1275);
+	document.form.dnsfilter_rulelist5.value = clientlist.substring(1275);
 }
 
 function check_macaddr(obj,flag){ //control hint of input mac address
@@ -297,6 +318,11 @@ function changeRow_main(r){
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="dnsfilter_enable_x" value="<% nvram_get("dnsfilter_enable_x"); %>">
 <input type="hidden" name="dnsfilter_rulelist" value="">
+<input type="hidden" name="dnsfilter_rulelist1" value="">
+<input type="hidden" name="dnsfilter_rulelist2" value="">
+<input type="hidden" name="dnsfilter_rulelist3" value="">
+<input type="hidden" name="dnsfilter_rulelist4" value="">
+<input type="hidden" name="dnsfilter_rulelist5" value="">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>

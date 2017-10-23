@@ -109,7 +109,13 @@ void dnsfilter_settings(FILE *fp, char *lan_ip) {
 			lan_class, lan_class);
 
 		/* Protection level per client */
+
+#ifdef HND_ROUTER
+		nv = nvp = malloc(255 * 6 + 1);
+		if (nv) nvram_split_get("dnsfilter_rulelist", nv, 255 * 6 + 1, 5);
+#else
 		nv = nvp = strdup(nvram_safe_get("dnsfilter_rulelist"));
+#endif
 		while (nv && (rule = strsep(&nvp, "<")) != NULL) {
 			if (vstrsep(rule, ">", &name, &mac, &mode) != 3)
 				continue;
@@ -150,7 +156,12 @@ void dnsfilter6_settings(FILE *fp, char *lan_if, char *lan_ip) {
 		    "-A FORWARD -i %s -p tcp -m tcp --dport 53 -j DNSFILTERF\n",
 		lan_if, lan_if, lan_if, lan_if);
 
+#ifdef HND_ROUTER
+	nv = nvp = malloc(255 * 6 + 1);
+	if (nv) nvram_split_get("dnsfilter_rulelist", nv, 255 * 6 + 1, 5);
+#else
 	nv = nvp = strdup(nvram_safe_get("dnsfilter_rulelist"));
+#endif
 	while (nv && (rule = strsep(&nvp, "<")) != NULL) {
 		if (vstrsep(rule, ">", &name, &mac, &mode) != 3)
 			continue;

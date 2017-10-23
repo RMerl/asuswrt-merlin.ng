@@ -126,6 +126,8 @@ void dnsfilter_settings(FILE *fp, char *lan_ip) {
 			}
 		}
 
+		free(nv);
+
 		/* Send other queries to the default server */
 		dnsmode = nvram_get_int("dnsfilter_mode");
 		if ((dnsmode) && get_dns_filter(AF_INET, dnsmode, server)) {

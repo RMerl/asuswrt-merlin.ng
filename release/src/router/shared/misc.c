@@ -2119,6 +2119,71 @@ int nvram_set_double(const char *key, double value)
 	return nvram_set(key, nvramstr);
 }
 
+#if 0	// Unused for now, handled by vpnrouting.sh and Javascript
+#ifdef HND_ROUTER
+/**
+ *
+ * Functions that split settings accross multiple variables
+ */
+char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst)
+{
+	char nvname[64];
+	int i;
+
+	strlcpy(buffer, nvram_safe_get(key), sizeof(buffer));
+
+	for (i=1; i <= maxinst; ++i) {
+		snprintf(nvname, sizeof (nvname), "%s%d", key, i);
+		strlcat(buffer, nvram_safe_get(key), sizeof(buffer));
+	}
+
+	return buffer;
+}
+
+int nvram_split_set(const char *key, char *value, int size, int maxinst)
+{
+	char nvname[64];
+	char *piece, *ptr;
+	int valuelen, i;
+
+	piece = malloc(size + 1);
+	if (piece == NULL)
+		return -1;
+	piece[size] = '\0';
+
+	valuelen = strlen(value);
+	ptr = value;
+
+	strncpy(piece, ptr, size);
+	nvram_set(nvname, piece);
+	ptr += size;
+
+	if (valuelen <= size) {
+		free(piece);
+		return 1;
+	}
+
+	for (i=1; i <= maxinst; ++i) {
+		strncpy(piece, ptr, size);
+
+		snprintf(nvname, sizeof (nvname), "%s%d", key, i);
+		nvram_set(nvname, piece);
+
+		ptr += size;
+		if (ptr >= value + valuelen) {
+			free(piece);
+			return i;
+		}
+	}
+
+	free(piece);
+
+	return i;
+}
+
+#endif
+#endif
+
 #if defined(RTCONFIG_HTTPS)
 int nvram_get_file(const char *key, const char *fname, int max)
 {

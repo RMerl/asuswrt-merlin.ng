@@ -1196,7 +1196,7 @@ void start_ovpn_server(int serverNum)
 			   so we should not insert them in the exported client ovp file.
 			*/
 			fp = fopen("/tmp/test.crt", "w");
-			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CERT, buffer2, sizeof(buffer2)));
+			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, buffer2, sizeof(buffer2)));
 			fclose(fp);
 
 			sprintf(buffer, "/usr/sbin/openssl verify -CAfile /etc/openvpn/server%d/ca.crt /tmp/test.crt > /tmp/output.txt", serverNum);
@@ -1208,7 +1208,7 @@ void start_ovpn_server(int serverNum)
 				valid = 1;
 
 			fprintf(fp_client, "<cert>\n");
-			if ((valid == 1) && ovpn_key_exists(OVPN_TYPE_CLIENT, serverNum, OVPN_SERVER_CLIENT_CERT)) {
+			if ((valid == 1) && ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT)) {
 				fprintf(fp_client, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, buffer2, sizeof(buffer2)));
 				len = strlen(buffer2);
 				if ((len) && (buffer2[len-1] != '\n'))
@@ -1219,7 +1219,7 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp_client, "</cert>\n");
 
 			fprintf(fp_client, "<key>\n");
-			if ((valid == 1) && ovpn_key_exists(OVPN_TYPE_CLIENT, serverNum, OVPN_SERVER_CLIENT_KEY) ) {
+			if ((valid == 1) && ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_KEY) ) {
 				fprintf(fp_client, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_KEY, buffer2, sizeof(buffer2)));
 				len = strlen(buffer2);
 				if ((len) && (buffer2[len-1] != '\n'))
@@ -1266,7 +1266,7 @@ void start_ovpn_server(int serverNum)
 	nvi = nvram_pf_get_int(prefix, "hmac");
 	if ( cryptMode == SECRET || (cryptMode == TLS && nvi >= 0) )
 	{
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, serverNum, OVPN_SERVER_STATIC) )
+		if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_STATIC) )
 		{
 			sprintf(buffer, "/etc/openvpn/server%d/static.key", serverNum);
 			fp = fopen(buffer, "w");

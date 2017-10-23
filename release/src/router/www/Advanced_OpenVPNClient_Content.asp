@@ -221,6 +221,13 @@ var digestsarray = [
 
 
 var clientlist_array = '<% nvram_get("vpn_client_clientlist"); %>';
+if (isSupport("hnd")) {
+	clientlist_array += '<% nvram_get("vpn_client_clientlist1"); %>'+
+			    '<% nvram_get("vpn_client_clientlist2"); %>'+
+			    '<% nvram_get("vpn_client_clientlist3"); %>'+
+			    '<% nvram_get("vpn_client_clientlist4"); %>'+
+			    '<% nvram_get("vpn_client_clientlist5"); %>';
+}
 
 function initial()
 {
@@ -281,6 +288,10 @@ function initial()
 	document.getElementById("vpn_client_custom_x").value = Base64.decode(document.form.vpn_client_custom2.value);
 
 	setTimeout("getConnStatus()", 1000);
+
+	if (isSupport("hnd"))
+		document.getElementById("vpn_client_custom_x").maxLength = 170;	// 255 - base64 overhead
+
 }
 
 function getTLS(unit){
@@ -588,7 +599,11 @@ function applyRule(manual_switch){
 	}
 	if(tmp_value == "<"+"<#IPConnection_VSList_Norule#>" || tmp_value == "<")
 		tmp_value = "";
-	document.form.vpn_client_clientlist.value = tmp_value;
+
+	if (isSupport("hnd"))
+		split_clientlist(tmp_value);
+	else
+		document.form.vpn_client_clientlist.value = tmp_value;
 
 	if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
 	     (policy_ori != document.form.vpn_client_rgw.value)) &&
@@ -598,6 +613,16 @@ function applyRule(manual_switch){
 	document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
 
 	document.form.submit();
+}
+
+function split_clientlist(clientlist){
+	document.form.vpn_client_clientlist.value = clientlist.substring(0,255)
+
+	document.form.vpn_client_clientlist1.value = clientlist.substring(255,510);
+	document.form.vpn_client_clientlist2.value = clientlist.substring(510,765);
+	document.form.vpn_client_clientlist3.value = clientlist.substring(765,1020);
+	document.form.vpn_client_clientlist4.value = clientlist.substring(1020,1275);
+	document.form.vpn_client_clientlist5.value = clientlist.substring(1275);
 }
 
 function change_vpn_unit(val){
@@ -1079,6 +1104,11 @@ function defaultSettings() {
 <input type="hidden" name="vpn_client_if" value="<% nvram_get("vpn_client_if"); %>">
 <input type="hidden" name="vpn_client_local" value="<% nvram_get("vpn_client_local"); %>">
 <input type="hidden" name="vpn_client_clientlist" value="<% nvram_clean_get("vpn_client_clientlist"); %>">
+<input type="hidden" name="vpn_client_clientlist1" value="<% nvram_clean_get("vpn_client_clientlist1"); %>">
+<input type="hidden" name="vpn_client_clientlist2" value="<% nvram_clean_get("vpn_client_clientlist2"); %>">
+<input type="hidden" name="vpn_client_clientlist3" value="<% nvram_clean_get("vpn_client_clientlist3"); %>">
+<input type="hidden" name="vpn_client_clientlist4" value="<% nvram_clean_get("vpn_client_clientlist4"); %>">
+<input type="hidden" name="vpn_client_clientlist5" value="<% nvram_clean_get("vpn_client_clientlist5"); %>">
 <input type="hidden" name="vpn_client_custom2" value="<% nvram_get("vpn_client_custom2"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">

@@ -167,12 +167,25 @@ function applyRule(){
 		}
 		return tmp_value;
 	};
-	
 
-	document.form.vts_rulelist.value = parseArrayToNvram(vts_rulelist_array["vts_rulelist_0"]);
+	var rulelist = parseArrayToNvram(vts_rulelist_array["vts_rulelist_0"]);
+
+	if (rulelist.length > 2047) {
+		alert("Resulting list of Port Forwards is too long - remove some, or use shorter descriptions.");
+                return false;
+	}
+
+	document.form.vts_rulelist.value = rulelist;
 	if(support_dual_wan_unit_flag) {
 		document.form.vts1_rulelist.disabled = false;
-		document.form.vts1_rulelist.value = parseArrayToNvram(vts_rulelist_array["vts_rulelist_1"]);
+		rulelist = parseArrayToNvram(vts_rulelist_array["vts_rulelist_1"]);
+
+		if (rulelist.length > 2047) {
+			alert("Resulting list of Port Forwards is too long - remove some, or use shorter descriptions.");
+			return false;
+		}
+
+		document.form.vts1_rulelist.value = rulelist;
 	}
 	
 	/* 2014.04 Viz: No need to reboot for ctf enable models.

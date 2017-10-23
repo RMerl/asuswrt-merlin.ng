@@ -185,6 +185,9 @@ function initial(){
 
 	document.getElementById("vpn_server_custom_x").value = Base64.decode(document.form.vpn_server_custom2.value);
 	updateVpnServerClientAccess();
+
+	if (isSupport("hnd"))
+		document.getElementById("vpn_server_custom_x").maxLength = 170; // 255 - base64 overhead
 }
 
 var MAX_RETRY_NUM = 5;

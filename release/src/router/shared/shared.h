@@ -485,6 +485,10 @@ extern int nvram_pf_match(char *prefix, char *name, char *match);
 extern int nvram_pf_invmatch(char *prefix, char *name, char *invmatch);
 extern double nvram_get_double(const char *key);
 extern int nvram_set_double(const char *key, double value);
+#ifdef HND_ROUTER
+extern char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst);
+extern int nvram_split_set(const char *key, char *value, int size, int maxinst);
+#endif
 
 //	extern long nvram_xget_long(const char *name, long min, long max, long def);
 extern int nvram_contains_word(const char *key, const char *word);

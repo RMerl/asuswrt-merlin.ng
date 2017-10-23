@@ -113,35 +113,35 @@ init_table(){
 # Begin
 if [ "$dev" == "tun11" ]
 then
-	VPN_IP_LIST=$(nvram get vpn_client1_clientlist)
+	VPN_IP_LIST=$(nvram get vpn_client1_clientlist)$(nvram get vpn_client1_clientlist1)$(nvram get vpn_client1_clientlist2)$(nvram get vpn_client1_clientlist3)$(nvram get vpn_client1_clientlist4)$(nvram get vpn_client1_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client1_rgw)
 	VPN_FORCE=$(nvram get vpn_client1_enforce)
 	VPN_UNIT=1
 	VPN_LOGGING=$(nvram get vpn_client1_verb)
 elif [ "$dev" == "tun12" ]
 then
-	VPN_IP_LIST=$(nvram get vpn_client2_clientlist)
+	VPN_IP_LIST=$(nvram get vpn_client2_clientlist)$(nvram get vpn_client2_clientlist1)$(nvram get vpn_client2_clientlist2)$(nvram get vpn_client2_clientlist3)$(nvram get vpn_client2_clientlist4)$(nvram get vpn_client2_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client2_rgw)
 	VPN_FORCE=$(nvram get vpn_client2_enforce)
 	VPN_UNIT=2
 	VPN_LOGGING=$(nvram get vpn_client2_verb)
 elif [ "$dev" == "tun13" ]
 then
-	VPN_IP_LIST=$(nvram get vpn_client3_clientlist)
+	VPN_IP_LIST=$(nvram get vpn_client3_clientlist)$(nvram get vpn_client3_clientlist1)$(nvram get vpn_client3_clientlist2)$(nvram get vpn_client3_clientlist3)$(nvram get vpn_client3_clientlist4)$(nvram get vpn_client3_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client3_rgw)
 	VPN_FORCE=$(nvram get vpn_client3_enforce)
 	VPN_UNIT=3
 	VPN_LOGGING=$(nvram get vpn_client3_verb)
 elif [ "$dev" == "tun14" ]
 then
-	VPN_IP_LIST=$(nvram get vpn_client4_clientlist)
+	VPN_IP_LIST=$(nvram get vpn_client4_clientlist)$(nvram get vpn_client4_clientlist1)$(nvram get vpn_client4_clientlist2)$(nvram get vpn_client4_clientlist3)$(nvram get vpn_client4_clientlist4)$(nvram get vpn_client4_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client4_rgw)
 	VPN_FORCE=$(nvram get vpn_client4_enforce)
 	VPN_UNIT=4
 	VPN_LOGGING=$(nvram get vpn_client4_verb)
 elif [ "$dev" == "tun15" ]
 then
-	VPN_IP_LIST=$(nvram get vpn_client5_clientlist)
+	VPN_IP_LIST=$(nvram get vpn_client5_clientlist)$(nvram get vpn_client5_clientlist1)$(nvram get vpn_client5_clientlist2)$(nvram get vpn_client5_clientlist3)$(nvram get vpn_client5_clientlist4)$(nvram get vpn_client5_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client5_rgw)
 	VPN_FORCE=$(nvram get vpn_client5_enforce)
 	VPN_UNIT=5

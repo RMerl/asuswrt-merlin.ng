@@ -402,6 +402,11 @@ function applyRule(){
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
 			}
 		}
+		if (tmp_value.length > 2499) {
+			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
+			return false;
+		}
+
 		document.form.dhcp_staticlist.value = tmp_value;
 
 		// Only restart the whole network if needed

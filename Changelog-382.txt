@@ -81,6 +81,8 @@ Asuswrt-Merlin 382 Changelog
               public/visible IP on the OpenVPN client page once
               a client is connected (same info that was already
               available on the VPN Status page).
+   - CHANGED: Moved Disk spindown settings to the System page,
+              to match stock FW which just added this feature too.
    - REMOVED: Obsolete/exotic HMAC digests for OpenVPN servers (to
               match with Asus' own supported list)
    - REMOVED: "Custom" OpenVPN authentication mode (which probably

@@ -102,7 +102,7 @@ function show_dnsfilter_list(){
 
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
 	code +='<thead><tr><td colspan="3"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>';
-	code +='<tr><th width="65%"><#ParentalCtrl_username#></th>';
+	code +='<tr><th width="65%">Client MAC address</th>';
 	code +='<th width="20%">Filter Mode</th>';
 	code +='<th width="15%"><#list_add_delete#></th></tr>';
 
@@ -110,7 +110,7 @@ function show_dnsfilter_list(){
 	code +='<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
 	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 52px" class="clientlist_dropdown"></div></td>';
 	code +='<td style="border-bottom:2px solid #000;">'+gen_modeselect("rule_mode", "-1", "")+'</td>';
-	code +='<td style="border-bottom:2px solid #000;"><input class="url_btn" type="button" onClick="addRow_main(64)" value=""></td></tr>';
+	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(64)" value=""></td></tr>';
 
 	if(dnsfilter_rule_list_row == "")
 		code +='<tr><td style="color:#FFCC00;" colspan="3"><#IPConnection_VSList_Norule#></td>';

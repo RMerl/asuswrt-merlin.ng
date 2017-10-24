@@ -3397,12 +3397,12 @@ void start_dms(void)
 
 			fprintf(f,
 				"serial=%s\n"
-				"model_number=%s.%s\n"
+				"model_number=%s\n"
 				//add explicit uuid based on mac(serial)
 				//since some recent change has resulted in a changing uuid at boot
 				"uuid=4d696e69-444c-164e-9d41-%s\n",
 				serial,
-				rt_version, rt_serialno,
+				rt_serialno,
 				serial);
 
 			append_custom_config(MEDIA_SERVER_APP".conf",f);

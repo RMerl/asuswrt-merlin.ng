@@ -9372,7 +9372,7 @@ static void sysinit(void)
 		run_shell(1, 0);
 	}
 
-	dbg("firmware version: %s.%s_%s\n", rt_version, rt_serialno, rt_extendno);
+	dbg("firmware version: %s_%s\n", rt_serialno, rt_extendno);
 
 	nvram_set("buildno_org", nvram_safe_get("buildno"));
 	nvram_set("extendno_org", nvram_safe_get("extendno"));

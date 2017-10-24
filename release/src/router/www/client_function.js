@@ -131,6 +131,28 @@ var isJsonChanged = function(objNew, objOld){
  
  })();
 
+/* ouiDB lookup code */
+var ouiClientListArray = new Array();
+ouiClientListArray = Session.get("ouiDB");
+if(ouiClientListArray == undefined) {
+	ouiClientListArray = [];
+	//Download OUI DB
+	setTimeout(function() {
+		var ouiBDjs = document.createElement("script");
+		ouiBDjs.type = "application/javascript";
+		ouiBDjs.src = "/js/ouiDB.js";
+		window.document.body.appendChild(ouiBDjs);
+	}, 1000);
+}
+
+function updateManufacturer(_ouiDBArray) {
+	ouiClientListArray = [];
+	ouiClientListArray = _ouiDBArray;
+	Session.set("ouiDB", _ouiDBArray);
+}
+
+/* End ouiDB lookup code */
+
 var ipState = new Array();
 ipState["Static"] =  "<#BOP_ctype_title5#>";
 ipState["DHCP"] =  "<#BOP_ctype_title1#>";
@@ -2774,7 +2796,7 @@ function ajaxCallJsonp(target){
 
 function oui_query_full_vendor(mac){
 	setTimeout(function(){
-		var manufacturer_id = mac.replace(/\:/g,"").substring(0, 6);
+		var manufacturer_id = mac.replace(/\:/g,"").substring(0, 6).toUpperCase();
 
 		if(ouiClientListArray[manufacturer_id] != undefined) {
 			if (typeof clientList[mac] != "undefined")
@@ -2782,7 +2804,11 @@ function oui_query_full_vendor(mac){
 			else
 				var overlibStrTmp = "<p><#MAC_Address#>:</p>" + mac.toUpperCase();
 			overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#>:</p>";
-			overlibStrTmp += ouiClientListArray[manufacturer_id];  //transformManufacturerName(ouiClientListArray[manufacturer_id]);
+			overlibStrTmp += ouiClientListArray[manufacturer_id];
+//			if(clientList[mac].vendor != "") {
+//				overlibStrTmp += "<p style='margin-top:5px'>Vendor:</p>";
+//				overlibStrTmp += clientList[mac].vendor;
+//			}
 			return overlib(overlibStrTmp);
 		} else {
 			return oui_query_web(mac);
@@ -2809,6 +2835,10 @@ function oui_query_web(mac){
 						var retData = response.split("pre")[1].split("(base 16)")[1].replace("PROVINCE OF CHINA", "R.O.C").split("</");
 						overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#>:</p>";
 						overlibStrTmp += retData[0].slice(0,retData[0].indexOf("\n"))
+//						if(clientList[mac].vendor != "") {
+//							overlibStrTmp += "<p style='margin-top:5px'>Vendor:</p>";
+//							overlibStrTmp += clientList[mac].vendor;
+//						}
 					}
 				}
                                 return overlib(overlibStrTmp);

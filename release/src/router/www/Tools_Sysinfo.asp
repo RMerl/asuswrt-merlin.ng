@@ -17,10 +17,17 @@ p{
 	font-weight: bolder;
 }
 .tableApi_table th {
-       height: 20px;
+	height: 20px;
+	text-align: left;
+}
+.tableApi_table td {
+	text-align: left;
 }
 .data_tr {
-       height: 30px;
+	height: 30px;
+}
+.row_title th {
+	width: unset;
 }
 </style>
 
@@ -292,11 +299,11 @@ function show_etherstate(){
 		header: [
 			{
 				"title" : "Port",
-				"width" : "15%"
+				"width" : "21%"
 			},
 			{
 				"title" : "VLAN",
-				"width" : "15%"
+				"width" : "14%"
 			},
 			{
 				"title" : "Link State",
@@ -304,7 +311,7 @@ function show_etherstate(){
 			},
 			{
 				"title" : "Last Device Seen",
-				"width" : "45%"
+				"width" : "40%"
 			}
 		]
 	}

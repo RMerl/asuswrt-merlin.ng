@@ -84,7 +84,6 @@ System:
 
 Disk sharing:
    - Enable/disable the use of shorter share names
-   - Disk spindown after user-configurable inactivity timeout
    - NFS sharing (through webui)
    - Allow or disable WAN access to the FTP server
    - Updated Samba version (3.6), with SMB2.0 support
@@ -149,6 +148,7 @@ integrated/enabled/re-implemented in the official firmware:
 - SSHD
 - Improved compatibility with 3TB+ and Advanced Format HDDs
 - Display the Ethernet port states
+- Disk spindown after user-configurable inactivity timeout
 
 
 

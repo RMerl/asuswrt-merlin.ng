@@ -114,6 +114,7 @@ extern "C" {
 # define SSL2_TXT_DES_64_CBC_WITH_MD5            "DES-CBC-MD5"
 # define SSL2_TXT_DES_64_CBC_WITH_SHA            "DES-CBC-SHA"
 # define SSL2_TXT_DES_192_EDE3_CBC_WITH_MD5      "DES-CBC3-MD5"
+# define SSL2_TXT_DES_192_EDE3_CBC_WITH_SHA      "DES-CBC3-SHA"
 # define SSL2_TXT_RC4_64_WITH_MD5                "RC4-64-MD5"
 
 # define SSL2_TXT_NULL                           "NULL"

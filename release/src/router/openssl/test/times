@@ -28,12 +28,14 @@ SSLv3 RC4-MD5      1000 x      1   14.46s   1.56s
 SSLv3 RC4-MD5      1000 x      1   51.93s   1.62s 1024bit RSA
 SSLv3 RC4-SHA      1000 x      1   14.61s   1.83s
 SSLv3 DES-CBC-SHA  1000 x      1   14.70s   1.89s
+SSLv3 DES-CBC3-SHA 1000 x      1   15.16s   2.16s
 
 SSLv2 RC4-MD5      1000 x   1024   13.72s   1.27s
 SSLv3 NULL-MD5     1000 x   1024   14.79s   1.92s
 SSLv3 RC4-MD5      1000 x   1024   52.58s   2.29s 1024bit RSA
 SSLv3 RC4-SHA      1000 x   1024   15.39s   2.67s
 SSLv3 DES-CBC-SHA  1000 x   1024   16.45s   3.55s
+SSLv3 DES-CBC3-SHA 1000 x   1024   18.21s   5.38s
 
 SSLv2 RC4-MD5      1000 x  10240   18.97s   6.52s
 SSLv3 NULL-MD5     1000 x  10240   17.79s   5.11s
@@ -41,6 +43,7 @@ SSLv3 RC4-MD5      1000 x  10240   20.25s   7.90s
 SSLv3 RC4-MD5      1000 x  10240   58.26s   8.08s 1024bit RSA
 SSLv3 RC4-SHA      1000 x  10240   22.96s  11.44s
 SSLv3 DES-CBC-SHA  1000 x  10240   30.65s  18.41s
+SSLv3 DES-CBC3-SHA 1000 x  10240   47.04s  34.53s
 
 SSLv2 RC4-MD5      1000 x 102400   70.22s  57.74s
 SSLv3 NULL-MD5     1000 x 102400   43.73s  31.03s
@@ -48,6 +51,7 @@ SSLv3 RC4-MD5      1000 x 102400   71.32s  58.83s
 SSLv3 RC4-MD5      1000 x 102400  109.66s  59.20s 1024bit RSA
 SSLv3 RC4-SHA      1000 x 102400   95.88s  82.21s
 SSLv3 DES-CBC-SHA  1000 x 102400  173.22s 160.55s
+SSLv3 DES-CBC3-SHA 1000 x 102400  336.61s 323.82s
 
 What does this all mean?  Well for a server, with no session-id reuse, with
 a transfer size of 10240 bytes, using RC4-MD5 and a 512bit server key,

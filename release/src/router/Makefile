@@ -2442,7 +2442,7 @@ openssl-1.0.0q/Makefile:
 #	no-zlib no-engine no-engines no-sse2 no-perlasm \
 #	no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
 
-	-@$(MAKE) -C openssl-1.0.0q clean
+	-@$(MAKE) -C openssl-1.0.0q clean depend
 	@touch $@
 
 openssl-1.0.0q: openssl-1.0.0q/Makefile
@@ -2478,7 +2478,7 @@ openssl/Makefile:
 #	no-zlib no-engine no-engines no-sse2 no-perlasm \
 #	no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
 
-	-@$(MAKE) -C openssl clean
+	-@$(MAKE) -C openssl clean depend
 	@touch $@
 
 fsbuild:

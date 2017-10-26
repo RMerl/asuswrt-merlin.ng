@@ -254,27 +254,28 @@ test x"$ac_cv_header_ogg_ogg_h" != x"yes" && AC_MSG_ERROR([libogg headers not fo
 test x"$ac_cv_header_vorbis_codec_h" != x"yes" && AC_MSG_ERROR([libvorbis headers not found or not usable])
 test x"$ac_cv_header_FLAC_metadata_h" != x"yes" && AC_MSG_ERROR([libFLAC headers not found or not usable])
 
-CFLAGS_SAVE="$CFLAGS"
-CFLAGS="$CFLAGS -Wall -Werror"
-AC_MSG_CHECKING([if we should use the daemon() libc function])
-AC_COMPILE_IFELSE(
-     [AC_LANG_PROGRAM(
-         [
-             #include <stdlib.h>
-             #include <unistd.h>
-         ],
-         [
-            return daemon(0, 0);
-         ]
-     )],
-     [
-         AC_DEFINE([USE_DAEMON], [1], 
-                   [use the system's builtin daemon()])
-         AC_MSG_RESULT([yes])
-     ],
-     [
-         AC_MSG_RESULT([no])
-     ])
+### That function is broken, stop trying to use it -RM
+#CFLAGS_SAVE="$CFLAGS"
+#CFLAGS="$CFLAGS -Wall -Werror"
+#AC_MSG_CHECKING([if we should use the daemon() libc function])
+#AC_COMPILE_IFELSE(
+#     [AC_LANG_PROGRAM(
+#         [
+#             #include <stdlib.h>
+#             #include <unistd.h>
+#         ],
+#         [
+#            return daemon(0, 0);
+#         ]
+#     )],
+#     [
+#         AC_DEFINE([USE_DAEMON], [1], 
+#                   [use the system's builtin daemon()])
+#         AC_MSG_RESULT([yes])
+#     ],
+#     [
+#         AC_MSG_RESULT([no])
+#     ])
 
 AC_MSG_CHECKING([if scandir declaration requires const char cast])
 AC_COMPILE_IFELSE(

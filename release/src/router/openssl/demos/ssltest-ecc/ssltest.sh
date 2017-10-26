@@ -36,7 +36,7 @@ ECDH_RSA_CIPHER_LIST="ECDH-RSA-AES256-SHA ECDH-RSA-AES128-SHA ECDH-RSA-DES-CBC3-
 
 # These require RSA certificates.
 # The RSA public key must be authorized for digital signature.
-ECDHE_RSA_CIPHER_LIST="ECDHE-RSA-RC4-SHA ECDHE-RSA-NULL-SHA"
+ECDHE_RSA_CIPHER_LIST="ECDHE-RSA-AES256-SHA ECDHE-RSA-AES128-SHA ECDHE-RSA-DES-CBC3-SHA ECDHE-RSA-RC4-SHA ECDHE-RSA-NULL-SHA"
 
 # List of Elliptic curves over which we wish to test generation of
 # ephemeral ECDH keys when using AECDH or ECDHE ciphers

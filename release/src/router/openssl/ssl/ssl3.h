@@ -217,6 +217,7 @@ extern "C" {
 # define SSL3_TXT_RSA_IDEA_128_SHA               "IDEA-CBC-SHA"
 # define SSL3_TXT_RSA_DES_40_CBC_SHA             "EXP-DES-CBC-SHA"
 # define SSL3_TXT_RSA_DES_64_CBC_SHA             "DES-CBC-SHA"
+# define SSL3_TXT_RSA_DES_192_CBC3_SHA           "DES-CBC3-SHA"
 
 # define SSL3_TXT_DH_DSS_DES_40_CBC_SHA          "EXP-DH-DSS-DES-CBC-SHA"
 # define SSL3_TXT_DH_DSS_DES_64_CBC_SHA          "DH-DSS-DES-CBC-SHA"

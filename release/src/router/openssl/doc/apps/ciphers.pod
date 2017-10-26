@@ -179,7 +179,8 @@ When in doubt, include B<!aNULL> in your cipherlist.
 
 =item B<kRSA>, B<RSA>
 
-cipher suites using RSA key exchange.
+cipher suites using RSA key exchange or authentication. B<RSA> is an alias for
+B<kRSA>.
 
 =item B<kDHr>, B<kDHd>, B<kDH>
 
@@ -372,6 +373,7 @@ e.g. DES-CBC3-SHA. In these cases, RSA authentication is used.
  SSL_RSA_WITH_IDEA_CBC_SHA               IDEA-CBC-SHA
  SSL_RSA_EXPORT_WITH_DES40_CBC_SHA       EXP-DES-CBC-SHA
  SSL_RSA_WITH_DES_CBC_SHA                DES-CBC-SHA
+ SSL_RSA_WITH_3DES_EDE_CBC_SHA           DES-CBC3-SHA
 
  SSL_DH_DSS_WITH_DES_CBC_SHA             DH-DSS-DES-CBC-SHA
  SSL_DH_DSS_WITH_3DES_EDE_CBC_SHA        DH-DSS-DES-CBC3-SHA
@@ -427,6 +429,7 @@ e.g. DES-CBC3-SHA. In these cases, RSA authentication is used.
  TLS_DH_anon_WITH_3DES_EDE_CBC_SHA       ADH-DES-CBC3-SHA
 
 =head2 AES ciphersuites from RFC3268, extending TLS v1.0
+
  TLS_RSA_WITH_AES_128_CBC_SHA            AES128-SHA
  TLS_RSA_WITH_AES_256_CBC_SHA            AES256-SHA
 
@@ -509,6 +512,9 @@ Note: these ciphers can also be used in SSL v3.
 
  TLS_ECDHE_RSA_WITH_NULL_SHA             ECDHE-RSA-NULL-SHA
  TLS_ECDHE_RSA_WITH_RC4_128_SHA          ECDHE-RSA-RC4-SHA
+ TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA     ECDHE-RSA-DES-CBC3-SHA
+ TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA      ECDHE-RSA-AES128-SHA
+ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA      ECDHE-RSA-AES256-SHA
 
  TLS_ECDHE_ECDSA_WITH_NULL_SHA           ECDHE-ECDSA-NULL-SHA
  TLS_ECDHE_ECDSA_WITH_RC4_128_SHA        ECDHE-ECDSA-RC4-SHA

@@ -4,7 +4,7 @@
 # and add symbolic links to their hash values.
 
 my $dir = "/etc";
-my $prefix = "/usr";
+my $prefix = "/etc";
 
 my $openssl = $ENV{OPENSSL} || "openssl";
 my $pwd;

@@ -320,7 +320,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
 #endif
 
 /* Cipher 0A */
-    /*{
+    {
      1,
      SSL3_TXT_RSA_DES_192_CBC3_SHA,
      SSL3_CK_RSA_DES_192_CBC3_SHA,
@@ -333,7 +333,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
      SSL_HANDSHAKE_MAC_DEFAULT | TLS1_PRF,
      112,
      168,
-     },*/
+     },
 
 /* The DH ciphers */
 /* Cipher 0B */
@@ -2351,7 +2351,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
      },
 
     /* Cipher C012 */
-    /*{
+    {
      1,
      TLS1_TXT_ECDHE_RSA_WITH_DES_192_CBC3_SHA,
      TLS1_CK_ECDHE_RSA_WITH_DES_192_CBC3_SHA,
@@ -2364,10 +2364,10 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
      SSL_HANDSHAKE_MAC_DEFAULT | TLS1_PRF,
      112,
      168,
-     },*/
+     },
 
     /* Cipher C013 */
-    /*{
+    {
      1,
      TLS1_TXT_ECDHE_RSA_WITH_AES_128_CBC_SHA,
      TLS1_CK_ECDHE_RSA_WITH_AES_128_CBC_SHA,
@@ -2380,10 +2380,10 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
      SSL_HANDSHAKE_MAC_DEFAULT | TLS1_PRF,
      128,
      128,
-     },*/
+     },
 
     /* Cipher C014 */
-    /*{
+    {
      1,
      TLS1_TXT_ECDHE_RSA_WITH_AES_256_CBC_SHA,
      TLS1_CK_ECDHE_RSA_WITH_AES_256_CBC_SHA,
@@ -2396,7 +2396,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
      SSL_HANDSHAKE_MAC_DEFAULT | TLS1_PRF,
      256,
      256,
-     },*/
+     },
 
     /* Cipher C015 */
     {
@@ -4237,7 +4237,7 @@ int ssl3_get_req_cert_type(SSL *s, unsigned char *p)
         return (int)s->cert->ctype_num;
     }
     /* get configured sigalgs */
-    siglen = tls12_get_psigalgs(s, &sig);
+    siglen = tls12_get_psigalgs(s, 1, &sig);
     if (s->cert->cert_flags & SSL_CERT_FLAGS_CHECK_TLS_STRICT)
         nostrict = 0;
     for (i = 0; i < siglen; i += 2, sig += 2) {

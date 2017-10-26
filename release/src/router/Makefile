@@ -4377,8 +4377,7 @@ minidlna-configure:
 	ac_cv_header_linux_netlink_h=no \
 	$(CONFIGURE)  --with-db-path=/tmp/minidlna --with-log-path=/tmp/minidlna \
 		--with-os-name=Asuswrt --with-os-version=382.xx --with-os-url="https://asuswrt.lostrealm.ca/" \
-		--enable-tivo && \
-	echo "#undef USE_DAEMON" >> config.h
+		--enable-tivo
 
 minidlna-clean:
 	-@$(MAKE) -C minidlna clean

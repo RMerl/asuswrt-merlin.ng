@@ -48,7 +48,7 @@ if test -r Makefile.am; then
     majneeded=`echo $AM_NEEDED | $VERSIONMKMAJ`
     minneeded=`echo $AM_NEEDED | $VERSIONMKMIN`
     for am in automake-$AM_NEEDED automake$AM_NEEDED \
-	automake-1.10 automake-1.9 automake-1.8 automake-1.7 automake; do
+	automake-1.11 automake-1.10 automake-1.9 automake-1.8 automake-1.7 automake; do
       ($am --version < /dev/null > /dev/null 2>&1) || continue
       ver=`$am --version < /dev/null | head -n 1 | $VERSIONGREP`
       maj=`echo $ver | $VERSIONMKMAJ`
@@ -62,7 +62,7 @@ if test -r Makefile.am; then
     test -z $AUTOMAKE &&  echo "no"
     echo -n "checking for aclocal $AM_NEEDED or later... "
     for ac in aclocal-$AM_NEEDED aclocal$AM_NEEDED \
-	aclocal-1.10 aclocal-1.9 aclocal-1.8 aclocal-1.7 aclocal; do
+	aclocal-1.11 aclocal-1.10 aclocal-1.9 aclocal-1.8 aclocal-1.7 aclocal; do
       ($ac --version < /dev/null > /dev/null 2>&1) || continue
       ver=`$ac --version < /dev/null | head -n 1 | $VERSIONGREP`
       maj=`echo $ver | $VERSIONMKMAJ`

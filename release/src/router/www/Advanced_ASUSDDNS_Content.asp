@@ -334,18 +334,6 @@ function validForm(){
 				}else if(!validator.string(document.form.ddns_passwd_x)){
 					return false;
 				}
-			
-			}else if(!validator.string(document.form.ddns_username_x)){
-				return false;
-			}
-			
-			if(document.form.ddns_passwd_x.value == ""){
-				alert("<#File_Pop_content_alert_desc6#>");
-				document.form.ddns_passwd_x.focus();
-				document.form.ddns_passwd_x.select();
-				return false;
-			}else if(!validator.string(document.form.ddns_passwd_x)){
-				return false;
 			}
 			
 			if(document.form.ddns_regular_period.value < 30){

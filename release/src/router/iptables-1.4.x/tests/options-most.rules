@@ -96,6 +96,9 @@
 -A matches -m hashlimit --hashlimit-upto 1/min --hashlimit-burst 1 --hashlimit-name mini2
 -A matches -m hashlimit --hashlimit-upto 1/hour --hashlimit-burst 1 --hashlimit-name mini3
 -A matches -m hashlimit --hashlimit-upto 1/day --hashlimit-burst 1 --hashlimit-name mini4
+-A matches -m hashlimit --hashlimit-upto 4kb/s --hashlimit-burst 400kb --hashlimit-name mini5
+-A matches -m hashlimit --hashlimit-upto 10mb/s --hashlimit-name mini6
+-A matches -m hashlimit --hashlimit-upto 123456b/s --hashlimit-burst 1mb --hashlimit-name mini7
 -A matches
 -A matches -m hbh ! --hbh-len 5
 -A matches

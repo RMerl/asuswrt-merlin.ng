@@ -1133,28 +1133,43 @@ const char *xtables_ipaddr_to_anyname(const struct in_addr *addr)
 	return xtables_ipaddr_to_numeric(addr);
 }
 
-const char *xtables_ipmask_to_numeric(const struct in_addr *mask)
+int xtables_ipmask_to_cidr(const struct in_addr *mask)
 {
-	static char buf[20];
 	uint32_t maskaddr, bits;
 	int i;
 
 	maskaddr = ntohl(mask->s_addr);
-
+	/* shortcut for /32 networks */
 	if (maskaddr == 0xFFFFFFFFL)
-		/* we don't want to see "/32" */
-		return "";
+		return 32;
 
 	i = 32;
 	bits = 0xFFFFFFFEL;
 	while (--i >= 0 && maskaddr != bits)
 		bits <<= 1;
 	if (i >= 0)
-		sprintf(buf, "/%d", i);
-	else
+		return i;
+
+	/* this mask cannot be converted to CIDR notation */
+	return -1;
+}
+
+const char *xtables_ipmask_to_numeric(const struct in_addr *mask)
+{
+	static char buf[20];
+	uint32_t cidr;
+
+	cidr = xtables_ipmask_to_cidr(mask);
+	if (cidr < 0) {
 		/* mask was not a decent combination of 1's and 0's */
 		sprintf(buf, "/%s", xtables_ipaddr_to_numeric(mask));
+		return buf;
+	} else if (cidr == 32) {
+		/* we don't want to see "/32" */
+		return "";
+	}
 
+	sprintf(buf, "/%d", cidr);
 	return buf;
 }
 
@@ -1465,7 +1480,7 @@ const char *xtables_ip6addr_to_anyname(const struct in6_addr *addr)
 	return xtables_ip6addr_to_numeric(addr);
 }
 
-static int ip6addr_prefix_length(const struct in6_addr *k)
+int xtables_ip6mask_to_cidr(const struct in6_addr *k)
 {
 	unsigned int bits = 0;
 	uint32_t a, b, c, d;
@@ -1492,7 +1507,7 @@ static int ip6addr_prefix_length(const struct in6_addr *k)
 const char *xtables_ip6mask_to_numeric(const struct in6_addr *addrp)
 {
 	static char buf[50+2];
-	int l = ip6addr_prefix_length(addrp);
+	int l = xtables_ip6mask_to_cidr(addrp);
 
 	if (l == -1) {
 		strcpy(buf, "/");

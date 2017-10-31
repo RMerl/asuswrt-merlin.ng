@@ -2,14 +2,15 @@
 \fBlimit\fP match) for a group of connections using a \fBsingle\fP iptables
 rule. Grouping can be done per-hostgroup (source and/or destination address)
 and/or per-port. It gives you the ability to express "\fIN\fP packets per time
-quantum per group" (see below for some examples).
+quantum per group" or "\fIN\fP bytes per seconds" (see below for some examples).
 .PP
 A hash limit option (\fB\-\-hashlimit\-upto\fP, \fB\-\-hashlimit\-above\fP) and
 \fB\-\-hashlimit\-name\fP are required.
 .TP
 \fB\-\-hashlimit\-upto\fP \fIamount\fP[\fB/second\fP|\fB/minute\fP|\fB/hour\fP|\fB/day\fP]
-Match if the rate is below or equal to \fIamount\fP/quantum. It is specified as
-a number, with an optional time quantum suffix; the default is 3/hour.
+Match if the rate is below or equal to \fIamount\fP/quantum. It is specified either as
+a number, with an optional time quantum suffix (the default is 3/hour), or as
+\fIamount\fPb/second (number of bytes per second).
 .TP
 \fB\-\-hashlimit\-above\fP \fIamount\fP[\fB/second\fP|\fB/minute\fP|\fB/hour\fP|\fB/day\fP]
 Match if the rate is above \fIamount\fP/quantum.
@@ -17,7 +18,9 @@ Match if the rate is above \fIamount\fP/quantum.
 \fB\-\-hashlimit\-burst\fP \fIamount\fP
 Maximum initial number of packets to match: this number gets recharged by one
 every time the limit specified above is not reached, up to this number; the
-default is 5.
+default is 5.  When byte-based rate matching is requested, this option specifies
+the amount of bytes that can exceed the given rate.  This option should be used
+with caution -- if the entry expires, the burst value is reset too.
 .TP
 \fB\-\-hashlimit\-mode\fP {\fBsrcip\fP|\fBsrcport\fP|\fBdstip\fP|\fBdstport\fP}\fB,\fP...
 A comma-separated list of objects to take into consideration. If no
@@ -63,3 +66,11 @@ matching on subnet
 "10000 packets per minute for every /28 subnet (groups of 8 addresses)
 in 10.0.0.0/8" =>
 \-s 10.0.0.8 \-\-hashlimit\-mask 28 \-\-hashlimit\-upto 10000/min
+.TP
+matching bytes per second
+"flows exceeding 512kbyte/s" =>
+\-\-hashlimit-mode srcip,dstip,srcport,dstport \-\-hashlimit\-above 512kb/s
+.TP
+matching bytes per second
+"hosts that exceed 512kbyte/s, but permit up to 1Megabytes without matching"
+\-\-hashlimit-mode dstip \-\-hashlimit\-above 512kb/s \-\-hashlimit-burst 1mb

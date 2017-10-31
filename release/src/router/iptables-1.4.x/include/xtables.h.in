@@ -442,6 +442,7 @@ extern const char *xtables_ipaddr_to_anyname(const struct in_addr *);
 extern const char *xtables_ipmask_to_numeric(const struct in_addr *);
 extern struct in_addr *xtables_numeric_to_ipaddr(const char *);
 extern struct in_addr *xtables_numeric_to_ipmask(const char *);
+extern int xtables_ipmask_to_cidr(const struct in_addr *);
 extern void xtables_ipparse_any(const char *, struct in_addr **,
 	struct in_addr *, unsigned int *);
 extern void xtables_ipparse_multiple(const char *, struct in_addr **,
@@ -451,6 +452,7 @@ extern struct in6_addr *xtables_numeric_to_ip6addr(const char *);
 extern const char *xtables_ip6addr_to_numeric(const struct in6_addr *);
 extern const char *xtables_ip6addr_to_anyname(const struct in6_addr *);
 extern const char *xtables_ip6mask_to_numeric(const struct in6_addr *);
+extern int xtables_ip6mask_to_cidr(const struct in6_addr *);
 extern void xtables_ip6parse_any(const char *, struct in6_addr **,
 	struct in6_addr *, unsigned int *);
 extern void xtables_ip6parse_multiple(const char *, struct in6_addr **,

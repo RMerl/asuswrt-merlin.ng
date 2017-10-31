@@ -329,6 +329,7 @@ iptables_restore_main(int argc, char *argv[])
 			char *curchar;
 			int quote_open, escaped;
 			size_t param_len;
+			char param_buffer[1024];
 
 			/* reset the newargv */
 			newargc = 0;
@@ -379,8 +380,6 @@ iptables_restore_main(int argc, char *argv[])
 			param_len = 0;
 
 			for (curchar = parsestart; *curchar; curchar++) {
-				char param_buffer[1024];
-
 				if (quote_open) {
 					if (escaped) {
 						param_buffer[param_len++] = *curchar;

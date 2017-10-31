@@ -6,7 +6,10 @@
 /* timings are in milliseconds. */
 #define XT_HASHLIMIT_SCALE 10000
 /* 1/10,000 sec period => max of 10,000/sec.  Min rate is then 429490
-   seconds, or one every 59 hours. */
+   seconds, or one packet every 59 hours. */
+
+/* packet length accounting is done in 16-byte steps */
+#define XT_HASHLIMIT_BYTE_SHIFT 4
 
 /* details of this structure hidden by the implementation */
 struct xt_hashlimit_htable;
@@ -17,6 +20,7 @@ enum {
 	XT_HASHLIMIT_HASH_SIP = 1 << 2,
 	XT_HASHLIMIT_HASH_SPT = 1 << 3,
 	XT_HASHLIMIT_INVERT   = 1 << 4,
+	XT_HASHLIMIT_BYTES    = 1 << 5,
 };
 
 struct hashlimit_cfg {

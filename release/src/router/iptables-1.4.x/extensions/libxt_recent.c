@@ -16,6 +16,7 @@ enum {
 	O_NAME,
 	O_RSOURCE,
 	O_RDEST,
+	O_MASK,
 	F_SET    = 1 << O_SET,
 	F_RCHECK = 1 << O_RCHECK,
 	F_UPDATE = 1 << O_UPDATE,
@@ -25,7 +26,7 @@ enum {
 };
 
 #define s struct xt_recent_mtinfo
-static const struct xt_option_entry recent_opts[] = {
+static const struct xt_option_entry recent_opts_v0[] = {
 	{.name = "set", .id = O_SET, .type = XTTYPE_NONE,
 	 .excl = F_ANY_OP, .flags = XTOPT_INVERT},
 	{.name = "rcheck", .id = O_RCHECK, .type = XTTYPE_NONE,
@@ -46,6 +47,32 @@ static const struct xt_option_entry recent_opts[] = {
 	 .flags = XTOPT_PUT, XTOPT_POINTER(s, name)},
 	{.name = "rsource", .id = O_RSOURCE, .type = XTTYPE_NONE},
 	{.name = "rdest", .id = O_RDEST, .type = XTTYPE_NONE},
+	XTOPT_TABLEEND,
+};
+#undef s
+
+#define s struct xt_recent_mtinfo_v1
+static const struct xt_option_entry recent_opts_v1[] = {
+	{.name = "set", .id = O_SET, .type = XTTYPE_NONE,
+	 .excl = F_ANY_OP, .flags = XTOPT_INVERT},
+	{.name = "rcheck", .id = O_RCHECK, .type = XTTYPE_NONE,
+	 .excl = F_ANY_OP, .flags = XTOPT_INVERT},
+	{.name = "update", .id = O_UPDATE, .type = XTTYPE_NONE,
+	 .excl = F_ANY_OP, .flags = XTOPT_INVERT},
+	{.name = "remove", .id = O_REMOVE, .type = XTTYPE_NONE,
+	 .excl = F_ANY_OP, .flags = XTOPT_INVERT},
+	{.name = "seconds", .id = O_SECONDS, .type = XTTYPE_UINT32,
+	 .flags = XTOPT_PUT, XTOPT_POINTER(s, seconds)},
+	{.name = "hitcount", .id = O_HITCOUNT, .type = XTTYPE_UINT32,
+	 .flags = XTOPT_PUT, XTOPT_POINTER(s, hit_count)},
+	{.name = "rttl", .id = O_RTTL, .type = XTTYPE_NONE,
+	 .excl = F_SET | F_REMOVE},
+	{.name = "name", .id = O_NAME, .type = XTTYPE_STRING,
+	 .flags = XTOPT_PUT, XTOPT_POINTER(s, name)},
+	{.name = "rsource", .id = O_RSOURCE, .type = XTTYPE_NONE},
+	{.name = "rdest", .id = O_RDEST, .type = XTTYPE_NONE},
+	{.name = "mask", .id = O_MASK, .type = XTTYPE_HOST,
+	 .flags = XTOPT_PUT, XTOPT_POINTER(s, mask)},
 	XTOPT_TABLEEND,
 };
 #undef s
@@ -74,18 +101,28 @@ static void recent_help(void)
 "    --name name                 Name of the recent list to be used.  DEFAULT used if none given.\n"
 "    --rsource                   Match/Save the source address of each packet in the recent list table (default).\n"
 "    --rdest                     Match/Save the destination address of each packet in the recent list table.\n"
+"    --mask netmask              Netmask that will be applied to this recent list.\n"
 "xt_recent by: Stephen Frost <sfrost@snowman.net>.  http://snowman.net/projects/ipt_recent/\n");
 }
 
-static void recent_init(struct xt_entry_match *match)
+enum {
+	XT_RECENT_REV_0 = 0,
+	XT_RECENT_REV_1,
+};
+
+static void recent_init(struct xt_entry_match *match, unsigned int rev)
 {
-	struct xt_recent_mtinfo *info = (void *)(match)->data;
+	struct xt_recent_mtinfo *info = (struct xt_recent_mtinfo *)match->data;
+	struct xt_recent_mtinfo_v1 *info_v1 =
+		(struct xt_recent_mtinfo_v1 *)match->data;
 
 	strncpy(info->name,"DEFAULT", XT_RECENT_NAME_LEN);
 	/* even though XT_RECENT_NAME_LEN is currently defined as 200,
 	 * better be safe, than sorry */
 	info->name[XT_RECENT_NAME_LEN-1] = '\0';
 	info->side = XT_RECENT_SOURCE;
+	if (rev == XT_RECENT_REV_1)
+		memset(&info_v1->mask, 0xFF, sizeof(info_v1->mask));
 }
 
 static void recent_parse(struct xt_option_call *cb)
@@ -131,8 +168,6 @@ static void recent_parse(struct xt_option_call *cb)
 
 static void recent_check(struct xt_fcheck_call *cb)
 {
-	struct xt_recent_mtinfo *info = cb->data;
-
 	if (!(cb->xflags & F_ANY_OP))
 		xtables_error(PARAMETER_PROBLEM,
 			"recent: you must specify one of `--set', `--rcheck' "
@@ -140,9 +175,9 @@ static void recent_check(struct xt_fcheck_call *cb)
 }
 
 static void recent_print(const void *ip, const struct xt_entry_match *match,
-                         int numeric)
+                         unsigned int family)
 {
-	const struct xt_recent_mtinfo *info = (const void *)match->data;
+	const struct xt_recent_mtinfo_v1 *info = (const void *)match->data;
 
 	if (info->invert)
 		printf(" !");
@@ -167,11 +202,23 @@ static void recent_print(const void *ip, const struct xt_entry_match *match,
 		printf(" side: source");
 	if (info->side == XT_RECENT_DEST)
 		printf(" side: dest");
+
+	switch(family) {
+	case NFPROTO_IPV4:
+		printf(" mask: %s",
+			xtables_ipaddr_to_numeric(&info->mask.in));
+		break;
+	case NFPROTO_IPV6:
+		printf(" mask: %s",
+			xtables_ip6addr_to_numeric(&info->mask.in6));
+		break;
+	}
 }
 
-static void recent_save(const void *ip, const struct xt_entry_match *match)
+static void recent_save(const void *ip, const struct xt_entry_match *match,
+			unsigned int family)
 {
-	const struct xt_recent_mtinfo *info = (const void *)match->data;
+	const struct xt_recent_mtinfo_v1 *info = (const void *)match->data;
 
 	if (info->invert)
 		printf(" !");
@@ -191,28 +238,116 @@ static void recent_save(const void *ip, const struct xt_entry_match *match)
 	if (info->check_set & XT_RECENT_TTL)
 		printf(" --rttl");
 	if(info->name) printf(" --name %s",info->name);
+
+	switch(family) {
+	case NFPROTO_IPV4:
+		printf(" --mask %s",
+			xtables_ipaddr_to_numeric(&info->mask.in));
+		break;
+	case NFPROTO_IPV6:
+		printf(" --mask %s",
+			xtables_ip6addr_to_numeric(&info->mask.in6));
+		break;
+	}
+
 	if (info->side == XT_RECENT_SOURCE)
 		printf(" --rsource");
 	if (info->side == XT_RECENT_DEST)
 		printf(" --rdest");
 }
 
-static struct xtables_match recent_mt_reg = {
-	.name          = "recent",
-	.version       = XTABLES_VERSION,
-	.family        = NFPROTO_UNSPEC,
-	.size          = XT_ALIGN(sizeof(struct xt_recent_mtinfo)),
-	.userspacesize = XT_ALIGN(sizeof(struct xt_recent_mtinfo)),
-	.help          = recent_help,
-	.init          = recent_init,
-	.x6_parse      = recent_parse,
-	.x6_fcheck     = recent_check,
-	.print         = recent_print,
-	.save          = recent_save,
-	.x6_options    = recent_opts,
+static void recent_init_v0(struct xt_entry_match *match)
+{
+	recent_init(match, XT_RECENT_REV_0);
+}
+
+static void recent_init_v1(struct xt_entry_match *match)
+{
+	recent_init(match, XT_RECENT_REV_1);
+}
+
+static void recent_save_v0(const void *ip, const struct xt_entry_match *match)
+{
+	recent_save(ip, match, NFPROTO_UNSPEC);
+}
+
+static void recent_save_v4(const void *ip, const struct xt_entry_match *match)
+{
+	recent_save(ip, match, NFPROTO_IPV4);
+}
+
+static void recent_save_v6(const void *ip, const struct xt_entry_match *match)
+{
+	recent_save(ip, match, NFPROTO_IPV6);
+}
+
+static void recent_print_v0(const void *ip, const struct xt_entry_match *match,
+			    int numeric)
+{
+	recent_print(ip, match, NFPROTO_UNSPEC);
+}
+
+static void recent_print_v4(const void *ip, const struct xt_entry_match *match,
+                         int numeric)
+{
+	recent_print(ip, match, NFPROTO_IPV4);
+}
+
+static void recent_print_v6(const void *ip, const struct xt_entry_match *match,
+                         int numeric)
+{
+	recent_print(ip, match, NFPROTO_IPV6);
+}
+
+static struct xtables_match recent_mt_reg[] = {
+	{
+		.name          = "recent",
+		.version       = XTABLES_VERSION,
+		.revision      = 0,
+		.family        = NFPROTO_UNSPEC,
+		.size          = XT_ALIGN(sizeof(struct xt_recent_mtinfo)),
+		.userspacesize = XT_ALIGN(sizeof(struct xt_recent_mtinfo)),
+		.help          = recent_help,
+		.init          = recent_init_v0,
+		.x6_parse      = recent_parse,
+		.x6_fcheck     = recent_check,
+		.print         = recent_print_v0,
+		.save          = recent_save_v0,
+		.x6_options    = recent_opts_v0,
+	},
+	{
+		.name          = "recent",
+		.version       = XTABLES_VERSION,
+		.revision      = 1,
+		.family        = NFPROTO_IPV4,
+		.size          = XT_ALIGN(sizeof(struct xt_recent_mtinfo_v1)),
+		.userspacesize = XT_ALIGN(sizeof(struct xt_recent_mtinfo_v1)),
+		.help          = recent_help,
+		.init          = recent_init_v1,
+		.x6_parse      = recent_parse,
+		.x6_fcheck     = recent_check,
+		.print         = recent_print_v4,
+		.save          = recent_save_v4,
+		.x6_options    = recent_opts_v1,
+	},
+	{
+		.name          = "recent",
+		.version       = XTABLES_VERSION,
+		.revision      = 1,
+		.family        = NFPROTO_IPV6,
+		.size          = XT_ALIGN(sizeof(struct xt_recent_mtinfo_v1)),
+		.userspacesize = XT_ALIGN(sizeof(struct xt_recent_mtinfo_v1)),
+		.help          = recent_help,
+		.init          = recent_init_v1,
+		.x6_parse      = recent_parse,
+		.x6_fcheck     = recent_check,
+		.print         = recent_print_v6,
+		.save          = recent_save_v6,
+		.x6_options    = recent_opts_v1,
+	},
 };
 
 void _init(void)
 {
-	xtables_register_match(&recent_mt_reg);
+	xtables_register_matches(recent_mt_reg, ARRAY_SIZE(recent_mt_reg));
 }

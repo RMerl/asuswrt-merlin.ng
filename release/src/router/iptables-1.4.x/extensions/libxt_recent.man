@@ -24,6 +24,9 @@ is the default.
 \fB\-\-rdest\fP
 Match/save the destination address of each packet in the recent list table.
 .TP
+\fB\-\-mask\fPnetmask
+Netmask that will be applied to this recent list.
+.TP
 [\fB!\fP] \fB\-\-rcheck\fP
 Check if the source address of the packet is currently in the list.
 .TP

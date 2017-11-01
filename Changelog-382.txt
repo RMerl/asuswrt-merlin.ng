@@ -41,7 +41,7 @@ Asuswrt-Merlin 382 Changelog
 
    - NEW: Merged with GPL 382_16466 (RT-AC86U).
    - NEW: Added support for the RT-AC86U and its Broadcom HND
-          platform.
+          platform (HND SDK from GPL 382_18219).
           Note that IPTraffic is not supported by this model due to
           its newer Linux kernel.
    - NEW: Added support for inline CRLs when importing an ovpn file
@@ -60,6 +60,8 @@ Asuswrt-Merlin 382 Changelog
    - NEW: Option to select the bitsize to use (1024 or 2048) when
           automatically generating the OpenVPN server key/certs
           (ported from Asus382)
+   - CHANGED: Updated wget to 1.19.2 (fixing connectivity to some
+              TLS 1.2 servers)
    - CHANGED: SSH host keys are now stored in /jffs/ssl/ rather
               than nvram.
    - CHANGED: SMB2 is enabled by default on RT-AC86U (no performance

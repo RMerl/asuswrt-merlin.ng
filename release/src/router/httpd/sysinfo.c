@@ -182,14 +182,20 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			}
 
 		} else if(strcmp(type,"cpu.freq") == 0) {
+#ifdef HND_ROUTER
 			int freq = 0;
-			char *buffer = read_whole_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+			char *buffer;
+
+			buffer = read_whole_file("/sys/devices/system/cpu/bcm_arm_cpuidle/admin_max_freq");
 
 			if (buffer) {
 				sscanf(buffer, "%d", &freq);
 				free(buffer);
-				sprintf(result, "%d", freq/1000);
-			} else {
+				sprintf(result, "%d", freq);
+			}
+			else
+#endif
+			{
 				tmp = nvram_get("clkfreq");
 				if (tmp)
 					sscanf(tmp,"%[^,]s", result);

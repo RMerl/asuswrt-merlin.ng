@@ -44,6 +44,10 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 vpath %.c $(SRCBASE)/router/nas${BCMEX}$(EX7) $(SRCBASE)/router/nas${BCMEX}$(EX7)/nas_fbt $(SRCBASE)/shared $(SRCBASE)/router/shared
 
 # build target

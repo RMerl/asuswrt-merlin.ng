@@ -56,7 +56,7 @@ function update_coretmp(e){
       update_coretmp();
     },
     success: function(response){
-			updateNum(curr_coreTmp_2, curr_coreTmp_5, curr_coreTmp_cpu);
+			updateNum(curr_coreTmp_2, curr_coreTmp_5, parseInt(curr_coreTmp_cpu));
 			setTimeout("update_coretmp();", 5000);
 		}    
   });
@@ -75,7 +75,7 @@ function updateNum(_coreTmp_2, _coreTmp_5, _cpuTemp){
 		document.getElementById("coreTemp_2").innerHTML = (_coreTmp_2 == 0 ? "disabled" : _coreTmp_2 + " °C");
 		document.getElementById("coreTemp_5").innerHTML = (_coreTmp_5 == 0 ? "disabled" : _coreTmp_5 + " °C");
 		if (_cpuTemp != "")
-			document.getElementById("coreTemp_cpu").innerHTML = _cpuTemp + " °C";
+			document.getElementById("coreTemp_cpu").innerHTML = parseInt(_cpuTemp) + " °C";
 	}
 }
 

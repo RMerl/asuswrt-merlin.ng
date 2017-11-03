@@ -2705,10 +2705,6 @@ wan_up(const char *pwan_ifname)
 	/* Sync time */
 	refresh_ntpc();
 
-#ifdef RTCONFIG_OPENVPN
-	start_ovpn_eas();
-#endif
-
 	stop_ddns();
 	start_ddns();
 
@@ -2844,6 +2840,10 @@ wan_up(const char *pwan_ifname)
 		}
 		fclose(fp);
 	}
+
+#ifdef RTCONFIG_OPENVPN
+	start_ovpn_eas();
+#endif
 
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }

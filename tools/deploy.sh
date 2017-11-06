@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ssh-add
-
 if [ "$1" == "beta" ]
 then
 	SUFFIXE="Beta/"
@@ -10,6 +8,14 @@ else
 	SUFFIXE=""
 	SUFFIXESF="Release/"
 fi
+
+read -p "Deploy to $SUFFIXESF (y/n)?" choice
+case "$choice" in
+  y|Y ) echo "Deploying to $SUFFIXESF";;
+  * ) echo "Aborting."; exit;;
+esac
+
+ssh-add
 
 cd /media/sf_Share/images/
 
@@ -23,5 +29,19 @@ do
    echo "Deploying $MODEL to Sourceforge..."
    scp $MODEL*.zip rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/$MODEL/$SUFFIXESF
 done
+
+echo "Uploading documentation..."
+cp README-merlin.txt /media/nas/Onedrive/Asuswrt-Merlin/Releases/Documentation/
+scp README-merlin.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
+
+cp Changelog*.txt /media/nas/Onedrive/Asuswrt-Merlin/Releases/Documentation/
+scp Changelog*.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
+
+# Only upload SHA256 checksums for non-beta releases
+if [ "$SUFFIXE" == "" ]
+then
+   cp sha256sums.txt /media/nas/Onedrive/Asuswrt-Merlin/Releases/Documentation/
+   scp sha256sums.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
+fi
 
 echo "Done deploying!"

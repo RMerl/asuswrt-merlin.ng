@@ -2971,7 +2971,7 @@ static int validate_apply(webs_t wp, json_object *root) {
 				get_ovpn_key(OVPN_TYPE_SERVER, unit, key_type, buf, sizeof(buf));
 
 				if(strcmp(buf, value)) {
-					set_ovpn_key(OVPN_TYPE_SERVER, unit, key_type, buf, NULL);
+					set_ovpn_key(OVPN_TYPE_SERVER, unit, key_type, value, NULL);
 					nvram_modified = 1;
 					_dprintf("set %s=%s\n", tmp, value);
 				}
@@ -3009,7 +3009,7 @@ static int validate_apply(webs_t wp, json_object *root) {
 				get_ovpn_key(OVPN_TYPE_CLIENT, unit, key_type, buf, sizeof(buf));
 
 				if(strcmp(buf, value)) {
-					set_ovpn_key(OVPN_TYPE_CLIENT, unit, key_type, buf, NULL);
+					set_ovpn_key(OVPN_TYPE_CLIENT, unit, key_type, value, NULL);
 					nvram_modified = 1;
 					_dprintf("set %s=%s\n", tmp, value);
 				}

@@ -217,71 +217,18 @@ char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 {
 	char *value;
 	int datalen, i;
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 	FILE *fp;
 	char filename[128];
-	char *p = buf;
-#endif
-	char tmpBuf[256] = {0};
 
-
-	value = nvram_safe_get(name);
-	datalen = strlen(value);
-
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	if(!d_exists(OVPN_FS_PATH))
-		mkdir(OVPN_FS_PATH, S_IRWXU);
 	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, name);
-#endif
 
-	if (datalen) {
-		for (i=0; (i < (datalen-1) && i < (buf_len-1)); i++) {
-			if (value[i] == '>')
-				buf[i] = '\n';
-			else
-				buf[i] = value[i];
-		}
-		buf[i] = '\0';
+	datalen = f_read(filename, buf, buf_len-1);
+	if (datalen < 0) {
+		buf[0] = '\0';
+	} else {
+		buf[datalen] = '\0';
+	}
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		//save to file and then clear nvram value
-		fp = fopen(filename, "w");
-		if(fp) {
-			chmod(filename, S_IRUSR|S_IWUSR);
-			fprintf(fp, "%s", buf);
-			fclose(fp);
-			nvram_set(name, "");
-		}
-#endif
-	}
-	else {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		datalen = 0;
-		fp = fopen(filename, "r");
-		if(fp) {
-			while(fgets(buf, buf_len, fp)) {
-				if(!strncmp(buf, PEM_START_TAG, strlen(PEM_START_TAG)) || !strncmp(buf, "none", 4))
-					break;
-			}
-			if(feof(fp) &&  strncmp(buf, "none", 4)) {
-				fclose(fp);
-				buf[0] = '\0';
-				return buf;
-			}
-			p += strlen(buf);
-			memset(tmpBuf, 0, sizeof(tmpBuf));
-			while(fgets(tmpBuf, sizeof(tmpBuf), fp)) {
-				datalen = strlen(tmpBuf);
-				if (p + datalen < buf + buf_len + 1) {
-					strcpy(p, tmpBuf);
-					p += datalen;
-				}
-			}
-			fclose(fp);
-		}
-#endif
-		*p = '\0';
-	}
 	return buf;
 }
 
@@ -309,16 +256,17 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 	}
 
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+	if(!d_exists(OVPN_FS_PATH))
+		mkdir(OVPN_FS_PATH, S_IRWXU);
 	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, varname);
 	fp = fopen(filename, "w");
 	if(fp) {
 		chmod(filename, S_IRUSR|S_IWUSR);
-		fprintf(fp, "%s", data);
+		fwrite(data, 1, strlen(data), fp);
 		fclose(fp);
 	}
 	else
 #endif
-	nvram_set(varname, data);
 
 	return 0;
 }

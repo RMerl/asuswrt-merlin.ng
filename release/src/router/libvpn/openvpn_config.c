@@ -269,13 +269,26 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 int _set_crt_parsed(const char *name, char *file_path)
 {
 	char target_file_path[128] ={0};
+	char *buffer, *data;
+	int result;
 
 	if(!d_exists(OVPN_FS_PATH))
 		mkdir(OVPN_FS_PATH, S_IRWXU);
 
 	if(f_exists(file_path)) {
 		snprintf(target_file_path, sizeof(target_file_path), "%s/%s", OVPN_FS_PATH, name);
-		return eval("cp", file_path, target_file_path);
+
+		buffer = read_whole_file(file_path);
+		if (!buffer) return -1;
+
+		data = strstr(buffer, PEM_START_TAG);
+		if (data) {
+			result = f_write(target_file_path, data, strlen(data), NULL, S_IRUSR|S_IWUSR);
+		} else {
+			result = -1;
+		}
+		free(buffer);
+		return result;
 	}
 	else {
 		return -1;

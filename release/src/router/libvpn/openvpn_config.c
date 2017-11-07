@@ -215,9 +215,7 @@ char *get_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, s
 
 char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 {
-	char *value;
-	int datalen, i;
-	FILE *fp;
+	int datalen;
 	char filename[128];
 
 	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, name);
@@ -255,7 +253,6 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 		if (!data) return -1;
 	}
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 	if(!d_exists(OVPN_FS_PATH))
 		mkdir(OVPN_FS_PATH, S_IRWXU);
 	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, varname);
@@ -265,15 +262,12 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 		fwrite(data, 1, strlen(data), fp);
 		fclose(fp);
 	}
-	else
-#endif
 
 	return 0;
 }
 
 int _set_crt_parsed(const char *name, char *file_path)
 {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 	char target_file_path[128] ={0};
 
 	if(!d_exists(OVPN_FS_PATH))
@@ -286,41 +280,6 @@ int _set_crt_parsed(const char *name, char *file_path)
 	else {
 		return -1;
 	}
-#else
-	FILE *fp=fopen(file_path, "r");
-	char buffer[4000] = {0};
-	char buffer2[256] = {0};
-	char *p = buffer;
-
-// TODO: Ensure that Asus's routine can handle CRLF too, otherwise revert to
-//       the code we currently use in httpd.
-
-	if(fp) {
-		while(fgets(buffer, sizeof(buffer), fp)) {
-			if(!strncmp(buffer, PEM_START_TAG, strlen(PEM_START_TAG)))
-				break;
-		}
-		if(feof(fp)) {
-			fclose(fp);
-			return -EINVAL;
-		}
-		p += strlen(buffer);
-		//if( *(p-1) == '\n' )
-			//*(p-1) = '>';
-		while(fgets(buffer2, sizeof(buffer2), fp)) {
-			strncpy(p, buffer2, strlen(buffer2));
-			p += strlen(buffer2);
-			//if( *(p-1) == '\n' )
-				//*(p-1) = '>';
-		}
-		*p = '\0';
-		nvram_set(name, buffer);
-		fclose(fp);
-		return 0;
-	}
-	else
-		return -ENOENT;
-#endif
 }
 
 
@@ -342,34 +301,26 @@ int ovpn_crt_is_empty(const char *name)
 	char file_path[128] ={0};
 	struct stat st;
 
-	if( nvram_is_empty(name) ) {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		//check file
-		if(d_exists(OVPN_FS_PATH)) {
-			snprintf(file_path, sizeof(file_path), "%s/%s", OVPN_FS_PATH, name);
-			if(stat(file_path, &st) == 0) {
-				if( !S_ISDIR(st.st_mode) && st.st_size ) {
-					return 0;
-				}
-				else {
-					return 1;
-				}
+	//check file
+	if(d_exists(OVPN_FS_PATH)) {
+		snprintf(file_path, sizeof(file_path), "%s/%s", OVPN_FS_PATH, name);
+		if(stat(file_path, &st) == 0) {
+			if( !S_ISDIR(st.st_mode) && st.st_size ) {
+				return 0;
 			}
 			else {
 				return 1;
 			}
 		}
 		else {
-			mkdir(OVPN_FS_PATH, S_IRWXU);
 			return 1;
 		}
-#else
-		return 1;
-#endif
 	}
 	else {
-		return 0;
+		mkdir(OVPN_FS_PATH, S_IRWXU);
 	}
+
+	return 1;
 }
 
 
@@ -430,7 +381,7 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 	if (datalen) {
 		encbuffer = malloc(base64_encoded_len(datalen) + 1);
 		if (encbuffer) {
-			enclen = base64_encode(buffer, encbuffer, datalen);
+			enclen = base64_encode((unsigned char*)buffer, encbuffer, datalen);
 			encbuffer[enclen] = '\0';
 
 			snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
@@ -443,4 +394,3 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 
 	return -1;
 }
-

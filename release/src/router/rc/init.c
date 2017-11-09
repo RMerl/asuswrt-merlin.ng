@@ -6311,6 +6311,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -6498,6 +6500,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 #ifdef RT4GAC68U
 		add_rc_support("usbX1");
@@ -6683,6 +6687,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -6838,6 +6844,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -7035,6 +7043,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -7137,6 +7147,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -7280,6 +7292,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -7399,6 +7413,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
@@ -7761,6 +7777,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX2");
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
+#else
+		add_rc_support("noupdate");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");

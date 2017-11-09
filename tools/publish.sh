@@ -15,6 +15,7 @@ case "$choice" in
   * ) echo "Aborting."; exit;;
 esac
 
+eval $(ssh-agent -s)
 ssh-add
 
 cd /media/sf_Share/images/
@@ -31,17 +32,20 @@ do
 done
 
 echo "Uploading documentation..."
-cp README-merlin.txt /media/nas/Onedrive/Asuswrt-Merlin/Releases/Documentation/
+cp README-merlin.txt /media/nas/Onedrive/Asuswrt-Merlin/Documentation/
 scp README-merlin.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
 
-cp Changelog*.txt /media/nas/Onedrive/Asuswrt-Merlin/Releases/Documentation/
+cp Changelog*.txt /media/nas/Onedrive/Asuswrt-Merlin/Documentation/
 scp Changelog*.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
 
 # Only upload SHA256 checksums for non-beta releases
 if [ "$SUFFIXE" == "" ]
 then
-   cp sha256sums.txt /media/nas/Onedrive/Asuswrt-Merlin/Releases/Documentation/
+   cp sha256sums.txt /media/nas/Onedrive/Asuswrt-Merlin/Documentation/
    scp sha256sums.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
 fi
 
 echo "Done deploying!"
+
+eval $(ssh-agent -k)
+

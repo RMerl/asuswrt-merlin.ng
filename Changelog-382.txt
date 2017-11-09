@@ -1,7 +1,7 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
-382.1 Beta (xx-xxx-2017)
+382.1 (xx-xxx-2017)
    Asuswrt-Merlin 382 was rebuilt from a clean 3.0.0.4.382_15098
    GPL archive, as merging the new 382 codebase on top of the existing
    code was proving too difficult.
@@ -9,24 +9,15 @@ Asuswrt-Merlin 382 Changelog
    For simplicity, the following abbreviations are used below:
       AM380 = Asuswrt-Merlin 380.xxx
       AM382 = Asuswrt-Merlin 382.xxx
-      Asus380 = Asus's GPL 3.0.0.4.380_xxxx
-      Asus382 = Asus's GPL 3.0.0.4.382_xxxx
+      Asus380 = Asus's 3.0.0.4.380_xxxx
+      Asus382 = Asus's 3.0.0.4.382_xxxx
 
    AM382.1 is based on AM380.68_4.
 
-   At this time, only the RT-AC86U is supported by AM382.  Other
-   models will gradually be moved to AM382 as Asus upgrades
-   them to the new 382 code base (and they release working GPL
-   drops for them).
-
-   Also note that since Asus' OpenVPN code is now closed source
-   starting with Asus382, it was decided to fork away from their
-   OpenVPN code, so we can retain our existing features, and
-   continue to further develop the OpenVPN support.  This means
-   that a lot of the OpeNVPN code had to be rewritten or modified
-   to work within the new 382 codebase.  The new code is under
-   a GPL licence.
-
+   At this time, only the RT-AC86U, RT-AC88U and RT-AC3100
+   are supported by AM382.  Other models will gradually be
+   moved to AM382 as Asus upgrade them to the new 382 code
+   base (and they release working GPL drops for them).
 
    This changelog will focus on changes that happened between
    AM380.68 and AM382.1, or between Asus382_16466 and AM382.
@@ -44,12 +35,13 @@ Asuswrt-Merlin 382 Changelog
           platform (HND SDK from GPL 382_18219).
           Note that IPTraffic is not supported by this model due to
           its newer Linux kernel.
+   - NEW: Rewrote part of the OpenVPN implementation, as Asus's own
+          is now closed source.
    - NEW: Added support for inline CRLs when importing an ovpn file
    - NEW: Added support for fullcone NAT (RT-AC86U)
    - NEW: Added WiFi Radar (Broadcom's Visualization app) in the
-          Wireless section (RT-AC86U).  You must enable data
-          collection on its Configuration page for all charts to
-          work properly.
+          Wireless section.  You must enable data collection on
+          its Configuration page for all charts to work properly.
    - NEW: Added option to disable the Asus NAT tunnel service under
           Other Settings -> Tweak.  Not quite sure what this
           partly closed source service is for, but it eats a
@@ -85,6 +77,8 @@ Asuswrt-Merlin 382 Changelog
               available on the VPN Status page).
    - CHANGED: Moved Disk spindown settings to the System page,
               to match stock FW which just added this feature too.
+   - CHANGED: Made Sourceforge the new primary download site - too
+              many issues with Mediafire's upload interface.
    - REMOVED: Obsolete/exotic HMAC digests for OpenVPN servers (to
               match with Asus' own supported list)
    - REMOVED: "Custom" OpenVPN authentication mode (which probably

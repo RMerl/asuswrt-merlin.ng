@@ -194,7 +194,7 @@ https://github.com/RMerl/asuswrt-merlin/wiki
 
 Source code
 -----------
-The buildable source code can be found on Github.
+The source code can be found on Github.
 
 Original branch:
 https://github.com/RMerl/asuswrt-merlin

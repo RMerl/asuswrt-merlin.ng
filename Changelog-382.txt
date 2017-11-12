@@ -1,10 +1,10 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
-382.1 (xx-xxx-2017)
-   Asuswrt-Merlin 382 was rebuilt from a clean 3.0.0.4.382_15098
-   GPL archive, as merging the new 382 codebase on top of the existing
-   code was proving too difficult.
+382.1 (12-Nov-2017)
+   Asuswrt-Merlin 382 was rebuilt from a clean GPL codebase, as
+   merging the new 382 GPL on top of the existing code proved too
+   difficult.
 
    For simplicity, the following abbreviations are used below:
       AM380 = Asuswrt-Merlin 380.xxx
@@ -12,15 +12,20 @@ Asuswrt-Merlin 382 Changelog
       Asus380 = Asus's 3.0.0.4.380_xxxx
       Asus382 = Asus's 3.0.0.4.382_xxxx
 
-   AM382.1 is based on AM380.68_4.
+   AM382.1 is based on AM380.68_4 merged on top of a clean
+   3.0.0.4.382_15098 GPL.
 
    At this time, only the RT-AC86U, RT-AC88U and RT-AC3100
    are supported by AM382.  Other models will gradually be
    moved to AM382 as Asus upgrade them to the new 382 code
-   base (and they release working GPL drops for them).
+   base (and GPL code becomes available for them).
 
    This changelog will focus on changes that happened between
    AM380.68 and AM382.1, or between Asus382_16466 and AM382.
+
+   Also note that the primary download site was changed to
+   Sourceforge, due to numerous issues with Mediafire.  Onedrive
+   will be the oficial mirror to the SF.net download site.
 
    - NEW: Moved to Asus382 codebase.  Some of the most important
           changes between Asus380 and Asus382:
@@ -36,7 +41,8 @@ Asuswrt-Merlin 382 Changelog
           Note that IPTraffic is not supported by this model due to
           its newer Linux kernel.
    - NEW: Rewrote part of the OpenVPN implementation, as Asus's own
-          is now closed source.
+          is now closed source.  Asuswrt-Merlin's OpenVPN code will
+          now be independent of Asus's.
    - NEW: Added support for inline CRLs when importing an ovpn file
    - NEW: Added support for fullcone NAT (RT-AC86U)
    - NEW: Added WiFi Radar (Broadcom's Visualization app) in the
@@ -46,7 +52,7 @@ Asuswrt-Merlin 382 Changelog
           Other Settings -> Tweak.  Not quite sure what this
           partly closed source service is for, but it eats a
           fair amount of CPU and RAM.
-   - NEW: Webui options on OpenVPN Server page to quickly choose
+   - NEW: Option on OpenVPN Server page to quickly choose
           between pushing LAN or LAN + Internet access (ported
           from Asus382)
    - NEW: Option to select the bitsize to use (1024 or 2048) when
@@ -71,14 +77,12 @@ Asuswrt-Merlin 382 Changelog
               will still only check the Release channel.
    - CHANGED: Layout improvements to the SNMP, Login, and
               Operation Mode pages (patches by Alin Trăistaru)
-   - CHANGED: Report both the local IP client IP as well as the
+   - CHANGED: Report both the local client IP as well as the
               public/visible IP on the OpenVPN client page once
               a client is connected (same info that was already
               available on the VPN Status page).
    - CHANGED: Moved Disk spindown settings to the System page,
-              to match stock FW which just added this feature too.
-   - CHANGED: Made Sourceforge the new primary download site - too
-              many issues with Mediafire's upload interface.
+              to match with Asus382 which now offers this feature.
    - REMOVED: Obsolete/exotic HMAC digests for OpenVPN servers (to
               match with Asus' own supported list)
    - REMOVED: "Custom" OpenVPN authentication mode (which probably

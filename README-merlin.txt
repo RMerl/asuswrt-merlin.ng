@@ -33,8 +33,9 @@ Asuswrt-Merlin is available in two separate branches:
 Supported Devices
 -----------------
 Each branch supports different models.  As Asus upgrades models
-to the new 382_xxxx code base, Asuswrt-Merlin will also migrate 
-them to the new branch.
+to the new 382 code base, they will gradually be migrated to 
+Asuswrt-Merlin's 382 branch, with the exception of the 
+RT-N66U and RT-AC66U which will remain on the legacy 380 branch.
 
 
 Supported devices on version 380:
@@ -51,9 +52,11 @@ Supported devices on version 380:
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
 
 Supported devices on version 382:
+ * RT-AC88U
+ * RT-AC3100
  * RT-AC86U
 
-Devices that are no longer supported:
+No longer supported:
  * RT-N16
 
 
@@ -263,8 +266,8 @@ of Good Will.
 Concerning privacy:
 
 The only call back made by this firmware to me is when it checks for the
-availability of a new version, which can be disabled if desired.  More info 
-on the Wiki:
+availability of a new version.  The automated check can be disabled if desired.
+More info on the Wiki:
 
 https://github.com/RMerl/asuswrt-merlin/wiki/RMerl/asuswrt-merlin/wiki/Privacy-disclosure
 

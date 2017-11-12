@@ -41,8 +41,8 @@ scp Changelog*.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/
 # Only upload SHA256 checksums for non-beta releases
 if [ "$SUFFIXE" == "" ]
 then
-   cp sha256sums.txt /media/nas/Onedrive/Asuswrt-Merlin/Documentation/
-   scp sha256sums.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
+   cp sha256sums*.txt /media/nas/Onedrive/Asuswrt-Merlin/Documentation/
+   scp sha256sums*.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/Documentation/
 fi
 
 echo "Done deploying!"

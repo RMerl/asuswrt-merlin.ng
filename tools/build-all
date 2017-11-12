@@ -250,8 +250,8 @@ wait
 
 echo ""
 cd ~/images
-sha256sum *.trx | unix2dos > sha256sums.txt
-sha256sum *.w | unix2dos >> sha256sums.txt
+sha256sum *.trx | unix2dos > sha256sums-382.txt
+sha256sum *.w | unix2dos >> sha256sums-382.txt
 
 
 # Copy everything to the host

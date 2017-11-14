@@ -1,6 +1,19 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
+382.2 Beta (xx-xxx-xxxx)
+   - NEW: Added custom/add/postconf support for mcpd.conf (RT-AC86U)
+   - CHANGED: Updated odhcp6c to latest upstream version
+              (patch by theMIRon)
+   - CHANGED: cifs and xt_set kernel modules will get automatically
+              loaded as needed.
+   - FIXED: allow IA_NA mode downgrade with forced IA_PD
+            (for ISPs with broken IPv6 support)
+            (patch by theMIRon)
+   - FIXED: SSH brute force protection would break WAN
+            connectivity (RT-AC86U)
+
+
 382.1 (12-Nov-2017)
    Asuswrt-Merlin 382 was rebuilt from a clean GPL codebase, as
    merging the new 382 GPL on top of the existing code proved too
@@ -48,6 +61,7 @@ Asuswrt-Merlin 382 Changelog
    - NEW: Added WiFi Radar (Broadcom's Visualization app) in the
           Wireless section.  You must enable data collection on
           its Configuration page for all charts to work properly.
+          (RT-AC86U)
    - NEW: Added option to disable the Asus NAT tunnel service under
           Other Settings -> Tweak.  Not quite sure what this
           partly closed source service is for, but it eats a

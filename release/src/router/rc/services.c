@@ -3554,8 +3554,13 @@ mcpd_conf(void)
 	fprintf(fp, "mld-mcast-snoop-exceptions "
 		"ff05::0001:0003/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff\n");
 
+	append_custom_config("mcpd.conf", fp);
 	if (fp)
 		fclose(fp);
+
+        use_custom_config("mcpd.conf",conf_file);
+        run_postconf("mcpd",conf_file);
+
 }
 
 void

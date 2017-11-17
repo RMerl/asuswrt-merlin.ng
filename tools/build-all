@@ -12,10 +12,10 @@
 
 ### Manual/hardcoded
 # Append git revision
-BUILDREV=1
+export BUILDREV=1
 
 # Enable update server support (don't use if you build a fork!)
-#MERLINUPDATE=y
+# export MERLINUPDATE=y
 
 # rsync tree from central source tree before build
 RSYNC_TREE=y

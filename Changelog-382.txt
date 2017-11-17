@@ -1,17 +1,22 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
-382.2 Beta (xx-xxx-xxxx)
+382.1_2 (xx-xxx-xxxx)
    - NEW: Added custom/add/postconf support for mcpd.conf (RT-AC86U)
    - CHANGED: Updated odhcp6c to latest upstream version
               (patch by theMIRon)
    - CHANGED: cifs and xt_set kernel modules will get automatically
               loaded as needed.
+   - CHANGED: Updated openssl to 1.0.2m.
    - FIXED: allow IA_NA mode downgrade with forced IA_PD
             (for ISPs with broken IPv6 support)
             (patch by theMIRon)
    - FIXED: SSH brute force protection would break WAN
             connectivity (RT-AC86U)
+   - FIXED: Wrong Trend Micro signature updater was used when
+            compiling with FW update checker enabled.
+   - FIXED: QoS Upload chart missing on PPPoE connections with
+            Adaptive QoS enabled.
 
 
 382.1 (12-Nov-2017)

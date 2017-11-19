@@ -114,7 +114,6 @@ define(function(){
 				menuName: "<#Traffic_Analyzer#>",
 				index: "menu_TrafficAnalyzer", 
 				tab: [
-					{url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"},
 					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
 					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
@@ -122,6 +121,7 @@ define(function(){
 					{url: "Main_TrafficMonitor_devrealtime.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_devdaily.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_devmonthly.asp", tabName: "__INHERIT__"},
+					{url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 

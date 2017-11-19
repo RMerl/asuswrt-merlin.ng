@@ -236,7 +236,7 @@ void get_meter_file(char *meter_buf)
 #else
 	FRead(meter_buf, RA_OFFSET_ISP_METER, 64);
 #endif
-	_dprintf("meter_buf: %s\n", meter_buf);
+	//_dprintf("meter_buf: %s\n", meter_buf);
 	return;
 }
 
@@ -323,7 +323,7 @@ static void save(int quick)
 
 	if (strcmp(save_path, "*nvram") == 0) {
 		if (!wait_action_idle(10)) {
-			_dprintf("%s: busy, not saving\n", __FUNCTION__);
+			//_dprintf("%s: busy, not saving\n", __FUNCTION__);
 			return;
 		}
 
@@ -334,7 +334,7 @@ static void save(int quick)
 				nvram_set("rstats_data", bo);
 				if (!nvram_match("debug_nocommit", "1")) nvram_commit();
 
-				_dprintf("%s: nvram commit\n", __FUNCTION__);
+				//_dprintf("%s: nvram commit\n", __FUNCTION__);
 
 				free(bo);
 			}
@@ -350,9 +350,9 @@ static void save(int quick)
 				_dprintf("%s: busy, not saving\n", __FUNCTION__);
 			}
 			else {
-				_dprintf("%s: cp %s %s\n", __FUNCTION__, hgz, tmp);
+				//_dprintf("%s: cp %s %s\n", __FUNCTION__, hgz, tmp);
 				if (eval("cp", hgz, tmp) == 0) {
-					_dprintf("%s: copy ok\n", __FUNCTION__);
+					//_dprintf("%s: copy ok\n", __FUNCTION__);
 
 					if (!nvram_match("rstats_bak", "0")) {
 						now = time(0);
@@ -371,9 +371,9 @@ static void save(int quick)
 						}
 					}
 
-					_dprintf("%s: rename %s %s\n", __FUNCTION__, tmp, save_path);
+					//_dprintf("%s: rename %s %s\n", __FUNCTION__, tmp, save_path);
 					if (rename(tmp, save_path) == 0) {
-						_dprintf("%s: rename ok\n", __FUNCTION__);
+						//_dprintf("%s: rename ok\n", __FUNCTION__);
 						break;
 					}
 				}
@@ -393,14 +393,14 @@ static int decomp(const char *fname, void *buffer, int size, int max)
 	FILE *fp;
 	long file_size = 0;
 
-	_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
+	//_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
 
 	unlink(uncomp_fn);
 
 	n = 0;
 	sprintf(s, "gzip -dc %s > %s", fname, uncomp_fn);
 	if (system(s)) {
-		_dprintf("%s: %s != 0\n", __func__, s);
+		//_dprintf("%s: %s != 0\n", __func__, s);
 		goto exit_decomp;
 	}
 	if (!(fp = fopen(uncomp_fn, "r")))
@@ -410,12 +410,12 @@ static int decomp(const char *fname, void *buffer, int size, int max)
 	file_size = ftell(fp);
 	fclose(fp);
 	if ((size * max) != file_size) {
-		_dprintf("%s: filesize mismatch! (%ld/%ld)\n", __func__, (size * max), file_size);
+		//_dprintf("%s: filesize mismatch! (%ld/%ld)\n", __func__, (size * max), file_size);
 		goto exit_decomp;
 	}
 
 	n = f_read(uncomp_fn, buffer, size * max);
-	_dprintf("%s: n=%d\n", __func__, n);
+	//_dprintf("%s: n=%d\n", __func__, n);
 	if (n <= 0)
 		n = 0;
 	else
@@ -438,13 +438,13 @@ static int load_history(const char *fname)
 {
 	history_t hist;
 
-	_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
+	//_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
 
 	if ((decomp(fname, &hist, sizeof(hist), 1) != 1) || (hist.id != CURRENT_ID)) {
 		history_v0_t v0;
 
 		if ((decomp(fname, &v0, sizeof(v0), 1) != 1) || (v0.id != ID_V0)) {
-			_dprintf("%s: load failed\n", __FUNCTION__);
+			//_dprintf("%s: load failed\n", __FUNCTION__);
 			return 0;
 		}
 		else {
@@ -463,7 +463,7 @@ static int load_history(const char *fname)
 		memcpy(&history, &hist, sizeof(history));
 	}
 
-	_dprintf("%s: dailyp=%d monthlyp=%d\n", __FUNCTION__, history.dailyp, history.monthlyp);
+	//_dprintf("%s: dailyp=%d monthlyp=%d\n", __FUNCTION__, history.dailyp, history.monthlyp);
 	return 1;
 }
 
@@ -533,7 +533,7 @@ static void load(int new)
 
 	sprintf(hgz, "%s.gz", speed_fn);
 	speed_count = decomp(hgz, speed, sizeof(speed[0]), MAX_SPEED_IF);
-	_dprintf("%s: speed_count = %d\n", __FUNCTION__, speed_count);
+	//_dprintf("%s: speed_count = %d\n", __FUNCTION__, speed_count);
 
 	for (i = 0; i < speed_count; ++i) {
 		if (speed[i].utime > current_uptime) {
@@ -553,9 +553,9 @@ static void load(int new)
 	}
 
 	f_read_string(source_fn, sp, sizeof(sp));	// always terminated
-	_dprintf("%s: read source=%s save_path=%s\n", __FUNCTION__, sp, save_path);
+	//_dprintf("%s: read source=%s save_path=%s\n", __FUNCTION__, sp, save_path);
 	if ((strcmp(sp, save_path) == 0) && (load_history(hgz))) {
-		_dprintf("%s: using local file\n", __FUNCTION__);
+		//_dprintf("%s: using local file\n", __FUNCTION__);
 		return;
 	}
 
@@ -567,7 +567,7 @@ static void load(int new)
 			if ((n = strlen(bi)) > 0) {
 				if ((bo = malloc(base64_decoded_len(n))) != NULL) {
 					n = base64_decode(bi, bo, n);
-					_dprintf("%s: nvram n=%d\n", __FUNCTION__, n);
+					//_dprintf("%s: nvram n=%d\n", __FUNCTION__, n);
 					f_write(hgz, bo, n, 0, 0);
 					free(bo);
 					load_history(hgz);
@@ -624,7 +624,7 @@ static void save_speedjs(long next)
 
 	if ((f = fopen("/var/tmp/rstats-speed.js", "w")) == NULL) return;
 
-	_dprintf("%s: speed_count = %d\n", __FUNCTION__, speed_count);
+	//_dprintf("%s: speed_count = %d\n", __FUNCTION__, speed_count);
 
 	fprintf(f, "\nspeed_history = {\n");
 
@@ -663,20 +663,20 @@ static void save_datajs(FILE *f, int mode)
 	int max;
 	int k, kn;
 
-_dprintf("save_datajs:\n");
+//_dprintf("save_datajs:\n");
 	fprintf(f, "\n%s_history = [\n", (mode == DAILY) ? "daily" : "monthly");
 
 	if (mode == DAILY) {
 		data = history.daily;
 		p = history.dailyp;
 		max = MAX_NDAILY;
-_dprintf("DAILY: p= %d\n", p);
+//_dprintf("DAILY: p= %d\n", p);
 	}
 	else {
 		data = history.monthly;
 		p = history.monthlyp;
 		max = MAX_NMONTHLY;
-_dprintf("MONTHLY: p= %d\n", p);
+//_dprintf("MONTHLY: p= %d\n", p);
 	}
 	kn = 0;
 	for (k = max; k > 0; --k) {
@@ -685,8 +685,8 @@ _dprintf("MONTHLY: p= %d\n", p);
 		fprintf(f, "%s[0x%lx,0x%llx,0x%llx]", kn ? "," : "",
 			(unsigned long)data[p].xtime, data[p].counter[0] / K, data[p].counter[1] / K);
 		++kn;
-_dprintf("%d:: [0x%lx,0x%llx,0x%llx]\n", p, 
-	(unsigned long)data[p].xtime, data[p].counter[0] / K, data[p].counter[1] / K);
+//_dprintf("%d:: [0x%lx,0x%llx,0x%llx]\n", p, 
+//	(unsigned long)data[p].xtime, data[p].counter[0] / K, data[p].counter[1] / K);
 	}
 	fprintf(f, "];\n");
 }
@@ -772,8 +772,8 @@ static enum if_id desc_to_id(char *desc)
 			id = IFID_WIRELESS3 + *s - '0' + 1;
 	}
 
-	if (id < 0 || id == IFID_MAX)
-		_dprintf("%s: Unknown desc [%s]\n", __func__, desc);
+	//if (id < 0 || id == IFID_MAX)
+		//_dprintf("%s: Unknown desc [%s]\n", __func__, desc);
 
 	return id;
 
@@ -1043,12 +1043,12 @@ _dprintf("CUR MONTH Tx= %lu = %lu + %llu - %lu\n",month_tx,last_month_tx,(histor
 			continue;
 		}
 		if (((current_uptime - sp->utime) > (10 * SMIN)) || (find_word(exclude, sp->ifname))) {
-			_dprintf("%s: #%d removing. > time limit or excluded\n", __FUNCTION__, i);
+			//_dprintf("%s: #%d removing. > time limit or excluded\n", __FUNCTION__, i);
 			--speed_count;
 			memcpy(sp, sp + 1, (speed_count - i) * sizeof(speed[0]));
 		}
 		else {
-			_dprintf("%s: %s not found setting sync=1\n", __FUNCTION__, sp->ifname, i);
+			//_dprintf("%s: %s not found setting sync=1\n", __FUNCTION__, sp->ifname, i);
 			sp->sync = 1;
 		}
 	}
@@ -1057,7 +1057,7 @@ _dprintf("CUR MONTH Tx= %lu = %lu + %llu - %lu\n",month_tx,last_month_tx,(histor
 	if (current_uptime >= save_utime) {
 		save(0);
 		save_utime = current_uptime + get_stime();
-		_dprintf("%s: uptime = %dm, save_utime = %dm\n", __FUNCTION__, current_uptime / 60, save_utime / 60);
+		//_dprintf("%s: uptime = %dm, save_utime = %dm\n", __FUNCTION__, current_uptime / 60, save_utime / 60);
 	}
 }
 
@@ -1104,7 +1104,7 @@ int main(int argc, char *argv[])
 	if (argc > 1) {
 		if (strcmp(argv[1], "--new") == 0) {
 			new = 1;
-			_dprintf("new=1\n");
+			_dprintf("New rstats database\n");
 		}
 	}
 
@@ -1147,7 +1147,7 @@ _dprintf("L_time= %ld\n",isp_limit_time);
         get_meter_file(isp_meter_buf);
 	if(isp_meter_buf!=NULL) {
                 if (sscanf(isp_meter_buf, "isp_meter:%lu,%lu,%ld,end", &isp_rx, &isp_tx, &isp_connect_time) == 3) {
-                        _dprintf("isp_rx= %lu, isp_tx= %lu, isp_connent_time= %ld\n", 
+                        //_dprintf("isp_rx= %lu, isp_tx= %lu, isp_connent_time= %ld\n", 
 				 isp_rx, isp_tx, isp_connect_time);
                         if((isp_rx>last_month_rx)&&(isp_tx>last_month_tx)){
                                 last_month_rx = isp_rx;

@@ -2052,7 +2052,7 @@ enum {
 	CKN_STR_MAX = 65535
 };
 
-#define CKN_STR_DEFAULT 32	// Otherwise a whole bunch of nvram can't be changed by webui
+#define CKN_STR_DEFAULT 1024	// Otherwise a whole bunch of nvram can't be changed by webui
 
 enum {
 	CKN_TYPE_DEFAULT = 0

@@ -2644,6 +2644,7 @@ int nvram_check(char *name, char *value, struct nvram_tuple *t, char *output)
 	{
 		ret=1;
 		_dprintf("nvram_check fail: nvram %s over length\n", t->name);
+		logmessage("httpd", "nvram_check fail: nvram %s over length (%d > %d)", t->name, strlen(value), t->len);
 	}
 #if defined(RTCONFIG_NVRAM_ENCRYPT)
 	else if(t->enc == 1){

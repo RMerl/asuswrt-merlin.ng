@@ -340,7 +340,6 @@ function setTLSTable(unit) {
 			document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client4_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
 			document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client4_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
 			document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client4_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-			document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client3_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
 			document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client4_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
 			break;
 		case "5" :

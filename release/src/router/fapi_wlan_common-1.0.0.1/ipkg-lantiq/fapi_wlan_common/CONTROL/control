@@ -1,9 +1,0 @@
-Package: fapi_wlan_common
-Version: 1.0.0.1-1
-Depends: libc, libssp, libhelper, libncurses, librt
-Source: /media/ASUSWRT/asuswrt/UGW-7.2PR1/UGW-7.2-SW-CD/Sources/ugw/feeds_ugw/wlan/fapi_wlan_common
-Section: net
-Maintainer: LANTIQ DEUTSCHLAND GMBH
-Architecture: lantiq
-Installed-Size: 201645
-Description:  Lantiq Common FAPI layer

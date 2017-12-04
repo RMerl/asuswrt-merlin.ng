@@ -830,7 +830,7 @@ static void calc(void)
 	nv_lan_ifnames = nvram_safe_get("lan_ifnames");
 
 #ifdef RTCONFIG_LANTIQ
-	if (nvram_get_int("switch_stb_x") == 0) {
+	if ((nvram_get_int("switch_stb_x") == 0 || nvram_get_int("switch_stb_x") > 6) && ppa_support(WAN_UNIT_FIRST)) {
 		if(nvram_get_int("wave_ready") == 0 ||
 			nvram_get_int("wave_action") != 0 ) return;
 		memset(tmp_speed, 0, sizeof(tmp_speed));
@@ -845,7 +845,7 @@ static void calc(void)
 
 	if (!f) return;
 #ifdef RTCONFIG_LANTIQ
-	if (nvram_get_int("switch_stb_x") > 0)
+	if ((nvram_get_int("switch_stb_x") > 0 && nvram_get_int("switch_stb_x") <= 6) || !ppa_support(WAN_UNIT_FIRST))
 #endif
 	{
 		fgets(buf, sizeof(buf), f);	// header
@@ -854,7 +854,7 @@ static void calc(void)
 	memset(tmp_speed, 0, sizeof(tmp_speed));
 	while (fgets(buf, sizeof(buf), f)) {
 #ifdef RTCONFIG_LANTIQ
-		if (nvram_get_int("switch_stb_x") > 0) {
+		if ((nvram_get_int("switch_stb_x") > 0 && nvram_get_int("switch_stb_x") <= 6) || !ppa_support(WAN_UNIT_FIRST)) {
 #endif
 			if ((p = strchr(buf, ':')) == NULL) continue;
 				//_dprintf("\n=== %s\n", buf);
@@ -926,7 +926,7 @@ loopagain:
 #endif
 	}
 #ifdef RTCONFIG_LANTIQ
-	if (nvram_get_int("switch_stb_x") == 0) {
+	if ((nvram_get_int("switch_stb_x") == 0 || nvram_get_int("switch_stb_x") > 6) && ppa_support(WAN_UNIT_FIRST)) {
 		unlink(RS_PPACMD_WAN_PATH);
 		unlink(RS_PPACMD_LAN_PATH);
 		unlink(RS_PPACMD_TRAFFIC_PATH);

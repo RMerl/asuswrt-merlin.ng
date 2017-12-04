@@ -1225,6 +1225,11 @@ char *get_lan_mac_name(void)
 		case MODEL_RTAC87U:
 		case MODEL_RTAC88U:
 			return "et1macaddr";
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
+		case MODEL_RTAC5300:
+			if (dpsta_mode() || dpsr_mode())
+				return "et1macaddr";
+#endif
 		default:
 			return "et0macaddr";
 	}
@@ -1302,3 +1307,105 @@ char *get_wlxy_ifname(int x, int y, char *buf)
 #endif
 	return get_wlifname(x, y, y, buf);
 }
+
+#ifdef RTCONFIG_AMAS
+void add_beacon_vsie(char *hexdata)
+{
+	char cmd[300] = {0};
+	//Bit 0 - Beacons, Bit 1 - Probe Rsp, Bit 2 - Assoc/Reassoc Rsp 
+	//Bit 3 - Auth Rsp, Bit 4 - Probe Req, Bit 5 - Assoc/Reassoc Req
+	int pktflag = 0x3;
+	int len = 0;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	if (is_router_mode() || access_point_mode())
+		snprintf(prefix, sizeof(prefix), "wl0_");
+	else
+		snprintf(prefix, sizeof(prefix), "wl0.1_");
+
+	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "wl -i %s add_ie %d %d %02X:%02X:%02X %s", 
+			ifname, pktflag, len, OUI_ASUS[0], OUI_ASUS[1], OUI_ASUS[2], hexdata);
+		system(cmd);
+	}
+}
+
+void del_beacon_vsie(char *hexdata)
+{
+	char cmd[300] = {0};
+	int pktflag = 0x3;
+	int len = 0;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	if (is_router_mode() || access_point_mode())
+		snprintf(prefix, sizeof(prefix), "wl0_");
+	else
+		snprintf(prefix, sizeof(prefix), "wl0.1_");
+
+	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "wl -i %s del_ie %d %d %02X:%02X:%02X %s",
+			ifname, pktflag, len, OUI_ASUS[0], OUI_ASUS[1], OUI_ASUS[2], hexdata);
+		system(cmd);
+	}
+}
+
+void add_obd_probe_req_vsie(char *hexdata)
+{
+	char cmd[300] = {0};
+	//Bit 0 - Beacons, Bit 1 - Probe Rsp, Bit 2 - Assoc/Reassoc Rsp
+	//Bit 3 - Auth Rsp, Bit 4 - Probe Req, Bit 5 - Assoc/Reassoc Req
+	int pktflag = 0x10;
+	int len = 0;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	if (is_router_mode() || access_point_mode())
+		snprintf(prefix, sizeof(prefix), "wl0_");
+	else
+		snprintf(prefix, sizeof(prefix), "wl0.1_");
+
+	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "wl -i %s add_ie %d %d %02X:%02X:%02X %s",
+			ifname, pktflag, len, OUI_ASUS[0], OUI_ASUS[1], OUI_ASUS[2], hexdata);
+		system(cmd);
+	}
+}
+
+void del_obd_probe_req_vsie(char *hexdata)
+{
+	char cmd[300] = {0};
+	int pktflag = 0x10;
+	int len = 0;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	if (is_router_mode() || access_point_mode())
+		snprintf(prefix, sizeof(prefix), "wl0_");
+	else
+		snprintf(prefix, sizeof(prefix), "wl0.1_");
+
+	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "wl -i %s del_ie %d %d %02X:%02X:%02X %s",
+			ifname, pktflag, len, OUI_ASUS[0], OUI_ASUS[1], OUI_ASUS[2], hexdata);
+		system(cmd);
+	}
+}
+#endif	/* RTCONFIG_AMAS */

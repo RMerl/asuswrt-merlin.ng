@@ -26,6 +26,10 @@ LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -L$(TOP)/nt_center/lib -lnt
 ifneq ($(RTCONFIG_QCA),y)
 LDFLAGS += -lpthread
 endif
+else
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
 endif
 
 ifeq ($(RTCONFIG_SW_HW_AUTH),y)

@@ -13,6 +13,10 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
@@ -58,7 +62,7 @@ all:
 	-cp -f prebuild$(BCMEX)$(EX7)/libbwdpi.so libbwdpi.so
 	-cp -f prebuild$(BCMEX)$(EX7)/hwinfo hwinfo
 else
-all: hwinfo libbwdpi.so
+all: hwinfo libbwdpi.so dpi_support.prep
 endif
 
 libbwdpi.so: $(OBJS)
@@ -91,5 +95,9 @@ install: all
 	@echo " [bwdpi] CC $@"
 	@$(CC) $(CFLAGS) -c $<
 
+dpi_support.prep: dpi_support.c
+	@echo " [bwdpi] compile prep $@"
+	@$(CC) $(CFLAGS) -E $< > $@
+
 clean:
-	rm -f *.so *.o hwinfo bwdpi_cmd dbg_dpi_support
+	rm -f *.so *.o *.prep hwinfo bwdpi_cmd dbg_dpi_support

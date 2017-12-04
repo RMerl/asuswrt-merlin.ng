@@ -79,7 +79,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script>
-var isFirst = ('<% nvram_get("x_Setting"); %>' == '1') ? false : true;;
+var isFirst = ('<% nvram_get("x_Setting"); %>' == '1') ? false : true;
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<% nvram_get("local_domain"); %>';
 var domainNameUrl = ((header_info.host.split(":").length==2)?"https":"http")+"://"+header_info.host.replace(header_info.host.split(":")[0], ROUTERHOSTNAME);
@@ -415,7 +415,7 @@ function QIS_load_body(){
 		document.QKform.wan1_pppoe_username.disabled = true;
 		document.QKform.wan1_pppoe_passwd.disabled = true;
 	}
-	if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VRZ-AC1300"){
+	if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300"){
 		document.getElementById("QIS_wizard_menu").style.display = "none";
 		document.getElementById("qis_menu").style.marginTop = "-160px";
 	}
@@ -771,7 +771,7 @@ function detect_httpd(){
 
 		<td>
 		<div class="_contentM_qis">
-			<iframe name="contentM" style="" id="contentM" class="contentM_qis" scrolling="auto" width="100%" height="540px" frameborder="0"></iframe> 
+			<iframe name="contentM" style="" id="contentM" class="contentM_qis" scrolling="auto" width="100%" height="550px" frameborder="0"></iframe> 
 		</div>
 		<script>
 			(function(){
@@ -784,8 +784,8 @@ function detect_httpd(){
 						$("._contentM_qis").css("height", "650px");
 					}
 					else{
-						$iframe.css("height", "540px");
-						$("._contentM_qis").css("height", "540px");
+						$iframe.css("height", "550px");
+						$("._contentM_qis").css("height", "550px");
 					}
 
 					$iframe[0].contentWindow.onbeforeunload = function(){

@@ -345,6 +345,8 @@ usage(void)
 #else
 #ifdef RTCONFIG_QCA
 #define PROFILE_HEADER_NEW      "AC55U"
+#elif defined(RTCONFIG_LANTIQ)
+#define PROFILE_HEADER_NEW      "BLUE"
 #else
 #define PROFILE_HEADER_NEW      "HDR2"
 #endif
@@ -610,7 +612,7 @@ int nvram_restore_new(char *file, char *buf)
 
 	p = buf;
 
-	while (*p)
+	while (*p || p-buf<=count)
 	{
 #if 1
 		/* e.g.: to skip the case: 00 2e 30 2e 32 38 00 ff 77 61 6e */

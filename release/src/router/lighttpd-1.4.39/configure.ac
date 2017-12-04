@@ -757,6 +757,11 @@ AC_CHECK_LIB(fcgi, FCGI_Accept, [
 
 AM_CONDITIONAL(CHECK_WITH_FASTCGI, test "x$fastcgi_found" = xyes)
 
+source_found=no
+if test -f src/mod_smbdav.c; then
+  source_found=yes
+fi
+AM_CONDITIONAL(NO_GPL_COMPILING, test "$source_found" = yes)
 
 dnl check for extra compiler options (warning options)
 if test "${GCC}" = "yes"; then

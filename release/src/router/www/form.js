@@ -99,7 +99,7 @@ function cal_panel_block(obj, multiple) {
 }
 
 function adjust_TM_eula_height(_objID) {
-	var scrollTop = document.body.scrollTop;
+	var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
 	document.getElementById(_objID).style.top = (scrollTop + 10) + "px";
 	var visiable_height = document.documentElement.clientHeight;
 	var tm_eula_container_height = parseInt(document.getElementById(_objID).offsetHeight);
@@ -110,6 +110,6 @@ function adjust_TM_eula_height(_objID) {
 	}
 }
 function adjust_panel_block_top(_objID, _offsetHeight) {
-	var scrollTop = document.body.scrollTop;
+	var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
 	document.getElementById(_objID).style.top = (scrollTop + _offsetHeight) + "px";
 }

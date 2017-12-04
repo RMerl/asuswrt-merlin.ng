@@ -1,4 +1,4 @@
-﻿document.write('<script type="text/javascript" src="/require/require.min.js"></script>');
+document.write('<script type="text/javascript" src="/require/require.min.js"></script>');
 document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
 document.write('<script type="text/javascript" src="/notification.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="/notification.css"></link>');
@@ -408,7 +408,7 @@ function isSupport(_ptn){
 		return hasRogClient;
 	}
 	else if(_ptn == "mssid"){
-		var wl_vifnames = '<% nvram_get("wl_vifnames"); %>';
+		var wl_vifnames = '<% nvram_get("wl0_vifnames"); %>';
 		var multissid = rc_support.search("mssid");
 		if(sw_mode == 2 || sw_mode == 4)
 			multissid = -1;
@@ -452,7 +452,11 @@ function isSupport(_ptn){
 		return (based_modelid.search("RP-") != -1) ? true : false;
 	}
 	else if(_ptn == "usbPortMax"){
-		return rc_support.charAt(rc_support.indexOf("usbX")+4);
+		var usbX_index = rc_support.indexOf("usbX");
+		return (usbX_index != -1) ? rc_support.charAt(usbX_index+4) : 0;
+	}
+	else if(_ptn == "usbX"){
+		return (rc_support.search("usbX") != -1) ? true : false;
 	}
 	else if(_ptn == "yadns"){
 		return (rc_support.search("yadns_hideqis") != -1 || rc_support.search("yadns") != -1) ? true : false;
@@ -488,8 +492,11 @@ function isSupport(_ptn){
 									 "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE"];
 		return (movistarTriple_support_models.indexOf(based_modelid) >= 0)? true : false;
 	}
+	else if(_ptn == "dpi_mals" || _ptn == "dpi_vp" || _ptn == "dpi_cc" || _ptn == "adaptive_qos" || _ptn == "webs_filter" || _ptn == "apps_filter" || _ptn == "web_history" || _ptn == "bandwidth_monitor"){
+		return uiSupport(_ptn);
+	}
 	else
-		return (rc_support.search(_ptn) == -1) ? false : true;
+		return (rc_support.split(" ").indexOf(_ptn) == -1) ? false : true;
 }
 
 var igd2_support = isSupport("igd2");
@@ -512,6 +519,7 @@ var psta_support = isSupport("psta");
 var wisp_support = isSupport("wisp");
 var wl6_support = isSupport("wl6");
 var no_finiwl_support = isSupport("no_finiwl");
+var Bcmwifi_support = isSupport("bcmwifi");
 var Rawifi_support = isSupport("rawifi");
 var Qcawifi_support = isSupport("qcawifi");
 var Rtkwifi_support = isSupport("rtkwifi");
@@ -541,7 +549,7 @@ var printer_support = isSupport("printer");
 var noprinter_support = isSupport("noprinter");
 var appbase_support = isSupport("appbase");
 var appnet_support = isSupport("appnet");
-var media_support = isSupport(" media");
+var media_support = isSupport("media");
 var noiTunes_support = isSupport("noitunes");
 var nomedia_support = isSupport("nomedia");
 var noftp_support = isSupport("noftp");
@@ -597,6 +605,10 @@ var adBlock_support = isSupport("adBlock");
 var keyGuard_support = isSupport("keyGuard");
 var rog_support = isSupport("rog");
 var smart_connect_support = isSupport("smart_connect");
+if(based_modelid == "BLUECAVE"){
+	smart_connect_support = isSupport("bandstr");
+}
+
 var rrsut_support = isSupport("rrsut");
 var gobi_support = isSupport("gobi");
 var findasus_support = isSupport("findasus");
@@ -624,6 +636,7 @@ var hive_hide_support = isSupport("hive_hide");
 var wifiproxy_support = isSupport("wifiproxy");
 var lyra_hide_support = isSupport("lyra_hide");
 var hdspindown_support = isSupport("hdspindown");
+var amesh_support = uiSupport("amas");
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
 var hnd_support = isSupport("hnd");
@@ -643,6 +656,7 @@ var sdk_7 = sdk_version_array[0] == 7 ? true : false;
 var sdk_5 = sdk_version_array[0] == 5 ? true : false;
 var bcm_mumimo_support = isSupport("mumimo");		//Broadcom MU-MIMOs
 var nt_center_support = isSupport("nt_center");
+var dblog_support = isSupport("dblog");
 
 if(nt_center_support)
 	document.write('<script type="text/javascript" src="/client_function.js"></script>');
@@ -697,6 +711,9 @@ var wan_diag_state = "<% nvram_get("dslx_diag_state"); %>";
 var wlan0_radio_flag = "<% nvram_get("wl0_radio"); %>";
 var wlan1_radio_flag = "<% nvram_get("wl1_radio"); %>";
 var wlan2_radio_flag = "<% nvram_get("wl2_radio"); %>";
+
+var diag_dblog_enable = "<% nvram_get("dblog_enable"); %>";
+var diag_dblog_remaining = "<% nvram_get("dblog_remaining"); %>";
 
 //for high power model
 var auto_channel = '<% nvram_get("AUTO_CHANNEL"); %>';
@@ -828,6 +845,15 @@ function show_banner(L3){// L3 = The third Level of Menu
 	banner_code +='<input type="hidden" name="action_wait" value="">\n';	
 	banner_code +='</form>\n';
 
+	if(dblog_support) {
+		banner_code +='<form method="post" name="canceldblogForm" action="apply.cgi" target="hidden_frame">\n';
+		banner_code +='<input type="hidden" name="action_mode" value="apply">\n';
+		banner_code +='<input type="hidden" name="rc_service" value="stop_dblog">\n';
+		banner_code +='<input type="hidden" name="action_wait" value="">\n';
+		banner_code +='<input type="hidden" name="dblog_enable" value="0">\n';
+		banner_code +='</form>\n';
+	}
+
 	//banner_code +='<form method="post" name="wan_form" action="/start_apply.htm" target="hidden_frame">\n';
 	//banner_code +='<input type="hidden" name="next_page" value="<% abs_index_page(); %>">\n';
 	//banner_code +='<input type="hidden" name="current_page" value="<% abs_index_page(); %>">\n';
@@ -901,6 +927,9 @@ function show_banner(L3){// L3 = The third Level of Menu
 	if(wl_info.band5g_2_support)
 		banner_code +='<span onclick="change_wl_unit_status(2)" id="elliptic_ssid_5g_2" class="title_link"></span>\n';
 	banner_code +='</td>\n';
+
+	if(dblog_support)
+		banner_code +='<td id="dblog_diag_status_td"><div id="dblog_diag_status" class="dblogdiag"></div></td>\n';
 
 	if(nt_center_support)
 		banner_code +='<td width="30" id="notification_status_td"><div><div id="noti_event_count" style="display:none"><div id="noti_event_num"></div></div><div id="notification_status"></div></div><div id="notification_desc"></div></td>\n';
@@ -1973,12 +2002,11 @@ function show_top_status(){
 	}
 
 	var ssid_status_2g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0_ssid"); %>');
-	ssid_status_2g = ssid_status_2g.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");   //replace < to &lt and > to &gt
 	var ssid_status_5g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1_ssid"); %>');
-	ssid_status_5g = ssid_status_5g.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");   //replace < to &lt and > to &gt
 
-	if(wl_info.band5g_2_support)
+	if(wl_info.band5g_2_support){
 		var ssid_status_5g_2 =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2_ssid"); %>');
+	}
 
 	if(!band2g_support)
 		ssid_status_2g = "";
@@ -2045,57 +2073,57 @@ function show_top_status(){
 	}
 
 	var topbanner_ssid_2g = handle_show_str(ssid_status_2g);
+
 	if(topbanner_ssid_2g.length >18){
-		document.getElementById('elliptic_ssid_2g').innerHTML = extend_display_ssid(topbanner_ssid_2g)+"...";
+		document.getElementById('elliptic_ssid_2g').innerHTML = extend_display_ssid(ssid_status_2g)+"...";
 	}
 	else{
 		document.getElementById('elliptic_ssid_2g').innerHTML = topbanner_ssid_2g;
 	}
 
 	if(!lyra_hide_support)
-		document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ssid_status_2g;
-
+		document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ ssid_status_2g;
 
 	var topbanner_ssid_5g = handle_show_str(ssid_status_5g);
 	if(topbanner_ssid_5g.length >18){
-		document.getElementById('elliptic_ssid_5g').innerHTML = extend_display_ssid(topbanner_ssid_5g)+"...";
+		document.getElementById('elliptic_ssid_5g').innerHTML = extend_display_ssid(ssid_status_5g)+"...";
 	}
 	else{
 		document.getElementById('elliptic_ssid_5g').innerHTML = topbanner_ssid_5g;
 	}
-	document.getElementById('elliptic_ssid_5g').title = "5 GHz: \n"+ssid_status_5g;
 
+	document.getElementById('elliptic_ssid_5g').title = "5 GHz: \n"+ ssid_status_5g;
 
 	if(wl_info.band5g_2_support){
 		var topbanner_ssid_5g_2 = handle_show_str(ssid_status_5g_2);
 		if(topbanner_ssid_5g_2.length >18){
-			document.getElementById('elliptic_ssid_5g_2').innerHTML = extend_display_ssid(topbanner_ssid_5g_2)+"...";
+			document.getElementById('elliptic_ssid_5g_2').innerHTML = extend_display_ssid(ssid_status_5g_2)+"...";
 		}
 		else{
 			document.getElementById('elliptic_ssid_5g_2').innerHTML = topbanner_ssid_5g_2;
 		}
-		document.getElementById('elliptic_ssid_5g_2').title = "5 GHz-2: \n"+ssid_status_5g_2;
+		document.getElementById('elliptic_ssid_5g_2').title = "5 GHz-2: \n"+ ssid_status_5g_2;
 	}
 
 	if(smart_connect_support){
 		if('<% nvram_get("smart_connect_x"); %>' == '1'){
-			document.getElementById('elliptic_ssid_2g').title = "Smart Connect: \n"+ssid_status_2g;
+			document.getElementById('elliptic_ssid_2g').title = "Smart Connect: \n"+ ssid_status_2g;
 			document.getElementById('elliptic_ssid_5g').style.display = "none";
 			if(wl_info.band5g_2_support)
 				document.getElementById('elliptic_ssid_5g_2').style.display = "none";
 		}else if('<% nvram_get("smart_connect_x"); %>' == '2'){
-			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ssid_status_2g;
-			document.getElementById('elliptic_ssid_5g').title = "5 GHz Smart Connect: \n"+ssid_status_5g;
+			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ ssid_status_2g;
+			document.getElementById('elliptic_ssid_5g').title = "5 GHz Smart Connect: \n"+ ssid_status_5g;
 			document.getElementById('elliptic_ssid_5g').style.display = "";
 			if(wl_info.band5g_2_support)
 				document.getElementById('elliptic_ssid_5g_2').style.display = "none";
 		}else{
-			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ssid_status_2g;
+			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ ssid_status_2g;
 			document.getElementById('elliptic_ssid_5g').style.display = "";
 			if(wl_info.band5g_2_support)
 				document.getElementById('elliptic_ssid_5g_2').style.display = "";
 		}
-        }
+	}
 
 	var swpjverno = '<% nvram_get("swpjverno"); %>';
 	var buildno = '<% nvram_get("buildno"); %>';
@@ -2144,80 +2172,78 @@ function show_top_status(){
 function extend_display_ssid(ssid){		//"&amp;"5&; "&lt;"4< ; "&gt;"4> ; "&nbsp;"6space
 		//alert(ssid.substring(0,35)+" : "+ssid.substring(0,35).lastIndexOf("&nbsp;")+" <&nbsp>");
 		if(ssid.substring(0,35).lastIndexOf("&nbsp;") >=30 || ssid.substring(0,35).lastIndexOf("&nbsp;") < 25 ){
-				//alert(ssid.substring(0,34)+" : "+ssid.substring(0,34).lastIndexOf("&amp;")+" <&amp>");
-				if(ssid.substring(0,34).lastIndexOf("&amp;") >=30 || ssid.substring(0,34).lastIndexOf("&amp;") < 26 ){
-						//alert(ssid.substring(0,33)+" : "+ssid.substring(0,33).lastIndexOf("&lt;")+" <&lt>");
-						if(ssid.substring(0,33).lastIndexOf("&lt;") >=30 || ssid.substring(0,34).lastIndexOf("&lt;") < 27 ){
-								//alert(ssid.substring(0,33)+" : "+ssid.substring(0,33).lastIndexOf("&gt;")+" <&gt>");
-								if(ssid.substring(0,33).lastIndexOf("&gt;") >=30 || ssid.substring(0,34).lastIndexOf("&gt;") < 27 ){
-										//alert(ssid.substring(0,30));
-										return ssid.substring(0,30);
-								}
-								else{
-										switch(ssid.substring(0,33).lastIndexOf("&gt;")){
-												case 27:
-																	return ssid.substring(0,31);
-																	break;
-												case 28:
-																	return ssid.substring(0,32);	
-																	break;
-												case 29:
-																	return ssid.substring(0,33);		
-																	break;	
-										}
-								}
+			//alert(ssid.substring(0,34)+" : "+ssid.substring(0,34).lastIndexOf("&amp;")+" <&amp>");
+			if(ssid.substring(0,34).lastIndexOf("&amp;") >=30 || ssid.substring(0,34).lastIndexOf("&amp;") < 26 ){
+				//alert(ssid.substring(0,33)+" : "+ssid.substring(0,33).lastIndexOf("&lt;")+" <&lt>");
+				if(ssid.substring(0,33).lastIndexOf("&lt;") >=30 || ssid.substring(0,34).lastIndexOf("&lt;") < 27 ){
+					//alert(ssid.substring(0,33)+" : "+ssid.substring(0,33).lastIndexOf("&gt;")+" <&gt>");
+					if(ssid.substring(0,33).lastIndexOf("&gt;") >=30 || ssid.substring(0,34).lastIndexOf("&gt;") < 27 ){
+						//alert(ssid.substring(0,30));
+						return ssid.substring(0,30);
+					}
+					else{
+						switch(ssid.substring(0,33).lastIndexOf("&gt;")){
+							case 27:
+								return ssid.substring(0,31);
+								break;
+							case 28:
+								return ssid.substring(0,32);	
+								break;
+							case 29:
+								return ssid.substring(0,33);		
+								break;	
 						}
-						else{
-									switch(ssid.substring(0,33).lastIndexOf("&lt;")){
-											case 27:
-																return ssid.substring(0,31);
-																break;
-											case 28:
-																return ssid.substring(0,32);
-																break;
-											case 29:
-																return ssid.substring(0,33);
-																break;
-
-									}			
-						}
+					}
 				}
 				else{
-							switch (ssid.substring(0,34).lastIndexOf("&amp;")){
-									case 26:
-														return ssid.substring(0,31);
-														break;
-									case 27:
-														return ssid.substring(0,32);
-														break;
-									case 28:
-														return ssid.substring(0,33);
-														break;
-									case 29:
-														return ssid.substring(0,34);
-														break;
-
-							}
+					switch(ssid.substring(0,33).lastIndexOf("&lt;")){
+						case 27:
+							return ssid.substring(0,31);
+							break;
+						case 28:
+							return ssid.substring(0,32);
+							break;
+						case 29:
+							return ssid.substring(0,33);
+							break;
+					}			
 				}
+			}
+			else{
+				switch (ssid.substring(0,34).lastIndexOf("&amp;")){
+					case 26:
+						return ssid.substring(0,31);
+						break;
+					case 27:
+						return ssid.substring(0,32);
+						break;
+					case 28:
+						return ssid.substring(0,33);
+						break;
+					case 29:
+						return ssid.substring(0,34);
+						break;
+				}
+			}
 		}
 		else{
-					switch (ssid.substring(0,35).lastIndexOf("&nbsp;")){
-									case 25:			
-														return ssid.substring(0,31);
-														break;			
-									case 26:
-														return ssid.substring(0,32);
-														break;
-									case 27:
-														return ssid.substring(0,33);
-														break;
-									case 28:
-														return ssid.substring(0,34);
-														break;
-									case 29:
-														return ssid.substring(0,35);
-														break;					
-					}
+			switch (ssid.substring(0,35).lastIndexOf("&nbsp;")){
+				case 25:			
+					return ssid.substring(0,31);
+					break;			
+				case 26:
+					return ssid.substring(0,32);
+					break;
+				case 27:
+					return ssid.substring(0,33);
+					break;
+				case 28:
+					return ssid.substring(0,34);
+					break;
+				case 29:
+					return ssid.substring(0,35);
+					break;					
+			}
 		}
 }
 
@@ -2862,7 +2888,13 @@ function refreshStatus(xhr){
 		vpnd_state = vpnStatus[14].firstChild.nodeValue.replace("vpn_server1_state=", "");
 	else	//unit 2
 		vpnd_state = vpnStatus[15].firstChild.nodeValue.replace("vpn_server2_state=", "");
-	
+
+	if(dblog_support) {
+		var diagStatus = devicemapXML[0].getElementsByTagName("diag");
+		diag_dblog_enable = diagStatus[0].firstChild.nodeValue.replace("diag_dblog_enable=", "");
+		diag_dblog_remaining = diagStatus[1].firstChild.nodeValue.replace("diag_dblog_remaining=", "");
+	}
+
 	if(realip_support){
 		if(active_wan_unit == "0"){
 			realip_state = wan0_realip_state;  //0: init/no act  1: can't get external IP  2: get external IP
@@ -2890,8 +2922,11 @@ function refreshStatus(xhr){
 		return false;
 	else if(location.pathname == "/Advanced_VPNClient_Content.asp" && !vpn_fusion_support)
 		show_vpnc_rulelist();
-	else if(location.pathname == "/Advanced_Feedback.asp")
+	else if(location.pathname == "/Advanced_Feedback.asp") {
 		updateUSBStatus();
+		if(dblog_support)
+			diag_control_usb_status();
+	}
 	
 	//Adaptive QoS mode	
 	if(bwdpi_support && qos_enable_flag && qos_type_flag == "1"){
@@ -2938,6 +2973,21 @@ function refreshStatus(xhr){
 				}		
 				document.getElementById("adsl_line_status").onmouseover = function(){overHint(9);}
 				document.getElementById("adsl_line_status").onmouseout = function(){nd();}
+		}
+
+		if(dblog_support) {
+			if(diag_dblog_enable == "1") {
+				document.getElementById("dblog_diag_status_td").style.width = "30px";
+				document.getElementById("dblog_diag_status").style.display = "block";
+				document.getElementById("dblog_diag_status").className = "dblogdiag";
+				document.getElementById("dblog_diag_status").onclick = function(){openHint(24,10);}
+				document.getElementById("dblog_diag_status").onmouseover = function(){overHint(27);}
+				document.getElementById("dblog_diag_status").onmouseout = function(){nd();}
+			}
+			else {
+				document.getElementById("dblog_diag_status_td").style.width = "0px";
+				document.getElementById("dblog_diag_status").style.display = "none";
+			}
 		}
 
 		(function(){
@@ -3987,40 +4037,16 @@ function check_dual_wan_status() {
 	return dual_wan_status;
 }
 
-//check NAT Acceleration status
-function check_nat_acceleration_status() {
-	var nat_status = {};
-	nat_status.status = false;
-	nat_status.name = "";
-	var nat_broadcom = '<% nvram_get("ctf_disable"); %>';
-	var nat_qca = '<% nvram_get("qca_sfe"); %>';
-	var nat_hw = '<% nvram_get("hwnat"); %>';
-	if(nat_broadcom != "") {
-		nat_status.status = (nat_broadcom == "0") ? true : false;
-		nat_status.name = "ctf_disable";
-	}
-	else if(nat_qca != "") {
-		nat_status.status = (nat_qca == "1") ? true : false;
-		nat_status.name = "qca_sfe";
-	}
-	else if(nat_hw != "") {
-		nat_status.status = (nat_hw == "1") ? true : false;
-		nat_status.name = "hwnat";
-	}
-	return nat_status;
-}
-
-//change dual wan to fo and disable nat
-function reset_wan_and_nat(_formObj, _controllerStatus) {
+//change dual wan mode from load balance to fail-over
+function reset_wan_to_fo(_formObj, _controllerStatus) {
 	var confirm_status = true;
 
 	if(_controllerStatus == "1") {
 		if(!check_bwdpi_engine_status()) {
 			var dual_wan_lb_status = (check_dual_wan_status().status == "1" && check_dual_wan_status().mode == "lb") ? true : false;
-			var nat_acceleration_status = (check_nat_acceleration_status().status) ? true : false;
 
-			if(dual_wan_lb_status || nat_acceleration_status) {
-				var confirm_hint = 'Dual-WAN "load balance" mode will be switched to "fail-over" and "NAT Acceleration" will be disable while enable "AiProtection" features, Are you sure to continue?'/*untranslated*/
+			if(dual_wan_lb_status) {
+				var confirm_hint = 'Dual-WAN "load balance" mode will be switched to "fail-over" while enable "AiProtection" features, Are you sure to continue?'/*untranslated*/
 				var confirm_flag = confirm(confirm_hint);
 				if(confirm_flag) {
 					var gen_hidden_item = function(_name, _value, _formObj) {
@@ -4035,36 +4061,11 @@ function reset_wan_and_nat(_formObj, _controllerStatus) {
 						element && element.parentNode && element.parentNode.removeChild(element);
 					}
 
-					if(dual_wan_lb_status) {
-						if(_formObj.children.wans_mode != null) {
-							removeElement(_formObj.children.wans_mode);	
-						}				
-						gen_hidden_item("wans_mode", "fo", _formObj);
+					if(_formObj.children.wans_mode != null) {
+						removeElement(_formObj.children.wans_mode);
 					}
+					gen_hidden_item("wans_mode", "fo", _formObj);
 
-					if(nat_acceleration_status) {
-						switch(check_nat_acceleration_status().name) {
-							case "ctf_disable" :
-								if(_formObj.children.ctf_disable != null) {
-									removeElement(_formObj.children.ctf_disable);	
-								}
-								gen_hidden_item(check_nat_acceleration_status().name, "1", _formObj);
-								break;
-							case "qca_sfe" :
-								if(_formObj.children.qca_sfe != null) {
-									removeElement(_formObj.children.qca_sfe);	
-								}
-								gen_hidden_item(check_nat_acceleration_status().name, "0", _formObj);
-								break;
-							case "hwnat" :
-								if(_formObj.children.hwnat != null) {
-									removeElement(_formObj.children.hwnat);	
-								}
-								gen_hidden_item(check_nat_acceleration_status().name, "0", _formObj);
-								break;
-						}
-					}
-					
 					_formObj.action_script.value = "reboot";
 					_formObj.action_wait.value = '<% nvram_get("reboot_time"); %>';
 				

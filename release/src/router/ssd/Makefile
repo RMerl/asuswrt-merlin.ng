@@ -11,7 +11,7 @@
 #
 # $Id: Makefile $
 #
-
+include ../common.mak
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall -Werror
 CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
 # CFLAGS	+= -DSSD_DEBUG
@@ -20,6 +20,10 @@ LDFLAGS += -L$(TOP)/nvram${BCMEX} -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += $(EXTRA_LDFLAGS)
 LDFLAGS += -lgcc_s
+
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
 
 
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)

@@ -74,6 +74,11 @@ config RTCONFIG_HNDMFG
 	depends on RTCONFIG_HND_ROUTER
 	default n
 
+config RTCONFIG_DFS_US
+	bool "DFS US support"
+	depends on RTCONFIG_HND_ROUTER
+	default n
+
 config RTCONFIG_BCM9
 	bool "Bcm sdk 9_10_162_x"
 	default n
@@ -145,6 +150,11 @@ config RTCONFIG_CIFS
 config RTCONFIG_BRCM_NAND_JFFS2
 	bool "JFFS Support on BRCM Nand Flash Partition"
 	default n
+
+config RTCONFIG_JFFS_NVRAM
+	bool "NVRAM on JFFS support"
+	depends on RTCONFIG_BRCM_NAND_JFFS2
+	default y
 
 config RTCONFIG_JFFS2
 	bool "JFFS Support"
@@ -293,7 +303,12 @@ config RTCONFIG_PROXYSTA
 	default n
 
 config RTCONFIG_DISABLE_PROXYSTA_UI
-	bool "Hiden UI Media Bridge Mode"
+	bool "Hide Proxy Station Repeater Mode on UI"
+	depends on RTCONFIG_PROXYSTA
+	default n
+
+config RTCONFIG_PSR_GUEST
+	bool "Guest network support under PSR mode"
 	depends on RTCONFIG_PROXYSTA
 	default n
 
@@ -376,6 +391,10 @@ config RTCONFIG_NEW_USER_LOW_RSSI
 
 config RTCONFIG_PUSH_EMAIL
 	bool "Push Mail Service Support"
+	default n
+
+config RTCONFIG_DBLOG
+	bool "System Diagnostic Support"
 	default n
 
 config RTCONFIG_USB
@@ -497,6 +516,11 @@ config RTCONFIG_EXT4FS
 config RTCONFIG_TFAT
 	bool "Tuxera FAT module Support"
 	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_OPENPLUS_TFAT
+	bool "Open + Tuxera FAT Support"
+	depends on RTCONFIG_OPEN_NTFS3G
 	default n
 
 config RTCONFIG_NTFS
@@ -816,6 +840,10 @@ config RTCONFIG_POWER_SAVE
 
 config RTCONFIG_QCA8033
 	bool "Qualcomm Atheros QCA8033 Powerline Chip Support"
+	default n
+
+config RTCONFIG_ART2_BUILDIN
+	bool "Buildin Qualcomm Atheros ART2 package"
 	default n
 
 config RTCONFIG_DEFAULT_AP_MODE
@@ -1462,6 +1490,10 @@ config RTCONFIG_WLCEVENTD
 	bool "Get event from Wi-Fi driver"
 	default n
 
+config RTCONFIG_HAPDEVENT
+	bool "Handle event from Wi-Fi driver on bluecave"
+	default n
+
 config RTCONFIG_6RELAYD
 	bool "IPv6 Relay support"
 	depends on RTCONFIG_IPV6
@@ -1619,16 +1651,33 @@ config RTCONFIG_SSID_AMAPS
 	bool "Single SSID rule as ASUS_2X(MAC)_AMAPS"
 	default n
 
-config RTCONFIG_CSU2_2
-	bool "version csu2.2"
+config RTCONFIG_WIFI_SON
+	bool "WiFi SON for Lyra series"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_ETHBACKHAUL
+	bool "eth backhaul"
 	default n
 
 config RTCONFIG_DUAL_BACKHAUL
 	bool "version csu2.2"
 	default n
+
+config RTCONFIG_AUTHSUPP
+	bool "new auth"
+	default n
+
 config RTCONFIG_FBWIFI
 	bool "enable FBWIFI for FaceBook"
 	default n
+
+config RTCONFIG_ADV_RAST
+	bool "enable advanced roaming assistant"
+	default n
+
+config RTCONFIG_CFGSYNC
+	bool "Sync config"
 
 config RTCONFIG_WLCSCAN_RSSI
 	bool "Sitesurvey for specific SSID rssi"
@@ -1654,14 +1703,27 @@ config RTCONFIG_I2CTOOLS
 config RTCONFIG_MTK_8021X3000
 	bool "The version 3.0.0.0 of 802.1x daemon for MTK."
 	default n
-	
+
+config RTCONFIG_INTEL
+	bool "Intel Chip Support"
+	default n
+
+config RTCONFIG_DBG_BLUECAVE_OBD
+	bool "Debug bluecave onboarding"
+	default n
+
+config RTCONFIG_AMAS
+	bool "AMAS architecture."
+	default n
+
 config RTCONFIG_NO_SELECT_CHANNEL
 	bool "Auto Channel Selection (no select) for MTK."
 	default n
 	
 config RTCONFIG_USB_SWAP
 	bool "Enable SWAP, if enable USB function."
-	default n	
+	default n
+		
 config RTCONFIG_SW_DEVLED
 	bool "software led control."
 	default n
@@ -1676,10 +1738,6 @@ config RTCONFIG_NVRAM_ENCRYPT
 
 config RTCONFIG_WIFI_PROXY
 	bool "Enable WiFi Proxy."
-	default n
-
-config RTCONFIG_FBT
-	bool "FAST BSS Transition (802.11r FBT) support"
 	default n
 
 config RTCONFIG_HD_SPINDOWN
@@ -1700,4 +1758,8 @@ config RTCONFIG_TXBF_BAND3ONLY
 
 config RTCONFIG_SW_HW_AUTH
 	bool "protectt ASUS own binary and tools"
+	default n
+
+config RTCONFIG_LIBASUSLOG
+	bool "asuslog library for debug"
 	default n

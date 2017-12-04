@@ -149,7 +149,11 @@
  */
 
 #define MAX_STRING 12
+#ifdef TRX_NEW
+#define MAX_VER 5
+#else
 #define MAX_VER 4
+#endif
 
 /* If hw[i].kernel == ROOTFS_OFFSET_MAGIC,
  * rootfilesystem offset (uImage header size + kernel size)

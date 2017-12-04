@@ -104,7 +104,7 @@ wbd_restore_defaults(void)
 #ifdef WLHOSTFBT
 
 /* Clear FBT_APs NVRAMS based on prefix */
-static void
+void
 fbt_aps_restore_defaults(char *prefix)
 {
 	char tmp_prefix[] = "wlXXXXXXXXXXXXXXXXXXXXXXXXXXXX_mssid_";
@@ -168,7 +168,7 @@ fbt_all_aps:
 }
 
 /* Clear all the FBT NVRAMs */
-static void
+void
 fbt_restore_defaults(void)
 {
 	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXXXXXXXXXXXXXXXX_mssid_";
@@ -420,7 +420,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_psta_monitor();
 		}
 #endif
-#if defined(AMAS) && defined(RTCONFIG_BCMWL6)
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ))
 		else if (strcmp(argv[1], "obd") == 0) {
 			if (on) start_obd();
 			else stop_obd();
@@ -576,10 +576,10 @@ static int rctest_main(int argc, char *argv[])
 }
 #endif
 
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1800)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1800)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1750)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -694,7 +694,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1800)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -765,7 +765,7 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
-#if defined(AMAS) && defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
 	{ "obd",			obd_main			},
 #endif
 #ifdef RTCONFIG_IPERF
@@ -796,6 +796,7 @@ static const applets_t applets[] = {
 #endif
 #if defined(RTCONFIG_RALINK)
 	{ "re_wpsc",			re_wpsc_main			},
+	{ "air_monitor",		air_monitor_main		},
 #endif
 #endif
 #ifdef RTCONFIG_WPS
@@ -821,6 +822,7 @@ static const applets_t applets[] = {
 	{ "delay_exec",			delay_main			},
 
 	{ "wanduck",			wanduck_main			},
+	{ "conn_diag",			conn_diag_main			},
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},
 #endif
@@ -891,15 +893,16 @@ static const applets_t applets[] = {
 #if defined(MAPAC2200)
 	{ "dpdt_ant",			dpdt_ant_main		},
 #endif
-#if defined(MAPAC1300) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(VZWAC1300)
 	{ "thermal_txpwr",		thermal_txpwr_main		},
-#endif	/* MAPAC1300 VRZAC1300 */
+#endif
 #ifdef RTCONFIG_ADTBW
 	{ "adtbw",			adtbw_main		},
 #endif
 	{NULL, NULL}
 };
 
+extern void gen_spcmd(char *);
 int main(int argc, char **argv)
 {
 	char *base;
@@ -984,9 +987,9 @@ int main(int argc, char **argv)
 	}
 
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) || defined(MAPAC1800)
+#ifdef RTCONFIG_WIFI_SON
         if(!strcmp(base, "hive_cap")){
-                if(nvram_get_int("sw_mode")==SW_MODE_ROUTER) {
+                if(nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) {
                         printf("start central ap...\n");
                         if (argv[1] && (!strcmp(argv[1], "start")))
                                 start_cap(0);
@@ -1003,7 +1006,7 @@ int main(int argc, char **argv)
         }
 
         if(!strcmp(base, "hive_re")){
-                if (nvram_get_int("sw_mode")==SW_MODE_AP) {
+                if (nvram_get_int("sw_mode")==SW_MODE_AP && !nvram_match("cfg_master", "1")) {
                         printf("start range extender ...\n");
                         if (argv[1] && (!strcmp(argv[1], "start")))
                                 start_re(0);
@@ -1020,41 +1023,85 @@ int main(int argc, char **argv)
         		printf("Error. RE should run in AP mode.\n");
                 return 0;
        }
+        if(!strcmp(base, "hive_cmd")){
+                if(nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) {
+                        printf("start central ap...\n");
+			if(argv[1] && strlen(argv[1])) {
+				if (!strcmp(argv[1], "reboot"))
+					gen_spcmd("xx");
+                                start_cmd(argv[1]);
+			}
+                        else
+                                printf("error command.\n");
+                }
+     		else
+                        printf("Error. CAP should run in router mode.\n");
+                return 0;
+        }
+	if(!strcmp(base, "hive_wsplcd")){
+                start_wsplcd();
+                return 0;
+       }
+	if(!strcmp(base, "hive_hyd")){
+                start_hyd();
+                return 0;
+       }
 #ifdef RTCONFIG_ETHBACKHAUL
         if(!strcmp(base, "hive_eth")){
-                if (nvram_get_int("sw_mode")==SW_MODE_AP) {
+                if (nvram_get_int("sw_mode")==SW_MODE_AP && !nvram_match("cfg_master", "1")) {
 			nvram_set("eth_detect_proc","1");
                         if (argv[1] && (!strcmp(argv[1], "1")))
                                 start_eth(1);
                         else if (argv[1] && (!strcmp(argv[1], "0")))
 			{
-				_dprintf("run when lan plugout ...RE\n");
+				_dprintf("run when upstream plugout ...RE\n");
                                 start_eth(0);
 			}
+                        else if (argv[1] && (!strcmp(argv[1], "2")))
+			{
+				_dprintf("run when downstream plugout ...RE\n");
+                                start_eth(2);
+			}
+                        else if (argv[1] && (!strcmp(argv[1], "3")))
+                                start_eth(3);
+			
 			nvram_set("eth_detect_proc","0");
+			nvram_set_int("prelink_pap_status", -1); // trigger LED to change
                 }
-		else if (nvram_get_int("sw_mode")==SW_MODE_ROUTER) {
-                        if (argv[1] && (!strcmp(argv[1], "0")))
+		else if (nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) {
+                        if (argv[1] && (!strcmp(argv[1], "1")))
+			{
+				start_eth(1); /* move to repacd */
+			}
+                        else if (argv[1] && (!strcmp(argv[1], "0")))
 			{
 				nvram_set("eth_detect_proc","1");
 				_dprintf("run when lan plugout...CAP\n");
-				ifconfig("eth1", 0, NULL, NULL);
-				sleep(eth_down_time); 
-				ifconfig("eth1", IFUP, NULL, NULL);
-				doSystem("killall -9 hyd");
-				notify_rc("start_dnsmasq");
+				start_eth(0); /* move to repacd */
 				nvram_set("eth_detect_proc","0");
 			}
+			nvram_set_int("prelink_pap_status", -1); // trigger LED to change
 		}	
                 else
         		printf("Error command.\n");
                 return 0;
        }
+
+       if(!strcmp(base, "eth_bh_mon")){
+		start_eth_bh_mon();
+                return 0;
+       }
+
+       if(!strcmp(base, "ethbh_peer_detect")){
+		if(argc >= 4)
+			ethbh_peer_detect(argv[1], argv[2], argv[3]);
+                return 0;
+       }
 #endif
        if(!strcmp(base, "wifimon_check")){	
 		int default_sec=0;
-		if (nvram_get_int("sw_mode")==SW_MODE_AP) {
-			if (argv[1] && strlen(argv[1]))
+                if (nvram_get_int("sw_mode")==SW_MODE_AP && !nvram_match("cfg_master", "1")) {
+			if(argv[1] && strlen(argv[1]))
 			{
 				if (safe_atoi(argv[1])>0 && safe_atoi(argv[1])<240)
 				{
@@ -1266,7 +1313,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif
-#endif
+#endif /* RTCONFIG_WIFI_SON */
 
 	if (!strcmp(base, "restart_wireless")) {
 		printf("restart wireless...\n");
@@ -1642,6 +1689,19 @@ int main(int argc, char **argv)
 		return wlcconnect_main();
 	}
 #endif
+#ifdef RTCONFIG_AMAS
+#if !defined(RTCONFIG_DISABLE_REPEATER_UI)
+	else if (!strcmp(base, "amas_wlcconnect")) {
+		return amas_wlcconnect_main();
+	}
+	else if (!strcmp(base, "amas_bhctrl")) {
+		return amas_bhctrl_main();
+	}
+#endif	
+	else if (!strcmp(base, "amas_lanctrl")) {
+		return amas_lanctrl_main();
+	}
+#endif	
 #ifdef CONFIG_BCMWL5
 	else if (!strcmp(base, "setup_dnsmq")) {
 		if (argc != 2)

@@ -160,8 +160,7 @@ extern char buf[WLC_IOCTL_MAXLEN];
 
 #endif
 
-#if defined(AMAS) || defined(RTCONFIG_CFGSYNC)
-#define OUI_ASUS	"\xF8\x32\xE4"
+#if defined(RTCONFIG_AMAS) || defined(RTCONFIG_CFGSYNC)
 struct tlvbase {
 	uchar type;
 	uchar len;

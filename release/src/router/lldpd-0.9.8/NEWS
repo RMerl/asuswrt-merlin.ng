@@ -1,0 +1,498 @@
+lldpd (0.9.8_patch)
+   * Changes:
+     + lldpcli can now display local interfaces with LLDP data sent on
+       each of them ("show interfaces").
+   * Fix:
+     + Don't remove interfaces when they are released from a bridge.
+
+lldpd (0.9.8)
+  * Changes:
+    + "Station" capability is only set if no other bit is set.
+    + Use ethtool to get permanent address for bonds and teams. This
+      might provide different results than the previous method. Some
+      devices may still use the previous method.
+    + Don't run ethtool as root. Kernels older than 2.6.19 won't get
+      link information anymore.
+    + Add "configure system hostname ." option to not use a FQDN
+      for system name.
+    + Add "-f json0" to provide a more regular/machine-parsable output
+      to JSON output, even when not compiled with --enable-json0.
+  * Fixes:
+    + Handle team interfaces like a bond. Real MAC address cannot be
+      retrieved yet.
+
+lldpd (0.9.7)
+  * Changes:
+    + Attach remote TTL to port instead of chassis.
+    + JSON support is now built-in and unconditionally enabled. Use
+      --enable-json0 to keep the pre-0.9.2 json-c format.
+    + When logging to syslog and daemonizing, don't log to stderr.
+    + vxlan interfaces are now ignored as they are multi-point interfaces.
+    + Maximum number of neighbors for an interface is increased from 4 to 32.
+
+lldpd (0.9.6)
+  * Changes:
+    + Add a compile-time option to restore pre-0.9.2 JSON format (when
+      using json-c). Use `--enable-json0` to enable this option.
+    + Support for newer ethtool interface on Linux
+      (ETHTOOL_GLINKSETTINGS) and additional speed settings.
+    + Current MAU type is displayed even when autoneg is off.
+    + Increase netlink receive buffer by default. Can be changed at
+      compile-time through ./configure.
+  * Fixes:
+    + Correctly parse LLDP-MED civic address when the length of the
+      TLV exceeds the length of the address.
+    + Fix 100% CPU on some rare error condition.
+    + Fix lost timer when an interface is enslaved on Linux.
+
+lldpd (0.9.5)
+  * Changes:
+    + More Ethernet media supported. However, RFC4836 is quite
+      out-of-date with respected to 10G+ speeds, bringing some
+      inaccuracies.
+    + Directly get media information for an interface without using
+      the privileged process.
+    + LLDP-MED capability TLV is not sent when LLDP-MED is not enabled,
+      even if other LLDP-MED TLV are present.
+  * Fixes:
+    + Compilation fix with older versions of GCC.
+    + Don't use ethtool at all to get real MAC address for enslaved
+      devices (always use /proc).
+
+lldpd (0.9.4)
+  * Changes:
+    + Make lldpd accepts a `-p` option to specify the PID file.
+    + Ability to change multicast MAC address to two additional values
+      to reach customer bridges.
+    + lldpcli will now display chassis TTL when detailed view is enabled.
+  * Fixes:
+    + Fix setting of local value for port ID.
+    + Fix compilation with BSD make.
+    + Ensure lldpcli returns an error code on invalid commands.
+
+lldpd (0.9.3)
+  * Changes:
+    + Do not rely on support of constructors for liblldpctl.
+    + Always log to stderr (even in addition to syslog).
+    + `lldpcli watch` accepts a limit on the number of received events.
+  * Fixes:
+    + `lldpcli -f {xml,json} watch` should work now.
+    + Consider `veth` interfaces as physical interfaces.
+
+lldpd (0.9.2)
+  * Changes:
+    + Ability to add/remove/replace custom TLV from lldpcli.
+    + LLDP-MED capabilities are displayed differently in lldpcli.
+    + Limit the maximum depth (5) when trying to apply a VLAN.
+    + Change JSON output format when using json-c to match Jansson
+      output.
+    + Integration tests for the major parts of lldpd, including use of
+      address and leak sanitizer.
+  * Fixes:
+    + LLDP-MED POE TLV are now displayed in lldpcli.
+    + Ignore lower link when it is in another namespace.
+    + Fix various problems with interfaces being enslaved.
+    + Fix a memory leak when modifying port-related settings.
+
+lldpd (0.9.1)
+  * Changes:
+    + Rework packaging for OS X to make it work with El Capitan. To
+      simplify a bit, it is not possible anymore to build fat
+      binaries. Latest version of OS X supporting 32bit was 10.6.
+  * Fixes:
+    + By default, when using port alias as description, use port name
+      as port ID.
+    + Miscellaneous fixes with netlink cache.
+    + Ensure large netlink messages can be received.
+
+lldpd (0.9.0)
+  * Changes:
+    + Don't rely on libnl3 for netlink. Reuse the previous code and
+      implement a lighweight cache.
+
+lldpd (0.8.0, never released)
+  * Changes:
+    + PIE is now disabled by default. It's too difficult to reliably
+      detect if it works. Use --enable-pie to enable it.
+    + Retrieve the permanent MAC address of an interface through
+      ethtool for Linux if /proc/net/bonding is not available.
+    + Running lldpd with "-d" will keep the process in foreground but
+      logs will still go to syslog. To log to the console, add at
+      least one "-d".
+    + Fix minimal kernel version to 2.6.39. Add a runtime warning when
+      this is not the case.
+    + Remove old bridge code (the one using ioctl).
+    + Don't discard down interfaces. Notably, this enables us to keep
+      their specific configuration if any.
+    + For Linux, switch to libnl3. Be aware of the licensing issues in
+      case of static linking.
+    + Introduce the notion of default local port. New interfaces will
+      use it as a base. This allows setting various MED stuff.
+    + Provide an apparmor profile (untested).
+  * Fixes:
+    + Fix a buffer overflow when receiving a too large management
+      address TLV. Unless hardening has been disabled, this overflow
+      cannot be used for arbitrary code execution.
+    + Update LLDP-MED policy L2 priority values to match
+      802.1Q-2005. This may be a breaking change.
+
+lldpd (0.7.17)
+  * Fixes:
+    + Fix the way libevent configure is called.
+    + Fix an infinite loop when using veth on Linux 4.1+ kernels.
+    + Make CDP advertise the appropriate kernel name as platform,
+      not just "Linux".
+
+lldpd (0.7.16)
+  * Changes:
+    + For Linux, 2.6.32 is now the minimal required kernel. When using
+      an older kernel, use `--enable-oldies`.
+    + For Linux, use netlink to retrieve information about bridges,
+      VLAN and bonds. The code was contributed by Cumulus Networks.
+    + Use symbol versioning for liblldpctl.so.
+    + Ability to get local chassis information with "show
+      chassis".
+    + The library also has the same ability with the
+      `lldpctl_get_local_chassis()` function. It is also possible to
+      get a chassis atom from a port with `lldpctl_k_port_chassis`
+      key. This is now the preferred way to retrieve chassis related
+      information.
+  * Fixes:
+    + Fix build on OS X.
+    + Accept "language" when configuring MED location as a civic address.
+
+lldpd (0.7.15)
+  * Changes:
+    + Optional features can be configured with "auto" to autodetect if
+      they are usable. This is the default value for JSON and XML support.
+    + Ability to send and decode custom/unknown TLV. Thanks to Alexandru
+      Ardelean.
+    + Modify checksum function. While this should be strictly
+      equivalent, if you notice CDP packets not accepted anymore, this
+      change is the first culprit.
+
+lldpd (0.7.14)
+  * Changes:
+    + Shutdown LLPDU are sent on MSAP change and when lldpd exits.
+    + When an exact IP is provided as a management pattern, use it
+      unconditionally.
+    + Ability to set port ID and description to an arbitrary value,
+      thanks to Alexandru Ardelean.
+  * Fixes:
+    + Incorrect boundary check when decoding management address and
+      protocol identity may lead to lldpd crash when processing
+      malformed LLDPDU.
+    + Many edge cases where lldpd was leaving hanging processes after
+      crashing.
+
+lldpd (0.7.13)
+  * Fixes:
+    + Unbreak customization of Unix socket path from command line.
+
+lldpd (0.7.12)
+  * Changes:
+    + Interface pattern, management pattern, system description,
+      system platform and system hostname can be unconfigured to their
+      default values.
+  * Fixes:
+    + Don't complain when parsing a commented line.
+    + Correctly persist configuration changes for "system interface
+      promiscuous", "system interface description" "med fast-start
+      enable", "pause" and "resume".
+    + Fix listening on bond devices for old kernels (< 2.6.27).
+
+lldpd (0.7.11)
+  * Changes:
+    + Ship bash and zsh completion.
+    + Abort when some command-line options are repeated.
+  * Fixes:
+    + Handle correctly read failures in liblldpctl.
+
+lldpd (0.7.10)
+  * Changes:
+    + Ability to set promiscuous mode to work around bugs of some
+      switches encapsulating LLDP frames inside 802.1Q frames.
+    + JSON support for lldpcli can use json-c instead of jansson,
+      thanks to Michel Stam.
+  * Fixes:
+    + Fix checksum computation for Cisco CDP.
+    + Fix ability to disable LLDP.
+    + Fix seccomp sandbox, thanks to Patrick McLean.
+
+lldpd (0.7.9)
+  * Changes:
+    + Default location for chroot, socket and PID are now configurable
+      in `./configure`. The default location is based on the value of
+      `runstatedir` which in turn may be based on the value of
+      `localstatedir` which defaults to `/usr/local/var`. Therefore,
+      to get the previous locations, lldpd should be configured with
+      `./configure --localstatedir=/var`.
+    + Add support for shutdown LLDPU.
+    + Ability to configure IP management pattern from lldpcli.
+    + Ability to choose what port ID should be (MAC or interface name).
+  * Fixes:
+    + Fix `configure system bond-slave-src-mac-type local`. Also use
+      it as default.
+
+lldpd (0.7.8)
+  * Changes:
+    + Android support
+    + Add the possibility to disable privilege separation (lower
+      memory consumption, lower security, don't do it).
+    + Interfaces can now be whitelisted. For example, *,!eth*,!!eth1
+      is a valid pattern for all interfaces except eth ones, except
+      eth1. Moreover, on exact match, an matching interface
+      circumvents most sanity checks (like VLAN handling).
+    + Ability to override the hostname.
+  * Fixes:
+    + Don't hard-code default values for system name, system
+      description and port description. When the field is not present,
+      just don't display it.
+    + Fix lldpcli behaviour when suid.
+    + On OSX, don't use p2p0 interfaces: it would break WLAN.
+    + Fix SNMP support on RHEL.
+
+lldpd (0.7.7)
+  * Changes:
+    + Use a locally administered MAC address or an arbitrary one
+      instead of null MAC address for bond devices on Linux. This is
+      configurable through `lldpcli`.
+    + Add support for "team" driver (alternative to bond devices).
+    + Preliminary support for DTrace/systemtap.
+    + Preliminary support for seccomp (for monitor process).
+    + Setup chroot inside lldpd instead of relying on init script.
+  * Fixes:
+    + Various bugs related to fixed point number handling (for
+      coordinates in LLDP-MED)
+    + Fix a regression in how MAC address of an enslaved device is
+      retrieved.
+
+lldpd (0.7.6)
+  * Changes:
+    + Provide a way to build packages for OSX.
+    + Add an option to update interface description with neighbor name.
+  * Fixes:
+    + Compilation fix for OSX 10.6.
+
+lldpd (0.7.5)
+  * Fixes:
+    + Segfault while tokenizing in lldpcli.
+
+lldpd (0.7.4)
+  * Fixes:
+    + Segfault in lldpcli.
+    + Memory leak in liblldpctl when using a custom log handler.
+    + Fix some unaligned memory accesses.
+    + Fix frame reception on OpenBSD.
+  * Changes:
+    + Allow to configure hold value from lldpcli (and hence the TTL).
+    + Allow to configure pattern for valid interfaces from lldpcli.
+    + Allow to override system description from lldpcli.
+    + Display the neighbor connected as the process title (or the
+      number of connected neighbors).
+
+lldpd (0.7.3)
+  * Changes:
+    + DragonFly BSD support.
+    + Solaris support (incomplete).
+    + LLDP-MED fast start support (thanks to Roopa Prabhu).
+    + Provide global statistics through "show statistics summary"
+      command (thanks to Roopa Prabhu).
+  * Fixes:
+    + Fix IPv4/IPv6 address discovery in Linux.
+
+lldpd (0.7.2)
+  * Changes:
+    + lldpd can be configured through /etc/lldpd.conf and
+      /etc/lldpd.d. All commands accepted by lldpcli are accepted.
+    + Lock BPF interfaces before handing them to chrooted process on
+      BSD.
+    + Limit the number of neighbors for each port to 4 (per protocol).
+    + Force CDPv2 protocol with argument `-ccc`.
+    + Provide port statistics through "show statistics" command
+      (thanks to Roopa Prabhu).
+  * Fixes:
+    + Driver whitelisting is done before checking if an interface has
+      a lower interface in Linux.
+    + Expire remote ports and chassis in a timely manner.
+
+lldpd (0.7.1)
+  * Changes:
+    + Mac OS X support, sponsored by Xcloud, Mac cloud server hosting
+      provider. http://xcloud.me/
+    + Upstart and systemd support.
+    + Remove Unix socket when there is no process listening.
+
+lldpd (0.7.0)
+  * Changes:
+    + FreeBSD support.
+    + OpenBSD support.
+    + NetBSD support.
+    + Detect interface changes.
+    + CLI for lldpctl: lldpcli.
+    + Allow to disable LLDP protocol (with `-ll`). In this case, the
+      first enabled protocol will be used when no neighbor is detected.
+    + Allow to filter debug logs using tokens. Add more debug logs.
+    + lldpctl can now output JSON.
+    + Use netlink to gather interface information on Linux.
+    + Don't use ioctl for bridges anymore on Linux. The configure
+      option `--enable-oldies` allow to reenable their uses for
+      systems not supporting sysfs.
+
+lldpd (0.6.1)
+  * Changes:
+    + Provide liblldpctl.so, a library to interface with lldpd. The
+      documentation is provided through Doxygen. See src/lib/lldpctl.h
+      which contains all the exported functions.
+    + Make lldpctl uses liblldpctl.so.
+    + Add a "watch" option to lldpctl to monitor neighbor changes.
+    + Add the possibility to display the current configuration of
+      lldpd with lldpctl. Also add the possibility to reset the
+      current transmit delay.
+
+lldpd (0.6)
+  * Changes:
+    + Allow lldpctl to display hidden ports.
+    + Add a switch to specify interfaces to use to get chassis ID.
+    + Support for multiple management addresses and IPv6 management
+      addresses. Contributed by João Valverde.
+    + Switch to libevent. See README.md for details.
+    + Partial rewrite of the SNMP part. Less code.
+    + Unit tests for SNMP.
+    + Major rewrite of the protocol between lldpd and lldpctl. Less
+      code.
+  * Fixes:
+    + Several small SNMP fixes (discovered by unit tests).
+
+lldpd (0.5.7)
+ * Fixes:
+    + Configure issue with NetSNMP and some linkers
+    + Fix infinite loop for the receive part: on certain conditions,
+      lldpd will stop sending packets and stop updating local data.
+
+lldpd (0.5.6)
+  * Changes:
+    + Send and receive native VLAN TLV with CDP
+    + Add a whitelist for some drivers (currently: dsa and veth)
+  * Fixes:
+    + Compilation issues with NetSNMP 5.7 (and with earlier versions too)
+    + Small optimization of BPF filter
+
+lldpd (0.5.5)
+  * Changes:
+    + Support for PPVID and PI Dot1 TLV, thanks to Shuah Khan.
+    + Extend whitelist with possibility to blacklist.
+  * Fixes:
+    + Key/value output was incorrect when a dot was present in
+      interface names. This is fixed but it is preferable to use XML
+      output since the parsing is more difficult in this case.
+    + Only grab DMI information once. Only uses DMI for x86 platform.
+    + Padding issues with socket protocol. This introduces a change in
+      the socket protocol!
+    + Fix a segfault when neither /etc/os-release nor lsb_release
+      are available.
+
+lldpd (0.5.4)
+  * Changes:
+    + Get OS information from /etc/os-release if available. Patch from
+      Michael Tremer.
+    + Add a flag to specify which interfaces lldpd should listen to.
+
+lldpd (0.5.3)
+  * Changes:
+    + Handle Dot3 POE-MDI TLV (802.3af and 802.3at).
+    + Allow to set Dot3 POE-MDI from lldpctl.
+  * Fixes:
+    + Allow root to change configuration of lldpd when lldpctl has suid set.
+
+lldpd (0.5.2)
+  * Changes:
+    + More flexible smart mode and new default. Manual page has been updated.
+    + Add a "receive-only" mode with "-r" switch.
+
+lldpd (0.5.1)
+  * Changes:
+    + Allow to force a protocol even when no peer for this protocol is
+      detected.
+    + Add a smart mode that allows to discard bogus port information,
+      for example CDP packets that are flooded through a switch that
+      does not support CDP.
+    + Allow to set LLDP-MED network policy from lldpctl, thanks to a patch from
+      Philipp Kempgen.
+    + Allow to set LLDP-MED POE-MDI from lldpctl.
+    + Add a summary of available options in "lldpd -h" and "lldpctl -h",
+      thanks to a patch from Jorge Boncompte.
+    + Add a new output (keyvalue) for lldpctl.
+    + Listen on VLAN using an appropriate BPF filter, VLAN
+      decapsulation. Older "listen on vlan" feature is discarded. See
+      README for more information on the new feature.
+    + Use output of lsb_release if available for system description.
+  * Fixes:
+    + Ignore interface with no queue. It should filter out interfaces
+      like "vnet0" that would fail if we try to send something on them.
+    + Don't check CDP checksums (not really a fix but it appears that
+      Cisco checksum have some difficult corner cases).
+
+lldpd (0.5.0)
+  * Changes:
+    + lldpd can now handle several systems on the same port. This
+      modification also allows to speak to a switch using CDP and LLDP
+      for example.
+    + The way that lldpd gathers information for each port has been
+      abstracted. This should allow to support more systems (BSD for
+      examples) or switch cores in the future. Sending/receive support
+      is also abstracted.
+    + Add "-k" switch to avoid to emit too much information on running
+      kernel.
+    + Support of ifAlias with kernel >= 2.6.28
+    + Lot of portability stuff. lldpd can now be compiled on RHEL
+      2.1. Still Linux-only though.
+    + Add an option to specify AgentX socket (-X).
+    + Add some unit tests
+    + lldpctl has been reworked; it is now able to output data in XML
+      format for easier parsing. Patches were provided by Andreas
+      Hofmeister.
+  * Fixes:
+    + Fix EDP VLAN handling
+    + Silent warnings about bridge stuff.
+    + Copy /etc/localtime into chroot before starting lldpd daemon to
+      ensure correct timestamps for logs.
+
+lldpd (0.4.1)
+  * Fix EDP handling when there is no VLAN
+  * Fix CDP version to not always be 1
+  * Misc fix:
+     + incorrect number of arguments for a LLOG_INFO call
+     + fix SNMP last change in case this change occurs before start time
+
+lldpd (0.4)
+  * Rewrite of packet builder and parser to be able to cope with
+    architecture that cannot do unaligned read. For decoder, we don't
+    cast structures any more since they can be unaligned. For encoder,
+    we use memcpy through the use of macro that build packets step by
+    step.
+
+lldpd (0.3.2)
+  * Fix LLDP-MED support
+
+lldpd (0.3.1)
+  * Misc fixes, including memory leaks
+
+lldpd (0.3)
+  * Initial support of LLDP-MED
+  * Fix for bridge detection (don't send bridge ioctl on random interfaces)
+  * For bonded devices, get the real hardware address. For inactive
+    slaves, transmit using a random MAC address.
+
+lldpd (0.2.1)
+  * Fix a syntax error in manual page
+  * Fix open() calls
+
+lldpd (0.2)
+  * Add privilege separation
+  * Add FDP support
+  * Support CDP encapsulated into native VLAN
+  * Various fixes
+
+lldpd (0.1)
+  * Initial release

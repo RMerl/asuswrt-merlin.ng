@@ -120,6 +120,10 @@ function QKinternettype_load_body(){
 
 	if(wanauxstate == 1)
 		document.getElementById("prev_btn").style.display = "";
+
+	var amesh_found_cap = '<% nvram_get("amesh_found_cap"); %>';
+	if(amesh_found_cap == "1" && parent.amesh_support)
+		document.getElementById("amesh_hint").style.display = "";
 }
 
 function waninfo(){
@@ -522,6 +526,9 @@ function paste_password(){
 		</ul>
                <ul id="restore" style="display:none"><li><#QKset_restore_0#></li>
                </ul>
+		<ul id="amesh_hint" style="display:none;color:#FC0;">
+			<li>There are AiMesh Master Router available nearby, if you want adding this router to your Amesh system, please connecting to Master Router setting.</li>
+		</ul>
 	</div>
 	<div id="loginImage" style="margin-left:320px;margin-top:-200px;"><img width="300px" style="border-radius:5px;" src="/images/qis/router_login.jpg"></span></div>
 </div>

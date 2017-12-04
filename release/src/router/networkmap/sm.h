@@ -3,8 +3,8 @@
 
 #include <shared.h>
 
-#define	NTYPE		35
-#define	BWDPITYPE	31
+#define	NTYPE		36
+#define	BWDPITYPE	32
 #define	VENDORTYPE	37
 
 #define SM_DEBUG_FILE	"/tmp/SM_DEBUG"

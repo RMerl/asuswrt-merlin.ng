@@ -607,8 +607,11 @@ function applyRule(){
 			document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
 		}	
 	}
-	showLoading();	
-	document.form.submit();
+
+	if(reset_wan_to_fo(document.form, document.form.wrs_enable.value)) {
+		showLoading();
+		document.form.submit();
+	}
 }
 
 function translate_category_id(){

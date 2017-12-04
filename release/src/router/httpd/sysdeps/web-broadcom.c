@@ -52,7 +52,7 @@
 #include <sysinfo.h>
 #ifdef RTCONFIG_BCMWL6
 #include <dirent.h>
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #include <security_ipc.h>
 #endif
 
@@ -4241,7 +4241,7 @@ typedef struct wlc_ap_list_info
 
 static wlc_ap_list_info_t ap_list[WLC_MAX_AP_SCAN_LIST_LEN];
 
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #define MAX_SSID_LEN	32
 
 typedef struct escan_wksp_s {
@@ -4624,7 +4624,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
 		if (wl_get_scan_results_escan(name) == NULL) {
 			return 0;
@@ -4638,7 +4638,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	if (list->count == 0)
 		return 0;
-#if !(defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER))
+#if !(defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER))
 	else if (list->version != WL_BSS_INFO_VERSION
 			&& list->version != LEGACY_WL_BSS_INFO_VERSION
 #ifdef RTCONFIG_BCMWL6

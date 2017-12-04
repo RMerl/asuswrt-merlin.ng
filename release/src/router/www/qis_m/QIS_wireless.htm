@@ -60,14 +60,13 @@ var timezones = {
 	"420":"MST7_2",
 	"360":"CST6_2",
 	"300":"UTC5_1",
-	"270":"UTC4.30",
 	"240":"UTC4_1",
 	"210":"NST3.30DST",
 	"180":"UTC3",
-	"120":"NORO2DST",
+	"120":"UTC2",
 	"60":"UTC1",
 	"0":"GMT0",
-	"-60":"UTC-1_2",
+	"-60":"UTC-1_3",
 	"-120":"UTC-2_1",
 	"-180":"UTC-3_1",
 	"-210":"UTC-3.30DST",
@@ -97,18 +96,17 @@ var timezones_dst = {
 	"420":"MST7DST_1",
 	"360":"UTC6DST",
 	"300":"EST5DST",
-	"270":"UTC4.30",
 	"240":"AST4DST",
 	"210":"NST3.30DST",
 	"180":"EBST3DST_1",
-	"120":"NORO2DST",
+	"120":"UTC2",
 	"60":"EUT1DST",
 	"0":"GMT0DST_1",
 	"-60":"UTC-1DST_1",
 	"-120":"UTC-2DST",
 	"-180":"IST-3",
 	"-210":"UTC-3.30DST",
-	"-240":"UTC-4DST_2",
+	"-240":"UTC-4_1",
 	"-270":"UTC-4.30",
 	"-300":"UTC-5",
 	"-330":"UTC-5.30_1",
@@ -1123,9 +1121,11 @@ function change_smart_con(v){
 		document.getElementById("wl_unit_field_1").style.display = "none";
 		document.getElementById("wl_unit_field_2").style.display = "none";
 		document.getElementById("wl_unit_field_3").style.display = "none";
-		document.getElementById("wl_unit_field_4").style.display = "none";
-		document.getElementById("wl_unit_field_5").style.display = "none";
-		document.getElementById("wl_unit_field_6").style.display = "none";
+		if(wl_info.band5g_2_support){
+			document.getElementById("wl_unit_field_4").style.display = "none";
+			document.getElementById("wl_unit_field_5").style.display = "none";
+			document.getElementById("wl_unit_field_6").style.display = "none";
+		}
 		document.getElementById("wl0_desc_name").innerHTML = "Tri-band Smart Connect Security";
 		document.getElementById("wl0_desc_name").style = "padding-bottom:10px";
 		parent.document.getElementById("contentM").height = contentM_height_orig;
@@ -1133,9 +1133,11 @@ function change_smart_con(v){
 		document.getElementById("wl_unit_field_1").style.display = "";
 		document.getElementById("wl_unit_field_2").style.display = "";
 		document.getElementById("wl_unit_field_3").style.display = "";
-		document.getElementById("wl_unit_field_4").style.display = "";
-		document.getElementById("wl_unit_field_5").style.display = "";
-		document.getElementById("wl_unit_field_6").style.display = "";
+		if(wl_info.band5g_2_support){
+			document.getElementById("wl_unit_field_4").style.display = "";
+			document.getElementById("wl_unit_field_5").style.display = "";
+			document.getElementById("wl_unit_field_6").style.display = "";
+		}
 		document.getElementById("wl0_desc_name").innerHTML = "2.4 GHz - <#Security#>";
 		parent.document.getElementById("contentM").height = document.body.scrollHeight + 20;
 	}

@@ -282,6 +282,13 @@ db_upgrade(sqlite3 *db)
 		if (ret != SQLITE_OK)
 			return 9;
 	}
+	if (db_vers < 11)
+	{
+		DPRINTF(E_WARN, L_DB_SQL, "Updating DB version to v%d\n", 11);
+		ret = sql_exec(db, "ALTER TABLE PLAYLISTS ADD TIMESTAMP INTEGER DEFAULT 1");
+		if (ret != SQLITE_OK)
+			return 10;
+	}
 	sql_exec(db, "PRAGMA user_version = %d", DB_VERSION);
 
 	return 0;

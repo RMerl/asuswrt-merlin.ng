@@ -21,6 +21,10 @@ LDFLAGS += -L$(TOP)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram ${
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += -lgcc_s
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 ifeq ($(wildcard $(SRCBASE)/router/aspmd/*.c),)
 all:
 	-cp -f prebuilt/aspmd aspmd

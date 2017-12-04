@@ -572,6 +572,9 @@ define(function(){
 					retArray.push("Advanced_Modem_Content.asp");
 				}
 
+				if(!rrsut_support)
+					retArray.push("cloud_router_sync.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re") || isSwMode("ew")){
 					retArray.push("GameBoost.asp");
@@ -589,7 +592,7 @@ define(function(){
 
 					if(!concurrep_support){
 						retArray.push("Advanced_Wireless_Content.asp");
-						retArray.push("Advanced_ACL_Content.asp");				
+						retArray.push("Advanced_ACL_Content.asp");
 					}
 
 					if(!userRSSI_support && !location_list_support){
@@ -627,7 +630,7 @@ define(function(){
 					retArray.push("Advanced_DHCP_Content.asp");
 					retArray.push("Advanced_MultiSubnet_Content.asp");
 					retArray.push("Advanced_GWStaticRoute_Content.asp");
-					retArray.push("Advanced_IPTV_Content.asp");								
+					retArray.push("Advanced_IPTV_Content.asp");
 					retArray.push("Advanced_SwitchCtrl_Content.asp");
 					retArray.push("Main_DHCPStatus_Content.asp");
 					retArray.push("Main_IPV6Status_Content.asp");

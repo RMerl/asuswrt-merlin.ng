@@ -160,6 +160,7 @@ function initial(){
 	enable_server_igncrt(current_server_igncrt);
 	//update_visibility();
 	update_cipher();
+	update_digest();
 	/*Advanced Setting end */
 
 	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"]};
@@ -1146,6 +1147,12 @@ function update_cipher() {
 	if(cipher == "default")
 		$("#cipher_hint").css("display", "");
 }
+function update_digest() {
+	$("#digest_hint").css("display", "none");
+	var digest = document.form.vpn_server_digest.value;
+	if(digest == "MD5" || digest == "RSA-MD4")
+		$("#digest_hint").css("display", "");
+}
 function vpnServerClientAccess() {
 	var vpn_server_client_access = getRadioValue(document.form.vpn_server_client_access);
 	switch(parseInt(vpn_server_client_access)) {
@@ -1377,7 +1384,7 @@ function updateVpnServerClientAccess() {
 											</td>											
 										</tr>
 										<tr id="trRSAEncryptionBasic">
-											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,8);">RSA Encryption<!--untranslated--></a></th>
+											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,8);"><#RSA_Encryption#></a></th>
 											<td>
 												<input type="radio" name="vpn_server_tls_keysize_basic" id="vpn_server_tls_keysize_basic_0" class="input" value="0" <% nvram_match_x("", "vpn_server_tls_keysize", "0", "checked"); %> onchange="vpnServerTlsKeysize(this);">
 												<label for='vpn_server_tls_keysize_basic_0'>1024 bit<!--untranslated--></label>
@@ -1386,12 +1393,12 @@ function updateVpnServerClientAccess() {
 											</td>
 										</tr>
 										<tr id="trClientWillUseVPNToAccess">
-											<th>Client will use VPN to access<!--untranslated--></th>
+											<th><#vpn_access#></th>
 											<td>
 												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_local" class="input" value="0" onchange="vpnServerClientAccess();">
-												<label for="vpn_server_client_access_local">Local network only<!--untranslated--></label>
+												<label for="vpn_server_client_access_local"><#vpn_access_LAN#></label>
 												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_both" class="input" value="1" onchange="vpnServerClientAccess();">
-												<label for="vpn_server_client_access_both">Internet and local network<!--untranslated--></label>
+												<label for="vpn_server_client_access_both"><#vpn_access_WANLAN#></label>
 												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_custom" class="input client_access_custom" value="2" onchange="vpnServerClientAccess();">
 												<label for="vpn_server_client_access_custom" class="client_access_custom"><#Custom#></label>
 											</td>
@@ -1588,7 +1595,8 @@ function updateVpnServerClientAccess() {
 											<tr>
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,26);">HMAC Authentication<!--untranslated--></a></th>
 												<td>
-													<select name="vpn_server_digest" class="input_option"></select>
+													<select name="vpn_server_digest" class="input_option" onChange="update_digest();"></select>
+													<span id="digest_hint" style="color:#FC0">(Not recommended)<!--untranslated--></span>
 												</td>
 											</tr>
 											<tr id="server_snnm">

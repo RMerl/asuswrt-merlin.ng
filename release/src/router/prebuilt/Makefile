@@ -6,6 +6,11 @@ else
 UTILS := wl nas
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+JLDFLAGS = -L$(TOP)/json-c/.libs -ljson-c
+endif
+
+
 all: $(UTILS)
 
 clean:
@@ -24,7 +29,7 @@ nas:
 	@cp -f $(SRCBASE)/wl/$(PLATFORM)/nas nas
 else
 nas: nas_exe.o
-	$(CC) $(CCFLAGS) -DBCMWPA2 -o $@ $< -L../shared  -L../nvram -lnvram -lshared
+	$(CC) $(CCFLAGS) -DBCMWPA2 -o $@ $< -L../shared  -L../nvram -lnvram -lshared $(JLDFLAGS)
 endif
 
 ifneq ($(wildcard $(SRCBASE)/wl/$(PLATFORM)/eapd),)

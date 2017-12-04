@@ -190,3 +190,16 @@ int str_escape_quotes(const char *output, const char *input, int outsize)
 
 	return dst - output;
 }
+
+void trim_space(char *str)
+{
+	char *pt;
+	if (!str) return;
+	pt = str+strlen(str)-1;
+	while (pt > str) {
+		if (*pt==' ')
+			*pt--='\0';
+		else
+			break;
+	}
+}

@@ -3,11 +3,14 @@
 #
 # Copyright (c) 2014, AAA Internet Publishing, Inc. (DBA WTFast)
 #
-
+include ../../common.mak
 LIBS = -lev -lwtf -lgpnutils -lcurl -lssl -lcrypto -lm
 
 ifeq ($(ROUTER_BUILD), y)
 	LIBS += -lshared -lgcc_s -lnvram
+ifeq ($(RTCONFIG_AMAS),y)
+	LIBS += -L$(TOP)/json-c/.libs -ljson-c
+endif		
 endif
 
 LDFLAGS += -Wl,-rpath -Wl,$(LIB)

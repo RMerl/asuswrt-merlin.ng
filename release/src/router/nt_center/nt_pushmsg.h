@@ -47,7 +47,7 @@ struct pnsInfo mapPushInfo[] =
 	{SYS_GAME_MODE_EVENT                         ,0  ,"Game mode is on"                                         ,"" },
 	{SYS_NEW_DEVICE_WIFI_CONNECTED_EVENT         ,0  ,"New Device Connected"                                    ,"webhook_device_connect" },
 	{SYS_WIFI_DEVICE_DISCONNECTED_EVENT          ,0  ,"Device Disconnected."                                    ,"" },
-	{SYS_EXISTED_DEVICE_WIFI_CONNECTED_EVENT     ,0  ,"Manage Your Wireless Client"                             ,"" },
+	{SYS_EXISTED_DEVICE_WIFI_CONNECTED_EVENT     ,0  ,"Manage Your Wireless Client"                             ,"webhook_device_connect" },
 	/* FIRMWARE EVENT */
 	{SYS_FW_NWE_VERSION_AVAILABLE_EVENT          ,0  ,"New Firmware Available"                                  ,"" },
 	{SYS_NEW_SIGNATURE_UPDATED_EVENT             ,0  ,"Signature Updated"                                       ,"" },

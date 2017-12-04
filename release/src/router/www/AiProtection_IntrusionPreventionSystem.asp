@@ -100,7 +100,7 @@ function getIPSCount(){
 			var code = ""
 			ips_count = event_count.vp_n;
 			code += ips_count;
-			code += '<span style="font-size: 16px;padding-left: 5px;">Hits</span>';
+			code += '<span style="font-size: 16px;padding-left: 5px;"><#AiProtection_scan_rHits#></span>';
 			$("#vp_count").html(code);
 		}
 	});
@@ -286,7 +286,7 @@ function getIPSDetailData(type, event){
 }
 
 function generateDetailTable(data_array){
-	var direct_type = ["Client Device Infected", "External Attacks"];
+	var direct_type = ["", "Client Device Infected", "External Attacks"];
 	var code = '';
 	code += '<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">';
 	code += '<div style="display:table-cell;width:70px;padding-right:5px;"><#diskUtility_time#></div>';
@@ -517,7 +517,7 @@ function deleteHover(flag){
 												<div style="background-color:#444f53;width:350px;height:340px;border-radius: 10px;display:table-cell;padding-left:10px;position:relative">
 													<div id="chart_shade" style="position:absolute;width:350px;height:330px;background-color:#505050;opacity:0.6;margin:5px 0 5px -5px;display:none"></div>
 													<div>
-														<div style="display:inline-block;margin:5px 10px">Hits</div>
+														<div style="display:inline-block;margin:5px 10px"><#AiProtection_scan_rHits#></div>
 														<div style="display:inline-block;margin:5px 10px">
 															<div style="display:inline-block"><div style="width:10px;height:10px;border-radius:50%;background:#ED1C24"></div></div>
 															<div style="display:inline-block">High</div>

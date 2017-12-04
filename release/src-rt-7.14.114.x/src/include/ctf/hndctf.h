@@ -123,8 +123,6 @@ do { \
 	((unsigned char *)&addr)[3]
 
 #ifdef CTF_IPV6
-#define FRAG_IPV6_UDP_H        (NULL + 1)
-#define FRAG_IPV6_UDP_DUMMY_PORT       0
 #define FRAG_IPV6_UDP_PROTO	0xF6
 #endif
 
@@ -303,7 +301,6 @@ struct ctf_ipc {
 	struct	ether_addr	sa;		/* MAC address of sender */
 	uint8			tos;		/* IPv4 tos or IPv6 traff class excl ECN */
 	uint16			pppoe_sid;	/* PPPOE session to use */
-	struct ctf_ipc		*realipc; 	/* Pointer to real ipc entry for UDPv6 */
 #if defined(CTF_PPTP) || defined(CTF_L2TP)
 	void			*pppox_opt;
 #endif	/* CTF_PPTP || CTF_L2TP */

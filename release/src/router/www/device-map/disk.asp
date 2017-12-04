@@ -53,7 +53,7 @@ function initial(){
 	if(noaidisk_support)
 		document.getElementById("aidisk_hyperlink").style.display = "none";
 	
-	if((based_modelid == "RT-AC87U" || based_modelid == "RT-AC5300" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U") && parent.currentUsbPort == 0){
+	if((based_modelid == "RT-AC87U" || based_modelid == "RT-AC5300" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U") && parent.currentUsbPort == 0){
 		document.getElementById('reduce_usb3_table').style.display = "";
 	}
 
@@ -62,7 +62,7 @@ function initial(){
 	var usb_ntfs_mod = '<% nvram_get("usb_ntfs_mod"); %>';
 	var usb_hfs_mod = '<% nvram_get("usb_hfs_mod"); %>';
 
-	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["Format", "disk_format.asp"]};
+	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["<#CTL_format#>", "disk_format.asp"]};
 	if(!parent.diskUtility_support) {
 		delete disk_list_array.health;
 		delete disk_list_array.format;

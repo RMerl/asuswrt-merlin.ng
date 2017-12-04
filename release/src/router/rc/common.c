@@ -1162,16 +1162,16 @@ const zoneinfo_t tz_list[] = {
         {"UTC6DST",	"US/Central"},		// (GMT-06:00) Central Time (US & Canada)
         {"EST5DST",	"US/Eastern"},		// (GMT-05:00) Eastern Time (US & Canada)
         {"UTC5_1",	"US/East-Indiana"},	// (GMT-05:00) Indiana (East)    US Eastern
-        {"UTC5_2",	"America/Bogota"},	// (GMT-05:00) Bogota, Lima, Quito   SA Pacific 
-        {"UTC4.30",	"America/Caracas"},	// (GMT-04:30) Caracas
-        {"AST4DST",	"Canada/Atlantic"},	// (GMT-04:00) Atlantic Time (Canada)
-        {"UTC4_1",	"America/Manaus"},	// (GMT-04:00) La Paz
+       	{"UTC5_2",	"America/Bogota"},	// (GMT-05:00) Bogota, Lima, Quito   SA Pacific
+	{"AST4DST",     "Canada/Atlantic"},     // (GMT-04:00) Atlantic Time (Canada)
+	{"UTC4_1",      "America/Manaus"},      // (GMT-04:00) La Paz
+	{"UTC4_2",	"America/Caracas"},	// (GMT-04:00) Caracas
         {"UTC4DST_2",	"America/Santiago"},	// (GMT-04:00) Santiago
         {"NST3.30DST",	"Canada/Newfoundland"},	// (GMT-03:30) Newfoundland
         {"EBST3DST_1",	"America/Araguaina"},	// (GMT-03:00) Brasilia
         {"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
         {"EBST3DST_2",	"America/Godthab"},	// (GMT-03:00) Greenland
-        {"NORO2DST",    "Atlantic/South_Georgia"},	// (GMT-02:00) Mid-Atlantic
+        {"UTC2",	"Atlantic/South_Georgia"},	// (GMT-02:00) South Georgia
         {"EUT1DST",     "Atlantic/Azores"},	// (GMT-01:00) Azores
         {"UTC1",        "Atlantic/Cape_Verde"},	// (GMT-01:00) Cape Verde Is.
         {"GMT0",        "GMT"},			// (GMT+00:00) Greenwich Mean Time
@@ -1189,7 +1189,7 @@ const zoneinfo_t tz_list[] = {
         {"UTC-1_3",     "Africa/Lagos"},	// (GMT+01:00) West Central Africa
         {"UTC-2DST",    "Europe/Vilnius"},	// (GMT+02:00) Vilnus, Bucharest, sofija
         {"UTC-2DST_3",  "Europe/Helsinki"},	// (GMT+02:00) Helsiki
-        {"EST-2DST",    "Africa/Cairo"},	// (GMT+02:00) Cairo
+        {"EST-2",	"Africa/Cairo"},	// (GMT+02:00) Cairo
         {"UTC-2DST_4",  "Europe/Riga"},		// (GMT+02:00) Riga, Tallinn
         {"UTC-2DST_2",  "Europe/Athens"},	// (GMT+02:00) Athens
         {"IST-2DST",    "Asia/Jerusalem"},	// (GMT+02:00) Jerusalem
@@ -1207,7 +1207,7 @@ const zoneinfo_t tz_list[] = {
         {"UTC-4_1",     "Asia/Muscat"},		// (GMT+04:00) Abu Dhabi, Muscat
         {"UTC-4_5",     "Europe/Samara"},	// (GMT+04:00) Izhevsk, Samara
         {"UTC-4_4",     "Asia/Tbilisi"},	// (GMT+04:00) Tbilisi, Yerevan
-        {"UTC-4DST_2",  "Asia/Baku"},		// (GMT+04:00) Baku
+        {"UTC-4_6",	"Asia/Baku"},		// (GMT+04:00) Baku
         {"UTC-4.30",    "Asia/Kabul"},		// (GMT+04:30) Kabul
         {"UTC-5",       "Asia/Karachi"},	// (GMT+05:00) Islamabad, Karachi, Tashkent
         {"UTC-5_1",     "Asia/Yekaterinburg"},	// (GMT+05:00) Yekaterinburg
@@ -1236,7 +1236,7 @@ const zoneinfo_t tz_list[] = {
         {"UTC-10DST_1", "Australia/Canberra"},	// (GMT+10:00) Canberra, Melbourne, Sydney
         {"UTC-10_2",    "Australia/Brisbane"},	// (GMT+10:00) Brisbane"
         {"UTC-10_4",    "Asia/Vladivostok"},	// (GMT+10:00) Vladivostok
-        {"UTC-10_5",    "Asia/Magadan"},	// (GMT+10:00) Asia/Magadan
+        {"UTC-11_4",    "Asia/Magadan"},	// (GMT+10:00) Asia/Magadan
         {"TST-10TDT",   "Australia/Hobart"},	// (GMT+10:00) Australia/Hobart
         {"UTC-10_6",    "Pacific/Guam"},	// (GMT+10:00) Guam, Port Moresby
         {"UTC-11",      "Pacific/Noumea"},	// (GMT+11:00) Solomon Is.
@@ -1276,7 +1276,7 @@ void time_zone_x_mapping(void)
 	}
 #endif
 
-	/* pre mapping */
+	/* pre mapping because time_zone area changed*/
 	if (nvram_match("time_zone", "KST-9KDT"))
 		nvram_set("time_zone", "UCT-9_1");
 	else if (nvram_match("time_zone", "RFT-9RFTDST"))
@@ -1301,6 +1301,28 @@ void time_zone_x_mapping(void)
 		nvram_set("time_zone", "UTC-10_4");
 	else if (nvram_match("time_zone", "UTC-12_1"))          /*Magadan*/
 		nvram_set("time_zone", "UTC-10_6");
+	else if (nvram_match("time_zone", "UTC4.30"))		/*Caracas*/
+                nvram_set("time_zone", "UTC4_2");
+	else if (nvram_match("time_zone", "NORO2DST")){           /*South Georgia*/
+                nvram_set("time_zone", "UTC2");
+		nvram_set("time_zone_dst", "0");
+	}
+	else if (nvram_match("time_zone", "UTC-1_2")){           /*Sarajevo, Skopje*/
+                nvram_set("time_zone", "UTC-1DST_1_2");
+                nvram_set("time_zone_dst", "1");
+        }
+	else if (nvram_match("time_zone", "EST-2DST")){		/*Cairo*/
+		nvram_set("time_zone", "EST-2");
+		nvram_set("time_zone_dst", "0");
+	}
+	else if (nvram_match("time_zone", "UTC-4DST_2")){	/*Baku*/
+		nvram_set("time_zone", "UTC-4_6");
+		nvram_set("time_zone_dst", "0");
+	}
+	else if (nvram_match("time_zone", "UTC-10_5")){		/*Magadan*/
+		nvram_set("time_zone", "UTC-11_4");
+	}
+
 
 	snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get("time_zone"));
 	/* replace . with : */

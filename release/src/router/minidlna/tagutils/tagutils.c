@@ -21,7 +21,7 @@
 
 /* This file is derived from mt-daapd project */
 
-#include "config.h"
+#include "../config.h"
 #include <ctype.h>
 #include <errno.h>
 #include <id3tag.h>

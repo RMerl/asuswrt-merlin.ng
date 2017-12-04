@@ -256,8 +256,19 @@ function applyRule(){
 		}	
 	}
 
-	showLoading();
-	document.form.submit();
+	if(reset_wan_to_fo(document.form, document.form.wrs_protect_enable.value)) {
+		showLoading();
+		document.form.submit();
+	}
+	else {
+		curState = 0;
+		document.form.wrs_protect_enable.value = "0";
+		$('#radio_protection_enable').find('.iphone_switch').animate({backgroundPosition: -37}, "slow");
+		shadeHandle('0');
+		if($('#agreement_panel').css('display') == "block") {
+			refreshpage();
+		}
+	}
 }
 
 function showWeaknessTable(){
@@ -290,6 +301,7 @@ function check_weakness(){
 		$("#router_scan_state").html("Risk");
 	}
 	else if(safe_count != 0){
+		$("#all_security_btn").hide();
 		$("#router_scan_count").html(safe_count);
 		$("#router_scan_count").css("backgroundColor", "#24A628");
 		$("#router_scan_state").html("Safe");
@@ -704,7 +716,7 @@ function check_TM_feature(){
 	var wrs_vp_enable = document.form.wrs_vp_enable.value;
 	var wrs_mals_enable = document.form.wrs_mals_enable.value;
 
-	if(wrs_mals_enable == 1){
+	if(wrs_mals_enable == 1 && document.form.wrs_protect_enable.value == 1){
 		safe_count++;
 		document.getElementById('wrs_service').innerHTML = "<#checkbox_Yes#>";
 		document.getElementById('wrs_service').className = "status_yes";
@@ -717,7 +729,7 @@ function check_TM_feature(){
 		document.getElementById('wrs_service').onmouseout = function(){nd();}
 	}
 
-	if(wrs_vp_enable == 1){
+	if(wrs_vp_enable == 1 && document.form.wrs_protect_enable.value == 1){
 		safe_count++;
 		document.getElementById('vp_service').innerHTML = "<#checkbox_Yes#>";
 		document.getElementById('vp_service').className = "status_yes";
@@ -730,7 +742,7 @@ function check_TM_feature(){
 		document.getElementById('vp_service').onmouseout = function(){nd();}
 	}
 	
-	if(wrs_cc_enable == 1){
+	if(wrs_cc_enable == 1 && document.form.wrs_protect_enable.value == 1){
 		safe_count++;
 		document.getElementById('cc_service').innerHTML = "<#checkbox_Yes#>";
 		document.getElementById('cc_service').className = "status_yes";
@@ -842,14 +854,14 @@ function apply_alert_preference(){
 			document.getElementById('mail_address').focus();
 			return false;
 		}
-		
-		if (document.form.PM_MY_EMAIL.value != address_temp || document.form.PM_MY_AUTH_PASS.value != authpass_temp)
+
+		if (document.form.PM_MY_EMAIL.value != address_temp)
 			document.form.action_script.value += ";email_conf;send_confirm_mail";
 				
 		document.form.PM_MY_EMAIL.value = address_temp;	
 	}
 	else{
-		if (document.form.PM_MY_EMAIL.value != address_temp || document.form.PM_MY_AUTH_PASS.value != authpass_temp)
+		if (document.form.PM_MY_EMAIL.value != address_temp)
 			document.form.action_script.value += ";email_conf;send_confirm_mail";
 			
 		document.form.PM_MY_EMAIL.value = account_temp[0] + "@" +smtpList[server_index].smtpDomain;
@@ -1038,7 +1050,7 @@ function shadeHandle(flag){
 							<input class="button_gen" type="button" onclick="close_weakness_status();" value="<#CTL_close#>">
 						</td>
 						<td>
-							<input class="button_gen_long" type="button" onclick="enable_whole_security();" value="<#CTL_secure#>">
+							<input id="all_security_btn" class="button_gen_long" type="button" onclick="enable_whole_security();" value="<#CTL_secure#>">
 						</td>
 					</tr>
 				</table>
@@ -1321,7 +1333,7 @@ function shadeHandle(flag){
 														<div id="mals_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
 														<div style="text-align:center;">
 															<div id="mali_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
-															<div style="font-size: 16px;">Hits</div>
+															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="mali_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>
@@ -1374,7 +1386,7 @@ function shadeHandle(flag){
 														<div id="vp_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
 														<div style="text-align:center;">
 															<div id="vp_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
-															<div style="font-size: 16px;">Hits</div>
+															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="vp_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>
@@ -1424,7 +1436,7 @@ function shadeHandle(flag){
 														<div id="infected_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
 														<div style="text-align:center;">
 															<div id="infected_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
-															<div style="font-size: 16px;">Hits</div>
+															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="infected_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>

@@ -25,6 +25,10 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 vpath %.c $(SRCBASE)/shared/ $(SRCBASE)/shared/bcmwifi/src
 
 ifeq ($(wildcard $(SRCBASE)/router/acsd${BCMEX}$(EX7)/*.c),)

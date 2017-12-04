@@ -1706,6 +1706,7 @@ static int webdav_parse_chunkqueue(server *srv, connection *con, plugin_data *p,
 
 	/* read the chunks in to the XML document */
 	ctxt = xmlCreatePushParserCtxt(NULL, NULL, NULL, 0, NULL);
+	ctxt->options -= XML_PARSE_DTDATTR;
 
 	for (c = cq->first; cq->bytes_out != cq->bytes_in; c = cq->first) {
 		size_t weWant = cq->bytes_out - cq->bytes_in;

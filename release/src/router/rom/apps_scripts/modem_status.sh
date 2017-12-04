@@ -936,6 +936,8 @@ elif [ "$1" == "scan" ]; then
 	nvram set ${prefix}act_scanning=1
 	if [ -z "$ret" ]; then
 		echo "17:Fail to scan the stations."
+		nvram set ${prefix}act_scanning=0
+		nvram set freeze_duck=$wandog_interval
 		exit 17
 	fi
 
@@ -943,6 +945,8 @@ elif [ "$1" == "scan" ]; then
 	num=`echo -n "$ret" |awk 'BEGIN{FS=")"}{print NF}' 2>/dev/null`
 	if [ -z "$num" ]; then
 		echo "18:Fail to count the stations."
+		nvram set ${prefix}act_scanning=0
+		nvram set freeze_duck=$wandog_interval
 		exit 18
 	fi
 

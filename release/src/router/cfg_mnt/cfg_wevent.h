@@ -6,6 +6,8 @@
 #define MAX_EVENT_INFO_LEN    512
 #define WCLIENT_LIST_JSON_PATH	"/tmp/wclientlist.json"
 #define WEVENT_FILE_LOCK	"wevent"
+#define ALLWCLIENT_LIST_JSON_PATH	"/tmp/allwclientlist.json"
+#define ALLWEVENT_FILE_LOCK	"allwevent"
 #define WEVENT_TIMESTAMP	"ts"
 #define WEVENT_EVENT		"event"
 

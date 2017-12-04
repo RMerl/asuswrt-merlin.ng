@@ -164,6 +164,11 @@ function submitForm(){
 				document.mbform.wlc_psta.value = 1;							
 				document.mbform.sw_mode.value = 3;
 			}
+
+			if(smart_connect_support){
+				document.mbform.smart_connect_x.value = 0;
+			}
+			
 			document.mbform.submit();
 		}
 		else {
@@ -440,6 +445,7 @@ var retValHandler = {
 <input type="hidden" name="http_passwd" value="" disabled> 
 <input type="hidden" name="x_Setting" value="1">
 <input type="hidden" name="w_Setting" value="1">
+<input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
 </form>
 
 <form method="post" name="form" action="/start_apply.htm" onsubmit="return submitForm();">

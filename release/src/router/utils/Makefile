@@ -58,6 +58,9 @@ CFLAGS += -DBCMINTERNAL -DBCMDBG
 ifneq ($(RTCONFIG_BCMWL6),y)
 LDFLAGS += -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
 endif
 
 #UTILS := mii-tool robocfg ttcp
@@ -156,12 +159,7 @@ endif
 
 mii-tool: mii-tool.c mii.h
 
-ifeq ($(wildcard $(SRCBASE)/router/utils/robocfg.c),)
-robocfg:
-	-cp -f $(SRCBASE)/wl/exe/prebuilt/robocfg robocfg
-else
 robocfg: robocfg.c etc53xx.h
-endif
 
 ttcp: epi_ttcp.c
 	$(CC) $(CFLAGS) -o $@ $^

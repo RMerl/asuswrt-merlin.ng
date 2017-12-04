@@ -446,7 +446,7 @@ function applyRule(){
 				}
 			}
 		}
-
+		
 		if(document.form.btn_ez_radiotoggle[1].disabled == false && document.form.btn_ez_radiotoggle[1].checked == true){
 				document.form.btn_ez_radiotoggle.value=1;
 				document.form.btn_ez_mode.value=0;
@@ -626,7 +626,13 @@ function validForm(){
 			&& document.form.dst_start_d.value == document.form.dst_end_d.value){
 		alert("<#FirewallConfig_URLActiveTime_itemhint4#>");	//At same day
 		return false;
-	}	
+	}
+
+	if(document.form.sshd_enable.value != "0" && document.form.sshd_pass[1].checked && document.form.sshd_authkeys.value == ""){		
+		alert("<#JS_fieldblank#>");
+		document.form.sshd_authkeys.focus();
+		return false;
+	}
 
 	/*if (!validator.range(document.form.http_lanport, 1, 65535))
 		return false;*/
@@ -761,15 +767,15 @@ var timezones = [
 	["EST5DST",	"(GMT-05:00) <#TZ14#>"],
 	["UTC5_1",	"(GMT-05:00) <#TZ15#>"],
 	["UTC5_2",	"(GMT-05:00) <#TZ16#>"],
-	["UTC4.30",	"(GMT-04:30) <#TZ18_1#>"],
 	["AST4DST",	"(GMT-04:00) <#TZ17#>"],
 	["UTC4_1",	"(GMT-04:00) <#TZ18#>"],
+	["UTC4_2",	"(GMT-04:00) <#TZ18_1#>"],
 	["UTC4DST_2",	"(GMT-04:00) <#TZ19#>"],
 	["NST3.30DST",	"(GMT-03:30) <#TZ20#>"],
 	["EBST3DST_1",	"(GMT-03:00) <#TZ21#>"],
 	["UTC3",	"(GMT-03:00) <#TZ22#>"],
 	["EBST3DST_2",	"(GMT-03:00) <#TZ23#>"],
-	["NORO2DST",	"(GMT-02:00) <#TZ24#>"],
+	["UTC2",	"(GMT-02:00) <#TZ24#>"],
 	["EUT1DST",	"(GMT-01:00) <#TZ25#>"],
 	["UTC1",	"(GMT-01:00) <#TZ26#>"],
 	["GMT0",	"(GMT) <#TZ27#>"],
@@ -778,7 +784,7 @@ var timezones = [
 	["GMT0_2",	"(GMT) <#TZ28_1#>"],
 	["UTC-1DST_1",	"(GMT+01:00) <#TZ29#>"],
 	["UTC-1DST_1_1","(GMT+01:00) <#TZ30#>"],
-	["UTC-1_2",	"(GMT+01:00) <#TZ31#>"],
+	["UTC-1DST_1_2",	"(GMT+01:00) <#TZ31#>"],
 	["UTC-1DST_2",	"(GMT+01:00) <#TZ32#>"],
 	["MET-1DST",	"(GMT+01:00) <#TZ33#>"],
 	["MET-1DST_1",	"(GMT+01:00) <#TZ34#>"],
@@ -787,7 +793,7 @@ var timezones = [
 	["UTC-1_3",	"(GMT+01:00) <#TZ37#>"],
 	["UTC-2DST",	"(GMT+02:00) <#TZ38#>"],
 	["UTC-2DST_3",	"(GMT+02:00) <#TZ33_1#>"],
-	["EST-2DST",	"(GMT+02:00) <#TZ39#>"],
+	["EST-2",	"(GMT+02:00) <#TZ39#>"],
 	["UTC-2DST_4",	"(GMT+02:00) <#TZ40#>"],
 	["UTC-2DST_2",	"(GMT+02:00) <#TZ41#>"],
 	["IST-2DST",	"(GMT+02:00) <#TZ42#>"],
@@ -805,7 +811,7 @@ var timezones = [
 	["UTC-4_1",	"(GMT+04:00) <#TZ50#>"],
 	["UTC-4_5",	"(GMT+04:00) <#TZ50_2#>"],
 	["UTC-4_4",	"(GMT+04:00) <#TZ50_1#>"],
-	["UTC-4DST_2",	"(GMT+04:00) <#TZ51#>"],
+	["UTC-4_6",	"(GMT+04:00) <#TZ51#>"],
 	["UTC-4.30",	"(GMT+04:30) <#TZ52#>"],
 	["UTC-5",	"(GMT+05:00) <#TZ54#>"],
 	["UTC-5_1",	"(GMT+05:00) <#TZ53#>"],
@@ -833,13 +839,13 @@ var timezones = [
 	["UTC-9.30DST",	"(GMT+09:30) <#TZ74#>"],
 	["UTC-10DST_1",	"(GMT+10:00) <#TZ75#>"],
 	["UTC-10_2",	"(GMT+10:00) <#TZ76#>"],
-	["UTC-10_4",	"(GMT+10:00) <#TZ78#>"],
-	["UTC-10_5",	"(GMT+10:00) <#TZ82_1#>"],
+	["UTC-10_4",	"(GMT+10:00) <#TZ78#>"],	
 	["TST-10TDT",	"(GMT+10:00) <#TZ77#>"],
 	["UTC-10_6",	"(GMT+10:00) <#TZ79#>"],
 	["UTC-11",	"(GMT+11:00) <#TZ80#>"],
 	["UTC-11_1",	"(GMT+11:00) <#TZ81#>"],
 	["UTC-11_3",	"(GMT+11:00) <#TZ86#>"],
+	["UTC-11_4",	"(GMT+11:00) <#TZ82_1#>"],
 	["UTC-12",      "(GMT+12:00) <#TZ82#>"],
 	["UTC-12_2",      "(GMT+12:00) <#TZ85#>"],
 	["NZST-12DST",	"(GMT+12:00) <#TZ83#>"],
@@ -1613,11 +1619,11 @@ function upload_cert_key(){
 			<table id="hdd_spindown_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;display:none;">
 				<thead>
 					<tr>
-					  <td colspan="2">USB Setting</td>
+					  <td colspan="2"><#USB_Setting#></td>
 					</tr>
 				</thead>
 				<tr>
-					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,11)">Enable HDD Hibernation<!--untranslated--></a></th>
+					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,11)"><#usb_HDD_Hibernation#></a></th>
 					<td>
 						<select name="usb_idle_enable" class="input_option" onchange="change_hddSpinDown(this.value);" disabled>
 							<option value="0" <% nvram_match("usb_idle_enable", "0", "selected"); %>><#checkbox_No#></option>
@@ -1626,7 +1632,7 @@ function upload_cert_key(){
 					</td>
 				</tr>
 				<tr id="usb_idle_timeout_tr">
-					<th width="40%">Time Period<!--untranslated--></th>
+					<th width="40%"><#TimePeriod#></th>
 					<td>
 						<input type="text" class="input_6_table" maxlength="4" name="usb_idle_timeout" onKeyPress="return validator.isNumber(this,event);" value='<% nvram_get("usb_idle_timeout"); %>' autocorrect="off" autocapitalize="off" disabled><#Second#>
 						<span>(<#Setting_factorydefault_value#> : 300) </span>
@@ -1835,7 +1841,7 @@ function upload_cert_key(){
 			<table id ="http_auth_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
 				<thead>
 					<tr>
-					  <td colspan="2">Local Access Config</td><!--untranslated-->
+					  <td colspan="2"><#Local_access_config#></td>
 					</tr>
 				</thead>
 				<tr id="https_tr">
@@ -1904,7 +1910,7 @@ function upload_cert_key(){
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
 				<thead>
 					<tr>
-					  <td colspan="2">Remote Access Config</td><!--untranslated-->
+					  <td colspan="2"><#Remote_access_config#></td>
 					</tr>
 				</thead>
 				<tr id="misc_http_x_tr">
@@ -1912,7 +1918,7 @@ function upload_cert_key(){
 					<td>
 						<input type="radio" value="1" name="misc_http_x" class="input" onClick="hideport(1);enable_wan_access(1);" <% nvram_match("misc_http_x", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" value="0" name="misc_http_x" class="input" onClick="hideport(0);enable_wan_access(0);" <% nvram_match("misc_http_x", "0", "checked"); %>><#checkbox_No#><br>
-						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;">Only HTTPS is supported when accessing web from wan.</span><!--untranslated-->
+						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> <a href="https://www.asus.com/us/support/FAQ/1034294" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a></span>
 						<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><#NSlookup_help#></div>
 					</td>
 				</tr>
@@ -1943,7 +1949,7 @@ function upload_cert_key(){
 				<tr>
 					<th width="10%"><div id="selAll" class="all_disable" style="margin: auto;width:40px;" onclick="control_all_rule_status(this);"><#All#></div></th>
 					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,9);"><#FirewallConfig_LanWanDstIP_itemname#></a></th>
-					<th width="40%">Access Type<!--untranslated--></th>
+					<th width="40%"><#Access_Type#></th>
 					<th width="10%"><#list_add_delete#></th>
 				</tr>
 

@@ -1,0 +1,26 @@
+_lldpcli()
+{
+    COMPREPLY=()
+    COMP_WORDBREAKS=" "
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local cmd=(${COMP_WORDS[*]})
+
+    if [ "" != "$cur" ]; then
+        unset cmd[COMP_CWORD]
+    fi
+
+    local choices=$(${cmd[0]} complete ${cmd[@]:1} | \
+        cut -d " " -f 1)
+    COMPREPLY=($(compgen -W '${choices}' -- ${cur} ))
+    return 0
+}
+
+complete -F _lldpcli lldpcli
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 4
+# indent-tabs-mode: nil
+# sh-basic-offset: 4
+# End:
+# vim: ft=zsh sw=4 ts=4 et

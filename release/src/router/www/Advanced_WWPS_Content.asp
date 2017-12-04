@@ -17,11 +17,15 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script>
-
-</script>
 <script><% wl_get_parameter(); %>
-
+$(function () {
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		$('<script>')
+			.attr('type', 'text/javascript')
+			.attr('src','/require/modules/amesh.js')
+			.appendTo('head');
+	}
+});
 var wsc_config_state_old = '<% nvram_get("wsc_config_state"); %>';
 var wps_enable_old = '<% nvram_get("wps_enable"); %>';
 var wl_wps_mode_old = '<% nvram_get("wl_wps_mode"); %>';
@@ -197,6 +201,13 @@ function applyRule(){
 }
 
 function enableWPS(){
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		if(!AiMesh_confirm_msg("Wireless_WPS", document.form.wps_enable.value)) {
+			document.form.wps_enable.value = "1";
+			$('#radio_wps_enable').find('.iphone_switch').animate({backgroundPosition: 0}, "slow");
+			return;
+		}
+	}
 	document.form.action_script.value = "restart_wireless";
 	document.form.action_mode.value = "apply_new";
 	document.form.action_wait.value = "3";

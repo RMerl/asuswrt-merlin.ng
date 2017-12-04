@@ -278,6 +278,7 @@ function onSubmitCtrlOnly(o, s){
 		else{
 			alert("<#JS_Shareblanktest#>");
 			document.form.file.focus();
+			return false;
 		}
 	}
 	stopFlag = 1;
@@ -719,10 +720,14 @@ function wl_wep_change(){
 		if(mode == "open" && document.form.wl_nmode_x.value != 2){
 			document.form.wl_wep_x.parentNode.parentNode.style.display = "none";
 			document.form.wl_wep_x.value = "0";
-		}	
-		else	
+		}
+		else if(lantiq_support){
+			inputCtrl(document.form.wl_wep_x, 0);
+		}
+		else{
 			inputCtrl(document.form.wl_wep_x, 1);
-			
+		}	
+
 		if(wep != "0"){
 			inputCtrl(document.form.wl_phrase_x, 1);
 			inputCtrl(document.form.wl_key1, 1);
@@ -748,7 +753,7 @@ function change_wep_type(mode, isload){
 	var cur_wep = document.form.wl_wep_x.value;
 	var wep_type_array;
 	var value_array;
-	
+
 	free_options(document.form.wl_wep_x);
 	if(mode == "shared"){ //2009.0310 Lock
 		wep_type_array = new Array("WEP-64bits", "WEP-128bits");
@@ -827,15 +832,35 @@ function insertExtChannelOption_5g(){
 			else
 				wl_channel_list_5g = eval('<% channel_list_5g_2(); %>');
 
-			if(based_modelid == "BLUECAVE"){
-				if(document.form.wl_bw.value == "1"){ // 20MHz
+			if(lantiq_support){
+				if(document.form.wl_bw.value == "0" ||
+				document.form.wl_bw.value == "1"	){
+					// 20MHz, 20/40/80
 					wl_channel_list_5g = eval('<% channel_list_5g_20m(); %>');
-				}else{ // 20/40/80, 40, 80
+				}else if(document.form.wl_bw.value == "2"){
+					// 40MHz
+					wl_channel_list_5g = eval('<% channel_list_5g_40m(); %>');
+				}else{ // 80
 					wl_channel_list_5g = eval('<% channel_list_5g_80m(); %>');
 				}
+
+				if(document.form.wl_bw.value != "1"){
+					inputCtrl(document.form.wl_nctrlsb, 1);
+				}
+				else{
+					inputCtrl(document.form.wl_nctrlsb, 0);
+				}
 			}
-				if(document.form.wl_bw.value != "0" && document.form.wl_nmode_x.value != "2")
-				{ //not Legacy mode and BW > 20MHz
+			else{
+				if(document.form.wl_bw.value != "0"){
+					inputCtrl(document.form.wl_nctrlsb, 1);
+				}
+				else{
+					inputCtrl(document.form.wl_nctrlsb, 0);
+				}
+			}
+
+				if(document.form.wl_bw.value != "0" && document.form.wl_nmode_x.value != "2"){ //not Legacy mode and BW > 20MHz
 					var i;
 					//cut channels >= 165 when bw != 20MHz
 					for(i=0; i < wl_channel_list_5g.length; i++)
@@ -1292,59 +1317,64 @@ function insertExtChannelOption_2g(){
 	}else{
 			document.form.wl_channel.innerHTML = '<% select_channel("WLANConfig11b"); %>';
 	}
-	
+
 	var CurrentCh = document.form.wl_channel.value;	
 	var option_length = document.form.wl_channel.options.length;
-	if ((wmode == "0"||wmode == "1") && document.form.wl_bw.value != "0"){
-		inputCtrl(document.form.wl_nctrlsb, 1);
-		var x = document.form.wl_nctrlsb;
-		var length = document.form.wl_nctrlsb.options.length;
-		if (length > 1){
-			x.selectedIndex = 1;
-			x.remove(x.selectedIndex);
-		}
-		
-		if ((CurrentCh >=1) && (CurrentCh <= 4)){
-			x.options[0].text = "<#WLANConfig11b_EChannelAbove#>";
-			x.options[0].value = "lower";
-		}
-		else if ((CurrentCh >= 5) && (CurrentCh <= 7)){
-			x.options[0].text = "<#WLANConfig11b_EChannelAbove#>";
-			x.options[0].value = "lower";
-			add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelBelow#>", "upper");
-			if (document.form.wl_nctrlsb_old.value == "upper")
-				document.form.wl_nctrlsb.options.selectedIndex=1;
+	if (wmode == "0"|| wmode == "1"){
+		if((lantiq_support && document.form.wl_bw.value != "1") || (!lantiq_support && document.form.wl_bw.value != "0")){
+			inputCtrl(document.form.wl_nctrlsb, 1);
+			var x = document.form.wl_nctrlsb;
+			var length = document.form.wl_nctrlsb.options.length;
+			if (length > 1){
+				x.selectedIndex = 1;
+				x.remove(x.selectedIndex);
+			}
 			
-			if(is_high_power && CurrentCh == 5)  // for high power model, Jieming added at 2013/08/19
-				document.form.wl_nctrlsb.remove(1);
-			else if(is_high_power && CurrentCh == 7)
-				document.form.wl_nctrlsb.remove(0);
-		}
-		else if ((CurrentCh >= 8) && (CurrentCh <= 9)){
-			x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
-			x.options[0].value = "upper";
-			if (option_length >=14){
-				add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelAbove#>", "lower");
-				if (document.form.wl_nctrlsb_old.value == "lower")
-					document.form.wl_nctrlsb.options.selectedIndex=1;
+			if ((CurrentCh >=1) && (CurrentCh <= 4)){
+				x.options[0].text = "<#WLANConfig11b_EChannelAbove#>";
+				x.options[0].value = "lower";
 			}
-		}
-		else if (CurrentCh == 10){
-			x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
-			x.options[0].value = "upper";
-			if (option_length > 14){
-				add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelAbove#>", "lower");
-				if (document.form.wl_nctrlsb_old.value == "lower")
+			else if ((CurrentCh >= 5) && (CurrentCh <= 7)){
+				x.options[0].text = "<#WLANConfig11b_EChannelAbove#>";
+				x.options[0].value = "lower";
+				add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelBelow#>", "upper");
+				if (document.form.wl_nctrlsb_old.value == "upper")
 					document.form.wl_nctrlsb.options.selectedIndex=1;
+				
+				if(is_high_power && CurrentCh == 5)  // for high power model, Jieming added at 2013/08/19
+					document.form.wl_nctrlsb.remove(1);
+				else if(is_high_power && CurrentCh == 7)
+					document.form.wl_nctrlsb.remove(0);
 			}
-		}
-		else if (CurrentCh >= 11){
-			x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
-			x.options[0].value = "upper";
+			else if ((CurrentCh >= 8) && (CurrentCh <= 9)){
+				x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
+				x.options[0].value = "upper";
+				if (option_length >=14){
+					add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelAbove#>", "lower");
+					if (document.form.wl_nctrlsb_old.value == "lower")
+						document.form.wl_nctrlsb.options.selectedIndex=1;
+				}
+			}
+			else if (CurrentCh == 10){
+				x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
+				x.options[0].value = "upper";
+				if (option_length > 14){
+					add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelAbove#>", "lower");
+					if (document.form.wl_nctrlsb_old.value == "lower")
+						document.form.wl_nctrlsb.options.selectedIndex=1;
+				}
+			}
+			else if (CurrentCh >= 11){
+				x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
+				x.options[0].value = "upper";
+			}
+			else{
+				x.options[0].text = "<#Auto#>";
+				x.options[0].value = "1";
+			}
 		}
 		else{
-			x.options[0].text = "<#Auto#>";
-			x.options[0].value = "1";
+			inputCtrl(document.form.wl_nctrlsb, 0);
 		}
 	}
 	else
@@ -1592,11 +1622,21 @@ function authentication_method_change(obj){
 
 /* Handle wireless mode changed */
 function wireless_mode_change(obj){
-	if(obj.value=='0' || obj.value=='2')
-		inputCtrl(document.form.wl_gmode_check, 1);
-	else
-		inputCtrl(document.form.wl_gmode_check, 0);
-		
+	if(Bcmwifi_support) {
+		if(obj.value == '2')
+			inputCtrl(document.form.wl_gmode_check, 1);
+		else {
+			inputCtrl(document.form.wl_gmode_check, 0);
+			document.form.wl_gmode_check.checked = true;
+		}
+	}
+	else {
+		if(obj.value=='0' || obj.value=='2')
+			inputCtrl(document.form.wl_gmode_check, 1);
+		else
+			inputCtrl(document.form.wl_gmode_check, 0);
+	}
+
 	if(obj.value == "2")
 		inputCtrl(document.form.wl_bw, 0);
 	else
@@ -1630,18 +1670,22 @@ function limit_auth_method(g_unit){
 			var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"]];
 	}
 	else{		//Legacy
-			if((based_modelid == "RT-AC87U" && '<% nvram_get("wl_unit"); %>' == '1') || g_unit != undefined)
-				var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"]];
+		if((based_modelid == "RT-AC87U" && '<% nvram_get("wl_unit"); %>' == '1') || g_unit != undefined){
+			var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"]];
+		}
+		else if(based_modelid == "BLUECAVE"){
+			var auth_array = [["Open System", "open"], ["WPA-Personal", "psk"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA-Enterprise", "wpa"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"]];
+		}
+		else{
+			if(new_wifi_cert_support){
+				var auth_array = [["Open System", "open"], ["Shared Key", "shared"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"], ["Radius with 802.1x", "radius"]];
+			}
+			else if(wifi_logo_support){
+				var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA-Enterprise", "wpa"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"]];
+			}
 			else{
-				if(new_wifi_cert_support){
-					var auth_array = [["Open System", "open"], ["Shared Key", "shared"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"], ["Radius with 802.1x", "radius"]];
-				}
-				else if(wifi_logo_support){
-					var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA-Enterprise", "wpa"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"]];
-				}
-				else{
-					var auth_array = [["Open System", "open"], ["Shared Key", "shared"], ["WPA-Personal", "psk"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA-Enterprise", "wpa"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"], ["Radius with 802.1x", "radius"]];
-				}
+				var auth_array = [["Open System", "open"], ["Shared Key", "shared"], ["WPA-Personal", "psk"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"], ["WPA-Enterprise", "wpa"], ["WPA2-Enterprise", "wpa2"], ["WPA-Auto-Enterprise", "wpawpa2"], ["Radius with 802.1x", "radius"]];
+			}
 		}
 	}
 

@@ -13,51 +13,6 @@ if(band5g_11ac_support){
 }
 
 var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
-if(country != "JP"){          // remove Weather Radar Channel
-	if(_chanspecs_5g.getIndexByValue("116l") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("116l"),1);
-	}		
-
-	if(_chanspecs_5g.getIndexByValue("116/80") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("116/80"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("120") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("120"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("120u") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("120u"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("120/80") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("120/80"),1);
-	}		
-
-	if(_chanspecs_5g.getIndexByValue("124") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("124"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("124l") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("124l"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("124/80") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("124/80"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("128") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("128"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("128u") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("128u"),1);
-	}
-
-	if(_chanspecs_5g.getIndexByValue("128/80") != -1){
-		_chanspecs_5g.splice(_chanspecs_5g.getIndexByValue("128/80"),1);
-	}		
-}
 for(i=0;i<_chanspecs_5g.length;i++){
 	if(_chanspecs_5g[i].indexOf("/80") != -1){
 		wl1.channel_80m.push(_chanspecs_5g[i]);
@@ -68,6 +23,20 @@ for(i=0;i<_chanspecs_5g.length;i++){
 	else{
 		wl1.channel_20m.push(_chanspecs_5g[i]);
 	}
+
+	if(based_modelid == "RT-AC87U"){
+		ch80m = JSON.parse('<% channel_list_5g_80m(); %>');
+		wl1.channel_80m.push("0");
+		for(i=0;i<ch80m.length;i++){
+			wl1.channel_80m.push(ch80m[i] + "/80");
+		}
+
+		ch40m = JSON.parse('<% channel_list_5g_40m(); %>');
+		wl1.channel_40m.push("0");
+		for(i=0;i<ch40m.length;i++){
+			wl1.channel_40m.push(wlextchannel_fourty(ch40m[i]));
+		}
+	}
 }
 if(wl_info.band5g_2_support){
 	var wl2 = {
@@ -75,53 +44,8 @@ if(wl_info.band5g_2_support){
 		"channel_40m": [],
 		"channel_80m": []
 	}
+
 	var _chanspecs_5g_2 =  JSON.parse('<% chanspecs_5g_2(); %>');
-	if(country != "JP"){          // remove Weather Radar Channel
-		if(_chanspecs_5g_2.getIndexByValue("116l") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("116l"),1);
-		}		
-
-		if(_chanspecs_5g_2.getIndexByValue("116/80") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("116/80"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("120") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("120"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("120u") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("120u"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("120/80") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("120/80"),1);
-		}		
-
-		if(_chanspecs_5g_2.getIndexByValue("124") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("124"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("124l") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("124l"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("124/80") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("124/80"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("128") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("128"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("128u") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("128u"),1);
-		}
-
-		if(_chanspecs_5g_2.getIndexByValue("128/80") != -1){
-			_chanspecs_5g_2.splice(_chanspecs_5g_2.getIndexByValue("128/80"),1);
-		}		
-	}
-
 	for(i=0;i<_chanspecs_5g_2.length;i++){
 		if(_chanspecs_5g_2[i].indexOf("/80") != -1){
 			wl2.channel_80m.push(_chanspecs_5g_2[i]);
@@ -347,19 +271,6 @@ function wl_chanspec_list_change(){
 			wl_channel_list_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');					
 			extend_channel = ["<#Auto#>"];		 // for 5GHz, extension channel always displays Auto
 			extend_channel_value = [""];
-			if(country != "JP"){            // remove Weather Radar Channel
-				if(wl_channel_list_5g_2.getIndexByValue("120") != -1){
-			        wl_channel_list_5g_2.splice(wl_channel_list_5g_2.getIndexByValue("120"),1);
-			    }
-			                                       
-			    if(wl_channel_list_5g_2.getIndexByValue("124") != -1){
-			        wl_channel_list_5g_2.splice(wl_channel_list_5g_2.getIndexByValue("124"),1);
-			    }
-			                                       
-			    if(wl_channel_list_5g_2.getIndexByValue("128") != -1){
-			        wl_channel_list_5g_2.splice(wl_channel_list_5g_2.getIndexByValue("128"),1);
-			    }
-			}
 
 			if(bw_cap == "0"){	// 20/40/80 MHz (auto)
 				document.getElementById('wl_nctrlsb_field').style.display = "";
@@ -394,6 +305,7 @@ function wl_chanspec_list_change(){
 				var _wl_channel = new Array();
 				for(i=0;i<wl_channel_list_5g_2.length; i++){
 					var _cur_channel = parseInt(wl_channel_list_5g_2[i]);
+					
 					for(j=0;j<wl2.channel_80m.length;j++){
 						if(wl2.channel_80m[j].indexOf(_cur_channel) != -1){
 							_wl_channel.push(_cur_channel+"/80");

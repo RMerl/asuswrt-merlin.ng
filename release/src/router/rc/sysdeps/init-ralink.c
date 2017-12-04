@@ -1229,7 +1229,7 @@ void init_syspara(void)
 	nvram_set("et0macaddr", macaddr);
 	nvram_set("et1macaddr", macaddr);
 #else
-#if defined(RTAC1200) 
+#if defined(RTAC1200) || defined(RTAC53)
 	nvram_set("et0macaddr", macaddr2);
 	nvram_set("et1macaddr", macaddr);
 #else

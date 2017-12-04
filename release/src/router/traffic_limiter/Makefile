@@ -13,6 +13,10 @@ CFLAGS += -I$(TOP)/libqcsapi_client
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain
 ifeq ($(RTCONFIG_QCA),y)
 EXTRACC += -lpthread -ldl

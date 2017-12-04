@@ -89,6 +89,10 @@ int is_audio(const char * file);
 int is_image(const char * file);
 int is_playlist(const char * file);
 int is_caption(const char * file);
+#define is_nfo(file) ends_with(file, ".nfo")
+media_types get_media_type(const char *file);
+media_types valid_media_types(const char *path);
+
 int is_album_art(const char * name);
 int resolve_unknown_type(const char * path, media_types dir_type);
 const char *mime_to_ext(const char * mime);
@@ -96,5 +100,6 @@ const char *mime_to_ext(const char * mime);
 /* Others */
 int make_dir(char * path, mode_t mode);
 unsigned int DJBHash(uint8_t *data, int len);
+long uptime(void);
 
 #endif

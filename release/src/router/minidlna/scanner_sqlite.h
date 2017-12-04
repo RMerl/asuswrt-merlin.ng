@@ -79,7 +79,8 @@ char create_playlistTable_sqlite[] = "CREATE TABLE PLAYLISTS ("
 					"NAME TEXT NOT NULL, "
 					"PATH TEXT NOT NULL, "
 					"ITEMS INTEGER DEFAULT 0, "
-					"FOUND INTEGER DEFAULT 0"
+					"FOUND INTEGER DEFAULT 0, "
+					"TIMESTAMP INTEGER DEFAULT 0"
 					");";
 
 char create_settingsTable_sqlite[] = "CREATE TABLE SETTINGS ("

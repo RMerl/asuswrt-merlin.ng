@@ -1190,7 +1190,7 @@ function regen_qos_rule(obj, priority){
 }
 
 function applyRule(){
-	if(reset_wan_and_nat(document.form, document.form.apps_analysis.value)) {
+	if(reset_wan_to_fo(document.form, document.form.apps_analysis.value)) {
 		document.form.qos_rulelist.value = qos_rulelist;
 		document.form.submit();
 	}

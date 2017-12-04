@@ -262,27 +262,25 @@ int check_if_exist_vlan_ifnames(char *ifname)
 void change_lan_ifnames(void)
 {
 	char word[256], *next;
-	char lan_ifnames[32];
-	char *p;
+	char lan_ifnames[128];
 
 	if (!vlan_enable())
 		return;
 
 	nvram_set("lan_ifnames_t", nvram_get("lan_ifnames"));
-	memset(lan_ifnames, 0x0, sizeof(lan_ifnames));
-	p = lan_ifnames;
 
-	foreach (word, nvram_safe_get("lan_ifnames"), next) {		
+	strcpy(lan_ifnames, "");
+	foreach (word, nvram_safe_get("lan_ifnames"), next) {
 		SKIP_ABSENT_FAKE_IFACE(word);
-		if (strncmp(word, "vlan", 4)) {
-			if (!check_if_exist_vlan_ifnames(word))
-				p += sprintf(p, "%s ", word);
-		}
-		else
-			p += sprintf(p, "%s ", word);
+		if (strncmp(word, "vlan", 4) != 0 &&
+		    check_if_exist_vlan_ifnames(word))
+			continue;
+		if (*lan_ifnames)
+			strlcat(lan_ifnames, " ", sizeof(lan_ifnames));
+		strlcat(lan_ifnames, word, sizeof(lan_ifnames));
 	}
-	
-	if (strlen(lan_ifnames))
+
+	if (*lan_ifnames)
 		nvram_set("lan_ifnames", lan_ifnames);
 }
 

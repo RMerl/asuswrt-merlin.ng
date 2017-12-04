@@ -87,7 +87,7 @@ var Interface_Text_Value = [{"if_text": "WAN", "value": "wan0", "type": "00"},
 					  		{"if_text": "<% nvram_char_to_ascii("","wl1.5_ssid"); %>", "value": "wl1.5", "type": "00"},
 					  		{"if_text": "<% nvram_char_to_ascii("","wl1.6_ssid"); %>", "value": "wl1.6", "type": "00"}];
 var vlan_if_list = decodeURIComponent("<% nvram_char_to_ascii("","vlan_if_list"); %>");
-var wl_unused_array = [];
+var vlan_wl_array = [];
 var all_interface = "";
 var all_interfaces_array = [];
 var bind_interface_array = [];
@@ -193,7 +193,7 @@ function showSettingTable(show, edit){
 		bind_interface_array.length = 0;
 	}
 	else{
-		if(edit){
+		if(typeof(edit) == "number" && edit){
 			document.getElementById("addRuleBtn").onclick = function(){
 				change_vlan_rule();
 			};
@@ -208,10 +208,11 @@ function showSettingTable(show, edit){
 			document.getElementById("addRuleBtn").onclick = function(){
 				add_vlan_rule();
 			};
+			selected_row = 999;//mean to add a new vlan rule
 		}
 
 		generate_sunbet_options(document.form.subnet_list);
-		if(edit){
+		if(typeof(edit) == "number" && edit){
 			for(var j = 0; j < document.form.subnet_list.length; j++){
 				if(vlan_rulelist_table.rows[selected_row].cells[5].innerHTML == document.form.subnet_list.options[j].text){
 					document.form.subnet_list.selectedIndex = j;
@@ -221,10 +222,7 @@ function showSettingTable(show, edit){
 		}
 
 		show_binding_list();
-		if(all_interfaces_array.length > bind_interface_array.length)
-			show_inf_list();
-		else
-			document.getElementById("addInterface_tr").style.display = "none";
+		show_inf_list();
 
 		change_interface_type(document.form.interface_list);
 		$("#VlanSettings_table").fadeIn(300);
@@ -264,6 +262,9 @@ function show_inf_list(){
 		if(add_option)
 			add_infoption_bytext(inf_text);
 	}
+
+	if(document.form.interface_list.options.length == 0)
+		document.getElementById("addInterface_tr").style.display = "none";
 }
 
 function change_interface_type(obj){
@@ -425,7 +426,10 @@ function show_binding_list(){
 			var wid=[40, 40];
 			code +='<td width="'+wid[0]+'%">'+ htmlEnDeCode.htmlEncode(bind_interface_array[key].text) +'</td>';
 			code +='<td width="'+wid[1]+'%">'+ htmlEnDeCode.htmlEncode(bind_interface_array[key].type) +'</td>';
-			code +='<td width="20%"><input class="remove_btn" onclick="del_BindingInf(this);" value=""/></td>';
+			if(selected_row == 0 && bind_interface_array[key].value.substr(0, 2) == "wl")
+				code +='<td width="20%"></td>';
+			else
+				code +='<td width="20%"><input class="remove_btn" onclick="del_BindingInf(this);" value=""/></td>';
 			code += '</tr>';
 		});
 	}	
@@ -626,15 +630,8 @@ function show_vlan_rulelist(){
 									is_wan_port = 1;
 
 								if(is_iptv_port || is_wan_port){
-									if(isUntagged){
-										wired_inf = wired_inf + "<span style='color:#2F3A3E;' title='";
-										if(is_iptv_port)
-											wired_inf += "<#TBVLAN_IPTVPort_Hint#>'>";
-										else if(is_wan_port)
-											wired_inf += "<#TBVLAN_IPTVPort_Hint#>'>";
-
-										wired_inf += htmlEncode_decodeURI(Interface_Text_Value[wan_num+k].if_text) + "<sup>U</sup></span>";
-									}	
+									if(isUntagged)
+										wired_inf = wired_inf + "<span style='color:#2F3A3E;' title='<#TBVLAN_IPTVPort_Hint#>'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num+k].if_text) + "<sup>U</sup></span>";
 									else
 										wired_inf = wired_inf + "<span style='color:#2F3A3E;' title='<#TBVLAN_IPTVPort_Hint#>'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num+k].if_text) + "<sup>T</sup></span>";
 								}
@@ -659,19 +656,36 @@ function show_vlan_rulelist(){
 						var wl_value = parseInt(vlan_rulelist_col[j].slice(-2), 16);
 						for(var k = 0; k < wireless_num; k++){
 							var isMember = (wl_value >> k) & 1;
+							var is_cp_fbwifi = 1;
 
 							if(isMember){
+								for(var m = 0; m < vlan_wl_array.length; m++){
+									if(j == 5 && Interface_Text_Value[wan_num + lan_num + k].value == vlan_wl_array[m])
+										is_cp_fbwifi = 0;
+									else if(j == 6 && Interface_Text_Value[wan_num + lan_num + wireless_num + k].value == vlan_wl_array[m])
+										is_cp_fbwifi = 0;
+								}
+
 								if( wireless_inf != "")
 									wireless_inf += "<br>";
+
 								if( j == 5){
-									wireless_inf = wireless_inf + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + k].if_text);
+									if(is_cp_fbwifi)
+										wireless_inf = wireless_inf + "<span style='color:#2F3A3E;' title='This interface is used by Captive Portal or Free Wifi and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + k].if_text) + "</span>"; //untranslated
+									else
+										wireless_inf = wireless_inf + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + k].if_text);
+
 									if(i != 1)
 										remove_from_inf_list(Interface_Text_Value[wan_num + lan_num + k].value);
 									else
 										vlan1_wl_array.push(Interface_Text_Value[wan_num + lan_num + k].value);
 								}
 								else{
-									wireless_inf = wireless_inf + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + wireless_num + k].if_text);
+									if(is_cp_fbwifi)
+										wireless_inf = wireless_inf + "<span style='color:#2F3A3E;' title='This interface is used by Captive Portal or Free Wifi and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + wireless_num + k].if_text) + "</span>";//untranslated
+									else
+										wireless_inf = wireless_inf + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + wireless_num + k].if_text);
+
 									if(i != 1)
 										remove_from_inf_list(Interface_Text_Value[wan_num + lan_num + wireless_num + k].value);
 									else
@@ -741,10 +755,14 @@ function del_vlanrule(r){
 	var index = r.parentNode.parentNode.rowIndex;
 	var vlan_rulelist_row_index = index + 1;
 	var wl_inf_str = vlan_rulelist_table.rows[index].cells[4].innerHTML;
-	var wl_inf_array = wl_inf_str.split(", ");
+	var wl_inf_array = wl_inf_str.split('<br>');
 
-	for(var i = 0; i < wl_inf_array.length; i++)//Add wireless interface back to all_interfaces_array
+	for(var i = 0; i < wl_inf_array.length; i++){//Add wireless interface back to all_interfaces_array
 		add_to_inf_list(wl_inf_array[i]);
+		vlan1_wl_array.push(inf_text_to_value(wl_inf_array[i]));
+		update_vlan1_rule();
+		vlan_rulelist_row = vlan_rulelist.split('<');
+	}
 
 	vlan_rulelist_row.splice(vlan_rulelist_row_index, 1);
 	vlan_rulelist_table.deleteRow(index);
@@ -777,7 +795,10 @@ function edit_vlanrule(r){
 	if(vlan_rulelist_table.rows[selected_row].cells[3].innerHTML != ""){
 		var lan_binding_array = vlan_rulelist_table.rows[selected_row].cells[3].innerHTML.split("<br>");
 		for(var i = 0; i < lan_binding_array.length; i++){
-			lan_binding_array[i] = lan_binding_array[i].substring(lan_binding_array[i].indexOf("LAN "), lan_binding_array[i].indexOf("<sup"));
+			if(lan_binding_array[i].indexOf("<span") != -1)
+				lan_binding_array[i] = lan_binding_array[i].substring(lan_binding_array[i].indexOf(">") + 1, lan_binding_array[i].indexOf("<sup"));
+			else
+				lan_binding_array[i] = lan_binding_array[i].substring(lan_binding_array[i].indexOf("LAN"), lan_binding_array[i].indexOf("<sup"));
 		}
 		binding_list = lan_binding_array.join("<br>");
 	}
@@ -787,6 +808,12 @@ function edit_vlanrule(r){
 
 	binding_list += vlan_rulelist_table.rows[selected_row].cells[4].innerHTML;
 	var binding_list_array = binding_list.split("<br>");
+	for(var i = 0; i < binding_list_array.length; i++){
+		if(binding_list_array[i].indexOf("<span") != -1){
+			binding_list_array[i] = binding_list_array[i].substring(binding_list_array[i].indexOf(">") + 1, binding_list_array[i].indexOf("</span"));
+		}
+	}
+
 	var index = 0;
 	for(var j = 0; j < binding_list_array.length; j++){
 		for( var k = 0; k < Interface_Text_Value.length; k++){
@@ -1403,7 +1430,7 @@ function parse_vlan_if_list(){
 				inf_value = "wl0." + i;
 
 			all_interfaces_array.push(inf_value);
-			wl_unused_array.push(inf_value);
+			vlan_wl_array.push(inf_value);
 		}
 	}
 
@@ -1417,7 +1444,7 @@ function parse_vlan_if_list(){
 				inf_value = "wl1." + i;
 
 			all_interfaces_array.push(inf_value);
-			wl_unused_array.push(inf_value);
+			vlan_wl_array.push(inf_value);
 		}
 	}
 
@@ -1554,6 +1581,8 @@ function update_pvid_options(){
 				break;
 		}		
 	}
+
+	show_pvid_list();
 }
 
 function show_pvid_list(){

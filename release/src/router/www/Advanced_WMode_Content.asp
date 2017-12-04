@@ -74,6 +74,9 @@ function initial(){
 	regen_band(document.form.wl_unit);
 	if(lantiq_support){
 		checkWLReady();
+		var mode_desc = ["<#WLANConfig11b_x_APMode_option2#>"];
+		var mode_value = ["2"];
+		add_options_x2(document.form.wl_mode_x, mode_desc, mode_value, "2");
 	}
 
 	if(based_modelid == "RT-AC87U" && document.form.wl_unit[1].selected == true){
@@ -82,7 +85,6 @@ function initial(){
 	}
 
 	change_wireless_bridge(document.form.wl_mode_x.value);	
-
 	if((sw_mode == 2 || sw_mode == 4) && '<% nvram_get("wl_unit"); %>' == '<% nvram_get("wlc_band"); %>'){
 		for(var i=5; i>=3; i--)
 			document.getElementById("MainTable1").deleteRow(i);
@@ -104,7 +106,6 @@ function initial(){
 		document.getElementById("wds_list_title_field").style.display = "none";
 		document.getElementById("wds_list_add_delete_field").style.display = "none";
 		document.getElementById("wds_list_add_field").style.display = "none";
-
 		document.getElementById("repeaterModeHint_desc").innerHTML = "<#CTL_nonsupported#>";
 		document.getElementById("repeaterModeHint").style.display = "";
 	}

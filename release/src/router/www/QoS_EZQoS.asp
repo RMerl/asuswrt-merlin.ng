@@ -554,7 +554,7 @@ function validForm(){
 	if(document.form.qos_enable.value == 1){
 		var qos_type = document.form.qos_type.value;
 		if(qos_type == 1) {
-			if(!reset_wan_and_nat(document.form, 1)) {
+			if(!reset_wan_to_fo(document.form, 1)) {
 				return false;
 			}
 		}
@@ -669,7 +669,7 @@ function submitQoS(){
 					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 				}
 				else{
-					if(document.form.qos_type.value == 0){
+					if(document.form.qos_type.value == 0 && !lantiq_support){
 						FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 					}
 					else{				
@@ -900,7 +900,6 @@ function cancel_priority_panel() {
 
 function save_priority(){
 	regen_priority(document.getElementById("category_list"));
-	document.getElementById("bwdpi_app_rulelist_edit").value = bwdpi_app_rulelist;
 	$("#priority_panel").fadeOut(300);	
 	setTimeout("change_qos_type(document.form.qos_type.value);", 300);
 }

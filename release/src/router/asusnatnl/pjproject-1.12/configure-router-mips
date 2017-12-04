@@ -31,13 +31,15 @@ if [ "$RTCONFIG_REALTEK" = "y" ]; then
 		EXTRA_CFLAGS=-DREALTEK
         EXTRA_LDFLAGS="-L$LIBDIR -ldl -lc -lgcc_s"
 fi 
-if [ "$QCA" = "y" ]; then
-	EXTRA_LDFLAGS="-L$LIBDIR -L$LIBDIR/gcc/mips-openwrt-linux-uclibc/4.6.3 -lc -lm -ldl -lgcc_s"
-fi
 
 if [ "$BLUECAVE" != "" ]; then
 	EXTRA_CFLAGS+=-DBLUECAVE
 	EXTRA_LDFLAGS="-L$LIBDIR  -ldl -lc -lgcc_s"
+fi
+
+if [ "$QCA" = "y" ]; then
+	EXTRA_CFLAGS=
+	EXTRA_LDFLAGS="-L$LIBDIR -L$LIBDIR/gcc/mips-openwrt-linux-uclibc/4.6.3 -lc -lm -ldl -lgcc_s"
 fi
 
 GDB_CFLAGS=-g

@@ -1127,12 +1127,17 @@ vsf_sysutil_next_dirent(const char* session_user, const char *base_dir, struct v
 				ascii_to_char_safe(char_user, group_member->name, sizeof(char_user));
 
 				group_right = get_permission(char_user, mount_path, share_name, "ftp", 1);
+#ifdef UNION_PERMISSION
+				if(group_right >= 1 && group_right != 2)
+					break;
+#else
 				if(group_right < 1 || group_right == 2){
 					PMS_FreeAccInfo(&account_list, &group_list);
 					free(mount_path);
 					free(share_name);
 					return DENIED_DIR;
 				}
+#endif
 
 				owned_group = owned_group->next;
 			}
@@ -1140,7 +1145,12 @@ vsf_sysutil_next_dirent(const char* session_user, const char *base_dir, struct v
 
 #endif
 			user_right = get_permission(session_user, mount_path, share_name, "ftp", 0);
-			if(user_right < 1 || user_right == 2){
+#ifdef UNION_PERMISSION
+			if((user_right < 1 || user_right == 2) && (group_right < 1 || group_right == 2))
+#else
+			if(user_right < 1 || user_right == 2)
+#endif
+			{
 				free(mount_path);
 				free(share_name);
 				return DENIED_DIR;
@@ -2534,11 +2544,13 @@ vsf_sysutil_getpwnam(const char* p_user)
 					continue;
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-                            char dec_passwd[64];
-                            memset(dec_passwd, 0, sizeof(dec_passwd));
-                            pw_dec(tmp_passwd, dec_passwd);
-                            tmp_passwd = dec_passwd;
+				char dec_passwd[64];
+
+				memset(dec_passwd, 0, sizeof(dec_passwd));
+				pw_dec(tmp_passwd, dec_passwd);
+				tmp_passwd = dec_passwd;
 #endif
+
 				char char_user[64], char_passwd[64];
 				memset(char_user, 0, 64);
 				ascii_to_char_safe(char_user, tmp_account, 64);

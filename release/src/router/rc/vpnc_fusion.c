@@ -54,7 +54,9 @@ static int vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, 
 int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action);
 int stop_vpnc_by_unit(const int unit);
 int set_routing_table(const int cmd, const int vpnc_id);
+#if 0
 static void vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile);
+#endif
 static VPNC_PROFILE* vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id);
 int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id);
 int set_routing_rule(const VPNC_ROUTE_CMD cmd, const char *source_ip, const int vpnc_id);
@@ -204,35 +206,57 @@ void update_vpnc_state(const int vpnc_idx, const int state, const int reason)
 int vpnc_update_resolvconf(const int unit)
 {
 	FILE *fp;
-	char tmp[32];
-	char vpnc_prefix[] = "vpncXXXX_";
-	char word[256], *next;
+#ifdef NORESOLV /* dnsmasq uses no resolv.conf */
+	FILE *fp_servers;
+#endif
+	char tmp[100], prefix[sizeof("vpncXXXXXXXXXX_")];
+	char *wan_dns, *next;
 	int lock;
-	char *wan_dns, *wan_xdns;
+#ifdef RTCONFIG_YANDEXDNS
+	int yadns_mode = nvram_get_int("yadns_enable_x") ? nvram_get_int("yadns_mode") : YADNS_DISABLED;
+#endif
 
 	lock = file_lock("resolv");
 
 	if (!(fp = fopen("/tmp/resolv.conf", "w+"))) {
 		perror("/tmp/resolv.conf");
-		file_unlock(lock);
-		return errno;
+		goto error;
+	}
+#ifdef NORESOLV /* dnsmasq uses no resolv.conf */
+	if (!(fp_servers = fopen("/tmp/resolv.dnsmasq", "w+"))) {
+		perror("/tmp/resolv.dnsmasq");
+		fclose(fp);
+		goto error;
+	}
+#endif
+
+	snprintf(prefix, sizeof(prefix), "vpnc%d_", unit);
+
+	wan_dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
+	foreach(tmp, wan_dns, next) {
+		fprintf(fp, "nameserver %s\n", tmp);
+#ifdef NORESOLV /* dnsmasq uses no resolv.conf */
+#ifdef RTCONFIG_YANDEXDNS
+		if (yadns_mode != YADNS_DISABLED)
+			continue;
+#endif
+		fprintf(fp_servers, "server=%s\n", tmp);
+#endif
 	}
 
-	snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", unit);
-
-	wan_dns = nvram_safe_get(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp)));
-	wan_xdns = nvram_safe_get(strlcat_r(vpnc_prefix, "xdns", tmp, sizeof(tmp)));
-
-	foreach(word, (*wan_dns ? wan_dns : wan_xdns), next)
-		fprintf(fp, "nameserver %s\n", word);
-
 	fclose(fp);
-
+#ifdef NORESOLV /* dnsmasq uses no resolv.conf */
+	fclose(fp_servers);
+#endif
 	file_unlock(lock);
 
 	reload_dnsmasq();
 
 	return 0;
+
+error:
+	file_unlock(lock);
+	return -1;
 }
 
 void vpnc_add_firewall_rule(const int unit, const char *vpnc_ifname)
@@ -332,8 +356,7 @@ vpnc_up(const int unit, const char *vpnc_ifname)
 	}
 	
 	/* Add dns servers to resolv.conf */
-	nvram_safe_get(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp)));
-	if(tmp[0] != '\0')
+	if (nvram_invmatch(strcat_r(vpnc_prefix, "dns", tmp), ""))
 		vpnc_update_resolvconf(unit);
 
 	/* Add firewall rules for VPN client */
@@ -387,12 +410,6 @@ vpnc_ipup_main(int argc, char **argv)
 		snprintf(buf, sizeof(buf), "%s", value);
 	if ((value = getenv("DNS2")))
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s%s", strlen(buf) ? " " : "", value);
-
-	/* empty DNS means they either were not requested or peer refused to send them.
-	 * lift up underlying xdns value instead, keeping "dns" filled */
-	if (strlen(buf) == 0)
-		snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strlcat_r(prefix, "xdns", tmp, sizeof(tmp))));
-
 	nvram_set(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp)), buf);
 
 	// load vpnc profile list	
@@ -908,6 +925,7 @@ vpnc_ovpn_sync_account(const VPNC_PROFILE *prof)
 * RETURN:  
 * NOTE:
 *******************************************************************/
+#if 0
 static void
 vpnc_dump_dev_policy_list(const VPNC_DEV_POLICY *list, const int list_size)
 {
@@ -931,7 +949,9 @@ vpnc_dump_dev_policy_list(const VPNC_DEV_POLICY *list, const int list_size)
 	}
 	_dprintf("[%s, %d]End of dump!\n", __FUNCTION__, __LINE__);
 }
+#endif
 
+#if 0
 static void
 vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile)
 {
@@ -953,6 +973,7 @@ vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile)
 			break;
 	}
 }
+#endif
 
 /*******************************************************************
 * NAME: vpnc_dump_vpnc_profile_list
@@ -964,6 +985,7 @@ vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile)
 * RETURN:  
 * NOTE:
 *******************************************************************/
+#if 0
 static void
 vpnc_dump_vpnc_profile_list(const VPNC_PROFILE *list, const int list_size)
 {
@@ -980,6 +1002,7 @@ vpnc_dump_vpnc_profile_list(const VPNC_PROFILE *list, const int list_size)
 
 	_dprintf("[%s, %d]End of dump!\n", __FUNCTION__, __LINE__);
 }
+#endif
 
 /*******************************************************************
 * NAME: vpnc_set_basic_conf
@@ -2087,7 +2110,7 @@ int set_routing_rule(const VPNC_ROUTE_CMD cmd, const char *source_ip, const int 
 	else
 		snprintf(id_str, sizeof(id_str), "main");
 
-	eval("ip", "rule", cmd_str, "from", source_ip, "table", id_str, "priority", VPNC_RULE_PRIORITY);
+	eval("ip", "rule", cmd_str, "from", (char *) source_ip, "table", id_str, "priority", VPNC_RULE_PRIORITY);
 	return 0;
 }
 

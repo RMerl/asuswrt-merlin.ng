@@ -341,6 +341,7 @@ void add_usb_modem_modules(void){
 	modprobe("libphy");
 #endif
 	modprobe("asix");
+	modprobe("ax88179_178a");
 	modprobe("cdc_ether");
 	modprobe("rndis_host");
 	modprobe("cdc_ncm");
@@ -373,6 +374,7 @@ void remove_usb_modem_modules(void)
 	modprobe_r("cdc_ncm");
 	modprobe_r("rndis_host");
 	modprobe_r("cdc_ether");
+	modprobe_r("ax88179_178a");
 	modprobe_r("asix");
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
 	modprobe_r("libphy");
@@ -675,7 +677,14 @@ void start_usb(int orig)
 
 			if (nvram_get_int("usb_fs_fat")) {
 #ifdef RTCONFIG_TFAT
-				modprobe("tfat");
+#ifdef RTCONFIG_OPENPLUS_TFAT
+				if(fs_coexist() == 1){
+					modprobe("fat");
+					modprobe("vfat");
+				}
+				else
+#endif
+					modprobe("tfat");
 #else
 				modprobe("fat");
 				modprobe("vfat");
@@ -731,7 +740,7 @@ void start_usb(int orig)
 #if defined(RTCONFIG_BT_CONN)
 		modprobe("btusb");
 		modprobe("ath3k");
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
 		if (nvram_match("x_Setting", "0"))
 			system("/usr/bin/btchk.sh &"); /* workaround script */
 #endif
@@ -742,7 +751,7 @@ void start_usb(int orig)
 	}
 }
 
-#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#ifdef RTCONFIG_SOC_IPQ40XX
 void remove_dakota_usb_modules(void)
 {
 	modprobe_r(USB_DWC3);
@@ -773,7 +782,14 @@ void remove_usb_storage_module(void)
 	modprobe_r("mbcache");
 #endif
 #ifdef RTCONFIG_TFAT
-	modprobe_r("tfat");
+#ifdef RTCONFIG_OPENPLUS_TFAT
+	if(fs_coexist() == 1){
+		modprobe_r("vfat");
+		modprobe_r("fat");
+	}
+	else
+#endif
+		modprobe_r("tfat");
 #else
 	modprobe_r("vfat");
 	modprobe_r("fat");
@@ -900,7 +916,7 @@ void remove_usb_module(void)
 	remove_usb_led_module();
 	remove_usb_host_module();
 
-#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#ifdef RTCONFIG_SOC_IPQ40XX
 	remove_dakota_usb_modules();
 #endif
 }
@@ -1056,7 +1072,7 @@ void stop_usb(int f_force)
 		}
 	}
 
-#if defined(RTAC58U) || defined(RT4GAC53U) || defined(RTAC82U) || defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300)
+#ifdef RTCONFIG_SOC_IPQ40XX
 	if(disabled)remove_dakota_usb_modules();
 #endif
 #endif // HND_ROUTER
@@ -1171,14 +1187,24 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 
 			sprintf(options + strlen(options), ",shortname=winnt" + (options[0] ? 0 : 1));
 #ifdef RTCONFIG_TFAT
-#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
-			if(nvram_get_int("stop_iostreaming"))
-				sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
-			else
-				sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
-#else
-			sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
+#ifdef RTCONFIG_OPENPLUS_TFAT
+			if(fs_coexist() == 1){
+#ifdef LINUX26
+				sprintf(options + strlen(options), ",flush" + (options[0] ? 0 : 1));
 #endif
+			}
+			else
+#endif
+			{
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
+				if(nvram_get_int("stop_iostreaming"))
+					sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
+				else
+					sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
+#else
+				sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
+#endif
+			}
 #else
 #ifdef LINUX26
 			sprintf(options + strlen(options), ",flush" + (options[0] ? 0 : 1));
@@ -1243,17 +1269,23 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 				f_write(flagfn, NULL, 0, 0, 0);
 			}
 
-#ifdef RTCONFIG_TFAT
 			if(!strncmp(type, "vfat", 4)){
-				ret = eval("mount", "-t", "tfat", "-o", options, mnt_dev, mnt_dir);
+#ifdef RTCONFIG_TFAT
+#ifdef RTCONFIG_OPENPLUS_TFAT
+				if(fs_coexist() == 1)
+					ret = eval("mount", "-t", "vfat", "-o", options, mnt_dev, mnt_dir);
+				else
+#endif
+					ret = eval("mount", "-t", "tfat", "-o", options, mnt_dev, mnt_dir);
+#else
+				ret = eval("mount", "-t", "vfat", "-o", options, mnt_dev, mnt_dir);
+#endif
 				if(ret != 0){
 					syslog(LOG_INFO, "USB %s(%s) failed to mount at the first try!" , mnt_dev, type);
 					TRACE_PT("USB %s(%s) failed to mount at the first try!\n", mnt_dev, type);
 				}
 			}
-
 			else
-#endif
 			{
 				ret = mount(mnt_dev, mnt_dir, type, flags, options[0] ? options : "");
 				if(ret != 0){
@@ -1591,6 +1623,15 @@ _dprintf("%s: stop_cloudsync.\n", __func__);
 	}
 	nvram_set("dsltmp_diag_log_path", "");
 #endif
+
+#ifdef RTCONFIG_PUSH_EMAIL
+#ifdef RTCONFIG_DBLOG
+	if(nvram_match("dblog_enable", "1")) {
+		eval("dblogcmd", "exit"); // to stop dblog daemon
+	}
+	nvram_set("dblog_usb_path", "");
+	#endif /* RTCONFIG_DBLOG */
+#endif /* RTCONFIG_PUSH_EMAIL */
 
 	if(!g_reboot && nvram_match("apps_mounted_path", mnt->mnt_dir))
 		stop_app();
@@ -1948,6 +1989,20 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 			}
 		}
 #endif
+
+#ifdef RTCONFIG_PUSH_EMAIL
+#ifdef RTCONFIG_DBLOG
+		if(ret == MOUNT_VAL_RW) {
+			if(nvram_match("dblog_usb_path", "")) {
+				nvram_set("dblog_usb_path", mountpoint);
+				//(enable=1) && (state=run || state=reboot)
+				if(nvram_match("dblog_enable", "1") && (nvram_match("dblog_state", "1")||nvram_match("dblog_state", "2"))) {
+					start_dblog(0);
+				}
+			}
+		}
+#endif /* RTCONFIG_DBLOG */
+#endif /* RTCONFIG_PUSH_EMAIL */
 
 		// check the permission files.
 		if(ret == MOUNT_VAL_RW)
@@ -2566,12 +2621,18 @@ start_ftpd(void)
 
 	killall("vsftpd", SIGHUP);
 
-#ifdef RTCONFIG_LANTIQ
+//#ifdef RTCONFIG_LANTIQ
+#if 0
 	if (!pids("vsftpd"))
 		cpu_eval(NULL, "2", "vsftpd", "/etc/vsftpd.conf");
 #else
-	if (!pids("vsftpd"))
+	if (!pids("vsftpd")) {
+#ifdef RTCONFIG_LANTIQ
+		_eval_retry(vsftpd_argv, NULL, 0, &pid, "vsftpd");
+#else
 		_eval(vsftpd_argv, NULL, 0, &pid);
+#endif
+	}
 #endif
 
 	if (pids("vsftpd"))
@@ -3279,10 +3340,16 @@ void start_dms(void)
 		once = 0;
 
 	if (nvram_get_int("dms_enable") != 0) {
-
-		if (/*(!once) &&*/ (nvram_get_int("dms_rebuild") == 0)) {
+#if 1
+		if ((nvram_get_int("dms_rebuild") == 0)) {
 			argv[index - 1] = "-r";
 		}
+#else
+		if ((!once) && (nvram_get_int("dms_rescan") == 0)) {
+			// no forced rescan
+			argv[--index] = NULL;
+		}
+#endif
 
 		if ((f = fopen(argv[2], "w")) != NULL) {
 			port = nvram_get_int("dms_port");
@@ -3413,8 +3480,10 @@ void start_dms(void)
 		if (nvram_get_int("dms_dbg"))
 			argv[index++] = "-v";
 
+#if 0
 		if (nvram_get_int("dms_web"))
 			argv[index++] = "-W";
+#endif
 
 		use_custom_config(MEDIA_SERVER_APP".conf","/etc/"MEDIA_SERVER_APP".conf");
 		run_postconf(MEDIA_SERVER_APP, "/etc/"MEDIA_SERVER_APP".conf");
@@ -3451,6 +3520,9 @@ void stop_dms(void)
 void force_stop_dms(void)
 {
 	killall_tk(MEDIA_SERVER_APP);
+#if 0
+	eval("rm", "-rf", nvram_safe_get("dms_dbcwd"));
+#endif
 }
 
 void
@@ -3730,6 +3802,12 @@ ifdef RTCONFIG_TUNNEL
 
 	/* WebDav SSL support */
 	write_webdav_server_pem();
+	if(f_size(LIGHTTPD_CERTKEY) != f_size(HTTPD_KEY) + f_size(HTTPD_CERT))
+	{
+		char buf[256];
+		snprintf(buf, sizeof(buf), "cat %s %s > %s", HTTPD_KEY, HTTPD_CERT, LIGHTTPD_CERTKEY);
+		system(buf);
+	}
 
 	/* write WebDav configure file*/
 	system("/sbin/write_webdav_conf");

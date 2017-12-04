@@ -67,7 +67,10 @@ sub ext_filter {
 	$ext = lc($ext);	
 	if ($ext eq "asp") { return 1; }
 	if ($ext eq "htm") { return 1; }
+	if ($ext eq "html") { return 1; }
 	if ($ext eq "js") { return 1; }
+	if ($ext eq "json") { return 1; }
+	if ($ext eq "xml") { return 1; }
 	return 0;
 }
 

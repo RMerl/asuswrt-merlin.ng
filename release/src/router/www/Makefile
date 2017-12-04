@@ -14,7 +14,7 @@ MODELS_HAVE_USB3 = AC2900 \
 	RP-AC68U
 
 MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AC86U AC2900 RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 DSL-AC68U RT-AC68U \
-	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U BRT-AC828 MAP-AC1300 MAP-AC2200 VRZ-AC1300 BLUECAVE
+	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U BRT-AC828 BLUECAVE
 
 all:
 ifeq ($(and $(HND_ROUTER),$(RTCONFIG_VISUALIZATION)),y)
@@ -62,6 +62,17 @@ endif # CONFIG_VISUALIZATION
 	rm -rf $(INSTALLDIR)/www/model_patch
 	rm -rf $(INSTALLDIR)/www/.gitignore
 	rm -rf `find $(INSTALLDIR) -name "*.bak"`
+
+ifeq ($(RTCONFIG_AMAS),y)
+	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
+	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
+	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
+	cp $(TOP)/www/sysdep/downsizeImages/mobile.customize.black $(INSTALLDIR)/www/mobile.customize -rf
+	rm -rf $(INSTALLDIR)/www/images/qis
+	rm -rf $(INSTALLDIR)/www/qis
+	rm -rf $(INSTALLDIR)/www/qis_m
+	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
+endif
 
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.asp"`
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.htm"`
@@ -203,8 +214,11 @@ ifneq ($(RTCONFIG_NETOOL),y)
 endif
 ifeq ($(RTCONFIG_DSL),y)
 	rm -rf $(INSTALLDIR)/www/qis/QIS_welcome.htm
+	rm -rf $(INSTALLDIR)/www/qis/QIS_manual.htm
 	rm -rf $(INSTALLDIR)/www/images/New_ui/rt.jpg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/ap.jpg
+	rm -rf $(INSTALLDIR)/www/images/New_ui/re.jpg
+	rm -rf $(INSTALLDIR)/www/Advanced_OperationMode_Content.asp
 else
 	rm -rf $(INSTALLDIR)/www/images/New_ui/export/line_export_notif.png
 	rm -rf $(INSTALLDIR)/www/Main_Spectrum_Content.asp
@@ -499,7 +513,7 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AC3100 RT-AC5300 GT-AC5
 	rm -rf $(INSTALLDIR)/www/qis_m
 	rm -rf $(INSTALLDIR)/www/images/qis/icon_MAC_clone.svg
 	rm -rf $(INSTALLDIR)/www/images/qis/logo.png
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300 MAP-AC2200 VRZ-AC1300))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300 MAP-AC2200 VZW-AC1300))
 	rm -rf $(INSTALLDIR)/www/css/icon-qis.css
 	rm -rf $(INSTALLDIR)/www/images/qis/loading.gif
 	rm -rf $(INSTALLDIR)/www/images/qis/mainimage_img4.png
@@ -644,7 +658,9 @@ else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC5300 GT-AC9600))
 else ifeq ($(BUILD_NAME),BRT-AC828)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BRTAC828.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),BLUECAVE)
-	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BLUECAVE.js modules/menuTree.js	
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BLUECAVE.js modules/menuTree.js
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300))
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_LYRA.js modules/menuTree.js
 else ifeq ($(RTCONFIG_BWDPI),y)
 ifeq ($(findstring $(BUILD_NAME),$(MODELS_HAVE_TRAFFIC_ANALYZER)),)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_bwdpi_no_traffic_analyzer.js modules/menuTree.js
@@ -677,4 +693,27 @@ ifneq ($(RTCONFIG_VPN_FUSION), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_VPNClientFusion_Content.asp
 else
 	cd $(INSTALLDIR)/www/ && mv Advanced_VPNClientFusion_Content.asp Advanced_VPNClient_Content.asp
+endif
+
+ifneq ($(RTCONFIG_AMAS), y)
+	rm -rf $(INSTALLDIR)/www/device-map/amesh.asp
+	rm -rf $(INSTALLDIR)/www/device-map/amesh.css
+	rm -rf $(INSTALLDIR)/www/images/New_ui/amesh
+	rm -rf $(INSTALLDIR)/www/require/modules/amesh.js
+	rm -rf $(INSTALLDIR)/www/ajax_onboarding.asp
+	rm -rf $(INSTALLDIR)/www/get_release_note_amas.asp
+	rm -rf $(INSTALLDIR)/www/chcap.json
+	rm -rf $(INSTALLDIR)/www/message.htm
+	rm -rf $(INSTALLDIR)/www/AiMesh_Node_FirmwareUpgrade.asp
+endif
+
+ifeq ($(RTCONFIG_TCPDUMP),y)
+ifeq ($(RTCONFIG_SOC_IPQ40XX)$(RTCONFIG_PSISTLOG),yy)
+	ln -fs /jffs/pppoe.pcap $(INSTALLDIR)/www/pppoe.pcap
+	ln -fs /jffs/discover.pcap $(INSTALLDIR)/www/discover.pcap
+endif
+endif
+
+ifneq ($(RTCONFIG_DBLOG),y)
+	rm -rf $(INSTALLDIR)/www/images/New_ui/dblog_diag.gif
 endif

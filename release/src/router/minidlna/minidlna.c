@@ -71,13 +71,9 @@
 
 #include <sys/stat.h>
 
-#ifdef MS_IPK
-#include <sys/stat.h>
-#else
 #ifdef RTAC68U
 #include <shared.h>
 #include <bcmnvram.h>
-#endif
 #endif
 
 #include "config.h"
@@ -110,6 +106,12 @@
 #if SQLITE_VERSION_NUMBER < 3005001
 # warning "Your SQLite3 library appears to be too old!  Please use 3.5.1 or newer."
 # define sqlite3_threadsafe() 0
+#endif
+
+#define FIXED_SSDP_NOTIFY_INTERVAL
+
+#ifdef FIXED_SSDP_NOTIFY_INTERVAL
+#define NOTIFY_INTERVAL	3
 #endif
  
 /* OpenAndConfHTTPSocket() :
@@ -190,11 +192,7 @@ sighup(int sig)
 static void
 set_startup_time(void)
 {
-#if 1
-	startup_time = time(NULL);
-#else
 	startup_time = uptime();
-#endif
 }
 
 static void
@@ -285,6 +283,18 @@ remove_files(char *path)
 	return ( system(cmd) != 0 ) ? 0 : 1;
 }
 
+static time_t
+_get_dbtime(void)
+{
+	char path[PATH_MAX];
+	struct stat st;
+
+	snprintf(path, sizeof(path), "%s/files.db", db_path);
+	if (stat(path, &st) != 0)
+		return 0;
+	return st.st_mtime;
+}
+
 static int
 open_db(sqlite3 **sq3)
 {
@@ -305,8 +315,11 @@ open_db(sqlite3 **sq3)
 	sql_exec(db, "pragma page_size = 4096");
 	sql_exec(db, "pragma journal_mode = OFF");
 	sql_exec(db, "pragma synchronous = OFF;");
+#if 0
+	sql_exec(db, "pragma default_cache_size = 8192;");
+#else
 	sql_exec(db, "pragma default_cache_size = 256;");
-
+#endif
 
 	return new_db;
 }
@@ -326,7 +339,8 @@ check_db(sqlite3 *db, int new_db, pid_t *scanner_pid)
 		media_path = media_dirs;
 		while (media_path)
 		{
-			ret = sql_get_int_field(db, "SELECT TIMESTAMP from DETAILS where PATH = %Q", media_path->path);
+			ret = sql_get_int_field(db, "SELECT TIMESTAMP as TYPE from DETAILS where PATH = %Q",
+						media_path->path);
 			if (ret != media_path->types)
 			{
 				ret = 1;
@@ -359,7 +373,7 @@ check_db(sqlite3 *db, int new_db, pid_t *scanner_pid)
 	if (ret != 0)
 	{
 rescan:
-		rescan_db = 0;
+		CLEARFLAG(RESCAN_MASK);
 		if (ret < 0)
 			DPRINTF(E_WARN, L_GENERAL, "Creating new database at %s/files.db\n", db_path);
 		else if (ret == 1)
@@ -367,7 +381,7 @@ rescan:
 		else if (ret == 2)
 			DPRINTF(E_WARN, L_GENERAL, "Removed media_dir detected; rebuilding...\n");
 		else
-			DPRINTF(E_WARN, L_GENERAL, "Database version mismatch (%d=>%d); need to recreate...\n",
+			DPRINTF(E_WARN, L_GENERAL, "Database version mismatch (%d => %d); need to recreate...\n",
 				ret, DB_VERSION);
 		sqlite3_close(db);
 
@@ -384,10 +398,10 @@ retry:
 		if (CreateDatabase() != 0)
 			DPRINTF(E_FATAL, L_GENERAL, "ERROR: Failed to create sqlite database!  Exiting...\n");
 	}
-	if (ret != 0 || rescan_db == 1)
+	if (ret || GETFLAG(RESCAN_MASK))
 	{
 #if USE_FORK
-		scanning = 1;
+		SETFLAG(SCANNING_MASK);
 		sqlite3_close(db);
 		*scanner_pid = fork();
 		open_db(&db);
@@ -666,7 +680,7 @@ init(int argc, char **argv)
 					else if (*path == 'V' || *path == 'v')
 						types |= TYPE_VIDEO;
 					else if (*path == 'P' || *path == 'p')
-						types |= TYPE_IMAGES;
+						types |= TYPE_IMAGE;
 					else
 						DPRINTF(E_FATAL, L_GENERAL, "Media directory entry not understood [%s]\n",
 							ary_options[i].value);
@@ -911,11 +925,13 @@ init(int argc, char **argv)
 		case 'h':
 			runtime_vars.port = -1; // triggers help display
 			break;
+#if 0
 		case 'W':
 			web_status = 1;
 			break;
+#endif
 		case 'r':
-			rescan_db = 1;
+			SETFLAG(RESCAN_MASK);
 			break;
 		case 'R':
 			retry_times = 0;
@@ -1226,8 +1242,6 @@ RETURN:
 #endif
 #endif
 
-#define NOTIFY_INTERVAL	3
-
 /* === main === */
 /* process HTTP or SSDP requests */
 int
@@ -1242,7 +1256,7 @@ main(int argc, char **argv)
 	fd_set readset;	/* for select() */
 	fd_set writeset;
 	struct timeval timeout, timeofday, lastnotifytime = {0, 0};
-	time_t lastupdatetime = 0;
+	time_t lastupdatetime = 0, lastdbtime = 0;
 	int max_fd = -1;
 	int last_changecnt = 0;
 	pid_t scanner_pid = 0;
@@ -1256,18 +1270,16 @@ main(int argc, char **argv)
 
 	for (i = 0; i < L_MAX; i++)
 		log_level[i] = E_WARN;
+
+	ret = init(argc, argv);
+	if (ret != 0)
+		return 1;
 	init_nls();
 
 #ifdef MS_IPK
 	if (access("/tmp/Mediaserver/scantag",0) == 0)
 		remove_scantag();
-#endif
-
-	ret = init(argc, argv);
-	if (ret != 0)
-		return 1;
-
-#ifndef MS_IPK
+#else
 #if (!defined(RTN66U) && !defined(RTN56U))
 #ifdef RTAC68U
 	if (is_ac66u_v2_series()) {
@@ -1303,6 +1315,7 @@ main(int argc, char **argv)
 			ret = -1;
 	}
 	check_db(db, ret, &scanner_pid);
+	lastdbtime = _get_dbtime();
 #ifdef HAVE_INOTIFY
 	if( GETFLAG(INOTIFY_MASK) )
 	{
@@ -1356,7 +1369,7 @@ main(int argc, char **argv)
 #endif
 
 	reload_ifaces(0);
-#if 1
+#ifndef FIXED_SSDP_NOTIFY_INTERVAL
 	lastnotifytime.tv_sec = time(NULL) + runtime_vars.notify_interval;
 #else
 	lastnotifytime.tv_sec = uptime();
@@ -1367,7 +1380,7 @@ main(int argc, char **argv)
 	{
 		/* Check if we need to send SSDP NOTIFY messages and do it if
 		 * needed */
-#if 1
+#ifndef FIXED_SSDP_NOTIFY_INTERVAL
 		if (gettimeofday(&timeofday, 0) < 0)
 		{
 			DPRINTF(E_ERROR, L_GENERAL, "gettimeofday(): %s\n", strerror(errno));
@@ -1381,7 +1394,7 @@ main(int argc, char **argv)
 #endif
 		{
 			/* the comparison is not very precise but who cares ? */
-#if 1
+#ifndef FIXED_SSDP_NOTIFY_INTERVAL
 			if (timeofday.tv_sec >= (lastnotifytime.tv_sec + runtime_vars.notify_interval))
 #else
 			if (timeofday.tv_sec >= (lastnotifytime.tv_sec + NOTIFY_INTERVAL))
@@ -1390,7 +1403,7 @@ main(int argc, char **argv)
 				DPRINTF(E_DEBUG, L_SSDP, "Sending SSDP notifies\n");
 				for (i = 0; i < n_lan_addr; i++)
 				{
-#if 1
+#ifndef FIXED_SSDP_NOTIFY_INTERVAL
 					SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
 						runtime_vars.port, runtime_vars.notify_interval);
 #else
@@ -1399,7 +1412,7 @@ main(int argc, char **argv)
 #endif
 				}
 				memcpy(&lastnotifytime, &timeofday, sizeof(struct timeval));
-#if 1
+#ifndef FIXED_SSDP_NOTIFY_INTERVAL
 				timeout.tv_sec = runtime_vars.notify_interval;
 #else
 				timeout.tv_sec = NOTIFY_INTERVAL;
@@ -1408,7 +1421,7 @@ main(int argc, char **argv)
 			}
 			else
 			{
-#if 1
+#ifndef FIXED_SSDP_NOTIFY_INTERVAL
 				timeout.tv_sec = lastnotifytime.tv_sec + runtime_vars.notify_interval
 				                 - timeofday.tv_sec;
 #else
@@ -1447,12 +1460,13 @@ main(int argc, char **argv)
 #endif
 		}
 
-		if (scanning)
+		if (GETFLAG(SCANNING_MASK))
 		{
 			if (!scanner_pid || kill(scanner_pid, 0) != 0)
 			{
-				scanning = 0;
-				updateID++;
+				CLEARFLAG(SCANNING_MASK);
+				if (_get_dbtime() != lastdbtime)
+					updateID++;
 			}
 		}
 
@@ -1526,7 +1540,16 @@ main(int argc, char **argv)
 		 * and if there is an active HTTP connection, at most once every 2 seconds */
 		if (i && (timeofday.tv_sec >= (lastupdatetime + 2)))
 		{
-			if (scanning || sqlite3_total_changes(db) != last_changecnt)
+			if (GETFLAG(SCANNING_MASK))
+			{
+				time_t dbtime = _get_dbtime();
+				if (dbtime != lastdbtime)
+				{
+					lastdbtime = dbtime;
+					last_changecnt = -1;
+				}
+			}
+			if (sqlite3_total_changes(db) != last_changecnt)
 			{
 				updateID++;
 				last_changecnt = sqlite3_total_changes(db);
@@ -1590,7 +1613,7 @@ main(int argc, char **argv)
 
 shutdown:
 	/* kill the scanner */
-	if (scanning && scanner_pid)
+	if (GETFLAG(SCANNING_MASK) && scanner_pid)
 		kill(scanner_pid, SIGKILL);
 
 	/* close out open sockets */
@@ -1618,7 +1641,10 @@ shutdown:
 	}
 
 	if (inotify_thread)
+	{
+		pthread_kill(inotify_thread, SIGCHLD);
 		pthread_join(inotify_thread, NULL);
+	}
 
 	/* kill other child processes */
 	process_reap_children();

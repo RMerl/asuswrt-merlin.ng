@@ -340,7 +340,9 @@ char * Gobi_FwVersion(int unit, char *line, int size)
 	char *p = NULL;
 
 	if (Gobi_AtCommand(unit, atCmd, tmpFile) >= 0 &&
-#ifdef RT4GAC68U
+#if defined(RT4GAC53U)
+			(p = get_line_by_str(line, size, tmpFile, "Revision: WWHC")) != NULL)
+#elif defined(RT4GAC68U)
 			(p = get_line_by_str(line, size, tmpFile, "WWHC")) != NULL)
 #else
 			(p = get_line_by_str(line, size, tmpFile, "WWLC")) != NULL)

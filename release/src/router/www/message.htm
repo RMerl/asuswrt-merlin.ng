@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns:v>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="icon" href="images/favicon.png">
+<title>AiMesh router detect</title>
+<style>
+body{
+	font-family: Arial;
+}
+.wrapper{
+	background:url(images/New_ui/login_bg.png) #283437 no-repeat;
+	background-size: 1280px 1076px;
+	background-position: center 0%;
+	margin: 0px; 
+	background:#283437\9;
+}
+.p1{
+	font-size: 16pt;
+	color:#fff;
+	width:480px;
+}
+.nologin{
+	margin:10px 0px 0px 78px;
+	background-color:rgba(255,255,255,0.2);
+	padding:20px;
+	line-height:36px;
+	border-radius: 5px;
+	width: 480px;
+	border: 0;
+	color:#FFF;
+	color:#FFF\9; /* IE6 IE7 IE8 */
+	font-size:28px;
+}
+.div_table{
+	display:table;
+}
+.div_tr{
+	display:table-row;
+}
+.title_gap{
+	margin:20px 0px 0px 78px;
+}
+.main_field_gap{
+	margin:100px auto 0;
+}
+
+/*for mobile device*/
+@media screen and (max-width: 1000px){
+	.p1{
+		font-size: 12pt;
+		width:100%;
+	}
+	.nologin{
+		margin-left:10px; 
+		padding:10px;
+		line-height:18px;
+		width: 100%;
+		font-size:14px;
+	}
+	.main_field_gap{
+		width:80%;
+		margin:30px 0 0 15px;
+		/*margin:30px auto 0;*/
+	}
+	.title_gap{
+		margin-left:15px; 
+	}
+}
+</style>
+<script>
+/* add Array.prototype.forEach() in IE8 */
+if(typeof Array.prototype.forEach != 'function'){
+	Array.prototype.forEach = function(callback){
+		for(var i = 0; i < this.length; i++){
+			callback.apply(this, [this[i], i, this]);
+		}
+	};
+}
+
+var cfg_device_list = decodeURIComponent('<% nvram_char_to_ascii("","cfg_device_list"); %>');
+var cfg_device_list_array = new Array();
+var cfg_master_ipaddr = "";
+if(cfg_device_list != "") {
+	var cfg_device_list_row = cfg_device_list.split("<");
+	for(var i = 0; i < cfg_device_list_row.length; i += 1) {
+		if(cfg_device_list_row[i] != "") {
+			var cfg_device_list_col = cfg_device_list_row[i].split(">");
+			cfg_device_list_array[cfg_device_list_col[1]] = cfg_device_list_col[3];
+			if(cfg_device_list_col[3] == "1") {
+				cfg_master_ipaddr = cfg_device_list_col[1];
+			}
+		}
+	}
+}
+
+var isAMeshRE = ('<% nvram_get("re_mode"); %>' == '1') ? true : false;
+(function(){
+	if(isAMeshRE) {
+		if(cfg_master_ipaddr != "") {
+			var s = document.createElement("script");
+			s.type = "text/javascript";
+			s.src = "http://" + cfg_master_ipaddr + "/chdom.json?hostname=" + cfg_master_ipaddr;
+			var h = document.getElementsByTagName("script")[0];
+			h.parentNode.insertBefore(s,h);
+		}
+		else
+			window.location.href = "/error_page.htm?flag=9";
+	}
+})();
+var AiMesh_router_exist = false;
+var chdom = function(){AiMesh_router_exist = true;};
+function initial(){
+	if(isAMeshRE) {	
+		setTimeout(function(){
+			if(AiMesh_router_exist)
+				window.location.href = "http://" + cfg_master_ipaddr;
+			else
+				window.location.href = "/error_page.htm?flag=9";
+		}, 2000);
+	}
+}
+
+</script>
+</head>
+<body class="wrapper" onload="initial();">
+<div class="div_table main_field_gap">
+	<div class="div_tr">
+		<!-- AiMesh node detect field -->
+		<div id="detect_field">
+			<div class="p1 title_gap"></div>
+			<div class="nologin">Detecting AiMesh router...</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

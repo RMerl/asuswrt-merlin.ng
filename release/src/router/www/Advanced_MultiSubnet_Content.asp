@@ -53,6 +53,69 @@ var default_domain = '<% nvram_get("lan_domain"); %>';
 var default_dns1 = '<% nvram_get("dhcp_dns1_x"); %>';
 var default_wins_x = '<% nvram_get("dhcp_wins_x"); %>';
 var default_dhcp_static = '<% nvram_get("dhcp_static_x"); %>';
+if(captivePortal_support){
+	var cp_net = '<% nvram_get("cp_net"); %>';
+	var cp_ipaddr = cp_net.split('/')[0];
+	var cp_netmsk_bits = parseInt(cp_net.split('/')[1]);
+	var cp_netmask = bits_to_netmask(cp_netmsk_bits);
+	var cp_lease = '<% nvram_get("cp_lease"); %>';
+	var cp_ipaddr_array = cp_ipaddr.split('.');
+	if(cp_ipaddr_array[3] == '0'){
+		cp_ipaddr_array[3] = "1";
+	}
+	var cp_gateway = cp_ipaddr_array.join('.');
+}
+
+if(cp_freewifi_support){
+	var chilli_net = '<% nvram_get("chilli_net"); %>';
+	var chilli_ipaddr = chilli_net.split('/')[0];
+	var chilli_netmsk_bits = parseInt(chilli_net.split('/')[1]);
+	var chilli_netmask = bits_to_netmask(chilli_netmsk_bits);
+	var chilli_lease = '<% nvram_get("chilli_lease"); %>';
+	var chilli_ipaddr_array = chilli_ipaddr.split('.');
+	if(chilli_ipaddr_array[3] == '0'){
+		chilli_ipaddr_array[3] = "1";
+	}
+	var chilli_gateway = chilli_ipaddr_array.join('.');
+}
+
+if(ipsec_srv_support){
+	var ipsec_subnet_array = [];
+	var ipsec_profile_array = [];
+	var ipsec_profile = "";
+	var ipsec_subnet_string = "";
+	var ipsec_ipaddr = "";
+	var ipsec_netmask = "";
+	var subnet_element = [];
+	ipsec_profile = decodeURIComponent('<% nvram_char_to_ascii("", "ipsec_profile_1"); %>');
+	if(ipsec_profile != "")
+		ipsec_profile_array.push(ipsec_profile);
+	ipsec_profile = decodeURIComponent('<% nvram_char_to_ascii("", "ipsec_profile_2"); %>');
+	if(ipsec_profile != "")
+		ipsec_profile_array.push(ipsec_profile);
+	ipsec_profile = decodeURIComponent('<% nvram_char_to_ascii("", "ipsec_profile_3"); %>');
+	if(ipsec_profile != "")
+		ipsec_profile_array.push(ipsec_profile);
+	ipsec_profile = decodeURIComponent('<% nvram_char_to_ascii("", "ipsec_profile_4"); %>');
+	if(ipsec_profile != "")
+		ipsec_profile_array.push(ipsec_profile);
+	ipsec_profile = decodeURIComponent('<% nvram_char_to_ascii("", "ipsec_profile_5"); %>');
+	if(ipsec_profile != "")
+		ipsec_profile_array.push(ipsec_profile);
+
+	Object.keys(ipsec_profile_array).forEach(function(key){
+		var profile_array = ipsec_profile_array[key].split('>');
+		if(profile_array[0] == '4'){
+			ipsec_subnet_string = profile_array[14];
+			ipsec_ipaddr = ipsec_subnet_string.split('/')[0];
+			ipsec_netmask = bits_to_netmask(ipsec_subnet_string.split('/')[1]);
+			subnet_element.push(ipsec_ipaddr);
+			subnet_element.push(ipsec_netmask)
+			ipsec_subnet_array.push(subnet_element);
+		}
+	});
+}
+
 for(var i = 1; i < subnet_rulelist_row.length; i ++) {
 	var  subnet_rulelist_col = subnet_rulelist_row[i].split('>');
 	if( i == 1){
@@ -85,6 +148,8 @@ function initial(){
 
 function show_subnet_list(){
 	var code = "";
+	var wid = [19, 19, 19, 19, 10, 7, 7];
+	var ip_range = [];
 
 	code +='<table width="98%" align="center" cellpadding="4" cellspacing="0"  class="list_table" id="subnet_list_table">';
 
@@ -93,7 +158,6 @@ function show_subnet_list(){
 	else{
 		Object.keys(subnet_rulelist_array).forEach(function(key){
 			code += '<tr id="row'+key+'">';
-			var wid = [19, 19, 19, 19, 10, 7, 7];
 			code += '<td width="'+wid[0]+'%">'+ subnet_rulelist_array[key][0] +'</td>';
 			code += '<td width="'+wid[1]+'%">'+ subnet_rulelist_array[key][1] +'</td>';
 			code += '<td width="'+wid[2]+'%">'+ subnet_rulelist_array[key][3] +'</td>';
@@ -108,6 +172,48 @@ function show_subnet_list(){
 			code += '</tr>';
 		});
 	}
+
+	/* Show subnet information of Captive Portal */
+	if(captivePortal_support){
+		ip_range = calculatorIPPoolRange(cp_gateway, cp_netmask).split('>');
+		code += '<tr id="cp_subnet">';
+		code += '<td width="'+wid[0]+'%">'+ cp_gateway +'</td>';
+		code += '<td width="'+wid[1]+'%">'+ cp_netmask +'</td>';
+		code += '<td width="'+wid[2]+'%">'+ ip_range[0] +'</td>';
+		code += '<td width="'+wid[3]+'%">'+ ip_range[1] +'</td>';
+		code += '<td width="'+wid[4]+'%">'+ cp_lease +'</td>';
+		code += '<td colspan = "2">'+'<#Captive_Portal#>'+'</td>';
+		code += '</tr>';
+	}
+
+	/* Show subnet information of Free WIFI */
+	if(cp_freewifi_support){
+		ip_range = calculatorIPPoolRange(chilli_gateway, chilli_netmask).split('>');
+		code += '<tr id="cp_subnet">';
+		code += '<td width="'+wid[0]+'%">'+ chilli_gateway +'</td>';
+		code += '<td width="'+wid[1]+'%">'+ chilli_netmask +'</td>';
+		code += '<td width="'+wid[2]+'%">'+ ip_range[0] +'</td>';
+		code += '<td width="'+wid[3]+'%">'+ ip_range[1] +'</td>';
+		code += '<td width="'+wid[4]+'%">'+ chilli_lease +'</td>';
+		code += '<td colspan = "2"> Free Wi-Fi </td>';
+		code += '</tr>';
+	}
+
+	/* Show subnet information of IPSec Server */
+	if(ipsec_srv_support){
+		Object.keys(ipsec_subnet_array).forEach(function(key){
+			ip_range = calculatorIPPoolRange(ipsec_subnet_array[key][0], ipsec_subnet_array[key][1]).split('>');
+			code += '<tr id="ipsec_subnet_' + key + '">';
+			code += '<td width="'+wid[0]+'%">'+ '-' +'</td>';
+			code += '<td width="'+wid[1]+'%">'+ ipsec_subnet_array[key][1] +'</td>';
+			code += '<td width="'+wid[2]+'%">'+ ip_range[0] +'</td>';
+			code += '<td width="'+wid[3]+'%">'+ ip_range[1] +'</td>';
+			code += '<td width="'+wid[4]+'%">'+ '-' +'</td>';
+			code += '<td colspan = "2"> IPSec Server</td>';
+			code += '</tr>';
+		});
+	}
+
 	code +='</table>';
 	document.getElementById('subnet_list_Block').innerHTML = code;
 
@@ -339,6 +445,26 @@ function netmask_to_bits(netmask){
 	return bit_number;
 }
 
+function bits_to_netmask(bits){
+	var netmaskArray = [];
+	var maskInt = 0;
+	var netmask = "";
+
+	for(var i = 0; i < 4; i++){
+		maskInt = 0;
+		for( var j = 7; j >= 0; j--){
+			if( bits > 0 ){
+				maskInt = maskInt | (1 << j);
+			}
+			bits--;
+		}
+		netmaskArray.push(maskInt);
+	}
+
+	netmask = netmaskArray.join('.');
+	return netmask;
+}
+
 function change_subnet_rule(){
 	if(validSubnetForm()){
 		subnet_rulelist_array[selected_row][0] = document.form.tGatewayIP.value;
@@ -429,6 +555,37 @@ function validSubnetForm() {
 		}
 	}
 
+	/* Check overlap of DHCP Range with Captive Portal, Free WiFi, and IPSec Server */
+	if(captivePortal_support){
+		var ipConflict_cp = checkIPConflict("", lanIPAddr, lanNetMask, cp_gateway, cp_netmask);
+		if(ipConflict_cp.state) {
+			alertMsg("<#Captive_Portal#>", ipConflict_cp.ipAddr, ipConflict_cp.netLegalRangeStart, ipConflict_cp.netLegalRangeEnd);
+			return false;
+		}
+	}
+
+	if(cp_freewifi_support){
+		var ipConflict_chilli = checkIPConflict("", lanIPAddr, lanNetMask, chilli_gateway, chilli_netmask);
+		if(ipConflict_chilli.state) {
+			alertMsg("Free Wi-Fi", ipConflict_chilli.ipAddr, ipConflict_chilli.netLegalRangeStart, ipConflict_chilli.netLegalRangeEnd);
+			return false;
+		}
+	}
+
+	if(ipsec_srv_support){
+		var ipsec_conflict = false;
+		Object.keys(ipsec_subnet_array).forEach(function(key){
+			var ipConflict_ipsec = checkIPConflict("", lanIPAddr, lanNetMask, ipsec_subnet_array[key][0], ipsec_subnet_array[key][1]);
+			if(ipConflict_ipsec.state) {
+				alertMsg("IPSec Server", ipConflict_ipsec.ipAddr, ipConflict_ipsec.netLegalRangeStart, ipConflict_ipsec.netLegalRangeEnd);
+				ipsec_conflict = true;
+			}
+		});
+
+		if(ipsec_conflict)
+			return false;
+	}
+
 	return true;
 }
 
@@ -458,9 +615,9 @@ function validate_dhcp_range(ip_obj){
 	return 1;
 }
 
-function calculatorIPPoolRange() {
-	var gatewayIPArray = document.form.tGatewayIP.value.split(".");
-	var netMaskArray = document.form.tSubnetMask.value.split(".");
+function calculatorIPPoolRange(ipaddr, netmask) {
+	var gatewayIPArray = ipaddr.split(".");
+	var netMaskArray = netmask.split(".");
 	var ipPoolStartArray  = new Array();
 	var ipPoolEndArray  = new Array();
 	var ipPoolStart = "";
@@ -479,7 +636,7 @@ function calculatorIPPoolRange() {
 	ipPoolEndArray[3] -= 1;
 
 	ipPoolStart = ipPoolStartArray[0] + "." + ipPoolStartArray[1] + "." + ipPoolStartArray[2] + "." + ipPoolStartArray[3];
-	if(inet_network(ipPoolStart) <= inet_network(document.form.tGatewayIP.value)) {
+	if(inet_network(ipPoolStart) <= inet_network(ipaddr)) {
 		ipPoolStart = ipPoolStartArray[0] + "." + ipPoolStartArray[1] + "." + ipPoolStartArray[2] + "." + (parseInt(ipPoolStartArray[3]) + 1);
 	}
 	ipPoolEnd = ipPoolEndArray[0] + "." + ipPoolEndArray[1] + "." + ipPoolEndArray[2] + "." + ipPoolEndArray[3];
@@ -499,7 +656,7 @@ function checkIPLegality() {
 
 	//setting IP pool range
 	if(document.form.tGatewayIP.value !== "" && document.form.tSubnetMask.value !== "") {
-		var ipPoolRangeArray = calculatorIPPoolRange().split(">");
+		var ipPoolRangeArray = calculatorIPPoolRange(document.form.tGatewayIP.value, document.form.tSubnetMask.value).split(">");
 		document.form.tDHCPStart.value = ipPoolRangeArray[0];
 		document.form.tDHCPEnd.value = ipPoolRangeArray[1];
 	}
@@ -515,7 +672,7 @@ function checkMaskLegality() {
 	
 	//setting IP pool range
 	if(document.form.tGatewayIP.value !== "" && document.form.tSubnetMask.value !== "") {
-		var ipPoolRangeArray = calculatorIPPoolRange().split(">");
+		var ipPoolRangeArray = calculatorIPPoolRange(document.form.tGatewayIP.value, document.form.tSubnetMask.value).split(">");
 		document.form.tDHCPStart.value = ipPoolRangeArray[0];
 		document.form.tDHCPEnd.value = ipPoolRangeArray[1];
 	}

@@ -24,10 +24,7 @@
 #ifndef __PLAYLIST_H__
 #define __PLAYLIST_H__
 
-int
-insert_playlist(const char * path, char * name);
-
-int
-fill_playlists(void);
+int insert_playlist(const char *path, const char *name);
+int fill_playlists(void);
 
 #endif // __PLAYLIST_H__

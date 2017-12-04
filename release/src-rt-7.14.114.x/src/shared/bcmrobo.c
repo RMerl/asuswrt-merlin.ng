@@ -135,6 +135,12 @@
 #define REG_TRUNKING_GRP1	0x12
 #endif
 
+/* Internal GPHY MII registers */
+#define REG_GPHY_MII_CTL	0x0	/* MII Control register */
+#define REG_GPHY_DSP		0x2a	/* DSP Coefficient Read/Write Port register */
+#define REG_GPHY_DSPA		0x2e	/* DSP Coefficient Address register */
+#define REG_GPHY_AUXCTL		0x30	/* Auxiliary Control register */
+
 /* VLAN page registers */
 #define REG_VLAN_CTRL0	0x00	/* VLAN Control 0 register */
 #define REG_VLAN_CTRL1	0x01	/* VLAN Control 1 register */
@@ -966,6 +972,104 @@ static dev_ops_t srab = {
 #define srab_rreg(a, b, c, d, e) 0
 #endif /* ROBO_SRAB */
 
+
+static void
+bcm_robo_gphy_misc_wreg(robo_info_t *robo, int port, uint8 reg, uint8 ch, uint16 val16)
+{
+	uint16 addr;
+
+	ASSERT(ROBO_IS_BCM5301X(robo->devid));
+
+	addr = (ch << 13) |	/* channel selection */
+		(0 << 8) |	/* DSP filter 0 for misc registers */
+		reg;
+	robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + port), REG_GPHY_DSPA,
+		&addr, sizeof(addr));
+
+	robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + port), REG_GPHY_DSP,
+		&val16, sizeof(val16));
+}
+
+/* Need to apply the setting for EGPHY40 */
+static void
+bcm_robo_gphy_config(robo_info_t *robo, int port)
+{
+	uint16 val16;
+	int retry = 10;
+
+	if (!ROBO_IS_BCM5301X(robo->devid))
+		return;
+
+	/* wait for out of phy reset state */
+	while (retry--) {
+		robo->ops->read_reg(robo, (PAGE_GPHY_MII_P0 + port),
+			REG_GPHY_MII_CTL, &val16, sizeof(val16));
+		/* check phy reset bit */
+		if (!(val16 & (1 << 15)))
+			break;
+		bcm_mdelay(100);
+	}
+
+	if (val16 & (1 << 15)) {
+		ET_ERROR(("%s: failed to leave phy reset state\n", __FUNCTION__));
+		return;
+	}
+
+	/* CORE_SHD18_000: AUX control register, enable DSP clk */
+	val16 = 0x0C00;
+	robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + port), REG_GPHY_AUXCTL,
+		&val16, sizeof(val16));
+
+	/* AFE registers start from DSP TAP30h */
+	/* AFE_RXCONFIG_0 */
+	bcm_robo_gphy_misc_wreg(robo, port, 0x30, 0, 0xD771);
+
+	/* AFE_RXCONFIG_2 */
+	bcm_robo_gphy_misc_wreg(robo, port, 0x30, 2, 0x1872);
+
+	/* AFE_HPF_TRIM */
+	bcm_robo_gphy_misc_wreg(robo, port, 0x33, 3, 0x0006);
+
+	/* AFE_PLLCTRL_4 */
+	bcm_robo_gphy_misc_wreg(robo, port, 0x33, 0, 0x0500);
+
+	/* DSP_TAP10 */
+	bcm_robo_gphy_misc_wreg(robo, port, 0xA, 0, 0x011B);
+
+	/* re-AutoNeg */
+	robo->ops->read_reg(robo, (PAGE_GPHY_MII_P0 + port),
+		REG_GPHY_MII_CTL, &val16, sizeof(val16));
+	val16 |= 0x0240;
+	val16 &= 0xDFFF;
+	robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + port),
+		REG_GPHY_MII_CTL, &val16, sizeof(val16));
+
+	ET_ERROR(("%s: gphy config done for port %d\n", __FUNCTION__, port));
+}
+
+/* Need to config bcm5301x GPHY after doing PHY reset */
+void
+bcm_robo_check_gphy_reset(robo_info_t *robo, uint8 page, uint8 reg, void *val, int len)
+{
+	uint16 val16;
+
+	if (!ROBO_IS_BCM5301X(robo->devid))
+		return;
+
+	if (len != 2)
+		return;
+
+	/* return if not accessing internal GPHY registers */
+	if (!(page >= PAGE_GPHY_MII_P0) || !(page < (PAGE_GPHY_MII_P0 + MAX_NO_PHYS)))
+		return;
+
+	/* check reset bit */
+	val16 = *(uint16 *)val;
+	if ((reg == REG_GPHY_MII_CTL) && (val16 & (1 << 15))) {
+		bcm_robo_gphy_config(robo, (page - PAGE_GPHY_MII_P0));
+	}
+}
+
 /* High level switch configuration functions. */
 
 /* Get access to the RoboSwitch */
@@ -1132,6 +1236,15 @@ bcm_robo_attach(si_t *sih, void *h, char *vars, miird_f miird, miiwr_f miiwr)
 		mii_wreg(robo, PAGE_CTRL, REG_CTRL_SRST, &srst_ctrl, sizeof(uint8));
 		srst_ctrl = 0x00;
 		mii_wreg(robo, PAGE_CTRL, REG_CTRL_SRST, &srst_ctrl, sizeof(uint8));
+	}
+
+	if (ROBO_IS_BCM5301X(robo->devid)) {
+		int port;
+
+		for (port = 0; port < MAX_NO_PHYS; port++) {
+			bcm_robo_gphy_config(robo, port);
+		}
+		ET_MSG(("%s: GPHY config done\n", __FUNCTION__));
 	}
 
 	/* Enable switch leds */

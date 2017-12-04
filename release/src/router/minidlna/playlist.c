@@ -37,12 +37,16 @@
 #include "log.h"
 
 int
-insert_playlist(const char * path, char * name)
+insert_playlist(const char *path, const char *name)
 {
 	struct song_metadata plist;
 	struct stat file;
 	int items = 0, matches, ret;
+	char *objname;
 	char type[4];
+
+	if (stat(path, &file) != 0)
+		return -1;
 
 	strncpyt(type, strrchr(name, '.')+1, 4);
 
@@ -61,27 +65,27 @@ insert_playlist(const char * path, char * name)
 		DPRINTF(E_WARN, L_SCANNER, "Bad playlist [%s]\n", path);
 		return -1;
 	}
-	strip_ext(name);
 
-	DPRINTF(E_DEBUG, L_SCANNER, "Playlist %s contains %d items\n", name, items);
-	
-	matches = sql_get_int_field(db, "SELECT count(*) from PLAYLISTS where NAME = '%q'", name);
-	if( matches > 0 )
+	objname = strdup(name);
+	strip_ext(objname);
+	matches = sql_get_int_field(db, "SELECT count(*) from PLAYLISTS where NAME = '%q'", objname);
+	if (matches > 0)
 	{
-		sql_exec(db, "INSERT into PLAYLISTS"
-		             " (NAME, PATH, ITEMS) "
-	        	     "VALUES"
-		             " ('%q(%d)', '%q', %d)",
-		             name, matches, path, items);
+		char *newname;
+		xasprintf(&newname, "%s(%d)", objname, matches);
+		strip_ext(newname);
+		free(objname);
+		objname = newname;
 	}
-	else
-	{
-		sql_exec(db, "INSERT into PLAYLISTS"
-		             " (NAME, PATH, ITEMS) "
-	        	     "VALUES"
-		             " ('%q', '%q', %d)",
-		             name, path, items);
-	}
+
+	DPRINTF(E_DEBUG, L_SCANNER, "Playlist %s contains %d items\n", objname, items);
+
+	sql_exec(db, "INSERT into PLAYLISTS"
+	             " (NAME, PATH, ITEMS, TIMESTAMP) "
+	             "VALUES"
+	             " ('%q', '%q', %d, %lld)",
+	             objname, path, items, (long long)file.st_mtime);
+	free(objname);
 	return 0;
 }
 
@@ -121,6 +125,12 @@ fill_playlists(void)
 	char type[4];
 	int64_t plID, detailID;
 	char sql_buf[] = "SELECT ID, NAME, PATH from PLAYLISTS where ITEMS > FOUND";
+
+	if( GETFLAG(NO_PLAYLIST_MASK) )
+	{
+		DPRINTF(E_WARN, L_SCANNER, "Playlist creation disabled\n");
+		return 0;
+	}
 
 	DPRINTF(E_WARN, L_SCANNER, "Parsing playlists...\n");
 
@@ -165,7 +175,7 @@ fill_playlists(void)
 			{
 				//DEBUG DPRINTF(E_DEBUG, L_SCANNER, "%d: already in database\n", plist.track);
 				found++;
-       				freetags(&plist);
+				freetags(&plist);
 				continue;
 			}
 			if( last_dir )
@@ -245,7 +255,7 @@ found:
 					goto retry;
 				}
 			}
-       			freetags(&plist);
+			freetags(&plist);
 		}
 		if( last_dir )
 		{

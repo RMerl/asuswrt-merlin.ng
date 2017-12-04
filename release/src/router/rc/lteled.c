@@ -129,6 +129,7 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_SIG3, LED_OFF);
 #if defined(RT4GAC53U)
 					led_control(LED_SIG4, LED_OFF);
+					led_control(LED_LTE_OFF, LED_OFF);
 #endif
 				}
 			}
@@ -239,7 +240,37 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_LTE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 				}
 #elif defined(RT4GAC53U)
-				;
+				switch (cnt % 5) {
+				case 3:
+					led_control(LED_SIG1, LED_ON);
+					led_control(LED_SIG2, LED_OFF);
+					led_control(LED_SIG3, LED_OFF);
+					led_control(LED_SIG4, LED_OFF);
+					break;
+				case 2:
+					led_control(LED_SIG1, LED_OFF);
+					led_control(LED_SIG2, LED_ON);
+					led_control(LED_SIG3, LED_OFF);
+					led_control(LED_SIG4, LED_OFF);
+					break;
+				case 1:
+					led_control(LED_SIG1, LED_OFF);
+					led_control(LED_SIG2, LED_OFF);
+					led_control(LED_SIG3, LED_ON);
+					led_control(LED_SIG4, LED_OFF);
+					break;
+				case 0:
+					led_control(LED_SIG1, LED_OFF);
+					led_control(LED_SIG2, LED_OFF);
+					led_control(LED_SIG3, LED_OFF);
+					led_control(LED_SIG4, LED_ON);
+					break;
+				default:
+					led_control(LED_SIG1, LED_OFF);
+					led_control(LED_SIG2, LED_OFF);
+					led_control(LED_SIG3, LED_OFF);
+					led_control(LED_SIG4, LED_OFF);
+				}
 #else /* 4G-AC55U */
 				led_control(LED_LTE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 #endif

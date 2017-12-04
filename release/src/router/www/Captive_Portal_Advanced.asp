@@ -3392,10 +3392,10 @@ function finishRule(flag) {
 	splash_page_adv_html += "<meta HTTP-EQUIV='Expires' CONTENT='-1'>\n";
 	splash_page_adv_html += "<title><#FreeWiFi_title#></title>\n";
 	splash_page_adv_html += "<link rel='stylesheet' type='text/css' href='Uam.css'>\n";
-	splash_page_adv_html += "<script type='text/javascript' src='jquery-1.7.1.min.js'><\/script>\n";
-	splash_page_adv_html += "<script type='text/javascript' src='uam.js'><\/script>\n";
+	splash_page_adv_html += "<_INCLUDE_JQUERY_>\n";
+	splash_page_adv_html += "<_INCLUDE_UAM_>\n";
 
-	splash_page_adv_html += "<script>\n";
+	splash_page_adv_html += "<_TAG_START_>\n";
 	splash_page_adv_html += "var htmlEnDeCode = (function() {\n";
 	splash_page_adv_html += "var charToEntityRegex,\n";
 	splash_page_adv_html += "entityToCharRegex,\n";
@@ -3902,7 +3902,7 @@ function finishRule(flag) {
 	splash_page_adv_html += "var result = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(_hex);\n";
 	splash_page_adv_html += "return result ? 'rgb(' + parseInt(result[1], 16) + ',' + parseInt(result[2], 16) + ',' + parseInt(result[3], 16) + ')' : 'rgb(255,255,255)';\n";
 	splash_page_adv_html += "}\n";
-	splash_page_adv_html += "<\/script>\n";
+	splash_page_adv_html += "<_TAG_END_>\n";
 	splash_page_adv_html += "</head>\n";
 	splash_page_adv_html += "<body id='component_body' onload='initial();' style='overflow-x:hidden;overflow-y:auto;;background-color:#21333E;font-family:Arial,Helvetica,sans-serif;'>\n";
 	if(component_array['component_eula'])

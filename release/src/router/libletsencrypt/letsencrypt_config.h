@@ -2,9 +2,10 @@
 #define _LETSENCRYPT_CONFIG_H
 
 #define LE_ACME_CERT_HOME	"/jffs/.le"
-#define LE_ACME_KEY_ACC	"account.key"
-#define LE_ACME_KEY_DOMAIN	"domain.key"
-#define LE_ACME_CERT_DOMAIN	"cert.pem"
+#define LE_ACME_ACC_KEY	"account.key"
+#define LE_ACME_DOMAIN_KEY	"domain.key"
+#define LE_ACME_DOMAIN_CERT	"cert.pem"
+#define LE_ACME_DOMAIN_FULLCHAIN	"fullchain.pem"
 
 //certificate
 typedef enum {
@@ -77,7 +78,7 @@ void update_le_auxsts(le_auxsts_t status);
 le_conf_t* get_le_conf(le_conf_t* get_le_conf);
 int check_le_configure(le_conf_t* conf);
 le_auxsts_t check_le_status(void);
+char* get_path_le_domain_fullchain(char* path, size_t len);
 char* get_path_le_domain_cert(char* path, size_t len);
 char* get_path_le_domain_key(char* path, size_t len);
-
 #endif

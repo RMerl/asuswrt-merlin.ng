@@ -103,6 +103,11 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 endif
 
 WPSM_LIBS = -lnvram -lbcm -lshared -lbcmcrypto -lm -lc
+
+ifeq ($(RTCONFIG_AMAS),y)
+WPSM_LIBS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 # Set link libraries search path
 export LIBPATH  = -L$(TOP)/libbcmcrypto -L$(INSTALLDIR)/libbcmcrypto/usr/lib
 export LIBPATH += -L$(TOP)/libbcm -L$(INSTALLDIR)/libbcm/usr/lib

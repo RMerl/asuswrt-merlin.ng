@@ -10,6 +10,10 @@ else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp include/tdts/sysdeps/dakota-tmcfg.h include/tdts/tmcfg.h -f                      # dakota
 	@cp include/udb/sysdeps/dakota-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # dakota
 	@cp bin/dakota/* bin/ -rf                                                            # dakota
+else ifeq ($(RTCONFIG_QCA956X),y)
+	@cp include/tdts/sysdeps/qca956x-tmcfg.h include/tdts/tmcfg.h -f                     # qca956x
+	@cp include/udb/sysdeps/qca956x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # qca956x
+	@cp bin/qca956x/* bin/ -rf                                                           # qca956x
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp include/tdts/sysdeps/mtk-tmcfg.h include/tdts/tmcfg.h -f                         # mtk
 	@cp include/udb/sysdeps/mtk-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # mtk
@@ -55,6 +59,9 @@ ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp include/tdts/sysdeps/dakota-tmcfg.h include/tdts/tmcfg.h -f                      # dakota
 	@cp include/udb/sysdeps/dakota-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # dakota
+else ifeq ($(RTCONFIG_QCA956X),y)
+	@cp include/tdts/sysdeps/qca956x-tmcfg.h include/tdts/tmcfg.h -f                     # qca956x
+	@cp include/udb/sysdeps/qca956x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # qca956x
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp include/tdts/sysdeps/mtk-tmcfg.h include/tdts/tmcfg.h -f                         # mtk
 	@cp include/udb/sysdeps/mtk-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # mtk
@@ -115,6 +122,8 @@ ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp -f modules/ipq806x/* RC_INDEP/
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp -f modules/dakota/* RC_INDEP/
+else ifeq ($(RTCONFIG_QCA956X),y)
+	@cp -f modules/qca956x/* RC_INDEP/
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp -f modules/mtk/* RC_INDEP/
 	@cp -f bin/partial/rule.trf RC_INDEP/

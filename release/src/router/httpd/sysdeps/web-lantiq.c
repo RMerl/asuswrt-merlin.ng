@@ -103,6 +103,14 @@ static const struct mode_s {
 	{ 0, NULL },
 };
 
+/* protect bit rate error code */
+int isnumber(const char*s, float *fRate) {
+	char* e = NULL;
+	*fRate = strtof(s, &e);
+	*fRate *= 10;
+	return e != NULL && *e == (char)0;
+}
+
 /**
  * Run "iwpriv XXX get_XXX" and return string behind colon.
  * Expected result is shown below:
@@ -196,79 +204,6 @@ static int get_wlsubnet(int band, const char *ifname)
 	return -1;
 }
 
-char *getAPPhyModebyIface(const char *iface)
-{
-	static char result[sizeof("11b/g/nXXXXXX")] = "";
-	const struct mode_s *q;
-	char *mode, *puren, *p, *sep;
-	unsigned int m = 0;
-	int sta = 0;
-
-	if (!iface)
-		return "";
-	mode = iwpriv_get(iface, "get_mode");
-	if (!mode)
-		return "";
-
-	/* Ref to phymode_strings of qca-wifi driver. */
-	if (!strcmp(mode, "11A") || !strcmp(mode, "TA"))
-		m = WL_A;
-	else if (!strcmp(mode, "11G") || !strcmp(mode, "TG"))
-		m = WL_G | WL_B;
-	else if (!strcmp(mode, "11B"))
-		m = WL_B;
-	else if (!strncmp(mode, "11NA", 4))
-		m = WL_N | WL_A;
-	else if (!strncmp(mode, "11NG", 4))
-		m = WL_N | WL_G | WL_B;
-	else if (!strncmp(mode, "11ACVHT", 7))
-		m = WL_AC | WL_N | WL_A;
-	else if (!strncmp(mode, "AUTO", 4)) {
-		if (!strcmp(iface, get_staifname(0))) {
-			sta = 1;
-			m = WL_N | WL_G | WL_B;
-		}
-		else if (!strcmp(iface, get_staifname(1)) ||
-			 !strcmp(iface, get_staifname(2))	/* FIXME: for 2-nd 5GHz */
-			) {
-			sta = 1;
-			m = WL_AC | WL_N | WL_A;
-		}
-		else
-			dbg("%s: Unknown interface [%s] in AUTO mode\n", __func__, iface);
-	}
-	else {
-		dbg("%s: Unknown mode [%s]\n", __func__, mode);
-	}
-
-	/* If puren is enabled, remove a/g/b. */
-	puren = iwpriv_get(iface, "get_puren");
-	if (!sta && atoi(puren))
-		m &= ~(WL_A | WL_B | WL_G);
-
-	p = result;
-	*p = '\0';
-	sep = "11";
-	for (q = &mode_tbl[0]; m > 0 && q->mask; ++q) {
-		if (!(m & q->mask))
-			continue;
-
-		m &= ~q->mask;
-		strcat(p, sep);
-		p += strlen(sep);
-		strcat(p, q->mode);
-		p += strlen(q->mode);
-		sep = "/";
-	}
-
-	return result;
-}
-
-char *getAPPhyMode(int unit)
-{
-	return getAPPhyModebyIface(get_wififname(unit));
-}
-
 unsigned int getAPChannelbyIface(const char *ifname)
 {
 	int skfd;
@@ -295,11 +230,10 @@ unsigned int getAPChannelbyIface(const char *ifname)
 		/* remove IW_FREQ_FIXED */
 		wrq.u.freq.flags = wrq.u.freq.flags & 0xFE;
 	  freq = iw_freq2float(&(wrq.u.freq));
+		if(freq > KILO)
+			freq = iw_freq_to_channel(freq, &range);
 		/* vbuf is channel */
 		iw_print_freq_value(vbuf, sizeof(vbuf), freq);
-	  channel = iw_freq_to_channel(freq, &range);
-	  iw_print_freq(buffer, sizeof(buffer),
-			freq, channel, wrq.u.freq.flags);
 	}
 	/* Close the socket. */
 	iw_sockets_close(skfd);
@@ -444,6 +378,7 @@ static int getSTAInfo(int unit, WIFI_STA_TABLE *sta_info)
 	char *wl_ifnames;
 	char line_buf[300];
 	char rssi_char[5];
+	float tTx, tRx;
 
 	memset(sta_info, 0, sizeof(*sta_info));
 	unit_name = strdup(get_wififname(unit));
@@ -489,10 +424,19 @@ static int getSTAInfo(int unit, WIFI_STA_TABLE *sta_info)
 							sscanf(line_buf, "%*s%s", rssi_char);
 							r->rssi = atoi(rssi_char);
 						}
-						else if(strstr(line_buf, "tx bitrate"))
+						else if(strstr(line_buf, "tx bitrate")) {
 							sscanf(line_buf, "%*s%*s%s", r->txrate);
+							if(!isnumber(r->txrate, &tTx))
+								memset(r->txrate, 0x00, sizeof(r->txrate));
+							else
+								snprintf(r->txrate, sizeof(r->txrate), "%0.f", tTx);
+						}
 						else if(strstr(line_buf, "rx bitrate")) {
 							sscanf(line_buf, "%*s%*s%s", r->rxrate);
+							if(!isnumber(r->rxrate, &tRx))
+								memset(r->rxrate, 0x00, sizeof(r->rxrate));
+							else
+								snprintf(r->rxrate, sizeof(r->rxrate), "%0.f", tRx);
 							break;
 						}
 					}
@@ -529,31 +473,6 @@ char* GetBW(int BW)
 #if defined(RTAC52U) || defined(RTAC51U)
 		case BW_80:
 			return "80M";
-#endif
-
-		default:
-			return "N/A";
-	}
-}
-
-char* GetPhyMode(int Mode)
-{
-	switch(Mode)
-	{
-		case MODE_CCK:
-			return "CCK";
-
-		case MODE_OFDM:
-			return "OFDM";
-		case MODE_HTMIX:
-			return "HTMIX";
-
-		case MODE_HTGREENFIELD:
-			return "GREEN";
-
-#if defined(RTAC52U) || defined(RTAC51U)
-		case MODE_VHT:
-			return "VHT";
 #endif
 
 		default:
@@ -671,6 +590,7 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 	int		channel;
 	char	buffer[128];	/* Temporary buffer */
 	char	vbuf[16];
+	struct ifreq ifr;
 
 	if (unit < 0 || !ifname || !op_mode)
 		return 0;
@@ -699,9 +619,6 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 	}
 	ret += websWrite(wp, "MAC address	: %02X:%02X:%02X:%02X:%02X:%02X\n",
 			mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-	*tmpstr = '\0';
-	strcpy(tmpstr, getAPPhyModebyIface(ifname));
-	ret += websWrite(wp, "Phy Mode	: %s\n", tmpstr);
 
 	/* Get list of frequencies / channels */
 	if(iw_get_range_info(skfd, ifname, &range) < 0){
@@ -713,11 +630,12 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 		/* remove IW_FREQ_FIXED */
 		wrq.u.freq.flags = wrq.u.freq.flags & 0xFE;
 		freq = iw_freq2float(&(wrq.u.freq));
+		if(freq > KILO)
+			freq = iw_freq_to_channel(freq, &range);
 		/* vbuf is channel */
- 		iw_print_freq_value(vbuf, sizeof(vbuf), freq);
-		channel = iw_freq_to_channel(freq, &range);
-		iw_print_freq(buffer, sizeof(buffer),
-				freq, channel, wrq.u.freq.flags);
+		iw_print_freq_value(vbuf, sizeof(vbuf), freq);
+	 //  iw_print_freq(buffer, sizeof(buffer),
+//			freq, channel, wrq.u.freq.flags);
 	}
 	/* Close the socket. */
 	iw_sockets_close(skfd);
@@ -794,8 +712,8 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		ret += websWrite(wp, "%-18s%-4s%-8s%-4s%-4s%-4s%-5s%-5s%-12s\n",
 				   "MAC", "PSM", "PhyMode", "BW", "MCS", "SGI", "STBC", "Rate", "Connect Time");
 #else
-		ret += websWrite(wp, "%-3s %-17s %-15s %-6s %-6s\n",
-			"idx", "MAC", "PhyMode", "TXRATE", "RXRATE");
+		ret += websWrite(wp, "%-3s %-17s %-6s %-6s\n",
+			"idx", "MAC", "TXRATE", "RXRATE");
 #endif
 
 		if ((sta_info = malloc(sizeof(*sta_info))) != NULL) {
@@ -804,10 +722,9 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				*subunit_str = '\0';
 				if (sta_info->Entry[i].subunit)
 					snprintf(subunit_str, sizeof(subunit_str), "%d", sta_info->Entry[i].subunit);
-				ret += websWrite(wp, "%3s %-17s %-15s %6s %6s\n",
+				ret += websWrite(wp, "%3s %-17s %6s %6s\n",
 					subunit_str,
 					sta_info->Entry[i].addr,
-					sta_info->Entry[i].mode,
 					sta_info->Entry[i].txrate,
 					sta_info->Entry[i].rxrate
 					);
@@ -1602,12 +1519,12 @@ static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int u
 
 	for(k = 0; k < range.num_frequency; k++){
 		if(k != 0){
-			if(range.freq[k].i != 165){
+			if(range.freq[k].i != 165 && range.freq[k].i != 140 ){
 				strcat(chList, ",");
 			}
 		}
 		snprintf(buffer, sizeof(buffer), "%d", range.freq[k].i);
-		if(range.freq[k].i != 165){
+		if(range.freq[k].i != 165 && range.freq[k].i != 140 ){
 			strcat(chList, buffer);
 		}
 	}
@@ -1623,6 +1540,34 @@ int
 ej_wl_channel_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 {
 	return ej_wl_channel_list(eid, wp, argc, argv, 0);
+}
+
+int display_channel(int bw, int channel)
+{
+	char country_code[3];
+
+	snprintf(country_code, sizeof(country_code), "%s",
+		nvram_safe_get("wl_country_code"));
+
+	if(bw == 80){
+		if(strcmp(country_code, "GB") == 0){
+			if(channel == 116 || channel == 132 ||
+				channel == 136 || channel == 140 ){
+				return 0;
+			}
+		}else{
+			if(channel == 165 || channel == 140 ){
+				return 0;
+			}
+		}
+	}else if(bw == 40){
+		if(strcmp(country_code, "GB") == 0){
+			if(channel == 116 || channel == 140){
+				return 0;
+			}
+		}
+	}
+	return 1;
 }
 
 int get_wl_channel_list_by_bw_core(int unit, char *ch_list, int bw)
@@ -1650,18 +1595,14 @@ int get_wl_channel_list_by_bw_core(int unit, char *ch_list, int bw)
 	strcat(ch_list, "[");
 	for(k = 0; k < range.num_frequency; k++){
 		if(k != 0){
-			if(bw == 80){
-				if(range.freq[k].i != 165){
-					strcat(ch_list, ",");
-				}
-			}else strcat(ch_list, ",");
+			if(display_channel(bw, range.freq[k].i) == 1){
+				strcat(ch_list, ",");
+			}
 		}
 		snprintf(buffer, sizeof(buffer), "%d", range.freq[k].i);
-		if(bw == 80){
-			if(range.freq[k].i != 165){
-				strcat(ch_list, buffer);
-			}
-		}else strcat(ch_list, buffer);
+		if(display_channel(bw, range.freq[k].i) == 1){
+			strcat(ch_list, buffer);
+		}
 	}
 	strcat(ch_list, "]");
 	/* Close the socket. */
@@ -1674,6 +1615,14 @@ int ej_wl_channel_list_5g_20m(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
 	static char ch_list[256] = {0};
+	int check_bit;
+
+	if( (nvram_get_int("wl_country_changed") & 0x1) == 0x1){
+		check_bit = nvram_get_int("wl_country_changed") ^ 0x1 ;
+		nvram_set_int("wl_country_changed", check_bit);
+		memset(ch_list, 0, sizeof(ch_list));
+	}
+
 	if(strlen(ch_list) == 0) retval = get_wl_channel_list_by_bw_core(1, ch_list, 20);
 	retval += websWrite(wp, ch_list);
 	return retval;
@@ -1683,6 +1632,15 @@ int ej_wl_channel_list_5g_40m(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
 	static char ch_list[256] = {0};
+	int check_bit;
+	int get_list_again;
+
+	if( (nvram_get_int("wl_country_changed") & 0x2) == 0x2){
+		check_bit = nvram_get_int("wl_country_changed") ^ 0x2 ;
+		nvram_set_int("wl_country_changed", check_bit);
+		memset(ch_list, 0, sizeof(ch_list));
+	}
+
 	if(strlen(ch_list) == 0) retval = get_wl_channel_list_by_bw_core(1, ch_list, 40);
 	retval += websWrite(wp, ch_list);
 	return retval;
@@ -1692,6 +1650,14 @@ int ej_wl_channel_list_5g_80m(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
 	static char ch_list[256] = {0};
+	int check_bit;
+
+	if( (nvram_get_int("wl_country_changed") & 0x4) == 0x4){
+		check_bit = nvram_get_int("wl_country_changed") ^ 0x4;
+		nvram_set_int("wl_country_changed", check_bit);
+		memset(ch_list, 0, sizeof(ch_list));
+	}
+
 	if(strlen(ch_list) == 0) retval = get_wl_channel_list_by_bw_core(1, ch_list, 80);
 	retval += websWrite(wp, ch_list);
 	return retval;

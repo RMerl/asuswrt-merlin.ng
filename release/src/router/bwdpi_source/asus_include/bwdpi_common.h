@@ -127,6 +127,7 @@ extern void run_dpi_engine_service();
 extern void start_dpi_engine_service();
 extern void save_version_of_bwdpi();
 extern void setup_dev_wan();
+extern void setup_dpi_conf_bit(int input);
 
 //wrs_app.c
 extern int wrs_app_main(char *cmd);

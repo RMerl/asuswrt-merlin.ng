@@ -83,6 +83,8 @@
 #iconWebcam{ background:url(images/New_ui/networkmap/map-iconWebcam.png) no-repeat 0% 0%; width:89px; height:89px; cursor:pointer;}
 .iconNo{ background:url(images/New_ui/networkmap/devicebt_default.png) no-repeat; width:91px; height:91px;}
 .iconNoM2{ background:url(images/New_ui/networkmap/M2_default.png) no-repeat; width:91px; height:91px;}
+.iconAMesh{ background:url(images/New_ui/amesh/Amesh_button_light.png) no-repeat 0% 0%; width:90px; height:90px; cursor:pointer;}
+.iconAMesh_dis{ background:url(images/New_ui/amesh/Amesh_button_dark.png) no-repeat 0% 0%; width:90px; height:90px; cursor:pointer;}
 .usb_text {
 	font: bold 16px Sans-Serif;
 	text-shadow: 1px 1px 1px #677C84;

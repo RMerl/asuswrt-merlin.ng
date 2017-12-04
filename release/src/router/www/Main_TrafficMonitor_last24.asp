@@ -194,6 +194,9 @@ function init()
 	initCommon(1, 0, 0, 1);	   //Viz 2010.09
 	ref.initX();
 	document.getElementById("faq0").href = "https://www.asus.com/support/FAQ/114483/" ;
+	if(bwdpi_support){
+		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
+	}
 }
 
 function switchPage(page){

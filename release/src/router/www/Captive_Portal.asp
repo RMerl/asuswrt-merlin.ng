@@ -1076,9 +1076,9 @@ function save_splash_page_content() {
 		html_landing += "<meta http-equiv='Expires' content='-1'>\n";
 		html_landing += "<title>" + decodeURIComponent(brand_name) + "</title>\n";
 		html_landing += "<link rel='stylesheet' type='text/css' href='FreeUam.css'>\n";
-		html_landing += "<script type='text/javascript' src='jquery-1.7.1.min.js'><\/script>\n";
-		html_landing += "<script type='text/javascript' src='uam.js'><\/script>\n";
-		html_landing += "<script type='text/javascript'>\n";
+		html_landing += "<_INCLUDE_JQUERY_>\n";
+		html_landing += "<_INCLUDE_UAM_>\n";
+		html_landing += "<_TAG_START_>\n";
 		if(terms_service_status) {
 			html_landing += "var htmlEnDeCode = (function() {\n";
 			html_landing += "var charToEntityRegex,\n";
@@ -1327,7 +1327,7 @@ function save_splash_page_content() {
 		html_landing += "for (var i in mobile) if (userAgentString.indexOf(mobile[i]) > 0) return true;\n";
 		html_landing += "return false;\n";
 		html_landing += "}\n";
-		html_landing += "<\/script>\n";
+		html_landing += "<_TAG_END_>\n";
 		html_landing += "</head>\n";
 		html_landing += "<body onload='initial();' id='splash_body' class='splash_body'>\n";
 		if(terms_service_status) {

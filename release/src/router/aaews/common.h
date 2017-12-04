@@ -5,7 +5,6 @@
 
 #define ASUS_DEVICE_NAME_LEN    64
 
-#define KAL_TIME		43200
 #define APP_LOG_PATH	"/tmp/aaews_log"
 #define SDK_LOG_PATH	"/tmp"
 #define SDK_LOG_FLAG_FILE "/tmp/tnl_log_on.txt" 

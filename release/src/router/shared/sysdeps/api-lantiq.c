@@ -389,7 +389,7 @@ char *wl_vifname_wave(int unit, int subunit)
 	int wave_unit = wl_wave_unit(unit);
 
 	if(!client_mode() && (subunit > 0) && (subunit < 4)){
-		sprintf(tmp, "wlan%d_%d", wave_unit, subunit);
+		sprintf(tmp, "wlan%d.%d", wave_unit, subunit);
 		return strdup(tmp);
 	}
 	else{
@@ -1254,7 +1254,11 @@ char *get_wan_mac_name(void)
 
 char *get_lan_hwaddr(void)
 {
-        return nvram_safe_get(get_lan_mac_name());
+#if defined(RTCONFIG_DBG_BLUECAVE_OBD)
+	return "60:45:CB:CB:F8:11";
+#else
+    return nvram_safe_get(get_lan_mac_name());
+#endif
 }
 
 char *get_2g_hwaddr(void)
@@ -1274,7 +1278,12 @@ char *get_wan_hwaddr(void)
 
 char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 {
-	sprintf(buf, "wl%d.%d", unit, subunit);
+	char wifbuf[32];
+	char prefix[] = "wlXXXXXX_", tmp[100];
+
+	/* get from wlx.x_vapif, setup in rpc_parse_nvram_from_httpd() of rc */
+	snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+	sprintf(buf, "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
 
 	return buf;
 }
@@ -1290,3 +1299,132 @@ char *get_wlxy_ifname(int x, int y, char *buf)
 {
 	return get_wlifname(x, y, y, buf);
 }
+
+#ifdef RTCONFIG_AMAS
+void add_beacon_vsie(char *hexdata)
+{
+	// 0: Beacon
+	// 1: ProbeRequest
+	// 2: ProbeResponse
+	// 3: AuthenticationRequest
+	// 4: AuthenticationRespnse
+	// 5: AssocationRequest
+	// 6: AssociationResponse
+	// 7: ReassociationRequest
+	// 8: ReassociationResponse
+	char cmd[300] = {0};
+	int pktflag = 0x0;
+	int len = 0;
+	char *ifname = NULL;
+	strlen(ifname);
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
+	
+	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli set_vsie -i%s %d DD%02X%02X%02X%02X%s", 
+			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
+		_dprintf("%s: cmd=%s\n", __func__, cmd);
+		system(cmd);
+	}
+}
+
+void del_beacon_vsie(char *hexdata)
+{
+	// 0: Beacon
+	// 1: ProbeRequest
+	// 2: ProbeResponse
+	// 3: AuthenticationRequest
+	// 4: AuthenticationRespnse
+	// 5: AssocationRequest
+	// 6: AssociationResponse
+	// 7: ReassociationRequest
+	// 8: ReassociationResponse
+	char cmd[300] = {0};
+	int pktflag = 0x0;
+	int len = 0;
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
+
+	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli del_vsie -i%s %d DD%02X%02X%02X%02X%s",
+			ifname, pktflag, (uint8_t)len,  (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
+		_dprintf("%s: cmd=%s\n", __func__, cmd);
+		system(cmd);
+	}
+}
+
+void add_obd_probe_req_vsie(char *hexdata)
+{
+#define MAX_VSIE_LEN 1024
+	// 13 : Associatino Request
+	// 14 : Probe Reqeust
+	// 15 : Authentication Request
+	char cmd[300] = {0};
+	int pktflag = 0xE;
+	int len = 0;
+	char *ifname = NULL;
+	strlen(ifname);
+	FILE *fp;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
+
+	snprintf(cmd, sizeof(cmd), "/tmp/wpa_cli vendor_elem_get -i%s %d",
+		"wlan1", pktflag);
+	if ((fp = popen(cmd, "r")) != NULL) {
+		char *vendor_elem[MAX_VSIE_LEN];
+		memset(vendor_elem, 0, sizeof(vendor_elem));
+
+		if (fgets(vendor_elem , sizeof(vendor_elem) , fp) != NULL) {
+			if (strlen(vendor_elem)) {
+				snprintf(cmd, sizeof(cmd), "/tmp/wpa_cli vendor_elem_remove -i%s %d %s",
+					"wlan1", pktflag, vendor_elem);
+				_dprintf("%s: cmd=%s\n", __func__, cmd);
+				system(cmd);
+			}
+		}
+		pclose(fp);
+	}
+
+	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
+
+	if (ifname && strlen(ifname)) {
+		memset(cmd, 0, sizeof(cmd));
+		snprintf(cmd, sizeof(cmd), "/tmp/wpa_cli vendor_elem_add -i%s %d DD%02X%02X%02X%02X%s",
+			"wlan1", pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
+		_dprintf("%s: cmd=%s\n", __func__, cmd);
+		system(cmd);
+	}
+}
+
+void del_obd_probe_req_vsie(char *hexdata)
+{
+	char cmd[300] = {0};
+	int pktflag = 0xE;
+	int len = 0;
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
+
+	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "/tmp/wpa_cli vendor_elem_remove -i%s %d DD%02X%02X%02X%02X%s",
+			"wlan1", pktflag, (uint8_t)len,  (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
+		_dprintf("%s: cmd=%s\n", __func__, cmd);
+		system(cmd);
+	}
+}
+#endif /* RTCONFIG_AMAS */

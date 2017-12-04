@@ -560,6 +560,9 @@ define(function(){
 					retArray.push("Advanced_PerformanceTuning_Content.asp");
 				}
 
+				if(!rrsut_support)
+					retArray.push("cloud_router_sync.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -612,7 +615,7 @@ define(function(){
 					retArray.push("Advanced_DHCP_Content.asp");
 					retArray.push("Advanced_MultiSubnet_Content.asp");
 					retArray.push("Advanced_GWStaticRoute_Content.asp");
-					retArray.push("Advanced_IPTV_Content.asp");								
+					retArray.push("Advanced_IPTV_Content.asp");
 					retArray.push("Advanced_SwitchCtrl_Content.asp");
 					retArray.push("Main_DHCPStatus_Content.asp");
 					retArray.push("Main_IPV6Status_Content.asp");
@@ -642,6 +645,10 @@ define(function(){
 				}
 				else{
 					retArray.push("Advanced_MobileBroadband_Content.asp");
+				}
+
+				if(based_modelid == "BLUECAVE"){
+					retArray.push("Advanced_Smart_Connect.asp");
 				}
 
 				return retArray;

@@ -136,7 +136,11 @@ int process_exists(pid_t pid)
 int module_loaded(const char *module)
 {
 	char sys_path[128];
+	char *p = sys_path;
 
 	snprintf(sys_path, sizeof(sys_path), "/sys/module/%s", module);
+	while ((p = strchr(p, '-'))) {
+		*p = '_';
+	}
 	return d_exists(sys_path);
 }

@@ -15,6 +15,10 @@ CFLAGS  += -O2
 endif
 LDFLAGS += -L. -L$(TOP)/shared -lshared
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 CFLAGS += -I$(TOP)/shared
 
 ifeq ($(STATIC),1)

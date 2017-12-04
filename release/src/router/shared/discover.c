@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <linux/if_packet.h> 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
@@ -32,19 +33,21 @@
 #include <errno.h>
 #include <netinet/udp.h>
 #include <netinet/ip.h>
-#include <netpacket/packet.h>
+//#include <netpacket/packet.h>
 #include <net/ethernet.h>
 #include <features.h>
+#include <shutils.h>
+
 #include <bcmnvram.h>
 #include <discover.h>
 #include <shared.h>
+#include <shutils.h>
 
 #ifdef RTCONFIG_BT_CONN
 #define DHCP_DETECT
 #endif
 //#define DHCP_SOCKET
 
-struct ifreq ifr;
 /***********************************************************************/
 // ppp
 
@@ -62,32 +65,21 @@ strDup(char const *str)
     return copy;
 }
 
-
 int
 openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 {
     int optval=1;
     int fd;
-    //struct ifreq ifr;
+    struct ifreq ifr;
     int domain, stype;
-																	       
+
     struct sockaddr sa;
-																	       
+
     memset(&sa, 0, sizeof(sa));
-																	       
+
     domain = PF_INET;
     stype = SOCK_PACKET;
-/*
-	// test
-	int n;
-	char buf[256];
-	if ((n=read(0, buf, sizeof(buf))) <= 0) {
-		perror("read");
-		return -1;
-	} else{
-		fprintf(stderr, "read %s\n", buf);
-	}
-*/
+
     if ((fd = socket(domain, stype, htons(type))) < 0) {
 	/* Give a more helpful message for the common error case */
 	if (errno == EPERM) {
@@ -99,15 +91,21 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
     }
 	// test
 	//fprintf(stderr, "openInterface: socket [%d]\n", fd);
-																	       
+
     if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval)) < 0) {
 	perror("setsockopt");
 	close(fd);
 	return -1;
     }
-																	       
+
+    memset(&ifr, 0, sizeof(ifr));
+
     /* Fill in hardware address */
     if (hwaddr) {
+	strcpy(ifr.ifr_name, ifname);
+	if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0)
+	    perror("SIOCGIFHWADDR");
+
 	memcpy(hwaddr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
 	if (NOT_UNICAST(hwaddr)) {
 	    char buffer[256];
@@ -117,17 +115,37 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 	    return -1;
 	}
     }
-																	       
+
     /* Sanity check on MTU */
     strcpy(sa.sa_data, ifname);
-																	       
-    /* We're only interested in packets on specified interface */
-    if (bind(fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
-	perror("bind ");
+
+    /* Bind to device */
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+    if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) == -1)	{
+	perror("SO_BINDTODEVICE");
 	close(fd);
 	return -1;
     }
-																	       
+
+    /* get ifr.ifr_ifindex */
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+    if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) {
+	perror("SIOCGIFINDEX");
+	close(fd);
+	return -1;
+    }
+
+    /* Bind to device */
+    /* only SO_BINDTODEVICE may also receive PADO (PPPoE Active Discovery Offer) frame from the other interface */
+    {
+    if (bind(fd, (struct sockaddr *) &sa, sizeof(sa)) < 0)
+    {
+	perror("openInterface() bind ");
+	close(fd);
+	return -1;
+    }
+    }
+
     return fd;
 }
 void
@@ -135,15 +153,15 @@ dumpHex(FILE *fp, unsigned char const *buf, int len)
 {
     int i;
     int base;
-																	       
+
     if (!fp) return;
-																	       
+
     /* do NOT dump PAP packets */
     if (len >= 2 && buf[0] == 0xC0 && buf[1] == 0x23) {
 	fprintf(fp, "(PAP Authentication Frame -- Contents not dumped)\n");
 	return;
     }
-																	       
+
     for (base=0; base<len; base += 16) {
 	for (i=base; i<base+16; i++) {
 	    if (i < len) {
@@ -167,7 +185,7 @@ dumpHex(FILE *fp, unsigned char const *buf, int len)
 	fprintf(fp, "\n");
     }
 }
-																	       
+
 UINT16_t
 etherType(PPPoEPacket *packet)
 {
@@ -185,7 +203,7 @@ parsePacket(PPPoEPacket *packet, ParseFunc *func, void *extra)
     UINT16_t len = ntohs(packet->length);
     unsigned char *curTag;
     UINT16_t tagType, tagLen;
-																	       
+
 	fprintf(stderr, "parse packet\n");
     if (packet->ver != 1) {
 	//syslog(LOG_ERR, "Invalid PPPoE version (%d)", (int) packet->ver);
@@ -195,13 +213,13 @@ parsePacket(PPPoEPacket *packet, ParseFunc *func, void *extra)
 	//syslog(LOG_ERR, "Invalid PPPoE type (%d)", (int) packet->type);
 	return -1;
     }
-																	       
+
     /* Do some sanity checks on packet */
     if (len > ETH_DATA_LEN - 6) { /* 6-byte overhead for PPPoE header */
 	//syslog(LOG_ERR, "Invalid PPPoE packet length (%u)", len);
 	return -1;
     }
-																	       
+
     /* Step through the tags */
     curTag = packet->payload;
     while (curTag - packet->payload < len) {
@@ -222,7 +240,7 @@ parsePacket(PPPoEPacket *packet, ParseFunc *func, void *extra)
     }
     return 0;
 }
-																	       
+
 void
 parseForHostUniq(UINT16_t type, UINT16_t len, unsigned char *data,
 		 void *extra)
@@ -236,19 +254,38 @@ parseForHostUniq(UINT16_t type, UINT16_t len, unsigned char *data,
 	}
     }
 }
-																	       
+
+void dump(const char *title, unsigned char *data, int len)
+{
+	int i;
+	char buf[512], *p = buf;
+	eprintf("## %s len(%d) ##\n", title, len);
+	for (i = 0 ; i < len; i++) {
+		if((i&0xf) == 0) 	p += sprintf(p, "%04x: %02x", i, data[i]);
+		else if((i&0xf) == 8) 	p += sprintf(p, " - %02x", data[i]);
+		else 			p += sprintf(p, " %02x", data[i]);
+
+		if((i&0xf) == 0xf) {
+			eprintf("%s\n", buf);
+			p = buf;
+		}
+	}
+	if(p != buf)
+		eprintf("%s\n", buf);
+}
+
 int
 packetIsForMe(PPPoEConnection *conn, PPPoEPacket *packet)
 {
     int forMe = 0;
-																	       
+
     /* If packet is not directed to our MAC address, forget it */
     if (memcmp(packet->ethHdr.h_dest, conn->myEth, ETH_ALEN)) return 0;
-																	       
-																	       
+
+
     /* If we're not using the Host-Unique tag, then accept the packet */
     if (!conn->useHostUniq) return 1;
-																	       
+
     parsePacket(packet, parseForHostUniq, &forMe);
     return forMe;
 }
@@ -257,27 +294,29 @@ int
 sendPacket(PPPoEConnection *conn, int sock, PPPoEPacket *pkt, int size)
 {
     struct sockaddr sa;
-																	       
+
     if (!conn) {
 	fprintf(stderr, "relay and server not supported on Linux 2.0 kernels\n");
 	return -1;
     }
     strcpy(sa.sa_data, conn->ifName);
     if (sendto(sock, pkt, size, 0, &sa, sizeof(sa)) < 0) {
+	perror("sendPacket sendto");
 	return -1;
     }
     return 0;
 }
-																	       
+
 int
 receivePacket(int sock, PPPoEPacket *pkt, int *size)
 {
     if ((*size = recv(sock, pkt, sizeof(PPPoEPacket), 0)) < 0) {
+	perror("receivePacket recv");
 	return -1;
     }
     return 0;
 }
-																	       
+
 void
 sendPADI(PPPoEConnection *conn)
 {
@@ -291,26 +330,26 @@ sendPADI(PPPoEConnection *conn)
     }
     plen = TAG_HDR_SIZE + namelen;
     CHECK_ROOM(cursor, packet.payload, plen);
-																	       
+
     /* Set destination to Ethernet broadcast address */
     memset(packet.ethHdr.h_dest, 0xFF, ETH_ALEN);
     memcpy(packet.ethHdr.h_source, conn->myEth, ETH_ALEN);
-																	       
+
     packet.ethHdr.h_proto = htons(Eth_PPPOE_Discovery);
     packet.ver = 1;
     packet.type = 1;
     packet.code = CODE_PADI;
     packet.session = 0;
-																	       
+
     svc->type = TAG_SERVICE_NAME;
     svc->length = htons(namelen);
     CHECK_ROOM(cursor, packet.payload, namelen+TAG_HDR_SIZE);
-																	       
+
     if (conn->serviceName) {
 	memcpy(svc->payload, conn->serviceName, strlen(conn->serviceName));
     }
     cursor += namelen + TAG_HDR_SIZE;
-																	       
+
     /* If we're using Host-Uniq, copy it over */
     if (conn->useHostUniq) {
 	PPPoETag hostUniq;
@@ -323,7 +362,7 @@ sendPADI(PPPoEConnection *conn)
 	cursor += sizeof(pid) + TAG_HDR_SIZE;
 	plen += sizeof(pid) + TAG_HDR_SIZE;
     }
-																	       
+
     packet.length = htons(plen);
     sendPacket(conn, conn->discoverySocket, &packet, (int) (plen + HDR_SIZE));
 }
@@ -337,13 +376,13 @@ u_int16_t checksum(void *addr, int count)
 	 */
 	register int32_t sum = 0;
 	u_int16_t *source = (u_int16_t *) addr;
-																	       
+
 	while (count > 1)  {
 		/*  This is the inner loop */
 		sum += *source++;
 		count -= 2;
 	}
-																	       
+
 	/*  Add left-over byte, if any */
 	if (count > 0) {
 		/* Make sure that the left-over byte is added correctly both
@@ -355,7 +394,7 @@ u_int16_t checksum(void *addr, int count)
 	/*  Fold 32-bit sum to 16 bits */
 	while (sum >> 16)
 		sum = (sum & 0xffff) + (sum >> 16);
-																	       
+
 	return ~sum;
 }
 
@@ -363,20 +402,16 @@ int listen_socket(unsigned int ip, int port, char *inf)
 {
 	struct ifreq interface;
 	int fd;
-	struct sockaddr_in addr;
 	int n = 1;
-																	       
+
 	//DEBUG(LOG_INFO, "Opening listen socket on 0x%08x:%d %s\n", ip, port, inf);
-	if ((fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		//DEBUG(LOG_ERR, "socket call failed: %s", strerror(errno));
+
+	if ((fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+	{
+		perror("listen_socket socket");
 		return -1;
 	}
-																	       
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = ip;
-																	       
+
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &n, sizeof(n)) == -1) {
 		close(fd);
 		return -1;
@@ -385,41 +420,72 @@ int listen_socket(unsigned int ip, int port, char *inf)
 		close(fd);
 		return -1;
 	}
-																	       
+
 	strncpy(interface.ifr_ifrn.ifrn_name, inf, IFNAMSIZ);
 	if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE,(char *)&interface, sizeof(interface)) < 0) {
+		perror("SO_BINDTODEVICE");
 		close(fd);
 		return -1;
 	}
-																	       
-	if (bind(fd, (struct sockaddr *)&addr, sizeof(struct sockaddr)) == -1) {
-		close(fd);
-		return -1;
-	}
-																	       
+
+    {
+	struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+        addr.sin_addr.s_addr = ip;
+        if (bind(fd, (struct sockaddr *)&addr, sizeof(struct sockaddr)) < 0)
+	{
+		perror("listen_socket() bind ");
+                close(fd);
+                return -1;
+        }
+    }
+
 	return fd;
 }
 
 int raw_socket(int ifindex)
 {
 	int fd;
+
+	if ((fd = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_IP))) < 0)
+	{
+		perror("raw_socket socket");
+		return -1;
+	}
+
+	{
+		struct ifreq ifr;
+		/* Get the name of the interface to send on */
+		memset(&ifr, 0, sizeof(ifr));
+		ifr.ifr_ifindex = ifindex;
+		if (ioctl(fd, SIOCGIFNAME, &ifr) < 0) {
+			perror("SIOCGIFNAME");
+			close(fd);
+			return -1;
+		}
+		if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE,(char *)&ifr, sizeof(ifr)) < 0) {
+			perror("get(SO_BINDTODEVICE)");
+			close(fd);
+			return -1;
+		}
+	}
+    {
 	struct sockaddr_ll sock;
-																	       
-	if ((fd = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_IP))) < 0) {
-		return -1;
-	}
-																	       
-	sock.sll_family = AF_PACKET;
-	sock.sll_protocol = htons(ETH_P_IP);
-	sock.sll_ifindex = ifindex;
-	if (bind(fd, (struct sockaddr *) &sock, sizeof(sock)) < 0) {
-		close(fd);
-		return -1;
-	}
-																	       
+        sock.sll_family = AF_PACKET;
+        sock.sll_protocol = htons(ETH_P_IP);
+        sock.sll_ifindex = ifindex;
+        if (bind(fd, (struct sockaddr *) &sock, sizeof(sock)) < 0) {
+		perror("raw_socket() bind ");
+                close(fd);
+                return -1;
+        }
+    }
+
 	return fd;
 }
-																	       
+
 /* Constuct a ip/udp header for a packet, and specify the source and dest hardware address */
 int raw_packet(struct dhcpMessage *payload, u_int32_t source_ip, int source_port,
 		   u_int32_t dest_ip, int dest_port, unsigned char *dest_arp, int ifindex)
@@ -438,28 +504,32 @@ int raw_packet(struct dhcpMessage *payload, u_int32_t source_ip, int source_port
 	if (getsockopt(fd, IPPROTO_IP, IP_TTL, &ttl, &optlen) < 0)
 		ttl = IPDEFTTL;
 	close(fd);
-																	       
+
 	if ((fd = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_IP))) < 0) {
 	ret_sock:
 		//DEBUG(LOG_ERR, "socket call failed: %s", strerror(errno));
 		fprintf(stderr, "socket call failed: %s\n", strerror(errno));
 		return -1;
 	}
-																	       
-	memset(&dest, 0, sizeof(dest));
-	memset(&packet, 0, sizeof(packet));
-																	       
-	dest.sll_family = AF_PACKET;
-	dest.sll_protocol = htons(ETH_P_IP);
-	dest.sll_ifindex = ifindex;
-	dest.sll_halen = 6;
-	memcpy(dest.sll_addr, dest_arp, 6);
-	if (bind(fd, (struct sockaddr *)&dest, sizeof(struct sockaddr_ll)) < 0) {
-		//DEBUG(LOG_ERR, "bind call failed: %s", strerror(errno));
-		fprintf(stderr, "bind call failed: %s\n", strerror(errno));
-		close(fd);
-		return -1;
+
+	{
+		struct ifreq ifr;
+		/* Get the name of the interface to send on */
+		memset(&ifr, 0, sizeof(ifr));
+		ifr.ifr_ifindex = ifindex;
+		if (ioctl(fd, SIOCGIFNAME, &ifr) < 0) {
+			perror("SIOCGIFNAME");
+			close(fd);
+			return -1;
+		}
+		if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE,(char *)&ifr, sizeof(ifr)) < 0) {
+			perror("get(SO_BINDTODEVICE)");
+			close(fd);
+			return -1;
+		}
 	}
+
+	memset(&packet, 0, sizeof(packet));
 
 	final_len = end_option(payload->options) + 1;				/* the length of options */
 	final_len += sizeof(packet.data) - sizeof(packet.data.options);		/* the length of whole dhcp packet */
@@ -483,12 +553,22 @@ int raw_packet(struct dhcpMessage *payload, u_int32_t source_ip, int source_port
 	packet.ip.version = IPVERSION;
 	packet.ip.ttl = ttl;
 	packet.ip.check = checksum(&(packet.ip), sizeof(packet.ip));
-																	       
+
+	/* set dest */
+	memset(&dest, 0, sizeof(dest));
+	dest.sll_family = AF_PACKET;
+	dest.sll_protocol = htons(ETH_P_IP);
+	dest.sll_ifindex = ifindex;
+	dest.sll_halen = 6;
+	memcpy(dest.sll_addr, dest_arp, 6);
+
 	result = sendto(fd, &packet, final_len, 0, (struct sockaddr *) &dest, sizeof(dest));
+
 	if (result <= 0) {
 		//DEBUG(LOG_ERR, "write on socket failed: %s", strerror(errno));
 		fprintf(stderr, "write on socket failed: %s", strerror(errno));
 	}
+
 	close(fd);
 	return result;
 }
@@ -502,20 +582,22 @@ int get_packet(struct dhcpMessage *packet, int fd)
 		""
 	};
 	char unsigned *vendor;
-																	       
+
 	memset(packet, 0, sizeof(struct dhcpMessage));
+
 	bytes = read(fd, packet, sizeof(struct dhcpMessage));
+
 	if (bytes < 0) {
 		//DEBUG(LOG_INFO, "couldn't read on listening socket, ignoring");
 		return -1;
 	}
-																	       
+
 	if (ntohl(packet->cookie) != DHCP_MAGIC) {
 		//LOG(LOG_ERR, "received bogus message, ignoring");
 		return -2;
 	}
 	//DEBUG(LOG_INFO, "Received a packet");
-																	       
+
 	if (packet->op == BOOTREQUEST && (vendor = get_option(packet, DHCP_VENDOR))) {
 		for (i = 0; broken_vendors[i][0]; i++) {
 			if (vendor[OPT_LEN - 2] == (unsigned char) strlen(broken_vendors[i]) &&
@@ -526,7 +608,7 @@ int get_packet(struct dhcpMessage *packet, int fd)
 			}
 		}
 	}
-																	       
+
 	return bytes;
 }
 
@@ -537,9 +619,11 @@ int get_raw_packet(struct dhcpMessage *payload, int fd)
 	struct udp_dhcp_packet packet;
 	u_int32_t source, dest;
 	u_int16_t check;
-																	       
+
 	memset(&packet, 0, sizeof(struct udp_dhcp_packet));
+
 	bytes = read(fd, &packet, sizeof(struct udp_dhcp_packet));
+
 	if (bytes < 0) {
 		//DEBUG(LOG_INFO, "couldn't read on raw listening socket -- ignoring");
 		fprintf(stderr, "couldn't read on raw listening socket -- ignoring");
@@ -547,41 +631,23 @@ int get_raw_packet(struct dhcpMessage *payload, int fd)
 eprintf("--- get_raw_packet: couldn't read on raw listening socket! ---\n");
 		return -1;
 	}
-#if 0
-	{
-		int i;
-		char buf[256], *p = buf;
-		for(i=0; i<bytes; i++) {
-			unsigned char data = ((unsigned char *)&packet)[i];
-			if((i & 0xf) == 0x0) p += sprintf(p, "%04x: %02x", i, data);
-			else if((i & 0xf) == 0x8) p += sprintf(p, " - %02x", data);
-			else p += sprintf(p, " %02x", data);
-			if((i & 0xf) == 0xf) {
-				eprintf("%s\n", buf);
-				p = buf;
-			}
-		}
-		if(p != buf)
-			eprintf("%s\n", buf);
-	}
-#endif
 
 	if (bytes < (int) (sizeof(struct iphdr) + sizeof(struct udphdr))) {
 		//DEBUG(LOG_INFO, "message too short, ignoring");
-eprintf("--- get_raw_packet: message too short! bytes(%d) ---\n", bytes);
+eprintf("--- get_raw_packet: message too short! bytes(%d) header size(%d)---\n", bytes, (sizeof(struct iphdr) + sizeof(struct udphdr)));
 		return -2;
 	}
-																	       
+
 	if (bytes < ntohs(packet.ip.tot_len)) {
 		//DEBUG(LOG_INFO, "Truncated packet");
 eprintf("--- get_raw_packet: Truncated packet! bytes(%d) tot_len(%d)---\n", bytes, ntohs(packet.ip.tot_len));
 		//return -2;
 		return -100;
 	}
-																	       
+
 	/* ignore any extra garbage bytes */
 	bytes = ntohs(packet.ip.tot_len);
-																	       
+
 	/* Make sure its the right packet for us, and that it passes sanity checks */
 	if (packet.ip.protocol != IPPROTO_UDP || packet.ip.version != IPVERSION ||
 	    packet.ip.ihl != sizeof(packet.ip) >> 2 || packet.udp.dest != htons(CLIENT_PORT) ||
@@ -591,7 +657,7 @@ eprintf("--- get_raw_packet: Truncated packet! bytes(%d) tot_len(%d)---\n", byte
 eprintf("--- get_raw_packet: unrelated/bogus packet! ---\n");
 		return -2;
 	}
-																	       
+
 	/* check IP checksum */
 	check = packet.ip.check;
 	packet.ip.check = 0;
@@ -600,14 +666,14 @@ eprintf("--- get_raw_packet: unrelated/bogus packet! ---\n");
 eprintf("--- get_raw_packet: bad IP header checksum! ---\n");
 		return -1;
 	}
-																	       
+
 	/* verify the UDP checksum by replacing the header with a psuedo header */
 	source = packet.ip.saddr;
 	dest = packet.ip.daddr;
 	check = packet.udp.check;
 	packet.udp.check = 0;
 	memset(&packet.ip, 0, sizeof(packet.ip));
-																	       
+
 	packet.ip.protocol = IPPROTO_UDP;
 	packet.ip.saddr = source;
 	packet.ip.daddr = dest;
@@ -617,9 +683,9 @@ eprintf("--- get_raw_packet: bad IP header checksum! ---\n");
 eprintf("--- get_raw_packet: packet with bad UDP checksum received! ---\n");
 		return -2;
 	}
-																	       
+
 	memcpy(payload, &(packet.data), bytes - (sizeof(packet.ip) + sizeof(packet.udp)));
-																	       
+
 	if (ntohl(payload->cookie) != DHCP_MAGIC) {
 		//LOG(LOG_ERR, "received bogus message (bad magic) -- ignoring");
 eprintf("--- get_raw_packet: received bogus message! ---\n");
@@ -628,7 +694,7 @@ eprintf("--- get_raw_packet: received bogus message! ---\n");
 	//DEBUG(LOG_INFO, "oooooh!!! got some!");
 eprintf("--- get_raw_packet: Got some correct message! ---\n");
 	return bytes - (sizeof(packet.ip) + sizeof(packet.udp));
-																	       
+
 }
 
 /* get an option with bounds checking (warning, not aligned). */
@@ -637,7 +703,7 @@ unsigned char *get_option(struct dhcpMessage *packet, int code)
 	int i, length;
 	unsigned char *optionptr;
 	int over = 0, done = 0, curr = OPTION_FIELD;
-																	       
+
 	optionptr = packet->options;
 	i = 0;
 	length = OPTIONS_SIZE;
@@ -689,21 +755,21 @@ unsigned char *get_option(struct dhcpMessage *packet, int code)
 int end_option(unsigned char *optionptr)
 {
 	int i = 0;
-																	       
+
 	while (optionptr[i] != DHCP_END) {
 		if (optionptr[i] == DHCP_PADDING) i++;
 		else i += optionptr[i + OPT_LEN] + 2;
 	}
 	return i;
 }
-																	       
-																	       
+
+
 /* add an option string to the options (an option string contains an option code,
  * length, then data) */
 int add_option_string(unsigned char *optionptr, unsigned char *string)
 {
 	int end = end_option(optionptr);
-																	       
+
 	/* end position + string length + option code/length + end option */
 	if (end + string[OPT_LEN] + 2 + 1 >= OPTIONS_SIZE) {
 		fprintf(stderr, "Option 0x%02x did not fit into the packet!\n", string[OPT_CODE]);
@@ -728,20 +794,20 @@ int add_simple_option(unsigned char *optionptr, unsigned char code, u_int32_t da
 	u8 = (unsigned char *) &aligned;
 	u16 = (u_int16_t *) &aligned;
 	u32 = &aligned;
-																	       
+
 	for (i = 0; options[i].code; i++)
 		if (options[i].code == code) {
 			length = option_lengths[options[i].flags & TYPE_MASK];
 		}
-																	       
+
 	if (!length) {
 		//DEBUG(LOG_ERR, "Could not add option 0x%02x", code);
 		return 0;
 	}
-																	       
+
 	option[OPT_CODE] = code;
 	option[OPT_LEN] = length;
-																	       
+
 	switch (length) {
 		case 1: *u8 =  data; break;
 		case 2: *u16 = data; break;
@@ -800,14 +866,14 @@ static void add_requests(struct dhcpMessage *packet)
 {
 	int end = end_option(packet->options);
 	int i, len = 0;
-																	       
+
 	packet->options[end + OPT_CODE] = DHCP_PARAM_REQ;
 	for (i = 0; options[i].code; i++)
 		if (options[i].flags & OPTION_REQ)
 			packet->options[end + OPT_DATA + len++] = options[i].code;
 	packet->options[end + OPT_LEN] = len;
 	packet->options[end + OPT_DATA + len] = DHCP_END;
-																	       
+
 }
 
 /* Broadcast a DHCP discover packet to the network, with an optionally requested IP */
@@ -827,9 +893,9 @@ int send_dhcp_discover(unsigned long xid, int ifindex, unsigned char *mac)
 int read_interface(char *interface, int *ifindex, u_int32_t *addr, unsigned char *arp)
 {
 	int fd;
-	//struct ifreq ifr;
+	struct ifreq ifr;
 	struct sockaddr_in *our_ip;
-																	       
+
 	memset(&ifr, 0, sizeof(struct ifreq));
 	if ((fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
 		ifr.ifr_addr.sa_family = AF_INET;
@@ -847,7 +913,7 @@ int read_interface(char *interface, int *ifindex, u_int32_t *addr, unsigned char
 				return -1;
 			}
 		}
-																	       
+
 		if (ioctl(fd, SIOCGIFINDEX, &ifr) == 0) {
 			*ifindex = ifr.ifr_ifindex;
 		} else {
@@ -882,7 +948,7 @@ unsigned long random_xid(void)
 	if (!initialized) {
 //		int fd;
 		unsigned long seed;
-																	       
+
 		//fd = open("/dev/urandom", 0);
 		//if (fd < 0 || read(fd, &seed, sizeof(seed)) < 0) {
 			//LOG(LOG_WARNING, "Could not load seed from /dev/urandom: %s",
@@ -915,7 +981,7 @@ void closeall(int fd1, int fd2) {
 }
 
 #ifdef RTCONFIG_DETWAN
-/* get_proto_via_br(int remove)
+/* get_proto_via_br(int insert)
  * break protocol frame to receive frames
  */
 void get_proto_via_br(int insert)
@@ -964,6 +1030,18 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 	if((pInf = (struct inf *) malloc(sizeof(struct inf) * num)) == NULL)
 		return -1;
 
+	unlink(DETECT_LOG);	//remove old log to reduce file size in memory of tmpfs
+
+#if defined(RTCONFIG_TCPDUMP) && defined(RTCONFIG_SOC_IPQ40XX) && defined(RTCONFIG_PSISTLOG)
+	if(num == 1)
+	{
+		pid_t pid;
+		char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", current_wan_ifnames[0], "-nnXw", "/jffs/discover.pcap", NULL};
+		_eval(tcpdump_argv, NULL, 0, &pid);
+		sleep(1);
+	}
+#endif	/* RTCONFIG_TCPDUMP && RTCONFIG_SOC_IPQ40XX && RTCONFIG_PSISTLOG */
+
 	wan_ifNames[0] = '\0';
 	p = wan_ifNames;
 	for(idx = 0; idx < num && (sizeof(wan_ifNames) > p - wan_ifNames + strlen(current_wan_ifnames[idx])); idx++) {
@@ -984,7 +1062,7 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 #else
 	change_mode(LISTEN_RAW);
 #endif
-	
+
 	memset(pInf, 0, sizeof(struct inf) * num);
 	for(idx = 0; idx < num; idx++) {
 		/* Initialize connection info */
@@ -995,7 +1073,7 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 
 		/* Pick a default interface name */
 		SET_STRING(pInf[idx].conn.ifName, current_wan_ifnames[idx]);
-	
+
 		pInf[idx].client_config.abort_if_no_lease = 0;
 		pInf[idx].client_config.foreground = 0;
 		pInf[idx].client_config.quit_after_lease = 0;
@@ -1017,13 +1095,13 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 			fprintf(stderr, "read interface error!\n");
 			goto leave;
 		}
-	
+
 		// ppp
 		if ((pInf[idx].conn.discoverySocket = openInterface(pInf[idx].conn.ifName, Eth_PPPOE_Discovery, pInf[idx].conn.myEth)) < 0) {
 			fprintf(stderr, "open interface fail [%d]\n", pInf[idx].conn.discoverySocket);
 			goto leave;
 		}
-		
+
 #ifdef DHCP_DETECT
 		if(dhcp_det) {
 			// dhcp
@@ -1057,9 +1135,9 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 #endif
 	*got_inf = -1;
 	for (;;) {
-		
+
 		FD_ZERO(&rfds);
-		
+
 		for(idx = 0; idx < num; idx++) {
 #ifdef DHCP_DETECT
 			if(dhcp_det) {
@@ -1125,17 +1203,14 @@ eprintf("--- %s(%s): retval == 0. ---\n", __func__, wan_ifNames);
 
 		for(idx = 0; idx < num; idx++) {
 			int got_DHCP = 0, got_PPP = 0;
-			*got_inf = -1;
 
 #ifdef DHCP_DETECT
 			if (dhcp_det && FD_ISSET(pInf[idx].cfd, &rfds)) {
 				got_DHCP = 1;
-				*got_inf = idx;
 			}
 #endif // DHCP_DETECT
 			if (FD_ISSET(pInf[idx].conn.discoverySocket, &rfds)) {
 				got_PPP = 1;
-				*got_inf = idx;
 			}
 eprintf("--- %s(%s): got_DHCP=%d, got_PPP=%d. ---\n", __func__, pInf[idx].conn.ifName, got_DHCP, got_PPP);
 #ifdef DHCP_DETECT
@@ -1150,11 +1225,12 @@ eprintf("--- %s(%s): discovery DHCP! ---\n", __func__, pInf[idx].conn.ifName);
 				len = get_packet(&packet, pInf[idx].cfd);
 			else
 				len = get_raw_packet(&packet, pInf[idx].cfd);
-			
+
+//dump("dhcp", (unsigned char *)&packet, len);
 			if (len == -1 && errno != EINTR) {
 				goto leave;
 			}
-			
+
 			if ((len < 0) || (packet.xid != xid) || ((message = get_option(&packet, DHCP_MESSAGE_TYPE)) == NULL)) {
 				++count;
 eprintf("--- %s(%s): Got the wrong %d packet when detecting DHCP! ---\n", __func__, pInf[idx].conn.ifName, count);
@@ -1164,6 +1240,7 @@ eprintf("--- %s(%s): Got the wrong %d packet when detecting DHCP! ---\n", __func
 			else if (*message == DHCPOFFER)
 			{
 eprintf("--- %s(%s): Got the DHCP OFFER ! ---\n", __func__, pInf[idx].conn.ifName);
+				*got_inf = idx;
 				pInf[idx].state |= DISCOVER_DHCP;
 				if(pInf[idx].state & DISCOVER_PPPOE) {
 					ret = 3;
@@ -1175,16 +1252,18 @@ eprintf("--- %s(%s): Got the DHCP OFFER ! ---\n", __func__, pInf[idx].conn.ifNam
 eprintf("--- %s(%s): end to analyse the DHCP's packet! ---\n", __func__, pInf[idx].conn.ifName);
 		}
 #endif // DHCP_DETECT
-		
+
 		if (retval > 0 && listen_mode != LISTEN_NONE && got_PPP == 1)
 		{
 			PPPoEPacket ppp_packet;
 			int ppp_len;
 eprintf("--- %s(%s): discovery PPPoE! ---\n", __func__, pInf[idx].conn.ifName);
+			memset(&ppp_packet, 0, sizeof(ppp_packet));
 			receivePacket(pInf[idx].conn.discoverySocket, &ppp_packet, &ppp_len);
-			
-			if (ppp_packet.code == CODE_PADO) {
+//dump("PPPoE", (unsigned char *)&ppp_packet, ppp_len);
+			if (ppp_len > 0 && ppp_packet.code == CODE_PADO) {
 eprintf("--- %s(%s): Got the PPPoE ! ---\n", __func__, pInf[idx].conn.ifName);
+				*got_inf = idx;
 				pInf[idx].state |= DISCOVER_PPPOE;
 				if(pInf[idx].state & DISCOVER_DHCP) {
 					ret = 3;
@@ -1205,6 +1284,7 @@ eprintf("--- %s(%s): Go to next detect loop. ---\n", __func__, pInf[idx].conn.if
 
 leave:
 	get_proto_via_br(0);
+
 	for(idx = 0; idx < num; idx++) {
 		closeall(pInf[idx].cfd, pInf[idx].conn.discoverySocket);
 	}
@@ -1225,6 +1305,11 @@ eprintf("--- %s(%s): finish ret(%d) got_inf(%d). ---\n", __func__, wan_ifNames, 
 		free(pInf[idx].conn.ifName);
 	}
 	free(pInf);
+
+#ifdef RTCONFIG_TCPDUMP
+	eval("killall", "tcpdump");
+#endif	/* RTCONFIG_TCPDUMP */
+
 	return ret;
 }
 
@@ -1243,7 +1328,7 @@ int discover_all(int wan_unit)
 
 	if(dualwan_unit__usbif(wan_unit))
 		return 0;
-	
+
 	memset(nvram_name, 0, sizeof(nvram_name));
 	snprintf(nvram_name, sizeof(nvram_name), "wan%d_ifname", wan_unit);
 	memset(current_wan_ifname, 0, sizeof(current_wan_ifname));

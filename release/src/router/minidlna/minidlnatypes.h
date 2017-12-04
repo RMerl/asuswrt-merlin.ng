@@ -60,11 +60,14 @@ struct string_s {
 };
 
 typedef uint8_t media_types;
-#define NO_MEDIA     0x00
-#define TYPE_AUDIO   0x01
-#define TYPE_VIDEO   0x02
-#define TYPE_IMAGES  0x04
-#define ALL_MEDIA    TYPE_AUDIO|TYPE_VIDEO|TYPE_IMAGES
+#define NO_MEDIA	0x00
+#define TYPE_AUDIO	0x01
+#define TYPE_VIDEO	0x02
+#define TYPE_IMAGE	0x04
+#define TYPE_PLAYLIST	0x09
+#define TYPE_CAPTION	0x10
+#define TYPE_NFO	0x20
+#define ALL_MEDIA	TYPE_AUDIO|TYPE_VIDEO|TYPE_IMAGE
 
 enum file_types {
 	TYPE_UNKNOWN,

@@ -1,5 +1,4 @@
 include ../common.mak
-
 CFLAGS += -Wall -Os $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
 ifneq ($(HND_ROUTER),y)
@@ -17,7 +16,7 @@ ifeq ($(RTCONFIG_DPSTA),y)
 CFLAGS += -I$(TOP)/dpsta
 endif
 CFLAGS += -ffunction-sections -fdata-sections
-CFLAGS += -DDLM -DASUS_DDNS -DASUS_EXT -DBTN_SETUP -DWEB_REDIRECT
+CFLAGS += -DDLM -DASUS_DDNS -DASUS_EXT -DBTN_SETUP -DWEB_REDIRECT -DNORESOLV
 CFLAGS += -DRTCONFIG_CROND
 CFLAGS += -DDEBUG_RCTEST
 
@@ -256,23 +255,7 @@ ifeq ($(RTCONFIG_BCMARM),y)
 OBJS += bcmutils.o
 endif
 
-ifeq ($(RTCONFIG_REALTEK),y)
-OBJS += init-realtek.o wps-realtek.o realtek.o rtk_wifi_drvmib.o ate-realtek.o
-else ifeq ($(RTCONFIG_RALINK),y)
-OBJS += init-ralink.o wps-ralink.o ralink.o ate-ralink.o
-ifeq ($(RTCONFIG_DSL),y)
-OBJS += init-ralink-dsl.o
-endif
-else ifeq ($(RTCONFIG_QCA),y)
-OBJS += init-qca.o wps-qca.o qca.o ate-qca.o $(if $(wildcard sysdeps/qca/ctl.c),ctl.obj,prebuild/ctl.obj)
-ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300),$(MAPAC1800)),y)
-OBJS += repacd.o
-endif
-else ifeq ($(RTCONFIG_ALPINE),y)
-OBJS += init-alpine.o wps-alpine.o alpine.o ate-alpine.o
-else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += init-lantiq.o wps-lantiq.o lantiq.o ate-lantiq.o lantiq-wave.o
-else
+ifeq ($(CONFIG_BCMWL5),y)
 OBJS += init-broadcom.o wps-broadcom.o broadcom.o ate-broadcom.o
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200))
 OBJS += cfe.o
@@ -283,9 +266,29 @@ endif
 ifeq ($(RTCONFIG_DSL),y)
 OBJS += init-broadcom-dsl.o
 endif
+else ifeq ($(RTCONFIG_REALTEK),y)
+OBJS += init-realtek.o wps-realtek.o realtek.o rtk_wifi_drvmib.o ate-realtek.o
+else ifeq ($(RTCONFIG_RALINK),y)
+OBJS += init-ralink.o wps-ralink.o ralink.o ate-ralink.o
+ifeq ($(RTCONFIG_CONCURRENTREPEATER),y)
+OBJS += air_monitor.o
+endif
+ifeq ($(RTCONFIG_DSL),y)
+OBJS += init-ralink-dsl.o
+endif
+else ifeq ($(RTCONFIG_QCA),y)
+OBJS += init-qca.o wps-qca.o qca.o ate-qca.o $(if $(wildcard sysdeps/qca/ctl.c),ctl.obj,prebuild/ctl.obj)
+ifeq ($(RTCONFIG_WIFI_SON),y)
+OBJS += repacd.o
+endif
+else ifeq ($(RTCONFIG_ALPINE),y)
+OBJS += init-alpine.o wps-alpine.o alpine.o ate-alpine.o
+else ifeq ($(RTCONFIG_LANTIQ),y)
+OBJS += init-lantiq.o wps-lantiq.o lantiq.o ate-lantiq.o lantiq-wave.o
 endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
+OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
 
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
@@ -381,7 +384,19 @@ ifeq ($(RTCONFIG_BCMWL6),y)
 ifeq ($(RTCONFIG_PROXYSTA),y)
 OBJS += psta_monitor.o
 endif
+ifeq ($(RTCONFIG_AMAS),y)
+ifneq ($(RTCONFIG_DISABLE_REPEATER_UI),y)
 OBJS += obd.o
+endif
+endif
+endif
+
+ifeq ($(RTCONFIG_LANTIQ),y)
+ifeq ($(RTCONFIG_AMAS),y)
+ifneq ($(RTCONFIG_DISABLE_REPEATER_UI),y)
+OBJS += obd_bluecave.o
+endif
+endif
 endif
 
 ifeq ($(RTCONFIG_WPS),y)
@@ -494,12 +509,30 @@ OBJS += tr069.o
 endif
 
 ifeq ($(RTCONFIG_NEW_USER_LOW_RSSI),y)
+ifeq ($(RTCONFIG_ADV_RAST),y)
+ifeq ($(RTCONFIG_CFGSYNC),y)
+CFLAGS += -I$(TOP)/json-c -I$(TOP)/cfg_mnt
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS += -lm -lpthread
+endif
+endif
 OBJS += roamast.o
 ifeq ($(RTCONFIG_RALINK),y)
 OBJS += roamast-ralink.o
 endif
+ifeq ($(CONFIG_BCMWL5),y)
+OBJS += roamast-broadcom.o
+endif
+ifeq ($(RTCONFIG_REALTEK),y)
+OBJS += roamast-realtek.o
+endif
 ifeq ($(RTCONFIG_LANTIQ),y)
+CFLAGS += -I$(TOP)/hostapd-2.6/src/utils/
 OBJS += roamast-lantiq.o
+ifeq ($(RTCONFIG_AMAS),y)
+OBJS += ../hostapd-2.6/src/common/wpa_ctrl.o
+OBJS += ../hostapd-2.6/src/utils/os_unix.o
+endif
 endif
 endif
 
@@ -570,6 +603,25 @@ endif
 
 ifneq ($(RTCONFIG_RALINK)$(RTCONFIG_QCA)$(RTCONFIG_REALTEK),y)
 OBJS += erp_monitor.o
+endif
+
+ifeq ($(RCONFIG_SW_HW_AUTH), y)
+CLFAGS += -I(TOP)/sw-hw-auth
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+vpath %.c sysdeps/amas 
+LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread
+CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -D_REENTRANT -pthread -DPTHREAD_STACK_SIZE_128K -DUSE_GET_TLV_SUPPORT_MAC
+ifneq ($(RTCONFIG_DISABLE_REPEATER_UI),y)
+OBJS += amas_wlcconnect.o
+OBJS += amas_bhctrl.o
+endif
+OBJS += amas_lanctrl.o
+ifeq ($(RTCONFIG_LIBASUSLOG),y)
+LDFLAGS += -L$(TOP)/libasuslog -lasuslog
+CFLAGS += -I$(TOP)/libasuslog
+endif
 endif
 
 all: rc
@@ -647,7 +699,9 @@ ifeq ($(RTCONFIG_BCMWL6),y)
 ifeq ($(RTCONFIG_PROXYSTA),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc psta_monitor
 endif
+ifeq ($(RTCONFIG_AMAS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc obd
+endif	
 endif
 ifeq ($(RTCONFIG_QTN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc qtn_monitor
@@ -684,7 +738,7 @@ endif
 ifeq ($(MAPAC2200),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dpdt_ant
 endif
-ifeq ($(or $(MAPAC1300),$(VRZAC1300)),y)
+ifeq ($(or $(MAPAC1300),$(VZWAC1300)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc thermal_txpwr
 endif
 
@@ -721,6 +775,7 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc delay_exec
 
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wanduck
+	@cd $(INSTALLDIR)/sbin && ln -sf rc conn_diag
 ifeq ($(and $(CONFIG_BCMWL5),$(RTCONFIG_DUALWAN)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dualwan
 endif
@@ -752,10 +807,17 @@ endif
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
 
-ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300),$(MAPAC1800)),y)
+ifeq ($(RTCONFIG_WIFI_SON),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_cap 
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_re
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wifimon_check
+	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_cmd 
+	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_wsplcd 
+	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_hyd 
+ifeq ($(RTCONFIG_ETHBACKHAUL),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc eth_bh_mon
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ethbh_peer_detect
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hive_eth
 ifeq ($(RTCONFIG_LP5523),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc lp55xx_set_led
@@ -889,10 +951,17 @@ endif
 ifeq ($(RTCONFIG_RALINK),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dump_powertable
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dump_txbftable
+	@cd $(INSTALLDIR)/sbin && ln -sf rc air_monitor
 endif
 
 ifneq ($(RTCONFIG_RALINK)$(RTCONFIG_QCA)$(RTCONFIG_REALTEK),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc erp_monitor
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_wlcconnect
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_bhctrl	
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_lanctrl
 endif
 
 ifeq ($(RTCONFIG_LETSENCRYPT),y)
@@ -938,7 +1007,9 @@ endif
 endif
 endif
 
-ifneq ($(wildcard ./prebuild/bwdpi_*.o),)
+ifneq ($(wildcard ./prebuild/bwdpi*.o),)
+bwdpi.o:
+	@-cp -f ./prebuild/bwdpi.o .
 bwdpi_check.o:
 	@-cp -f ./prebuild/bwdpi_check.o .
 bwdpi_db_10.o:
@@ -1001,7 +1072,16 @@ ifneq ($(wildcard ./prebuild/adtbw-broadcom.o),)
 adtbw-broadcom.o:
 	@-cp -f ./prebuild/adtbw-broadcom.o .
 endif
-
+endif
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
+ifneq ($(wildcard ./prebuild/psta_monitor.o),)
+psta_monitor.o:
+	@-cp -f ./prebuild/psta_monitor.o .
+endif
+endif
+ifneq ($(wildcard ./prebuild/broadcom.o),)
+broadcom.o:
+	@-cp -f ./prebuild/broadcom.o .
 endif
 endif
 
@@ -1009,6 +1089,18 @@ ifeq ($(RTCONFIG_RALINK),y)
 ifneq ($(wildcard ./prebuild/ate-ralink.o),)
 ate-ralink.o:
 	@-cp -f ./prebuild/ate-ralink.o .
+endif
+ifneq ($(wildcard ./prebuild/air_monitor.o),)
+air_monitor.o:
+	@-cp -f ./prebuild/air_monitor.o .
+endif
+ifneq ($(wildcard ./prebuild/ralink.o),)
+ralink.o:
+	@-cp -f ./prebuild/ralink.o .
+endif
+ifneq ($(wildcard ./prebuild/roamast-ralink.o),)
+roamast-ralink.o:
+	@-cp -f ./prebuild/roamast-ralink.o .
 endif
 endif
 
@@ -1023,6 +1115,14 @@ ifeq ($(RTCONFIG_REALTEK),y)
 ifneq ($(wildcard ./prebuild/ate-realtek.o),)
 ate-realtek.o:
 	@-cp -f ./prebuild/ate-realtek.o .
+endif
+ifneq ($(wildcard ./prebuild/realtek.o),)
+realtek.o:
+	@-cp -f ./prebuild/realtek.o .
+endif
+ifneq ($(wildcard ./prebuild/rtk_wifi_drvmib.o),)
+rtk_wifi_drvmib.o:
+	@-cp -f ./prebuild/rtk_wifi_drvmib.o .
 endif
 endif
 
@@ -1100,6 +1200,43 @@ obd.o:
 	@-cp -f ./prebuild/obd.o .
 endif
 
+ifeq ($(RTCONFIG_NEW_USER_LOW_RSSI),y)
+ifneq ($(wildcard ./prebuild/roamast.o),)
+roamast.o:
+	@-cp -f ./prebuild/roamast.o .
+endif
+ifneq ($(wildcard ./prebuild/roamast-broadcom.o),)
+roamast-broadcom.o:
+	@-cp -f ./prebuild/roamast-broadcom.o .
+endif
+ifneq ($(wildcard ./prebuild/roamast-latiq.o),)
+roamast-lantiq.o:
+	@-cp -f ./prebuild/roamast-lantiq.o .
+endif
+endif
+
+ifeq ($(RTCONFIG_TR069),y)
+ifneq ($(wildcard ./prebuild/tr069.o),)
+tr069.o:
+	@-cp -f ./prebuild/tr069.o .
+endif
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+ifneq ($(wildcard ./prebuild/amas_lanctrl.o),)
+amas_lanctrl.o:
+	@-cp -f ./prebuild/amas_lanctrl.o .
+endif
+ifneq ($(wildcard ./prebuild/amas_bhctrl.o),)
+amas_bhctrl.o:
+	@-cp -f ./prebuild/amas_bhctrl.o .
+endif
+ifneq ($(wildcard ./prebuild/amas_wlcconnect.o),)
+amas_wlcconnect.o:
+	@-cp -f ./prebuild/amas_wlcconnect.o .
+endif
+endif
+
 %.o: %.c
 	@echo " [rc] CC $@"
 	@$(CC) $(CFLAGS) -c $<
@@ -1107,7 +1244,9 @@ endif
 .%.depend: %.c
 	@$(CC) $(CFLAGS) -M $< > $@
 
--include Makefile.hook
+ifeq ($(RTCONFIG_QCA),y)
+-include sysdeps/qca/Makefile.hook
+endif
 
 pswatch: pswatch.c
 	@$(CC) -o $@ $^

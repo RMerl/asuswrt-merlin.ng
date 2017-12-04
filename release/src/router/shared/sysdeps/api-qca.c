@@ -89,6 +89,8 @@ const char STA_2G[] = "sta0";
 const char VPHY_5G[] = "wifi1";
 const char VPHY_2G[] = "wifi0";
 const char WSUP_DRV[] = "athr";
+const char BR_GUEST[] = "brg0";
+const char APMODE_BRGUEST_IP[]="192.168.55.1";
 #elif defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994)
 #if defined(RTAC88N)
 const char WIF_5G[] = "ath0";
@@ -119,7 +121,7 @@ const char WSUP_DRV[] = "athr";
 #error Define WiFi 2G/5G interface name!
 #endif
 
-#if defined(RTCONFIG_PCIE_QCA9888) && defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_HAS_5G_2)
 const char WIF_5G2[] = "ath2";
 const char STA_5G2[] = "sta2";
 const char VPHY_5G2[] = "wifi2";
@@ -1228,8 +1230,8 @@ char *get_lan_mac_name(void)
 	case MODEL_RTAC88N:	/* fall-through */
 	case MODEL_RPAC51:	/* fall-through */
         case MODEL_MAPAC1300:
-        case MODEL_VRZAC1300:
-        case MODEL_MAPAC1800:
+        case MODEL_VZWAC1300:
+        case MODEL_MAPAC1750:
         case MODEL_MAPAC2200:
 		/* Use 5G MAC address as LAN MAC address. */
 		mac_name = "et1macaddr";
@@ -1552,4 +1554,20 @@ int get_channel(const char *ifname)
 	return get_ch(freq);
 }
 
+#ifdef RTCONFIG_AMAS
+void add_beacon_vsie(char *hexdata)
+{
+}
 
+void del_beacon_vsie(char *hexdata)
+{
+}
+
+void add_obd_probe_req_vsie(char *hexdata)
+{
+}
+
+void del_obd_probe_req_vsie(char *hexdata)
+{
+}
+#endif /* RTCONFIG_AMAS */

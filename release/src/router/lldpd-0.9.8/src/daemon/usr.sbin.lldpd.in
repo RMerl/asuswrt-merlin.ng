@@ -1,0 +1,65 @@
+#include <tunables/global>
+
+@sbindir@/lldpd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability net_admin,
+  capability net_raw,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+  capability sys_module,
+
+  # Need to receive/send raw packets
+  network packet raw,
+
+  @sbindir@/lldpd mr,
+  /run/systemd/notify w,
+
+  # Ability to run lldpcli for self-configuration
+  @sbindir@/lldpcli rix,
+  @sysconfdir@/lldpd.d/ r,
+  @sysconfdir@/lldpd.d/* r,
+  @sysconfdir@/lldpd.conf r,
+
+  # PID file and socket
+  @LLDPD_PID_FILE@ rw,
+  @LLDPD_CTL_SOCKET@ rw,
+
+  # Chroot setup
+  @PRIVSEP_CHROOT@ w,
+  @PRIVSEP_CHROOT@/etc/ rw,
+  @PRIVSEP_CHROOT@/etc/localtime rw,
+
+  # Gather system description
+  /etc/os-release r,
+  /usr/lib/os-release r,
+  /usr/bin/lsb_release Cxr -> lsb_release,
+  profile lsb_release {
+    #include <abstractions/base>
+    #include <abstractions/python>
+    /usr/bin/lsb_release r,
+    /bin/dash ixr,
+    /usr/bin/dpkg-query ixr,
+    /usr/include/python2.[4567]/pyconfig.h r,
+    /etc/lsb-release r,
+    /etc/debian_version r,
+    /var/lib/dpkg/** r,
+    /usr/local/lib/python3.[0-5]/dist-packages/ r,
+    /usr/bin/ r,
+    /usr/bin/python3.[0-5] r,
+  }
+
+  # Gather network information
+  @{PROC}/sys/net/ipv4/ip_forward r,
+  @{PROC}/net/bonding/* r,
+  @{PROC}/self/net/bonding/* r,
+  /sys/devices/virtual/dmi/** r,
+  /sys/devices/pci**/net/*/ifalias r,
+}

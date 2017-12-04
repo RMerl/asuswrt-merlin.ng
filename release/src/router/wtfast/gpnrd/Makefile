@@ -3,12 +3,16 @@
 #
 # Copyright (C) 2014-2015, AAA Internet Publishing, Inc. (DBA WTFast)
 #
-
+include ../../common.mak
 ifneq ($(ROUTER_BUILD), y)
 CFLAGS += -pedantic-errors
 endif
 LDFLAGS += -Wl,-rpath -Wl,$(LIB)
 LIBS = -lgpnutils -lgpnclient -lrt -lshared -lnvram -lssl -lcrypto
+
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
 
 SRCS = gpnrd.c
 OBJS = $(SRCS:.c=.o)

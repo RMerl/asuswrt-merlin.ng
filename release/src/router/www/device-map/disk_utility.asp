@@ -78,7 +78,7 @@ function initial(){
 	var usb_ntfs_mod = '<% nvram_get("usb_ntfs_mod"); %>';
 	var usb_hfs_mod = '<% nvram_get("usb_hfs_mod"); %>';
 
-	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["Format", "disk_format.asp"]};
+	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["<#CTL_format#>", "disk_format.asp"]};
 	if(!parent.diskUtility_support) {
 		delete disk_list_array.health;
 		delete disk_list_array.format;
@@ -525,7 +525,7 @@ function reset_force_stop(){
 						</td>							
 						<td >
 							<div id="date_field">
-								<div style="margin-bottom:5px;">Date</div>
+								<div style="margin-bottom:5px;"><#Date#></div>
 								<select name="freq_mon" class="input_option" onchange="freq_change();">
 									<option value="1">1</option>
 									<option value="2">2</option>

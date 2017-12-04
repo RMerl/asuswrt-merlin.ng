@@ -207,6 +207,9 @@ int mtd_unlock_erase_main(int argc, char *argv[])
 	int c;
 	char *dev = NULL;
 
+#ifdef RTCONFIG_LANTIQ
+	nvram_set(ASUS_STOP_COMMIT, "1");
+#endif
 	while ((c = getopt(argc, argv, "d:")) != -1) {
 		switch (c) {
 		case 'd':

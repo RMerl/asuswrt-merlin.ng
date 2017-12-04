@@ -56,7 +56,7 @@ function initial(){
 
 function applyRule(){
 	if(validForm()){
-		if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VRZ-AC1300")
+		if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750")
 			alert("By applying new LAN settings, please reboot all Lyras connected to main Lyra manually.");
 		showLoading();
 		document.form.submit();

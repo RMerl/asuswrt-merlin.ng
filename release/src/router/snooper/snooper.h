@@ -28,7 +28,9 @@
 /* snooper */
 extern unsigned char ifhwaddr[ETHER_ADDR_LEN];
 extern in_addr_t ifaddr;
+int listen_query(in_addr_t group, int timeout);
 int send_query(in_addr_t group);
+int switch_probe(void);
 
 /* igmp */
 int accept_igmp(unsigned char *packet, int size, unsigned char *shost, int loopback);
@@ -88,7 +90,7 @@ void purge_timers(void);
 int init_cache(void);
 int get_port(unsigned char *haddr);
 int add_member(unsigned char *maddr, in_addr_t addr, int port, int timeout);
-int del_member(unsigned char *maddr, in_addr_t addr, int port);
+int del_member(unsigned char *maddr, in_addr_t addr, int port, int timeout);
 int add_router(in_addr_t addr, int port, int timeout);
 int expire_members(unsigned char *maddr, int timeout);
 int purge_cache(void);
@@ -113,6 +115,7 @@ int purge_cache(void);
     ARG_PORT((a), 1), ARG_PORT((a), 2), ARG_PORT((a), 3), ARG_PORT((a), 4), \
     ARG_PORT((a), 5), ARG_PORT((a), 6), ARG_PORT((a), 7), ARG_PORT((a), 8)
 
+int open_socket(int domain, int type, int protocol);
 void ether_mtoe(in_addr_t addr, unsigned char *ea);
 unsigned int ether_hash(unsigned char *ea);
 int logger(int level, char *fmt, ...);

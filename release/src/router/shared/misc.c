@@ -596,13 +596,12 @@ static int test_one_class(const struct ip_mask_s *pt, const struct ip_mask_s *pk
 					if (p->cidr < max_cidr)
 						max_cidr = p->cidr;
 					dbg("\t%08x/%d conflicts, max_cidr %d.\n", p->ip, p->cidr, max_cidr);
+					logmessage("", "\t%08x/%d conflicts, max_cidr %d.\n", p->ip, p->cidr, max_cidr);
 					c++;
 				}
 			}
 
 			if (c == 0) {
-				dbg("Find non-conflicts network %08x/%d for %08x/%d\n",
-					s, i, *exp_ip, exp_cidr);
 				new_ip = s;
 				found = 1;
 				break;
@@ -626,6 +625,8 @@ static int test_one_class(const struct ip_mask_s *pt, const struct ip_mask_s *pk
 		if ((new_ip & m) == (*exp_ip & m))
 			return 0;
 		else {
+			dbg("Find non-conflicts network %08x/%d for %08x/%d\n",
+				s, i, *exp_ip, exp_cidr);
 			// dbg("New IP/mask %08x/%d\n", new_ip, exp_cidr);
 			*exp_ip = new_ip;
 			return 1;
@@ -1114,10 +1115,10 @@ static int get_known_networks(unsigned int nr, struct ip_mask_s *tbl, uint32_t e
  */
 int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_cidr, uint32_t excl)
 {
-	int i, exp_class_idx, r = -1, nr;
+	int i, exp_class_idx, r = -1, nr, may_conflicts = 0;
 	uint32_t m, ip, cidr;
 	const struct ip_mask_s *pv;
-	struct ip_mask_s known_network_tbl[50];
+	struct ip_mask_s known_network_tbl[50], *kn;
 
 	if (!exp_ip || exp_cidr <= 0 || exp_cidr > 30)
 		return -1;
@@ -1144,6 +1145,18 @@ int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_c
 	nr = ARRAY_SIZE(known_network_tbl);
 	memset(known_network_tbl, 0, nr);
 	get_known_networks(--nr, known_network_tbl, excl);   /* leave last elements */
+
+	for (i = 0, kn = &known_network_tbl[0];
+	    i < ARRAY_SIZE(known_network_tbl) && kn->ip && kn->cidr;
+	    ++i, ++kn)
+	{
+		m = min(exp_cidr, kn->cidr);
+		if ((*exp_ip & m) == (kn->ip & m))
+			may_conflicts++;
+	}
+
+	if (!may_conflicts)
+		return 0;
 
 	/* Try class own @exp_ip/@exp_cidr. */
 	if (exp_class_idx >= 0 && exp_class_idx < ARRAY_SIZE(private_network_tbl)) {
@@ -1991,6 +2004,26 @@ int ubi_getinfo(const char *ubiname, int *dev, int *part, int *size)
 
 // -----------------------------------------------------------------------------
 
+/* 
+ * Get the value of an NVRAM variable, using supplied buffer.
+ * @param	name	name of variable to get
+ * @param	buf	local buffer for the value
+ * @param	bufsize	local buffer size
+ * @return	value of variable copied to local buffer or
+ *		NULL if undefined.
+ */
+char *nvram_get_r(const char *name, char *buf, size_t buflen)
+{
+	char *v = nvram_get(name);
+
+	if (v && buf) {
+		strlcpy(buf, v, buflen);
+		return buf;
+	}
+
+	return v;
+}
+
 /**
  * Combine prefix and name before nvram_get().
  * @prefix:
@@ -2780,12 +2813,7 @@ int is_psta(int unit)
 	if (unit < 0) return 0;
 	if ((sw_mode() == SW_MODE_AP) &&
 		(nvram_get_int("wlc_psta") == 1) &&
-		(
-#ifdef RTCONFIG_DPSTA
-		is_dpsta(unit) ||
-#endif
-		(nvram_get_int("wlc_band") == unit)
-		))
+		(nvram_get_int("wlc_band") == unit))
 		return 1;
 
 	return 0;
@@ -2801,14 +2829,17 @@ int is_psr(int unit)
 		(nvram_get_int("wlc_psta") == 2) &&
 		(
 #ifdef RTCONFIG_DPSTA
-#if 0
 		is_dpsta(unit) ||
-#else
-		dpsta_mode() ||
-#endif
 #endif
 		is_dpsr(unit) ||
-		(nvram_get_int("wlc_band") == unit)
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
+		dpsta_mode() ||
+#endif
+		((nvram_get_int("wlc_band") == unit) && !dpsr_mode()
+#ifdef RTCONFIG_DPSTA
+		&& !dpsta_mode()
+#endif
+		)
 		))
 		return 1;
 
@@ -3660,6 +3691,68 @@ int is_valid_group_id(const char *str)
 	}
 	return 1;
 }
+
+char *if_nametoalias(char *name, char *alias, int alias_len)
+{
+	char prefix[]="wlXXXXXX_", tmp[100];
+	char word[256], *next;
+	int unit = 0;
+	int subunit = 0;
+	int max_mssid = 0;
+	char *ifname = NULL;
+	int found = 0;
+
+	if (!strncmp(name, "2G", 2) || !strncmp(name, "5G", 2)) {
+		snprintf(alias, alias_len, "%s", name);
+		return alias;
+	}
+
+        foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+		max_mssid = num_of_mssid_support(unit);
+		memset(prefix, 0, sizeof(prefix));
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		ifname = nvram_get(strcat_r(prefix, "ifname", tmp));
+		subunit = 0;
+
+		if (!strcmp(ifname, name)) {
+			snprintf(alias, alias_len, "%s", unit ? (unit == 2 ? "5G1" : "5G") : "2G");
+			found = 1;
+			break;
+		}
+
+		for (subunit = 1; subunit < max_mssid+1; subunit++) {
+			memset(prefix, 0, sizeof(prefix));
+                        snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+			ifname = nvram_get(strcat_r(prefix, "ifname", tmp));
+
+			if (!strcmp(ifname, name)) {
+#if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
+				if (nvram_get_int("sw_mode") == SW_MODE_REPEATER
+#ifdef RTCONFIG_PROXYSTA
+					|| dpsr_mode()
+#ifdef RTCONFIG_DPSTA
+					|| dpsta_mode()
+#endif
+#endif
+					)
+					snprintf(alias, alias_len, "%s", unit ? (unit == 2 ? "5G1" : "5G") : "2G");
+				else
+#endif
+				snprintf(alias, alias_len, "%s_%d", unit ? (unit == 2 ? "5G1" : "5G") : "2G", subunit);
+				found = 1;
+				break;
+			}
+		}
+
+		if (found)
+			break;
+ 
+		unit++;
+	}
+
+	return alias;
+}
 #endif /* RTCONFIG_CFGSYNC */
 
 #ifdef RTCONFIG_BONDING
@@ -3722,3 +3815,106 @@ int get_bonding_status()
 
 #endif
 #endif
+
+#ifdef RTCONFIG_LANTIQ
+int ppa_support(int wan_unit)
+{
+	int ret = 1;
+	char wan_proto[16];
+	char tmp[100], prefix[32];
+	int ctf_disable_force = 0 ;
+
+	ctf_disable_force = nvram_get_int("ctf_disable_force");
+
+	/* recover the NAT accelerator*/
+	nvram_set("ctf_disable_force", "0");
+
+#ifdef RTCONFIG_USB_MODEM
+	char modem_type[32];
+	int wan_type = get_dualwan_by_unit(wan_unit);
+	int modem_unit = get_modemunit_by_type(wan_type);
+	char tmp2[100], prefix2[32];
+
+	if(modem_unit < 0)
+		modem_unit = 0;
+
+	usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
+	snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
+
+	if((wan_type == WANS_DUALWAN_IF_USB || wan_type == WANS_DUALWAN_IF_USB2)
+			&& (!strcmp(modem_type, "tty") || !strcmp(modem_type, "mbim"))
+			)
+	{
+		ret = 0;
+	}
+#endif
+
+	/*
+		1. traditaional qos / bandwidth limiter / disable NAT accelerator
+		2. stop_ppa_wan : debug usage
+	*/
+	if((nvram_get_int("qos_enable") == 1 && (nvram_get_int("qos_type") != 1))
+		|| nvram_match("ctf_disable_force", "1") || nvram_match("stop_ppa_wan", "1"))
+	{
+		ret = 0;
+	}
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
+
+	if(strcmp(wan_proto, "pptp") == 0) ret = 0;
+	if(strcmp(wan_proto, "l2tp") == 0) ret = 0;
+	if(strcmp(nvram_safe_get(strcat_r(prefix, "hwaddr_x", tmp)), "")) ret = 0;
+	if(ctf_disable_force == 1) ret = 0;
+
+	/* when ppa wan interface removed, show NAT accelerator status */
+	if (ret == 0) {
+		nvram_set("ctf_disable", "1"); // GUI display
+		nvram_set("ctf_disable_force", "1");
+	}
+	else {
+		nvram_set("ctf_disable", "0"); // GUI display
+	}
+
+	return ret;
+}
+#endif
+
+#ifdef RTCONFIG_MULTICAST_IPTV
+#define MOVISTART_PORT 1
+#else
+#define MOVISTART_PORT 3
+#endif
+int IPTV_ports_cnt(void)
+{
+	int cnt = 0;
+	const char *switch_wantag = nvram_safe_get("switch_wantag");
+
+	if (switch_wantag[0] == '\0' || strcmp(switch_wantag, "none") == 0)
+	{
+		int switch_stb_x = nvram_get_int("switch_stb_x");
+		if (switch_stb_x >= 1 && switch_stb_x <= 4)
+			cnt = 2;
+		else if (switch_stb_x >= 5 && switch_stb_x <= 6)
+			cnt = 3;
+	}
+	else if (strcmp(switch_wantag, "unifi_biz") == 0)
+		cnt = 1;
+	else if (strcmp(switch_wantag, "singtel_mio") == 0 
+	      || strcmp(switch_wantag, "vodafone") == 0)
+		cnt = 3;
+	else if (strcmp(switch_wantag, "movistar") == 0) {
+		cnt = MOVISTART_PORT;
+	}
+	else if (strcmp(switch_wantag, "manual") == 0) {
+		if (nvram_safe_get("switch_wan0tagid")[0] != 0)
+			cnt++;
+		if (nvram_safe_get("switch_wan1tagid")[0] != 0)
+			cnt++;
+		if (nvram_safe_get("switch_wan2tagid")[0] != 0)
+			cnt++;
+	}
+	else
+		cnt = 2;
+	return cnt;
+}

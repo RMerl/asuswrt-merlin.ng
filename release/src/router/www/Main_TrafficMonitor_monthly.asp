@@ -146,6 +146,9 @@ function init()
 	initDate('ym');
 	monthly_history.sort(cmpHist);
 	redraw();
+	if(bwdpi_support){
+		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
+	}
 }
 
 function switchPage(page){

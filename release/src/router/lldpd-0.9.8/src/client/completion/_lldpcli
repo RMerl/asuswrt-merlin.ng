@@ -1,0 +1,48 @@
+#compdef lldpcli
+#
+# zsh completion for lldpcli
+#
+# Copyright (c) 2014 Vincent Bernat <bernat@luffy.cx>
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+__lldpcli_command () {
+    local -a completions
+    completions=(${(f)"$(_call_program commands lldpcli complete ${words[1,$(($CURRENT-1))]})"})
+    completions=(${completions:s/ /:/})
+    _describe -t lldpcli-command "lldpcli completion" completions "$@"
+}
+
+_lldpcli () {
+    local curcontext="$curcontext" state line
+
+    _arguments -C \
+        '*-d[print more debugging information]' \
+        '(- *)-v[print version number and exit]' \
+        '-u[use an alternate socket with lldpd]:UNIX socket:_files' \
+        '-f[output format]:format:(plain xml json keyvalue)' \
+        '*-c[read a configuration file]:configuration file:_files' \
+        '(-)*::lldpcli command:__lldpcli_command'
+}
+
+
+_lldpcli "$@"
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 4
+# indent-tabs-mode: nil
+# sh-basic-offset: 4
+# End:
+# vim: ft=zsh sw=4 ts=4 et

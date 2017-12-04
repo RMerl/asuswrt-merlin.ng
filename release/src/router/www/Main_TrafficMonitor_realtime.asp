@@ -194,7 +194,10 @@ function init()
 	else{ // ctf_disable == 1 or ctf_disable is not existed
 		document.getElementById("ctfLevelDesc").style.display = "none";
 	}
-	
+
+	if(bwdpi_support){
+		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
+	}	
 }
 
 function switchPage(page){

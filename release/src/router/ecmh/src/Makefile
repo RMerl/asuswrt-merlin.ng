@@ -21,6 +21,8 @@
 #ECMH_LDFREEBSD=-L/usr/local/lib/ -lgnugetopt
 
 # Below here nothing should have to be changed
+include $(SRCBASE)/router/.config
+
 BINS	= ecmh
 SRCS	= ecmh.c linklist.c common.c interfaces.c groups.c grpint.c subscr.c
 INCS	= ecmh.h linklist.h common.h interfaces.h groups.h grpint.h subscr.h mld.h
@@ -31,6 +33,11 @@ EXTRA   = -g
 #EXTRA	= -O3
 CFLAGS	= $(WARNS) $(EXTRA) -D_GNU_SOURCE -D'ECMH_VERSION="$(ECMH_VERSION)"' $(ECMH_OPTIONS) $(EXTRACFLAGS) -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared 
 LDFLAGS	= $(ECMH_LDFREEBSD) $(EXTRALDFLAGS)
+
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 CC	:= @echo "[Compiling] $$@"; $(CC)
 
 all:	$(BINS)

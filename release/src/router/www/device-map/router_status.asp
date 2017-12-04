@@ -302,7 +302,7 @@ function tab_reset(v){
 	}else if(v == 1){	//Smart Connect
 		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300")
 			document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100")
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 		
 		document.getElementById("t1").style.display = "none";
@@ -373,7 +373,8 @@ function get_ethernet_ports() {
 			setTimeout("get_ethernet_ports();", 1000);
 		},
 		success: function(response) {
-			var wanLanStatus = get_wan_lan_status;
+			var wanLanStatus = get_wan_lan_status["portSpeed"];
+			var wanCount = get_wan_lan_status["portCount"]["wanCount"];
 			//parse nvram to array
 			var parseStrToArray = function(_array) {
 				var speedMapping = new Array();
@@ -384,7 +385,19 @@ function get_ethernet_ports() {
 				for (var prop in _array) {
 					if (_array.hasOwnProperty(prop)) {
 						var newRuleArray = new Array();
-						newRuleArray.push(prop);
+						var port_name = prop;
+						if(wanCount != undefined) {
+							if(port_name.substr(0, 3) == "WAN") {
+								if(parseInt(wanCount) > 1) {
+									var port_idx = port_name.split(" ");
+									port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
+								}
+								else {
+									port_name = "WAN";
+								}
+							}
+						}
+						newRuleArray.push(port_name);
 						newRuleArray.push(speedMapping[_array[prop]]);
 						parseArray.push(newRuleArray);
 					}

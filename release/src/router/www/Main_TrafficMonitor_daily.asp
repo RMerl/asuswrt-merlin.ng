@@ -161,6 +161,10 @@ function init(){
 	initDate('ymd');
 	daily_history.sort(cmpHist);
 	redraw();
+
+	if(bwdpi_support){
+		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
+	}
 }
 
 function switchPage(page){

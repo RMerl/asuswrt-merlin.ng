@@ -1025,6 +1025,7 @@ static int construct_reply(char *inbuf,char *outbuf,int size,int bufsize)
 	int outsize = 0;
 	int msg_type = CVAL(inbuf,0);
 	uint16_t mid = SVAL(inbuf, smb_mid);
+	uint8_t wct = CVAL(inbuf, smb_wct);
 
 	chain_size = 0;
 	file_chain_reset();
@@ -1032,6 +1033,23 @@ static int construct_reply(char *inbuf,char *outbuf,int size,int bufsize)
 
 	if (msg_type != 0)
 		return(reply_special(inbuf,outbuf));  
+
+	/* Ensure we have at least wct words and 2 bytes of bcc. */
+	if (smb_size + wct*2 > size) {
+		DEBUG(0,("init_smb_request: invalid wct number %u (size %u)\n",
+			(unsigned int)wct,
+			(unsigned int)size));
+		exit_server_cleanly("Invalid SMB request");
+	}
+	/* Ensure bcc is correct. */
+	if (((uint8 *)smb_buf(inbuf)) + smb_buflen(inbuf) > inbuf + size) {
+		DEBUG(0,("init_smb_request: invalid bcc number %u "
+			"(wct = %u, size %u)\n",
+			(unsigned int)smb_buflen(inbuf),
+			(unsigned int)wct,
+			(unsigned int)size));
+		exit_server_cleanly("Invalid SMB request");
+	}
 
 	construct_reply_common(inbuf, outbuf);
 
@@ -1161,7 +1179,7 @@ int chain_reply(char *inbuf,char *outbuf,int size,int bufsize)
 	static char *orig_outbuf;
 	static int orig_size;
 	int smb_com1, smb_com2 = CVAL(inbuf,smb_vwv0);
-	unsigned smb_off2 = SVAL(inbuf,smb_vwv1);
+	static unsigned smb_off2;
 	char *inbuf2, *outbuf2;
 	int outsize2;
 	int new_size;
@@ -1180,7 +1198,15 @@ int chain_reply(char *inbuf,char *outbuf,int size,int bufsize)
 		orig_inbuf = inbuf;
 		orig_outbuf = outbuf;
 		orig_size = size;
+		smb_off2 = 0;
 	}
+
+	if (SVAL(inbuf,smb_vwv1) <= smb_off2) {
+		DEBUG(1, ("AndX offset not increasing\n"));
+		SCVAL(outbuf, smb_vwv0, 0xFF);
+		return outsize;
+	}
+	smb_off2 = SVAL(inbuf, smb_vwv1);
 
 	/* Validate smb_off2 */
 	if ((smb_off2 < smb_wct - 4) || orig_size < (smb_off2 + 4 - smb_wct)) {

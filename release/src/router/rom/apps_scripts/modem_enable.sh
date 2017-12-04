@@ -357,7 +357,10 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 		nvram commit
 	fi
 
-	/usr/sbin/find_modem_node.sh
+	modem_act_node=`nvram get $act_node`
+	if [ "$modem_act_node" == "" ]; then
+		/usr/sbin/find_modem_node.sh
+	fi
 
 	modem_act_node=`nvram get $act_node`
 	if [ "$modem_act_node" == "" ]; then
@@ -550,15 +553,9 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 			echo "Got the QMI dev: $modem_dev."
 		fi
 
+		modem_stop.sh
+
 		wdm=`_get_wdm_by_usbnet $modem_dev`
-
-		uqmi -d $wdm --keep-client-id wds --stop-network 4294967295 --autoconnect
-		if [ "$?" == "0" ]; then
-			echo "QMI($wdm): stop the network & disable autoconnect..."
-		else
-			echo "QMI($wdm): faile to stop the network & disable autoconnect..."
-		fi
-
 		echo "QMI($wdm): set the ISP profile."
 		pdp_str=`_get_qmi_pdp_str`
 		echo "$modem_type: set the PDP be $pdp_str."
@@ -589,15 +586,19 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 
 			echo "$modem_type: set the flag_auth be \"$flag_auth\"."
 
-			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" \"$flag_auth\" --ip-family $pdp_str --autoconnect"
-			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" "$flag_auth" --ip-family $pdp_str --autoconnect
+			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" \"$flag_auth\" --ip-family $pdp_str"
+			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" "$flag_auth" --ip-family $pdp_str
 		else
-			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" --ip-family $pdp_str --autoconnect"
-			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" --ip-family $pdp_str --autoconnect
+			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" --ip-family $pdp_str"
+			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" --ip-family $pdp_str
+		fi
+		if [ "$?" != "0" ]; then
+			echo "QMI($wdm): faile to start the network..."
 		fi
 
+		uqmi -d $wdm --keep-client-id wds --set-autoconnect enabled
 		if [ "$?" != "0" ]; then
-			echo "QMI($wdm): faile to start the network & enable autoconnect..."
+			echo "QMI($wdm): faile to enable autoconnect..."
 		fi
 
 		if [ "$modem_vid" == "4817" -a "$modem_pid" == "5132" ]; then

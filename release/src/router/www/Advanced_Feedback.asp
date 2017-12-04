@@ -18,9 +18,29 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-
+<script language="JavaScript" type="text/javascript" src="merlin.js"></script>
+<script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
+<style>
+.noUSBHint, .storeUSBHint {
+	color: #FC0;
+	margin-left: 10px;
+	display: none;
+}
+.dblog_service_item {
+	margin-right: 5px;
+}
+.dblog_enabled_status {
+	display: none;
+}
+.dblog_stop_text {
+	cursor: pointer;
+	text-decoration: underline;
+}
+</style>
 <script>
+var usb_status_last_time = false;
 var orig_page = '<% get_parameter("origPage"); %>';
+var dblog_trans_id = '<% generate_trans_id(); %>';
 function initial(){
 	show_menu();
 	if(dsl_support){
@@ -38,6 +58,7 @@ function initial(){
 		document.form.attach_cfgfile_id.checked = true;
 		document.form.attach_iptables.checked = false;
 		document.form.attach_modemlog.checked = true;
+		document.form.attach_wlanlog_id.checked = true;
 		document.getElementById("attach_iptables_span").style.display = "none";		
 		inputCtrl(document.form.dslx_diag_enable[0], 0);
 		inputCtrl(document.form.dslx_diag_enable[1], 0);
@@ -54,6 +75,12 @@ function initial(){
 	}
 
 	setTimeout("check_wan_state();", 300);
+
+	if(dblog_support)
+		init_diag_feature();
+	else {
+		$(".dblog_support_class").remove();
+	}
 }
 
 function check_wan_state(){
@@ -65,6 +92,7 @@ function check_wan_state(){
 		document.form.attach_syslog.disabled = "true";
 		document.form.attach_cfgfile.disabled = "true";
 		document.form.attach_modemlog.disabled = "true";
+		document.form.attach_wlanlog.disabled = "true";
 		document.form.fb_comment.disabled = "true";
 		document.form.btn_send.disabled = "true";
 		if(dsl_support){
@@ -88,6 +116,7 @@ function check_wan_state(){
 		document.form.fb_email.disabled = "";
 		document.form.attach_syslog.disabled = "";
 		document.form.attach_modemlog.disabled = "";
+		document.form.attach_wlanlog.disabled = "";
 		document.form.attach_cfgfile.disabled = "";
 		document.form.fb_comment.disabled = "";
 		document.form.btn_send.disabled = "";
@@ -275,7 +304,7 @@ function updateUSBStatus(){
 	else{		
 		document.getElementById("storage_ready").style.display = "";
 		document.getElementById("be_lack_storage").style.display = "none";
-	}					
+	}
 }
 
 function redirect(){
@@ -306,6 +335,10 @@ function applyRule(){
 			document.form.PM_attach_modemlog.value = 1;
 		else
 			document.form.PM_attach_modemlog.value = 0;
+		if(document.form.attach_wlanlog.checked == true)
+			document.form.PM_attach_wlanlog.value = 1;
+		else
+			document.form.PM_attach_wlanlog.value = 0;
 		if(dsl_support){
 			if(document.form.attach_iptables.checked == true)
 				document.form.PM_attach_iptables.value = 1;
@@ -324,6 +357,47 @@ function applyRule(){
 				alert("<#feedback_email_alert#>");    					
 				document.form.fb_email.focus();
 				return false;
+			}
+		}
+
+		//check Diagnostic
+		if(dblog_support) {
+			var dblog_enable = getRadioValue($('form[name="form"]').children().find('input[name=dblog_enable]'));
+			if(dblog_enable == "1") {
+				var service_list_checked = $("input:checkbox[name=dblog_service_list]:checked").map(function() {
+					return $(this).val();
+				}).get();
+				var dblog_service = 0;
+				if(service_list_checked.length == 0) {
+					alert("Please select at least one option.");/*untranslated*/
+					return false;
+				}
+				for(var idx in service_list_checked){
+					if(service_list_checked.hasOwnProperty(idx)) {
+						dblog_service += parseInt(service_list_checked[idx]);
+					}
+				}
+				document.form.dblog_tousb.disabled = false;
+				document.form.dblog_tousb.value = "0";
+				if(usb_support) {
+					if(allUsbStatus.search("storage") != "-1") {
+						if($("input[name=dblog_tousb_cb]").prop("checked")) {
+							document.form.dblog_tousb.value = "1";
+						}
+					}
+				}
+				document.form.dblog_service.disabled = false;
+				document.form.dblog_service.value = dblog_service;
+				document.form.dblog_duration.disabled = false;
+				document.form.dblog_transid.disabled = false;
+				if(dblog_trans_id != "")
+					document.form.dblog_transid.value = dblog_trans_id;
+			}
+			else {
+				document.form.dblog_tousb.disabled = true;
+				document.form.dblog_service.disabled = true;
+				document.form.dblog_duration.disabled = true;
+				document.form.dblog_transid.disabled = true;
 			}
 		}
 
@@ -358,12 +432,12 @@ function textCounter(field, cnt, upper) {
 function change_dsl_diag_enable(value) {
 	if(value) {
 		if(allUsbStatus.search("storage") == "-1"){
-			alert("USB disk required in order to store the debug log, please plug-in a USB disk to <#Web_Title2#> and Enable DSL Line Diagnostic again.");
+			alert("USB disk required in order to store the debug log, please plug-in a USB disk to <#Web_Title2#> and Enable DSL Line Diagnostic again.");/*untranslated*/
 			document.form.dslx_diag_enable[1].checked = true;
 			return;
 		}
 		else{
-			alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture. Please note that xDSL line would resync in one minute after Feedback form submitted.");
+			alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture. Please note that xDSL line would resync in one minute after Feedback form submitted.");/*untranslated*/
 		}
 		showhide("dslx_diag_duration",1);
 	}
@@ -371,7 +445,225 @@ function change_dsl_diag_enable(value) {
 		showhide("dslx_diag_duration",0);
 	}
 }
+function init_diag_feature() {
+	var dblog_enable = '<% nvram_get("dblog_enable"); %>';
+	setRadioValue($('form[name="form"]').children().find('input[name=dblog_enable]'), dblog_enable);
 
+	if(dblog_enable == "1") {
+		$(".dblog_disabled_status").find("input, textarea, button, select").attr("disabled", true);
+		$(".dblog_disabled_status").css("display", "none");
+		$(".dblog_enabled_status").css("display", "inline");
+
+		var dblog_remaining = parseInt('<% nvram_get("dblog_remaining"); %>');
+		var transformTime = function(_sec) {
+			var days = Math.floor(dblog_remaining / 60 / 60 / 24);
+			var hours = Math.floor(dblog_remaining / 60 / 60 % 24);
+			var minutes = Math.floor(dblog_remaining / 60 % 60);
+			var seconds = Math.floor(dblog_remaining % 60);
+			var remaining_time_str = "<#mssid_time_remaining#> : ";
+
+			if(dblog_remaining == 0) {
+				remaining_time_str += "0" + " " + "(Prepare data...)";/* untranslated */
+				return remaining_time_str;
+			}
+
+			if(days)
+				remaining_time_str += days + " <#Day#> ";
+			if(hours)
+				remaining_time_str += hours + " <#Hour#> ";
+			if(minutes)
+				remaining_time_str += minutes + " <#Minute#> ";
+			if(seconds)
+				remaining_time_str += seconds + " <#Second#> ";
+			return remaining_time_str;
+		};
+		$(".dblog_remaining_text").html(transformTime(dblog_remaining));
+		var transformTimeInterval = setInterval(function(){
+			if(dblog_remaining == 0 || isNaN(dblog_remaining))
+				clearInterval(transformTimeInterval);
+			else {
+				dblog_remaining--;
+				$(".dblog_remaining_text").html(transformTime(dblog_remaining));
+			}
+		}, 1000);
+
+		var dblog_service = parseInt('<% nvram_get("dblog_service"); %>');
+		var dblog_service_mapping = ["", "Wi-Fi", "Download Master", "<#UPnPMediaServer#>", "AiMesh"];/* untranslated */
+		var dblog_service_text = "";
+		for(var i = 1; dblog_service != 0 && i <= 4; i++) {
+			if(dblog_service & 1) {
+				if(dblog_service_text != "")
+					dblog_service_text += ", " + dblog_service_mapping[i];
+				else
+					dblog_service_text += dblog_service_mapping[i];
+			}
+			dblog_service = dblog_service >> 1;
+		}
+		$(".dblog_service_text").html(dblog_service_text);
+	}
+	else {
+		$(".dblog_item_tr").css("display", "none");
+		$(".dblog_disabled_status").find("input, textarea, button, select").attr("disabled", false);
+		$("input[name=dblog_tousb_cb]").prop("checked", false);
+		if(usb_support) {
+			var usb_exist = (('<% show_usb_path(); %>').search("storage") != "-1") ? true : false;
+			if(usb_exist) {
+				$(".noUSBHint").css("display", "none");
+				$(".storeUSBHint").css("display", "inline");
+				var dblog_tousb = '<% nvram_get("dblog_tousb"); %>';
+				$("input[name=dblog_tousb_cb]").prop("checked", ((dblog_tousb == "1") ? true : false));
+				usb_status_last_time = true;
+			}
+			else {
+				$(".noUSBHint").css("display", "inline");
+				$(".storeUSBHint").css("display", "none");
+				usb_status_last_time = false;
+			}
+		}
+		else {
+			$(".noUSBHint").css("display", "none");
+			$(".storeUSBHint").css("display", "none");
+		}
+		$("input[name=dblog_service_list_all]").prop("checked", false);
+		$("input[name=dblog_service_list]").prop("checked", false);
+		diag_tune_service_option();
+		diag_create_duration_option();
+	}
+}
+function diag_change_dblog_status() {
+	var dblog_enable = getRadioValue($('form[name="form"]').children().find('input[name=dblog_enable]'));
+	if(dblog_enable == "1") {
+		$(".dblog_item_tr").css("display", "");
+		if(usb_support) {
+			if(allUsbStatus.search("storage") == "-1")
+				alert("Debug log capture in progress, UI top right System icon flashing in yellow indicating that debug log capture in progress. Click on the yellow System icon could cancel the debug log capture.");/*untranslated*/
+			else {
+				if($("input[name=dblog_tousb_cb]").prop("checked"))
+					alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right System icon flashing in yellow indicating that debug log capture in progress. Click on the yellow System icon could cancel the debug log capture.");/*untranslated*/
+				else
+					alert("Debug log capture in progress, UI top right System icon flashing in yellow indicating that debug log capture in progress. Click on the yellow System icon could cancel the debug log capture.");/*untranslated*/
+			}
+		}
+		else
+			alert("Debug log capture in progress, UI top right System icon flashing in yellow indicating that debug log capture in progress. Click on the yellow System icon could cancel the debug log capture.");/*untranslated*/
+	}
+	else {
+		$(".dblog_item_tr").css("display", "none");
+	}
+}
+function diag_control_usb_status() {
+	var dblog_enable = '<% nvram_get("dblog_enable"); %>';
+	if(dblog_enable == "0") {
+		if(usb_support) {
+			var usb_status_current = (allUsbStatus.search("storage") != "-1") ? true : false;
+			if(usb_status_current != usb_status_last_time) {
+				$(".noUSBHint").css("display", "none");
+				$(".storeUSBHint").css("display", "none");
+				$("input[name=dblog_tousb_cb]").prop("checked", false);
+				if(usb_status_current) {
+					$(".noUSBHint").css("display", "none");
+					$(".storeUSBHint").css("display", "inline");
+					var dblog_tousb = '<% nvram_get("dblog_tousb"); %>';
+					$("input[name=dblog_tousb_cb]").prop("checked", ((dblog_tousb == "1") ? true : false));
+					usb_status_last_time = true;
+				}
+				else {
+					$(".noUSBHint").css("display", "inline");
+					$(".storeUSBHint").css("display", "none");
+					usb_status_last_time = false;
+				}
+				diag_tune_service_option();
+				diag_create_duration_option();
+			}
+		}
+	}
+}
+function diag_change_storeUSB() {
+	diag_tune_service_option();
+	if($("input[name=dblog_service_list_all]").prop("checked")) {
+		$("input[name=dblog_service_list]").prop("checked", true);
+	}
+	diag_create_duration_option();
+}
+function diag_create_duration_option() {
+	$("select[name=dblog_duration]").empty();
+	var hour_to_sec = function(_hours) {
+		var sec = 0;
+		sec = _hours*60*60;
+		return sec;
+	};
+	var selectOption = "";
+	if(usb_support && $("input[name=dblog_tousb_cb]").prop("checked")) {
+		selectOption = { "12 <#Hour#>" : hour_to_sec(12), "1 <#Day#>" : hour_to_sec(24), "2 <#Day#>" : hour_to_sec(48), "3 <#Day#>" : hour_to_sec(72) };
+	}
+	else {
+		selectOption = { "6 <#Hour#>" : hour_to_sec(6), "12 <#Hour#>" : hour_to_sec(12), "24 <#Hour#>" : hour_to_sec(24) };
+	}
+
+	$.each(selectOption, function(item, value) {
+		$("select[name=dblog_duration]")
+			.append($("<option></option>")
+			.attr("value",value)
+			.text(item));
+	});
+}
+function diag_change_service_list_all() {
+	if($("input[name=dblog_service_list_all]").prop("checked")) {
+		$("input[name=dblog_service_list]").prop("checked", true);
+	}
+	else {
+		$("input[name=dblog_service_list]").prop("checked", false);
+	}
+}
+function diag_change_service_list() {
+	var service_list_all_option_count = $("input:checkbox[name=dblog_service_list]").length;
+	var service_list_click_option_count = $("input:checkbox[name=dblog_service_list]:checked").length;
+	if(service_list_all_option_count == service_list_click_option_count)
+		$("input[name=dblog_service_list_all]").prop("checked", true);
+	else
+		$("input[name=dblog_service_list_all]").prop("checked", false);
+}
+function diag_tune_service_option() {
+	var gen_service_option = function(_value, _text, _class) {
+		var $labelHtml = $("<label>");
+		$labelHtml.addClass("dblog_service_item");
+		$labelHtml.addClass(_class);
+
+		var $inputHtml = $('<input/>');
+		$inputHtml.attr({"type" : "checkbox"});
+		$inputHtml.attr({"name" : "dblog_service_list"});
+		$inputHtml.val(_value);
+		$inputHtml.click(function() {
+			diag_change_service_list();
+		});
+		$labelHtml.append($inputHtml);
+		$labelHtml.append(_text);
+
+		return $labelHtml;
+	};
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		if($(".dblog_service_item.AiMesh").length == 0)
+			$(".dblog_service_item.all").after(gen_service_option(8, "AiMesh", "AiMesh"));
+	}
+
+	if(usb_support) {
+		if($(".dblog_service_item.noUSB").length > 0)
+			$(".dblog_service_item.noUSB").remove();
+		if($("input[name=dblog_tousb_cb]").prop("checked")) {
+			if(media_support)
+				$(".dblog_service_item.all").after(gen_service_option(4, "<#UPnPMediaServer#>", "noUSB"));
+			if(!nodm_support)
+				$(".dblog_service_item.all").after(gen_service_option(2, "Download Master", "noUSB"));/*untranslated*/
+		}
+	}
+
+	if($(".dblog_service_item.wifi").length == 0)
+		$(".dblog_service_item.all").after(gen_service_option(1, "Wi-Fi", "wifi"));/*untranslated*/
+}
+function dblog_stop() {
+	showLoading(3);
+	document.stop_dblog_form.submit();
+}
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -392,6 +684,14 @@ function change_dsl_diag_enable(value) {
 </div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
+<form method="post" name="stop_dblog_form" class="dblog_support_class" action="/start_apply.htm" target="hidden_frame">
+<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="current_page" value="Advanced_Feedback.asp">
+<input type="hidden" name="dblog_enable" value="0">
+<input type="hidden" name="action_mode" value="apply">
+<input type="hidden" name="action_script" value="stop_dblog">
+<input type="hidden" name="action_wait" value="3">
+</form>
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="current_page" value="Advanced_Feedback.asp">
@@ -402,9 +702,13 @@ function change_dsl_diag_enable(value) {
 <input type="hidden" name="PM_attach_cfgfile" value="">
 <input type="hidden" name="PM_attach_iptables" value="">	
 <input type="hidden" name="PM_attach_modemlog" value="">
+<input type="hidden" name="PM_attach_wlanlog" value="">
 <input type="hidden" name="feedbackresponse" value="<% nvram_get("feedbackresponse"); %>">
 <input type="hidden" name="fb_experience" value="<% nvram_get("fb_experience"); %>">
 <input type="hidden" name="fb_browserInfo" value="">
+<input type="hidden" name="dblog_service" class="dblog_support_class" value="">
+<input type="hidden" name="dblog_tousb" class="dblog_support_class" value="">
+<input type="hidden" name="dblog_transid" class="dblog_support_class" value="0123456789ABCDEF">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>
@@ -461,6 +765,7 @@ function change_dsl_diag_enable(value) {
 	<input type="checkbox" class="input" name="attach_cfgfile" id="attach_cfgfile_id"><label for="attach_cfgfile_id"><#feedback_setting_file#></label>&nbsp;&nbsp;&nbsp;
 	<span id="attach_iptables_span" style="color:#FFFFFF;"><input type="checkbox" class="input" name="attach_iptables" id="attach_iptables_id"><label for="attach_iptables_id"><#feedback_iptable_setting#></label></span>
 	<span id="attach_modem_span" style="color:#FFFFFF;"><input type="checkbox" class="input" name="attach_modemlog" id="attach_modemlog_id"><label for="attach_modemlog_id"><#feedback_3G_log#></label></span>
+	<input type="checkbox" class="input" name="attach_wlanlog" id="attach_wlanlog_id"><label for="attach_wlanlog_id">Wi-Fi log<!--untranslated--></label>
 </td>
 </tr>
 
@@ -485,6 +790,45 @@ function change_dsl_diag_enable(value) {
 			<option value="43200">12 <#Hour#></option>
 			<option value="86400">24 <#Hour#></option>
 		</select>
+	</td>
+</tr>
+
+<tr class="dblog_support_class">
+	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34, 1);">Enable System Diagnostic *<!--untranslated--></a></th>
+	<td>
+		<div class="dblog_disabled_status">
+			<input type='radio' name='dblog_enable' id='dblog_status_en' value="1" onclick="diag_change_dblog_status();"><label for='dblog_status_en'><#checkbox_Yes#></label>
+			<input type='radio' name='dblog_enable' id='dblog_status_dis' value="0" onclick="diag_change_dblog_status();" checked><label for='dblog_status_dis'><#checkbox_No#></label>
+			<label class="storeUSBHint"><input type="checkbox" name="dblog_tousb_cb" value="1" onclick="diag_change_storeUSB();" checked>Store in USB disk<!--untranslated--></label>
+			<span class="noUSBHint">* No USB disk plug-in.<!--untranslated--></span>
+		</div>
+		<div class="dblog_enabled_status">
+			<span>* Diagnostic debug log capture in progress<!--untranslated--></span>
+			<br>
+			<span class="dblog_stop_text" onclick="dblog_stop();">Cancel debug capture<!--untranslated--></span>
+		</div>
+	</td>
+</tr>
+<tr class="dblog_item_tr dblog_support_class">
+	<th>Currently Capturing Logs<!--untranslated--></th>
+	<td class="dblog_item_td">
+		<div class="dblog_disabled_status">
+			<label class="dblog_service_item all"><input type="checkbox" name="dblog_service_list_all" onclick="diag_change_service_list_all();"><#All#></label>
+		</div>
+		<div class="dblog_enabled_status">
+			<span class="dblog_service_text"></span>
+		</div>
+	</td>
+</tr>
+<tr class="dblog_item_tr dblog_support_class">
+	<th>Diagnostic debug log capture duration<!--untranslated--></th>
+	<td>
+		<div class="dblog_disabled_status">
+			<select class="input_option" name="dblog_duration"></select>
+		</div>
+		<div class="dblog_enabled_status">
+			<span class="dblog_remaining_text"></span>
+		</div>
 	</td>
 </tr>
 
@@ -544,6 +888,7 @@ function change_dsl_diag_enable(value) {
 			<li><#feedback_note1#></li>
 			<li><#feedback_note2#></li>
 			<li><#feedback_note3#></li>
+			<li><#feedback_note4#></li>
 		</ul>
 	</td>
 </tr>	

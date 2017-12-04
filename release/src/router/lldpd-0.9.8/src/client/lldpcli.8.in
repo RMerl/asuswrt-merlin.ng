@@ -1,0 +1,908 @@
+.\" Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
+.\" Copyright (c) 2008 Vincent Bernat <bernat@luffy.cx>
+.\"
+.\" Permission to use, copy, modify, and/or distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate: July 16 2008 $
+.Dt LLDPCLI 8
+.Os
+.Sh NAME
+.Nm lldpcli ,
+.Nm lldpctl
+.Nd control LLDP daemon
+.Sh SYNOPSIS
+.Nm
+.Op Fl dv
+.Op Fl u Ar socket
+.Op Fl f Ar format
+.Op Fl c Ar file
+.Op Ar command ...
+.Nm lldpctl
+.Op Fl dv
+.Op Fl u Ar socket
+.Op Fl f Ar format
+.Op Ar interfaces ...
+.Sh DESCRIPTION
+The
+.Nm
+program controls
+.Xr lldpd 8
+daemon.
+.Pp
+When no command is specified,
+.Nm
+will start an interactive shell which can be used to input arbitrary
+commands as if they were specified on the command line. This
+interactive shell should provide completion and history support.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl d
+Enable more debugging information. This flag can be repeated.
+.It Fl u Ar socket
+Specify the Unix-domain socket used for communication with
+.Xr lldpd 8 .
+.It Fl v
+Show
+.Nm
+version. When repeated, show more build information.
+.It Fl f Ar format
+Choose the output format. Currently
+.Em plain ,
+.Em xml ,
+.Em json ,
+.Em json0
+and
+.Em keyvalue
+formats are available. The default is
+.Em plain .
+.Em json0
+is more verbose than
+.Em json
+but the structure of the JSON object is not affected by the number of
+interfaces or the number of neighbors. It is therefore easier to
+parse.
+.It Fl c Ar file
+Read the given configuration file. This option may be repeated several
+times. If a directory is provided, each file contained in it will be
+read  if ending by
+.Li .conf .
+Order is alphabetical.
+.El
+.Pp
+When invoked as
+.Nm lldpctl ,
+.Nm
+will display detailed information about each neighbors on the
+specified interfaces or on all interfaces if none are specified. This
+command is mostly kept for backward compatibility with older versions.
+.Pp
+The following commands are supported by
+.Nm .
+When there is no ambiguity, the keywords can be abbreviated. For
+example,
+.Cd show neighbors ports eth0 summary
+and
+.Cd sh neigh p eth0 sum
+are the same command.
+.Bd -ragged -offset XX
+.Cd exit
+.Bd -ragged -offset XXXXXX
+Quit
+.Nm .
+.Ed
+
+.Cd help Op ...
+.Bd -ragged -offset XXXXXX
+Display general help or help about a command. Also, you can get help
+using the completion or by pressing the
+.Ic ?
+key. However, completion and inline help may be unavailable if
+.Nm
+was compiled without readline support but
+.Cd help
+command is always available.
+.Ed
+
+.Cd show neighbors
+.Op ports Ar ethX Op ,...
+.Op Cd details | summary
+.Op Cd hidden
+.Bd -ragged -offset XXXXXX
+Display information about each neighbor known by
+.Xr lldpd 8
+daemon. With
+.Cd summary ,
+only a the name and the port description of each remote host will be
+displayed. On the other hand, with
+.Cd details ,
+all available information will be displayed, giving a verbose
+view. When using
+.Cd hidden ,
+also display remote ports hidden by the smart filter. When specifying
+one or several ports, the information displayed is limited to the
+given list of ports.
+.Ed
+
+.Cd show chassis
+.Op Cd details | summary
+.Bd -ragged -offset XXXXXX
+Display information about local chassis. With
+.Cd summary ,
+most details are skipped. On the other hand, with
+.Cd details ,
+all available information will be displayed, giving a verbose
+view.
+.Ed
+
+.Cd watch
+.Op ports Ar ethX Op ,...
+.Op Cd details | summary
+.Op Cd hidden
+.Op Cd limit Ar X
+.Bd -ragged -offset XXXXXX
+Watch for any neighbor changes and report them as soon as they
+happen. When specifying ports, the changes are only reported when
+happening on the given ports.
+.Cd hidden , summary
+and
+.Cd details
+have the same meaning than previously described. If
+.Cd limit
+is specificed,
+.Nm
+will exit after receiving the specified number of events.
+.Ed
+
+.Cd show configuration
+.Bd -ragged -offset XXXXXX
+Display global configuration of
+.Xr lldpd 8
+daemon.
+.Ed
+
+.Cd show statistics
+.Op ports Ar ethX Op ,...
+.Op Cd summary
+.Bd -ragged -offset XXXXXX
+Report LLDP-related statistics, like the number of LLDPDU transmitted,
+received, discarded or unrecognized. When specifying ports, only the
+statistics from the given port are reported. With
+.Cd summary
+the statistics of each port is summed.
+.Ed
+
+.Cd update
+.Bd -ragged -offset XXXXXX
+Make
+.Xr lldpd 8
+update its information and send new LLDP PDU on all interfaces.
+.Ed
+
+.Cd configure
+.Cd system hostname Ar name
+.Bd -ragged -offset XXXXXX
+Override system hostname with the provided value. By default, the
+system name is the FQDN found from the resolved value of
+.Ic uname -n .
+As a special value, use "." (dot) to use the short hostname instead of
+a FQDN.
+.Ed
+
+.Cd unconfigure
+.Cd system hostname
+.Bd -ragged -offset XXXXXX
+Do not override system hostname and restore the use of the node name.
+.Ed
+
+.Cd configure
+.Cd system description Ar description
+.Bd -ragged -offset XXXXXX
+Override chassis description with the provided value instead of using
+kernel name, node name, kernel version, build date and architecture.
+.Ed
+
+.Cd unconfigure
+.Cd system description
+.Bd -ragged -offset XXXXXX
+Do not override chassis description and use a value computed from node
+name, kernel name, kernel version, build date and architecture instead.
+.Ed
+
+.Cd configure
+.Cd system platform Ar description
+.Bd -ragged -offset XXXXXX
+Override platform description with the provided value instead of using
+kernel name. This value is currently only used for CDP.
+.Ed
+
+.Cd unconfigure
+.Cd system platform
+.Bd -ragged -offset XXXXXX
+Do not override platform description and use the kernel name. This
+option undoes the previous one.
+.Ed
+
+.Cd configure
+.Cd system interface pattern Ar pattern
+.Bd -ragged -offset XXXXXX
+Specify which interface to listen and send LLDPDU to. Without this
+option,
+.Nm lldpd
+will use all available physical interfaces. This option can use
+wildcards. Several interfaces can be specified separated by commas.
+It is also possible to blacklist an interface by suffixing it with an
+exclamation mark. It is possible to whitelist an interface by
+suffixing it with two exclamation marks. A whitelisted interface beats
+a blacklisted interfaces which beats a simple matched interface. For
+example, with
+.Em eth*,!eth1,!eth2
+.Nm lldpd
+will only use interfaces starting by
+.Em eth
+with the exception of
+.Em eth1
+and
+.Em eth2 .
+While with
+.Em *,!eth*,!!eth1
+.Nm
+will use all interfaces, except interfaces starting by
+.Em eth
+with the exception of
+.Em eth1 .
+When an exact match is found, it will circumvent some tests. For example, if
+.Em eth0.12
+is specified, it will be accepted even if this is a VLAN interface.
+.Ed
+
+.Cd unconfigure
+.Cd system interface pattern
+.Bd -ragged -offset XXXXXX
+Remove any previously configured interface pattern and use all
+physical interafces. This option undoes the previous one.
+.Ed
+
+.Cd configure
+.Cd system interface description
+.Bd -ragged -offset XXXXXX
+Some OS allows the user to set a description for an interface. Setting
+this option will enable
+.Nm lldpd
+to override this description with the name of the peer neighbor if one
+is found or with the number of neighbors found.
+.Ed
+
+.Cd unconfigure
+.Cd system interface description
+.Bd -ragged -offset XXXXXX
+Do not update interface description with the name of the peer
+neighbor. This option undoes the previous one.
+.Ed
+
+.Cd configure
+.Cd system interface promiscuous
+.Bd -ragged -offset XXXXXX
+Enable promiscuous mode on managed interfaces.
+.Pp
+When the interface is not managed any more (or when quitting
+.Nm lldpd ) ,
+the interface is left in promiscuous mode as it is difficult to know
+if someone else also put the interface in promiscuous mode.
+.Pp
+This option is known to be useful when the remote switch is a Cisco
+2960 and the local network card features VLAN hardware
+acceleration. In this case, you may not receive LLDP frames from the
+remote switch. The most plausible explanation for this is the frame is
+tagged with some VLAN (usually VLAN 1) and your network card is
+filtering VLAN. This is not the only available solution to work-around
+this problem. If you are concerned about performance issues, you can
+also tag the VLAN 1 on each interface instead.
+.Pp
+Currently, this option has no effect on anything else than Linux. On
+other OS, either disable VLAN acceleration, tag VLAN 1 or enable
+promiscuous mode manually on the interface.
+.Ed
+
+.Cd unconfigure
+.Cd system interface promiscuous
+.Bd -ragged -offset XXXXXX
+Do not set promiscuous mode on managed interfaces. This option does
+not disable promiscuous mode on interfaces already using this mode.
+.Ed
+
+.Cd configure
+.Cd system ip management pattern Ar pattern
+.Bd -ragged -offset XXXXXX
+Specify the management addresses of this system. As for interfaces
+(described above), this option can use wildcards and inversions.
+Without this option, the first IPv4 and the first IPv6 are used. If an
+exact IP address is provided, it is used as a management address
+without any check. If only negative patterns are provided, only one
+IPv4 and one IPv6 addresses are chosen. Otherwise, many of them can be
+selected. If you want to blacklist IPv6 addresses, you can use
+.Em !*:* .
+.Ed
+
+.Cd unconfigure
+.Cd system ip management pattern
+.Bd -ragged -offset XXXXXX
+Unset any specific pattern for matching management addresses. This
+option undoes the previous one.
+.Ed
+
+.Cd configure
+.Cd system bond-slave-src-mac-type Ar value
+.Bd -ragged -offset XXXXXX
+Set the type of src mac in lldp frames sent on bond slaves
+
+Valid types are:
+.Bl -tag -width "XXX." -compact -offset XX
+.It Sy real
+Slave real mac
+.It Sy zero
+All zero mac
+.It Sy fixed
+An arbitrary fixed value
+.Li ( 00:60:08:69:97:ef )
+.It Sy local
+Real mac with locally administered bit set. If the real mac already
+has the locally administered bit set, fallback to the fixed value.
+.El
+.Pp
+Default value for
+.Nm bond-slave-src-mac-type
+is
+.Nm local .
+Some switches may complain when using one of the two other possible
+values (either because
+.Li 00:00:00:00:00:00
+is not a valid MAC or because the MAC address is flapping from one
+port to another). Using
+.Sy local
+might lead to a duplicate MAC address on the network (but this is
+quite unlikely).
+.Ed
+
+.Cd configure
+.Cd lldp agent-type
+.Cd nearest-bridge | nearest-non-tpmr-bridge | nearest-customer-bridge
+.Bd -ragged -offset XXXXXX
+The destination MAC address used to send LLDPDU allows an agent to
+control the propagation of LLDPDUs. By default, the
+.Li 01:80:c2:00:00:0e
+MAC address is used and limit the propagation of the LLDPDU to the
+nearest bridge
+.Cd ( nearest-bridge ) .
+To instruct
+.Nm lldpd
+to use the
+.Li 01:80:c2:00:00:03
+MAC address instead, use
+.Cd nearest-nontpmr-bridge
+instead.
+To use the
+.Li 01:80:c2:00:00:00
+MAC address instead, use
+.Cd nearest-customer-bridge
+instead.
+.Ed
+
+.Cd configure
+.Cd lldp portidsubtype
+.Cd ifname | macaddress
+.Pp
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd lldp portidsubtype
+.Cd local Ar value Op Cd description Ar description
+.Bd -ragged -offset XXXXXX
+Force port ID subtype. By default,
+.Nm lldpd
+will use the MAC address as port identifier and the interface name as
+port description, unless the interface has an alias. In this case, the
+interface name will be used as port identifier and the description
+will be the interface alias. With this command, you can force the port
+identifier to be the interface name (with
+.Cd ifname ) ,
+the MAC address (with
+.Cd macaddress )
+or a local value (with
+.Cd value ) .
+In the latest case, the local value should be provided.
+Optionally, a port description can also be provided after the local
+value.
+.Ed
+
+.Cd configure
+.Cd lldp tx-interval Ar interval
+.Bd -ragged -offset XXXXXX
+Change transmit delay to the specified value in seconds. The transmit
+delay is the delay between two transmissions of LLDP PDU. The default
+value is 30 seconds.
+.Ed
+
+.Cd configure
+.Cd lldp tx-hold Ar hold
+.Bd -ragged -offset XXXXXX
+Change transmit hold value to the specified value. This value is used
+to compute the TTL of transmitted packets which is the product of this
+value and of the transmit delay. The default value is 4 and therefore
+the default TTL is 120 seconds.
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd lldp
+.Cd status Ar rx-and-tx | rx-only | tx-only | disabled
+.Bd -ragged -offset XXXXXX
+Configure the administrative status of the given port. By default, all
+ports are configured to be in
+.Ar rx-and-tx
+mode. This means they can receive and transmit LLDP frames (as well as
+other protocols if needed). In
+.Ar rx-only
+mode, they won't emit any frames and in
+.Ar tx-only
+mode, they won't receive any frames. In
+.Ar disabled
+mode, no frame will be sent and any incoming frame will be
+discarded. This settings do not override the operational mode of the
+main daemon. If it is configured in receive-only mode (with the
+.Fl r
+flag), setting any transmit mode won't have any effect.
+.Ed
+
+.Cd configure
+.Cd lldp custom-tlv
+.Op Cd add | replace
+.Cd oui Ar oui
+.Cd subtype Ar subtype
+.Op Cd oui-info Ar content
+.Bd -ragged -offset XXXXXX
+Emit a custom TLV for OUI
+.Ar oui ,
+with subtype
+.Ar subtype
+and optionally with the bytes specified in
+.Ar content .
+Both
+.Ar oui
+and
+.Ar content
+should be a comma-separated list of bytes in hex format.
+.Ar oui
+must be exactly 3-byte long.
+If
+.Ar add
+is specified then the TLV will be added. This is the default action.
+If
+.Ar replace
+is specified then all TLVs with the same
+.Ar oui
+and
+.Ar subtype
+will be replaced.
+
+.Ed
+
+.Cd unconfigure
+.Cd lldp custom-tlv
+.Op Cd oui Ar oui
+.Op Cd subtype Ar subtype
+.Bd -ragged -offset XXXXXX
+When no oui is specified, remove all previously configured custom TLV.
+When OUI
+.Ar oui
+and subtype
+.Ar subtype
+is specified, remove specific instances of custom TLV.
+.Ed
+
+.Cd configure med fast-start
+.Cd enable | tx-interval Ar interval
+.Bd -ragged -offset XXXXXX
+Configure LLDP-MED fast start mechanism. When a new LLDP-MED-enabled
+neighbor is detected, fast start allows
+.Nm lldpd
+to shorten the interval between two LLDPDU.
+.Cd enable
+should enable LLDP-MED fast start while
+.Cd tx-interval
+specifies the interval between two LLDPDU in seconds. The default
+interval is 1 second. Once 4 LLDPDU have been sent, the fast start
+mechanism is disabled until a new neighbor is detected.
+.Ed
+
+.Cd unconfigure med fast-start
+.Bd -ragged -offset XXXXXX
+Disable LLDP-MED fast start mechanism.
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd med location coordinate
+.Cd latitude Ar latitude
+.Cd longitude Ar longitude
+.Cd altitude Ar altitude Ar unit
+.Cd datum Ar datum
+.Bd -ragged -offset XXXXXX
+Advertise a coordinate based location on the given ports (or on all
+ports if no port is specified). The format of
+.Ar latitude
+is a decimal floating point number followed either by
+.Em N
+or
+.Em S .
+The format of
+.Ar longitude
+is a decimal floating point number followed either by 
+.Em E
+or
+.Em W .
+.Ar altitude
+is a decimal floating point number followed either by
+.Em m
+when expressed in meters or
+.Em f
+when expressed in floors. A space is expected between the floating
+point number and the unit.
+.Ar datum
+is one of those values:
+.Bl -bullet -compact -offset XXXXXXXX
+.It
+WGS84
+.It
+NAD83
+.It
+NAD83/MLLW
+.El
+.Pp
+A valid use of this command is:
+.D1 configure ports eth0 med location coordinate latitude 48.85667N longitude 2.2014E altitude 117.47 m datum WGS84
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd med location address
+.Cd country Ar country
+.Cd Op Ar type value Op ...
+.Bd -ragged -offset XXXXXX
+Advertise a civic address on the given ports (or on all ports if no
+port is specified).
+.Ar country
+is the two-letter code representing the country. The remaining
+arguments should be paired to form the address. The first member of
+each pair indicates the type of the second member which is a free-form
+text. Here is the list of valid types:
+.Bl -bullet -compact -offset XXXXXXXX
+.It
+language
+.It
+country-subdivision
+.It
+county
+.It
+city
+.It
+city-division
+.It
+block
+.It
+street
+.It
+direction
+.It
+trailing-street-suffix
+.It
+street-suffix
+.It
+number
+.It
+number-suffix
+.It
+landmark
+.It
+additional
+.It
+name
+.It
+zip
+.It
+building
+.It
+unit
+.It
+floor
+.It
+room
+.It
+place-type
+.It
+script
+.El
+.Pp
+A valid use of this command is:
+.D1 configure ports eth1 med location address country US street Qo Commercial Road Qc city Qo Roseville Qc
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd med location elin
+.Ar number
+.Bd -ragged -offset XXXXXX
+Advertise the availability of an ELIN number. This is used for setting
+up emergency call. If the provided number is too small, it will be
+padded with 0. Here is an example of use:
+.D1 configure ports eth2 med location elin 911
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd med policy
+.Cd application Ar application
+.Op Cd unknown
+.Op Cd tagged
+.Op Cd vlan Ar vlan
+.Op Cd priority Ar priority
+.Op Cd dscp Ar dscp
+.Bd -ragged -offset XXXXXX
+Advertise a specific network policy for the given ports (or for all
+ports if no port was provided). Only the application type is
+mandatory.
+.Ar application
+should be one of the following values:
+.Bl -bullet -compact -offset XXXXXXXX
+.It
+voice
+.It
+voice-signaling
+.It
+guest-voice
+.It
+guest-voice-signaling
+.It
+softphone-voice
+.It
+video-conferencing
+.It
+streaming-video
+.It
+video-signaling
+.El
+.Pp
+The
+.Cd unknown
+flag tells that the network policy for the specified application type
+is required by the device but is currently unknown. This is used by
+Endpoint Devices, not by Network Connectivity Devices. If not
+specified, the network policy for the given application type is
+defined.
+.Pp
+When a VLAN is specified with
+.Ar vlan
+tells which 802.1q VLAN ID has to be advertised for the network
+policy. A valid value is between 1 and 4094.
+.Cd tagged
+tells the VLAN should be tagged for the specified application type.
+.Pp
+.Ar priority
+allows one to specify IEEE 802.1d / IEEE 802.1p Layer 2 Priority, also
+known as Class of Service (CoS), to be used for the specified
+application type. This field is usually ignored if no VLAN is
+specified. The names match 802.1D-2004 standard (table G-2). Some more
+recent standards may use different labels. Only the numeric values
+should be relied upon. The accepted labels are:
+.Bl -tag -width "X." -compact -offset XXXX
+.It Sy 1
+background
+.It Sy 0
+best-effort
+.It Sy 2
+excellent-effort
+.It Sy 3
+critical-applications
+.It Sy 4
+video
+.It Sy 5
+voice
+.It Sy 6
+internetwork-control
+.It Sy 7
+network-control
+.El
+.Pp
+.Ar dscp
+represents the DSCP value to be advertised for the given network
+policy.  DiffServ/Differentiated Services Code Point (DSCP) value as
+defined in IETF RFC 2474 for the specified application type. Value: 0
+(default per RFC 2475) through 63. Note: The class selector DSCP
+values are backwards compatible for devices that only support the old
+IP precedence Type of Service (ToS) format. (See the RFCs for what
+these values mean)
+.Pp
+A valid use of this command is:
+.D1 configure med policy application voice vlan 500 priority voice dscp 46
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd med power pse | pd
+.Cd source Ar source
+.Cd priority Ar priority
+.Cd value Ar value
+.Bd -ragged -offset XXXXXX
+Advertise the LLDP-MED POE-MDI TLV for the given ports or for all
+interfaces if no port is provided.  One can act as a PD (power
+consumer) or a PSE (power provider). No check is done on the validity
+of the parameters while LLDP-MED requires some restrictions:
+.Bl -bullet
+.It
+PD shall never request more power than physical 802.3af class.
+.It
+PD shall never draw more than the maximum power advertised by PSE.
+.It
+PSE shall not reduce power allocated to PD when this power is in use.
+.It
+PSE may request reduced power using conservation mode
+.It
+Being PSE or PD is a global parameter, not a per-port parameter.
+.Nm
+does not enforce this: a port can be set as PD or PSE. LLDP-MED also
+requires for a PSE to only have one power source (primary or
+backup). Again,
+.Nm
+does not enforce this. Each port can have its own power source. The
+same applies for PD and power priority. LLDP-MED MIB does not allow
+this kind of representation.
+.El
+.Pp
+Valid types are:
+.Bl -tag -width "XXX." -compact -offset XX
+.It Sy pse
+Power Sourcing Entity (power provider)
+.It Sy pd
+Power Device (power consumer)
+.El
+.Pp
+Valid sources are:
+.Bl -tag -width "XXXXXXX" -compact -offset XX
+.It Sy unknown
+Unknown
+.It Sy primary
+For PSE, the power source is the primary power source.
+.It Sy backup
+For PSE, the power source is the backup power source or a power
+conservation mode is asked (the PSE may be running on UPS for
+example).
+.It Sy pse
+For PD, the power source is the PSE.
+.It Sy local
+For PD, the power source is a local source.
+.It Sy both
+For PD, the power source is both the PSE and a local source.
+.El
+.Pp
+Valid priorities are:
+.Bl -tag -width "XXXXXXXXX" -compact -offset XX
+.It Sy unknown
+Unknown priority
+.It Sy critical
+Critical
+.It Sy high
+High
+.It Sy low
+Low
+.El
+.Pp
+.Ar value
+should be the total power in milliwatts required by the PD device or
+available by the PSE device.
+.Pp
+Here is an example of use:
+.D1 configure med power pd source pse priority high value 5000
+.Ed
+
+.Cd configure
+.Op ports Ar ethX Op ,...
+.Cd dot3 power pse | pd
+.Op Cd supported
+.Op Cd enabled
+.Op Cd paircontrol
+.Cd powerpairs Ar powerpairs
+.Op Cd class Ar class
+.Op Cd type Ar type Cd source Ar source Cd priority Ar priority Cd requested Ar requested Cd allocated Ar allocated
+.Bd -ragged -offset XXXXXX
+Advertise Dot3 POE-MDI TLV for the given port or for all ports if none
+was provided. One can act as a PD (power consumer) or a PSE (power
+provider). This configuration is distinct of the configuration of the
+transmission of the LLDP-MED POE-MDI TLV but the user should ensure
+the coherency of those two configurations if they are used together.
+.Pp
+.Ar supported
+means that MDI power is supported on the given port while
+.Ar enabled
+means that MDI power is enabled.
+.Ar paircontrol
+is used to indicate if pair selection can be controlled. Valid values
+forr
+.Ar powerpairs
+are:
+.Bl -tag -width "XXXXXX" -compact -offset XX
+.It Sy signal
+The signal pairs only are in use.
+.It Sy spare
+The spare pairs only are in use.
+.El
+.Pp
+When specified,
+.Ar class
+is a number between 0 and 4.
+.Pp
+The remaining parameters are in conformance with 802.3at and are optional.
+.Ar type
+should be either 1 or 2, indicating which if the device conforms to
+802.3at type 1 or 802.3at type 2. Values of
+.Ar source
+and
+.Ar priority
+are the same as for LLDP-MED POE-MDI TLV.
+.Ar requested
+and
+.Ar allocated
+are expressed in milliwats.
+.Pp
+Here are two valid uses of this command:
+.D1 configure ports eth3 dot3 power pse supported enabled paircontrol powerpairs spare class class-3
+.D1 configure dot3 power pd supported enabled powerpairs spare class class-3 type 1 source pse priority low requested 10000 allocated 15000
+.Ed
+
+.Cd pause
+.Bd -ragged -offset XXXXXX
+Pause
+.Nm lldpd
+operations.
+.Nm lldpd
+will not send any more frames or receive ones. This can be undone with
+.Cd resume
+command.
+.Ed
+
+.Cd resume
+.Bd -ragged -offset XXXXXX
+Resume
+.Nm lldpd
+operations.
+.Nm lldpd
+will start to send and receive frames. This command is issued
+internally after processing configuration but can be used at any time
+if a manual
+.Cd pause
+command is issued.
+.Ed
+
+.Ed
+.Sh FILES
+.Bl -tag -width "@LLDPD_CTL_SOCKET@XX" -compact
+.It @LLDPD_CTL_SOCKET@
+Unix-domain socket used for communication with
+.Xr lldpd 8 .
+.El
+.Sh SEE ALSO
+.Xr lldpd 8
+.Sh AUTHORS
+.An -nosplit
+The
+.Nm
+program was written by
+.An Vincent Bernat Aq bernat@luffy.cx .

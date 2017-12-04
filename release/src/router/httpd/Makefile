@@ -151,6 +151,10 @@ LIBS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 ifeq ($(RTCONFIG_USB),y)
 CFLAGS += -I$(TOP)/libdisk	
 LIBS += -L$(TOP)/libdisk -ldisk
@@ -216,6 +220,10 @@ CFLAGS  += -DASUSWRT_SDK
 LIBS += -L$(TOP)/nt_center/lib/ -lnt
 LIBS += -L$(TOP)/sqlite/.libs -lsqlite3
 LIBS += -lpthread #Depend on sqlite
+endif
+
+ifeq ($(RTCONFIG_AIHOME_TUNNEL),y)
+CFLAGS  += -I$(TOP)/aaews
 endif
 
 ifeq ($(RTCONFIG_LETSENCRYPT),y)

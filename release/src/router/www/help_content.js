@@ -171,8 +171,7 @@ helpcontent[11] = new Array("",
 							"<#LANHostConfig_x_TimeZone_DSTEnd_desc#>",
 							"For destination IP address, you can:<br/>(a) enter a specific IP address, such as \"192.168.1.2\"<br/>(b) enter IP addresses within one subnet or within the same IP pool, such as \"192.168.1.0/24\"",	/* untranslated */
 							"This feature allows you to restrict only specified IP address could access the wireless router via \"Web UI\" / \"SSH\" / \"Telnet\" from WAN(if Enabled) or LAN side(Telnet LAN only).",		/* untranslated */
-							"USB hard disks will hibernate after being inactive for the configured time period."		/* untranslated */
-		);
+							"<#usb_HDD_Hibernation_Desc#>");
 //Log
 helpcontent[12] = new Array("",
 							"<#General_x_SystemUpTime_itemdesc#>",
@@ -372,6 +371,11 @@ helpcontent[33] = new Array("",
 							"<#vpn_ipsec_Key_Retries_Hint#>"
 							);
 
+
+//Feedback
+helpcontent[34] = new Array("",
+							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the “Diagnostic debug log capture duration” option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture."/*untranslated*/
+							);
 
 helpcontent[50] = new Array("",
 				"<#IPConnection_LocalIP_itemdesc#> or fixed Interface (Device) ID starting with ::<br/>A fixed Interface ID is commonly an EUI-64 address.",

@@ -224,13 +224,13 @@ typedef struct _SITE_SURVEY_RT3352_iNIC
 	char newline;
 } SITE_SURVEY_RT3352_iNIC;
 
-typedef struct _SITE_SURVEY 
-{ 
+typedef struct _SITE_SURVEY
+{
 	char channel[4];
 //	unsigned char channel;
 //	unsigned char centralchannel;
 //	unsigned char unused;
-	unsigned char ssid[33]; 
+	unsigned char ssid[33];
 	char bssid[18];
 	char encryption[9];
 	char authmode[16];
@@ -245,18 +245,18 @@ typedef struct _SITE_SURVEY
 } SITE_SURVEY;
 
 typedef struct _SITE_SURVEY_ARRAY
-{ 
+{
 	SITE_SURVEY SiteSurvey[64];
 } SSA;
 
 #define SITE_SURVEY_APS_MAX	(16*1024)
 
-//#if WIRELESS_EXT <= 11 
-//#ifndef SIOCDEVPRIVATE 
-//#define SIOCDEVPRIVATE 0x8BE0 
-//#endif 
-//#define SIOCIWFIRSTPRIV SIOCDEVPRIVATE 
-//#endif 
+//#if WIRELESS_EXT <= 11
+//#ifndef SIOCDEVPRIVATE
+//#define SIOCDEVPRIVATE 0x8BE0
+//#endif
+//#define SIOCIWFIRSTPRIV SIOCDEVPRIVATE
+//#endif
 //
 //SET/GET CONVENTION :
 // * ------------------
@@ -301,6 +301,12 @@ enum ASUS_IOCTL_SUBCMD {
 	ASUS_SUBCMD_GETSKUTABLE,
     ASUS_SUBCMD_GETSKUTABLE_TXBF,
 	ASUS_SUBCMD_CLIQ,
+    ASUS_SUBCMD_CLRSSI,    
+#ifdef RTCONFIG_ADV_RAST
+    ASUS_SUBCMD_GMONITOR_RSSI,
+    ASUS_SUBCMD_MACMODE,
+    ASUS_SUBCMD_MACLIST,
+#endif
 	ASUS_SUBCMD_MAX
 };
 

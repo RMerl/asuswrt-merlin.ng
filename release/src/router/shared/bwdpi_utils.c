@@ -79,9 +79,6 @@ int check_bwdpi_nvram_setting()
 void disable_dpi_engine_setting(void)
 {
 	nvram_set_int("wrs_protect_enable", 0);
-	nvram_set_int("wrs_mals_enable", 0);
-	nvram_set_int("wrs_cc_enable", 0);
-	nvram_set_int("wrs_vp_enable", 0);
 	nvram_set_int("wrs_enable", 0);
 	nvram_set_int("wrs_app_enable", 0);
 	nvram_set_int("bwdpi_db_enable", 0);
@@ -91,6 +88,8 @@ void disable_dpi_engine_setting(void)
 	// only for adaptive qos
 	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 1)
 		nvram_set_int("qos_enable", 0);
+
+	nvram_commit();
 }
 #endif
 

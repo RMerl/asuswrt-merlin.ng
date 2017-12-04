@@ -168,15 +168,11 @@
 25521,PEOPLEnet,#777,,000000,,PEOPLEnet
 25523,CDMA Ukraine,#777,,,,CDMA Ukraine
 26001,Plus,*99#,,,internet,Plus
-26002,T-Mobile,*99***1#,erainternet,erainternet,erainternet,Era Internet postpaid
-26002,T-Mobile,*99***1#,erainternet,erainternet,erainternettt,Era Internet prepaid
-26002,T-Mobile,*99***1#,,,erawap,Era HTTP postpaid
-26002,T-Mobile,*99***1#,,,erawaptt,Era HTTP prepaid
-26003,Orange,*99#,internet,internet,internet,Orange Internet
-26003,Orange,*99#,wap,wap,wap,Orange HTTP
+26002,T-Mobile,*99***1#,,,erainternet,T-Mobile
+26003,Orange,*99#,,,internet,Orange
 26006,Play,*99#,,,internet,P4 Internet
 26006,Play,*99#,,,wap,P4 Data HTTP
-26012,Cyfrowy Polsat,*99***1#,,,multi.internet,Cyfrowy Polsat
+26012,Cyfrowy Polsat,*99***1#,,,plus,Cyfrowy Polsat
 26017,Aero2,*99#,,,darmowy,Aero2
 26201,DE T-D1 GPRS,,t-mobile,tm,internet.telekom,T-Mobile Internet (4G)
 26201,DE T-D1 GPRS,,t-mobile,tm,internet.t-mobile,T-Mobile Internet
@@ -802,17 +798,9 @@
 50216,DiGi,*99#,digi,digi,digiwap,Digi HTTP
 50218,U Mobile,*99#,,,my3g,U Mobile Internet
 50219,Celcom,*99***1#,,,celcom,Celcom HTTP prepaid
-505001,Telstra Internet,*99#,,,telstra.internet,Telstra Internet
-505002,Optus Internet,*99#,,,yesinternet,Optus Internet
-505002,Optus Streaming,*99#,,,wap.optus.net.au,Optus Streaming
-505002,Optus Zoo,*99#,,,wap.optus.net.au,Optus Zoo
-50501,Telstra,*99#,,,telstra.internet,Telstra Internet
-50501,Telstra,*99#,,,telstra.internet,Telstra Internet
-50501,Telstra,*99#,,,telstra.wap,Telstra Internet
-50502,Optus,*99#,,,wap.optus.net.au,Optus Streaming
-50502,Optus,*99#,,,wap.optus.net.au,Optus Zoo
-50502,Optus,*99#,,,yesinternet,Optus Internet
-50503,Vodafone,*99#,,,vfprepaymbb,Vodafone
+50501,Telstra Internet,*99#,,,telstra.internet,Telstra Internet
+50502,Optus Streaming,*99#,,,yesinternet,Optus Streaming
+50503,Vodafone,*99#,,,live.vodafone.com,Vodafone
 50506,3,*99***1#,,,3netaccess,Mobile Internet
 50506,3,*99***1#,,,3services,3 Services
 50506,3,*99***1#,,,3services,3 Streaming

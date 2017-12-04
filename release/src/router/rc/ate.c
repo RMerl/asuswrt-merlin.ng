@@ -84,6 +84,23 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		}
 		break;
 #endif
+#if defined(RT4GAC53U)
+	case MODEL_RT4GAC53U:
+		{
+			static enum led_id blue_led[] = {
+				LED_POWER, LED_2G, LED_5G, LED_LAN, LED_USB,
+				LED_SIG1, LED_SIG2, LED_SIG3, LED_SIG4,
+				LED_ID_MAX
+			};
+			static enum led_id red_led[] = {
+				LED_LTE_OFF, LED_POWER_RED,
+				LED_ID_MAX
+			};
+			all_led[LED_COLOR_BLUE] = blue_led;
+			all_led[LED_COLOR_RED] = red_led;
+		}
+		break;
+#endif
 #if defined(RTAC82U)
 	case MODEL_RTAC82U:
 		{
@@ -125,6 +142,27 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			all_led[LED_COLOR_WHITE] = white_led;
 			all_led[LED_COLOR_RED] = red_led;
 			rtk_switch_led_color = LED_COLOR_WHITE;
+		}
+		break;
+#endif
+#if defined(MAPAC1750)
+	case MODEL_MAPAC1750:
+		{
+			static enum led_id blue_led[] = {
+				LED_BLUE,
+				LED_ID_MAX
+			};
+			static enum led_id green_led[] = {
+				LED_GREEN,
+				LED_ID_MAX
+			};
+			static enum led_id red_led[] = {
+				LED_RED,
+				LED_ID_MAX
+			};
+			all_led[LED_COLOR_BLUE] = blue_led;
+			all_led[LED_COLOR_GREEN] = green_led;
+			all_led[LED_COLOR_RED] = red_led;
 		}
 		break;
 #endif
@@ -642,7 +680,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		puts("1");
 		return 0;
 #else
-		return 0;
+		return setAllSpecificColorLedOn(LED_COLOR_GREEN);
 #endif
 	}
 #ifdef RTCONFIG_BCMARM
@@ -1150,7 +1188,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		puts(nvram_safe_get("btn_rst"));
 		return 0;
 	}
-	else if (!strcmp(command, "Get_WpsButtonStatus")) {
+	else if (!strcmp(command, "Get_WpsButtonStatus") || !strcmp(command, "Get_PairingButtonStatus")) {
 		puts(nvram_safe_get("btn_ez"));
 		return 0;
 	}
@@ -1530,7 +1568,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 #ifdef RTCONFIG_QCA
 #if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
-#if 0
+#ifdef RTCONFIG_ART2_BUILDIN
 	else if (!strcmp(command, "Set_ART2")) {
 		Set_ART2();
 		return 0;
@@ -1544,12 +1582,15 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		Get_CalCompare();
 		return 0;
 	}
-#elif defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
+#endif
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_PCIE_QCA9880) || defined(RTCONFIG_PCIE_QCA9882) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
 	else if (!strcmp(command, "Set_Qcmbr")) {
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
 		nvram_set_int("restwifi_qis", 1);
 #endif
+#if !defined(RPAC66)
 		Set_Qcmbr(value);
+#endif
 		return 0;
 	}
 #endif
@@ -1564,7 +1605,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return 0;
 	}
 #endif
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VRZAC1300) /* for Lyra */
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) /* for Lyra */
 	else if (!strcmp(command, "Set_DisableWifiDrv")) {
 		if (setDisableWifiDrv(value))
 		{
@@ -2002,14 +2043,15 @@ int ate_dev_status(void)
 #ifndef RTCONFIG_ALPINE
 #ifdef RTCONFIG_BT_CONN
 	{
+#define RETRY_MAX 100
 		int retry;
-		for(retry = 60; retry > 0; retry--){
+		for(retry = 0; retry < RETRY_MAX; retry++){
 			extern int check_bluetooth_device(const char *bt_dev);
 			if(check_bluetooth_device("hci0") == 0)
 				break;
 			sleep(1);
 		}
-		if(retry > 0)
+		if(retry < RETRY_MAX)
 		{
 			result = 'O';
 		}

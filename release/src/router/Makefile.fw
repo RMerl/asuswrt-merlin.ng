@@ -41,6 +41,9 @@ ifeq ($(RTCONFIG_FLATLAS),y)
 	WLCX			:= "-wlcx"
 endif
 endif
+ifeq ($(RTCONFIG_FBT),y)
+	FBT			:= "-fbt"
+endif
 
 # 43602a1-roml target
 FW_43602a1_SRCBASE		:= $(abspath $(SRCBASE)/../43602/src)
@@ -85,7 +88,7 @@ ifeq ($(WLTEST),1)
         #FW_4366c0_TARGET := config_pcie_wltest
 else
 ifeq ($(HND_ROUTER),y)
-	FW_4366c0_TARGET       := pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs$(WLCX)-stamon-hostpmac-murx-splitassoc-hostmemucode-dyn160-dhdhdr
+	FW_4366c0_TARGET       := pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs$(WLCX)-stamon-hostpmac-murx-splitassoc-hostmemucode-dyn160-dhdhdr$(FBT)
 else
     FW_4366c0_TARGET       := pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs$(WLCX)-stamon-hostpmac-murx-splitassoc-hostmemucode-dyn160-txpwr-stamon
         #FW_4366c0_TARGET := config_pcie_external

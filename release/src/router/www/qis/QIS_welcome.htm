@@ -201,6 +201,10 @@ function QKinternettype_load_body(){
 	else{
 		document.getElementById("QISmain").style.display = "";
 	}
+
+	var amesh_found_cap = '<% nvram_get("amesh_found_cap"); %>';
+	if(amesh_found_cap == "1" && parent.amesh_support)
+		document.getElementById("amesh_hint").style.display = "";
 }
 
 function redirect_page(redirect_flag){
@@ -595,6 +599,9 @@ function disable_button(){
 					</div>
 					<div style="height:30px;display:none">
 						<input id="upload_setting_profile" type="file" name="file" class="input" style="color:#FFCC00;" onchange="uploadSetting();">
+					</div>
+					<div id="amesh_hint" style="padding-left:20px;margin-top:10px;color:#FC0;display:none;">
+						<span>There are AiMesh Master Router available nearby, if you want adding this router to your Amesh system, please connecting to Master Router setting.</span>
 					</div>
 				</div>
 			</td>

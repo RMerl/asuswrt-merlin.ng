@@ -38,6 +38,10 @@ CFLAGS  += -DASUSWRT_SDK
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -lpthread -L$(TOP)/nt_center/lib -lnt -lm
 LDFLAGS += -L$(TOP)/wlc_nt -lwlc_nt_client
+else
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
 endif
 
 ifeq ($(RTCONFIG_CFGSYNC),y)

@@ -1062,9 +1062,9 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 		  {
 		    preferred_time = valid_time = 0;
 		    message = _("address invalid");
-		  }
+		  } 
 
-		if (message)
+		if (message && (message != state->hostname))
 		  log6_packet(state, "DHCPREPLY", req_addr, message);	
 		else
 		  log6_quiet(state, "DHCPREPLY", req_addr, message);

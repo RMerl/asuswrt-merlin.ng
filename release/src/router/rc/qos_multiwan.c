@@ -1272,7 +1272,7 @@ static int start_tqos(void)
 				fprintf(f,
 					"# ingress %d: %u%%\n", i, rate);
 				fprintf(f,"\t$TFA parent ffff: prio %d protocol ip handle %d "
-					  "fw police rate %ukbit burst %ukbit drop flowid ffff:%d\n", , x, x, u, v, x);
+					  "fw police rate %ukbit burst %ukbit drop flowid ffff:%d\n", x, x, u, v, x);
 #endif
 			}
 			free(buf);

@@ -41,7 +41,7 @@ function initial(){
 	var usb_ntfs_mod = '<% nvram_get("usb_ntfs_mod"); %>';
 	var usb_hfs_mod = '<% nvram_get("usb_hfs_mod"); %>';
 
-	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["Format", "disk_format.asp"]};
+	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["<#CTL_format#>", "disk_format.asp"]};
 	if(!parent.diskUtility_support) {
 		delete disk_list_array.health;
 		delete disk_list_array.format;
@@ -331,9 +331,7 @@ function showLoadingUpdate(){
 		<div id="scan_status_field" style="margin-top:10px;margin-left:10px;">
 			<table>
 				<tr>
-					<td>
-						Click [Format] to format your hard drive.
-					</td>
+					<td><#format_desc#></td>
 				</tr>
 			</table>	
 		</div>
@@ -348,7 +346,7 @@ function showLoadingUpdate(){
 		</div>
 		<img style="margin-top:5px;margin-left:9px; *margin-top:-10px; width:283px;" src="/images/New_ui/networkmap/linetwo2.png">
 		<div style="padding:7px;">
-			<div class="formfonttitle_nwm">Disk label:</div>
+			<div class="formfonttitle_nwm"><#DiskLabel#> :</div>
 			<div>
 				<input type="text" maxlength="32" class="input_25_table" name="disk_name" value="" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 			</div>
@@ -356,7 +354,7 @@ function showLoadingUpdate(){
 		</div>
 		<img style="margin-top:5px;margin-left:9px; *margin-top:-10px; width:283px;" src="/images/New_ui/networkmap/linetwo2.png">
 		<div style="padding:7px;">
-			<div class="formfonttitle_nwm">Format type:</div>
+			<div class="formfonttitle_nwm"><#format_type#> :</div>
 			<div>
 				<select name="disk_system" id="disk_system" class="input_option" style="margin-left:2px;" onChange="change_disk_system();">
 					<option value="tntfs">NTFS</option>
@@ -366,12 +364,12 @@ function showLoadingUpdate(){
 			</div>
 		</div>
 		<img style="margin-top:5px;margin-left:9px; *margin-top:-10px; width:283px;" src="/images/New_ui/networkmap/linetwo2.png">
-		<div class="formfonttitle_nwm" style="margin-left:10px;margin-bottom:5px;margin-top:10px;">Format results</div>
+		<div class="formfonttitle_nwm" style="margin-left:10px;margin-bottom:5px;margin-top:10px;"><#format_results#></div>
 		<span id="log_field" >
 			<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" style="resize:none;display:;width:93%; font-family:'Courier New', Courier, mono; font-size:11px;background:#475A5F;color:#FFFFFF;margin-left:8px;"></textarea>
 		</span>
 		<div style="margin-top:20px;margin-bottom:10px;"align="center">
-			<input id="btn_format" type="button" class="button_gen" onclick="go_format();" value="Format">
+			<input id="btn_format" type="button" class="button_gen" onclick="go_format();" value="<#CTL_format#>">
 			<img id="loadingIcon" style="display:none;margin-right:10px;" src="/images/InternetScan.gif">
 		</div>
     </td>

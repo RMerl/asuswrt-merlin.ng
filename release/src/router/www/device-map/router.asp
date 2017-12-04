@@ -9,14 +9,125 @@
 <title></title>
 <link href="/NM_style.css" rel="stylesheet" type="text/css" />
 <link href="/form_style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
+<style>
+.cancel{
+	border: 2px solid #898989;
+	border-radius:50%;
+	background-color: #898989;
+}
+.check{
+	border: 2px solid #093;
+	border-radius:50%;
+	background-color: #093;
+}
+.cancel, .check{
+	width: 22px;
+	height: 22px;
+	margin:0 auto;
+	transition: .35s;
+}
+.cancel:active, .check:active{
+	transform: scale(1.5,1.5);
+	opacity: 0.5;
+	transition: 0;
+}
+.all_enable{
+	border: 1px solid #393;
+	color: #393;
+}
+.all_disable{
+	border: 1px solid #999;
+	color: #999;
+}
+.ui-slider {
+	position: relative;
+	text-align: left;
+}
+.ui-slider .ui-slider-handle {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+}
+.ui-slider .ui-slider-range {
+	position: absolute;
+}
+.ui-slider-horizontal {
+	height: 6px;
+}
+
+.ui-widget-content {
+	border: 1px solid #000;
+	background-color:#000;
+}
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+	border: 1px solid ;
+	background: #e6e6e6;
+	margin-top:-4px;
+	margin-left:-6px;
+}
+
+/* Corner radius */
+.ui-corner-all,
+.ui-corner-top,
+.ui-corner-left,
+.ui-corner-tl {
+	border-top-left-radius: 4px;
+}
+.ui-corner-all,
+.ui-corner-top,
+.ui-corner-right,
+.ui-corner-tr {
+	border-top-right-radius: 4px;
+}
+.ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-left,
+.ui-corner-bl {
+	border-bottom-left-radius: 4px;
+}
+.ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-right,
+.ui-corner-br {
+	border-bottom-right-radius: 4px;
+}
+
+.ui-slider-horizontal .ui-slider-range {
+	top: 0;
+	height: 100%;
+}
+
+#slider .ui-slider-range {
+	background: #3367d6;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 1px;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 1px;
+}
+
+#slider .ui-slider-handle { border-color: #3367d6; }	
+</style>
 <script>
 if(parent.location.pathname !== '<% abs_networkmap_page(); %>' && parent.location.pathname !== "/") top.location.href = "../"+'<% networkmap_page(); %>';
+
+$(function () {
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		$('<script>')
+			.attr('type', 'text/javascript')
+			.attr('src','/require/modules/amesh.js')
+			.appendTo('head');
+	}
+});
 
 <% wl_get_parameter(); %>
 var flag = '<% get_parameter("flag"); %>';
@@ -29,10 +140,34 @@ if(yadns_support){
 	var yadns_clients = [ <% yadns_clients(); %> ];
 }
 
+var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
+var led_table = ["Off", "Low", "Medium", "Highest"];
 function initial(){
 	var wl_subunit = '<% nvram_get("wl_subunit"); %>';
 	if(lantiq_support){
+		$("#led_tr").show();
 		checkWLReady();
+		register_event();
+		var led = httpApi.nvramGet(["bc_ledLv"]);
+		if(led.bc_ledLv == 3){
+			translated_value = 100;
+		}
+		else if(led.bc_ledLv == 2){
+			translated_value = 67;
+		}
+		else if(led.bc_ledLv == 1){
+			translated_value = 33;
+		}
+		else{		// led.bc_ledLv is 0
+			translated_value = 0;
+		}
+
+		document.getElementById('slider').children[0].style.width = translated_value + "%";
+		document.getElementById('slider').children[1].style.left = translated_value + "%";
+		//$("#color_pad").css("background-color", color_table[led.bc_ledLv]);
+		$("#color_pad").html(led_table[led.bc_ledLv]);
+		$("#slider .ui-slider-range").css("background-color", color_table[led.bc_ledLv]);
+		$("#slider .ui-slider-handle").css("border-color", color_table[led.bc_ledLv]);
 	}
 
 	if(lyra_hide_support){
@@ -42,6 +177,8 @@ function initial(){
 		inputCtrl(document.form.wl_auth_mode_x, 0);
 		document.getElementById("wl_wpa_psk_title").innerHTML = "<#Network_key#>";
 		document.getElementById("t_status").style.display = "none";
+		document.getElementById("t3").style.display = "none";
+		document.getElementById("pincode").style.display = "none";
 	}
 	else{
 		if(band5g_support){
@@ -130,7 +267,8 @@ function initial(){
 			based_modelid == "RT-AC88U" ||
 			based_modelid == "RT-AC86U" ||
 			based_modelid == "AC2900" ||
-			based_modelid == "RT-AC3100"){
+			based_modelid == "RT-AC3100" ||
+			based_modelid == "BLUECAVE"){
 			var value = new Array();
 			var desc = new Array();
 				
@@ -144,7 +282,7 @@ function initial(){
 				value = ["0", "1"];
 				add_options_x2(document.form.smart_connect_t, desc, value, smart_connect_x);						
 			}
-			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100"){
+			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE"){
 				desc = ["none", "Dual-Band Smart Connect"];
 				value = ["0", "1"];
 				add_options_x2(document.form.smart_connect_t, desc, value, smart_connect_x);						
@@ -206,6 +344,37 @@ function initial(){
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
 
 	set_NM_height();
+}
+
+function register_event(){
+	$(function() {
+		$( "#slider" ).slider({
+			orientation: "horizontal",
+			range: "min",
+			min: 1,
+			max: 4,
+			value: 4,
+			slide:function(event, ui){
+				//$("#color_pad").css("background-color", color_table[ui.value-1]);
+				$("#color_pad").html(led_table[ui.value-1]);
+				$("#slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
+				$("#slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
+			},
+			stop:function(event, ui){
+				set_led(ui.value);	  
+			}
+		}); 
+	});
+}
+
+function set_led(value){
+	var obj = {
+		"action_mode": "apply",
+		"rc_service": "reset_led",
+	}
+
+	obj.bc_ledLv = value-1;
+	httpApi.nvramSet(obj);
 }
 
 function change_tabclick(){
@@ -416,7 +585,7 @@ function show_LAN_info(v){
 	}
 
 	showtext(document.getElementById("PINCode"), '<% nvram_get("secret_code"); %>');
-	showtext(document.getElementById("MAC"), '<% nvram_get("lan_hwaddr"); %>');
+	showtext(document.getElementById("MAC"), '<% get_lan_hwaddr(); %>');
 	showtext(document.getElementById("MAC_wl2"), '<% nvram_get("wl0_hwaddr"); %>');
 	if(document.form.wl_unit.value == '1')
 		showtext(document.getElementById("MAC_wl5"), '<% nvram_get("wl1_hwaddr"); %>');
@@ -546,6 +715,25 @@ function submitForm(){
 	}
 	document.form.wsc_config_state.value = "1";
 
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		if(!check_wl_auth_support(auth_mode, $("select[name=wl_auth_mode_x] option:selected")))
+			return false;
+		else {
+			var wl_parameter = {
+				"original" : {
+					"ssid" : '<% nvram_get("wl_ssid"); %>',
+					"psk" : '<% nvram_get("wl_wpa_psk"); %>'
+				},
+				"current": {
+					"ssid" : document.form.wl_ssid.value,
+					"psk" : document.form.wl_wpa_psk.value
+				}
+			};
+			if(!AiMesh_confirm_msg("Wireless_SSID_PSK", wl_parameter))
+				return false;
+		}
+	}
+
 	parent.showLoading();
 	if(based_modelid == "RT-AC87U" && "<% nvram_get("wl_unit"); %>" == "1"){
 		parent.stopFlag = '0';
@@ -613,7 +801,7 @@ function tab_reset(v){
 	}else if(v == 1){	//Smart Connect
 		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300")
 			document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100")
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 		
 		document.getElementById("t1").style.display = "none";
@@ -661,15 +849,16 @@ function checkWLReady(){
 	    url: '/ajax_wl_ready.asp',
 	    dataType: 'script',	
 	    error: function(xhr) {
-			setTimeout("checkWLReady();", 1000);
+			setTimeout("checkWLReady();", 2000);
 	    },
 	    success: function(response){
 	    	if(wave_ready != 1){
 	    		$("#lantiq_ready").show();
-	    		setTimeout("checkWLReady();", 1000);
+	    		setTimeout("checkWLReady();", 2000);
 	    	}
 	    	else{
 	    		$("#lantiq_ready").hide();
+	    		setTimeout("checkWLReady();", 2000);
 	    	}
 	    }
   	});
@@ -925,6 +1114,7 @@ function checkWLReady(){
   	</td>
 </tr>
 
+
 <tr>
 	<td> 			
  		<table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px">
@@ -933,6 +1123,28 @@ function checkWLReady(){
 					<input id="applySecurity" type="button" class="button_gen" value="<#CTL_apply#>" onclick="submitForm();" style="margin-left:90px;">
     			</td>
   		</tr>
+  		<tr id="led_tr" style="display:none">
+  			<td>
+  				<div>
+  					<table>
+  						<tr>
+  							<td>
+  								<div style="font-family: Arial, Helvetica, sans-serif;font-weight: bolder;">LED Brightness</div>
+  							</td>
+  						</tr>
+  						<tr>
+  							<td style="border:0px;padding-left:0px;">
+  								<div id="slider" style="width:180px;"></div>
+  							</td>									
+  							<td style="border:0px;">
+  								<!--div id="color_pad" style="width:36px;height:24px;background: #3367D6;border-radius: 3px;margin-left:20px;"></div-->
+								<div id="color_pad" style="margin-left: 20px;font-weight: bolder;">100%</div>
+  							</td>
+  						</tr>
+  					</table>
+  				</div>
+  			</td>
+  		</tr>
   		<tr>
     			<td style="padding:10px 10px 0px 10px;">
     				<p class="formfonttitle_nwm" ><#LAN_IP#></p>
@@ -940,7 +1152,7 @@ function checkWLReady(){
       			<img style="margin-top:5px; *margin-top:-10px;" src="/images/New_ui/networkmap/linetwo2.png">
     			</td>
   		</tr>  
-  		<tr>
+		<tr id="pincode">
     			<td style="padding:5px 10px 0px 10px;">
     				<p class="formfonttitle_nwm" ><#PIN_code#></p>
     				<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; *margin-top:-5px; margin-right:10px;line-height:20px;" id="PINCode"></p>

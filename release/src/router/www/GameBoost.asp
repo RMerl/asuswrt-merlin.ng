@@ -100,7 +100,7 @@ function initial(){
 }
 function check_game_boost(){
 	if(document.getElementById("game_boost_enable").checked){
-		if(!reset_wan_and_nat(document.form, 1)) {
+		if(!reset_wan_to_fo(document.form, 1)) {
 			document.getElementById("game_boost_enable").checked = false;
 			return false;
 		}

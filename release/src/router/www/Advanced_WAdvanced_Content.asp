@@ -124,6 +124,14 @@
 
 </style>
 <script>
+$(function () {
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		$('<script>')
+			.attr('type', 'text/javascript')
+			.attr('src','/require/modules/amesh.js')
+			.appendTo('head');
+	}
+});
 //Get boot loader version and convert type form string to Integer
 var bl_version = '<% nvram_get("bl_version"); %>';
 var bl_version_array = bl_version.split(".");
@@ -299,7 +307,7 @@ function initial(){
 			}
 		}
 
-		if(based_modelid == "RT-AC88N" || based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VRZ-AC1300"){
+		if(based_modelid == "RT-AC88N" || based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750" || based_modelid == "MAP-AC3000"){
 			inputCtrl(document.form.wl_txbf, 1);
 			document.getElementById("wl_MU_MIMO_field").style.display = "";
 			document.form.wl_mumimo.disabled = false;
@@ -328,7 +336,7 @@ function initial(){
 		}
 
 		if((!Qcawifi_support && !Rawifi_support) || based_modelid == "RT-AC87U"
-		    || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VRZ-AC1300"
+		    || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750" || based_modelid == "MAP-AC3000"
 		    || based_modelid == "RT-AC82U" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || (based_modelid == "RP-AC87" && wl_unit_value == "1") ){		// hide on Broadcom platform
 			document.getElementById("wl_plcphdr_field").style.display = "none";
 		}
@@ -399,7 +407,7 @@ function initial(){
 				inputCtrl(document.form.wl_itxbf, 1);
 			}	
 		}	
-		if(based_modelid == "RT-AC88N" || based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VRZ-AC1300")
+		if(based_modelid == "RT-AC88N" || based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750" || based_modelid == "MAP-AC3000")
 		{
 			$('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_ExpBeam#>";
 			inputCtrl(document.form.wl_txbf, 1);
@@ -459,12 +467,12 @@ function initial(){
 		document.form.wl_mumimo.disabled = false;
 	}
 
-	if(lantiq_support && wl_unit_value == '1'){
+	/*if(lantiq_support && wl_unit_value == '1'){
 		document.getElementById("wl_MU_MIMO_field").style.display = "";
 		document.form.wl_mumimo.disabled = false;
 		document.form.wl1_mumimo.disabled = false;
 		document.form.wl_mumimo.value = document.form.wl1_mumimo.value;	
-	}
+	}*/
 
 	if(bcm_mumimo_support){
 		document.getElementById("wl_MU_MIMO_field").style.display = "";
@@ -499,7 +507,7 @@ function initial(){
 	}
 	
 
-	if( based_modelid == "BRT-AC828" || based_modelid == "RT-AC82U" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VRZ-AC1300")
+	if( based_modelid == "BRT-AC828" || based_modelid == "RT-AC82U" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750" || based_modelid == "MAP-AC3000")
 		document.getElementById("wl_implicitxbf_field").style.display = "";
 	else
 		document.getElementById("wl_implicitxbf_field").style.display = "none";
@@ -577,11 +585,11 @@ function initial(){
 	}
 }
 
+var tcode = ttc.substring(0,2);
 function generate_country_selection(){
 	var code = '';
 	var matched = false;
-	var tcode = ttc.substring(0,2);
-
+	
 	code += '<select class="input_option" name="location_code">';
 	for(i=0; i<country_array.length; i++){
 		var index = country_array[i];
@@ -730,9 +738,16 @@ function applyRule(){
 		}
 		
 		if(location_list_support){
-			if(orig_region.length >= 0 && orig_region != document.form.location_code.value){
-				document.form.action_script.value = "reboot";
-				document.form.action_wait.value = reboot_needed_time;
+			if((orig_region.length > 0 && orig_region != document.form.location_code.value)
+			|| (orig_region == "" && document.form.location_code.value != tcode)){
+				if(lantiq_support){
+					document.form.action_script.value = "restart_wireless";
+					document.form.group_id.value = "location"
+				}
+				else{
+					document.form.action_script.value = "reboot";
+					document.form.action_wait.value = reboot_needed_time;
+				}
 			}				
 		}
 
@@ -746,13 +761,15 @@ function applyRule(){
 		if(lantiq_support && wl_unit_value == "1"){
 			document.form.wl1_mumimo.value = document.form.wl_mumimo.value;
 			document.form.wl_mumimo.disabled = true;
-			if(document.form.wl1_mumimo.value != "<% nvram_get("wl1_mumimo"); %>"){
-				document.form.action_script.value = "reboot";
-				document.form.action_wait.value = reboot_needed_time;				
-			}
+			document.form.group_id.value = "mumimo"
 		}
 		
 		document.form.wl_sched.value = wifi_schedule_value;	
+		if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+			var radio_value = (document.form.wl_radio[0].checked) ? 1 : 0;
+			if(!AiMesh_confirm_msg("Wireless_Radio",radio_value))
+				return;
+		}
 		showLoading();
 		document.form.submit();
 	}
@@ -788,7 +805,7 @@ function validForm(){
 
 	if(userRSSI_support){
 		if(document.form.wl_user_rssi.value != 0){
-			if(!validator.range(document.form.wl_user_rssi, -90, -70)){
+			if(!validator.range(document.form.wl_user_rssi, -90, -40)){
 				document.form.wl_user_rssi.focus();
 				return false;			
 			}
@@ -1809,7 +1826,7 @@ function checkWLReady(){
 							</select>
 						</td>
 					</tr>					
-					<!-- RT-AC82U & RT-AC58U & 4G-AC53U & MAP-AC1300 & MAP-AC2200 & VRZ-AC1300 -->
+					<!-- RT-AC82U & RT-AC58U & 4G-AC53U & MAP-AC1300 & MAP-AC2200 & VZW-AC1300 & MAP-AC1750 & MAP-AC3000 -->
 					<tr id="wl_implicitxbf_field"  style="display:none">
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="">Implicit beamforming</a></th>
 						<td>

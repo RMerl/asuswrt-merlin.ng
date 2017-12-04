@@ -247,7 +247,7 @@ function form_show(v){
 			}	
 		}
 
-		appendModeOption(document.form.wans_mode.value);
+		appendModeOption(document.form.wans_mode_option.value);
 		show_wans_rules();
 		document.getElementById("wans_mode_tr").style.display = "";
 		document.getElementById("fo_detection_count_hd").innerHTML = "<#dualwan_pingtime_detect2#>";
@@ -424,15 +424,6 @@ function applyRule(){
 				}
 			}
 		}
-	}
-	
-	if (document.form.wans_primary.value == "dsl") document.form.next_page.value = "Advanced_DSL_Content.asp";
-	if (document.form.wans_primary.value == "lan") document.form.next_page.value = "Advanced_WAN_Content.asp";
-	if (document.form.wans_primary.value == "usb"){
-		if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
-			document.form.next_page.value = "Advanced_MobileBroadband_Content.asp";
-		else			
-			document.form.next_page.value = "Advanced_Modem_Content.asp";
 	} 
 
 	wans_dualwan_array = document.form.wans_dualwan.value.split(" "); //update wans_dualwan_array

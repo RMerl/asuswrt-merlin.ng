@@ -46,11 +46,17 @@ usage(void)
 	exit(0);
 }
 
-#define PROFILE_HEADER		"HDR1"
+#define PROFILE_HEADER          "HDR1"
 #ifdef RTCONFIG_DSL
 #define PROFILE_HEADER_NEW      "N55U"
 #else
+#ifdef RTCONFIG_QCA
+#define PROFILE_HEADER_NEW      "AC55U"
+#elif defined(RTCONFIG_LANTIQ)
+#define PROFILE_HEADER_NEW      "BLUE"
+#else
 #define PROFILE_HEADER_NEW      "HDR2"
+#endif
 #endif
 
 // save nvram to file
@@ -310,7 +316,7 @@ int nvram_restore_new(char *file, char *buf)
 
 	p = buf;
 
-	while (*p)
+	while (*p || p-buf<=count)
 	{
 		v = strchr(p, '=');
 

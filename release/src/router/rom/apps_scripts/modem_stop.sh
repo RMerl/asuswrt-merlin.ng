@@ -128,7 +128,15 @@ if [ "$modem_type" == "gobi" ]; then
 elif [ "$modem_type" == "qmi" ]; then
 	wdm=`_get_wdm_by_usbnet $modem_dev`
 
-	uqmi -d $wdm --keep-client-id wds --stop-network 4294967295 --autoconnect
+	uqmi -d $wdm --keep-client-id wds --set-autoconnect disabled
+	if [ "$?" != "0" ]; then
+		echo "modem_stop: QMI($wdm): faile to disable autoconnect..."
+	fi
+
+	uqmi -d $wdm --keep-client-id wds --stop-network 4294967295
+	if [ "$?" != "0" ]; then
+		echo "modem_stop: QMI($wdm): faile to stop the network..."
+	fi
 fi
 
 echo "$modem_type: Successfull to stop network."

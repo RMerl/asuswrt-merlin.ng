@@ -2,11 +2,11 @@
  * Shell-like utility functions
  *
  * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -206,6 +206,23 @@ waitfor(int fd, int timeout)
 	return select(fd + 1, &rfds, NULL, NULL, (timeout > 0) ? &tv : NULL);
 }
 
+int _eval_retry(char *const argv[], const char *path, int timeout, int *ppid, char *appname)
+{
+	int i = 0;
+
+	for(i=0; i<5; ++i) {
+		if(pids(appname))
+			break;
+		else {
+			_dprintf("%s[%s]: counts %d!\n", __func__, appname, i+1);
+			sleep(1);
+			_eval(argv, path, timeout, ppid);
+		}
+	}
+
+	return 0;
+}
+
 /*
  * Concatenates NULL-terminated list of arguments into a single
  * commmand and executes it
@@ -278,7 +295,7 @@ EXIT:
 		}
 		return status;
 	}
-	
+
 	// child
 
 	// reset signal handlers
@@ -304,7 +321,7 @@ EXIT:
 		cprintf("_eval +%ld pid=%d ", uptime(), pid);
 		for (n = 0; argv[n]; ++n) cprintf("%s ", argv[n]);
 		cprintf("\n");
-		
+
 		if ((fd = open("/dev/console", O_RDWR | O_NONBLOCK)) >= 0) {
 			dup2(fd, STDIN_FILENO);
 			dup2(fd, STDOUT_FILENO);
@@ -335,7 +352,7 @@ EXIT:
 				flags |= O_TRUNC;
 			}
 		}
-		
+
 		if ((fd = open(path, flags, 0644)) < 0) {
 			perror(path);
 		}
@@ -639,7 +656,7 @@ void cprintf(const char *format, ...)
 			close(nfd);
 		}
 	}
-#if 1	
+#if 1
 #ifdef RTCONFIG_NVRAM_FILE
 	if (debug_cprintf_file == 1) {
 #else
@@ -659,12 +676,12 @@ void cprintf(const char *format, ...)
 #if 0
 	if (nvram_match("debug_cprintf_log", "1")) {
 		char s[512];
-		
+
 		va_start(args, format);
 		vsnprintf(s, sizeof(s), format, args);
 		s[sizeof(s) - 1] = 0;
 		va_end(args);
-		
+
 		if ((s[0] != '\n') || (s[1] != 0)) syslog(LOG_DEBUG, "%s", s);
 	}
 #endif
@@ -1179,9 +1196,9 @@ str_binit(struct strbuf *b, char *buf, unsigned int size)
 
 /* Buffer sprintf wrapper to guard against buffer overflow */
 int
-str_bprintf(struct strbuf *b, const char *fmt, ...) 
+str_bprintf(struct strbuf *b, const char *fmt, ...)
 {
-        va_list ap; 
+        va_list ap;
         int r;
 
         va_start(ap, fmt);
@@ -1384,22 +1401,22 @@ static void put_string(strbuf_t *buf, char *s, int len, int width,
 {
 	int		i;
 
-	if (len < 0) { 
-		len = strnlen(s, prec >= 0 ? prec : ULONG_MAX); 
-	} else if (prec >= 0 && prec < len) { 
-		len = prec; 
+	if (len < 0) {
+		len = strnlen(s, prec >= 0 ? prec : ULONG_MAX);
+	} else if (prec >= 0 && prec < len) {
+		len = prec;
 	}
 	if (width > len && !(f & flag_minus)) {
-		for (i = len; i < width; ++i) { 
-			put_char(buf, ' '); 
+		for (i = len; i < width; ++i) {
+			put_char(buf, ' ');
 		}
 	}
-	for (i = 0; i < len; ++i) { 
-		put_char(buf, s[i]); 
+	for (i = 0; i < len; ++i) {
+		put_char(buf, s[i]);
 	}
 	if (width > len && f & flag_minus) {
-		for (i = len; i < width; ++i) { 
-			put_char(buf, ' '); 
+		for (i = len; i < width; ++i) {
+			put_char(buf, ' ');
 		}
 	}
 }
@@ -1417,31 +1434,31 @@ static void put_ulong(strbuf_t *buf, unsigned long int value, int base,
 
 	for (len = 1, x = 1; x < ULONG_MAX / base; ++len, x = x2) {
 		x2 = x * base;
-		if (x2 > value) { 
-			break; 
+		if (x2 > value) {
+			break;
 		}
 	}
 	zeros = (prec > len) ? prec - len : 0;
 	width -= zeros + len;
-	if (prefix != NULL) { 
-		width -= strnlen(prefix, ULONG_MAX); 
+	if (prefix != NULL) {
+		width -= strnlen(prefix, ULONG_MAX);
 	}
 	if (!(f & flag_minus)) {
 		if (f & flag_zero) {
-			for (i = 0; i < width; ++i) { 
-				put_char(buf, '0'); 
+			for (i = 0; i < width; ++i) {
+				put_char(buf, '0');
 			}
 		} else {
-			for (i = 0; i < width; ++i) { 
-				put_char(buf, ' '); 
+			for (i = 0; i < width; ++i) {
+				put_char(buf, ' ');
 			}
 		}
 	}
-	if (prefix != NULL) { 
-		put_string(buf, prefix, -1, 0, -1, flag_none); 
+	if (prefix != NULL) {
+		put_string(buf, prefix, -1, 0, -1, flag_none);
 	}
-	for (i = 0; i < zeros; ++i) { 
-		put_char(buf, '0'); 
+	for (i = 0; i < zeros; ++i) {
+		put_char(buf, '0');
 	}
 	for ( ; x > 0; x /= base) {
 		int digit = (value / x) % base;
@@ -1449,8 +1466,8 @@ static void put_ulong(strbuf_t *buf, unsigned long int value, int base,
 			digit));
 	}
 	if (f & flag_minus) {
-		for (i = 0; i < width; ++i) { 
-			put_char(buf, ' '); 
+		for (i = 0; i < width; ++i) {
+			put_char(buf, ' ');
 		}
 	}
 }
@@ -1497,16 +1514,16 @@ static int dsnprintf(char **s, int size, char *fmt, va_list arg, int msize)
 			int width = 0;
 			int prec = -1;
 			for ( ; c != '\0'; c = *fmt++) {
-				if (c == '-') { 
-					f |= flag_minus; 
-				} else if (c == '+') { 
-					f |= flag_plus; 
-				} else if (c == ' ') { 
-					f |= flag_space; 
-				} else if (c == '#') { 
-					f |= flag_hash; 
-				} else if (c == '0') { 
-					f |= flag_zero; 
+				if (c == '-') {
+					f |= flag_minus;
+				} else if (c == '+') {
+					f |= flag_plus;
+				} else if (c == ' ') {
+					f |= flag_space;
+				} else if (c == '#') {
+					f |= flag_hash;
+				} else if (c == '0') {
+					f |= flag_zero;
 				} else {
 					break;
 				}
@@ -1579,10 +1596,10 @@ static int dsnprintf(char **s, int size, char *fmt, va_list arg, int msize)
 				} else {
 					if (f & flag_hash && value != 0) {
 						if (c == 'x') {
-							put_ulong(&buf, value, 16, 0, ("0x"), width, 
+							put_ulong(&buf, value, 16, 0, ("0x"), width,
 								prec, f);
 						} else {
-							put_ulong(&buf, value, 16, 1, ("0X"), width, 
+							put_ulong(&buf, value, 16, 1, ("0X"), width,
 								prec, f);
 						}
 					} else {
@@ -1709,11 +1726,11 @@ int doSystem(char *fmt, ...)
 			_dprintf("[doSystem] %s\n", cmd);
 		rc = system(cmd);
 		bfree(B_L, cmd);
-	}	
+	}
 	return rc;
 }
 
-int 
+int
 swap_check()
 {
 	struct sysinfo info;
@@ -1787,7 +1804,7 @@ long uptime(void)
 {
 	struct sysinfo info;
 	sysinfo(&info);
-	
+
 	return info.uptime;
 }
 
@@ -1819,7 +1836,7 @@ int _vstrsep(char *buf, const char *sep, ...)
 	return n;
 }
 
-#if defined(CONFIG_BCMWL5) || defined(RTCONFIG_REALTEK)
+#if defined(CONFIG_BCMWL5) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_RALINK) || defined(RTCONFIG_LANTIQ)
 char *
 wl_ether_etoa(const struct ether_addr *n)
 {
@@ -1830,7 +1847,11 @@ wl_ether_etoa(const struct ether_addr *n)
 	for (i = 0; i < ETHER_ADDR_LEN; i++) {
 		if (i)
 			*c++ = ':';
+#if defined(RTCONFIG_LANTIQ)		
+		c += sprintf(c, "%02X", n->ether_addr_octet[i] & 0xff);
+#else
 		c += sprintf(c, "%02X", n->octet[i] & 0xff);
+#endif		
 	}
 	return etoa_buf;
 }
@@ -2053,7 +2074,7 @@ int writefile(char *fname,char *content)
 
  fp=fopen(fname,"w");
  if (!fp) return 0;
- len=fputs(content,fp); 
+ len=fputs(content,fp);
  fclose(fp);
  if (len>0) return 1;
  return 0;
@@ -2073,7 +2094,7 @@ char *readfile(char *fname,int *fsize)
  if (!fp) return NULL;
  while (1)
   {
-   len=fread(buf,1,100,fp); 
+   len=fread(buf,1,100,fp);
    if (len==-1)
     goto sysfail;
    lsize=size;

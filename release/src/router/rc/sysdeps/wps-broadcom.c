@@ -48,6 +48,10 @@
 #include "web-qtn.h"
 #endif
 
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+#include <cfg_onboarding.h>
+#endif
+
 static int
 set_wps_env(char *uibuf)
 {
@@ -117,6 +121,12 @@ start_wps_method(void)
 	}
 
 	wps_band = nvram_get_int("wps_band_x");
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
+		wps_band = 0;
+		dbg("wps_band(%d) for wps registrar\n", wps_band);
+	}
+#endif
 #ifdef RTCONFIG_DPSTA
 	if (is_dpsta(wps_band) || is_dpsr(wps_band))
 	snprintf(prefix, sizeof(prefix), "wl%d.1_", wps_band);
@@ -190,6 +200,15 @@ start_wps_method(void)
 #endif
 	nvram_unset("wps_band");
 
+#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
+	if (!wps_band && (is_dpsr(wps_band)
+#ifdef RTCONFIG_DPSTA
+		|| is_dpsta(wps_band)
+#endif
+	))
+	eval("wl", "spatial_policy", "0");
+#endif
+
 	nvram_set("wps_env_buf", buf);
 	nvram_set_int("wps_restart_war", 1);
 	set_wps_env(buf);
@@ -222,6 +241,15 @@ stop_wps_method(void)
 
 	set_wps_env(buf);
 
+#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
+	if (!nvram_get_int("wps_band_x") && (is_dpsr(nvram_get_int("wps_band_x"))
+#ifdef RTCONFIG_DPSTA
+		|| is_dpsta(nvram_get_int("wps_band_x"))
+#endif
+	))
+		eval("wl", "spatial_policy", "1");
+#endif
+
 	return 0;
 }
 
@@ -239,7 +267,7 @@ stop_wps_method(void)
  * Currently only supports action WPS_UI_ACT_ENROLL and method WPS_UI_METHOD_PBC
  */
 
-#ifdef AMAS
+#ifdef RTCONFIG_AMAS
 int start_wps_enr(void)
 {
 	char prefix[]="wlXXXXXX_", tmp[100], buf[256] = "SET ";
@@ -280,7 +308,7 @@ int is_wps_stopped(void)
 	time_t wps_uptime = strtoul(nvram_safe_get("wps_uptime"), NULL, 10);
 	char tmp[100];
 
-#ifdef AMAS
+#ifdef RTCONFIG_AMAS
 	if (is_router_mode() && !nvram_get_int("w_Setting") && nvram_match("amesh_led", "1"))
 		return 0;
 #endif

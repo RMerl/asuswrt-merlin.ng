@@ -617,15 +617,10 @@ int initial_all_var_file(const char *const mount_path)
 {
 	int result;
 	int acc_num;
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
 	char char_user[64];
-#else
-	int i;
-	char **account_list;
-#endif
 	DIR *opened_dir;
 	struct dirent *dp;
 
@@ -660,7 +655,6 @@ int initial_all_var_file(const char *const mount_path)
 		usb_dbg("Can't initial the var file for the share mode.\n");
 
 	// 3. get the account number and account_list
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	PMS_GetAccountInfo(PMS_ACTION_GET_FULL, &account_list, &group_list,
 			   &acc_num, &group_num);
 
@@ -687,16 +681,6 @@ int initial_all_var_file(const char *const mount_path)
 	}
 
 	PMS_FreeAccInfo(&account_list, &group_list);
-#else
-	result = get_account_list(&acc_num, &account_list);
-
-	for (i = 0; i < acc_num; ++i) {
-		if (initial_var_file(account_list[i], mount_path, 0) != 0)
-			usb_dbg("Can't initial \"%s\"'s file in %s.\n",
-				account_list[i], mount_path);
-	}
-	free_2_dimension_list(&acc_num, &account_list);
-#endif
 
 	// 4. initial the folder list
 	result = initial_folder_list(mount_path);
@@ -1768,7 +1752,7 @@ extern int set_permission(const char *const account,
 	
 	return 0;
 }
-#endif	/* RTCONFIG_PERMISSION_MANAGEMENT */
+#endif
 
 #if defined(RTCONFIG_PERMISSION_MANAGEMENT)
 int add_folder_at_var_file(const char *const account,
@@ -1853,7 +1837,6 @@ int add_folder_at_var_file(const char *const account,
 		webdav_right = DEFAULT_WEBDAV_RIGHT;
 #endif
 	}
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	else if (is_group) {
 		samba_right = DEFAULT_SAMBA_RIGHT;
 		ftp_right = DEFAULT_FTP_RIGHT;
@@ -1862,7 +1845,6 @@ int add_folder_at_var_file(const char *const account,
 		webdav_right = DEFAULT_WEBDAV_RIGHT;
 #endif
 	}
-#endif
 	else {
 		samba_right = 0;
 		ftp_right = 0;
@@ -2083,7 +2065,7 @@ int del_folder_at_var_file(const char *const account,
 {
 	return 0;
 }
-#endif	/* RTCONFIG_PERMISSION_MANAGEMENT */
+#endif
 
 extern int del_folder(const char *const mount_path, const char *const folder){
 	int result, len;
@@ -2292,7 +2274,7 @@ int mod_folder_at_var_file(const char *const account,
 {
 	return 0;
 }
-#endif	/* RTCONFIG_PERMISSION_MANAGEMENT */
+#endif
 
 extern int mod_folder(const char *const mount_path, const char *const folder, const char *const new_folder){
 	int result, len;
@@ -2672,22 +2654,15 @@ int del_account(const char *const account)
 	char *ptr;
 	int len;
 	int acc_num;
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list;
 	char ascii_user[64];
-#else
-	char *tmp_ascii_user, *tmp_ascii_passwd, char_user[64];
-	char *nv, *nvp, *b;
-	char nvram_value[PATH_MAX];
-#endif
 
 	if (account == NULL || strlen(account) <= 0) {
 		usb_dbg("No input, \"account\".\n");
 		return -1;
 	}
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	if (PMS_GetAccountInfo
 	    (PMS_ACTION_GET_FULL, &account_list, &group_list, &acc_num,
 	     &group_num) < 0) {
@@ -2698,13 +2673,10 @@ int del_account(const char *const account)
 
 	PMS_FreeAccInfo(&account_list, &group_list);
 
-#else
-	acc_num = nvram_get_int("acc_num");
-#endif
 	if (acc_num <= 0) {
 		return 0;
 	}
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
+
 	memset(ascii_user, 0, sizeof(ascii_user));
 	char_to_ascii_safe(ascii_user, account, sizeof(ascii_user));
 
@@ -2716,54 +2688,6 @@ int del_account(const char *const account)
 	PMS_list_ACCOUNT_free(follow_account);
 
 	i = acc_num - 1;
-#else
-	memset(nvram_value, 0, sizeof(nvram_value));
-	nv = nvp = strdup(nvram_safe_get("acc_list"));
-	i = 0;
-	if (nv && strlen(nv) > 0) {
-		while ((b = strsep(&nvp, "<")) != NULL) {
-			if (vstrsep(b, ">", &tmp_ascii_user, &tmp_ascii_passwd)
-			    != 2)
-				continue;
-
-			memset(char_user, 0, sizeof(char_user));
-			ascii_to_char_safe(char_user, tmp_ascii_user,
-					   sizeof(char_user));
-
-			if (!strcmp(account, char_user)) {
-				if (--acc_num == 0) {
-					nvram_set("acc_num", "0");
-					nvram_set("acc_list", "");
-
-					free(nv);
-					return 0;
-				}
-
-				continue;
-			}
-
-			len = strlen(nvram_value);
-			if (len > 0) {
-				ptr = nvram_value + len;
-				sprintf(ptr, "<%s>%s", tmp_ascii_user,
-					tmp_ascii_passwd);
-			} else
-				sprintf(nvram_value, "%s>%s", tmp_ascii_user,
-					tmp_ascii_passwd);
-
-			if (++i >= acc_num)
-				break;
-		}
-	}
-	if (nv)
-		free(nv);
-	nvram_set("acc_list", nvram_value);
-
-	memset(nvram_value, 0, sizeof(nvram_value));
-	sprintf(nvram_value, "%d", i);
-	nvram_set("acc_num", nvram_value);
-	need_commit = 1;
-#endif
 
 	if (i <= 0) {
 		nvram_set("st_samba_mode", "1");
@@ -2981,11 +2905,11 @@ extern int del_account(const char *const account){
 
 	return 0;
 }
-#endif	/* RTCONFIG_PERMISSION_MANAGEMENT */
+#endif
 
+#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 // "new_account" can be the same with "account" and only change the password!
 extern int mod_account(const char *const account, const char *const new_account, const char *const new_password){
-#ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	disk_info_t *disk_list, *follow_disk;
 	partition_info_t *follow_partition;
 	char *var_file, *new_var_file;
@@ -3114,7 +3038,9 @@ extern int mod_account(const char *const account, const char *const new_account,
 	free_disk_data(&disk_list);
 
 	return 0;
+}
 #else	/* !RTCONFIG_PERMISSION_MANAGEMENT */
+extern int mod_account(const char *const account, const char *const new_account, const char *const new_password){
 	disk_info_t *disk_list, *follow_disk;
 	partition_info_t *follow_partition;
 	int acc_num;
@@ -3157,7 +3083,6 @@ extern int mod_account(const char *const account, const char *const new_account,
 				continue;
 
 			char *set_passwd;
-			char enc_passwd[64];
 			char ascii_user[64], ascii_passwd[64];
 
 			memset(ascii_user, 0, 64);
@@ -3170,6 +3095,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 				memset(ascii_passwd, 0, 64);
 				char_to_ascii_safe(ascii_passwd, new_password, 64);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
+				char enc_passwd[64];
 				memset(enc_passwd, 0, sizeof(enc_passwd));
 				pw_enc(ascii_passwd, enc_passwd);
 				set_passwd = enc_passwd;
@@ -3278,8 +3204,8 @@ extern int mod_account(const char *const account, const char *const new_account,
 	free_disk_data(&disk_list);
 
 	return 0;
-#endif	/* RTCONFIG_PERMISSION_MANAGEMENT */
 }
+#endif
 
 extern int test_if_exist_account(const char *const account){
 	int acc_num;

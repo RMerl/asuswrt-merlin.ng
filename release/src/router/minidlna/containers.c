@@ -32,8 +32,10 @@ const char *music_artist_id = MUSIC_ARTIST_ID;
 const char *music_album_id = MUSIC_ALBUM_ID;
 const char *music_plist_id = MUSIC_PLIST_ID;
 const char *music_dir_id = MUSIC_DIR_ID;
+const char *video_id = VIDEO_ID;
 const char *video_all_id = VIDEO_ALL_ID;
 const char *video_dir_id = VIDEO_DIR_ID;
+const char *image_id = IMAGE_ID;
 const char *image_all_id = IMAGE_ALL_ID;
 const char *image_date_id = IMAGE_DATE_ID;
 const char *image_camera_id = IMAGE_CAMERA_ID;
@@ -111,6 +113,11 @@ struct magic_container_s magic_containers[] =
 	{ NULL, "16", &image_dir_id, NULL, NULL, NULL, NULL, NULL, NULL, -1, FLAG_MS_PFS },
 	{ NULL, "D2", &image_camera_id, NULL, NULL, NULL, NULL, NULL, NULL, -1, FLAG_MS_PFS },
 
+	/* Samsung DCM10 containers for Series E(?) */
+	{ NULL, "I", &image_id, NULL, NULL, NULL, NULL, NULL, NULL, -1, FLAG_SAMSUNG_DCM10 },
+	{ NULL, "A", &music_id, NULL, NULL, NULL, NULL, NULL, NULL, -1, FLAG_SAMSUNG_DCM10 },
+	{ NULL, "V", &video_id, NULL, NULL, NULL, NULL, NULL, NULL, -1, FLAG_SAMSUNG_DCM10 },
+
 	/* Jump straight to Music on audio-only devices */
 	{ NULL, "0", &music_id, NULL, "0", NULL, NULL, NULL, NULL, -1, FLAG_AUDIO_ONLY },
 
@@ -133,9 +140,9 @@ in_magic_container(const char *id, int flags, const char **real_id)
 		len = strlen(magic_containers[i].objectid_match);
 		if (strncmp(id, magic_containers[i].objectid_match, len) == 0)
 		{
- 			if (*(id+len) == '$')
+			if (*(id+len) == '$')
 				*real_id = id+len+1;
- 			else if (*(id+len) == '\0')
+			else if (*(id+len) == '\0')
 				*real_id = id;
 			else
 				continue;

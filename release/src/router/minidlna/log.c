@@ -28,6 +28,8 @@
 #include "upnpglobalvars.h"
 #include "log.h"
 
+#include "utils.h"
+
 static FILE *log_fp = NULL;
 static const int _default_log_level = E_WARN;
 int log_level[L_MAX];
@@ -142,7 +144,7 @@ log_err(int level, enum _log_facility facility, char *fname, int lineno, char *f
 	{
 		time_t t;
 		struct tm *tm;
-		t = time(NULL);
+		t = uptime();
 		tm = localtime(&t);
 		fprintf(log_fp, "[%04d/%02d/%02d %02d:%02d:%02d] ",
 		        tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,

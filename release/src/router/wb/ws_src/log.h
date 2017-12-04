@@ -6,6 +6,18 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+
+#if defined(RTCONFIG_NOTIFICATION_CENTER) && (defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA))
+/* IFTTT DEBUG DEFINE SETTING 
+---------------------------------*/
+#define COMMON_IFTTT_DEBUG                     "/tmp/IFTTT_ALEXA"
+#define COMMON_IFTTT_LOG_FILE                  "/tmp/IFTTT_ALEXA.log"
+
+#define IFTTT_DEBUG(fmt,args...) \
+	if(isFileExist(COMMON_IFTTT_DEBUG) > 0) { \
+		Debug2File(COMMON_IFTTT_LOG_FILE, "[Tunnel][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	}
+#endif
 // Enable the debugging for the category.
 #define WB_DBG	1
 //#define NDEBUG
@@ -19,10 +31,16 @@
 #define STD_ERR		2
 #define FILE_TYPE	4
 #define CONSOLE_TYPE	8
+#define STDOUT_TYPE	16
 
 #define WB_DEBUG_TO_FILE "/tmp/WB_DEBUG_FILE"
 #define WB_DEBUG_TO_CONSOLE "/tmp/WB_DEBUG_CONSOLE"
 #define WB_DEBUG_TO_SYSLOG "/tmp/WB_DEBUG_SYSLOG"
+#define WB_DEBUG_TO_STDOUT "/tmp/WB_DEBUG_STDOUT"
+
+#if defined(RTCONFIG_NOTIFICATION_CENTER) && (defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA))
+void Debug2File(const char *FilePath, const char * format, ...);
+#endif
 
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
 void dprintf_impl2(const char* file,const char* func, size_t line, int enable, int level, const char* fmt, va_list ap);
@@ -30,8 +48,6 @@ void dprintf_virtual(const char* file,const char* func, size_t line, int enable,
 int open_log(const char* log_path, int stream_type);
 //void closefp(FILE* fp);
 void close_log();
-extern FILE* gfp;
-//FILE* gfp =NULL;
 #define WHERESTR "[%32s][%25s] <<%38s>>, line %i: "
 #define WHEREARG  __FILE__,__func__,__LINE__
 

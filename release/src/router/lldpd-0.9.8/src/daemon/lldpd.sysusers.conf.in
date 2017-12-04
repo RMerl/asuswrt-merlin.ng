@@ -1,0 +1,6 @@
+# System user and group for lldpd
+# @PRIVSEP_USER@:@PRIVSEP_GROUP@
+
+# Type Name ID GECOS Home
+u @PRIVSEP_USER@ - "lldpd user" @PRIVSEP_CHROOT@
+m @PRIVSEP_USER@ @PRIVSEP_GROUP@

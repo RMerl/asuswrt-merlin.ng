@@ -51,6 +51,8 @@
 #include "upnpglobalvars.h"
 #include "log.h"
 
+#include "utils.h"
+
 /* OpenAndConfHTTPSocket() :
  * setup the socket used to handle incoming HTTP connections. */
 int
@@ -220,7 +222,7 @@ rcvBeaconMessage(char *beacon)
 	char buf[32];
 	static time_t lastSummary = 0;
 
-	current = time(NULL);
+	current = uptime();
 	for( b = topBeacon; b != NULL; b = b->next )
 	{
 		if( strcasecmp(machine, b->machine) == 0 ||

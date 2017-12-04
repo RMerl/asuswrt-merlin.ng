@@ -20,6 +20,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .transition_style{
 	-webkit-transition: all 0.2s ease-in-out;
@@ -45,21 +46,83 @@ function initial(){
 		document.getElementById("log_field").style.display = "none";
 	}	
 }
+
+var htmlEnDeCode = (function() {
+    var charToEntityRegex,
+        entityToCharRegex,
+        charToEntity,
+        entityToChar;
+
+    function resetCharacterEntities() {
+        charToEntity = {};
+        entityToChar = {};
+        // add the default set
+        addCharacterEntities({
+            '&amp;'     :   '&',
+            '&gt;'      :   '>',
+            '&lt;'      :   '<',
+            '&quot;'    :   '"',
+            '&#39;'     :   "'"
+        });
+    }
+
+    function addCharacterEntities(newEntities) {
+        var charKeys = [],
+            entityKeys = [],
+            key, echar;
+        for (key in newEntities) {
+            echar = newEntities[key];
+            entityToChar[key] = echar;
+            charToEntity[echar] = key;
+            charKeys.push(echar);
+            entityKeys.push(key);
+        }
+        charToEntityRegex = new RegExp('(' + charKeys.join('|') + ')', 'g');
+        entityToCharRegex = new RegExp('(' + entityKeys.join('|') + '|&#[0-9]{1,5};' + ')', 'g');
+    }
+
+    function htmlEncode(value){
+        var htmlEncodeReplaceFn = function(match, capture) {
+            return charToEntity[capture];
+        };
+
+        return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+    }
+
+    function htmlDecode(value) {
+        var htmlDecodeReplaceFn = function(match, capture) {
+            return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
+        };
+
+        return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
+    }
+
+    resetCharacterEntities();
+
+    return {
+        htmlEncode: htmlEncode,
+        htmlDecode: htmlDecode
+    };
+})();
+
 var data_array = new Array();
 function parsingAjaxResult(rawData){
 	var match = 0;;
 	for(i=0;i<rawData.length;i++){
+		var thisRawData = rawData[i];
+		thisRawData[2] = htmlEnDeCode.htmlEncode(rawData[i][2]);
+
 		for(j=0;j<data_array.length;j++){
-			if((data_array[j][0] == rawData[i][0])
-			&& (data_array[j][1] == rawData[i][1])
-			&& (data_array[j][2].toUpperCase() == rawData[i][2].toUpperCase())){
+			if((data_array[j][0] == thisRawData[0])
+			&& (data_array[j][1] == thisRawData[1])
+			&& (data_array[j][2].toUpperCase() == thisRawData[2].toUpperCase())){
 				match = 1;				
 				break;
 			}	
 		}
 				
 		if(match == 0)
-			data_array.push(rawData[i]);
+			data_array.push(thisRawData);
 		
 		match = 0;
 	}
@@ -71,16 +134,22 @@ function parsingAjaxResult(rawData){
 	code += "<th style='width:50%;text-align:left'>Domain Name</th>";
 	code += "</tr>";
 	for(var i=0; i<data_array.length; i++){	
+		var thisLog = {
+			macAddr: data_array[i][0],
+			timeStamp: data_array[i][1],
+			hostName: data_array[i][2]
+		}
+
 		code += "<tr style='line-height:15px;'>";
-		code += "<td>" + convertTime(data_array[i][1]) + "</td>";
-		if(clientList[data_array[i][0]] != undefined) {
-			var clientName = (clientList[data_array[i][0]].nickName == "") ? clientList[data_array[i][0]].name : clientList[data_array[i][0]].nickName;
-			code += "<td title="+ data_array[i][0] + ">" + clientName + "</td>";
+		code += "<td>" + convertTime(thisLog.timeStamp) + "</td>";
+		if(clientList[thisLog.macAddr] != undefined) {
+			var clientName = (clientList[thisLog.macAddr].nickName == "") ? clientList[thisLog.macAddr].name : clientList[thisLog.macAddr].nickName;
+			code += "<td title="+ thisLog.macAddr + ">" + clientName + "</td>";
 		}
 		else
-			code += "<td>" + data_array[i][0] + "</td>";
+			code += "<td>" + thisLog.macAddr + "</td>";
 		
-		code += "<td>" + data_array[i][2] + "</td>";	
+		code += "<td>" + thisLog.hostName + "</td>";	
 		code += "</tr>";
 	}
 	
@@ -194,7 +263,7 @@ function change_page(flag){
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.bwdpi_wh_enable.value = 1;
-	if(reset_wan_and_nat(document.form, document.form.bwdpi_wh_enable.value)) {
+	if(reset_wan_to_fo(document.form, document.form.bwdpi_wh_enable.value)) {
 		document.form.action_wait.value = "15";
 		document.form.submit();
 	}
@@ -237,7 +306,11 @@ function cal_panel_block(obj){
 	else
 		document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
 }
-
+function updateWebHistory() {
+	setTimeout(function() {
+		getWebHistory(document.form.clientList.value);
+	}, 200);
+}
 </script>
 </head>
 <body onload="initial();" onunload="unload_body();">
@@ -292,7 +365,7 @@ function cal_panel_block(obj){
 																	function(){
 																		if(document.form.TM_EULA.value == 0){
 																			var adjust_TM_eula_height = function(_objID) {
-																				var scrollTop = document.body.scrollTop;
+																				var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
 																				document.getElementById(_objID).style.top = (scrollTop + 10) + "px";
 																				var visiable_height = document.documentElement.clientHeight;
 																				var tm_eula_container_height = parseInt(document.getElementById(_objID).offsetHeight);
@@ -348,7 +421,7 @@ function cal_panel_block(obj){
 
 																			document.form.bwdpi_wh_stamp.value = timestamp;
 																			document.form.bwdpi_wh_enable.value = 1;
-																			if(reset_wan_and_nat(document.form, document.form.bwdpi_wh_enable.value)) {
+																			if(reset_wan_to_fo(document.form, document.form.bwdpi_wh_enable.value)) {
 																				document.form.submit();
 																			}
 																			else {
@@ -379,6 +452,7 @@ function cal_panel_block(obj){
 											<table style="width:100%" id="log_table"></table>
 										</div>
 										<div class="apply_gen">
+											<input class="button_gen_long" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
 											<input class="button_gen_long" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
 										</div>
 									</div>
@@ -392,6 +466,7 @@ function cal_panel_block(obj){
 		</td>		
 	</tr>
 </table>
+</form>
 <div id="footer"></div>
 </body>
 </html>

@@ -21,6 +21,9 @@ const char *hold_ap[] = {
 	"wl_crypto", "wl0_crypto", "wl1_crypto", "wl2_crypto",
 	"wl_wpa_psk", "wl0_wpa_psk", "wl1_wpa_psk", "wl2_wpa_psk",
 	"wl_auth_mode_x", "wl0_auth_mode_x", "wl1_auth_mode_x", "wl2_auth_mode_x",
+#ifdef RTCONFIG_CFGSYNC
+"cfg_group",
+#endif
 	NULL
 };
 const char *hold_rp_2g[] = {
@@ -28,6 +31,9 @@ const char *hold_rp_2g[] = {
 	"wl_crypto", "wl0_crypto", "wl1_crypto", "wl2_crypto",
 	"wl_wpa_psk", "wl0_wpa_psk", "wl1_wpa_psk", "wl2_wpa_psk",
 	"wl_auth_mode_x", "wl0_auth_mode_x", "wl1_auth_mode_x", "wl2_auth_mode_x",
+#ifdef RTCONFIG_CFGSYNC
+"cfg_group",
+#endif
 	NULL
 };
 const char *hold_rp_5g[] = {
@@ -35,6 +41,9 @@ const char *hold_rp_5g[] = {
 	"wl_crypto", "wl0_crypto", "wl1_crypto", "wl2_crypto",
 	"wl_wpa_psk", "wl0_wpa_psk", "wl1_wpa_psk", "wl2_wpa_psk",
 	"wl_auth_mode_x", "wl0_auth_mode_x", "wl1_auth_mode_x", "wl2_auth_mode_x",
+#ifdef RTCONFIG_CFGSYNC
+"cfg_group",
+#endif
 	NULL
 };
 

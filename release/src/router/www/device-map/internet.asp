@@ -590,7 +590,7 @@ function update_wanip(e) {
 			}, 1);
 		
 			if(wanip == '0.0.0.0' || wanip == '')
-				parent.document.getElementById("wanIP_div").style.display = "none";
+				document.getElementById("wanIP_div").style.display = "none";
 		}
 
 		if(old_link_internet == -1)

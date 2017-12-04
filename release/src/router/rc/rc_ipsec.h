@@ -67,6 +67,7 @@ typedef enum vpn_type_s{
 typedef enum flag_type_s{
     FLAG_IKE_ENCRYPT,
     FLAG_ESP_HASH,
+    FLAG_DH_GROUP,
     FLAG_KEY_CHAG_VER,
     FLAG_NONE,
 }flag_type_t;
@@ -185,6 +186,11 @@ typedef struct ipsec_prof_s{
     uint16_t keyingtries;
 	char samba_settings[SZ_64BUF];
     uint8_t ipsec_conn_en;  /*1: up ; 0:down*/
+	uint16_t encryption_p1_ext;
+	uint16_t hash_p1_ext;
+	uint16_t dh_group;
+	uint16_t encryption_p2_ext;
+	uint16_t hash_p2_ext;
 }ipsec_prof_t;
 
 

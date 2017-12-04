@@ -2,7 +2,7 @@ include ../common.mak
 include $(SRCBASE)/router/.config
 
 CFLAGS += -Wall -Os $(EXTRACFLAGS)
-CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/libevent-2.0.21 -I$(TOP)/libevent-2.0.21/include -I$(TOP)/networkmap
+CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/networkmap
 CFLAGS += -I./sysdeps
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS += -I$(TOP)/json-c
@@ -12,19 +12,37 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -lpthread
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
-LDFLAGS += -L$(TOP)/libevent-2.0.21/.libs -levent
+
+ifeq ($(RTCONFIG_AMAS),y)
+CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -DUPDATECOST
+LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
+endif
 
 ifeq ($(HND_ROUTER),y)
-CFLAGS += -DPTHREAD_STACK_SIZE_2M
+CFLAGS += -DPTHREAD_STACK_SIZE_1M
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
 endif
 
+ifeq ($(RTCONFIG_INTEL),y)
+CFLAGS += -fPIC
+endif
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 else ifeq ($(RTCONFIG_RALINK),y)
 CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools
+else ifeq ($(RTCONFIG_QCA),y)
+CFLAGS += -fPIC
 endif 
+
+ifeq ($(RTCONFIG_SW_HW_AUTH),y)
+CFLAGS  += -I$(TOP)/sw-hw-auth
+endif
+
+ifeq ($(RTCONFIG_LIBASUSLOG),y)
+CFLAGS += -I$(TOP)/libasuslog
+LDFLAGS += -L$(TOP)/libasuslog -lasuslog
+endif
 
 ifeq ($(RTCONFIG_RALINK),y)
 COMMON_OBJS += ralink.o
@@ -36,16 +54,27 @@ vpath %.c sysdeps/qca
 else ifeq ($(RTCONFIG_REALTEK),y)
 COMMON_OBJS += realtek.o
 vpath %.c sysdeps/realtek
+else ifeq ($(RTCONFIG_INTEL),y)
+COMMON_OBJS += intel.o
+vpath %.c sysdeps/intel
+else ifeq ($(RTCONFIG_LANTIQ),y)
+COMMON_OBJS += lantiq.o
+CFLAGS += -fPIC
+vpath %.c sysdeps/lantiq
 else
 COMMON_OBJS += broadcom.o
 vpath %.c sysdeps/broadcom
 endif 
 
-COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o
+ifeq ($(RTCONFIG_AMAS),y)
+COMMON_OBJS += chmgmt.o
+endif
+COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o
 SERVER_OBJS += $(COMMON_OBJS) cfg_mnt.o
 CLIENT_OBJS += $(COMMON_OBJS) cfg_client.o
+REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
 
-ifeq ($(or $(MAPAC1300),$(MAPAC2200),$(VRZAC1300)),y)
+ifeq ($(RTCONFIG_WIFI_SON),y)
 CFLAGS += -DREPORT_PAP_INFO
 #COMMON_OBJS += cfg_onboarding.o
 #CFLAGS += -DONBOARDING
@@ -54,15 +83,22 @@ ifneq ($(RTCONFIG_REALTEK),y)
 COMMON_OBJS += cfg_roaming.o
 CFLAGS += -DLEGACY_ROAMING
 COMMON_OBJS += cfg_onboarding.o
-CFLAGS += -DONBOARDING
+CFLAGS += -DONBOARDING -DRSSI_LIST
 # for wireless channel sync
-#CFLAGS += -DSYNC_WCHANNEL
+CFLAGS += -DSYNC_WCHANNEL
 # for roaming info for sta
 #COMMON_OBJS += cfg_roaminginfo.o
 #CFLAGS += -DROAMING_INFO
 # for master detection
 #CFLAGS += -DMASTER_DET
+# for radar detected
+COMMON_OBJS += cfg_radardet.o
+CFLAGS += -DRADAR_DET
 endif
+endif
+
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300))
+CFLAGS += -DSUPPORT_TRI_BAND
 endif
 
 ifeq ($(RTCONFIG_MASTER_DET),y)
@@ -73,9 +109,10 @@ ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)
 all:
 	-cp -f prebuild/cfg_server cfg_server
 	-cp -f prebuild/cfg_client cfg_client
+	-cp -f prebuild/cfg_reportstatus cfg_reportstatus
 	-cp -f prebuild/libcfgmnt.so libcfgmnt.so
 else
-all: cfg_server cfg_client libcfgmnt.so
+all: cfg_server cfg_client cfg_reportstatus libcfgmnt.so
 endif
 
 cfg_server: $(SERVER_OBJS)
@@ -83,6 +120,10 @@ cfg_server: $(SERVER_OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 cfg_client: $(CLIENT_OBJS)
+	echo " [cfg_mnt] CC $@"
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+
+cfg_reportstatus: $(REPORTSTATUS_OBJS)
 	echo " [cfg_mnt] CC $@"
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
@@ -94,12 +135,15 @@ install: all
 	@echo "[cfg_mnt] Installing..."
 	@install -D cfg_server $(INSTALLDIR)/sbin/cfg_server
 	@install -D cfg_client $(INSTALLDIR)/sbin/cfg_client
+	@install -D cfg_reportstatus $(INSTALLDIR)/sbin/cfg_reportstatus
 	@install -D libcfgmnt.so $(INSTALLDIR)/usr/lib/libcfgmnt.so
 	@$(STRIP) $(INSTALLDIR)/sbin/cfg_server
 	@$(STRIP) $(INSTALLDIR)/sbin/cfg_client
+	@$(STRIP) $(INSTALLDIR)/sbin/cfg_reportstatus
 	@$(STRIP) $(INSTALLDIR)/usr/lib/libcfgmnt.so
 	@chmod 0500 $(INSTALLDIR)/sbin/cfg_server
 	@chmod 0500 $(INSTALLDIR)/sbin/cfg_client
+	@chmod 0500 $(INSTALLDIR)/sbin/cfg_reportstatus
 
 clean:
-	rm -f cfg_server cfg_client *.so *.o .*.depend
+	rm -f cfg_server cfg_client cfg_reportstatus *.so *.o .*.depend

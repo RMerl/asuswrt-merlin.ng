@@ -56,6 +56,10 @@ legend {
 	position:relative;
 }
 
+.bottom_bg{
+	background-image: url(/images/New_ui/bottom_bg.png);	
+}
+
 /*   0831 added for setting Form table in QIS iframe*/
 .QISform{
 	width:600px;
@@ -384,7 +388,6 @@ legend {
 	 font-size:15px;
 	 padding:5px 0px 0px 7px;
 }
-
 .contentM_qis{
 	position:relative;
 	-webkit-border-radius: 5px;
@@ -459,4 +462,3 @@ legend {
 	font-weight:bolder;
 	color:#FC0;
 }
-

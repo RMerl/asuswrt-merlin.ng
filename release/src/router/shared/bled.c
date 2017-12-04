@@ -829,5 +829,98 @@ void set_wifiled(int mode)
 		}
 	}
 }
+#elif defined(MAPAC1750)
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(ary) (sizeof(ary) / sizeof((ary)[0]))
+#endif
+
+unsigned int rgbled_udef_mode = 0;
+
+void set_rgbled(unsigned int mode)
+{
+	unsigned int cmask = RGBLED_COLOR_MESK, bmask = RGBLED_BLINK_MESK;
+	unsigned int c = mode & cmask;
+	unsigned int b = mode & bmask;
+	int i;
+	struct udef_pattern {
+		unsigned int interval;
+		char *pattern;
+	} u[] = {
+		{1000,	"0 0"},		/* off */
+		{1000,	"1 1"},		/* on */
+		{500,	"0 1"},		/* off:0.5s, on:0.5s */
+		{250,	"0 1 1 1"},	/* off:0.25s, on:0.75s */
+		{NULL}
+	};
+	struct led_info {
+		char *gpio;
+		unsigned int on;
+		unsigned int uidx;
+	} p[3] = {
+		{"led_blue_gpio",	0, 0},
+		{"led_green_gpio",	0, 0},
+		{"led_red_gpio",	0, 0}
+	};
+
+	if (rgbled_udef_mode == 0) {
+		led_control(LED_BLUE, LED_ON);
+		led_control(LED_GREEN, LED_ON);
+		led_control(LED_RED, LED_ON);
+		rgbled_udef_mode = 1;
+	}
+
+	switch (c) {
+	case RGBLED_BLUE:
+		p[0].on = 1;
+		break;
+	case RGBLED_GREEN:
+		p[1].on = 1;
+		break;
+	case RGBLED_RED:
+		p[2].on = 1;
+		break;
+	case RGBLED_NIAGARA_BLUE:
+		p[0].on = 1;
+		p[1].on = 1;
+		break;
+	case RGBLED_YELLOW:
+		p[1].on = 1;
+		p[2].on = 1;
+		break;
+	case RGBLED_PURPLE:
+		p[0].on = 1;
+		p[2].on = 1;
+		break;
+	case RGBLED_WHITE:
+		p[0].on = 1;
+		p[1].on = 1;
+		p[2].on = 1;
+		break;
+	default:
+		;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(p); ++i) {
+		if (p[i].on) {
+			switch (b) {
+			case RGBLED_SBLINK:
+				p[i].uidx = 2;
+				break;
+			case RGBLED_3ON1OFF:
+				p[i].uidx = 3;
+				break;
+			default:
+				p[i].uidx = 1;
+			}
+		}
+
+		if (b == RGBLED_NORMAL_MODE)
+			set_bled_normal_mode(p[i].gpio);
+		else {
+			set_bled_udef_pattern(p[i].gpio, u[p[i].uidx].interval, u[p[i].uidx].pattern);
+			set_bled_udef_pattern_mode(p[i].gpio);
+		}
+	}
+}
 #endif
 #endif	/* RTCONFIG_BLINK_LED */

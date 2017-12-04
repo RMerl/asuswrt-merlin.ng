@@ -130,7 +130,7 @@ ip_conntrack_is_ipc_allowed(struct sk_buff *skb, u_int32_t hooknum)
 		/* Add ipc entry if packet is received on ctf enabled interface
 		 * and the packet is not a defrag'd one.
 		 */
-		if (ctf_isenabled(kcih, dev) && (skb->len <= dev->mtu)) {
+		if (ctf_isenabled(kcih, dev)) {
 			skb->nfcache |= NFC_CTF_ENABLED;
 		}
 	}
@@ -250,6 +250,9 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 
 		if (ct->proto.tcp.state >= TCP_CONNTRACK_FIN_WAIT &&
 			ct->proto.tcp.state <= TCP_CONNTRACK_TIME_WAIT)
+			return;
+
+		if (skb->len > skb->dev->mtu)
 			return;
 	}
 	else if (protocol != IPPROTO_UDP)
@@ -635,23 +638,6 @@ PX_PROTO_PPTP_L2TP:
 #endif
 
 	ctf_ipc_add(kcih, &ipc_entry, !IPVERSION_IS_4(ipver));
-
-#ifdef CONFIG_IPV6
-	if (ipver == 6 && protocol == IPPROTO_UDP) {
-		ctf_ipc_t *realipc, *tmpipc;
-		realipc = ctf_ipc_lkup(kcih, &ipc_entry, ipver == 6);
-		if (realipc != NULL)
-			ctf_ipc_release(kcih, realipc);
-		ipc_entry.tuple.sp = FRAG_IPV6_UDP_DUMMY_PORT;
-		ipc_entry.tuple.dp = FRAG_IPV6_UDP_DUMMY_PORT;
-		ctf_ipc_add(kcih, &ipc_entry, !IPVERSION_IS_4(ipver));
-		tmpipc = ctf_ipc_lkup(kcih, &ipc_entry, ipver == 6);
-		if (tmpipc != NULL) {
-			tmpipc->realipc = realipc;
-			ctf_ipc_release(kcih, tmpipc);
-		}
-	}
-#endif
 
 #ifdef CTF_PPPOE
 	if (skb->ctf_pppoe_cb[0] == 2) {

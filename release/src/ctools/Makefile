@@ -1,5 +1,10 @@
 CC = gcc
 CFLAGS = -O3 -Wall
+LBITS := $(shell getconf LONG_BIT)
+ifeq ($(LBITS),64)
+CFLAGS += -m32
+endif
+
 ifeq ($(TRX),NEW)
 CFLAGS += -DTRX_NEW
 endif

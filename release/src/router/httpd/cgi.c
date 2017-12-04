@@ -40,6 +40,7 @@
 #endif
 
 #include <json.h>
+#include <rtconfig.h>
 
 #if defined(linux)
 /* Use SVID search */
@@ -101,8 +102,14 @@ get_cgi_json(char *name, json_object *root)
 	}else{
 		struct json_object *json_value = NULL;
 		json_object_object_get_ex(root, name, &json_value);
-
+#ifdef RTCONFIG_CFGSYNC
+		if (json_object_is_type(json_value, json_type_object))
+			return (char *)json_object_to_json_string(json_value);
+		else
+			return (char *)json_object_get_string(json_value);
+#else
 		return (char *)json_object_get_string(json_value);
+#endif
 	}
 }
 

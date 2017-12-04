@@ -44,6 +44,10 @@
 #include "sql.h"
 #include "log.h"
 
+#ifndef MS_IPK
+#include "rtconfig.h"
+#endif
+
 #define FLAG_TITLE	0x00000001
 #define FLAG_ARTIST	0x00000002
 #define FLAG_ALBUM	0x00000004
@@ -96,7 +100,7 @@ dlna_timestamp_is_present(const char *filename, int *raw_packet_size)
 			if (buffer[i + MPEG_TS_PACKET_LENGTH_DLNA] == MPEG_TS_SYNC_CODE &&
 			    buffer[i + MPEG_TS_PACKET_LENGTH_DLNA*2] == MPEG_TS_SYNC_CODE)
 			{
-			        *raw_packet_size = MPEG_TS_PACKET_LENGTH_DLNA;
+				*raw_packet_size = MPEG_TS_PACKET_LENGTH_DLNA;
 				if (buffer[i+MPEG_TS_PACKET_LENGTH] == 0x00 &&
 				    buffer[i+MPEG_TS_PACKET_LENGTH+1] == 0x00 &&
 				    buffer[i+MPEG_TS_PACKET_LENGTH+2] == 0x00 &&
@@ -106,8 +110,8 @@ dlna_timestamp_is_present(const char *filename, int *raw_packet_size)
 					return 1;
 			} else if (buffer[i + MPEG_TS_PACKET_LENGTH] == MPEG_TS_SYNC_CODE &&
 				   buffer[i + MPEG_TS_PACKET_LENGTH*2] == MPEG_TS_SYNC_CODE) {
-			    *raw_packet_size = MPEG_TS_PACKET_LENGTH;
-			    return 0;
+				*raw_packet_size = MPEG_TS_PACKET_LENGTH;
+				return 0;
 			}
 		}
 	}
@@ -125,13 +129,13 @@ check_for_captions(const char *path, int64_t detailID)
 	strncpyt(file, path, sizeof(file));
 	p = strip_ext(file);
 	if (!p)
-		p = strrchr(file, '\0');
+		return;
 
 	/* If we weren't given a detail ID, look for one. */
 	if (!detailID)
 	{
 		detailID = sql_get_int64_field(db, "SELECT ID from DETAILS where (PATH > '%q.' and PATH <= '%q.z')"
-		                            " and MIME glob 'video/*' limit 1", file, file);
+						   " and MIME glob 'video/*' limit 1", file, file);
 		if (detailID <= 0)
 		{
 			//DPRINTF(E_MAXDEBUG, L_METADATA, "No file found for caption %s.\n", path);
@@ -174,7 +178,7 @@ parse_nfo(const char *path, metadata_t *m)
 	}
 	DPRINTF(E_DEBUG, L_METADATA, "Parsing .nfo file: %s\n", path);
 	buf = calloc(1, file.st_size + 1);
-	if (buf)
+	if (!buf)
 		return;
 	nfo = fopen(path, "r");
 	if (!nfo)
@@ -182,7 +186,7 @@ parse_nfo(const char *path, metadata_t *m)
 		free(buf);
 		return;
 	}
-	nread = fread(&buf, 1, sizeof(buf), nfo);
+	nread = fread(buf, 1, file.st_size, nfo);
 	fclose(nfo);
 	
 	ParseNameValue(buf, nread, &xml, 0);
@@ -287,7 +291,7 @@ GetFolderMetadata(const char *name, const char *path, const char *artist, const 
 }
 
 int64_t
-GetAudioMetadata(const char *path, char *name)
+GetAudioMetadata(const char *path, const char *name)
 {
 	char type[4];
 	static char lang[6] = { '\0' };
@@ -303,7 +307,6 @@ GetAudioMetadata(const char *path, char *name)
 
 	if ( stat(path, &file) != 0 )
 		return 0;
-	strip_ext(name);
 
 	if( ends_with(path, ".mp3") )
 	{
@@ -384,7 +387,9 @@ GetAudioMetadata(const char *path, char *name)
 	}
 	else
 	{
-		m.title = name;
+		free_flags |= FLAG_TITLE;
+		m.title = strdup(name);
+		strip_ext(m.title);
 	}
 	for( i = ROLE_START; i < N_ROLE; i++ )
 	{
@@ -483,7 +488,7 @@ GetAudioMetadata(const char *path, char *name)
 }
 
 /* For libjpeg error handling */
-static jmp_buf setjmp_buffer;
+jmp_buf setjmp_buffer;
 static void
 libjpeg_error_handler(j_common_ptr cinfo)
 {
@@ -492,8 +497,24 @@ libjpeg_error_handler(j_common_ptr cinfo)
 	return;
 }
 
+#if defined MS_IPK || defined RTCONFIG_WEBDAV || defined MS_LIMIT
+//- 20130708 Sungmin add
+int
+thumb_cache_exists(const char *orig_path, char **cache_file)
+{
+	if( asprintf(cache_file, "%s/art_cache%s", db_path, orig_path) < 0 )
+	{
+		*cache_file = NULL;
+		return 0;
+	}
+	strcpy(strchr(*cache_file, '\0')-4, ".jpg");
+
+	return (!access(*cache_file, F_OK));
+}
+#endif
+
 int64_t
-GetImageMetadata(const char *path, char *name)
+GetImageMetadata(const char *path, const char *name)
 {
 	ExifData *ed;
 	ExifEntry *e = NULL;
@@ -514,7 +535,6 @@ GetImageMetadata(const char *path, char *name)
 	//DEBUG DPRINTF(E_DEBUG, L_METADATA, "Parsing %s...\n", path);
 	if ( stat(path, &file) != 0 )
 		return 0;
-	strip_ext(name);
 	//DEBUG DPRINTF(E_DEBUG, L_METADATA, " * size: %jd\n", file.st_size);
 
 	/* MIME hard-coded to JPEG for now, until we add PNG support */
@@ -597,7 +617,32 @@ GetImageMetadata(const char *path, char *name)
 			}
 		}
 		else
+		{
 			thumb = 1;
+#if defined MS_IPK || defined RTCONFIG_WEBDAV
+			//- 20130708 Sungmin add
+			if(ed->data && ed->size)
+			{
+				char* art_file;
+				if( !thumb_cache_exists(path, &art_file) )
+				{
+					char cache_dir[MAXPATHLEN];
+					strncpyt(cache_dir, art_file, sizeof(cache_dir));
+					make_dir(dirname(cache_dir), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+
+					FILE *thumb = fopen(art_file, "wb");
+					//DPRINTF(E_WARN, L_METADATA, " * cache_dir: %s\n", cache_dir);
+					//DPRINTF(E_WARN, L_METADATA, " * thumbnail: %s\n", art_file);
+					if(thumb)
+					{
+						fwrite(ed->data, 1, ed->size, thumb);
+						fclose(thumb);
+					}
+				}
+				free(art_file);
+			}
+#endif
+		}
 	}
 	//DEBUG DPRINTF(E_DEBUG, L_METADATA, " * thumbnail: %d\n", thumb);
 
@@ -639,13 +684,15 @@ no_exifdata:
 	else if( (width <= 4096 && height <= 4096) || !GETFLAG(DLNA_STRICT_MASK) )
 		m.dlna_pn = strdup("JPEG_LRG");
 	xasprintf(&m.resolution, "%dx%d", width, height);
+	m.title = strdup(name);
+	strip_ext(m.title);
 
 	ret = sql_exec(db, "INSERT into DETAILS"
 	                   " (PATH, TITLE, SIZE, TIMESTAMP, DATE, RESOLUTION,"
 	                    " ROTATION, THUMBNAIL, CREATOR, DLNA_PN, MIME) "
 	                   "VALUES"
 	                   " (%Q, '%q', %lld, %lld, %Q, %Q, %u, %d, %Q, %Q, %Q);",
-	                   path, name, (long long)file.st_size, (long long)file.st_mtime, m.date,
+	                   path, m.title, (long long)file.st_size, (long long)file.st_mtime, m.date,
 	                   m.resolution, m.rotation, thumb, m.creator, m.dlna_pn, m.mime);
 	if( ret != SQLITE_OK )
 	{
@@ -662,7 +709,7 @@ no_exifdata:
 }
 
 int64_t
-GetVideoMetadata(const char *path, char *name)
+GetVideoMetadata(const char *path, const char *name)
 {
 	struct stat file;
 	int ret, i;
@@ -685,7 +732,6 @@ GetVideoMetadata(const char *path, char *name)
 	//DEBUG DPRINTF(E_DEBUG, L_METADATA, "Parsing video %s...\n", name);
 	if ( stat(path, &file) != 0 )
 		return 0;
-	strip_ext(name);
 	//DEBUG DPRINTF(E_DEBUG, L_METADATA, " * size: %jd\n", file.st_size);
 
 	ret = lav_open(&ctx, path);
@@ -843,6 +889,10 @@ GetVideoMetadata(const char *path, char *name)
 			xasprintf(&m.mime, "video/x-matroska");
 		else if( strcmp(ctx->iformat->name, "flv") == 0 )
 			xasprintf(&m.mime, "video/x-flv");
+		else if( strcmp(ctx->iformat->name, "rm") == 0 )
+			xasprintf(&m.mime, "video/x-pn-realvideo");
+		else if( strcmp(ctx->iformat->name, "rmvb") == 0 )
+			xasprintf(&m.mime, "video/x-pn-realvideo");
 		if( m.mime )
 			goto video_no_dlna;
 
@@ -1537,7 +1587,10 @@ video_no_dlna:
 	}
 
 	if( !m.title )
+	{
 		m.title = strdup(name);
+		strip_ext(m.title);
+	}
 
 	album_art = find_album_art(path, m.thumb_data, m.thumb_size);
 	freetags(&video);

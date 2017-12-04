@@ -2,12 +2,27 @@
 #define __CFG_PARAM_H__
 
 /* parameter list table */
+#if defined(BIT)
+#undef BIT
+#endif
 #define BIT(x)	((1 << x))
 
 /* feature */
 #define FT_WIRELESS	BIT(0)
 #define FT_LOGIN	BIT(1)
 #define FT_TIME		BIT(2)
+#define FT_MISC		BIT(3)
+#define FT_LOGGER		BIT(4)
+#define FT_FEEDBACK		BIT(5)
+#define FT_DIAGNOSTIC	BIT(6)
+#define FT_BACKHAULCTRL	BIT(7)
+#if defined(MAPAC2200)
+#define FT_BHBLOCK	BIT(8)	/* normal client blocking in backhaul */
+#endif
+#ifdef RTCONFIG_WIFI_SON
+#define FT_SPCMD	BIT(9)	/* special command */
+#endif
+
 
 struct feature_mapping_s {
 	char *name;
@@ -17,10 +32,21 @@ struct feature_mapping_s {
 
 struct feature_mapping_s feature_mapping_list[] = {
 	{ "wireless", 	FT_WIRELESS,	"restart_wireless" },
-	{ "login", 	FT_LOGIN,	"chpass" },
-	{ "time", 	FT_TIME,	"restart_time" },
+	{ "login", 	FT_LOGIN,		"chpass" },
+	{ "time",		FT_TIME,			"restart_time" },
+	{ "misc",		FT_MISC,			NULL },
+	{ "logger",	FT_LOGGER,		"restart_logger" },
+	{ "feedback",	FT_FEEDBACK,	"restart_sendmail" },
+	{ "diagnostic",	FT_DIAGNOSTIC,	"restart_dblog" },
+	{ "backhalctrl", 	FT_BACKHAULCTRL,	"restart_amas_bhctrl"},
+#if defined(MAPAC2200)
+	{ "bhblock", 	FT_BHBLOCK,	"restart_bhblock" },
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
+#endif
 	/* END */
-	{ NULL, 0, 0 }
+	{ NULL, 0, NULL }
 };
 
 struct subfeature_mapping_s {
@@ -63,14 +89,39 @@ enum {
 	SUBFT_MACFILTER_2G_G3,
 	SUBFT_MACFILTER_5G_G3,
 	SUBFT_MACFILTER_5G1_G3,
+	SUBFT_ADVANCED_2G,
+	SUBFT_ADVANCED_5G,
+	SUBFT_ADVANCED_5G1,
 
 	/* sub feature for administration */
 	SUBFT_ROUTER_LOGIN,
 	SUBFT_TIMEZONE,
-	SUBFT_NTP_SERVER
+	SUBFT_NTP_SERVER,
+	SUBFT_TELNET_SERVER,
+	SUBFT_SSH_SERVER,
+	SUBFT_LOG_SERVER,
+	SUBFT_LOCATION,
+	SUBFT_MISCELLANEOUS,
+
+	/* sub feature for feedback and diagnostic */
+	SUBFT_FEEDBACK,
+	SUBFT_DIAGNOSTIC,
+
+	/* sub feature for amas */
+	SUBFT_BACKHAULCTRL,	/* backhaul ctrl */
+
+	/* sub feature for smart connect */
+	SUBFT_SMART_CONNECT,	/* smart connect */
+#if defined(MAPAC2200)
+	SUBFT_NCB,
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	SUBFT_SPCMD,
+#endif
 };
 
 struct subfeature_mapping_s subfeature_mapping_list[] = {
+	/* for wireless */
 	{ "basic_2g",	 	SUBFT_BASIC_2G,		FT_WIRELESS },
 	{ "basic_5g", 		SUBFT_BASIC_5G,		FT_WIRELESS },
 	{ "basic_5g1",		SUBFT_BASIC_5G1,	FT_WIRELESS },
@@ -101,9 +152,30 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "macfilter_2g_g3", 	SUBFT_MACFILTER_2G_G3,	FT_WIRELESS },
 	{ "macfilter_5g_g3", 	SUBFT_MACFILTER_5G_G3,	FT_WIRELESS },
 	{ "macfilter_5g1_g3",	SUBFT_MACFILTER_5G1_G3,	FT_WIRELESS },
+	{ "advanced_2g",	 	SUBFT_ADVANCED_2G,		FT_WIRELESS },
+	{ "advanced_5g", 		SUBFT_ADVANCED_5G,		FT_WIRELESS },
+	{ "advanced_5g1",		SUBFT_ADVANCED_5G1,	FT_WIRELESS },
+	/* administration */
 	{ "router_login", 	SUBFT_ROUTER_LOGIN,	FT_LOGIN },
 	{ "time_zone",		SUBFT_TIMEZONE,		FT_TIME },
 	{ "ntp_server",		SUBFT_NTP_SERVER,	FT_TIME },
+	{ "telnet_server",		SUBFT_TELNET_SERVER,	FT_TIME },
+	{ "ssh_server",		SUBFT_SSH_SERVER,	FT_TIME },
+	{ "log_server",		SUBFT_LOG_SERVER,	FT_LOGGER },
+	{ "location",		SUBFT_LOCATION,	FT_MISC },
+	{ "misc",		SUBFT_MISCELLANEOUS,	FT_MISC },
+	/* feedback and diagnostic */
+	{ "feedback",		SUBFT_FEEDBACK,		FT_FEEDBACK },
+	{ "diagnostic",		SUBFT_DIAGNOSTIC,	FT_DIAGNOSTIC},
+	/* backhaul ctrl */
+	{ "backhalctrl",		SUBFT_BACKHAULCTRL,	FT_BACKHAULCTRL },
+	{ "smart_connect", 	SUBFT_SMART_CONNECT, FT_WIRELESS },
+#if defined(MAPAC2200)
+	{ "ncb",		SUBFT_NCB,	FT_BHBLOCK },
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
+#endif
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -121,7 +193,10 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_crypto",		FT_WIRELESS,		SUBFT_BASIC_2G},
 	{ "wl0_wep_x",		FT_WIRELESS,		SUBFT_BASIC_2G},
 	{ "wl0_key",		FT_WIRELESS,		SUBFT_BASIC_2G},
-	{ "wl0_wep_key",	FT_WIRELESS,		SUBFT_BASIC_2G},
+	{ "wl0_key1",		FT_WIRELESS,		SUBFT_BASIC_2G},
+	{ "wl0_key2",		FT_WIRELESS,		SUBFT_BASIC_2G},
+	{ "wl0_key3",		FT_WIRELESS,		SUBFT_BASIC_2G},
+	{ "wl0_key4",		FT_WIRELESS,		SUBFT_BASIC_2G},
 	{ "wl0_bw",		FT_WIRELESS,		SUBFT_CHANNEL_2G},
 #ifdef RTCONFIG_BCMWL6
 	{ "wl0_chanspec",	FT_WIRELESS,		SUBFT_CHANNEL_2G},
@@ -135,7 +210,10 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1_crypto",		FT_WIRELESS,		SUBFT_BASIC_5G},
 	{ "wl1_wep_x",		FT_WIRELESS,		SUBFT_BASIC_5G},
 	{ "wl1_key",		FT_WIRELESS,		SUBFT_BASIC_5G},
-	{ "wl1_wep_key",	FT_WIRELESS,		SUBFT_BASIC_5G},
+	{ "wl1_key1",		FT_WIRELESS,		SUBFT_BASIC_5G},
+	{ "wl1_key2",		FT_WIRELESS,		SUBFT_BASIC_5G},
+	{ "wl1_key3",		FT_WIRELESS,		SUBFT_BASIC_5G},
+	{ "wl1_key4",		FT_WIRELESS,		SUBFT_BASIC_5G},
 	{ "wl1_bw",		FT_WIRELESS,		SUBFT_CHANNEL_5G},
 #ifdef RTCONFIG_BCMWL6
 	{ "wl1_chanspec",	FT_WIRELESS,		SUBFT_CHANNEL_5G},
@@ -149,7 +227,10 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_crypto",		FT_WIRELESS,		SUBFT_BASIC_5G1},
 	{ "wl2_wep_x",		FT_WIRELESS,		SUBFT_BASIC_5G1},
 	{ "wl2_key",		FT_WIRELESS,		SUBFT_BASIC_5G1},
-	{ "wl2_wep_key",	FT_WIRELESS,		SUBFT_BASIC_5G1},
+	{ "wl2_key1",		FT_WIRELESS,		SUBFT_BASIC_5G1},
+	{ "wl2_key2",		FT_WIRELESS,		SUBFT_BASIC_5G1},
+	{ "wl2_key3",		FT_WIRELESS,		SUBFT_BASIC_5G1},
+	{ "wl2_key4",		FT_WIRELESS,		SUBFT_BASIC_5G1},
 	{ "wl2_bw",		FT_WIRELESS,		SUBFT_CHANNEL_5G1},
 #ifdef RTCONFIG_BCMWL6
 	{ "wl2_chanspec",	FT_WIRELESS,		SUBFT_CHANNEL_5G1},
@@ -167,72 +248,85 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_2G},
 	{ "wl1_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_5G},
 	{ "wl1_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_5G},
-	{ "wl2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
-	{ "wl2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
+	{ "wl2_timesched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
+	{ "wl2_sched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
 	/* guest network */
 	{ "wl0.1_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
+	{ "wl0.1_expire",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl1.1_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
-        { "wl2.1_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
-        { "wl2.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
-        { "wl2.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
-        { "wl2.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
-        { "wl2.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl1.1_expire",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
+	{ "wl2.1_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl2.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl2.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl2.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl2.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl2.1_expire",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl0.1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G_G1},
 	{ "wl0.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G_G1},
 	{ "wl1.1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G_G1},
 	{ "wl1.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G_G1},
-        { "wl2.1_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G1},
-        { "wl2.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G1},
+	{ "wl2.1_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G1},
+	{ "wl2.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G1},
 	{ "wl0.2_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
+	{ "wl0.2_expire",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl1.2_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
+	{ "wl1.2_expire",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl2.2_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
+	{ "wl2.2_expire",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl0.2_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G_G2},
 	{ "wl0.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G_G2},
 	{ "wl1.2_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G_G2},
 	{ "wl1.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G_G2},
-        { "wl2.2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G2},
-        { "wl2.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G2},
+	{ "wl2.2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G2},
+	{ "wl2.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G2},
 	{ "wl0.3_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
+	{ "wl0.3_expire",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl1.3_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
-        { "wl2.3_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
-        { "wl2.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
-        { "wl2.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
-        { "wl2.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
-        { "wl2.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl1.3_expire",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
+	{ "wl2.3_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl2.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl2.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl2.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl2.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl2.3_expire",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl0.3_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G_G3},
 	{ "wl0.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G_G3},
 	{ "wl1.3_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G_G3},
 	{ "wl1.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G_G3},
-        { "wl2.3_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G3},
-        { "wl2.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G3},
+	{ "wl2.3_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G3},
+	{ "wl2.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G3},
+	/* wireless advanced */
+	{ "wl0_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_2G},
+	{ "wl1_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_5G},
+	{ "wl2_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_5G1},
 	/* http login */
 	{ "http_username", 	FT_LOGIN,		SUBFT_ROUTER_LOGIN},
 	{ "http_passwd",	FT_LOGIN,		SUBFT_ROUTER_LOGIN},
@@ -243,6 +337,54 @@ struct param_mapping_s param_mapping_list[] = {
 	/* ntp server */
 	{ "ntp_server0", 	FT_TIME,		SUBFT_NTP_SERVER},
 	{ "ntp_server1", 	FT_TIME,		SUBFT_NTP_SERVER},
+	/* telnet server */
+	{ "telnetd_enable", 	FT_TIME,		SUBFT_TELNET_SERVER},
+	/* telnet server */
+	{ "telnetd_enable", 	FT_TIME,		SUBFT_TELNET_SERVER},
+	/* ssh server */
+	{ "sshd_enable", 	FT_TIME,		SUBFT_SSH_SERVER},
+	{ "sshd_port", 	FT_TIME,		SUBFT_SSH_SERVER},
+	{ "sshd_pass", 	FT_TIME,		SUBFT_SSH_SERVER},
+	{ "sshd_authkeys", 	FT_TIME,		SUBFT_SSH_SERVER},
+	{ "shell_timeout", 	FT_TIME,		SUBFT_SSH_SERVER},
+	/* log server */
+	{ "log_ipaddr", 	FT_LOGGER,		SUBFT_LOG_SERVER},
+	/* misc */
+	{ "cfg_alias", 	FT_MISC,		SUBFT_LOCATION},
+	{ "apps_sq", 	FT_MISC,		SUBFT_MISCELLANEOUS},
+	{ "preferred_lang",	FT_MISC,	SUBFT_MISCELLANEOUS},
+	/* feedback */
+	{ "fb_email_dbg", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_email", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_ptype", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_pdesc", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_country", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_browserInfo", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "PM_attach_syslog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "PM_attach_cfgfile", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "PM_attach_modemlog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+#ifdef RTCONFIG_DSL
+	{ "fb_ISP", 				FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_availability", 			FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_Subscribed_Info", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "PM_attach_iptables", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
+#endif
+	/* diagnostic */
+	{ "dblog_enable", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
+	{ "dblog_tousb", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
+	{ "dblog_service", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
+	{ "dblog_duration", 	FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
+	{ "dblog_transid", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
+	/* backhaul ctrl */
+	{ "amas_ethernet", 	FT_BACKHAULCTRL,	SUBFT_BACKHAULCTRL},
+	{ "smart_connect_x", 	FT_WIRELESS,	SUBFT_SMART_CONNECT},
+#if defined(MAPAC2200)
+	/* normal client blocking in backhaul */
+	{ "ncb_enable", 	FT_BHBLOCK,		SUBFT_NCB},
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
+#endif
 	/* END */
 	{ NULL, 0, 0 }
 };
@@ -259,7 +401,12 @@ struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] = {
 	{ "auth_mode_x",	"auth_mode" },
 	{ "wep_x",		"wep" },
 	{ "key",		NULL },
-	{ "wep_key",	NULL },
+	{ "key1",		NULL },
+	{ "key2",		NULL },
+	{ "key3",		NULL },
+	{ "key4",		NULL },
+	{ "macmode", NULL },
+	{ "maclist_x", NULL },
 	{ NULL, 		NULL }
 };
 

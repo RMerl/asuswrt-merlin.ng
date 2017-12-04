@@ -48,7 +48,7 @@ _find_act_type(){
 			got_other=1
 			echo "rndis"
 			break
-		elif [ "$t" == "asix" ]; then
+		elif [ "$t" == "asix" ] || [ "$t" == "ax88179_178a" ]; then
 			got_other=1
 			echo "asix"
 			break

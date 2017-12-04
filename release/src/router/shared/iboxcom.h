@@ -225,6 +225,7 @@ typedef struct ws_info_t	{
 #define EXTEND_CAP_WEBDAV 		0x0001
 #define EXTEND_CAP_SYNC			0x0002
 #define EXTEND_CAP_MEDIA		0x0004
+#define EXTEND_CAP_AMAS			0x0008
 
 #define EXTEND_CAP_AAE_BASIC		0x0010
 #define EXTEND_CAP_HWCTRL		0x0020

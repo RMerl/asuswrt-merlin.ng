@@ -83,18 +83,18 @@ struct subscriber {
 
 struct upnp_event_notify {
 	LIST_ENTRY(upnp_event_notify) entries;
-    int s;  /* socket */
-    enum { ECreated=1,
+	int s;  /* socket */
+	enum { ECreated=1,
 	       EConnecting,
 	       ESending,
 	       EWaitingForResponse,
 	       EFinished,
 	       EError } state;
-    struct subscriber * sub;
-    char * buffer;
-    int buffersize;
+	struct subscriber * sub;
+	char * buffer;
+	int buffersize;
 	int tosend;
-    int sent;
+	int sent;
 	const char * path;
 	char addrstr[16];
 	char portstr[8];
@@ -109,6 +109,9 @@ LIST_HEAD(listhead, subscriber) subscriberlist = { NULL };
 
 /* notify list */
 LIST_HEAD(listheadnotif, upnp_event_notify) notifylist = { NULL };
+
+#define MAX_SUBSCRIBERS 500
+static uint16_t nsubscribers = 0;
 
 /* create a new subscriber */
 static struct subscriber *
@@ -151,12 +154,15 @@ upnpevents_addSubscriber(const char * eventurl,
 	struct subscriber * tmp;
 	DPRINTF(E_DEBUG, L_HTTP, "addSubscriber(%s, %.*s, %d)\n",
 	       eventurl, callbacklen, callback, timeout);
+	if (nsubscribers >= MAX_SUBSCRIBERS)
+		return NULL;
 	tmp = newSubscriber(eventurl, callback, callbacklen);
 	if(!tmp)
 		return NULL;
 	if(timeout)
-		tmp->timeout = time(NULL) + timeout;
+		tmp->timeout = uptime() + timeout;
 	LIST_INSERT_HEAD(&subscriberlist, tmp, entries);
+	nsubscribers++;
 	upnp_event_create_notify(tmp);
 	return tmp->uuid;
 }
@@ -168,7 +174,7 @@ renewSubscription(const char * sid, int sidlen, int timeout)
 	struct subscriber * sub;
 	for(sub = subscriberlist.lh_first; sub != NULL; sub = sub->entries.le_next) {
 		if(memcmp(sid, sub->uuid, 41) == 0) {
-			sub->timeout = (timeout ? time(NULL) + timeout : 0);
+			sub->timeout = (timeout ? uptime() + timeout : 0);
 			return 0;
 		}
 	}
@@ -189,6 +195,7 @@ upnpevents_removeSubscriber(const char * sid, int sidlen)
 				sub->notify->sub = NULL;
 			}
 			LIST_REMOVE(sub, entries);
+			nsubscribers--;
 			free(sub);
 			return 0;
 		}
@@ -468,28 +475,27 @@ void upnpevents_processfds(fd_set *readset, fd_set *writeset)
 			}
 			if(obj->sub)
 				obj->sub->notify = NULL;
-#if 0 /* Just let it time out instead of explicitly removing the subscriber */
 			/* remove also the subscriber from the list if there was an error */
 			if(obj->state == EError && obj->sub) {
 				LIST_REMOVE(obj->sub, entries);
+				nsubscribers--;
 				free(obj->sub);
 			}
-#endif
 			free(obj->buffer);
 			LIST_REMOVE(obj, entries);
 			free(obj);
 		}
 		obj = next;
 	}
-	/* remove timeouted subscribers */
-	curtime = time(NULL);
+	/* remove timed-out subscribers */
+	curtime = uptime();
 	for(sub = subscriberlist.lh_first; sub != NULL; ) {
 		subnext = sub->entries.le_next;
 		if(sub->timeout && curtime > sub->timeout && sub->notify == NULL) {
 			LIST_REMOVE(sub, entries);
+			nsubscribers--;
 			free(sub);
 		}
 		sub = subnext;
 	}
 }
-

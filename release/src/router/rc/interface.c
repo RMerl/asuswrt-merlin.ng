@@ -180,15 +180,31 @@ void gen_lan_ports(char *buf, const int sample[SWPORT_COUNT], int index, int ind
 
 int _ifconfig(const char *name, int flags, const char *addr, const char *netmask, const char *dstaddr, int mtu)
 {
-	int s;
+	int s, err;
 	struct ifreq ifr;
 	struct in_addr in_addr, in_netmask, in_broadaddr;
 
 #ifdef RTCONFIG_LANTIQ
 	if(strcmp(name, "wlan0") == 0 ||
 		strcmp(name, "wlan2") == 0){
-		_dprintf("[%s][%d]skip name:[%s]\n", __func__, __LINE__, name);
-		return -1;
+		if(flags == 0){
+			_dprintf("[%s][%d]skip name:[%s]\n", __func__, __LINE__, name);
+			return -1;
+		}
+		if(flags & IFUP){
+			if(strcmp(name, "wlan0") == 0 && (flags & IFUP)){
+				if(nvram_get_int("wl0_radio") == 0){
+					_dprintf("[%s][%d] wl0_radio=0, skip IFUP wlan0\n", __func__, __LINE__);
+					return -1;
+				}
+			}
+			if(strcmp(name, "wlan2") == 0 && (flags & IFUP)){
+				if(nvram_get_int("wl1_radio") == 0){
+					_dprintf("[%s][%d] wl1_radio=0, skip IFUP wlan2\n", __func__, __LINE__);
+					return -1;
+				}
+			}
+		}
 	}
 	if(strcmp(name, "eth0_1") == 0 ||
 		strcmp(name, "eth0_2") == 0 ||
@@ -261,14 +277,15 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	return 0;
 
  ERROR:
-	close(s);
+	err = errno; 
 	perror(name);
-	return errno;
+	close(s);
+	return err;
 }
 
 int _ifconfig_get(const char *name, int *flags, char *addr, char *netmask, char *dstaddr, int *mtu)
 {
-	int s;
+	int s, err;
 	struct ifreq ifr;
 
 	/* Open a raw socket to the kernel */
@@ -320,10 +337,10 @@ int _ifconfig_get(const char *name, int *flags, char *addr, char *netmask, char 
 	return 0;
 
  ERROR:
-	close(s);
+	err = errno;
 	perror(name);
-	_dprintf("%s: name=%s, errno %d (%s)\n", __FUNCTION__, name, errno, strerror(errno));
-	return errno;
+	close(s);
+	return err;
 }
 
 int ifconfig_mtu(const char *name, int mtu)
@@ -339,14 +356,15 @@ int ifconfig_mtu(const char *name, int mtu)
 
 static int route_manip(int cmd, char *name, int metric, char *dst, char *gateway, char *genmask)
 {
-	int s;
+	int s, err = 0;
 	struct rtentry rt;
 	
 	_dprintf("%s: cmd=%s name=%s addr=%s netmask=%s gateway=%s metric=%d\n",
 		__FUNCTION__, cmd == SIOCADDRT ? "ADD" : "DEL", name, dst, genmask, gateway, metric);
 
 	/* Open a raw socket to the kernel */
-	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) return errno;
+	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+		return errno;
 
 	/* Fill in rtentry */
 	memset(&rt, 0, sizeof(rt));
@@ -370,13 +388,12 @@ static int route_manip(int cmd, char *name, int metric, char *dst, char *gateway
 	rt.rt_genmask.sa_family = AF_INET;
 		
 	if (ioctl(s, cmd, &rt) < 0) {
+		err = errno;
 		perror(name);
-		close(s);
-		return errno;
 	}
 
 	close(s);
-	return 0;
+	return err;
 
 }
 
@@ -491,7 +508,7 @@ int start_vlan(void)
 		for (j = 1; j <= DEV_NUMIFS; j ++) {
 			ifr.ifr_ifindex = j;
 			if (ioctl(s, SIOCGIFNAME, &ifr))
-				continue;
+				continue;		
 			if (ioctl(s, SIOCGIFHWADDR, &ifr))
 				continue;
 			if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER)
@@ -506,6 +523,7 @@ int start_vlan(void)
 			ifr.ifr_data = (caddr_t)&info;
 			if (ioctl(s, SIOCETHTOOL, &ifr) < 0)
 				continue;
+
 			if (strcmp(info.driver, hwname) == 0)
 				break;
 #else
@@ -543,6 +561,16 @@ int start_vlan(void)
 #else
 		char *wan_base_if = "eth0";
 #endif
+#if defined(RTCONFIG_DETWAN)
+		char buf[32];
+		char *detwan_ifname;
+
+		if((detwan_ifname = nvram_get("detwan_ifname")) != NULL) {
+			strncpy(buf, detwan_ifname, sizeof(buf)-1);
+			buf[sizeof(buf)-1] = '\0';
+			wan_base_if = buf;
+		}
+#endif	/* RTCONFIG_DETWAN */
 #elif defined(RTCONFIG_RALINK)
 #if defined(RTCONFIG_RALINK_MT7620) /* RT-N14U, RT-AC52U, RT-AC51U, RT-N11P, RT-N54U, RT-AC1200HP, RT-AC54U */
 		char *wan_base_if = "eth2";
@@ -580,13 +608,13 @@ int start_vlan(void)
 #endif
 
 #if defined(HND_ROUTER)
-	if(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")&&!nvram_match("switch_wantag", "hinet")) {
+	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "manual"))) {
 		char *wan_base_if = "eth0";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);
 	}
 #elif defined(BLUECAVE)
-	if(!nvram_match("switch_wantag", "")) {
+	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "manual"))) {
 		char *wan_base_if = "eth1";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);

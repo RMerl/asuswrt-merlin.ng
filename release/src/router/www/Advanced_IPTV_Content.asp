@@ -55,6 +55,8 @@ var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
 var iptv_modified = 0;
 var voip_modified = 0;
 
+var orig_mr_enable = '<% nvram_get("mr_enable_x"); %>';
+
 function initial(){
 	show_menu();
 	if(dsl_support) {
@@ -84,11 +86,15 @@ function initial(){
 	if(!Rtkwifi_support && !Qcawifi_support && !hnd_support && !lantiq_support){
 		document.getElementById('enable_eff_multicast_forward').style.display="";
 	}
-	
-	if(dualWAN_support)
-		document.getElementById("IPTV_desc_DualWAN").style.display = "";
-	else	
-		document.getElementById("IPTV_desc").style.display = "";
+
+	if(dualWAN_support) {
+		if(based_modelid == "BRT-AC828")
+			$("#IPTV_desc_DualWAN_BRTAC828").css("display", "");
+		else
+			$("#IPTV_desc_DualWAN").css("display", "");
+	}
+	else
+		$("#IPTV_desc").css("display", "");
 
 	//Fine tune ISP option start
 	if(!nz_isp_support){
@@ -311,7 +317,10 @@ function ISP_Profile_Selection(isp){
 	document.getElementById("wan_internet_x").style.display = ISP_setting[3];
 	document.getElementById("wan_iptv_port4_x").style.display = ISP_setting[4];
 	document.getElementById("wan_voip_port3_x").style.display = ISP_setting[5];
-	document.form.switch_stb_x.value = ISP_setting[6];
+	if(isp == original_switch_wantag)
+		document.form.switch_stb_x.value = original_switch_stb_x;
+	else
+		document.form.switch_stb_x.value = ISP_setting[6];
 	document.getElementById("mr_enable_field").style.display = ISP_setting[7];
 	if(!Rtkwifi_support && !Qcawifi_support && !hnd_support && !lantiq_support){
 		document.getElementById("enable_eff_multicast_forward").style.display = ISP_setting[8];
@@ -365,6 +374,19 @@ function ISP_Profile_Selection(isp){
 	else{
 		document.getElementById("iptv_configure_status").style.display = "none";
 		document.getElementById("voip_configure_status").style.display = "none";
+	}
+
+	if(hnd_support){
+		if(document.form.switch_stb_x.value != "0"){
+			document.getElementById("mr_enable_x").style.display = "none";
+			document.getElementById("mr_disable").style.display = "";
+			document.form.mr_enable_x.value = "0";
+		}
+		else{
+			document.getElementById("mr_enable_x").style.display = "";
+			document.getElementById("mr_disable").style.display = "none";
+			document.form.mr_enable_x.value = orig_mr_enable;
+		}
 	}
 }
 
@@ -1016,6 +1038,23 @@ function set_dns_switch(wan_dnsenable_flag){
 function pass_checked(obj){
 	switchType(obj, document.form.show_pass_1.checked, true);
 }
+
+function change_mr_enable(switch_stb){
+	if(hnd_support){
+		if(switch_stb != "0"){
+			document.getElementById("mr_enable_x").style.display = "none";
+			document.getElementById("mr_disable").style.display = "";
+			document.form.mr_enable_x.value = "0";
+		}
+		else{
+			document.getElementById("mr_enable_x").style.display = "";
+			document.getElementById("mr_disable").style.display = "none";
+			document.form.mr_enable_x.value = orig_mr_enable;
+		}
+	}
+	else
+		document.getElementById("mr_disable").style.display = "none";
+}
 </script>
 </head>
 
@@ -1321,13 +1360,15 @@ function pass_checked(obj){
   <table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle">
 	<tbody>
 	<tr>
-		  <td bgcolor="#4D595D" valign="top"  >
-		  <div>&nbsp;</div>
-		  <div class="formfonttitle"><#menu5_2#> - IPTV</div>
-      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-      <div id="IPTV_desc" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc#></div>
-      <div id="IPTV_desc_DualWAN" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc2#></div>
-	  
+		<td bgcolor="#4D595D" valign="top"  >
+			<div>&nbsp;</div>
+			<div class="formfonttitle"><#menu5_2#> - IPTV</div>
+			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+			<div id="IPTV_desc" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc#></div>
+			<div id="IPTV_desc_DualWAN" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc2#></div>
+			<div id="IPTV_desc_DualWAN_BRTAC828" class="formfontdesc" style="display:none;">
+				You must select "Ethernet LAN" as the primary WAN to use IPTV function. Please go to <a href="/Advanced_WANPort_Content.asp" style="text-decoration: underline;">WAN - Dual WAN</a> to confirm that Ethernet LAN port is assigned to primary WAN.<!--untranslated-->
+			</div>
 	  
 	  <!-- IPTV & VoIP Setting -->
 	  
@@ -1366,7 +1407,7 @@ function pass_checked(obj){
 			<tr id="wan_stb_x">
 			<th width="30%"><#Layer3Forwarding_x_STB_itemname#></th>
 			<td align="left">
-			    <select id="switch_stb_x" name="switch_stb_x" class="input_option" onchange="control_wans_primary();">
+			    <select id="switch_stb_x" name="switch_stb_x" class="input_option" onchange="control_wans_primary();change_mr_enable(this.value);">
 				<option value="0" <% nvram_match( "switch_stb_x", "0", "selected"); %>><#wl_securitylevel_0#></option>
 				<option value="1" <% nvram_match( "switch_stb_x", "1", "selected"); %>>LAN1</option>
 				<option value="2" <% nvram_match( "switch_stb_x", "2", "selected"); %>>LAN2</option>
@@ -1382,8 +1423,6 @@ function pass_checked(obj){
 		<tr id="tr_wans_primary" style="display:none;">
 			<th width="30%"><#dualwan_primary#></th>
 			<td align="left">
-				<span>You must select "Ethernet LAN" as the primary WAN to use the IPTV function.<!--untranslated--></span>
-				<br>
 				<span style="color:#FFFFFF;">Ethernet LAN</span>
 				<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px;"></select>
 				<div style="margin-top:2px;"><span style="color:#FFFFFF;">( Current Primary WAN: </span><span id="cur_primary" style="color:#FFFFFF;"></span><span style="color:#FFFFFF;"> )</span></div>
@@ -1503,11 +1542,15 @@ function pass_checked(obj){
 			<tr id="mr_enable_field">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,11);"><#RouterConfig_GWMulticastEnable_itemname#> (IGMP Proxy)</a></th>
 				<td>
-          <select name="mr_enable_x" class="input_option">
-            <option value="0" <% nvram_match("mr_enable_x", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-           	<option value="1" <% nvram_match("mr_enable_x", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
-          </select>
+					<select id="mr_enable_x" name="mr_enable_x" class="input_option">
+						<option value="0" <% nvram_match("mr_enable_x", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+						<option value="1" <% nvram_match("mr_enable_x", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+					</select>
 					<span>( This feature only works on Primary WAN )<!--untranslated--></span>
+					<div id="mr_disable" style="display:none;">
+						<span style="color:#FFF;"><#WLANConfig11b_WirelessCtrl_buttonname#></span>
+						<span style="margin-left: 5px;">(Due to hardware limitation, IGMP proxy can’t co-exist with IPTV function.)</span><!--untranslated-->
+					</div>
 				</td>
 			</tr>
 

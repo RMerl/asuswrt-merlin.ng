@@ -575,7 +575,7 @@ next_header:
 		    (ctype == ESamsungSeriesB && type == ESamsungSeriesA))
 			return;
 		h->req_client->type = &client_types[client];
-		h->req_client->age = time(NULL);
+		h->req_client->age = uptime();
 	}
 }
 
@@ -720,6 +720,7 @@ SendResp_readynas_admin(struct upnphttp * h)
 }
 #endif
 
+#if 0
 static void
 SendResp_presentation(struct upnphttp * h)
 {
@@ -747,7 +748,7 @@ SendResp_presentation(struct upnphttp * h)
 		"<tr><td>Image files</td><td>%d</td></tr>"
 		"</table>", a, v, p);
 
-	if (scanning)
+	if (GETFLAG(SCANNING_MASK))
 		strcatf(&str,
 			"<br><i>* Media scan in progress</i><br>");
 
@@ -766,13 +767,14 @@ SendResp_presentation(struct upnphttp * h)
 	}
 	strcatf(&str, "</table>");
 
-	strcatf(&str, "<br>%d connection%s currently open<br>", number_of_children, (number_of_children == 1 ? "" : "s"));
+	strcatf(&str, "<br>%d connection%s currently open<br>", (number_of_children > 0 ? number_of_children : 0), (number_of_children == 1 ? "" : "s"));
 	strcatf(&str, "</BODY></HTML>\r\n");
 
 	BuildResp_upnphttp(h, str.data, str.off);
 	SendResp_upnphttp(h);
 	CloseSocket_upnphttp(h);
 }
+#endif
 
 /* ProcessHTTPPOST_upnphttp()
  * executes the SOAP query if it is possible */
@@ -1121,6 +1123,7 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 		{
 			SendResp_caption(h, HttpUrl+10);
 		}
+#if 0
 		else if(strncmp(HttpUrl, "/status", 7) == 0)
 		{
 			if (web_status)
@@ -1135,6 +1138,7 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 			SendResp_presentation(h);
 			#endif
 		}
+#endif
 		else
 		{
 			DPRINTF(E_WARN, L_HTTP, "%s not found, responding ERROR 404\n", HttpUrl);
@@ -1273,7 +1277,7 @@ BuildHeader_upnphttp(struct upnphttp * h, int respcode,
 		"Connection: close\r\n"
 		"Content-Length: %d\r\n"
 		"Server: " MINIDLNA_SERVER_STRING "\r\n";
-	time_t curtime = time(NULL);
+	time_t curtime = uptime();
 	char date[30];
 	int templen;
 	struct string_s res;
@@ -1437,6 +1441,25 @@ send_file(struct upnphttp * h, int sendfd, off_t offset, off_t end_offset)
 	free(buf);
 }
 
+static void
+start_dlna_header(struct string_s *str, int respcode, const char *tmode, const char *mime)
+{
+	char date[30];
+	time_t now;
+
+	now = uptime();
+	strftime(date, sizeof(date),"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&now));
+	strcatf(str, "HTTP/1.1 %d OK\r\n"
+	             "Connection: close\r\n"
+	             "Date: %s\r\n"
+	             "Server: " MINIDLNA_SERVER_STRING "\r\n"
+	             "EXT:\r\n"
+	             "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
+	             "transferMode.dlna.org: %s\r\n"
+	             "Content-Type: %s\r\n",
+	             respcode, date, tmode, mime);
+}
+
 static int
 _open_file(const char *orig_path)
 {
@@ -1460,7 +1483,7 @@ _open_file(const char *orig_path)
 			if (strncmp(path, media_path->path, strlen(media_path->path)) == 0)
 				break;
 		}
-               if (!media_path && strncmp(path, db_path, strlen(db_path)))
+		if (!media_path && strncmp(path, db_path, strlen(db_path)))
 		{
 			DPRINTF(E_ERROR, L_HTTP, "Rejecting wide link %s -> %s\n",
 						orig_path, path);
@@ -1475,25 +1498,6 @@ _open_file(const char *orig_path)
 		DPRINTF(E_ERROR, L_HTTP, "Error opening %s\n", path);
 
 	return fd;
-}
-
-static void
-start_dlna_header(struct string_s *str, int respcode, const char *tmode, const char *mime)
-{
-	char date[30];
-	time_t now;
-
-	now = time(NULL);
-	strftime(date, sizeof(date),"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&now));
-	strcatf(str, "HTTP/1.1 %d OK\r\n"
-	             "Connection: close\r\n"
-	             "Date: %s\r\n"
-	             "Server: " MINIDLNA_SERVER_STRING "\r\n"
-	             "EXT:\r\n"
-	             "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
-	             "transferMode.dlna.org: %s\r\n"
-	             "Content-Type: %s\r\n",
-	             respcode, date, tmode, mime);
 }
 
 #ifdef MS_IPK
@@ -1885,7 +1889,6 @@ SendResp_icon(struct upnphttp * h, char * icon)
 	int size;
 	struct string_s str;
 #if defined(RTN66U) || defined(RTN56U)
-
 	if( strcmp(icon, "sm.png") == 0 )
 	{
 		DPRINTF(E_DEBUG, L_HTTP, "Sending small PNG icon\n");
@@ -2168,7 +2171,7 @@ SendResp_resizedimg(struct upnphttp * h, char * object)
 #ifdef MS_IPK
 	no_thumb_image_path_dir = realpath("/opt/etc/downloadmaster/mediaserverui/images", no_thumb_image_path_dir_buf);
 #else
-    	no_thumb_image_path_dir = realpath("/www/images", no_thumb_image_path_dir_buf);
+    no_thumb_image_path_dir = realpath("/www/images", no_thumb_image_path_dir_buf);
 #endif
 	if (no_thumb_image_path_dir)
 		snprintf(no_thumb_image_path, sizeof(no_thumb_image_path), "%s/ic_file_image.jpg", no_thumb_image_path_dir);
@@ -2349,9 +2352,9 @@ SendResp_resizedimg(struct upnphttp * h, char * object)
 		}
 
 #if defined MS_IPK || defined MS_LIMIT
-        imdst = imsrc;
+		imdst = imsrc;
 #else
-        imdst = image_resize(imsrc, dstw, dsth);
+		imdst = image_resize(imsrc, dstw, dsth);
 #endif
 		data = image_save_to_jpeg_buf(imdst, &size);
 
@@ -2364,14 +2367,14 @@ SendResp_resizedimg(struct upnphttp * h, char * object)
 		{
 
 #if defined MS_IPK || defined MS_LIMIT
-            if (thumb_cache_exists(file_path, &cache_file))
-                imsrc = image_new_from_jpeg(cache_file, 1, NULL, 0, 1, rotate);
-            else
-                imsrc = image_new_from_jpeg(no_thumb_image_path, 1, NULL, 0, 1, rotate);
+			if (thumb_cache_exists(file_path, &cache_file))
+				imsrc = image_new_from_jpeg(cache_file, 1, NULL, 0, 1, rotate);
+			else
+			imsrc = image_new_from_jpeg(no_thumb_image_path, 1, NULL, 0, 1, rotate);
 #else
-            imsrc = image_new_from_jpeg(file_path, 1, NULL, 0, scale, rotate);
+			imsrc = image_new_from_jpeg(file_path, 1, NULL, 0, scale, rotate);
 #endif
-            if( !imsrc )
+			if( !imsrc )
 			{
 				DPRINTF(E_WARN, L_HTTP, "Unable to open image %s!\n", file_path);
 				Send500(h);
@@ -2379,9 +2382,9 @@ SendResp_resizedimg(struct upnphttp * h, char * object)
 			}
 			
 #if defined MS_IPK || defined MS_LIMIT
-            imdst = imsrc;
+			imdst = imsrc;
 #else
-            imdst = image_resize(imsrc, dstw, dsth);
+			imdst = image_resize(imsrc, dstw, dsth);
 #endif
 			data = image_save_to_jpeg_buf(imdst, &size);
 

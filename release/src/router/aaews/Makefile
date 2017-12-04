@@ -2,6 +2,7 @@ TARGET=aaews
 WSLIB=libws.so
 DOG=mastiff
 
+include ../common.mak
 include $(TOP)/.config
 
 CURL_DIR=$(TOP)/curl-7.21.7
@@ -52,7 +53,29 @@ ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
 endif
 endif
 
-CFLAGS = -I$(CURL_DIR)/include -I$(OPENSSL_DIR)/include -I$(XML2_DIR)/include -I$(JSON_C_DIR) -I. $(ASUSNATNL_CFLAGS)  -I$(WS_SRC) -I$(NVRAM_DIR) -I$(WB_DIR) -I$(NT_CENTER_DIR)/lib -I$(SRCBASE)/include $(AICAM_CFLAGS) $(ROUTER_CFLAGS) -g
+CFLAGS += -g
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER), y)
+CFLAGS += -DRTCONFIG_NOTIFICATION_CENTER=y
+endif
+ifeq ($(RTCONFIG_IFTTT), y)
+CFLAGS += -DRTCONFIG_IFTTT=y
+endif
+ifeq ($(RTCONFIG_ALEXA), y)
+CFLAGS += -DRTCONFIG_ALEXA=y
+endif
+CFLAGS += -I.
+CFLAGS += -I$(CURL_DIR)/include
+CFLAGS += -I$(OPENSSL_DIR)/include
+CFLAGS += -I$(XML2_DIR)/include
+CFLAGS += -I$(JSON_C_DIR)
+CFLAGS += -I$(WS_SRC)
+CFLAGS += -I$(NVRAM_DIR)
+CFLAGS += -I$(WB_DIR)
+CFLAGS += -I$(NT_CENTER_DIR)/lib
+CFLAGS += -I$(SRCBASE)/include
+CFLAGS += $(ASUSNATNL_CFLAGS)
+CFLAGS += $(AICAM_CFLAGS)
+CFLAGS += $(ROUTER_CFLAGS)
 
 LIBS = -lcurl -lssl -lcrypto -lxml2 -ljson-c -ldl -pthread -lrt $(ROUTER_LIBS) -lws
 LDFLAGS = -L$(OPENSSL_DIR) -L$(CURL_DIR)/lib/.libs -L$(XML2_DIR)/.libs -L$(JSON_C_DIR)/.libs -L. $(ROUTER_LDFLAGS) -L$(WS_SRC) -L$(WB_DIR) -L$(WB_DIR)/output

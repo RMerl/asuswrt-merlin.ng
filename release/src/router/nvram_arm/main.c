@@ -499,7 +499,7 @@ int nvram_restore_new(char *file, char *buf)
 
 	p = buf;
 
-	while (*p)
+	while (*p || p-buf<=count)
 	{
 #if 1
 		/* e.g.: to skip the case: 00 2e 30 2e 32 38 00 ff 77 61 6e */

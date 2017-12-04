@@ -455,6 +455,17 @@ function initial(){
 		$("#reason_field").hide();
 		$("#suggestion").hide();
 	}
+	else if(casenum == 9) {
+		$("#page_title").html("<#web_redirect_case8_title#>");
+		html_code += "<ul>";
+		html_code += "<li>Make sure your AiMesh router is power on</li>";
+		html_code += "<li>Reboot AiMesh router and try again.</li>";
+		html_code += "</ul>";
+		$("#wanLink").hide();
+		$("#reason_title").hide();
+		$("#reason_field").hide();
+		$("#suggestion").hide();
+	}
 	else{
 		parent.location = '<% abs_index_page(); %>';
 	}

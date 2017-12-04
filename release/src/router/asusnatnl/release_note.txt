@@ -1,4 +1,8 @@
-﻿2017-08-21: 2.1.0.122
+﻿2017-11-15: 2.1.0.123
+==> SDK : 1. [update] ANT : Fill the status of tnl_info by pjsua_call_make_call if call->last_code is 0.
+          2. [bug fix] ANT : The issue that making call is always failed on windows platform.
+
+2017-08-21: 2.1.0.122
 ==> SDK : 1. Update (ANT). Disable sctp for all platforms.
           2. BugFix (ANT). Fix crash issue when trigger natnl_make_call before natnl_lib_init called.
 

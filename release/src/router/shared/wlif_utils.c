@@ -424,6 +424,8 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 			sprintf(tmptr, "br%d_ifnames", i);
 			sprintf(if_name, "br%d", i);
 			ifnames = nvram_get(tmptr);
+			if (!ifnames && !i)
+			ifnames = nvram_get("lan_ifnames");
 			ifname = if_name;
 
 			if (ifnames) {
@@ -723,7 +725,6 @@ get_wsec(wsec_info_t *info, unsigned char *mac, char *osifname)
 	/* verbose */
 	value = nvram_safe_get(strcat_r(wl_prefix, "nas_dbg", comb));
 	info->debug = (int)strtoul(value, NULL, 0);
-
 
 	/* get mfp setting */
 	info->mfp = atoi(nvram_safe_get(strcat_r(wl_prefix, "mfp", comb)));

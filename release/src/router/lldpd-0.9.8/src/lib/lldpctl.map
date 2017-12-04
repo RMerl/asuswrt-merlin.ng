@@ -1,0 +1,48 @@
+LIBLLDPCTL_4.8 {
+ global:
+  lldpctl_get_default_port;
+};
+
+LIBLLDPCTL_4.7 {
+ global:
+  lldpctl_get_local_chassis;
+};
+
+LIBLLDPCTL_4.6 {
+ global:
+  lldpctl_atom_create;
+  lldpctl_atom_dec_ref;
+  lldpctl_atom_get;
+  lldpctl_atom_get_buffer;
+  lldpctl_atom_get_connection;
+  lldpctl_atom_get_int;
+  lldpctl_atom_get_str;
+  lldpctl_atom_inc_ref;
+  lldpctl_atom_iter;
+  lldpctl_atom_iter_next;
+  lldpctl_atom_iter_value;
+  lldpctl_atom_set;
+  lldpctl_atom_set_buffer;
+  lldpctl_atom_set_int;
+  lldpctl_atom_set_str;
+  lldpctl_get_configuration;
+  lldpctl_get_default_transport;
+  lldpctl_get_interfaces;
+  lldpctl_get_port;
+  lldpctl_key_get_map;
+  lldpctl_last_error;
+  lldpctl_log_callback;
+  lldpctl_log_level;
+  lldpctl_new;
+  lldpctl_new_name;
+  lldpctl_process_conn_buffer;
+  lldpctl_recv;
+  lldpctl_release;
+  lldpctl_send;
+  lldpctl_strerror;
+  lldpctl_watch;
+  lldpctl_watch_callback;
+
+ local:
+  *;
+};

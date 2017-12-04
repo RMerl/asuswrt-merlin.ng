@@ -59,6 +59,10 @@ JNAERATORBASEURL = http://jnaerator.googlecode.com/files/
 
 CFLAGS += -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/networkmap
 LDFLAGS += -L$(TOP)/shared -lshared  -L$(TOP)/nvram${BCMEX}${EX7} -lnvram
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
 endif
@@ -69,6 +73,10 @@ endif
 
 ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 
 ifeq (SunOS, $(OS))

@@ -27,18 +27,56 @@
 #include <asm/gpio.h>
 #include "../bled_defs.h"
 #include "gpio_api.h"
+#ifdef CONFIG_4GAC53U
+#include <linux/list.h>
+#include <linux/leds.h>
+
+extern struct list_head leds_list;
+#endif
 
 /* __gpio_set_value() and __gpio_get_value() are defined and exported
  * by drivers/gpio/gpiolib.c
  */
 static void gpio_set(int gpio_nr, int value)
 {
+#ifdef CONFIG_4GAC53U
+	struct led_classdev *led_cdev = NULL;
+	char buf[8];
+
+	snprintf(buf, sizeof(buf), "led%d", gpio_nr);
+
+	list_for_each_entry(led_cdev, &leds_list, node) {
+		if (!strcmp(led_cdev->name, buf)) {
+			led_set_brightness(led_cdev, value);
+			return;
+		}
+	}
+#else
 	__gpio_set_value(gpio_nr, value);
+#endif
 }
 
 static int gpio_get(int gpio_nr)
 {
+#ifdef CONFIG_4GAC53U
+	struct led_classdev *led_cdev = NULL;
+	char buf[8];
+	int brightness = 0;
+
+	snprintf(buf, sizeof(buf), "led%d", gpio_nr);
+
+	list_for_each_entry(led_cdev, &leds_list, node) {
+		if (!strcmp(led_cdev->name, buf)) {
+			if (led_cdev->brightness > 0)
+				brightness = 1;
+			break;
+		}
+	}
+
+	return brightness;
+#else
 	return __gpio_get_value(gpio_nr);
+#endif
 }
 
 struct gpio_api_s gpio_api_tbl[GPIO_API_MAX] = {

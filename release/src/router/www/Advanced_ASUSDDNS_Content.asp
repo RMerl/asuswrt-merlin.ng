@@ -148,9 +148,9 @@ function submitForm(){
 		else if(http_enable != "0" && document.form.le_enable.value != orig_le_enable){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
-				document.form.action_script.value = "restart_httpd;restart_ddns_le";
+				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
 			else
-				document.form.action_script.value += ";restart_httpd";
+				document.form.action_script.value += ";restart_httpd;restart_webdav";
 		}
 	}
 
@@ -464,7 +464,7 @@ function change_cert_method(cert_method){
 
 			case "1":
 				document.getElementById("cert_desc").style.display = "";
-				document.getElementById("cert_desc").innerHTML = "Let's Encrypt is a service to provide free domain-validated certificate and certificate will be renewed automatically. Now Let's Encrypt certificate only supports ASUS DDNS service on "+ productid+"."; //untranslated
+				document.getElementById("le_desc").innerHTML = "Let's Encrypt is a service to provide free domain-validated certificate and certificate will be renewed automatically."; //untranslated
 				html_code = '<div style="margin-top:5px;"><input type="checkbox" name="letsEncryptTerm_check" checked>';
 				html_code += "I agree to the Let's Encrypt";//untranslated
 				html_code += '<a href="https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf" target="_blank" style="margin-left: 5px; color:#FFF; text-decoration: underline;">Term of Service</a>'
@@ -515,7 +515,7 @@ function show_cert_details(){
 			document.getElementById("cert_status").innerHTML = "<#upgrade_processing#>";
 		}
 		else
-			document.getElementById("cert_status").innerHTML = "<#Status_Active#>";
+			document.getElementById("cert_status").innerHTML = "<#CTL_ok#>";
 	}
 	else{
 		document.getElementById("cert_status").innerHTML = "Authorizing";
@@ -555,6 +555,10 @@ function upload_cert_key(){
 		hide_upload_window();
 		show_cert_details();
 	}
+}
+
+function save_cert_key(){
+	location.href = "cert_key.tar";
 }
 </script>
 </head>
@@ -651,10 +655,10 @@ function upload_cert_key(){
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,13);"><#LANHostConfig_x_DDNSHostNames_itemname#></a></th>
 				<td>
 					<div id="ddnsname_input" style="display:none;">
-						<input type="text" maxlength="64" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% nvram_get("ddns_hostname_x"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+						<input type="text" maxlength="63" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% nvram_get("ddns_hostname_x"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 					</div>
 					<div id="asusddnsname_input" style="display:none;">
-						<input type="text" maxlength="64" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off">.asuscomm.com
+						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off">.asuscomm.com
 						<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
 								<span id="alert_str"></span>
 						</div>
@@ -715,13 +719,13 @@ function upload_cert_key(){
 					<span id="self_signed" style="color:#FFF;">
 					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#wl_securitylevel_0#>
 					</span>	
-					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;"></div>
+					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;"><span id="le_desc"></span><span id="le_faq"><a href="https://www.asus.com/us/support/FAQ/1034294" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a></span></div>
 					<div id="cert_act" style="margin-top: 5px;"></div>
 				</td>
 			</tr>
 
 			<tr id="cert_details" style="display:none;">
-				<th>Server Certificate</th>
+				<th>Server Certificate</th><!--untranslated-->
 				<td>
 					<div style="display:table-row;">
 						<div style="display:table-cell;"><#Status_Str#> :</div>
@@ -738,6 +742,9 @@ function upload_cert_key(){
 					<div style="display:table-row;">
 						<div style="display:table-cell;">Expires on :</div> <!--untranslated-->
 						<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
+					</div>
+					<div>
+						<input class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
 					</div>
 				</td>
 			</tr>

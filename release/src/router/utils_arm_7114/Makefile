@@ -99,6 +99,10 @@ LDFLAGS += -L$(TOP)/nvram${BCMEX} -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += -lgcc_s
 
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 ifeq ($(RTCONFIG_5301X),y)
 CFLAGS += -DBCM5301X
 endif
@@ -136,12 +140,7 @@ wifi/%.o: %.c
 	$(CC) -c $(CFLAGS) -DRWL_WIFI -o $@ $^
 endif
 
-ifeq ($(wildcard $(SRCBASE)/router/utils/robocfg.c),)
-robocfg:
-	-cp -f $(SRCBASE)/wl/exe/prebuilt/robocfg robocfg
-else
 robocfg: robocfg.c etc53xx.h
-endif
 
 et:
 	cp -f $(SRCBASE)/wl/exe/prebuilt/et et

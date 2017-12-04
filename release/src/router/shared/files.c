@@ -20,6 +20,7 @@
 #include "shutils.h"
 #include "shared.h"
 
+unsigned int __dir_size__ = 0;
 
 int f_exists(const char *path)	// note: anything but a directory
 {
@@ -38,6 +39,26 @@ unsigned long f_size(const char *path)	// 4GB-1	-1 = error
 	struct stat st;
 	if (stat(path, &st) == 0) return st.st_size;
 	return (unsigned long)-1;
+}
+
+// callback function for ftw() in d_size() to calculate size of a directory, in bytes.
+int sum(const char *fpath, const struct stat *sb, int typeflag)
+{
+	__dir_size__ += sb->st_size;
+	return 0;
+}
+
+int d_size(const char *dirPath)
+{
+	__dir_size__ = 0;
+
+	if (ftw(dirPath, &sum, 1))
+	{
+		cprintf("ftw error!\n");
+		return -1;
+	}
+
+	return __dir_size__;
 }
 
 int f_read_excl(const char *path, void *buffer, int max)

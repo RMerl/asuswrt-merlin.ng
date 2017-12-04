@@ -103,8 +103,10 @@ static void rndis_msg_indicate(struct usbnet *dev, struct rndis_indicate *msg,
 int rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf, int buflen)
 {
 	struct cdc_state	*info = (void *) &dev->data;
+	struct usb_cdc_notification notification;
 	int			master_ifnum;
 	int			retval;
+	int			partial;
 	unsigned		count;
 	__le32			rsp;
 	u32			xid = 0, msg_len, request_id;
@@ -132,12 +134,20 @@ int rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf, int buflen)
 	if (unlikely(retval < 0 || xid == 0))
 		return retval;
 
-	// we time out and cancel our "get response" requests...
-	// so, this is fragile.  Probably need to poll for status.
+	/* Some devices don't respond on the control channel until
+	 * polled on the status channel, so do that first. */
+	if (dev->driver_info->data & RNDIS_DRIVER_DATA_POLL_STATUS) {
+		retval = usb_interrupt_msg(
+			dev->udev,
+			usb_rcvintpipe(dev->udev,
+				       dev->status->desc.bEndpointAddress),
+			&notification, sizeof(notification), &partial,
+			RNDIS_CONTROL_TIMEOUT_MS);
+		if (unlikely(retval < 0))
+			return retval;
+	}
 
-	/* ignore status endpoint, just poll the control channel;
-	 * the request probably completed immediately
-	 */
+	/* Poll the control channel; the request probably completed immediately */
 	rsp = buf->msg_type | RNDIS_MSG_COMPLETION;
 	for (count = 0; count < 10; count++) {
 		memset(buf, 0, CONTROL_BUFFER_SIZE);
@@ -414,8 +424,12 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 		dev_err(&intf->dev, "rndis get ethaddr, %d\n", retval);
 		goto halt_fail_and_release;
 	}
-	memcpy(net->dev_addr, bp, ETH_ALEN);
-	memcpy(net->perm_addr, bp, ETH_ALEN);
+
+	if (bp[0] & 0x02)
+		random_ether_addr(dev->net->dev_addr);
+	else
+		memcpy(net->dev_addr, bp, ETH_ALEN);
+	memcpy(net->perm_addr, net->dev_addr, ETH_ALEN);
 
 	/* set a nonzero filter to enable data transfers */
 	memset(u.set, 0, sizeof *u.set);
@@ -500,9 +514,10 @@ int rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			return 0;
 		}
 		skb_pull(skb, 8 + data_offset);
+		msg_len -= 8 + data_offset;
 
 		/* at most one packet left? */
-		if (likely((data_len - skb->len) <= sizeof *hdr)) {
+		if (likely((skb->len - msg_len) <= sizeof *hdr)) {
 			skb_trim(skb, data_len);
 			break;
 		}
@@ -511,7 +526,7 @@ int rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 		skb2 = skb_clone(skb, GFP_ATOMIC);
 		if (unlikely(!skb2))
 			break;
-		skb_pull(skb, msg_len - sizeof *hdr);
+		skb_pull(skb, msg_len);
 		skb_trim(skb2, data_len);
 		usbnet_skb_return(dev, skb2);
 	}
@@ -578,17 +593,33 @@ static const struct driver_info	rndis_info = {
 	.tx_fixup =	rndis_tx_fixup,
 };
 
+static const struct driver_info	rndis_poll_status_info = {
+	.description =	"RNDIS device (poll status before control)",
+	.flags =	FLAG_ETHER | FLAG_FRAMING_RN | FLAG_NO_SETINT,
+	.data =		RNDIS_DRIVER_DATA_POLL_STATUS,
+	.bind =		rndis_bind,
+	.unbind =	rndis_unbind,
+	.status =	rndis_status,
+	.rx_fixup =	rndis_rx_fixup,
+	.tx_fixup =	rndis_tx_fixup,
+};
+
 /*-------------------------------------------------------------------------*/
 
 static const struct usb_device_id	products [] = {
 {
+	/* 2Wire HomePortal 1000SW */
+	USB_DEVICE_AND_INTERFACE_INFO(0x1630, 0x0042,
+				      USB_CLASS_COMM, 2 /* ACM */, 0x0ff),
+	.driver_info = (unsigned long) &rndis_poll_status_info,
+}, {
 	/* RNDIS is MSFT's un-official variant of CDC ACM */
 	USB_INTERFACE_INFO(USB_CLASS_COMM, 2 /* ACM */, 0x0ff),
 	.driver_info = (unsigned long) &rndis_info,
 }, {
 	/* "ActiveSync" is an undocumented variant of RNDIS, used in WM5 */
 	USB_INTERFACE_INFO(USB_CLASS_MISC, 1, 1),
-	.driver_info = (unsigned long) &rndis_info,
+	.driver_info = (unsigned long) &rndis_poll_status_info,
 }, {
 	/* RNDIS for tethering */
 	USB_INTERFACE_INFO(USB_CLASS_WIRELESS_CONTROLLER, 1, 3),

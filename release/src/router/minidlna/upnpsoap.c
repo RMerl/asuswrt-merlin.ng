@@ -1127,6 +1127,15 @@ callback(void *args, int argc, char **argv, char **azColName)
 				                   "http://%s:%d/AlbumArt/%s-%s.jpg"
 				                   "&lt;/res&gt;",
 				                   lan_addr[passed_args->iface].str, runtime_vars.port, album_art, detailID);
+				if (passed_args->client == ESamsungSeriesCDE ) {
+					ret = strcatf(str, "&lt;res dlna:profileID=\"JPEG_SM\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\""
+							   " protocolInfo=\"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;"
+							   "DLNA.ORG_OP=01;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=%08X%024X\" resolution=\"320x320\"&gt;"
+							   "http://%s:%d/AlbumArt/%s-%s.jpg"
+							   "&lt;/res&gt;",
+							   DLNA_FLAG_DLNA_V1_5|DLNA_FLAG_TM_B|DLNA_FLAG_TM_I, 0,
+							   lan_addr[passed_args->iface].str, runtime_vars.port, album_art, detailID);
+				}
 			} else if( passed_args->filter & FILTER_UPNP_ALBUMARTURI ) {
 				ret = strcatf(str, "&lt;upnp:albumArtURI");
 				if( passed_args->filter & FILTER_UPNP_ALBUMARTURI_DLNA_PROFILEID ) {
@@ -2071,6 +2080,12 @@ SamsungGetFeatureList(struct upnphttp * h, const char * action)
 			video = runtime_vars.root_container;
 			image = runtime_vars.root_container;
 		}
+	}
+	else if (h->req_client && (h->req_client->type->flags & FLAG_SAMSUNG_DCM10))
+	{
+		audio = "A";
+		video = "V";
+		image = "I";
 	}
 
 	len = snprintf(body, sizeof(body), resp, audio, video, image);

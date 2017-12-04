@@ -201,6 +201,11 @@ static inline int update_failover_led(void);
 #endif
 
 void set_link_internet(int wan_unit, int link_internet){
+	if(nvram_get_int("link_internet") == link_internet){
+		//_dprintf("%s: skip the set link_internet.\n", __func__);
+		return;
+	}
+
 	nvram_set_int("link_internet", link_internet);
 #if defined(RTCONFIG_LANWAN_LED)
 	update_wan_leds(wan_unit);
@@ -210,8 +215,6 @@ void set_link_internet(int wan_unit, int link_internet){
 #if defined(RTCONFIG_LANWAN_LED)
 int update_wan_leds(int wan_unit)
 {
-	int link_internet = nvram_get_int("link_internet");
-
 #if defined(RTCONFIG_WANRED_LED)
 #ifdef RTCONFIG_WPS_ALLLED_BTN
 	if (nvram_match("AllLED", "1"))
@@ -220,6 +223,7 @@ int update_wan_leds(int wan_unit)
 			update_wan_led_and_wanred_led(wan_unit);
 
 #else	/* !RTCONFIG_WANRED_LED */
+	int link_internet = nvram_get_int("link_internet");
 
 #ifdef RT4GAC68U
 	int other_wan = 0;
@@ -941,7 +945,7 @@ int detect_internet(int wan_unit)
 
 		// avoid the nat rules had be applied by wan_up before wanduck.
 		if(nvram_get_int("nat_state") == NAT_STATE_NORMAL)
-			stop_nat_rules();
+			nat_state = stop_nat_rules();
 	}
 #endif
 	else if(!dns_ret && /* PPP connections with DNS detection */
@@ -1177,7 +1181,6 @@ int chk_proto(int wan_unit){
 			}
 		}
 #endif
-
 		if(current_state[wan_unit] == WAN_STATE_INITIALIZING){
 			disconn_case[wan_unit] = case_fail;
 			return DISCONN;
@@ -1347,7 +1350,6 @@ int if_wan_phyconnected(int wan_unit){
 	char tmp[100], prefix[32];
 	char wan_proto[16];
 #ifdef RTCONFIG_USB_MODEM
-	int find_modem_node = 0;
 	int wan_state = 0;
 	int sim_state = 0;
 	int modem_unit;
@@ -1372,7 +1374,6 @@ int if_wan_phyconnected(int wan_unit){
 	if(wan_unit == WAN_UNIT_FIRST && dualwan_unit__nonusbif(wan_unit) && get_dualwan_by_unit(other_wan_unit) == WANS_DUALWAN_IF_NONE){
 		snprintf(prefix, sizeof(prefix), "wan%d_", other_wan_unit);
 
-		find_modem_node = 0;
 		wan_state = nvram_get_int(nvram_state[other_wan_unit]);
 		modem_unit = get_modemunit_by_type(get_dualwan_by_unit(other_wan_unit));
 if(test_log)
@@ -1441,23 +1442,7 @@ _dprintf("wanduck: modem_unit=%d, try to get usb_if=%s.\n", modem_unit, usb_if);
 #endif
 
 					wan_state = nvram_get_int(nvram_state[other_wan_unit]); // after sleep(), wan_state is changed.
-
-					if(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_int", tmp2)), ""))
-						find_modem_node = 1;
 				}
-
-#if 0
-				if((!strcmp(modem_type, "tty") || !strcmp(modem_type, "mbim"))
-						&& !strcmp(nvram_safe_get(strcat_r(prefix2, "act_bulk", tmp2)), "")
-						&& strcmp(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)), "6610") // e.q. ZTE MF637U
-						){
-					_dprintf("wanduck(%d): finding the second tty node...\n", other_wan_unit);
-					find_modem_node = 1;
-				}
-#endif
-
-				if(find_modem_node)
-					eval("/usr/sbin/find_modem_node.sh");
 
 #if 0
 				if(!strcmp(modem_type, "tty") && !strcmp(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)), "6610")){ // e.q. ZTE MF637U
@@ -1511,7 +1496,6 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 	if(dualwan_unit__usbif(wan_unit)){
 		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 
-		find_modem_node = 0;
 		wan_state = nvram_get_int(nvram_state[wan_unit]);
 		modem_unit = get_modemunit_by_type(get_dualwan_by_unit(wan_unit));
 
@@ -1600,23 +1584,7 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 #endif
 
 					wan_state = nvram_get_int(nvram_state[wan_unit]); // after sleep(), wan_state is changed.
-
-					if(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_int", tmp2)), ""))
-						find_modem_node = 1;
 				}
-
-#if 0
-				if((!strcmp(modem_type, "tty") || !strcmp(modem_type, "mbim"))
-						&& !strcmp(nvram_safe_get(strcat_r(prefix2, "act_bulk", tmp2)), "")
-						&& strcmp(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)), "6610") // e.q. ZTE MF637U
-						){
-					_dprintf("wanduck(%d): finding the second tty node...\n", wan_unit);
-					find_modem_node = 1;
-				}
-#endif
-
-				if(find_modem_node)
-					eval("/usr/sbin/find_modem_node.sh");
 
 #if 0
 				if(!strcmp(modem_type, "tty") && !strcmp(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)), "6610")){ // e.q. ZTE MF637U
@@ -1628,7 +1596,7 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 				if(wan_state != WAN_STATE_CONNECTING || sim_state == 100){
 					if(!strcmp(modem_type, "gobi"))
 						eval("/usr/sbin/modem_status.sh", "sim");
-					else if(sim_state == 100 || sim_state == -2)
+					else if(sim_state == 100 || sim_state == -2) // QMI
 						eval("/usr/sbin/modem_status.sh", "sim");
 				}
 
@@ -1854,10 +1822,11 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			}
 		}
 		else if(!link_wan[wan_unit]){
+			if(link_internet != 1 && wan_unit == wan_primary_ifunit()
 #ifdef RTCONFIG_DUALWAN
-			if(strcmp(dualwan_mode, "lb"))
+					&& strcmp(dualwan_mode, "lb")
 #endif
-			{
+					){
 				set_link_internet(wan_unit, 1);
 				link_internet = 1;
 			}
@@ -2001,7 +1970,7 @@ int if_wan_connected(int wan_unit){
 	int link_internet;
 
 	if(chk_proto(wan_unit) != CONNED) {
-#if defined(MAPAC2200) || defined(MAPAC1300) || defined(VRZAC1300) || defined(MAPAC1800)
+#ifdef RTCONFIG_WIFI_SON
 		if ((nvram_get_int("link_internet") == 2) && (nvram_match("x_Setting", "1"))) {
 			logmessage("WAN Connection", "WAN stopped...");
 			set_link_internet(wan_unit, 1);
@@ -2903,6 +2872,16 @@ int wanduck_main(int argc, char *argv[]){
 	WAN_FB_UNIT = WAN_UNIT_SECOND;
 #endif
 
+	// let wanduck's first detect be activated after start_wan().
+	int i;
+	for(i = 0; i < 5; ++i){
+		if(nvram_get_int("wanduck_start_detect") == 1)
+			break;
+
+		_dprintf("wanduck: delay %d seconds before the first detect...\n", i+1);
+		sleep(1);
+	}
+
 #ifdef WEB_REDIRECT
 	if(nvram_get_int("freeze_duck"))
 		_dprintf("\n<*>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
@@ -3046,14 +3025,29 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 				eval("rmmod", "ebtables");
 #endif
 				redirect_setting();
-				eval("iptables-restore", "/tmp/redirect_rules");
+				eval("iptables-restore", REDIRECT_RULES);
 				// nat_rules = NAT_STATE_REDIRECT;
 			}
+#ifdef RTCONFIG_WIFI_SON
+			else if(!nvram_match("cfg_master", "1"))
+				; // do nothing.
+#endif
 			else if(cross_state == CONNED){
 				_dprintf("\n# AP mode: Disable direct rule(CONNED)\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
 				eval("ebtables", "-t", "broute", "-I", "BROUTING", "-p", "ipv4", "--ip-proto", "udp", "--ip-dport", "53", "-j", "redirect", "--redirect-target", "DROP");
+#ifdef RTCONFIG_WIFI_SON
+				if(sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))
+                                {
+                                        if(nvram_get_int("wl0.1_bss_enabled"))
+                                        {
+                                                eval("ebtables", "-t", "broute", "-I", "BROUTING","-i","ath1.55" ,"-j","ACCEPT");
+                                                eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
+                                        }
+                                }
+
+#endif
 				redirect_nat_setting();
 				eval("iptables-restore", NAT_RULES);
 				// nat_rules = NAT_STATE_NORMAL;
@@ -3099,6 +3093,28 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 		_dprintf("\n#CONNED : Enable direct rule\n");
 		rule_setup = 1;
 	}
+	else{ // CONNED at the first detect
+#if defined(RTCONFIG_WPS_ALLLED_BTN)
+		if(nvram_match("AllLED", "1"))
+			led_control(LED_WAN, LED_ON);
+		else
+			led_control(LED_WAN, LED_OFF);
+#elif defined(DSL_N55U) || defined(DSL_N55U_B)
+		led_control(LED_WAN, LED_ON);
+#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+		if(nvram_match("AllLED", "1")
+#ifdef RTAC68U
+				&& is_ac66u_v2_series()
+#endif
+				){
+			led_control(LED_WAN, LED_OFF);
+			enable_wan_led();
+		}
+#endif
+		_dprintf("\n#CONNED : first detect\n");
+		rule_setup = 0;
+	}
+
 if(test_log)
 _dprintf("wanduck(%d)(first detect   end): state %d, state_old %d, changed %d, wan_state %d.\n"
 		, current_wan_unit, conn_state[current_wan_unit], conn_state_old[current_wan_unit], conn_changed_state[current_wan_unit], current_state[current_wan_unit]);
@@ -3127,7 +3143,7 @@ _dprintf("wanduck(%d)(first detect   end): state %d, state_old %d, changed %d, w
 		tval.tv_sec = scan_interval;
 		tval.tv_usec = 0;
 
-		get_related_nvram();
+		get_related_nvram();		
 
 		// Sam 2014/10/14
 		// rule_setup depend on wan status,
@@ -3355,6 +3371,11 @@ if(test_log)
 _dprintf("wanduck(%d)(fo    phy): state %d, state_old %d, changed %d, wan_state %d.\n"
 		, current_wan_unit, conn_state[current_wan_unit], conn_state_old[current_wan_unit], conn_changed_state[current_wan_unit], current_state[current_wan_unit]);
 
+#ifdef RTCONFIG_USB_MODEM
+			if(conn_state[current_wan_unit] == CONNED && conn_state_old[current_wan_unit] == PHY_RECONN)
+				conn_state[current_wan_unit] = PHY_RECONN;
+#endif
+
 			if(current_state[current_wan_unit] == WAN_STATE_DISABLED){
 				//record_wan_state_nvram(current_wan_unit, WAN_STATE_STOPPED, WAN_STOPPED_REASON_MANUAL, -1);
 
@@ -3516,6 +3537,11 @@ _dprintf("wanduck(%d)(fo change): state %d, state_old %d, changed %d, wan_state 
 			other_wan_unit = get_next_unit(current_wan_unit);
 
 			current_state[current_wan_unit] = nvram_get_int(nvram_state[current_wan_unit]);
+
+#ifdef RTCONFIG_USB_MODEM
+			if(conn_state[current_wan_unit] == CONNED && conn_state_old[current_wan_unit] == PHY_RECONN)
+				conn_state[current_wan_unit] = PHY_RECONN;
+#endif
 
 			if(current_state[current_wan_unit] == WAN_STATE_DISABLED){
 				//record_wan_state_nvram(current_wan_unit, WAN_STATE_STOPPED, WAN_STOPPED_REASON_MANUAL, -1);
@@ -3714,6 +3740,11 @@ _dprintf("wanduck(%d) fail-back: state %d, state_old %d, changed %d, wan_state %
 
 			current_state[current_wan_unit] = nvram_get_int(nvram_state[current_wan_unit]);
 
+#ifdef RTCONFIG_USB_MODEM
+			if(conn_state[current_wan_unit] == CONNED && conn_state_old[current_wan_unit] == PHY_RECONN)
+				conn_state[current_wan_unit] = PHY_RECONN;
+#endif
+
 			if(current_state[current_wan_unit] == WAN_STATE_DISABLED){
 				disconn_case[current_wan_unit] = CASE_OTHERS;
 				conn_state[current_wan_unit] = DISCONN;
@@ -3730,6 +3761,13 @@ _dprintf("wanduck(%d): detect the modem to be reset...\n", current_wan_unit);
 			}
 #endif
 			else{
+// mark here, because had executed update_wan_leds() at if_wan_phyconnected().
+//#if defined(RTAC58U)
+//				update_wan_leds(current_wan_unit);
+// mark here, because had executed if_wan_phyconnected() before.
+//#elif !defined(RTN14U) && !defined(RTAC1200GP) && !defined(RTAC1200) && !defined(RTAC82U) && !defined(MAPAC1300) && !defined(MAPAC2200) && !defined(VZWAC1300)
+//				conn_state[current_wan_unit] = if_wan_phyconnected(current_wan_unit);
+//#endif
 				if(conn_state[current_wan_unit] == CONNED){
 #ifdef RTCONFIG_USB_MODEM
 					if(!(dualwan_unit__usbif(current_wan_unit) && current_state[current_wan_unit] == WAN_STATE_INITIALIZING))
@@ -3922,7 +3960,7 @@ _dprintf("wanduck(%d)(all   end): state %d, state_old %d, changed %d, wan_state 
 					else
 						_dprintf("\n# LB: Enable direct rule\n");
 					rule_setup = 1;
-_dprintf("nat_rule: stop_nat_rules 5.\n");
+					set_link_internet(wan_unit, 1);
 				}
 				nat_state = stop_nat_rules();
 			}
@@ -3931,7 +3969,7 @@ _dprintf("nat_rule: stop_nat_rules 5.\n");
 				if(rule_setup){
 					_dprintf("\n# LB: Disable direct rule\n");
 					rule_setup = 0;
-_dprintf("nat_rule: start_nat_rules 5.\n");
+					set_link_internet(wan_unit, 2);
 				}
 				nat_state = start_nat_rules();
 			}
@@ -4022,9 +4060,27 @@ _dprintf("nat_rule: stop_nat_rules 6.\n");
 					snprintf(domain_mapping, sizeof(domain_mapping), "%x %s", inet_addr(nvram_safe_get("lan_ipaddr")), DUT_DOMAIN_NAME);
 					f_write_string("/proc/net/dnsmqctrl", domain_mapping, 0, 0);
 #endif
+
+#ifndef RTCONFIG_LANTIQ
 #ifdef RTCONFIG_REDIRECT_DNAME
 					eval("ebtables", "-t", "broute", "-A", "BROUTING", "-p", "ipv4", "--ip-proto", "udp", "--ip-dport", "53", "-j", "redirect", "--redirect-target", "DROP");
 #endif
+#endif
+
+#ifdef RTCONFIG_WIFI_SON
+                                	if(sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))
+                                	{
+                                       		if(nvram_get_int("wl0.1_bss_enabled"))
+                                        	{
+                                                	eval("ebtables", "-t", "broute", "-I", "BROUTING","-i","ath1.55" ,"-j","ACCEPT");
+                                                	eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
+                                        	}
+                                	}
+
+#endif
+
+
+
 _dprintf("nat_rule: start_nat_rules 6.\n");
 					nat_state = start_nat_rules();
 #if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_RALINK)
@@ -4050,14 +4106,29 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
 				redirect_setting();
-				eval("iptables-restore", "/tmp/redirect_rules");
+				eval("iptables-restore", REDIRECT_RULES);
 				// nat_rules = NAT_STATE_REDIRECT;
 			}
+#ifdef RTCONFIG_WIFI_SON
+			else if(!nvram_match("cfg_master", "1"))
+				; // do nothing.
+#endif
 			else if (conn_changed_state[current_wan_unit] == D2C) {
 				_dprintf("\n# AP mode: Disable direct rule(D2C)\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
 				eval("ebtables", "-t", "broute", "-I", "BROUTING", "-p", "ipv4", "--ip-proto", "udp", "--ip-dport", "53", "-j", "redirect", "--redirect-target", "DROP");
+#ifdef RTCONFIG_WIFI_SON
+                                if(sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))
+                                {
+                                        if(nvram_get_int("wl0.1_bss_enabled"))
+                                        {
+                                                eval("ebtables", "-t", "broute", "-I", "BROUTING","-i","ath1.55" ,"-j","ACCEPT");
+                                                eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
+                                        }
+                                }
+
+#endif
 				redirect_nat_setting();
 				eval("iptables-restore", NAT_RULES);
 				// nat_rules = NAT_STATE_NORMAL;
@@ -4180,9 +4251,9 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				if(nvram_match("AllLED", "1")
 					&& !nvram_get_int("led_disable")
 #ifdef RTAC68U
-					&& is_ac66u_v2_series()
+						&& is_ac66u_v2_series()
 #endif
-				){
+						){
 					led_control(LED_WAN, LED_OFF);
 					enable_wan_led();
 				}

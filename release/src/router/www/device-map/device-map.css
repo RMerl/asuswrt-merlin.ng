@@ -746,7 +746,13 @@ Desktop			34
 .clientTitle {
 	font-family: Arial, Helvetica, sans-serif;
 	height: 25px;
-	line-height: 25px;
+	font-size: 12px;
+}
+.clientTitle:before {
+	content: "";
+	height: 100%;
+	display: inline-block;
+	vertical-align: middle;
 }
 
 .clientlist_dropdown {
@@ -799,7 +805,7 @@ Desktop			34
 .nav {
 	display:none;
 	float: left;
-	width: 107%;
+	width: 99%;
 	margin-bottom: 30px;
 	margin-top: -7px;
 }

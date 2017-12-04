@@ -106,8 +106,6 @@ function initial(){
 }
 
 function convRSSI(val){
-	if(val == "") return "wired";
-
 	val = parseInt(val);
 	if(val >= -50) return 4;
 	else if(val >= -80)	return Math.ceil((24 + ((val + 80) * 26)/10)/25);
@@ -215,10 +213,12 @@ function drawClientList(tab){
 		clientHtmlTd += '</td><td>';
 		var rssi_t = 0;
 		var connectModeTip = "";
-		rssi_t = convRSSI(clientObj.rssi);
-		if(isNaN(rssi_t))
+		if(clientObj.isWL == "0") {
+			rssi_t = "wired";
 			connectModeTip = "<#tm_wired#>";
+		}
 		else {
+			rssi_t = convRSSI(clientObj.rssi);
 			switch (rssi_t) {
 				case 1:
 					connectModeTip = "<#Radio#>: <#PASS_score1#>\n";
@@ -452,7 +452,7 @@ function updateClientList(e){
 				<td>
 					<div id="tabWired" class="tab_NW" align="center" style="display:none">
 						<span>
-							Wired (<b style="font-size:10px;" id="tabWiredNum">0</b>)
+							<#tm_wired#> (<b style="font-size:10px;" id="tabWiredNum">0</b>)
 						</span>
 					</div>
 					<script>
@@ -467,11 +467,11 @@ function updateClientList(e){
 					</script>
 				</td>
 				<td>
-					<div id="tabWireless" class="tab_NW" align="center" style="display:none">											
+					<div id="tabWireless" class="tab_NW" align="center" style="display:none;position:relative;min-width:85px;">
     					<span id="tabWirelessSpan">
-							Wireless (<b style="font-size:10px;" id="tabWirelessNum">0</b>)
+							<#tm_wireless#> (<b style="font-size:10px;" id="tabWirelessNum">0</b>)
 						</span>
-						<nav class="nav" id="select_wlclient_band"></nav>    
+						<nav class="nav" style="position:absolute;" id="select_wlclient_band"></nav>
 					</div>
 					<script>
 						function switchTab_drawClientList(wband){

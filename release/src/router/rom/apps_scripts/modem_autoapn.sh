@@ -11,8 +11,6 @@ else
 fi
 
 modem_type=`nvram get ${prefix}act_type`
-act_node1="${prefix}act_int"
-act_node2="${prefix}act_bulk"
 modem_vid=`nvram get ${prefix}act_vid`
 modem_autoapn=`nvram get modem_autoapn`
 modem_imsi=
@@ -22,28 +20,6 @@ dataf="$apps_local_space/spn_asus.dat"
 
 if [ "$modem_type" == "" -o  "$modem_type" == "ecm" -o "$modem_type" == "rndis" -o "$modem_type" == "asix" -o "$modem_type" == "ncm" ]; then
 	exit 0
-fi
-
-act_node=
-#if [ "$modem_type" = "tty" -o "$modem_type" = "mbim" ]; then
-#	if [ "$modem_type" = "tty" -a "$modem_vid" = "6610" ]; then # e.q. ZTE MF637U
-#		act_node=$act_node1
-#	else
-#		act_node=$act_node2
-#	fi
-#else
-	act_node=$act_node1
-#fi
-
-modem_act_node=`nvram get $act_node`
-if [ -z "$modem_act_node" ]; then
-	/usr/sbin/find_modem_node.sh
-
-	modem_act_node=`nvram get $act_node`
-	if [ -z "$modem_act_node" ]; then
-		echo "Can't get $act_node!"
-		exit 1
-	fi
 fi
 
 if [ "$1" = "set" ]; then

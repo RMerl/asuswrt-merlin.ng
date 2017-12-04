@@ -537,7 +537,7 @@ function applyRule(){
 		{
 			document.form.qos_enable.value = 1;
 			document.form.qos_type.value = 2;
-			if(ctf_disable_orig == '0'){	//brcm NAT Acceleration turned ON
+			if(ctf_disable_orig == '0' && !lantiq_support){	//brcm NAT Acceleration turned ON
 				document.form.action_script.value = "saveNvram;reboot";
 				document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 			}
@@ -550,7 +550,7 @@ function applyRule(){
 				|| unit_bw_dl != document.form.wl_bw_dl.value
 				|| (wl_x_y_bss_enabled == 1 && (document.form.bw_enabled_x.value == "1" || document.form.bw_enabled_x[0].checked)))	
 		{	
-			if(ctf_disable_orig == '0' && document.form.wl_bw_enabled.value == 1){
+			if(ctf_disable_orig == '0' && document.form.wl_bw_enabled.value == 1 && !lantiq_support){
 				document.form.action_script.value = "saveNvram;reboot";
 				document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 			}

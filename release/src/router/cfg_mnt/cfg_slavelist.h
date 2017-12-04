@@ -30,7 +30,9 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char ap5g1[CFG_CLIENT_NUM][MAC_LEN];
 	int level[CFG_CLIENT_NUM];
 	char fwVer[CFG_CLIENT_NUM][FWVER_LEN];
+	char newFwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char modelName[CFG_CLIENT_NUM][MODEL_NAME_LEN];
+	int activePath[CFG_CLIENT_NUM];
 	int maxLevel;
 	int count;
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;

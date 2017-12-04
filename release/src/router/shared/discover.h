@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <linux/if_packet.h> 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
@@ -32,8 +33,8 @@
 #include <errno.h>
 #include <netinet/udp.h>
 #include <netinet/ip.h>
-#include <netpacket/packet.h>
-//#include <net/ethernet.h>
+//#include <netpacket/packet.h>
+#include <net/ethernet.h>
 #include <features.h>
 
 #include <sys/uio.h>
@@ -45,8 +46,9 @@
 //#include <netinet/if_ether.h>
 #include <ctype.h>
 
+#define DETECT_LOG "/tmp/detect_wrong.log"
 #define eprintf(fmt, args...) do{\
-	FILE *ffp = fopen("/tmp/detect_wrong.log", "a+");\
+	FILE *ffp = fopen(DETECT_LOG, "a+");\
 	if(ffp) {\
 		fprintf(ffp, fmt, ## args);\
 		fclose(ffp);\

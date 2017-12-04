@@ -178,7 +178,7 @@ CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8370mb
 OBJS += rtl8370mb.o mdio.o
 endif
 else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += flash_mtd.o api-lantiq.o
+OBJS += flash_mtd.o api-lantiq.o lantiq.o
 else
 # Broadcom
 OBJS += wl.o wl_linux.o
@@ -277,6 +277,10 @@ endif
 
 ifeq ($(RTCONFIG_LP5523),y)
 OBJS += lp5523led.o
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+CFLAGS += -I$(TOP)/shared/sysdeps/amas
 endif
 
 vpath %.c sysdeps $(SRCBASE)/shared/ $(WLAN_ComponentSrcDirs)
@@ -395,7 +399,7 @@ endif
 .%.depend: %.c
 	@$(CC) $(CFLAGS) -M $< > $@
 
-.defaults.depend .tcode.depend: .%.depend: %.c %.prep
+.defaults.depend .tcode.depend .hw_auth.depend: .%.depend: %.c %.prep
 	@$(CC) $(CFLAGS) -M $< > $@
 
 %.prep: %.c

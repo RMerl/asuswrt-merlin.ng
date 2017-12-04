@@ -80,6 +80,7 @@ enum client_types {
 	EBubbleUPnP,
 	ENetFrontLivingConnect,
 	EKodi,
+	EMovian,
 	EStandardDLNA150,
 	EStandardUPnP
 };

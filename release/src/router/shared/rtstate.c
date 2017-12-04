@@ -364,7 +364,7 @@ char *get_wan6_ifname(int unit)
 
 int get_ports_status(unsigned int port_mask)
 {
-#if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_DETWAN)
 	return rtkswitch_Port_phyStatus(port_mask);
 #else
 	return -1;

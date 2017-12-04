@@ -1,3 +1,14 @@
+1.2.1 - Released 24-Aug-2017
+--------------------------------
+- Added Movian client detection and subtitle support.
+- Fixed an issue with discovery on non-Linux systems.
+- Fixed Bonjour discovery compatibility with TiVo Bolt.
+- Fixed NFO file parsing, and added change monitoring support for them.
+- Added a workaround for video thumbnails on some Samsung clients.
+- Added DoS protection for event subscriptions.
+- Fixed content browsing issues with some Samsung TVs.
+- Improved non-destructive update scan support.
+
 1.2.0 - Released 17-May-2017
 --------------------------------
 - Add libavformat > 57 compatibility.

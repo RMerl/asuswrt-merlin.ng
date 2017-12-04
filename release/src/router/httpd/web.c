@@ -21334,8 +21334,8 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	else //enable https, show current certificate content
 #endif
 	{
-//		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);	// TODO: update macro to use Asus'
-		strcpy(cert_path, UPLOAD_CERT);
+		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);
+//		strcpy(cert_path, UPLOAD_CERT);
 	}
 
 	fp = fopen(cert_path, "r");

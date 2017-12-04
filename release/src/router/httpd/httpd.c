@@ -2238,15 +2238,8 @@ void erase_cert(void)
 void start_ssl(void)
 {
 	int lockfd;
-	int ok=0;
 	int retry;
-	unsigned long long sn;
 	int i;
-#if !defined(RTCONFIG_JFFS2) && !defined(RTCONFIG_BRCM_NAND_JFFS2) && !defined(RTCONFIG_UBIFS)
-        int save;
-
-	save = nvram_match("https_crt_save", "1");
-#endif
 
 	lockfd = open("/var/lock/sslinit.lock", O_CREAT | O_RDWR, 0666);
 
@@ -2260,65 +2253,23 @@ void start_ssl(void)
 		}
 	}
 
-	//fprintf(stderr,"[httpd] start_ssl running!!\n");
-	//nvram_set("https_crt_gen", "1");
-
 	if (nvram_match("https_crt_gen", "1")) {
 		erase_cert();
 	}
 
 	retry = 1;
-
 	while (1) {
-
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-		if (f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-			eval("cp", "-p", UPLOAD_KEY, UPLOAD_CERT, "/etc/");
-			system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
-			chmod("/etc/server.pem", S_IRUSR|S_IWUSR);
-			ok = 1;
-		}
-#endif
-
 		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))) {
-			ok = 0;
-#if !defined(RTCONFIG_JFFS2) && !defined(RTCONFIG_BRCM_NAND_JFFS2) && !defined(RTCONFIG_UBIFS)
-			if (save) {
-				fprintf(stderr, "Save SSL certificate...\n"); // tmp test
-				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
-					if (eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
-						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
-						chmod("/etc/server.pem", S_IRUSR|S_IWUSR);
-						ok = 1;
-					}
+			erase_cert();
+			logmessage("httpd", "Generating SSL certificate...");
+			eval("gencert.sh", "web");
 
-					int save_intermediate_crt = nvram_match("https_intermediate_crt_save", "1");
-					if(save_intermediate_crt){
-						eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/intermediate_cert.pem");
-					}
-
-					unlink("/tmp/cert.tgz");
-				}
-			}
+#ifdef RTCONFIG_LETSENCRYPT
+			if (nvram_match("le_enable", "2"))
 #endif
-			if (!ok) {
-				erase_cert();
-				logmessage("httpd", "Generating SSL certificate...");
-				fprintf(stderr, "Generating SSL certificate...\n"); // tmp test
-				// browsers seems to like this when the ip address moves...	-- zzz
-				f_read("/dev/urandom", &sn, sizeof(sn));
-
-				eval("gencert.sh", "web");
+			{
+				save_cert();
 			}
-		}
-
-		if ((!ok)
-#if !defined(RTCONFIG_JFFS2) && !defined(RTCONFIG_BRCM_NAND_JFFS2) && !defined(RTCONFIG_UBIFS)
-		    && (save)
-		    && (*nvram_safe_get("https_crt_file")) == 0
-#endif
-		    ){
-			save_cert();
 		}
 
 		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {

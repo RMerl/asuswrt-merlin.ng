@@ -279,18 +279,6 @@ function rescan(){
 			<span style="display:none; color:#FFCC00; padding-right:20px;" id="radio2warn">2.4 GHz radio is disabled - cannot scan that band!</span>
 			<span style="display:none; color:#FFCC00;" id="radio5warn">5 GHz radio is disabled - cannot scan that band!</span>
 
-			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-				<tr>
-					<th width="20%">Scan Mode</th>
-					<td>
-						<select name="wlc_scan_mode" class="input_option">
-							<option value="0" <% nvram_match("wlc_scan_mode", "0", "selected"); %>>Active (default)</option>
-							<option value="1" <% nvram_match("wlc_scan_mode", "1", "selected"); %>>Passive</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-
 			<div class="apply_gen" valign="top">
 				<input disabled type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen_dis">
 				<img id="SearchingIcon" style="display:none;" src="/images/InternetScan.gif">

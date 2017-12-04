@@ -615,13 +615,14 @@ function applyRule(manual_switch){
 }
 
 function split_clientlist(clientlist){
-	document.form.vpn_client_clientlist.value = clientlist.substring(0,255)
+	var counter = 0;
+	document.form.vpn_client_clientlist.value = clientlist.substring(counter, (couter+=255))
 
-	document.form.vpn_client_clientlist1.value = clientlist.substring(255,510);
-	document.form.vpn_client_clientlist2.value = clientlist.substring(510,765);
-	document.form.vpn_client_clientlist3.value = clientlist.substring(765,1020);
-	document.form.vpn_client_clientlist4.value = clientlist.substring(1020,1275);
-	document.form.vpn_client_clientlist5.value = clientlist.substring(1275);
+	document.form.vpn_client_clientlist1.value = clientlist.substring(counter, (couter+=255));
+	document.form.vpn_client_clientlist2.value = clientlist.substring(counter, (couter+=255));
+	document.form.vpn_client_clientlist3.value = clientlist.substring(counter, (couter+=255));
+	document.form.vpn_client_clientlist4.value = clientlist.substring(counter, (couter+=255));
+	document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (couter+=255));
 }
 
 function change_vpn_unit(val){

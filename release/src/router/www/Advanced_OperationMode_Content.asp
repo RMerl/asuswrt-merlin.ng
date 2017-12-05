@@ -252,20 +252,20 @@ function initial(){
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["repeaterMode"], sw_mode_orig));
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
-		$("#operation_mode_bg").append("&nbsp;&nbsp;");
+		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
 		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
 	}
 	else {
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));
-		$("#operation_mode_bg").append("&nbsp;&nbsp;");
+		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["repeaterMode"], sw_mode_orig));
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
-		$("#operation_mode_bg").append("&nbsp;&nbsp;");
+		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["apMode"], sw_mode_orig));
-		$("#operation_mode_bg").append("&nbsp;&nbsp;");
+		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
 	}
 	setScenerion(sw_mode_orig, document.form.wlc_express.value);

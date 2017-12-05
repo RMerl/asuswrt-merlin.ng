@@ -49,6 +49,14 @@ function initial(){
 		showhide("client4", 0);
 		showhide("client5", 0);
 	}
+
+	if (!pptpd_support)
+		showhide("pptpserver", 0);
+
+	if (ipsec_srv_support)
+		setTimeout("refresh_ipsec_data()",1200);
+	else
+		showhide("ipsecsrv", 0);
 }
 
 
@@ -170,13 +178,17 @@ function displayData(){
 		else
 			document.getElementById("pptp_Block_Running").innerHTML = state_srv_stop;
 		parsePPTPClients();
-
-	} else {
-		showhide("pptpserver", 0);
 	}
 
 	if ( (vpnc_support) && (vpnc_clientlist_array != "") ) {
 		show_vpnc_rulelist();
+	}
+
+	if(ipsec_srv_support) {
+		if('<% nvram_get("ipsec_server_enable"); %>' == "1")
+			document.getElementById("ipsec_srv_Block_Running").innerHTML = state_srv_run;
+		else
+			document.getElementById("ipsec_srv_Block_Running").innerHTML = state_srv_stop;
 	}
 
 	setTimeout("refreshData()",2000);
@@ -429,6 +441,33 @@ function parseStatus(text, block, ipaddress, ripaddress){
 }
 
 
+function parseIPSecData(profileName){
+	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table"><thead><tr><td colspan="5">Connected Clients</td></tr></thead><tr>';
+        code += '<th style="text-align:left;white-space:nowrap;">Remote IP</th>';
+	code += '<th style="text-align:left;white-space:nowrap;"><#statusTitle_Client#></th>'
+        code += '<th style="text-align:left;white-space:nowrap;"><#Access_Time#></th>';
+        code += '<th style="text-align:left;white-space:nowrap;"><#vpn_ipsec_XAUTH#> <#Permission_Management_Users#></th>';
+        code += '<th style="text-align:left;white-space:nowrap;">PSKR Auth Time</th>';
+
+	var statusText = [[""], ["<#Connected#>"], ["<#Connecting_str#>"], ["<#Connecting_str#>"]]
+	var profileName_array = ipsec_connect_status_array[profileName].split("<");
+	for (i = 0; i < profileName_array.length; i += 1) {
+		if(profileName_array[i] != "") {
+			var profileName_col = profileName_array[i].split(">");
+
+			code += '<tr><td style="text-align:left;">' + profileName_col[0] + '</td>';
+			code += '<td style="text-align:left;">' + statusText[profileName_col[1]] + '</td>';
+			code += '<td style="text-align:left;">' + profileName_col[2] + '</td>';
+			code += '<td style="text-align:left;">' + profileName_col[3] + '</td>';
+			code += '<td style="text-align:left;">' + profileName_col[4] + '</td></tr>';
+                }
+        }
+
+	code +='</table>';
+	document.getElementById('ipsec_srv_Block').innerHTML = code;
+
+}
+
 function show_vpnc_rulelist(){
 	if(vpnc_clientlist_array[0] == "<")
 		vpnc_clientlist_array = vpnc_clientlist_array.split("<")[1];
@@ -483,6 +522,36 @@ function show_vpnc_rulelist(){
 	code +='</table>';
 
 	document.getElementById("vpnc_clientlist_Block").innerHTML = code;
+}
+
+function refresh_ipsec_data() {
+	$.ajax({
+		url: '/ajax_ipsec.asp',
+		dataType: 'script',
+		timeout: 1500,
+		error: function(xhr){
+			setTimeout("refresh_ipsec_data();",1500);
+		},
+		success: function() {
+			ipsec_connect_status_array = [];
+			for(var i = 0; i < ipsec_connect_status.length; i += 1) {
+				ipsec_connect_status_array["Host-to-Net"] = ipsec_connect_status[i][1];
+			}
+			if(ipsec_connect_status_array["Host-to-Net"] != undefined) {
+				var connected_count = (ipsec_connect_status_array["Host-to-Net"].split("<").length - 1);
+				if(connected_count > 0) {
+					parseIPSecData("Host-to-Net");
+				}
+				else
+					document.getElementById('ipsec_srv_Block').innerHTML = "";
+				}
+			else {
+				document.getElementById('ipsec_srv_Block').innerHTML = "";
+			}
+		}
+	});
+
+	setTimeout("refresh_ipsec_data()", 2000)
 }
 
 
@@ -573,6 +642,19 @@ function show_vpnc_rulelist(){
 					</tr>
 
 				</table>
+				<br>
+				<table width="100%" id="ipsecsrv" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+                                                        <td>IPSec Server<span id="ipsec_srv_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="ipsec_srv_Block"></div>
+						</td>
+					</tr>
+                                </table>
 				<br>
 				<table width="100%" id="client1" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>

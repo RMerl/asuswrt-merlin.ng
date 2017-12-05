@@ -1,6 +1,22 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
+382.2 Beta (xx-xxx-xxxx)
+   - NEW: Merged with GPL 382_18991 (RT-AC88U/RT-AC3100 blobs).
+          Most notable changes:
+            - Added IPSec VPN server
+            - Added IFTTT and Alexa support
+            - Let's Encrypt support (on the DDNS page)
+   - NEW: Added IPSec VPN status on the VPNStatus page.
+   - CHANGED: Moved HTTPS cert management to the DDNS page (where
+              Asus has put theirs, as Let's Encrypt is tied to
+              the DDNS configuration)
+   - REMOVED: Removed option to select between active and passive
+              scan mode for a site survey (that code is now closed
+              source and therefore that option can no longer be
+              implemented).
+
+
 382.1_2 (2-Dec-2017)
    - NEW: Added custom/add/postconf support for mcpd.conf (RT-AC86U)
    - CHANGED: Updated odhcp6c to latest upstream version

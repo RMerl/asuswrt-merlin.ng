@@ -1025,10 +1025,13 @@ function hide_https_lanport(_value){
 function hide_https_crt(){
 	var protos = document.form.http_enable.value;
 
-	showhide("https_crt_san", (protos != "0" ? 1 : 0));
-	showhide("https_crt_gen", (protos != "0" ? 1 : 0));
-	showhide("https_cert", (protos != "0" ? 1 : 0));
 	showhide("cert_details", (protos != "0" ? 1 : 0));
+
+	if (!letsencrypt_support) {
+		showhide("https_crt_san", (protos != "0" ? 1 : 0));
+		showhide("https_crt_gen", (protos != "0" ? 1 : 0));
+		showhide("https_cert", (protos != "0" ? 1 : 0));
+	}
 }
 
 // show clientlist
@@ -1862,14 +1865,14 @@ function upload_cert_key(){
 						<span id="https_access_page"></span>
 					</td>
 				</tr>
-                                <tr id="https_crt_gen">
+                                <tr id="https_crt_gen" style="display:none;">
                                         <th>Generate a new certificate</th>
                                         <td>
 						<input type="radio" name="https_crt_gen" class="input" value="1" onClick="hide_https_crt();" <% nvram_match_x("", "https_crt_gen", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="https_crt_gen" class="input" value="0" onClick="hide_https_crt();" <% nvram_match_x("", "https_crt_gen", "0", "checked"); %>><#checkbox_No#>
                                         </td>
                                 </tr>
-				<tr id="https_crt_san">
+				<tr id="https_crt_san" style="display:none;">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
 					<td>
 						<input type="text" name="https_crt_cn" value="<% nvram_get("https_crt_cn"); %>" autocomplete="off" class="input_32_table" maxlength="64" autocorrect="off" autocapitalize="off">

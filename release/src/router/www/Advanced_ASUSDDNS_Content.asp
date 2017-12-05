@@ -141,11 +141,14 @@ function get_real_ip(){
 
 function submitForm(){
 	if(letsencrypt_support){
+		if(document.form.cert_cn.value != '<% nvram_get("https_crt_cn"); %>'){
+			document.form.cert_gen.value = "1";
+		}
 		if(document.form.ddns_enable_x.value == "1" && document.form.le_enable.value == "1"){
 			document.form.action_wait.value = "10";
 			document.form.action_script.value = "restart_ddns_le";
 		}
-		else if(http_enable != "0" && document.form.le_enable.value != orig_le_enable){
+		else if(http_enable != "0" && (document.form.le_enable.value != orig_le_enable || document.form.cert_gen.value == "1")){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
 				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
@@ -242,8 +245,14 @@ function ddns_load_body(){
     hideLoading();
     var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
-    if(ddnsHint != "")
-        alert(ddnsHint);
+    if(ddnsHint != "") {
+        if(ddns_return_code.indexOf('200')!=-1) {
+            document.getElementById("ddns_state").innerHTML=ddnsHint;
+            document.getElementById("ddns_state").display="";
+        } else {
+            alert(ddnsHint);
+        }
+    }
     if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
         showhide("wan_ip_hide2", 0);
         if(ddns_server_x == "WWW.ASUS.COM"){
@@ -453,6 +462,8 @@ function change_cert_method(cert_method){
 
 		switch(cert_method){
 			case "0":
+				document.getElementById("cert_gen").style.display = "none";
+				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "none";
 				document.getElementById("cert_act").style.display = "none";
 				if(orig_le_enable != "0")
@@ -463,6 +474,8 @@ function change_cert_method(cert_method){
 				break;
 
 			case "1":
+				document.getElementById("cert_gen").style.display = "none";
+				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "";
 				document.getElementById("le_desc").innerHTML = "Let's Encrypt is a service to provide free domain-validated certificate and certificate will be renewed automatically."; //untranslated
 				html_code = '<div style="margin-top:5px;"><input type="checkbox" name="letsEncryptTerm_check" checked>';
@@ -487,6 +500,8 @@ function change_cert_method(cert_method){
 				break;
 
 			case "2":
+				document.getElementById("cert_gen").style.display = "";
+				document.getElementById("cert_san").style.display = "";
 				document.getElementById("cert_desc").style.display = "none";
 				html_code += '<div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
 				document.getElementById("cert_act").innerHTML = html_code;
@@ -521,6 +536,7 @@ function show_cert_details(){
 		document.getElementById("cert_status").innerHTML = "Authorizing";
 		setTimeout("get_cert_info();", 1000);
 	}
+	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
 	document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
 	document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
 	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
@@ -608,6 +624,7 @@ function save_cert_key(){
 				<div class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
 				<div class="formfontdesc" id="wan_ip_hide3" style="color:#FFCC00; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc3#></div>
 				<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_ddns#></div>
+				<div class="formfontdesc" id="ddns_state" style="color:#FFCC00; display:none;"></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 				<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
 			<tr>
@@ -723,23 +740,40 @@ function save_cert_key(){
 					<div id="cert_act" style="margin-top: 5px;"></div>
 				</td>
 			</tr>
+			<tr id="cert_gen" style="display:none;">
+				<th>Generate a new certificate</th>
+				<td>
+					<input type="radio" name="https_crt_gen" class="input" value="1" <% nvram_match_x("", "https_crt_gen", "1", "checked"); %>><#checkbox_Yes#>
+					<input type="radio" name="https_crt_gen" class="input" value="0" <% nvram_match_x("", "https_crt_gen", "0", "checked"); %>><#checkbox_No#>
+				</td>
+			</tr>
+			<tr id="cert_san" style="display:none;">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
+				<td>
+					<input type="text" name="https_crt_cn" value="<% nvram_get("https_crt_cn"); %>" autocomplete="off" class="input_32_table" maxlength="64" autocorrect="off" autocapitalize="off">
+				</td>
+			</tr>
 
 			<tr id="cert_details" style="display:none;">
 				<th>Server Certificate</th><!--untranslated-->
 				<td>
-					<div style="display:table-row;">
-						<div style="display:table-cell;"><#Status_Str#> :</div>
+					<div style="display:table-row;white-space: nowrap;">
+						<div style="display:table-cell;white-space: nowrap;"><#Status_Str#> :</div>
 						<div id="cert_status" style="display:table-cell; padding-left:10px;"></div>
 					</div>
-					<div style="display:table-row;">
+					<div style="display:table-row;white-space: nowrap;">
 						<div style="display:table-cell;">Issued to :</div> <!--untranslated-->
 						<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
 					</div>
-					<div style="display:table-row;">
+					<div style="display:table-row;white-space: nowrap;">
+						<div style="display:table-cell;">SAN :</div>
+						<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
+					</div>
+					<div style="display:table-row;white-space: nowrap;">
 						<div style="display:table-cell;">Issued by :</div> <!--untranslated-->
 						<div id="issueBy" style="display:table-cell; padding-left:10px;"></div>
 					</div>
-					<div style="display:table-row;">
+					<div style="display:table-row;white-space: nowrap;">
 						<div style="display:table-cell;">Expires on :</div> <!--untranslated-->
 						<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 					</div>

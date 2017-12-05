@@ -4146,14 +4146,20 @@ start_httpd(void)
 			cp_le_cert(LE_KEY, HTTPD_KEY);
 		}
 	}
-	else if(nvram_match("le_enable", "2"))
-#endif
-	{
-		if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
-			eval("cp", UPLOAD_CERT, HTTPD_CERT);
-			eval("cp", UPLOAD_KEY, HTTPD_KEY);
+	else if(nvram_match("le_enable", "2")) {
+                unlink(HTTPD_CERT);
+                unlink(HTTPD_KEY);
+                if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
+                        eval("cp", UPLOAD_CERT, HTTPD_CERT);
+                        eval("cp", UPLOAD_KEY, HTTPD_KEY);
 		}
 	}
+#else
+	if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
+		eval("cp", UPLOAD_CERT, HTTPD_CERT);
+		eval("cp", UPLOAD_KEY, HTTPD_KEY);
+	}
+#endif
 
 	enable = nvram_get_int("http_enable");
 	if (enable != 0) {

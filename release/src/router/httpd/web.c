@@ -6546,7 +6546,6 @@ send_netool_req(void *data)
 	
 	return 1;
 }
-#endif
 
 static void
 netool(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, char_t *path, char_t *query)
@@ -6722,6 +6721,7 @@ netool(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, char_
 	}
 	return;
 }
+#endif
 
 static int ej_get_arp_table(int eid, webs_t wp, int argc, char_t **argv){
 	const int MAX = 80;
@@ -21810,7 +21810,7 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv) {
 		while (!feof(p_fp)){
 			if(fgets(out, sizeof(out), p_fp)) {
 				out_len = strlen(out);
-				if (out_len > 0) {
+				if ((out_len > 0) && (strncmp(out, "ATE_ERROR", 9))) {
 					if(out[out_len - 1] == '\n' || out[out_len - 1] == '\r')
 						out[out_len - 1] = '\0';
 

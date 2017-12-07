@@ -437,9 +437,9 @@ define platformKernelConfig
 					cp -f $(SRCBASE)/wl/sysdeps/default/clm/src/wlc_clm_data.c $(SRCBASE)/wl/clm/src/. ; \
 				fi; \
 			fi; \
-			if [ -d $(SRCBASE)/router/wl_arm/$(BUILD_NAME) ]; then \
+			if [ -d $(SRCBASE)/router/wl_arm/prebuilt/$(BUILD_NAME) ]; then \
 				mkdir $(SRCBASE)/wl/linux ; \
-				cp $(SRCBASE)/router/wl_arm/$(BUILD_NAME)/prebuilt/wl*.o $(SRCBASE)/wl/linux ; \
+				cp $(SRCBASE)/router/wl_arm/prebuilt/$(BUILD_NAME)/wl*.o $(SRCBASE)/wl/linux ; \
 			fi; \
 			if [ -d $(SRCBASE)/router/et_arm/prebuilt ]; then \
 				mkdir -p $(SRCBASE)/et/linux ; \

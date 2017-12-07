@@ -5116,7 +5116,11 @@ endif
 
 lighttpd-1.4.39: shared nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl-7.21.7 $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) lighttpd-1.4.39/stamp-h1
 	@mkdir -p lighttpd-1.4.39/src/.libs
+ifeq ($(HND_ROUTER),y)
+	@cp lighttpd-1.4.39/prebuild_hnd/*.so lighttpd-1.4.39/src/.libs/
+else
 	@cp lighttpd-1.4.39/prebuild/*.so lighttpd-1.4.39/src/.libs/
+endif
 	$(MAKE) -C lighttpd-1.4.39 $(PARALLEL_BUILD)
 
 lighttpd-1.4.39-install:

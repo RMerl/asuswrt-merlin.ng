@@ -8,9 +8,12 @@ Asuswrt-Merlin 382 Changelog
             - Added IFTTT and Alexa support
             - Let's Encrypt support (on the DDNS page)
    - NEW: Added IPSec VPN status on the VPNStatus page.
+   - NEW: Added support for RT-AC68U (and all of its variants)
    - CHANGED: Moved HTTPS cert management to the DDNS page (where
               Asus has put theirs, as Let's Encrypt is tied to
               the DDNS configuration)
+   - FIXED: httpd crash on certain web pages if there are no Ethernet
+            clients connected
    - REMOVED: Removed option to select between active and passive
               scan mode for a site survey (that code is now closed
               source and therefore that option can no longer be

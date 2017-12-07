@@ -569,6 +569,11 @@ config BCM_WLAN_IMPL
 	int "Wireless Implementation Selection"
 	depends on BCM_WLAN
 
+config JFFS_NVRAM
+	bool "NVRAM on JFFS support"
+	default n
+	depends on BCM_WLAN
+
 config BCM_PCI
 	bool "Support for PCI"
 	select PCI

@@ -232,6 +232,10 @@ extern int nvram_getall(char *nvram_buf, int count);
  */
 uint8 nvram_calc_crc(struct nvram_header * nvh);
 
+#ifdef JFFS_NVRAM
+extern void jffs_nvram_init(void);
+#endif
+
 extern int nvram_space;
 #endif /* _LANGUAGE_ASSEMBLY */
 

@@ -323,7 +323,7 @@ function show_etherstate(){
 
 
 function show_etherstate_hnd(){
-	var wanLanStatus = hndswitch;
+	var wanLanStatus = hndswitch["portSpeed"];
 
 	var parseStrToArray = function(_array) {
 		var speedMapping = new Array();

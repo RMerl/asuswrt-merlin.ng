@@ -15498,39 +15498,22 @@ void bwdpi_restart_vpn_services()
 		printf("%s : restart_vpnd\n", __FUNCTION__);
 	}
 
-	if (nvram_get_int("VPNServer_enable")) {
-		stop_ovpn_server(nvram_get_int("vpn_server_unit"));
-		start_ovpn_server(nvram_get_int("vpn_server_unit"));
-		printf("%s : restart_openvpnd\n", __FUNCTION__);
-	}
+#endif
+
+	// OpenVPN client and servers
+#if defined(RTCONFIG_OPENVPN)
+	stop_ovpn_all();
+	start_ovpn_eas();
+	printf("%s : restart openvpn servers and clients\n", __FUNCTION__);
 #endif
 
 	// vpn client
 #if defined(RTCONFIG_VPNC)
-#if defined(RTCONFIG_OPENVPN)
-	char buf[32] = {0};
-	int i;
-	int openvpnc_unit = nvram_get_int("vpn_client_unit");
-#endif // RTCONFIG_OPENVPN
 	if (!nvram_match("vpnc_proto", "openvpn") && !nvram_match("vpnc_proto", "disable")) {
 		stop_vpnc();
 		start_vpnc();
 		printf("%s : restart vpn client - pptp/l2tp\n", __FUNCTION__);
 	}
-#if defined(RTCONFIG_OPENVPN)
-	else if (nvram_match("vpnc_proto", "openvpn") && !nvram_match("vpnc_proto", "disable")) {
-		for (i = 1; i <= OVPN_CLIENT_MAX; i++)
-		{
-			sprintf(buf, "vpnclient%d", i);
-			if ( pidof(buf) >= 0 )
-			{
-				stop_ovpn_client(i);
-			}
-		}
-		start_ovpn_client(openvpnc_unit);
-		printf("%s : restart vpn client - openvpn\n", __FUNCTION__);
-	}
-#endif // RTCONFIG_OPENVPN
 #endif // RTCONFIG_VPNC
 
 	// vpn fusion

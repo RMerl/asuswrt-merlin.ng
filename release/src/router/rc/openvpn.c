@@ -462,6 +462,13 @@ void start_ovpn_client(int clientNum)
 			fprintf(fp, "iptables -t nat -I POSTROUTING -s %d.%d.%d.%d/%s -o %s -j MASQUERADE\n",
 			        ip[0]&nm[0], ip[1]&nm[1], ip[2]&nm[2], ip[3]&nm[3], nvram_safe_get("lan_netmask"), iface);
 		}
+		// Disable rp_filter when in policy mode - firewall restart would re-enable it
+		if (nvram_pf_get_int(prefix, "rgw") > 1) {
+			fprintf(fp, "for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do\n"); /* */
+			fprintf(fp, "echo 0 > $i\n");
+			fprintf(fp, "done\n");
+		}
+
 		fclose(fp);
 		vpnlog(VPN_LOG_EXTRA,"Done creating firewall rules");
 

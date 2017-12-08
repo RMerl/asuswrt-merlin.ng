@@ -74,8 +74,8 @@ then
 
 	if [ $setdns == 1 ]
 	then
-		echo /usr/sbin/iptables -t nat -A PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
-		echo /usr/sbin/iptables -t nat -A PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
+		echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
+		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
 	fi
 fi
 

@@ -62,14 +62,14 @@ then
 		if echo $option | grep "dhcp-option WINS "; then echo $option | sed "s/ WINS /=44,/" >> $conffile; fi
 		if echo $option | grep "dhcp-option DNS"
 		then
-			echo $option | sed "s/dhcp-option DNS/nameserver/" >> $resolvfile
+			echo $option | sed "s/dhcp-option DNS/server=/" >> $resolvfile
 			if [ $setdns == 0 ]
 			then
 				create_client_list $(echo $option | sed "s/dhcp-option DNS//")
 				setdns=1
 			fi
 		fi
-		if echo $option | grep "dhcp-option DOMAIN"; then echo $option | sed "s/dhcp-option DOMAIN/search/" >> $resolvfile; fi
+#		if echo $option | grep "dhcp-option DOMAIN"; then echo $option | sed "s/dhcp-option DOMAIN/search/" >> $resolvfile; fi
 	done
 
 	if [ $setdns == 1 ]

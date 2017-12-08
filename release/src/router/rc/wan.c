@@ -2068,7 +2068,7 @@ int update_resolvconf(void)
 
 /* Add DNS from VPN clients, others if non-exclusive */
 #ifdef RTCONFIG_OPENVPN
-	dnsstrict = write_ovpn_resolv(fp);
+	dnsstrict = write_ovpn_resolv(fp_servers);
 	// If dns not set to exclusive
 	if (dnsstrict != 3)
 #endif

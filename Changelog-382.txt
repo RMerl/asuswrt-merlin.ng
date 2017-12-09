@@ -3,17 +3,26 @@ Asuswrt-Merlin 382 Changelog
 
 382.2 Beta (xx-xxx-xxxx)
    - NEW: Merged with GPL 382_18991 (RT-AC88U/RT-AC3100 blobs).
-          Most notable changes:
+          Most notable changes (will vary from models):
             - Added IPSec VPN server
             - Added IFTTT and Alexa support
-            - Let's Encrypt support (on the DDNS page)
+            - Let's Encrypt support (DDNS page)
+   - NEW: Merged HND SDK + binary components from 382_18848
+          (RT-AC86U)
    - NEW: Added IPSec VPN status on the VPNStatus page.
    - NEW: Added support for RT-AC68U (and all of its variants)
    - CHANGED: Moved HTTPS cert management to the DDNS page (where
               Asus has put theirs, as Let's Encrypt is tied to
               the DDNS configuration)
+   - CHANGED: Updated openssl to 1.0.2n.
+   - CHANGED: Updated tor to 0.2.9.14.
    - FIXED: httpd crash on certain web pages if there are no Ethernet
             clients connected
+   - FIXED: DNSFILTER rules would have priority over OPENVPN Client
+            rules (when client has DNS set to Exclusive mode).
+   - FIXED: traffic routing from the router itself would fail when
+            restarting the firewall while using an ovpn client with
+            policy rules in effect.
    - REMOVED: Removed option to select between active and passive
               scan mode for a site survey (that code is now closed
               source and therefore that option can no longer be

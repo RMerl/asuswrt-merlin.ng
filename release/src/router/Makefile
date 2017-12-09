@@ -5334,7 +5334,7 @@ strongswan-5.2.1/stamp-h1:
 	--enable-cmd --enable-eap-tls --enable-libipsec --disable-static \
 	CFLAGS="-I$(STAGEDIR)/usr/include -I$(TOP)/openssl/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
 	LDFLAGS="$(if $(RTCONFIG_HND_ROUTER), -L$(TOP)/strongswan-5.2.1, -L$(STAGEDIR)/usr/lib -L$(TOP)/openssl)" \
-	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
+	LIBS="-lpthread -ldl -lm"
 	touch $@
 
 strongswan-5.2.1: strongswan-5.2.1/stamp-h1

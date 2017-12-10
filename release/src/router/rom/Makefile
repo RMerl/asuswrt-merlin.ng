@@ -259,7 +259,7 @@ ifeq ($(RTCONFIG_LETSENCRYPT),y)
 endif
 
 ifeq ($(HND_ROUTER),y)
-	mkdir -p $(INSTALLDIR)/rom/rom/usr/share/zoneinfo
+	mkdir -p $(INSTALLDIR)/rom/usr/share/zoneinfo
 	mkdir -p $(INSTALLDIR)/rom/scripts
-	cp -rf zoneinfo/* $(INSTALLDIR)/rom/rom/usr/share/zoneinfo/
+	cp -rf zoneinfo/* $(INSTALLDIR)/rom/usr/share/zoneinfo/
 endif

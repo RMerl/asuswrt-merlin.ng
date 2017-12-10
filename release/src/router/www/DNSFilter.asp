@@ -194,12 +194,12 @@ function applyRule(){
 function split_clientlist(clientlist){
 	var counter = 0;
 
-	document.form.dnsfilter_rulelist.value = clientlist.substring(counter, (couter+=255))
-	document.form.dnsfilter_rulelist1.value = clientlist.substring(counter, (couter+=255));
-	document.form.dnsfilter_rulelist2.value = clientlist.substring(counter, (couter+=255));
-	document.form.dnsfilter_rulelist3.value = clientlist.substring(counter, (couter+=255));
-	document.form.dnsfilter_rulelist4.value = clientlist.substring(counter, (couter+=255));
-	document.form.dnsfilter_rulelist5.value = clientlist.substring(counter, (couter+=255));
+	document.form.dnsfilter_rulelist.value = clientlist.substring(counter, (counter+=255))
+	document.form.dnsfilter_rulelist1.value = clientlist.substring(counter, (counter+=255));
+	document.form.dnsfilter_rulelist2.value = clientlist.substring(counter, (counter+=255));
+	document.form.dnsfilter_rulelist3.value = clientlist.substring(counter, (counter+=255));
+	document.form.dnsfilter_rulelist4.value = clientlist.substring(counter, (counter+=255));
+	document.form.dnsfilter_rulelist5.value = clientlist.substring(counter, (counter+=255));
 }
 
 function check_macaddr(obj,flag){ //control hint of input mac address

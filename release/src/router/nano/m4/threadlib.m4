@@ -66,7 +66,7 @@ changequote(,)dnl
          dnl child process gets an endless segmentation fault inside execvp().
          dnl Disable multithreading by default on Cygwin 1.5.x, because it has
          dnl bugs that lead to endless loops or crashes. See
-         dnl <http://cygwin.com/ml/cygwin/2009-08/msg00283.html>.
+         dnl <https://cygwin.com/ml/cygwin/2009-08/msg00283.html>.
          osf*) gl_use_threads=no ;;
          cygwin*)
                case `uname -r` in
@@ -169,7 +169,7 @@ int main ()
         #
         # If -pthread works, prefer it to -lpthread, since Ubuntu 14.04
         # needs -pthread for some reason.  See:
-        # http://lists.gnu.org/archive/html/bug-gnulib/2014-09/msg00023.html
+        # https://lists.gnu.org/r/bug-gnulib/2014-09/msg00023.html
         save_LIBS=$LIBS
         for gl_pthread in '' '-pthread'; do
           LIBS="$LIBS $gl_pthread"

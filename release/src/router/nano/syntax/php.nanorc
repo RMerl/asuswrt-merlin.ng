@@ -1,7 +1,7 @@
 ## Here is an example for PHP.
 
 syntax "php" "\.ph(p[23457s~]?|tml)$"
-magic "PHP script text"
+magic "PHP script"
 comment "//"
 
 # PHP markings.

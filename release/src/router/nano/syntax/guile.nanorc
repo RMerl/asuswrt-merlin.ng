@@ -2,7 +2,6 @@
 
 syntax "guile" "\.scm$"
 header "^#!.*guile"
-magic "guile"
 comment ";"
 
 # Basic scheme functions

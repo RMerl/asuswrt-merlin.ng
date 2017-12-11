@@ -87,8 +87,8 @@ AC_DEFUN([AC_CHECK_HEADER_STDBOOL],
              char o[sizeof n == m * sizeof n[0] ? 1 : -1];
              char p[-1 - (Bool) 0 < 0 && -1 - (bool) 0 < 0 ? 1 : -1];
              /* Catch a bug in an HP-UX C compiler.  See
-                http://gcc.gnu.org/ml/gcc-patches/2003-12/msg02303.html
-                http://lists.gnu.org/archive/html/bug-coreutils/2005-11/msg00161.html
+                https://gcc.gnu.org/ml/gcc-patches/2003-12/msg02303.html
+                https://lists.gnu.org/r/bug-coreutils/2005-11/msg00161.html
               */
              Bool q = true;
              Bool *pq = &q;

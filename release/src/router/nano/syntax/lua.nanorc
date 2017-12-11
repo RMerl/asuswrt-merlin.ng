@@ -5,6 +5,7 @@
 ## Version: 2011-05-05
 
 syntax "lua" "\.lua$"
+magic "Lua script"
 comment "--"
 
 color brightwhite "\[\[.*\]\]"

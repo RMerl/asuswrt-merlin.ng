@@ -1,3 +1,26 @@
+2017.11.27 - GNU nano 2.9.1 "Damyatta" fixes a bug where, when the mark
+		is on, ^S would overwrite the file with just the marked
+		region.  This release further clears the "Modified" flag
+		when all edits are undone, adds or updates some magic
+		strings, and does not forget when the cursor was last
+		at line 1, column 1.
+
+2017.11.18 - GNU nano 2.9.0 "Eta" introduces the ability to record and
+		replay keystrokes (M-: to start and stop recording, M-;
+		to play the macro back), makes ^Q and ^S do something
+		useful by default (^Q starts a backward search, and ^S
+		saves the current file), changes ^W to start always a
+		forward search, shows the number of open buffers (when
+		more than one) in the title bar, no longer asks to press
+		Enter when there are errors in an rc file, retires the
+		options '--quiet' and 'set quiet' and 'set backwards',
+		makes indenting and unindenting undoable, will look in
+		$XDG_CONFIG_HOME for a nanorc file and in $XDG_DATA_HOME
+		for the history files, adds a history stack for executed
+		commands (^R^X), does not overwrite the position-history
+		file of another nano, and fixes a score of tiny bugs.
+
+
 2017.08.27 - GNU nano 2.8.7 "Fragrance" fixes a lockup when tabs are
 		wider than the screen, makes indenting + unindenting
 		more predictable by retaining relative indentations,
@@ -1627,7 +1650,7 @@
 
 2000.02.02 - Okay, I hate to go back on what I said in the last release,
 		but I may be changing jobs very soon.  I will release
-		version 0.8.2 as is (no i18n, no help menu (yet).  I
+		version 0.8.2 as is (no i18n, no help menu (yet)).  I
 		expect things to settle down by the end of next week,
 		and then I can try to start on the i18n support and help
 		menu; look for these new features in version 0.8.5 to

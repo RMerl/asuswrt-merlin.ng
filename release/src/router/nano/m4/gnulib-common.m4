@@ -228,13 +228,13 @@ m4_ifndef([AS_VAR_IF],
 # This is like AC_PROG_CC_C99, except that
 # - AC_PROG_CC_C99 did not exist in Autoconf versions < 2.60,
 # - AC_PROG_CC_C99 does not mix well with AC_PROG_CC_STDC
-#   <http://lists.gnu.org/archive/html/bug-gnulib/2011-09/msg00367.html>,
+#   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00367.html>,
 #   but many more packages use AC_PROG_CC_STDC than AC_PROG_CC_C99
-#   <http://lists.gnu.org/archive/html/bug-gnulib/2011-09/msg00441.html>.
+#   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00441.html>.
 # Remaining problems:
 # - When AC_PROG_CC_STDC is invoked twice, it adds the C99 enabling options
 #   to CC twice
-#   <http://lists.gnu.org/archive/html/bug-gnulib/2011-09/msg00431.html>.
+#   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00431.html>.
 # - AC_PROG_CC_STDC is likely to change now that C11 is an ISO standard.
 AC_DEFUN([gl_PROG_CC_C99],
 [

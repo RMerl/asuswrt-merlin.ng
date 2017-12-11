@@ -48,7 +48,7 @@ int do_statusbar_input(bool *ran_func, bool *finished)
     *finished = FALSE;
 
     /* Read in a character. */
-    input = get_kbinput(bottomwin);
+    input = get_kbinput(bottomwin, VISIBLE);
 
 #ifndef NANO_TINY
     if (input == KEY_WINCH)
@@ -60,7 +60,7 @@ int do_statusbar_input(bool *ran_func, bool *finished)
      * shortcut character. */
     if (input == KEY_MOUSE) {
 	if (do_statusbar_mouse() == 1)
-	    input = get_kbinput(bottomwin);
+	    input = get_kbinput(bottomwin, BLIND);
 	else
 	    return ERR;
     }
@@ -439,10 +439,7 @@ void update_the_statusbar(void)
 
 /* Get a string of input at the statusbar prompt. */
 functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
-	bool allow_files, bool *listed,
-#ifndef DISABLE_HISTORIES
-	filestruct **history_list,
-#endif
+	bool allow_files, bool *listed, filestruct **history_list,
 	void (*refresh_func)(void))
 {
     int kbinput = ERR;
@@ -452,7 +449,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
     bool tabbed = FALSE;
 	/* Whether we've pressed Tab. */
 #endif
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     char *history = NULL;
 	/* The current history string. */
     char *magichistory = NULL;
@@ -465,21 +462,14 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 	/* The length of the original string that we're trying to
 	 * tab complete, if any. */
 #endif
-#endif /* !DISABLE_HISTORIES */
+#endif /* ENABLE_HISTORIES */
 
     if (statusbar_x > strlen(answer))
 	statusbar_x = strlen(answer);
 
-#ifdef DEBUG
-    fprintf(stderr, "acquiring: answer = \"%s\", statusbar_x = %lu\n", answer, (unsigned long) statusbar_x);
-#endif
-
     update_the_statusbar();
 
     while (TRUE) {
-	/* Ensure the cursor is shown when waiting for input. */
-	curs_set(1);
-
 	kbinput = do_statusbar_input(&ran_func, &finished);
 
 #ifndef NANO_TINY
@@ -487,7 +477,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 	if (kbinput == KEY_WINCH) {
 	    refresh_func();
 	    *actual = KEY_WINCH;
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
 	    free(magichistory);
 #endif
 	    return NULL;
@@ -504,7 +494,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 	    tabbed = FALSE;
 
 	if (func == do_tab) {
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
 	    if (history_list != NULL) {
 		if (last_kbinput != the_code_for(do_tab, TAB_CODE))
 		    complete_len = strlen(answer);
@@ -521,7 +511,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 					&tabbed, refresh_func, listed);
 	} else
 #endif /* ENABLE_TABCOMP */
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
 	if (func == get_history_older_void) {
 	    if (history_list != NULL) {
 		/* If we're scrolling up at the bottom of the history list
@@ -567,7 +557,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 		finished = FALSE;
 	    }
 	} else
-#endif /* !DISABLE_HISTORIES */
+#endif /* ENABLE_HISTORIES */
 	if (func == do_help_void) {
 	    /* This key has a shortcut-list entry when it's used to go to
 	     * the help browser or display a message indicating that help
@@ -584,12 +574,12 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 
 	update_the_statusbar();
 
-#if !defined(DISABLE_HISTORIES) && defined(ENABLE_TABCOMP)
+#if defined(ENABLE_HISTORIES) && defined(ENABLE_TABCOMP)
 	last_kbinput = kbinput;
 #endif
     }
 
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     /* Set the current position in the history list to the bottom. */
     if (history_list != NULL) {
 	history_reset(*history_list);
@@ -614,10 +604,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
  * interpreted.  The allow_files parameter indicates whether we should
  * allow all files (as opposed to just directories) to be tab completed. */
 int do_prompt(bool allow_tabs, bool allow_files,
-	int menu, const char *curranswer,
-#ifndef DISABLE_HISTORIES
-	filestruct **history_list,
-#endif
+	int menu, const char *curranswer, filestruct **history_list,
 	void (*refresh_func)(void), const char *msg, ...)
 {
     va_list ap;
@@ -643,11 +630,7 @@ int do_prompt(bool allow_tabs, bool allow_files,
     prompt[actual_x(prompt, (COLS < 5) ? 0 : COLS - 5)] = '\0';
 
     func = acquire_an_answer(&retval, allow_tabs, allow_files, &listed,
-#ifndef DISABLE_HISTORIES
-			history_list,
-#endif
-			refresh_func);
-
+				history_list, refresh_func);
     free(prompt);
     prompt = saved_prompt;
 
@@ -671,10 +654,6 @@ int do_prompt(bool allow_tabs, bool allow_files,
     blank_statusbar();
     wnoutrefresh(bottomwin);
 
-#ifdef DEBUG
-    fprintf(stderr, "answer = \"%s\"\n", answer);
-#endif
-
 #ifdef ENABLE_TABCOMP
     /* If we've done tab completion, there might still be a list of
      * filename matches on the edit window.  Clear them off. */
@@ -694,7 +673,7 @@ int do_yesno_prompt(bool all, const char *msg)
     char *message = display_string(msg, 0, COLS, FALSE);
 
     /* TRANSLATORS: For the next three strings, if possible, specify
-     * the single-byte shortcuts for both your language and English.
+     * the single-byte letters for both your language and English.
      * For example, in French: "OoYy", for both "Oui" and "Yes". */
     const char *yesstr = _("Yy");
     const char *nostr = _("Nn");
@@ -706,7 +685,6 @@ int do_yesno_prompt(bool all, const char *msg)
 
     while (response == -2) {
 	int kbinput;
-	functionptrtype func;
 
 	if (!ISSET(NO_HELP)) {
 	    char shortstr[MAXCHARLEN + 2];
@@ -721,20 +699,20 @@ int do_yesno_prompt(bool all, const char *msg)
 	    /* Now show the ones for "Yes", "No", "Cancel" and maybe "All". */
 	    sprintf(shortstr, " %c", yesstr[0]);
 	    wmove(bottomwin, 1, 0);
-	    onekey(shortstr, _("Yes"), width);
+	    post_one_key(shortstr, _("Yes"), width);
 
 	    if (all) {
 		shortstr[1] = allstr[0];
 		wmove(bottomwin, 1, width);
-		onekey(shortstr, _("All"), width);
+		post_one_key(shortstr, _("All"), width);
 	    }
 
 	    shortstr[1] = nostr[0];
 	    wmove(bottomwin, 2, 0);
-	    onekey(shortstr, _("No"), width);
+	    post_one_key(shortstr, _("No"), width);
 
 	    wmove(bottomwin, 2, width);
-	    onekey("^C", _("Cancel"), width);
+	    post_one_key("^C", _("Cancel"), width);
 	}
 
 	/* Color the statusbar over its full width and display the question. */
@@ -744,17 +722,19 @@ int do_yesno_prompt(bool all, const char *msg)
 	wattroff(bottomwin, interface_color_pair[TITLE_BAR]);
 
 	wnoutrefresh(bottomwin);
-
-	/* When not replacing, show the cursor. */
-	if (!all)
-	    curs_set(1);
-
 	currmenu = MYESNO;
-	kbinput = get_kbinput(bottomwin);
 
-	func = func_from_key(&kbinput);
+	/* When not replacing, show the cursor while waiting for a key. */
+	kbinput = get_kbinput(bottomwin, !all);
 
-	if (func == do_cancel)
+	/* See if the pressed key is in the Yes, No, or All strings. */
+	if (strchr(yesstr, kbinput) != NULL)
+	    response = 1;
+	else if (strchr(nostr, kbinput) != NULL)
+	    response = 0;
+	else if (all && strchr(allstr, kbinput) != NULL)
+	    response = 2;
+	else if (func_from_key(&kbinput) == do_cancel)
 	    response = -1;
 #ifdef ENABLE_MOUSE
 	else if (kbinput == KEY_MOUSE) {
@@ -764,14 +744,9 @@ int do_yesno_prompt(bool all, const char *msg)
 			wmouse_trafo(bottomwin, &mouse_y, &mouse_x, FALSE) &&
 			mouse_x < (width * 2) && mouse_y > 0) {
 		int x = mouse_x / width;
-			/* The x-coordinate among the Yes/No/All shortcuts. */
 		int y = mouse_y - 1;
-			/* The y-coordinate among the Yes/No/All shortcuts. */
 
-		assert(0 <= x && x <= 1 && 0 <= y && y <= 1);
-
-		/* x == 0 means they clicked Yes or No.
-		 * y == 0 means Yes or All. */
+		/* x == 0 means Yes or No, y == 0 means Yes or All. */
 		response = -2 * x * y + x - y + 1;
 
 		if (response == 2 && !all)
@@ -779,15 +754,6 @@ int do_yesno_prompt(bool all, const char *msg)
 	    }
 	}
 #endif /* ENABLE_MOUSE */
-	else {
-	    /* Look for the kbinput in the Yes, No (and All) strings. */
-	    if (strchr(yesstr, kbinput) != NULL)
-		response = 1;
-	    else if (strchr(nostr, kbinput) != NULL)
-		response = 0;
-	    else if (all && strchr(allstr, kbinput) != NULL)
-		response = 2;
-	}
     }
 
     free(message);

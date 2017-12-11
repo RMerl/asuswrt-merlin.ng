@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sun Aug 27 09:59:26 2017 -->
+<!-- CreationDate: Mon Nov 27 19:14:33 2017 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -50,8 +50,12 @@ GNU nano&rsquo;s configuration file</p>
 <b>nano</b>, a small and friendly editor. The file should be
 in Unix format, not in DOS or Mac format. During startup,
 <b>nano</b> will first read the system-wide settings, from
-<b>/etc/nanorc</b> (the exact path might be different), and
-then the user-specific settings, from <b>~/.nanorc</b>.</p>
+<b>/etc/nanorc</b> (the exact path might be different on
+your system), and then the user-specific settings, either
+from <b>~/.nanorc</b> or from
+<i>$XDG_CONFIG_HOME</i><b>/nano/nanorc</b> or from
+<b>~/.config/nano/nanorc</b>, whichever is encountered
+first.</p>
 
 <h2>OPTIONS
 <a name="OPTIONS"></a>
@@ -72,9 +76,8 @@ defaults, and command-line options override <i>nanorc</i>
 settings. Also, options that do not take an argument are
 unset by default. So using the <b>unset</b> command is only
 needed when wanting to override a setting of the
-system&rsquo;s <i>nanorc</i> file in your own
-<b>~/.nanorc</b>. Options that take an argument cannot be
-unset.</p>
+system&rsquo;s <i>nanorc</i> file in your own <i>nanorc</i>.
+Options that take an argument cannot be unset.</p>
 
 <p style="margin-left:11%; margin-top: 1em">Below, the
 <i>string</i> parameters need to be enclosed in double
@@ -123,8 +126,9 @@ the specified <i>directory</i>.</p>
 
 <p style="margin-left:11%;"><b>set backwards</b></p>
 
-<p style="margin-left:15%;">Do backwards searches by
-default.</p>
+<p style="margin-left:15%;">Obsolete option. Recognized but
+ignored. <b>^Q</b> is available to start a backward
+search.</p>
 
 <p style="margin-left:11%;"><b>set boldtext</b></p>
 
@@ -184,9 +188,9 @@ more details.</p>
 
 <p style="margin-left:11%;"><b>set historylog</b></p>
 
-<p style="margin-left:15%;">Enable the use of
-<b>~/.nano/search_history</b> for saving and reading
-search/replace strings.</p>
+<p style="margin-left:15%;">Save the last hundred search
+strings and replacement strings and executed commands, so
+they can be easily reused in later sessions.</p>
 
 <p style="margin-left:11%;"><b>set justifytrim</b></p>
 
@@ -314,11 +318,8 @@ of 25. The option <b>constantshow</b> overrides this.</p>
 
 <p style="margin-left:11%;"><b>set quiet</b></p>
 
-<p style="margin-left:15%;"><b>nano</b> will not report
-errors in the <i>nanorc</i> file nor ask them to be
-acknowledged by pressing Enter at startup. If this is used,
-it should be placed at the top of the file to be fully
-effective.</p>
+<p style="margin-left:15%;">Obsolete option. Recognized but
+ignored.</p>
 
 <p style="margin-left:11%;"><b>set quotestr</b>
 <i>string</i></p>
@@ -708,7 +709,7 @@ disk, asking for a name.</p>
 <p style="margin-left:15%;"><b>savefile</b></p>
 
 <p style="margin-left:18%;">Writes the current file to disk
-without prompting or warning.</p>
+without prompting.</p>
 
 <p style="margin-left:15%;"><b>insert</b></p>
 
@@ -718,9 +719,14 @@ buffer when option <b>multibuffer</b> is set.</p>
 
 <p style="margin-left:15%;"><b>whereis</b></p>
 
-<p style="margin-left:18%;">Searches for text in the
-current buffer -- or for filenames matching a string in the
-current list in the file browser.</p>
+<p style="margin-left:18%;">Starts a forward search for
+text in the current buffer -- or for filenames matching a
+string in the current list in the file browser.</p>
+
+<p style="margin-left:15%;"><b>wherewas</b></p>
+
+<p style="margin-left:18%;">Starts a backward search for
+text in the current buffer.</p>
 
 <p style="margin-left:15%;"><b>searchagain</b></p>
 
@@ -904,11 +910,11 @@ are separated by one or more blank lines.)</p>
 <p style="margin-left:18%;">Moves the cursor to the
 beginning of the next block of text.</p>
 
-<p style="margin-left:15%;"><b>prevpage</b></p>
+<p style="margin-left:15%;"><b>pageup</b></p>
 
 <p style="margin-left:18%;">Goes up one screenful.</p>
 
-<p style="margin-left:15%;"><b>nextpage</b></p>
+<p style="margin-left:15%;"><b>pagedown</b></p>
 
 <p style="margin-left:18%;">Goes down one screenful.</p>
 
@@ -973,6 +979,17 @@ cursor.</p>
 
 <p style="margin-left:18%;">Deletes the character before
 the cursor.</p>
+
+<p style="margin-left:15%;"><b>recordmacro</b></p>
+
+<p style="margin-left:18%;">Starts the recording of
+keystrokes -- the keystrokes are stored as a macro. When
+already recording, the recording is stopped.</p>
+
+<p style="margin-left:15%;"><b>runmacro</b></p>
+
+<p style="margin-left:18%;">Replays the keystrokes of the
+last recorded macro.</p>
 
 <p style="margin-left:15%;"><b>undo</b></p>
 
@@ -1071,7 +1088,7 @@ discard the current buffer without saving. (This function is
 bound by default only when option
 <b>&minus;&minus;tempfile</b> is in effect.)</p>
 
-<p style="margin-left:15%;"><b>tofiles</b></p>
+<p style="margin-left:15%;"><b>browser</b></p>
 
 <p style="margin-left:18%;">Starts the file browser,
 allowing to select a file from a list.</p>
@@ -1271,7 +1288,9 @@ all menus where the specified <i>key</i> exists.</p>
 <p style="margin-left:22%;">System-wide configuration
 file.</p>
 
-<p style="margin-left:11%;"><b>~/.nanorc</b></p>
+<p style="margin-left:11%;"><b>~/.nanorc</b> or
+<i>$XDG_CONFIG_HOME</i><b>/nano/nanorc</b> or
+<b>~/.config/nano/nanorc</b></p>
 
 <p style="margin-left:22%;">Per-user configuration
 file.</p>

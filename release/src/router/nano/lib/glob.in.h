@@ -15,14 +15,12 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _GL_GLOB_H
 #define _GL_GLOB_H
 
-#if @HAVE_SYS_CDEFS_H@
-# include <sys/cdefs.h>
-#endif
+#include <libc-config.h>
 
 #include <stddef.h>
 
@@ -31,31 +29,6 @@
    rely on 'struct stat'.  */
 #include <sys/stat.h>
 
-#ifndef __BEGIN_DECLS
-# ifdef __cplusplus
-#  define __BEGIN_DECLS  extern "C" {
-#  define __END_DECLS    }
-# else
-#  define __BEGIN_DECLS
-#  define __END_DECLS
-# endif
-#endif
-#ifndef __THROW
-# define __THROW
-#endif
-#ifndef __THROWNL
-# define __THROWNL
-#endif
-
-/* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
-
-/* The definition of _GL_ARG_NONNULL is copied here.  */
-
-/* The definition of _GL_WARN_ON_USE is copied here.  */
-
-#ifndef __size_t
-# define __size_t       size_t
-#endif
 #ifndef __USE_GNU
 # define __USE_GNU    1
 #endif
@@ -64,6 +37,7 @@
 #define glob rpl_glob
 #define globfree rpl_globfree
 #define glob_pattern_p rpl_glob_pattern_p
+#define __glob_pattern_p glob_pattern_p
 
 #define __GLOB_GNULIB 1
 

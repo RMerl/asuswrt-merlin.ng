@@ -8,8 +8,8 @@
 
 @smallbook
 @set EDITION 0.5
-@set VERSION 2.8.7
-@set UPDATED August 2017
+@set VERSION 2.9.1
+@set UPDATED November 2017
 
 @dircategory Editors
 @direntry
@@ -23,7 +23,7 @@
 @titlepage
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 2.8.7
+@subtitle version 2.9.1
 
 @author Chris Allegretta
 @page
@@ -63,7 +63,7 @@ e-mail: @email{chrisa@@asty.org}@*
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 2.8.7.
+This manual documents the GNU @command{nano} editor, version 2.9.1.
 
 @menu
 * Introduction::
@@ -130,7 +130,7 @@ adding it with a comma.  So a more complete command synopsis is:
 @sp 1
 @end iftex
 
-Normally, however, you set your preferred options in a @file{.nanorc}
+Normally, however, you set your preferred options in a @file{nanorc}
 file (@pxref{Nanorc Files}).  And when using @code{set positionlog}
 (making @command{nano} remember the cursor position when you close a file),
 you will rarely need to specify a line number.
@@ -183,12 +183,12 @@ Enable vim-style file locking when editing files.
 
 @item -H
 @itemx --historylog
-Log search and replace strings to @file{~/.nano/search_history},
-so they can be retrieved in later sessions.
+Save the last hundred search strings and replacement strings and
+executed commands, so they can be easily reused in later sessions.
 
 @item -I
 @itemx --ignorercfiles
-Don't look at the system's nanorc file nor at the user's @file{~/.nanorc}.
+Don't look at the system's nanorc file nor at the user's nanorc.
 
 @item -K
 @itemx --rebindkeypad
@@ -335,8 +335,7 @@ sent to the editor can be stopped and started.
 
 @item -q
 @itemx --quiet
-Do not report errors in the nanorc file nor ask them to be acknowledged
-by pressing @kbd{Enter} at startup.
+Obsolete option.  Recognized but ignored.
 
 @item -r @var{number}
 @itemx --fill=@var{number}
@@ -423,7 +422,7 @@ Ignored, for compatibility with Pico.
 * Screen Layout::
 * Search and Replace::
 * Using the Mouse::
-* Limitation::
+* Limitations::
 @end menu
 
 @node Entering Text
@@ -553,15 +552,18 @@ Shift key during those actions.
 The mouse will work in the X Window System, and on the console when gpm
 is running.
 
-@node Limitation
-@section Limitation
+@node Limitations
+@section Limitations
 
-Justifications (@kbd{^J}) and reindentations (@kbd{M-@{} and @kbd{M-@}})
+Justifications (@kbd{^J})
 are not yet covered by the general undo system.  So after a justification
-that is not immediately undone, or after any reindentation, earlier edits
+that is not immediately undone, earlier edits
 cannot be undone any more.  The workaround is, of course, to exit without
 saving.
 
+The recording and playback of keyboard macros works correctly only on a
+terminal emulator, not on a Linux console (VT), because the latter is a
+deficient terminal.  And it works only with recent versions of ncurses.
 
 @node Built-in Help
 @chapter Built-in Help
@@ -647,7 +649,8 @@ The nanorc files contain the default settings for @command{nano}.  They
 should be in Unix format, not in DOS or Mac format.  During startup,
 @command{nano} will first read the system-wide settings, from /etc/nanorc
 (the exact path might be different), and then the user-specific settings,
-from @file{~/.nanorc}.
+either from @file{~/.nanorc} or from @file{$XDG_CONFIG_HOME/nano/nanorc}
+or from @file{.config/nano/nanorc}, whichever exists first.
 
 A nanorc file accepts a series of "set" and "unset" commands, which can
 be used to configure @command{nano} on startup without using command-line
@@ -659,8 +662,7 @@ Options in nanorc files take precedence over @command{nano}'s defaults, and
 command-line options override nanorc settings.  Also, options that do not
 take an argument are unset by default.  So using the @code{unset} command
 is only needed when wanting to override a setting of the system's nanorc
-file in your own @file{~/.nanorc}.  Options that take an argument cannot
-be unset.
+file in your own nanorc.  Options that take an argument cannot be unset.
 
 Quotes inside string parameters don't have to be escaped with
 backslashes.  The last double quote in the string will be treated as its
@@ -703,7 +705,8 @@ with @code{set backup} or @option{--backup} or @option{-B}.
 The uniquely numbered files are stored in the specified directory.
 
 @item set backwards
-Do backwards searches by default.
+Obsolete option.  Recognized but ignored.  @code{^Q} is available to
+start a backward search.
 
 @item set boldtext
 Use bold instead of reverse video for the title bar, status bar, key combos,
@@ -747,8 +750,8 @@ The name of the foreground color may be prefixed with @code{bright}.
 And either @var{fgcolor} or ,@var{bgcolor} may be left out.
 
 @item set historylog
-Enable the use of @file{~/.nano/search_history} for saving and reading
-search/replace strings.
+Save the last hundred search strings and replacement strings and
+executed commands, so they can be easily reused in later sessions.
 
 @item set justifytrim
 When justifying text, trailing whitespace will automatically be removed.
@@ -827,9 +830,7 @@ Do quick status-bar blanking: status-bar messages will disappear after 1
 keystroke instead of 25.  Note that @option{constantshow} overrides this.
 
 @item set quiet
-When set, @command{nano} will not report errors in the nanorc file nor ask them
-to be acknowledged by pressing @kbd{Enter} at startup.  If this option is used, it
-should be placed at the top of the file to be fully effective.
+Obsolete option.  Recognized but ignored.
 
 @item set quotestr "@var{string}"
 The email-quote string, used to justify email-quoted paragraphs.  This
@@ -1080,15 +1081,18 @@ Exits from the program (or from the help viewer or the file browser).
 Writes the current buffer to disk, asking for a name.
 
 @item savefile
-Writes the current file to disk without prompting or warning.
+Writes the current file to disk without prompting.
 
 @item insert
 Inserts a file into the current buffer (at the current cursor position),
 or into a new buffer when option @code{multibuffer} is set.
 
 @item whereis
-Searches for text in the current buffer --- or for filenames matching
-a string in the current list in the file browser
+Starts a forward search for text in the current buffer --- or for filenames
+matching a string in the current list in the file browser.
+
+@item wherewas
+Starts a backward search for text in the current buffer.
 
 @item searchagain
 Repeats the last search command without prompting.
@@ -1199,10 +1203,10 @@ Moves the cursor to the beginning of the current or preceding block of text.
 @item nextblock
 Moves the cursor to the beginning of the next block of text.
 
-@item prevpage
+@item pageup
 Goes up one screenful.
 
-@item nextpage
+@item pagedown
 Goes down one screenful.
 
 @item firstline
@@ -1242,6 +1246,13 @@ Deletes the character under the cursor.
 
 @item backspace
 Deletes the character before the cursor.
+
+@item recordmacro
+Starts the recording of keystrokes --- the keystrokes are stored
+as a macro.  When already recording, the recording is stopped.
+
+@item runmacro
+Replays the keystrokes of the last recorded macro.
 
 @item undo
 Undoes the last performed text action (add text, delete text, etc).
@@ -1304,7 +1315,7 @@ When about to write a file, discard the current buffer without saving.
 (This function is bound by default only when option @option{--tempfile}
 is in effect.)
 
-@item tofiles
+@item browser
 Starts the file browser, allowing to select a file from a list.
 
 @item gotodir
@@ -1463,14 +1474,14 @@ ask any more), or Cancel (stop with replacing).
 
 @item Search and Replace History
 When the option @option{-H} or @option{--historylog} is given (or set in
-the .nanorc file), text entered as search or replace strings is stored.
+the a nanorc file), text entered as search or replace strings is stored.
 These strings can be accessed with the up/down arrow keys, or you can
 type the first few characters and then use @kbd{Tab} to cycle through the
 matching strings.  A retrieved string can subsequently be edited.
 
 @item Position History
 When the option @option{-P} or @option{--positionlog} is given (or set in
-the .nanorc file), @command{nano} will store the position of the cursor
+a nanorc file), @command{nano} will store the position of the cursor
 when you close a file, and will place the cursor in that position
 again when you later reopen the file.
 
@@ -1591,9 +1602,8 @@ Disable support for reading the nanorc files at startup.  With such
 support, you can store custom settings in a system-wide and a per-user
 nanorc file rather than having to pass command-line options to get
 the desired behavior.  @xref{Nanorc Files} for more info.
-Disabling this also eliminates the @option{-I} and @option{-q} command-line
-options; the first inhibits the reading of nanorcfiles, and the second
-suppresses warnings about errors in those files.
+Disabling this also eliminates the @option{-I} command-line option,
+which inhibits the reading of nanorc files.
 
 @item --disable-operatingdir
 Disable setting the operating directory.  This also eliminates the @option{-o}

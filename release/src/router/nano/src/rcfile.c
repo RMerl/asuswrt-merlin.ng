@@ -3,7 +3,7 @@
  *                                                                        *
  *   Copyright (C) 2001-2011, 2013-2017 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mike Frysinger                                    *
- *   Copyright (C) 2014, 2015, 2016 Benno Schulenberg                     *
+ *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -31,7 +31,7 @@
 #ifdef ENABLE_NANORC
 
 #ifndef RCFILE_NAME
-#define RCFILE_NAME ".nanorc"
+#define RCFILE_NAME "nanorc"
 #endif
 
 static const rcoption rcopts[] = {
@@ -39,15 +39,15 @@ static const rcoption rcopts[] = {
 #ifdef ENABLE_LINENUMBERS
     {"linenumbers", LINE_NUMBERS},
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
     {"brackets", 0},
 #endif
     {"const", CONSTANT_SHOW},  /* deprecated form, remove in 2018 */
     {"constantshow", CONSTANT_SHOW},
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
     {"fill", 0},
 #endif
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     {"historylog", HISTORYLOG},
 #endif
     {"morespace", MORE_SPACE},
@@ -60,18 +60,18 @@ static const rcoption rcopts[] = {
     {"nohelp", NO_HELP},
     {"nonewlines", NO_NEWLINES},
     {"nopauses", NO_PAUSES},
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
     {"nowrap", NO_WRAP},
 #endif
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
     {"operatingdir", 0},
 #endif
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     {"poslog", POS_HISTORY},  /* deprecated form, remove in 2018 */
     {"positionlog", POS_HISTORY},
 #endif
     {"preserve", PRESERVE},
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
     {"punct", 0},
     {"quotestr", 0},
 #endif
@@ -79,7 +79,7 @@ static const rcoption rcopts[] = {
     {"rebinddelete", REBIND_DELETE},
     {"rebindkeypad", REBIND_KEYPAD},
     {"regexp", USE_REGEXP},
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
     {"speller", 0},
 #endif
     {"suspend", SUSPEND},
@@ -111,7 +111,7 @@ static const rcoption rcopts[] = {
     {"wordbounds", WORD_BOUNDS},
     {"wordchars", 0},
 #endif
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     {"titlecolor", 0},
     {"numbercolor", 0},
     {"selectedcolor", 0},
@@ -122,13 +122,11 @@ static const rcoption rcopts[] = {
     {NULL, 0}
 };
 
-static bool errors = FALSE;
-	/* Whether we got any errors while parsing an rcfile. */
 static size_t lineno = 0;
-	/* If we did, the line number where the last error occurred. */
+	/* The line number of the last encountered error. */
 static char *nanorc = NULL;
 	/* The path to the rcfile we're parsing. */
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 static bool opensyntax = FALSE;
 	/* Whether we're allowed to add to the last syntax.  When a file ends,
 	 * or when a new syntax command is seen, this bool becomes FALSE. */
@@ -138,21 +136,16 @@ static colortype *lastcolor = NULL;
 	/* The end of the color list for the current syntax. */
 #endif
 
-/* We have an error in some part of the rcfile.  Print the error message
- * on stderr, and then make the user hit Enter to continue starting
- * nano. */
+/* Report an error in an rcfile, printing it to stderr. */
 void rcfile_error(const char *msg, ...)
 {
     va_list ap;
 
-    if (ISSET(QUIET))
-	return;
+    if (rcfile_with_errors == NULL)
+	rcfile_with_errors = strdup(nanorc);
 
-    fprintf(stderr, "\n");
-    if (lineno > 0) {
-	errors = TRUE;
+    if (lineno > 0)
 	fprintf(stderr, _("Error in %s on line %lu: "), nanorc, (unsigned long)lineno);
-    }
 
     va_start(ap, msg);
     vfprintf(stderr, _(msg), ap);
@@ -162,7 +155,7 @@ void rcfile_error(const char *msg, ...)
 }
 #endif /* ENABLE_NANORC */
 
-#if defined(ENABLE_NANORC) || !defined(DISABLE_HISTORIES)
+#if defined(ENABLE_NANORC) || defined(ENABLE_HISTORIES)
 /* Parse the next word from the string, null-terminate it, and return
  * a pointer to the first character after the null terminator.  The
  * returned pointer will point to '\0' if we hit the end of the line. */
@@ -182,7 +175,7 @@ char *parse_next_word(char *ptr)
 
     return ptr;
 }
-#endif /* ENABLE_NANORC || !DISABLE_HISTORIES */
+#endif /* ENABLE_NANORC || ENABLE_HISTORIES */
 
 #ifdef ENABLE_NANORC
 /* Parse an argument, with optional quotes, after a keyword that takes
@@ -221,7 +214,7 @@ char *parse_argument(char *ptr)
     return ptr;
 }
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 /* Pass over the current regex string in the line starting at ptr,
  * null-terminate it, and return a pointer to the /next/ word. */
 char *parse_next_regex(char *ptr)
@@ -344,7 +337,7 @@ void parse_syntax(char *ptr)
     if (*ptr != '\0')
 	grab_and_store("extension", ptr, &live_syntax->extensions);
 }
-#endif /* !DISABLE_COLOR */
+#endif /* ENABLE_COLOR */
 
 /* Check whether the given executable function is "universal" (meaning
  * any horizontal movement or deletion) and thus is present in almost
@@ -448,14 +441,6 @@ void parse_binding(char *ptr, bool dobind)
 	goto free_things;
     }
 
-#ifdef DEBUG
-    if (dobind)
-	fprintf(stderr, "newsc address is now %ld, assigned func = %ld, menu = %x\n",
-	    (long)&newsc, (long)newsc->scfunc, menu);
-    else
-	fprintf(stderr, "unbinding \"%s\" from menu %x\n", keycopy, menu);
-#endif
-
     if (dobind) {
 	subnfunc *f;
 	int mask = 0;
@@ -490,20 +475,12 @@ void parse_binding(char *ptr, bool dobind)
 	    rcfile_error(N_("Sorry, keystroke \"%s\" may not be rebound"), newsc->keystr);
 	    goto free_things;
 	}
-#ifdef DEBUG
-	fprintf(stderr, "s->keystr = \"%s\"\n", newsc->keystr);
-	fprintf(stderr, "s->keycode = \"%d\"\n", newsc->keycode);
-#endif
     }
 
     /* Now find and delete any existing same shortcut in the menu(s). */
     for (s = sclist; s != NULL; s = s->next) {
-	if ((s->menus & menu) && !strcmp(s->keystr, keycopy)) {
-#ifdef DEBUG
-	    fprintf(stderr, "deleting entry from among menus %x\n", s->menus);
-#endif
+	if ((s->menus & menu) && !strcmp(s->keystr, keycopy))
 	    s->menus &= ~menu;
-	}
     }
 
     if (dobind) {
@@ -527,10 +504,14 @@ void parse_binding(char *ptr, bool dobind)
     free(keycopy);
 }
 
-/* Verify that the given file is not a folder nor a device. */
+/* Verify that the given file exists, is not a folder nor a device. */
 bool is_good_file(char *file)
 {
     struct stat rcinfo;
+
+    /* First check that the file exists and is readable. */
+    if (access(file, R_OK) != 0)
+	return FALSE;
 
     /* If the thing exists, it may not be a directory nor a device. */
     if (stat(file, &rcinfo) != -1 && (S_ISDIR(rcinfo.st_mode) ||
@@ -542,7 +523,7 @@ bool is_good_file(char *file)
 	return TRUE;
 }
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 /* Read and parse one included syntax file. */
 static void parse_one_include(char *file)
 {
@@ -888,9 +869,8 @@ void pick_up_name(const char *kind, char *ptr, char **storage)
     }
 
     *storage = mallocstrcpy(*storage, ptr);
-
 }
-#endif /* !DISABLE_COLOR */
+#endif /* ENABLE_COLOR */
 
 /* Verify that the user has not unmapped every shortcut for a
  * function that we consider 'vital' (such as "Exit"). */
@@ -951,7 +931,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	keyword = ptr;
 	ptr = parse_next_word(ptr);
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	/* Handle extending first... */
 	if (strcasecmp(keyword, "extendsyntax") == 0) {
 	    syntaxtype *sint;
@@ -1011,7 +991,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	else if (strcasecmp(keyword, "linter") == 0)
 	    pick_up_name("linter", ptr, &live_syntax->linter);
 	else if (strcasecmp(keyword, "formatter") == 0)
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	    pick_up_name("formatter", ptr, &live_syntax->formatter);
 #else
 	    ;
@@ -1022,7 +1002,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	else if (strcasecmp(keyword, "include") == 0)
 	    parse_includes(ptr);
 	else
-#endif /* !DISABLE_COLOR */
+#endif /* ENABLE_COLOR */
 	if (strcasecmp(keyword, "set") == 0)
 	    set = 1;
 	else if (strcasecmp(keyword, "unset") == 0)
@@ -1034,7 +1014,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	else
 	    rcfile_error(N_("Command \"%s\" not understood"), keyword);
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	/* If a syntax was extended, it stops at the end of the command. */
 	if (live_syntax != syntaxes)
 	    opensyntax = FALSE;
@@ -1103,7 +1083,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	    continue;
 	}
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	if (strcasecmp(rcopts[i].name, "titlecolor") == 0)
 	    specified_color_combo[TITLE_BAR] = option;
 	else if (strcasecmp(rcopts[i].name, "numbercolor") == 0)
@@ -1118,12 +1098,12 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	    specified_color_combo[FUNCTION_TAG] = option;
 	else
 #endif
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	if (strcasecmp(rcopts[i].name, "operatingdir") == 0)
 	    operating_dir = option;
 	else
 #endif
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
 	if (strcasecmp(rcopts[i].name, "fill") == 0) {
 	    if (!parse_num(option, &wrap_at)) {
 		rcfile_error(N_("Requested fill size \"%s\" is invalid"),
@@ -1155,7 +1135,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	    }
 	} else
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 	if (strcasecmp(rcopts[i].name, "punct") == 0) {
 	    punct = option;
 	    if (has_blank_mbchars(punct)) {
@@ -1182,7 +1162,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	    word_chars = option;
 	else
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	if (strcasecmp(rcopts[i].name, "speller") == 0)
 	    alt_speller = option;
 	else
@@ -1198,7 +1178,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 	    assert(FALSE);
     }
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     if (opensyntax && lastcolor == NULL)
 	rcfile_error(N_("Syntax \"%s\" has no color commands"),
 			live_syntax->name);
@@ -1225,7 +1205,6 @@ void parse_one_nanorc(void)
 #ifdef DEBUG
     fprintf(stderr, "Going to parse file \"%s\"\n", nanorc);
 #endif
-
     rcstream = fopen(nanorc, "rb");
 
     /* If opening the file succeeded, parse it.  Otherwise, only
@@ -1236,9 +1215,22 @@ void parse_one_nanorc(void)
 	rcfile_error(N_("Error reading %s: %s"), nanorc, strerror(errno));
 }
 
+bool have_nanorc(const char *path, char *name)
+{
+    if (path == NULL)
+	return FALSE;
+
+    free(nanorc);
+    nanorc = concatenate(path, name);
+
+    return is_good_file(nanorc);
+}
+
 /* First read the system-wide rcfile, then the user's rcfile. */
 void do_rcfiles(void)
 {
+    const char *xdgconfdir;
+
     nanorc = mallocstrcpy(nanorc, SYSCONFDIR "/nanorc");
 
     /* Process the system-wide nanorc. */
@@ -1252,27 +1244,22 @@ void do_rcfiles(void)
 #endif
 
     get_homedir();
+    xdgconfdir = getenv("XDG_CONFIG_HOME");
 
-    if (homedir == NULL)
-	rcfile_error(N_("I can't find my home directory!  Wah!"));
-    else {
-	nanorc = charealloc(nanorc, strlen(homedir) + strlen(RCFILE_NAME) + 2);
-	sprintf(nanorc, "%s/%s", homedir, RCFILE_NAME);
-
-	/* Process the current user's nanorc. */
+    /* Now try the to find a nanorc file in the user's home directory
+     * or in the XDG configuration directories. */
+    if (have_nanorc(homedir, "/." RCFILE_NAME))
 	parse_one_nanorc();
-    }
+    else if (have_nanorc(xdgconfdir, "/nano/" RCFILE_NAME))
+	parse_one_nanorc();
+    else if (have_nanorc(homedir, "/.config/nano/" RCFILE_NAME))
+	parse_one_nanorc();
+    else if (homedir == NULL && xdgconfdir == NULL)
+	rcfile_error(N_("I can't find my home directory!  Wah!"));
 
     check_vitals_mapped();
 
     free(nanorc);
-
-    if (errors && !ISSET(QUIET) && !ISSET(NO_PAUSES)) {
-	errors = FALSE;
-	fprintf(stderr, _("\nPress Enter to continue starting nano.\n"));
-	while (getchar() != '\n')
-	    ;
-    }
 }
 
 #endif /* ENABLE_NANORC */

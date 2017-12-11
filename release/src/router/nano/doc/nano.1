@@ -16,8 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 2.8.7" "August 2017"
-.\" Please adjust this date whenever revising the manpage.
+.TH NANO 1 "version 2.9.1" "November 2017"
 
 .SH NAME
 nano \- Nano's ANOther editor, an enhanced free Pico clone
@@ -61,7 +60,7 @@ stride.
 .PP
 The two lines at the bottom of the screen show some important commands;
 the built-in help (\fB^G\fR) lists all the available ones.
-The default key bindings can be changed via the .nanorc file -- see
+The default key bindings can be changed via a \fInanorc\fR file -- see
 .BR nanorc (5).
 
 .SH OPTIONS
@@ -77,7 +76,7 @@ line.
 When saving a file, back up the previous version of it, using the current
 filename suffixed with a tilde (\fB~\fP).
 .TP
-.BR \-C\ \fIdirectory\fR ", " \-\-backupdir= \fIdirectory
+.BR \-C\ \fIdirectory ", " \-\-backupdir= \fIdirectory
 Make and keep not just one backup file, but make and keep a uniquely
 numbered one every time a file is saved -- when backups are enabled (\fB\-B\fR).
 The uniquely numbered files are stored in the specified \fIdirectory\fR.
@@ -95,11 +94,11 @@ Read a file into a new buffer by default.
 Use vim-style file locking when editing files.
 .TP
 .BR \-H ", " \-\-historylog
-Log search and replace strings to \fI~/.nano/search_history\fP, so they can be
-retrieved in later sessions.
+Save the last hundred search strings and replacement strings and
+executed commands, so they can be easily reused in later sessions.
 .TP
 .BR \-I ", " \-\-ignorercfiles
-Don't look at the system's \fBnanorc\fP nor at \fB~/.nanorc\fP.
+Don't look at the system's \fInanorc\fR nor at the user's \fInanorc\fR.
 .TP
 .BR \-K ", " \-\-rebindkeypad
 Interpret the numeric keypad keys so that they all work properly.  You
@@ -120,7 +119,7 @@ For the 200 most recent files, log the last position of the cursor,
 and place it at that position again upon reopening such a file.
 (The old form of this option, \fB\-\-poslog\fR, is deprecated.)
 .TP
-.BR "\-Q ""\fIcharacters\fB""" ", " "\-\-quotestr=""" \fIcharacters\fR """
+.BR "\-Q ""\fIcharacters\fB""" ", " "\-\-quotestr=""" \fIcharacters """
 Set the quoting string for justifying.  The default is
 \fB"^([\ \\t]*[#:>\\|}])+"\fP if extended regular expression support is
 available, or \fB">\ "\fP otherwise.  Note that \fB\\t\fP stands for a
@@ -139,7 +138,7 @@ with any name beginning with 'r' (e.g. "rnano").
 Use smooth scrolling: text will scroll line-by-line, instead of the
 usual chunk-by-chunk behavior.
 .TP
-.BR \-T\ \fInumber\fR ", " \-\-tabsize= \fInumber
+.BR \-T\ \fInumber ", " \-\-tabsize= \fInumber
 Set the size (width) of a tab to \fInumber\fP columns.  The value of
 \fInumber\fP must be greater than 0.  The default value is 8.
 .TP
@@ -160,7 +159,7 @@ Specify which other characters (besides the normal alphanumeric ones)
 should be considered as part of a word.  This overrides option
 \fB\-W\fR (\fB\-\-wordbounds\fR).
 .TP
-.BR \-Y\ \fIname\fR ", " \-\-syntax= \fIname
+.BR \-Y\ \fIname ", " \-\-syntax= \fIname
 Specify the name of the syntax highlighting to use from among the ones
 defined in the \fInanorc\fP files.
 .TP
@@ -209,7 +208,7 @@ and will write to the pipe when the user saves the "file".  This way
 \fBnano\fR can be used as an editor in combination with for instance
 \fBgpg\fR without having to write sensitive data to disk first.
 .TP
-.BR \-o\ \fIdirectory\fR ", " \-\-operatingdir= \fIdirectory
+.BR \-o\ \fIdirectory ", " \-\-operatingdir= \fIdirectory
 Set the operating directory.  This makes \fBnano\fP set up something
 similar to a chroot.
 .TP
@@ -218,17 +217,16 @@ Preserve the XON and XOFF sequences (^Q and ^S) so they will be caught
 by the terminal.
 .TP
 .BR \-q ", " \-\-quiet
-Do not report errors in the \fInanorc\fP files nor ask them to be
-acknowledged by pressing Enter at startup.
+Obsolete option.  Recognized but ignored.
 .TP
-.BR \-r\ \fInumber\fR ", " \-\-fill= \fInumber
+.BR \-r\ \fInumber ", " \-\-fill= \fInumber
 Hard-wrap lines at column \fInumber\fP.  If this value is 0 or less, wrapping
 will occur at the width of the screen less \fInumber\fP columns, allowing
 the wrap point to vary along with the width of the screen if the screen
 is resized.  The default value is \-8.  This option conflicts with
 \fB\-w\fR (\fB\-\-nowrap\fR) -- the last one given takes effect.
 .TP
-.BR \-s\ \fIprogram\fR ", " \-\-speller= \fIprogram
+.BR \-s\ \fIprogram ", " \-\-speller= \fIprogram
 Use this alternative spell checker command.
 .TP
 .BR \-t ", " \-\-tempfile
@@ -272,9 +270,10 @@ hard-wrapping of long lines, \fBM\-$\fR toggles soft-wrapping,
 See at the end of the \fB^G\fR help text for a complete list.
 
 .SH INITIALIZATION FILE
-\fBnano\fP will read initialization files in the following order:
-the system's \fBnanorc\fP (if it exists), and then the user's
-\fB~/.nanorc\fP (if it exists).  Please see
+\fBnano\fR will read two configuration files: first the system's
+\fInanorc\fR (if it exists), and then the user's \fInanorc\fR (if it
+exists), either \fB~/.nanorc\fR or \fI$XDG_CONFIG_HOME\fB/nano/nanorc\fR
+or \fB~/.config/nano/nanorc\fR, whichever is encountered first.  See
 .BR nanorc (5)
 for more information on the possible contents of those files.
 
@@ -294,11 +293,15 @@ it unique.  In multibuffer mode, \fBnano\fP will write all the open
 buffers to their respective emergency files.
 
 .SH BUGS
-Justifications (\fB^J\fR) and reindentations (\fBM\-{\fR and \fBM\-}\fR)
+Justifications (\fB^J\fR)
 are not yet covered by the general undo system.  So after a justification
-that is not immediately undone, or after any reindentation, earlier edits
+that is not immediately undone, earlier edits
 cannot be undone any more.  The workaround is, of course, to exit without
 saving.
+.sp
+The recording and playback of keyboard macros works correctly only on a
+terminal emulator, not on a Linux console (VT), because the latter is a
+deficient terminal.  And it works only with recent versions of ncurses.
 .sp
 Please report any other bugs that you encounter via:
 .br

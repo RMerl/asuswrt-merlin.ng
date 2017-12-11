@@ -16,8 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 2.8.7" "August 2017"
-.\" Please adjust this date whenever revising the manpage.
+.TH NANORC 5 "version 2.9.1" "November 2017"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -27,7 +26,9 @@ The \fInanorc\fP file contains the default settings for \fBnano\fP, a
 small and friendly editor.  The file should be in Unix format, not in
 DOS or Mac format.  During startup, \fBnano\fP will first read the
 system-wide settings, from \fB/etc/nanorc\fP (the exact path might be
-different), and then the user-specific settings, from \fB~/.nanorc\fP.
+different on your system), and then the user-specific settings, either
+from \fB~/.nanorc\fR or from \fI$XDG_CONFIG_HOME\fB/nano/nanorc\fR
+or from \fB~/.config/nano/nanorc\fR, whichever is encountered first.
 
 .SH OPTIONS
 The configuration file accepts a series of \fBset\fP and \fBunset\fP
@@ -40,7 +41,7 @@ Options in \fInanorc\fP files take precedence over nano's defaults, and
 command-line options override \fInanorc\fP settings.  Also, options that
 do not take an argument are unset by default.  So using the \fBunset\fR
 command is only needed when wanting to override a setting of the system's
-\fInanorc\fR file in your own \fB~/.nanorc\fR.  Options that take an
+\fInanorc\fR file in your own \fInanorc\fR.  Options that take an
 argument cannot be unset.
 .PP
 Below, the \fIstring\fR parameters need to be enclosed in double quotes.
@@ -75,7 +76,8 @@ with \fBset backup\fR or \fB\-\-backup\fR or \fB\-B\fR.
 The uniquely numbered files are stored in the specified \fIdirectory\fR.
 .TP
 .B set backwards
-Do backwards searches by default.
+Obsolete option.  Recognized but ignored.  \fB^Q\fR is available to
+start a backward search.
 .TP
 .B set boldtext
 Use bold instead of reverse video for the title bar, status bar, key combos,
@@ -113,8 +115,8 @@ in the two help lines at the bottom of the screen.
 See \fBset titlecolor\fR for more details.
 .TP
 .B set historylog
-Enable the use of \fB~/.nano/search_history\fP for saving and reading
-search/replace strings.
+Save the last hundred search strings and replacement strings and
+executed commands, so they can be easily reused in later sessions.
 .TP
 .B set justifytrim
 When justifying text, trailing whitespace will automatically be removed.
@@ -195,9 +197,7 @@ Do quick status-bar blanking: status-bar messages will disappear after 1
 keystroke instead of 25.  The option \fBconstantshow\fR overrides this.
 .TP
 .B set quiet
-\fBnano\fP will not report errors in the \fInanorc\fP file nor ask them
-to be acknowledged by pressing Enter at startup.  If this is used, it
-should be placed at the top of the file to be fully effective.
+Obsolete option.  Recognized but ignored.
 .TP
 .B set quotestr "\fIstring\fP"
 The email-quote string, used to justify email-quoted paragraphs.  This
@@ -437,15 +437,18 @@ Exits from the program (or from the help viewer or the file browser).
 Writes the current buffer to disk, asking for a name.
 .TP
 .B savefile
-Writes the current file to disk without prompting or warning.
+Writes the current file to disk without prompting.
 .TP
 .B insert
 Inserts a file into the current buffer (at the current cursor position),
 or into a new buffer when option \fBmultibuffer\fR is set.
 .TP
 .B whereis
-Searches for text in the current buffer -- or for filenames matching
-a string in the current list in the file browser.
+Starts a forward search for text in the current buffer -- or for filenames
+matching a string in the current list in the file browser.
+.TP
+.B wherewas
+Starts a backward search for text in the current buffer.
 .TP
 .B searchagain
 Repeats the last search command without prompting.
@@ -559,10 +562,10 @@ Moves the cursor to the beginning of the current or preceding block of text.
 .B nextblock
 Moves the cursor to the beginning of the next block of text.
 .TP
-.B prevpage
+.B pageup
 Goes up one screenful.
 .TP
-.B nextpage
+.B pagedown
 Goes down one screenful.
 .TP
 .B firstline
@@ -602,6 +605,13 @@ Deletes the character under the cursor.
 .TP
 .B backspace
 Deletes the character before the cursor.
+.TP
+.B recordmacro
+Starts the recording of keystrokes -- the keystrokes are stored
+as a macro.  When already recording, the recording is stopped.
+.TP
+.B runmacro
+Replays the keystrokes of the last recorded macro.
 .TP
 .B undo
 Undoes the last performed text action (add text, delete text, etc).
@@ -664,7 +674,7 @@ When about to write a file, discard the current buffer without saving.
 (This function is bound by default only when option \fB\-\-tempfile\fR
 is in effect.)
 .TP
-.B tofiles
+.B browser
 Starts the file browser, allowing to select a file from a list.
 .TP
 .B gotodir
@@ -789,7 +799,7 @@ for \fBunbind\fR it means all menus where the specified \fIkey\fR exists.
 .B /etc/nanorc
 System-wide configuration file.
 .TP
-.B ~/.nanorc
+.BR ~/.nanorc " or " \fI$XDG_CONFIG_HOME\fB/nano/nanorc " or " ~/.config/nano/nanorc
 Per-user configuration file.
 
 .SH SEE ALSO

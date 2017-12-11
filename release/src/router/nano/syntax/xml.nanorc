@@ -2,7 +2,7 @@
 
 syntax "xml" "\.([jrsx]html?|jnlp|mml|pom|rng|sgml?|svg|w[as]dl|wsdd|xjb|xml|xs(d|lt?)|xul)$"
 header "<\?xml.*version=.*\?>"
-magic "(XML|SGML) (sub)?document text"
+magic "(XML|SGML) (sub)?document"
 comment "<!--|-->"
 
 # The entire content of the tag:

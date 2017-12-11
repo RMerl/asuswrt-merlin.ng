@@ -1,5 +1,80 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* CPU and C ABI indicator */
+#ifndef __i386__
+#undef __i386__
+#endif
+#ifndef __x86_64_x32__
+#undef __x86_64_x32__
+#endif
+#ifndef __x86_64__
+#undef __x86_64__
+#endif
+#ifndef __alpha__
+#undef __alpha__
+#endif
+#ifndef __arm__
+#undef __arm__
+#endif
+#ifndef __armhf__
+#undef __armhf__
+#endif
+#ifndef __arm64_ilp32__
+#undef __arm64_ilp32__
+#endif
+#ifndef __arm64__
+#undef __arm64__
+#endif
+#ifndef __hppa__
+#undef __hppa__
+#endif
+#ifndef __hppa64__
+#undef __hppa64__
+#endif
+#ifndef __ia64_ilp32__
+#undef __ia64_ilp32__
+#endif
+#ifndef __ia64__
+#undef __ia64__
+#endif
+#ifndef __m68k__
+#undef __m68k__
+#endif
+#ifndef __mips__
+#undef __mips__
+#endif
+#ifndef __mipsn32__
+#undef __mipsn32__
+#endif
+#ifndef __mips64__
+#undef __mips64__
+#endif
+#ifndef __powerpc__
+#undef __powerpc__
+#endif
+#ifndef __powerpc64__
+#undef __powerpc64__
+#endif
+#ifndef __powerpc64_elfv2__
+#undef __powerpc64_elfv2__
+#endif
+#ifndef __s390__
+#undef __s390__
+#endif
+#ifndef __s390x__
+#undef __s390x__
+#endif
+#ifndef __sh__
+#undef __sh__
+#endif
+#ifndef __sparc__
+#undef __sparc__
+#endif
+#ifndef __sparc64__
+#undef __sparc64__
+#endif
+
+
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
@@ -59,39 +134,29 @@
 #endif
 
 
-/* Define this to disable syntax highlighting. */
-#undef DISABLE_COLOR
-
-/* Define this to disable extra stuff. */
-#undef DISABLE_EXTRA
-
-/* Define this to disable search and position histories. */
-#undef DISABLE_HISTORIES
-
-/* Define this to disable the justify routines. */
-#undef DISABLE_JUSTIFY
-
-/* Define this to disable the setting of an operating directory (a chroot of
-   sorts). */
-#undef DISABLE_OPERATINGDIR
-
 /* Define this to disable text wrapping as root by default. */
 #undef DISABLE_ROOTWRAPPING
-
-/* Define this to disable the spell-checker functions. */
-#undef DISABLE_SPELLER
-
-/* Define this to disable all text wrapping. */
-#undef DISABLE_WRAPPING
 
 /* Define this to enable the built-in file browser. */
 #undef ENABLE_BROWSER
 
+/* Define this to have syntax highlighting. */
+#undef ENABLE_COLOR
+
 /* Define this to enable the comment/uncomment function. */
 #undef ENABLE_COMMENT
 
+/* Define this to have an Easter egg. */
+#undef ENABLE_EXTRA
+
 /* Define this to enable the Ctrl+G help texts. */
 #undef ENABLE_HELP
+
+/* Define this to have search and position histories. */
+#undef ENABLE_HISTORIES
+
+/* Define this to have the routines for justifying. */
+#undef ENABLE_JUSTIFY
 
 /* Define this to enable line numbering. */
 #undef ENABLE_LINENUMBERS
@@ -109,6 +174,12 @@
    language is requested. */
 #undef ENABLE_NLS
 
+/* Define this to allow setting an operating directory (a chroot of sorts). */
+#undef ENABLE_OPERATINGDIR
+
+/* Define this to have the spell-checker functions. */
+#undef ENABLE_SPELLER
+
 /* Define this to have tab completion for filenames and search strings. */
 #undef ENABLE_TABCOMP
 
@@ -117,6 +188,9 @@
 
 /* Define this to enable the word-completion function. */
 #undef ENABLE_WORDCOMPLETION
+
+/* Define this to have hard text wrapping. */
+#undef ENABLE_WRAPPING
 
 /* Define to nothing if C supports flexible array members, and to 1 if it does
    not. That way, with a declaration like 'struct s { int n; double
@@ -450,9 +524,6 @@
 
 /* Define if the frexp function is available in libc. */
 #undef HAVE_FREXP_IN_LIBC
-
-/* Define to 1 if you have the `fstatat' function. */
-#undef HAVE_FSTATAT
 
 /* Define to 1 if you have the `funlockfile' function. */
 #undef HAVE_FUNLOCKFILE
@@ -1724,6 +1795,9 @@
 # include <builtins.h>
 #endif
     
+
+/* Define to 1 if the compiler supports the keyword '__inline'. */
+#undef HAVE___INLINE
 
 /* Define as the bit index in the word where to find bit 0 of the exponent of
    'long double'. */

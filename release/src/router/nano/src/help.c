@@ -103,7 +103,7 @@ void do_help(void)
     int was_margin = margin;
 #endif
     ssize_t was_tabsize = tabsize;
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     char *was_syntax = syntaxstr;
 #endif
     char *saved_answer = (answer != NULL) ? strdup(answer) : NULL;
@@ -149,7 +149,7 @@ void do_help(void)
     margin = 0;
 #endif
     tabsize = 8;
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     syntaxstr = "nanohelp";
 #endif
     curs_set(0);
@@ -158,6 +158,7 @@ void do_help(void)
     help_init();
     inhelp = TRUE;
     location = 0;
+    didfind = 0;
 
     bottombars(MHELP);
     wnoutrefresh(bottomwin);
@@ -181,9 +182,10 @@ void do_help(void)
     while (TRUE) {
 	lastmessage = HUSH;
 	focusing = TRUE;
-	didfind = 0;
 
-	kbinput = get_kbinput(edit);
+	/* Show the cursor when we searched and found something. */
+	kbinput = get_kbinput(edit, didfind == 1);
+	didfind = 0;
 
 	func = parse_help_input(&kbinput);
 
@@ -203,7 +205,7 @@ void do_help(void)
 	    do_first_line();
 	} else if (func == do_last_line) {
 	    do_last_line();
-	} else if (func == do_search) {
+	} else if (func == do_search_forward) {
 	    do_search();
 	    bottombars(MHELP);
 	} else if (func == do_research) {
@@ -224,12 +226,10 @@ void do_help(void)
 	} else if (func == do_exit) {
 	    /* Exit from the help viewer. */
 	    close_buffer();
+	    curs_set(0);
 	    break;
 	} else
 	    unbound_key(kbinput);
-
-	/* If we searched and found something, let the cursor show it. */
-	curs_set(didfind == 1 ? 1 : 0);
 
 	currmenu = MHELP;
 	edit_refresh();
@@ -251,12 +251,12 @@ void do_help(void)
     margin = was_margin;
 #endif
     tabsize = was_tabsize;
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     syntaxstr = was_syntax;
 #endif
 
     /* Switch back to the buffer we were invoked from. */
-    switch_to_prev_buffer_void();
+    switch_to_prev_buffer();
 
     if (ISSET(NO_HELP)) {
 	currmenu = oldmenu;
@@ -389,7 +389,7 @@ void help_init(void)
 	htx[2] = NULL;
     }
 #endif /* ENABLE_BROWSER */
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
     else if (currmenu == MSPELL) {
 	htx[0] = N_("Spell Check Help Text\n\n "
 		"The spell checker checks the spelling of all text in "
@@ -403,7 +403,7 @@ void help_init(void)
 	htx[1] = NULL;
 	htx[2] = NULL;
     }
-#endif /* !DISABLE_SPELLER */
+#endif /* ENABLE_SPELLER */
 #ifndef NANO_TINY
     else if (currmenu == MEXTCMD) {
 	htx[0] = N_("Execute Command Help Text\n\n "
@@ -575,7 +575,7 @@ functionptrtype parse_help_input(int *kbinput)
 	    case 'W':
 	    case 'w':
 	    case '/':
-		return do_search;
+		return do_search_forward;
 	    case 'N':
 #ifndef NANO_TINY
 		return do_findprevious;

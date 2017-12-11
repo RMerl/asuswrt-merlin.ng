@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License along
-   with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 /* This file can be parametrized with the following macros:
      VASNPRINTF         The name of the function being defined.
@@ -4905,8 +4905,8 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                    On native Windows systems (such as mingw) where the OS is
                    Windows Vista, the use of %n in format strings by default
                    crashes the program. See
-                     <http://gcc.gnu.org/ml/gcc/2007-06/msg00122.html> and
-                     <http://msdn2.microsoft.com/en-us/library/ms175782(VS.80).aspx>
+                     <https://gcc.gnu.org/ml/gcc/2007-06/msg00122.html> and
+                     <https://msdn.microsoft.com/en-us/library/ms175782.aspx>
                    So we should avoid %n in this situation.  */
                 fbp[1] = '\0';
 # endif

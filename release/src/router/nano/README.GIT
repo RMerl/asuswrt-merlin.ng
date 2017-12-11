@@ -93,12 +93,15 @@ first create a branch off of master:
 
     $ git checkout -b somename
 
-Then change the code so it does what you want, and commit it, with in the
-commit message (after the one-line summary) a rationale for the change:
+Then change the code so it does what you want, and commit it together
+with your Sign-off:
 
     $ git commit -as
 
-Then create a patch (or patches):
+In the commit message (after the one-line summary) give a rationale
+for the change.  With your Signed-off-by you declare that the code is
+yours, or that you are free to reuse it, and that you submit it under
+the license that covers nano.  Then create a patch (or patches):
 
     $ git format-patch master
 

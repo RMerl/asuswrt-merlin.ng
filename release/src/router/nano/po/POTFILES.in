@@ -5,6 +5,7 @@ src/color.c
 src/files.c
 src/global.c
 src/help.c
+src/history.c
 src/nano.c
 src/prompt.c
 src/rcfile.c

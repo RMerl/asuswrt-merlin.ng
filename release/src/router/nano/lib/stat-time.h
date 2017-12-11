@@ -13,13 +13,17 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert.  */
 
 #ifndef STAT_TIME_H
 #define STAT_TIME_H 1
 
+#include "intprops.h"
+
+#include <errno.h>
+#include <stddef.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -200,6 +204,47 @@ get_stat_birthtime (struct stat const *st)
 #endif
 
   return t;
+}
+
+/* If a stat-like function returned RESULT, normalize the timestamps
+   in *ST, in case this platform suffers from the Solaris 11 bug where
+   tv_nsec might be negative.  Return the adjusted RESULT, setting
+   errno to EOVERFLOW if normalization overflowed.  This function
+   is intended to be private to this .h file.  */
+_GL_STAT_TIME_INLINE int
+stat_time_normalize (int result, struct stat *st)
+{
+#if defined __sun && defined STAT_TIMESPEC
+  if (result == 0)
+    {
+      long int timespec_resolution = 1000000000;
+      short int const ts_off[] = { offsetof (struct stat, st_atim),
+                                   offsetof (struct stat, st_mtim),
+                                   offsetof (struct stat, st_ctim) };
+      int i;
+      for (i = 0; i < sizeof ts_off / sizeof *ts_off; i++)
+        {
+          struct timespec *ts = (struct timespec *) ((char *) st + ts_off[i]);
+          long int q = ts->tv_nsec / timespec_resolution;
+          long int r = ts->tv_nsec % timespec_resolution;
+          if (r < 0)
+            {
+              r += timespec_resolution;
+              q--;
+            }
+          ts->tv_nsec = r;
+          /* Overflow is possible, as Solaris 11 stat can yield
+             tv_sec == TYPE_MINIMUM (time_t) && tv_nsec == -1000000000.
+             INT_ADD_WRAPV is OK, since time_t is signed on Solaris.  */
+          if (INT_ADD_WRAPV (q, ts->tv_sec, &ts->tv_sec))
+            {
+              errno = EOVERFLOW;
+              return -1;
+            }
+        }
+    }
+#endif
+  return result;
 }
 
 #ifdef __cplusplus

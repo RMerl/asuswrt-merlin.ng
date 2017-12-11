@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-AC_INIT([GNU nano], [2.8.7], [nano-devel@gnu.org], [nano])
+AC_INIT([GNU nano], [2.9.1], [nano-devel@gnu.org], [nano])
 AC_CONFIG_SRCDIR([src/nano.c])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([1.14])
@@ -75,6 +75,15 @@ fi
 
 AC_ARG_ENABLE(color,
 AS_HELP_STRING([--disable-color], [Disable color and syntax highlighting]))
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_color" = xyes; then
+	if test "x$enable_nanorc" != xyes; then
+	    AC_MSG_ERROR([--enable-color needs --enable-nanorc to work])
+	fi
+    else
+	enable_color=no
+    fi
+fi
 if test "x$enable_nanorc" = xno; then
     if test "x$enable_color" = xyes; then
 	AC_MSG_ERROR([--enable-color cannot work with --disable-nanorc])
@@ -83,9 +92,8 @@ if test "x$enable_nanorc" = xno; then
 	enable_color=no
     fi
 fi
-if test "x$enable_color" = xno; then
-    AC_DEFINE(DISABLE_COLOR, 1, [Define this to disable syntax highlighting.])
-else
+if test "x$enable_color" != xno; then
+    AC_DEFINE(ENABLE_COLOR, 1, [Define this to have syntax highlighting.])
     color_support=yes
 fi
 
@@ -104,8 +112,13 @@ fi
 
 AC_ARG_ENABLE(extra,
 AS_HELP_STRING([--disable-extra], [Disable the Easter egg]))
-if test "x$enable_extra" = xno; then
-    AC_DEFINE(DISABLE_EXTRA, 1, [Define this to disable extra stuff.])
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_extra" != xyes; then
+	enable_extra=no
+    fi
+fi
+if test "x$enable_extra" != xno; then
+    AC_DEFINE(ENABLE_EXTRA, 1, [Define this to have an Easter egg.])
 fi
 
 AC_ARG_ENABLE(help,
@@ -133,14 +146,24 @@ fi
 
 AC_ARG_ENABLE(histories,
 AS_HELP_STRING([--disable-histories], [Disable search and position histories]))
-if test "x$enable_histories" = xno; then
-    AC_DEFINE(DISABLE_HISTORIES, 1, [Define this to disable search and position histories.])
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_histories" != xyes; then
+	enable_histories=no
+    fi
+fi
+if test "x$enable_histories" != xno; then
+    AC_DEFINE(ENABLE_HISTORIES, 1, [Define this to have search and position histories.])
 fi
 
 AC_ARG_ENABLE(justify,
 AS_HELP_STRING([--disable-justify], [Disable the justify/unjustify functions]))
-if test "x$enable_justify" = xno; then
-    AC_DEFINE(DISABLE_JUSTIFY, 1, [Define this to disable the justify routines.])
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_justify" != xyes; then
+	enable_justify=no
+    fi
+fi
+if test "x$enable_justify" != xno; then
+    AC_DEFINE(ENABLE_JUSTIFY, 1, [Define this to have the routines for justifying.])
 fi
 
 AC_ARG_ENABLE(libmagic,
@@ -193,14 +216,24 @@ fi
 
 AC_ARG_ENABLE(operatingdir,
 AS_HELP_STRING([--disable-operatingdir], [Disable the setting of an operating directory]))
-if test "x$enable_operatingdir" = xno; then
-    AC_DEFINE(DISABLE_OPERATINGDIR, 1, [Define this to disable the setting of an operating directory (a chroot of sorts).])
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_operatingdir" != xyes; then
+	enable_operatingdir=no
+    fi
+fi
+if test "x$enable_operatingdir" != xno; then
+    AC_DEFINE(ENABLE_OPERATINGDIR, 1, [Define this to allow setting an operating directory (a chroot of sorts).])
 fi
 
 AC_ARG_ENABLE(speller,
 AS_HELP_STRING([--disable-speller], [Disable the spell-checker functions]))
-if test "x$enable_speller" = xno; then
-    AC_DEFINE(DISABLE_SPELLER, 1, [Define this to disable the spell-checker functions.])
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_speller" != xyes; then
+	enable_speller=no
+    fi
+fi
+if test "x$enable_speller" != xno; then
+    AC_DEFINE(ENABLE_SPELLER, 1, [Define this to have the spell-checker functions.])
 fi
 
 AC_ARG_ENABLE(tabcomp,
@@ -229,8 +262,13 @@ fi
 
 AC_ARG_ENABLE(wrapping,
 AS_HELP_STRING([--disable-wrapping], [Disable all hard-wrapping of text]))
-if test "x$enable_wrapping" = xno; then
-    AC_DEFINE(DISABLE_WRAPPING, 1, [Define this to disable all hard text wrapping.])
+if test "x$enable_tiny" = xyes; then
+    if test "x$enable_wrapping" != xyes; then
+	enable_wrapping=no
+    fi
+fi
+if test "x$enable_wrapping" != xno; then
+    AC_DEFINE(ENABLE_WRAPPING, 1, [Define this to have hard text wrapping.])
 fi
 
 AC_ARG_ENABLE(wrapping-as-root,
@@ -251,34 +289,8 @@ AC_ARG_ENABLE(tiny,
 AS_HELP_STRING([--enable-tiny], [Disable features for the sake of size]))
 if test "x$enable_tiny" = xyes; then
     AC_DEFINE(NANO_TINY, 1, [Define this to make the nano executable as small as possible.])
-    if test "x$enable_color" != xyes; then
-	AC_DEFINE(DISABLE_COLOR, 1, [Define this to disable syntax highlighting.])
-	color_support=no
-    else
-	if test "x$enable_nanorc" != xyes; then
-	    AC_MSG_ERROR([--enable-color needs --enable-nanorc to work])
-	fi
-    fi
-    if test "x$enable_extra" != xyes; then
-	AC_DEFINE(DISABLE_EXTRA, 1, [Define this to disable extra stuff.])
-    fi
-    if test "x$enable_histories" != xyes; then
-	AC_DEFINE(DISABLE_HISTORIES, 1, [Define this to disable search and position histories.])
-    fi
-    if test "x$enable_justify" != xyes; then
-	AC_DEFINE(DISABLE_JUSTIFY, 1, [Define this to disable the justify routines.])
-    fi
     if test "x$enable_libmagic" != xyes; then
 	enable_libmagic=no
-    fi
-    if test "x$enable_operatingdir" != xyes; then
-	AC_DEFINE(DISABLE_OPERATINGDIR, 1, [Define this to disable the setting of an operating directory (a chroot of sorts).])
-    fi
-    if test "x$enable_speller" != xyes; then
-	AC_DEFINE(DISABLE_SPELLER, 1, [Define this to disable the spell-checker functions.])
-    fi
-    if test "x$enable_wrapping" != xyes; then
-	AC_DEFINE(DISABLE_WRAPPING, 1, [Define this to disable all text wrapping.])
     fi
 fi
 

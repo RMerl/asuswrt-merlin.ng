@@ -1,3 +1,179 @@
+Changes between v2.9.0 and v2.9.1:
+----------------------------------
+
+Benno Schulenberg (20):
+      build: fix compilation with --disable-browser --disable-tabcomp
+      bump version numbers and add a news item for the 2.9.1 release
+      files: always update the stat info when the entire file is written
+      files: save the marked region only when we've prompted for a file name
+      gnulib: update to its current upstream state
+      history: create the path '~/.local/share/' when it is needed
+      history: make nano's state directory accessible for the user only
+      history: save the positions file also when a record was deleted
+      input: make the macro key discoverable by giving feedback when undefined
+      linting: switch the mark off when the linter starts
+      selecting: do not cancel the softmark when the cursor is not moved
+      selecting: let a justification cancel a softmark
+      syntax: adjust the magic strings for the changes since file-5.10
+      tweaks: adjust indentation after previous change
+      tweaks: elide the 'mark_set' boolean -- the 'mark' pointer is enough
+      tweaks: rename, rewrap, and reshuffle some stuff, and frob some comments
+      tweaks: reshuffle a couple of lines, and frob a comment or two
+      tweaks: reshuffle a couple of lines, to put similar things together
+      undo: clear the Modified state when the very first edit is undone
+      undo: discarding the stack does not always lose information
+
+
+Changes between v2.8.7 and v2.9.0:
+----------------------------------
+
+Benno Schulenberg (103):
+      bindings: don't allow calling help when searching in the help viewer
+      bindings: make ^Q and ^S do something useful by default
+      bindings: make the search function rebindable again in help and browser
+      bindings: make ^W start always a forward search (as there is ^Q now)
+      browser: place the cursor properly on the selected file when -g is used
+      build: let git ignore also the generated PDF file
+      bump version numbers and add a news item for the 2.9.0 release
+      copyright: update some years, and standardize on the dashed format
+      display: keep the cursor switched on when resizing the screen
+      display: rework the switching on and off of the cursor
+      display: stop the help viewer from turning on the multibuffer indicator
+      display: switch off the cursor early on during startup
+      docs: make it clearer that a Signed-off-by is wanted on patches
+      docs: mention that macros work correctly only on terminal emulators
+      docs: remove another remark about indenting lacking undo capability
+      docs: update references to the nanorc files for the XDG changes
+      files: avoid an abortion when excuting a command in a new buffer
+      gnulib: update to its current upstream state
+      help: don't fall back to other syntaxes if there is no nanohelp one
+      history: after loading the lists, mark them as unchanged
+      history: remove the migration service for the old searches file
+      input: recognize Option+Arrow keys on iTerm2 in "xterm mode"
+      moving: don't slither and slide over tabs when they are overlong
+      moving: prevent the cursor sticking on or skipping over overwide tabs
+      new feature: a bindable function that starts always a backward search
+      options: remove '--quiet' and 'set quiet', because they hide problems
+      options: retire 'set backwards' -- it's still recognized but a no-op
+      organization: move all history-related stuff to its own file
+      ouch: set the positions-file name also when using the legacy state dir
+      painting: evade an ncurses bug by adding the A_PROTECT attribute
+      search: suppress the "not found" message when replacements were made
+      search: suppress the "Search Wrapped" message when doing replacements
+      search: wipe reassuring feedback as soon as searching has finished
+      startup: don't ask the user to press Enter upon an rcfile error
+      startup: don't produce more than three consecutive beeps
+      startup: when an rcfile contains errors, report this on the status bar
+      syntax: default: use colors that are readable also on dark backgrounds
+      titlebar: don't reshow version when dropping back to a single buffer
+      titlebar: don't show nano's name and version when in the file browser
+      titlebar: drop the prefix "File: " from before the filename
+      tweaks: add a translator hint, and adjust two others
+      tweaks: adjust a comment, and condense a fragment of code
+      tweaks: adjust indentation and comments after the previous change
+      tweaks: adjust two comments, and correct and a few cosmetic mistakes
+      tweaks: avoid an unused-variable warning with --disable-nanorc
+      tweaks: change some mayday messages, to urge the user to report a bug
+      tweaks: change the arrows to triangles also for searching in file browser
+      tweaks: change the help-text arrows to triangles, to be more visible
+      tweaks: chuck a bunch of asserts -- they have lost their usefulness
+      tweaks: chuck an assert, and then condense the code and a comment
+      tweaks: constify the result strings of getenv(), as a reminder
+      tweaks: correct two minor things in the documentation
+      tweaks: discard another set of useless asserts
+      tweaks: discard some obsolete debugging stuff
+      tweaks: don't construct the positions-history filename time and again
+      tweaks: drop a bunch of outdated asserts
+      tweaks: drop the ineffective cgitrc -- sorting by "age" does not work
+      tweaks: elide a comment, and improve a couple of others
+      tweaks: elide an unneeded check
+      tweaks: elide an unneeded function now that stuff is grouped together
+      tweaks: elide a superfluous allocation
+      tweaks: elide two variables by using a pointer instead of an index
+      tweaks: fix compilation when configured with --disable-histories
+      tweaks: fix compilation when configured with --enable-tiny
+      tweaks: fix compilation with --enable-tiny --enable-histories
+      tweaks: frob a couple of comments
+      tweaks: frob some comments and rename a few variables and a function
+      tweaks: get rid of some cluttering conditional compilation
+      tweaks: improve some comments, and rename a variable for symmetry
+      tweaks: make the switching on and off of the cursor a bit more compact
+      tweaks: move a general function to the utils.c file
+      tweaks: reduce a bit of code duplication
+      tweaks: remove a comment from the docs that is no longer accurate
+      tweaks: remove another bit of conditional compilation
+      tweaks: remove a superfluous no-op function call
+      tweaks: remove a useless prefix from a hundred constants
+      tweaks: rename a function and swap its two parameters
+      tweaks: rename a function plus two parameters, to be more fitting
+      tweaks: rename a macro, to make a little more sense
+      tweaks: rename a variable, to avoid a possible confusion
+      tweaks: rename a variable, to make more sense
+      tweaks: rename one variable once more
+      tweaks: rename some constants, to follow the same underscoreless scheme
+      tweaks: rename three functions, to be shorter or clearer
+      tweaks: rename three variables, for more contrast
+      tweaks: rename two variables, for contrast, and frob some comments
+      tweaks: rename two variables, to be more indicative of what they do
+      tweaks: rename two variables, to make a little more sense
+      tweaks: reshuffle a bit of code and elide an unneeded variable
+      tweaks: reshuffle a couple of lines, and trim some comments
+      tweaks: reshuffle some code, and rename a variable
+      tweaks: reshuffle some code in order to elide a variable
+      tweaks: reshuffle some regexes, for order and compactness
+      tweaks: strip four unneeded checks
+      tweaks: transform the token DISABLE_COLOR to ENABLE_COLOR
+      tweaks: transform the token DISABLE_EXTRA to ENABLE_EXTRA
+      tweaks: transform the token DISABLE_HISTORIES to ENABLE_HISTORIES
+      tweaks: transform the token DISABLE_JUSTIFY to ENABLE_JUSTIFY
+      tweaks: transform the token DISABLE_OPERATINGDIR to ENABLE_OPERATINGDIR
+      tweaks: transform the token DISABLE_SPELLER to ENABLE_SPELLER
+      tweaks: transform the token DISABLE_WRAPJUSTIFY to ENABLED_WRAPORJUSTIFY
+      tweaks: transform the token DISABLE_WRAPPING to ENABLE_WRAPPING
+      tweaks: use mnemonic constants instead of TRUE and FALSE
+
+Brand Huntsman (3):
+      bindings: allow exiting from the help viewer with F1, like with ^G
+      history: prevent overwriting of positions between multiple instances
+      syntax: nanohelp: colorize Up, Down, Left and Right (when not in UTF-8)
+
+David Lawrence Ramsey (18):
+      build: add history.c to the list of files with translatable strings
+      display: don't cut off zero-width characters at the end of a chunk
+      docs: decribe the bindable functions 'recordmacro' and 'runmacro'
+      docs: document the more everyday names of three bindable functions
+      docs: remove man page reference to indent/unindent lacking undo/redo
+      files: don't change file format when inserting into an existing buffer
+      help: allow firstline and lastline to work at the search prompt
+      history: fix the check for an existing $HOME/.nano/ directory
+      moving: set the preferred column properly when doing a smart home
+      search: don't bother saving and restoring the search direction
+      search: trim a failed search string for width instead of length
+      softwrap: break before multi-column Unicode blanks when they overshoot
+      syntax: nanorc: properly color valid arguments of 'selectedcolor'
+      text: hook up indenting and unindenting to the undo/redo code
+      text: move the indenting of a single line into its own function
+      text: move the unindenting of a single line into its own function
+      tweaks: use printf's z modifier for most of the size_t/ssize_t types
+      undo: generalize update_comment_undo() into update_multiline_undo()
+
+Lion Yang (1):
+      input: ensure that standard input uses blocking mode
+
+Marco Diego Aurélio Mesquita (5):
+      general: do not free strings gotten from getenv(), to avoid a crash
+      history: remember the commands that were executed during this session
+      history: remember the list of executed commands across sessions
+      new feature: show current and total number of open buffers in title bar
+      new feature: the ability to record and play back a series of keystrokes
+
+Simon Ochsenreither (1):
+      startup: look for nanorc and history files also in the XDG directories
+
+Viorel Bota (1):
+      files: check for a changed disk file also for 'savefile' and --tempfile
+
+
 Changes between v2.8.6 and v2.8.7:
 ----------------------------------
 

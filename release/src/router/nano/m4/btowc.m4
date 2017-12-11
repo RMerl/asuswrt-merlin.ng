@@ -10,7 +10,7 @@ AC_DEFUN([gl_FUNC_BTOWC],
 
   dnl Check whether <wchar.h> is usable at all, first. Otherwise the test
   dnl program below may lead to an endless loop. See
-  dnl <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42440>.
+  dnl <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42440>.
   AC_REQUIRE([gl_WCHAR_H_INLINE_OK])
 
   AC_CHECK_FUNCS_ONCE([btowc])

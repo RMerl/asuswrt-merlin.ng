@@ -2,7 +2,7 @@
 
 syntax "texinfo" "\.texi$"
 header "^\\input texinfo"
-magic "Texinfo source text"
+magic "Texinfo source"
 comment "@c "
 
 # Command arguments, trailing and enclosed.

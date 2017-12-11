@@ -2,7 +2,7 @@
  *   move.c  --  This file is part of GNU nano.                           *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2017 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014, 2015, 2016 Benno Schulenberg                     *
+ *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -65,25 +65,27 @@ void get_edge_and_target(size_t *leftedge, size_t *target_column)
 }
 
 /* Return the index in line->data that corresponds to the given column on the
- * chunk that starts at the given leftedge.  If the index lands on a tab, and
- * this tab starts on an earlier chunk, and the tab ends on this row OR we're
- * going forward, then increment the index and recalculate leftedge. */
+ * chunk that starts at the given leftedge.  If the target column has landed
+ * on a tab, prevent the cursor from falling back a row when moving forward,
+ * or from skipping a row when moving backward, by incrementing the index. */
 size_t proper_x(filestruct *line, size_t *leftedge, bool forward,
 		size_t column, bool *shifted)
 {
     size_t index = actual_x(line->data, column);
 
 #ifndef NANO_TINY
-    if (ISSET(SOFTWRAP) && line->data[index] == '\t' && (forward ||
-		*leftedge / tabsize < (*leftedge + editwincols) / tabsize) &&
-		*leftedge % tabsize != 0 && column < *leftedge + tabsize) {
+    if (ISSET(SOFTWRAP) && line->data[index] == '\t' &&
+		((forward && strnlenpt(line->data, index) < *leftedge) ||
+		(!forward && column / tabsize == (*leftedge - 1) / tabsize &&
+		column / tabsize < (*leftedge + editwincols - 1) / tabsize))) {
 	index++;
-
-	*leftedge = leftedge_for(strnlenpt(line->data, index), line);
 
 	if (shifted != NULL)
 	    *shifted = TRUE;
     }
+
+    if (ISSET(SOFTWRAP))
+	*leftedge = leftedge_for(strnlenpt(line->data, index), line);
 #endif
 
     return index;
@@ -94,17 +96,15 @@ size_t proper_x(filestruct *line, size_t *leftedge, bool forward,
 void set_proper_index_and_pww(size_t *leftedge, size_t target, bool forward)
 {
     bool shifted = FALSE;
+    size_t was_edge = *leftedge;
 
     openfile->current_x = proper_x(openfile->current, leftedge, forward,
 			actual_last_column(*leftedge, target), &shifted);
 
     /* If the index was incremented, try going to the target column. */
-    if (shifted) {
-	size_t newer_x = actual_x(openfile->current->data, *leftedge + target);
-
-	if (newer_x > openfile->current_x)
-	    openfile->current_x = newer_x;
-    }
+    if (shifted || *leftedge < was_edge)
+	openfile->current_x = proper_x(openfile->current, leftedge, forward,
+			actual_last_column(*leftedge, target), &shifted);
 
     openfile->placewewant = *leftedge + target;
 }
@@ -119,9 +119,8 @@ void do_page_up(void)
      * beginning of the top line of the edit window, as Pico does. */
     if (!ISSET(SMOOTH_SCROLL)) {
 	openfile->current = openfile->edittop;
+	leftedge = openfile->firstcolumn;
 	openfile->current_y = 0;
-
-	leftedge = leftedge_for(openfile->firstcolumn, openfile->edittop);
 	target_column = 0;
     } else
 	get_edge_and_target(&leftedge, &target_column);
@@ -150,9 +149,8 @@ void do_page_down(void)
      * beginning of the top line of the edit window, as Pico does. */
     if (!ISSET(SMOOTH_SCROLL)) {
 	openfile->current = openfile->edittop;
+	leftedge = openfile->firstcolumn;
 	openfile->current_y = 0;
-
-	leftedge = leftedge_for(openfile->firstcolumn, openfile->edittop);
 	target_column = 0;
     } else
 	get_edge_and_target(&leftedge, &target_column);
@@ -171,18 +169,18 @@ void do_page_down(void)
     refresh_needed = TRUE;
 }
 
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 /* Move to the beginning of the last beginning-of-paragraph line before the
  * current line.  If update_screen is TRUE, update the screen afterwards. */
 void do_para_begin(bool update_screen)
 {
     filestruct *was_current = openfile->current;
 
-    if (openfile->current != openfile->fileage) {
-	do
-	    openfile->current = openfile->current->prev;
-	while (!begpar(openfile->current));
-    }
+    if (openfile->current != openfile->fileage)
+	openfile->current = openfile->current->prev;
+
+    while (!begpar(openfile->current))
+	openfile->current = openfile->current->prev;
 
     openfile->current_x = 0;
 
@@ -231,9 +229,9 @@ void do_para_end_void(void)
 {
     do_para_end(TRUE);
 }
-#endif /* !DISABLE_JUSTIFY */
+#endif /* ENABLE_JUSTIFY */
 
-/* Move to the preceding block of text in the file. */
+/* Move to the preceding block of text. */
 void do_prev_block(void)
 {
     filestruct *was_current = openfile->current;
@@ -255,7 +253,7 @@ void do_prev_block(void)
     edit_redraw(was_current, CENTERING);
 }
 
-/* Move to the next block of text in the file. */
+/* Move to the next block of text. */
 void do_next_block(void)
 {
     filestruct *was_current = openfile->current;
@@ -273,9 +271,8 @@ void do_next_block(void)
     edit_redraw(was_current, CENTERING);
 }
 
-/* Move to the previous word in the file.  If allow_punct is TRUE, treat
- * punctuation as part of a word.  If update_screen is TRUE, update the
- * screen afterwards. */
+/* Move to the previous word.  If allow_punct is TRUE, treat punctuation
+ * as part of a word.  When requested, update the screen afterwards. */
 void do_prev_word(bool allow_punct, bool update_screen)
 {
     filestruct *was_current = openfile->current;
@@ -317,10 +314,9 @@ void do_prev_word(bool allow_punct, bool update_screen)
 	edit_redraw(was_current, FLOWING);
 }
 
-/* Move to the next word in the file.  If allow_punct is TRUE, treat
- * punctuation as part of a word.  If update_screen is TRUE, update the
- * screen afterwards.  Return TRUE if we started on a word, and FALSE
- * otherwise. */
+/* Move to the next word.  If allow_punct is TRUE, treat punctuation
+ * as part of a word.   When requested, update the screen afterwards.
+ * Return TRUE if we started on a word, and FALSE otherwise. */
 bool do_next_word(bool allow_punct, bool update_screen)
 {
     filestruct *was_current = openfile->current;
@@ -332,7 +328,7 @@ bool do_next_word(bool allow_punct, bool update_screen)
     while (TRUE) {
 	/* If at the end of a line, move to the beginning of the next one. */
 	if (openfile->current->data[openfile->current_x] == '\0') {
-	    /* If at the end of the file, stop. */
+	    /* When at end of file, stop. */
 	    if (openfile->current->next == NULL)
 		break;
 	    openfile->current = openfile->current->next;
@@ -424,7 +420,7 @@ void do_home(void)
 	openfile->current_x = 0;
 
     if (moved_off_chunk)
-	openfile->placewewant = 0;
+	openfile->placewewant = xplustabs();
 
     /* If we changed chunk, we might be offscreen.  Otherwise,
      * update current if the mark is on or we changed "page". */
@@ -506,7 +502,7 @@ void do_up(bool scroll_only)
     set_proper_index_and_pww(&leftedge, target_column, FALSE);
 
     if (scroll_only)
-	edit_scroll(UPWARD, 1);
+	edit_scroll(BACKWARD, 1);
 
     edit_redraw(was_current, FLOWING);
 
@@ -530,7 +526,7 @@ void do_down(bool scroll_only)
     set_proper_index_and_pww(&leftedge, target_column, TRUE);
 
     if (scroll_only)
-	edit_scroll(DOWNWARD, 1);
+	edit_scroll(FORWARD, 1);
 
     edit_redraw(was_current, FLOWING);
 

@@ -2,7 +2,7 @@
  *   color.c  --  This file is part of GNU nano.                          *
  *                                                                        *
  *   Copyright (C) 2001-2011, 2013-2017 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014, 2015, 2016, 2017 Benno Schulenberg               *
+ *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -28,7 +28,16 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
+
+/* For early versions of ncurses-6.0, use an additional A_PROTECT attribute
+ * for all colors, in order to work around an ncurses miscoloring bug. */
+#if defined(NCURSES_VERSION_MAJOR) && (NCURSES_VERSION_MAJOR == 6) && \
+	(NCURSES_VERSION_MINOR == 0) && (NCURSES_VERSION_PATCH < 20151017)
+#define A_BANDAID  A_PROTECT
+#else
+#define A_BANDAID  A_NORMAL
+#endif
 
 /* Initialize the colors for nano's interface, and assign pair numbers
  * for the colors in each syntax. */
@@ -59,8 +68,8 @@ void set_colorpairs(void)
 	    if (background == -1 && !using_defaults)
 		background = COLOR_BLACK;
 	    init_pair(i + 1, foreground, background);
-	    interface_color_pair[i] =
-			COLOR_PAIR(i + 1) | (bright ? A_BOLD : A_NORMAL);
+	    interface_color_pair[i] = COLOR_PAIR(i + 1) | A_BANDAID |
+					(bright ? A_BOLD : A_NORMAL);
 	} else {
 	    if (i != FUNCTION_TAG)
 		interface_color_pair[i] = hilite_attribute;
@@ -91,7 +100,7 @@ void set_colorpairs(void)
 	    else
 		ink->pairnum = new_number++;
 
-	    ink->attributes = COLOR_PAIR(ink->pairnum) |
+	    ink->attributes = COLOR_PAIR(ink->pairnum) | A_BANDAID |
 				(ink->bright ? A_BOLD : A_NORMAL);
 	}
     }
@@ -125,9 +134,6 @@ void color_init(void)
 	    background = COLOR_BLACK;
 
 	init_pair(ink->pairnum, foreground, background);
-#ifdef DEBUG
-	fprintf(stderr, "init_pair(): fg = %hd, bg = %hd\n", foreground, background);
-#endif
     }
 
     have_palette = TRUE;
@@ -175,13 +181,13 @@ void color_update(void)
 		break;
 	}
 
-	if (sint == NULL)
+	if (sint == NULL && !inhelp)
 	    statusline(ALERT, _("Unknown syntax name: %s"), syntaxstr);
     }
 
     /* If no syntax-override string was specified, or it didn't match,
      * try finding a syntax based on the filename (extension). */
-    if (sint == NULL) {
+    if (sint == NULL && !inhelp) {
 	char *reserved = charalloc(PATH_MAX + 1);
 	char *currentdir = getcwd(reserved, PATH_MAX + 1);
 	char *joinednames = charalloc(PATH_MAX + 1);
@@ -210,10 +216,7 @@ void color_update(void)
     }
 
     /* If the filename didn't match anything, try the first line. */
-    if (sint == NULL) {
-#ifdef DEBUG
-	fprintf(stderr, "No result from file extension, trying headerline...\n");
-#endif
+    if (sint == NULL && !inhelp) {
 	for (sint = syntaxes; sint != NULL; sint = sint->next) {
 	    if (found_in_list(sint->headers, openfile->fileage->data))
 		break;
@@ -222,13 +225,11 @@ void color_update(void)
 
 #ifdef HAVE_LIBMAGIC
     /* If we still don't have an answer, try using magic. */
-    if (sint == NULL) {
+    if (sint == NULL && !inhelp) {
 	struct stat fileinfo;
 	magic_t cookie = NULL;
 	const char *magicstring = NULL;
-#ifdef DEBUG
-	fprintf(stderr, "No result from headerline either, trying libmagic...\n");
-#endif
+
 	if (stat(openfile->filename, &fileinfo) == 0) {
 	    /* Open the magic database and get a diagnosis of the file. */
 	    cookie = magic_open(MAGIC_SYMLINK |
@@ -243,9 +244,6 @@ void color_update(void)
 		if (magicstring == NULL)
 		    statusline(ALERT, _("magic_file(%s) failed: %s"),
 				openfile->filename, magic_error(cookie));
-#ifdef DEBUG
-		fprintf(stderr, "Returned magic string is: %s\n", magicstring);
-#endif
 	    }
 	}
 
@@ -263,7 +261,7 @@ void color_update(void)
 #endif /* HAVE_LIBMAGIC */
 
     /* If nothing at all matched, see if there is a default syntax. */
-    if (sint == NULL) {
+    if (sint == NULL && !inhelp) {
 	for (sint = syntaxes; sint != NULL; sint = sint->next) {
 	    if (strcmp(sint->name, "default") == 0)
 		break;
@@ -435,4 +433,4 @@ void precalc_multicolorinfo(void)
     }
 }
 
-#endif /* !DISABLE_COLOR */
+#endif /* ENABLE_COLOR */

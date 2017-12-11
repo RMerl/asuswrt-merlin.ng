@@ -63,8 +63,8 @@ dnl Check whether <wchar.h> is usable at all.
 AC_DEFUN([gl_WCHAR_H_INLINE_OK],
 [
   dnl Test whether <wchar.h> suffers due to the transition from '__inline' to
-  dnl 'gnu_inline'. See <http://sourceware.org/bugzilla/show_bug.cgi?id=4022>
-  dnl and <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42440>. In summary,
+  dnl 'gnu_inline'. See <https://sourceware.org/bugzilla/show_bug.cgi?id=4022>
+  dnl and <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42440>. In summary,
   dnl glibc version 2.5 or older, together with gcc version 4.3 or newer and
   dnl the option -std=c99 or -std=gnu99, leads to a broken <wchar.h>.
   AC_CACHE_CHECK([whether <wchar.h> uses 'inline' correctly],
@@ -122,7 +122,7 @@ This is a known interoperability problem of glibc <= 2.5 with gcc >= 4.3 in
 C99 mode. You have four options:
   - Add the flag -fgnu89-inline to CC and reconfigure, or
   - Fix your include files, using parts of
-    <http://sourceware.org/git/?p=glibc.git;a=commitdiff;h=b037a293a48718af30d706c2e18c929d0e69a621>, or
+    <https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=b037a293a48718af30d706c2e18c929d0e69a621>, or
   - Use a gcc version older than 4.3, or
   - Don't use the flags -std=c99 or -std=gnu99.
 Configuration aborted.])

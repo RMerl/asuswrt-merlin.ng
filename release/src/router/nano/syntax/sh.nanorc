@@ -2,7 +2,7 @@
 
 syntax "sh" "\.sh$"
 header "^#!.*((ba|da|k|pdk)?sh[-0-9_]*|openrc-run|runscript)"
-magic "(POSIX|Bourne.*) shell script text"
+magic "(POSIX|Bourne-Again) shell script.*text"
 linter dash -n
 comment "#"
 

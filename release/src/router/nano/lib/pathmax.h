@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _PATHMAX_H
 # define _PATHMAX_H
@@ -68,7 +68,7 @@
 # if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
 /* The page "Naming Files, Paths, and Namespaces" on msdn.microsoft.com,
    section "Maximum Path Length Limitation",
-   <http://msdn.microsoft.com/en-us/library/aa365247(v=vs.85).aspx#maxpath>
+   <https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath>
    explains that the maximum size of a filename, including the terminating
    NUL byte, is 260 = 3 + 256 + 1.
    This is the same value as

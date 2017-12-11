@@ -1,4 +1,4 @@
-# float_h.m4 serial 11
+# float_h.m4 serial 12
 dnl Copyright (C) 2007, 2009-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -24,10 +24,14 @@ changequote([,])dnl
         x86_64 )
           # On x86_64 systems, the C compiler may still be generating
           # 32-bit code.
-          AC_EGREP_CPP([yes],
-            [#if defined __LP64__ || defined __x86_64__ || defined __amd64__
-             yes
-             #endif],
+          AC_COMPILE_IFELSE(
+            [AC_LANG_SOURCE(
+               [[#if defined __LP64__ || defined __x86_64__ || defined __amd64__
+                  int ok;
+                 #else
+                  error fail
+                 #endif
+               ]])],
             [],
             [FLOAT_H=float.h])
           ;;
@@ -69,10 +73,14 @@ int main ()
         [gl_cv_func_itold_works=no],
         [case "$host" in
            sparc*-*-linux*)
-             AC_EGREP_CPP([yes],
-               [#if defined __LP64__ || defined __arch64__
-                yes
-                #endif],
+             AC_COMPILE_IFELSE(
+               [AC_LANG_SOURCE(
+                 [[#if defined __LP64__ || defined __arch64__
+                    int ok;
+                   #else
+                    error fail
+                   #endif
+                 ]])],
                [gl_cv_func_itold_works="guessing no"],
                [gl_cv_func_itold_works="guessing yes"])
              ;;

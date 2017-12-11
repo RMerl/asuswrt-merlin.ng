@@ -1,4 +1,4 @@
-# serial 12
+# serial 13
 
 # Copyright (C) 2009-2017 Free Software Foundation, Inc.
 #
@@ -55,6 +55,11 @@ AC_DEFUN([gl_FUNC_STAT],
           REPLACE_STAT=1
           AC_DEFINE([REPLACE_FUNC_STAT_FILE], [1], [Define to 1 if stat needs
             help when passed a file name with a trailing slash]);;
+      esac
+      case $host_os in
+        dnl Solaris stat can return a negative tv_nsec.
+        solaris*)
+          REPLACE_FSTAT=1 ;;
       esac
       ;;
   esac

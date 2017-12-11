@@ -1,4 +1,4 @@
-# sys_types_h.m4 serial 8
+# sys_types_h.m4 serial 9
 dnl Copyright (C) 2011-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -35,12 +35,12 @@ AC_DEFUN([gl_SYS_TYPES_H_DEFAULTS],
 ])
 
 # This works around a buggy version in autoconf <= 2.69.
-# See <https://lists.gnu.org/archive/html/autoconf/2016-08/msg00014.html>
+# See <https://lists.gnu.org/r/autoconf/2016-08/msg00014.html>
 
 m4_version_prereq([2.70], [], [
 
 # This is taken from the following Autoconf patch:
-# http://git.sv.gnu.org/cgit/autoconf.git/commit/?id=e17a30e98
+# https://git.savannah.gnu.org/cgit/autoconf.git/commit/?id=e17a30e987d7ee695fb4294a82d987ec3dc9b974
 
 m4_undefine([AC_HEADER_MAJOR])
 AC_DEFUN([AC_HEADER_MAJOR],

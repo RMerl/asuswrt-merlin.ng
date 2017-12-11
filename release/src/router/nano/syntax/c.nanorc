@@ -1,7 +1,7 @@
 ## Here is an example for C/C++.
 
 syntax "c" "\.(c(c|pp|xx|\+\+)?|C)$" "\.(h(h|pp|xx)?|H)$" "\.ii?$"
-magic "(ASCII|UTF-8 Unicode) C(\+\+)? program text"
+magic "^(C|C\+\+) (source|program)"
 comment "//"
 
 # Constants.

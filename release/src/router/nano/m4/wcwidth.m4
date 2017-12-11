@@ -1,4 +1,4 @@
-# wcwidth.m4 serial 23
+# wcwidth.m4 serial 25
 dnl Copyright (C) 2006-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -34,7 +34,20 @@ AC_DEFUN([gl_FUNC_WCWIDTH],
     HAVE_DECL_WCWIDTH=0
   fi
 
-  if test $ac_cv_func_wcwidth = yes; then
+  if test $ac_cv_func_wcwidth != yes; then
+    AC_CACHE_CHECK([whether wcwidth is a macro],
+      [gl_cv_func_wcwidth_macro],
+      [AC_EGREP_CPP([wchar_header_defines_wcwidth], [
+#include <wchar.h>
+#ifdef wcwidth
+ wchar_header_defines_wcwidth
+#endif],
+         [gl_cv_func_wcwidth_macro=yes],
+         [gl_cv_func_wcwidth_macro=no])
+      ])
+  fi
+
+  if test $ac_cv_func_wcwidth = yes || test $gl_cv_func_wcwidth_macro = yes; then
     HAVE_WCWIDTH=1
     dnl On Mac OS X 10.3, wcwidth(0x0301) (COMBINING ACUTE ACCENT) returns 1.
     dnl On OpenBSD 5.0, wcwidth(0x05B0) (HEBREW POINT SHEVA) returns 1.

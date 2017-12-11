@@ -2,7 +2,7 @@
  *   browser.c  --  This file is part of GNU nano.                        *
  *                                                                        *
  *   Copyright (C) 2001-2011, 2013-2017 Free Software Foundation, Inc.    *
- *   Copyright (C) 2015, 2016 Benno Schulenberg                           *
+ *   Copyright (C) 2015-2016 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -55,9 +55,6 @@ char *do_browser(char *path)
     DIR *dir;
 	/* The directory whose contents we are showing. */
 
-    /* Don't show a cursor in the file list. */
-    curs_set(0);
-
   read_directory_contents:
 	/* We come here when we refresh or select a new directory. */
 
@@ -106,20 +103,18 @@ char *do_browser(char *path)
     titlebar(path);
 
     while (TRUE) {
-	/* Make sure that the cursor is off. */
-	curs_set(0);
 	lastmessage = HUSH;
 
 	bottombars(MBROWSER);
 
 	/* Display (or redisplay) the file list if the list itself or
 	 * the selected file has changed. */
-	if (old_selected != selected)
+	if (old_selected != selected || ISSET(SHOW_CURSOR))
 	    browser_refresh();
 
 	old_selected = selected;
 
-	kbinput = get_kbinput(edit);
+	kbinput = get_kbinput(edit, ISSET(SHOW_CURSOR));
 
 #ifdef ENABLE_MOUSE
 	if (kbinput == KEY_MOUSE) {
@@ -170,7 +165,7 @@ char *do_browser(char *path)
 #else
 	    say_there_is_no_help();
 #endif
-	} else if (func == do_search) {
+	} else if (func == do_search_forward) {
 	    do_filesearch();
 	} else if (func == do_research) {
 	    do_fileresearch(TRUE);
@@ -230,10 +225,7 @@ char *do_browser(char *path)
 	    selected = filelist_len - 1;
 	} else if (func == goto_dir_void) {
 	    /* Ask for the directory to go to. */
-	    int i = do_prompt(TRUE, FALSE, MGOTODIR, NULL,
-#ifndef DISABLE_HISTORIES
-			NULL,
-#endif
+	    int i = do_prompt(TRUE, FALSE, MGOTODIR, NULL, NULL,
 			/* TRANSLATORS: This is a prompt. */
 			browser_refresh, _("Go To Directory"));
 
@@ -251,7 +243,7 @@ char *do_browser(char *path)
 		sprintf(path, "%s%s", present_path, answer);
 	    }
 
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	    if (outside_of_confinement(path, FALSE)) {
 		/* TRANSLATORS: This refers to the confining effect of the
 		 * option --operatingdir, not of --restricted. */
@@ -281,7 +273,7 @@ char *do_browser(char *path)
 		continue;
 	    }
 
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	    /* Note: The selected file can be outside the operating
 	     * directory if it's ".." or if it's a symlink to a
 	     * directory outside the operating directory. */
@@ -380,7 +372,7 @@ char *do_browse_from(const char *inpath)
 	}
     }
 
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
     /* If the resulting path isn't in the operating directory, use
      * the operating directory instead. */
     if (outside_of_confinement(path, FALSE))
@@ -490,7 +482,7 @@ functionptrtype parse_browser_input(int *kbinput)
 	    case 'W':
 	    case 'w':
 	    case '/':
-		return do_search;
+		return do_search_forward;
 	    case 'N':
 #ifndef NANO_TINY
 		return do_findprevious;
@@ -684,10 +676,7 @@ int filesearch_init(void)
 	buf = mallocstrcpy(NULL, "");
 
     /* This is now one simple call.  It just does a lot. */
-    input = do_prompt(FALSE, FALSE, MWHEREISFILE, NULL,
-#ifndef DISABLE_HISTORIES
-		&search_history,
-#endif
+    input = do_prompt(FALSE, FALSE, MWHEREISFILE, NULL, &search_history,
 		browser_refresh, "%s%s", _("Search"), buf);
 
     /* Release buf now that we don't need it anymore. */
@@ -776,7 +765,7 @@ void do_filesearch(void)
     else
 	last_search = mallocstrcpy(last_search, answer);
 
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     /* If answer is not empty, add the string to the search history list. */
     if (*answer != '\0')
 	update_history(&search_history, answer);

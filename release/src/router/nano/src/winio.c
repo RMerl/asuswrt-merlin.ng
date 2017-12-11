@@ -2,7 +2,7 @@
  *   winio.c  --  This file is part of GNU nano.                          *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2017 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014, 2015, 2016, 2017 Benno Schulenberg               *
+ *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -49,6 +49,71 @@ static int statusblank = 0;
 static bool seen_wide = FALSE;
 	/* Whether we've seen a multicolumn character in the current line. */
 #endif
+static bool reveal_cursor = FALSE;
+	/* Whether the cursor should be shown when waiting for input. */
+#ifndef NANO_TINY
+static bool recording = FALSE;
+	/* Whether we are in the process of recording a macro. */
+static int *macro_buffer = NULL;
+	/* A buffer where the recorded key codes are stored. */
+static size_t macro_length = 0;
+	/* The current length of the macro. */
+
+/* Add the given code to the macro buffer. */
+void add_to_macrobuffer(int code)
+{
+    macro_length++;
+    macro_buffer = (int*)nrealloc(macro_buffer, macro_length * sizeof(int));
+    macro_buffer[macro_length - 1] = code;
+}
+
+/* Remove the last key code plus any trailing Esc codes from macro buffer. */
+void snip_last_keystroke(void)
+{
+    macro_length--;
+    while (macro_length > 0 && macro_buffer[macro_length - 1] == '\x1b')
+	macro_length--;
+}
+
+/* Start or stop the recording of keystrokes. */
+void record_macro(void)
+{
+    recording = !recording;
+
+    if (recording) {
+	macro_length = 0;
+	statusbar(_("Recording a macro..."));
+    } else {
+	snip_last_keystroke();
+	statusbar(_("Stopped recording"));
+    }
+}
+
+/* Copy the stored sequence of codes into the regular key buffer,
+ * so they will be "executed" again. */
+void run_macro(void)
+{
+    size_t i;
+
+    if (recording) {
+	statusline(HUSH, _("Cannot run macro while recording"));
+	snip_last_keystroke();
+	return;
+    }
+
+    if (macro_length == 0) {
+	statusline(HUSH, _("Macro is empty"));
+	return;
+    }
+
+    free(key_buffer);
+    key_buffer = (int *)nmalloc(macro_length * sizeof(int));
+    key_buffer_len = macro_length;
+
+    for (i = 0; i < macro_length; i++)
+	key_buffer[i] = macro_buffer[i];
+}
+#endif /* !NANO_TINY */
 
 /* Control character compatibility:
  *
@@ -109,7 +174,7 @@ static bool seen_wide = FALSE;
  * buffer is empty. */
 void get_key_buffer(WINDOW *win)
 {
-    int input;
+    int input = ERR;
     size_t errcount = 0;
 
     /* If the keystroke buffer isn't empty, get out. */
@@ -120,37 +185,33 @@ void get_key_buffer(WINDOW *win)
      * screen updates. */
     doupdate();
 
-    /* Read in the first character using whatever mode we're in. */
-    input = wgetch(win);
+    if (reveal_cursor)
+	curs_set(1);
 
-#ifndef NANO_TINY
-    if (the_window_resized) {
-	ungetch(input);
-	regenerate_screen();
-	input = KEY_WINCH;
-    }
-#endif
-
-    if (input == ERR && !waiting_mode)
-	return;
-
+    /* Read in the first keystroke using whatever mode we're in. */
     while (input == ERR) {
-	/* If we've failed to get a character MAX_BUF_SIZE times in a row,
-	 * assume our input source is gone and die gracefully.  We could
-	 * check if errno is set to EIO ("Input/output error") and die in
-	 * that case, but it's not always set properly.  Argh. */
-	if (++errcount == MAX_BUF_SIZE)
-	    die(_("Too many errors from stdin"));
+	input = wgetch(win);
 
 #ifndef NANO_TINY
 	if (the_window_resized) {
 	    regenerate_screen();
 	    input = KEY_WINCH;
-	    break;
 	}
 #endif
-	input = wgetch(win);
+	if (input == ERR && !waiting_mode) {
+	    curs_set(0);
+	    return;
+	}
+
+	/* If we've failed to get a character MAX_BUF_SIZE times in a row,
+	 * assume our input source is gone and die gracefully.  We could
+	 * check if errno is set to EIO ("Input/output error") and die in
+	 * that case, but it's not always set properly.  Argh. */
+	if (input == ERR && ++errcount == MAX_BUF_SIZE)
+	    die(_("Too many errors from stdin"));
     }
+
+    curs_set(0);
 
     /* Increment the length of the keystroke buffer, and save the value
      * of the keystroke at the end of it. */
@@ -169,6 +230,10 @@ void get_key_buffer(WINDOW *win)
     nodelay(win, TRUE);
 
     while (TRUE) {
+#ifndef NANO_TINY
+	if (recording)
+	    add_to_macrobuffer(input);
+#endif
 	input = wgetch(win);
 
 	/* If there aren't any more characters, stop reading. */
@@ -285,9 +350,11 @@ int *get_input(WINDOW *win, size_t input_len)
 }
 
 /* Read in a single keystroke, ignoring any that are invalid. */
-int get_kbinput(WINDOW *win)
+int get_kbinput(WINDOW *win, bool showcursor)
 {
     int kbinput = ERR;
+
+    reveal_cursor = showcursor;
 
     /* Extract one keystroke from the input stream. */
     while (kbinput == ERR)
@@ -962,6 +1029,7 @@ int convert_sequence(const int *seq, size_t seq_len)
 		}
 		break;
 #ifndef NANO_TINY
+	    case '9': /* To accomodate iTerm2 in "xterm mode". */
 	    case '3':
 		switch (seq[4]) {
 		    case 'A': /* Esc [ 1 ; 3 A == Alt-Up on xterm. */
@@ -1431,11 +1499,6 @@ long get_unicode_kbinput(WINDOW *win, int kbinput)
 	statusline(HUSH, _("Unicode Input: %s"), partial);
     }
 
-#ifdef DEBUG
-    fprintf(stderr, "get_unicode_kbinput(): kbinput = %d, uni_digits = %d, uni = %ld, retval = %ld\n",
-						kbinput, uni_digits, uni, retval);
-#endif
-
     /* If we have an end result, reset the Unicode digit counter. */
     if (retval != ERR)
 	uni_digits = 0;
@@ -1524,6 +1587,8 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 {
     int *kbinput;
 
+    reveal_cursor = TRUE;
+
     /* Read in the first code. */
     while ((kbinput = get_input(win, 1)) == NULL)
 	;
@@ -1552,6 +1617,8 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 	else {
 	    char *multibyte;
 	    int onebyte, i;
+
+	    reveal_cursor = FALSE;
 
 	    while (unicode == ERR) {
 		free(kbinput);
@@ -1884,7 +1951,7 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 #endif
     }
 
-    while (*buf != '\0' && column < beyond) {
+    while (*buf != '\0' && (column < beyond || mbwidth(buf) == 0)) {
 	int charlength, charwidth = 1;
 
 	if (*buf == ' ') {
@@ -1977,6 +2044,19 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
     return converted;
 }
 
+/* Determine the sequence number of the given buffer in the circular list. */
+int buffer_number(openfilestruct *buffer)
+{
+    int count = 1;
+
+    while (buffer != firstfile) {
+	buffer = buffer->prev;
+	count++;
+    }
+
+    return count;
+}
+
 /* If path is NULL, we're in normal editing mode, so display the current
  * version of nano, the current filename, and whether the current file
  * has been modified on the titlebar.  If path isn't NULL, we're either
@@ -1990,20 +2070,20 @@ void titlebar(const char *path)
 	/* The width that "Modified" would take up. */
     size_t offset = 0;
 	/* The position at which the center part of the titlebar starts. */
-    const char *branding = BRANDING;
+    const char *upperleft = "";
 	/* What is shown in the top left corner. */
     const char *prefix = "";
-	/* What is shown before the path -- "File:", "DIR:", or "". */
+	/* What is shown before the path -- "DIR:" or nothing. */
     const char *state = "";
 	/* The state of the current buffer -- "Modified", "View", or "". */
     char *caption;
 	/* The presentable form of the pathname. */
+    char *indicator = NULL;
+	/* The buffer sequence number plus buffer count. */
 
     /* If the screen is too small, there is no titlebar. */
     if (topwin == NULL)
 	return;
-
-    assert(path != NULL || openfile->filename != NULL);
 
     wattron(topwin, interface_color_pair[TITLE_BAR]);
 
@@ -2015,19 +2095,25 @@ void titlebar(const char *path)
      * then sacrifice the prefix, and only then start dottifying. */
 
     /* Figure out the path, prefix and state strings. */
-    if (inhelp)
-	branding = "";
 #ifdef ENABLE_BROWSER
-    else if (path != NULL)
+    if (!inhelp && path != NULL)
 	prefix = _("DIR:");
+    else
 #endif
-    else {
+    if (!inhelp) {
+	/* If there are/were multiple buffers, show which out of how many. */
+	if (more_than_one) {
+	    indicator = charalloc(24);
+	    sprintf(indicator, "[%i/%i]", buffer_number(openfile),
+					buffer_number(firstfile->prev));
+	    upperleft = indicator;
+	} else
+	    upperleft = BRANDING;
+
 	if (openfile->filename[0] == '\0')
 	    path = _("New Buffer");
-	else {
+	else
 	    path = openfile->filename;
-	    prefix = _("File:");
-	}
 
 	if (openfile->modified)
 	    state = _("Modified");
@@ -2038,7 +2124,7 @@ void titlebar(const char *path)
     }
 
     /* Determine the widths of the four elements, including their padding. */
-    verlen = strlenpt(branding) + 3;
+    verlen = strlenpt(upperleft) + 3;
     prefixlen = strlenpt(prefix);
     if (prefixlen > 0)
 	prefixlen++;
@@ -2051,7 +2137,7 @@ void titlebar(const char *path)
 
     /* Only print the version message when there is room for it. */
     if (verlen + prefixlen + pathlen + pluglen + statelen <= COLS)
-	mvwaddstr(topwin, 0, 2, branding);
+	mvwaddstr(topwin, 0, 2, upperleft);
     else {
 	verlen = 2;
 	/* If things don't fit yet, give up the placeholder. */
@@ -2063,6 +2149,8 @@ void titlebar(const char *path)
 	    statelen -= 2;
 	}
     }
+
+    free(indicator);
 
     /* If we have side spaces left, center the path name. */
     if (verlen > 0)
@@ -2159,13 +2247,11 @@ void statusline(message_type importance, const char *msg, ...)
     if (importance == ALERT) {
 	if (++alerts > 3 && !ISSET(NO_PAUSES))
 	    msg = _("Further warnings were suppressed");
-	beep();
+	else if (alerts < 4)
+	    beep();
     }
 
     lastmessage = importance;
-
-    /* Turn the cursor off while fiddling in the statusbar. */
-    curs_set(0);
 
     blank_statusbar();
 
@@ -2252,7 +2338,7 @@ void bottombars(int menu)
 
 	wmove(bottomwin, 1 + i % 2, (i / 2) * itemwidth);
 
-	onekey(s->keystr, _(f->desc), itemwidth + (COLS % itemwidth));
+	post_one_key(s->keystr, _(f->desc), itemwidth + (COLS % itemwidth));
 	i++;
     }
 
@@ -2261,27 +2347,24 @@ void bottombars(int menu)
     wrefresh(bottomwin);
 }
 
-/* Write a shortcut key to the help area at the bottom of the window.
- * keystroke is e.g. "^G" and desc is e.g. "Get Help".  We are careful
- * to write at most length characters, even if length is very small and
- * keystroke and desc are long.  Note that waddnstr(,,(size_t)-1) adds
- * the whole string!  We do not bother padding the entry with blanks. */
-void onekey(const char *keystroke, const char *desc, int length)
+/* Write a key's representation plus a minute description of its function
+ * to the screen.  For example, the key could be "^C" and its tag "Cancel".
+ * Key plus tag may occupy at most width columns. */
+void post_one_key(const char *keystroke, const char *tag, int width)
 {
-    assert(keystroke != NULL && desc != NULL);
-
     wattron(bottomwin, interface_color_pair[KEY_COMBO]);
-    waddnstr(bottomwin, keystroke, actual_x(keystroke, length));
+    waddnstr(bottomwin, keystroke, actual_x(keystroke, width));
     wattroff(bottomwin, interface_color_pair[KEY_COMBO]);
 
-    length -= strlenpt(keystroke) + 1;
+    /* If the remaning space is too small, skip the description. */
+    width -= strlenpt(keystroke);
+    if (width < 2)
+	return;
 
-    if (length > 0) {
-	waddch(bottomwin, ' ');
-	wattron(bottomwin, interface_color_pair[FUNCTION_TAG]);
-	waddnstr(bottomwin, desc, actual_x(desc, length));
-	wattroff(bottomwin, interface_color_pair[FUNCTION_TAG]);
-    }
+    waddch(bottomwin, ' ');
+    wattron(bottomwin, interface_color_pair[FUNCTION_TAG]);
+    waddnstr(bottomwin, tag, actual_x(tag, width - 1));
+    wattroff(bottomwin, interface_color_pair[FUNCTION_TAG]);
 }
 
 /* Redetermine current_y from the position of current relative to edittop,
@@ -2331,7 +2414,7 @@ void place_the_cursor(void)
 void edit_draw(filestruct *fileptr, const char *converted,
 	int row, size_t from_col)
 {
-#if !defined(NANO_TINY) || !defined(DISABLE_COLOR)
+#if !defined(NANO_TINY) || defined(ENABLE_COLOR)
     size_t from_x = actual_x(fileptr->data, from_col);
 	/* The position in fileptr->data of the leftmost character
 	 * that displays at least partially on the window. */
@@ -2340,9 +2423,6 @@ void edit_draw(filestruct *fileptr, const char *converted,
 	 * completely off the window to the right.  Note that till_x
 	 * might be beyond the null terminator of the string. */
 #endif
-
-    assert(openfile != NULL && fileptr != NULL && converted != NULL);
-    assert(strlenpt(converted) <= editwincols);
 
 #ifdef ENABLE_LINENUMBERS
     /* If line numbering is switched on, put a line number in front of
@@ -2354,7 +2434,7 @@ void edit_draw(filestruct *fileptr, const char *converted,
 	    mvwprintw(edit, row, 0, "%*s", margin - 1, " ");
 	else
 #endif
-	    mvwprintw(edit, row, 0, "%*ld", margin - 1, (long)fileptr->lineno);
+	    mvwprintw(edit, row, 0, "%*zd", margin - 1, fileptr->lineno);
 	wattroff(edit, interface_color_pair[LINE_NUMBER]);
     }
 #endif
@@ -2371,7 +2451,7 @@ void edit_draw(filestruct *fileptr, const char *converted,
 	wredrawln(edit, row, 1);
 #endif
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     /* If color syntaxes are available and turned on, apply them. */
     if (openfile->colorstrings != NULL && !ISSET(NO_COLOR_SYNTAX)) {
 	const colortype *varnish = openfile->colorstrings;
@@ -2619,15 +2699,15 @@ void edit_draw(filestruct *fileptr, const char *converted,
 	    wattroff(edit, varnish->attributes);
 	}
     }
-#endif /* !DISABLE_COLOR */
+#endif /* ENABLE_COLOR */
 
 #ifndef NANO_TINY
     /* If the mark is on, and fileptr is at least partially selected, we
      * need to paint it. */
-    if (openfile->mark_set &&
-		(fileptr->lineno <= openfile->mark_begin->lineno ||
+    if (openfile->mark &&
+		(fileptr->lineno <= openfile->mark->lineno ||
 		fileptr->lineno <= openfile->current->lineno) &&
-		(fileptr->lineno >= openfile->mark_begin->lineno ||
+		(fileptr->lineno >= openfile->mark->lineno ||
 		fileptr->lineno >= openfile->current->lineno)) {
 	const filestruct *top, *bot;
 	    /* The lines where the marked region begins and ends. */
@@ -2798,7 +2878,7 @@ int update_softwrapped_line(filestruct *fileptr)
 bool line_needs_update(const size_t old_column, const size_t new_column)
 {
 #ifndef NANO_TINY
-    if (openfile->mark_set)
+    if (openfile->mark)
 	return TRUE;
     else
 #endif
@@ -2902,7 +2982,7 @@ bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge)
 
 /* Scroll the edit window in the given direction and the given number of rows,
  * and draw new lines on the blank lines left after the scrolling. */
-void edit_scroll(scroll_dir direction, int nrows)
+void edit_scroll(bool direction, int nrows)
 {
     filestruct *line;
     size_t leftedge;
@@ -2912,7 +2992,7 @@ void edit_scroll(scroll_dir direction, int nrows)
 
     /* Move the top line of the edit window the requested number of rows up or
      * down, and reduce the number of rows with the amount we couldn't move. */
-    if (direction == UPWARD)
+    if (direction == BACKWARD)
 	nrows -= go_back_chunks(nrows, &openfile->edittop, &openfile->firstcolumn);
     else
 	nrows -= go_forward_chunks(nrows, &openfile->edittop, &openfile->firstcolumn);
@@ -2935,7 +3015,7 @@ void edit_scroll(scroll_dir direction, int nrows)
 
     /* Scroll the text of the edit window a number of rows up or down. */
     scrollok(edit, TRUE);
-    wscrl(edit, (direction == UPWARD) ? -nrows : nrows);
+    wscrl(edit, (direction == BACKWARD) ? -nrows : nrows);
     scrollok(edit, FALSE);
 
     /* Part 2: nrows is now the number of rows in the scrolled region of the
@@ -2951,7 +3031,7 @@ void edit_scroll(scroll_dir direction, int nrows)
     leftedge = openfile->firstcolumn;
 
     /* If we scrolled forward, move down to the start of the blank region. */
-    if (direction == DOWNWARD)
+    if (direction == FORWARD)
 	go_forward_chunks(editwinrows - nrows, &line, &leftedge);
 
 #ifndef NANO_TINY
@@ -2982,72 +3062,55 @@ void edit_scroll(scroll_dir direction, int nrows)
 size_t get_softwrap_breakpoint(const char *text, size_t leftedge,
 				bool *end_of_line)
 {
-    size_t index = 0;
-	/* Current index in text. */
+    size_t goal_column = leftedge + editwincols;
+	/* The place at or before which text must be broken. */
+    size_t breaking_col = goal_column;
+	/* The column where text can be broken, when there's no better. */
     size_t column = 0;
 	/* Current column position in text. */
-    size_t prev_column = 0;
-	/* Previous column position in text. */
-    size_t goal_column;
-	/* Column of the last character where we can break the text. */
-    bool found_blank = FALSE;
-	/* Did we find at least one blank? */
-    size_t lastblank_index = 0;
-	/* Current index of the last blank in text. */
-    size_t lastblank_column = 0;
-	/* Current column position of the last blank in text. */
-    int char_len = 0;
-	/* Length of current character, in bytes. */
+    size_t last_blank_col = 0;
+	/* The column position of the last seen whitespace character. */
+    const char *farthest_blank = NULL;
+	/* A pointer to the last seen whitespace character in text. */
 
-    while (*text != '\0' && column < leftedge) {
-	char_len = parse_mbchar(text, NULL, &column);
-	text += char_len;
-    }
+    /* First find the place in text where the current chunk starts. */
+    while (*text != '\0' && column < leftedge)
+	text += parse_mbchar(text, NULL, &column);
 
-    /* The intention is to use the entire available width. */
-    goal_column = leftedge + editwincols;
-
+    /* Now find the place in text where this chunk should end. */
     while (*text != '\0' && column <= goal_column) {
 	/* When breaking at blanks, do it *before* the target column. */
 	if (ISSET(AT_BLANKS) && is_blank_mbchar(text) && column < goal_column) {
-	    found_blank = TRUE;
-	    lastblank_index = index;
-	    lastblank_column = column;
+	    farthest_blank = text;
+	    last_blank_col = column;
 	}
 
-	prev_column = column;
-	char_len = parse_mbchar(text, NULL, &column);
-	text += char_len;
-	index += char_len;
+	breaking_col = (*text == '\t' ? goal_column : column);
+	text += parse_mbchar(text, NULL, &column);
     }
 
-    /* If we didn't overshoot the target, we've found a breaking point. */
+    /* If we didn't overshoot the limit, we've found a breaking point;
+     * and we've reached EOL if we didn't even *reach* the limit. */
     if (column <= goal_column) {
-	/* We've reached EOL if we didn't even reach the target. */
 	*end_of_line = (column < goal_column);
 	return column;
     }
 
-    /* If we're softwrapping at blanks and we found at least one blank, move
-     * the pointer back to the last blank, step beyond it, and we're done. */
-    if (found_blank) {
-	text = text - index + lastblank_index;
-	parse_mbchar(text, NULL, &lastblank_column);
+    /* If we're softwrapping at blanks and we found at least one blank, break
+     * after that blank -- if it doesn't overshoot the screen's edge. */
+    if (farthest_blank != NULL) {
+	parse_mbchar(farthest_blank, NULL, &last_blank_col);
 
-	/* If we've now overshot the screen's edge, then break there. */
-	if (lastblank_column > goal_column)
-	    return goal_column;
+	if (last_blank_col <= goal_column)
+	    return last_blank_col;
 
-	return lastblank_column;
+	/* If it's a tab that overshoots, break at the screen's edge. */
+	if (*farthest_blank == '\t')
+	    breaking_col = goal_column;
     }
 
-    /* If a tab is split over two chunks, break at the screen's edge. */
-    if (*(text - char_len) == '\t')
-	prev_column = goal_column;
-
-    /* Otherwise, return the column of the last character that doesn't
-     * overshoot the target, since we can't break the text anywhere else. */
-    return (editwincols > 1) ? prev_column : column - 1;
+    /* Otherwise, break at the last character that doesn't overshoot. */
+    return (editwincols > 1) ? breaking_col : column - 1;
 }
 
 /* Get the row of the softwrapped chunk of the given line that column is on,
@@ -3205,7 +3268,7 @@ void edit_redraw(filestruct *old_current, update_type manner)
 
 #ifndef NANO_TINY
     /* If the mark is on, update all lines between old_current and current. */
-    if (openfile->mark_set) {
+    if (openfile->mark) {
 	filestruct *line = old_current;
 
 	while (line != openfile->current) {
@@ -3236,7 +3299,7 @@ void edit_refresh(void)
     filestruct *line;
     int row = 0;
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     /* When needed, initialize the colors for the current syntax. */
     if (!have_palette)
 	color_init();
@@ -3325,7 +3388,7 @@ void total_refresh(void)
  * portion of the window. */
 void display_main_list(void)
 {
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     if (openfile->syntax &&
 		(openfile->syntax->formatter || openfile->syntax->linter))
 	set_lint_or_format_shortcuts();
@@ -3351,9 +3414,6 @@ void do_cursorpos(bool force)
 	suppress_cursorpos = FALSE;
 	return;
     }
-
-    /* Hide the cursor while we are calculating. */
-    curs_set(0);
 
     /* Determine the size of the file up to the cursor. */
     saved_byte = openfile->current->data[openfile->current_x];
@@ -3504,7 +3564,7 @@ void spotlight_softwrapped(bool active, size_t from_col, size_t to_col)
 }
 #endif
 
-#ifndef DISABLE_EXTRA
+#ifdef ENABLE_EXTRA
 #define CREDIT_LEN 54
 #define XLCREDIT_LEN 9
 
@@ -3590,7 +3650,6 @@ void do_credits(void)
 	window_init();
     }
 
-    curs_set(0);
     nodelay(edit, TRUE);
 
     blank_titlebar();
@@ -3654,4 +3713,4 @@ void do_credits(void)
 
     total_refresh();
 }
-#endif /* !DISABLE_EXTRA */
+#endif /* ENABLE_EXTRA */

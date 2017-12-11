@@ -89,8 +89,10 @@ host_triplet = @host@
 subdir = m4
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/00gnulib.m4 \
+	$(top_srcdir)/m4/__inline.m4 \
 	$(top_srcdir)/m4/absolute-header.m4 \
 	$(top_srcdir)/m4/ac_define_dir.m4 $(top_srcdir)/m4/alloca.m4 \
+	$(top_srcdir)/m4/asm-underscore.m4 \
 	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
 	$(top_srcdir)/m4/btowc.m4 $(top_srcdir)/m4/builtin-expect.m4 \
 	$(top_srcdir)/m4/clock_time.m4 $(top_srcdir)/m4/closedir.m4 \
@@ -112,7 +114,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/00gnulib.m4 \
 	$(top_srcdir)/m4/gettimeofday.m4 $(top_srcdir)/m4/glibc21.m4 \
 	$(top_srcdir)/m4/glob.m4 $(top_srcdir)/m4/gnulib-common.m4 \
 	$(top_srcdir)/m4/gnulib-comp.m4 \
-	$(top_srcdir)/m4/hard-locale.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/hard-locale.m4 \
+	$(top_srcdir)/m4/host-cpu-c-abi.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/include_next.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intmax_t.m4 \
 	$(top_srcdir)/m4/inttypes_h.m4 $(top_srcdir)/m4/isblank.m4 \
@@ -150,13 +153,13 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/00gnulib.m4 \
 	$(top_srcdir)/m4/snprintf-posix.m4 \
 	$(top_srcdir)/m4/snprintf.m4 $(top_srcdir)/m4/ssize_t.m4 \
 	$(top_srcdir)/m4/stat-time.m4 $(top_srcdir)/m4/stat.m4 \
-	$(top_srcdir)/m4/stdarg.m4 $(top_srcdir)/m4/stdbool.m4 \
-	$(top_srcdir)/m4/stddef_h.m4 $(top_srcdir)/m4/stdint.m4 \
-	$(top_srcdir)/m4/stdint_h.m4 $(top_srcdir)/m4/stdio_h.m4 \
-	$(top_srcdir)/m4/stdlib_h.m4 $(top_srcdir)/m4/strcase.m4 \
-	$(top_srcdir)/m4/strcasestr.m4 $(top_srcdir)/m4/string_h.m4 \
-	$(top_srcdir)/m4/strings_h.m4 $(top_srcdir)/m4/strnlen.m4 \
-	$(top_srcdir)/m4/sys_socket_h.m4 \
+	$(top_srcdir)/m4/std-gnu11.m4 $(top_srcdir)/m4/stdarg.m4 \
+	$(top_srcdir)/m4/stdbool.m4 $(top_srcdir)/m4/stddef_h.m4 \
+	$(top_srcdir)/m4/stdint.m4 $(top_srcdir)/m4/stdint_h.m4 \
+	$(top_srcdir)/m4/stdio_h.m4 $(top_srcdir)/m4/stdlib_h.m4 \
+	$(top_srcdir)/m4/strcase.m4 $(top_srcdir)/m4/strcasestr.m4 \
+	$(top_srcdir)/m4/string_h.m4 $(top_srcdir)/m4/strings_h.m4 \
+	$(top_srcdir)/m4/strnlen.m4 $(top_srcdir)/m4/sys_socket_h.m4 \
 	$(top_srcdir)/m4/sys_stat_h.m4 $(top_srcdir)/m4/sys_time_h.m4 \
 	$(top_srcdir)/m4/sys_types_h.m4 $(top_srcdir)/m4/sys_wait_h.m4 \
 	$(top_srcdir)/m4/threadlib.m4 $(top_srcdir)/m4/time_h.m4 \
@@ -671,6 +674,7 @@ HAVE_DECL_GETLOGIN = @HAVE_DECL_GETLOGIN@
 HAVE_DECL_GETLOGIN_R = @HAVE_DECL_GETLOGIN_R@
 HAVE_DECL_GETPAGESIZE = @HAVE_DECL_GETPAGESIZE@
 HAVE_DECL_GETUSERSHELL = @HAVE_DECL_GETUSERSHELL@
+HAVE_DECL_INITSTATE = @HAVE_DECL_INITSTATE@
 HAVE_DECL_LDEXPL = @HAVE_DECL_LDEXPL@
 HAVE_DECL_LOCALTIME_R = @HAVE_DECL_LOCALTIME_R@
 HAVE_DECL_LOG10L = @HAVE_DECL_LOG10L@
@@ -690,6 +694,7 @@ HAVE_DECL_ROUNDF = @HAVE_DECL_ROUNDF@
 HAVE_DECL_ROUNDL = @HAVE_DECL_ROUNDL@
 HAVE_DECL_SETENV = @HAVE_DECL_SETENV@
 HAVE_DECL_SETHOSTNAME = @HAVE_DECL_SETHOSTNAME@
+HAVE_DECL_SETSTATE = @HAVE_DECL_SETSTATE@
 HAVE_DECL_SINL = @HAVE_DECL_SINL@
 HAVE_DECL_SNPRINTF = @HAVE_DECL_SNPRINTF@
 HAVE_DECL_SQRTL = @HAVE_DECL_SQRTL@
@@ -949,6 +954,8 @@ HAVE_WMEMSET = @HAVE_WMEMSET@
 HAVE_XLOCALE_H = @HAVE_XLOCALE_H@
 HAVE__BOOL = @HAVE__BOOL@
 HAVE__EXIT = @HAVE__EXIT@
+HOST_CPU = @HOST_CPU@
+HOST_CPU_C_ABI = @HOST_CPU_C_ABI@
 INCLUDE_NEXT = @INCLUDE_NEXT@
 INCLUDE_NEXT_AS_FIRST_DIRECTIVE = @INCLUDE_NEXT_AS_FIRST_DIRECTIVE@
 INSTALL = @INSTALL@
@@ -1098,6 +1105,7 @@ REPLACE_EXPF = @REPLACE_EXPF@
 REPLACE_EXPM1 = @REPLACE_EXPM1@
 REPLACE_EXPM1F = @REPLACE_EXPM1F@
 REPLACE_FABSL = @REPLACE_FABSL@
+REPLACE_FACCESSAT = @REPLACE_FACCESSAT@
 REPLACE_FCHOWNAT = @REPLACE_FCHOWNAT@
 REPLACE_FCLOSE = @REPLACE_FCLOSE@
 REPLACE_FCNTL = @REPLACE_FCNTL@
@@ -1144,6 +1152,7 @@ REPLACE_HYPOTF = @REPLACE_HYPOTF@
 REPLACE_HYPOTL = @REPLACE_HYPOTL@
 REPLACE_ILOGB = @REPLACE_ILOGB@
 REPLACE_ILOGBF = @REPLACE_ILOGBF@
+REPLACE_ILOGBL = @REPLACE_ILOGBL@
 REPLACE_ISATTY = @REPLACE_ISATTY@
 REPLACE_ISFINITE = @REPLACE_ISFINITE@
 REPLACE_ISINF = @REPLACE_ISINF@

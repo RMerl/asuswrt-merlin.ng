@@ -1,4 +1,4 @@
-# stdlib_h.m4 serial 43
+# stdlib_h.m4 serial 44
 dnl Copyright (C) 2007-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -78,6 +78,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   HAVE_DECL_GETLOADAVG=1;    AC_SUBST([HAVE_DECL_GETLOADAVG])
   HAVE_GETSUBOPT=1;          AC_SUBST([HAVE_GETSUBOPT])
   HAVE_GRANTPT=1;            AC_SUBST([HAVE_GRANTPT])
+  HAVE_DECL_INITSTATE=1;     AC_SUBST([HAVE_DECL_INITSTATE])
   HAVE_MKDTEMP=1;            AC_SUBST([HAVE_MKDTEMP])
   HAVE_MKOSTEMP=1;           AC_SUBST([HAVE_MKOSTEMP])
   HAVE_MKOSTEMPS=1;          AC_SUBST([HAVE_MKOSTEMPS])
@@ -96,6 +97,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   HAVE_SECURE_GETENV=1;      AC_SUBST([HAVE_SECURE_GETENV])
   HAVE_SETENV=1;             AC_SUBST([HAVE_SETENV])
   HAVE_DECL_SETENV=1;        AC_SUBST([HAVE_DECL_SETENV])
+  HAVE_DECL_SETSTATE=1;      AC_SUBST([HAVE_DECL_SETSTATE])
   HAVE_STRTOD=1;             AC_SUBST([HAVE_STRTOD])
   HAVE_STRTOLL=1;            AC_SUBST([HAVE_STRTOLL])
   HAVE_STRTOULL=1;           AC_SUBST([HAVE_STRTOULL])

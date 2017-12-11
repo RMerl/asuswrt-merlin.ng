@@ -1,4 +1,4 @@
-# math_h.m4 serial 115
+# math_h.m4 serial 116
 dnl Copyright (C) 2007-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -291,6 +291,7 @@ AC_DEFUN([gl_MATH_H_DEFAULTS],
   REPLACE_HYPOTL=0;            AC_SUBST([REPLACE_HYPOTL])
   REPLACE_ILOGB=0;             AC_SUBST([REPLACE_ILOGB])
   REPLACE_ILOGBF=0;            AC_SUBST([REPLACE_ILOGBF])
+  REPLACE_ILOGBL=0;            AC_SUBST([REPLACE_ILOGBL])
   REPLACE_ISFINITE=0;          AC_SUBST([REPLACE_ISFINITE])
   REPLACE_ISINF=0;             AC_SUBST([REPLACE_ISINF])
   REPLACE_ISNAN=0;             AC_SUBST([REPLACE_ISNAN])

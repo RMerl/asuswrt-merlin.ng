@@ -14,4 +14,4 @@ color ,red " +	+"
 color brightred "(GNU )?nano [1-9]\.[0-9]\.[^[:space:][:punct:]]+"
 
 # Email addresses.
-color yellow "<[[:alnum:].%_+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}>"
+color magenta "<[[:alnum:].%_+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}>"

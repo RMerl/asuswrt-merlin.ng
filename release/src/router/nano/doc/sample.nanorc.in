@@ -15,11 +15,6 @@
 ## its end.  For example, for the "brackets" option, ""')>]}" will match
 ## ", ', ), >, ], and }.
 
-## Silently ignore problems with unknown directives in the nanorc file.
-## Useful when your nanorc file might be read on systems with multiple
-## versions of nano installed (e.g. your home directory is on NFS).
-# set quiet
-
 ## When soft line wrapping is enabled, make it wrap lines at blanks
 ## (tabs and spaces) instead of always at the edge of the screen.
 # set atblanks
@@ -32,9 +27,6 @@
 
 ## The directory to put unique backup files in.
 # set backupdir ""
-
-## Do backwards searches by default.
-# set backwards
 
 ## Use bold text instead of reverse video text.
 # set boldtext
@@ -269,9 +261,8 @@
 ## Key bindings.
 ## See nanorc(5) (section REBINDING KEYS) for more details on this.
 ##
-## The following three functions are not bound to any key by default.
-## You may wish to choose different keys than the ones suggested here.
-# bind ^S savefile main
+## The following two functions are not bound to any key by default.
+## You may wish to choose other keys than the ones suggested here.
 # bind M-B cutwordleft main
 # bind M-N cutwordright main
 

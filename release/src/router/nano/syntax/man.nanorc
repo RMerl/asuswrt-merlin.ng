@@ -1,7 +1,7 @@
 ## Here is an example for manpages.
 
 syntax "man" "\.[1-9]x?$"
-magic "troff or preprocessor input text"
+magic "troff or preprocessor input"
 comment ".\""
 
 color green "\.(SH|SS|TH) .*$"

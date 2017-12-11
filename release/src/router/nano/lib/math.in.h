@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_MATH_H
 
@@ -194,8 +194,17 @@ _NaN ()
 #endif
 
 
-/* Ensure FP_ILOGB0 and FP_ILOGBNAN are defined.  */
-#if !(defined FP_ILOGB0 && defined FP_ILOGBNAN)
+#if defined FP_ILOGB0 && defined FP_ILOGBNAN
+ /* Ensure FP_ILOGB0 and FP_ILOGBNAN are correct.  */
+# if defined __HAIKU__
+  /* Haiku: match what ilogb() does */
+#  undef FP_ILOGB0
+#  undef FP_ILOGBNAN
+#  define FP_ILOGB0   (- 2147483647 - 1) /* INT_MIN */
+#  define FP_ILOGBNAN (- 2147483647 - 1) /* INT_MIN */
+# endif
+#else
+ /* Ensure FP_ILOGB0 and FP_ILOGBNAN are defined.  */
 # if defined __NetBSD__ || defined __sgi
   /* NetBSD, IRIX 6.5: match what ilogb() does */
 #  define FP_ILOGB0   (- 2147483647 - 1) /* INT_MIN */
@@ -1214,10 +1223,19 @@ _GL_WARN_ON_USE (ilogb, "ilogb is unportable - "
 #endif
 
 #if @GNULIB_ILOGBL@
-# if !@HAVE_ILOGBL@
+# if @REPLACE_ILOGBL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef ilogbl
+#   define ilogbl rpl_ilogbl
+#  endif
+_GL_FUNCDECL_RPL (ilogbl, int, (long double x));
+_GL_CXXALIAS_RPL (ilogbl, int, (long double x));
+# else
+#  if !@HAVE_ILOGBL@
 _GL_FUNCDECL_SYS (ilogbl, int, (long double x));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (ilogbl, int, (long double x));
+# endif
 _GL_CXXALIASWARN (ilogbl);
 #elif defined GNULIB_POSIXCHECK
 # undef ilogbl

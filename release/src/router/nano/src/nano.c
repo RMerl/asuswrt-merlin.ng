@@ -2,7 +2,7 @@
  *   nano.c  --  This file is part of GNU nano.                           *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2017 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014, 2015, 2016 Benno Schulenberg                     *
+ *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -71,7 +71,7 @@ filestruct *make_new_node(filestruct *prevnode)
     newnode->next = NULL;
     newnode->lineno = (prevnode != NULL) ? prevnode->lineno + 1 : 1;
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     newnode->multidata = NULL;
 #endif
 
@@ -88,7 +88,7 @@ filestruct *copy_node(const filestruct *src)
     dst->prev = src->prev;
     dst->lineno = src->lineno;
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     dst->multidata = NULL;
 #endif
 
@@ -128,7 +128,7 @@ void unlink_node(filestruct *fileptr)
 void delete_node(filestruct *fileptr)
 {
     free(fileptr->data);
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     free(fileptr->multidata);
 #endif
     free(fileptr);
@@ -306,16 +306,14 @@ void extract_buffer(filestruct **file_top, filestruct **file_bot,
     edittop_inside = (openfile->edittop->lineno >= openfile->fileage->lineno &&
 			openfile->edittop->lineno <= openfile->filebot->lineno);
 #ifndef NANO_TINY
-    if (openfile->mark_set) {
-	mark_inside = (openfile->mark_begin->lineno >=
-		openfile->fileage->lineno &&
-		openfile->mark_begin->lineno <=
-		openfile->filebot->lineno &&
-		(openfile->mark_begin != openfile->fileage ||
-		openfile->mark_begin_x >= top_x) &&
-		(openfile->mark_begin != openfile->filebot ||
-		openfile->mark_begin_x <= bot_x));
-	same_line = (openfile->mark_begin == openfile->fileage);
+    if (openfile->mark) {
+	mark_inside = (openfile->mark->lineno >= openfile->fileage->lineno &&
+			openfile->mark->lineno <= openfile->filebot->lineno &&
+			(openfile->mark != openfile->fileage ||
+						openfile->mark_x >= top_x) &&
+			(openfile->mark != openfile->filebot ||
+						openfile->mark_x <= bot_x));
+	same_line = (openfile->mark == openfile->fileage);
     }
 #endif
 
@@ -368,11 +366,11 @@ void extract_buffer(filestruct **file_top, filestruct **file_bot,
     openfile->current_x = top_x;
 #ifndef NANO_TINY
     if (mark_inside) {
-	openfile->mark_begin = openfile->current;
-	openfile->mark_begin_x = openfile->current_x;
+	openfile->mark = openfile->current;
+	openfile->mark_x = openfile->current_x;
     } else if (same_line)
 	/* Update the pointer to this partially cut line. */
-	openfile->mark_begin = openfile->current;
+	openfile->mark = openfile->current;
 #endif
 
     top_save = openfile->fileage;
@@ -412,7 +410,7 @@ void ingraft_buffer(filestruct *somebuffer)
 #ifndef NANO_TINY
     /* Keep track of whether the mark begins inside the partition and
      * will need adjustment. */
-    if (openfile->mark_set) {
+    if (openfile->mark) {
 	filestruct *top, *bot;
 	size_t top_x, bot_x;
 
@@ -445,10 +443,10 @@ void ingraft_buffer(filestruct *somebuffer)
      * x coordinate for the change in the current line. */
     if (openfile->fileage == openfile->filebot) {
 #ifndef NANO_TINY
-	if (openfile->mark_set && single_line) {
-	    openfile->mark_begin = openfile->current;
+	if (openfile->mark && single_line) {
+	    openfile->mark = openfile->current;
 	    if (!right_side_up)
-		openfile->mark_begin_x += openfile->current_x;
+		openfile->mark_x += openfile->current_x;
 	}
 #endif
 	/* When the pasted stuff contains no newline, adjust the cursor's
@@ -456,12 +454,12 @@ void ingraft_buffer(filestruct *somebuffer)
 	openfile->current_x += current_x_save;
     }
 #ifndef NANO_TINY
-    else if (openfile->mark_set && single_line) {
+    else if (openfile->mark && single_line) {
 	if (right_side_up)
-	    openfile->mark_begin = openfile->fileage;
+	    openfile->mark = openfile->fileage;
 	else {
-	    openfile->mark_begin = openfile->current;
-	    openfile->mark_begin_x += openfile->current_x - current_x_save;
+	    openfile->mark = openfile->current;
+	    openfile->mark_x += openfile->current_x - current_x_save;
 	}
     }
 #endif
@@ -507,6 +505,9 @@ void unlink_opennode(openfilestruct *fileptr)
 {
     assert(fileptr != fileptr->prev && fileptr != fileptr->next);
 
+    if (fileptr == firstfile)
+	firstfile = firstfile->next;
+
     fileptr->prev->next = fileptr->next;
     fileptr->next->prev = fileptr->prev;
 
@@ -522,7 +523,7 @@ void delete_opennode(openfilestruct *fileptr)
     free(fileptr->current_stat);
     free(fileptr->lock_filename);
     /* Free the undo stack. */
-    discard_until(NULL, fileptr);
+    discard_until(NULL, fileptr, TRUE);
 #endif
     free(fileptr);
 }
@@ -561,12 +562,12 @@ void finish(void)
     /* Restore the old terminal settings. */
     tcsetattr(0, TCSANOW, &oldterm);
 
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
+    /* If the user wants history persistence, write the relevant files. */
     if (ISSET(HISTORYLOG))
 	save_history();
     if (ISSET(POS_HISTORY)) {
 	update_poshistory(openfile->filename, openfile->current->lineno, xplustabs() + 1);
-	save_poshistory();
     }
 #endif
 
@@ -717,7 +718,7 @@ void window_init(void)
 	keypad(bottomwin, TRUE);
     }
 
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
     /* Set up the wrapping point, accounting for screen width when negative. */
     fill = wrap_at;
     if (fill <= 0)
@@ -803,7 +804,7 @@ void usage(void)
 #ifndef NANO_TINY
     print_opt("-G", "--locking", N_("Use (vim-style) lock files"));
 #endif
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     if (!ISSET(RESTRICTED))
 	print_opt("-H", "--historylog",
 		N_("Log & read search/replace string history"));
@@ -821,12 +822,12 @@ void usage(void)
 	N_("Don't convert files from DOS/Mac format"));
 #endif
     print_opt("-O", "--morespace", N_("Use one more line for editing"));
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     if (!ISSET(RESTRICTED))
 	print_opt("-P", "--positionlog",
 		N_("Log & read location of cursor position"));
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
     print_opt(_("-Q <str>"), _("--quotestr=<str>"), N_("Quoting string"));
 #endif
     if (!ISSET(RESTRICTED))
@@ -844,7 +845,7 @@ void usage(void)
     print_opt(_("-X <str>"), _("--wordchars=<str>"),
 	N_("Which other characters are word parts"));
 #endif
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     if (!ISSET(RESTRICTED))
 	print_opt(_("-Y <name>"), _("--syntax=<name>"),
 		N_("Syntax definition to use for coloring"));
@@ -871,21 +872,16 @@ void usage(void)
     print_opt("-m", "--mouse", N_("Enable the use of the mouse"));
 #endif
     print_opt("-n", "--noread", N_("Do not read the file (only write it)"));
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
     print_opt(_("-o <dir>"), _("--operatingdir=<dir>"),
 	N_("Set operating directory"));
 #endif
     print_opt("-p", "--preserve", N_("Preserve XON (^Q) and XOFF (^S) keys"));
-#ifdef ENABLE_NANORC
-    if (!ISSET(RESTRICTED))
-	print_opt("-q", "--quiet",
-		N_("Silently ignore startup issues like rc file errors"));
-#endif
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
     print_opt(_("-r <#cols>"), _("--fill=<#cols>"),
 	N_("Set hard-wrapping point at column #cols"));
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
     if (!ISSET(RESTRICTED))
 	print_opt(_("-s <prog>"), _("--speller=<prog>"),
 		N_("Enable alternate speller"));
@@ -895,7 +891,7 @@ void usage(void)
     print_opt("-u", "--unix", N_("Save a file by default in Unix format"));
 #endif
     print_opt("-v", "--view", N_("View mode (read-only)"));
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
     print_opt("-w", "--nowrap", N_("Don't hard-wrap long lines"));
 #endif
     print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
@@ -926,19 +922,19 @@ void version(void)
 #ifdef ENABLE_BROWSER
     printf(" --enable-browser");
 #endif
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     printf(" --enable-color");
 #endif
-#ifndef DISABLE_EXTRA
+#ifdef ENABLE_EXTRA
     printf(" --enable-extra");
 #endif
 #ifdef ENABLE_HELP
     printf(" --enable-help");
 #endif
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
     printf(" --enable-histories");
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
     printf(" --enable-justify");
 #endif
 #ifdef HAVE_LIBMAGIC
@@ -956,38 +952,38 @@ void version(void)
 #ifdef ENABLE_MULTIBUFFER
     printf(" --enable-multibuffer");
 #endif
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
     printf(" --enable-operatingdir");
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
     printf(" --enable-speller");
 #endif
 #ifdef ENABLE_TABCOMP
     printf(" --enable-tabcomp");
 #endif
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
     printf(" --enable-wrapping");
 #endif
 #else /* !NANO_TINY */
 #ifndef ENABLE_BROWSER
     printf(" --disable-browser");
 #endif
-#ifdef DISABLE_COLOR
+#ifndef ENABLE_COLOR
     printf(" --disable-color");
 #endif
 #ifndef ENABLE_COMMENT
     printf(" --disable-comment");
 #endif
-#ifdef DISABLE_EXTRA
+#ifndef ENABLE_EXTRA
     printf(" --disable-extra");
 #endif
 #ifndef ENABLE_HELP
     printf(" --disable-help");
 #endif
-#ifdef DISABLE_HISTORIES
+#ifndef ENABLE_HISTORIES
     printf(" --disable-histories");
 #endif
-#ifdef DISABLE_JUSTIFY
+#ifndef ENABLE_JUSTIFY
     printf(" --disable-justify");
 #endif
 #ifndef HAVE_LIBMAGIC
@@ -1005,10 +1001,10 @@ void version(void)
 #ifndef ENABLE_NANORC
     printf(" --disable-nanorc");
 #endif
-#ifdef DISABLE_OPERATINGDIR
+#ifndef ENABLE_OPERATINGDIR
     printf(" --disable-operatingdir");
 #endif
-#ifdef DISABLE_SPELLER
+#ifndef ENABLE_SPELLER
     printf(" --disable-speller");
 #endif
 #ifndef ENABLE_TABCOMP
@@ -1017,7 +1013,7 @@ void version(void)
 #ifndef ENABLE_WORDCOMPLETION
     printf(" --disable-wordcomp");
 #endif
-#ifdef DISABLE_WRAPPING
+#ifndef ENABLE_WRAPPING
     printf(" --disable-wrapping");
 #endif
 #endif /* !NANO_TINY */
@@ -1077,7 +1073,7 @@ void do_exit(void)
 
     /* If the user chose not to save, or if the user chose to save and
      * the save succeeded, we're ready to exit. */
-    if (i == 0 || (i == 1 && do_writeout(TRUE)))
+    if (i == 0 || (i == 1 && do_writeout(TRUE, TRUE) > 0))
 	close_and_go();
     else if (i != 1)
 	statusbar(_("Cancelled"));
@@ -1397,7 +1393,7 @@ void do_toggle(int flag)
 	    break;
 	case WHITESPACE_DISPLAY:
 	    titlebar(NULL);	/* Fall through. */
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	case NO_COLOR_SYNTAX:
 #endif
 	    refresh_needed = TRUE;
@@ -1570,13 +1566,13 @@ int do_input(bool allow_funcs)
 	/* The input buffer for actual characters. */
     static size_t depth = 0;
 	/* The length of the input buffer. */
-    bool preserve = FALSE;
-	/* Whether to preserve the contents of the cutbuffer. */
+    bool retain_cuts = FALSE;
+	/* Whether to conserve the current contents of the cutbuffer. */
     const sc *s;
     bool have_shortcut;
 
-    /* Read in a keystroke. */
-    input = get_kbinput(edit);
+    /* Read in a keystroke, and show the cursor while waiting. */
+    input = get_kbinput(edit, VISIBLE);
 
 #ifndef NANO_TINY
     if (input == KEY_WINCH)
@@ -1589,7 +1585,7 @@ int do_input(bool allow_funcs)
 	if (do_mouse() == 1)
 	    /* The click was on a shortcut -- read in the character
 	     * that it was converted into. */
-	    input = get_kbinput(edit);
+	    input = get_kbinput(edit, BLIND);
 	else
 	    /* The click was invalid or has been handled -- get out. */
 	    return ERR;
@@ -1627,8 +1623,8 @@ int do_input(bool allow_funcs)
 	    puddle[depth++] = (char)input;
 	}
 #ifndef NANO_TINY
-	if (openfile->mark_set && openfile->kind_of_mark == SOFTMARK) {
-	    openfile->mark_set = FALSE;
+	if (openfile->mark && openfile->kind_of_mark == SOFTMARK) {
+	    openfile->mark = NULL;
 	    refresh_needed = TRUE;
 	}
 #endif
@@ -1639,7 +1635,7 @@ int do_input(bool allow_funcs)
      * all available characters in the input puddle.  Note that this
      * puddle will be empty if we're in view mode. */
     if (have_shortcut || get_key_buffer_len() == 0) {
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
 	/* If we got a shortcut or toggle, and it's not the shortcut
 	 * for verbatim input, turn off prepending of wrapped text. */
 	if (have_shortcut && s->scfunc != do_verbatim_input)
@@ -1676,7 +1672,7 @@ int do_input(bool allow_funcs)
 		|| s->scfunc == do_copy_text || s->scfunc == do_cut_till_eof
 #endif
 		)
-	    preserve = TRUE;
+	    retain_cuts = TRUE;
 
 #ifdef ENABLE_WORDCOMPLETION
 	if (s->scfunc != complete_a_word)
@@ -1686,16 +1682,18 @@ int do_input(bool allow_funcs)
 	if (s->scfunc == do_toggle_void) {
 	    do_toggle(s->toggle);
 	    if (s->toggle != CUT_FROM_CURSOR)
-		preserve = TRUE;
+		retain_cuts = TRUE;
 	} else
 #endif
 	{
 #ifndef NANO_TINY
+	    filestruct *was_current = openfile->current;
+	    size_t was_x = openfile->current_x;
+
 	    /* If Shifted movement occurs, set the mark. */
-	    if (shift_held && !openfile->mark_set) {
-		openfile->mark_set = TRUE;
-		openfile->mark_begin = openfile->current;
-		openfile->mark_begin_x = openfile->current_x;
+	    if (shift_held && !openfile->mark) {
+		openfile->mark = openfile->current;
+		openfile->mark_x = openfile->current_x;
 		openfile->kind_of_mark = SOFTMARK;
 	    }
 #endif
@@ -1703,14 +1701,15 @@ int do_input(bool allow_funcs)
 	    s->scfunc();
 #ifndef NANO_TINY
 	    /* If Shiftless movement occurred, discard a soft mark. */
-	    if (openfile->mark_set && !shift_held &&
-				openfile->kind_of_mark == SOFTMARK) {
-		openfile->mark_set = FALSE;
-		openfile->mark_begin = NULL;
+	    if (!shift_held && openfile->mark &&
+				openfile->kind_of_mark == SOFTMARK &&
+				(openfile->current_x != was_x ||
+				openfile->current != was_current)) {
+		openfile->mark = NULL;
 		refresh_needed = TRUE;
 	    }
 #endif
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	    if (f && !f->viewok)
 		check_the_multis(openfile->current);
 #endif
@@ -1721,22 +1720,11 @@ int do_input(bool allow_funcs)
 
     /* If we aren't cutting or copying text, and the key wasn't a toggle,
      * blow away the text in the cutbuffer upon the next cutting action. */
-    if (!preserve)
+    if (!retain_cuts)
 	cutbuffer_reset();
 
     return input;
 }
-
-void xon_complaint(void)
-{
-    statusbar(_("XON ignored, mumble mumble"));
-}
-
-void xoff_complaint(void)
-{
-    statusbar(_("XOFF ignored, mumble mumble"));
-}
-
 
 #ifdef ENABLE_MOUSE
 /* Handle a mouse click on the edit window or the shortcut list. */
@@ -1764,10 +1752,6 @@ int do_mouse(void)
 	else
 #endif
 	    leftedge = get_page_start(xplustabs());
-
-#ifdef DEBUG
-	fprintf(stderr, "mouse_row = %d, current_y = %ld\n", mouse_row, (long)openfile->current_y);
-#endif
 
 	/* Move current up or down to the row corresponding to mouse_row. */
 	if (row_count < 0)
@@ -1852,9 +1836,9 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 	add_undo(ADD);
 
 	/* Note that current_x has not yet been incremented. */
-	if (openfile->mark_set && openfile->current == openfile->mark_begin &&
-		openfile->current_x < openfile->mark_begin_x)
-	    openfile->mark_begin_x += char_len;
+	if (openfile->current == openfile->mark &&
+			openfile->current_x < openfile->mark_x)
+	    openfile->mark_x += char_len;
 
 	/* When the cursor is on the top row and not on the first chunk
 	 * of a line, adding text there might change the preceding chunk
@@ -1872,7 +1856,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 	update_undo(ADD);
 #endif
 
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
 	/* If text gets wrapped, the edit window needs a refresh. */
 	if (!ISSET(NO_WRAP) && do_wrap(openfile->current))
 	    refresh_needed = TRUE;
@@ -1893,7 +1877,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 
     openfile->placewewant = xplustabs();
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     check_the_multis(openfile->current);
 #endif
 
@@ -1903,14 +1887,14 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 
 int main(int argc, char **argv)
 {
-    int optchr;
-#ifndef DISABLE_WRAPJUSTIFY
+    int stdin_flags, optchr;
+#if defined(ENABLED_WRAPORJUSTIFY) && defined(ENABLE_NANORC)
     bool fill_used = FALSE;
 	/* Was the fill option used on the command line? */
-#ifndef DISABLE_WRAPPING
+#endif
+#ifdef ENABLE_WRAPPING
     bool forced_wrapping = FALSE;
 	/* Should long lines be automatically hard wrapped? */
-#endif
 #endif
 #ifdef ENABLE_MULTIBUFFER
     bool is_multibuffer;
@@ -1928,14 +1912,14 @@ int main(int argc, char **argv)
 	{"rebindkeypad", 0, NULL, 'K'},
 	{"nonewlines", 0, NULL, 'L'},
 	{"morespace", 0, NULL, 'O'},
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 	{"quotestr", 1, NULL, 'Q'},
 #endif
 	{"restricted", 0, NULL, 'R'},
 	{"tabsize", 1, NULL, 'T'},
 	{"quickblank", 0, NULL, 'U'},
 	{"version", 0, NULL, 'V'},
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	{"syntax", 1, NULL, 'Y'},
 #endif
 	{"constantshow", 0, NULL, 'c'},
@@ -1951,20 +1935,20 @@ int main(int argc, char **argv)
 	{"mouse", 0, NULL, 'm'},
 #endif
 	{"noread", 0, NULL, 'n'},
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	{"operatingdir", 1, NULL, 'o'},
 #endif
 	{"preserve", 0, NULL, 'p'},
 	{"quiet", 0, NULL, 'q'},
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
 	{"fill", 1, NULL, 'r'},
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	{"speller", 1, NULL, 's'},
 #endif
 	{"tempfile", 0, NULL, 't'},
 	{"view", 0, NULL, 'v'},
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
 	{"nowrap", 0, NULL, 'w'},
 #endif
 	{"nohelp", 0, NULL, 'x'},
@@ -1993,6 +1977,11 @@ int main(int argc, char **argv)
 
     /* Back up the terminal settings so that they can be restored. */
     tcgetattr(0, &oldterm);
+
+    /* Get the state of standard input and ensure it uses blocking mode. */
+    stdin_flags = fcntl(0, F_GETFL, 0);
+    if (stdin_flags != -1)
+	fcntl(0, F_SETFL, stdin_flags & ~O_NONBLOCK);
 
 #ifdef ENABLE_UTF8
     /* If setting the locale is successful and it uses UTF-8, we need
@@ -2070,7 +2059,7 @@ int main(int argc, char **argv)
 		SET(LOCKING);
 		break;
 #endif
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
 	    case 'H':
 		SET(HISTORYLOG);
 		break;
@@ -2094,12 +2083,12 @@ int main(int argc, char **argv)
 	    case 'O':
 		SET(MORE_SPACE);
 		break;
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
 	    case 'P':
 		SET(POS_HISTORY);
 		break;
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 	    case 'Q':
 		quotestr = mallocstrcpy(quotestr, optarg);
 		break;
@@ -2133,7 +2122,7 @@ int main(int argc, char **argv)
 		word_chars = mallocstrcpy(word_chars, optarg);
 		break;
 #endif
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
 	    case 'Y':
 		syntaxstr = mallocstrcpy(syntaxstr, optarg);
 		break;
@@ -2168,7 +2157,7 @@ int main(int argc, char **argv)
 	    case 'n':
 		SET(NOREAD_MODE);
 		break;
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	    case 'o':
 		operating_dir = mallocstrcpy(operating_dir, optarg);
 		break;
@@ -2177,24 +2166,25 @@ int main(int argc, char **argv)
 		SET(PRESERVE);
 		break;
 #ifdef ENABLE_NANORC
-	    case 'q':
-		SET(QUIET);
+	    case 'q':  /* obsolete, ignored */
 		break;
 #endif
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
 	    case 'r':
 		if (!parse_num(optarg, &wrap_at)) {
 		    fprintf(stderr, _("Requested fill size \"%s\" is invalid"), optarg);
 		    fprintf(stderr, "\n");
 		    exit(1);
 		}
+#ifdef ENABLE_NANORC
 		fill_used = TRUE;
-#ifndef DISABLE_WRAPPING
+#endif
+#ifdef ENABLE_WRAPPING
 		forced_wrapping = TRUE;
 #endif
 		break;
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	    case 's':
 		alt_speller = mallocstrcpy(alt_speller, optarg);
 		break;
@@ -2210,7 +2200,7 @@ int main(int argc, char **argv)
 	    case 'v':
 		SET(VIEW_MODE);
 		break;
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
 	    case 'w':
 		SET(NO_WRAP);
 		/* If both --fill and --nowrap are given on the
@@ -2263,20 +2253,20 @@ int main(int argc, char **argv)
 #ifdef ENABLE_NANORC
     if (!no_rcfiles) {
 	/* Back up the command-line options, then read the rcfile(s). */
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	char *operating_dir_cpy = operating_dir;
 #endif
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
 	ssize_t wrap_at_cpy = wrap_at;
 #endif
 #ifndef NANO_TINY
 	char *backup_dir_cpy = backup_dir;
 	char *word_chars_cpy = word_chars;
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 	char *quotestr_cpy = quotestr;
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	char *alt_speller_cpy = alt_speller;
 #endif
 	ssize_t tabsize_cpy = tabsize;
@@ -2285,17 +2275,17 @@ int main(int argc, char **argv)
 
 	memcpy(flags_cpy, flags, sizeof(flags_cpy));
 
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	operating_dir = NULL;
 #endif
 #ifndef NANO_TINY
 	backup_dir = NULL;
 	word_chars = NULL;
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 	quotestr = NULL;
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	alt_speller = NULL;
 #endif
 
@@ -2307,13 +2297,13 @@ int main(int argc, char **argv)
 #endif
 
 	/* If the backed-up command-line options have a value, restore them. */
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
 	if (operating_dir_cpy != NULL) {
 	    free(operating_dir);
 	    operating_dir = operating_dir_cpy;
 	}
 #endif
-#ifndef DISABLE_WRAPJUSTIFY
+#ifdef ENABLED_WRAPORJUSTIFY
 	if (fill_used)
 	    wrap_at = wrap_at_cpy;
 #endif
@@ -2327,13 +2317,13 @@ int main(int argc, char **argv)
 	    word_chars = word_chars_cpy;
 	}
 #endif
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
 	if (quotestr_cpy != NULL) {
 	    free(quotestr);
 	    quotestr = quotestr_cpy;
 	}
 #endif
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
 	if (alt_speller_cpy != NULL) {
 	    free(alt_speller);
 	    alt_speller = alt_speller_cpy;
@@ -2354,34 +2344,34 @@ int main(int argc, char **argv)
 #endif
 #endif /* ENABLE_NANORC */
 
-#ifndef DISABLE_WRAPPING
+#ifdef ENABLE_WRAPPING
     /* Override a "set nowrap" in an rcfile (or a --disable-wrapping-as-root)
      * if --fill was given on the command line and not undone by --nowrap. */
     if (forced_wrapping)
 	UNSET(NO_WRAP);
 #endif
 
-    /* If we're using bold text instead of reverse video text, set it up
-     * now. */
+    /* If the user wants bold instead of reverse video for hilited text... */
     if (ISSET(BOLD_TEXT))
 	hilite_attribute = A_BOLD;
 
-#ifndef DISABLE_HISTORIES
-    /* Set up the search/replace history. */
+#ifdef ENABLE_HISTORIES
+    /* Initialize the pointers for the Search/Replace/Execute histories. */
     history_init();
-    /* Verify that the home directory and ~/.nano subdir exist. */
-    if (ISSET(HISTORYLOG) || ISSET(POS_HISTORY)) {
-	get_homedir();
-	if (homedir == NULL || check_dotnano() == 0) {
-	    UNSET(HISTORYLOG);
-	    UNSET(POS_HISTORY);
-	}
+
+    /* If we need history files, verify that we have a directory for them,
+     * and when not, cancel the options. */
+    if ((ISSET(HISTORYLOG) || ISSET(POS_HISTORY)) && !have_statedir()) {
+	UNSET(HISTORYLOG);
+	UNSET(POS_HISTORY);
     }
+
+    /* If the user wants history persistence, read the relevant files. */
     if (ISSET(HISTORYLOG))
 	load_history();
     if (ISSET(POS_HISTORY))
 	load_poshistory();
-#endif /* !DISABLE_HISTORIES */
+#endif /* ENABLE_HISTORIES */
 
 #ifndef NANO_TINY
     /* If backups are enabled and a backup directory was specified and
@@ -2391,14 +2381,14 @@ int main(int argc, char **argv)
 	init_backup_dir();
 #endif
 
-#ifndef DISABLE_OPERATINGDIR
+#ifdef ENABLE_OPERATINGDIR
     /* Set up the operating directory.  This entails chdir()ing there,
      * so that file reads and writes will be based there. */
     if (operating_dir != NULL)
 	init_operating_dir();
 #endif
 
-#ifndef DISABLE_JUSTIFY
+#ifdef ENABLE_JUSTIFY
     /* If punct wasn't specified, set its default value. */
     if (punct == NULL)
 	punct = mallocstrcpy(NULL, "!.?");
@@ -2422,16 +2412,16 @@ int main(int argc, char **argv)
 	quoteerr = charalloc(size);
 	regerror(quoterc, &quotereg, quoteerr, size);
     }
-#endif /* !DISABLE_JUSTIFY */
+#endif /* ENABLE_JUSTIFY */
 
-#ifndef DISABLE_SPELLER
+#ifdef ENABLE_SPELLER
     /* If we don't have an alternative spell checker after reading the
      * command line and/or rcfile(s), check $SPELL for one, as Pico
      * does (unless we're using restricted mode, in which case spell
      * checking is disabled, since it would allow reading from or
      * writing to files not specified on the command line). */
     if (!ISSET(RESTRICTED) && alt_speller == NULL) {
-	char *spellenv = getenv("SPELL");
+	const char *spellenv = getenv("SPELL");
 	if (spellenv != NULL)
 	    alt_speller = mallocstrcpy(NULL, spellenv);
     }
@@ -2463,6 +2453,7 @@ int main(int argc, char **argv)
 
     /* Initialize the search string. */
     last_search = mallocstrcpy(NULL, "");
+    UNSET(BACKWARDS_SEARCH);
 
     /* If tabsize wasn't specified, set its default value. */
     if (tabsize == -1)
@@ -2486,6 +2477,7 @@ int main(int argc, char **argv)
 
     /* Create the three subwindows, based on the current screen dimensions. */
     window_init();
+    curs_set(0);
 
     editwincols = COLS;
 
@@ -2497,7 +2489,7 @@ int main(int argc, char **argv)
     mouse_init();
 #endif
 
-#ifndef DISABLE_COLOR
+#ifdef ENABLE_COLOR
     set_colorpairs();
 #else
     interface_color_pair[TITLE_BAR] = hilite_attribute;
@@ -2573,7 +2565,7 @@ int main(int argc, char **argv)
 	/* If a position was given on the command line, go there. */
 	if (givenline != 0 || givencol != 0)
 	    do_gotolinecolumn(givenline, givencol, FALSE, FALSE);
-#ifndef DISABLE_HISTORIES
+#ifdef ENABLE_HISTORIES
 	else if (ISSET(POS_HISTORY) && openfile->filename[0] != '\0') {
 	    ssize_t savedline, savedcol;
 	    /* If edited before, restore the last cursor position. */
@@ -2603,6 +2595,9 @@ int main(int argc, char **argv)
 #endif
 
     prepare_for_display();
+
+    if (rcfile_with_errors != NULL)
+	statusline(ALERT, _("Mistakes in '%s'"), rcfile_with_errors);
 
     while (TRUE) {
 #ifdef ENABLE_LINENUMBERS
@@ -2642,9 +2637,6 @@ int main(int argc, char **argv)
 	    wnoutrefresh(edit);
 	} else
 	    edit_refresh();
-
-	/* Make sure the cursor is visible. */
-	curs_set(1);
 
 	focusing = TRUE;
 

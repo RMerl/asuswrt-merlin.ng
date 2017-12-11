@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 m4_version_prereq([2.70], [] ,[
 
 # This is adapted with modifications from upstream Autoconf here:
-# http://git.savannah.gnu.org/cgit/autoconf.git/commit/?id=04be2b7a29d65d9a08e64e8e56e594c91749598c
+# https://git.savannah.gnu.org/cgit/autoconf.git/commit/?id=04be2b7a29d65d9a08e64e8e56e594c91749598c
 AC_DEFUN([_AC_FUNC_MALLOC_IF],
 [
   AC_REQUIRE([AC_HEADER_STDC])dnl

@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License along
-   with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 /* Before including this file, you need to include <config.h> and
    <string.h>, and define:
@@ -50,8 +50,8 @@
    achieve improved (potentially sub-linear) performance.
 
    See http://www-igm.univ-mlv.fr/~lecroq/string/node26.html#SECTION00260,
-   http://en.wikipedia.org/wiki/Boyer-Moore_string_search_algorithm,
-   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.34.6641&rep=rep1&type=pdf
+   https://en.wikipedia.org/wiki/Boyer-Moore_string_search_algorithm,
+   https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.34.6641&rep=rep1&type=pdf
 */
 
 /* Point at which computing a bad-byte shift table is likely to be

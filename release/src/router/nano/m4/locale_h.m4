@@ -1,4 +1,4 @@
-# locale_h.m4 serial 19
+# locale_h.m4 serial 20
 dnl Copyright (C) 2007, 2009-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -17,7 +17,7 @@ AC_DEFUN([gl_LOCALE_H],
   dnl If <stddef.h> is replaced, then <locale.h> must also be replaced.
   AC_REQUIRE([gl_STDDEF_H])
 
-  dnl Solaris 11 2011-11 defines the int_p_*, int_n_* members of 'struct lconv'
+  dnl Solaris 11.0 defines the int_p_*, int_n_* members of 'struct lconv'
   dnl only if _LCONV_C99 is defined.
   AC_REQUIRE([AC_CANONICAL_HOST])
   case "$host_os" in

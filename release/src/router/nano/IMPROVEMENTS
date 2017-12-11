@@ -1,6 +1,13 @@
 Improvements in GNU nano
 ========================
 
+Since 2.9.0:
+  - The ability to record and replay a series of keystrokes (a macro).
+  - Assigned functions to ^S (save file) and ^Q (start backward search).
+  - Indenting and unindenting have been integrated into the undo system.
+  - Support for $XDG_CONFIG_HOME for the nanorc file, and $XDG_DATA_HOME
+    for the history files (of search strings and cursor positions).
+
 Since 2.8.0:
   - Meta-Up/Meta-Down will search the previous/next occurrence.
   - ^U pastes the first line of the cutbuffer at a prompt.

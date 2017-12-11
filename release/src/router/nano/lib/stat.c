@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Eric Blake and Bruno Haible.  */
 
@@ -102,7 +102,7 @@ rpl_stat (char const *name, struct stat *buf)
   /* Fill the fields ourselves, because the original stat function returns
      values for st_atime, st_mtime, st_ctime that depend on the current time
      zone.  See
-     <https://lists.gnu.org/archive/html/bug-gnulib/2017-04/msg00134.html>  */
+     <https://lists.gnu.org/r/bug-gnulib/2017-04/msg00134.html>  */
   /* XXX Should we convert to wchar_t* and prepend '\\?\', in order to work
      around length limitations
      <https://msdn.microsoft.com/en-us/library/aa365247.aspx> ?  */
@@ -405,19 +405,23 @@ rpl_stat (char const *name, struct stat *buf)
   }
 #else
   int result = orig_stat (name, buf);
-# if REPLACE_FUNC_STAT_FILE
-  /* Solaris 9 mistakenly succeeds when given a non-directory with a
-     trailing slash.  */
-  if (result == 0 && !S_ISDIR (buf->st_mode))
+  if (result == 0)
     {
-      size_t len = strlen (name);
-      if (ISSLASH (name[len - 1]))
+# if REPLACE_FUNC_STAT_FILE
+      /* Solaris 9 mistakenly succeeds when given a non-directory with a
+         trailing slash.  */
+      if (!S_ISDIR (buf->st_mode))
         {
-          errno = ENOTDIR;
-          return -1;
+          size_t len = strlen (name);
+          if (ISSLASH (name[len - 1]))
+            {
+              errno = ENOTDIR;
+              return -1;
+            }
         }
-    }
 # endif /* REPLACE_FUNC_STAT_FILE */
+      result = stat_time_normalize (result, buf);
+    }
   return result;
 #endif
 }

@@ -28,6 +28,7 @@ nano_SOURCES =	browser.c \
 		files.c \
 		global.c \
 		help.c \
+		history.c \
 		move.c \
 		nano.c \
 		nano.h \

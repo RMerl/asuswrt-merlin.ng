@@ -12,7 +12,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* _GL_ARG_NONNULL((n,...,m)) tells the compiler and static analyzer tools
    that the values passed as arguments n, ..., m must be non-NULL pointers.

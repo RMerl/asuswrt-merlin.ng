@@ -1,7 +1,6 @@
 ## Here is an example for PostgreSQL.
 
 syntax "sql" "\.sql[2345s~]?$"
-magic "PostgreSQL script text"
 comment "-- "
 
 # Functions.

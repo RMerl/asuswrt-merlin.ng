@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert.  */
 
@@ -196,7 +196,7 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
   /* Some Linux-based NFS clients are buggy, and mishandle timestamps
      of files in NFS file systems in some cases.  We have no
      configure-time test for this, but please see
-     <http://bugs.gentoo.org/show_bug.cgi?id=132673> for references to
+     <https://bugs.gentoo.org/show_bug.cgi?id=132673> for references to
      some of the problems with Linux 2.6.16.  If this affects you,
      compile with -DHAVE_BUGGY_NFS_TIME_STAMPS; this is reported to
      help in some cases, albeit at a cost in performance.  But you
@@ -250,8 +250,8 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
           result = utimensat (AT_FDCWD, file, ts, 0);
 #  ifdef __linux__
           /* Work around a kernel bug:
-             http://bugzilla.redhat.com/442352
-             http://bugzilla.redhat.com/449910
+             https://bugzilla.redhat.com/show_bug.cgi?id=442352
+             https://bugzilla.redhat.com/show_bug.cgi?id=449910
              It appears that utimensat can mistakenly return 280 rather
              than -1 upon ENOSYS failure.
              FIXME: remove in 2010 or whenever the offending kernels
@@ -566,8 +566,8 @@ lutimens (char const *file, struct timespec const timespec[2])
       result = utimensat (AT_FDCWD, file, ts, AT_SYMLINK_NOFOLLOW);
 # ifdef __linux__
       /* Work around a kernel bug:
-         http://bugzilla.redhat.com/442352
-         http://bugzilla.redhat.com/449910
+         https://bugzilla.redhat.com/show_bug.cgi?id=442352
+         https://bugzilla.redhat.com/show_bug.cgi?id=449910
          It appears that utimensat can mistakenly return 280 rather
          than -1 upon ENOSYS failure.
          FIXME: remove in 2010 or whenever the offending kernels

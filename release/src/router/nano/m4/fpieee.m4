@@ -33,7 +33,7 @@ AC_DEFUN([gl_FP_IEEE],
     alpha*)
       # On Alpha systems, a compiler option provides the behaviour.
       # See the ieee(3) manual page, also available at
-      # <http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V51B_HTML/MAN/MAN3/0600____.HTM>
+      # <https://backdrift.org/man/tru64/man3/ieee.3.html>
       if test -n "$GCC"; then
         # GCC has the option -mieee.
         # For full IEEE compliance (rarely needed), use option -mieee-with-inexact.

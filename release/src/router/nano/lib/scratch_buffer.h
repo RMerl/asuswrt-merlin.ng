@@ -1,0 +1,4 @@
+#define __libc_scratch_buffer_grow gl_scratch_buffer_grow
+#define __libc_scratch_buffer_grow_preserve gl_scratch_buffer_grow_preserve
+#define __libc_scratch_buffer_set_array_size gl_scratch_buffer_set_array_size
+#include <malloc/scratch_buffer.h>

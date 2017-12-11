@@ -2,6 +2,7 @@
 
 syntax "ruby" "\.rb$"
 header "^#!.*ruby[-0-9._]*"
+magic "Ruby script"
 linter ruby -w -c
 comment "#"
 

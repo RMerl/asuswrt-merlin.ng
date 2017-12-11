@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License along
-   with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Bruno Haible <bruno@clisp.org>.  */
 
@@ -355,7 +355,7 @@ get_charset_aliases (void)
          by Alex Taylor:
          <http://altsan.org/os2/toolkits/uls/index.html#codepages>.
          See also "IBM Globalization - Code page identifiers":
-         <http://www-01.ibm.com/software/globalization/cp/cp_cpgid.html>.  */
+         <https://www-01.ibm.com/software/globalization/cp/cp_cpgid.html>.  */
       cp = "CP813" "\0" "ISO-8859-7" "\0"
            "CP878" "\0" "KOI8-R" "\0"
            "CP819" "\0" "ISO-8859-1" "\0"

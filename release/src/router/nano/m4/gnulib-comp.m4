@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+# along with this file.  If not, see <https://www.gnu.org/licenses/>.
 #
 # As a special exception to the GNU General Public License,
 # this file may be distributed as part of a program that
@@ -48,6 +48,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module alloca-opt:
   # Code from module btowc:
   # Code from module builtin-expect:
+  # Code from module c99:
   # Code from module clock-time:
   # Code from module closedir:
   # Code from module configmake:
@@ -82,6 +83,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module glob:
   # Code from module hard-locale:
   # Code from module havelib:
+  # Code from module host-cpu-c-abi:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module isblank:
@@ -92,6 +94,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module langinfo:
   # Code from module largefile:
   AC_REQUIRE([AC_SYS_LARGEFILE])
+  # Code from module libc-config:
   # Code from module limits-h:
   # Code from module localcharset:
   # Code from module locale:
@@ -121,6 +124,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module raise:
   # Code from module readdir:
   # Code from module regex:
+  # Code from module scratch_buffer:
   # Code from module sigaction:
   # Code from module signal-h:
   # Code from module signbit:
@@ -135,6 +139,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module ssize_t:
   # Code from module stat:
   # Code from module stat-time:
+  # Code from module std-gnu11:
   # Code from module stdarg:
   dnl Some compilers (e.g., AIX 5.3 cc) need to be in c99 mode
   dnl for the builtin va_copy to work.  With Autoconf 2.60 or later,
@@ -306,9 +311,12 @@ AC_DEFUN([gl_INIT],
   gl_GLOB
   if test -n "$GLOB_H"; then
     AC_LIBOBJ([glob])
+    AC_LIBOBJ([glob_pattern_p])
+    AC_LIBOBJ([globfree])
     gl_PREREQ_GLOB
   fi
   gl_HARD_LOCALE
+  AC_REQUIRE([gl_HOST_CPU_C_ABI])
   gl_FUNC_ISBLANK
   if test $HAVE_ISBLANK = 0; then
     AC_LIBOBJ([isblank])
@@ -340,6 +348,7 @@ AC_DEFUN([gl_INIT],
   gl_WCTYPE_MODULE_INDICATOR([iswblank])
   gl_LANGINFO_H
   AC_REQUIRE([gl_LARGEFILE])
+  gl___INLINE
   gl_LIMITS_H
   gl_LOCALCHARSET
   LOCALCHARSET_TESTS_ENVIRONMENT="CHARSETALIASDIR=\"\$(abs_top_builddir)/$gl_source_base\""
@@ -702,6 +711,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/asnprintf.c
   lib/btowc.c
   lib/c++defs.h
+  lib/cdefs.h
   lib/closedir.c
   lib/config.charset
   lib/ctype.in.h
@@ -742,6 +752,9 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/glob-libc.h
   lib/glob.c
   lib/glob.in.h
+  lib/glob_internal.h
+  lib/glob_pattern_p.c
+  lib/globfree.c
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
@@ -759,6 +772,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/iswblank.c
   lib/itold.c
   lib/langinfo.in.h
+  lib/libc-config.h
   lib/limits.in.h
   lib/localcharset.c
   lib/localcharset.h
@@ -768,6 +782,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/localtime-buffer.h
   lib/lstat.c
   lib/malloc.c
+  lib/malloc/scratch_buffer.h
+  lib/malloc/scratch_buffer_grow.c
+  lib/malloc/scratch_buffer_grow_preserve.c
+  lib/malloc/scratch_buffer_set_array_size.c
   lib/malloca.c
   lib/malloca.h
   lib/malloca.valgrind
@@ -808,6 +826,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/regex_internal.c
   lib/regex_internal.h
   lib/regexec.c
+  lib/scratch_buffer.h
   lib/sig-handler.c
   lib/sig-handler.h
   lib/sigaction.c
@@ -870,8 +889,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/xsize.c
   lib/xsize.h
   m4/00gnulib.m4
+  m4/__inline.m4
   m4/absolute-header.m4
   m4/alloca.m4
+  m4/asm-underscore.m4
   m4/btowc.m4
   m4/builtin-expect.m4
   m4/clock_time.m4
@@ -910,6 +931,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/glob.m4
   m4/gnulib-common.m4
   m4/hard-locale.m4
+  m4/host-cpu-c-abi.m4
   m4/include_next.m4
   m4/intmax_t.m4
   m4/inttypes_h.m4
@@ -972,6 +994,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/ssize_t.m4
   m4/stat-time.m4
   m4/stat.m4
+  m4/std-gnu11.m4
   m4/stdarg.m4
   m4/stdbool.m4
   m4/stddef_h.m4

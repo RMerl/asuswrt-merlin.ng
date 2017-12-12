@@ -52,6 +52,7 @@ Supported devices on version 380:
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
 
 Supported devices on version 382:
+ * RT-AC68U
  * RT-AC88U
  * RT-AC3100
  * RT-AC86U

@@ -11,11 +11,14 @@ Asuswrt-Merlin 382 Changelog
           (RT-AC86U)
    - NEW: Added IPSec VPN status on the VPNStatus page.
    - NEW: Added support for RT-AC68U (and all of its variants)
+   - NEW: Enabled support for Let's Encrypt on RT-AC68U
+          (in addition to RT-AC88U)
    - CHANGED: Moved HTTPS cert management to the DDNS page (where
               Asus has put theirs, as Let's Encrypt is tied to
               the DDNS configuration)
    - CHANGED: Updated openssl to 1.0.2n.
    - CHANGED: Updated tor to 0.2.9.14.
+   - CHANGED: Updated nano to 2.9.1.
    - FIXED: httpd crash on certain web pages if there are no Ethernet
             clients connected
    - FIXED: DNSFILTER rules would have priority over OPENVPN Client
@@ -23,6 +26,8 @@ Asuswrt-Merlin 382 Changelog
    - FIXED: traffic routing from the router itself would fail when
             restarting the firewall while using an ovpn client with
             policy rules in effect.
+   - FIXED: Dashes were rejected when used in an OpenVPN policy
+            client description.
    - REMOVED: Removed option to select between active and passive
               scan mode for a site survey (that code is now closed
               source and therefore that option can no longer be

@@ -73,23 +73,7 @@ $(function () {
 var vpnc_dev_policy_list_array = []
 var vpnc_dev_policy_list_array_ori = [];
 
-var dhcp_staticlist_array = "";
-if (isSupport("hnd")) {
-	dhcp_staticlist_array = "<% nvram_get("dhcp_shost"); %>"+
-				"<% nvram_get("dhcp_shost1"); %>"+
-				"<% nvram_get("dhcp_shost2"); %>"+
-				"<% nvram_get("dhcp_shost3"); %>"+
-				"<% nvram_get("dhcp_shost4"); %>"+
-				"<% nvram_get("dhcp_shost5"); %>"+
-				"<% nvram_get("dhcp_shost6"); %>"+
-				"<% nvram_get("dhcp_shost7"); %>"+
-				"<% nvram_get("dhcp_shost8"); %>"+
-				"<% nvram_get("dhcp_shost9"); %>";
-}
-
-if (dhcp_staticlist_array.length == 0) {
-	dhcp_staticlist_array = "<% nvram_get("dhcp_staticlist"); %>";
-}
+var dhcp_staticlist_array = "<% nvram_get("dhcp_staticlist"); %>";
 
 if(pptpd_support){
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
@@ -109,7 +93,7 @@ var pool_start_end = parseInt(pool_start.split(".")[3]);
 var pool_end_end = parseInt(pool_end.split(".")[3]);
 
 var static_enable = '<% nvram_get("dhcp_static_x"); %>';
-var dhcp_staticlists = dhcp_staticlist_array;
+var dhcp_staticlists = '<% nvram_get("dhcp_staticlist"); %>';
 var staticclist_row = dhcp_staticlists.split('&#60');
 
 var lan_domain_curr = '<% nvram_get("lan_domain"); %>';
@@ -417,7 +401,7 @@ function applyRule(){
 	if(validForm()){
 		var rule_num = document.getElementById('dhcp_staticlist_table').rows.length;
 		var item_num = document.getElementById('dhcp_staticlist_table').rows[0].cells.length;
-		var tmp_value = "", tmp_value_short = "";
+		var tmp_value = "";
 
 		if (document.getElementById('dhcp_staticlist_table').rows[0].cells[0].innerHTML != "<#IPConnection_VSList_Norule#>") {
 			for(i=0; i<rule_num; i++){
@@ -425,26 +409,14 @@ function applyRule(){
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title + ">";
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML + ">";
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
-
-				if (hnd_support) {
-					tmp_value_short += "<";
-					tmp_value_short += document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title + ">";
-					tmp_value_short += document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML;
-				}
 			}
 		}
-
 		if (tmp_value.length > 2499) {
 			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
 			return false;
 		}
 
-		if (hnd_support) {
-			split_leases(tmp_value)
-			document.form.dhcp_staticlist.value = tmp_value_short;
-		} else {
-			document.form.dhcp_staticlist.value = tmp_value;
-		}
+		document.form.dhcp_staticlist.value = tmp_value;
 
 		// Only restart the whole network if needed
 		if ((document.form.dhcp_wins_x.value != dhcp_wins_curr) ||
@@ -875,22 +847,6 @@ jQuery(function($) {
 	}
 });
 
-function split_leases(data) {
-	var counter = 0;
-	document.form.dhcp_shost.value = data.substring(counter, (counter+=255));
-
-	document.form.dhcp_shost1.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost2.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost3.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost4.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost5.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost6.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost7.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost8.value = data.substring(counter, (counter+=255));
-	document.form.dhcp_shost9.value = data.substring(counter, (counter+=255));
-}
-
-
 function parse_vpnc_dev_policy_list(_oriNvram) {
 	var parseArray = [];
 	var oriNvramRow = decodeURIComponent(_oriNvram).split('<');
@@ -936,16 +892,6 @@ function parse_vpnc_dev_policy_list(_oriNvram) {
 <input type="hidden" name="lan_ipaddr" value="<% nvram_get("lan_ipaddr"); %>">
 <input type="hidden" name="lan_netmask" value="<% nvram_get("lan_netmask"); %>">
 <input type="hidden" name="dhcp_staticlist" value="">
-<input type="hidden" name="dhcp_shost" value="">
-<input type="hidden" name="dhcp_shost1" value="">
-<input type="hidden" name="dhcp_shost2" value="">
-<input type="hidden" name="dhcp_shost3" value="">
-<input type="hidden" name="dhcp_shost4" value="">
-<input type="hidden" name="dhcp_shost5" value="">
-<input type="hidden" name="dhcp_shost6" value="">
-<input type="hidden" name="dhcp_shost7" value="">
-<input type="hidden" name="dhcp_shost8" value="">
-<input type="hidden" name="dhcp_shost9" value="">
 <input type="hidden" name="vpnc_dev_policy_list" value="" disabled>
 <input type="hidden" name="vpnc_dev_policy_list_tmp" value="" disabled>
 

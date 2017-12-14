@@ -2937,7 +2937,7 @@ int stop_8021x(void)
 void write_static_leases(FILE *fp)
 {
 	FILE *fp2;
-	char *nv=NULL, *nvp, *b;
+	char *nv, *nvp, *b;
 	char *mac, *ip, *name;
 	char lan_if[IFNAMSIZ];
 	int vars;
@@ -2961,15 +2961,7 @@ void write_static_leases(FILE *fp)
 	if (!fp2)
 		return;
 
-#ifdef HND_ROUTER
-	if (!nvram_is_empty("dhcp_shost")) {
-                nv = nvp = malloc(255 * 10 + 1);
-                if (nv) nvram_split_get("dhcp_shost", nv, 255 * 10 + 1, 9);
-	}
-	if (!nv)
-#endif
 	nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
-
 	if (!nv) {
 		fclose(fp2);
 		return;

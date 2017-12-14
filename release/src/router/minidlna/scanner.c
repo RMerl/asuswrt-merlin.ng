@@ -1246,12 +1246,14 @@ start_rescan(void)
 		monitor_insert_directory(0, esc_name, path);
 		free(esc_name);
 	}
+	remove_scantag();
 	fill_playlists();
 
 	if (sqlite3_total_changes(db) != changes)
 		summary = "changes found";
 	else
 		summary = "no changes";
+
 	DPRINTF(E_INFO, L_SCANNER, "Rescan completed. (%s)\n", summary);
 }
 /* end rescan functions */

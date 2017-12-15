@@ -2154,7 +2154,6 @@ int nvram_set_double(const char *key, double value)
 
 #ifdef HND_ROUTER
 /**
- *
  * Functions that split settings accross multiple variables
  */
 char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst)
@@ -2172,7 +2171,6 @@ char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst)
 	return buffer;
 }
 
-#if 0	// Unused for now
 int nvram_split_set(const char *key, char *value, int size, int maxinst)
 {
 	char nvname[64];
@@ -2188,7 +2186,7 @@ int nvram_split_set(const char *key, char *value, int size, int maxinst)
 	ptr = value;
 
 	strncpy(piece, ptr, size);
-	nvram_set(nvname, piece);
+	nvram_set(key, piece);
 	ptr += size;
 
 	if (valuelen <= size) {
@@ -2213,8 +2211,6 @@ int nvram_split_set(const char *key, char *value, int size, int maxinst)
 
 	return i;
 }
-
-#endif
 #endif
 
 #if defined(RTCONFIG_HTTPS)

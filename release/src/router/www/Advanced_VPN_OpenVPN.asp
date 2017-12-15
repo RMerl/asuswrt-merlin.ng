@@ -184,11 +184,16 @@ function initial(){
 	set_FAQ_link("faq_iPhone", "1004471", "OpenVPN");
 	set_FAQ_link("faq_android", "1004466", "OpenVPN");
 
-	document.getElementById("vpn_server_custom_x").value = Base64.decode(document.form.vpn_server_custom2.value);
-	updateVpnServerClientAccess();
+	var custom2 = document.form.vpn_server_custom2.value;
+	if (isSupport("hnd")) {
+		document.getElementById("vpn_server_custom_x").maxLength = 170 * 3; // 255*3 - base64 overhead
 
-	if (isSupport("hnd"))
-		document.getElementById("vpn_server_custom_x").maxLength = 170; // 255 - base64 overhead
+		custom2 += document.form.vpn_server_custom21.value +
+		           document.form.vpn_server_custom22.value;
+	}
+	document.getElementById("vpn_server_custom_x").value = Base64.decode(custom2);
+
+	updateVpnServerClientAccess();
 }
 
 var MAX_RETRY_NUM = 5;
@@ -326,7 +331,10 @@ function applyRule(){
 		var pool_start = '<% nvram_get("dhcp_start"); %>';
 		var pool_subnet = pool_start.split(".")[0]+"."+pool_start.split(".")[1]+"."+pool_start.split(".")[2]+".";
 
-		document.form.vpn_server_custom2.value = Base64.encode(document.getElementById("vpn_server_custom_x").value);
+		if (isSupport("hnd"))
+			split_custom2(Base64.encode(document.getElementById("vpn_server_custom_x").value));
+		else
+			document.form.vpn_server_custom2.value = Base64.encode(document.getElementById("vpn_server_custom_x").value);
 
 		if(document.form.vpn_server_if.value == 'tun'){
 			if(vpnSubnet.value == ""){
@@ -577,6 +585,14 @@ function applyRule(){
 		showLoading();
 		document.form.submit();
 	}
+}
+
+function split_custom2(custom2){
+	var counter = 0;
+	document.form.vpn_server_custom2.value = custom2.substring(counter, (counter+=255));
+
+	document.form.vpn_server_custom21.value = custom2.substring(counter, (counter+=255));
+	document.form.vpn_server_custom22.value = custom2.substring(counter, (counter+=255));
 }
 
 function addRow(obj, head){
@@ -1317,6 +1333,8 @@ function updateVpnServerClientAccess() {
 <input type="hidden" name="vpn_server_ccd_val" value="">
 <input type="hidden" name="vpn_server_tls_keysize" value="<% nvram_get("vpn_server_tls_keysize"); %>">
 <input type="hidden" name="vpn_server_custom2" value="<% nvram_get("vpn_server_custom2"); %>">
+<input type="hidden" name="vpn_server_custom21" value="<% nvram_get("vpn_server_custom21"); %>">
+<input type="hidden" name="vpn_server_custom22" value="<% nvram_get("vpn_server_custom22"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>		

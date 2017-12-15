@@ -285,12 +285,16 @@ function initial()
 	document.form.vpn_client_rgw.value = policy_ori;
 	update_visibility();
 
-	document.getElementById("vpn_client_custom_x").value = Base64.decode(document.form.vpn_client_custom2.value);
+
+	var custom2 = document.form.vpn_client_custom2.value;
+	if (isSupport("hnd")) {
+		document.getElementById("vpn_client_custom_x").maxLength = 170 * 3;     // 255 * 3 - base64 overhead
+		custom2 += document.form.vpn_client_custom21.value +
+		           document.form.vpn_client_custom22.value;
+	}
+	document.getElementById("vpn_client_custom_x").value = Base64.decode(custom2);
 
 	setTimeout("getConnStatus()", 1000);
-
-	if (isSupport("hnd"))
-		document.getElementById("vpn_client_custom_x").maxLength = 170;	// 255 - base64 overhead
 
 }
 
@@ -599,30 +603,39 @@ function applyRule(manual_switch){
 	if(tmp_value == "<"+"<#IPConnection_VSList_Norule#>" || tmp_value == "<")
 		tmp_value = "";
 
-	if (isSupport("hnd"))
+	if (isSupport("hnd")) {
 		split_clientlist(tmp_value);
-	else
+		split_custom2(Base64.encode(document.getElementById("vpn_client_custom_x").value));
+	} else {
 		document.form.vpn_client_clientlist.value = tmp_value;
+		document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
+	}
 
 	if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
 	     (policy_ori != document.form.vpn_client_rgw.value)) &&
 	    (client_state == 0) && (manual_switch == 0))
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
 
-	document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
-
 	document.form.submit();
 }
 
 function split_clientlist(clientlist){
 	var counter = 0;
-	document.form.vpn_client_clientlist.value = clientlist.substring(counter, (counter+=255))
+	document.form.vpn_client_clientlist.value = clientlist.substring(counter, (counter+=255));
 
 	document.form.vpn_client_clientlist1.value = clientlist.substring(counter, (counter+=255));
 	document.form.vpn_client_clientlist2.value = clientlist.substring(counter, (counter+=255));
 	document.form.vpn_client_clientlist3.value = clientlist.substring(counter, (counter+=255));
 	document.form.vpn_client_clientlist4.value = clientlist.substring(counter, (counter+=255));
 	document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (counter+=255));
+}
+
+function split_custom2(custom2){
+	var counter = 0;
+	document.form.vpn_client_custom2.value = custom2.substring(counter, (counter+=255));
+
+	document.form.vpn_client_custom21.value = custom2.substring(counter, (counter+=255));
+	document.form.vpn_client_custom22.value = custom2.substring(counter, (counter+=255));
 }
 
 function change_vpn_unit(val){
@@ -1110,6 +1123,8 @@ function defaultSettings() {
 <input type="hidden" name="vpn_client_clientlist4" value="<% nvram_clean_get("vpn_client_clientlist4"); %>">
 <input type="hidden" name="vpn_client_clientlist5" value="<% nvram_clean_get("vpn_client_clientlist5"); %>">
 <input type="hidden" name="vpn_client_custom2" value="<% nvram_get("vpn_client_custom2"); %>">
+<input type="hidden" name="vpn_client_custom21" value="<% nvram_get("vpn_client_custom21"); %>">
+<input type="hidden" name="vpn_client_custom22" value="<% nvram_get("vpn_client_custom22"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>

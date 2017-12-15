@@ -358,7 +358,13 @@ char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
         }
 
 	snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
-	nvcontent = nvram_safe_get(varname);
+
+#ifdef HND_ROUTER
+	nvcontent = malloc(255 * 3 + 1);
+	if (nvcontent) nvram_split_get(varname, nvcontent, 255 * 3 + 1, 2);
+#else
+	nvcontent = strdup(nvram_safe_get(varname));
+#endif
 	datalen = strlen(nvcontent);
 
 	if (datalen) {
@@ -367,6 +373,7 @@ char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
 		buffer[declen] = '\0';
 	}
 
+	free(nvcontent);
 	return buffer;
 }
 
@@ -398,7 +405,12 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 			encbuffer[enclen] = '\0';
 
 			snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
+
+#ifdef HND_ROUTER
+			nvram_split_set(varname, encbuffer, 255, 2);
+#else
 			nvram_set(varname, encbuffer);
+#endif
 
 			free(encbuffer);
 			return 0;

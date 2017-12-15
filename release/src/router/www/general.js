@@ -442,8 +442,8 @@ function change_common_radio(o, s, v, r){
 				showhide("wildcard_field",1);
 			}
 
-			if(letsencrypt_support)
-				show_cert_settings(1);
+//			if(letsencrypt_support)
+//				show_cert_settings(1);
 
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
@@ -467,8 +467,8 @@ function change_common_radio(o, s, v, r){
 			inputCtrl(document.form.ddns_regular_period, 0);
 			inputCtrl(document.form.ddns_refresh_x, 0);
 			
-			if(letsencrypt_support)
-				show_cert_settings(0);
+//			if(letsencrypt_support)
+//				show_cert_settings(0);
 		}	
 		update_ddns_wan_unit_option();
 	}

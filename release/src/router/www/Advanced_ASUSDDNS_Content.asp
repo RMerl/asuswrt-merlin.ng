@@ -215,11 +215,6 @@ function ddns_load_body(){
 	inputCtrl(document.form.ddns_refresh_x, 1);
 
         change_ddns_setting(document.form.ddns_server_x.value);
-        if(letsencrypt_support){
-            show_cert_settings(1);
-            change_cert_method(orig_le_enable);
-            show_cert_details();
-        }
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 		    if(ddns_updated_t == "1"){
@@ -238,9 +233,13 @@ function ddns_load_body(){
         document.form.ddns_wildcard_x[1].disabled= 1;
 	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
-        if(letsencrypt_support)
-            show_cert_settings(0);
     }
+
+	if(letsencrypt_support){
+		show_cert_settings(1);
+		change_cert_method(orig_le_enable);
+		show_cert_details();
+	}
    
     hideLoading();
     var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
@@ -355,6 +354,10 @@ function validForm(){
 			return true;
 		}
 	}
+	else if (document.form.le_enable[0].checked == true) {
+		alert("Let's Encrypt requires DDNS to be enabled.");
+		return false;
+	}
 	else
 		return true;
 }
@@ -452,7 +455,12 @@ function change_cert_method(cert_method){
 					document.form.le_enable[2].checked = true;
 					break;
 				case "1":
-					document.form.le_enable[0].checked = true;
+					if(document.form.ddns_enable_x[1].checked) {
+						alert("Let's Encrypt requires DDNS to be enabled.");
+						document.form.le_enable[2].checked = true;
+					} else {
+						document.form.le_enable[0].checked = true;
+					}
 					break;
 				case "2":
 					document.form.le_enable[1].checked = true;
@@ -474,6 +482,11 @@ function change_cert_method(cert_method){
 				break;
 
 			case "1":
+				if(document.form.ddns_enable_x[1].checked) {
+					alert("Let's Encrypt requires DDNS to be enabled.");
+					document.form.le_enable[2].checked = true;
+					return false;
+				}
 				document.getElementById("cert_gen").style.display = "none";
 				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "";

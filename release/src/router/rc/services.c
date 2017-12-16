@@ -707,14 +707,14 @@ void create_passwd(void)
 	if ((f = fopen("/etc/shadow", "w")) != NULL) {
 		p = crypt(p, salt);
 		fprintf(f,
-				"%s:%s:0:0:99999:7:0:0:\n"
+				"%s:%s::0:99999:7:0::\n"
 #ifdef RTCONFIG_TOR
-				"tor:*:0:0:99999:7:0:0:\n"
+				"tor:*::0:99999:7:0::\n"
 #endif
 #ifdef RTCONFIG_SAMBASRV	//!!TB
-				"%s:*:0:0:99999:7:0:0:\n"
+				"%s:*::0:99999:7:0::\n"
 #endif
-				"nobody:*:0:0:99999:7:0:0:\n"
+				"nobody:*::0:99999:7:0::\n"
 				, http_user, p
 #ifdef RTCONFIG_SAMBASRV	//!!TB
 				, smbd_user

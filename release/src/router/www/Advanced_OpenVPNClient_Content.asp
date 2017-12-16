@@ -1390,7 +1390,7 @@ function defaultSettings() {
 					</tr>
 
 					<tr id="client_adns">
-						<th>Accept DNS Configuration</th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,24);">Accept DNS Configuration</a></th>
 						<td>
 							<select name="vpn_client_adns" class="input_option">
 								<option value="0" <% nvram_match("vpn_client_adns","0","selected"); %> >Disabled</option>

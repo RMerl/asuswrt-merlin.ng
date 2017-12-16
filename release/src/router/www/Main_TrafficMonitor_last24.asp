@@ -286,7 +286,7 @@ function Zoom(func){
 						<table width="100%" >
 							<tr>
 							<td  class="formfonttitle" align="left">
-										<div style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
+										<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
 									</td>
 							<td>
      						<div align="right">

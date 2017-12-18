@@ -196,7 +196,7 @@ void start_ovpn_client(int clientNum)
 	fp = fopen(buffer, "w");
 	chmod(buffer, S_IRUSR|S_IWUSR);
 	fprintf(fp, "# Automatically generated configuration\n");
-	fprintf(fp, "daemon\n");
+	fprintf(fp, "daemon ovpn-client%d\n", clientNum);
 	if ( cryptMode == TLS )
 		fprintf(fp, "client\n");
 	fprintf(fp, "dev %s\n", iface);
@@ -732,7 +732,7 @@ void start_ovpn_server(int serverNum)
 	fp = fopen(buffer, "w");
 	chmod(buffer, S_IRUSR|S_IWUSR);
 	fprintf(fp, "# Automatically generated configuration\n");
-	fprintf(fp, "daemon\n");
+	fprintf(fp, "daemon ovpn-server%d\n", serverNum);
 
 	sprintf(buffer, "/etc/openvpn/server%d/client.ovpn", serverNum);
 	fp_client = fopen(buffer, "w");

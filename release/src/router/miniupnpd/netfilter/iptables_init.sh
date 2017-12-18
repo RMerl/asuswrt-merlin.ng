@@ -1,6 +1,7 @@
 #! /bin/sh
 # $Id: iptables_init.sh,v 1.5 2011/05/16 12:11:37 nanard Exp $
 IPTABLES="`which iptables`" || exit 1
+IPTABLES="$IPTABLES -w"
 IP="`which ip`" || exit 1
 
 #change this parameters :

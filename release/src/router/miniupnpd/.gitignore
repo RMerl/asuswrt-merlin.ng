@@ -19,4 +19,8 @@ validateupnppermissions
 validategetifaddr
 testssdppktgen
 validatessdppktgen
-version.h
+.depend
+pf/testobsdrdr
+pf/testpfpinhole
+netfilter/test_nfct_get
+testminissdp

@@ -3,7 +3,7 @@
 
 OS=`uname -s`
 case $OS in
-	OpenBSD | Darwin)
+	FreeBSD | OpenBSD | Darwin | SunOS)
 	NS="`which netstat`" || exit 1
 	IFCONFIG="`which ifconfig`" || exit 1
 	EXTIF="`$NS -r -f inet | grep 'default' | awk '{ print $NF  }' `" || exit 1

@@ -1,7 +1,7 @@
 /* $Id: upnppinhole.c,v 1.7 2014/12/09 09:13:53 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -134,18 +134,14 @@ upnp_add_inboundpinhole(const char * raddr,
 	timestamp = current + leasetime;
 	r = 0;
 
-#if 0
-	if(r == 1 && strcmp(iaddr, iaddr_old)==0 && iport==iport_old)
-	{
-		syslog(LOG_INFO, "Pinhole for inbound traffic from [%s]:%hu to [%s]:%hu with protocol %s already done. Updating it.", raddr, rport, iaddr_old, iport_old, protocol);
-		t = upnp_update_inboundpinhole(idfound, leaseTime);
-		*uid = atoi(idfound);
-		return t;
+	*uid = upnp_find_inboundpinhole(raddr, rport, iaddr, iport, proto, NULL, 0, NULL);
+	if(*uid >= 0) {
+		syslog(LOG_INFO, "Pinhole for inbound traffic from [%s]:%hu to [%s]:%hu with proto %d found uid=%d. Updating it.", raddr, rport, iaddr, iport, proto, *uid);
+		r = upnp_update_inboundpinhole(*uid, timestamp);
+		return (r >= 0) ? 1 : r;
 	}
-	else
-#endif
 #if defined(USE_PF) || defined(USE_NETFILTER)
-	*uid = add_pinhole (0/*ext_if_name*/, raddr, rport,
+	*uid = add_pinhole (ext_if_name, raddr, rport,
 	                    iaddr, iport, proto, desc, timestamp);
 	return *uid >= 0 ? 1 : -1;
 #else

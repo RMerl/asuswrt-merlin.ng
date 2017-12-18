@@ -66,6 +66,7 @@ struct file;
 #include "netinet/ip_nat.h"
 #include "netinet/ip_state.h"
 
+#include "../macros.h"
 
 #ifndef __P
 # ifdef __STDC__
@@ -330,6 +331,7 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 	ipfobj_t obj;
 	ipnat_t ipn;
 	int r;
+	UNUSED(ifname);
 
 	memset(&obj, 0, sizeof(obj));
 	obj.ipfo_rev = IPFILTER_VERSION;
@@ -490,6 +492,7 @@ real_delete_redirect_rule(const char * ifname, unsigned short eport, int proto)
 	ipfobj_t obj;
 	ipnat_t ipn;
 	int r;
+	UNUSED(ifname);
 
 	memset(&obj, 0, sizeof(obj));
 	obj.ipfo_rev = IPFILTER_VERSION;
@@ -566,6 +569,8 @@ add_filter_rule2(const char * ifname, const char * rhost,
 	frentry_t fr;
 	fripf_t ipffr;
 	int r;
+	UNUSED(ifname); UNUSED(desc);
+	UNUSED(iport);
 
 	if (dev_ipl < 0) {
 		syslog(LOG_ERR, "%s not open", IPL_NAME);
@@ -655,6 +660,7 @@ delete_filter_rule(const char * ifname, unsigned short eport, int proto)
 	friostat_t fio;
 	frentry_t *fp;
 	int r;
+	UNUSED(ifname);
 
 	if (dev_ipl < 0) {
 		syslog(LOG_ERR, "%s not open", IPL_NAME);
@@ -804,6 +810,8 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
                    unsigned short iport, const char * desc,
                    unsigned int timestamp)
 {
+	UNUSED(ifname); UNUSED(eport); UNUSED(proto);
+	UNUSED(iport); UNUSED(desc); UNUSED(timestamp);
 	/* TODO: implement update_portmapping() */
 	syslog(LOG_ERR, __FILE__ " update_portmapping() is not implemented");
 	return -1;
@@ -815,6 +823,7 @@ update_portmapping_desc_timestamp(const char * ifname,
                    unsigned short eport, int proto,
                    const char * desc, unsigned int timestamp)
 {
+	UNUSED(ifname);
 	del_redirect_desc(eport, proto);
 	add_redirect_desc(eport,proto, timestamp, desc);
 	return 0;

@@ -1,7 +1,8 @@
-/* $Id: upnpglobalvars.h,v 1.38 2014/03/10 11:04:53 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: upnpglobalvars.h,v 1.43 2017/05/27 07:47:57 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -31,6 +32,10 @@ extern unsigned long upstream_bitrate;
 
 /* statup time */
 extern time_t startup_time;
+#if defined(ENABLE_NATPMP) || defined(ENABLE_PCP)
+/* origin for "epoch time" sent into NATPMP and PCP responses */
+extern time_t epoch_origin;
+#endif /*  defined(ENABLE_NATPMP) || defined(ENABLE_PCP) */
 
 extern unsigned long int min_lifetime;
 extern unsigned long int max_lifetime;
@@ -144,7 +149,7 @@ extern char ipv6_addr_for_http_with_brackets[64];
 /* address used to bind local services */
 extern struct in6_addr ipv6_bind_addr;
 
-#endif
+#endif /* ENABLE_IPV6 */
 
 extern const char * minissdpdsocketpath;
 
@@ -152,5 +157,9 @@ extern const char * minissdpdsocketpath;
 extern unsigned int upnp_bootid;
 extern unsigned int upnp_configid;
 
-#endif
+#ifdef RANDOMIZE_URLS
+#define RANDOM_URL_MAX_LEN (16)
+extern char random_url[];
+#endif /* RANDOMIZE_URLS */
 
+#endif /* UPNPGLOBALVARS_H_INCLUDED */

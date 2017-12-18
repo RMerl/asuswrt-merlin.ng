@@ -1,7 +1,8 @@
-/* $Id: upnpglobalvars.c,v 1.39 2014/12/10 09:49:22 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: upnpglobalvars.c,v 1.41 2017/05/27 07:47:57 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -29,6 +30,11 @@ unsigned long upstream_bitrate = 0;
 
 /* startup time */
 time_t startup_time = 0;
+
+#if defined(ENABLE_NATPMP) || defined(ENABLE_PCP)
+/* origin for "epoch time" sent into NATPMP and PCP responses */
+time_t epoch_origin = 0;
+#endif /*  defined(ENABLE_NATPMP) || defined(ENABLE_PCP) */
 
 #ifdef ENABLE_PCP
 /* for PCP */
@@ -157,4 +163,8 @@ unsigned int upnp_bootid = 1;      /* BOOTID.UPNP.ORG */
  * DDD = Device Description Document
  * SCPD = Service Control Protocol Description */
 unsigned int upnp_configid = 1337; /* CONFIGID.UPNP.ORG */
+
+#ifdef RANDOMIZE_URLS
+char random_url[RANDOM_URL_MAX_LEN] = "random";
+#endif /* RANDOMIZE_URLS */
 

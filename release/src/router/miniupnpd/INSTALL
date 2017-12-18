@@ -1,12 +1,12 @@
 MiniUPnP project.
-(c) 2006-2016 Thomas Bernard
+(c) 2006-2017 Thomas Bernard
 Homepage : http://miniupnp.free.fr/
-Mirror: http://miniupnp.tuxfamily.org/
+Mirror: https://miniupnp.tuxfamily.org/
 github: https://github.com/miniupnp/miniupnp
 
-miniupnpd is still under active developpement. This documentation is
+miniupnpd is still under developpement. This documentation is
 likely to be a little outdated when you read it. So please go on the
-web forum http://miniupnp.tuxfamily.org/ if you need more information.
+web forum https://miniupnp.tuxfamily.org/ if you need more information.
 
 ================================ *BSD/pf =================================
 To Build and Install :
@@ -116,12 +116,29 @@ work is in progress. To build :
  > make -f Makefile.linux_nft
 
 see :
-http://miniupnp.tuxfamily.org/forum/viewtopic.php?p=4370
+https://miniupnp.tuxfamily.org/forum/viewtopic.php?p=4370
 https://github.com/miniupnp/miniupnp/pull/114
 
 =========================== Configuration =============================
 Edit the /etc/miniupnpd.conf file to set options. Almost all options are
 also available through command line switches.
+
+A basic configuration would set :
+ext_ifname :   WAN network interface (interface connected to the internet)
+listening_ip : LAN network interface (network where to supply NAT traversal)
+enable_natpmp=yes
+enable_upnp=yes
+and the permission rules (see below).
+
+Historically, LAN had to be specified by IP/mask, such as
+listening_ip=192.168.0.1/24
+but if you compiled with IPv6 support, you need to specify an interface name :
+listening_ip=eth0
+The current code assumes there is only one IPv4 address assigned to LAN
+interfaces. That is not the case with some CARP setup, there is then a risk
+the wrong mask would be picked. You can force the mask when using interface
+names :
+listening_ip=eth0/24
 
 Miniupnpd supports some kind of security check for allowing or disallowing
 redirection to be made. The UPnP permission rules are read from the
@@ -164,3 +181,14 @@ or if your linux system use /etc/init.d/
   # /etc/init.d/miniupnpd stop
 
 
+* Signals :
+miniupnpd handles the following signals :
+SIGUSR1: Send public IP address change notification
+SIGUSR2: Handle special actions in Tomato Firmware version
+SIGINT:  Close gracefully
+SIGTERM: Close gracefully
+SIGPIPE: Ignore
+
+There is code to detect change in network interfaces bsd/ifacewatcher.c and
+linux/ifacewatcher.c, but if that code doesn't work for you, you may want to
+send SIGUSR1 to miniupnpd if you public IP address changed.

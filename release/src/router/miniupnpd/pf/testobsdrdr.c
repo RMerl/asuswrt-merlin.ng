@@ -1,7 +1,7 @@
 /* $Id: testobsdrdr.c,v 1.28 2014/03/06 13:02:47 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2014 Thomas Bernard
+ * (c) 2006-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -118,7 +118,7 @@ main(int argc, char * * argv)
 		printf("get_redirect_rule() failed\n");
 	else
 	{
-		printf("\n%s:%d '%s' packets=%llu bytes=%llu\n", buf, (int)iport, desc,
+		printf("\n%s:%d '%s' packets=%" PRIu64 " bytes=%" PRIu64 "\n", buf, (int)iport, desc,
 		       packets, bytes);
 	}
 

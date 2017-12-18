@@ -1,7 +1,8 @@
-/* $Id: upnpevents.c,v 1.35 2016/02/11 10:41:44 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: upnpevents.c,v 1.38 2017/11/02 15:50:35 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2008-2016 Thomas Bernard
+ * (c) 2008-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -473,7 +474,8 @@ static void upnp_event_send(struct upnp_event_notify * obj)
 	i = send(obj->s, obj->buffer + obj->sent, obj->tosend - obj->sent, 0);
 	if(i<0) {
 		if(errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) {
-			syslog(LOG_NOTICE, "%s: send(): %m", "upnp_event_send");
+			syslog(LOG_NOTICE, "%s: send(%s%s): %m", "upnp_event_send",
+			       obj->addrstr, obj->portstr);
 			obj->state = EError;
 			return;
 		} else {

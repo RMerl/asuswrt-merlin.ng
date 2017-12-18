@@ -22,8 +22,6 @@ getifstats(const char * ifname, struct ifdata * data)
 	kstat_ctl_t *kc;
 	int instance;
 	kstat_t *ksp;
-	uint32_t cnt32;
-	void *ptr;
 
 	if (data == NULL)
 		goto error;
@@ -46,7 +44,6 @@ getifstats(const char * ifname, struct ifdata * data)
 		if (ksp && (kstat_read(kc, ksp, NULL) != -1)) {
 			/* found the right interface */
 			if (sizeof(long) == 8) {
-				uint64_t cnt64;
 				kn = kstat_data_lookup(ksp, "rbytes64");
 				if (kn != NULL) {
 					data->ibytes = kn->value.i64;

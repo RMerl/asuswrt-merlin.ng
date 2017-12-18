@@ -4,6 +4,7 @@
 # Checks for state of filter before doing anything..
 
 IPTABLES="`which iptables`" || exit 1
+IPTABLES="$IPTABLES -w"
 IP="`which ip`" || exit 1
 
 #EXTIF=eth0

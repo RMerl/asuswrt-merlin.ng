@@ -1,7 +1,7 @@
 /* $Id: getroute.c,v 1.12 2015/11/19 11:46:30 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2015 Thomas Bernard
+ * (c) 2006-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -20,8 +20,9 @@
 #include "../config.h"
 #include "../upnputils.h"
 
+/* SA_SIZE() is a multiple of sizeof(long) with a minimum value of sizeof(long) */
 #ifndef SA_SIZE
-#define SA_SIZE(sa) (SA_LEN(sa))
+#define SA_SIZE(sa) (((SA_LEN(sa)) == 0) ? sizeof(long) : (1 + (((SA_LEN(sa)) - 1) | (sizeof(long) - 1))))
 #endif /* SA_SIZE */
 
 int
@@ -42,8 +43,8 @@ get_src_for_route_to(const struct sockaddr * dst,
 
 	if(dst == NULL)
 		return -1;
-	if(dst->sa_len > 0) {
-		l = dst->sa_len;
+	if(SA_LEN(dst) > 0) {
+		l = SA_LEN(dst);
 	} else {
 		if(dst->sa_family == AF_INET)
 			l = sizeof(struct sockaddr_in);
@@ -66,7 +67,9 @@ get_src_for_route_to(const struct sockaddr * dst,
 	rtm.rtm_seq = 1;
 	rtm.rtm_addrs = RTA_DST | RTA_IFA | RTA_IFP;	/* pass destination address, request source address & interface */
 	memcpy(m_rtmsg.m_space, dst, l);
+#if !defined(__sun)
 	((struct sockaddr *)m_rtmsg.m_space)->sa_len = l;
+#endif
 	rtm.rtm_msglen = sizeof(struct rt_msghdr) + l;
 	if(write(s, &m_rtmsg, rtm.rtm_msglen) < 0) {
 		syslog(LOG_ERR, "write: %m");
@@ -100,8 +103,9 @@ get_src_for_route_to(const struct sockaddr * dst,
 				}
 				sa = (struct sockaddr *)p;
 				sockaddr_to_string(sa, tmp, sizeof(tmp));
-				syslog(LOG_DEBUG, "type=%d sa_len=%d sa_family=%d %s",
-				       i, sa->sa_len, sa->sa_family, tmp);
+				syslog(LOG_DEBUG, "offset=%3d type=%2d sa_len=%d sa_family=%d %s",
+				       (int)(p - m_rtmsg.m_space),
+				       i, SA_LEN(sa), sa->sa_family, tmp);
 				if(i == RTA_IFA) {
 					size_t len = 0;
 					void * paddr = NULL;
@@ -132,14 +136,7 @@ get_src_for_route_to(const struct sockaddr * dst,
 						*index = sdl->sdl_index;
 				}
 #endif
-				/* at least 4 bytes per address are reserved,
-				 * that is true with OpenBSD 4.3.
-				 * The test is only useful when SA_SIZE() is not properly
-				 * defined, as it should be always >= sizeof(long) */
-				if(SA_SIZE(sa) > 0)
-					p += SA_SIZE(sa);
-				else
-					p += sizeof(long);
+				p += SA_SIZE(sa);
 			}
 		}
 	}

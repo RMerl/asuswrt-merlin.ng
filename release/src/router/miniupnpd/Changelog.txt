@@ -1,4 +1,37 @@
-$Id: Changelog.txt,v 1.428 2016/04/19 21:10:36 nanard Exp $
+$Id: Changelog.txt,v 1.432 2017/05/24 22:47:53 nanard Exp $
+
+2017/12/12:
+  Fix a few buffer overrun in SSDP and SOAP parsing
+
+2017/11/02:
+  PCP : reset epoch after address change
+
+2017/05/26:
+  merge https://github.com/miniupnp/miniupnp/tree/randomize_url branch
+
+2017/05/24:
+  get SSDP packet receiving interface index and use it to check if the
+    packet is from a LAN
+
+2017/03/13:
+  default to client address for AddPortMapping when <NewInternalClient>
+    is empty
+  pass ext_if_name to add_pinhole()
+
+2016/12/23:
+  Fix UDA-1.2.10 Man header empty or invalid
+
+2016/12/16:
+  Do not try to open IPv6 sockets once it is disabled
+
+2016/12/01:
+  Fix "AddPinhole Twice" test
+
+2016/11/11:
+  fixes build for Solaris/SunOS
+
+2016/07/23:
+  fixes build error on DragonFly BSD
 
 VERSION 2.0 : released on 2016/04/19
 
@@ -64,6 +97,11 @@ VERSION 2.0 : released on 2016/04/19
 
 2015/09/15:
   use name server from query in SOAP responses
+
+2015/09/14:
+  Randomize URLs to avoid http://www.filet-o-firewall.com/
+    https://github.com/filetofirewall/fof
+    (specific branch, merged later, see above)
 
 2015/08/25:
   better bind socket to right interface(s),

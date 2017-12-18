@@ -1,7 +1,8 @@
-/* $Id: miniupnpd.c,v 1.213 2015/12/16 10:21:49 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: miniupnpd.c,v 1.221 2017/05/27 07:47:55 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2015 Thomas Bernard
+ * (c) 2006-2017 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -322,6 +323,7 @@ OpenAndConfHTTPSocket(unsigned short * port)
 		syslog(LOG_WARNING, "socket(PF_INET6, ...) failed with EAFNOSUPPORT, disabling IPv6");
 		SETFLAG(IPV6DISABLEDMASK);
 		ipv6 = 0;
+		/* Try again with IPv4 */
 		s = socket(PF_INET, SOCK_STREAM, 0);
 	}
 #endif
@@ -630,7 +632,7 @@ static int nfqueue_cb(
 
 					/* printf("pkt found %s\n",dd);*/
 					ProcessSSDPData (sudp, dd, size - x,
-					                 &sendername, (unsigned short) 5555);
+					                 &sendername, -1, (unsigned short) 5555);
 				}
 			}
 		}
@@ -983,7 +985,6 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str)
 		}
 	}
 #endif
-#ifdef ENABLE_IPV6
 	if(lan_addr->ifname[0] != '\0')
 	{
 		lan_addr->index = if_nametoindex(lan_addr->ifname);
@@ -991,6 +992,7 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str)
 			fprintf(stderr, "Cannot get index for network interface %s",
 			        lan_addr->ifname);
 	}
+#ifdef ENABLE_IPV6
 	else
 	{
 		fprintf(stderr,
@@ -1664,6 +1666,9 @@ init(int argc, char * * argv, struct runtime_vars * v)
 
 	/* initialize random number generator */
 	srandom((unsigned int)time(NULL));
+#ifdef RANDOMIZE_URLS
+	snprintf(random_url, RANDOM_URL_MAX_LEN, "%08lx", random());
+#endif /* RANDOMIZE_URLS */
 
 	/* initialize redirection engine (and pinholes) */
 	if(init_redirect() < 0)
@@ -1854,9 +1859,11 @@ main(int argc, char * * argv)
 
 	if(
 #ifdef ENABLE_NATPMP
-        !GETFLAG(ENABLENATPMPMASK) &&
+	   !GETFLAG(ENABLENATPMPMASK) && !GETFLAG(ENABLEUPNPMASK)
+#else
+	   !GETFLAG(ENABLEUPNPMASK)
 #endif
-        !GETFLAG(ENABLEUPNPMASK) ) {
+	   ) {
 		syslog(LOG_ERR, "Why did you run me anyway?");
 		return 0;
 	}
@@ -1927,16 +1934,18 @@ main(int argc, char * * argv)
 #endif /* V6SOCKETS_ARE_V6ONLY */
 #endif /* ENABLE_HTTPS */
 #ifdef ENABLE_IPV6
-		if(find_ipv6_addr(lan_addrs.lh_first ? lan_addrs.lh_first->ifname : NULL,
-		                  ipv6_addr_for_http_with_brackets, sizeof(ipv6_addr_for_http_with_brackets)) > 0) {
-			syslog(LOG_NOTICE, "HTTP IPv6 address given to control points : %s",
-			       ipv6_addr_for_http_with_brackets);
-		} else {
-			memcpy(ipv6_addr_for_http_with_brackets, "[::1]", 6);
-			syslog(LOG_WARNING, "no HTTP IPv6 address, disabling IPv6");
-			SETFLAG(IPV6DISABLEDMASK);
+		if(!GETFLAG(IPV6DISABLEDMASK)) {
+			if(find_ipv6_addr(lan_addrs.lh_first ? lan_addrs.lh_first->ifname : NULL,
+			                  ipv6_addr_for_http_with_brackets, sizeof(ipv6_addr_for_http_with_brackets)) > 0) {
+				syslog(LOG_NOTICE, "HTTP IPv6 address given to control points : %s",
+				       ipv6_addr_for_http_with_brackets);
+			} else {
+				memcpy(ipv6_addr_for_http_with_brackets, "[::1]", 6);
+				syslog(LOG_WARNING, "no HTTP IPv6 address, disabling IPv6");
+				SETFLAG(IPV6DISABLEDMASK);
+			}
 		}
-#endif
+#endif	/* ENABLE_IPV6 */
 
 		/* open socket for SSDP connections */
 		sudp = OpenAndConfSSDPReceiveSocket(0);
@@ -2004,7 +2013,9 @@ main(int argc, char * * argv)
 #endif
 
 #if defined(ENABLE_IPV6) && defined(ENABLE_PCP)
-	spcp_v6 = OpenAndConfPCPv6Socket();
+	if(!GETFLAG(IPV6DISABLEDMASK)) {
+		spcp_v6 = OpenAndConfPCPv6Socket();
+	}
 #endif
 
 	/* for miniupnpdctl */
@@ -2048,6 +2059,16 @@ main(int argc, char * * argv)
 			if(GETFLAG(ENABLEUPNPMASK))
 			{
 				upnp_event_var_change_notify(EWanIPC);
+			}
+#endif
+#ifdef ENABLE_PCP
+			if(GETFLAG(ENABLENATPMPMASK))
+			{
+#ifdef ENABLE_IPV6
+				PCPPublicAddressChanged(snatpmp, addr_count, spcp_v6);
+#else /* IPv4 only */
+				PCPPublicAddressChanged(snatpmp, addr_count);
+#endif
 			}
 #endif
 			should_send_public_address_change_notif = 0;

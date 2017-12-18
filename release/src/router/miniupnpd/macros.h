@@ -12,7 +12,9 @@
 
 #include <stdint.h>
 
+#ifndef INLINE
 #define INLINE static inline
+#endif
 /* theses macros are designed to read/write unsigned short/long int
  * from an unsigned char array in network order (big endian).
  * Avoid pointer casting, so avoid accessing unaligned memory, which

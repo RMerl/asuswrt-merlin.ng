@@ -1,6 +1,7 @@
 /* $Id: portinuse.c,v 1.3 2014/04/01 12:52:50 nanard Exp $ */
-/* MiniUPnP project
- * (c) 2007-2014 Thomas Bernard
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * (c) 2007-2017 Thomas Bernard
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -23,6 +24,7 @@
 
 #if defined(__OpenBSD__)
 #include <sys/queue.h>
+#include <sys/select.h>
 #include <kvm.h>
 #include <fcntl.h>
 #include <nlist.h>
@@ -55,7 +57,11 @@
 
 #if defined(USE_NETFILTER)
 /* Hardcoded for now.  Ideally would come from .conf file */
-char *chains_to_check[] = { "VSERVER" , 0 };
+#	ifdef TOMATO
+		const char *chains_to_check[] = { "WANPREROUTING" , 0 };
+#	else
+		const char *chains_to_check[] = { "VSERVER" , 0 };
+#	endif
 #endif
 
 int
@@ -251,7 +257,7 @@ static struct nlist list[] = {
 			abort();
 		}
 		/* no support for IPv6 */
-		if ((inp->inp_vflag & INP_IPV6) != 0)
+		if (INP_ISIPV6(inp) != 0)
 			continue;
 		syslog(LOG_DEBUG, "%08lx:%hu %08lx:%hu <=> %hu %08lx:%hu",
 		       (u_long)inp->inp_laddr.s_addr, ntohs(inp->inp_lport),

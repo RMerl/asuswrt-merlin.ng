@@ -34,7 +34,7 @@ get_lan_for_peer(const struct sockaddr * peer);
  * define portability macros
  */
 #if defined(__sun)
-static size_t _sa_len(const struct sockaddr *addr)
+static __inline size_t _sa_len(const struct sockaddr *addr)
 {
         if (addr->sa_family == AF_INET)
                 return (sizeof(struct sockaddr_in));

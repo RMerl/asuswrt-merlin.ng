@@ -188,6 +188,7 @@ static const struct LongShort aliases[]= {
   {"$W", "abstract-unix-socket",     ARG_STRING},
   {"$X", "tls-max",                  ARG_STRING},
   {"$Y", "suppress-connect-headers", ARG_BOOL},
+  {"$Z", "compressed-ssh",           ARG_BOOL},
   {"0",   "http1.0",                 ARG_NONE},
   {"01",  "http1.1",                 ARG_NONE},
   {"02",  "http2",                   ARG_NONE},
@@ -251,12 +252,15 @@ static const struct LongShort aliases[]= {
   {"E7", "proxy-capath",             ARG_STRING},
   {"E8", "proxy-insecure",           ARG_BOOL},
   {"E9", "proxy-tlsv1",              ARG_NONE},
+  {"EA", "socks5-basic",             ARG_BOOL},
+  {"EB", "socks5-gssapi",            ARG_BOOL},
   {"f",  "fail",                     ARG_BOOL},
   {"fa", "fail-early",               ARG_BOOL},
   {"F",  "form",                     ARG_STRING},
   {"Fs", "form-string",              ARG_STRING},
   {"g",  "globoff",                  ARG_BOOL},
   {"G",  "get",                      ARG_NONE},
+  {"Ga", "request-target",           ARG_STRING},
   {"h",  "help",                     ARG_BOOL},
   {"H",  "header",                   ARG_STRING},
   {"Hp", "proxy-header",             ARG_STRING},
@@ -440,11 +444,12 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
   bool toggle = TRUE; /* how to switch boolean options, on or off. Controlled
                          by using --OPTION or --no-OPTION */
 
+  *usedarg = FALSE; /* default is that we don't use the arg */
 
   if(('-' != flag[0]) ||
      (('-' == flag[0]) && ('-' == flag[1]))) {
     /* this should be a long name */
-    const char *word = ('-' == flag[0]) ? flag+2 : flag;
+    const char *word = ('-' == flag[0]) ? flag + 2 : flag;
     size_t fnam = strlen(word);
     int numhits = 0;
 
@@ -487,13 +492,12 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
 
     if(!longopt) {
       letter = (char)*parse;
-      subletter='\0';
+      subletter = '\0';
     }
     else {
       letter = parse[0];
       subletter = parse[1];
     }
-    *usedarg = FALSE; /* default is that we don't use the arg */
 
     if(hit < 0) {
       for(j = 0; j < sizeof(aliases)/sizeof(aliases[0]); j++) {
@@ -542,7 +546,8 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         GetStr(&config->oauth_bearer, nextarg);
         break;
       case 'c': /* connect-timeout */
-        err = str2udouble(&config->connecttimeout, nextarg);
+        err = str2udouble(&config->connecttimeout, nextarg,
+                          LONG_MAX/1000);
         if(err)
           return err;
         break;
@@ -586,7 +591,11 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       {
         /* We support G, M, K too */
         char *unit;
-        curl_off_t value = curlx_strtoofft(nextarg, &unit, 0);
+        curl_off_t value;
+        if(curlx_strtoofft(nextarg, &unit, 0, &value)) {
+          warnf(global, "unsupported rate\n");
+          return PARAM_BAD_USE;
+        }
 
         if(!*unit)
           unit = (char *)"b";
@@ -778,7 +787,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
           url = config->url_get;
         else
           /* there was no free node, create one! */
-          url = new_getout(config);
+          config->url_get = url = new_getout(config);
 
         if(!url)
           return PARAM_NO_MEM;
@@ -995,7 +1004,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
 #ifdef USE_METALINK
           int mlmaj, mlmin, mlpatch;
           metalink_get_version(&mlmaj, &mlmin, &mlpatch);
-          if((mlmaj*10000)+(mlmin*100)+mlpatch < CURL_REQ_LIBMETALINK_VERS) {
+          if((mlmaj*10000)+(mlmin*100) + mlpatch < CURL_REQ_LIBMETALINK_VERS) {
             warnf(global,
                   "--metalink option cannot be used because the version of "
                   "the linked libmetalink library is too old. "
@@ -1044,7 +1053,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
           return err;
         break;
       case 'R': /* --expect100-timeout */
-        err = str2udouble(&config->expect100timeout, nextarg);
+        err = str2udouble(&config->expect100timeout, nextarg, LONG_MAX/1000);
         if(err)
           return err;
         break;
@@ -1067,6 +1076,9 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         break;
       case 'Y': /* --suppress-connect-headers */
         config->suppress_connect_headers = toggle;
+        break;
+      case 'Z': /* --compressed-ssh */
+        config->ssh_compression = toggle;
         break;
       }
       break;
@@ -1178,7 +1190,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         config->resume_from_current = TRUE;
         config->resume_from = 0;
       }
-      config->use_resume=TRUE;
+      config->use_resume = TRUE;
       break;
     case 'd':
       /* postfield data */
@@ -1342,11 +1354,11 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         memcpy(config->postfields, oldpost, (size_t)oldlen);
         /* use byte value 0x26 for '&' to accommodate non-ASCII platforms */
         config->postfields[oldlen] = '\x26';
-        memcpy(&config->postfields[oldlen+1], postdata, size);
-        config->postfields[oldlen+1+size] = '\0';
+        memcpy(&config->postfields[oldlen + 1], postdata, size);
+        config->postfields[oldlen + 1 + size] = '\0';
         Curl_safefree(oldpost);
         Curl_safefree(postdata);
-        config->postfieldsize += size+1;
+        config->postfieldsize += size + 1;
       }
       else {
         config->postfields = postdata;
@@ -1554,9 +1566,25 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         config->proxy_insecure_ok = toggle;
         break;
 
-      case '9':
+      case '9': /* --proxy-tlsv1 */
         /* TLS version 1 for proxy */
         config->proxy_ssl_version = CURL_SSLVERSION_TLSv1;
+        break;
+
+      case 'A':
+        /* --socks5-basic */
+        if(toggle)
+          config->socks5_auth |= CURLAUTH_BASIC;
+        else
+          config->socks5_auth &= ~CURLAUTH_BASIC;
+        break;
+
+      case 'B':
+        /* --socks5-gssapi */
+        if(toggle)
+          config->socks5_auth |= CURLAUTH_GSSAPI;
+        else
+          config->socks5_auth &= ~CURLAUTH_GSSAPI;
         break;
 
       default: /* unknown flag */
@@ -1578,11 +1606,11 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
          to sort this out slowly and carefully */
       if(formparse(config,
                    nextarg,
-                   &config->httppost,
-                   &config->last_post,
-                   (subletter=='s')?TRUE:FALSE)) /* 's' means literal string */
+                   &config->mimepost,
+                   &config->mimecurrent,
+                   (subletter == 's')?TRUE:FALSE)) /* 's' is literal string */
         return PARAM_BAD_USE;
-      if(SetHTTPrequest(config, HTTPREQ_FORMPOST, &config->httpreq))
+      if(SetHTTPrequest(config, HTTPREQ_MIMEPOST, &config->httpreq))
         return PARAM_BAD_USE;
       break;
 
@@ -1591,7 +1619,11 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       break;
 
     case 'G': /* HTTP GET */
-      config->use_httpget = TRUE;
+      if(subletter == 'a') { /* --request-target */
+        GetStr(&config->request_target, nextarg);
+      }
+      else
+        config->use_httpget = TRUE;
       break;
 
     case 'h': /* h for help */
@@ -1602,12 +1634,45 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       break;
     case 'H':
       /* A custom header to append to a list */
-      if(subletter == 'p') /* --proxy-header */
-        err = add2list(&config->proxyheaders, nextarg);
-      else
-        err = add2list(&config->headers, nextarg);
-      if(err)
-        return err;
+      if(nextarg[0] == '@') {
+        /* read many headers from a file or stdin */
+        char *string;
+        size_t len;
+        bool use_stdin = !strcmp(&nextarg[1], "-");
+        FILE *file = use_stdin?stdin:fopen(&nextarg[1], FOPEN_READTEXT);
+        if(!file)
+          warnf(global, "Failed to open %s!\n", &nextarg[1]);
+        else {
+          err = file2memory(&string, &len, file);
+          if(!err) {
+            /* Allow strtok() here since this isn't used threaded */
+            /* !checksrc! disable BANNEDFUNC 2 */
+            char *h = strtok(string, "\r\n");
+            while(h) {
+              if(subletter == 'p') /* --proxy-header */
+                err = add2list(&config->proxyheaders, h);
+              else
+                err = add2list(&config->headers, h);
+              if(err)
+                break;
+              h = strtok(NULL, "\r\n");
+            }
+            free(string);
+          }
+          if(!use_stdin)
+            fclose(file);
+          if(err)
+            return err;
+        }
+      }
+      else {
+        if(subletter == 'p') /* --proxy-header */
+          err = add2list(&config->proxyheaders, nextarg);
+        else
+          err = add2list(&config->headers, nextarg);
+        if(err)
+          return err;
+      }
       break;
     case 'i':
       config->include_headers = toggle; /* include the headers as well in the
@@ -1657,7 +1722,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       break;
     case 'm':
       /* specified max time */
-      err = str2udouble(&config->timeout, nextarg);
+      err = str2udouble(&config->timeout, nextarg, LONG_MAX/1000);
       if(err)
         return err;
       break;
@@ -1722,7 +1787,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         url = config->url_out;
       else
         /* there was no free node, create one! */
-        url = new_getout(config);
+        config->url_out = url = new_getout(config);
 
       if(!url)
         return PARAM_NO_MEM;
@@ -1786,10 +1851,13 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       if(ISDIGIT(*nextarg) && !strchr(nextarg, '-')) {
         char buffer[32];
         curl_off_t off;
+        if(curlx_strtoofft(nextarg, NULL, 10, &off)) {
+          warnf(global, "unsupported range point\n");
+          return PARAM_BAD_USE;
+        }
         warnf(global,
               "A specified range MUST include at least one dash (-). "
               "Appending one for you!\n");
-        off = curlx_strtoofft(nextarg, NULL, 10);
         snprintf(buffer, sizeof(buffer), "%" CURL_FORMAT_CURL_OFF_T "-", off);
         Curl_safefree(config->range);
         config->range = strdup(buffer);
@@ -1844,23 +1912,23 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       /* we are uploading */
     {
       struct getout *url;
-      if(!config->url_out)
-        config->url_out = config->url_list;
-      if(config->url_out) {
+      if(!config->url_ul)
+        config->url_ul = config->url_list;
+      if(config->url_ul) {
         /* there's a node here, if it already is filled-in continue to find
            an "empty" node */
-        while(config->url_out && (config->url_out->flags & GETOUT_UPLOAD))
-          config->url_out = config->url_out->next;
+        while(config->url_ul && (config->url_ul->flags & GETOUT_UPLOAD))
+          config->url_ul = config->url_ul->next;
       }
 
       /* now there might or might not be an available node to fill in! */
 
-      if(config->url_out)
+      if(config->url_ul)
         /* existing node */
-        url = config->url_out;
+        url = config->url_ul;
       else
         /* there was no free node, create one! */
-        url = new_getout(config);
+        config->url_ul = url = new_getout(config);
 
       if(!url)
         return PARAM_NO_MEM;
@@ -1985,7 +2053,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         break;
       }
       now = time(NULL);
-      config->condtime=curl_getdate(nextarg, &now);
+      config->condtime = curl_getdate(nextarg, &now);
       if(-1 == (int)config->condtime) {
         /* now let's see if it is a file name to get the time from instead! */
         struct_stat statbuf;

@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_NOPROXY 3 "May 30, 2017" "libcurl 7.54.1" "curl_easy_setopt options"
+.TH CURLOPT_NOPROXY 3 "September 24, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_NOPROXY \- disable proxy use for specific hosts
@@ -42,8 +42,13 @@ If the name in the noproxy list has a leading period, it is a domain match
 against the provided host name. This way ".example.com" will switch off proxy
 use for both "www.example.com" as well as for "foo.example.com".
 
+Setting the noproxy string to "" (an empty string) will explicitly enable the
+proxy for all host names, even if there is an environment variable set for it.
+
 The application does not have to keep the string around after setting this
 option.
+.SH "Environment variables"
+See \fICURLOPT_PROXY(3)\fP
 .SH DEFAULT
 NULL
 .SH PROTOCOLS

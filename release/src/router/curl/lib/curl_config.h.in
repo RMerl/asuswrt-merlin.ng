@@ -9,6 +9,9 @@
 /* Location of default ca path */
 #undef CURL_CA_PATH
 
+/* Default SSL backend */
+#undef CURL_DEFAULT_SSL_BACKEND
+
 /* to disable cookies support */
 #undef CURL_DISABLE_COOKIES
 
@@ -72,6 +75,9 @@
 /* Definition to make a library symbol externally visible. */
 #undef CURL_EXTERN_SYMBOL
 
+/* built with multiple SSL backends */
+#undef CURL_WITH_MULTI_SSL
+
 /* your Entropy Gathering Daemon socket pathname */
 #undef EGD_SOCKET
 
@@ -126,6 +132,15 @@
 /* Define to 1 if using BoringSSL. */
 #undef HAVE_BORINGSSL
 
+/* if BROTLI is in use */
+#undef HAVE_BROTLI
+
+/* Define to 1 if you have the <brotli/decode.h> header file. */
+#undef HAVE_BROTLI_DECODE_H
+
+/* Define to 1 if you have the __builtin_available function. */
+#undef HAVE_BUILTIN_AVAILABLE
+
 /* Define to 1 if you have the clock_gettime function and monotonic timer. */
 #undef HAVE_CLOCK_GETTIME_MONOTONIC
 
@@ -179,9 +194,6 @@
 
 /* Define to 1 if you have the fdopen function. */
 #undef HAVE_FDOPEN
-
-/* Define to 1 if you have the `fork' function. */
-#undef HAVE_FORK
 
 /* Define to 1 if you have the freeaddrinfo function. */
 #undef HAVE_FREEADDRINFO
@@ -258,9 +270,6 @@
 /* Define to 1 if you have the `getppid' function. */
 #undef HAVE_GETPPID
 
-/* Define to 1 if you have the `getprotobyname' function. */
-#undef HAVE_GETPROTOBYNAME
-
 /* Define to 1 if you have the `getpwuid' function. */
 #undef HAVE_GETPWUID
 
@@ -324,9 +333,6 @@
 
 /* Define to 1 if you have the `if_nametoindex' function. */
 #undef HAVE_IF_NAMETOINDEX
-
-/* Define to 1 if you have the `inet_addr' function. */
-#undef HAVE_INET_ADDR
 
 /* Define to 1 if you have the inet_ntoa_r function. */
 #undef HAVE_INET_NTOA_R
@@ -392,6 +398,9 @@
 /* Define to 1 if you have the `ldap_url_parse' function. */
 #undef HAVE_LDAP_URL_PARSE
 
+/* Define to 1 if you have the `brotlidec' library (-lbrotlidec). */
+#undef HAVE_LIBBROTLIDEC
+
 /* Define to 1 if you have the <libgen.h> header file. */
 #undef HAVE_LIBGEN_H
 
@@ -419,6 +428,9 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
+/* Define to 1 if you have the <linux/tcp.h> header file. */
+#undef HAVE_LINUX_TCP_H
+
 /* if your compiler supports LL */
 #undef HAVE_LL
 
@@ -430,6 +442,9 @@
 
 /* Define to 1 if the compiler supports the 'long long' data type. */
 #undef HAVE_LONGLONG
+
+/* Define to 1 if you have the `mach_absolute_time' function. */
+#undef HAVE_MACH_ABSOLUTE_TIME
 
 /* Define to 1 if you have the malloc.h header file. */
 #undef HAVE_MALLOC_H
@@ -477,9 +492,6 @@
 /* Define to 1 if you have the <openssl/pem.h> header file. */
 #undef HAVE_OPENSSL_PEM_H
 
-/* Define to 1 if you have the <openssl/pkcs12.h> header file. */
-#undef HAVE_OPENSSL_PKCS12_H
-
 /* Define to 1 if you have the <openssl/rsa.h> header file. */
 #undef HAVE_OPENSSL_RSA_H
 
@@ -494,9 +506,6 @@
 
 /* Define to 1 if you have the <pem.h> header file. */
 #undef HAVE_PEM_H
-
-/* Define to 1 if you have the `perror' function. */
-#undef HAVE_PERROR
 
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
@@ -714,9 +723,6 @@
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
-/* Define to 1 if you have the `uname' function. */
-#undef HAVE_UNAME
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -879,6 +885,9 @@
 /* Define to the function return type for send. */
 #undef SEND_TYPE_RETV
 
+/* The size of `curl_off_t', as computed by sizeof. */
+#undef SIZEOF_CURL_OFF_T
+
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
@@ -899,9 +908,6 @@
 
 /* The size of `time_t', as computed by sizeof. */
 #undef SIZEOF_TIME_T
-
-/* The size of `void*', as computed by sizeof. */
-#undef SIZEOF_VOIDP
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
@@ -1000,9 +1006,6 @@
 
 /* Define to 1 to provide own prototypes. */
 #undef WANT_IDN_PROTOTYPES
-
-/* Define to avoid automatic inclusion of winsock.h */
-#undef WIN32_LEAN_AND_MEAN
 
 /* Define to 1 if OS is AIX. */
 #ifndef _ALL_SOURCE

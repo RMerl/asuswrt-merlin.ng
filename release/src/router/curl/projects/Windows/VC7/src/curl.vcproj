@@ -1297,9 +1297,6 @@
 				RelativePath="..\..\..\..\src\tool_metalink.c">
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\tool_mfiles.c">
-			</File>
-			<File
 				RelativePath="..\..\..\..\src\tool_msgs.c">
 			</File>
 			<File
@@ -1431,9 +1428,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_metalink.h">
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\tool_mfiles.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_msgs.h">

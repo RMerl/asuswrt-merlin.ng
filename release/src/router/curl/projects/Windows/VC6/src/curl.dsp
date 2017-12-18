@@ -787,10 +787,6 @@ SOURCE=..\..\..\..\src\tool_metalink.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\tool_mfiles.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\src\tool_msgs.c
 # End Source File
 # Begin Source File
@@ -964,10 +960,6 @@ SOURCE=..\..\..\..\src\tool_main.h
 # Begin Source File
 
 SOURCE=..\..\..\..\src\tool_metalink.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\src\tool_mfiles.h
 # End Source File
 # Begin Source File
 

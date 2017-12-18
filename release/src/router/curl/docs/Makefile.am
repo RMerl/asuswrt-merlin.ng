@@ -35,8 +35,8 @@ HTMLPAGES = $(GENHTMLPAGES) index.html
 
 # Build targets in this file (.) before cmdline-opts to ensure that
 # the curl.1 rule below runs first
-SUBDIRS = libcurl . cmdline-opts
-DIST_SUBDIRS = $(SUBDIRS) examples
+SUBDIRS = . cmdline-opts
+DIST_SUBDIRS = $(SUBDIRS) examples libcurl
 
 CLEANFILES = $(GENHTMLPAGES) $(PDFPAGES) $(MANDISTPAGES) curl.1
 
@@ -46,7 +46,7 @@ EXTRA_DIST = MANUAL BUGS CONTRIBUTE.md FAQ FEATURES INTERNALS.md SSLCERTS.md    
  README.netware MAIL-ETIQUETTE HTTP-COOKIES.md SECURITY.md RELEASE-PROCEDURE    \
  SSL-PROBLEMS.md HTTP2.md ROADMAP.md CODE_OF_CONDUCT.md CODE_STYLE.md           \
  CHECKSRC.md CMakeLists.txt README.md CIPHERS.md INSTALL.cmake README.cmake     \
- $(noinst_man_MANS)
+ $(noinst_man_MANS) HELP-US.md
 
 MAN2HTML= roffit $< >$@
 
@@ -80,4 +80,7 @@ pdf: $(PDFPAGES)
 	ps2pdf $$foo.ps $@; \
 	rm $$foo.ps; \
 	echo "converted $< to $@")
+
+distclean:
+	rm -f $(CLEANFILES)
 

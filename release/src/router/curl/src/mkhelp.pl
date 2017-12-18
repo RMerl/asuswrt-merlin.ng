@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 #***************************************************************************
 #                                  _   _ ____  _
 #  Project                     ___| | | |  _ \| |
@@ -36,7 +36,7 @@ if($ARGV[0] eq "-c") {
 my $README = $ARGV[0];
 
 if($README eq "") {
-    print "usage: mkreadme.pl [-c] <README> < manpage\n";
+    print "usage: mkhelp.pl [-c] <README> < manpage\n";
     exit;
 }
 
@@ -102,11 +102,9 @@ while(<READ>) {
 }
 close(READ);
 
-$now = localtime;
 print <<HEAD
 /*
  * NEVER EVER edit this manually, fix the mkhelp.pl script instead!
- * Generation time: $now
  */
 #ifdef USE_MANUAL
 #include "tool_hugehelp.h"

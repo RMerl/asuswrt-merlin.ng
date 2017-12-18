@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CAPATH 3 "May 30, 2017" "libcurl 7.54.1" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_CAPATH 3 "September 10, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_CAPATH \- specify directory holding proxy CA certificates
@@ -56,8 +56,9 @@ if(curl) {
 .SH AVAILABILITY
 Added in 7.52.0
 
-This option is supported by the OpenSSL, GnuTLS and PolarSSL backends. The NSS
-backend provides the option only for backward compatibility.
+This option is supported by the OpenSSL, GnuTLS, PolarSSL and mbedTLS
+(since 7.56.0) backends. The NSS backend provides the option only for
+backward compatibility.
 .SH RETURN VALUE
 CURLE_OK if supported; or an error such as:
 

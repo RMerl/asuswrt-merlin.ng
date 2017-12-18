@@ -145,6 +145,10 @@ my $HTTPPROXYPORT;       # HTTP proxy port, when using CONNECT
 my $HTTPPIPEPORT;        # HTTP pipelining port
 my $HTTPUNIXPATH;        # HTTP server Unix domain socket path
 my $HTTP2PORT;           # HTTP/2 server port
+my $DICTPORT;            # DICT server port
+my $SMBPORT;             # SMB server port
+my $SMBSPORT;            # SMBS server port
+my $NEGTELNETPORT;       # TELNET server port with negotiation
 
 my $srcdir = $ENV{'srcdir'} || '.';
 my $CURL="../src/curl".exe_ext(); # what curl executable to run on the tests
@@ -213,6 +217,7 @@ my $gopher_ipv6;    # set if Gopher server has IPv6 support
 my $has_ipv6;       # set if libcurl is built with IPv6 support
 my $has_unix;       # set if libcurl is built with Unix sockets support
 my $has_libz;       # set if libcurl is built with libz support
+my $has_brotli;     # set if libcurl is built with brotli support
 my $has_getrlimit;  # set if system has getrlimit()
 my $has_ntlm;       # set if libcurl is built with NTLM support
 my $has_ntlm_wb;    # set if libcurl is built with NTLM delegation to winbind
@@ -228,6 +233,8 @@ my $has_crypto;     # set if libcurl is built with cryptographic support
 my $has_cares;      # set if built with c-ares
 my $has_threadedres;# set if built with threaded resolver
 my $has_psl;        # set if libcurl is built with PSL support
+my $has_ldpreload;  # set if curl is built for systems supporting LD_PRELOAD
+my $has_multissl;   # set if curl is build with MultiSSL support
 
 # this version is decided by the particular nghttp2 library that is being used
 my $h2cver = "h2c";
@@ -378,7 +385,8 @@ sub init_serverpidfile_hash {
       }
     }
   }
-  for my $proto (('tftp', 'sftp', 'socks', 'ssh', 'rtsp', 'gopher', 'httptls')) {
+  for my $proto (('tftp', 'sftp', 'socks', 'ssh', 'rtsp', 'gopher', 'httptls',
+                  'dict', 'smb', 'smbs', 'telnet')) {
     for my $ipvnum ((4, 6)) {
       for my $idnum ((1, 2)) {
         my $serv = servername_id($proto, $ipvnum, $idnum);
@@ -555,8 +563,7 @@ sub runclientoutput {
 # Memory allocation test and failure torture testing.
 #
 sub torture {
-    my $testcmd = shift;
-    my $gdbline = shift;
+    my ($testcmd, $testnum, $gdbline) = @_;
 
     # remove memdump first to be sure we get a new nice and clean one
     unlink($memdump);
@@ -570,17 +577,17 @@ sub torture {
     my $count=0;
     my @out = `$memanalyze -v $memdump`;
     for(@out) {
-        if(/^Allocations: (\d+)/) {
+        if(/^Operations: (\d+)/) {
             $count = $1;
             last;
         }
     }
     if(!$count) {
-        logmsg " found no allocs to make fail\n";
+        logmsg " found no functions to make fail\n";
         return 0;
     }
 
-    logmsg " $count allocations to make fail\n";
+    logmsg " $count functions to make fail\n";
 
     for ( 1 .. $count ) {
         my $limit = $_;
@@ -595,7 +602,7 @@ sub torture {
             my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
                 localtime(time());
             my $now = sprintf("%02d:%02d:%02d ", $hour, $min, $sec);
-            logmsg "Fail alloc no: $limit at $now\r";
+            logmsg "Fail function no: $limit at $now\r";
         }
 
         # make the memory allocation function number $limit return failure
@@ -604,14 +611,28 @@ sub torture {
         # remove memdump first to be sure we get a new nice and clean one
         unlink($memdump);
 
-        logmsg "*** Alloc number $limit is now set to fail ***\n" if($gdbthis);
+        my $cmd = $testcmd;
+        if($valgrind && !$gdbthis) {
+            my @valgrindoption = getpart("verify", "valgrind");
+            if((!@valgrindoption) || ($valgrindoption[0] !~ /disable/)) {
+                my $valgrindcmd = "$valgrind ";
+                $valgrindcmd .= "$valgrind_tool " if($valgrind_tool);
+                $valgrindcmd .= "--quiet --leak-check=yes ";
+                $valgrindcmd .= "--suppressions=$srcdir/valgrind.supp ";
+                # $valgrindcmd .= "--gen-suppressions=all ";
+                $valgrindcmd .= "--num-callers=16 ";
+                $valgrindcmd .= "${valgrind_logfile}=$LOGDIR/valgrind$testnum";
+                $cmd = "$valgrindcmd $testcmd";
+            }
+        }
+        logmsg "*** Function number $limit is now set to fail ***\n" if($gdbthis);
 
         my $ret = 0;
         if($gdbthis) {
             runclient($gdbline);
         }
         else {
-            $ret = runclient($testcmd);
+            $ret = runclient($cmd);
         }
         #logmsg "$_ Returned " . ($ret >> 8) . "\n";
 
@@ -623,6 +644,20 @@ sub torture {
             logmsg " core dumped\n";
             $dumped_core = 1;
             $fail = 2;
+        }
+
+        if($valgrind) {
+            my @e = valgrindparse("$LOGDIR/valgrind$testnum");
+            if(@e && $e[0]) {
+                if($automakestyle) {
+                    logmsg "FAIL: torture $testnum - valgrind\n";
+                }
+                else {
+                    logmsg " valgrind ERROR ";
+                    logmsg @e;
+                }
+                $fail = 1;
+            }
         }
 
         # verify that it returns a proper error code, doesn't leak memory
@@ -649,7 +684,7 @@ sub torture {
             }
         }
         if($fail) {
-            logmsg " Failed on alloc number $limit in test.\n",
+            logmsg " Failed on function number $limit in test.\n",
             " invoke with \"-t$limit\" to repeat this single case.\n";
             stopservers($verbose);
             return 1;
@@ -1119,6 +1154,128 @@ sub verifysocks {
 }
 
 #######################################################################
+# Verify that the server that runs on $ip, $port is our server.  This also
+# implies that we can speak with it, as there might be occasions when the
+# server runs fine but we cannot talk to it ("Failed to connect to ::1: Can't
+# assign requested address")
+#
+sub verifysmb {
+    my ($proto, $ipvnum, $idnum, $ip, $port) = @_;
+    my $server = servername_id($proto, $ipvnum, $idnum);
+    my $pid = 0;
+    my $time=time();
+    my $extra="";
+
+    my $verifylog = "$LOGDIR/".
+        servername_canon($proto, $ipvnum, $idnum) .'_verify.log';
+    unlink($verifylog) if(-f $verifylog);
+
+    my $flags = "--max-time $server_response_maxtime ";
+    $flags .= "--silent ";
+    $flags .= "--verbose ";
+    $flags .= "--globoff ";
+    $flags .= "-u 'curltest:curltest' ";
+    $flags .= $extra;
+    $flags .= "\"$proto://$ip:$port/SERVER/verifiedserver\"";
+
+    my $cmd = "$VCURL $flags 2>$verifylog";
+
+    # check if this is our server running on this port:
+    logmsg "RUN: $cmd\n" if($verbose);
+    my @data = runclientoutput($cmd);
+
+    my $res = $? >> 8; # rotate the result
+    if($res & 128) {
+        logmsg "RUN: curl command died with a coredump\n";
+        return -1;
+    }
+
+    foreach my $line (@data) {
+        if($line =~ /WE ROOLZ: (\d+)/) {
+            # this is our test server with a known pid!
+            $pid = 0+$1;
+            last;
+        }
+    }
+    if($pid <= 0 && @data && $data[0]) {
+        # this is not a known server
+        logmsg "RUN: Unknown server on our $server port: $port\n";
+        return 0;
+    }
+    # we can/should use the time it took to verify the server as a measure
+    # on how fast/slow this host is.
+    my $took = int(0.5+time()-$time);
+
+    if($verbose) {
+        logmsg "RUN: Verifying our test $server server took $took seconds\n";
+    }
+    $ftpchecktime = $took>=1?$took:1; # make sure it never is below 1
+
+    return $pid;
+}
+
+#######################################################################
+# Verify that the server that runs on $ip, $port is our server.  This also
+# implies that we can speak with it, as there might be occasions when the
+# server runs fine but we cannot talk to it ("Failed to connect to ::1: Can't
+# assign requested address")
+#
+sub verifytelnet {
+    my ($proto, $ipvnum, $idnum, $ip, $port) = @_;
+    my $server = servername_id($proto, $ipvnum, $idnum);
+    my $pid = 0;
+    my $time=time();
+    my $extra="";
+
+    my $verifylog = "$LOGDIR/".
+        servername_canon($proto, $ipvnum, $idnum) .'_verify.log';
+    unlink($verifylog) if(-f $verifylog);
+
+    my $flags = "--max-time $server_response_maxtime ";
+    $flags .= "--silent ";
+    $flags .= "--verbose ";
+    $flags .= "--globoff ";
+    $flags .= "--upload-file - ";
+    $flags .= $extra;
+    $flags .= "\"$proto://$ip:$port\"";
+
+    my $cmd = "echo 'verifiedserver' | $VCURL $flags 2>$verifylog";
+
+    # check if this is our server running on this port:
+    logmsg "RUN: $cmd\n" if($verbose);
+    my @data = runclientoutput($cmd);
+
+    my $res = $? >> 8; # rotate the result
+    if($res & 128) {
+        logmsg "RUN: curl command died with a coredump\n";
+        return -1;
+    }
+
+    foreach my $line (@data) {
+        if($line =~ /WE ROOLZ: (\d+)/) {
+            # this is our test server with a known pid!
+            $pid = 0+$1;
+            last;
+        }
+    }
+    if($pid <= 0 && @data && $data[0]) {
+        # this is not a known server
+        logmsg "RUN: Unknown server on our $server port: $port\n";
+        return 0;
+    }
+    # we can/should use the time it took to verify the server as a measure
+    # on how fast/slow this host is.
+    my $took = int(0.5+time()-$time);
+
+    if($verbose) {
+        logmsg "RUN: Verifying our test $server server took $took seconds\n";
+    }
+
+    return $pid;
+}
+
+
+#######################################################################
 # Verify that the server that runs on $ip, $port is our server.
 # Retry over several seconds before giving up.  The ssh server in
 # particular can take a long time to start if it needs to generate
@@ -1143,7 +1300,10 @@ my %protofunc = ('http' => \&verifyhttp,
                  'ssh' => \&verifyssh,
                  'socks' => \&verifysocks,
                  'gopher' => \&verifyhttp,
-                 'httptls' => \&verifyhttptls);
+                 'httptls' => \&verifyhttptls,
+                 'dict' => \&verifyftp,
+                 'smb' => \&verifysmb,
+                 'telnet' => \&verifytelnet);
 
 sub verifyserver {
     my ($proto, $ipvnum, $idnum, $ip, $port) = @_;
@@ -2165,6 +2325,235 @@ sub runsocksserver {
 }
 
 #######################################################################
+# start the dict server
+#
+sub rundictserver {
+    my ($verbose, $alt, $port) = @_;
+    my $proto = "dict";
+    my $ip = $HOSTIP;
+    my $ipvnum = 4;
+    my $idnum = 1;
+    my $server;
+    my $srvrname;
+    my $pidfile;
+    my $logfile;
+    my $flags = "";
+
+    if($alt eq "ipv6") {
+        # No IPv6
+    }
+
+    $server = servername_id($proto, $ipvnum, $idnum);
+
+    $pidfile = $serverpidfile{$server};
+
+    # don't retry if the server doesn't work
+    if ($doesntrun{$pidfile}) {
+        return (0,0);
+    }
+
+    my $pid = processexists($pidfile);
+    if($pid > 0) {
+        stopserver($server, "$pid");
+    }
+    unlink($pidfile) if(-f $pidfile);
+
+    $srvrname = servername_str($proto, $ipvnum, $idnum);
+
+    $logfile = server_logfilename($LOGDIR, $proto, $ipvnum, $idnum);
+
+    $flags .= "--verbose 1 " if($debugprotocol);
+    $flags .= "--pidfile \"$pidfile\" --logfile \"$logfile\" ";
+    $flags .= "--id $idnum " if($idnum > 1);
+    $flags .= "--port $port --srcdir \"$srcdir\"";
+
+    my $cmd = "$srcdir/dictserver.py $flags";
+    my ($dictpid, $pid2) = startnew($cmd, $pidfile, 15, 0);
+
+    if($dictpid <= 0 || !pidexists($dictpid)) {
+        # it is NOT alive
+        logmsg "RUN: failed to start the $srvrname server\n";
+        stopserver($server, "$pid2");
+        displaylogs($testnumcheck);
+        $doesntrun{$pidfile} = 1;
+        return (0,0);
+    }
+
+    # Server is up. Verify that we can speak to it.
+    my $pid3 = verifyserver($proto, $ipvnum, $idnum, $ip, $port);
+    if(!$pid3) {
+        logmsg "RUN: $srvrname server failed verification\n";
+        # failed to talk to it properly. Kill the server and return failure
+        stopserver($server, "$dictpid $pid2");
+        displaylogs($testnumcheck);
+        $doesntrun{$pidfile} = 1;
+        return (0,0);
+    }
+    $pid2 = $pid3;
+
+    if($verbose) {
+        logmsg "RUN: $srvrname server is now running PID $dictpid\n";
+    }
+
+    sleep(1);
+
+    return ($dictpid, $pid2);
+}
+
+#######################################################################
+# start the SMB server
+#
+sub runsmbserver {
+    my ($verbose, $alt, $port) = @_;
+    my $proto = "smb";
+    my $ip = $HOSTIP;
+    my $ipvnum = 4;
+    my $idnum = 1;
+    my $server;
+    my $srvrname;
+    my $pidfile;
+    my $logfile;
+    my $flags = "";
+
+    if($alt eq "ipv6") {
+        # No IPv6
+    }
+
+    $server = servername_id($proto, $ipvnum, $idnum);
+
+    $pidfile = $serverpidfile{$server};
+
+    # don't retry if the server doesn't work
+    if ($doesntrun{$pidfile}) {
+        return (0,0);
+    }
+
+    my $pid = processexists($pidfile);
+    if($pid > 0) {
+        stopserver($server, "$pid");
+    }
+    unlink($pidfile) if(-f $pidfile);
+
+    $srvrname = servername_str($proto, $ipvnum, $idnum);
+
+    $logfile = server_logfilename($LOGDIR, $proto, $ipvnum, $idnum);
+
+    $flags .= "--verbose 1 " if($debugprotocol);
+    $flags .= "--pidfile \"$pidfile\" --logfile \"$logfile\" ";
+    $flags .= "--id $idnum " if($idnum > 1);
+    $flags .= "--port $port --srcdir \"$srcdir\"";
+
+    my $cmd = "$srcdir/smbserver.py $flags";
+    my ($smbpid, $pid2) = startnew($cmd, $pidfile, 15, 0);
+
+    if($smbpid <= 0 || !pidexists($smbpid)) {
+        # it is NOT alive
+        logmsg "RUN: failed to start the $srvrname server\n";
+        stopserver($server, "$pid2");
+        displaylogs($testnumcheck);
+        $doesntrun{$pidfile} = 1;
+        return (0,0);
+    }
+
+    # Server is up. Verify that we can speak to it.
+    my $pid3 = verifyserver($proto, $ipvnum, $idnum, $ip, $port);
+    if(!$pid3) {
+        logmsg "RUN: $srvrname server failed verification\n";
+        # failed to talk to it properly. Kill the server and return failure
+        stopserver($server, "$smbpid $pid2");
+        displaylogs($testnumcheck);
+        $doesntrun{$pidfile} = 1;
+        return (0,0);
+    }
+    $pid2 = $pid3;
+
+    if($verbose) {
+        logmsg "RUN: $srvrname server is now running PID $smbpid\n";
+    }
+
+    sleep(1);
+
+    return ($smbpid, $pid2);
+}
+
+#######################################################################
+# start the telnet server
+#
+sub runnegtelnetserver {
+    my ($verbose, $alt, $port) = @_;
+    my $proto = "telnet";
+    my $ip = $HOSTIP;
+    my $ipvnum = 4;
+    my $idnum = 1;
+    my $server;
+    my $srvrname;
+    my $pidfile;
+    my $logfile;
+    my $flags = "";
+
+    if($alt eq "ipv6") {
+        # No IPv6
+    }
+
+    $server = servername_id($proto, $ipvnum, $idnum);
+
+    $pidfile = $serverpidfile{$server};
+
+    # don't retry if the server doesn't work
+    if ($doesntrun{$pidfile}) {
+        return (0,0);
+    }
+
+    my $pid = processexists($pidfile);
+    if($pid > 0) {
+        stopserver($server, "$pid");
+    }
+    unlink($pidfile) if(-f $pidfile);
+
+    $srvrname = servername_str($proto, $ipvnum, $idnum);
+
+    $logfile = server_logfilename($LOGDIR, $proto, $ipvnum, $idnum);
+
+    $flags .= "--verbose 1 " if($debugprotocol);
+    $flags .= "--pidfile \"$pidfile\" --logfile \"$logfile\" ";
+    $flags .= "--id $idnum " if($idnum > 1);
+    $flags .= "--port $port --srcdir \"$srcdir\"";
+
+    my $cmd = "$srcdir/negtelnetserver.py $flags";
+    my ($ntelpid, $pid2) = startnew($cmd, $pidfile, 15, 0);
+
+    if($ntelpid <= 0 || !pidexists($ntelpid)) {
+        # it is NOT alive
+        logmsg "RUN: failed to start the $srvrname server\n";
+        stopserver($server, "$pid2");
+        displaylogs($testnumcheck);
+        $doesntrun{$pidfile} = 1;
+        return (0,0);
+    }
+
+    # Server is up. Verify that we can speak to it.
+    my $pid3 = verifyserver($proto, $ipvnum, $idnum, $ip, $port);
+    if(!$pid3) {
+        logmsg "RUN: $srvrname server failed verification\n";
+        # failed to talk to it properly. Kill the server and return failure
+        stopserver($server, "$ntelpid $pid2");
+        displaylogs($testnumcheck);
+        $doesntrun{$pidfile} = 1;
+        return (0,0);
+    }
+    $pid2 = $pid3;
+
+    if($verbose) {
+        logmsg "RUN: $srvrname server is now running PID $ntelpid\n";
+    }
+
+    sleep(1);
+
+    return ($ntelpid, $pid2);
+}
+
+
+#######################################################################
 # Single shot http and gopher server responsiveness test. This should only
 # be used to verify that a server present in %run hash is still functional
 #
@@ -2372,6 +2761,9 @@ sub checksystem {
             $curl =~ s/^(.*)(libcurl.*)/$1/g;
 
             $libcurl = $2;
+            if($curl =~ /linux|bsd|solaris|darwin/) {
+                $has_ldpreload = 1;
+            }
             if($curl =~ /win32|mingw(32|64)/) {
                 # This is a Windows MinGW build or native build, we need to use
                 # Win32-style path.
@@ -2468,6 +2860,10 @@ sub checksystem {
                 # ssl enabled
                 $has_ssl=1;
             }
+            if($feat =~ /MultiSSL/i) {
+                # multiple ssl backends available.
+                $has_multissl=1;
+            }
             if($feat =~ /Largefile/i) {
                 # large file support
                 $has_largefile=1;
@@ -2484,6 +2880,9 @@ sub checksystem {
             }
             if($feat =~ /libz/i) {
                 $has_libz = 1;
+            }
+            if($feat =~ /brotli/i) {
+                $has_brotli = 1;
             }
             if($feat =~ /NTLM/i) {
                 # NTLM enabled
@@ -2762,6 +3161,13 @@ sub subVariables {
   $$thing =~ s/%TFTP6PORT/$TFTP6PORT/g;
   $$thing =~ s/%TFTPPORT/$TFTPPORT/g;
 
+  $$thing =~ s/%DICTPORT/$DICTPORT/g;
+
+  $$thing =~ s/%SMBPORT/$SMBPORT/g;
+  $$thing =~ s/%SMBSPORT/$SMBSPORT/g;
+
+  $$thing =~ s/%NEGTELNETPORT/$NEGTELNETPORT/g;
+
   # server Unix domain socket paths
 
   $$thing =~ s/%HTTPUNIXPATH/$HTTPUNIXPATH/g;
@@ -2796,14 +3202,14 @@ sub subVariables {
 
   # HTTP2
 
-  $$thing =~ s/%H2CVER/$h2cver/g;  
+  $$thing =~ s/%H2CVER/$h2cver/g;
 }
 
 sub fixarray {
     my @in = @_;
 
     for(@in) {
-        subVariables \$_;
+        subVariables(\$_);
     }
     return @in;
 }
@@ -2914,6 +3320,11 @@ sub singletest {
                     next;
                 }
             }
+            elsif($1 eq "MultiSSL") {
+                if($has_multissl) {
+                    next;
+                }
+            }
             elsif($1 eq "SSLpinning") {
                 if($has_sslpinning) {
                     next;
@@ -2949,6 +3360,11 @@ sub singletest {
                     next;
                 }
             }
+            elsif($1 eq "ld_preload") {
+                if($has_ldpreload && !$debug_build) {
+                    next;
+                }
+            }
             elsif($1 eq "unittest") {
                 if($debug_build) {
                     next;
@@ -2981,6 +3397,11 @@ sub singletest {
             }
             elsif($1 eq "libz") {
                 if($has_libz) {
+                    next;
+                }
+            }
+            elsif($1 eq "brotli") {
+                if($has_brotli) {
                     next;
                 }
             }
@@ -3039,6 +3460,11 @@ sub singletest {
                     next;
                 }
             }
+            elsif($1 eq "threaded-resolver") {
+                if($has_threadedres) {
+                    next;
+                }
+            }
             elsif($1 eq "PSL") {
                 if($has_psl) {
                     next;
@@ -3069,6 +3495,11 @@ sub singletest {
             if($f =~ /^!(.*)$/) {
                 if($1 eq "SSL") {
                     if(!$has_ssl) {
+                        next;
+                    }
+                }
+                elsif($1 eq "MultiSSL") {
+                    if(!$has_multissl) {
                         next;
                     }
                 }
@@ -3130,6 +3561,11 @@ sub singletest {
                         next;
                     }
                 }
+                elsif($1 eq "brotli") {
+                    if(!$has_brotli) {
+                        next;
+                    }
+                }
                 elsif($1 eq "NTLM") {
                     if(!$has_ntlm) {
                         next;
@@ -3185,6 +3621,11 @@ sub singletest {
                         next;
                     }
                 }
+                elsif($1 eq "threaded-resolver") {
+                    if(!$has_threadedres) {
+                        next;
+                    }
+                }
                 else {
                     next;
                 }
@@ -3209,9 +3650,9 @@ sub singletest {
 
         for $k (@keywords) {
             chomp $k;
-            if ($disabled_keywords{$k}) {
+            if ($disabled_keywords{lc($k)}) {
                 $why = "disabled by keyword";
-            } elsif ($enabled_keywords{$k}) {
+            } elsif ($enabled_keywords{lc($k)}) {
                 $match = 1;
             }
         }
@@ -3253,7 +3694,7 @@ sub singletest {
     if(@setenv) {
         foreach my $s (@setenv) {
             chomp $s;
-            subVariables \$s;
+            subVariables(\$s);
             if($s =~ /([^=]*)=(.*)/) {
                 my ($var, $content) = ($1, $2);
                 # remember current setting, to restore it once test runs
@@ -3379,6 +3820,13 @@ sub singletest {
 
     # if this section exists, we verify upload
     my @upload = getpart("verify", "upload");
+    if(@upload) {
+      my %hash = getpartattr("verify", "upload");
+      if($hash{'nonewline'}) {
+          # cut off the final newline from the final line of the upload data
+          chomp($upload[$#upload]);
+      }
+    }
 
     # if this section exists, it might be FTP server instructions:
     my @ftpservercmd = getpart("reply", "servercmd");
@@ -3432,23 +3880,25 @@ sub singletest {
         unlink($memdump);
     }
 
-    # create a (possibly-empty) file before starting the test
-    my @inputfile=getpart("client", "file");
-    my %fileattr = getpartattr("client", "file");
-    my $filename=$fileattr{'name'};
-    if(@inputfile || $filename) {
-        if(!$filename) {
-            logmsg "ERROR: section client=>file has no name attribute\n";
-            timestampskippedevents($testnum);
-            return -1;
+    # create (possibly-empty) files before starting the test
+    for my $partsuffix (('', '1', '2', '3', '4')) {
+        my @inputfile=getpart("client", "file".$partsuffix);
+        my %fileattr = getpartattr("client", "file".$partsuffix);
+        my $filename=$fileattr{'name'};
+        if(@inputfile || $filename) {
+            if(!$filename) {
+                logmsg "ERROR: section client=>file has no name attribute\n";
+                timestampskippedevents($testnum);
+                return -1;
+            }
+            my $fileContent = join('', @inputfile);
+            subVariables \$fileContent;
+#            logmsg "DEBUG: writing file " . $filename . "\n";
+            open(OUTFILE, ">$filename");
+            binmode OUTFILE; # for crapage systems, use binary
+            print OUTFILE $fileContent;
+            close(OUTFILE);
         }
-        my $fileContent = join('', @inputfile);
-        subVariables \$fileContent;
-#        logmsg "DEBUG: writing file " . $filename . "\n";
-        open(OUTFILE, ">$filename");
-        binmode OUTFILE; # for crapage systems, use binary
-        print OUTFILE $fileContent;
-        close(OUTFILE);
     }
 
     my %cmdhash = getpartattr("client", "command");
@@ -3609,7 +4059,8 @@ sub singletest {
     # run the command line we built
     if ($torture) {
         $cmdres = torture($CMDLINE,
-                       "$gdb --directory libtest $DBGCURL -x $LOGDIR/gdbcmd");
+                          $testnum,
+                          "$gdb --directory libtest $DBGCURL -x $LOGDIR/gdbcmd");
     }
     elsif($gdbthis) {
         my $GDBW = ($gdbxwin) ? "-w" : "";
@@ -3913,6 +4364,17 @@ sub singletest {
     if(@upload) {
         # verify uploaded data
         my @out = loadarray("$LOGDIR/upload.$testnum");
+
+        # what parts to cut off from the upload
+        my @strippart = getpart("verify", "strippart");
+        my $strip;
+        for $strip (@strippart) {
+            chomp $strip;
+            for(@out) {
+                eval $strip;
+            }
+        }
+
         $res = compare($testnum, $testname, "upload", \@out, \@upload);
         if ($res) {
             return 1;
@@ -4576,7 +5038,7 @@ sub startservers {
                     return "failed starting socks5 server";
                 }
                 elsif(($sshdid =~ /OpenSSH/) && ($sshdvernum < 370)) {
-                    # Need OpenSSH 3.7 for socks5 - http://www.openssh.com/txt/release-3.7
+                    # Need OpenSSH 3.7 for socks5 - https://www.openssh.com/txt/release-3.7
                     logmsg "$sshdverstr insufficient; socks5 tests need at least OpenSSH 3.7\n";
                     return "failed starting socks5 server";
                 }
@@ -4601,6 +5063,41 @@ sub startservers {
                 logmsg sprintf("* pid http-unix => %d %d\n", $pid, $pid2)
                     if($verbose);
                 $run{'http-unix'}="$pid $pid2";
+            }
+        }
+        elsif($what eq "dict") {
+            if(!$run{'dict'}) {
+                ($pid, $pid2) = rundictserver($verbose, "", $DICTPORT);
+                if($pid <= 0) {
+                    return "failed starting DICT server";
+                }
+                logmsg sprintf ("* pid DICT => %d %d\n", $pid, $pid2)
+                    if($verbose);
+                $run{'dict'}="$pid $pid2";
+            }
+        }
+        elsif($what eq "smb") {
+            if(!$run{'smb'}) {
+                ($pid, $pid2) = runsmbserver($verbose, "", $SMBPORT);
+                if($pid <= 0) {
+                    return "failed starting SMB server";
+                }
+                logmsg sprintf ("* pid SMB => %d %d\n", $pid, $pid2)
+                    if($verbose);
+                $run{'dict'}="$pid $pid2";
+            }
+        }
+        elsif($what eq "telnet") {
+            if(!$run{'telnet'}) {
+                ($pid, $pid2) = runnegtelnetserver($verbose,
+                                                   "",
+                                                   $NEGTELNETPORT);
+                if($pid <= 0) {
+                    return "failed starting neg TELNET server";
+                }
+                logmsg sprintf ("* pid neg TELNET => %d %d\n", $pid, $pid2)
+                    if($verbose);
+                $run{'dict'}="$pid $pid2";
             }
         }
         elsif($what eq "none") {
@@ -4870,8 +5367,6 @@ while(@ARGV) {
         if($xtra =~ s/(\d+)$//) {
             $tortalloc = $1;
         }
-        # we undef valgrind to make this fly in comparison
-        undef $valgrind;
     }
     elsif($ARGV[0] eq "-a") {
         # continue anyway, even if a test fail
@@ -4937,7 +5432,7 @@ Usage: runtests.pl [options] [test selection(s)]
   -rf      full run time statistics
   -s       short output
   -am      automake style output PASS/FAIL: [number] [name]
-  -t[N]    torture (simulate memory alloc failures); N means fail Nth alloc
+  -t[N]    torture (simulate function failures); N means fail Nth function
   -v       verbose output
   -vc path use this curl only to verify the existing servers
   [num]    like "5 6 9" or " 5 to 22 " to run those tests only
@@ -4968,10 +5463,10 @@ EOHELP
         $disabled{$1}=$1;
     }
     elsif($ARGV[0] =~ /^!(.+)/) {
-        $disabled_keywords{$1}=$1;
+        $disabled_keywords{lc($1)}=$1;
     }
     elsif($ARGV[0] =~ /^([-[{a-zA-Z].*)/) {
-        $enabled_keywords{$1}=$1;
+        $enabled_keywords{lc($1)}=$1;
     }
     else {
         print "Unknown option: $ARGV[0]\n";
@@ -5062,6 +5557,10 @@ $HTTPTLS6PORT    = $base++; # HTTP TLS (non-stunnel) IPv6 server port
 $HTTPPROXYPORT   = $base++; # HTTP proxy port, when using CONNECT
 $HTTPPIPEPORT    = $base++; # HTTP pipelining port
 $HTTP2PORT       = $base++; # HTTP/2 port
+$DICTPORT        = $base++; # DICT port
+$SMBPORT         = $base++; # SMB port
+$SMBSPORT        = $base++; # SMBS port
+$NEGTELNETPORT   = $base++; # TELNET port with negotiation
 $HTTPUNIXPATH    = 'http.sock'; # HTTP server Unix domain socket path
 
 #######################################################################

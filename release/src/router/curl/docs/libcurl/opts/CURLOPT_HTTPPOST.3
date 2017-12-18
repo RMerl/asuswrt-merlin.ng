@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_HTTPPOST 3 "May 17, 2016" "libcurl 7.54.1" "curl_easy_setopt options"
+.TH CURLOPT_HTTPPOST 3 "September 02, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_HTTPPOST \- specify the multipart formpost content
@@ -43,6 +43,9 @@ You can disable this header with \fICURLOPT_HTTPHEADER(3)\fP.
 
 When setting \fICURLOPT_HTTPPOST(3)\fP, it will automatically set
 \fICURLOPT_NOBODY(3)\fP to 0.
+
+This option is deprecated! Do not use it. Use \fICURLOPT_MIMEPOST(3)\fP
+instead after having prepared mime data.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -72,9 +75,9 @@ curl_formadd(&formpost,
              CURLFORM_END);
 .fi
 .SH AVAILABILITY
-As long as HTTP is enabled
+As long as HTTP is enabled. Deprecated in 7.56.0.
 .SH RETURN VALUE
 Returns CURLE_OK if HTTP is enabled, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_POSTFIELDS "(3), " CURLOPT_POST "(3), "
-.BR curl_formadd "(3), " curl_formfree "(3), "
+.BR CURLOPT_POSTFIELDS "(3), " CURLOPT_POST "(3), " CURLOPT_MIMEPOST "(3),"
+.BR curl_formadd "(3), " curl_formfree "(3), " curl_mime_init "(3)"

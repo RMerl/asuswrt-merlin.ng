@@ -40,8 +40,11 @@ Alex Bligh
 Alex Chan
 Alex Fishman
 Alex Gruz
+Alex Malinovich
 Alex McLellan
 Alex Neblett
+Alex Nichols
+Alex Potapenko
 Alex Rousskov
 Alex Suykov
 Alex Vinnik
@@ -59,11 +62,13 @@ Alexander Sinditskiy
 Alexander Traud
 Alexander Zhuravlev
 Alexey Borzov
+Alexey Melnichuk
 Alexey Pesternikov
 Alexey Simak
 Alexey Zakhlestin
 Alexis Carvalho
 Alexis La Goutte
+Alfonso Martone
 Alfred Gebert
 Allen Pulsifer
 Alona Rossen
@@ -91,6 +96,7 @@ Andreas Streichardt
 Andreas Wurf
 Andrei Benea
 Andrei Cipu
+Andrei Karas
 Andrei Kurushin
 Andrei Sedoi
 Andrej E Baranov
@@ -101,6 +107,7 @@ Andrew Francis
 Andrew Fuller
 Andrew Krieger
 Andrew Kurushin
+Andrew Lambert
 Andrew Moise
 Andrew Robbins
 Andrew Wansink
@@ -129,6 +136,7 @@ Arkadiusz Miskiewicz
 Armel Asselin
 Arnaud Compan
 Arnaud Ebalard
+Artak Galoyan
 Arthur Murray
 Arve Knudsen
 Arvid Norberg
@@ -157,6 +165,7 @@ Benjamin Gerard
 Benjamin Gilbert
 Benjamin Johnson
 Benjamin Kircher
+Benjamin Sergeant
 Benoit Neil
 Benoit Sigoure
 Bernard Leak
@@ -171,6 +180,7 @@ Bill Egert
 Bill Hoffman
 Bill Middlecamp
 Bill Nagel
+Bill Pyne
 Bjoern Sikora
 Bjorn Augustsson
 Bjorn Reese
@@ -301,6 +311,7 @@ Dan Nelson
 Dan Petitt
 Dan Torop
 Dan Zitter
+Daniel Bankhead
 Daniel Black
 Daniel Cater
 Daniel Egger
@@ -308,6 +319,7 @@ Daniel Gustafsson
 Daniel Hwang
 Daniel Johnson
 Daniel Kahn Gillmor
+Daniel Krügler
 Daniel Lee Hwang
 Daniel Melani
 Daniel Mentz
@@ -337,6 +349,7 @@ David Binderman
 David Blaikie
 David Byron
 David Cohen
+David E. Narváez
 David Eriksson
 David Houlder
 David Hull
@@ -347,6 +360,7 @@ David Kierznowski
 David Kimdon
 David Lang
 David LeBlanc
+David Lord
 David McCreedy
 David Meyer
 David Odin
@@ -380,12 +394,15 @@ Dimitrios Siganos
 Dimitris Sarris
 Dinar
 Dirk Eddelbuettel
+Dirk Feytons
 Dirk Manske
 Dmitri Shubin
+Dmitri Tikhonov
 Dmitriy Sergeyev
 Dmitry Bartsevich
 Dmitry Eremin-Solenikov
 Dmitry Falko
+Dmitry Kostjuchenko
 Dmitry Kurochkin
 Dmitry Popov
 Dmitry Rechkin
@@ -408,6 +425,7 @@ Duane Cathey
 Duncan Mac-Vicar Prett
 Dustin Boswell
 Dusty Mabe
+Dwarakanath Yadavalli
 Dylan Ellicott
 Dylan Salisbury
 Dániel Bakai
@@ -458,6 +476,8 @@ Erwin Authried
 Ethan Glasser Camp
 Eugene Kotlyarov
 Evan Jordan
+Even Rouault
+Evert Pot
 Evgeny Grin
 Evgeny Turnaev
 Eygene Ryabinkin
@@ -469,6 +489,7 @@ Fabrizio Ammollo
 Fahim Chandurwala
 Fedor Karpelevitch
 Feist Josselin
+Felix Kaiser
 Felix Yan
 Felix von Leitner
 Feng Tu
@@ -479,6 +500,7 @@ Florian Weimer
 Forrest Cahoon
 Francisco Moraes
 Francois Petitjean
+Frank Denis
 Frank Gevaerts
 Frank Hempel
 Frank Keeney
@@ -493,6 +515,7 @@ Fred New
 Fred Noz
 Fred Stluka
 Frederic Lepied
+Frederik B
 Fredrik Thulin
 Gabriel Kuri
 Gabriel Sjoberg
@@ -554,8 +577,10 @@ Gwenole Beauchesne
 Gökhan Şengün
 Götz Babin-Ebell
 Hamish Mackenzie
+Han Qiao
 Hang Kin Lau
 Hang Su
+Hannes Magnusson
 Hanno Böck
 Hanno Kranzhoff
 Hans Steegers
@@ -584,6 +609,7 @@ Howard Chu
 Hubert Kario
 Hzhijun
 Ian D Allen
+Ian Fette
 Ian Ford
 Ian Gulliver
 Ian Lynagh
@@ -607,12 +633,14 @@ Ishan SinghLevett
 Ivan Avdeev
 Ivo Bellin Salarin
 Jack Zhang
+Jackarain on github
 Jacky Lam
 Jacob Meuser
 Jacob Moshenko
 Jactry Zeng
 Jad Chamcham
 Jaime Fullaondo
+Jakub Wilk
 Jakub Zakrzewski
 James Atwill
 James Bursa
@@ -624,9 +652,11 @@ James Gallagher
 James Griffiths
 James Housley
 James MacMillan
+James Slaughter
 Jamie Lokier
 Jamie Newton
 Jamie Wilkinson
+Jan Alexander Steffens
 Jan Ehrhardt
 Jan Koen Annot
 Jan Kunder
@@ -643,6 +673,7 @@ Jason McDonald
 Jason S. Priebe
 Javier Barroso
 Javier G. Sogo
+Javier Sixto
 Jay Austin
 Jayesh A Shah
 Jaz Fresh
@@ -669,6 +700,7 @@ Jeremy Friesner
 Jeremy Huddleston
 Jeremy Lin
 Jeremy Pearson
+Jeremy Tan
 Jeroen Koekkoek
 Jeroen Ooms
 Jerome Muffat-Meridol
@@ -678,6 +710,7 @@ Jerry Krinock
 Jerry Wu
 Jes Badwal
 Jesper Jensen
+Jesse Chisholm
 Jesse Noller
 Jesse Tan
 Jie He
@@ -706,6 +739,7 @@ Johannes Schindelin
 John Bradshaw
 John Coffey
 John Crow
+John David Anglin
 John Dennis
 John Dunn
 John E. Malmberg
@@ -721,11 +755,13 @@ John Marino
 John Marshall
 John McGowan
 John P. McCaskey
+John Starks
 John Suprock
 John Wanghui
 John Wilkinson
 John-Mark Bell
 Johnny Luong
+Jon DeVree
 Jon Grubbs
 Jon Nelson
 Jon Sargeant
@@ -767,6 +803,7 @@ Julien Nabet
 Julien Royer
 Jun-ichiro itojun Hagino
 Jurij Smakov
+Juro Bystricky
 Justin Clift
 Justin Ehlert
 Justin Fletcher
@@ -804,6 +841,7 @@ Kevin Ji
 Kevin Lussier
 Kevin Reed
 Kevin Roth
+Kevin Smith
 Kim Minjoong
 Kim Rinnewitz
 Kim Vandry
@@ -817,6 +855,7 @@ Krishnendu Majumdar
 Krister Johansen
 Kristian Gunstone
 Kristian Köhntopp
+Kristiyan Tsaklev
 Kurt Fankhauser
 Kyle J. McKay
 Kyle L. Huff
@@ -837,6 +876,7 @@ Lars Torben Wilson
 Lau Hang Kin
 Laurent Rabret
 Lauri Kasanen
+Lawrence Wagerfield
 Legoff Vincent
 Lehel Bernadt
 Leif W
@@ -863,6 +903,7 @@ Loic Dachary
 Loren Kirkby
 Luan Cestari
 Luca Altea
+Luca Boccassi
 Lucas Adamski
 Lucas Pardue
 Ludek Finstrle
@@ -888,6 +929,7 @@ Mamoru Tasaka
 Mandy Wu
 Manfred Schwarb
 Manuel Massing
+Marc Aldorasi
 Marc Boucher
 Marc Deslauriers
 Marc Doughty
@@ -954,10 +996,12 @@ Matt Kraai
 Matt Veenstra
 Matt Witherspoon
 Matt Wixson
+Matteo B.
 Matteo Rocco
 Matthew Blain
 Matthew Clarke
 Matthew Hall
+Matthew Kerwin
 Matthias Bolte
 Maurice Barnum
 Mauro Iorio
@@ -978,6 +1022,7 @@ Michael Calmer
 Michael Cronenworth
 Michael Curtis
 Michael Day
+Michael Felt
 Michael Goffioul
 Michael Jahn
 Michael Jerris
@@ -1040,17 +1085,20 @@ Neal Poole
 Nehal J Wani
 Neil Bowers
 Neil Dunbar
+Neil Kolban
 Neil Spring
 Nic Roets
 Nicholas Maniscalco
 Nick Draffen
 Nick Gimbrone
 Nick Humfrey
+Nick Miyake
 Nick Zitzmann
 Nico Baggus
 Nicolas Berloquin
 Nicolas Croiset
 Nicolas François
+Nicolas Morey-Chaisemartin
 Niels van Tongeren
 Nikita Schmidt
 Nikitinskit Dmitriy
@@ -1072,6 +1120,7 @@ Ola Mork
 Olaf Flebbe
 Olaf Stüben
 Oleg Pudeyev
+Oli Kingshott
 Oliver Gondža
 Oliver Graute
 Oliver Kuckertz
@@ -1118,12 +1167,17 @@ Paul Oliver
 Paul Querna
 Paul Saab
 Pavel Cenek
+Pavel Gushchin
 Pavel Orehov
+Pavel P
 Pavel Raiskup
+Pavel Rochnyak
+Pavol Markovic
 Pawel A. Gajda
 Pawel Kierski
 Pedro Larroy
 Pedro Neves
+Per Lundberg
 Per Malmberg
 Peter Bray
 Peter Forret
@@ -1132,10 +1186,12 @@ Peter Gal
 Peter Heuchert
 Peter Hjalmarsson
 Peter Korsgaard
+Peter Lamare
 Peter Lamberg
 Peter Laser
 Peter O'Gorman
 Peter Pentchev
+Peter Piekarski
 Peter Silva
 Peter Su
 Peter Sylvester
@@ -1148,6 +1204,7 @@ Peteris Krumins
 Petr Bahula
 Petr Novak
 Petr Pisar
+Petr Voytsik
 Phil Blundell
 Phil Crump
 Phil Karn
@@ -1234,9 +1291,11 @@ Rick Jones
 Rick Richardson
 Ricki Hirner
 Rider Linden
+Rob Cotrone
 Rob Crittenden
 Rob Davies
 Rob Jones
+Rob Sanders
 Rob Stanzel
 Rob Ward
 Robert A. Monat
@@ -1279,9 +1338,12 @@ Ryan Chan
 Ryan Nelson
 Ryan Schmidt
 Ryan Scott
+Ryan Winograd
 Ryuichi KAWAMATA
 Rémy Léone
 S. Moonesamy
+SBKarr on github
+Salah-Eddin Shaban
 Salvador Dávila
 Salvatore Sorrentino
 Sam Deane
@@ -1404,6 +1466,7 @@ Thomas J. Moore
 Thomas Klausner
 Thomas L. Shinnick
 Thomas Lopatic
+Thomas Petazzoni
 Thomas Ruecker
 Thomas Schwinge
 Thomas Tonino
@@ -1424,6 +1487,7 @@ Tim Stack
 Tim Starling
 Timo Sirainen
 Timotej Lazar
+Timothe Litt
 Timothy Polich
 Tinus van den Berg
 Tobias Markus
@@ -1520,6 +1584,7 @@ William Ahern
 Wojciech Zwiefka
 Wouter Van Rooy
 Wu Yongzheng
+Wyatt O'Day
 Xavier Bouchoux
 Xiangbin Li
 Yaakov Selkowitz
@@ -1540,17 +1605,23 @@ Yves Arrouye
 Yves Lejeune
 Zdenek Pavlas
 Zekun Ni
+Zenju on github
 Zmey Petroff
 Zvi Har'El
 afrind on github
+arainchik on github
 asavah on github
 baumanj on github
 bsammon on github
-canavan at github
+canavan on github
+cbartl on github
+destman on github
 dkjjr89 on github
 eXeC64 on github
-jonrumsey at github
+hsiao yi
+imilli on github
 jonrumsey on github
+joshhe on github
 jveazey on github
 ka7 on github
 kreshano on github
@@ -1560,18 +1631,24 @@ madblobfish on github
 marc-groundctl on github
 mccormickt12 on github
 mkzero on github
+moohoorama on github
 neex on github
 neheb on github
 nk
 nopjmp on github
+olesteban on github
+omau on github
+ovidiu-benea on github
+paulharris on github
 silveja1 on github
-stootill at github
+stootill on github
 swalkaus at yahoo.com
 tarek112 on github
 tommink[at]post.pl
 vanillajonathan on github
 wmsch on github
-wyattoday at github
+wyattoday on github
+youngchopin on github
 zelinchen on github
 İsmail Dönmez
 Štefan Kremeň

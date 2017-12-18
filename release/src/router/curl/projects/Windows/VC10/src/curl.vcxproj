@@ -2654,7 +2654,6 @@
     <ClCompile Include="..\..\..\..\src\tool_libinfo.c" />
     <ClCompile Include="..\..\..\..\src\tool_main.c" />
     <ClCompile Include="..\..\..\..\src\tool_metalink.c" />
-    <ClCompile Include="..\..\..\..\src\tool_mfiles.c" />
     <ClCompile Include="..\..\..\..\src\tool_msgs.c" />
     <ClCompile Include="..\..\..\..\src\tool_operate.c" />
     <ClCompile Include="..\..\..\..\src\tool_operhlp.c" />
@@ -2700,7 +2699,6 @@
     <ClInclude Include="..\..\..\..\src\tool_libinfo.h" />
     <ClInclude Include="..\..\..\..\src\tool_main.h" />
     <ClInclude Include="..\..\..\..\src\tool_metalink.h" />
-    <ClInclude Include="..\..\..\..\src\tool_mfiles.h" />
     <ClInclude Include="..\..\..\..\src\tool_msgs.h" />
     <ClInclude Include="..\..\..\..\src\tool_operate.h" />
     <ClInclude Include="..\..\..\..\src\tool_operhlp.h" />

@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_INTERLEAVEFUNCTION 3 "May 31, 2017" "libcurl 7.54.1" "curl_easy_setopt options"
+.TH CURLOPT_INTERLEAVEFUNCTION 3 "September 15, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_INTERLEAVEFUNCTION \- callback function for RTSP interleaved data
@@ -55,8 +55,12 @@ connection may close. The application may use \fICURL_RTSPREQ_RECEIVE\fP to
 service RTP data when no requests are desired. If the application makes a
 request, (e.g.  \fICURL_RTSPREQ_PAUSE\fP) then the response handler will
 process any pending RTP data before marking the request as finished.
+
+The \fICURLOPT_WRITEDATA(3)\fP is passed in the \fIuserdata\fP argument in the
+callback.
 .SH DEFAULT
-NULL
+NULL, the interleave data is then passed to the regular write function:
+\fICURLOPT_WRITEFUNCTION(3)\fP.
 .SH PROTOCOLS
 RTSP
 .SH EXAMPLE
@@ -78,4 +82,4 @@ Added in 7.20.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_INTERLEAVEFUNCTION "(3), " CURLOPT_RTSP_REQUEST "(3), "
+.BR CURLOPT_INTERLEAVEDATA "(3), " CURLOPT_RTSP_REQUEST "(3), "

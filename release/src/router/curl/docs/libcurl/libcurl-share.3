@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH libcurl-share 3 "February 03, 2016" "libcurl 5.5.5" "libcurl share interface"
+.TH libcurl-share 3 "November 27, 2017" "libcurl 7.57.0" "libcurl share interface"
 
 .SH NAME
 libcurl-share \- how to use the share interface
@@ -35,10 +35,9 @@ The share interface was added to enable sharing of data between curl
 \&"handles".
 .SH "ONE SET OF DATA - MANY TRANSFERS"
 You can have multiple easy handles share data between them. Have them update
-and use the \fBsame\fP cookie database, DNS cache, TLS session cache! This
-way, each single transfer will take advantage from data updates made by the
-other transfer(s). The sharing interface, however, does not share active or
-persistent connections between different easy handles.
+and use the \fBsame\fP cookie database, DNS cache, TLS session cache and/or
+connection cache! This way, each single transfer will take advantage from data
+updates made by the other transfer(s).
 .SH "SHARE OBJECT"
 You create a shared object with \fIcurl_share_init(3)\fP. It returns a handle
 for a newly created one.

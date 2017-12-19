@@ -1305,14 +1305,6 @@ struct nvram_tuple router_defaults[] = {
 #endif
 	{ "dns_delay_round", "2", CKN_STR6, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
-	{ "dns_probe_host", "dns.msftncsi.com"},	/* host to resolve */
-#ifdef RTCONFIG_IPV6
-	{ "dns_probe_content", "131.107.255.255 fd3e:4f5a:5b81::1"},	/* resolve target addr or wildcard */
-#else
-	{ "dns_probe_content", "131.107.255.255"},	/* resolve target addr or wildcard */
-#endif
-	{ "dns_delay_round", "2"},
-
 	/* Misc WAN parameters */
 	{ "wan_desc", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* WAN connection description */
 	{ "wan_upnp_enable", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* upnp igd */

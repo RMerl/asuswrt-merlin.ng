@@ -440,8 +440,7 @@ void start_ovpn_client(int clientNum)
 		fp = fopen(buffer, "w");
 		chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);
 		fprintf(fp, "#!/bin/sh\n");
-		fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", iface);
-		fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), iface);
+		fprintf(fp, "iptables -I OVPN -i %s -j ACCEPT\n", iface);
 #ifdef HND_ROUTER
 		if (nvram_match("fc_disable", "0")) {
 #else
@@ -560,7 +559,7 @@ void stop_ovpn_client(int clientNum)
 	sprintf(buffer, "/etc/openvpn/fw/client%d-fw.sh", clientNum);
 	argv[0] = "sed";
 	argv[1] = "-i";
-	argv[2] = "s/-A/-D/g;s/-I/-D/g;s/FORWARD\\ [0-9]\\ /FORWARD\\ /g";
+	argv[2] = "s/-A/-D/g;s/-I/-D/g";
 	argv[3] = buffer;
 	argv[4] = NULL;
 	if (!_eval(argv, NULL, 0, NULL))
@@ -1350,8 +1349,7 @@ void start_ovpn_server(int serverNum)
 		fprintf(fp, "--dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
 		if ( !nvram_pf_match(prefix, "firewall", "external") )
 		{
-			fprintf(fp, "iptables -I INPUT -i %s -j ACCEPT\n", iface);
-			fprintf(fp, "iptables -I FORWARD %d -i %s -j ACCEPT\n", (nvram_match("cstats_enable", "1") ? 4 : 2), iface);
+			fprintf(fp, "iptables -I OVPN -i %s -j ACCEPT\n", iface);
 #ifdef HND_ROUTER
 			if (nvram_match("fc_disable", "0")) {
 #else
@@ -1462,7 +1460,7 @@ void stop_ovpn_server(int serverNum)
 	sprintf(buffer, "/etc/openvpn/fw/server%d-fw.sh", serverNum);
 	argv[0] = "sed";
 	argv[1] = "-i";
-	argv[2] = "s/-A/-D/g;s/-I/-D/g;s/FORWARD\\ [0-9]\\ /FORWARD\\ /g";
+	argv[2] = "s/-A/-D/g;s/-I/-D/g";
 	argv[3] = buffer;
 	argv[4] = NULL;
 	if (!_eval(argv, NULL, 0, NULL))

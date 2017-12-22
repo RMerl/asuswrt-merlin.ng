@@ -52,6 +52,7 @@ Supported devices on version 380:
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
 
 Supported devices on version 382:
+ * RT-AC56U
  * RT-AC68U
  * RT-AC88U
  * RT-AC3100
@@ -214,7 +215,7 @@ Website: https://asuswrt.lostrealm.ca/
 Github: https://github.com/RMerl
 Email: rmerl@lostrealm.ca
 Twitter: https://twitter.com/RMerlinDev
-IRC: #asuswrt on DALnet
+IRC: #asuswrt on Freenode
 Download: https://asuswrt.lostrealm.ca/download
 
 Development news will be posted on Twitter and the support forums.  

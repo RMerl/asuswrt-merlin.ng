@@ -2,23 +2,36 @@ Asuswrt-Merlin 382 Changelog
 ============================
 
 382.2 Beta (xx-xxx-xxxx)
-   - NEW: Merged with GPL 382_18991 (RT-AC88U/RT-AC3100 blobs).
-          Most notable changes (will vary from models):
+   - NOTE: The official IRC channel has moved to
+           Freenode (#asuswrt).
+
+   - NEW: Merged with GPL 382_18991.
+          Most notable changes (will vary between models):
             - Added IPSec VPN server
             - Added IFTTT and Alexa support
             - Let's Encrypt support (DDNS page)
+            - Better support for some longer settings (RT-AC86U)
    - NEW: Merged HND SDK + binary components from 382_18848
           (RT-AC86U)
    - NEW: Added IPSec VPN status on the VPNStatus page.
-   - NEW: Added support for RT-AC68U (and all of its variants)
-   - NEW: Enabled support for Let's Encrypt on RT-AC68U
-          (in addition to RT-AC88U)
+   - NEW: Added support for RT-AC56U and RT-AC68U
+          (and all of its variants)
+   - NEW: Enabled support for Let's Encrypt on RT-AC56U and
+          RT-AC68U (in addition to RT-AC88U/3100)
    - CHANGED: Moved HTTPS cert management to the DDNS page (where
               Asus has put theirs, as Let's Encrypt is tied to
               the DDNS configuration)
    - CHANGED: Updated openssl to 1.0.2n.
    - CHANGED: Updated tor to 0.2.9.14.
    - CHANGED: Updated nano to 2.9.1.
+   - CHANGED: Updated curl to 7.57.0.
+   - CHANGED: Increased max length for OpenVPN custom settings from
+              170 to 510 characters on RT-AC86U.
+   - CHANGED: Updated miniupnod to Github snapshot 20171212.
+   - CHANGED: OpenVPN firewall rules are now processed after the
+              various security chains (access restriction, network
+              service firewall, etc...), ensuring OVPN traffic no
+              longer bypasses them.
    - FIXED: httpd crash on certain web pages if there are no Ethernet
             clients connected
    - FIXED: DNSFILTER rules would have priority over OPENVPN Client

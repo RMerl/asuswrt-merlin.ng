@@ -2327,7 +2327,7 @@ si_watchdog_msticks(void)
 bool
 si_taclear(si_t *sih, bool details)
 {
-#if defined(BCMDBG_ERR) || defined(BCMASSERT_SUPPORT)
+#if defined(BCMDBG) || defined(BCMASSERT_SUPPORT)
 	if (CHIPTYPE(sih->socitype) == SOCI_SB)
 		return sb_taclear(sih, details);
 	else if ((CHIPTYPE(sih->socitype) == SOCI_AI) || (CHIPTYPE(sih->socitype) == SOCI_NAI))
@@ -4063,7 +4063,7 @@ BCMATTACHFN(si_gpio_handler_register)(si_t *sih, uint32 event,
 	gi->next = sii->gpioh_head;
 	sii->gpioh_head = gi;
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	{
 		gpioh_item_t *h = sii->gpioh_head;
 		int cnt = 0;
@@ -4108,7 +4108,7 @@ BCMATTACHFN(si_gpio_handler_unregister)(si_t *sih, void *gpioh)
 		}
 	}
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	{
 		gpioh_item_t *h = sii->gpioh_head;
 		int cnt = 0;

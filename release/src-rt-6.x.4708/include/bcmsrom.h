@@ -23,7 +23,7 @@
 
 #include <bcmsrom_fmt.h>
 
-#if defined(BCMDBG_ERR) || defined(WLTEST)
+#if defined(BCMDBG) || defined(WLTEST)
 #define	BS_ERROR(args)	printf args
 #else
 #define	BS_ERROR(args)

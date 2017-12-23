@@ -55,7 +55,9 @@ Node *Node_new(char *ipaddr) {
 		memset(self, 0, sizeof(Node));
 		self->id = CURRENT_ID;
 		strncpy(self->ipaddr, ipaddr, INET_ADDRSTRLEN);
+#ifdef DEBUG_CSTATS
 		_dprintf("%s: new node ip=%s, version=%d, sizeof(Node)=%d (bytes)\n", __FUNCTION__, self->ipaddr, self->id, sizeof(Node));
+#endif
 	}
 	return self;
 }
@@ -109,7 +111,9 @@ static int save_history_from_tree(const char *fname) {
 	char s[256];
 
 	info.kn=0;
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
+#endif
 
 	unlink(uncomp_fn);
 	if ((f = fopen(uncomp_fn, "wb")) != NULL) {
@@ -141,14 +145,17 @@ static void save(int quick) {
 	struct tm *tms;
 	static int lastbak = -1;
 
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: quick=%d\n", __FUNCTION__, quick);
-
+#endif
 	f_write("/var/lib/misc/cstats-stime", &save_utime, sizeof(save_utime), 0, 0);
 
 	n = save_history_from_tree(history_fn);
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: saved %d records from tree on file %s\n", __FUNCTION__, n, history_fn);
 
 	_dprintf("%s: write source=%s\n", __FUNCTION__, save_path);
+#endif
 	f_write_string(source_fn, save_path, 0, 0);
 
 	if (quick) {
@@ -166,7 +173,9 @@ static void save(int quick) {
 				_dprintf("%s: busy, not saving\n", __FUNCTION__);
 			}
 			else {
+#ifdef DEBUG_CSTATS
 				_dprintf("%s: cp %s %s\n", __FUNCTION__, hgz, tmp);
+#endif
 				if (eval("cp", hgz, tmp) == 0) {
 					_dprintf("%s: copy ok\n", __FUNCTION__);
 
@@ -189,9 +198,13 @@ static void save(int quick) {
 						}
 					}
 
+#ifdef DEBUG_CSTATS
 					_dprintf("%s: rename %s %s\n", __FUNCTION__, tmp, save_path);
+#endif
 					if (rename(tmp, save_path) == 0) {
+#ifdef DEBUG_CSTATS
 						_dprintf("%s: rename ok\n", __FUNCTION__);
+#endif
 						break;
 					}
 				}
@@ -213,8 +226,10 @@ static int load_history_to_tree(const char *fname) {
 	char *exclude;
 
 	exclude = nvram_safe_get("cstats_exclude");
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: cstats_exclude='%s'\n", __FUNCTION__, exclude);
 	_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
+#endif
 	unlink(uncomp_fn);
 
 	n = -1;	// Initial value, will be returned if we failed to parse a data file
@@ -224,16 +239,22 @@ static int load_history_to_tree(const char *fname) {
 			n = 0;	// Initial counter
 			while (fread(&tmp, sizeof(Node), 1, f) > 0) {
 				if ((find_word(exclude, tmp.ipaddr))) {
+#ifdef DEBUG_CSTATS
 					_dprintf("%s: not loading excluded ip '%s'\n", __FUNCTION__, tmp.ipaddr);
+#endif
 					continue;
 				}
 
 				if (tmp.id == CURRENT_ID) {
+#ifdef DEBUG_CSTATS
 					_dprintf("%s: found data for ip %s\n", __FUNCTION__, tmp.ipaddr);
+#endif
 
 					ptr = TREE_FIND(&tree, _Node, linkage, &tmp);
 					if (ptr) {
+#ifdef DEBUG_CSTATS
 						_dprintf("%s: removing/reloading new data for ip %s\n", __FUNCTION__, ptr->ipaddr);
+#endif
 						TREE_REMOVE(&tree, _Node, linkage, ptr);
 						free(ptr);
 						ptr = NULL;
@@ -263,17 +284,21 @@ static int load_history_to_tree(const char *fname) {
 					}
 
 					++n;
+#ifdef DEBUG_CSTATS
 				} else {
 					_dprintf("%s: data for ip '%s' version %d not loaded (current version is %d)\n", __FUNCTION__, tmp.ipaddr, tmp.id, CURRENT_ID);
+#endif
 				}
 			}
 
 		fclose(f);
 		}
 	}
+#ifdef DEBUG_CSTATS
 	else {
 		_dprintf("%s: %s != 0\n", __FUNCTION__, s);
 	}
+#endif
 	unlink(uncomp_fn);
 
 	if (n == -1)
@@ -285,7 +310,9 @@ static int load_history_to_tree(const char *fname) {
 }
 
 static int load_history(const char *fname) {
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: fname=%s\n", __FUNCTION__, fname);
+#endif
 	return load_history_to_tree(fname);
 }
 
@@ -328,7 +355,9 @@ static void load(int new) {
 
 	current_uptime = uptime();
 
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: new=%d, uptime=%lu\n", __FUNCTION__, new, current_uptime);
+#endif
 
 	strlcpy(save_path, nvram_safe_get("rstats_path"), sizeof(save_path) - 32);
 	if (((n = strlen(save_path)) > 0) && (save_path[n - 1] == '/')) {
@@ -350,7 +379,9 @@ static void load(int new) {
 	}
 	t = current_uptime + get_stime();
 	if ((save_utime < current_uptime) || (save_utime > t)) save_utime = t;
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: uptime = %lum, save_utime = %lum\n", __FUNCTION__, current_uptime / 60, save_utime / 60);
+#endif
 
 	sprintf(hgz, "%s.gz", history_fn);
 
@@ -550,11 +581,13 @@ static void calc(void) {
 	now = time(0);
 
 	exclude = strdup(nvram_safe_get("cstats_exclude"));
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: cstats_exclude='%s'\n", __FUNCTION__, exclude);
-
+#endif
 	include = strdup(nvram_safe_get("cstats_include"));
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: cstats_include='%s'\n", __FUNCTION__, include);
-
+#endif
 
 	uint64_t tx;
 	uint64_t rx;
@@ -584,7 +617,9 @@ static void calc(void) {
 			if ( (ptr) || (nvram_get_int("cstats_all")) || (find_word(include, ipaddr)) ) {
 
 				if (!ptr) {
+#ifdef DEBUG_CSTATS
 					_dprintf("%s: new ip: %s\n", __FUNCTION__, ipaddr);
+#endif
 					TREE_INSERT(&tree, _Node, linkage, Node_new(ipaddr));
 					ptr = TREE_FIND(&tree, _Node, linkage, &test);
 					ptr->sync = 1;
@@ -604,24 +639,24 @@ static void calc(void) {
 #endif
 					memcpy(ptr->last, counter, sizeof(ptr->last));
 					memset(counter, 0, sizeof(counter));
-					for (i = 0; i < MAX_COUNTER; ++i) {
-						_dprintf("%s: counter[%d]=%llu ptr->last[%d]=%llu\n", __FUNCTION__, i, counter[i], i, ptr->last[i]);
-					}
 				}
 				else {
 #ifdef DEBUG_CSTATS
 					_dprintf("%s: sync[%s] = %d \n", __FUNCTION__, ptr->ipaddr, ptr->sync);
 #endif
 					ptr->sync = -1;
-					_dprintf("%s: sync[%s] = %d \n", __FUNCTION__, ptr->ipaddr, ptr->sync);
 					tick = current_uptime - ptr->utime;
 					n = tick / INTERVAL;
 					if (n < 1) {
+#ifdef DEBUG_CSTATS
 						_dprintf("%s: %s is a little early... %lu < %d\n", __FUNCTION__, ipaddr, tick, INTERVAL);
+#endif
 						continue;	// Don't update the tree this time
 					} else {
 						ptr->utime += (n * INTERVAL);
+#ifdef DEBUG_CSTATS
 						_dprintf("%s: %s n=%d tick=%lu utime=%lu ptr->utime=%lu\n", __FUNCTION__, ipaddr, n, tick, current_uptime, ptr->utime);
+#endif
 						for (i = 0; i < MAX_COUNTER; ++i) {
 							c = counter[i];
 							sc = ptr->last[i];
@@ -637,7 +672,9 @@ static void calc(void) {
 							}
 							ptr->last[i] = c;
 							counter[i] = diff;
+#ifdef DEBUG_CSTATS
 							_dprintf("%s: counter[%d]=%llu ptr->last[%d]=%llu c=%llu sc=%llu diff=%llu\n", __FUNCTION__, i, counter[i], i, ptr->last[i], c, sc, diff);
+#endif
 						}
 #ifdef SPEED_SUPPORT
 						_dprintf("%s: ip=%s n=%d ptr->tail=%d\n", __FUNCTION__, ptr->ipaddr, n, ptr->tail);
@@ -651,7 +688,9 @@ static void calc(void) {
 							}
 
 						}
+#ifdef DEBUG_CSTATS
 						_dprintf("%s: ip=%s j=%d n=%d ptr->tail=%d\n", __FUNCTION__, ptr->ipaddr, j, n, ptr->tail);
+#endif
 #endif
 					}
 				}
@@ -684,11 +723,15 @@ static void calc(void) {
 	nvp = exclude;
 	if (nvp) {
 		while ((b = strsep(&nvp, ",")) != NULL) {
+#ifdef DEBUG_CSTATS
 			_dprintf("%s: check exclude='%s'\n", __FUNCTION__, b);
+#endif
 			strncpy(test.ipaddr, b, INET_ADDRSTRLEN);
 			ptr = TREE_FIND(&tree, _Node, linkage, &test);
 			if (ptr) {
+#ifdef DEBUG_CSTATS
 				_dprintf("%s: excluding '%s'\n", __FUNCTION__, ptr->ipaddr);
+#endif
 				TREE_REMOVE(&tree, _Node, linkage, ptr);
 				free(ptr);
 				ptr = NULL;
@@ -703,10 +746,14 @@ static void calc(void) {
 	if (current_uptime >= save_utime) {
 		save(0);
 		save_utime = current_uptime + get_stime();
+#ifdef DEBUG_CSTATS
 		_dprintf("%s: uptime = %lum, save_utime = %lum\n", __FUNCTION__, current_uptime / 60, save_utime / 60);
+#endif
 	}
 
+#ifdef DEBUG_CSTATS
 	_dprintf("%s: ====================================\n", __FUNCTION__);
+#endif
 
 //QUIT:
 	if (exclude) {
@@ -754,7 +801,9 @@ int main(int argc, char *argv[]) {
 	if (argc > 1) {
 		if (strcmp(argv[1], "--new") == 0) {
 			new = 1;
+#ifdef DEBUG_CSTATS
 			_dprintf("new=1\n");
+#endif
 		}
 	}
 

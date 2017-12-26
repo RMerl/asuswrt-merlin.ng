@@ -5210,6 +5210,8 @@ void qtn_module_check(void)
 			logmessage("QTN", "QTN connection lost[%s][%s]", src_ip, dst_ip);
 			system("reboot &");
 		}
+	} else {
+		failed = 0;
 	}
 	waiting = 0;
 

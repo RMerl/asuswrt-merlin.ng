@@ -40,7 +40,9 @@ fi
 
 if [ "$QOSDEBUG" == "1" ]
 then
-	echo "$NEWPARMS" >> /tmp/qos.log
+	echo "ori: $ORIPARMS" >> /tmp/qos.log
+	echo "new: $NEWPARMS" >> /tmp/qos.log
+	echo " " >> /tmp/qos.log
 fi
 
 /usr/sbin/realtc $NEWPARMS

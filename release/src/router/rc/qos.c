@@ -1701,11 +1701,16 @@ void set_codel_patch(void)
 
 void remove_codel_patch(void)
 {
+#if 0
 	if (f_exists("/var/lock/qostc")) {
-		umount(TCPATH);
+		umount2(TCPATH,MNT_DETACH);
 		unlink("/var/lock/qostc");
 		logmessage("qos", "Removing codel patch");
 	}
+#else
+	return;
+#endif
+
 }
 
 #endif

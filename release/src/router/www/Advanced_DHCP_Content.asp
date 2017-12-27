@@ -411,7 +411,7 @@ function applyRule(){
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
 			}
 		}
-		if (tmp_value.length > 2499) {
+		if (tmp_value.length > 2998) {
 			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
 			return false;
 		}

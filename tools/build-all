@@ -30,17 +30,14 @@ RSYNC_TREE=y
 
 DEFAULTBUILD="none"
 
-#BN66=y
-#BAC66=y
-
-#BAC56=y
-#BAC68=y
+BAC56=y
+BAC68=y
 #BAC87=y
 
 #BAC3200=y
 
-#BAC88=y
-#BAC3100=y
+BAC88=y
+BAC3100=y
 #BAC5300=y
 
 BAC86=y
@@ -80,11 +77,6 @@ if [ -z "$BUILDMODELS" ]; then
         BUILDMODELS=$DEFAULTBUILD
 fi
 
-if [[ "$BUILDMODELS" =~ "mips" || "$BUILDMODELS" =~ "all" ]] ; then
-	BN66=y
-	BAC66=y
-fi
-
 if [[ "$BUILDMODELS" =~ "arm" || "$BUILDMODELS" =~ "all" || "$BUILDMODELS" =~ "sdk6" ]] ; then
 	BAC56=y
 	BAC68=y
@@ -118,12 +110,13 @@ build_fw()
 		cd image
 		if [ "$FWMODEL" == "rt-ac86u" ]; then
 			FWNAME=$(ls -t *_cferom_ubi.w | head -n 1)
+			ZIPNAME="${FWNAME//_cferom_ubi.w/}".zip
 		else
 			FWNAME=$(ls -t *.trx | head -n 1)
+			ZIPNAME="${FWNAME%.*}".zip
 		fi
 		cp $FWNAME $STAGE_LOC/
 
-		ZIPNAME="${FWNAME%.*}".zip
 		sha256sum $FWNAME > sha256sum.sha256
 		zip -j $STAGE_LOC/$ZIPNAME $FWNAME $STAGE_LOC/README-merlin.txt $STAGE_LOC/Changelog*.txt sha256sum.sha256 &>/dev/null
 		echo "*** $(date +%R) - Done building $FWMODEL!"
@@ -156,7 +149,8 @@ clean_tree()
 # Initial cleanup
 
 echo "--- $(date +%R) - Global cleanup..."
-rm $STAGE_LOC/*
+mkdir -p $STAGE_LOC/backup
+mv $STAGE_LOC/* $STAGE_LOC/backup/
 cp $SRC_LOC/README-merlin.txt $STAGE_LOC/
 cp $SRC_LOC/Changelog*.txt $STAGE_LOC/
 
@@ -164,17 +158,11 @@ cp $SRC_LOC/Changelog*.txt $STAGE_LOC/
 # Update all model trees
 
 echo "--- $(date +%R) - Preparing trees"
-if [ "$BN66" == "y" ]; then
-	clean_tree am382.n66 release/src-rt-6.x rt-n66u
-fi
 if [ "$BAC56" == "y" ]; then
 	clean_tree am382.ac56 release/src-rt-6.x.4708 rt-ac56u
 fi
 if [ "$BAC68" == "y" ]; then
 	clean_tree am382.ac68 release/src-rt-6.x.4708 rt-ac68u
-fi
-if [ "$BAC66" == "y" ]; then
-	clean_tree am382.ac66 release/src-rt-6.x rt-ac66u
 fi
 if [ "$BAC87" == "y" ]; then
 	clean_tree am382.ac87 release/src-rt-6.x.4708 rt-ac87u
@@ -201,20 +189,12 @@ echo -e "--- $(date +%R) - All trees ready!\n"
 # Launch parallel builds
 
 echo "--- $(date +%R) - Launching all builds"
-if [ "$BN66" == "y" ]; then
-	build_fw am382.n66/release/src-rt-6.x rt-n66u &
-	sleep 20
-fi
 if [ "$BAC56" == "y" ]; then
 	build_fw am382.ac56/release/src-rt-6.x.4708 rt-ac56u &
 	sleep 20
 fi
 if [ "$BAC68" == "y" ]; then
 	build_fw am382.ac68/release/src-rt-6.x.4708 rt-ac68u &
-	sleep 20
-fi
-if [ "$BAC66" == "y" ]; then
-	build_fw am382.ac66/release/src-rt-6.x rt-ac66u &
 	sleep 20
 fi
 if [ "$BAC87" == "y" ]; then

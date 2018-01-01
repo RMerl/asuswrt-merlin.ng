@@ -691,7 +691,7 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 	}
 
 	if (nvram_get_int("qos_type") != 2) {	// Must not be BW Limiter
-		snprintf(tmp, sizeof(tmp), "tc -s class show dev %s > /tmp/tcclass.txt", get_wan_ifname(wan_primary_ifunit()));
+		snprintf(tmp, sizeof(tmp), "tc -s class show dev %s > /tmp/tcclass.txt", "eth0");
 		system(tmp);
 
 	        ret += websWrite(wp, "var tcdata_wan_array = [\n");

@@ -3051,6 +3051,7 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	    ":FUPNP - [0:0]\n"
 	    ":SECURITY - [0:0]\n"
 	    ":ACCESS_RESTRICTION - [0:0]\n"
+	    ":other2wan - [0:0]\n"
 #ifdef RTCONFIG_OPENVPN
 	    ":OVPN - [0:0]\n"
 #endif
@@ -3546,9 +3547,9 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
-	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, "br+", logdrop);
+	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, "br+", "other2wan");
 #else
-	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, logdrop);
+	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, "other2wan");
 #endif
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled() && *wan6face) {
@@ -3569,10 +3570,13 @@ TRACE_PT("writing Parental Control\n");
 #endif
 			)
 #ifdef RTCONFIG_WIFI_SON
-		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, "br+", logdrop);
+		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, "br+", "other2wan");
 #else
-		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, logdrop);
+		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, "other2wan");
 #endif
+
+	fprintf(fp, "-A other2wan -i tun+ -j RETURN\n");	// Let OVPN traffic through
+	fprintf(fp, "-A other2wan -j %s\n", logdrop);		// Drop other foreign traffic
 
 // oleg patch ~
 	/* Drop the wrong state, INVALID, packets */
@@ -4150,6 +4154,7 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_OPENVPN
 	    ":OVPN - [0:0]\n"
 #endif
+	   ":other2wan - [0:0]\n"
 #ifdef RTCONFIG_PARENTALCTRL
 	    ":PControls - [0:0]\n"
 #endif
@@ -4620,7 +4625,9 @@ TRACE_PT("writing Parental Control\n");
 #endif
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
-		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, logdrop);
+
+
+		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, "other2wan");
 #ifdef RTCONFIG_IPV6
 		 if (ipv6_enabled() && *wan6face) {
 			if (nvram_match("ipv6_fw_enable", "1")) {
@@ -4631,8 +4638,11 @@ TRACE_PT("writing Parental Control\n");
 		}
 #endif
 		if (strcmp(wanx_if, wan_if) && inet_addr_(wanx_ip) && dualwan_unit__nonusbif(unit))
-			fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, logdrop);
+			fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, "other2wan");
 	}
+	fprintf(fp, "-A other2wan -i tun+ -j RETURN\n");	// Let OVPN traffic through
+	fprintf(fp, "-A other2wan -j %s\n", logdrop);		// Drop other foreign traffic
+
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 	/* Write forward rule for deny lan */
 	vlan_subnet_deny_forward(fp);

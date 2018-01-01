@@ -307,56 +307,33 @@ function parseStatus(text, block, ipaddress, ripaddress){
 		code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table"><thead><tr><td colspan="6">Clients</td></tr></thead><tr>';
 
 // Headers
-		for (i = 0; i < (clientTableHeaders.length - 2); ++i)
-		{
-			switch (i) {
-				case 0: // CN, merge with user
-					code +='<th style="text-align:left;">' + clientTableHeaders[0] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[clientTableHeaders.length-2] + '</span></th>';
-					break;
-				case 2: // Virtual IPv4, merge with IPv6
-					code +='<th style="text-align:left;">' + clientTableHeaders[2] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[3] + '</span></th>';
-					break;
-				case 3: // IPv6, merged with IPv4 field
-				case 7: // Connected since time_t
-					break;
-				case 4: // dl/up amount
-				case 5:
-					code +='<th style="text-align:left;">' + clientTableHeaders[i].replace("Bytes","MBytes") + '</th>';
-					break;
-				default:
-					code +='<th style="text-align:left;">' + clientTableHeaders[i] + '</th>';
-			}
-		}
-
+		// Common Name, Username
+		code +='<th style="width:25%;text-align:left;">' + clientTableHeaders[0] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[8] + '</span></th>';
+		// Real IPv4, merged with Virtual IPv4
+		code +='<th style="width:20%;text-align:left;">' + clientTableHeaders[1] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[2] + '</span></th>';
+		// dl/up amount
+		code +='<th style="width:16%;text-align:left;">' + clientTableHeaders[4].replace("Bytes","MBytes") + '</th>';
+		code +='<th style="width:16%;text-align:left;">' + clientTableHeaders[5].replace("Bytes","MBytes") + '</th>';
+		// Connected since
+		code +='<th style="width:23%;text-align:left;">' + clientTableHeaders[6] + '</th>';
 		code += '</tr>';
 
 // Clients
 		for (i = 0; i < clientTableEntries.length; ++i)
 		{
 			code += '<tr>';
-			for (j = 0; j < (clientTableEntries[i].length-2); ++j)
-			{
-				switch (j) {
-					case 0:	// CN, merge with user
-						if (clientTableEntries[i][8] == "UNDEF") {
-							clientTableEntries[i][8] = "";
-						}
-						code += '<td style="vertical-align:top; white-space:nowrap; text-align:left;">' + clientTableEntries[i][0] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][8] +'</span></td>';
-						break;
-					case 2:	// virtual IPv4, merge with IPv6
-						code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][2] + '<br><span style=""color: cyan; background: transparent;">' + clientTableEntries[i][3] +'</span></td>';
-						break;
-					case 3:	// IPv6, merged with IPv4 field
-					case 7: // connected since time_t
-						break;
-					case 4:
-					case 5: // dl/up amount
-						code += '<td style="vertical-align:top; text-align:left;">' + Number(clientTableEntries[i][j]/1024/1024).toFixed(2).toLocaleString() + '</td>';
-						break;
-					default:
-						code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][j] + '</td>';
-				}
+			// Common Name, Username
+			if (clientTableEntries[i][8] == "UNDEF") {
+				clientTableEntries[i][8] = "";
 			}
+			code += '<td style="vertical-align:top; white-space:nowrap; text-align:left;">' + clientTableEntries[i][0] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][8] +'</span></td>';
+			// Real IP, Virtual IP
+			code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][1] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][2] +'</span></td>';
+			// dl/up amount
+			code += '<td style="vertical-align:top; text-align:left;">' + Number(clientTableEntries[i][4]/1024/1024).toFixed(2).toLocaleString() + '</td>';
+			code += '<td style="vertical-align:top; text-align:left;">' + Number(clientTableEntries[i][5]/1024/1024).toFixed(2).toLocaleString() + '</td>';
+			// Connected Since
+			code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][6] + '</td>';
 			code += '</tr>';
 		}
 		code += '</table><br>';

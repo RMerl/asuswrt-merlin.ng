@@ -10,7 +10,13 @@ CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,
 CFLAGS	+= -s -O2
 
 # BUILD_NAME
+ifneq ($(findstring 4G-,$(BUILD_NAME)),)
+TARGET_MODEL = RT$(subst -,,$(BUILD_NAME))
+else ifneq ($(findstring DSL,$(BUILD_NAME)),)
+TARGET_MODEL = $(subst -,_,$(BUILD_NAME))
+else
 TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
+endif
 CFLAGS  += -D$(TARGET_MODEL)
 
 TARGET_LIBS = -lssl -lcrypto -ldl -lm
@@ -24,10 +30,6 @@ LDFLAGS += $(EXTRALDFLAGS)
 endif
 ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
-endif
-
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 
 OBJS = sw_auth.o hw_auth.o

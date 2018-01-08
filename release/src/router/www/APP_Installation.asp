@@ -17,7 +17,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/disk_functions.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 #Aidisk_png{
   background: url(images/New_ui/USBExt/APP_list.png);
@@ -102,6 +102,10 @@ var wan_unit_orig = '<% nvram_get("wan_unit"); %>';
 
 function initial(){
 	show_menu();
+	//	http://www.asus.com/support/FAQ/1009773/
+	httpApi.faqURL("faq", "1009773", "https://www.asus.com", "/support/FAQ/");
+	//	http://www.asus.com/support/FAQ/1016385/
+	httpApi.faqURL("faq2", "1016385", "https://www.asus.com", "/support/FAQ/");
 
 	default_apps_array = [["AiDisk", "aidisk.asp", "<#AiDiskWelcome_desp1#>", "Aidisk_png", ""],
 			["<#Servers_Center#>", "mediaserver.asp", "<#UPnPMediaServer_Help#>", "server_png", ""],
@@ -931,10 +935,10 @@ function go_modem_page(usb_unit_flag){
 						<ul style="margin-left:10px;">
 							<br>
 							<li>
-								<a id="faq" href="http://www.asus.com/support/FAQ/1009773/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master FAQ</a>
+								<a id="faq" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="faq2" href="http://www.asus.com/support/FAQ/1016385/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
+								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
 								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/RT-AC5300/UT_Download_Master_2228_Win.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_Download_Tool#></a>

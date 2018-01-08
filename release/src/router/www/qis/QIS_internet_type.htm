@@ -580,6 +580,8 @@ function detect_if_wan_plug(flag){
 <input type="hidden" name="current_page" value="QIS_internet_type.htm">
 <input type="hidden" name="next_page" value="/qis/QIS_finish.htm">
 <input type="hidden" name="prev_page" value="/qis/QIS_detect.htm">
+<input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>">
+<input type="hidden" name="action_script" value="restart_wan_if">
 <input type="hidden" name="wan_proto" value="">
 <input type="hidden" name="switch_stb_x" value="">
 <input type="hidden" name="mr_enable_x" value="<% nvram_get("mr_enable_x"); %>">

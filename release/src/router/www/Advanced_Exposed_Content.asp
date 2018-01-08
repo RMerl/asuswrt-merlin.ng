@@ -16,6 +16,8 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
@@ -81,7 +83,8 @@ function done_validating(action){
 
 function initial(){
 	show_menu();
-	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "DMZ"]);
+	// https://www.asus.com/US/support/FAQ/1001253
+	httpApi.faqURL("faq", "1001253", "https://www.asus.com", "/support/FAQ/");
 	dmz_enable_check();
 
 	//if(dualWAN_support && wans_mode == "lb")

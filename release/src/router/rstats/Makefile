@@ -20,10 +20,6 @@ CFLAGS += -I$(TOP)/libqcsapi_client -I$(TOP)/shared/sysdeps/qtn
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 OBJS = rstats.o
 
 all: rstats

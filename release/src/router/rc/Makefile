@@ -624,7 +624,7 @@ CFLAGS += -I$(TOP)/libasuslog
 endif
 endif
 
-all: rc
+all: rc init.prep
 
 rc: $(OBJS)
 	@echo " [rc] CC $@"
@@ -852,6 +852,9 @@ endif
 ifeq ($(or $(CONFIG_BCMWL5),$(RTCONFIG_RALINK),$(RTCONFIG_QCA),$(RTCONFIG_REALTEK)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc set_factory_mode
 endif
+ifeq ($(or $(RTCONFIG_OPENPLUS_TFAT),$(RTCONFIG_OPENPLUSPARAGON_NTFS),$(RTCONFIG_OPENPLUSTUXERA_NTFS),$(RTCONFIG_OPENPLUSPARAGON_HFS),$(RTCONFIG_OPENPLUSTUXERA_HFS)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc set_fs_coexist
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc run_telnetd
 ifeq ($(RTCONFIG_SSH),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc run_sshd
@@ -977,7 +980,7 @@ ifeq ($(RTCONFIG_ADTBW),y)
 endif
 
 clean:
-	rm -f rc *.o .*.depend
+	rm -f rc *.o .*.depend *.prep
 
 size: rc
 	mipsel-uclibc-nm --print-size --size-sort rc
@@ -1243,6 +1246,9 @@ endif
 
 .%.depend: %.c
 	@$(CC) $(CFLAGS) -M $< > $@
+
+init.prep: init.c
+	@$(CC) $(CFLAGS) -E $< > $@
 
 ifeq ($(RTCONFIG_QCA),y)
 -include sysdeps/qca/Makefile.hook

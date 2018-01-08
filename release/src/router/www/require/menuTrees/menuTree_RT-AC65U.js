@@ -63,7 +63,7 @@ define(function(){
 					{url: "AiProtection_IntrusionPreventionSystem.asp", tabName: "<#AiProtection_two-way_IPS#>"},
 					{url: "AiProtection_InfectedDevicePreventBlock.asp", tabName: "<#AiProtection_detection_blocking#>"},
 					{url: "AiProtection_WebProtector.asp", tabName: "<#Parental_Control#>"},
-					{url: "ParentalControl.asp", tabName: "<#Parental_Control#>"},
+					{url: "ParentalControl.asp", tabName: "__INHERIT__"},
 					{url: "AiProtection_AdBlock.asp", tabName: "Ad Blocking"},
 					{url: "AiProtection_Key_Guard.asp", tabName: "Key Guard"},
 					{url: "NULL", tabName: "__INHERIT__"}
@@ -82,6 +82,14 @@ define(function(){
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
+				] 
+			},
+			{
+				menuName: "<#Traffic_Analyzer#>",
+				index: "menu_TrafficAnalyzer", 
+				tab: [
+					{url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
 			{
@@ -592,14 +600,11 @@ define(function(){
 				// --
 
 				/* MODELDEP */
-				if(!ParentalCtrl2_support || based_modelid != "RT-AC65U"){
+				if(!ParentalCtrl2_support){
 					retArray.push("ParentalControl.asp");
 				}
-				if(based_modelid == "RT-AC65U"){
-					retArray.push("AiProtection_WebProtector.asp");
-					retArray.push("AdaptiveQoS_WebHistory.asp");	
-				}
-				else if(based_modelid == "RT-N10U"){
+
+				if(based_modelid == "RT-N10U"){
 					retArray.push("Advanced_WMode_Content.asp");
 				}
 				else if(based_modelid == "RT-AC87U" && '<% nvram_get("wl_unit"); %>' == '1'){

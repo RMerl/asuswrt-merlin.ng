@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Toto pole se používá pro přihlášení
 LANHostConfig_x_DDNSUserName_itemname=Uživatelské jméno nebo e-mailová adresa
 LANHostConfig_x_DDNSWildcard_itemdesc=Pokud je povoleno, je doména s wildcard přesměrována na vaši IP adresu.
 LANHostConfig_x_DDNSWildcard_itemname=Povolit wildcard
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Toto je IP adresa původní brány pro přístupový bod
 LANHostConfig_x_LDNSServer1_itemdesc=Toto pole ukazuje IP adresu DNS pro klienty, kteří vyžadují IP adresu ze serveru DHCP. Pokud zanecháte pole prázdné, budou požadavky DNS zpracovány prostřednictvím ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=IP adresa serveru DNS
@@ -2228,7 +2229,7 @@ sockets_UNIX=Sokety UNIX
 Smart_Access=Smart Access
 smart_access_desc=Aktivuje vzdálený přístup k PC a zařízením podporující Network Place (Samba). Smart Access také dokáže probudit spící PC.
 smart_access2=Funkce WOL (Wake-On-LAN) umožňuje probouzet počítač z jakéhokoli zařízení v síti.
-smart_access3=Co je <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Co je <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Detekce odrazu
 smart_connect_enable=Povolit chytré připojení

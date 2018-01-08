@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Acest câmp este utilizat ca identitate, c
 LANHostConfig_x_DDNSUserName_itemname=Nume utilizator sau adresă e-mail
 LANHostConfig_x_DDNSWildcard_itemdesc=Când este activată această opţiune, numele de domeniu cu caracter wildcard este redirecţionat către adresa dvs. IP.
 LANHostConfig_x_DDNSWildcard_itemname=Activare caracter wildcard
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Aceasta este adresa IP a gateway-ului implicit pentru punctul de acces
 LANHostConfig_x_LDNSServer1_itemdesc=Acest câmp indică adresa IP din DNS care va fi furnizată clienţilor care solicită o adresă IP de la serverul DHCP. Puteţi lăsa câmpul necompletat, iar solicitarea către DNS va fi procesată de către dispozitivul ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Server DNS
@@ -2228,7 +2229,7 @@ sockets_UNIX=Mufe UNIX
 Smart_Access=Smart Access
 smart_access_desc=Permite accesarea de la distanţă a PC-urilor şi dispozitivelor conectate la Network Place (Samba). Funcţia Smart Access oferă şi posibilitatea reactivării unui PC aflat în starea de inactivitatea.
 smart_access2=Caracteristica WOL (Wake-On-LAN – Activare prin LAN) vă permite să scoateţi un computer din starea de inactivitate utilizând orice dispozitiv din reţea.
-smart_access3=Ce reprezintă funcţia <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Ce reprezintă funcţia <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Detectare returnare
 smart_connect_enable=Activare Smart Connect

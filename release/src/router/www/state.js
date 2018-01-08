@@ -473,7 +473,7 @@ function isSupport(_ptn){
 
 		if(( based_modelid == "BRT-AC828" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" || 
 			based_modelid == "RT-AC88U" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC85U" ||
-			based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68R" || 
+			based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68R" || 
 			based_modelid == "RT-AC68W" || based_modelid == "RT-AC68RW" || based_modelid == "RT-AC1900P" || 
 			based_modelid == "RT-AC67U" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC56R" || based_modelid == "BLUECAVE")
 		){
@@ -1155,277 +1155,6 @@ function get_helplink(){
 	return getlink;
 }
 
-function addOnlineHelp(obj, keywordArray){
-	var support_path = "support/Knowledge-searchV2/?";
-	var faqLang = {
-		EN : "/",
-		TW : "/",
-		CN : "/",
-		CZ : "/",
-		PL : "/",
-		RU : "/",
-		DE : "/",
-		FR : "/",
-		TR : "/",
-		TH : "/",
-		MS : "/",
-		NO : "/",
-		FI : "/",
-		DA : "/",
-		SV : "/",
-		BR : "/",
-		JP : "/",
-		ES : "/",
-		IT : "/",
-		UK : "/",
-		HU : "/",
-		RO : "/",
-		KR : "/",
-		SL : "/"
-	}
-
-	// exception start
-	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "download" && keywordArray[2] == "master"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.RU = "/ru/";
-		faqLang.MS = "/my/";
-		faqLang.SV = "/se/";
-		faqLang.UK = "/ua/";
-	
-	}else if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "ez" && keywordArray[2] == "printer"){
-		support_path = "support/Search-Result-Detail/552E63A3-FA2D-1265-7029-84467B3993E4/?";
-		faqLang.ES = "/es/";
-		faqLang.RU = "/ru/";
-		faqLang.MS = "/my/";
-		faqLang.UK = "/ua/";
-		faqLang.TR = "/tr/";
-		faqLang.DE = "/de/";
-		faqLang.PL = "/pl/";
-		faqLang.CZ = "/cz/";
-	
-	}else if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "lpr"){
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.RU = "/ru/";
-		faqLang.MS = "/my/";
-		faqLang.UK = "/ua/";
-		faqLang.TR = "/tr/";
-		faqLang.DE = "/de/";
-		faqLang.PL = "/pl/";
-		faqLang.CZ = "/cz/";
-		faqLang.TH = "/th/";
-	
-	}else	if(keywordArray[0] == "mac" && keywordArray[1] == "lpr"){
-		faqLang.TW = "/tw/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.RU = "/ru/";
-		faqLang.MS = "/my/";
-		faqLang.UK = "/ua/";
-		faqLang.TR = "/tr/";
-		faqLang.DE = "/de/";
-		faqLang.PL = "/pl/";
-		faqLang.CZ = "/cz/";
-		faqLang.BR = "/br/";
-		faqLang.TH = "/th/";
-	
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "IPv6"){
-		faqLang.MS = "/my/";
-	
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "VPN"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.MS = "/my/";
-	
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "DMZ"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.MS = "/my/";
-	
-	}else	if(keywordArray[0] == "set" && keywordArray[1] == "up" && keywordArray[2] == "specific" && keywordArray[3] == "IP" && keywordArray[4] == "addresses"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";		
-	
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "port" && keywordArray[2] == "forwarding"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.MS = "/my/";
-		faqLang.RU = "/ru/";
-		faqLang.UK = "/ua/";
-	
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "port" && keywordArray[2] == "trigger"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.ES = "/es/";		
-	
-	}else	if(keywordArray[0] == "UPnP"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-        faqLang.RU = "/ru/";
-        faqLang.MS = "/my/";
-        faqLang.UK = "/ua/";
-        faqLang.PL = "/pl/";
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "hard" && keywordArray[2] == "disk" 
-		&& keywordArray[3] == "USB"){
-
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "Traffic" && keywordArray[2] == "Monitor"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.RU = "/ru/";
-        faqLang.MS = "/my/";
-        faqLang.UK = "/ua/";
-	}else	if(keywordArray[0] == "ASUSWRT" && keywordArray[1] == "samba" && keywordArray[2] == "Windows"
-			&& keywordArray[3] == "network" && keywordArray[4] == "place"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.MY = "/my/";
-	
-	}else	if(keywordArray[0] == "samba"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-	
-	}else	if(keywordArray[0] == "WOL" && keywordArray[1] == "wake" && keywordArray[2] == "on"
-			&& keywordArray[3] == "lan"){
-	
-	}else	if(keywordArray[0] == "WOL" && keywordArray[1] == "BIOS"){
-		faqLang.TW = "/tw/";
-		faqLang.CN = ".cn/";
-		faqLang.FR = "/fr/";
-		faqLang.ES = "/es/";
-		faqLang.RU = "/ru/";
-        faqLang.MS = "/my/";
-        faqLang.KR = "/kr/";
-        faqLang.UK = "/ua/";
-	}else{
-		faqLang.BR = "/";
-		faqLang.CN = "/";
-		faqLang.CZ = "/";
-		faqLang.DA = "/";
-		faqLang.DE = "/";
-		faqLang.EN = "/";
-		faqLang.ES = "/";
-		faqLang.FI = "/";
-		faqLang.FR = "/";
-		faqLang.HU = "/";
-		faqLang.IT = "/";
-		faqLang.JP = "/";
-		faqLang.KR = "/";
-		faqLang.MS = "/";
-		faqLang.NO = "/";
-		faqLang.PL = "/";
-		faqLang.RO = "/";
-		faqLang.RU = "/";
-		faqLang.SV = "/";
-		faqLang.TH = "/";
-		faqLang.TR = "/";
-		faqLang.TW = "/";
-		faqLang.UK = "/";
-	}		
-	// exception end	
-
-	if(obj){
-		obj.href = "http://www.asus.com"+faqLang.<% nvram_get("preferred_lang"); %>;
-		obj.href += support_path;
-		obj.href += "keyword=";
-		for(var i=0; i<keywordArray.length; i++){
-			obj.href += keywordArray[i];
-			obj.href += "%20";
-		}
-	}
-}
-
-function set_FAQ_link(_objID, _faqNum, _name) {
-	var faqLang = {
-		EN : "/",
-		TW : "/",
-		CN : "/",
-		CZ : "/",
-		PL : "/",
-		RU : "/",
-		DE : "/",
-		FR : "/",
-		TR : "/",
-		TH : "/",
-		MS : "/",
-		NO : "/",
-		FI : "/",
-		DA : "/",
-		SV : "/",
-		BR : "/",
-		PT : "/",
-		JP : "/",
-		ES : "/",
-		IT : "/",
-		UK : "/",
-		HU : "/",
-		RO : "/",
-		KR : "/",
-		SL : "/",
-		NL : "/"
-	};
-
-	switch(_name) {
-		case "privateIP" :
-			faqLang.TW = "/tw/";
-			faqLang.CN = ".cn/";
-			break;
-		case "IPSec" :
-			faqLang.TW = "/tw/";
-			faqLang.CN = ".cn/";
-			break;
-		case "IPSecAdv" :
-			break;
-		case "OpenVPN" :
-			faqLang.TW = "/TW/";
-			faqLang.CN = "/CN/";
-			faqLang.CZ = "/CZ/";
-			faqLang.PL = "/PL/";
-			faqLang.RU = "/RU/";
-			faqLang.DE = "/DE/";
-			faqLang.FR = "/FR/";
-			faqLang.TR = "/TR/";
-			faqLang.TH = "/TH/";
-			faqLang.PT = "/PT/";
-			faqLang.KR = "/KR/";
-			faqLang.ES = "/ES/";
-			faqLang.IT = "/IT/";
-			faqLang.UK = "/UK/";
-			faqLang.HU = "/HU/";
-			faqLang.RO = "/RO/";
-			break;
-		default :
-			break;
-	}
-
-	var preferredLang = "";
-	preferredLang = faqLang.<% nvram_get("preferred_lang"); %>;
-	if(preferredLang == undefined)
-		preferredLang = "/";
-
-	var faqURL = "";
-	faqURL = "https://www.asus.com" + preferredLang;
-	faqURL += "support/FAQ/";
-	faqURL += _faqNum;
-	$("#" + _objID + "").attr("href", faqURL);
-}
-
 function Block_chars(obj, keywordArray){
 	// bolck ascii code 32~126 first
 	var invalid_char = "";		
@@ -1893,10 +1622,12 @@ function get_supportsite_lang(obj){
 		JP : "/jp/",
 		KR : "/kr/",
 		MS : "/my/",
+		NL : "/nl/",
 		NO : "/no/",
 		PL : "/pl/",
 		RO : "/ro/",
 		RU : "/ru/",
+		SL : "/sk/",
 		SV : "/se/",
 		TH : "/th/",
 		TR : "/tr/",
@@ -1924,10 +1655,12 @@ function search_supportsite(obj){
 		JP : "/jp/",
 		KR : "/kr/",
 		MS : "/my/",
+		NL : "/nl/",
 		NO : "/no/",
 		PL : "/pl/",
 		RO : "/ro/",
 		RU : "/ru/",
+		SL : "/sk/",
 		SV : "/se/",
 		TH : "/th/",
 		TR : "/tr/",
@@ -2126,22 +1859,27 @@ function show_top_status(){
 	}
 
 	var swpjverno = '<% nvram_get("swpjverno"); %>';
+	var firmver = '<% nvram_get("firmver"); %>';
 	var buildno = '<% nvram_get("buildno"); %>';
-	var firmver = '<% nvram_get("firmver"); %>'
+	//var rcno = '<% nvram_get("rcno"); %>';
 	var extendno = '<% nvram_get("extendno"); %>';
+	var FWString = '';
+
+	FWString = buildno;
+	//if(rcno.length > 0)
+	//	FWString += "rc"+rcno;
+	if ((extendno != "") && (extendno != "0"))
+		FWString += "_"+extendno;
 
 	if(swpjverno == ''){
 		if(swisscom_support)
-			showtext(document.getElementById("firmver"), firmver + "." + buildno + '_' + extendno.split("-g")[0] + '_swisscom' );
-		else if ((extendno == "") || (extendno == "0"))
-			showtext(document.getElementById("firmver"), buildno);
-		else
-			showtext(document.getElementById("firmver"), buildno + '_' + extendno.split("-g")[0]);
+			FWString += '_swisscom';
+		showtext(document.getElementById("firmver"), FWString);
 	}
 	else{
 		showtext(document.getElementById("firmver"), swpjverno + '_' + extendno);
 	}
-	
+
 	// no_op_mode
 	if (!dsl_support && based_modelid != "AC2900" && !lyra_hide_support){	//MODELDEP: AC2900(RT-AC86U)
 
@@ -3930,6 +3668,7 @@ var isNewFW = function(FWVer, check_path, current_path){	//path> 0:stable, 1:bet
 
 		current_firm = parseInt('<% nvram_get("buildno"); %>'.split(".")[0].replace(/[.]/gi,""));
 		current_buildno = parseInt('<% nvram_get("buildno"); %>'.split(".")[1].replace(/[.]/gi,""));
+		//current_rcno = parseInt('<% nvram_get("rcno"); %>');
 		current_extendno = parseInt('<% nvram_get("extendno"); %>'.split("-g")[0].replace(/^[0-9]$/,"10$&").replace(/alpha/gi,"1").replace(/beta/gi,"5"));
 		if((current_firm < Latest_firm) ||
 			(current_buildno < Latest_buildno && current_firm == Latest_firm) ||

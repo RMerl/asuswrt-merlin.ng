@@ -2,7 +2,6 @@
 20205,Vodafone,*99#,,,internet,Vf Mobile Broadband
 20210,WIND ADSM,*99#,,,gint.b-online.gr,WIND Internet
 20404,Vodafone,*99***1#,vodafone,vodafone,live.vodafone.com,Vodafone Internet
-20408,KPN,*99***1#,,,basic.internet.ben.data,Ben internet
 20408,KPN,*99***1#,,,portalmmm.nl,KPN/Hi Mobiel Internet
 20410,KPN,*99***1#,,,internet,KPN
 20412,Telfort,*99***1#,,,internet,Telfort Mobiel Internet
@@ -652,7 +651,7 @@
 4133,Etisalat Internet,*99#,,,ebb,Etisalat Internet
 4135,AirtelLive,*99#,,,airtellive,AirtelLive
 41501,Cellis FTML Lebannon GPRS,*99***1#,mic1,mic1,internet.mic1.com.lb,Alfa Internet
-41503,mtc touch Internet,*99#,,,gprs.mtctouch.com.lb,mtc touch Internet
+41503,Ogero,*99#,,,touch,Ogero
 41601,Fastlink Jordan GPRS,*99***1#,,,,Zain
 41603,Umniah HTTP,*99#,,,wap,Umniah HTTP
 41603,Umniah Internet,*99#,,,net,Umniah Internet
@@ -840,16 +839,12 @@
 51503,Smart,*99#,smartwap,smartwap,smart1,SMART HTTP postpaid
 51505,Sun,*99#,,,minternet,SUN Internet
 51509,Smart Bro,*99#,,,smartbro,Smart Bro
-52000,CAT3G INTERNET,*99#,,,internet,CAT3G INTERNET
+52000,CAT,*99#,,,internet,CAT
 52001,AIS,*99#,,,internet,Advanced Info Service
 52003,AIS,*99#,,,internet,AIS Internet
-52003,AIS,*99#,,,wap,AIS HTTP
-52004,truemove H,*99#,true,true,internet,TRUE-H INTERNET
-52004,truemove H,*99#,true,true,wap,TRUE HTTP
-52005,dtac,*99#,,,wap.djuice.co.th,DTAC HTTP
-52005,dtac,*99#,,,www.dtac.co.th,DTAC Internet
-52018,dtac,*99#,,,wap.djuice.co.th,DTAC HTTP
-52018,dtac,*99#,,,www.dtac.co.th,DTAC Internet
+52004,Truemove H,*99#,true,true,internet,Truemove H
+52005,DTAC,*99#,,,internet,DTAC Internet
+52018,DTAC,*99#,,,internet,DTAC Internet
 52023,AIS,*99#,,,internet,Advanced Info Service
 52099,truemove H,*99#,true,true,hinternet,True Move
 52501,SingTel,*99#,,,internet,SingTel

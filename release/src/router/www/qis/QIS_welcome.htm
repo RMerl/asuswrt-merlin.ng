@@ -79,12 +79,6 @@ function assign_color(){
 function QKinternettype_load_body(){
 	parent.flag_manual = 0;
 
-	if('<% check_asus_model(); %>' == '0'){
-		document.getElementById("warming_field").style.display ="";
-		document.getElementById("main_manual").style.display ="none";
-		disable_button();
-	}
-
 	if(wanstate == 4 && wansbstate == 4){
 		parent.changeSubnet = true;
 	}
@@ -481,14 +475,6 @@ function uploadSetting(){
 	}	
 }
 
-function disable_button(){
-	var disable_button_x = document.getElementsByClassName('button_gen');
-	for(x=disable_button_x.length-1;x>=0;x--){
-		disable_button_x[x].disabled = true;
-	}
-}
-
-
 </script>
 </head>  
 <body onLoad="QKinternettype_load_body();" onunload="" onKeyPress="submitenter(this,event)">
@@ -509,7 +495,6 @@ function disable_button(){
 		<tr>
 			<td>
 				<div style="margin:5px;"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
-				<div id="warming_field" style="display:none" class="warming_desc">Note: the router you are using is not an ASUS device or has not been authorised by ASUS. ASUSWRT might not work properly on this device.</div>
 			</td>
 		</tr>	
 		<tr>

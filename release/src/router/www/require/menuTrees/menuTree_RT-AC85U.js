@@ -58,9 +58,9 @@ define(function(){
 				index: "menu_AiProtection", 
 				tab: [
 					{url: "AiProtection_HomeSecurity.asp", tabName: "__HIDE__"},
-					{url: "AiProtection_MaliciousSitesBlocking.asp", tabName: "__INHERIT__"},
-					{url: "AiProtection_IntrusionPreventionSystem.asp", tabName: "__INHERIT__"},
-					{url: "AiProtection_InfectedDevicePreventBlock.asp", tabName: "__INHERIT__"},
+					{url: "AiProtection_MaliciousSitesBlocking.asp", tabName: "<#AiProtection_sites_blocking#>"},
+					{url: "AiProtection_IntrusionPreventionSystem.asp", tabName: "<#AiProtection_two-way_IPS#>"},
+					{url: "AiProtection_InfectedDevicePreventBlock.asp", tabName: "<#AiProtection_detection_blocking#>"},
 					{url: "AiProtection_HomeProtection.asp", tabName: "<#AiProtection_Home#>"},
 					{url: "AiProtection_WebProtector.asp", tabName: "<#Parental_Control#>"},
 					{url: "ParentalControl.asp", tabName: "__INHERIT__"},

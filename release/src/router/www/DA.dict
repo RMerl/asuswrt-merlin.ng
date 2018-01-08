@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Dette felt anvendes som identitet til at l
 LANHostConfig_x_DDNSUserName_itemname=Brugernavn eller e-postadresse
 LANHostConfig_x_DDNSWildcard_itemdesc=Når den er aktiveret, omdirigeres domænenavnet med jokertegn til din IP-adresse.
 LANHostConfig_x_DDNSWildcard_itemname=Skal understøttelse af jokertegn aktiveres
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Dette er standardgatewayens IP-adresse på adgangspunktet.
 LANHostConfig_x_LDNSServer1_itemdesc=Dette felt angiver DNS-IP-adressen, der tildeles klienter, som anmoder om en IP-adresse fra DHCP-serveren. Det kan være tomt, hvorved DNS-anmodningen behandles af ZVMODELVZ\'en.
 LANHostConfig_x_LDNSServer1_itemname=DNS-server
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX-stik
 Smart_Access=Smart Access
 smart_access_desc=Muliggør fjernadgang til computere og enheder, der er forbundet via Network Place (Samba). Smart Access kan også aktivere en computer, der er i dvale.
 smart_access2=WOL (Wake-On-LAN) funktionen giver dig mulighed for, at vække en computer fra enhver enhed på netværket.
-smart_access3=Hvad er <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Hvad er <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Bounce-registrering
 smart_connect_enable=Aktiverer Smart Connect

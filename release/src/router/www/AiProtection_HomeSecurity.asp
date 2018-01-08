@@ -31,11 +31,6 @@ function initial(){
 		document.getElementById("keyGuard_field_h").style.display = "";
 		document.getElementById("keyGuard_field").style.display = "";
 	}
-	/* MODELDEP */
-	if(based_modelid == "RT-AC65U"){
-		document.getElementById("Link_to_ParentalCtrl").href = "ParentalControl.asp";
-		document.getElementById("item_filter").style.display = "none";
-	}
 }
 
 </script>

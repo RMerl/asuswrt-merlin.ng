@@ -18,6 +18,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .Portrange{
 	font-size: 12px;
@@ -38,6 +40,8 @@ function key_event(evt){
 
 function initial(){
 	show_menu();
+	//	https://www.asus.com/support/FAQ/1010951/
+	httpApi.faqURL("faq", "1010951", "https://www.asus.com", "/support/FAQ/");
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#menu5_3_2#> - <#EzQoS_type_traditional#>";
 	}
@@ -784,7 +788,7 @@ function linkport(obj){
 									<li><#UserQoSRule_desc_one#></li>
 							</ul>
 					</div>
-					<div class="formfontdesc"><a style="text-decoration:underline;" href="https://www.asus.com/support/FAQ/1010951/" target="_blank">QoS FAQ</a></div>
+					<div class="formfontdesc"><a id="faq" href="" style="text-decoration:underline;" target="_blank">QoS FAQ</a></div>
 
 					</div>	
 					</td>

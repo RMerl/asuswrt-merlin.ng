@@ -48,9 +48,6 @@ LDLIBS += -lshared
 LDLIBS += -lnvram
 LDFLAGS += -L$(RTSHAREDBASE)
 LDFLAGS += -L$(RTNVARMBASE)
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
 endif
 
 #check if make goal is android-lib or linux-lib

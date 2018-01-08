@@ -138,6 +138,7 @@ static int json_escape_str(struct printbuf *pb, char *str, int len)
 
 
 /* reference counting */
+static void json_object_object_delete(struct json_object* jso);
 
 extern struct json_object* json_object_get(struct json_object *jso)
 {
@@ -154,9 +155,18 @@ int json_object_put(struct json_object *jso)
 		jso->_ref_count--;
 		if(!jso->_ref_count)
 		{
+#ifdef HND_ROUTER
+			json_object_private_delete_fn *jdp = jso->_delete;
+#endif
 			if (jso->_user_delete)
 				jso->_user_delete(jso, jso->_userdata);
+			
 			jso->_delete(jso);
+#ifdef HND_ROUTER
+			/* testma */
+			if(jdp == &json_object_object_delete)
+				malloc_trim();
+#endif
 			return 1;
 		}
 	}

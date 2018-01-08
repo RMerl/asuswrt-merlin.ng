@@ -4,7 +4,20 @@
 
 const char *rt_version = RT_VERSION;
 const char *rt_serialno = RT_SERIALNO;
+const char *rt_rcno = RT_RCNO;
 const char *rt_extendno = RT_EXTENDNO;
 const char *rt_buildname = RT_BUILD_NAME;
 const char *rt_buildinfo = RT_BUILD_INFO;
 const char *rt_swpjverno = RT_SWPJVERNO;
+
+void set_basic_fw_name(void){
+	nvram_set("buildno", rt_serialno);
+	if(rt_rcno)
+		nvram_set("rcno", rt_rcno);
+	else
+		nvram_unset("rcno");
+	nvram_set("extendno", rt_extendno);
+	nvram_set("buildinfo", rt_buildinfo);
+	nvram_set("swpjverno", rt_swpjverno);
+}
+

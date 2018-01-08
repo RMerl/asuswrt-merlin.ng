@@ -874,12 +874,16 @@ void set_rgbled(unsigned int mode)
 		p[0].on = 1;
 		break;
 	case RGBLED_GREEN:
+		if (nvram_match("lp55xx_lp5523_user_enable", "1") && b == 0)
+			break;
 		p[1].on = 1;
 		break;
 	case RGBLED_RED:
 		p[2].on = 1;
 		break;
 	case RGBLED_NIAGARA_BLUE:
+		if (nvram_match("lp55xx_lp5523_user_enable", "1") && b == 0)
+			break;
 		p[0].on = 1;
 		p[1].on = 1;
 		break;

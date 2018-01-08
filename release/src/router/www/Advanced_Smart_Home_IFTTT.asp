@@ -32,7 +32,7 @@
 }
 
 .div_img {
-	padding: 35px 0px 100px 25px;
+	padding: 35px 0px 50px 25px;
 }
 
 .step_1{
@@ -145,6 +145,8 @@ function initial(){
 		AAE_MAX_RETRY_NUM = 10;
 		get_activation_code();
 	}
+
+	check_account_state();
 }
 
 function tag_control(){
@@ -340,6 +342,56 @@ function clipboard(ID_value)
 	input.remove();
 }
 
+function check_account_state(){
+
+	var RetDDNSstatus = function(){
+		var ddns_return_code = '<% nvram_get("ddns_return_code"); %>';
+		if( '<% nvram_get("ddns_server_x"); %>' == 'WWW.ASUS.COM' ) {
+			if( (ddns_return_code.indexOf('200')==-1) && (ddns_return_code.indexOf('220')==-1) && (ddns_return_code.indexOf('230')==-1))
+				return false;
+			else
+				return true;
+		}else{
+			if(ddns_updated != '1' || ddns_return_code=='unknown_error' || ddns_return_code=="auth_fail")
+				return false;
+			else
+				return true;
+		}
+	}
+
+	var StatusList = {
+		"NoInetrnet": "Internet is disconnected.",
+		"SvrFail": "Server connection failed",
+		"StepAccount": "Please follow steps to pair your account",
+		"EnableRemoteCtrl": "Please enable DDNS and Web access from WAN",
+		"Success": "Linked"
+	}
+
+	var RetAccLink = {
+		"AccLink":('<% nvram_match_x("","ifttt_token", "", "1"); %>' == '1')?false:true,
+		"AAE_SIP":('<% nvram_get("aae_sip_connected"); %>' == '1')?true:false,
+		"DDNSLink":RetDDNSstatus()
+	}
+
+	var RetStatus;
+	if('<% nvram_get("link_internet"); %>' != 2){
+		RetStatus = StatusList.NoInetrnet;
+	}
+	else if(external_ip == 1){	//public ip
+		if(RetAccLink.AccLink)
+			RetStatus = (RetAccLink.DDNSLink)?StatusList.Success:StatusList.EnableRemoteCtrl;
+		else
+			RetStatus = StatusList.StepAccount;
+	}
+	else{
+		if(RetAccLink.AccLink)
+			RetStatus = (RetAccLink.AAE_SIP)?StatusList.Success:StatusList.SvrFail;
+		else
+			RetStatus = StatusList.StepAccount;
+	}
+
+	document.getElementById("account_status").innerHTML = RetStatus;
+}
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -503,6 +555,10 @@ function clipboard(ID_value)
 																</td>
 															</tr>
 														</table>
+													</div>
+													<div style="padding:60px 10px 0px 35px;">
+														<span style="font-size:18px;text-shadow:1px 1px 0px black;color:#c0c0c0">Amazon Alexa Account:</span>
+														<span id="account_status" style="font-size:18px;text-shadow:1px 1px 0px black;color:#FC0;">initial</span>
 													</div>
 												</div>
 											</div>

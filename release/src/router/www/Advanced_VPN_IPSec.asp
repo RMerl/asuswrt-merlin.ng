@@ -20,6 +20,7 @@
 <script language="JavaScript" type="text/javascript" src="form.js"></script>
 <script language="JavaScript" type="text/javascript" src="validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
 .ipsec_view_log_panel {
 	width: 720px;
@@ -171,10 +172,14 @@ function initial(){
 	setTimeout("show_warning_message();", 100);
 
 	//set FAQ URL
-	set_FAQ_link("faq_windows", "1033576", "IPSec");
-	set_FAQ_link("faq_macOS", "1033575", "IPSec");
-	set_FAQ_link("faq_iPhone", "1033574", "IPSec");
-	set_FAQ_link("faq_android", "1033572", "IPSec");
+	//	https://www.asus.com/support/FAQ/1033576
+	httpApi.faqURL("faq_windows", "1033576", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1033575
+	httpApi.faqURL("faq_macOS", "1033575", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1033574
+	httpApi.faqURL("faq_iPhone", "1033574", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1033572
+	httpApi.faqURL("faq_android", "1033572", "https://www.asus.com", "/support/FAQ/");
 }
 
 var MAX_RETRY_NUM = 5;
@@ -192,7 +197,8 @@ function show_warning_message(){
 				document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 				document.getElementById("privateIP_notes").style.display = "";
 				$(".general_server_addr").html("-");
-				set_FAQ_link("faq_port_forwarding", "1033906", "privateIP");//this id is include in string : #vpn_privateIP_hint#
+				//	http://www.asus.com/support/FAQ/1033906
+				httpApi.faqURL("faq_port_forwarding", "1033906", "https://www.asus.com", "/support/FAQ/");	//this id is include in string : #vpn_privateIP_hint#
 			}
 			else {
 				if(ddns_enable_x == "1" && ddns_hostname_x != "") {
@@ -208,7 +214,8 @@ function show_warning_message(){
 				document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 				document.getElementById("privateIP_notes").style.display = "";
 				$(".general_server_addr").html("-");
-				set_FAQ_link("faq_port_forwarding", "1033906", "privateIP");//this id is include in string : #vpn_privateIP_hint#
+				//	http://www.asus.com/support/FAQ/1033906
+				httpApi.faqURL("faq_port_forwarding", "1033906", "https://www.asus.com", "/support/FAQ/");	//this id is include in string : #vpn_privateIP_hint#
 			}
 			else {
 				if(ddns_enable_x == "1" && ddns_hostname_x != "") {
@@ -224,7 +231,8 @@ function show_warning_message(){
 		document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 		document.getElementById("privateIP_notes").style.display = "";
 		$(".general_server_addr").html("-");
-		set_FAQ_link("faq_port_forwarding", "1033906", "privateIP");//this id is include in string : #vpn_privateIP_hint#
+		//	http://www.asus.com/support/FAQ/1033906
+		httpApi.faqURL("faq_port_forwarding", "1033906", "https://www.asus.com", "/support/FAQ/");	//this id is include in string : #vpn_privateIP_hint#
 	}
 	else {
 		if(ddns_enable_x == "1" && ddns_hostname_x != "") {
@@ -816,10 +824,10 @@ function showIPSecClients(profileName, e) {
 											How to setup IPSec VPN client
 											<br>
 											<ol>
-												<li><a id="faq_windows" href="https://www.asus.com/support/FAQ/1033576" target="_blank" style="text-decoration:underline;">Windows</a></li>
-												<li><a id="faq_macOS" href="https://www.asus.com/support/FAQ/1033575" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
-												<li><a id="faq_iPhone" href="https://www.asus.com/support/FAQ/1033574" target="_blank" style="text-decoration:underline;">iOS</a></li>
-												<li><a id="faq_android" href="https://www.asus.com/support/FAQ/1033572" target="_blank" style="text-decoration:underline;">Android</a></li>
+												<li><a id="faq_windows" href="" target="_blank" style="text-decoration:underline;">Windows</a></li>
+												<li><a id="faq_macOS" href="" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
+												<li><a id="faq_iPhone" href="" target="_blank" style="text-decoration:underline;">iOS</a></li>
+												<li><a id="faq_android" href="" target="_blank" style="text-decoration:underline;">Android</a></li>
 											<ol>
 										</div>
 										<!-- Quick Select table start-->

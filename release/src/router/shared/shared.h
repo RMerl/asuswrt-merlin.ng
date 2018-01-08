@@ -230,10 +230,13 @@
 //version.c
 extern const char *rt_version;
 extern const char *rt_serialno;
+extern const char *rt_rcno;
 extern const char *rt_extendno;
 extern const char *rt_buildname;
 extern const char *rt_buildinfo;
 extern const char *rt_swpjverno;
+
+extern void set_basic_fw_name(void);
 
 #ifdef DEBUG_NOISY
 #define _dprintf		cprintf
@@ -1556,6 +1559,9 @@ extern uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl);
 extern int get_wlan_service_status(int bssidx, int vifidx);
 extern void set_wlan_service_status(int bssidx, int vifidx, int enabled);
 #endif
+#ifdef RTCONFIG_LACP
+extern uint32_t traffic_trunk(int port_num, uint32_t *rx, uint32_t *tx);
+#endif
 
 // base64.c
 extern int base64_encode(const unsigned char *in, char *out, int inlen);		// returns amount of out buffer used
@@ -2137,6 +2143,7 @@ extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
 extern int is_ac66u_v2_series();
 extern int is_n66u_v2();
 extern int is_ssid_rev3_series();
+extern void ac68u_cofs();
 #endif
 
 /* rtstate.c */

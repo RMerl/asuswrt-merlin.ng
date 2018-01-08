@@ -13,10 +13,6 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
@@ -31,6 +27,16 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif
+
+# BUILD_NAME
+ifneq ($(findstring 4G-,$(BUILD_NAME)),)
+TARGET_MODEL = RT$(subst -,,$(BUILD_NAME))
+else ifneq ($(findstring DSL,$(BUILD_NAME)),)
+TARGET_MODEL = $(subst -,_,$(BUILD_NAME))
+else
+TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
+endif
+CFLAGS  += -D$(TARGET_MODEL)
 
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain
 ifeq ($(RTCONFIG_QCA),y)

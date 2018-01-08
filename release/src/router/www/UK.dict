@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Це поле використовуєть
 LANHostConfig_x_DDNSUserName_itemname=Ім'я користувача або електронна адреса:
 LANHostConfig_x_DDNSWildcard_itemdesc=Коли доменне імя з символом узагальнення доволено, воно перенаправляється на вашу ІР-адресу.
 LANHostConfig_x_DDNSWildcard_itemname=Активувати символ узагальнення?
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Це - ІР-адреса основного шлюзу  для точки доступу
 LANHostConfig_x_LDNSServer1_itemdesc=Це поле позначає ІР-адресу DNS, щоб надати її клієнтам, які подають запит щодо ІР-адреси з сервера DHCP. Якщо лишити поле порожнім, запит DNS буде оброблено ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Сервер DNS:
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX сокети
 Smart_Access=Smart Access
 smart_access_desc=Активує дистанційний доступ до ПК з мережним підключенням Network Place (Samba). Smart Access також може пробудити ПК з режиму сну.
 smart_access2=Функція WOL (Wake-On-LAN) надає можливість вивести ПК з режиму очікування з будь-якого пристрою в мережі.
-smart_access3=Що таке <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a>?
+smart_access3=Що таке <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a>?
 smart_connect=Smart Connect
 smart_connect_BD=Визначення недоставки
 smart_connect_enable=Активувати Smart Connect

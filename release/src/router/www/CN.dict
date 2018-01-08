@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=本栏可用来当作登录动态DNS（Dyn
 LANHostConfig_x_DDNSUserName_itemname=用户名称或 E-mail帐号
 LANHostConfig_x_DDNSWildcard_itemdesc=本栏可决定含有通配符的网域名称是否可改成IP地址。
 LANHostConfig_x_DDNSWildcard_itemname=启用通配符（wildcard）
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let’s Encrypt是一个提供免费网域证书认证的服务，而在核发网域所需的证书前，Let's Encrypt加密将会执行网域验证。Let's Encrypt加密核发的证书有效期间为90天，如果网域验证成功，证书即将过期前，华硕路由器将会自动更新证书。请务必确认您的华硕路由器可透過端口80从互联网进行网域验证与进行证书更新。
 LANHostConfig_x_Gateway_itemdesc=此为无线网络桥接器所使用的默认网关的IP地址
 LANHostConfig_x_LDNSServer1_itemdesc=DHCP 使用的 DNS 的网络位置。
 LANHostConfig_x_LDNSServer1_itemname=DNS 服务器
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX 套接字
 Smart_Access=智能访问
 smart_access_desc=开启从远端访问网上邻居的电脑和设备。智能访问同样可以唤醒睡眠的电脑。
 smart_access2=WOL（Wake-On-LAN）功能允许您通过网络中的设备来唤醒计算机。
-smart_access3=什么是 <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=什么是 <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=弹回检测
 smart_connect_enable=启动 Smart Connect

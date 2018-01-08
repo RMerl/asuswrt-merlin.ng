@@ -1212,6 +1212,7 @@ void set_radio(int on, int unit, int subunit)
  */
 char *get_lan_mac_name(void)
 {
+#ifdef RTCONFIG_BCMARM
 #ifdef RTCONFIG_GMAC3
 	char *et2macaddr;
 	if (!nvram_match("stop_gmac3", "1") && (et2macaddr = nvram_get("et2macaddr")) &&
@@ -1220,18 +1221,11 @@ char *get_lan_mac_name(void)
 	}
 #endif
 
-#ifdef RTCONFIG_BCMARM
 	switch(get_model()) {
 		case MODEL_RTAC87U:
 		case MODEL_RTAC88U:
-			return "et1macaddr";
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
 		case MODEL_RTAC5300:
-			if (dpsta_mode() || dpsr_mode())
-				return "et1macaddr";
-#endif
-		default:
-			return "et0macaddr";
+			return "et1macaddr";
 	}
 #endif
 	return "et0macaddr";
@@ -1253,9 +1247,8 @@ char *get_wan_mac_name(void)
 	switch(get_model()) {
 		case MODEL_RTAC87U:
 		case MODEL_RTAC88U:
+		case MODEL_RTAC5300:
 			return "et1macaddr";
-		default:
-			return "et0macaddr";
 	}
 #endif
 	return "et0macaddr";

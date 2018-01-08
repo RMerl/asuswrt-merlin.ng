@@ -84,14 +84,28 @@ endif
 
 export BRANCH := $(shell git branch)
 
+ifneq ($(RCNO),)
+RCSTRING="rc$(RCNO)"
+RC_EXT_NO1=$(shell expr $(RCNO) + 1)
+RC_EXT_NO=$(shell expr $(RC_EXT_NO1) \* 10000)
+
+# At runtime, set the tag of RCNO.
+export RUN_TAG=$(shell git tag -fa asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)$(RCSTRING) -m "Released $(RCSTRING)" HEAD)
+else
+RCSTRING=""
+RC_EXT_NO=0
+endif
+EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)
+
 #ifeq ($(BRANCH),)
 #include ./router/extendno.conf
 #else
-#ifeq ($(EXTENDTYPE),)
-#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
+#ifneq ($(EXTENDTYPE),)
+#EXSTRING="-$(EXTENDTYPE)"
 #else
-#export EXTENDNO := $(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")-$(EXTENDTYPE)
+#EXSTRING=""
 #endif
+#export EXTENDNO := $(shell expr $(EXTENDNO1) + $(RC_EXT_NO))-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
 #endif
 
 ifeq ($(EXTENDNO),)
@@ -357,9 +371,19 @@ rt_ver:
 	@echo '#define RT_VERSION "$(KERNEL_VER).$(FS_VER)"' >> router/shared/version.h
 ifeq ($(FAKEID),y)
 	@echo '#define RT_SERIALNO "$(FORCE_SN)"' >> router/shared/version.h
+ifneq ($(RCNO),)
+	@echo '#define RT_RCNO "$(FORCE_RN)"' >> router/shared/version.h
+else
+	@echo '#define RT_RCNO NULL' >> router/shared/version.h
+endif
 	@echo '#define RT_EXTENDNO "$(FORCE_EN)$(BUILDREV)"' >> router/shared/version.h
 else
 	@echo '#define RT_SERIALNO "$(SERIALNO)"' >> router/shared/version.h
+ifneq ($(RCNO),)
+	@echo '#define RT_RCNO "$(RCNO)"' >> router/shared/version.h
+else
+	@echo '#define RT_RCNO NULL' >> router/shared/version.h
+endif
 	@echo '#define RT_EXTENDNO "$(EXTENDNO)$(BUILDREV)"' >> router/shared/version.h
 endif
 	@echo '#define RT_SWPJVERNO "$(SWPJVERNO)"' >> router/shared/version.h
@@ -716,13 +740,13 @@ export_config:
 kernel_patch:
 ifeq ($(CONFIG_LANTIQ),y)
 	cd proprietary; rm -rf ltq_eip97_1.2.25; tar zxf ltq_eip97_1.2.25.tar.gz
-	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.61.6_AE.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.61.6_AE ${SRCBASE}/router/rom_lantiq/
+	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.61.7_AE.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.61.7_AE ${SRCBASE}/router/rom_lantiq/
 	cp patches/iptables-1.4.21/extensions/* ${SRCBASE}/router/iptables-1.4.21/extensions/
 	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
 	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
 	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
 	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
-	cd proprietary; cp -rf rom_lantiq_05.04.00.61.6_AE_patch/* ${SRCBASE}/router/rom_lantiq/
+	cd proprietary; cp -rf rom_lantiq_05.04.00.61.7_AE_patch/* ${SRCBASE}/router/rom_lantiq/
 	# cp -f proprietary/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin linux/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin
 endif
 
@@ -4200,6 +4224,8 @@ endif
 get_extendno:
 	@if [ "$(ID)" == "" ]; then echo "No ID is assigned"; exit 1; fi
 	git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..$(ID) | wc -l
+	@echo $(RC_EXT_NO)
+	@echo $(EXTENDNO)
 
 .PHONY: all clean distclean cleanimage cleantools cleankernel prepk what setprofile libc help image default bin_file
 .PHONY: a b c d m Makefile allversions

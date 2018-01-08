@@ -919,27 +919,34 @@ function enable_lb_rules(flag){
 	}
 }
 
-var str0="";
+var str0 = "";
 function add_option_count(obj, obj_t, selected_flag){
-		
-		if(obj_t.name == "wandog_maxfail" || (obj_t.name == "wandog_fb_count" && document.getElementById("wandog_fb_count_tr").style.display == "") || obj_t.name == "detect_count"){
-				
-				free_options(obj_t);
-				for(var i=1; i<100; i++){
-						if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
-							str0= i;
-						else
-							str0 = i*parseInt(obj.value);
+	var start = 1;
+	var end = 99;
 
-						if(selected_flag == i)
-								add_option(obj_t, str0, i, 1);
-						else
-								add_option(obj_t, str0, i, 0);
-				}
+	if(obj_t.name == "wandog_maxfail" || (obj_t.name == "wandog_fb_count" && document.getElementById("wandog_fb_count_tr").style.display == "") || obj_t.name == "detect_count"){
+		if(obj_t.name == "wandog_fb_count" || obj_t.name == "wandog_maxfail"){
+			start = 3;
+			if(obj_t.name == "wandog_fb_count")
+				end = parseInt(document.form.wandog_maxfail.value);
 		}
-		else{
-			return;
-		}		
+
+		free_options(obj_t);
+		for(var i = start; i <= end; i++){
+			if((based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U") && obj_t.name != "wandog_fb_count")
+				str0= i;
+			else
+				str0 = i*parseInt(obj.value);
+
+			if(selected_flag == i)
+					add_option(obj_t, str0, i, 1);
+			else
+					add_option(obj_t, str0, i, 0);
+		}
+	}
+	else{
+		return;
+	}
 }
 
 function hotstandby_act(enable){

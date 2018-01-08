@@ -98,10 +98,6 @@ void start_pptpd(void)
 		return;
 	}
 
-#ifdef HND_ROUTER
-	/* workaround for ppp packets are dropped by fc GRE learning when user uses PPTP - VPN server */
-	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "0");
-#endif
 
 	// cprintf("stop vpn modules\n");
 	// stop_vpn_modules ();
@@ -320,9 +316,4 @@ void stop_pptpd(void)
 
 	killall_tk("pptpd");
 	killall_tk("bcrelay");
-
-#ifdef HND_ROUTER
-	/* recover fc GRE learning : workaround for ppp packets are dropped by fc GRE learning when user uses PPTP - VPN server */
-	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
-#endif
 }

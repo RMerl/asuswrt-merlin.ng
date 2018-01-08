@@ -400,9 +400,11 @@ function applyRule(){
 
 			var radio_value = (document.form.wl_closed[0].checked) ? 1 : 0;
 			if(document.form.wps_enable.value == 1) {
-				if(!AiMesh_confirm_msg("Wireless_Hide_WPS", radio_value))
-					return false;
-				document.form.wps_enable.value = "0";
+				if(radio_value) {
+					if(!AiMesh_confirm_msg("Wireless_Hide_WPS", radio_value))
+						return false;
+					document.form.wps_enable.value = "0";
+				}
 			}
 			else {
 				if(!AiMesh_confirm_msg("Wireless_Hide", radio_value))

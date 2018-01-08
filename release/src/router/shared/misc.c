@@ -3823,7 +3823,7 @@ int ppa_support(int wan_unit)
 	ctf_disable_force = nvram_get_int("ctf_disable_force");
 
 	/* recover the NAT accelerator*/
-	nvram_set("ctf_disable_force", "0");
+	// nvram_set("ctf_disable_force", "0");
 
 #ifdef RTCONFIG_USB_MODEM
 	char modem_type[32];
@@ -3849,11 +3849,15 @@ int ppa_support(int wan_unit)
 		1. traditaional qos / bandwidth limiter / disable NAT accelerator
 		2. stop_ppa_wan : debug usage
 	*/
-	if((nvram_get_int("qos_enable") == 1 && (nvram_get_int("qos_type") != 1))
-		|| nvram_match("ctf_disable_force", "1") || nvram_match("stop_ppa_wan", "1"))
+	if((nvram_get_int("qos_enable") == 1 &&
+		(nvram_get_int("qos_type") != 1)))
 	{
 		ret = 0;
 	}
+
+	if(ctf_disable_force == 1) ret = 0;
+
+	if (nvram_match("stop_ppa_wan", "1")) ret = 0;
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
@@ -3861,16 +3865,6 @@ int ppa_support(int wan_unit)
 	if(strcmp(wan_proto, "pptp") == 0) ret = 0;
 	if(strcmp(wan_proto, "l2tp") == 0) ret = 0;
 	if(strcmp(nvram_safe_get(strcat_r(prefix, "hwaddr_x", tmp)), "")) ret = 0;
-	if(ctf_disable_force == 1) ret = 0;
-
-	/* when ppa wan interface removed, show NAT accelerator status */
-	if (ret == 0) {
-		nvram_set("ctf_disable", "1"); // GUI display
-		nvram_set("ctf_disable_force", "1");
-	}
-	else {
-		nvram_set("ctf_disable", "0"); // GUI display
-	}
 
 	return ret;
 }

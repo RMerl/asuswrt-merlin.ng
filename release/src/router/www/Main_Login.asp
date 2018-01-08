@@ -248,12 +248,6 @@ function initial(){
 		document.getElementById("password_title_ie").style.display ="";
 	}
 
-	if('<% check_asus_model(); %>' == '0'){
-		document.getElementById("warming_field").style.display ="";
-		disable_input(0);
-		disable_button(1);
-	}
-
 	if(flag != ""){
 		document.getElementById("error_status_field").style.display ="";
 
@@ -471,7 +465,6 @@ function checkTime(i){
 <input type="hidden" name="login_authorization" value="">
 <div class="div_table main_field_gap">
 	<div class="div_tr">
-		<div id="warming_field" style="display:none;" class="warming_desc">Note: the router you are using is not an ASUS device or has not been authorised by ASUS. ASUSWRT might not work properly on this device.</div>
 		<div class="title_name">
 			<div class="div_td img_gap">
 				<div class="login_img"></div>

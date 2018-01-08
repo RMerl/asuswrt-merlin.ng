@@ -2729,18 +2729,12 @@ void set_cap_apmode_filter(void)
 {
 	const char *cap_rules = "/tmp/cap_apmode_filter.default";
 	FILE *fp;
-	struct in_addr guest, guest1;
-	char glan[24], glan1[24];
-	unsigned int dip;
-
-	dip = ntohl(inet_addr(nvram_safe_get("lan_ipaddr")));
-	guest.s_addr = htonl(dip)&0x0000FFFF;
-	guest1.s_addr = htonl(dip)&0x00FFFFFF;
-	strlcpy(glan, inet_ntoa(guest), sizeof(glan));
-	strlcpy(glan1, inet_ntoa(guest1), sizeof(glan1));
+	char lan_class[32];
 
 	if((fp = fopen(cap_rules, "w")) == NULL)
 		return;
+
+	ip2class(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), lan_class);
 
 	fprintf(fp, "*filter\n"
 		":INPUT ACCEPT [0:0]\n"
@@ -2748,9 +2742,9 @@ void set_cap_apmode_filter(void)
 		":OUTPUT ACCEPT [0:0]\n"
 		);
 
-	fprintf(fp, "-A INPUT -d %s/24 -i %s -j DROP\n", glan1,BR_GUEST);
+	fprintf(fp, "-A INPUT -d %s -i %s -j DROP\n", lan_class, BR_GUEST);
 	fprintf(fp, "-A FORWARD -d %s/32 -i %s -o %s -j ACCEPT\n", nvram_safe_get("lan_gateway"), BR_GUEST, nvram_safe_get("lan_ifname"));
-	fprintf(fp, "-A FORWARD -d %s/16 -i %s -o %s -j DROP\n", glan,BR_GUEST, nvram_safe_get("lan_ifname"));
+	fprintf(fp, "-A FORWARD -d %s -i %s -o %s -j DROP\n", lan_class, BR_GUEST, nvram_safe_get("lan_ifname"));
 	fprintf(fp, "COMMIT\n\n");
 	fclose(fp);
 	eval("iptables-restore", cap_rules);
@@ -3024,6 +3018,11 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
 	int unit = get_wan_unit(wan_if);
 #endif
+#ifdef RTCONFIG_WIFI_SON
+	char lan_class[32];
+
+	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
+#endif
 
 	if(wan_prefix(wan_if, prefix) < 0)
 		sprintf(prefix, "wan%d_", WAN_UNIT_FIRST);
@@ -3259,6 +3258,7 @@ TRACE_PT("writing Parental Control\n");
 		}
 #endif
 #ifdef RTCONFIG_WIFI_SON
+		fprintf(fp, "-A INPUT -i %s -d %s -j DROP\n", BR_GUEST, lan_class);
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "br+", "ACCEPT");
 #else
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
@@ -4315,13 +4315,6 @@ TRACE_PT("writing Parental Control\n");
 		}
 #endif
 
-#ifdef RTCONFIG_WIFI_SON
-	//CAP/RE's guest can not access CAP's UI/app.
-	char lan_class[32];
-	ip2class(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), lan_class);
-	if(sw_mode() == SW_MODE_ROUTER || (sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1")))
-		fprintf(fp, "-A INPUT -i %s -d %s -j DROP\n", BR_GUEST,lan_class);
-#endif
 	if (nvram_match("fw_enable_x", "1")) {
 		/* Drop ICMP before ESTABLISHED state */
 		if (nvram_get_int("misc_ping_x") == 0) {

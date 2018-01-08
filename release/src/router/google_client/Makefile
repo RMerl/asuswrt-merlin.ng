@@ -20,11 +20,6 @@ LDFLAGS += -L$(TOP)/libqcsapi_client
 LIBS += -lqcsapi_client
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-LIBS += -ljson-c
-endif
-
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/common/include
 endif

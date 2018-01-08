@@ -1331,7 +1331,9 @@ void start_dnsmasq(void)
 #endif /* __CONFIG_NORTON__ */
 
 #ifdef NORESOLV /* dnsmasq uses no resolv.conf */
-	fprintf(fp, "no-resolv\n");		// no resolv
+	fprintf(fp, is_routing_enabled() ?
+		"no-resolv\n" :			// no resolv, use only additional list
+		"resolv-file=%s\n", dmresolv);	// the real stuff is here
 #else
 #ifdef RTCONFIG_YANDEXDNS
 	if (nvram_get_int("yadns_enable_x") && nvram_get_int("yadns_mode") != YADNS_DISABLED) {
@@ -3753,6 +3755,7 @@ start_acsd()
 	)
 		return 0;
 #endif
+
 	stop_acsd();
 
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")))
@@ -5548,8 +5551,12 @@ void start_chg_swmode(void)
 		nvram_set("lan_dnsenable_x", "1");
 	}
 	else if (sw_mode==1) {
-		nvram_set("lan_proto", "static");
-		nvram_set("lan_dnsenable_x", "0");
+		nvram_set("lan_proto", nvram_default_get("lan_proto"));
+		nvram_set("lan_ipaddr", nvram_default_get("lan_ipaddr"));
+		nvram_set("lan_ipaddr_rt", nvram_default_get("lan_ipaddr_rt"));
+		nvram_set("dhcp_start", nvram_default_get("dhcp_start"));
+		nvram_set("dhcp_end", nvram_default_get("dhcp_end"));
+		nvram_set("lan_dnsenable_x", nvram_default_get("lan_dnsenable_x"));
 	}
 
 	nvram_commit();
@@ -8802,6 +8809,65 @@ void factory_reset(void)
 
 	kill(1, SIGTERM);
 }
+
+#if defined(RTCONFIG_BWDPI)
+#if defined(RTCONFIG_VPN_FUSION)
+static void parse_vpn_fusion_profile()
+{
+	char *nv = NULL, *nvp = NULL, *b = NULL;
+	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
+	char *desc, *proto, *server, *username, *passwd, *active, *vpnc_idx;
+
+	while (nv && (b = strsep(&nvp, "<")) != NULL)
+	{
+		//proto, server, active and vpnc_idx are mandatory
+		if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx) < 4)
+			continue;
+
+		if (active) {
+			stop_vpnc_by_unit(atoi(vpnc_idx));
+			start_vpnc_by_unit(atoi(vpnc_idx));
+			printf("%s : resatrt vpn fusion %s\n", __FUNCTION__, vpnc_idx);
+		}
+	}
+	free(nv);
+}
+#endif // RTCONFIG_VPN_FUSION
+
+void bwdpi_restart_vpn_services()
+{
+	// vpn server
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+	if (nvram_get_int("pptpd_enable")) {
+		stop_pptpd();
+		start_pptpd();
+		printf("%s : restart_vpnd\n", __FUNCTION__);
+	}
+
+#endif
+
+	// OpenVPN client and servers
+#if defined(RTCONFIG_OPENVPN)
+	stop_ovpn_all();
+	start_ovpn_eas();
+	printf("%s : restart openvpn servers and clients\n", __FUNCTION__);
+#endif
+
+	// vpn client
+#if defined(RTCONFIG_VPNC)
+	if (!nvram_match("vpnc_proto", "openvpn") && !nvram_match("vpnc_proto", "disable")) {
+		stop_vpnc();
+		start_vpnc();
+		printf("%s : restart vpn client - pptp/l2tp\n", __FUNCTION__);
+	}
+#endif // RTCONFIG_VPNC
+
+	// vpn fusion
+#if defined(RTCONFIG_VPN_FUSION)
+	parse_vpn_fusion_profile();
+#endif
+}
+#endif
 
 void handle_notifications(void)
 {
@@ -15415,14 +15481,14 @@ void send_event_to_cfgmnt(int event_id)
 #endif
 
 #ifdef RTCONFIG_USB_SWAP
-int start_usb_swap(path)
+int start_usb_swap(char *path)
 {
 	int ret;
 	ret = eval("/usr/sbin/usb_swap.sh", path);
 	return ret;
 }
 
-int stop_usb_swap(path)
+int stop_usb_swap(char *path)
 {
 	int ret;
 	ret = eval("/usr/sbin/usb_swap.sh", path, "0");
@@ -15459,64 +15525,5 @@ void reset_led(void)
 	if(brightness_level < 0 || brightness_level > 3)
 		brightness_level = 2;
 	setCentralLedLv(brightness_level);
-}
-#endif
-
-#if defined(RTCONFIG_BWDPI)
-#if defined(RTCONFIG_VPN_FUSION)
-static void parse_vpn_fusion_profile()
-{
-	char *nv = NULL, *nvp = NULL, *b = NULL;
-	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
-	char *desc, *proto, *server, *username, *passwd, *active, *vpnc_idx;
-
-	while (nv && (b = strsep(&nvp, "<")) != NULL)
-	{
-		//proto, server, active and vpnc_idx are mandatory
-		if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx) < 4)
-			continue;
-
-		if (active) {
-			stop_vpnc_by_unit(atoi(vpnc_idx));
-			start_vpnc_by_unit(atoi(vpnc_idx));
-			printf("%s : resatrt vpn fusion %s\n", __FUNCTION__, vpnc_idx);
-		}
-	}
-	free(nv);
-}
-#endif // RTCONFIG_VPN_FUSION
-
-void bwdpi_restart_vpn_services()
-{
-	// vpn server
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
-	if (nvram_get_int("pptpd_enable")) {
-		stop_pptpd();
-		start_pptpd();
-		printf("%s : restart_vpnd\n", __FUNCTION__);
-	}
-
-#endif
-
-	// OpenVPN client and servers
-#if defined(RTCONFIG_OPENVPN)
-	stop_ovpn_all();
-	start_ovpn_eas();
-	printf("%s : restart openvpn servers and clients\n", __FUNCTION__);
-#endif
-
-	// vpn client
-#if defined(RTCONFIG_VPNC)
-	if (!nvram_match("vpnc_proto", "openvpn") && !nvram_match("vpnc_proto", "disable")) {
-		stop_vpnc();
-		start_vpnc();
-		printf("%s : restart vpn client - pptp/l2tp\n", __FUNCTION__);
-	}
-#endif // RTCONFIG_VPNC
-
-	// vpn fusion
-#if defined(RTCONFIG_VPN_FUSION)
-	parse_vpn_fusion_profile();
-#endif
 }
 #endif

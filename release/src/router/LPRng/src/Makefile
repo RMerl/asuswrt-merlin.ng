@@ -105,10 +105,6 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c -ljson-c
-endif
-
 FILTER_DIR = ${libexecdir}/filters
 LPD_DIR    = ${sbindir}
 

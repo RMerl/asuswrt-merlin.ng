@@ -23,6 +23,7 @@
 <script type="text/javascript" language="JavaScript" src="/client_function.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
 <script type="text/javascript" src="form.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
 .contentM_qis{
 	position:absolute;
@@ -287,7 +288,8 @@ function initial(){
 	get_vpnc_profile_status();
 	gen_exception_list_table();
 
-	$("#faq1").attr("href", "https://www.asus.com/support/FAQ/1033909");//this id is include in string : #VPN_Fusion_FAQ#	
+	//	https://www.asus.com/support/FAQ/1033909
+	httpApi.faqURL("faq1", "1033909", "https://www.asus.com", "/support/FAQ/");	//this id is include in string : #VPN_Fusion_FAQ#	
 }
 function gen_exception_list_table() {
 	//set table Struct

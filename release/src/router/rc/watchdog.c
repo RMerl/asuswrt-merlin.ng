@@ -5822,7 +5822,7 @@ void onboarding_check()
 #ifdef RTCONFIG_CFGSYNC
 void cfgsync_check()
 {
-	if (!pids("cfg_client") && !pids("cfg_server"))
+	if (nvram_match("x_Setting", "1") && !pids("cfg_client") && !pids("cfg_server"))
 		start_cfgsync();
 }
 #endif /* RTCONFIG_CFGSYNC */
@@ -6664,11 +6664,15 @@ void watchdog(int sig)
 			pid_t *pidList;
 			pid_t *pl;
 			int count;
+			static int hyd_wake_cnt=0, hyd_reset_cnt=0;
+			static long hyd_last_wake_time=0;
+			long uptime_now;
 #ifdef RTCONFIG_ETHBACKHAUL
 			static int chaos_eth_state=0;
 #endif
 
-			if(uptime()-nvram_get_int("watchdog_hyd")>40)
+			uptime_now = uptime();
+			if(uptime_now- atol(nvram_get("hyd_cfg_time"))>40)
 			{
 				pidList = find_pid_by_name("hyd");
 				count=0;
@@ -6680,8 +6684,37 @@ void watchdog(int sig)
 					invalid_state=0;
 				if (invalid_state >= 2) {
 					if (count==0) {
-						_dprintf("[[[WATCHDOG]]] : wakup hyd\n");
-						eval("hyd","-C","/tmp/hyd.conf");
+						if ((uptime_now-hyd_last_wake_time)>10) { /* reset */
+							hyd_wake_cnt=0;
+							hyd_reset_cnt=0;
+						}
+						hyd_last_wake_time = uptime_now;
+						hyd_wake_cnt++;
+						if (hyd_wake_cnt > 5) { /* something wrong, regen hyd config */
+							hyd_wake_cnt=0;
+							hyd_reset_cnt++;
+							if (hyd_reset_cnt > 2) { /* serious situation... */
+								logmessage("HYD", "hyd cannot startup, reboot!");
+								eval("reboot");
+							} else {
+								char lbuf[40];
+								_dprintf("[[[WATCHDOG]]] : reset hyd process!\n");
+								/* log some information */
+								logmessage("HYD", "==================================");
+								system("ifconfig -a | logger -s");
+								logmessage("HYD", "==================================");
+								system("iwconfig | logger -s");
+								logmessage("HYD", "==================================");
+								system("cat /tmp/hyd.conf | logger -s");
+								logmessage("HYD", "==================================");
+								eval("hive_hyd");
+								sprintf(lbuf, "%lu", uptime_now-40);
+								nvram_set("hyd_cfg_time", lbuf);
+							}
+						} else {
+							_dprintf("[[[WATCHDOG]]] : wakup hyd\n");
+							eval("hyd","-C","/tmp/hyd.conf");
+						}
 					} else {
 						int tmp_count;
 						for (tmp_count=0; tmp_count<=(count-1); tmp_count++) {

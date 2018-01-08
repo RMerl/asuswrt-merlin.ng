@@ -28,11 +28,6 @@ else
 	XML_LIBS+=" -lm"
 fi
 
-AMAS=`cat ../.config |grep "RTCONFIG_AMAS=y"`
-if [ -n "$AMAS" ]; then
-	LIBS+=" -L$router_dir/json-c/.libs -ljson-c"
-fi
-
 PMS=`cat ../.config |grep "RTCONFIG_PERMISSION_MANAGEMENT=y"`
 if [ -n "$PMS" ]; then
 	CFLAGS+=" -I$router_dir/sqlCipher -I$router_dir/PMS_DBapis"

@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Ce champ est utilisé comme un identifiant
 LANHostConfig_x_DDNSUserName_itemname=Nom d'utilisateur ou adresse email
 LANHostConfig_x_DDNSWildcard_itemdesc=Une fois activé, le nom de domaine est redirigé vers votre adresse IP.
 LANHostConfig_x_DDNSWildcard_itemname=Activer le wildcard 
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Adresse IP de la passerelle par défaut pour le point d'accès.
 LANHostConfig_x_LDNSServer1_itemdesc=Ce champ indique l\'adresse IP du service DNS à fournir aux clients demandant une adresse IP au serveur DHCP. Si vous laissez ce champ vide, la requête DNS est alors traitée par le ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Serveur DNS
@@ -2228,7 +2229,7 @@ sockets_UNIX=Sockets UNIX
 Smart_Access=Smart Access
 smart_access_desc=Active la fonctionnalité Samba permettant d'accéder à distance à des clients mis en réseau. La fonction d'accès intelligent permet également de sortir un ordinateur du mode veille.
 smart_access2=La fonctionnalité WOL (éveil par appel réseau) permet de mettre en route un ordinateur à partir de n'importe quel appareil du réseau.
-smart_access3=Qu'est ce que <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Qu'est ce que <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Détection de rebonds
 smart_connect_enable=Activer Smart Connect

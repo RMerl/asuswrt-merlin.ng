@@ -18,6 +18,7 @@
 <script type="text/javascript" src="help.js"></script>
 <script type="text/javascript" src="validator.js"></script>
 <script language="JavaScript" type="text/JavaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
 <% wan_get_parameter(); %>
@@ -50,7 +51,8 @@ new Array("ICMPv6", "icmp6")
 
 function initial(){	
 	show_menu();	
-	
+	// https://www.asus.com/US/support/FAQ/113990
+	httpApi.faqURL("faq", "113990", "https://www.asus.com", "/support/FAQ/");
 	if(!IPv6_Passthrough_support){
 		$("#ipv61_service option[value='ipv6pt']").remove();
 		$("#ipv61_service option[value='flets']").remove();
@@ -70,7 +72,6 @@ function initial(){
 		}
 	}
 
-	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "IPv6"]);
 	document.form.wan_selection.selectedIndex = parseInt(ipv6_unit);
 	genWANSoption();
 }

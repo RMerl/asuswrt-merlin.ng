@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=このフィールドは、Dynamic-DNS サ
 LANHostConfig_x_DDNSUserName_itemname=ユーザー名またはEメールアドレス
 LANHostConfig_x_DDNSWildcard_itemdesc=有効にすると、ワイルドカードを含むドメイン名はユーザーの IP アドレスにリダイレクトされます。
 LANHostConfig_x_DDNSWildcard_itemname=ワイルドカードを有効にする
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=これはアクセスポイント用のデフォルトゲートウェイの IP アドレスです。
 LANHostConfig_x_LDNSServer1_itemdesc=このフィールドは、DNS の IP アドレスを指し、 DHCP サーバーから IP アドレスを要求するクライアントに提供されます。空欄にしても問題ありませんが、DNS リクエストは ZVMODELVZ により実行されます。
 LANHostConfig_x_LDNSServer1_itemname=DNS サーバー
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX ソケット
 Smart_Access=Smart Access
 smart_access_desc=Smart Access は、利用環境に関わらずインターネット経由で LAN 上の PC にアクセスすることができる機能です。
 smart_access2=WOL (Wake-On-LAN) 機能で、同一ネットワーク上の任意のデバイスからコンピューターを起動させることができます。
-smart_access3=<a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> とは？
+smart_access3=<a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> とは？
 smart_connect=スマートコネクトは、電波の強さ、デバイスのスピード性能、混雑状況に応じ、2.4GHz 、5GHz の帯域を自動的に割り当てることによって、より快適な無線通信を提供します。
 smart_connect_BD=バウンス検出
 smart_connect_enable=スマートコネクト

@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=To polje je uporabljeno kot identiteta za 
 LANHostConfig_x_DDNSUserName_itemname=Uporabniško ime ali e-poštni naslov
 LANHostConfig_x_DDNSWildcard_itemdesc=Če je ta možnost omogočena, je ime domene z nadomestnimi znaki preusmerjeno na vaš naslov IP.
 LANHostConfig_x_DDNSWildcard_itemname=Omogoči nadomestne znake
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=To je naslov IP privzetega prehoda za dostopno točko.
 LANHostConfig_x_LDNSServer1_itemdesc=V tem polju je naveden naslov IP sistema DNS za zagotavljanje naslova IP odjemalcem, ki ga zahtevajo, iz strežnika DHCP. Če polje pustite prazno, bo zahtevo sistema DNS obdelal usmerjevalnik ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=DNS strežnik
@@ -2228,7 +2229,7 @@ sockets_UNIX=Vtičnice UNIX
 Smart_Access=Pametni dostop
 smart_access_desc=Omogoča dostop na daljavo do računalnikov in naprav v omrežju, ki podpirajo omrežni pogon (Samba). S funkcijo pametnega dostopa lahko tudi prebudite računalnik, ki je v stanju spanja.
 smart_access2=S funkcijo WOL (prebujanje prek omrežja LAN) lahko prebudite računalnik s poljubno napravo v omrežju.
-smart_access3=Kaj je <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Kaj je <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Pametno povezovanje
 smart_connect_BD=Zaznavanje odboja
 smart_connect_enable=Omogoči pametno povezovanje

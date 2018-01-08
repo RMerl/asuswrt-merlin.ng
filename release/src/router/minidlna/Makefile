@@ -40,9 +40,6 @@ LDFLAGS += -L$(TOP)/zlib -L$(TOP)/sqlite/.libs -L$(TOP)/jpeg -L$(TOP)/libvorbis/
 	-L$(TOP)/libid3tag/.libs
 ifeq ($(RTAC68U), y)
 LDFLAGS += -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
 endif
 else
 LDFLAGS += -static

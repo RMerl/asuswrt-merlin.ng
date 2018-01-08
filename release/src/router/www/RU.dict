@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Это поле используется �
 LANHostConfig_x_DDNSUserName_itemname=Имя пользователя или адрес электронной почты
 LANHostConfig_x_DDNSWildcard_itemdesc=При включении этой функции имя домена, содержащее подстановочные символы, будет перенаправляться на ваш IP-адрес.
 LANHostConfig_x_DDNSWildcard_itemname=Включить подстановочные символы
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=IP-адрес шлюза по умолчанию для точки доступа
 LANHostConfig_x_LDNSServer1_itemdesc=В этом поле указывается IP-адрес DNS для клиентов, запрашивающих IP-адрес у DHCP-сервера. Это поле можно оставить пустым, тогда запросы DNS будут обрабатываться ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=IP-адрес DNS
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX сокеты
 Smart_Access=Smart Access
 smart_access_desc=Включает в сетевое окружение (Samba) для удаленного подключения. Smart Access также может вывести ПК из спящего режима.
 smart_access2=Функция WOL (Wake-On-LAN) позволяет разбудить компьютер с любого устройства в сети.
-smart_access3=Что такое <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Что такое <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Обнаружение отказа
 smart_connect_enable=Включить Smart Connect

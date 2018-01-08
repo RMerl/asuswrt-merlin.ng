@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
 .appIcons{
 	width:36px;
@@ -179,6 +180,8 @@ function initial(){
 	}
 
 	show_menu();
+	// http://www.asus.com/support/FAQ/1008717/
+	httpApi.faqURL("faq", "1008717", "https://www.asus.com", "/support/FAQ/");
 	show_clients();
 }
 
@@ -1467,7 +1470,7 @@ function cancel(){
 							<td>
 								<div style=" *width:136px;margin:5px 0px 0px 300px;" class="titlebtn" align="center" onClick="applyRule();">
 									<span><#CTL_apply#></span>
-									<div style="margin:-30px 0 0px -290px;width:200px;"><a style="text-decoration:underline;" href="http://www.asus.com/support/FAQ/1008717/" target="_blank"><#Bandwidth_monitor_WANLAN#> FAQ</a></div>
+									<div style="margin:-30px 0 0px -290px;width:200px;"><a id="faq" href="" style="text-decoration:underline;" target="_blank"><#Bandwidth_monitor_WANLAN#> FAQ</a></div>
 								</div>
 							</td>
 						</tr>		

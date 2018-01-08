@@ -32,6 +32,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
@@ -88,7 +90,9 @@ function initial(){
 		}
 	}
 	
-	show_menu();			
+	show_menu();
+	// https://www.asus.com/support/FAQ/1011715/
+	httpApi.faqURL("faq", "1011715", "https://www.asus.com", "/support/FAQ/");
 	change_wan_type(document.form.wan_proto.value, 0);	
 	fixed_change_wan_type(document.form.wan_proto.value);
 	genWANSoption();
@@ -109,8 +113,6 @@ function initial(){
 		}
 	}
 	display_upnp_options();
-
-	addOnlineHelp(document.getElementById("faq"), ["UPnP"]);
 
 	if(gobi_support){
 		document.getElementById("page_title").innerHTML = "<#WAN_page_desc#>";

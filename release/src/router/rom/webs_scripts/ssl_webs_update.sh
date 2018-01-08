@@ -207,36 +207,43 @@ releasenote_file1=`echo $get_productid`_`nvram get webs_state_info_beta`_"$LANG"
 releasenote_file1_US=`echo $get_productid`_`nvram get webs_state_info_beta`_US_note.zip
 releasenote_path1="/tmp/release_note1.txt"
 
-if [ "$webs_state_flag" -eq "1" ]; then
-	if [ "$forsq" == "1" ]; then
-		echo "---- download SQ release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0 -O $releasenote_path0
-		if [ "$?" != "0" ]; then
-			wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0_US -O $releasenote_path0
-		fi
-		echo "---- https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1 -O $releasenote_path1
-		if [ "$?" != "0" ]; then
-			wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US -O $releasenote_path1
-		fi
-		echo "---- https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1 ----" >> /tmp/webs_upgrade.log
-	else
-		echo "---- download real release note ----" >> /tmp/webs_upgrade.log
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0 -O $releasenote_path0
-		if [ "$?" != "0" ]; then
-			wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0_US -O $releasenote_path0
-		fi
-		echo "---- https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1 -O $releasenote_path1
-		if [ "$?" != "0" ]; then
-			wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1_US -O $releasenote_path1
-		fi
-		echo "---- https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1 ----" >> /tmp/webs_upgrade.log
-	fi
-	
+if [ "$forsq" == "1" ]; then
+	echo "---- download SQ release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
+	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0 -O $releasenote_path0
 	if [ "$?" != "0" ]; then
-		echo "---- download SQ release note failed ----" >> /tmp/webs_upgrade.log
-		nvram set webs_state_error=1		
+		echo "---- download SQ release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0  [Failed] ----" >> /tmp/webs_upgrade.log
+		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0_US -O $releasenote_path0
+		if [ "$?" != "0" ]; then
+			echo "---- download SQ US release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
+		fi
+	fi
+	echo "---- download SQ beta release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1 ----" >> /tmp/webs_upgrade.log
+	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1 -O $releasenote_path1
+	if [ "$?" != "0" ]; then
+		echo "---- download SQ beta release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1  [Failed] ----" >> /tmp/webs_upgrade.log
+		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US -O $releasenote_path1
+		if [ "$?" != "0" ]; then
+			echo "---- download SQ US beta release note https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US  [Failed] ----" >> /tmp/webs_upgrade.log
+		fi
+	fi
+else
+	echo "---- download real release note https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
+	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0 -O $releasenote_path0
+	if [ "$?" != "0" ]; then
+		echo "---- download real release note https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0  [Failed] ----" >> /tmp/webs_upgrade.log
+		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0_US -O $releasenote_path0
+		if [ "$?" != "0" ]; then
+			echo "---- download real US release note https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
+		fi
+	fi
+	echo "---- download real release note https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1 ----" >> /tmp/webs_upgrade.log
+	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1 -O $releasenote_path1
+	if [ "$?" != "0" ]; then
+		echo "---- download real release note https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1  [Failed] ----" >> /tmp/webs_upgrade.log
+		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1_US -O $releasenote_path1
+		if [ "$?" != "0" ]; then
+			echo "---- download real US release note https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file1_US  [Failed] ----" >> /tmp/webs_upgrade.log
+		fi
 	fi
 fi
 

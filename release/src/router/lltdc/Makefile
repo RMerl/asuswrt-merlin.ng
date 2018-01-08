@@ -20,10 +20,6 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 OS_LAYER = osl-linux.c
 
 all: lld2c

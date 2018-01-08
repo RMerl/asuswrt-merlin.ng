@@ -18,6 +18,7 @@
 <script type="text/javascript" src="help.js"></script>
 <script type="text/javascript" src="validator.js"></script>
 <script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .contentM_connection{
 	position:absolute;
@@ -53,6 +54,8 @@ var Wan_Setting = [
 	];
 function initial(){
 	show_menu();
+	// https://www.asus.com/support/FAQ/1011715/
+	httpApi.faqURL("faq", "1011715", "https://www.asus.com", "/support/FAQ/");	
 
 }
 

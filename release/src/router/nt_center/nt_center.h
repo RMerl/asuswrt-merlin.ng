@@ -37,6 +37,10 @@ typedef struct __push_msg_conf__t_
 	char            cusid[MAX_CUSID_LEN];
 	char            deviceid[MAX_DEVICEID_LEN];
 	char            deviceticket[MAX_DEVTICKET_LEN];
+	char            devicetype[4];
+	char            fwver[MAX_DESC_LEN];
+	char            apilevel[4];
+	char            modelname[MAX_STATUS_LEN];
 
 }PUSHMSG_CONFIG_T;
 

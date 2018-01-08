@@ -665,7 +665,6 @@ define(function(){
 					retArray.push("Advanced_OperationMode_Content.asp");
 					retArray.push("QoS_EZQoS.asp");
 					retArray.push("AdaptiveQoS_WebHistory.asp");
-					retArray.push("Advanced_DHCP_Content.asp");
 				}
 
 				return retArray;

@@ -16,10 +16,6 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 OBJS = sysstate.o dumplog.o respipc.o cpuusage.o cputemp.o ramusage.o
 
 ifneq ($(wildcard ./prebuild$(BCMEX)$(EXHND)),)

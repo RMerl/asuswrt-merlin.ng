@@ -648,19 +648,18 @@ static void config_qca8337_LANWANPartition(int type)
 	// LAN 
 #if defined(PLAC56) || defined(PLAC66U) // QCA8337 RGMII_PORT connect to PLC
 	qca8337_vlan_set(1, 1, 0, (lan_mask | CPU_PORT_LAN_MASK | (1U << RGMII_PORT)), lan_mask | (1U << RGMII_PORT));
-#elif defined(PLN12) || defined(MAPAC1750) // for QCA953X/QCA956X support Router mode via VLAN
+#elif (defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)) && !defined(RPAC51)
 	qca8337_vlan_set(1, 1, 0, (lan_mask | CPU_PORT_LAN_MASK), lan_mask);
 #else /* RT-AC55U || 4G-AC55U */
 	qca8337_vlan_set(1, 1, 0, (lan_mask | CPU_PORT_LAN_MASK), (lan_mask | CPU_PORT_LAN_MASK));
 #endif
 
 	// WAN & DUALWAN
-	if (sw_mode == SW_MODE_ROUTER) {
+	if (sw_mode == SW_MODE_ROUTER || (sw_mode == SW_MODE_AP && nvram_match("cfg_master", "1"))) {
 		switch (wanscap_wanlan) {
 		case WANSCAP_WAN | WANSCAP_LAN:
 			qca8337_vlan_set(2, 2, 0, (wan_mask      | CPU_PORT_WAN_MASK), wan_mask);
 			qca8337_vlan_set(3, 3, 0, (wans_lan_mask | CPU_PORT_WAN_MASK), wans_lan_mask);
-			eval("swconfig", "dev", MII_IFNAME, "set", "enable_vlan", "1"); // enable vlan
 			break;
 		case WANSCAP_LAN:
 			qca8337_vlan_set(2, 2, 0, (wans_lan_mask | CPU_PORT_WAN_MASK), (wans_lan_mask | CPU_PORT_WAN_MASK));
@@ -668,7 +667,6 @@ static void config_qca8337_LANWANPartition(int type)
 		case WANSCAP_WAN:
 #if defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
 			qca8337_vlan_set(2, 2, 0, (wan_mask      | CPU_PORT_WAN_MASK), wan_mask);
-			eval("swconfig", "dev", MII_IFNAME, "set", "enable_vlan", "1"); // enable vlan
 #else /* RT-AC55U || 4G-AC55U */
 			qca8337_vlan_set(2, 2, 0, (wan_mask      | CPU_PORT_WAN_MASK), (wan_mask      | CPU_PORT_WAN_MASK));
 #endif
@@ -677,10 +675,7 @@ static void config_qca8337_LANWANPartition(int type)
 			_dprintf("%s: Unknown WANSCAP %x\n", __func__, wanscap_wanlan);
 		}
 	}
-#if defined(PLN12) || defined(PLAC56) || defined(PLAC66U) || defined(MAPAC1750) // for QCA953X/QCA956X support bridge mode via VLAN
-	else
-		eval("swconfig", "dev", MII_IFNAME, "set", "enable_vlan", "1"); // enable vlan
-#endif
+	eval("swconfig", "dev", MII_IFNAME, "set", "enable_vlan", "1"); // enable vlan
 	eval("swconfig", "dev", MII_IFNAME, "set", "apply"); // apply changes
 }
 
@@ -1170,7 +1165,7 @@ void ATE_port_status(void)
 	snprintf(buf, sizeof(buf), "L1=%C;",
 		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X');
 #elif defined(MAPAC1750)
-	snprintf(buf, sizeof(buf), "L1=%C;L2=%C;",
+	snprintf(buf, sizeof(buf), "W=%C;L=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
 		(pS.link[1] == 1) ? (pS.speed[1] == 2) ? 'G' : 'M': 'X');
 #else

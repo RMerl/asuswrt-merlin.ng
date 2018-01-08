@@ -520,7 +520,7 @@ config RTCONFIG_TFAT
 
 config RTCONFIG_OPENPLUS_TFAT
 	bool "Open + Tuxera FAT Support"
-	depends on RTCONFIG_OPEN_NTFS3G
+	depends on RTCONFIG_TFAT
 	default n
 
 config RTCONFIG_NTFS

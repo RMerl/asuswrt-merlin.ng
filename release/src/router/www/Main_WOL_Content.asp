@@ -21,6 +21,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var wollist_array = "<% nvram_get("wollist"); %>";
 var manually_wol_list_array = new Array();
@@ -34,6 +35,8 @@ Object.prototype.getKey = function(value) {
 };
 function initial(){
 	show_menu();
+	//	http://www.asus.com/support/FAQ/1009775
+	httpApi.faqURL("faq3", "1009775", "https://www.asus.com", "/support/FAQ/");	// id in #smart_access3#
 
 	var wollist_row = wollist_array.split('&#60');
 	for(var i = 1; i < wollist_row.length; i += 1) {

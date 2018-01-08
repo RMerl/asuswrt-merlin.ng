@@ -20,7 +20,19 @@
 <script type="text/javascript" src="/help.js"></script>
 <script>
 var fb_state = "<% nvram_get("fb_state"); %>";
-	
+
+var firmver = '<% nvram_get("firmver"); %>';
+var buildno = '<% nvram_get("buildno"); %>';
+//var rcno = '<% nvram_get("rcno"); %>';
+var extendno = '<% nvram_get("extendno"); %>';
+var FWString = '';
+
+FWString = firmver+"."+buildno;
+//if(rcno.length > 0)
+//	FWString += "rc"+rcno;
+FWString += "_"+extendno;
+
+
 function initial(){
 	show_menu();
 	check_info();
@@ -60,7 +72,7 @@ function get_debug_log_info(){
 	desc += "----------------------------------------------------------------------\n";
 
 	desc += "Model: "+based_modelid+"\n";
-	desc += "Firmware Version: <% nvram_get("firmver"); %>.<% nvram_get("buildno"); %>_<% nvram_get("extendno"); %>\n";
+	desc += "Firmware Version: "+FWString+"\n";
 	desc += "Inner Version: <% nvram_get("innerver"); %>\n";
 	desc += "DSL Firmware Version: <% nvram_get("dsllog_fwver"); %>\n";
 	desc += "DSL Driver Version:  <% nvram_get("dsllog_drvver"); %>\n\n";

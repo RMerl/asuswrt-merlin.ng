@@ -16,11 +16,6 @@ LIBS = -lnvram -lshared -lcrypto -lssl -lcurl -lxml2
 #CFLAGS += -I$(SRCBASE)/common/include
 #endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs
-LIBS += -ljson-c
-endif
-
 all: libsmartsync_api.so
 
 api.o: api.c

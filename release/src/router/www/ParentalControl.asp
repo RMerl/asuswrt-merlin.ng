@@ -212,11 +212,6 @@ function initial(){
 	}
 	document.getElementById('disable_NAT').href = "Advanced_SwitchCtrl_Content.asp?af=ctf_disable_force";	//this id is include in string : #ParentalCtrl_disable_NAT#
 
-	/* MODELDEP */
-	if(based_modelid == "RT-AC65U"){
-		document.getElementById('switch_menu').style.display = "none";
-	}
-
 	show_footer();
 	init_array(array);
 	init_cookie();	

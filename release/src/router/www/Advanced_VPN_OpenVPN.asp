@@ -21,6 +21,7 @@
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
 .contentM_qis{
 	width:740px;	
@@ -125,7 +126,7 @@ function initial(){
 	var currentcipher = "<% nvram_get("vpn_server_cipher"); %>";
 	var currentdigest = "<% nvram_get("vpn_server_digest"); %>";
 
-	show_menu();		
+	show_menu();
 
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {
@@ -179,10 +180,14 @@ function initial(){
 	setTimeout("show_warning_message();", 100);
 
 	//set FAQ URL
-	set_FAQ_link("faq_windows", "1004469", "OpenVPN");
-	set_FAQ_link("faq_macOS", "1004472", "OpenVPN");
-	set_FAQ_link("faq_iPhone", "1004471", "OpenVPN");
-	set_FAQ_link("faq_android", "1004466", "OpenVPN");
+	//	https://www.asus.com/support/FAQ/1033576
+	httpApi.faqURL("faq_windows", "1033576", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1033575
+	httpApi.faqURL("faq_macOS", "1033575", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1033574
+	httpApi.faqURL("faq_iPhone", "1033574", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1033572
+	httpApi.faqURL("faq_android", "1033572", "https://www.asus.com", "/support/FAQ/");	
 
 	var custom2 = document.form.vpn_server_custom2.value;
 	if (isSupport("hnd")) {

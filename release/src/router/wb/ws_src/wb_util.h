@@ -135,8 +135,11 @@ const char* ifttt_notification_template =
 ;
 
 const char* wb_custom_header_templ = 
-"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; apilevel=%d";
-#endif
+"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; apilevel=%d; modelname=%s";
+
+const char* wb_custom_header_templ2 = 
+"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; apilevel=%s; modelname=%s";
 
 const char* ifttt_notification_header_templ = 
 "Content-Type: application/json";
+#endif

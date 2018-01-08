@@ -16,6 +16,7 @@
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .weakness{
 	width:650px;
@@ -148,6 +149,8 @@ var safe_count = 0;
 
 function initial(){
 	show_menu();
+	//	http://www.asus.com/support/FAQ/1008719/
+	httpApi.faqURL("faq", "1008719", "https://www.asus.com", "/support/FAQ/");
 
 	if(lyra_hide_support){
 		document.getElementById("scenario_tr").style.display = "none";
@@ -1207,7 +1210,9 @@ function shadeHandle(flag){
 														<tr>
 															<td>
 																<div style="width:430px"><#AiProtection_desc#></div>
-																<div style="width:430px"><a style="text-decoration:underline;" href="http://www.asus.com/support/FAQ/1008719/" target="_blank"><#AiProtection_title#> FAQ</a></div>
+																<div style="width:430px">
+																	<a id="faq" style="text-decoration:underline;" href="" target="_blank"><#AiProtection_title#> FAQ</a>
+																</div>
 															</td>
 															<td>
 																<div style="width:100px;height:48px;margin-left:-40px;background-image:url('images/New_ui/tm_logo.png');"></div>

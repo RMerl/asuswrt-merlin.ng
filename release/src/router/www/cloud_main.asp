@@ -70,10 +70,6 @@ else
 
 function initial(){
 	show_menu();
-	addOnlineHelp(document.getElementById("faq0"), ["samba"]);
-	addOnlineHelp(document.getElementById("faq1"), ["ASUSWRT", "port", "forwarding"]);
-	addOnlineHelp(document.getElementById("faq2"), ["ASUSWRT", "DMZ"]);
-	addOnlineHelp(document.getElementById("faq3"), ["WOL", "BIOS"]);
 
 	document.getElementById("app_state").style.display = "";
 	

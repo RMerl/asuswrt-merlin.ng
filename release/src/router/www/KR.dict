@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=이 필드는 동적 DNS 서비스에 로�
 LANHostConfig_x_DDNSUserName_itemname=사용자 이름 또는 이메일 주소
 LANHostConfig_x_DDNSWildcard_itemdesc=사용할 경우, 와일드 카드를 사용한 도메인 이름이 당신의 IP 어드레스로 리다이렉트 됩니다.
 LANHostConfig_x_DDNSWildcard_itemname=와일드 카드 사용
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=이것은 AP 의 기본 게이트웨이 IP 어드레스 입니다.
 LANHostConfig_x_LDNSServer1_itemdesc=이 필드는 DNS 의 IP 어드레스를 클라이언트에 제공하여 DHCP 서버로부터 IP 어드레스를 요청할 것인지 나타냅니다. 공란으로 남겨둘 경우, ZVMODELVZ가 DNS 요청을 하게 됩니다.
 LANHostConfig_x_LDNSServer1_itemname=DNS 서버
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX sockets
 Smart_Access=Smart Access
 smart_access_desc=원격으로 액세스할 네트워크 장소(Samba) 네트워크 연결된 PC 와 장치를 활성화합니다. 스마트 액세스는 대기 모드에 있는 PC를 재가동시킵니다.
 smart_access2=WOL(Wake-On-LAN) 기능은 당신의 PC를 네트워크에 있는 어떤 장치에서도 켤 수 있게 합니다.
-smart_access3=<a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> 이란?
+smart_access3=<a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> 이란?
 smart_connect=Smart Connect
 smart_connect_BD=바운드 감지
 smart_connect_enable=Smart Connect 활성화

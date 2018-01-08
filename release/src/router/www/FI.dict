@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Tätä kenttää käytetään tunnistetiet
 LANHostConfig_x_DDNSUserName_itemname=User Name or E-mail Address (Käyttäjänimi tai sähköpostiosoite)
 LANHostConfig_x_DDNSWildcard_itemdesc=Kun yleismerkki on käytössä, toimialuenimi, jossa on yleismerkki, ohjataan IP-osoitteeseesi.
 LANHostConfig_x_DDNSWildcard_itemname=Otetaanko yleismerkki käyttöön
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Tämä on oletusyhdyskäytävän IP-osoite tukiasemaa varten
 LANHostConfig_x_LDNSServer1_itemdesc=Tämä kenttä ilmaisee DNS-palvelimen IP-osoitteen, joka toimitetaan asiakkaille, jotka pyysivät DHCP-palvelimelta IP-osoitetta. Voit jättää sen tyhjäksi, jolloin ZVMODELVZ-reititin käsittelee DNS-pyynnön.
 LANHostConfig_x_LDNSServer1_itemname=DNS Server (DNS-palvelin)
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX-liitännät
 Smart_Access=Smart Access
 smart_access_desc=Ottaa käyttöön Network Place (Samba) -verkossa olevien PC-tietokoneiden ja laitteiden etäkäytön. Smart Access -sovelluksella pystyy myös herättämään lepotilassa olevan PC-tietokoneen.
 smart_access2=WOL (Wake-On-LAN) -ominaisuus sallii sinun herättää tietokone miltä tahansa verkon laitteella.
-smart_access3=Mikä on <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Mikä on <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Toimittamattoman viestin palautuksen tunnistus
 smart_connect_enable=Ota käyttöön Älykäs yhdistäminen

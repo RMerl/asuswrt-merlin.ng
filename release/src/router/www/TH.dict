@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=ฟิลด์นี้ใช้เพื
 LANHostConfig_x_DDNSUserName_itemname=ชื่อผู้ใช้หรืออีเมลแอดเดรส
 LANHostConfig_x_DDNSWildcard_itemdesc=เมื่อเปิดทำงาน ชื่อโดเมนที่มีอักขระตัวแทนจะถูกเปลี่ยนเส้นทางไปยัง IP แอดเดรสของคุณ
 LANHostConfig_x_DDNSWildcard_itemname=เปิดทำงานอักขระตัวแทน
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=นี่คือ IP แอดเดรสของเกตเวย์เริ่มต้นสำหรับแอคเซสพอยต์
 LANHostConfig_x_LDNSServer1_itemdesc=ฟิลด์นี้ระบุถึง IP แอดเดรสของ DNS ที่ให้กับไคลเอ็นต์ที่ขอ IP แอดเดรสจาก DHCP เซิร์ฟเวอร์ คุณสามารถปล่อยให้ว่างไว้ได้, จากนั้นคำขอ DNS จะถูกประมวลผลโดย ZVMODELVZ
 LANHostConfig_x_LDNSServer1_itemname=DNS เซิร์ฟเวอร์
@@ -2228,7 +2229,7 @@ sockets_UNIX=ซ็อกเก็ต UNIX
 Smart_Access=Smart Access
 smart_access_desc=เปิดใช้งาน Network Place (ตำแหน่งเครือข่าย) (Samba) ที่เชื่อมโยง PC และอุปกรณ์ต่างๆ เพื่อที่จะเข้าถึงจากระยะไกล Smart Access (การเข้าถึงแบบอัจฉริยะ) ยังสามารถเรียก PC ที่อยู่ในโหมดสลิปกลับมาทำงาน
 smart_access2=คุณสมบัติ WOL (ปลุก-ผ่าน-LAN) อนุญาตให้คุณปลุกคอมพิวเตอร์จากอุปกรณ์ใดๆ ก็ได้ในเครือข่าย
-smart_access3=<a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> คืออะไร?
+smart_access3=<a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> คืออะไร?
 smart_connect=Smart Connect
 smart_connect_BD=Bounce Detect (การตรวจสอบการตีกลับ)
 smart_connect_enable=เปิดใช้งาน Smart Connect (การเชื่อมต่ออัจฉริยะ)

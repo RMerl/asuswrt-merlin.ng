@@ -676,15 +676,15 @@ void start_usb(int orig)
 			}
 
 			if (nvram_get_int("usb_fs_fat")) {
-#ifdef RTCONFIG_TFAT
 #ifdef RTCONFIG_OPENPLUS_TFAT
-				if(fs_coexist() == 1){
+				if(nvram_match("usb_fatfs_mod", "tuxera"))
+					modprobe("tfat");
+				else{
 					modprobe("fat");
 					modprobe("vfat");
 				}
-				else
-#endif
-					modprobe("tfat");
+#elif defined(RTCONFIG_TFAT)
+				modprobe("tfat");
 #else
 				modprobe("fat");
 				modprobe("vfat");
@@ -781,15 +781,15 @@ void remove_usb_storage_module(void)
 #ifdef LINUX26
 	modprobe_r("mbcache");
 #endif
-#ifdef RTCONFIG_TFAT
 #ifdef RTCONFIG_OPENPLUS_TFAT
-	if(fs_coexist() == 1){
+	if(nvram_match("usb_fatfs_mod", "tuxera"))
+		modprobe_r("tfat");
+	else{
 		modprobe_r("vfat");
 		modprobe_r("fat");
 	}
-	else
-#endif
-		modprobe_r("tfat");
+#elif defined(RTCONFIG_TFAT)
+	modprobe_r("tfat");
 #else
 	modprobe_r("vfat");
 	modprobe_r("fat");
@@ -1186,16 +1186,8 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 			}
 
 			sprintf(options + strlen(options), ",shortname=winnt" + (options[0] ? 0 : 1));
-#ifdef RTCONFIG_TFAT
 #ifdef RTCONFIG_OPENPLUS_TFAT
-			if(fs_coexist() == 1){
-#ifdef LINUX26
-				sprintf(options + strlen(options), ",flush" + (options[0] ? 0 : 1));
-#endif
-			}
-			else
-#endif
-			{
+			if(nvram_match("usb_fatfs_mod", "tuxera")){
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
 				if(nvram_get_int("stop_iostreaming"))
 					sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
@@ -1205,6 +1197,19 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 				sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
 #endif
 			}
+#ifdef LINUX26
+			else
+				sprintf(options + strlen(options), ",flush" + (options[0] ? 0 : 1));
+#endif
+#elif defined(RTCONFIG_TFAT)
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
+			if(nvram_get_int("stop_iostreaming"))
+				sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
+			else
+				sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
+#else
+			sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
+#endif
 #else
 #ifdef LINUX26
 			sprintf(options + strlen(options), ",flush" + (options[0] ? 0 : 1));
@@ -1270,13 +1275,13 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 			}
 
 			if(!strncmp(type, "vfat", 4)){
-#ifdef RTCONFIG_TFAT
 #ifdef RTCONFIG_OPENPLUS_TFAT
-				if(fs_coexist() == 1)
-					ret = eval("mount", "-t", "vfat", "-o", options, mnt_dev, mnt_dir);
-				else
-#endif
+				if(nvram_match("usb_fatfs_mod", "tuxera"))
 					ret = eval("mount", "-t", "tfat", "-o", options, mnt_dev, mnt_dir);
+				else
+					ret = eval("mount", "-t", "vfat", "-o", options, mnt_dev, mnt_dir);
+#elif defined(RTCONFIG_TFAT)
+				ret = eval("mount", "-t", "tfat", "-o", options, mnt_dev, mnt_dir);
 #else
 				ret = eval("mount", "-t", "vfat", "-o", options, mnt_dev, mnt_dir);
 #endif

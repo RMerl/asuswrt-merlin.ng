@@ -1613,6 +1613,13 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif
+#if defined(RTCONFIG_OPENPLUS_TFAT) || defined(RTCONFIG_OPENPLUSPARAGON_NTFS) || defined(RTCONFIG_OPENPLUSTUXERA_NTFS) || defined(RTCONFIG_OPENPLUSPARAGON_HFS) || defined(RTCONFIG_OPENPLUSTUXERA_HFS)
+	else if(!strcmp(base, "set_fs_coexist")){
+		set_fs_coexist();
+		puts("1");
+		return 0;
+	}
+#endif
 	else if (!strcmp(base, "run_telnetd")) {
 		_start_telnetd(1);
 		return 0;

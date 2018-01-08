@@ -1417,21 +1417,23 @@ void rc_ipsec_config_init()
 {
     memset((ipsec_samba_t *)&samba_prof, 0, sizeof(ipsec_samba_t));
     memset((ipsec_prof_t *)&prof[0][0], 0, sizeof(ipsec_prof_t) * MAX_PROF_NUM);
-    memset((pki_ca_t *)&ca_tab[0], 0, sizeof(pki_ca_t) * CA_FILES_MAX_NUM);
+    //memset((pki_ca_t *)&ca_tab[0], 0, sizeof(pki_ca_t) * CA_FILES_MAX_NUM);
 	memset((ipsec_samba_t *)&pre_samba_prof, 0, sizeof(ipsec_samba_t));
-    system("cp -rf /usr/etc/* /tmp/etc/");
-    mkdir("/jffs/ca_files", 0777);
+	if(!d_exists("/etc/ipsec.d") || !d_exists("/etc/strongswan.d"))
+		system("cp -rf /usr/etc/* /tmp/etc/");
+    //mkdir("/jffs/ca_files", 0777);
     /*ipsec.conf init*/    
     rc_ipsec_conf_default_init();
     rc_ipsec_psk_xauth_rw_init();
     /*ipsec.secrets init*/
-    rc_ipsec_set(IPSEC_INIT,PROF_ALL);
+    if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable"))
+		rc_ipsec_set(IPSEC_INIT,PROF_ALL);
     //rc_ipsec_secrets_set();
     //rc_ipsec_conf_set();
     /*ipsec pki shell script default generate*/
     //rc_ipsec_ca_default_gen();
     //rc_ipsec_pki_gen_exec();
-    rc_ipsec_ca_init();
+    //rc_ipsec_ca_init();
     /*ca import*/
     //rc_ipsec_ca_import();
     return;

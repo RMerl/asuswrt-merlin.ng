@@ -1175,8 +1175,8 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 	/*** ATE Get functions ***/
 	else if (!strcmp(command, "Get_FWVersion")) {
-		char fwver[12];
-		sprintf(fwver, "%s.%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"));
+		char fwver[16];
+		snprintf(fwver, sizeof(fwver), "%s.%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"));
 		puts(fwver);
 		return 0;
 	}
@@ -1355,8 +1355,9 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 		GetPhyStatus(1);
 #else
-		if (!GetPhyStatus(1))
+		if (!GetPhyStatus(1) && nvram_match("ATEMODE", "1")) {
 			puts("ATE_ERROR");
+		}
 #endif
 
 		return 0;
@@ -2045,6 +2046,14 @@ int ate_dev_status(void)
 	{
 #define RETRY_MAX 100
 		int retry;
+#ifdef RTCONFIG_LANTIQ
+		system("killall bluetoothd");
+		system("hciconfig hci0 down");
+		system("hciconfig hci0 reset");
+		system("hciconfig hci0 up");
+		system("hciconfig hci0 leadv 0");
+		system("bluetoothd &");
+#endif
 		for(retry = 0; retry < RETRY_MAX; retry++){
 			extern int check_bluetooth_device(const char *bt_dev);
 			if(check_bluetooth_device("hci0") == 0)

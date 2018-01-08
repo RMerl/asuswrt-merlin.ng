@@ -19,6 +19,7 @@
 <script type="text/javascript" src="form.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 #switch_menu{
 	text-align:right
@@ -70,6 +71,8 @@ var curState = '<% nvram_get("wrs_enable"); %>';
 
 function initial(){
 	show_menu();
+	//	http://www.asus.com/support/FAQ/1008720/
+	httpApi.faqURL("faq", "1008720", "https://www.asus.com", "/support/FAQ/");
 	translate_category_id();
 	genMain_table();
 	if('<% nvram_get("wrs_enable"); %>' == 1)
@@ -852,7 +855,9 @@ function eula_confirm(){
 													<li><#AiProtection_filter_desc4#></li>
 												</ol>
 												<span><#AiProtection_filter_note#></span>
-												<div><a style="text-decoration:underline;" href="http://www.asus.com/support/FAQ/1008720/" target="_blank"><#Parental_Control#> FAQ</a></div>
+												<div>
+													<a id="faq" href="" style="text-decoration:underline;" target="_blank"><#Parental_Control#> FAQ</a>
+												</div>
 											</td>
 										</tr>
 									</table>

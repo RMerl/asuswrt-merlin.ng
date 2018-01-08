@@ -384,4 +384,6 @@ extern int get_modemunit_by_node(const char *usb_node);
 extern int get_modemunit_by_type(int wan_type);
 extern int get_wantype_by_modemunit(int modem_unit);
 
+extern char *get_userdns_r(const char *prefix, char *buf, size_t buflen);
+
 #endif	/* !__RTSTATE_H__ */

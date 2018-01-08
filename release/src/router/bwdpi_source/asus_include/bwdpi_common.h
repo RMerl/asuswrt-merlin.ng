@@ -62,6 +62,9 @@
 		dbg("[BWSUP][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
+// folder path
+#define TMP_BWDPI       nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/" : "/tmp/bwdpi/"
+
 // signature check
 #define APPDB           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/bwdpi.app.db" : "/tmp/bwdpi/bwdpi.app.db"
 #define CATDB           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/bwdpi.cat.db" : "/tmp/bwdpi/bwdpi.cat.db"
@@ -75,7 +78,8 @@
 #define WRS_VP_LOG      "/jffs/wrs_vp.txt"
 #define SIG_VER         "/proc/nk_policy"
 #define DPI_VER         "/proc/ips_info"
-#define WAN_TMP         nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/dev_wan" : "/tmp/bwdpi/dev_wan"
+#define WAN_TMP         "/tmp/bwdpi/dev_wan"
+#define QOS_TMP         "/tmp/bwdpi/qos_rul"
 
 // database hidden path and function path
 #define BWDPI_DB_DIR    "/jffs/.sys"
@@ -102,7 +106,6 @@ extern void start_tm_qos();
 extern int tm_qos_main(char *cmd);
 extern void start_qosd();
 extern void stop_qosd();
-extern void restart_qosd();
 extern int qosd_main(char *cmd);
 
 //wrs.c
@@ -122,11 +125,11 @@ extern int get_app_patrol_main();
 
 //dpi.c
 extern int check_daulwan_mode();
+extern int tdts_check_wan_changed();
 extern void stop_dpi_engine_service(int forced);
 extern void run_dpi_engine_service();
 extern void start_dpi_engine_service();
 extern void save_version_of_bwdpi();
-extern void setup_dev_wan();
 extern void setup_dpi_conf_bit(int input);
 
 //wrs_app.c

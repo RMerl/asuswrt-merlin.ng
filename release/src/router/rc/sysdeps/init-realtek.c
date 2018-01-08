@@ -129,10 +129,7 @@ void init_syspara(void)
 
 	nvram_set("firmver", rt_version);
 	nvram_set("productid", rt_buildname);
-	nvram_set("buildno", rt_serialno);
-	nvram_set("extendno", rt_extendno);
-	nvram_set("buildinfo", rt_buildinfo);
-	nvram_set("swpjverno", rt_swpjverno);
+	set_basic_fw_name();
 
 	set_country_code();
 #ifdef RTCONFIG_TCODE

@@ -16,10 +16,6 @@ LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram ${EXTRA_NV_LDFLAGS}
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += $(EXTRALDFLAGS)
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 #ifdef BCMINTERNAL
 ifneq ($(NO_BCMINTERNAL), 1)
 CFLAGS	+= -DBCMINTERNAL

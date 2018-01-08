@@ -351,7 +351,7 @@ int is_wps_stopped(void)
 					dbg("QTN: WPS Success\n");
 					break;
 				case 3: /* WPS_ERROR */
-					dbg("QTN: WPS Fail due to message exange error!\n");
+					dbg("QTN: WPS Fail due to message exchange error!\n");
 					break;
 				case 4: /* WPS_TIMEOUT */
 					dbg("QTN: WPS Fail due to time out!\n");
@@ -397,7 +397,7 @@ int is_wps_stopped(void)
 			dbg("WPS Success\n");
 			break;
 		case 3: /* WPS_MSG_ERR */
-			dbg("WPS Fail due to message exange error!\n");
+			dbg("WPS Fail due to message exchange error!\n");
 			break;
 		case 4: /* WPS_TIMEOUT */
 			dbg("WPS Fail due to time out!\n");

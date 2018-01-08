@@ -259,8 +259,10 @@ deconfig(int zcip)
 	int end_wan_sbstate = WAN_STOPPED_REASON_DHCP_DECONFIG;
 
 	/* Figure out nvram variable name prefix for this i/f */
-	if (wan_prefix(wan_ifname, prefix) < 0)
+	if (wan_prefix(wan_ifname, prefix) < 0){
+		logmessage("wan", "[%s] exit [%d]", __FUNCTION__, __LINE__);
 		return -1;
+	}
 	if ((unit < 0) &&
 	    (nvram_match(strcat_r(prefix, "proto", tmp), "l2tp") ||
 	     nvram_match(strcat_r(prefix, "proto", tmp), "pptp"))) {
@@ -281,6 +283,7 @@ deconfig(int zcip)
 		update_wan_state(prefix, WAN_STATE_STOPPED, end_wan_sbstate);
 
 	_dprintf("udhcpc:: %s done\n", __FUNCTION__);
+	logmessage("wan", "[%s] udhcpc done[%d]", __FUNCTION__, __LINE__);
 	return 0;
 }
 
@@ -572,10 +575,8 @@ renew(void)
 
 	if (nvram_get_int(strcat_r(wanprefix, "dnsenable_x", tmp))) {
 		/* ex: android phone, the gateway is the DNS server. */
-		if ((value = getenv("dns") ? : getenv("router"))) {
-			changed += !nvram_match(strcat_r(prefix, "dns", tmp), trim_r(value));
-			nvram_set(strcat_r(prefix, "dns", tmp), trim_r(value));
-		}
+		if ((value = getenv("dns") ? : getenv("router")))
+			changed += nvram_set_check(strcat_r(prefix, "dns", tmp), trim_r(value));
 #ifdef DHCP_RFC3397
 		if ((value = getenv("search")) && *value) {
 			char *domain, *result;
@@ -585,8 +586,7 @@ renew(void)
 				sprintf(result, "%s %s", domain, value);
 				value = result;
 			}
-			changed += !nvram_match(strcat_r(prefix, "domain", tmp), trim_r(value));
-			nvram_set(strcat_r(prefix, "domain", tmp), trim_r(value));
+			changed += nvram_set_check(strcat_r(prefix, "domain", tmp), trim_r(value));
 		} else
 #endif
 		changed += nvram_set_env(strcat_r(prefix, "domain", tmp), "domain");
@@ -845,7 +845,7 @@ stop_udhcpc(int unit)
 	snprintf(pid, sizeof(pid), "/var/run/udhcpc%d.pid", unit);
 	if (kill_pidfile_s(pid, SIGUSR2) == 0) {
 		usleep(10000);
-		kill_pidfile_s(pid, SIGTERM);
+		kill_pidfile_tk(pid);
 	}
 }
 

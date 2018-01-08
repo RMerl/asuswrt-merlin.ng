@@ -20,12 +20,15 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var autofw_rulelist_array = [];
 var wans_mode ='<% nvram_get("wans_mode"); %>';
 
 function initial(){
 	show_menu();
+	// https://www.asus.com/support/FAQ/114110/
+	httpApi.faqURL("faq", "114110", "https://www.asus.com", "/support/FAQ/");
 	well_known_apps();
 	//parse nvram to array
 	var parseNvramToArray = function() {
@@ -47,7 +50,7 @@ function initial(){
 
 	autofw_rulelist_array = parseNvramToArray();
 	showautofw_rulelist();
-	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "port", "trigger"]);
+
 	//if(dualWAN_support && wans_mode == "lb")
 	//	document.getElementById("lb_note").style.display = "";
 }

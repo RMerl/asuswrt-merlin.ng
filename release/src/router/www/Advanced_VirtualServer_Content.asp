@@ -19,6 +19,7 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var wItem = new Array(new Array("", "", "TCP"),
 											new Array("FTP", "20,21", "TCP"),
@@ -58,6 +59,8 @@ var dual_wan_lb_status = (check_dual_wan_status().status == "1" && check_dual_wa
 var support_dual_wan_unit_flag = (mtwancfg_support && dual_wan_lb_status) ? true : false;
 function initial(){
 	show_menu();
+	// https://www.asus.com/support/FAQ/114093/
+	httpApi.faqURL("faq", "114093", "https://www.asus.com", "/support/FAQ/");
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];
@@ -102,7 +105,6 @@ function initial(){
 	Object.keys(vts_rulelist_array).forEach(function(key) {
 		showvts_rulelist(vts_rulelist_array[key], key);
 	});
-	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "port", "forwarding"]);
 
 	if(!parent.usb_support){
 		document.getElementById('FTP_desc').style.display = "none";

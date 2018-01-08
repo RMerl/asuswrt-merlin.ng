@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Dit veld wordt gebruikt als een identiteit
 LANHostConfig_x_DDNSUserName_itemname=Gebruikersnaam of e-mailadres
 LANHostConfig_x_DDNSWildcard_itemdesc=Indien ingeschakeld, wordt de domeinnaam met jokerteken omgeleid naar uw IP-adres.
 LANHostConfig_x_DDNSWildcard_itemname=Jokerteken inschakelen
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Dit is het IP-adres van de standaard gateway voor het toegangspunt
 LANHostConfig_x_LDNSServer1_itemdesc=Dit veld geeft het IP-adres van DNS aan om clients dat aanvraag-IP-adres van de DHCP-server te leveren. U kunt dit leeg laten omdat de DNS-aanvraag door ZVMODELVZ zal worden verwerkt.
 LANHostConfig_x_LDNSServer1_itemname=DNS-server
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX-sockets
 Smart_Access=Slimme toegang
 smart_access_desc=Biedt de mogelijkheid op afstand toegang te krijgen tot netwerkcomputers en apparaten op de netwerklocatie (Samba). Slimme toegang kan ook een slapende pc activeren.
 smart_access2=Met de WOL-functie (Wake-On-LAN) kunt u een computer activeren vanaf elk apparaat in het netwerk.
-smart_access3=Wat is <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=Wat is <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Slim verbinden
 smart_connect_BD=Bounce detecteren
 smart_connect_enable=Slim verbinden inschakelen

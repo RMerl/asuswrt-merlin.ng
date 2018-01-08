@@ -21,6 +21,7 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -143,6 +144,8 @@ function initial(){
 	restrict_rulelist_array = JSON.parse(JSON.stringify(orig_restrict_rulelist_array));
 
 	show_menu();
+	//	https://www.asus.com/us/support/FAQ/1034294
+	httpApi.faqURL("faq", "1034294", "https://www.asus.com", "/support/FAQ/");
 	show_http_clientlist();
 	display_spec_IP(document.form.http_client.value);
 
@@ -1921,7 +1924,9 @@ function upload_cert_key(){
 					<td>
 						<input type="radio" value="1" name="misc_http_x" class="input" onClick="hideport(1);enable_wan_access(1);" <% nvram_match("misc_http_x", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" value="0" name="misc_http_x" class="input" onClick="hideport(0);enable_wan_access(0);" <% nvram_match("misc_http_x", "0", "checked"); %>><#checkbox_No#><br>
-						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> <a href="https://www.asus.com/us/support/FAQ/1034294" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a></span>
+						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> 
+							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
+						</span>
 						<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><#NSlookup_help#></div>
 					</td>
 				</tr>

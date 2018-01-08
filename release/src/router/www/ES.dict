@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=Este campo se utiliza como una entidad par
 LANHostConfig_x_DDNSUserName_itemname=Nombre de usuario o dirección de correo electrónico
 LANHostConfig_x_DDNSWildcard_itemdesc=Si se habilitan, el nombre de dominio con comodín se redireccionará a su dirección IP.
 LANHostConfig_x_DDNSWildcard_itemname=Desea habilitar los comodines
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is a service to provide free domain-validated certificate and will perform domain validation before issuing certificates for your domains. Certificates issued by Let's Encrypt are valid for 90 days. Before the certificates expire, ASUS router will automatically renew such certificates after successful domain validation. Please make sure your router can be issued domain validation and certificate renewal via 80 port from the Internet.
 LANHostConfig_x_Gateway_itemdesc=Esta es la dirección IP de la puerta de enlace predeterminada para el punto de acceso.
 LANHostConfig_x_LDNSServer1_itemdesc=Este campo indica la dirección IP de DNS que se va a proporcionar a los clientes que solicitan la dirección IP del servidor DHCP. Puede dejarlo en blanco, en cuyo caso ZVMODELVZ procesará la solicitud de DNS.
 LANHostConfig_x_LDNSServer1_itemname=Servidor DNS
@@ -2228,7 +2229,7 @@ sockets_UNIX=Sockets UNIX
 Smart_Access=Smart Access
 smart_access_desc=Permite el acceso remoto a dispositivos y equipos conectados mediante sitios de red (Samba). El acceso inteligente también puede reactivar un equipo que se encuentre en estado de suspensión.
 smart_access2=La función Reactivación en LAN (WOL, Wake-On-LAN) permite reactivar un equipo desde cualquier dispositivo de la red.
-smart_access3=¿Qué es <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=¿Qué es <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=Rechazar detección
 smart_connect_enable=Habilitar Smart Connect (conexión inteligente)

@@ -279,11 +279,7 @@ var httpApi ={
 		){
 			retData.wanType = wanTypeList.connected;
 		}
-		else if(
-			wanInfo.autodet_state == "0" ||
-			wanInfo.autodet_state == "1" ||
-			wanInfo.autodet_state == ""
-		){
+		else if(wanInfo.autodet_state == ""){
 			retData.wanType = wanTypeList.check;			
 		}
 		else if(wanInfo.autodet_state == "6" || wanInfo.autodet_auxstate == "6"){
@@ -373,5 +369,56 @@ var httpApi ={
 		else {
 			alert("Clean error, no path!");/*untranslated*/
 		}
+	},
+
+	"faqURL": function(_Objid, _faqNum, _URL1, _URL2){
+		// https://www.asus.com/tw/support/FAQ/1000906
+		var pLang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;		
+		var faqLang = {
+			EN : "",
+			TW : "/tw",
+			CN : ".cn",
+			BR : "/br",
+			CZ : "/cz",
+			DA : "/dk",
+			DE : "/de",
+			ES : "/es",
+			FI : "/fi",
+			FR : "/fr",
+			HU : "/hu",
+			IT : "/it",
+			JP : "/jp",
+			KR : "/kr",
+			MS : "/my",
+			NL : "/nl",
+			NO : "/no",
+			PL : "/pl",
+			RO : "/ro",
+			RU : "/ru",
+			SL : "/sk",
+			SV : "/se",
+			TH : "/th",
+			TR : "/tr",
+			UK : "/ua"
+		}
+		var temp_URL_lang = _URL1+faqLang[pLang]+_URL2+_faqNum;
+		var temp_URL_global = _URL1+_URL2+_faqNum;
+		//console.log(temp_URL_lang);
+		$.ajax({
+			url: temp_URL_lang,
+			type: 'GET',
+			timeout: 1500,
+			error: function(response){
+				//console.log(response);
+				document.getElementById(_Objid).href = temp_URL_global;
+			},
+			success: function(response) {				
+				//console.log(response);
+				if(response.search("QAPage") >= 0)
+					document.getElementById(_Objid).href =  temp_URL_lang;
+				else
+					document.getElementById(_Objid).href = temp_URL_global;		
+			}
+		});
 	}
 }

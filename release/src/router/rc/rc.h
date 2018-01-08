@@ -276,6 +276,9 @@ extern int wanport_status(int wan_unit);
 
 /* board API under sysdeps directory */
 extern void set_factory_mode();
+#if defined(RTCONFIG_OPENPLUS_TFAT) || defined(RTCONFIG_OPENPLUSPARAGON_NTFS) || defined(RTCONFIG_OPENPLUSTUXERA_NTFS) || defined(RTCONFIG_OPENPLUSPARAGON_HFS) || defined(RTCONFIG_OPENPLUSTUXERA_HFS)
+extern void set_fs_coexist();
+#endif
 extern int _dump_powertable();
 extern void ate_commit_bootlog(char *err_code);
 extern int setAllLedOn(void);
@@ -2036,8 +2039,8 @@ extern void start_erp_monitor();
 #endif
 
 #ifdef RTCONFIG_USB_SWAP	
-extern int stop_usb_swap(path);
-extern int start_usb_swap(path);
+extern int stop_usb_swap(char *path);
+extern int start_usb_swap(char *path);
 #endif	
 
 #ifdef RTCONFIG_HD_SPINDOWN

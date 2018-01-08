@@ -477,8 +477,13 @@ wan_prefix(char *ifname, char *prefix)
 	int unit;
 
 	if ((unit = wan_ifunit(ifname)) < 0 &&
-	    (unit = wanx_ifunit(ifname)) < 0)
+	    (unit = wanx_ifunit(ifname)) < 0){
+		if(wan_ifunit(ifname) < 0)
+			logmessage("wan", "[%s] exit [%d], ifname:[%s]", __FUNCTION__, __LINE__, ifname);
+		if(wanx_ifunit(ifname) < 0)
+			logmessage("wan", "[%s] exit [%d], ifname:[%s]", __FUNCTION__, __LINE__, ifname);
 		return -1;
+	}
 
 	sprintf(prefix, "wan%d_", unit);
 
@@ -631,22 +636,16 @@ void update_wan_state(char *prefix, int state, int reason)
 		nvram_unset(strcat_r(prefix, "xroutes_ms", tmp));
 		nvram_unset(strcat_r(prefix, "xroutes_rfc", tmp));
 
-		/* reset wanX* dns variables */
-		strcpy(tmp1, "");
-		ptr = nvram_safe_get_r(strcat_r(prefix, "dns1_x", tmp), tmp, sizeof(tmp));
-		if (*ptr && inet_addr_(ptr) != INADDR_ANY)
-			snprintf(tmp1, sizeof(tmp1), "%s", ptr);
-		ptr = nvram_safe_get_r(strcat_r(prefix, "dns2_x", tmp), tmp, sizeof(tmp));
-		if (*ptr && inet_addr_(ptr) != INADDR_ANY)
-			snprintf(tmp1 + strlen(tmp1), sizeof(tmp1) - strlen(tmp1), "%s%s", *tmp1 ? " " : "", ptr);
-
-		/* reset wanX_dns */
-		ptr = !nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)) ? tmp1 : "";
+		/* reset wanX_dns && wanX_xdns VPN */
+		ptr = nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)) ? "" :
+			get_userdns_r(prefix, tmp1, sizeof(tmp1));
 		nvram_set(strcat_r(prefix, "dns", tmp), ptr);
-
-		/* reset wanX_xdns VPN */
-		ptr = !nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)) ? tmp1 : "";
-		nvram_set(strcat_r(prefix, "xdns", tmp), ptr);
+		if (nvram_match(strcat_r(prefix, "proto", tmp), "pppoe") ||
+		    nvram_match(strcat_r(prefix, "proto", tmp), "pptp") ||
+		    nvram_match(strcat_r(prefix, "proto", tmp), "l2tp"))
+			nvram_set(strcat_r(prefix, "xdns", tmp), ptr);
+		else
+			nvram_unset(strcat_r(prefix, "xdns", tmp));
 
 #ifdef RTCONFIG_IPV6
 		nvram_set(strcat_r(prefix, "6rd_ip4size", tmp), "");
@@ -2747,28 +2746,35 @@ wan_up(const char *pwan_ifname)
 
 #ifdef RTCONFIG_BWDPI
 	int enabled = check_bwdpi_nvram_setting();
+	int changed = tdts_check_wan_changed();
 
-	BWDPI_DBG("enabled= %d\n", enabled);
+	BWDPI_DBG("enabled = %d, changed = %d\n", enabled, changed);
 
 	if(enabled){
 		_dprintf("[%s] do dpi engine service ... \n", __FUNCTION__);
 		// if Adaptive QoS or AiProtection is enabled
 		int count = 0;
 		int val = 0;
-		while(count < 3){
+		while (count < 3) {
 			sleep(1);
 			val = found_default_route(0);
 			count++;
-			if((val == 1) || (count == 3)) break;
+			if ((val == 1) || (count == 3)) break;
 		}
 
 		BWDPI_DBG("found_default_route result: %d\n", val);
 
-		if(val){
+		if (val) {
 			// if restart_wan_if, remove dpi engine related
-			if(f_exists("/dev/detector") || f_exists("/dev/idpfw")){
-				_dprintf("[%s] stop dpi engine service\n", __FUNCTION__);
+			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
+			{
+				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
 				stop_dpi_engine_service(0);
+			}
+			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
+			{
+				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
+				stop_dpi_engine_service(1);
 			}
 			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
 			set_codel_patch();

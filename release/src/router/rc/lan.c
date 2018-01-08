@@ -120,24 +120,13 @@ void update_lan_state(int state, int reason)
 
 	if(state==LAN_STATE_INITIALIZING)
 	{
-		if(nvram_match(strcat_r(prefix, "proto", tmp), "dhcp")) {
-			// always keep in default ip before getting ip
-			nvram_set(strcat_r(prefix, "dns", tmp), nvram_default_get("lan_ipaddr"));
-		}
-
-		if (!nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp))) {
-			strcpy(tmp1, "");
-			ptr = nvram_safe_get_r(strcat_r(prefix, "dns1_x", tmp), tmp, sizeof(tmp));
-			if (*ptr && inet_addr_(ptr) != INADDR_ANY)
-				snprintf(tmp1, sizeof(tmp1), "%s", ptr);
-			ptr = nvram_safe_get_r(strcat_r(prefix, "dns2_x", tmp), tmp, sizeof(tmp));
-			if (*ptr && inet_addr_(ptr) != INADDR_ANY)
-				snprintf(tmp1 + strlen(tmp1), sizeof(tmp1) - strlen(tmp1), "%s%s", *tmp1 ? " " : "", ptr);
-			nvram_set(strcat_r(prefix, "dns", tmp), tmp1);
-		}
-		// why not keeping default ip set above?
-		else
-			nvram_set(strcat_r(prefix, "dns", tmp), "");
+		//if(nvram_match(strcat_r(prefix, "proto", tmp), "dhcp")) {
+		//	// always keep in default ip before getting ip
+		//	nvram_set(strcat_r(prefix, "dns", tmp), nvram_default_get("lan_ipaddr"));
+		//}
+		ptr = nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)) ? "" :
+			get_userdns_r(prefix, tmp1, sizeof(tmp1));
+		nvram_set(strcat_r(prefix, "dns", tmp), ptr);
 	}
 	else if(state==LAN_STATE_STOPPED) {
 		// Save Stopped Reason
@@ -2215,7 +2204,7 @@ void start_lan(void)
 
 #ifdef RTCONFIG_DETWAN
 #ifdef RTCONFIG_ETHBACKHAUL
-				if ((sw_mode() == SW_MODE_ROUTER) && nvram_safe_get("wan0_ifname")[0] == '\0')
+				if (((sw_mode() == SW_MODE_ROUTER) && nvram_safe_get("wan0_ifname")[0] == '\0') || (sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1")))
 #endif
 				{
 					int idx;
@@ -2411,7 +2400,8 @@ void start_lan(void)
 #endif
 					{
 #ifdef RTCONFIG_WIFI_SON
-			                	if(nvram_get_int("wl0.1_bss_enabled") && !strcmp(nvram_safe_get("wl0.1_ifname"),ifname))
+						if (nvram_get_int("wl0.1_bss_enabled") && nvram_match("wl0.1_lanaccess", "off")
+										       && !strcmp(nvram_safe_get("wl0.1_ifname"), ifname))
 							eval("brctl", "addif", BR_GUEST, ifname);
 						else
 #endif
@@ -2986,10 +2976,8 @@ gmac3_no_swbr:
 
 		eval("brctl", "delbr", lan_ifname);
 #ifdef RTCONFIG_WIFI_SON
-                if(nvram_get_int("wl0.1_bss_enabled"))
-			eval("brctl", "delbr",BR_GUEST);
+		eval("brctl", "delbr", BR_GUEST);
 #endif
-
 	}
 	else if (*lan_ifname) {
 #ifdef CONFIG_BCMWL5
@@ -4978,12 +4966,13 @@ void start_lan_wl(void)
 #endif
 #endif
 
-#ifdef RTCONFIG_WIFI_SON
-					if(nvram_get_int("wl0.1_bss_enabled"))
-						eval("brctl", "addif", BR_GUEST, nvram_safe_get("wl0.1_ifname"));
-#endif
 #ifdef HND_ROUTER
 					if (!strstr(bonding_ifnames, ifname))
+#elif defined(RTCONFIG_WIFI_SON)
+					if (nvram_get_int("wl0.1_bss_enabled") && nvram_match("wl0.1_lanaccess", "off")
+									       && !strcmp(nvram_safe_get("wl0.1_ifname"), ifname))
+						eval("brctl", "addif", BR_GUEST, ifname);
+					else
 #endif
 						eval("brctl", "addif", lan_ifname, ifname);
 #ifdef CONFIG_BCMWL5
@@ -5201,17 +5190,13 @@ void lanaccess_mssid_ban(const char *limited_ifname)
 #else
 
 #ifdef RTCONFIG_WIFI_SON
-        if(nvram_get_int("wl0.1_bss_enabled"))
+	if (strcmp(limited_ifname, nvram_safe_get("wl0.1_ifname")))
+#endif
 	{
-		if(!strcmp(limited_ifname,nvram_safe_get("wl0.1_ifname")))
-			goto pass_drop;
+		eval("ebtables", "-A", "FORWARD", "-i", (char*)limited_ifname, "-j", "DROP"); //ebtables FORWARD: "for frames being forwarded by the bridge"
+		eval("ebtables", "-A", "FORWARD", "-o", (char*)limited_ifname, "-j", "DROP"); // so that traffic via host and nat is passed
  	}
-#endif
-	eval("ebtables", "-A", "FORWARD", "-i", (char*)limited_ifname, "-j", "DROP"); //ebtables FORWARD: "for frames being forwarded by the bridge"
-	eval("ebtables", "-A", "FORWARD", "-o", (char*)limited_ifname, "-j", "DROP"); // so that traffic via host and nat is passed
-#ifdef RTCONFIG_WIFI_SON
-pass_drop:
-#endif
+
 	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 	if(nvram_match("captive_portal_enable", "on") || nvram_match("captive_portal_adv_enable", "on")){

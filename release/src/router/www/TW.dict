@@ -1754,6 +1754,7 @@ LANHostConfig_x_DDNSUserName_itemdesc=本欄可用來當作登入動態 DNS（Dy
 LANHostConfig_x_DDNSUserName_itemname=用戶名稱或 E-mail 帳號
 LANHostConfig_x_DDNSWildcard_itemdesc=本欄可決定含有萬用字元的網域名稱是否可改成IP位址。
 LANHostConfig_x_DDNSWildcard_itemname=啟用萬用字元（wildcard）
+LANHostConfig_x_DDNSLetsEncrypt_desc=Let’s Encrypt是一個提供免費網域憑證認證的服務，而在核發網域所需的憑證前，Let's Encrypt 將會執行網域驗證。Let's Encrypt 核發的憑證有效期間為 90 天，如果網域驗證成功，憑證即將過期前，華碩路由器將會自動更新憑證。請務必確認您的華碩路由器可透過連接埠 80從網際網路進行網域驗證與進行憑證更新。
 LANHostConfig_x_Gateway_itemdesc=此為無線網路橋接器所使用的預設閘道器的 IP 位址
 LANHostConfig_x_LDNSServer1_itemdesc=DHCP 使用的 DNS 的網路位置。
 LANHostConfig_x_LDNSServer1_itemname=DNS 伺服器
@@ -2228,7 +2229,7 @@ sockets_UNIX=UNIX sockets
 Smart_Access=智慧遠端連線
 smart_access_desc=開啟從遠端訪問網路芳鄰的電腦和設備。智慧遠端連線同樣可以喚醒睡眠的電腦。
 smart_access2=WOL（Wake-On-LAN）功能允許您透過網路中的裝置來喚醒電腦。
-smart_access3=什麼是 <a id="faq3" href="http://www.asus.com/support/FAQ/1009775" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
+smart_access3=什麼是 <a id="faq3" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;">WOL</a> ?
 smart_connect=Smart Connect
 smart_connect_BD=彈回偵測
 smart_connect_enable=啟動 Smart Connect

@@ -1209,6 +1209,20 @@ void generate_switch_para(void)
 				nvram_set("vlan2hwname", hw_name);
 			nvram_set("vlan1hwname", hw_name);
 
+#ifdef RTCONFIG_AMAS
+			if(nvram_get_int("re_mode")==1) {
+
+				switch_gen_config(lan, ports, cfg, 0, "*");
+				switch_gen_config(wan, ports, wancfg, 1, "");
+				nvram_set("vlan1ports", lan);
+				nvram_set("vlan2ports", wan);
+				switch_gen_config(lan, ports, cfg, 0, NULL);
+				switch_gen_config(wan, ports, wancfg, 1, NULL);
+				nvram_set("lanports", lan);
+				nvram_set("wanports", wan);
+			}
+			else
+#endif
 			if (cfg != SWCFG_BRIDGE) {
 				int wan1cfg = nvram_get_int("wans_lanport");
 
@@ -1284,16 +1298,32 @@ void generate_switch_para(void)
 				nvram_unset("wan1ports");
 			}
 #else	// RTCONFIG_DUALWAN
-			switch_gen_config(lan, ports, cfg, 0, "*");
-			switch_gen_config(wan, ports, wancfg, 1, "u");
-			nvram_set("vlan1ports", lan);
-			nvram_set("vlan1hwname", hw_name);
-			nvram_set("vlan2ports", wan);
-			nvram_set("vlan2hwname", hw_name);
-			switch_gen_config(lan, ports, cfg, 0, NULL);
-			switch_gen_config(wan, ports, wancfg, 1, NULL);
-			nvram_set("lanports", lan);
-			nvram_set("wanports", wan);
+#ifdef RTCONFIG_AMAS
+			if(nvram_get_int("re_mode")==1) {
+
+				switch_gen_config(lan, ports, cfg, 0, "*");
+				switch_gen_config(wan, ports, wancfg, 1, "");
+				nvram_set("vlan1ports", lan);
+				nvram_set("vlan2ports", wan);
+				switch_gen_config(lan, ports, cfg, 0, NULL);
+				switch_gen_config(wan, ports, wancfg, 1, NULL);
+				nvram_set("lanports", lan);
+				nvram_set("wanports", wan);
+			}
+			else
+#endif
+			{
+				switch_gen_config(lan, ports, cfg, 0, "*");
+				switch_gen_config(wan, ports, wancfg, 1, "u");
+				nvram_set("vlan1ports", lan);
+				nvram_set("vlan1hwname", hw_name);
+				nvram_set("vlan2ports", wan);
+				nvram_set("vlan2hwname", hw_name);
+				switch_gen_config(lan, ports, cfg, 0, NULL);
+				switch_gen_config(wan, ports, wancfg, 1, NULL);
+				nvram_set("lanports", lan);
+				nvram_set("wanports", wan);
+			}
 #endif
 			break;
 		}
@@ -1330,6 +1360,20 @@ void generate_switch_para(void)
 				nvram_set("vlan2hwname", hw_name);
 			nvram_set("vlan1hwname", hw_name);
 
+#ifdef RTCONFIG_AMAS
+			if(nvram_get_int("re_mode")==1) {
+
+				switch_gen_config(lan, ports, cfg, 0, "*");
+				switch_gen_config(wan, ports, wancfg, 1, "");
+				nvram_set("vlan1ports", lan);
+				nvram_set("vlan2ports", wan);
+				switch_gen_config(lan, ports, cfg, 0, NULL);
+				switch_gen_config(wan, ports, wancfg, 1, NULL);
+				nvram_set("lanports", lan);
+				nvram_set("wanports", wan);
+			}
+			else
+#endif
 			if (cfg != SWCFG_BRIDGE) {
 				int wan1cfg = nvram_get_int("wans_lanport");
 
@@ -1405,6 +1449,21 @@ void generate_switch_para(void)
 				nvram_unset("wan1ports");
 			}
 #else	// RTCONFIG_DUALWAN
+#ifdef RTCONFIG_AMAS
+			if(nvram_get_int("re_mode")==1) {
+
+				switch_gen_config(lan, ports, cfg, 0, "*");
+				switch_gen_config(wan, ports, wancfg, 1, "");
+				nvram_set("vlan1ports", lan);
+				nvram_set("vlan2ports", wan);
+				switch_gen_config(lan, ports, cfg, 0, NULL);
+				switch_gen_config(wan, ports, wancfg, 1, NULL);
+				nvram_set("lanports", lan);
+				nvram_set("wanports", wan);
+			}
+			else
+#endif
+			{
 			switch_gen_config(lan, ports, cfg, 0, "*");
 			switch_gen_config(wan, ports, wancfg, 1, "u");
 			nvram_set("vlan1ports", lan);
@@ -1415,6 +1474,7 @@ void generate_switch_para(void)
 			switch_gen_config(wan, ports, wancfg, 1, NULL);
 			nvram_set("lanports", lan);
 			nvram_set("wanports", wan);
+			}
 #endif
 			break;
 		}
@@ -1850,6 +1910,14 @@ reset_mssid_hwaddr(int unit)
 	int max_mssid = num_of_mssid_support(unit);
 	char tmp[100], prefix[]="wlXXXXXXX_";
 	int unit_total = num_of_wl_if();
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+	int psr = (is_psr(unit)
+			|| dpsr_mode()
+#ifdef RTCONFIG_DPSTA
+			|| dpsta_mode()
+#endif
+			);
+#endif
 
 	if (unit > (unit_total - 1))
 		return;
@@ -1921,6 +1989,7 @@ reset_mssid_hwaddr(int unit)
 		}
 
 		macaddr_strp = cfe_nvram_get(macaddr_str);
+
 		if (macaddr_strp)
 		{
 			if (!mssid_mac_validate(macaddr_strp))
@@ -1949,11 +2018,19 @@ reset_mssid_hwaddr(int unit)
 					mac_binary[5]);
 			macvalue_local = strtoll(macbuf, (char **) NULL, 16);
 
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			if (!unit && psr) {
+				macvalue++;
+				macvalue_local++;
+			}
+
 #ifdef RTCONFIG_PSR_GUEST
-			if (is_psr(unit) && !nvram_match(strcat_r(prefix, "psr_guest", tmp), "1")) {
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+			if (is_psr(unit) && nvram_match(strcat_r(prefix, "psr_guest", tmp), "1")) {
 				macvalue--;
 				macvalue_local--;
 			}
+#endif
 #endif
 
 			/* including primary ssid */
@@ -2005,9 +2082,6 @@ reset_psr_hwaddr()
 			|| dpsta_mode()
 #endif
 			);
-#ifdef RTCONFIG_PSR_GUEST
-	int psr_guest_rmac = 0;
-#endif
 
 	memset(mac_binary, 0x0, 6);
 	memset(macbuf, 0x0, 13);
@@ -2040,17 +2114,6 @@ reset_psr_hwaddr()
 		sprintf(macaddr_str, "%02X:%02X:%02X:%02X:%02X:%02X", *(macp+5), *(macp+4), *(macp+3), *(macp+2), *(macp+1), *(macp+0));
 		nvram_set(macaddr_name, macaddr_str);
 	}
-
-#ifdef RTCONFIG_PSR_GUEST
-	psr_guest_rmac = (dpsr_mode()
-#ifdef RTCONFIG_DPSTA
-		|| dpsta_mode()
-#endif
-		);
-	nvram_set("psr_guest_rmac", psr_guest_rmac ? "1" : "0");
-#else
-	nvram_unset("psr_guest_rmac");
-#endif
 }
 #endif
 
@@ -2303,7 +2366,7 @@ void fini_wl(void)
 {
 	int model = get_model();
 
-#if (defined(RTAC3200) || defined(HND_ROUTER) || defined(RTCONFIG_BCM9))
+#if (defined(RTAC3200) || defined(HND_ROUTER) || defined(RTCONFIG_BCM9) || defined(RTCONFIG_BCM_7114))
 	return;
 #endif
 
@@ -2347,10 +2410,7 @@ void init_syspara(void)
 
 	nvram_set("firmver", rt_version);
 	nvram_set("productid", rt_buildname);
-	nvram_set("buildno", rt_serialno);
-	nvram_set("extendno", rt_extendno);
-	nvram_set("buildinfo", rt_buildinfo);
-	nvram_set("swpjverno", rt_swpjverno);
+	set_basic_fw_name();
 	ptr = nvram_get("regulation_domain");
 
 #ifdef HND_ROUTER
@@ -2976,7 +3036,18 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				nvram_set(tmp, "0");
 			}
 		}
+
+#ifdef RTCONFIG_PSR_GUEST
+		nvram_set(strcat_r(prefix, "mbss_rmac", tmp), (nvram_match(strcat_r(prefix, "psr_guest", tmp2), "1") && (dpsr_mode()
+#ifdef RTCONFIG_DPSTA
+			|| dpsta_mode()
 #endif
+			)) ? "1" : "0");
+#else
+		nvram_unset(strcat_r(prefix, "mbss_rmac", tmp));
+#endif
+#endif
+
 		memset(interface_list, 0, interface_list_size);
 		for (i = 1; i < WL_MAXBSSCFG; i++) {
 			sprintf(nv_interface, "wl%d.%d", unit, i);

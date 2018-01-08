@@ -142,11 +142,13 @@ int wanlink_hook_dsl(int eid, webs_t wp, int argc, char_t **argv){
 	char *ip = "0.0.0.0";
 	char *netmask = "0.0.0.0";
 	char *gateway = "0.0.0.0";
+	char *dns = "";
 	unsigned int lease = 0, expires = 0;
 	char *xtype = "";
 	char *xip = "0.0.0.0";
 	char *xnetmask = "0.0.0.0";
 	char *xgateway = "0.0.0.0";
+	char *xdns = "";
 	unsigned int xlease = 0, xexpires = 0;
 
 	status = 1;
@@ -157,6 +159,7 @@ int wanlink_hook_dsl(int eid, webs_t wp, int argc, char_t **argv){
 		ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
 		netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
 		gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
+		dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
 		lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
 		if (lease > 0)
 			expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
@@ -184,6 +187,7 @@ int wanlink_hook_dsl(int eid, webs_t wp, int argc, char_t **argv){
 //		xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
 //		xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
 //		xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
+//		xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
 //		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
 //		if (xlease > 0)
 //			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
@@ -193,7 +197,7 @@ int wanlink_hook_dsl(int eid, webs_t wp, int argc, char_t **argv){
 	websWrite(wp, "function wanlink_xipaddr() { return '%s';}\n", xip);
 	websWrite(wp, "function wanlink_xnetmask() { return '%s';}\n", xnetmask);
 	websWrite(wp, "function wanlink_xgateway() { return '%s';}\n", xgateway);
-	websWrite(wp, "function wanlink_xdns() { return '%s';}\n", nvram_safe_get(strcat_r(prefix, "xdns", tmp)));
+	websWrite(wp, "function wanlink_xdns() { return '%s';}\n", xdns);
 	websWrite(wp, "function wanlink_xlease() { return %d;}\n", xlease);
 	websWrite(wp, "function wanlink_xexpires() { return %d;}\n", xexpires);
 

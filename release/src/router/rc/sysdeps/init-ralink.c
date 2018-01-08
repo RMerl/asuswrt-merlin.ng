@@ -1130,10 +1130,8 @@ void init_syspara(void)
 	char value_str[MAX_REGSPEC_LEN+1];
 	memset(value_str, 0, sizeof(value_str));
 #endif
-	nvram_set("buildno", rt_serialno);
-	nvram_set("extendno", rt_extendno);
-	nvram_set("buildinfo", rt_buildinfo);
-	nvram_set("swpjverno", rt_swpjverno);
+
+	set_basic_fw_name();
 
 	/* /dev/mtd/2, RF parameters, starts from 0x40000 */
 	dst = buffer;
@@ -1507,10 +1505,19 @@ void init_syspara(void)
 	_dprintf("READ ASUS PSK: Out of scope\n");
 		nvram_set("wifi_psk", "");
 	 } else {
-	if (buffer[0] == 0xff)
-		nvram_set("wifi_psk", "");
-	else
-		nvram_set("wifi_psk", buffer);
+		if (buffer[0] == 0xff)
+			nvram_set("wifi_psk", "");
+		else
+		{
+			for(i = 0; i < 14 && buffer[i] != '\0'; i++) {
+				if ((unsigned char)buffer[i] == 0xff)
+				{
+					buffer[i] = '\0';
+					break;
+				}
+			}
+			nvram_set("wifi_psk", buffer);
+		}
 	}
 #endif /* RTCONFIG_TCODE */
 

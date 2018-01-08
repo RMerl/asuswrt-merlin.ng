@@ -1161,3 +1161,31 @@ char *get_default_ssid(int unit, int subunit)
 	}
 	return ssid;
 }
+
+/**
+ * Get Static IPv4 DNS list separated by spaces.
+ * @prefix:	WAN/LAN prefix of dns1_x & dns2_x values
+ * @buf:	char buffer for storing the return value
+ * @buflen:	char buffer size
+ * @return:	pointer to a char array with DNS lisr, space separated
+ */
+char *get_userdns_r(const char *prefix, char *buf, size_t buflen)
+{
+	char tmp[32], *value;
+	int i;
+
+	if (buf == NULL || buflen <= 0)
+		return NULL;
+
+	strlcpy(buf, "", buflen);
+	for (i = 1; i <= 2; i++) {
+		snprintf(tmp, sizeof(tmp), "%sdns%d_x", prefix, i);
+		value = nvram_safe_get_r(tmp, tmp, sizeof(tmp));
+		if (*value && inet_addr_(value) != INADDR_ANY) {
+			if (*buf)
+				strlcat(buf, " ", buflen);
+			strlcat(buf, value, buflen);
+		}
+	}
+	return buf;
+}

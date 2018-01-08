@@ -708,8 +708,7 @@ function guest_divctrl(flag){
 		}
 
 		document.getElementById("gnset_table").style.display = "";
-		if(sw_mode == "3")
-			inputCtrl(document.form.wl_lanaccess, 0);
+
 		
 		document.getElementById("applyButton").style.display = "";
 	}
@@ -861,20 +860,22 @@ function change_guest_unit(_unit, _subunit){
 
 	updateMacModeOption();
 
+	if(captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Free Wi-Fi" || captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Captive Portal Wi-Fi") {
+		$(".captive_portal_control_class").css("display", "none");
+	}
+	else {
+		$(".captive_portal_control_class").css("display", "");
+			if(isSwMode("ap"))
+				inputCtrl(document.form.wl_lanaccess, 0);
+	}
+
 	if(lyra_hide_support){
 		document.form.wl_crypto.value = "aes";
 		document.getElementById("wl_auth_mode_tr").style.display = "none";
 		document.getElementById("wl_crypt_tr").style.display = "none";
 		document.getElementById("psk_title").innerHTML = "<#Network_key#>";
 		inputCtrl(document.form.wl_macmode, 0);
-	}
-
-	if(captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Free Wi-Fi" || captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Captive Portal Wi-Fi") {
-		$(".captive_portal_control_class").css("display", "none");
-
-	}
-	else {
-		$(".captive_portal_control_class").css("display", "");
+		inputCtrl(document.form.wl_lanaccess, 1);
 	}
 }
 

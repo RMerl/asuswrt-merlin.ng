@@ -721,8 +721,8 @@ function submitForm(){
 		else {
 			var wl_parameter = {
 				"original" : {
-					"ssid" : '<% nvram_get("wl_ssid"); %>',
-					"psk" : '<% nvram_get("wl_wpa_psk"); %>'
+					"ssid" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
+					"psk" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>')
 				},
 				"current": {
 					"ssid" : document.form.wl_ssid.value,

@@ -1,6 +1,13 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
+382.3 Beta (xx-xxx-xxxx)
+   - NEW: Merged with GPL 382_19466
+   - NEW: Added support for RT-AC3200 (merged
+          SDK 7.x-main).
+   - NEW: Merged RT-AC68U binary blobs from 382_19333
+
+
 382.2 Beta (xx-xxx-xxxx)
    - NOTE: The official IRC channel has moved to
            Freenode (#asuswrt).

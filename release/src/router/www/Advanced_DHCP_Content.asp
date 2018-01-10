@@ -20,6 +20,7 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 #ClientList_Block_PC{
 	border:1px outset #999;
@@ -158,7 +159,6 @@ function initial(){
 
 	document.form.sip_server.disabled = true;
 	document.form.sip_server.parentNode.parentNode.style.display = "none";	
-	addOnlineHelp(document.getElementById("faq"), ["set", "up", "specific", "IP", "address"]);
 
 	if(vpn_fusion_support) {
 		vpnc_dev_policy_list_array = parse_vpnc_dev_policy_list('<% nvram_char_to_ascii("","vpnc_dev_policy_list"); %>');
@@ -920,6 +920,9 @@ function parse_vpnc_dev_policy_list(_oriNvram) {
       <div class="formfontdesc"><#LANHostConfig_DHCPServerConfigurable_sectiondesc#></div>
       <div id="router_in_pool" class="formfontdesc" style="color:#FFCC00;display:none;"><#LANHostConfig_DHCPServerConfigurable_sectiondesc2#><span id="LANIP"></span></div>
       <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><span id="VPN_conflict_span"></span></div>
+			<div class="formfontdesc" style="margin-top:-10px;">
+				<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;FAQ</a>
+			</div>
       <div class="formfontdesc" style="margin-top:-10px">
          <br>You can enter up to 128 static DHCP reservations.  If filled, the Name field content will be pushed to the
          client as the hostname.  If an invalid name is entered (such as one with spaces), then the name will only

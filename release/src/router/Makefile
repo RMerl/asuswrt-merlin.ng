@@ -2311,7 +2311,7 @@ ifeq ($(HND_ROUTER),y)
 	cd httpd && rm -f wlioctl.h && ln -sf $(SRCBASE)/../../dhd/src/include/wlioctl.h  wlioctl.h && rm -f bcmwifi_rates.h && ln -sf $(SRCBASE)/../../dhd/src/shared/bcmwifi/include/bcmwifi_rates.h bcmwifi_rates.h && rm -f wlioctl_defs.h && ln -sf $(SRCBASE)/../../dhd/components/shared/devctrl_if/wlioctl_defs.h wlioctl_defs.h
 endif
 	@-rm -f httpd/prebuild/*.o || true
-	@-cp -f httpd/prebuild/models/$(BUILD_NAME)/* httpd/prebuild/
+	@-cp -f httpd/prebuild/$(BUILD_NAME)/* httpd/prebuild/
 	$(MAKE) -C httpd
 
 httpd-install:
@@ -2553,7 +2553,7 @@ rc: shared nvram$(BCMEX)$(EX7) libbcmcrypto libdisk $(if $(RTCONFIG_FBWIFI),fb_w
 	@$(SEP)
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
-	@-cp -f rc/prebuild/models/$(BUILD_NAME)/* rc/prebuild/
+	@-cp -f rc/prebuild/$(BUILD_NAME)/* rc/prebuild/
 	@$(MAKE) -C rc
 
 rc-install:
@@ -2944,7 +2944,7 @@ miniupnpc-install:
 shared: $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(RTCONFIG_HTTPS),openssl)
 # Dig into our collection of prebuilt objects based on model.
 	@-rm -f shared/prebuild/*.o || true
-	@-cp -f shared/prebuild/models/$(BUILD_NAME)/* shared/prebuild/
+	@-cp -f shared/prebuild/$(BUILD_NAME)/* shared/prebuild/
 ifeq ($(RTCONFIG_RALINK)$(RTCONFIG_QCA)$(RTCONFIG_ALPINE)$(RTCONFIG_LANTIQ),y)
 	make -C wireless_tools wireless.h
 endif

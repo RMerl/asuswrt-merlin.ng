@@ -351,12 +351,12 @@ endif
 
 sw_auth.o:
 ifeq ($(wildcard $(SRCBASE)/router/sw-hw-auth/*.c),)
-	cp -f $(TOP)/sw-hw-auth/prebuild/models/$(BUILD_NAME)/sw_auth.o ./
+	cp -f $(TOP)/sw-hw-auth/prebuild/$(BUILD_NAME)/sw_auth.o ./
 endif
 
 hw_auth.o:
 ifeq ($(wildcard $(SRCBASE)/router/sw-hw-auth/*.c),)
-	cp -f $(TOP)/sw-hw-auth/prebuild/models/$(BUILD_NAME)/hw_auth.o ./
+	cp -f $(TOP)/sw-hw-auth/prebuild/$(BUILD_NAME)/hw_auth.o ./
 endif
 
 ifeq ($(RTCONFIG_USB),y)

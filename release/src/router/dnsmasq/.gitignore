@@ -3,10 +3,10 @@ src/*.mo
 src/dnsmasq.pot
 src/dnsmasq
 src/dnsmasq_baseline
-src/.configured
-src/.copts*
-contrib/wrt/dhcp_lease_time
-contrib/wrt/dhcp_release
+src/.copts_*
+contrib/lease-tools/dhcp_lease_time
+contrib/lease-tools/dhcp_release
+contrib/lease-tools/dhcp_release6
 debian/base/
 debian/daemon/
 debian/files

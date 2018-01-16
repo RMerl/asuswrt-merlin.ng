@@ -1178,6 +1178,13 @@ void start_dnsmasq(void)
 		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME2);
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()) {
+			/* localhost ipv6 */
+			fprintf(fp, "::1 ip6-localhost ip6-loopback\n");
+			/* multicast ipv6 */
+			fprintf(fp, "fe00::0 ip6-localnet\n"
+				    "ff00::0 ip6-mcastprefix\n"
+				    "ff02::1 ip6-allnodes\n"
+				    "ff02::2 ip6-allrouters\n");
                        /* lan6 hostname.domain hostname */
                         value = (char*) ipv6_router_address(NULL);
 			if (*value && nvram_invmatch("lan_hostname", "")) {
@@ -1186,8 +1193,6 @@ void start_dnsmasq(void)
 					    nvram_safe_get("lan_domain"),
 					    nvram_safe_get("lan_hostname"));
 			}
-			/* localhost ipv6 */
-			fprintf(fp, "::1 localhost6.localdomain6 localhost6\n");
 		}
 #endif
 		append_custom_config("hosts", fp);

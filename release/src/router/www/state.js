@@ -637,13 +637,18 @@ var hive_hide_support = isSupport("hive_hide");
 var wifiproxy_support = isSupport("wifiproxy");
 var lyra_hide_support = isSupport("lyra_hide");
 var hdspindown_support = isSupport("hdspindown");
-var amesh_support = uiSupport("amas");
+if ("<% nvram_get("amas_force"); %>" == "1") {
+	var amesh_support = uiSupport("amas");
+	var cfg_sync_support = isSupport("cfg_sync");
+} else {
+	var amesh_support = false;
+	var cfg_sync_support = false;
+}
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
 var hnd_support = isSupport("hnd");
 var tagged_based_vlan = isSupport("tagged_based_vlan");
 var vpn_fusion_support = isSupport("vpn_fusion");
-var cfg_sync_support = isSupport("cfg_sync");
 var meoVoda_support = isSupport("meoVoda");
 var movistarTriple_support = isSupport("movistarTriple");
 

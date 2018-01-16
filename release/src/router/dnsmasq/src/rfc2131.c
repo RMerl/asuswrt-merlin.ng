@@ -681,7 +681,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
       
       *pq = 0;
       
-      if (legal_hostname(daemon->dhcp_buff))
+      if (valid_hostname(daemon->dhcp_buff))
 	offer_hostname = client_hostname = daemon->dhcp_buff;
     }
   else if ((opt = option_find(mess, sz, OPTION_HOSTNAME, 1)))
@@ -695,7 +695,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	borken_opt = 1;
       else
 	daemon->dhcp_buff[len] = 0;
-      if (legal_hostname(daemon->dhcp_buff))
+      if (valid_hostname(daemon->dhcp_buff))
 	client_hostname = daemon->dhcp_buff;
     }
 

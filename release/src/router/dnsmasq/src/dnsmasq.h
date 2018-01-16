@@ -1184,6 +1184,7 @@ unsigned short rand16(void);
 u32 rand32(void);
 u64 rand64(void);
 int legal_hostname(char *name);
+int valid_hostname(char *name);
 char *canonicalise(char *in, int *nomem);
 unsigned char *do_rfc1035_name(unsigned char *p, char *sval, char *limit);
 void *safe_malloc(size_t size);

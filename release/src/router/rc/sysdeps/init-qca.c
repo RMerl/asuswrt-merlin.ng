@@ -1114,6 +1114,9 @@ static void __load_wifi_driver(int testmode)
 					f_write_string("/proc/net/skb_recycler/max_spare_skbs", "10", 0, 0);
 					/* *v++ = "low_mem_system=1"; obsoleted in new driver */
 				}
+#elif defined(MAPAC1750)
+				f_write_string("/proc/net/skb_recycler/flush", "1", 0, 0);
+				f_write_string("/proc/net/skb_recycler/max_skbs", "256", 0, 0);
 #endif
 			}
 			else {
@@ -1200,6 +1203,8 @@ static void __load_wifi_driver(int testmode)
 		strncpy(code_str, nvram_safe_get("wl2_txpower"), sizeof(code_str)-1);
 		eval("iwpriv", (char*) VPHY_5G2, "txpwrpc", code_str);
 #endif
+		/* add acs channel weight */
+		acs_ch_weight_param();
 
 #if defined(RTCONFIG_HAS_5G_2)
 		strlcpy(country, nvram_safe_get("wl2_country_code"), sizeof(country));
@@ -1940,6 +1945,12 @@ void reinit_sfe(int unit)
 #if defined(RTCONFIG_SOC_IPQ40XX) && defined(RTCONFIG_BWDPI)
 		handle_bwdpi = 1;
 #else
+		act = 0;
+#endif
+
+#if defined(RTCONFIG_QCA956X) && defined(RTCONFIG_BWDPI)
+	/* For MAP-AC1750, not to integrate fast-path in stage 1 */
+	if (check_bwdpi_nvram_setting() == 1)
 		act = 0;
 #endif
 

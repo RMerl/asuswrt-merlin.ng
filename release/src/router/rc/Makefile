@@ -305,7 +305,9 @@ endif
 
 ifeq ($(RTCONFIG_USB),y)
 OBJS += usb.o
+ifneq ($(RTCONFIG_NO_USBPORT),y)
 OBJS += usbled.o
+endif
 OBJS += usb_devices.o
 endif
 
@@ -782,7 +784,9 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc tcpcheck
 	@cd $(INSTALLDIR)/sbin && ln -sf rc auto_macclone
 ifeq ($(RTCONFIG_USB),y)
+ifneq ($(RTCONFIG_NO_USBPORT),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc usbled
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_apps_name
 ifeq ($(BCM_MMC),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc asus_mmc

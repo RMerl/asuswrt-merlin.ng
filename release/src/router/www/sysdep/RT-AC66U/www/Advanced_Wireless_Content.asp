@@ -37,7 +37,7 @@ $(function () {
 wl_channel_list_2g = <% channel_list_2g(); %>;
 wl_channel_list_5g = <% channel_list_5g(); %>;
 var cur_control_channel = [<% wl_control_channel(); %>][0];
-
+var reboot_needed_time = eval("<% get_default_reboot_time(); %>");
 var wl_unit = <% nvram_get("wl_unit"); %>;
 var country = '';
 if(wl_unit == '1')
@@ -141,6 +141,12 @@ function initial(){
 				}
 		}
 	}
+	else if(country == "US" && dfs_US_support){
+		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
+			document.getElementById('dfs_checkbox').style.display = "";
+			check_DFS_support(document.form.acs_dfs_checkbox);
+		}
+	}
 	else if(country == "US" || country == "SG"){		//display checkbox of band1 channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
 		|| based_modelid == "RT-AC56U" || based_modelid == "RT-AC56S"
@@ -158,6 +164,7 @@ function initial(){
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
 	}
+
 	
 	if(country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR"){
 		if(!Qcawifi_support && !Rawifi_support){
@@ -386,8 +393,8 @@ function applyRule(){
 			else {
 				var wl_parameter = {
 					"original" : {
-						"ssid" : '<% nvram_get("wl_ssid"); %>',
-						"psk" : '<% nvram_get("wl_wpa_psk"); %>'
+						"ssid" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
+						"psk" :  decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>')
 					},
 					"current": {
 						"ssid" : document.form.wl_ssid.value,
@@ -487,6 +494,30 @@ function applyRule(){
 					document.form.wl_chanspec.value = document.form.wl_channel.value + document.form.wl_nctrlsb.value;
 				}
 			}	
+		}
+
+		if(country == "US" && dfs_US_support && wl_unit == "1"){
+			if(document.form.wl_channel.value == "0"){
+				if(document.form.acs_dfs_checkbox.checked){
+					document.form.wl1_dfs.value = "1";
+					document.form.acs_dfs.value = "1";
+				}
+				else{
+					document.form.wl1_dfs.value = "0";
+					document.form.acs_dfs.value = "0";
+				}		
+			}
+			else{
+				if(dfs_channel.indexOf(document.form.wl_channel.value) != -1){
+					document.form.wl1_dfs.value = "1";
+					document.form.acs_dfs.value = "1";
+				}
+			}
+
+			if(wl1_dfs != document.form.wl1_dfs.value){
+				document.form.action_script.value = "reboot";
+				document.form.action_wait.value = reboot_needed_time;
+			}
 		}
 
 		if(country == "EU" && based_modelid == "RT-AC87U" && wl_unit == '1'){			//Interlocking setting to enable 'wl1_80211h' in EU RT-AC87U under 5GHz
@@ -846,7 +877,6 @@ function regen_auto_option(obj){
 <input type="hidden" name="action_mode" value="apply_new">
 <input type="hidden" name="action_script" value="restart_wireless">
 <input type="hidden" name="action_wait" value="10">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="wl_country_code" value="<% nvram_get("wl0_country_code"); %>" disabled>
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="wl_chanspec" value="">
@@ -887,6 +917,7 @@ function regen_auto_option(obj){
 <input type="hidden" name="wl_wep_x_orig" value='<% nvram_get("wl_wep_x"); %>'>
 <input type="hidden" name="wl_optimizexbox" value='<% nvram_get("wl_optimizexbox"); %>'>
 <input type="hidden" name="wl_subunit" value='-1'>
+<input type="hidden" name="wl1_dfs" value='<% nvram_get("wl1_dfs"); %>'>
 <input type="hidden" name="acs_dfs" value='<% nvram_get("acs_dfs"); %>'>
 <input type="hidden" name="acs_band1" value='<% nvram_get("acs_band1"); %>'>
 <input type="hidden" name="acs_band3" value='<% nvram_get("acs_band3"); %>'>

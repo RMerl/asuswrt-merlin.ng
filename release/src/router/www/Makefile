@@ -522,6 +522,11 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300
 endif
 endif
 
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
+	rm -rf $(INSTALLDIR)/www/images/New_ui/asus_hive_block_internet_web.png
+endif
+
+
 ifneq ($(RTCONFIG_DISK_MONITOR), y)
 	rm -rf $(INSTALLDIR)/www/device-map/disk_utility.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/backgroud_move_8P_2.0.gif

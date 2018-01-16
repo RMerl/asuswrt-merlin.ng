@@ -356,6 +356,7 @@ static int json_object_object_to_json_string(struct json_object* jso,
 static void json_object_lh_entry_free(struct lh_entry *ent)
 {
   free(ent->k);
+  ent->k = LH_FREED;
   json_object_put((struct json_object*)ent->v);
 }
 

@@ -34,10 +34,6 @@ EXTRA   = -g
 CFLAGS	= $(WARNS) $(EXTRA) -D_GNU_SOURCE -D'ECMH_VERSION="$(ECMH_VERSION)"' $(ECMH_OPTIONS) $(EXTRACFLAGS) -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared 
 LDFLAGS	= $(ECMH_LDFREEBSD) $(EXTRALDFLAGS)
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 CC	:= @echo "[Compiling] $$@"; $(CC)
 
 all:	$(BINS)

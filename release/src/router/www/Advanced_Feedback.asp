@@ -40,6 +40,7 @@
 <script>
 var usb_status_last_time = false;
 var orig_page = '<% get_parameter("origPage"); %>';
+var fb_trans_id = '<% generate_trans_id(); %>';
 var dblog_trans_id = '<% generate_trans_id(); %>';
 function initial(){
 	show_menu();
@@ -358,6 +359,11 @@ function applyRule(){
 				document.form.fb_email.focus();
 				return false;
 			}
+		}
+
+		if(fb_trans_id != "")
+		{
+			document.form.fb_transid.value = fb_trans_id;
 		}
 
 		//check Diagnostic
@@ -706,6 +712,7 @@ function dblog_stop() {
 <input type="hidden" name="feedbackresponse" value="<% nvram_get("feedbackresponse"); %>">
 <input type="hidden" name="fb_experience" value="<% nvram_get("fb_experience"); %>">
 <input type="hidden" name="fb_browserInfo" value="">
+<input type="hidden" name="fb_transid" value="123456789ABCDEF0">
 <input type="hidden" name="dblog_service" class="dblog_support_class" value="">
 <input type="hidden" name="dblog_tousb" class="dblog_support_class" value="">
 <input type="hidden" name="dblog_transid" class="dblog_support_class" value="0123456789ABCDEF">

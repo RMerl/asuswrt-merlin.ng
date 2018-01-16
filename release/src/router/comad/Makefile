@@ -26,10 +26,6 @@ LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += -L$(TOP)/libbcm -L$(INSTALLDIR)/libbcm/usr/lib -lbcm
 LDFLAGS += $(EXTRA_LDFLAGS)
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 
 vpath %.c $(SRCBASE)/shared/ $(SRCBASE)/shared/bcmwifi/src
 

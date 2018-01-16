@@ -259,7 +259,7 @@ deconfig(int zcip)
 	int end_wan_sbstate = WAN_STOPPED_REASON_DHCP_DECONFIG;
 
 	/* Figure out nvram variable name prefix for this i/f */
-	if (wan_prefix(wan_ifname, prefix) < 0){
+	if (wan_prefix(wan_ifname, prefix) < 0) {
 		logmessage("wan", "[%s] exit [%d]", __FUNCTION__, __LINE__);
 		return -1;
 	}
@@ -274,7 +274,7 @@ deconfig(int zcip)
 	wan_down(wan_ifname);
 
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	if(get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT)
+	if (get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT)
 		end_wan_sbstate = WAN_STOPPED_REASON_DATALIMIT;
 #endif
 
@@ -326,9 +326,9 @@ bound(void)
 
 	changed += nvram_set_env(strcat_r(prefix, "ipaddr", tmp), "ip");
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
-	if(dualwan_unit__usbif(ifunit)){
+	if (dualwan_unit__usbif(ifunit)) {
 		modem_unit = get_modemunit_by_dev(wan_ifname);
-		if(modem_unit == MODEM_UNIT_NONE){
+		if (modem_unit == MODEM_UNIT_NONE) {
 			_dprintf("%s: cannot get the modem unit!\n", __FUNCTION__);
 			return -1;
 		}
@@ -356,7 +356,7 @@ bound(void)
 		if ((value = getenv("search")) && *value) {
 			char *domain, *result;
 			if ((domain = getenv("domain")) && *domain &&
-					find_word(value, trim_r(domain)) == NULL) {
+			    find_word(value, trim_r(domain)) == NULL) {
 				result = alloca(strlen(domain) + strlen(value) + 2);
 				sprintf(result, "%s %s", domain, value);
 				value = result;
@@ -404,7 +404,7 @@ bound(void)
 
 #ifdef RTCONFIG_TR069
 	if ((value = getenv("opt43")) && nvram_get_int("tr_discovery") &&
-			(value = hex2bin(value, &size))) {
+	    (value = hex2bin(value, &size))) {
 		struct opt_hdr *opt;
 		char buf[256], *url = NULL, *userinfo, *host, *path, *ptr, *user, *pass;
 		if ((opt = opt_get(value, size, 1)) &&
@@ -452,8 +452,8 @@ bound(void)
 		struct viopt_hdr *viopt;
 		struct opt_hdr *oui, *serial, *class;
 		if ((viopt = viopt_get(value, size, htonl(3561))) &&
-				(oui = opt_get(viopt->data, viopt->len, 4)) &&
-				(serial = opt_get(viopt->data, viopt->len, 5))) {
+		    (oui = opt_get(viopt->data, viopt->len, 4)) &&
+		    (serial = opt_get(viopt->data, viopt->len, 5))) {
 			char vivso[6 + 64 + 64 + 3];
 			char *ptr = vivso;
 			char *end = ptr + sizeof(vivso);
@@ -494,8 +494,8 @@ bound(void)
 	/* Clean nat conntrack for this interface,
 	 * but skip physical VPN subinterface for PPTP/L2TP */
 	if (changed && !(unit < 0 &&
-			(nvram_match(strcat_r(wanprefix, "proto", tmp), "l2tp") ||
-			nvram_match(strcat_r(wanprefix, "proto", tmp), "pptp"))))
+	    (nvram_match(strcat_r(wanprefix, "proto", tmp), "l2tp") ||
+	     nvram_match(strcat_r(wanprefix, "proto", tmp), "pptp"))))
 		ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
 	ifconfig(wan_ifname, IFUP,
 		 nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)),
@@ -546,9 +546,9 @@ renew(void)
 			!nvram_match(strcat_r(prefix, "ipaddr", tmp), trim_r(value)))
 		return bound();
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
-	if(dualwan_unit__usbif(ifunit)){
+	if (dualwan_unit__usbif(ifunit)) {
 		modem_unit = get_modemunit_by_dev(wan_ifname);
-		if(modem_unit == MODEM_UNIT_NONE){
+		if (modem_unit == MODEM_UNIT_NONE) {
 			_dprintf("%s: cannot get the modem unit!\n", __FUNCTION__);
 			return -1;
 		}
@@ -560,16 +560,16 @@ renew(void)
 		if (!nvram_match(strcat_r(prefix, "netmask", tmp), "255.255.255.255"))
 			return bound();
 		if ((gateway = getenv("ip")) == NULL ||
-				!nvram_match(strcat_r(prefix, "gateway", tmp), trim_r(gateway)))
+		    !nvram_match(strcat_r(prefix, "gateway", tmp), trim_r(gateway)))
 			return bound();
 	} else
 #endif
 	{
 		if ((value = getenv("subnet")) == NULL ||
-				!nvram_match(strcat_r(prefix, "netmask", tmp), trim_r(value)))
+		    !nvram_match(strcat_r(prefix, "netmask", tmp), trim_r(value)))
 			return bound();
 		if ((gateway = getenv("router")) == NULL ||
-				!nvram_match(strcat_r(prefix, "gateway", tmp), trim_r(gateway)))
+		    !nvram_match(strcat_r(prefix, "gateway", tmp), trim_r(gateway)))
 			return bound();
 	}
 
@@ -1001,7 +1001,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 		;
 	else
 #endif
-	if(nvram_match("lan_proto", "static"))
+	if (nvram_match("lan_proto", "static"))
 		ifconfig(lan_ifname, IFUP | IFF_ALLMULTI, nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 	else
 		ifconfig(lan_ifname, IFUP | IFF_ALLMULTI, nvram_default_get("lan_ipaddr"), nvram_default_get("lan_netmask"));
@@ -1056,7 +1056,7 @@ bound_lan(void)
 	}
 	if ((value = getenv("router"))) {
 #if defined(RTCONFIG_AMAS)		
-		if (!nvram_match("lan_gateway", trim_r(value))){
+		if (!nvram_match("lan_gateway", trim_r(value))) {
 			lanchange = 1;
 		}
 #endif		
@@ -1064,7 +1064,7 @@ bound_lan(void)
 	}
 	if ((value = getenv("lease"))) {
 #if defined(RTCONFIG_AMAS)		
-		if (!nvram_match("lan_lease", trim_r(value))){
+		if (!nvram_match("lan_lease", trim_r(value))) {
 			lanchange = 1;
 		}
 #endif				
@@ -1114,9 +1114,9 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 
 #ifdef RTCONFIG_WIRELESSREPEATER
 #ifdef RTCONFIG_REALTEK
-	if((repeater_mode() || mediabridge_mode())
+	if ((repeater_mode() || mediabridge_mode())
 #else
-	if(sw_mode() == SW_MODE_REPEATER
+	if (sw_mode() == SW_MODE_REPEATER
 #endif
 	&& nvram_get_int("wlc_mode") == 0) {
 		update_lan_state(LAN_STATE_CONNECTED, 0);

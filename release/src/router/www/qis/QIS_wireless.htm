@@ -782,7 +782,7 @@ function submitForm(){
 
 	// no need to restart wireless
 	if(document.form.action_script.value == "restart_wireless"){
-		document.form.action_script.value = "saveNvram";
+		document.form.action_script.value = "";
 		document.form.action_wait.value = "0";
 		
 		if(document.form.sw_mode.value == "1" && !document.form.wl0_ssid.disabled) 
@@ -800,11 +800,6 @@ function submitForm(){
 	}
 
 	document.form.submit();
-	if((document.form.sw_mode.value == "1" || document.form.sw_mode.value == "3") && !(!parent.flag_manual && parent.pppoe_failed_flag)){
-		setTimeout(function(){
-			location.href = "/qis/QIS_finish.htm";
-		}, 500)
-	}
 }
 
 function reset_wl_hwaddr(prefix){

@@ -13,10 +13,6 @@ LDFLAGS += -L$(TOP)/nvram -lnvram
 
 include $(SRCBASE)/router/.config
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 depend:
 	$(CC) $(CFLAGS) -M $(DCFILES) >.depend
 

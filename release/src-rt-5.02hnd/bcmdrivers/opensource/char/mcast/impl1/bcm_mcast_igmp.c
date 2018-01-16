@@ -324,7 +324,7 @@ void bcm_mcast_igmp_init(bcm_mcast_ifdata *pif)
    }
 
    setup_timer(&pif->igmp_timer, bcm_mcast_igmp_timer, (unsigned long)pif->ifindex);
-   pif->igmp_snooping = BCM_MCAST_SNOOPING_BLOCKING_MODE;
+   pif->igmp_snooping = BCM_MCAST_SNOOPING_STANDARD_MODE;
    pif->igmp_lan2lan_mc_enable = 0;
    pif->igmp_rate_limit = 0;
 }

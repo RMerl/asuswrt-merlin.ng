@@ -48,88 +48,17 @@ var isJsonChanged = function(objNew, objOld){
 			}
 		}
 		else if( i == "fromNetworkmapd"){
-			if(objNew[i] != objOld[i])
+			if(JSON.stringify(objNew[i]) != JSON.stringify(objOld[i]))
 				return true;
 		}
 		else{
-			if(typeof objNew[i] == "undefined" || objOld[i] != objNew[i]){
-				return true;				
-			}
+			if(typeof objNew[i] == "undefined" || JSON.stringify(objOld[i]) != JSON.stringify(objNew[i]))
+				return true;
 		}
 	}
 
     return false;
 };
-
-/**
- * Implements cookie-less JavaScript session variables
- * v1.0
- *
- * By Craig Buckler, Optimalworks.net
- *
- * As featured on SitePoint.com
- * Please use as you wish at your own risk.
-*
- * Usage:
- *
- * // store a session value/object
- * Session.set(name, object);
- *
- * // retreive a session value/object
- * Session.get(name);
- *
- * // clear all session data
- * Session.clear();
- *
- * // dump session data
- * Session.dump();
- */
- 
- if (JSON && JSON.stringify && JSON.parse) var Session = Session || (function() {
- 
-	// window object
-	var win = window.top || window;
-	
-	// Browser sometimes contain random characters here, breaking the JSON parser
-	if ((typeof(win.name) != "string") || (win.name.substring(2, 7) != "ouiDB") && (win.name.substring(2,6) != "menu")) {
-		win.name = "";
-	}
-
-	// session store
-	var store = (win.name ? JSON.parse(win.name) : {});
-	
-	// save store on page unload
-	function Save() {
-		win.name = JSON.stringify(store);
-	};
-	
-	// page unload event
-	if (window.addEventListener) window.addEventListener("unload", Save, false);
-	else if (window.attachEvent) window.attachEvent("onunload", Save);
-	else window.onunload = Save;
-
-	// public methods
-	return {
-	
-		// set a session variable
-		set: function(name, value) {
-			store[name] = value;
-		},
-		
-		// get a session value
-		get: function(name) {
-			return (store[name] ? store[name] : undefined);
-		},
-		
-		// clear session
-		clear: function() { store = {}; },
-		
-		// dump session data
-		dump: function() { return JSON.stringify(store); }
- 
-	};
- 
- })();
 
 /* ouiDB lookup code */
 var ouiClientListArray = new Array();
@@ -217,6 +146,7 @@ var setClientAttr = function(){
 	this.wlInterface = "";
 	this.amesh_isRe = false;
 	this.amesh_isReClient = false;
+	this.amesh_papMac = "";
 }
 
 var clientList = new Array(0);
@@ -324,6 +254,7 @@ function genClientList(){
 					if(thisClient.amesh_papMac != undefined) {
 						if(clientList[thisClient.amesh_papMac] != undefined)
 							clientList[thisClientMacAddr].amesh_isReClient = (thisClient.amesh_isReClient == "1") ? true : false;
+							clientList[thisClientMacAddr].amesh_papMac = thisClient.amesh_papMac;
 					}
 				}
 			}
@@ -1433,7 +1364,7 @@ function slideUp(objnmae, speed) {
 }
 
 function registerIframeClick(iframeName, action) {
-	var iframe = document.getElementById(iframeName);
+	var iframe = document.getElementById(iframeName) || top.document.getElementById(iframeName);
 	if(iframe != null) {
 		var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
@@ -1447,7 +1378,7 @@ function registerIframeClick(iframeName, action) {
 }
 
 function removeIframeClick(iframeName, action) {
-	var iframe = document.getElementById(iframeName);
+	var iframe = document.getElementById(iframeName) || top.document.getElementById(iframeName);
 	if(iframe != null) {
 		var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
@@ -1727,11 +1658,10 @@ function pop_clientlist_listview() {
 	clientlist_view_hide_flag = false;
 
 	create_clientlist_listview();
-	updateClientListBackground();
+	setTimeout("updateClientListBackground();", 5000);//avoiding no data when open the view list
 	setTimeout("sorterClientList();updateClientListView();", 500);
-	
-	registerIframeClick("statusframe", hide_clientlist_view_block);
 
+	registerIframeClick("statusframe", hide_clientlist_view_block);
 }
 
 function exportClientListLog() {

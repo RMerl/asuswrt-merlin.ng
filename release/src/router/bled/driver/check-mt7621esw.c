@@ -218,7 +218,7 @@ unsigned int swports_check_traffic(struct bled_priv *bp)
 		diff += d;
 		if (unlikely(bp->flags & BLED_FLAGS_DBG_CHECK_FUNC)) {
 			prn_bl_v("GPIO#%d: port %2d, d %10lu (RX %10lu,%10lu / TX %10lu,%10lu)\n",
-				bp->gpio_nr, p, d, ifs->last_rx_bytes, rx_bytes,
+				bp->gpio_nr[0], p, d, ifs->last_rx_bytes, rx_bytes,
 				ifs->last_tx_bytes, tx_bytes);
 		}
 

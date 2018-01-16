@@ -2154,7 +2154,8 @@ extern void blog_gre_xmit( struct sk_buff *skb_p, uint32_t h_proto );
 #endif
 
 #if defined(CONFIG_ACCEL_PPTP)
-#define BLOG_PPTP_RCV_NOT_PPTP             2
+#define BLOG_PPTP_ENCRYPTED               3
+#define BLOG_PPTP_RCV_NOT_PPTP            2
 #define BLOG_PPTP_RCV_NO_SEQNO            1
 #define BLOG_PPTP_RCV_IN_SEQ              0
 #define BLOG_PPTP_RCV_NO_TUNNEL          -1

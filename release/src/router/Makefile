@@ -480,10 +480,14 @@ obj-y += wireless_tools
 
 obj-y += $(if $(RTN65U),rt2880_app,flash)
 ifeq ($(RTN65U),)
-obj-y += $(if $(or $(RTN14U),$(RTAC52U),$(RTAC51U),$(RTN11P),$(RTN300),$(RTN54U),$(RTAC1200HP),$(RTN56UB1),$(RTN56UB2),$(RTAC54U),$(RTAC51UP),$(RTAC53),$(RTAC1200),$(RTAC1200GA1),$(RTAC1200GU),$(RTN600),$(RTN11PB1),$(RPAC87),$(RTAC85U)),reg,hw_nat)
+obj-y += $(if $(or $(RTN14U),$(RTAC52U),$(RTAC51U),$(RTN11P),$(RTN300),$(RTN54U),$(RTAC1200HP),$(RTN56UB1),$(RTN56UB2),$(RTAC54U),$(RTAC51UP),$(RTAC53),$(RTAC1200),$(RTAC1200GA1),$(RTAC1200GU),$(RTN600),$(RTN11PB1),$(RPAC87),$(RTAC85U),$(RTN800HP)),reg,hw_nat)
 obj-y += $(if $(RTCONFIG_ATED122),ated_1.2.2,ated)
 endif
 obj-y += $(if $(RTCONFIG_MII_MGR),mii_mgr)
+
+ifeq ($(RTN800HP),y)
+obj-y += switch
+endif
 
 ifeq ($(RPAC87),y)
 obj-y += mpstat-0.1.1
@@ -2103,6 +2107,8 @@ endif
 
 	@rm -f $(TARGETDIR)/lib/modules/*/build
 endif
+	@# Fix /usr/lib permission for OpenVPN authentication.
+	@chmod 755 $(TARGETDIR)/usr/lib
 
 gen_gpl_excludes_router:
 	@[ ! -d ../../../buildtools/ ] || ../../../buildtools/gpl_excludes_router.sh $(SRCBASE) "$(obj-y) $(released_dir)"
@@ -3419,9 +3425,6 @@ accel-pptpd: kernel_header pppd accel-pptpd/pptpd-1.3.3/Makefile
 	@$(MAKE) -C accel-pptpd server
 
 accel-pptpd/pptpd-1.3.3/Makefile:
-	$(MAKE) accel-pptpd-configure
-
-accel-pptpd-configure:
 	( cd accel-pptpd/pptpd-1.3.3 && CFLAGS="$(CFLAGS) -g -O2 $(EXTRACFLAGS) -idirafter $(KDIR)/include" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 			--enable-bcrelay KDIR=$(KDIR) PPPDIR=$(TOP)/pppd \
@@ -3897,16 +3900,14 @@ iperf-clean:
 lldpd-0.9.8: lldpd-0.9.8/Makefile
 	$(MAKE) -C $@
 
-lldpd-0.9.8/Makefile: lldpd-0.9.8-configure
+lldpd-0.9.8/Makefile:
 ifeq ($(HND_ROUTER),y)
-	(cd lldpd-0.9.8 ; LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
+	(cd lldpd-0.9.8 ; autoreconf -i -f ; LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
 	$(CONFIGURE) $(if $(RTCONFIG_AMAS),JSONC_CFLAGS='-I$(TOP)/json-c' JSONC_LIBS='-L$(TOP)/josn-c/.libs -ljson-c',) --prefix= --bindir=/usr/sbin --libdir=/usr/lib --with-privsep-user=admin --with-privsep-group=root --with-privsep-path=/var/run/lldpd $(if $(RTCONFIG_AMAS),--with-json=yes,))
 else	
-	(cd lldpd-0.9.8 ; LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
+	(cd lldpd-0.9.8 ; autoreconf -i -f ; LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
 	$(CONFIGURE) $(if $(RTCONFIG_AMAS),JSONC_CFLAGS='-I$(TOP)/json-c' JSONC_LIBS='-L$(TOP)/josn-c/.libs -ljson-c',) --prefix= --enable-oldies --bindir=/usr/sbin --libdir=/usr/lib --with-privsep-user=admin --with-privsep-group=root --with-privsep-path=/var/run/lldpd $(if $(RTCONFIG_AMAS),--with-json=yes,))
 endif
-lldpd-0.9.8-configure:
-	cd lldpd-0.9.8 && ./autogen.sh
 
 lldpd-0.9.8-install: lldpd-0.9.8
 	install -D lldpd-0.9.8/src/client/.libs/lldpcli $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpcli
@@ -3923,9 +3924,6 @@ libevent-2.0.21: libevent-2.0.21/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
 
 libevent-2.0.21/Makefile:
-	$(MAKE) libevent-2.0.21-configure
-
-libevent-2.0.21-configure:
 	( cd libevent-2.0.21 && autoreconf -i -f ; CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS)" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 	)
@@ -4835,9 +4833,6 @@ openpam: openpam/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 openpam/Makefile:
-	$(MAKE) openpam-configure
-
-openpam-configure:
 	( cd openpam ; \
 		LDFLAGS=-ldl \
 		$(CONFIGURE) \
@@ -5262,7 +5257,7 @@ strongswan-5.2.1: strongswan-5.2.1/stamp-h1
 
 strongswan-5.2.1-install: strongswan-5.2.1
 	@$(SEP)
-	@$(MAKE) -C strongswan-5.2.1 install DESTDIR=$(INSTALLDIR)/strongswan-5.2.1/
+	@$(MAKE) -C strongswan-5.2.1 install DESTDIR=$(INSTALLDIR)/strongswan-5.2.1/ ; chmod 755 $(INSTALLDIR)/strongswan-5.2.1/usr/lib
 	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/usr/etc
 	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.la
 	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.la
@@ -6713,11 +6708,8 @@ endif
 		ln -sf libc.so.0 libc.so.1 && \
 		ln -sf libpthread.so.0 libpthread.so.1
 
-jansson-2.7/configure:
-	cd jansson-2.7 && ./autogen.sh
-
-jansson-2.7/Makefile: jansson-2.7/configure
-	@cd jansson-2.7 && $(CONFIGURE) CC=$(CC) \
+jansson-2.7/Makefile:
+	@cd jansson-2.7 && autoreconf -i -f && $(CONFIGURE) CC=$(CC) \
 		--prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib \
 		--sysconfdir=/etc --datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info
 
@@ -7218,6 +7210,9 @@ else ifeq ($(RTCONFIG_REALTEK),y)
 	install -D $(LIBDIR)/libc.so.0 $(TARGETDIR)/lib/libc.so.0
 	install -D $(LIBDIR)/libgcc_s.so.1 $(TARGETDIR)/lib/libgcc_s.so.1
 	install -D $(LIBDIR)/libstdc++.so.6 $(TARGETDIR)/lib/libstdc++.so.6
+else ifeq ($(RTCONFIG_RALINK),y)
+	install -D $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0 $(INSTALLDIR)/wb/lib/librt.so.0
+	install -D $(shell dirname $(shell which $(CXX)))/../lib/libstdc++.so.6 $(INSTALLDIR)/wb/lib/libstdc++.so.6
 else
 	install -D $(shell dirname $(shell which $(CXX)))/../lib/libstdc++.so.6 $(INSTALLDIR)/wb/usr/lib/libstdc++.so.6
 endif
@@ -7228,7 +7223,7 @@ aaews-clean:
 amas-utils: json-c openssl nvram${BCMEX}$(EX7)
 	cd amas-utils && \
         CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
-        make lib && make cli
+        make all
         
 amas-utils-clean:
 	cd amas-utils && make clean
@@ -7237,8 +7232,10 @@ amas-utils-install:
 	install -d $(INSTALLDIR)/amas-utils/usr/lib/
 	install -D amas-utils/libamas-utils.so $(INSTALLDIR)/amas-utils/usr/lib/libamas-utils.so
 	$(STRIP) -s $(INSTALLDIR)/amas-utils/usr/lib/libamas-utils.so
+ifneq ($(wildcard $(TOP)/amas-utils/*.c),)
 	install -D amas-utils/amas-utils-cli $(INSTALLDIR)/amas-utils/usr/sbin/amas-utils-cli
 	$(STRIP) -s $(INSTALLDIR)/amas-utils/usr/sbin/amas-utils-cli
+endif
 
 json-c/stamp-h1:
 ifeq ($(RTCONFIG_LANTIQ),y)

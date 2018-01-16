@@ -90,7 +90,7 @@ unsigned int interrupt_check_traffic(struct bled_priv *bp)
 		diff += d;
 		if (unlikely(bp->flags & BLED_FLAGS_DBG_CHECK_FUNC)) {
 			prn_bl_v("GPIO#%d: interrupt %u, d %10lu (%10lu,%10lu)\n",
-				bp->gpio_nr, intrs->interrupt, d, intrs->last_nr_interrupts, s);
+				bp->gpio_nr[0], intrs->interrupt, d, intrs->last_nr_interrupts, s);
 		}
 
 		intrs->last_nr_interrupts = s;

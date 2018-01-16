@@ -90,10 +90,12 @@ enum gpio_api {
 #define BLED_UDEF_PATTERN_MIN_INTERVAL	(50)	/* unit: ms */
 #define BLED_UDEF_PATTERN_MAX_INTERVAL	(3000)	/* unit: ms */
 
+#define BLED_MAX_NR_GPIO_PER_BLED	(3)	/* for RGB LED */
 
 struct bled_common {
-	unsigned int gpio_nr;
-	int active_low;
+	unsigned int gpio_nr;		/* Primary GPIO number that is used to search bled. */
+	int active_low;			/* Polary of gpio_nr or gpio2, depends on ioctl command. */
+	unsigned int gpio2_nr;		/* New GPIO that will be added to an exist bled. */
 	enum gpio_api gpio_api_id;
 	enum bled_state state;
 	enum bled_bh_type bh_type;
@@ -103,6 +105,7 @@ struct bled_common {
 	unsigned int pattern_interval;	/* unit: ms (BLED_UDEF_PATTERN_MIN_INTERVAL ~ BLED_UDEF_PATTERN_MAX_INTERVAL) */
 	unsigned int nr_pattern;	/* number of valid item in pattern[] */
 	unsigned int pattern[BLED_MAX_NR_PATTERN];	/* 0: Turn off LED; otherwise: Turn on LED */
+	unsigned int trigger[BLED_MAX_NR_GPIO_PER_BLED];/* 0: Turn off LED; otherwise: Run user defined pattern */
 };
 
 struct ndev_bled {
@@ -138,6 +141,8 @@ struct interrupt_bled {
 #define BLED_CTL_SET_UDEF_PATTERN	_IOW('B', 9, struct bled_common)	/* gpio_nr, pattern_interval, nr_pattern, pattern[] */
 #define BLED_CTL_SET_MODE		_IOW('B',10, struct bled_common)	/* gpio_nr, mode */
 #define BLED_CTL_ADD_INTERRUPT_BLED	_IOW('B',11, struct interrupt_bled)	/* all fields; except mode, state */
+#define BLED_CTL_ADD_GPIO		_IOW('B',13, struct bled_common)	/* gpio_nr, active_low, gpio2_nr */
+#define BLED_CTL_SET_UDEF_TRIGGER	_IOW('B',14, struct bled_common)	/* gpio_nr, trigger */
 
 #define BLED_TIMER_CHECK_INTERVAL	(HZ / 5)				/* unit: jiffies */
 #define BLED_HYBRID_CHECK_INTERVAL	(HZ / 2)				/* unit: jiffies */
@@ -207,14 +212,16 @@ struct interrupt_bled_priv {
 
 struct udef_pattern_s {
 	unsigned int curr, nr_pattern;
+	unsigned int trigger[BLED_MAX_NR_GPIO_PER_BLED];	/* 0: Turn off LED; 1: Run user defined pattern */
 	unsigned char value[BLED_MAX_NR_PATTERN];		/* 0: Turn off LED; 1: Turn on LED. */
 	unsigned long interval[BLED_MAX_NR_PATTERN];		/* pattern interval in jiffies. */
 };
 
 struct bled_priv {
 	struct list_head list;
-	unsigned int gpio_nr;
-	int active_low;
+	unsigned int gpio_count;				/* Number of GPIO in gpio_nr[]/active_low[] */
+	unsigned int gpio_nr[BLED_MAX_NR_GPIO_PER_BLED];
+	int active_low[BLED_MAX_NR_GPIO_PER_BLED];
 	enum bled_state state;
 	enum bled_type type;
 	enum bled_bh_type bh_type;

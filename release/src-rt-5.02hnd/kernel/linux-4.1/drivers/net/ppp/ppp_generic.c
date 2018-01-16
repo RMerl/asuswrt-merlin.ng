@@ -3503,6 +3503,30 @@ static void *unit_find(struct idr *p, int n)
 	return idr_find(p, n);
 }
 
+int
+ppp_rcv_decomp_run(struct ppp_channel *chan)
+{
+        struct channel *ch;
+        struct ppp *ppp;
+
+        if (!chan)
+                return 0;
+        ch = chan->ppp;
+        if (!ch)
+                return 0;
+        ppp = ch->ppp;
+        if (!ppp)
+                return 0;
+
+        PPTP_DBG("flags 0x%x xstate 0x%x rstate 0x%x\n",
+                ppp->flags, ppp->xstate, ppp->rstate);
+
+	if (ppp->rstate & SC_DECOMP_RUN)
+		return 1;
+	else
+        	return 0;
+}
+
 /* Module/initialization stuff */
 
 module_init(ppp_init);
@@ -3519,6 +3543,7 @@ EXPORT_SYMBOL(ppp_input_error);
 EXPORT_SYMBOL(ppp_output_wakeup);
 EXPORT_SYMBOL(ppp_register_compressor);
 EXPORT_SYMBOL(ppp_unregister_compressor);
+EXPORT_SYMBOL(ppp_rcv_decomp_run);
 MODULE_LICENSE("GPL");
 MODULE_ALIAS_CHARDEV(PPP_MAJOR, 0);
 MODULE_ALIAS("devname:ppp");

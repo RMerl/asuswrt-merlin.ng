@@ -1,0 +1,106 @@
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain">AiMesh</div>
+			<div class="titleSub"><#Description#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div class="pageDesc">
+			<div class="descSteps">Router</div>
+			<div>Connect your modem to the WAN port on your router using the Ethernet cable.</div>
+		</div>
+		<div>
+			<div class="selectorTopContainer">
+				<div class="selectorContainer">
+					<div class="selectorContainerDiv">
+						<div class="selectBar" onclick="goTo.asRouter()">
+							I want to set this device as AiMesh router
+						</div>
+						<div class="narrowContainer">
+							<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div style="height: 50px"></div>
+
+		<div class="pageDesc">
+			<div class="descSteps">AiMesh node</div>
+			<div>The AiMesh system is composed of ASUS routers. You will set up one router becomes AiMesh router and you can add another AiMesh node to expand your network.</div>
+		</div>
+		<div>
+			<div class="selectorTopContainer">
+				<div class="selectorContainer">
+					<div class="selectorContainerDiv">
+						<div class="selectBar" onclick="goTo.asNode()">
+							I want to set this device as AiMesh node
+						</div>
+						<div class="narrowContainer">
+							<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div style="margin-top:80px">
+			<div class="aimesh_illustration_bg amasSupport">
+				<div class="aimesh_illustration_icon modem"></div>
+				<div class="aimesh_illustration_icon ethernet"></div>
+				<div class="aimesh_illustration_icon router"></div>
+				<div class="aimesh_illustration_icon wifi"></div>
+				<div class="aimesh_illustration_icon router"></div>
+				<div style="clear: both;"></div>
+			</div>
+			<div class="aimesh_illustration_bg text amasSupport">
+				<div class="aimesh_illustration_text">Modem</div>
+				<div class="aimesh_illustration_text ethernet"></div>
+				<div class="aimesh_illustration_text">AiMesh router</div>
+				<div class="aimesh_illustration_text wifi"></div>
+				<div class="aimesh_illustration_text">AiMesh node</div>
+				<div style="clear: both;"></div>
+			</div>
+		</div>
+
+		<div>
+			<!-- Action Button -->
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick="abort.chooseRole()"><#CTL_prev#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr style="height:102px;text-align:center">
+						<td class="mobileAbort" onclick="abort.chooseRole()">
+							<div class="mobile_abortBtn"><#CTL_prev#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>

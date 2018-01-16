@@ -3747,7 +3747,7 @@ uint32 si_watchdog_msticks(void)
 bool
 si_taclear(si_t *sih, bool details)
 {
-#if defined(BCMDBG_ERR) || defined(BCMASSERT_SUPPORT) || defined(BCMDBG_DUMP)
+#if defined(BCMDBG) || defined(BCMASSERT_SUPPORT) || defined(BCMDBG_DUMP)
 	if (CHIPTYPE(sih->socitype) == SOCI_SB)
 		return sb_taclear(sih, details);
 	else if ((CHIPTYPE(sih->socitype) == SOCI_AI) || (CHIPTYPE(sih->socitype) == SOCI_NAI))

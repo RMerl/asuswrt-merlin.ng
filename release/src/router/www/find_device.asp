@@ -151,7 +151,7 @@ var thisDevice;
 		ipaddr: '<% nvram_get("lan_ipaddr"); %>',
 		mac: '<% nvram_get("lan_hwaddr"); %>',
 		other: "1",
-		ssid:'<% nvram_get("wl_ssid"); %>',
+		ssid: decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
 		netmask:'<% nvram_get("lan_netmask"); %>',
 		opmode:'<% nvram_get("sw_mode"); %>'
 	}

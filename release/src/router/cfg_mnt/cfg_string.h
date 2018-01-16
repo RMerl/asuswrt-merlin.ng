@@ -43,5 +43,6 @@
 #define CFG_STR_LEVEL		"level"
 #define CFG_STR_BANDNUM		"cfg_bandnum"
 #define CFG_ACTION_SCRIPT	"action_script"
+#define CFG_STR_CURRENT_CHANNEL	"cur_channel"
 
 #endif /* __CFG_STRING_H__ */

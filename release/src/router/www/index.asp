@@ -211,6 +211,20 @@ function initial(){
 	else
 		show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
 
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
+		html += '<div id="iconAMesh" class="iconAMesh_dis" style="margin-top:20px;" onclick="clickEvent(this);"></div>';
+		html += '</a>';
+		html += '<div class="clients" id="ameshNumber" style="cursor:pointer;">AiMesh Node: <span>0</span></div>';/* untranslated */
+		$("#ameshContainer").html(html);
+		require(['/require/modules/amesh.js'], function(){
+			updateAMeshCount();
+			setInterval(updateAMeshCount, 5000);
+		});
+	}
+	else
+		$("#ameshContainer").remove();
+
 	set_default_choice();
 
 	if(!parent.usb_support || usbPortMax == 0){
@@ -387,20 +401,7 @@ function initial(){
 	}
 
 	orig_NM_container_height = parseInt($(".NM_radius_bottom_container").css("height"));
-
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
-		html += '<div id="iconAMesh" class="iconAMesh_dis" style="margin-top:20px;" onclick="clickEvent(this);"></div>';
-		html += '</a>';
-		html += '<div class="clients" id="ameshNumber" style="cursor:pointer;">AiMesh Node: <span>0</span></div>';/* untranslated */
-		$("#ameshContainer").html(html);
-		require(['/require/modules/amesh.js'], function(){
-			updateAMeshCount();
-			setInterval(updateAMeshCount, 5000);
-		});
-	}
-	else
-		$("#ameshContainer").remove();
+	
 }
 
 function show_smart_connect_status(){

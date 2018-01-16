@@ -29,7 +29,7 @@ OUTPUT := $(WB_DIR)/output
 
 SRC=$(wildcard *.c)
 OBJS=$(patsubst %.c, %.o, $(SRC))
-OBJS_MAIN=$(filter-out $(DOG).o cmd_handler.o, $(OBJS))
+OBJS_MAIN=$(filter-out $(DOG).o, $(OBJS))
 WSLIB_OBJS := $(WS_SOURCES:%.c=$(OUTPUT)/%.o)
 
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
@@ -96,7 +96,7 @@ ifeq ($(wildcard $(TOP)/aaews/*.c),)
 $(DOG):
 	-cp -f $(TOP)/aaews/prebuild$(BCMEX)$(EXHND)/mastiff mastiff
 else
-$(DOG): $(DOG).o nat_nvram.o  ws_caller.o nw_util.o natapi.o $(WSLIB_OBJS) cmd_handler.o info_report.o
+$(DOG): $(DOG).o nat_nvram.o  ws_caller.o nw_util.o natapi.o $(WSLIB_OBJS) info_report.o
 	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^ 
 #	mipsel-uclibc-gcc -c $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^ 
 endif

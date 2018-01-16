@@ -725,7 +725,12 @@ function applyRule(){
 		}
 		
 		if(document.form.usb_usb3.disabled == false && document.form.usb_usb3.value != '<% nvram_get("usb_usb3"); %>'){
-			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			if(based_modelid == "BLUECAVE"){
+				FormActions("start_apply.htm", "apply", "restart_wireless", "");
+			}
+			else{
+				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			}
 		}
 
 		if(no_finiwl_support &&  wl_txpower_orig != document.form.wl_txpower.value){

@@ -426,7 +426,11 @@ extern uint32 wl_ampdu_dbg;
 #endif
 #define	WL_RATE(args)
 #ifdef WLMSG_ASSOC
+#if 0
 #define	WL_ASSOC(args)		WL_PRINT(args)
+#else
+#define WL_ASSOC(args)		do {if (wl_msg_level & WL_ASSOC_VAL) WL_PRINT(args);} while (0)
+#endif
 #else
 #define	WL_ASSOC(args)
 #endif

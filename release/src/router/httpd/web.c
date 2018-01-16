@@ -2666,7 +2666,7 @@ int nvram_check_and_set_for_prefix(char *name, char *tmp, char *value)
 	struct nvram_tuple *t;
 	for (t = router_defaults; t->name; t++)
 	{
-		if(!strncmp(t->name, name, strlen(t->name))){
+		if(!strcmp(t->name, name)){
 			ret = nvram_check(name, value, t, output);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			if(ret == 2)
@@ -4143,21 +4143,17 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv) {
 
 				if(strcmp(action_script, "saveNvram"))
 				{
-					if(!strcmp(action_script, "QisFinish")){
-						skip_auth = 0;
-					}else{
 #ifdef RTCONFIG_CFGSYNC
-						if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server")) {
-							/* trigger cfg_server to send notification */
-							kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR2);
-							cfg_changed = 0;
-						}
-						else
+					if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server")) {
+						/* trigger cfg_server to send notification */
+						kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR2);
+						cfg_changed = 0;
+					}
+					else
 #endif
-						{
-							nvram_set("freeze_duck", "15");
-							notify_rc(notify_cmd);
-						}
+					{
+						nvram_set("freeze_duck", "15");
+						notify_rc(notify_cmd);
 					}
 				}
 			}
@@ -10031,8 +10027,8 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 			else{
 				_dprintf("[httpd] Invalid SystemCmd!\n");
 				strcpy(SystemCmd, "");
-
 				websRedirect_iframe(wp, current_url);
+				goto APPLY_FINISH;
 			}
 		}
 		if(strstr(system_cmd,"\n") != NULL || strstr(system_cmd,"\r") != NULL){
@@ -13236,8 +13232,7 @@ static void do_detwan_cgi(char *url, FILE *stream)
 	json_object_put(root);
 }
 
-#if defined(RTCONFIG_QCA)
-#if defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_WIFI_SON)
 static void GetAthXStatus(char *state, int band, char *param)
 {
 	FILE *fp;
@@ -13384,7 +13379,6 @@ static void do_athX_state_cgi(char *url, FILE *stream)
 	json_object_put(root);
 }
 #endif
-#endif /* RTCONFIG_QCA */
 
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 static void
@@ -14413,7 +14407,6 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 			else
 				websWrite(wp, "{\n\"error_status\":\"%d\"\n}\n", login_error_status);
 		}else{
-			strncpy(login_url, INDEXPAGE, sizeof(login_url));
 			websWrite(wp,"<HTML><HEAD>\n" );
 			websWrite(wp,"<script>parent.location.href='/Main_Login.asp';</script>\n");
 			websWrite(wp,"</HEAD></HTML>\n" );
@@ -14789,82 +14782,70 @@ do_auto_guestnetwork_cgi(char *url, FILE *stream)
 	if(check_user_agent(user_agent) == FROM_IFTTT || check_user_agent(user_agent) == FROM_ALEXA)
 		IFTTT_DEBUG("[HTTPD] do_auto_guestnetwork_cgi\n");
 #endif
-	int unit = -1, subunit = -1, band_num = 0;
+	int unit = 0, subunit = -1, band_num = 0;
 	int from_app = 0;
 	char prefix[]="wlXXXXXX_", tmp[100]={0};
 	unsigned char mac_binary[6]={0};
-	unsigned char ssidbase[16]={0};
 	unsigned char ssid[32]={0};
 	char key[32]={0};
-	char *macp = NULL;
+	char *macp = NULL, *wl_expire = NULL, *wl_bss_enabled = NULL;
 	struct json_object *root=NULL, *res=NULL;
+	char word[256]={0}, *next=NULL;
 
-	root = json_object_new_object();
 	res = json_object_new_object();
-
+	root = json_object_new_object();
 	do_json_decode(&root);
 
 	from_app = check_user_agent(user_agent);
-
-	char *wl_unit = safe_get_cgi_json("wl_unit", root);
-	char *wl_subunit = safe_get_cgi_json("wl_subunit", root);
-	char *wl_expire = safe_get_cgi_json("wl_expire", root);
-
-	if(!strcmp(wl_unit, ""))
-		unit = 0;
-	else
-		unit = atoi(wl_unit);
-
-	if(!strcmp(wl_subunit, ""))
-		subunit = num_of_mssid_support(unit);
-	else
-		subunit = atoi(wl_subunit);
-
+	wl_expire = safe_get_cgi_json("wl_expire", root);
+	wl_bss_enabled = safe_get_cgi_json("wl_bss_enabled", root);
 	band_num = num_of_wl_if();
 	macp = get_2g_hwaddr();
 	ether_atoe(macp, mac_binary);
-
-	snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-
-	if(from_app == FROM_IFTTT)
-		sprintf((char *) ssid, "%s_IFTTT_Guest", SSID_PREFIX);
-	else if(from_app == FROM_ALEXA)
-		sprintf((char *) ssid, "%s_Alexa_Guest", SSID_PREFIX);
-	else{
-		sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
-		sprintf((char *) ssid, "%s%s_Guest", ssidbase, unit ? (unit == 2 ? "_5G-2" : (band_num > 2 ? "_5G-1" : "_5G")) : (band_num > 1 ? "_2G" : ""));
-	}
-
 	gen_guestnetwork_pass(key, sizeof(key));
 
-	nvram_set(strcat_r(prefix, "ssid", tmp), (char *) ssid);
-	nvram_set(strcat_r(prefix, "wpa_psk", tmp), key);
-	nvram_set(strcat_r(prefix, "bss_enabled", tmp), "1");
-	nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "pskpsk2");
-	nvram_set(strcat_r(prefix, "crypto", tmp), "aes");
-	nvram_set(strcat_r(prefix, "wpa_gtk_rekey", tmp), "3600");
-	nvram_set(strcat_r(prefix, "lanaccess", tmp), "off");
-	nvram_set(strcat_r(prefix, "macmode", tmp), "disabled");
-	if(!strcmp(wl_expire, "")){
-		nvram_set(strcat_r(prefix, "expire", tmp), "10800");
-		nvram_set(strcat_r(prefix, "expire_tmp", tmp), "10800");
-	}
-	else{
-		nvram_set(strcat_r(prefix, "expire", tmp), wl_expire);
-		nvram_set(strcat_r(prefix, "expire_tmp", tmp), wl_expire);
+	foreach(word, nvram_safe_get("wl_ifnames"), next) {
+
+		subunit = num_of_mssid_support(unit);
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+
+		if(from_app == FROM_IFTTT)
+			sprintf((char *) ssid, "%s_IFTTT%s_Guest", SSID_PREFIX, unit ? (unit == 2 ? "_5G-2" : (band_num > 2 ? "_5G-1" : "_5G")) : "");
+		else if(from_app == FROM_ALEXA)
+			sprintf((char *) ssid, "%s_Alexa%s_Guest", SSID_PREFIX, unit ? (unit == 2 ? "_5G-2" : (band_num > 2 ? "_5G-1" : "_5G")) : "");
+
+		nvram_set(strcat_r(prefix, "ssid", tmp), (char *) ssid);
+		nvram_set(strcat_r(prefix, "wpa_psk", tmp), key);
+		nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "pskpsk2");
+		nvram_set(strcat_r(prefix, "crypto", tmp), "aes");
+		nvram_set(strcat_r(prefix, "wpa_gtk_rekey", tmp), "3600");
+		nvram_set(strcat_r(prefix, "lanaccess", tmp), "off");
+		nvram_set(strcat_r(prefix, "macmode", tmp), "disabled");
+		if(!strcmp(wl_expire, "")){
+			nvram_set(strcat_r(prefix, "expire", tmp), "10800");
+			nvram_set(strcat_r(prefix, "expire_tmp", tmp), "10800");
+		}
+		else{
+			nvram_set(strcat_r(prefix, "expire", tmp), wl_expire);
+			nvram_set(strcat_r(prefix, "expire_tmp", tmp), wl_expire);
+		}
+
+		if(!strcmp(wl_bss_enabled, ""))
+			nvram_set(strcat_r(prefix, "bss_enabled", tmp), "1");
+		else
+			nvram_set(strcat_r(prefix, "bss_enabled", tmp), wl_bss_enabled);
+
+		unit++;
 	}
 
 	response_nvram_config(stream, "GuestNetwork", res, root);
-
 	websWrite(stream, "{\"auto_guestnetwork\":%s}\n", json_object_to_json_string(res));
 
-	json_object_put(root);
 	json_object_put(res);
 
 #ifdef RTCONFIG_LANTIQ
 	wave_handle_app_flag("auto_guestnetwork", wave_app_flag);
 #endif
-
 	notify_rc("restart_wireless");
 }
 
@@ -14873,39 +14854,25 @@ response_nvram_config(webs_t wp, char *config_name, json_object *res, json_objec
 
 	if (!strcmp(config_name, "GuestNetwork")) {
 
-		int  unit, subunit;
-		char *wl_unit = NULL;
-		char *wl_subunit = NULL;
+		int  unit=0, subunit=0;
 		char *value = NULL;
+		char word[256]={0}, *next=NULL;
 		char prefix[32], tmp[100];
 		struct nvram_config *t;
 
-		wl_unit = safe_get_cgi_json("wl_unit", root);
-		wl_subunit = safe_get_cgi_json("wl_subunit", root);
-
-		if(!strcmp(wl_unit, ""))
-			unit = 0;
-		else
-			unit = atoi(wl_unit);
-
-		if(!strcmp(wl_subunit, ""))
+		foreach(word, nvram_safe_get("wl_ifnames"), next) {
 			subunit = num_of_mssid_support(unit);
-		else
-			subunit = atoi(wl_subunit);
-
-		//(void)copy_index_to_unindex("wl_", unit, subunit);
-
-		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-
-		for (t=guestnetwork_conf; t->name; t++){
-			//memset(tmp, 0, sizeof(tmp));
-			if(!strncmp(t->name, "wl_", 3))
-				strcat_r(prefix, t->name+3, tmp);
-			else
-				strlcpy(tmp, t->name, sizeof(tmp));
-			value = nvram_safe_get(tmp);
-			//_dprintf("response_nvram_config: value = %s\n", value);
-			json_object_object_add(res, tmp, json_object_new_string(value));
+			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+			for (t=guestnetwork_conf; t->name; t++){
+				if(!strncmp(t->name, "wl_", 3))
+					strcat_r(prefix, t->name+3, tmp);
+				else
+					strlcpy(tmp, t->name, sizeof(tmp));
+				value = nvram_safe_get(tmp);
+				//_dprintf("response_nvram_config: value = %s\n", value);
+				json_object_object_add(res, tmp, json_object_new_string(value));
+			}
+			unit++;
 		}
 	}
 }
@@ -15128,10 +15095,8 @@ struct mime_handler mime_handlers[] = {
 #if defined(RTCONFIG_LP5523) || defined(MAPAC1750)
 	{ "lp55xx.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_lp55xx_cgi, do_auth },
 #endif
-#if defined(RTCONFIG_QCA)
-#if defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_WIFI_SON)
 	{ "athX_state.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_athX_state_cgi, do_auth },
-#endif
 #endif
 
 #ifdef RTCONFIG_NETOOL
@@ -15179,9 +15144,7 @@ struct except_mime_handler except_mime_handlers[] = {
 #ifdef RTCONFIG_DETWAN
 	{ "detwan.cgi", MIME_EXCEPTION_NOAUTH_FIRST},
 #endif
-#if defined(RTCONFIG_SOC_IPQ40XX)
 	{ "athX_state.cgi", MIME_EXCEPTION_NOAUTH_FIRST},
-#endif
 #endif
 	{ NULL, 0 }
 };
@@ -20710,19 +20673,66 @@ static int
 ej_get_allclientlist(int eid, webs_t wp, int argc, char **argv){
 	int lock;
 	json_object *clietListObj = NULL;
-	char output[4096] = {0};
+	json_object *brMacObj = NULL;
+	json_object *clientObj = NULL;
+	json_object *infoObj = NULL;
+	int brmac_first = 0;
+	int type_first = 0;
+	int client_first = 0;
+	int info_first = 0;
 
 	lock = file_lock(CLIENTLIST_FILE_LOCK);
 
 	clietListObj = json_object_from_file(CLIENT_LIST_JSON_PATH);
 	if (clietListObj) {
-		strlcpy(output, json_object_to_json_string(clietListObj), sizeof(output));
-		websWrite(wp, output);
-		json_object_put(clietListObj);
+		/* assemble output */
+		websWrite(wp, "{");
+		json_object_object_foreach(clietListObj, key, val) {
+			if (!brmac_first)
+				brmac_first = 1;
+			else
+				websWrite(wp, ",");
+
+			type_first = 0;
+			brMacObj = val;
+			websWrite(wp, "\"%s\":{", key);
+			json_object_object_foreach(brMacObj, key, val) {
+				if (!type_first)
+					type_first = 1;
+				else
+					websWrite(wp, ",");
+
+				client_first = 0;
+				clientObj = val;
+				websWrite(wp, "\"%s\":{", key);
+				json_object_object_foreach(clientObj, key, val) {
+					if (!client_first)
+						client_first = 1;
+					else
+						websWrite(wp, ",");
+
+					info_first = 0;
+					infoObj = val;
+					websWrite(wp, "\"%s\":{", key);
+					json_object_object_foreach(infoObj, key, val) {
+						if (!info_first)
+							info_first = 1;
+						else
+							websWrite(wp, ",");
+						websWrite(wp, "\"%s\":\"%s\"", key, json_object_get_string(val));
+					}
+					websWrite(wp, "}");
+				}
+				websWrite(wp, "}");
+			}
+			websWrite(wp, "}");
+		}
+		websWrite(wp, "}");
 	}
 	else
 		websWrite(wp, "{}");
 
+	json_object_put(clietListObj);
 	file_unlock(lock);
 
 	return 0;
@@ -22149,7 +22159,7 @@ static int ej_get_lan_hwaddr(int eid, webs_t wp, int argc, char **argv){
 	return 0;
 }
 
-#ifdef RTCONFIG_DBLOG
+#ifdef RTCONFIG_PUSH_EMAIL
 static int
 ej_generate_trans_id(int eid, webs_t wp, int argc, char **argv) {
 	int idx = 0;
@@ -22565,7 +22575,7 @@ struct ej_handler ej_handlers[] = {
 	{ "get_encrypt_wifi_result", ej_get_encrypt_wifi_result},
 	{ "get_lan_hwaddr", ej_get_lan_hwaddr},
 	{ "get_ui_support", ej_get_ui_support},
-#ifdef RTCONFIG_DBLOG
+#ifdef RTCONFIG_PUSH_EMAIL
 	{ "generate_trans_id", ej_generate_trans_id},
 #endif
 	{ NULL, NULL }
@@ -22796,6 +22806,9 @@ struct AiMesh_whitelist AiMesh_whitelists[] = {
 	{"Updating.asp", NULL},
 	{"UpdateError_reboot.asp", NULL},
 	{"UpdateError.asp", NULL},
+	{"message.htm", NULL},
+	{"error_page.htm", NULL},
+	{"Main_Login.asp", NULL},
 	{ NULL, NULL }
 };
 #endif

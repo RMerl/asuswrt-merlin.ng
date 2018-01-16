@@ -124,6 +124,7 @@ else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp -f modules/dakota/* RC_INDEP/
 else ifeq ($(RTCONFIG_QCA956X),y)
 	@cp -f modules/qca956x/* RC_INDEP/
+	@cp -f bin/lite/rule.trf RC_INDEP/
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp -f modules/mtk/* RC_INDEP/
 	@cp -f bin/partial/rule.trf RC_INDEP/

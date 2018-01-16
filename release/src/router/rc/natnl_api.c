@@ -1,8 +1,20 @@
 
 #include "rc.h"
 #ifdef RTCONFIG_TUNNEL
+static int is_mesh_re_mode()
+{
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(MAPAC1750) // Lyra
+    return !nvram_get_int("cfg_master");
+#else  // aimesh
+    return nvram_get_int("re_mode");
+#endif
+}
+
 void start_aae()
 {
+	if (is_mesh_re_mode())
+		return;
+
 	if(nvram_get_int("aae_disable_force"))
 		return;
 
@@ -40,6 +52,9 @@ void start_mastiff()
 	if (IS_ATE_FACTORY_MODE())
 #endif
 	return;
+
+	if (is_mesh_re_mode())
+		return;
 
 	if(nvram_get_int("aae_disable_force"))
 		return;

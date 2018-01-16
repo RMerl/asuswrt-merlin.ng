@@ -53,6 +53,11 @@ ifeq ($(RTCONFIG_SW_HW_AUTH), y)
 CFLAGS += -I$(TOP)/sw-hw-auth
 endif
 
+ifeq ($(RTCONFIG_LIBASUSLOG),y)
+CFLAGS += -I$(TOP)/libasuslog
+LDFLAGS += -L$(TOP)/libasuslog -lasuslog
+endif
+
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
 
 ifeq ($(wildcard $(SRCBASE)/router/wlceventd/*.c),)

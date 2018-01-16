@@ -6,10 +6,6 @@ else
 UTILS := wl nas
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-JLDFLAGS = -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 
 all: $(UTILS)
 

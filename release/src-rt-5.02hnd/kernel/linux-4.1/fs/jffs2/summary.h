@@ -17,7 +17,7 @@
    is larger than that, we have to just ditch it and avoid using summary
    for the eraseblock in question... and it probably doesn't hurt us much
    anyway. */
-#define MAX_SUMMARY_SIZE 65536
+#define MAX_SUMMARY_SIZE 131072
 
 #include <linux/uio.h>
 #include <linux/jffs2.h>

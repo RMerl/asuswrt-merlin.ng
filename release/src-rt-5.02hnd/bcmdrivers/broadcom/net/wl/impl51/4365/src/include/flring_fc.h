@@ -23,6 +23,7 @@ typedef struct flowring_op_param {
 	uint32 lfrag_max;
 	uint32 phyrate;
 	uint32 mumimo;
+	uint32 dwds;
 } flowring_op_param_t;
 
 typedef struct flowring_op_data {

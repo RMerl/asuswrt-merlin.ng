@@ -9,9 +9,6 @@ LDFLAGS += $(EXTRALDFLAGS) -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared 
 LDFLAGS += -lcrypt
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
 
 INSTALL = install
 

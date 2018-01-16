@@ -70,7 +70,7 @@ unsigned int usbbus_check_traffic(struct bled_priv *bp)
 		diff += d;
 		if (unlikely(bp->flags & BLED_FLAGS_DBG_CHECK_FUNC)) {
 			prn_bl_v("GPIO#%d: bus %2d, d %10lu (RX %10lu,%10lu / TX %10lu,%10lu)\n",
-				bp->gpio_nr, bus, d, ifs->last_rx_bytes, s->rx_bytes,
+				bp->gpio_nr[0], bus, d, ifs->last_rx_bytes, s->rx_bytes,
 				ifs->last_tx_bytes, s->tx_bytes);
 		}
 

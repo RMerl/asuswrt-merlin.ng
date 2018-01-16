@@ -158,6 +158,10 @@ function initial(){
 		$(".AiProtection_02").css('display','none');
 		$(".AiProtection_03").css('display','none');
 		$(".line_1").css('display','none');
+		if(!uiSupport("dpi_vp")){
+			$("#twoWayIPS_padding").hide();
+			$("#twoWayIPS_field").hide();
+		}
 	}
 
 	if(document.form.wrs_protect_enable.value == '1'){
@@ -170,6 +174,8 @@ function initial(){
 	getEventTime();
 	getEventData();
 	check_weakness();
+
+	$("#all_security_btn").hide();
 }
 
 function getEventTime(){
@@ -1346,8 +1352,8 @@ function shadeHandle(flag){
 												</td>
 											</tr>
 
-											<tr style="height:10px;"></tr>
-											<tr class="block_bg block_line" style="height:120px;">
+											<tr id="twoWayIPS_padding" style="height:10px;"></tr>
+											<tr id="twoWayIPS_field" class="block_bg block_line" style="height:120px;">
 												<td style="border-radius:10px 0px 0px 10px;">
 													<div class="AiProtection_02"></div>
 												</td>

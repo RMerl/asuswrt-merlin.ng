@@ -99,7 +99,7 @@ static int bc_wps_led = 0;
 
 #ifdef RTCONFIG_AMAS
 #define AMESH_TIMEOUT_COUNT	30 * 20		/* 30 secnods */
-#define ONBOARDING_TIMEOUT	60		/* 60 seconds */
+#define ONBOARDING_TIMEOUT	120		/* 120 seconds */
 #endif
 
 #ifdef RTCONFIG_WPS_RST_BTN
@@ -2796,13 +2796,15 @@ void btn_check(void)
 			if (LED_status_on) {
 				TRACE_PT("LED turn to normal\n");
 				led_control(LED_POWER, LED_ON);
-#if defined(RTAC65U)  || defined(RTAC85U)
+#if defined(RTAC65U)  || defined(RTAC85U) || defined(RTN800HP)
 			if (nvram_match("wl0_radio", "1")) {
 				led_control(LED_2G, LED_ON);
 			}
+#ifdef RTCONFIG_HAS_5G
 			if (nvram_match("wl1_radio", "1")) {
 				led_control(LED_5G, LED_ON);
 			}
+#endif
 #endif
 #if defined(RTAC51UP) || defined(RTAC53)
 				eval("rtkswitch", "100", "0x20000"); //lan/wan ethernet/giga led
@@ -3125,7 +3127,7 @@ void btn_check(void)
 #if (defined(PLN12) || defined(PLAC56))
 						set_wifiled(3);
 #elif defined(MAPAC1750)
-						set_rgbled(RGBLED_GREEN_3ON1OFF);
+						set_rgbled(RGBLED_BLUE_3ON1OFF);
 #endif
 #endif // RTCONFIG_WIFI_CLONE
 
@@ -3309,7 +3311,10 @@ void btn_check(void)
 #if defined(RTCONFIG_LP5523)
 				lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
 #elif defined(MAPAC1750)
-				nvram_set("prelink_pap_status", "0");
+				if (pids("bluetoothd") && wsc_timeout == 0)
+					set_rgbled(RGBLED_WHITE);
+				else
+					nvram_set("prelink_pap_status", "-1");
 #endif
 #endif
 
@@ -4997,6 +5002,10 @@ void ddns_check(void)
 
 void networkmap_check()
 {
+#ifdef RTCONFIG_WIFI_SON
+	if (sw_mode() == SW_MODE_AP && !nvram_match("cfg_master", "1"))
+		return;
+#endif
 	if (!pids("networkmap"))
 		start_networkmap(0);
 }
@@ -5693,7 +5702,6 @@ static void link_pap_status()
 #if defined(RTCONFIG_LP5523)
 							lp55xx_leds_proc(LP55XX_ALL_BREATH_LEDS, LP55XX_ACT_NONE);
 #elif defined(MAPAC1750)
-							set_rgbled(RGBLED_BLUE);
 #endif
 						}
 						else {
@@ -5705,7 +5713,7 @@ static void link_pap_status()
 #if defined(RTCONFIG_LP5523)
 							lp55xx_leds_proc(LP55XX_GREENERY_LEDS, LP55XX_ACT_3ON1OFF);
 #elif defined(MAPAC1750)
-							set_rgbled(RGBLED_GREEN_3ON1OFF);
+							set_rgbled(RGBLED_BLUE_3ON1OFF);
 #endif
 						}
 					}
@@ -5804,6 +5812,9 @@ void onboarding_check()
 {
 	static int onboarding_count = 0;
 
+	if (!nvram_match("start_service_ready", "1"))
+		return;
+
 	if (!nvram_match("re_mode", "1"))
 		return;
 
@@ -5826,6 +5837,14 @@ void cfgsync_check()
 		start_cfgsync();
 }
 #endif /* RTCONFIG_CFGSYNC */
+
+#ifdef RTCONFIG_TUNNEL
+void mastiff_check()
+{
+	if (!pids("mastiff"))
+		start_mastiff();
+}
+#endif /* RTCONFIG_TUNNEL */
 
 #ifdef RTCONFIG_USER_LOW_RSSI
 #define ETHER_ADDR_STR_LEN	18
@@ -6912,6 +6931,9 @@ wdp:
 #endif
 #ifdef RTCONFIG_CFGSYNC
 	cfgsync_check();
+#endif
+#ifdef RTCONFIG_TUNNEL
+	mastiff_check();
 #endif
 
 	return;

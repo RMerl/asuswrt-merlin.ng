@@ -843,7 +843,7 @@ function ppp_echo_control(flag){
 	var enable = (flag == 1) ? 1 : 0;
 	inputCtrl(document.form.wan_ppp_echo_interval, enable);
 	inputCtrl(document.form.wan_ppp_echo_failure, enable);
-	var enable = (flag == 2) ? 1 : 0;
+	enable = (flag == 2) ? 1 : 0;
 	//inputCtrl(document.form.dns_probe_timeout, enable);
 	inputCtrl(document.form.dns_delay_round, enable);
 }

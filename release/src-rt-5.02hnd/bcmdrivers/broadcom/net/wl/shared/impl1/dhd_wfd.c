@@ -314,6 +314,33 @@ void dhd_wfd_unbind(int wfd_idx)
 	wfd_unbind(wfd_idx, WFD_WL_FWD_HOOKTYPE_FKB);
 }
 
+int dhd_wfd_registerdevice(int wfd_idx, struct net_device *dev)
+{
+	int ret = 0;
+	int ifidx = WLAN_NETDEVPATH_SSID(netdev_path_get_hw_port(dev));
+
+	ret = wfd_registerdevice(wfd_idx, ifidx, dev);
+	if (ret != 0) {
+		DHD_ERROR(("%s failed wfd_idx %d, ifidx %d\n",
+			__FUNCTION__, wfd_idx, ifidx));
+	}
+	return ret;
+}
+
+int dhd_wfd_unregisterdevice(int wfd_idx, struct net_device *dev)
+{
+	int ret = 0;
+	int ifidx = WLAN_NETDEVPATH_SSID(netdev_path_get_hw_port(dev));
+
+	ret = wfd_unregisterdevice(wfd_idx, ifidx);
+	if (ret != 0) {
+		DHD_ERROR(("%s failed wfd_idx %d ifidx %d\n",
+			__FUNCTION__, wfd_idx, ifidx));
+}
+
+return ret;
+}
+
 /* Add wfd dump output to a buffer */
 void
 dhd_wfd_dump(dhd_pub_t *dhdp, struct bcmstrbuf *strbuf)

@@ -36,9 +36,9 @@
 #ifdef BCMDBG
 #define	DMA_ERROR(args) if (di && (!(*di->msg_level & 1))); else printf args
 #define	DMA_TRACE(args) if (di && (!(*di->msg_level & 2))); else printf args
-#elif defined(BCMDBG_ERR)
-#define	DMA_ERROR(args) if (di && (!(*di->msg_level & 1))); else printf args
-#define	DMA_TRACE(args)
+//#elif defined(BCMDBG_ERR)
+//#define	DMA_ERROR(args) if (di && (!(*di->msg_level & 1))); else printf args
+//#define	DMA_TRACE(args)
 #else
 #define	DMA_ERROR(args)
 #define	DMA_TRACE(args)
@@ -60,11 +60,11 @@
 
 /* default dma message level (if input msg_level pointer is null in dma_attach()) */
 static uint dma_msg_level =
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	1;
 #else
 	0;
-#endif /* BCMDBG_ERR */
+#endif /* BCMDBG */
 
 #define MAXNAMEL	8		/* 8 char names */
 

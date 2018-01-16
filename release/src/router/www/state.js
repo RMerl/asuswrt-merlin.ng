@@ -152,38 +152,38 @@ var cookie = {
 };
 
 var Session = Session || (function(){
-	if (!JSON || !JSON.stringify || !JSON.parse) return {
-		set: function(){},
-		get: function(){},
-		clear: function(){},
-		dump: function(){}
-	};
-	var win = window.top || window;
+ 	var win = window.top || window;
+	try{
+		var store = (win.name ? JSON.parse(win.name) : {});
+		function Save() {
+			win.name = JSON.stringify(store);
+		};
 
-	if ((typeof(win.name) != "string") || (win.name.substring(2, 7) != "ouiDB") && (win.name.substring(2,6) != "menu")) {
-		win.name = "";
+		if (window.addEventListener) window.addEventListener("unload", Save, false);
+		else if (window.attachEvent) window.attachEvent("onunload", Save);
+		else window.onunload = Save;
+
+		return {
+			set: function(name, value) {
+				store[name] = value;
+			},
+			get: function(name) {
+				return (store[name] ? store[name] : undefined);
+			},
+			clear: function() { store = {}; },
+			dump: function() { return JSON.stringify(store); }
+		};
 	}
-
-	var store = (win.name ? JSON.parse(win.name) : {});
-	function Save() {
-		win.name = JSON.stringify(store);
-	};
-	
-	if (window.addEventListener) window.addEventListener("unload", Save, false);
-	else if (window.attachEvent) window.attachEvent("onunload", Save);
-	else window.onunload = Save;
-
-	return {
-		set: function(name, value) {
-			store[name] = value;
-		},
-		get: function(name) {
-			return (store[name] ? store[name] : undefined);
-		},
-		clear: function() { store = {}; },
-		dump: function() { return JSON.stringify(store); }
-	};
- })();
+	catch(e){
+		win.name = ""; /* reset cache */
+		return {
+			set: function(){},
+			get: function(){},
+			clear: function(){},
+			dump: function(){}
+		};
+	}
+})();
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
@@ -484,12 +484,12 @@ function isSupport(_ptn){
 	}
 	else if(_ptn == "meoVoda"){
 		var meoVoda_support_models = ["RT-N14U", "BRT-AC828", "RT-AD7200", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC86U", "AC2900", "RT-AC87U", 
-							  "RT-AC68U", "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE"];
+							  "RT-AC68U", "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE", "RT-N800HP"];
 		return (meoVoda_support_models.indexOf(based_modelid) >= 0)? true : false;
 	}
 	else if(_ptn == "movistarTriple"){
 		var movistarTriple_support_models = ["BRT-AC828", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC87U", "RT-AC68U", 
-									 "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE"];
+									 "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE", "RT-N800HP"];
 		return (movistarTriple_support_models.indexOf(based_modelid) >= 0)? true : false;
 	}
 	else if(_ptn == "dpi_mals" || _ptn == "dpi_vp" || _ptn == "dpi_cc" || _ptn == "adaptive_qos" || _ptn == "webs_filter" || _ptn == "apps_filter" || _ptn == "web_history" || _ptn == "bandwidth_monitor"){
@@ -527,6 +527,7 @@ var lantiq_support = isSupport("lantiq");
 var wifi_logo_support = isSupport("wifilogo");
 var vht80_80_support = isSupport("vht80_80");
 var vht160_support = isSupport("vht160");
+var dfs_US_support = isSupport("dfs");
 var SwitchCtrl_support = isSupport("switchctrl");
 var dsl_support = isSupport("dsl");
 var vdsl_support = isSupport("vdsl");
@@ -1151,7 +1152,7 @@ function get_helplink(){
 	var href_lang = get_supportsite_lang();
 	var model_name_supportsite = supportsite_model(support_site_modelid, hw_ver);  // @ /js/support_site.js
 
-	var getlink="http://www.asus.com"+href_lang+"Networking/" +model_name_supportsite+ "/HelpDesk_Download/";       
+	var getlink="https://www.asus.com"+href_lang+"Networking/" +model_name_supportsite+ "/HelpDesk_Download/";       
 	return getlink;
 }
 
@@ -1510,7 +1511,7 @@ function show_footer(){
 	var tracing_path_Utility = "/HelpDesk_Download/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";
 	var model_name_supportsite = supportsite_model(support_site_modelid, hw_ver);	// @ /js/support_site.js	
 			
-	footer_code += "<td width=\"335\" id=\"bottom_help_link\" align=\"left\"><a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"http://www.asus.com"+ href_lang +"Networking/"+ model_name_supportsite + tracing_path_Manual +"\" target=\"_blank\"><#Manual#></a>&nbsp|&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"http://www.asus.com"+ href_lang +"Networking/" + model_name_supportsite + tracing_path_Utility +"\" target=\"_blank\"><#Utility#></a>";
+	footer_code += "<td width=\"335\" id=\"bottom_help_link\" align=\"left\"><a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"https://www.asus.com"+ href_lang +"Networking/"+ model_name_supportsite + tracing_path_Manual +"\" target=\"_blank\"><#Manual#></a>&nbsp|&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"https://www.asus.com"+ href_lang +"Networking/" + model_name_supportsite + tracing_path_Utility +"\" target=\"_blank\"><#Utility#></a>";
 
 	if(dsl_support && feedback_support){
 		footer_code += '&nbsp|&nbsp<a id="fb_link" href="/Advanced_Feedback.asp" target="_self" style="font-weight: bolder;text-decoration:underline;cursor:pointer;"><#menu_feedback#></a>';
@@ -1634,50 +1635,18 @@ function get_supportsite_lang(obj){
 		UK : "/ua/"
 	}	
 	
-	var href_lang = faqLang.<% nvram_get("preferred_lang"); %>;
-	return href_lang;
+	return faqLang['<% nvram_get("preferred_lang"); %>'] || faqLang["EN"];
 }
 
-function search_supportsite(obj){
-	var faqLang = {
-		EN : "/",
-		TW : "/tw/",
-		CN : ".cn/",
-		BR : "/br/",
-		CZ : "/cz/",
-		DA : "/dk/",
-		DE : "/de/",
-		ES : "/es/",
-		FI : "/fi/",
-		FR : "/fr/",
-		HU : "/hu/",
-		IT : "/it/",
-		JP : "/jp/",
-		KR : "/kr/",
-		MS : "/my/",
-		NL : "/nl/",
-		NO : "/no/",
-		PL : "/pl/",
-		RO : "/ro/",
-		RU : "/ru/",
-		SL : "/sk/",
-		SV : "/se/",
-		TH : "/th/",
-		TR : "/tr/",
-		UK : "/ua/"
-	}	
-	
-		var keywordArray = document.getElementById("FAQ_input").value.split(" ");
-		var faq_href;
-		faq_href = "http://www.asus.com";		
-		faq_href += faqLang.<% nvram_get("preferred_lang"); %>;
-		faq_href += "support/Knowledge-searchV2/?utm_source=asus-product&utm_medium=referral&utm_campaign=router&";
-		faq_href += "keyword=";
-		for(var i=0; i<keywordArray.length; i++){
-			faq_href += keywordArray[i];
-			faq_href += "%20";
-		}
-		window.open(faq_href);
+function search_supportsite(){
+	//	https://www.asus.com/search/results.aspx?SearchKey=%s&SearchType=FAQ&PDLineFilter=1849
+	var faq_href = "https://www.asus.com";
+	faq_href += get_supportsite_lang();
+	faq_href += "search/results.aspx?SearchKey=";
+	faq_href += (document.getElementById("FAQ_input")) ? document.getElementById("FAQ_input").value : '';
+	faq_href += "&SearchType=FAQ&PDLineFilter=1849";
+
+	window.open(faq_href);
 }
 
 var isFirefox = navigator.userAgent.search("Firefox") > -1;

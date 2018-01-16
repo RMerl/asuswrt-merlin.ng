@@ -39,7 +39,7 @@ ai_d11rsdb_reset_set(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 	volatile uint32 rstctrlp;
 	uint loop_counter = 10;
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	si_cores_info_t *cores_info = (si_cores_info_t *)sii->cores_info;
 #endif
 	/* ensure there are no pending backplane operations */
@@ -57,7 +57,7 @@ ai_d11rsdb_reset_set(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 	/* put core to reset */
 	W_REG(sii->osh, &pmacai->resetctrl,  AIRC_RESET);
 	W_REG(sii->osh, &smacai->resetctrl,  AIRC_RESET);
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (dummyp != 0)
 		SI_ERROR(("%s: WARN2: primary mac resetstatus=0x%0x\n", __FUNCTION__, dummyp));
 	if (dummys != 0)
@@ -73,7 +73,7 @@ ai_d11rsdb_reset_set(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 		/* ensure there are no pending backplane operations on core1 */
 		SPINWAIT(((dummys = R_REG(sii->osh, &smacai->resetstatus)) != 0), 300);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 		if (dummyp != 0)
 			SI_ERROR(("%s: WARN2: primary mac resetstatus=0x%0x\n",
 			__FUNCTION__, dummyp));
@@ -102,7 +102,7 @@ ai_d11rsdb_reset_set(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 		SPINWAIT(((dummys = R_REG(sii->osh, &smacai->resetstatus)) != 0), 300);
 	}
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (loop_counter == 0)
 		SI_ERROR(("%s: Failed to set core reset bit 0x%x\n",
 		          __FUNCTION__, cores_info->coreid[sii->curidx]));
@@ -118,7 +118,7 @@ ai_d11rsdb_reset_clear(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 	volatile uint32 rstctrlp;
 	uint loop_counter = 10;
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	si_cores_info_t *cores_info = (si_cores_info_t *)sii->cores_info;
 #endif
 	/* ensure there are no pending backplane operations */
@@ -130,7 +130,7 @@ ai_d11rsdb_reset_clear(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 	W_REG(sii->osh, &pmacai->resetctrl, 0);
 	W_REG(sii->osh, &smacai->resetctrl, 0);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (dummyp != 0)
 		SI_ERROR(("%s: WARN2: primary mac resetstatus=0x%0x\n", __FUNCTION__, dummyp));
 	if (dummys != 0)
@@ -146,7 +146,7 @@ ai_d11rsdb_reset_clear(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 		/* ensure there are no pending backplane operations on core 1 */
 		SPINWAIT(((dummys = R_REG(sii->osh, &smacai->resetstatus)) != 0), 300);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 		if (dummyp != 0)
 			SI_ERROR(("%s: WARN2: primary mac resetstatus=0x%0x\n",
 			__FUNCTION__, dummyp));
@@ -176,7 +176,7 @@ ai_d11rsdb_reset_clear(const si_info_t *sii, aidmp_t *pmacai, aidmp_t *smacai)
 		SPINWAIT(((dummys = R_REG(sii->osh, &smacai->resetstatus)) != 0), 300);
 	}
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (loop_counter == 0)
 		SI_ERROR(("%s: Failed to take core 0x%x out of reset\n",
 		          __FUNCTION__, cores_info->coreid[sii->curidx]));
@@ -236,7 +236,7 @@ ai_d11rsdb_core_reset(si_t *sih, uint32 bits,
 	/* ensure there are no pending backplane operations */
 	SPINWAIT(((dummy = R_REG(sii->osh, &pmacai->resetstatus)) != 0), 300);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (dummy != 0)
 		SI_ERROR(("%s: WARN1: resetstatus=0x%0x\n", __FUNCTION__, dummy));
 #endif

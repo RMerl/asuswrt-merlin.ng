@@ -579,6 +579,9 @@ extern void wl_disband5grp();
 extern int setWanLedMode1(void);
 extern int setWanLedMode2(void);
 extern void tweak_smp_affinity(int enable_samba);
+#ifdef HND_ROUTER
+extern void tweak_usb_affinity(int enable);
+#endif
 #endif
 #ifdef WLCLMLOAD
 extern int download_clmblob_files();
@@ -1148,8 +1151,10 @@ extern int ejusb_main(int argc, char *argv[]);
 extern int __ejusb_main(const char *port_path, int unplug);
 extern void webdav_account_default(void);
 extern void remove_storage_main(int shutdn);
+#ifndef RTCONFIG_NO_USBPORT
 extern int start_usbled(void);
 extern int stop_usbled(void);
+#endif
 extern void restart_nas_services(int stop, int start);
 extern void stop_nas_services(int force);
 extern int sd_partition_num();
@@ -1949,6 +1954,7 @@ extern int factory_debug();
 #if !(defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM))
 extern char *ATE_BRCM_PREFIX(void);
 extern int ATE_BRCM_SET(const char *name, const char *value);
+extern int ATE_BRCM_UNSET(const char *name);
 extern void ATE_BRCM_COMMIT(void);
 #endif
 #endif
@@ -2053,6 +2059,11 @@ void stop_usb_idle(void);
 extern int adtbw_main(int argc, char **argv);
 extern void stop_adtbw();
 extern void start_adtbw();
+#endif
+
+// natnl_api.c
+#ifdef RTCONFIG_TUNNEL
+extern void start_aae();
 #endif
 
 #endif	/* __RC_H__ */

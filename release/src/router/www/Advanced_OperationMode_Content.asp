@@ -120,6 +120,7 @@ function initial(){
 	var gen_operation_mode = function(_jsonArray, _sw_mode) {
 		var $spanHtml = $('<span>');
 		$spanHtml.attr({"id" : _jsonArray["span"]["id"]});
+		$spanHtml.css("margin-right", "10px");
 		var $inputHtml = $('<input>');
 		$inputHtml.attr({ "type" : "radio", "id" : _jsonArray["input"]["id"], "name" :  _jsonArray["input"]["name"], "value" : _jsonArray["input"]["value"] });
 		$inputHtml.addClass("input");
@@ -244,6 +245,7 @@ function initial(){
 			"express" : "0"
 		}
 	}
+        
 	if(amesh_support) {
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));
 		$("#operation_mode_bg").append("<br>");
@@ -256,6 +258,7 @@ function initial(){
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
 		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+        
 	}
 	else {
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));

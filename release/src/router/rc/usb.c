@@ -226,6 +226,10 @@ fill_smbpasswd_input_file(const char *passwd)
 
 void add_usb_host_module(void)
 {
+#if defined(HND_ROUTER)
+	tweak_usb_affinity(1);
+#endif
+
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U)
 	char *u3_param = "u3intf=0";
@@ -885,21 +889,22 @@ void remove_usb_host_module(void)
 #endif
 	modprobe_r(USB30_MOD);
 #endif
+#else  // HND_ROUTER
+	tweak_usb_affinity(0);
 #endif
 
 #if defined(RTCONFIG_BLINK_LED)
 	/* If both bled and USB Bus traffic statistics are enabled,
 	 * don't remove USB core and USB common kernel module.
 	 */
-	if (!((nvram_get_int("led_usb_gpio") | nvram_get_int("led_usb3_gpio")) & GPIO_BLINK_LED)) {
+	if (!((nvram_get_int("led_usb_gpio") | nvram_get_int("led_usb3_gpio")) & GPIO_BLINK_LED))
 #endif
+	{
 		modprobe_r(USBCORE_MOD);
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,2,0)
 		modprobe_r(USBCOMMON_MOD);
 #endif
-#if defined(RTCONFIG_BLINK_LED)
 	}
-#endif
 }
 
 void remove_usb_module(void)
@@ -3016,12 +3021,16 @@ start_samba(void)
 {
 	int acc_num;
 	char cmd[256];
-#if defined(SMP) && !defined(GTAC5300)
+#if defined(SMP)
+#if defined(GTAC5300)
+	char *cpu_list = "3";
+#else
 	char *cpu_list = "1";
 #endif
-#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && defined(SMP) && !defined(GTAC5300)
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && defined(SMP)
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 	int taskset_ret = -1;
+#endif
 #endif
 	char smbd_cmd[32];
 
@@ -3162,8 +3171,8 @@ start_samba(void)
 	snprintf(smbd_cmd, 32, "%s/smbd", "/usr/sbin");
 #endif
 
-#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)) && !defined(GTAC5300)
-#ifdef SMP
+#if defined(SMP)
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SAMBA36X)
 #if 0
 	if(cpu_num > 1)
 		taskset_ret = cpu_eval(NULL, "1", "ionice", "-c1", "-n0", smbd_cmd, "-D", "-s", "/etc/smb.conf");

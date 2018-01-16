@@ -3866,6 +3866,9 @@ int ppa_support(int wan_unit)
 	if(strcmp(wan_proto, "l2tp") == 0) ret = 0;
 	if(strcmp(nvram_safe_get(strcat_r(prefix, "hwaddr_x", tmp)), "")) ret = 0;
 
+	if(ret == 0) nvram_set_int("ppa_running", 0);
+	else nvram_set_int("ppa_running", 1);
+
 	return ret;
 }
 #endif

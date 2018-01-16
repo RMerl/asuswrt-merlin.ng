@@ -2727,6 +2727,7 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+/* TODO: still required? */
 	if (nvram_get_int("pptpd_enable")) {
 		stop_pptpd();
 		start_pptpd();

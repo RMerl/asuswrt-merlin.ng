@@ -24,6 +24,15 @@
 #include <linux/poll.h>
 #include <net/net_namespace.h>
 
+//#define CATHY_PPTP_DBG
+
+#ifdef CATHY_PPTP_DBG
+#define PPTP_DBG(fmt, arg...) \
+	do { printk("%s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); } while (0)
+#else
+#define PPTP_DBG(fmt, arg...)
+#endif
+
 struct ppp_channel;
 
 struct ppp_channel_ops {
@@ -75,6 +84,7 @@ extern int ppp_unit_number(struct ppp_channel *);
 /* Get the device name associated with a channel, or NULL if none */
 extern char *ppp_dev_name(struct ppp_channel *);
 
+extern int ppp_rcv_decomp_run(struct ppp_channel *);
 /*
  * SMP locking notes:
  * The channel code must ensure that when it calls ppp_unregister_channel,

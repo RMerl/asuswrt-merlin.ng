@@ -350,7 +350,7 @@ reg:
 		warnx("json_fmt_newreg");
 	else if ((lc = sreq(c, p->newreg, req)) < 0)
 		warnx("%s: bad comm", p->newreg);
-	else if (200 != lc && 201 != lc)
+	else if (200 != lc && 201 != lc && 409 != lc)	//409, Registration key is already in use
 	{
 		warnx("%s: bad HTTP: %ld", p->newreg, lc);
 		if(lc == 400 && (cp = strstr(c->buf.buf, "current agreement URL")) && new_agreement == 0)
@@ -709,8 +709,9 @@ netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
 	}
 
 	/* If new, register with the CA server. */
+	// do reg, if alreay registered, continue to do authorise
 
-	if (newacct && ! donewreg(&c, agreement, &paths))
+	if ( ! donewreg(&c, agreement, &paths) && newacct)
 		goto out;
 
 	/* Pre-authorise all domains with CA server. */

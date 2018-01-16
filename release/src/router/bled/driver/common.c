@@ -117,7 +117,18 @@ static struct bled_wproc_handler_s {
  */
 static inline void bled_ctrl(struct bled_priv *bp, int v)
 {
-	bp->gpio_set(bp->gpio_nr, !!v ^ bp->active_low);
+	unsigned int i;
+
+	for (i = 0; i < bp->gpio_count; i++) {
+		if (bp->mode == BLED_UDEF_PATTERN_MODE && bp->gpio_count > 1) {
+			if (bp->udef_pattern.trigger[i] == 0) {
+				bp->gpio_set(bp->gpio_nr[i], !!(0) ^ bp->active_low[i]);
+				continue;
+			}
+		}
+
+		bp->gpio_set(bp->gpio_nr[i], !!v ^ bp->active_low[i]);
+	}
 	bp->value = v;
 }
 
@@ -179,7 +190,7 @@ static void __bled_bh_func(struct bled_priv *bp)
 	}
 
 	if (unlikely(bp->state == BLED_STATE_STOP)) {
-		dbg_bl("GPIO#%d stopped!\n", bp->gpio_nr);
+		dbg_bl("GPIO#%d stopped!\n", bp->gpio_nr[0]);
 		return;
 	}
 
@@ -254,7 +265,7 @@ static void bled_wq_func(struct work_struct *work)
 		return;
 
 	if (unlikely(bp->state == BLED_STATE_STOP)) {
-		dbg_bl("GPIO#%d stopped!\n", bp->gpio_nr);
+		dbg_bl("GPIO#%d stopped!\n", bp->gpio_nr[0]);
 		return;
 	}
 
@@ -287,7 +298,7 @@ static struct bled_priv *find_bled_priv_by_gpio(unsigned int gpio_nr)
 	struct bled_priv *bp, *ret = NULL;
 
 	list_for_each_entry(bp, &bled_list, list) {
-		if (bp->gpio_nr != gpio_nr)
+		if (bp->gpio_nr[0] != gpio_nr)
 			continue;
 
 		ret = bp;
@@ -332,7 +343,7 @@ static int validate_bled(struct bled_common *bc, int type)
 	if (!bc)
 		return -EINVAL;
 
-	if (bc->gpio_nr >= 0xFF)
+	if (bc->gpio_nr >= 0xFF || bc->gpio2_nr >= 0xFF)
 		return -EINVAL;
 	if (type && bc->bh_type >= BLED_BHTYPE_MAX)
 		return -EINVAL;
@@ -453,8 +464,8 @@ static int init_bled_priv(struct bled_priv *bp, struct bled_common *bc)
 	struct gpio_api_s *p;
 	struct udef_pattern_s *patt = &bp->udef_pattern;
 
-	bp->gpio_nr = bc->gpio_nr;
-	bp->active_low = !!bc->active_low;
+	bp->gpio_nr[bp->gpio_count] = bc->gpio_nr;
+	bp->active_low[bp->gpio_count] = !!bc->active_low;
 	bp->state = BLED_STATE_STOP;
 	bp->bh_type = bc->bh_type;
 	bp->mode = BLED_NORMAL_MODE;
@@ -489,7 +500,7 @@ static int init_bled_priv(struct bled_priv *bp, struct bled_common *bc)
 	p = &gpio_api_tbl[bc->gpio_api_id];
 	bp->gpio_set = p->gpio_set;
 	bp->gpio_get = p->gpio_get;
-	bp->value = !!p->gpio_get(bp->gpio_nr) ^ bp->active_low;
+	bp->value = !!p->gpio_get(bp->gpio_nr[0]) ^ bp->active_low[0];
 
 	init_timer(&bp->timer);
 	bp->timer.expires = jiffies + bp->next_check_interval;
@@ -497,6 +508,7 @@ static int init_bled_priv(struct bled_priv *bp, struct bled_common *bc)
 	bp->timer.function = bled_timer_func;
 
 	INIT_DELAYED_WORK(&bp->bled_work, bled_wq_func);
+	bp->gpio_count++;
 
 	return 0;
 }
@@ -547,7 +559,7 @@ static void del_bled(struct bled_priv *bp)
 	/* Always turn on LED */
 	bled_ctrl(bp, 1);
 	list_del(&bp->list);
-	dbg_bl("Remove GPIO#%d.\n", bp->gpio_nr);
+	dbg_bl("Remove GPIO#%d.\n", bp->gpio_nr[0]);
 	kfree(bp);
 }
 
@@ -844,7 +856,10 @@ static int proc_bled_show(struct seq_file *m, void *v)
 	local_bh_disable();
 	list_for_each_entry(bp, &bled_list, list) {
 		seq_printf(m, "%s\n", sep);
-		seq_printf(m, TFMT "%d (%s active)\n", "LED GPIO#", bp->gpio_nr, (bp->active_low)? "low":"high");
+		for (i = 0; i < bp->gpio_count; ++i) {
+			seq_printf(m, TFMT "%d (%s active)\n", "LED GPIO#",
+				bp->gpio_nr[i], (bp->active_low[i])? "low":"high");
+		}
 		seq_printf(m, TFMT "%d (%s) / %d / %x / %s\n", "Type / State / Flags / LED",
 			bp->type, get_bhtype_str(bp), bp->state, bp->flags, (bp->value)? "ON":"OFF");
 		seq_printf(m, TFMT "%u\n", "Mode", bp->mode);
@@ -1029,7 +1044,7 @@ static int handle_add_netdev_bled(unsigned long arg)
 	if (bp->bh_type == BLED_BHTYPE_HYBRID)
 		schedule_delayed_work(&bp->bled_work, bp->next_check_interval);
 	mod_timer(&bp->timer, jiffies + bp->next_check_interval);
-	printk("bled: GPIO#%d: netdev %s.\n", bp->gpio_nr, ifs->ifname);
+	printk("bled: GPIO#%d: netdev %s.\n", bp->gpio_nr[0], ifs->ifname);
 
 	return 0;
 }
@@ -1258,7 +1273,7 @@ static int handle_add_swports_bled(unsigned long arg)
 	if (bp->bh_type == BLED_BHTYPE_HYBRID)
 		schedule_delayed_work(&bp->bled_work, bp->next_check_interval);
 	mod_timer(&bp->timer, bp->next_check_ts);
-	printk("bled: GPIO#%d: switch ports mask %8x.\n", bp->gpio_nr, sp->port_mask);
+	printk("bled: GPIO#%d: switch ports mask %8x.\n", bp->gpio_nr[0], sp->port_mask);
 
 	return 0;
 }
@@ -1346,7 +1361,7 @@ static int handle_add_usbbus_bled(unsigned long arg)
 	if (bp->bh_type == BLED_BHTYPE_HYBRID)
 		schedule_delayed_work(&bp->bled_work, bp->next_check_interval);
 	mod_timer(&bp->timer, jiffies + bp->next_check_interval);
-	printk("bled: GPIO#%d: USB BUS mask %8x.\n", bp->gpio_nr, up->bus_mask);
+	printk("bled: GPIO#%d: USB BUS mask %8x.\n", bp->gpio_nr[0], up->bus_mask);
 
 	return 0;
 }
@@ -1418,6 +1433,36 @@ static int handle_set_udef_pattern(unsigned long arg)
 	patt->nr_pattern = ++curr;
 	local_bh_disable();
 	bp->udef_pattern = *patt;
+	local_bh_enable();
+
+	return 0;
+}
+
+/**
+ * Handle BLED_CTL_SET_UDEF_TRIGGER ioctl command.
+ * @arg:	pointer to parameter in user-space
+ * 		(pointer to integer)
+ * @return:
+ * 	0:	success
+ *  otherwise:	fail
+ */
+static int handle_set_udef_trigger(unsigned long arg)
+{
+	unsigned int i;
+	struct bled_common bled, *bc = &bled;
+	struct bled_priv *bp;
+
+	if (copy_from_user(bc, (void __user *) arg, sizeof(struct bled_common)))
+		return -EFAULT;
+
+	if (bc->gpio_nr >= 0xFF)
+		return -EINVAL;
+	if (!(bp = find_bled_priv_by_gpio(bc->gpio_nr)))
+		return -ENODEV;
+
+	local_bh_disable();
+	for (i = 0; i < bp->gpio_count; i++)
+		bp->udef_pattern.trigger[i] = !!bc->trigger[i];
 	local_bh_enable();
 
 	return 0;
@@ -1524,7 +1569,44 @@ static int handle_add_interrupt_bled(unsigned long arg)
 	if (bp->bh_type == BLED_BHTYPE_HYBRID)
 		schedule_delayed_work(&bp->bled_work, bp->next_check_interval);
 	mod_timer(&bp->timer, jiffies + bp->next_check_interval);
-	printk("bled: GPIO#%d: interrupt %u.\n", bp->gpio_nr, intrs->interrupt);
+	printk("bled: GPIO#%d: interrupt %u.\n", bp->gpio_nr[0], intrs->interrupt);
+
+	return 0;
+}
+
+/**
+ * Handle BLED_CTL_ADD_GPIO ioctl command.
+ * @arg:	pointer to parameter in user-space
+ * 		(pointer to  struct bled_common)
+ * @return:
+ * 	0:	success
+ *  otherwise:	fail
+ */
+static int handle_add_gpio(unsigned long arg)
+{
+	unsigned int i;
+	struct bled_common bled, *bc = &bled;
+	struct bled_priv *bp;
+
+	if (copy_from_user(&bled, (void __user *) arg, sizeof(bled)))
+		return -EFAULT;
+
+	if (validate_bled(bc, 0))
+		return -EINVAL;
+	if (!(bp = find_bled_priv_by_gpio(bc->gpio_nr)))
+		return -ENODEV;
+
+	if ((bp->gpio_count + 1) > BLED_MAX_NR_GPIO_PER_BLED)
+		return -ENOSPC;
+
+	for (i = 0; i < bp->gpio_count; i++) {
+		if (bp->gpio_nr[i] == bc->gpio2_nr)
+			return -EPERM;
+	}
+
+	bp->gpio_nr[bp->gpio_count] = bc->gpio2_nr;
+	bp->active_low[bp->gpio_count] = bc->active_low;
+	bp->gpio_count++;
 
 	return 0;
 }
@@ -1574,11 +1656,17 @@ static long bled_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case BLED_CTL_SET_UDEF_PATTERN:
 		ret = handle_set_udef_pattern(arg);
 		break;
+	case BLED_CTL_SET_UDEF_TRIGGER:
+		ret = handle_set_udef_trigger(arg);
+		break;
 	case BLED_CTL_SET_MODE:
 		ret = handle_set_mode(arg);
 		break;
 	case BLED_CTL_ADD_INTERRUPT_BLED:
 		ret = handle_add_interrupt_bled(arg);
+		break;
+	case BLED_CTL_ADD_GPIO:
+		ret = handle_add_gpio(arg);
 		break;
 	}
 

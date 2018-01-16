@@ -15,6 +15,7 @@
 /* SOCKET SERVER DEFINE SETTING 
 ---------------------------------*/
 #define PROTECT_SRV_MAX_SOCKET_CLIENT         5
+#define PTCSRV_PTHREAD_STACK_SIZE             0x100000
 #define PROTECT_SRV_SOCKET_PATH               "/var/run/protect_srv_socket"
 #define PROTECT_SRV_PID_PATH                  "/var/run/protect_srv.pid"
 #define PROTECT_SRV_LOG_FILE                  "/tmp/protect_srv.log"

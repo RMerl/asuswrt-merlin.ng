@@ -641,6 +641,8 @@ static inline int rdpa_if_is_wlan(rdpa_if __if)
     return (RDPA_PORT_ALL_WLAN & rdpa_if_id(__if)) ? 1 : 0;
 }
 
+#define WL_NUM_OF_SSID_PER_UNIT        8
+
 #ifndef XRDP
 /** All WiFi virtual interfaces */
 #define RDPA_PORT_ALL_SSIDS \

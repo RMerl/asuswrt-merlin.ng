@@ -127,13 +127,25 @@ int rtk_get_channel_list_via_country(char* country_code,char* list,wlan_band ban
 			{
 				regDomain = countryIEArray[i].A_Band_Region;
 				rtklog("regDomain:%d\n",regDomain);
-				for(j=0;j<reg_channel_5g_full_band[regDomain-1].len;j++)
-				{
-					memset(tmp,0,sizeof(tmp));
-					sprintf(tmp,"%d",reg_channel_5g_full_band[regDomain-1].channel[j]);
-					strcat(list,tmp);
-					if(j != reg_channel_5g_full_band[regDomain-1].len - 1)
-						strcat(list,",");
+				if (regDomain == DOMAIN_ETSI || regDomain == DOMAIN_MKK || nvram_contains_word("rc_support", "dfs"))
+				{ 
+					for(j=0;j<reg_channel_5g_full_band[regDomain-1].len;j++)
+					{
+						memset(tmp,0,sizeof(tmp));
+						sprintf(tmp,"%d",reg_channel_5g_full_band[regDomain-1].channel[j]);
+						strcat(list,tmp);
+						if(j != reg_channel_5g_full_band[regDomain-1].len - 1)
+							strcat(list,",");
+					}
+				} else {
+					for(j=0;j<reg_channel_5g_not_dfs_band[regDomain-1].len;j++)
+					{
+						memset(tmp,0,sizeof(tmp));
+						sprintf(tmp,"%d",reg_channel_5g_not_dfs_band[regDomain-1].channel[j]);
+						strcat(list,tmp);
+						if(j != reg_channel_5g_not_dfs_band[regDomain-1].len - 1)
+							strcat(list,",");
+					}					
 				}
 			}
 			else if(band == WLAN_2G)
@@ -525,7 +537,7 @@ int set_tx_calibration(HW_WLAN_SETTING_Tp phw,char* interface,int txpower)
 	sprintf(tmpbuff,"iwpriv %s set_mib xcap=%d",interface,phw->xCap);
  	system(tmpbuff);
 	rtk_printf("%s\n",tmpbuff);
-	if(phw->regDomain == 3)
+	if(phw->regDomain == 3 || phw->regDomain == 6)/*CE or JP*/
 	{
 		sprintf(tmpbuff,"iwpriv %s set_mib adaptivity_enable=1",interface);
 		system(tmpbuff);
@@ -537,9 +549,21 @@ int set_tx_calibration(HW_WLAN_SETTING_Tp phw,char* interface,int txpower)
 		system(tmpbuff);
 		rtk_printf("%s\n",tmpbuff);
 	}
+	if(phw->regDomain == 6)/*JP*/
+	{
+		sprintf(tmpbuff,"iwpriv %s set_mib Carrier_Sense_enable=1",interface);
+		system(tmpbuff);
+		rtk_printf("%s\n",tmpbuff);		
+	}
+	else
+	{
+		sprintf(tmpbuff,"iwpriv %s set_mib Carrier_Sense_enable=0",interface);
+		system(tmpbuff);
+		rtk_printf("%s\n",tmpbuff);		
+	}
 	if(!strcmp(interface,"wl1"))/*5G*/
 	{
-		if(phw->regDomain == 3 || phw->regDomain == 6)/*CE or JP*/
+		if(phw->regDomain == 3 || phw->regDomain == 6 || nvram_contains_word("rc_support", "dfs")) /*CE or JP*/
 		{
 			sprintf(tmpbuff,"iwpriv %s set_mib disable_DFS=0",interface);
 			system(tmpbuff);

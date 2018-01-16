@@ -311,7 +311,7 @@ function applyRule(){
 					return false;
 
 			if(wans_mode_orig != "lb" && check_bwdpi_engine_status()) {
-				var confirm_flag = confirm("If you turn on the load balance option, AiProtection function will be disable. Are you sure to process?");/*untranslated*/
+				var confirm_flag = confirm("<#dualwan_lb_dpi_conflict#>");
 				if(confirm_flag) {
 					document.form.action_script.value = "dpi_disable;reboot;";
 				}

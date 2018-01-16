@@ -218,6 +218,23 @@ var get_protocol = function() {
 var header_info = [<% get_header_info(); %>];
 var location_org = get_protocol() + "//" + header_info[0].host;
 
+var isWLclient = function(){  //detect login client is by wireless or wired
+	<% login_state_hook(); %>
+	var wireless = [<% wl_auth_list(); %>];	// [[MAC, associated, authorized], ...]
+	if(wireless[0] == undefined)
+		return false;
+
+	if(wireless.length > 0) {
+		for(var i = 0; i < wireless.length; i += 1) {
+			if(wireless[i][0].toUpperCase() == login_mac_str().toUpperCase()) {
+				return true;  //wireless
+			}
+		}
+	}
+
+	return false; //wired
+};
+
 function yadns_change(need_apply){
 	var enable = document.getElementById("yadns_enable").checked;
 	var defmode = document.getElementById("yadns_defmode").checked;
@@ -240,13 +257,6 @@ var get_protocol = function() {
 };
 var header_info = [<% get_header_info(); %>];
 var location_org = get_protocol() + "//" + header_info[0].host;
-
-function yadns_change(need_apply){
-	var enable = document.getElementById("yadns_enable").checked;
-
-	parent.yadns_stage = need_apply ? 1 : 0;
-	document.getElementById("yadns_defmode").disabled = !enable;
-}
 
 /* Live update */
 function doLiveUpdate(_do){
@@ -383,26 +393,40 @@ function restartService(){
 
 	}
 
+	var actionScriptArray = [];
+
 	if(parent.sysReboot){
-		document.restartForm.action_wait.value = parent.rebootTime;
-		document.restartForm.action_script.value = "reboot";
-		document.getElementById('loadingIcon').style.display = '';
+		if(parent.changeSubnet)
+			actionScriptArray.push("restart_subnet");
+		actionScriptArray.push("reboot");
 	}
 	else{
-		var actionScriptArray = [];
-
 		if(parent.restartWireless){
 			actionScriptArray.push("restart_wireless");
-			document.restartForm.action_wait.value = 6;
 			if(parent.based_modelid == "RT-AC82U" || parent.based_modelid == "RT-AC58U" || parent.based_modelid == "4G-AC53U")
 				delayTimeout = 20000;
 		}
-		if(parent.restartTime){
-			actionScriptArray.push("restart_time");
-			document.restartForm.action_wait.value = 6;
+
+		if(isWLclient() && parent.changeSubnet){
+			actionScriptArray.push("restart_subnet");
 		}
 
-		document.restartForm.action_script.value = actionScriptArray.join(";");
+		if(parent.restartTime){
+			actionScriptArray.push("restart_time");
+		}
+	}
+
+	var actionScriptStr = actionScriptArray.join(";");
+
+	document.restartForm.action_script.value = actionScriptStr;
+	if(actionScriptStr.indexOf("reboot") >= 0){
+		document.restartForm.action_wait.value = parent.rebootTime;
+	}
+	else if(actionScriptStr.indexOf("restart_subnet") >= 0){
+		document.restartForm.action_wait.value = 10;
+	}
+	else{
+		document.restartForm.action_wait.value = 6;
 	}
 
 	document.restartForm.submit();
@@ -413,6 +437,7 @@ function checkIsNewFirmware(){
 	parent.document.getElementById("QIS_wizard_menu").onclick = "";
 	parent.document.getElementById("QIS_wizard_menu").style.cursor = "default";
 	parent.document.getElementById("QIS_wizard_menu").className = "menu_blocked";
+	document.getElementById('loadingIcon').style.display = '';
 
 	if(parent.new_FW){
 		$("#currentFW")[0].innerHTML = parent.exist_firmver + "_" + parent.current_buildno + "_" + parent.current_extendno; 
@@ -437,23 +462,15 @@ function checkIsNewFirmware(){
 		}
 	}
 	else{
-		if(parent.sysReboot){
-			document.getElementById('loadingIcon').style.display = '';
+		if(parent.sysReboot || isWLclient())
 			restartService();
-		}
 		else if(parent.changeSubnet){
 			document.restartForm.action_wait.value = 10;
 			document.restartForm.action_script.value = "restart_subnet";
-			document.getElementById('loadingIcon').style.display = '';
 			document.restartForm.submit();
 		}
-		else if(parent.yadns_support && parent.yadns_stage == 1) {
-			parent.yadns_stage++;
-			yadns_apply();
-			setTimeout("parent.location.href='/index.asp'", 10000);
-		}
-		else{
-			document.getElementById('loadingIcon').style.display = '';
+		else
+		{
 			setTimeout(function(){
 				parent.location.href = '<% abs_index_page(); %>';
 			}, delayTimeout);
@@ -1383,8 +1400,8 @@ function QKfinish_load_body(){
 		parent.set_step("t3");
 		parent.document.getElementById("LoadingBar").style.visibility = 'hidden';
 	}
-	
-	if(!parent.sysReboot) setTimeout(function(){
+
+	if(!isWLclient() && !parent.sysReboot) setTimeout(function(){
 		restartService();
 	}, 1000);
 }

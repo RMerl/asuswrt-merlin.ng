@@ -382,6 +382,9 @@ define(function(){
 				if(lyra_hide_support){
 					retArray.push("menu_Wireless");
 					retArray.push("menu_TrafficAnalyzer");
+					if(based_modelid == "MAP-AC1750"){
+						retArray.push("menu_BandwidthMonitor");
+					}
 				}
 
 				return retArray;
@@ -665,6 +668,9 @@ define(function(){
 					retArray.push("Advanced_OperationMode_Content.asp");
 					retArray.push("QoS_EZQoS.asp");
 					retArray.push("AdaptiveQoS_WebHistory.asp");
+					if(based_modelid == "MAP-AC1750"){
+						retArray.push("AiProtection_IntrusionPreventionSystem.asp");
+					}
 				}
 
 				return retArray;

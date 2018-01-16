@@ -31,8 +31,6 @@ var wanxip = wanlink_xipaddr();
 var wanxnetmask = wanlink_xnetmask();
 var wanxdns = wanlink_xdns();
 var wanxgateway = wanlink_xgateway();
-var wan_lease = wanlink_lease();
-var wan_expires = wanlink_expires();
 
 var first_wanip = first_wanlink_ipaddr();
 var first_wannetmask = first_wanlink_netmask();
@@ -42,8 +40,6 @@ var first_wanxip = first_wanlink_xipaddr();
 var first_wanxnetmask = first_wanlink_xnetmask();
 var first_wanxdns = first_wanlink_xdns();
 var first_wanxgateway = first_wanlink_xgateway();
-var first_lease = first_wanlink_lease();
-var first_expires = first_wanlink_expires();
 
 var secondary_wanip = secondary_wanlink_ipaddr();
 var secondary_wannetmask = secondary_wanlink_netmask();
@@ -53,8 +49,6 @@ var secondary_wanxip = secondary_wanlink_xipaddr();
 var secondary_wanxnetmask = secondary_wanlink_xnetmask();
 var secondary_wanxdns = secondary_wanlink_xdns();
 var secondary_wanxgateway = secondary_wanlink_xgateway();
-var secondary_lease = secondary_wanlink_lease();
-var secondary_expires = secondary_wanlink_expires();
 
 var wanstate = -1;
 var wansbstate = -1;
@@ -274,7 +268,7 @@ function initial(){
 				&& (productid == "DSL-AC68U" || productid == "DSL-AC68R")){     //MODELDEP: DSL-AC68U,DSL-AC68R
 				document.getElementById("divSwitchMenu").style.display = "";	
 			}
-			update_all_ip(first_wanip, first_wannetmask, first_wangateway , 0);
+			update_all_ip(first_wanip, first_wannetmask, first_wangateway, 0);
 			update_all_xip(first_wanxip, first_wanxnetmask, first_wanxgateway, 0);
 			update_all_dns(first_wandns, first_wanxdns, 0);
 		}
@@ -289,7 +283,7 @@ function initial(){
 			&& (productid == "DSL-AC68U" || productid == "DSL-AC68R")){     //MODELDEP: DSL-AC68U,DSL-AC68R
 			document.getElementById("divSwitchMenu").style.display = "";
 		}
-		update_all_ip(wanip, wannetmask, wangateway , unit);
+		update_all_ip(wanip, wannetmask, wangateway, unit);
 		update_all_xip(wanxip, wanxnetmask, wanxgateway, unit);
 		update_all_dns(wandns, wanxdns, unit);
 	}
@@ -545,8 +539,6 @@ function update_wanip(e) {
 			first_wanxnetmask = first_wanlink_xnetmask();
 			first_wanxdns = first_wanlink_xdns();
 			first_wanxgateway = first_wanlink_xgateway();
-			first_lease = first_wanlink_lease();
-			firset_expires = first_wanlink_expires();
 
 			secondary_wanip = secondary_wanlink_ipaddr();
 			secondary_wannetmask = secondary_wanlink_netmask();
@@ -556,8 +548,6 @@ function update_wanip(e) {
 			secondary_wanxnetmask = secondary_wanlink_xnetmask();
 			secondary_wanxdns = secondary_wanlink_xdns();
 			secondary_wanxgateway = secondary_wanlink_xgateway();
-			secondary_lease = secondary_wanlink_lease();
-			secondary_expires = secondary_wanlink_expires();
 		}
 		else{
 			wanip = wanlink_ipaddr();
@@ -568,8 +558,6 @@ function update_wanip(e) {
 			wanxnetmask = wanlink_xnetmask();
 			wanxdns = wanlink_xdns();
 			wanxgateway = wanlink_xgateway();
-			wan_lease = wanlink_lease();
-			wan_expires = wanlink_expires();
 
 			parent.document.getElementById("index_status").innerHTML = '<span style="word-break:break-all;">' + wanip + '</span>'
 			setTimeout(function(){

@@ -79,6 +79,9 @@ typedef u_int8_t u8;
 #ifdef RTCONFIG_AMAS
 #include <cfg_onboarding.h>
 #endif
+#ifdef RTCONFIG_CFGSYNC
+#include <cfg_event.h>
+#endif
 
 const int ifup_vap =
 #if defined(RTCONFIG_QCA)
@@ -1789,7 +1792,7 @@ void update_subnet_rulelist(void){
 	char *ema;
 	char *macipbinding;
 	char *gateway, *lan_ipaddr;
-	char subnet_rulelist[1024];
+	char subnet_rulelist[(sizeof(SUBNET_RULE_EXAMPLE) + sizeof(SUBNET_STATICLIST_EXAMPLE) * STATIC_MAC_IP_BINDING_PER_VLAN) * (VLAN_MAX_NUM - 1) + sizeof(DHCP_STATICLIST_EXAMPLE) * STATIC_MAC_IP_BINDING_PER_LAN + 8];	/* 2954 +2240 + 8 */
 	char *tmpbuf;
 	int index = 0;
 
@@ -2334,6 +2337,9 @@ void start_lan(void)
 						}
 						close(s);
 					}
+					
+					if(dpsta)
+						add_to_list(ifname, list, sizeof(list));
 				}
 #endif				
 #ifdef RTCONFIG_AMAS  						
@@ -4914,6 +4920,9 @@ void start_lan_wl(void)
 						}
 						close(s);
 					}
+
+					if(dpsta)
+						add_to_list(ifname, list2, sizeof(list2));
 				}
 #endif
 #ifdef RTCONFIG_AMAS  						
@@ -5736,6 +5745,10 @@ void restart_wireless(void)
 		chmod(RSTHYD_SCRIPT, 0777);
 		doSystem("%s &", RSTHYD_SCRIPT);
 	}
+#endif
+
+#ifdef RTCONFIG_CFGSYNC
+	send_event_to_cfgmnt(EID_RC_UPDATE_5G_BAND);
 #endif
 }
 

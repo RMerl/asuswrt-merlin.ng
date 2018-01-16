@@ -241,6 +241,11 @@
 	height: 85px;
 	margin: auto;
 	float: none;
+	top: 0;
+	bottom: 0;
+	position: absolute;
+	left: 0;
+	right: 0;
 }
 .amesh_router_icon {
 	width: 50px;
@@ -476,11 +481,6 @@
 	bottom: 0px;
 	right: 5px;
 }
-.amesh_client_interface_icon {
-	float: right;
-	top: 5px;
-	position: relative;
-}
 .amesh_scenario_slider_bg {
 	width: 570px;
 	height: 300px;
@@ -649,16 +649,6 @@
 	margin-bottom: 0px;
 	font-weight: normal;
 }
-.amesh_title.card {
-	font-size: 13px;
-	color: #FC0;
-	cursor: pointer;
-	font-family: monospace, Courier New, Courier;
-	text-decoration: underline;
-	font-weight: normal;
-	margin-left: 0px;
-	margin-bottom: 0px;
-}
 .amesh_node_title {
 	font-size: 13px;
 	font-family: Arial, Helvetica, sans-serif;
@@ -688,37 +678,6 @@
 	position: relative;
 	height: 25px;
 	width: 100%;
-}
-.edit_text_tool_combine_select {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 280px;
-	margin-left: 2px;
-	background: #576d73;
-	height: 25px;
-	border: 0;
-	color: #FFFFFF;
-	outline: none;
-	font-size: 12px;
-	font-family: Lucida Console;
-	background-image: url(/images/New_ui/inputbg.png);
-}
-.edit_text_tool_combine_input {
-	position: absolute;
-	left: 0;
-	top: 0;
-	margin-left: 2px;
-	padding-left: 0.4em;
-	height: 23px;
-	width: 255px;
-	line-height: 23px \9;
-	font-size: 12px;
-	font-family: Lucida Console;
-	background-image: url(/images/New_ui/inputbg.png);
-	border-width: 0;
-	color: #FFFFFF;
-	outline: none;
 }
 .aimesh_illustration_bg {
 	margin: 15px 10px 0px 10px;
@@ -826,4 +785,183 @@
 	margin-top: 10px;
 	margin-left: 376px;
 	background-position: -313px -15px;
+}
+.aimesh_node_close_icon {
+	float: right;
+	background-image: url(/images/button-close.gif);
+	background-repeat: no-repeat;
+	width: 30px;
+	height: 30px;
+	background-size: 30px;
+	cursor: pointer;
+}
+.aimesh_node_info_bg {
+	margin: 10px;
+}
+.aimesh_node_title_name {
+	font-size: 18px;
+	text-align: center;
+	font-weight: bolder;
+	margin: 15px 10px 0px 10px;
+}
+.aimesh_node_static_info_title {
+	width: 40%;
+	float: left;
+	height: 25px;
+	line-height: 25px;
+}
+.aimesh_node_setting_info_title {
+	width: 35%;
+	float: left;
+}
+.aimesh_node_static_info_content {
+	float: left;
+	width: 60%;
+	color: #569AC7;
+	font-size: 15px;
+	font-weight: bolder;
+	font-family: monospace, Courier New, Courier;
+	height: 25px;
+	line-height: 25px;
+}
+.aimesh_node_setting_info_content {
+	float: left;
+	width: 65%;
+	color: #569AC7;
+	font-size: 14px;
+	font-weight: bolder;
+	font-family: monospace, Courier New, Courier;
+}
+.text_hyperlink {
+	text-decoration: underline;
+	cursor: pointer;
+}
+.aimesh_node_line_bg {
+	margin: 10px 15px;
+}
+.aimesh_node_setting_bg {
+	margin: 0px 30px 0px 50px;
+	display: none;
+}
+.aimesh_node_setting_line {
+	display: none;
+}
+.aimesh_node_select_text_combine {
+	position: relative;
+	height: 25px;
+	width: 100%;
+}
+.aimesh_node_select_text_combine_select {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 25px;
+	background: #2b373b;
+	color: #569AC7;
+	font-size: 14px;
+	border: 1px solid #4c5355;
+	outline: none;
+	width: 100%;
+	padding-left: 1px;
+	font-weight: bolder;
+	font-family: monospace, Courier New, Courier;
+}
+.aimesh_node_select_text_combine_text {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 21px;
+	background: #2b373b;
+	color: #569AC7;
+	font-size: 14px;
+	border: 1px solid #4c5355;
+	outline: none;
+	width: 90%;
+	padding-left: 5px;
+	line-height: 21px;
+	border-right: 0px;
+	font-weight: bolder;
+	font-family: monospace, Courier New, Courier;
+}
+.aimesh_node_input_select {
+	height: 25px;
+	background: #2b373b;
+	font-size: 14px;
+	border: 1px solid #4c5355;
+	color: #569AC7;
+	font-weight: bolder;
+	font-family: monospace, Courier New, Courier;
+}
+.aimesh_node_input_select_option {
+	font-size: 14px;
+	font-weight: bolder;
+	font-family: monospace, Courier New, Courier;
+}
+.aimesh_node_category_bg {
+	color: #FFF;
+	font-size: 12px;
+	background-color: #4D595D;
+	text-align: left;
+	font-weight: bolder;
+	border: 1px solid #222;
+	padding: 3px;
+	border-collapse: collapse;
+	padding-left: 10px;
+	background: #92A0A5;
+	background: -moz-linear-gradient(top, #92A0A5 0%, #66757C 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#92A0A5 ), color-stop(100%,#66757C));
+	background: -webkit-linear-gradient(top, #92A0A5 0%, #66757C 100%);
+	background: -o-linear-gradient(top, #92A0A5 0%, #66757C 100%);
+	background: -ms-linear-gradient(top, #92A0A5 0%, #66757C 100%);
+	background: linear-gradient(to bottom, #92A0A5 0%, #66757C 100%);
+}
+.clear_both {
+	clear: both;
+}
+.aimesh_node_location_hint {
+	width: 60%;
+	float: right;
+	color: #FC0;
+	display: none;
+}
+.aimesh_node_client_icon_default {
+	height: 40px;
+	width: 40px;
+	cursor: default;
+	margin: auto;
+}
+.aimesh_node_client_icon_vendor {
+	height: 47px;
+	width: 47px;
+	background-size: 78px;
+	cursor: default;
+	margin: auto;
+}
+.aimesh_node_client_icon_userIcon {
+	height: 40px;
+	width: 40px;
+	cursor: default;
+	margin: auto;
+	background-size: 100%;
+	border-radius: 10px;
+}
+.aimesh_node_client_item {
+	cursor:pointer;
+}
+.aimesh_manual_fw_update_hint {
+	color: #FFCC00;
+	margin: 10px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	display: none;
+}
+.aimesh_fw_update_offline {
+	color: #FC0;
+	cursor: pointer;
+	text-decoration: underline;
+	margin-left: 10px;
+}
+.aimesh_fw_release_note {
+	text-decoration: underline;
+	cursor: pointer;
 }

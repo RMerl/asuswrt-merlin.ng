@@ -354,15 +354,17 @@ static int pptp_rcv_core(struct sock *sk, struct sk_buff *skb)
 
 	payload = skb->data + headersize;
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG) 
-    if (!blog_gre_tunnel_accelerated())
+    if (!blog_gre_tunnel_accelerated() || ppp_rcv_decomp_run(&po->chan))
     {   
 #endif
+	PPTP_DBG("<1> seq %u o-seq %u\n", seq, opt->seq_recv);
 	/* check for expected sequence number */
 	if (seq < opt->seq_recv + 1 || WRAPPED(opt->seq_recv, seq)) {
 		if ((payload[0] == PPP_ALLSTATIONS) && (payload[1] == PPP_UI) &&
 				(PPP_PROTOCOL(payload) == PPP_LCP) &&
 				((payload[4] == PPP_LCP_ECHOREQ) || (payload[4] == PPP_LCP_ECHOREP)))
 			goto allow_packet;
+	PPTP_DBG("<1> seq %u o-seq %u drop!!\n", seq, opt->seq_recv);
 	} else {
 		opt->seq_recv = seq;
 allow_packet:
@@ -390,12 +392,15 @@ allow_packet:
     }
     else /* blog_gre_tunnel_accelerated is true, so opt->seq_recv and opt->ack_recv have been ++ by  pptp_rcv_check() */
     {
+	PPTP_DBG("<2> seq %u o-seq %u\n", seq, opt->seq_recv);
+
         /* check for expected sequence number */
         if ( seq < opt->seq_recv || WRAPPED(opt->seq_recv, seq) )
         {
             if ( (payload[0] == PPP_ALLSTATIONS) && (payload[1] == PPP_UI) && (PPP_PROTOCOL(payload) == PPP_LCP) &&
                 ((payload[4] == PPP_LCP_ECHOREQ) || (payload[4] == PPP_LCP_ECHOREP)) )
                 goto allow_packet2;
+		PPTP_DBG("<2> seq %u o-seq %u drop!!\n", seq, opt->seq_recv);
         }
         else
         {
@@ -870,6 +875,8 @@ int pptp_rcv_check(uint16_t call_id, uint32_t *rcv_pktSeq, uint32_t rcv_pktAck, 
     if (sock) 
     {
         opt=&sock->proto.pptp;
+	PPTP_DBG("opt->ppp_flags 0x%x rcv compressed %d\n",
+		opt->ppp_flags, ppp_rcv_decomp_run(&sock->chan));
         if (opt->dst_addr.sin_addr.s_addr!=saddr) 
 		{
             sock=NULL;
@@ -878,7 +885,11 @@ int pptp_rcv_check(uint16_t call_id, uint32_t *rcv_pktSeq, uint32_t rcv_pktAck, 
         {   
             sock_hold(sk_pppox(sock));
             //printk(KERN_INFO "PPTP: pptp_rcv_check() current seq_recv is %d \n", opt->seq_recv);
-            if (opt->seq_recv && ((*rcv_pktSeq) > opt->seq_recv)) 
+	    if (ppp_rcv_decomp_run(&sock->chan)) {
+	    	ret = BLOG_PPTP_ENCRYPTED;
+		rcu_read_unlock();
+		return ret;
+            } else if (opt->seq_recv && ((*rcv_pktSeq) > opt->seq_recv)) 
             {
                 opt->seq_recv = (*rcv_pktSeq);
                 ret = BLOG_PPTP_RCV_IN_SEQ;

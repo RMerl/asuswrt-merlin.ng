@@ -62,13 +62,13 @@ typedef struct {
 } pcicore_info_t;
 
 /* debug/trace */
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 #if !defined(PCI_ERROR) /* allow over-riding */
 #define	PCI_ERROR(args)	printf args
 #endif
 #else
 #define	PCI_ERROR(args)
-#endif	/* BCMDBG_ERR */
+#endif	/* BCMDBG */
 
 /* routines to access mdio slave device registers */
 static bool pcie_mdiosetblock(pcicore_info_t *pi,  uint blk);

@@ -70,9 +70,6 @@ void rdd_fc_context_init(void)
         rdd_context_entry_free(i);
 }
 
-#ifndef WL_NUM_OF_SSID_PER_UNIT
-#define WL_NUM_OF_SSID_PER_UNIT  8
-#endif
 
 void rdd_fc_context_entry_read(rdd_fc_context_t *ctx, RDD_FLOW_CACHE_CONTEXT_ENTRY_DTS *entry)
 {

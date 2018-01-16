@@ -500,6 +500,10 @@ wl_defaults(void)
 #endif
 		/* including primary ssid */
 		max_mssid = num_of_mssid_support(unit);
+#ifdef RTCONFIG_PSR_GUEST
+		max_mssid++;
+#endif
+
 		for (subunit = 1; subunit < max_mssid+1; subunit++)
 		{
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
@@ -931,10 +935,11 @@ tagged_vlan_defaults(void)
 {
 	char *buf, *g, *p;
 	char *mac, *ip, *gateway, *lan_ipaddr;
-	char subnet_rulelist[1024], dhcp_staticlist[512];
+	char dhcp_staticlist[sizeof(DHCP_STATICLIST_EXAMPLE) * STATIC_MAC_IP_BINDING_PER_LAN + 8];			/* 2240 + 8 */
+	char subnet_rulelist[(sizeof(SUBNET_RULE_EXAMPLE) + sizeof(SUBNET_STATICLIST_EXAMPLE) * STATIC_MAC_IP_BINDING_PER_VLAN) * (VLAN_MAX_NUM - 1) + sizeof(dhcp_staticlist)];	/* 2954 + 2240 + 8 */
 
-	memset(subnet_rulelist, 0, 1024);
-	memset(dhcp_staticlist, 0, 512);
+	memset(subnet_rulelist, 0, sizeof(subnet_rulelist));
+	memset(dhcp_staticlist, 0, sizeof(dhcp_staticlist));
 	nvram_set("vlan_enable", "0");
 	nvram_set("vlan_rulelist", "<1>1>0>0000>00FF00FF>007F>007F>default>1>0");
 	nvram_set("vlan_if_list","00>00FF>007F>007F");
@@ -1551,6 +1556,10 @@ misc_defaults(int restore_defaults)
 
 	nvram_set("success_start_service", "0");
 
+#ifdef RTCONFIG_AMAS
+	nvram_set("start_service_ready", "0");
+#endif
+
 #if defined(RTAC66U) || defined(BCM4352)
 	nvram_set("led_5g", "0");
 #endif
@@ -1678,7 +1687,9 @@ misc_defaults(int restore_defaults)
 #ifdef RTCONFIG_AMAS
 	nvram_unset("amesh_found_cap");
 	nvram_unset("amesh_led");
+#ifdef RTCONFIG_LANTIQ
 	nvram_unset("amesh_hexdata");
+#endif
 #endif
 }
 
@@ -3594,6 +3605,47 @@ int init_nvram(void)
 		break;
 #endif	/* RP-AC87 */
 
+#if defined(RTN800HP)
+	case MODEL_RTN800HP:
+
+		nvram_set("boardflags", "0x100"); // although it is not used in ralink driver, set for vlan
+		nvram_set("vlan1hwname", "et0");  // vlan. used to get "%smacaddr" for compare and find parent interface.
+		nvram_set("vlan2hwname", "et0");  // vlan. used to get "%smacaddr" for compare and find parent interface.
+		nvram_set("lan_ifname", "br0");
+		wl_ifaces[WL_2G_BAND] = "ra0";
+
+		set_basic_ifname_vars("eth3", "vlan1", wl_ifaces, NULL, "vlan1", NULL, "vlan3", NULL, 0);
+
+		nvram_set_int("btn_rst_gpio",  16|GPIO_ACTIVE_LOW);
+		nvram_set_int("btn_wps_gpio",  18|GPIO_ACTIVE_LOW);
+		nvram_set_int("led_wan_gpio",  13|GPIO_ACTIVE_LOW);
+		nvram_set_int("led_pwr_gpio",  12|GPIO_ACTIVE_LOW);
+		nvram_set_int("led_wps_gpio",  12|GPIO_ACTIVE_LOW);
+		nvram_set_int("led_2g_gpio",   14|GPIO_ACTIVE_LOW);
+
+		eval("rtkswitch", "11");
+
+		config_swports_bled("led_wan_gpio", 0);
+		config_netdev_bled("led_2g_gpio", "ra0");
+
+		if (nvram_get("wl_mssid") && nvram_match("wl_mssid", "1"))
+			add_rc_support("mssid");
+		add_rc_support("2.4G update");
+		add_rc_support("rawifi");
+		add_rc_support("switchctrl");
+		add_rc_support("manual_stb");
+		add_rc_support("11AC");
+		add_rc_support("meoVoda");
+		add_rc_support("movistarTriple");
+
+		// the following values is model dep. so move it from default.c to here
+		nvram_set("wl0_HT_TxStream", "4");
+		nvram_set("wl0_HT_RxStream", "4");
+
+		//nvram_set("wl_time", "15");
+		break;
+#endif	/* RT-N800HP */
+
 #if defined(RTAC85U)
 	case MODEL_RTAC85U:
 		nvram_set("boardflags", "0x100"); // although it is not used in ralink driver, set for vlan
@@ -4181,10 +4233,9 @@ int init_nvram(void)
 
 		/* enable bled */
 		config_netdev_bled("led_blue_gpio", "ath0");
-		config_netdev_bled("led_green_gpio", "ath0");
-		config_netdev_bled("led_red_gpio", "ath0");
-
-		//config_netdev_bled("led_2g_gpio", "ath0");
+		add_gpio_to_bled("led_blue_gpio", "led_green_gpio");
+		add_gpio_to_bled("led_blue_gpio", "led_red_gpio");
+		set_rgbled(RGBLED_BLUE_3ON3OFF);
 
 		/* Etron xhci host:
 		 *	USB2 bus: 1-1
@@ -8290,6 +8341,15 @@ int init_nvram(void)
 	}
 #endif
 
+#ifdef RTCONFIG_REBOOT_SCHEDULE
+	add_rc_support("reboot_schedule");
+	// tmp to add default nvram
+	if(nvram_match("reboot_schedule_enable", ""))
+		nvram_set("reboot_schedule_enable", "0");
+	if(nvram_match("reboot_schedule", ""))
+		nvram_set("reboot_schedule", "00000000000");
+#endif
+
 #ifdef RTCONFIG_IPV6
 	add_rc_support("ipv6");
 #ifdef RTCONFIG_6RELAYD
@@ -8308,7 +8368,10 @@ int init_nvram(void)
 
 #ifdef RTCONFIG_TCODE
 	config_tcode(0);
+	/* Last action for del rc_support */
+	config_tcode(2);
 #endif
+
 #ifdef RTCONFIG_YANDEXDNS
 #ifdef RTCONFIG_TCODE
 	if (!nvram_contains_word("rc_support", "yadns") &&
@@ -8576,9 +8639,6 @@ int init_nvram(void)
 #ifdef RTCONFIG_DNSSEC
         add_rc_support("dnssec");
 #endif
-#ifdef RTAC68U
-	ac68u_cofs();
-#endif
 
 #ifdef RTCONFIG_OPENPLUS_TFAT
 #if defined(RTAC58U)
@@ -8781,14 +8841,6 @@ int init_nvram(void)
 	add_rc_support("noaidisk nodm noftp");
 #endif
 
-#ifdef RTCONFIG_REBOOT_SCHEDULE
-	add_rc_support("reboot_schedule");
-	// tmp to add default nvram
-	if(nvram_match("reboot_schedule_enable", ""))
-		nvram_set("reboot_schedule_enable", "0");
-	if(nvram_match("reboot_schedule", ""))
-		nvram_set("reboot_schedule", "00000000000");
-#endif
 #ifdef RTCONFIG_WTFAST
 	add_rc_support("wtfast");
 #endif
@@ -8885,11 +8937,6 @@ int init_nvram(void)
 	add_rc_support("amas");
 #endif
 
-#ifdef RTCONFIG_TCODE
-	/* Last action for del rc_support */
-	config_tcode(2);
-#endif
-
 #ifdef RTCONFIG_WIFI_PROXY
 	add_rc_support("wifiproxy");
 #endif
@@ -8901,6 +8948,12 @@ int init_nvram(void)
 #ifdef RTCONFIG_LYRA_HIDE
 	add_rc_support("lyra_hide");
 #endif
+
+#ifdef RTCONFIG_DFS_US
+	add_rc_support("dfs");
+
+#endif
+
 	return 0;
 }
 
@@ -9040,6 +9093,7 @@ int init_nvram2(void)
 #ifdef RTCONFIG_CFGSYNC
 	nvram_set("cfg_cost", "0");
 	nvram_unset("cfg_alive");
+	nvram_unset("cfg_masterip");
 	if (!is_router_mode())
 		nvram_unset("cfg_cost");
 #ifdef RTCONFIG_QCA
@@ -9845,16 +9899,19 @@ static void sysinit(void)
 		f_write_string("/proc/sys/vm/min_free_kbytes", "8192", 0, 0);
 		min_free_kbytes_check = 1;
 	}
-	else if ((model == MODEL_RTN56U) || (model == MODEL_DSLN55U) || (model == MODEL_RTAC52U) || (model == MODEL_RTAC51U)
-	      || (model == MODEL_RTAC51UP) ||(model == MODEL_RTAC53) ||(model == MODEL_RTN14U) ||(model == MODEL_RTN54U) ||(model == MODEL_RTAC54U) ||(model == MODEL_RTAC1200HP) || (model == MODEL_RTN56UB1) || (model == MODEL_RTN56UB2))
-		{
-			f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
-			min_free_kbytes_check = 1;
-		}
-	else	{
-		 	f_write_string("/proc/sys/vm/min_free_kbytes", "2048", 0, 0);
-			min_free_kbytes_check = 0;
-		}
+	else if ((model == MODEL_RTN56U) || (model == MODEL_DSLN55U) || (model == MODEL_RTAC52U) || (model == MODEL_RTAC51U) \
+			 || (model == MODEL_RTAC51UP) ||(model == MODEL_RTAC53) ||(model == MODEL_RTN14U) ||(model == MODEL_RTN54U) \
+			 || (model == MODEL_RTAC54U) ||(model == MODEL_RTAC1200HP) || (model == MODEL_RTN56UB1) || (model == MODEL_RTN56UB2) \
+			 || (model == MODEL_RTN800HP))
+	{
+		f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
+		min_free_kbytes_check = 1;
+	}
+	else
+	{
+		f_write_string("/proc/sys/vm/min_free_kbytes", "2048", 0, 0);
+		min_free_kbytes_check = 0;
+	}
 #elif defined(RTCONFIG_QCA)
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994)
 	f_write_string("/proc/sys/vm/min_free_kbytes", "23916", 0, 0);
@@ -10381,7 +10438,9 @@ int init_main(int argc, char *argv[])
 #else
 					stop_usb(0);
 #endif
+#ifndef RTCONFIG_NO_USBPORT
 					stop_usbled();
+#endif
 #endif
 				}
 #endif
@@ -10683,7 +10742,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #else
 			start_usb(0);
 #endif
+#ifndef RTCONFIG_NO_USBPORT
 			start_usbled();
+#endif
 			file_unlock(fd);	// allow to process usb hotplug events
 #endif	/* RTCONFIG_BT_CONN */
 #endif	/* RTCONFIG_USB */
@@ -10815,7 +10876,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #else
 			start_usb(0);
 #endif
+#ifndef RTCONFIG_NO_USBPORT
 			start_usbled();
+#endif
 			file_unlock(fd);	// allow to process usb hotplug events
 #endif	/* RTCONFIG_BT_CONN */
 
@@ -10842,6 +10905,10 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #ifndef RTCONFIG_LANTIQ
 			nvram_set("success_start_service", "1");
 			force_free_caches();
+#endif
+
+#ifdef RTCONFIG_AMAS
+			nvram_set("start_service_ready", "1");
 #endif
 
 #ifdef RTCONFIG_REALTEK
@@ -10928,7 +10995,7 @@ int reboothalt_main(int argc, char *argv[])
 	_dprintf(reboot ? "Rebooting..." : "Shutting down...");
 	kill(1, reboot ? SIGTERM : SIGQUIT);
 
-#if defined(RTN14U) || defined(RTN65U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTCONFIG_QCA) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC85U)
+#if defined(RTN14U) || defined(RTN65U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTCONFIG_QCA) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC85U) || defined(RTN800HP)
 	def_reset_wait = 50;
 #endif
 

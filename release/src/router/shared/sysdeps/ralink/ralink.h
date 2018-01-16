@@ -335,7 +335,7 @@ typedef enum _RT_802_11_PHY_MODE {
 #define OFFSET_MTD_FACTORY	0x40000
 #define OFFSET_EEPROM_VER	0x40002
 
-#if defined(RTAC85U) || defined(RPAC87) || defined(RTAC1200GU)
+#if defined(RTAC85U) || defined(RPAC87) || defined(RTAC1200GU) || defined(RTN800HP)
 #define OFFSET_PIN_CODE		0x4ff70	// 8 bytes
 #define OFFSET_COUNTRY_CODE	0x4ff78	// 2 bytes
 #define OFFSET_BOOT_VER		0x4ff7a	// 4 bytes
@@ -350,12 +350,20 @@ typedef enum _RT_802_11_PHY_MODE {
 #define OFFSET_MAC_ADDR_2G	0x40004 //only one MAC
 #define OFFSET_MAC_GMAC2	0x4018E
 #define OFFSET_MAC_GMAC0	0x40194
-#elif defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC51UP) || defined(RTAC53) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC1200)  || defined(RPAC87) || defined(RTAC85U)
+#elif defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC51UP) || defined(RTAC53) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC1200)  || defined(RPAC87) || defined(RTAC85U) || defined(RTN800HP)
+#if defined(RTN800HP)
+#define OFFSET_MAC_ADDR_2G	0x40004
+#define OFFSET_MAC_ADDR		0x40004 //only one MAC
+#else
 #define OFFSET_MAC_ADDR_2G	0x40004
 #define OFFSET_MAC_ADDR		0x48004
+#endif
 #if defined(RTAC85U) || defined(RPAC87) || defined(RTAC1200GU)
 #define OFFSET_MAC_GMAC0	0x4E000
 #define OFFSET_MAC_GMAC2	0x4E006
+#elif defined(RTN800HP)
+#define OFFSET_MAC_GMAC0	0x4E000
+#define OFFSET_MAC_GMAC2	0x4E000 //only one Mac
 #else
 #define OFFSET_MAC_GMAC0	0x40022
 #define OFFSET_MAC_GMAC2	0x40028
@@ -368,7 +376,7 @@ typedef enum _RT_802_11_PHY_MODE {
 #endif
 #if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
 #define OFFSET_FIX_CHANNEL      0x40170
-#elif defined(RTAC85U)
+#elif defined(RTAC85U)|| defined(RTN800HP)
 #define OFFSET_BR_STP      0x4ff7e	// 1 bytes
 #endif
 
@@ -377,7 +385,7 @@ typedef enum _RT_802_11_PHY_MODE {
 #if defined(RTCONFIG_NEW_REGULATION_DOMAIN)
 #define	MAX_REGDOMAIN_LEN	10
 #define	MAX_REGSPEC_LEN		4
-#if defined(RTAC85U) || defined(RPAC87) || defined(RTAC1200GU)
+#if defined(RTAC85U) || defined(RPAC87) || defined(RTAC1200GU) || defined(RTN800HP)
 #define REG2G_EEPROM_ADDR	0x4ff40 //10 bytes
 #define REG5G_EEPROM_ADDR	0x4ff4a //10 bytes
 #define REGSPEC_ADDR		0x4ff54 // 4 bytes

@@ -1236,6 +1236,22 @@ function enable_wan_access(flag){
 			}
 		}
 		else{
+			var effectApps = [];
+			if(app_support) effectApps.push("<#RemoteAccessHint_RouterApp#>");
+			if(alexa_support) effectApps.push("<#RemoteAccessHint_AlexaIFTTT#>");
+
+			var original_misc_http_x = httpApi.nvramGet(["misc_http_x"]).misc_http_x;
+			var RemoteAccessHint = "<#RemoteAccessHint#>".replace("$Apps$", effectApps.join(", "));
+
+			if(original_misc_http_x == '1' && effectApps.length != 0){
+				if(!confirm(RemoteAccessHint)){
+					document.form.misc_http_x[0].checked = true;
+					hideport(1);
+					enable_wan_access(1);			
+					return false;
+				}
+			}
+
 			if(autoChange){
 				document.form.http_enable.selectedIndex = 0;
 				autoChange = false;

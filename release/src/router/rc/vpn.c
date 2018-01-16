@@ -32,17 +32,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-char *ip2bcast(char *ip, char *netmask, char *buf)
-{
-	struct in_addr addr;
-
-	addr.s_addr = inet_addr(ip) | ~inet_addr(netmask);
-	if (buf)
-		sprintf(buf, "%s", inet_ntoa(addr));
-
-	return buf;
-}
-
 void write_chap_secret(char *file)
 {
 	FILE *fp;
@@ -87,7 +76,6 @@ void start_pptpd(void)
 		NULL };
 	char *nv, *nvp, *b;
 	char *pptpd_client, *vpn_network, *vpn_netmask;
-	char bcast[32];
 	int ret, pptpd_opt, count, port;
 
 	if (!nvram_get_int("pptpd_enable"))
@@ -174,8 +162,9 @@ void start_pptpd(void)
 	if (nvram_invmatch("pptpd_wins2", "") && count < 2)
 		count += fprintf(fp,"ms-wins %s\n", nvram_safe_get("pptpd_wins2")) > 0 ? 1 : 0;
 
-	// force ppp interface starting from 10
-	fprintf(fp, "minunit 10\n");
+	fprintf(fp,
+		"minunit 10\n"		// avoid conflict with wan ppp units
+		"ifname pptp%%d\n");	// rename interface to pptpN
 	fclose(fp);
 
 	// Following is all crude and need to be revisited once testing confirms
@@ -218,7 +207,7 @@ void start_pptpd(void)
 	if (nvram_invmatch("pptpd_broadcast", "") &&
 	    nvram_invmatch("pptpd_broadcast", "disable")) {
 		fprintf(fp, "bcrelay %s,%s\n",
-			nvram_safe_get("lan_ifname"), "ppp1[0-9].*");
+			nvram_safe_get("lan_ifname"), "ppp1[0-9]+");
 	}
 
 	append_custom_config("pptpd.conf", fp);
@@ -229,17 +218,10 @@ void start_pptpd(void)
 	run_postconf("pptpd", "/tmp/pptpd/pptpd.conf");
 	// Create ip-up and ip-down scripts that are unique to pptpd to avoid
 	// interference with pppoe and pptp
-	ip2bcast(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), bcast);
-
 	fp = fopen("/tmp/pptpd/ip-up", "w");
 	fprintf(fp, "#!/bin/sh\n"
 		"startservice set_routes\n"	// reinitialize
-		"echo \"$PPPD_PID $1 $5 $6 $PEERNAME\" >> /tmp/pptp_connected\n" 
-		"iptables -I INPUT -i $1 -j ACCEPT\n"
-		"iptables -I FORWARD 1 -i $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n"
-		"iptables -I FORWARD 2 -i $1 -j ACCEPT\n"
-		"iptables -t nat -I PREROUTING -i $1 -p udp -m udp --sport 9 -j DNAT --to-destination %s\n",	// rule for wake on lan over pptp tunnel
-		bcast);
+		"echo \"$PPPD_PID $1 $5 $6 $PEERNAME\" >> /tmp/pptp_connected\n");
 #ifdef CONFIG_BCMWL5
 #ifdef HND_ROUTER
 	/* bypass flow cache learning */
@@ -274,12 +256,7 @@ void start_pptpd(void)
 
 	fp = fopen("/tmp/pptpd/ip-down", "w");
 	fprintf(fp, "#!/bin/sh\n"
-		"sed -i \"/$1/d\" /tmp/pptp_connected\n"
-		"iptables -D INPUT -i $1 -j ACCEPT\n"
-		"iptables -D FORWARD -i $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n"
-		"iptables -D FORWARD -i $1 -j ACCEPT\n"
-		"iptables -t nat -D PREROUTING -i $1 -p udp -m udp --sport 9 -j DNAT --to-destination %s\n",	// rule for wake on lan over pptp tunnel
-		bcast);
+		"sed -i \"/$1/d\" /tmp/pptp_connected\n");
 #ifdef CONFIG_BCMWL5
 #ifdef HND_ROUTER
 	/* bypass flow cache learning */

@@ -140,6 +140,10 @@ CFLAGS += -I$(BASEDIR)/components/apps/nfc/3rdparty/embedded/nsa_examples/linux/
 CFLAGS += -include $(BASEDIR)/components/apps/nfc/3rdparty/embedded/nsa_examples/linux/libnsa/include/buildcfg.h
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+CFLAGS += -DAMAS
+endif
+
 WPS_OSL := $(WPS_ROUTERHALFILES)
 WPS_OSL += src/wps/brcm_apps/linux/wps_linux_main.c
 

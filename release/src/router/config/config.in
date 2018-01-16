@@ -397,6 +397,10 @@ config RTCONFIG_DBLOG
 	bool "System Diagnostic Support"
 	default n
 
+config RTCONFIG_NO_USBPORT
+	bool "No USB port"
+	default n
+
 config RTCONFIG_USB
 	bool "USB Support"
 	default y

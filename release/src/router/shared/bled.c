@@ -205,6 +205,70 @@ exit_set_bled_udef_pattern:
 }
 
 /**
+ * Set user defined pattern whether triggered (correspond to gpio_nr[]) to a bled.
+ * @main_led_gpio:	pointer to name of "led_xxx_gpio", the bled must be configured first.
+ * 			e.g., config_netdev_bled(), config_swports_bled(), and config_usbbus_bled()
+ * @trigger:		e.g., "1 0 1"
+ * 			0: turn off LED.
+ * 			otherwise: run user defined pattern.
+ * @return:
+ */
+int set_bled_udef_trigger(const char *main_led_gpio, const char *trigger)
+{
+	int gpio_nr, fd, r, ret = 0;
+	char *str, *p, *token;
+	struct bled_common bl_common, *bl = &bl_common;
+	unsigned int curr, *m = &bl->trigger[0];
+
+	if (!main_led_gpio || *main_led_gpio == '\0' || !(nvram_get_int(main_led_gpio) & GPIO_BLINK_LED) ||
+	    !trigger || *trigger == '\0')
+		return -1;
+
+	if ((gpio_nr = extract_gpio_pin(main_led_gpio)) < 0) {
+		ret = -2;
+		goto exit_set_bled_udef_trigger;
+	}
+
+	if (!(str = strdup(trigger))) {
+		ret = -3;
+		goto exit_set_bled_udef_trigger;
+	}
+	memset(bl, 0, sizeof(*bl));
+	bl->gpio_nr = gpio_nr;
+	for (curr = 0, p = str; curr < BLED_MAX_NR_GPIO_PER_BLED; curr++, p = NULL) {
+		if (!(token = strtok(p, " ")))
+			break;
+		*m++ = !!atoi(token);
+	}
+	if (!curr) {
+		_dprintf("%s: %s: trigger not found.\n", __func__, main_led_gpio);
+		ret = -4;
+		goto exit_set_bled_udef_trigger;
+	}
+
+	if ((fd = open(BLED_DEVNAME, O_RDWR)) < 0) {
+		_dprintf("%s: open %s fail. (%s)\n", __func__, BLED_DEVNAME, strerror(errno));
+		ret = -5;
+		goto exit_set_bled_udef_trigger;
+	}
+
+	if ((r = ioctl(fd, BLED_CTL_SET_UDEF_TRIGGER, bl)) < 0) {
+		_dprintf("%s: ioctl(BLED_CTL_SET_UDEF_TRIGGER) fail, return %d errno %d (%s)\n",
+			__func__, r, errno, strerror(errno));
+		close(fd);
+		ret = -6;
+		goto exit_set_bled_udef_trigger;
+	}
+
+	close(fd);
+	free(str);
+
+exit_set_bled_udef_trigger:
+
+	return ret;
+}
+
+/**
  * Set operation mode of a bled.
  * @led_gpio:	pointer to name of "led_xxx_gpio", the bled must be configured first.
  * 		e.g., config_netdev_bled(), config_swports_bled(), and config_usbbus_bled()
@@ -738,6 +802,54 @@ int is_swports_bled(const char *led_gpio)
 	return (get_bled_type(led_gpio) == BLED_TYPE_SWPORTS_BLED)? 1:0;
 }
 
+/**
+ * Add a gpio in @led_gpio to an exist bled indexed by @main_led_gpio.
+ * @main_led_gpio:	pointer to name of "led_xxx_gpio"
+ * @led_gpio:		pointer to name of "led_xxx_gpio"
+ * @return:
+ * 	0:		success
+ *  otherwise:		fail
+ */
+int add_gpio_to_bled(const char *main_led_gpio, const char *led_gpio)
+{
+	int gpio_nr, gpio2_nr, fd, r, ret = 0;
+	struct bled_common bled, *bl = &bled;
+
+	if ((gpio_nr = extract_gpio_pin(main_led_gpio)) < 0) {
+		ret = -1;
+		goto exit_add_gpio_to_bled;
+	}
+	if ((gpio2_nr = extract_gpio_pin(led_gpio)) < 0) {
+		ret = -2;
+		goto exit_add_gpio_to_bled;
+	}
+
+	if ((fd = open(BLED_DEVNAME, O_RDWR)) < 0) {
+		_dprintf("%s: open %s fail. (%s)\n", __func__, BLED_DEVNAME, strerror(errno));
+		ret = -3;
+		goto exit_add_gpio_to_bled;
+	}
+
+	memset(&bled, 0, sizeof(bled));
+	bl->gpio_nr = gpio_nr;
+	bl->active_low = !!(nvram_get_int(led_gpio) & GPIO_ACTIVE_LOW);
+	bl->gpio2_nr = gpio2_nr;
+
+	if ((r = ioctl(fd, BLED_CTL_ADD_GPIO, &bled)) < 0 && errno != EEXIST) {
+		_dprintf("%s: ioctl(BLED_CTL_ADD_GPIO) fail, return %d errno %d (%s)\n",
+			__func__, r, errno, strerror(errno));
+		close(fd);
+		ret = -4;
+		goto exit_add_gpio_to_bled;
+	}
+
+	close(fd);
+
+	return 0;
+
+exit_add_gpio_to_bled:
+	return ret;
+}
 
 /*
  * model dependence
@@ -841,26 +953,29 @@ void set_rgbled(unsigned int mode)
 	unsigned int cmask = RGBLED_COLOR_MESK, bmask = RGBLED_BLINK_MESK;
 	unsigned int c = mode & cmask;
 	unsigned int b = mode & bmask;
-	int i;
+	char *main_led_gpio = "led_blue_gpio";
 	struct udef_pattern {
 		unsigned int interval;
 		char *pattern;
 	} u[] = {
-		{1000,	"0 0"},		/* off */
 		{1000,	"1 1"},		/* on */
 		{500,	"0 1"},		/* off:0.5s, on:0.5s */
 		{250,	"0 1 1 1"},	/* off:0.25s, on:0.75s */
+		{3000,	"0 1"},		/* off:3s, on:3s */
 		{NULL}
 	};
-	struct led_info {
-		char *gpio;
-		unsigned int on;
-		unsigned int uidx;
-	} p[3] = {
-		{"led_blue_gpio",	0, 0},
-		{"led_green_gpio",	0, 0},
-		{"led_red_gpio",	0, 0}
+	int uidx = 0;
+	char *led_color[] = {
+		"0 0 0",		/* off: B G R */
+		"1 0 0",		/* RGBLED_BLUE */
+		"0 1 0",		/* RGBLED_GREEN */
+		"0 0 1",		/* RGBLED_RED */
+		"1 1 0",		/* RGBLED_NIAGARA_BLUE */
+		"0 1 1",		/* RGBLED_YELLOW */
+		"1 0 1",		/* RGBLED_PURPLE */
+		"1 1 1"			/* RGBLED_WHITE */
 	};
+	char *udef_trigger = led_color[0];
 
 	if (rgbled_udef_mode == 0) {
 		led_control(LED_BLUE, LED_ON);
@@ -871,59 +986,56 @@ void set_rgbled(unsigned int mode)
 
 	switch (c) {
 	case RGBLED_BLUE:
-		p[0].on = 1;
+		udef_trigger = led_color[1];
 		break;
 	case RGBLED_GREEN:
 		if (nvram_match("lp55xx_lp5523_user_enable", "1") && b == 0)
 			break;
-		p[1].on = 1;
+		udef_trigger = led_color[2];
 		break;
 	case RGBLED_RED:
-		p[2].on = 1;
+		udef_trigger = led_color[3];
 		break;
 	case RGBLED_NIAGARA_BLUE:
 		if (nvram_match("lp55xx_lp5523_user_enable", "1") && b == 0)
 			break;
-		p[0].on = 1;
-		p[1].on = 1;
+		udef_trigger = led_color[4];
 		break;
 	case RGBLED_YELLOW:
-		p[1].on = 1;
-		p[2].on = 1;
+		udef_trigger = led_color[5];
 		break;
 	case RGBLED_PURPLE:
-		p[0].on = 1;
-		p[2].on = 1;
+		udef_trigger = led_color[6];
 		break;
 	case RGBLED_WHITE:
-		p[0].on = 1;
-		p[1].on = 1;
-		p[2].on = 1;
+		udef_trigger = led_color[7];
 		break;
 	default:
 		;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(p); ++i) {
-		if (p[i].on) {
-			switch (b) {
-			case RGBLED_SBLINK:
-				p[i].uidx = 2;
-				break;
-			case RGBLED_3ON1OFF:
-				p[i].uidx = 3;
-				break;
-			default:
-				p[i].uidx = 1;
-			}
-		}
+	switch (b) {
+	case RGBLED_SBLINK:
+		uidx = 1;
+		break;
+	case RGBLED_3ON1OFF:
+		uidx = 2;
+		break;
+	case RGBLED_3ON3OFF:
+		uidx = 3;
+		break;
+	default:
+		;
+	}
 
-		if (b == RGBLED_NORMAL_MODE)
-			set_bled_normal_mode(p[i].gpio);
-		else {
-			set_bled_udef_pattern(p[i].gpio, u[p[i].uidx].interval, u[p[i].uidx].pattern);
-			set_bled_udef_pattern_mode(p[i].gpio);
-		}
+	if (b == RGBLED_ATE_MODE) {
+		del_bled(extract_gpio_pin(main_led_gpio));
+		__update_gpio_nv_var(main_led_gpio, 0);
+	}
+	else {
+		set_bled_udef_pattern(main_led_gpio, u[uidx].interval, u[uidx].pattern);
+		set_bled_udef_trigger(main_led_gpio, udef_trigger);
+		set_bled_udef_pattern_mode(main_led_gpio);
 	}
 }
 #endif

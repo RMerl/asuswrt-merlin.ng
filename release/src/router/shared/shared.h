@@ -403,6 +403,12 @@ struct ip_mask_s {
 #define VLAN_MAX_NUM			8	/* FIXME */
 #endif
 
+#define DHCP_STATICLIST_EXAMPLE		"<00:03:7f:00:00:02>192.168.100.200"
+#define SUBNET_RULE_EXAMPLE		"<192.168.100.254>255.255.255.128>1>192.168.100.102>192.168.100.253>864000>12345678901234567890123456789012>192.168.100.100>192.168.100.099>1>"
+#define SUBNET_STATICLIST_EXAMPLE	"00:03:7f:20:00:01 192.168.120.101;"
+#define STATIC_MAC_IP_BINDING_PER_LAN	64
+#define STATIC_MAC_IP_BINDING_PER_VLAN	8
+
 #define EXCLUDE_NET_USB_MODEM		(1U << 0)
 #define EXCLUDE_NET_LAN			(1U << 1)
 #define EXCLUDE_NET_WAN			(1U << 2)
@@ -677,6 +683,7 @@ enum {
 	MODEL_RTN11P_B1,
 	MODEL_RPAC87,
 	MODEL_RTAC85U,
+	MODEL_RTN800HP,
 	MODEL_RTAC88N,
 	MODEL_BRTAC828,
 	MODEL_RTAC88S,
@@ -947,7 +954,7 @@ enum led_id {
 	LED_FAR,
 	LED_NEAR,
 #endif
-#ifdef RPAC87
+#if defined(RPAC87)
 	LED_2G_GREEN1 ,
 	LED_2G_GREEN2,
 	LED_2G_GREEN3,
@@ -1051,7 +1058,11 @@ static inline int have_sata_led(__attribute__ ((unused)) int model) { return 0; 
 #if defined(BRTAC828)
 #define MAX_NO_MSSID	8
 #else
+#ifdef RTCONFIG_PSR_GUEST
+#define MAX_NO_MSSID	5
+#else
 #define MAX_NO_MSSID	4
+#endif
 #endif
 
 #ifndef ARRAY_SIZE
@@ -1901,6 +1912,7 @@ static inline int wan2_red_led_control(__attribute__ ((unused)) int onoff) { ret
 extern int __config_netdev_bled(const char *led_gpio, const char *ifname, unsigned int min_blink_speed, unsigned int interval);
 extern int config_netdev_bled(const char *led_gpio, const char *ifname);
 extern int set_bled_udef_pattern(const char *led_gpio, unsigned int interval, const char *pattern);
+extern int set_bled_udef_tigger(const char *main_led_gpio, const char *tigger);
 extern int set_bled_normal_mode(const char *led_gpio);
 extern int set_bled_udef_pattern_mode(const char *led_gpio);
 extern int start_bled(unsigned int gpio_nr);
@@ -1914,6 +1926,7 @@ extern int __config_usbbus_bled(const char *led_gpio, char *bus_list, unsigned i
 extern int is_swports_bled(const char *led_gpio);
 extern int __config_interrupt_bled(const char *led_gpio, char *interrupt_list, unsigned int min_blink_speed, unsigned int interval);
 extern int config_interrupt_bled(const char *led_gpio, char *interrupt_list);
+extern int add_gpio_to_bled(const char *main_led_gpio, const char *led_gpio);
 #if (defined(PLN12) || defined(PLAC56))
 extern void set_wifiled(int mode);
 #elif defined(MAPAC1750)
@@ -1933,10 +1946,12 @@ extern void set_wifiled(int mode);
 /* blink */
 #define RGBLED_SBLINK			0x10
 #define RGBLED_3ON1OFF			0x20
-#define RGBLED_NORMAL_MODE		0x40
-#define RGBLED_BLINK_MESK		RGBLED_SBLINK | RGBLED_3ON1OFF | RGBLED_NORMAL_MODE
+#define RGBLED_ATE_MODE			0x40
+#define RGBLED_3ON3OFF			0x80
+#define RGBLED_BLINK_MESK		RGBLED_SBLINK | RGBLED_3ON1OFF | RGBLED_ATE_MODE | RGBLED_3ON3OFF
 /* color+blink */
-#define RGBLED_GREEN_3ON1OFF		RGBLED_GREEN | RGBLED_3ON1OFF
+#define RGBLED_BLUE_3ON1OFF		RGBLED_BLUE | RGBLED_3ON1OFF
+#define RGBLED_BLUE_3ON3OFF		RGBLED_BLUE | RGBLED_3ON3OFF
 #define RGBLED_PURPLE_3ON1OFF		RGBLED_PURPLE | RGBLED_3ON1OFF
 #define RGBLED_WHITE_SBLINK		RGBLED_WHITE | RGBLED_SBLINK
 #define RGBLED_YELLOW_SBLINK		RGBLED_YELLOW | RGBLED_SBLINK
@@ -1963,7 +1978,7 @@ static inline void enable_wifi_bled(char *ifname)
 		if(!get_radio(1, 0) && unit==1) //*5G WiFi not ready. Don't turn on WiFi GPIO LED . */
 		 	v=LED_OFF;
 #endif		
-#if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U)
+#if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTN800HP)
 		if(!get_radio(0, 0) && unit==0) //*2G WiFi not ready. Don't turn on WiFi GPIO LED . */
 		 	v=LED_OFF;
 #endif		
@@ -2021,6 +2036,7 @@ static inline int config_usbbus_bled(const char *led_gpio, char *bus_list)
 static inline int __config_netdev_bled(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) const char *ifname, __attribute__ ((unused)) unsigned int min_blink_speed, __attribute__ ((unused)) unsigned int interval) { return 0; }
 static inline int config_netdev_bled(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) const char *ifname) { return 0; }
 static inline int set_bled_udef_pattern(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) unsigned int interval, __attribute__ ((unused)) const char *pattern) { return 0; }
+static inline int set_bled_udef_tigger(__attribute__ ((unused)) const char *main_led_gpio, __attribute__ ((unused)) const char *tigger) { return 0; }
 static inline int set_bled_normal_mode(__attribute__ ((unused)) const char *led_gpio) { return 0; }
 static inline int set_bled_udef_pattern_mode(__attribute__ ((unused)) const char *led_gpio) { return 0; }
 static inline int start_bled(__attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
@@ -2041,6 +2057,7 @@ static inline int config_swports_bled(__attribute__ ((unused)) const char *led_g
 static inline int config_swports_bled_sleep(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) unsigned int port_mask) { return 0; }
 static inline int config_usbbus_bled(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) char *bus_list) { return 0; }
 static inline int is_swports_bled(__attribute__ ((unused)) const char *led_gpio) { return 0; }
+static inline int add_gpio_to_bled(__attribute__ ((unused)) const char *main_led_gpio, __attribute__ ((unused)) const char *led_gpio) { return 0; }
 
 #endif	/* RTCONFIG_BLINK_LED */
 
@@ -2206,6 +2223,7 @@ enum {
 	CKN_STR2999 = 2999,
 	CKN_STR3999 = 3999,
 	CKN_STR4096 = 4096,
+	CKN_STR5500 = 5500,
 	CKN_STR_MAX = 65535
 };
 

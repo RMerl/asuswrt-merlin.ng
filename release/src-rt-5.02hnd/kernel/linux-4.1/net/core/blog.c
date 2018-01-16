@@ -1850,12 +1850,18 @@ BlogAction_t blog_finit_locked( struct fkbuff * fkb_p, void * dev_p,
 #endif
         switch (pptp_status)
         {
+            case BLOG_PPTP_ENCRYPTED:
+                blog_print( "RX PPTP encrypted pkt seqno <%u>", rcv_pktSeq );
+                action = PKT_NORM;
+                fkb_release( fkb_p );
+                goto bypass;
+
             case BLOG_PPTP_RCV_NOT_PPTP:
             case BLOG_PPTP_RCV_NO_SEQNO:
             case BLOG_PPTP_RCV_IN_SEQ:
 #ifdef CATHY_PPTP_DL_ACC
-            if (rcv_pktAck)
-                blogHash.flags.grerx_ackIe = 1;
+                if (rcv_pktAck)
+                    blogHash.flags.grerx_ackIe = 1;
 #endif
             	break;
 
@@ -1876,8 +1882,8 @@ BlogAction_t blog_finit_locked( struct fkbuff * fkb_p, void * dev_p,
             case BLOG_PPTP_RCV_OOS_GT:
                 blog_print( "RX PPTP out-of-seq GT pkt seqno <%u>", rcv_pktSeq );
 #ifdef CATHY_PPTP_DL_ACC
-            if (rcv_pktAck)
-                blogHash.flags.grerx_ackIe = 1;
+                if (rcv_pktAck)
+                    blogHash.flags.grerx_ackIe = 1;
 #endif
                 break;
 
@@ -3787,7 +3793,7 @@ void blog_gre_xmit(struct sk_buff *skb_p, uint32_t h_proto) { return; }
 #endif
 
 #if defined(CONFIG_ACCEL_PPTP) 
-#if 1 //cathy
+#ifdef CATHY_PPTP_DL_ACC
 int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto,
                     uint32_t *rcv_pktSeq, uint32_t *rcv_pktAck) { return 1; }
 #else

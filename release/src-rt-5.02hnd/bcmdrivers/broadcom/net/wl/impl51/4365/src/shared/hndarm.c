@@ -48,11 +48,11 @@ static uint32 _armcr4_idx = 0;
 #endif
 static uint32 get_armcr4_idx(void);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 #define	HNDARM_ERROR(args)	printf args
 #else
 #define	HNDARM_ERROR(args)
-#endif	/* BCMDBG_ERR */
+#endif	/* BCMDBG */
 
 #ifdef BCMDBG
 #define	HNDARM_MSG(args)	printf args

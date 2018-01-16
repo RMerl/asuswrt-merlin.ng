@@ -421,7 +421,6 @@ function applyRule(){
 				if(!AiMesh_confirm_msg("Wireless_SSID_PSK", wl_parameter))
 					return false;
 			}
-
 			var radio_value = (document.form.wl_closed[0].checked) ? 1 : 0;
 			if(document.form.wps_enable.value == 1) {
 				if(radio_value) {

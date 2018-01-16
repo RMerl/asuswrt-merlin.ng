@@ -327,7 +327,7 @@ function showLoadingUpdate(){
 <div id="diskTab" class='tab_table'></div>
 <table width="95%" align="center" cellspacing="0">
   <tr >
-    <td style="background-color:#4D595D">
+    <td class="list_bg">
 		<div id="scan_status_field" style="margin-top:10px;margin-left:10px;">
 			<table>
 				<tr>
@@ -366,7 +366,7 @@ function showLoadingUpdate(){
 		<img style="margin-top:5px;margin-left:9px; *margin-top:-10px; width:283px;" src="/images/New_ui/networkmap/linetwo2.png">
 		<div class="formfonttitle_nwm" style="margin-left:10px;margin-bottom:5px;margin-top:10px;"><#format_results#></div>
 		<span id="log_field" >
-			<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" style="resize:none;display:;width:93%; font-family:'Courier New', Courier, mono; font-size:11px;background:#475A5F;color:#FFFFFF;margin-left:8px;"></textarea>
+			<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" class="textarea_bg" style="resize:none;display:;width:93%; font-family:'Courier New', Courier, mono; font-size:11px;margin-left:8px;color:#FFFFFF;"></textarea>
 		</span>
 		<div style="margin-top:20px;margin-bottom:10px;"align="center">
 			<input id="btn_format" type="button" class="button_gen" onclick="go_format();" value="<#CTL_format#>">

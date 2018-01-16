@@ -8,9 +8,6 @@ ifeq ($(RTCONFIG_HTTPS),y)
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
 
 EXEC = ated
 SRCS = ated.c

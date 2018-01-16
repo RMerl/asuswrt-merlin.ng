@@ -52,11 +52,11 @@
 #include <saverestore.h>
 #endif
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 #define	PMU_ERROR(args)	printf args
 #else
 #define	PMU_ERROR(args)
-#endif	/* BCMDBG_ERR */
+#endif	/* BCMDBG */
 
 #ifdef BCMDBG
 #if !defined(PMU_MSG)  /* over-rideable */
@@ -8602,7 +8602,7 @@ static void
 si_pmu_spuravoid_pllupdate(si_t *sih, pmuregs_t *pmu, osl_t *osh, uint8 spuravoid)
 {
 	uint32 tmp = 0;
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	char chn[8];
 #endif
 	uint32 xtal_freq, reg_val, mxdiv, ndiv_int, ndiv_frac_int, part_mul;

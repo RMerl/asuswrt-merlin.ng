@@ -131,8 +131,12 @@ function initial(){
 	if(lyra_hide_support)
 		document.getElementById("gn_index_tr").style.display = "none";
 
-	if(ifttt_support){
-		$("#smart_home").show();
+	if(ifttt_support || alexa_support){
+		$("#smart_home_0").show();
+		if(band5g_support)
+			$("#smart_home_1").show();
+		if(wl_info.band5g_2_support)
+			$("#smart_home_2").show();
 	}
 
 	//When redirect page from Free WiFi or Captive Portal, auto go to anchor tag
@@ -391,8 +395,8 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 				}
 			}
 
-			if(unit == 0 && i == (gn_array_length-1)){
-				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home" style="font-size: 13px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -12px;display:none">Alexa/IFTTT Configured</div></td></tr></tfoot>';
+			if(i == (gn_array_length-1)){
+				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home_'+unit+'" style="font-size: 12px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -20px;display:none">Default setting by Alexa/IFTTT</div></td></tr></tfoot>';
 			}
 			htmlcode += '</table></td>';		
 	}	

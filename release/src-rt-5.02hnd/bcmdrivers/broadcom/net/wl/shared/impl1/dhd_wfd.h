@@ -18,6 +18,7 @@
 #if defined(BCM_WFD)
 
 #include <wfd_dev.h>
+#include <wlan_shared_defs.h>
 
 extern dhd_pub_t *g_dhd_info[];
 
@@ -45,6 +46,8 @@ extern dhd_wmf_t* dhd_wmf_conf(dhd_pub_t *dhdp, uint32 idx);
 #endif
 
 extern void dhd_wfd_dump(dhd_pub_t *dhdp, struct bcmstrbuf *strbuf);
+extern int dhd_wfd_registerdevice(int wfd_idx, struct net_device *dev);
+extern int dhd_wfd_unregisterdevice(int wfd_idx, struct net_device *dev);
 
 #endif /* BCM_WFD */
 

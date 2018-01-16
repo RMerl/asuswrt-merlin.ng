@@ -45,6 +45,7 @@
 #include <pcie_core.h>
 #include <dhd_pcie.h>
 #include <bcm_map_part.h>
+#include <wlan_shared_defs.h>
 
 #if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
 #include <linux/bcm_log.h>
@@ -820,10 +821,8 @@ static int dhd_runner_skb_get(dhd_runner_hlp_t *dhd_hlp, rdpa_cpu_port port,
 	if (rc)
 	    return rc;
 
-#ifdef WL_NUM_OF_SSID_PER_UNIT
-	/* reason_data should be set to ifidx of each radio */
-	info->reason_data -= (dhd_hlp->dhd->unit * WL_NUM_OF_SSID_PER_UNIT);
-#endif /* WL_NUM_OF_SSID_PER_UNIT */
+	/* Extract the ssid ifidx from mapped hw_port */
+	info->reason_data = WLAN_NETDEVPATH_SSID(info->reason_data);
 
 	/* create a sysb and initialize it with packet data & len */
 	*sysb = bdmf_sysb_header_alloc(bdmf_sysb_skb, (uint8_t *)info->data,

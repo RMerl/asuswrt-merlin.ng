@@ -59,7 +59,7 @@ else
 		echo "---- buildno: $buildno ----" >> /tmp/webs_upgrade.log
 		nvram set webs_state_flag=1	# Do upgrade
 	elif [ "$current_buildno" -eq "$buildno" ]; then
-		if [ "$current_firm" -lt "$firmver"]; then
+		if [ "$current_firm" -lt "$firmver" ]; then
 			echo "---- firmver: $firmver ----" >> /tmp/webs_upgrade.log
 			nvram set webs_state_flag=1	# Do upgrade
 		elif [ "$current_firm" -eq "$firmver" ]; then

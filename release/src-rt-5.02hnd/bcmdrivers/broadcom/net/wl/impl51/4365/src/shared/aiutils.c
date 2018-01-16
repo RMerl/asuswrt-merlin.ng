@@ -1130,7 +1130,7 @@ static void
 _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 {
 	si_info_t *sii = SI_INFO(sih);
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	si_cores_info_t *cores_info = (si_cores_info_t *)sii->cores_info;
 #endif
 	aidmp_t *ai;
@@ -1143,7 +1143,7 @@ _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 	/* ensure there are no pending backplane operations */
 	SPINWAIT(((dummy = R_REG(sii->osh, &ai->resetstatus)) != 0), 300);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (dummy != 0)
 		SI_ERROR(("%s: WARN1: resetstatus=0x%0x\n", __FUNCTION__, dummy));
 #endif
@@ -1162,7 +1162,7 @@ _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 	/* ensure there are no pending backplane operations */
 	SPINWAIT(((dummy = R_REG(sii->osh, &ai->resetstatus)) != 0), 300);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (dummy != 0)
 		SI_ERROR(("%s: WARN2: resetstatus=0x%0x\n", __FUNCTION__, dummy));
 #endif
@@ -1171,7 +1171,7 @@ _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 		/* ensure there are no pending backplane operations */
 		SPINWAIT(((dummy = R_REG(sii->osh, &ai->resetstatus)) != 0), 300);
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 		if (dummy != 0)
 			SI_ERROR(("%s: WARN3 resetstatus=0x%0x\n", __FUNCTION__, dummy));
 #endif
@@ -1183,7 +1183,7 @@ _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 		SPINWAIT((R_REG(sii->osh, &ai->resetstatus) != 0), 300);
 	}
 
-#ifdef BCMDBG_ERR
+#ifdef BCMDBG
 	if (loop_counter == 0)
 		SI_ERROR(("%s: Failed to take core 0x%x out of reset\n",
 		          __FUNCTION__, cores_info->coreid[sii->curidx]));

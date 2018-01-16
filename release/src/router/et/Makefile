@@ -9,10 +9,6 @@ CFLAGS	+= -I. -I$(TOP)/shared -I$(TOP)/$(BUSYBOX_DIR) -I$(SRCBASE)/include -Wall
 CFLAGS	+= -s -O2 -DBCMWPA2
 LDFLAGS	+= -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
-
 OBJS := et.o
 vpath %.c $(SRCBASE)/et/linux
 

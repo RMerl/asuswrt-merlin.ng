@@ -321,6 +321,22 @@ var httpApi ={
 		return retData;
 	},
 
+	"isPppAuthFail": function(){
+		if(window.pppAuthFailChecked) return false;
+
+		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "wan0_proto", "sw_mode"], true);
+		var result = (	
+			wanInfo.sw_mode         == "1"     &&
+			wanInfo.wan0_proto	    == "pppoe" &&
+			wanInfo.wan0_state_t    == "4"     &&
+			wanInfo.wan0_sbstate_t  == "2"     &&
+			wanInfo.wan0_auxstate_t == "0"
+		)
+
+		window.pppAuthFailChecked = result;
+		return result;
+	},
+
 	"isConnected": function(){
 		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "link_internet"], true);
 		return (
@@ -339,7 +355,7 @@ var httpApi ={
 	"checkCap": function(targetOrigin, targetId){
 		window.chcap = function(){
 			setTimeout(function(){
-				if(isPage("conncap_page")) window.location.href = targetOrigin + "/cfg_onboarding.cgi?id=" + targetId;
+				if(isPage("amasconncap_page")) window.location.href = targetOrigin + "/cfg_onboarding.cgi?id=" + targetId;
 			}, 3000);
 
 			// $("#connCapAlert").hide();
@@ -420,5 +436,26 @@ var httpApi ={
 					document.getElementById(_Objid).href = temp_URL_global;		
 			}
 		});
+	},
+
+	"nvram_match_x": function(postData, compareData, retData){
+		var queryString = "nvram_match_x(\"\",\""+postData+"\",\""+compareData+"\",\""+retData+"\")";
+		var retData = {};
+
+		$.ajax({
+			url: '/appGet.cgi?hook=' + queryString,
+			dataType: 'json',
+			async: false,
+			error: function(){
+				retData[postData] = "";
+				retData.isError = true;
+			},
+			success: function(response){
+				retData[postData] = response["nvram_match_x-"];
+				retData.isError = false;
+			}
+		});
+
+		return retData;
 	}
 }

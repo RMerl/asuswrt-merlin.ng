@@ -1320,7 +1320,7 @@ void start_dnsmasq(void)
 		if (is_routing_enabled())
 		fprintf(fp, "interface=%s\n"		// dns on VPN clients interfaces
 		    	"no-dhcp-interface=%s\n",	// no dhcp for VPN clients
-			"ppp1*", "ppp1*");
+			"pptp*", "pptp*");
 #endif
 	}
 

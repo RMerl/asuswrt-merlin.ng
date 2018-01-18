@@ -7,10 +7,11 @@ config.log
 config.status
 curl-config
 src/curl
-src/hugehelp.c
+src/tool_hugehelp.c
 src/curl_config.h
 stamp-h2
 Makefile
+docs/curl.1
 docs/examples/Makefile
 docs/libcurl/Makefile
 include/curl/stamp-h3
@@ -40,4 +41,3 @@ libcurl.pc
 .dirstamp
 libcurl.vers
 docs/libcurl/libcurl-symbols.3
-

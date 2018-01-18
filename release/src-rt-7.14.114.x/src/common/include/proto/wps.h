@@ -112,6 +112,9 @@ extern "C" {
 #define WPS_ID_8021X_ENABLED      0x1062
 #define WPS_ID_WEP_TRANSMIT_KEY   0x1064
 #define WPS_ID_REQ_DEV_TYPE       0x106A
+#ifdef AMAS
+#define WPS_ID_GROUP_ID           0x106B
+#endif
 
 /* WSC 2.0, WFA Vendor Extension Subelements */
 #define WFA_VENDOR_EXT_ID                 "\x00\x37\x2A"

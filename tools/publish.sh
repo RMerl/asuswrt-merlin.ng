@@ -42,7 +42,7 @@ scp Changelog*.txt rmerlin@frs.sourceforge.net:/home/pfs/project/asuswrt-merlin/
 if [ "$SUFFIXE" == "Beta/" ]
 then
    mv sha256sums.txt sha256sums-beta.txt
-   mv sha256sums-382.txt sha256sums-382-beta.txt
+   mv sha256sums-ng.txt sha256sums-ng-beta.txt
 fi
 
 cp sha256sums*.txt /media/nas/Onedrive/Asuswrt-Merlin/Documentation/

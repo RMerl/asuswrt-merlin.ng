@@ -854,6 +854,12 @@ ip_conntrack_ipct_resume(struct sk_buff *skb, u_int32_t hooknum,
 	tuple.dst_port = tcph->dest;
 	tuple.protocol = protocol;
 
+#ifdef CTF_PPPOE
+	if ((skb->dev->flags & IFF_POINTOPOINT) && (skb->ctf_pppoe_cb[0] == 1)) {
+		tuple.sid = *(uint16 *)&skb->ctf_pppoe_cb[2];
+	}
+#endif
+
 #ifdef CONFIG_NF_CONNTRACK_MARK
 	if (ct->mark != 0) {
 		/* To Update Mark */

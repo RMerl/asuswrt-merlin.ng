@@ -26,15 +26,15 @@ performance, and performance over features.
 
 Asuswrt-Merlin is available in two separate branches:
 
-- The original Asuswrt-Merlin (up to version 380.xxx)
-- The new branch (version 382.xxx and newer)
+- The original (legacy) Asuswrt-Merlin (up to version 380.xxx)
+- The new generation (current) branch (version 382.xxx and newer)
 
 
 Supported Devices
 -----------------
 Each branch supports different models.  As Asus upgrades models
-to the new 382 code base, they will gradually be migrated to 
-Asuswrt-Merlin's 382 branch, with the exception of the 
+to the new 382/384 code base, they will gradually be migrated to 
+Asuswrt-Merlin's new gen branch, with the exception of the 
 RT-N66U and RT-AC66U which will remain on the legacy 380 branch.
 
 
@@ -51,7 +51,7 @@ Supported devices on version 380:
  * RT-AC5300
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
 
-Supported devices on version 382:
+Supported devices on version 382 and newer:
  * RT-AC56U
  * RT-AC68U
  * RT-AC3200
@@ -202,11 +202,11 @@ Source code
 -----------
 The source code can be found on Github.
 
-Original branch:
+Original legacy branch:
 https://github.com/RMerl/asuswrt-merlin
 
-New 382 branch:
-https://github.com/RMerl/asuswrt-merlin.382
+New generation/current branch (382.xx and newer):
+https://github.com/RMerl/asuswrt-merlin.ng
 
    
 Contact information

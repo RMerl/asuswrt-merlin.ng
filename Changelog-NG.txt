@@ -1,14 +1,40 @@
 Asuswrt-Merlin 382 Changelog
 ============================
 
-382.3 Beta (xx-xxx-xxxx)
-   - NEW: Merged with GPL 382_19466
+384.3 Beta (xx-xxx-xxxx)
+   - NOTE: To reduce confusion following the version
+           bump to 384, the current Github repository
+           was renamed from asuswrt-merlin.382 to
+           asuswrt-merlin.ng (for New Generation).
+           It's recommended that you update your
+           local repository if you're a developer,
+           for example by running:
+
+              git remote set-url origin \
+                 git@github.com:RMerl/asuswrt-merlin.ng.git
+
+   - NEW: Merged with GPL 384_10007
    - NEW: Added support for RT-AC3200 (merged
-          SDK 7.x-main).
-   - NEW: Merged RT-AC68U binary blobs from 382_19333
+          SDK 7.x-main + binary blobs from 382_19466).
+   - FIXED: Some routers coming from 380.xx would incorrectly
+            report a new firmware available at boot time.
+   - FIXED: ignore reserved hostnames from broken dhcp clients
+            (like Samsung TV) (patch by theMIRon)
+   - FIXED: Added missing IPv6 local hostnames (patch by
+            theMIRon)
 
 
-382.2 Beta (xx-xxx-xxxx)
+382.2 Beta (17-Jan-2018)
+   - NOTE: Due to various issues with GPL 382_18991, the 382.2
+           release is being dropped, and work is moving on to the
+           next version.  382.2 beta releases remain available
+           for those who still wish to use it (especially RT-AC56U
+           users for whom there is no ETA as to when Asus will
+           release the next GPL for that particular model.)
+           Known issues include lack of PPPoE HW acceleration and
+           Adaptive QoS sometimes failing to start at boot among
+           others.
+
    - NOTE: The official IRC channel has moved to
            Freenode (#asuswrt).
 

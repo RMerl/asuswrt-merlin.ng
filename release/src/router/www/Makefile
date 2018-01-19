@@ -64,6 +64,7 @@ endif # CONFIG_VISUALIZATION
 	rm -rf `find $(INSTALLDIR) -name "*.bak"`
 
 ifeq ($(RTCONFIG_AMAS),y)
+	cp $(TOP)/www/sysdep/BLUECAVE/www/Advanced_Wireless_Survey.asp $(INSTALLDIR)/www/Advanced_Wireless_Survey.asp
 	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
 	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
 	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf

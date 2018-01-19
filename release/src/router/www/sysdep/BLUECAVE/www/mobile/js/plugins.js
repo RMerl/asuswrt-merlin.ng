@@ -233,8 +233,9 @@ var Get_Component_WirelessInput = function(wlArray){
 
 function handleSysDep(){
 	$("#welcomeTitle").html($("#welcomeTitle").html().replace("BLUE_CAVE", "BLUE CAVE"))
-	$(".amasSupport").toggle(isSupport("AMAS"));
-	$(".noAmasSupport").toggle(!isSupport("AMAS"));
+	var enableAMAS = httpApi.nvramGet(["amas_force"], true);
+	$(".amasSupport").toggle(isSupport("AMAS") && (enableAMAS.amas_force == "1"));
+	$(".noAmasSupport").toggle(!isSupport("AMAS") || (enableAMAS.amas_force != "1"));
 	$(".tosSupport").toggle(systemVariable.isDefault && isSupport("QISBWDPI"));
 	$(".repeaterSupport").toggle(isSupport("repeater"));
 	$(".pstaSupport").toggle(isSupport("psta"));

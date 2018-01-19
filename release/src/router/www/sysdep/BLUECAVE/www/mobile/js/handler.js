@@ -439,7 +439,9 @@ apply.wireless = function(){
 		postDataModel.remove(wirelessObj["wl" + wlcUnit]);
 	}
 
-	if(isSupport("AMAS") && (isSwMode("RT") || isSwMode("AP"))) {
+	var enableAMAS = httpApi.nvramGet(["amas_force"], true);
+
+	if(enableAMAS.amas_force && isSupport("AMAS") && (isSwMode("RT") || isSwMode("AP"))) {
 		postDataModel.insert(aimeshObj);
 	}
 

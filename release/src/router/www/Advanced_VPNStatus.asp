@@ -35,11 +35,6 @@ function initial(){
 
 	if (openvpnd_support) {
 		setTimeout("refreshData()",1000);
-		if (based_modelid == "RT-AC3200") {
-			showhide("client3", 0);
-			showhide("client4", 0);
-			showhide("client5", 0);
-		}
 	} else {
 		showhide("server1", 0);
 		showhide("server2", 0);
@@ -92,7 +87,7 @@ function displayData(){
 	else
 		document.getElementById("server2_Block_Running").innerHTML = state_srv_stop;
 
-	for (var unit = 1; unit < (based_modelid == "RT-AC3200" ? 3 : 6); unit++) {
+	for (var unit = 1; unit < 6; unit++) {
 		switch (unit) {
 			case 1:
 				client_state = vpnc_state_t1;
@@ -166,11 +161,9 @@ function displayData(){
 	parseStatus(vpn_server2_status, "server2_Block", "", "");
 	parseStatus(vpn_client1_status, "client1_Block", vpn_client1_ip, vpn_client1_rip);
 	parseStatus(vpn_client2_status, "client2_Block", vpn_client2_ip, vpn_client2_rip);
-	if (based_modelid != "RT-AC3200") {
-		parseStatus(vpn_client3_status, "client3_Block", vpn_client3_ip, vpn_client3_rip);
-		parseStatus(vpn_client4_status, "client4_Block", vpn_client4_ip, vpn_client4_rip);
-		parseStatus(vpn_client5_status, "client5_Block", vpn_client5_ip, vpn_client5_rip);
-	}
+	parseStatus(vpn_client3_status, "client3_Block", vpn_client3_ip, vpn_client3_rip);
+	parseStatus(vpn_client4_status, "client4_Block", vpn_client4_ip, vpn_client4_rip);
+	parseStatus(vpn_client5_status, "client5_Block", vpn_client5_ip, vpn_client5_rip);
 
 	if (pptpd_support) {
 		if (pptpdpid > 0)

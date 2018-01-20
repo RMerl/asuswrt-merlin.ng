@@ -4,11 +4,7 @@
 #define OVPN_SERVER_MAX	2
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 
-#if defined(RTAC3200)
-#define OVPN_CLIENT_MAX 2
-#else
 #define OVPN_CLIENT_MAX	5
-#endif
 
 #else
 #define OVPN_CLIENT_MAX	1

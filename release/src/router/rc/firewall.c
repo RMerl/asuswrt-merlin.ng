@@ -3490,17 +3490,6 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp, "-I INPUT -p tcp --dport %s:%s -j ACCEPT\n", nvram_safe_get("apps_dl_share_port_from"), nvram_safe_get("apps_dl_share_port_to"));
 	}
 
-
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled())
-	{
-		if (nvram_match("ipv6_fw_enable", "1"))
-		{
-			fprintf(fp_ipv6, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
-		}
-	}
-#endif
-
 	/* Pass multicast */
 	if (nvram_get_int("mr_enable_x"))
 		fprintf(fp, "-A FORWARD -p udp -d 224.0.0.0/4 -j ACCEPT\n");
@@ -3546,6 +3535,10 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 	fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
+		fprintf(fp_ipv6, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
+#endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	if (nvram_get_int("pptpd_enable"))
 		fprintf(fp, "-A FORWARD -i %s -j %s\n", "pptp+", "ACCEPT");
@@ -4573,16 +4566,6 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp, "-I INPUT -p tcp --dport %s:%s -j ACCEPT\n", nvram_safe_get("apps_dl_share_port_from"), nvram_safe_get("apps_dl_share_port_to"));
 	}
 
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled())
-	{
-		if (nvram_match("ipv6_fw_enable", "1"))
-		{
-			fprintf(fp_ipv6, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
-		}
-	}
-#endif
-
 	/* Pass multicast */
 	if (nvram_get_int("mr_enable_x"))
 		fprintf(fp, "-A FORWARD -p udp -d 224.0.0.0/4 -j ACCEPT\n");
@@ -4640,6 +4623,10 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 	fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
+		fprintf(fp_ipv6, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
+#endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	if (nvram_get_int("pptpd_enable"))
 		fprintf(fp, "-A FORWARD -i %s -j %s\n", "pptp+", "ACCEPT");

@@ -797,10 +797,20 @@ void reply_query(int fd, int family, time_t now)
       unsigned char *pheader;
       size_t plen;
       int is_sign;
-      
+
+      /* In strict order mode, there must be a server later in the chain
+        left to send to, otherwise without the forwardall mechanism,
+        code further on will cycle around the list forwever if they
+        all return REFUSED. Note that server is always non-NULL before 
+        this executes. */
+      if (option_bool(OPT_ORDER))
+       for (server = forward->sentto->next; server; server = server->next)
+         if (!(server->flags & (SERV_LITERAL_ADDRESS | SERV_HAS_DOMAIN | SERV_FOR_NODOTS | SERV_NO_ADDR | SERV_LOOP)))
+           break;
+     
       /* recreate query from reply */
       pheader = find_pseudoheader(header, (size_t)n, &plen, NULL, &is_sign, NULL);
-      if (!is_sign)
+      if (!is_sign && server)
 	{
 	  header->ancount = htons(0);
 	  header->nscount = htons(0);

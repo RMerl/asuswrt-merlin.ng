@@ -1954,7 +1954,9 @@ endif
 	$(if $(RTCONFIG_L7),@cp -f,@mv) $(TARGETDIR)/lib/modules/*/kernel/net/ipv4/netfilter/ipt_layer7.*o $(PLATFORMDIR)/extras/ || true
 	$(if $(RTCONFIG_L7),@cp -f,@mv) $(TARGETDIR)/lib/modules/*/kernel/net/netfilter/xt_layer7.*o $(PLATFORMDIR)/extras/ || true
 
+ifeq ($(RTCONFIG_JFFS2ND_BACKUP),y)
 	@mkdir -p $(TARGETDIR)/asus_jffs
+endif
 	@mkdir -p $(PLATFORMDIR)/extras/apps
 	@mkdir -p $(PLATFORMDIR)/extras/lib
 

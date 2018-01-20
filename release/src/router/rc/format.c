@@ -85,6 +85,12 @@ void adjust_merlin_config(void)
 	}
 #endif
 
+/* Remove legacy 1.xxx Trend Micro signatures if present */
+#ifdef RTCONFIG_BWDPI
+	if (f_exists("/jffs/signature/rule.trf") &&
+	   f_size("/jffs/signature/rule.trf") < 50000)
+		unlink("/jffs/signature/rule.trf");
+#endif
 }
 
 void adjust_url_urlelist(void)

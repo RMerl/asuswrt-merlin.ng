@@ -150,27 +150,40 @@ char *arp_mac(struct in_addr sin_addr){
 	return mac_address;
 }
 
-void handle_req(int sockfd, char *buf, char *mac){
-
-	char page[2*MAX_LEN];
-	char timebuf[100];
-	char dut_addr[64];
+void handle_req(int sockfd, char *buf, char *mac)
+{
+	char page[2*MAX_LEN], timebuf[100], *proto;
 	time_t now;
+	int port;
 
-        if(!strncmp(buf, "GET /", 5)){
-		memset(page, 0, sizeof(page));
-		memset(dut_addr, 0, sizeof(dut_addr));
+	if (strncmp(buf, "GET /", 5) == 0 || strncmp(buf, "POST /", 6) == 0) {
 		now = time(NULL);
 		strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
-		sprintf(page, "%s%s%s%s%s%s", page, "HTTP/1.0 302 Moved Temporarily\r\n", "Server: pc_block\r\n", "Date: ", timebuf, "\r\n");
-		strcpy(dut_addr, nvram_safe_get("lan_ipaddr"));
+#ifdef RTCONFIG_HTTPS
+		if (nvram_get_int("http_enable") == 1) {
+			proto = "https";
+			port = nvram_get_int("https_lanport") ? : 443;
+		} else
+#endif
+		{
+			proto = "http";
+			port = nvram_get_int("http_lanport") ? : 80;
+		}
 
-		sprintf(page, "%s%s%s%s%s%s%s", page, "Connection: close\r\n", "Location:http://", dut_addr, "/blocking.asp?mac=", mac,"\r\nContent-Type: text/plain\r\n\r\n<html></html>\r\n");
+		snprintf(page, sizeof(page),
+			"HTTP/1.0 302 Moved Temporarily\r\n"
+			"Server: pc_block\r\n"
+			"Date: %s\r\n"
+			"Connection: close\r\n"
+			"Location: %s://%s:%d/blocking.asp?mac=%s\r\n"
+			"Content-Type: text/plain\r\n"
+			"\r\n"
+			"<html></html>\r\n",
+			timebuf, proto, nvram_safe_get("lan_ipaddr"), port, mac);
 		write(sockfd, page, strlen(page));
-                close_socket(sockfd);
-        }
-        else
-                close_socket(sockfd);
+	}
+
+	close_socket(sockfd);
 }
 
 void perform_http_serv(int sockfd, char *mac){

@@ -4103,16 +4103,16 @@ void
 start_httpd(void)
 {
 	char *httpd_argv[] = { "httpd",
-	/*	"-p", nvram_safe_get("http_lanport"),*/
 		NULL, NULL,	/* -i ifname */
+		NULL, NULL,	/* -p port */
 		NULL };
 	int httpd_index = 1;
 #ifdef RTCONFIG_HTTPS
 	char *https_argv[] = { "httpds", "-s",
-		"-p", nvram_safe_get("https_lanport"),
 		NULL, NULL,	/* -i ifname */
+		NULL, NULL,	/* -p port */
 		NULL };
-	int https_index = 4;
+	int https_index = 2;
 	int enable;
 #endif
 	char *cur_dir;
@@ -4168,7 +4168,12 @@ start_httpd(void)
 
 	enable = nvram_get_int("http_enable");
 	if (enable != 0) {
-		logmessage(LOGNAME, "start httpd - SSL");
+		pid = nvram_get_int("https_lanport") ? : 443;
+		if (pid != 443) {
+			https_argv[https_index++] = "-p";
+			https_argv[https_index++] = nvram_safe_get("https_lanport");
+		}
+		logmessage(LOGNAME, "start https:%d", pid);
 		_eval(https_argv, NULL, 0, &pid);
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 		sleep(1);
@@ -4179,7 +4184,12 @@ start_httpd(void)
 #endif
 #endif
 	{
-		logmessage(LOGNAME, "start httpd");
+		pid = nvram_get_int("http_lanport") ? : 80;
+		if (pid != 80) {
+			httpd_argv[httpd_index++] = "-p";
+			httpd_argv[httpd_index++] = nvram_safe_get("http_lanport");
+		}
+		logmessage(LOGNAME, "start httpd:%d", pid);
 		_eval(httpd_argv, NULL, 0, &pid);
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 		sleep(1);
@@ -4370,7 +4380,7 @@ void start_upnp(void)
 				} else
 #endif
 				{
-					fprintf(f, "%s://%s:%d/\n", "http", lanip, /*nvram_get_int("http_lanport") ? :*/ 80);
+					fprintf(f, "%s://%s:%d/\n", "http", lanip, nvram_get_int("http_lanport") ? : 80);
 				}
 
 				char uuid[45];

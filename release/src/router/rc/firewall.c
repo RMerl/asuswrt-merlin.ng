@@ -1272,14 +1272,14 @@ void repeater_filter_setting(int mode){
 
 				fprintf(fp, "-A INPUT -i %s -m mark --mark %s -d %s -p tcp -m multiport --dport 23,%d,%d,9999 -j DROP\n",
 						word, BIT_RES_GUI, nvram_safe_get("lan_ipaddr"),
-						/*nvram_get_int("http_lanport") ? :*/ 80,
+						nvram_get_int("http_lanport") ? : 80,
 						nvram_get_int("https_lanport") ? : 443);
 			}
 		}
 		else{
 			fprintf(fp, "-A INPUT -i %s -m mark --mark %s -d %s -p tcp -m multiport --dport 23,%d,%d,9999 -j DROP\n",
 					nvram_safe_get("lan_ifname"), BIT_RES_GUI, nvram_safe_get("lan_ipaddr"),
-					/*nvram_get_int("http_lanport") ? :*/ 80,
+					nvram_get_int("http_lanport") ? : 80,
 					nvram_get_int("https_lanport") ? : 443);
 		}
 	}
@@ -1319,13 +1319,19 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 		// need multiple instance for tis?
 		if (nvram_get_int("misc_http_x")) {
 #ifdef RTCONFIG_HTTPS
-			wan_port = nvram_get_int("misc_httpsport_x") ? : 8443;
-			fprintf(fp, "-A VSERVER -p tcp -m tcp --dport %d -j DNAT --to-destination %s:%d\n",
-				wan_port, lan_ip, nvram_get_int("https_lanport") ? : 443);
+			int enable = nvram_get_int("http_enable");
+			if (enable != 0) {
+				wan_port = nvram_get_int("misc_httpsport_x") ? : 8443;
+				fprintf(fp, "-A VSERVER -p tcp -m tcp --dport %d -j DNAT --to-destination %s:%d\n",
+					wan_port, lan_ip, nvram_get_int("https_lanport") ? : 443);
+			}
+			/* do not support http (enable != 1) */
 #else
-			wan_port = nvram_get_int("misc_httpport_x") ? : 8080;
-			fprintf(fp, "-A VSERVER -p tcp -m tcp --dport %d -j DNAT --to-destination %s:%d\n",
-				wan_port, lan_ip, 80);
+			{
+				wan_port = nvram_get_int("misc_httpport_x") ? : 8080;
+				fprintf(fp, "-A VSERVER -p tcp -m tcp --dport %d -j DNAT --to-destination %s:%d\n",
+					wan_port, lan_ip, nvram_get_int("http_lanport") ? : 80);
+			}
 #endif
 		}
 	}
@@ -2428,7 +2434,7 @@ void write_access_restriction(FILE *fp)
 		if (en != 1)
 #endif
 		{
-			http_port = 80;
+			http_port = nvram_get_int("http_lanport") ? : 80;
 		}
 		if (http_port != 0 && https_port != 0)
 			snprintf(webports, sizeof(webports), "%d,%d", http_port, https_port);
@@ -2542,7 +2548,7 @@ start_default_filter(int lanunit)
 
 		fprintf(fp, "-A INPUT -i %s -m mark --mark %s -d %s -p tcp -m multiport --dport 23,%d,%d,9999 -j DROP\n",
 				lan_if, BIT_RES_GUI, nvram_safe_get("lan_ipaddr"),
-				/*nvram_get_int("http_lanport") ? :*/ 80,
+				nvram_get_int("http_lanport") ? : 80,
 				nvram_get_int("https_lanport") ? : 443);
 	}
 #endif
@@ -2573,12 +2579,12 @@ start_default_filter(int lanunit)
 #ifdef RTCONFIG_HTTPS
 		int en = nvram_get_int("http_enable");
 		if (en != 0)
-			https_port = nvram_get_int("https_lanport") ? : 433;
+			https_port = nvram_get_int("https_lanport") ? : 443;
 
 		if (en != 1)
 #endif
 		{
-			http_port = 80;
+			http_port = nvram_get_int("http_lanport") ? : 80;
 		}
 		if (http_port != 0 && https_port != 0)
 			snprintf(webports, sizeof(webports), "%d,%d", http_port, https_port);
@@ -3179,7 +3185,7 @@ TRACE_PT("writing Parental Control\n");
 
 		fprintf(fp, "-A INPUT -i %s -m mark --mark %s -d %s -p tcp -m multiport --dport 23,%d,%d,9999 -j DROP\n",
 				lan_if, BIT_RES_GUI, lan_ip,
-				/*nvram_get_int("http_lanport") ? :*/ 80,
+				nvram_get_int("http_lanport") ? : 80,
 				nvram_get_int("https_lanport") ? : 443);
 	}
 #endif
@@ -3298,11 +3304,17 @@ TRACE_PT("writing Parental Control\n");
 		// Firewall between WAN and Local
 		if (nvram_get_int("misc_http_x")) {
 #ifdef RTCONFIG_HTTPS
-			fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p tcp -m tcp -d %s --dport %d -j %s\n",
-				lan_ip, nvram_get_int("https_lanport") ? : 443, logaccept);
+			int enable = nvram_get_int("http_enable");
+			if (enable != 0) {
+				fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p tcp -m tcp -d %s --dport %d -j %s\n",
+					lan_ip, nvram_get_int("https_lanport") ? : 443, logaccept);
+			}
+			/* do not support http (enable != 1) */
 #else
-			fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p tcp -m tcp -d %s --dport %d -j %s\n",
-				lan_ip, 80, logaccept);
+			{
+				fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p tcp -m tcp -d %s --dport %d -j %s\n",
+					lan_ip, nvram_get_int("http_lanport") ? : 80, logaccept);
+			}
 #endif
 		}
 
@@ -4283,7 +4295,7 @@ TRACE_PT("writing Parental Control\n");
 
 		fprintf(fp, "-A INPUT -i %s -m mark --mark %s -d %s -p tcp -m multiport --dport 23,%d,%d,9999 -j DROP\n",
 				lan_if, BIT_RES_GUI, lan_ip,
-				/*nvram_get_int("http_lanport") ? :*/ 80,
+				nvram_get_int("http_lanport") ? : 80,
 				nvram_get_int("https_lanport") ? : 443);
 	}
 #endif
@@ -4439,11 +4451,17 @@ TRACE_PT("writing Parental Control\n");
 		// Firewall between WAN and Local
 		if (nvram_get_int("misc_http_x")) {
 #ifdef RTCONFIG_HTTPS
-			fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n",
-				lan_ip, nvram_get_int("https_lanport") ? : 443, logaccept);
+			int enable = nvram_get_int("http_enable");
+			if (enable != 0) {
+				fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n",
+					lan_ip, nvram_get_int("https_lanport") ? : 443, logaccept);
+			}
+			/* do not support http (enable != 1) */
 #else
-			fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n",
-				lan_ip, 80, logaccept);
+			{
+				fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n",
+					lan_ip, nvram_get_int("http_lanport") ? : 80, logaccept);
+			}
 #endif
 		}
 #ifdef RTCONFIG_SSH

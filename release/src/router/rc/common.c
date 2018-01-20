@@ -1535,7 +1535,7 @@ int setup_dnsmq(int mode)
 		if (!is_psta(nvram_get_int("wlc_band")) && !is_psr(nvram_get_int("wlc_band")))
 #endif
 		{
-			snprintf(tmp, sizeof(tmp), "%s:%d", nvram_safe_get("lan_ipaddr"), /*nvram_get_int("http_lanport") ? :*/ 80);
+			snprintf(tmp, sizeof(tmp), "%s:%d", nvram_safe_get("lan_ipaddr"), nvram_get_int("http_lanport") ? : 80);
 			eval("iptables", "-t", "nat", "-I", "PREROUTING", "-p", "tcp", "-d", "10.0.0.1", "--dport", "80",
 				"-j", "DNAT", "--to-destination", tmp);
 		}

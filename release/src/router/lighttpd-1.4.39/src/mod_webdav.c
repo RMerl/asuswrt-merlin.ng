@@ -3734,7 +3734,7 @@ propmatch_cleanup:
 		char* webdav_http_port = nvram_get_webdav_http_port();
 		char* webdav_https_port = nvram_get_webdav_https_port();
 		char* http_enable = nvram_get_http_enable();
-		char* lan_http_port = "80";
+		char* lan_http_port = nvram_get_lan_http_port();
 		char* lan_https_port = nvram_get_lan_https_port();
 		char* misc_http_x = nvram_get_misc_http_x();
 		char* misc_http_port = nvram_get_misc_http_port();

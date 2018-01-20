@@ -3389,7 +3389,7 @@ function set_variable(_variable, _val){
 }
 
 function isPortConflict(_val){
-	if(_val == '80')
+	if(_val == '<% nvram_get("http_lanport"); %>')
 		return "<#portConflictHint#> HTTP LAN port.";
 	else if(_val == '<% nvram_get("dm_http_port"); %>')
 		return "<#portConflictHint#> Download Master.";

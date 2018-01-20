@@ -1731,6 +1731,7 @@ $(document).ready(function(){
     			g_storage.set('misc_http_enable', x.find("misc_http_enable").text());
     			g_storage.set('misc_http_port', String(x.find("misc_http_port").text()).replace("\n",""));
     			g_storage.set('misc_https_port', String(x.find("misc_https_port").text()).replace("\n",""));
+    			g_storage.set('lan_http_port', String(x.find("lan_http_port").text()).replace("\n",""));
     			g_storage.set('lan_https_port', String(x.find("lan_https_port").text()).replace("\n",""));
     			g_storage.set('last_login_info', x.find("last_login_info").text());
     			g_storage.set('ddns_host_name', x.find("ddns_host_name").text());
@@ -2146,6 +2147,7 @@ $(document).ready(function(){
 			var misc_http_enable = parseInt(g_storage.get('misc_http_enable'));
 	    	var misc_http_port = g_storage.get('misc_http_port');
 	    	var misc_https_port = g_storage.get('misc_https_port');
+	    	var lan_http_port = g_storage.get('lan_http_port');
 	    	var lan_https_port = g_storage.get('lan_https_port');
 	    	var location_host = g_storage.get('request_host_url');//window.location.host;
 	    	var misc_protocol = "http";
@@ -2178,6 +2180,8 @@ $(document).ready(function(){
 	  			
 	  			if(http_enable==1)
 	  				url += ":" + lan_https_port; 
+	  			else if(lan_http_port)
+	  				url += ":" + lan_http_port; 
 	  		}
 	  		else{
 	  			url = misc_protocol + "://" + location_host.split(":")[0];

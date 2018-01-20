@@ -411,7 +411,8 @@ function applyRule(){
 				document.form.misc_httpport_x.disabled = true;
 		}
 
-		if(document.form.https_lanport.value != '<% nvram_get("https_lanport"); %>' 
+		if(document.form.http_lanport.value != '<% nvram_get("http_lanport"); %>'
+				|| document.form.https_lanport.value != '<% nvram_get("https_lanport"); %>'
 				|| document.form.http_enable.value != '<% nvram_get("http_enable"); %>'
 				|| document.form.misc_httpport_x.value != '<% nvram_get("misc_httpport_x"); %>'
 				|| document.form.misc_httpsport_x.value != '<% nvram_get("misc_httpsport_x"); %>'
@@ -426,6 +427,8 @@ function applyRule(){
 			if(document.form.http_enable.value == "0"){	//HTTP
 				if(isFromWAN)
 					document.form.flag.value = "http://" + location.hostname + ":" + document.form.misc_httpport_x.value;
+				else if (document.form.http_lanport.value)
+					document.form.flag.value = "http://" + location.hostname + ":" + document.form.http_lanport.value;
 				else
 					document.form.flag.value = "http://" + location.hostname;
 			}
@@ -444,6 +447,8 @@ function applyRule(){
 				}else{
 					if(isFromWAN)
 						document.form.flag.value = "http://" + location.hostname + ":" + document.form.misc_httpport_x.value;
+					else if (document.form.http_lanport.value)
+						document.form.flag.value = "http://" + location.hostname + ":" + document.form.http_lanport.value;
 					else
 						document.form.flag.value = "http://" + location.hostname;
 				}
@@ -637,8 +642,8 @@ function validForm(){
 		return false;
 	}
 
-	/*if (!validator.range(document.form.http_lanport, 1, 65535))
-		return false;*/
+	if (!validator.range(document.form.http_lanport, 1, 65535))
+		/*return false;*/ document.form.http_lanport = 80;
 	if (HTTPS_support && !validator.range(document.form.https_lanport, 1, 65535) && !tmo_support)
 		return false;
 
@@ -669,12 +674,14 @@ function validForm(){
 		return false;
 	}
 
-	if(isPortConflict(document.form.misc_httpport_x.value)){
+	if(!document.form.misc_httpport_x.disabled &&
+			isPortConflict(document.form.misc_httpport_x.value)){
 		alert(isPortConflict(document.form.misc_httpport_x.value));
 		document.form.misc_httpport_x.focus();
 		return false;
 	}
-	else if(isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
+	else if(!document.form.misc_httpsport_x.disabled &&
+			isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
 		alert(isPortConflict(document.form.misc_httpsport_x.value));
 		document.form.misc_httpsport_x.focus();
 		return false;
@@ -1556,6 +1563,7 @@ function upload_cert_key(){
 <input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
 <input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
+<input type="hidden" name="http_lanport" value="<% nvram_get("http_lanport"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>

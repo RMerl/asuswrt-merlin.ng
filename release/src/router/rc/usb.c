@@ -3427,7 +3427,7 @@ void start_dms(void)
 			} else
 #endif
 			{
-				fprintf(f, "%s://%s:%d/\n", "http", nvram_safe_get("lan_ipaddr"), /*nvram_get_int("http_lanport") ? :*/ 80);
+				fprintf(f, "%s://%s:%d/\n", "http", nvram_safe_get("lan_ipaddr"), nvram_get_int("http_lanport") ? : 80);
 			}
 
                         if (!nvram_get_int("dms_dir_manual"))

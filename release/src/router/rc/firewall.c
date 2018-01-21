@@ -2525,6 +2525,7 @@ start_default_filter(int lanunit)
 		":INPUT DROP [0:0]\n"
 		":FORWARD DROP [0:0]\n"
 		":OUTPUT ACCEPT [0:0]\n"
+		":FUPNP - [0:0]\n"
 		":ACCESS_RESTRICTION - [0:0]\n"
 #ifdef RTCONFIG_OPENVPN
 		":OVPN - [0:0]\n"

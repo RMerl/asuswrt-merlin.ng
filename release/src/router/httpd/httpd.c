@@ -246,7 +246,7 @@ int reget_passwd = 0;
 int x_Setting = 0;
 int skip_auth = 0;
 char url[128];
-int http_port = SERVER_PORT;
+int http_port = 0;
 char *http_ifname = NULL;
 time_t login_dt=0;
 char login_url[128];

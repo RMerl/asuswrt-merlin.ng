@@ -1584,7 +1584,7 @@ function updateVpnServerClientAccess() {
 											<tr id="server_tls_crypto_tr">
 												<th>Keys and Certificates</th>
 												<td>
-													<input type="button" onclick="edit_Keys();" value="Edit..."</td>
+													<input type="button" onclick="edit_Keys();" value="Edit...">
 												</td>
 											</tr>
 											<tr>
@@ -1732,7 +1732,7 @@ function updateVpnServerClientAccess() {
 											<tr>
 												<th>Log verbosity</th>
 												<td>
-													<input type="text" maxlength="2" class="input_6_table"name="vpn_server_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_verb"); %>">
+													<input type="text" maxlength="2" class="input_6_table" name="vpn_server_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_verb"); %>">
 													<span style="color:#FC0">(Between 0 and 6. Default: 3)</span>
 												</td>
 											</tr>

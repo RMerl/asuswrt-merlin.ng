@@ -369,7 +369,7 @@ function show_tor_settings(value){
 							</tr>
 						</thead>		
 						<tr>
-							<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);">MAC</th>
+							<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);">MAC</a></th>
 							<th class="edit_table" width="20%"><#list_add_delete#></th>		
 						</tr>
 						<tr>

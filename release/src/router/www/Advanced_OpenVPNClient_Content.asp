@@ -1040,7 +1040,7 @@ function defaultSettings() {
 										<tr>
 											<th id="manualKey">Extra Chain Certificates<br><br><i>(Optional)</i></th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table"id="edit_vpn_crt_client_extra" name="edit_vpn_crt_client_extra" cols="65" maxlength="3499"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_extra" name="edit_vpn_crt_client_extra" cols="65" maxlength="3499"></textarea>
 											</td>
 										</tr>
 									</table>

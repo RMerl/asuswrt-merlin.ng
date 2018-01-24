@@ -515,7 +515,7 @@ function update_sysinfo(e){
 						<td id="rc_td"></td>
 					</tr>
 					<tr>
-						<th><#General_x_SystemUpTime_itemname#></a></th>
+						<th><#General_x_SystemUpTime_itemname#></th>
 						<td><span id="boot_days"></span> <#Day#> <span id="boot_hours"></span> <#Hour#> <span id="boot_minutes"></span> <#Minute#> <span id="boot_seconds"></span> <#Second#></td>
 					</tr>
 
@@ -579,7 +579,7 @@ function update_sysinfo(e){
 					</tr>
 				</table>
 
-				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0"bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
 							<td colspan="2">Internal Storage</td>
@@ -595,7 +595,7 @@ function update_sysinfo(e){
 					</tr>
 				</table>
 
-				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0"bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
 							<td colspan="2">Network</td>

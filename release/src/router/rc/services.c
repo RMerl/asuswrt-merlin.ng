@@ -1990,6 +1990,8 @@ void stop_ipv6(void)
 {
 	char *lan_ifname = nvram_safe_get("lan_ifname");
 	char *wan_ifname = (char *) get_wan6face();
+	char prefix[sizeof("ffff::/xxx")];
+	int i;
 
 #ifdef RTCONFIG_6RELAYD
 	stop_6relayd();
@@ -1997,9 +1999,13 @@ void stop_ipv6(void)
 	stop_dhcp6c();
 	stop_ipv6_tunnel();
 
+	eval("ip", "-6", "route", "flush", "default");
+	for (i = 1; i < 8; i++) {
+		snprintf(prefix, sizeof(prefix), "%04x::/%d", (0xfe0000 >> i) & 0xffff, i);
+		eval("ip", "-6", "route", "flush", "root", prefix, "table", "main");
+	}
 	eval("ip", "-6", "addr", "flush", "scope", "global", "dev", lan_ifname);
 	eval("ip", "-6", "addr", "flush", "scope", "global", "dev", wan_ifname);
-	eval("ip", "-6", "route", "flush", "scope", "global");
 	eval("ip", "-6", "neigh", "flush", "dev", lan_ifname);
 }
 #endif

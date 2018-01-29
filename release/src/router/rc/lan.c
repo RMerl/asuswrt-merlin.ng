@@ -237,6 +237,17 @@ start_emf(char *lan_ifname)
 	return;
 #endif /* HND_ROUTER && MCPD_PROXY */
 
+#if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
+	char path[PATH_MAX], sval[16];
+
+	if (lan_ifname == NULL)
+		return;
+
+	snprintf(path, sizeof(path), "/sys/class/net/%s/bridge/multicast_snooping", lan_ifname);
+	snprintf(sval, sizeof(sval), "%d", !nvram_get_int("emf_enable"));
+	f_write_string(path, sval, 0, 0);
+#endif
+
 	if (!nvram_get_int("emf_enable"))
 		return;
 

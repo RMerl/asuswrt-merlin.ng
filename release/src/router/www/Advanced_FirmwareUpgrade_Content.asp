@@ -1276,7 +1276,7 @@ function update_AiMesh_fw() {
 				</td>
 			</tr>			
 		</table>
-		<div class="aimesh_manual_fw_update_hint">
+		<div class="aimesh_manual_fw_update_hint" style="display:none;">
 			Note : Manual firmware update will update this AiMesh router / node only, if you are using AiMesh system, please make sure you are uploading proper firmware version.<!-- untranslated -->
 		</div>
 		

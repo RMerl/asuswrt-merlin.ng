@@ -4,7 +4,7 @@
 # For use with Postconf scripts (and others)
 
 _quote() {
-	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
+	echo $1 | sed 's/[]\/$*.^|[]/\\&/g'
 }
 
 # This function looks for a string, and inserts a specified string after it inside a given file

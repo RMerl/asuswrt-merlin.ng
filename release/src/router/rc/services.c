@@ -193,9 +193,9 @@ int jffs2_fail;
 void
 sanity_logs()
 {
-#if defined(RTAC56U) || defined(RTAC56S)
-	logmessage("ATE", "valid user mode(%d)", !nvram_get_int(ATE_BRCM_FACTORY_MODE_STR()));
-#endif
+//#if defined(RTAC56U) || defined(RTAC56S)
+//	logmessage("ATE", "valid user mode(%d)", !nvram_get_int(ATE_BRCM_FACTORY_MODE_STR()));
+//#endif
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2)
 	logmessage("jffs2", "valid logs(%d)", !jffs2_fail);
 #endif

@@ -387,15 +387,14 @@ function parseStatus(text, block, ipaddress, ripaddress){
 /*** Static Stats ***/
 
 	if (staticstatsPtr > 0) {
-
 		code += '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table"><thead><tr><td colspan="4">Statistics</td></tr></thead>';
 
-                if (ipaddress != "") {
+		if (ipaddress != "") {
 			code += '<tr><th class="statcell">Public IP</th>';
 			code += '<td class="statcell">' + ripaddress +'</td>';
 			code += '<th class="statcell">Local IP</th>';
 			code += '<td class="statcell">' + ipaddress +'</td></tr>';
-                }
+		}
 
 		for (i = 0; i < staticstatsTableEntries.length; ++i)
 		{
@@ -412,12 +411,12 @@ function parseStatus(text, block, ipaddress, ripaddress){
 
 
 function parseIPSecData(profileName){
-	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table"><thead><tr><td colspan="5">Connected Clients</td></tr></thead><tr>';
-        code += '<th style="text-align:left;white-space:nowrap;">Remote IP</th>';
-	code += '<th style="text-align:left;white-space:nowrap;"><#statusTitle_Client#></th>'
-        code += '<th style="text-align:left;white-space:nowrap;"><#Access_Time#></th>';
-        code += '<th style="text-align:left;white-space:nowrap;"><#vpn_ipsec_XAUTH#> <#Permission_Management_Users#></th>';
-        code += '<th style="text-align:left;white-space:nowrap;">PSKR Auth Time</th>';
+	var code = "<table width='100%' border='1' align='center' cellpadding='4' cellspacing='0' bordercolor='#6b8fa3' class='FormTable_table'><thead><tr><td colspan='5'>Connected Clients</td></tr></thead><tr>";
+	code += "<th style='text-align:left;white-space:nowrap;'>Remote IP</th>";
+	code += "<th style='text-align:left;white-space:nowrap;'><#statusTitle_Client#></th>";
+	code += "<th style='text-align:left;white-space:nowrap;'><#Access_Time#></th>";
+	code += "<th style='text-align:left;white-space:nowrap;'><#vpn_ipsec_XAUTH#> <#Permission_Management_Users#></th>";
+	code += "<th style='text-align:left;white-space:nowrap;'>PSKR Auth Time</th>";
 
 	var statusText = [[""], ["<#Connected#>"], ["<#Connecting_str#>"], ["<#Connecting_str#>"]]
 	var profileName_array = ipsec_connect_status_array[profileName].split("<");
@@ -425,17 +424,16 @@ function parseIPSecData(profileName){
 		if(profileName_array[i] != "") {
 			var profileName_col = profileName_array[i].split(">");
 
-			code += '<tr><td style="text-align:left;">' + profileName_col[0] + '</td>';
-			code += '<td style="text-align:left;">' + statusText[profileName_col[1]] + '</td>';
-			code += '<td style="text-align:left;">' + profileName_col[2] + '</td>';
-			code += '<td style="text-align:left;">' + profileName_col[3] + '</td>';
-			code += '<td style="text-align:left;">' + profileName_col[4] + '</td></tr>';
-                }
-        }
+			code += "<tr><td style='text-align:left;'>" + profileName_col[0] + "</td>";
+			code += "<td style='text-align:left;'>" + statusText[profileName_col[1]] + "</td>";
+			code += "<td style='text-align:left;'>" + profileName_col[2] + "</td>";
+			code += "<td style='text-align:left;'>" + profileName_col[3] + "</td>";
+			code += "<td style='text-align:left;'>" + profileName_col[4] + "</td></tr>";
+		}
+	}
 
 	code +='</table>';
 	document.getElementById('ipsec_srv_Block').innerHTML = code;
-
 }
 
 function show_vpnc_rulelist(){
@@ -486,7 +484,6 @@ function show_vpnc_rulelist(){
 					code += '<td>'+ vpnc_clientlist_col[1] +'</td>';
 				}
 			}
-
 		}
 	}
 	code +='</table>';
@@ -729,4 +726,5 @@ function refresh_ipsec_data() {
 <div id="footer"></div>
 </body>
 </html>
+
 

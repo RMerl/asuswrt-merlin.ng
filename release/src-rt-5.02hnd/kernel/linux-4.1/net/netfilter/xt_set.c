@@ -444,14 +444,14 @@ set_target_v3(struct sk_buff *skb, const struct xt_action_param *par)
 		if (!ret)
 			return XT_CONTINUE;
 		if (map_opt.cmdflags & IPSET_FLAG_MAP_SKBMARK)
-			skb->mark = (skb->mark & ~(map_opt.ext.skbmarkmask))
-				    ^ (map_opt.ext.skbmark);
+			skb->mark = (skb->mark & ~(map_opt.ext.skbinfo.skbmarkmask))
+				    ^ (map_opt.ext.skbinfo.skbmark);
 		if (map_opt.cmdflags & IPSET_FLAG_MAP_SKBPRIO)
-			skb->priority = map_opt.ext.skbprio;
+			skb->priority = map_opt.ext.skbinfo.skbprio;
 		if ((map_opt.cmdflags & IPSET_FLAG_MAP_SKBQUEUE) &&
 		    skb->dev &&
-		    skb->dev->real_num_tx_queues > map_opt.ext.skbqueue)
-			skb_set_queue_mapping(skb, map_opt.ext.skbqueue);
+		    skb->dev->real_num_tx_queues > map_opt.ext.skbinfo.skbqueue)
+			skb_set_queue_mapping(skb, map_opt.ext.skbinfo.skbqueue);
 	}
 	return XT_CONTINUE;
 }

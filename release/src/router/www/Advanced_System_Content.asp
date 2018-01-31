@@ -171,10 +171,6 @@ function initial(){
 	setInterval("corrected_timezone();", 5000);
 	load_timezones();
 	parse_dstoffset();
-	load_dst_m_Options();
-	load_dst_w_Options();
-	load_dst_d_Options();
-	load_dst_h_Options();
 	document.form.http_passwd2.value = "";
 	
 	if(svc_ready == "0")
@@ -880,26 +876,30 @@ var dstoff_start_m,dstoff_start_w,dstoff_start_d,dstoff_start_h;
 var dstoff_end_m,dstoff_end_w,dstoff_end_d,dstoff_end_h;
 
 function parse_dstoffset(){     //Mm.w.d/h,Mm.w.d/h
-		if(dstoffset){
-					var dstoffset_startend = dstoffset.split(",");
+	if(dstoffset){
+		var dstoffset_startend = dstoffset.split(",");
     			
-					var dstoffset_start = dstoffset_startend[0];
-					var dstoff_start = dstoffset_start.split(".");
-					dstoff_start_m = dstoff_start[0];
-					dstoff_start_w = dstoff_start[1];
-					dstoff_start_d = dstoff_start[2].split("/")[0];
-					dstoff_start_h = dstoff_start[2].split("/")[1];
-					
-					var dstoffset_end = dstoffset_startend[1];
-					var dstoff_end = dstoffset_end.split(".");
-					dstoff_end_m = dstoff_end[0];
-					dstoff_end_w = dstoff_end[1];
-					dstoff_end_d = dstoff_end[2].split("/")[0];
-					dstoff_end_h = dstoff_end[2].split("/")[1];
+		var dstoffset_start = trim(dstoffset_startend[0]);
+		var dstoff_start = dstoffset_start.split(".");
+		dstoff_start_m = dstoff_start[0];
+		dstoff_start_w = dstoff_start[1];
+		dstoff_start_d = dstoff_start[2].split("/")[0];
+		dstoff_start_h = dstoff_start[2].split("/")[1];
+				
+		var dstoffset_end = trim(dstoffset_startend[1]);
+		var dstoff_end = dstoffset_end.split(".");
+		dstoff_end_m = dstoff_end[0];
+		dstoff_end_w = dstoff_end[1];
+		dstoff_end_d = dstoff_end[2].split("/")[0];
+		dstoff_end_h = dstoff_end[2].split("/")[1];
     			
-					//alert(dstoff_start_m+"."+dstoff_start_w+"."+dstoff_start_d+"/"+dstoff_start_h);
-					//alert(dstoff_end_m+"."+dstoff_end_w+"."+dstoff_end_d+"/"+dstoff_end_h);
-		}
+		//console.log(dstoff_start_m+"."+dstoff_start_w+"."+dstoff_start_d+"/"+dstoff_start_h);
+		//console.log(dstoff_end_m+"."+dstoff_end_w+"."+dstoff_end_d+"/"+dstoff_end_h);
+		load_dst_m_Options();
+		load_dst_w_Options();
+		load_dst_d_Options();
+		load_dst_h_Options();
+	}
 }
 
 function load_dst_m_Options(){
@@ -1599,7 +1599,7 @@ function upload_cert_key(){
 				<tr>
 				  <th width="40%"><#Router_Login_Name#></th>
 					<td>
-						<div><input type="text" id="http_username" name="http_username" tabindex="1" autocomplete="off" style="height:25px;" class="input_18_table" maxlength="20" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:#FC0;margin-left:8px;"></span></div>
+						<div><input type="text" id="http_username" name="http_username" tabindex="1" autocomplete="off" style="height:25px;" class="input_18_table" maxlength="20" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:#FC0;margin-left:8px;display:inline-block;"></span></div>
 					</td>
 				</tr>
 
@@ -1619,7 +1619,7 @@ function upload_cert_key(){
 					<td>
 						<input type="password" autocomplete="new-password" name="v_password2" tabindex="3" onKeyPress="return validator.isString(this, event);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="16" autocorrect="off" autocapitalize="off"/>
 						<div style="margin:-25px 0px 5px 175px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.http_passwd2);pass_checked(document.form.v_password2);"><#QIS_show_pass#></div>
-						<span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
+						<span id="alert_msg2" style="color:#FC0;margin-left:8px;display:inline-block;"></span>
 					
 					</td>
 				</tr>

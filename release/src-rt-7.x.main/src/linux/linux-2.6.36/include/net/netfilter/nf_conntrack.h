@@ -92,6 +92,7 @@ struct nf_conn_help {
 #define CTF_FLAGS_DNAT_CACHED	(1 << 29)
 #define CTF_FLAGS_SNAT_CACHED	(1 << 28)
 #define CTF_FLAGS_ROUTE_CACHED	(1 << 27)
+#define CTF_FLAGS_PPPOE_PORT_FWD	(1 << 26)
 #define CTF_FLAGS_REPLY_CACHED	(1 << 1)
 #define CTF_FLAGS_ORG_CACHED	(1 << 0)
 #endif
@@ -132,6 +133,7 @@ struct nf_conn {
 
 	/* Flags for connection attributes */
 	u_int32_t ctf_flags;
+	u_int16_t ctf_pppoe_sid;
 #endif /* HNDCTF */
 
 #if defined(CONFIG_NETFILTER_XT_MATCH_LAYER7) || \

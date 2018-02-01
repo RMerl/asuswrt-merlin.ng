@@ -374,7 +374,9 @@ mtype_flush(struct ip_set *set)
 	struct hbucket *n;
 	u32 i;
 
+#ifndef HND_ROUTER
 	rcu_read_lock();
+#endif
 	t = ipset_dereference_protected(h->table, set);
 	for (i = 0; i < jhash_size(t->htable_bits); i++) {
 		n = __ipset_dereference_protected(hbucket(t, i), 1);
@@ -384,9 +386,15 @@ mtype_flush(struct ip_set *set)
 			mtype_ext_cleanup(set, n);
 		/* FIXME: use slab cache */
 		rcu_assign_pointer(hbucket(t, i), NULL);
+#ifdef HND_ROUTER
+		kfree_rcu(n, rcu);
+#else
 		kfree(n);
+#endif
 	}
+#ifndef HND_ROUTER
 	rcu_read_unlock();
+#endif
 #ifdef IP_SET_HASH_WITH_NETS
 	memset(h->nets, 0, sizeof(h->nets));
 #endif
@@ -472,7 +480,9 @@ mtype_expire(struct ip_set *set, struct htype *h)
 	u8 k;
 #endif
 
+#ifndef HND_ROUTER
 	rcu_read_lock();
+#endif
 	t = ipset_dereference_protected(h->table, set);
 	for (i = 0; i < jhash_size(t->htable_bits); i++) {
 		n = __ipset_dereference_protected(hbucket(t, i), 1);
@@ -503,7 +513,11 @@ mtype_expire(struct ip_set *set, struct htype *h)
 			if (d >= n->size) {
 				set->ext_size -= ext_size(n->size, dsize);
 				rcu_assign_pointer(hbucket(t, i), NULL);
+#ifdef HND_ROUTER
+				kfree_rcu(n, rcu);
+#else
 				kfree(n);
+#endif
 				continue;
 			}
 			tmp = kzalloc(sizeof(*tmp) +
@@ -524,10 +538,16 @@ mtype_expire(struct ip_set *set, struct htype *h)
 			tmp->pos = d;
 			set->ext_size -= ext_size(AHASH_INIT_SIZE, dsize);
 			rcu_assign_pointer(hbucket(t, i), tmp);
+#ifdef HND_ROUTER
+			kfree_rcu(n, rcu);
+#else
 			kfree(n);
+#endif
 		}
 	}
+#ifndef HND_ROUTER
 	rcu_read_unlock();
+#endif
 }
 
 static void
@@ -571,10 +591,14 @@ mtype_resize(struct ip_set *set, bool retried)
 	if (!tmp)
 		return -ENOMEM;
 #endif
+#ifndef HND_ROUTER
 	rcu_read_lock_bh();
+#endif
 	orig = rcu_dereference_bh_nfnl(h->table);
 	htable_bits = orig->htable_bits;
+#ifndef HND_ROUTER
 	rcu_read_unlock_bh();
+#endif
 
 retry:
 	ret = 0;
@@ -814,7 +838,9 @@ overwrite_extensions:
 #ifdef IP_SET_HASH_WITH_NETS
 	mtype_data_set_flags(data, flags);
 #endif
+#ifndef HND_ROUTER
 	rcu_read_lock();
+#endif
 	if (SET_WITH_COUNTER(set))
 		ip_set_init_counter(ext_counter(data, set), ext);
 	if (SET_WITH_COMMENT(set))
@@ -831,7 +857,9 @@ overwrite_extensions:
 		if (old)
 			kfree(old);
 	}
+#ifndef HND_ROUTER
 	rcu_read_unlock();
+#endif
 
 	return 0;
 set_full:
@@ -856,11 +884,15 @@ mtype_del(struct ip_set *set, void *value, const struct ip_set_ext *ext,
 	u32 key, multi = 0;
 	size_t dsize = set->dsize;
 
+#ifndef HND_ROUTER
 	rcu_read_lock_bh();
+#endif
 	t = ipset_dereference_protected(h->table, set);
 	key = HKEY(value, h->initval, t->htable_bits);
 	n = __ipset_dereference_protected(hbucket(t, key), 1);
+#ifndef HND_ROUTER
 	rcu_read_unlock_bh();
+#endif
 	if (!n)
 		goto out;
 	for (i = 0, k = 0; i < n->pos; i++) {
@@ -888,7 +920,9 @@ mtype_del(struct ip_set *set, void *value, const struct ip_set_ext *ext,
 #endif
 		ip_set_ext_destroy(set, data);
 
+#ifndef HND_ROUTER
 		rcu_read_lock();
+#endif
 		for (; i < n->pos; i++) {
 			if (!test_bit(i, n->used))
 				k++;
@@ -896,7 +930,11 @@ mtype_del(struct ip_set *set, void *value, const struct ip_set_ext *ext,
 		if (n->pos == 0 && k == 0) {
 			set->ext_size -= ext_size(n->size, dsize);
 			rcu_assign_pointer(hbucket(t, key), NULL);
+#ifdef HND_ROUTER
+			kfree_rcu(n, rcu);
+#else
 			kfree(n);
+#endif
 		} else if (k >= AHASH_INIT_SIZE) {
 			struct hbucket *tmp = kzalloc(sizeof(*tmp) +
 					(n->size - AHASH_INIT_SIZE) * dsize,
@@ -915,9 +953,15 @@ mtype_del(struct ip_set *set, void *value, const struct ip_set_ext *ext,
 			tmp->pos = k;
 			set->ext_size -= ext_size(AHASH_INIT_SIZE, dsize);
 			rcu_assign_pointer(hbucket(t, key), tmp);
+#ifdef HND_ROUTER
+			kfree_rcu(n, rcu);
+#else
 			kfree(n);
+#endif
 		}
+#ifndef HND_ROUTER
 		rcu_read_unlock();
+#endif
 		goto out;
 	}
 

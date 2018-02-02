@@ -121,7 +121,8 @@ then
 	cp release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/
 fi
 
-cp release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK
+cp release/src/router/bwdpi_source/asus/prebuild/hwinfo $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK
+cp release/src/router/bwdpi_source/asus/prebuild/libbwdpi.so $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK/$MODEL
 cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild$ARCH$SDK
 cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild$ARCH$SDK
 cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/

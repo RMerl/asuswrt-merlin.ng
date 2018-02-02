@@ -65,7 +65,13 @@ vpath %.c $(TOP)/bwdpi_source/src/tdts_udb_sample
 
 ifeq ($(wildcard $(SRCBASE)/router/bwdpi_source/asus/*.c),)
 all:
+
+# SDK6.37 has both 382 and 384 models
+ifeq ($(EX7),)
+	-cp -f prebuild_arm/$(BUILD_NAME)/libbwdpi.so libbwdpi.so
+else
 	-cp -f prebuild$(BCMEX)$(EX7)/libbwdpi.so libbwdpi.so
+endif
 	-cp -f prebuild$(BCMEX)$(EX7)/hwinfo hwinfo
 else
 all: hwinfo libbwdpi.so dpi_support.prep

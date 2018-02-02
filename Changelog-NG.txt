@@ -1,4 +1,4 @@
-Asuswrt-Merlin 382 Changelog
+Asuswrt-Merlin 384 Changelog
 ============================
 
 384.3 Beta (xx-xxx-xxxx)
@@ -13,15 +13,28 @@ Asuswrt-Merlin 382 Changelog
               git remote set-url origin \
                  git@github.com:RMerl/asuswrt-merlin.ng.git
 
+   - NOTE: AiMesh is currently not supported.  Feasability of
+           supporting it is still under evaluation.
    - NEW: Merged with GPL 384_10007
    - NEW: Added support for RT-AC3200 (merged
           SDK 7.x-main + binary blobs from 382_19466).
+   - CHANGED: Allow up to 5 OpenVPN clients on RT-AC3200.
    - FIXED: Some routers coming from 380.xx would incorrectly
             report a new firmware available at boot time.
-   - FIXED: ignore reserved hostnames from broken dhcp clients
-            (like Samsung TV) (patch by theMIRon)
-   - FIXED: Added missing IPv6 local hostnames (patch by
-            theMIRon)
+   - FIXED: Some broken clients (like Samsung TVs) try to use
+            reserved hostnames - ignore these.  (theMIRon)
+   - FIXED: Added missing IPv6 local hostnames (theMIRon)
+   - FIXED: Issues withh DNS & broadcast relay for pptp
+            clients (theMIRon)
+   - FIXED: Fixed CVE-2018-5721 in httpd (Merlin & theMIROn)
+   - FIXED: helper.js wasn't properly handling parentheses
+            (John9527)
+   - FIXED: NAT acceleration of PPPoE for some models (fix
+            backported from 382_50010)
+   - FIXED: Networkmap-related issues on some models (missing
+            tx/rx rate and such).
+   - FIXED: ipset could cause the router to crash on the HND
+            platform (john9527)
 
 
 382.2 Beta (17-Jan-2018)

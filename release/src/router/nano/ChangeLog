@@ -1,3 +1,170 @@
+Changes between v2.9.2 and v2.9.3:
+----------------------------------
+
+Benno Schulenberg (65):
+      build: fix compilation when configured with --enable(tiny,color,nanorc}
+      build: fix compilation with --enable-tiny --enable-justify
+      build: let ./configure fail (not just warn) when curses.h is missing
+      bump version numbers and add a news item for the 2.9.3 release
+      copyright: update the years for the FSF
+      display: wipe the status bar when doing a total refresh
+      docs: remove the note about needing a recent ncurses for macros to work
+      docs: update the FAQ for the changed default location of history files
+      docs: update the TODO file to the current state of affairs
+      gnulib: update to its current upstream state
+      help: don't get stuck when there is an unwrappable piece of text
+      input: consume only the actual length of an escape sequence
+      input: fully reset state when a three-digit character code is cut short
+      input: make <Shift+Tab> do an unindent also on a Manjaro console
+      input: recognize escape sequences for <Shift+PageUp> and <Shift+PageDown>
+      input: recognize more escape sequences for <Shift+Home> and <Shift+End>
+      input: recognize the deviant keycode for <Ctrl+End> in urxvt
+      options: recognize -M and --trimblanks on the command line
+      painting: look for an end match only after a start match, if any
+      prompt: show whitespace only in the filename, not in the whole line
+      replacing: don't skip the first character of a backwards-marked region
+      search: suppress the occurrence at the cursor only when replacing
+      startup: allow a named pipe as file argument when --noread is used
+      startup: make an error message succinct and to the point
+      startup: move the initialization of colors, so any error gets printed
+      syntax: go: colorize only valid octal numbers
+      syntax: lua: do not color debug.setinfo as it doesn't exist
+      syntax: nanohelp: color also the Sh-Tab key combo
+      tweaks: change a 'do' to a 'while', and return early to elide an 'if'
+      tweaks: check for the type of terminal far earlier
+      tweaks: condense a condition and a comment, and reshuffle a line
+      tweaks: condense and rewrap some comments, and reindent two lines
+      tweaks: condense the conditional compilation of shortcut reassignments
+      tweaks: don't bother freeing the key buffer, just reallocate it
+      tweaks: don't bother to reallocate when the keybuffer size decreases
+      tweaks: drop a superfluous parameter, as it is always 1
+      tweaks: drop a useless assert, and don't abort over an unhandled option
+      tweaks: drop two unneeded initializations, and trim a comment
+      tweaks: elide a tiny intermediate buffer, and rename two variables
+      tweaks: exclude --trimblanks when no wrapping or justifying is configured
+      tweaks: fully include Savefile and Wherewas in the tiny version
+      tweaks: indenting text files with tabs is not a good idea
+      tweaks: mark the two blocks that have a deviant indentation
+      tweaks: move a bunch of comments to the lines that they refer to
+      tweaks: move two functions to their proper place, orderingwise
+      tweaks: remove a fragment of dead code
+      tweaks: remove a handful of redundant (because always true) asserts
+      tweaks: remove a superfluous case -- there can never be four digits
+      tweaks: remove a superfluous check, as we insert always one code
+      tweaks: rename a function, for aptness, and drop a superfluous check
+      tweaks: rename a function, to be more distinct
+      tweaks: rename a variable, and further condense some comments
+      tweaks: rename a variable, for more contrast
+      tweaks: rename a variable, to better fit its usage
+      tweaks: rename two variables, and swap their declaration order
+      tweaks: rename two variables, for preciseness and shortness
+      tweaks: reshuffle a couple of lines
+      tweaks: reshuffle a couple of lines, to make a bit more sense
+      tweaks: reshuffle some stuff, and avoid a memory leak
+      tweaks: reshuffle two condition series, to look better
+      tweaks: rewrap a bunch of lines in the NEWS file
+      tweaks: set a modifier in a single place, for conciseness
+      tweaks: swap the row and col parameters to a more consistent order
+      tweaks: transform a parameter, from a pointer to the value itself
+      wrapping: don't trim a blank character that the user just typed
+
+Brand Huntsman (1):
+      startup: parse interface colors when they are read, not when initialized
+
+
+Changes between v2.9.1 and v2.9.2:
+----------------------------------
+
+Benjamin Mintz (1):
+      syntax: python: add 'async', 'await', and 'nonlocal' as keywords
+
+Benno Schulenberg (62):
+      bump version numbers and add a news item for the 2.9.2 release
+      display: ensure that cursor is visible when compiled with --with-slang
+      docs: mention that the source code is best viewed with a tab size of 4
+      docs: say thanks to some fairly recent translators, and rename one
+      gnulib: pull in the fix for the missing stat include
+      gnulib: update to its current upstream state
+      help: show that "Tab" will indent, just like "Sh-Tab" will unindent
+      help: swap the order of the Complete and Comment functions
+      indenting: don't exclude last line of region when region is empty
+      indenting: keep affecting last line of marked region if it was at first
+      input: allow using <Tab> and <Shift+Tab> to (un)indent selected region
+      input: make <Ctrl+Shift+Arrow> work also when using --rebindkeypad
+      input: optimize a bit for non-shortcut keys, as they are most frequent
+      options: rename 'justifytrim' to 'trimblanks', because it has morphed
+      prompt: blank the bar when a "continue?" is answered with No or ^C
+      syntaxes: remove redundant word-boundary markers
+      syntax: javascript: add some comments, and color explicit numbers too
+      syntax: javascript: add some keywords, and sort them more logically
+      syntax: javascript: color strings differently from major keywords
+      syntax: javascript: require that a comment is preceded by whitespace
+      syntax: lua: condense some regexes, tweak comments, reorder things
+      syntax: nanorc: don't color parts of valid strings as if invalid
+      syntax: python: color also the special values 'False', 'None', 'True'
+      text: allow unindenting when not all lines are indented
+      text: keep cursor at left edge when it IS there when indenting/commenting
+      text: let a Shift-selection persist when indenting and commenting
+      text: let indenting/commenting skip the last line if its x is zero
+      text: set and reset the Modified state correctly when undoing/redoing
+      tweaks: add a separate function that actually wipes the status bar
+      tweaks: avoid incrementing a variable that won't be used again later
+      tweaks: condense or rewrap a bunch of repetitious comments
+      tweaks: condense, reword, and rewrap a bunch of comments
+      tweaks: condense some debugging code, and rewrap a line
+      tweaks: convert the indentation of the NEWS file too
+      tweaks: convert the indentation to use only tabs
+      tweaks: drop some old debugging code plus a superfluous comment
+      tweaks: elide two parameters from the get_region() function
+      tweaks: elide two variables that are used just once
+      tweaks: factor out a piece of common code
+      tweaks: fix some whitespace errors, and convert alignment tabs to spaces
+      tweaks: fold some regexes into one another, for conciseness
+      tweaks: frob four comments, and rewrap two lines
+      tweaks: invert the logic of a variable, and rename it
+      tweaks: limit the resetting of "Modified" to writing a full buffer
+      tweaks: move some frequently-used keystrokes to the top of the list
+      tweaks: remove a redundant call of renumber()
+      tweaks: remove a superfluous condition
+      tweaks: remove a superfluous placing of a terminating nul byte
+      tweaks: remove some unneeded parentheses, and shorten two function calls
+      tweaks: remove two irrelevant conditions
+      tweaks: rename three variables, for more contrast and variety
+      tweaks: reshuffle a bit of common code, moving it to an existing function
+      tweaks: reshuffle another bit of code, for conciseness
+      tweaks: rewrap some lines and some comments, and trim two others
+      tweaks: slightly rename four functions, for aptness and variety
+      tweaks: strip some debugging stuff, and condense a bit of code
+      tweaks: trim another placing of a terminating nul byte
+      tweaks: use for git the more faithful "less -x1,5" suggested by Brand
+      tweaks: use spaces for alignment also in the THANKS file
+      wrapping: delete trailing blanks upon hardwrapping, when requested
+      wrapping: keep prepending to the same next line as long as possible
+      wrapping: we're still on the same line if the next line has not changed
+
+David Lawrence Ramsey (3):
+      input: support backtab when Slang and/or --rebindkeypad is used
+      tweaks: use printf's z modifier for (s)size_t, instead of casting
+      undo: when adding text adds a magicline, an undo should remove both
+
+Liu Hao (1):
+      syntax: c: increase the color contrast of reminders like FIXME
+
+Michael Francis (1):
+      syntax: php: function and variable names can contain uppercase and digits
+
+Mike Frysinger (1):
+      syntax: javascript: add newer keywords and string syntax
+
+Tom Levy (6):
+      syntax: go: fix word boundary before dot in number literal
+      syntax: go: sign of exponent in number literal is optional
+      syntax: lua: add new and missing standard library functions
+      syntax: lua: correct the word boundaries on standard library functions
+      syntax: lua: require at least one digit for hexadecimal numbers
+      syntax: lua: support fractional part and exponent for decimal and hex
+
+
 Changes between v2.9.0 and v2.9.1:
 ----------------------------------
 

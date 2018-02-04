@@ -107,3 +107,10 @@ the license that covers nano.  Then create a patch (or patches):
 
 Send that patch (or patches) to <nano-devel@gnu.org>, as an attachment
 or with git send-email.
+
+To keep most lines of nano's source code within a width of 80 characters,
+a tab size of four should be used.  So in your nanorc file you may want
+to include 'set tabsize 4', or you could use -T4 on the command line.
+To make git display things as intended, you can do:
+
+    $ git config --local core.pager "less -x1,5"

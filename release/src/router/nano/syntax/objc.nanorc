@@ -12,7 +12,7 @@ color green "\<(class|namespace|template|public|protected|private|typename|this|
 color brightgreen "\<(for|if|while|do|else|case|default|switch)\>"
 color brightgreen "\<(try|throw|catch|operator|new|delete)\>"
 color brightgreen "\<(goto|continue|break|return)\>"
-color brightgreen "@\<(en(code|d)|i(mplementation|nterface)|selector)\>"
+color brightgreen "@(encode|end|implementation|interface)|selector)\>"
 
 # GCC builtins.
 color cyan "__attribute__[[:space:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"

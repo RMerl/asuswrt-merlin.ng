@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -701,7 +701,7 @@ re_comp (const char *s)
 
   if (re_comp_buf.fastmap == NULL)
     {
-      re_comp_buf.fastmap = (char *) malloc (SBC_MAX);
+      re_comp_buf.fastmap = re_malloc (char, SBC_MAX);
       if (re_comp_buf.fastmap == NULL)
 	return (char *) gettext (__re_error_msgid
 				 + __re_error_msgid_idx[(int) REG_ESPACE]);
@@ -1197,7 +1197,7 @@ analyze (regex_t *preg)
 	  break;
       if (i == preg->re_nsub)
 	{
-	  free (dfa->subexp_map);
+	  re_free (dfa->subexp_map);
 	  dfa->subexp_map = NULL;
 	}
     }

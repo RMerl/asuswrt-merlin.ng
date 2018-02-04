@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nano 2.6.2\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2017-11-27 19:15+0100\n"
+"POT-Creation-Date: 2018-01-29 09:42+0100\n"
 "PO-Revision-Date: 2016-08-08 17:24+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -31,9 +31,9 @@ msgstr "Nie można przejść do katalogu wyżej"
 msgid "Go To Directory"
 msgstr "Przejdź do katalogu"
 
-#: src/browser.c:233 src/browser.c:691 src/files.c:1076 src/files.c:2090
-#: src/nano.c:1079 src/search.c:156 src/search.c:240 src/search.c:759
-#: src/search.c:816 src/text.c:3074 src/text.c:3269
+#: src/browser.c:233 src/browser.c:691 src/files.c:1080 src/files.c:2094
+#: src/nano.c:1084 src/search.c:156 src/search.c:240 src/search.c:754
+#: src/search.c:811 src/text.c:3050 src/text.c:3244
 msgid "Cancelled"
 msgstr "Anulowano"
 
@@ -48,9 +48,9 @@ msgstr "Nie można wyjść poza katalog %s"
 msgid "Can't move up a directory"
 msgstr "Nie można przejść do katalogu wyżej"
 
-#: src/browser.c:287 src/files.c:967 src/files.c:973 src/files.c:1611
-#: src/files.c:1728 src/files.c:1769 src/files.c:1789 src/files.c:1901
-#: src/history.c:311 src/history.c:407 src/rcfile.c:540 src/rcfile.c:1215
+#: src/browser.c:287 src/files.c:971 src/files.c:977 src/files.c:1615
+#: src/files.c:1732 src/files.c:1773 src/files.c:1793 src/files.c:1905
+#: src/history.c:311 src/history.c:407 src/rcfile.c:526 src/rcfile.c:1207
 #, c-format
 msgid "Error reading %s: %s"
 msgstr "Błąd odczytu %s: %s"
@@ -80,29 +80,29 @@ msgstr "(ogromny)"
 msgid "Search"
 msgstr "Szukaj"
 
-#: src/browser.c:721 src/browser.c:726 src/search.c:315
+#: src/browser.c:721 src/browser.c:726 src/search.c:310
 msgid "Search Wrapped"
 msgstr "Wyszukiwanie minęło granicę pliku - kontynuowane od początku (końca)"
 
-#: src/browser.c:737 src/search.c:447
+#: src/browser.c:737 src/search.c:442
 msgid "This is the only occurrence"
 msgstr "To jedyne wystąpienie"
 
-#: src/browser.c:782 src/search.c:415
+#: src/browser.c:782 src/search.c:410
 msgid "No current search pattern"
 msgstr "Brak wzorca wyszukiwania"
 
-#: src/color.c:185
+#: src/color.c:181
 #, c-format
 msgid "Unknown syntax name: %s"
 msgstr "Nieznana nazwa składni: %s"
 
-#: src/color.c:241
+#: src/color.c:237
 #, c-format
 msgid "magic_load() failed: %s"
 msgstr "błąd magic_load(): %s"
 
-#: src/color.c:245
+#: src/color.c:241
 #, c-format
 msgid "magic_file(%s) failed: %s"
 msgstr "błąd magic_file(%s): %s"
@@ -163,46 +163,46 @@ msgid "Error reading lock file %s: Not enough data read"
 msgstr "Błąd odczytu pliku blokowania %s. Przeczytano za mało danych"
 
 #. TRANSLATORS: The second %s is the name of the user, the third that of the editor.
-#: src/files.c:349
+#: src/files.c:352
 #, fuzzy, c-format
 msgid "File %s is being edited (by %s with %s, PID %s); continue?"
 msgstr "Edytowanie pliku %s (przez %s używając %s, PID %d): kontynuować?"
 
-#: src/files.c:425
+#: src/files.c:428
 #, fuzzy, c-format
 msgid "Can't read file from outside of %s"
 msgstr "Nie można wstawić pliku spoza %s "
 
-#: src/files.c:440 src/files.c:957 src/rcfile.c:519
+#: src/files.c:444 src/files.c:961 src/rcfile.c:505
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "\"%s\" jest katalogiem"
 
-#: src/files.c:442
+#: src/files.c:446
 #, c-format
 msgid "\"%s\" is not a normal file"
 msgstr "\"%s\" nie jest zwykłym plikiem"
 
-#: src/files.c:593
+#: src/files.c:597
 msgid "No more open file buffers"
 msgstr "Nie ma więcej otwartych buforów"
 
-#: src/files.c:618
+#: src/files.c:622
 #, c-format
 msgid "Switched to %s"
 msgstr "Przełączono na %s"
 
-#: src/files.c:620 src/global.c:1045 src/winio.c:2114
+#: src/files.c:624 src/global.c:1034 src/winio.c:2034
 msgid "New Buffer"
 msgstr "Nowy bufor"
 
-#: src/files.c:888
+#: src/files.c:892
 #, fuzzy, c-format
 msgid "File '%s' is unwritable"
 msgstr "Ścieżka '%s' nie jest dostępna"
 
 #. TRANSLATORS: Keep the next four messages at most 78 characters.
-#: src/files.c:892
+#: src/files.c:896
 #, fuzzy, c-format
 msgid "Read %zu line (Converted from DOS and Mac format)"
 msgid_plural "Read %zu lines (Converted from DOS and Mac format)"
@@ -210,7 +210,7 @@ msgstr[0] "Wczytano %lu linię (przekonwertowana z formatu DOS i Mac)"
 msgstr[1] "Wczytano %lu linie (przekonwertowane z formatu DOS i Mac)"
 msgstr[2] "Wczytano %lu linii (przekonwertowane z formatu DOS i Mac)"
 
-#: src/files.c:897
+#: src/files.c:901
 #, fuzzy, c-format
 msgid "Read %zu line (Converted from Mac format)"
 msgid_plural "Read %zu lines (Converted from Mac format)"
@@ -218,7 +218,7 @@ msgstr[0] "Wczytano %lu linię (przekonwertowana z formatu Mac)"
 msgstr[1] "Wczytano %lu linie (przekonwertowane z formatu Mac)"
 msgstr[2] "Wczytano %lu linii (przekonwertowane z formatu Mac)"
 
-#: src/files.c:902
+#: src/files.c:906
 #, fuzzy, c-format
 msgid "Read %zu line (Converted from DOS format)"
 msgid_plural "Read %zu lines (Converted from DOS format)"
@@ -226,7 +226,7 @@ msgstr[0] "Wczytano %lu linię (przekonwertowana z formatu DOS)"
 msgstr[1] "Wczytano %lu linie (przekonwertowane z formatu DOS)"
 msgstr[2] "Wczytano %lu linii (przekonwertowane z formatu DOS)"
 
-#: src/files.c:908
+#: src/files.c:912
 #, fuzzy, c-format
 msgid "Read %zu line"
 msgid_plural "Read %zu lines"
@@ -234,93 +234,93 @@ msgstr[0] "Wczytano %lu linię"
 msgstr[1] "Wczytano %lu linie"
 msgstr[2] "Wczytano %lu linii"
 
-#: src/files.c:943
+#: src/files.c:947
 msgid "New File"
 msgstr "Nowy plik"
 
-#: src/files.c:948
+#: src/files.c:952
 #, c-format
 msgid "File \"%s\" not found"
 msgstr "Nie znaleziono pliku \"%s\""
 
-#: src/files.c:958 src/rcfile.c:520
+#: src/files.c:962 src/rcfile.c:506
 #, c-format
 msgid "\"%s\" is a device file"
 msgstr "\"%s\" jest plikiem urządzenia"
 
-#: src/files.c:976
+#: src/files.c:980
 msgid "Reading File"
 msgstr "Wczytywanie pliku"
 
 #. TRANSLATORS: The next four messages are prompts.
-#: src/files.c:1042
+#: src/files.c:1046
 #, fuzzy
 msgid "Command to execute in new buffer"
 msgstr "Polecenie do wykonania w nowym buforze [z %s] "
 
-#: src/files.c:1045
+#: src/files.c:1049
 #, fuzzy
 msgid "Command to execute"
 msgstr "Polecenie do wykonania [z %s] "
 
-#: src/files.c:1051
+#: src/files.c:1055
 #, fuzzy, c-format
 msgid "File to insert into new buffer [from %s]"
 msgstr "Plik do wstawienia do nowego bufora [z %s] "
 
-#: src/files.c:1054
+#: src/files.c:1058
 #, fuzzy, c-format
 msgid "File to insert [from %s]"
 msgstr "Plik do wstawienia [z %s] "
 
-#: src/files.c:1197
+#: src/files.c:1201
 msgid "Key invalid in non-multibuffer mode"
 msgstr "Klawisz niedozwolony w trybie innym niż wielu buforów"
 
-#: src/files.c:1410
+#: src/files.c:1414
 #, fuzzy
 msgid "Invalid operating directory\n"
 msgstr "Ustawienie katalogu pracy"
 
-#: src/files.c:1459
+#: src/files.c:1463
 msgid "Failed to write backup file; continue saving? (Say N if unsure.) "
 msgstr ""
 "Utworzenie kopii zapasowej nie powiodło się; kontynuować zapis? (N jeśli nie "
 "jesteś pewien)"
 
-#: src/files.c:1476
+#: src/files.c:1480
 #, fuzzy
 msgid "Invalid backup directory\n"
 msgstr "Nie można przejść do katalogu wyżej"
 
-#: src/files.c:1569
+#: src/files.c:1573
 #, c-format
 msgid "Can't write outside of %s"
 msgstr "Nie można zapisać poza %s"
 
-#: src/files.c:1647 src/files.c:1671 src/files.c:1689 src/files.c:1703
-#: src/files.c:1715 src/files.c:1738
+#: src/files.c:1651 src/files.c:1675 src/files.c:1693 src/files.c:1707
+#: src/files.c:1719 src/files.c:1742
 #, c-format
 msgid "Error writing backup file %s: %s"
 msgstr "Błąd zapisu kopii zapasowej %s: %s"
 
-#: src/files.c:1648 src/nano.c:663
+#: src/files.c:1652 src/nano.c:665
 msgid "Too many backup files?"
 msgstr "Za wiele kopii zapasowych?"
 
-#: src/files.c:1778 src/files.c:1800 src/help.c:55 src/help.c:122
-#: src/text.c:3002 src/text.c:3014 src/text.c:3394 src/text.c:3405
+#: src/files.c:1782 src/files.c:1804 src/help.c:55 src/help.c:122
+#: src/text.c:2976 src/text.c:2988 src/text.c:3368 src/text.c:3379
 #, c-format
 msgid "Error writing temp file: %s"
 msgstr "Błąd zapisu pliku tymczasowego: %s"
 
-#: src/files.c:1819 src/files.c:1829 src/files.c:1849 src/files.c:1866
-#: src/files.c:1876 src/files.c:1908 src/files.c:1915
+#: src/files.c:1823 src/files.c:1833 src/files.c:1853 src/files.c:1870
+#: src/files.c:1880 src/files.c:1912 src/files.c:1919
 #, c-format
 msgid "Error writing %s: %s"
 msgstr "Błąd zapisu %s: %s"
 
-#: src/files.c:1958
+#: src/files.c:1969
 #, fuzzy, c-format
 msgid "Wrote %zu line"
 msgid_plural "Wrote %zu lines"
@@ -328,879 +328,882 @@ msgstr[0] "Zapisano %lu linię"
 msgstr[1] "Zapisano %lu linie"
 msgstr[2] "Zapisano %lu linii"
 
-#: src/files.c:2050
+#: src/files.c:2054
 msgid " [DOS Format]"
 msgstr " [format DOS]"
 
-#: src/files.c:2051
+#: src/files.c:2055
 msgid " [Mac Format]"
 msgstr " [format Mac]"
 
-#: src/files.c:2052
+#: src/files.c:2056
 msgid " [Backup]"
 msgstr " [Kopia zap.]"
 
 #. TRANSLATORS: The next six strings are prompts.
-#: src/files.c:2059
+#: src/files.c:2063
 msgid "Prepend Selection to File"
 msgstr "Wpisz wybór na początek pliku"
 
-#: src/files.c:2060
+#: src/files.c:2064
 msgid "Append Selection to File"
 msgstr "Dopisz wybór do pliku"
 
-#: src/files.c:2061
+#: src/files.c:2065
 msgid "Write Selection to File"
 msgstr "Zapisz wybór do pliku"
 
-#: src/files.c:2063
+#: src/files.c:2067
 msgid "File Name to Prepend to"
 msgstr "Nazwa pliku do wpisania"
 
-#: src/files.c:2064
+#: src/files.c:2068
 msgid "File Name to Append to"
 msgstr "Nazwa pliku do dopisania"
 
-#: src/files.c:2067
+#: src/files.c:2071
 msgid "File Name to Write"
 msgstr "Nazwa pliku do zapisu"
 
 #. TRANSLATORS: Restricted mode forbids overwriting.
-#: src/files.c:2176
+#: src/files.c:2180
 msgid "File exists -- cannot overwrite"
 msgstr ""
 
-#: src/files.c:2186
+#: src/files.c:2190
 msgid "Save file under DIFFERENT NAME? "
 msgstr "Zapisać plik pod INNĄ NAZWĄ? "
 
-#: src/files.c:2194
+#: src/files.c:2198
 #, c-format
 msgid "File \"%s\" exists; OVERWRITE? "
 msgstr "Plik \"%s\" istnieje; ZAMAZAĆ? "
 
-#: src/files.c:2216
+#: src/files.c:2225
 msgid "File on disk has changed"
 msgstr ""
 
-#: src/files.c:2218
+#: src/files.c:2227
 msgid "File was modified since you opened it; continue saving? "
 msgstr "Plik został zmodyfikowany po otworzeniu go, kontynuować zapis? "
 
-#: src/files.c:2637
+#: src/files.c:2646
 msgid "(more)"
 msgstr "(więcej)"
 
 #. TRANSLATORS: Try to keep the next fifteen strings at most 10 characters.
-#: src/global.c:494
+#: src/global.c:486
 msgid "Exit"
 msgstr "Wyjdź"
 
-#: src/global.c:495
+#: src/global.c:487
 msgid "Close"
 msgstr "Zamknij"
 
-#: src/global.c:496
+#: src/global.c:488
 msgid "Uncut Text"
 msgstr "Odnów Tekst"
 
-#: src/global.c:498
+#: src/global.c:490
 msgid "Unjustify"
 msgstr "Cofnij just."
 
-#: src/global.c:504
+#: src/global.c:496
 msgid "Read File"
 msgstr "Wczyt.plik"
 
-#: src/global.c:505
+#: src/global.c:497
 msgid "Where Is"
 msgstr "Wyszukaj"
 
-#: src/global.c:506
+#: src/global.c:498
 msgid "Replace"
 msgstr "Zastąp"
 
-#: src/global.c:507
+#: src/global.c:499
 msgid "Go To Line"
 msgstr "Przejdź do linii"
 
-#: src/global.c:508
+#: src/global.c:500
 msgid "Prev Line"
 msgstr "Poprz.lin."
 
-#: src/global.c:509
+#: src/global.c:501
 msgid "Next Line"
 msgstr "Nast. lin."
 
-#: src/global.c:510
+#: src/global.c:502
 msgid "Prev Page"
 msgstr "Poprz.str."
 
-#: src/global.c:511
+#: src/global.c:503
 msgid "Next Page"
 msgstr "Nast.str."
 
-#: src/global.c:513
+#: src/global.c:505
 msgid "Justify"
 msgstr "Wyjustuj"
 
-#: src/global.c:514
+#: src/global.c:506
 msgid "FullJstify"
 msgstr "Wyjustuj"
 
-#: src/global.c:516
+#: src/global.c:508
 msgid "Refresh"
 msgstr "Odśwież"
 
 #. TRANSLATORS: Try to keep this string at most 12 characters.
-#: src/global.c:518
+#: src/global.c:510
 msgid "WhereIs Next"
 msgstr "Szukaj Znów"
 
 #. TRANSLATORS: The next long series of strings are shortcut descriptions;
 #. * they are best kept shorter than 56 characters, but may be longer.
-#: src/global.c:523
+#: src/global.c:515
 msgid "Cancel the current function"
 msgstr "Anuluj bieżącą funkcję"
 
-#: src/global.c:524
+#: src/global.c:516
 msgid "Display this help text"
 msgstr "Wyświetla ten tekst pomocy"
 
-#: src/global.c:527
+#: src/global.c:519
 msgid "Close the current file buffer / Exit from nano"
 msgstr "Zamknij bieżący bufor / Wyjdź z nano"
 
-#: src/global.c:529
+#: src/global.c:521
 msgid "Exit from nano"
 msgstr "Wyjdź z nano"
 
-#: src/global.c:533
+#: src/global.c:525
 msgid "Write the current file to disk"
 msgstr "Zapisz bieżący plik na dysku"
 
-#: src/global.c:535
+#: src/global.c:527
 msgid "Insert another file into the current one"
 msgstr "Wstaw do bieżącego pliku zawartość innego pliku"
 
-#: src/global.c:537
+#: src/global.c:529
 #, fuzzy
 msgid "Search forward for a string or a regular expression"
 msgstr "Szukaj łańcucha lub wyrażenia regularnego"
 
-#: src/global.c:539
+#: src/global.c:531
 #, fuzzy
 msgid "Search backward for a string or a regular expression"
 msgstr "Szukaj łańcucha lub wyrażenia regularnego"
 
-#: src/global.c:541
+#: src/global.c:533
 msgid "Search for a string"
 msgstr "Szukaj łańcucha"
 
-#: src/global.c:542
+#: src/global.c:534
 msgid "Refresh the file list"
 msgstr "Odśwież listę plików"
 
-#: src/global.c:544
+#: src/global.c:536
 msgid "Go to lefthand column"
 msgstr "Przejdź do lewej kolumny"
 
-#: src/global.c:545
+#: src/global.c:537
 msgid "Go to righthand column"
 msgstr "Przejdź do prawej kolumny"
 
-#: src/global.c:546
+#: src/global.c:538
 #, fuzzy
 msgid "Go to first row in this column"
 msgstr "Przejdź do prawej kolumny"
 
-#: src/global.c:547
+#: src/global.c:539
 #, fuzzy
 msgid "Go to last row in this column"
 msgstr "Przejdź do prawej kolumny"
 
-#: src/global.c:550
+#: src/global.c:542
 msgid "Go one screenful up"
 msgstr "Przejdź do poprzedniego ekranu"
 
-#: src/global.c:551
+#: src/global.c:543
 msgid "Go one screenful down"
 msgstr "Przejdź do następnego ekranu"
 
-#: src/global.c:553
+#: src/global.c:545
 msgid "Cut the current line and store it in the cutbuffer"
 msgstr "Wytnij bieżącą linię i przechowaj w buforze wycinania"
 
-#: src/global.c:555
+#: src/global.c:547
 msgid "Uncut from the cutbuffer into the current line"
 msgstr "Wklej zawartość bufora wycinania w bieżącej linii"
 
-#: src/global.c:556
+#: src/global.c:548
 msgid "Display the position of the cursor"
 msgstr "Pokaż informację o pozycji kursora"
 
-#: src/global.c:558
+#: src/global.c:550
 msgid "Invoke the spell checker, if available"
 msgstr "Wywołaj sprawdzanie pisowni, jeśli dostępne"
 
-#: src/global.c:560
+#: src/global.c:552
 msgid "Replace a string or a regular expression"
 msgstr "Zamień łańcuch lub wyrażenie regularne"
 
-#: src/global.c:561
+#: src/global.c:553
 msgid "Go to line and column number"
 msgstr "Przejdź do linii i kolumny"
 
-#: src/global.c:562
+#: src/global.c:554
 msgid "Repeat the last search"
 msgstr "Powtórz ostatnie wyszukiwanie"
 
-#: src/global.c:564
+#: src/global.c:556
 msgid "Mark text starting from the cursor position"
 msgstr "Ustaw znacznik w bieżącym położeniu kursora"
 
-#: src/global.c:566
+#: src/global.c:558
 msgid "Copy the current line and store it in the cutbuffer"
 msgstr "Skopiuj bieżącą linię i przechowaj w buforze wycinania"
 
-#: src/global.c:567
-msgid "Indent the current line"
-msgstr "Wyrównaj bieżącą linię"
+#: src/global.c:559
+#, fuzzy
+msgid "Indent the current line (or marked lines)"
+msgstr "Zakomentuj/odkomentuj bieżącą linię lub oznaczone linii"
 
-#: src/global.c:568
-msgid "Unindent the current line"
-msgstr "Usuń wcięcia z bieżącej linii"
+#: src/global.c:560
+#, fuzzy
+msgid "Unindent the current line (or marked lines)"
+msgstr "Zakomentuj/odkomentuj bieżącą linię lub oznaczone linii"
 
-#: src/global.c:569
+#: src/global.c:561
 msgid "Undo the last operation"
 msgstr "Odwołaj ostatnią operację"
 
-#: src/global.c:570
+#: src/global.c:562
 msgid "Redo the last undone operation"
 msgstr "Odtwórz ostatnią operację"
 
-#: src/global.c:572
+#: src/global.c:564
 msgid "Go back one character"
 msgstr "Przejdź o znak wstecz"
 
-#: src/global.c:573
+#: src/global.c:565
 msgid "Go forward one character"
 msgstr "Przejdź o znak do przodu"
 
-#: src/global.c:574
+#: src/global.c:566
 msgid "Go back one word"
 msgstr "Przejdź o słowo wstecz"
 
-#: src/global.c:575
+#: src/global.c:567
 msgid "Go forward one word"
 msgstr "Przejdź o słowo do przodu"
 
-#: src/global.c:576
+#: src/global.c:568
 msgid "Go to previous line"
 msgstr "Przejdź do poprzedniej linii"
 
-#: src/global.c:577
+#: src/global.c:569
 msgid "Go to next line"
 msgstr "Przejdź do następnej linii"
 
-#: src/global.c:578
+#: src/global.c:570
 msgid "Go to beginning of current line"
 msgstr "Przejdź na początek bieżącej linii"
 
-#: src/global.c:579
+#: src/global.c:571
 msgid "Go to end of current line"
 msgstr "Przejdź na koniec bieżącej linii"
 
-#: src/global.c:580
+#: src/global.c:572
 msgid "Go to previous block of text"
 msgstr "Przejdź do poprzedniego bloku tekstu"
 
-#: src/global.c:581
+#: src/global.c:573
 msgid "Go to next block of text"
 msgstr "Przejdź do następnego bloku tekstu"
 
-#: src/global.c:584
+#: src/global.c:576
 msgid "Go to beginning of paragraph; then of previous paragraph"
 msgstr "Przejdź na początek akapitu; potem na początek poprzedniego akapitu"
 
-#: src/global.c:586
+#: src/global.c:578
 msgid "Go just beyond end of paragraph; then of next paragraph"
 msgstr "Przejdź w koniec akapitu; potem w koniec następnego akapitu"
 
-#: src/global.c:588
+#: src/global.c:580
 msgid "Go to the first line of the file"
 msgstr "Przejdź do pierwszej linii pliku"
 
-#: src/global.c:589
+#: src/global.c:581
 msgid "Go to the last line of the file"
 msgstr "Przejdź do ostatniej linii pliku"
 
-#: src/global.c:591
+#: src/global.c:583
 msgid "Go to the matching bracket"
 msgstr "Przejdź do parzystego nawiasu"
 
-#: src/global.c:593
+#: src/global.c:585
 msgid "Scroll up one line without scrolling the cursor"
 msgstr "Przewiń na jedną linię w górę bez przesunięcia kursora"
 
-#: src/global.c:595
+#: src/global.c:587
 msgid "Scroll down one line without scrolling the cursor"
 msgstr "Przewiń na jedną linię w dół bez przesunięcia kursora"
 
-#: src/global.c:598
+#: src/global.c:590
 msgid "Switch to the previous file buffer"
 msgstr "Przejdź do poprzedniego bufora"
 
-#: src/global.c:599
+#: src/global.c:591
 msgid "Switch to the next file buffer"
 msgstr "Przejdź do następnego bufora"
 
-#: src/global.c:601
+#: src/global.c:593
 msgid "Insert the next keystroke verbatim"
 msgstr "Wstaw następne naciśnięcie klawisza dosłownie"
 
-#: src/global.c:602
+#: src/global.c:594
 msgid "Insert a tab at the cursor position"
 msgstr "Wstaw znak tabulacji na pozycji kursora"
 
-#: src/global.c:603
+#: src/global.c:595
 msgid "Insert a newline at the cursor position"
 msgstr "Wstaw znak nowej linii na pozycji kursora"
 
-#: src/global.c:604
+#: src/global.c:596
 msgid "Delete the character under the cursor"
 msgstr "Usuń znak na pozycji kursora"
 
-#: src/global.c:606
+#: src/global.c:598
 msgid "Delete the character to the left of the cursor"
 msgstr "Usuń znak na lewo od kursora"
 
-#: src/global.c:609
+#: src/global.c:601
 msgid "Cut backward from cursor to word start"
 msgstr "Wycina wstecz od kursora do początku słowa"
 
-#: src/global.c:611
+#: src/global.c:603
 msgid "Cut forward from cursor to next word start"
 msgstr "Wycina od kursora do początku następnego słowa"
 
-#: src/global.c:613
+#: src/global.c:605
 msgid "Cut from the cursor position to the end of the file"
 msgstr "Wytnij wszystko z pozycji kursora po koniec pliku"
 
-#: src/global.c:616
+#: src/global.c:608
 msgid "Justify the current paragraph"
 msgstr "Wyjustuj bieżący akapit"
 
-#: src/global.c:617
+#: src/global.c:609
 msgid "Justify the entire file"
 msgstr "Wyjustuj cały plik"
 
-#: src/global.c:621
+#: src/global.c:613
 msgid "Count the number of words, lines, and characters"
 msgstr "Policz ilość słów, linii i znaków"
 
-#: src/global.c:624
+#: src/global.c:616
 msgid "Refresh (redraw) the current screen"
 msgstr "Odśwież (ponownie wyświetl) bieżący ekran"
 
-#: src/global.c:626
+#: src/global.c:618
 msgid "Suspend the editor (if suspension is enabled)"
 msgstr "Zawieś edytor (jeżeli zawieszenie jest włączone)"
 
-#: src/global.c:628
+#: src/global.c:620
 #, fuzzy
 msgid "Try and complete the current word"
 msgstr "Wyrównaj bieżącą linię"
 
-#: src/global.c:632
-msgid "Comment/uncomment the current line or marked lines"
+#: src/global.c:624
+#, fuzzy
+msgid "Comment/uncomment the current line (or marked lines)"
 msgstr "Zakomentuj/odkomentuj bieżącą linię lub oznaczone linii"
 
-#: src/global.c:635
+#: src/global.c:626
 msgid "Save file without prompting"
 msgstr "Zapisać plik bez podpowiedzi"
 
-#: src/global.c:636
+#: src/global.c:628
 msgid "Search next occurrence backward"
 msgstr "Szukanie wstecz"
 
-#: src/global.c:637
+#: src/global.c:629
 msgid "Search next occurrence forward"
 msgstr "Szukanie naprzód"
 
-#: src/global.c:638
+#: src/global.c:630
 msgid "Start/stop recording a macro"
 msgstr ""
 
-#: src/global.c:639
+#: src/global.c:631
 #, fuzzy
 msgid "Run the last recorded macro"
 msgstr "Odwołaj ostatnią operację"
 
-#: src/global.c:642
+#: src/global.c:634
 msgid "Toggle the case sensitivity of the search"
 msgstr "Przełącz uwzględnienie rozmiaru znaków pod czas wyszukiwania"
 
-#: src/global.c:644
+#: src/global.c:636
 msgid "Reverse the direction of the search"
 msgstr "Odwróć kierunek wyszukiwania"
 
-#: src/global.c:646
+#: src/global.c:638
 msgid "Toggle the use of regular expressions"
 msgstr "Przełącz użycie wyrażeń regularnych"
 
-#: src/global.c:649
+#: src/global.c:641
 msgid "Recall the previous search/replace string"
 msgstr "Przywróć poprzednie łańcuchy wyszukiwania/zamiany"
 
-#: src/global.c:651
+#: src/global.c:643
 msgid "Recall the next search/replace string"
 msgstr "Przywróć następne łańcuchy wyszukiwania/zamiany"
 
-#: src/global.c:654
+#: src/global.c:646
 msgid "Toggle the use of DOS format"
 msgstr "Przełącz użycie formatu DOS"
 
-#: src/global.c:655
+#: src/global.c:647
 msgid "Toggle the use of Mac format"
 msgstr "Przełącz użycie formatu Mac"
 
-#: src/global.c:656
+#: src/global.c:648
 msgid "Toggle appending"
 msgstr "Przełącz dopisywanie w koniec"
 
-#: src/global.c:657
+#: src/global.c:649
 msgid "Toggle prepending"
 msgstr "Przełącz dopisywanie na początek"
 
-#: src/global.c:658
+#: src/global.c:650
 msgid "Toggle backing up of the original file"
 msgstr "Przełącz utworzenie kopii zapasowych oryginalnego pliku"
 
-#: src/global.c:659
+#: src/global.c:651
 msgid "Execute external command"
 msgstr "Wywołaj polecenie zewnętrzne"
 
-#: src/global.c:662
+#: src/global.c:654
 msgid "Toggle the use of a new buffer"
 msgstr "Przełącz użycie nowego bufora"
 
-#: src/global.c:664
+#: src/global.c:656
 msgid "Close buffer without saving it"
 msgstr "Zamknij bufor bez zapisu"
 
-#: src/global.c:666
+#: src/global.c:658
 msgid "Go to file browser"
 msgstr "Pokaż przeglądarkę plików"
 
-#: src/global.c:667
+#: src/global.c:659
 msgid "Exit from the file browser"
 msgstr "Wyjdź z przeglądarki plików"
 
-#: src/global.c:668
+#: src/global.c:660
 msgid "Go to the first file in the list"
 msgstr "Przejdź do pierwszego pliku na liście"
 
-#: src/global.c:669
+#: src/global.c:661
 msgid "Go to the last file in the list"
 msgstr "Przejdź do ostatniego pliku na liście"
 
-#: src/global.c:670
+#: src/global.c:662
 msgid "Go to the previous file in the list"
 msgstr "Przejdź do poprzedniego pliku na liście"
 
-#: src/global.c:671
+#: src/global.c:663
 msgid "Go to the next file in the list"
 msgstr "Przejdź do następnego pliku na liście"
 
-#: src/global.c:672
+#: src/global.c:664
 msgid "Go to directory"
 msgstr "Przejdź do katalogu"
 
-#: src/global.c:675
+#: src/global.c:667
 msgid "Invoke the linter, if available"
 msgstr "Wywołaj sprawdzanie składni, jeśli dostępne"
 
-#: src/global.c:676
+#: src/global.c:668
 msgid "Go to previous linter msg"
 msgstr "Przejdź do poprzedniej linii"
 
-#: src/global.c:677
+#: src/global.c:669
 msgid "Go to next linter msg"
 msgstr "Przejdź do następnej linii"
 
-#: src/global.c:679
+#: src/global.c:671
 msgid "Invoke formatter, if available"
 msgstr "Wywołaj formater, jeśli jest dostępny"
 
 #. TRANSLATORS: Try to keep the following strings at most 10 characters.
-#: src/global.c:694
+#: src/global.c:686
 msgid "Get Help"
 msgstr "Pomoc"
 
-#: src/global.c:697 src/prompt.c:715
+#: src/global.c:689 src/prompt.c:711
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: src/global.c:710
+#: src/global.c:702
 msgid "Write Out"
 msgstr "Zapisz"
 
-#: src/global.c:749
+#: src/global.c:741
 msgid "Go To Dir"
 msgstr "Do kat."
 
-#: src/global.c:766
+#: src/global.c:758
 msgid "Cut Text"
 msgstr "Wytnij"
 
-#: src/global.c:781
+#: src/global.c:773
 msgid "To Spell"
 msgstr "Pisownia"
 
-#: src/global.c:785
+#: src/global.c:777
 msgid "To Linter"
 msgstr "Składnia"
 
-#: src/global.c:788
+#: src/global.c:780
 msgid "Formatter"
 msgstr "Formater"
 
-#: src/global.c:794
+#: src/global.c:786
 msgid "Cur Pos"
 msgstr "Bież.poz."
 
-#: src/global.c:806
+#: src/global.c:798
 msgid "Undo"
 msgstr "Odwołaj"
 
-#: src/global.c:808
+#: src/global.c:800
 msgid "Redo"
 msgstr "Odtwórz"
 
-#: src/global.c:811
+#: src/global.c:803
 msgid "Mark Text"
 msgstr "Zaznacz"
 
-#: src/global.c:813
+#: src/global.c:805
 msgid "Copy Text"
 msgstr "Kopiuj"
 
-#: src/global.c:817
+#: src/global.c:809
 msgid "Case Sens"
 msgstr "Wielk.liter"
 
-#: src/global.c:819
+#: src/global.c:811
 msgid "Regexp"
 msgstr "Wyr.reg."
 
-#: src/global.c:821
+#: src/global.c:813
 msgid "Backwards"
 msgstr "Wstecz"
 
-#: src/global.c:827
+#: src/global.c:819
 msgid "No Replace"
 msgstr "Nie zast."
 
-#: src/global.c:839
+#: src/global.c:831
 msgid "To Bracket"
 msgstr "Do nawiasu"
 
-#: src/global.c:845
+#: src/global.c:837
 msgid "Previous"
 msgstr "Poprzedni"
 
-#: src/global.c:847
+#: src/global.c:839
 msgid "Next"
 msgstr "Następny"
 
-#: src/global.c:851 src/global.c:856
+#: src/global.c:843 src/global.c:848
 msgid "Back"
 msgstr "Wstecz"
 
-#: src/global.c:853 src/global.c:858
+#: src/global.c:845 src/global.c:850
 msgid "Forward"
 msgstr "W przód"
 
-#: src/global.c:862
+#: src/global.c:854
 msgid "Prev Word"
 msgstr "Poprz.słowo"
 
-#: src/global.c:864
+#: src/global.c:856
 msgid "Next Word"
 msgstr "Nast.słowo"
 
-#: src/global.c:867
+#: src/global.c:859
 msgid "Home"
 msgstr "Początek"
 
-#: src/global.c:869
+#: src/global.c:861
 msgid "End"
 msgstr "Koniec"
 
-#: src/global.c:877
+#: src/global.c:869
 msgid "Scroll Up"
 msgstr "W górę"
 
-#: src/global.c:879
+#: src/global.c:871
 msgid "Scroll Down"
 msgstr "W dół"
 
-#: src/global.c:883
+#: src/global.c:875
 msgid "Prev Block"
 msgstr "Poprz.Block"
 
-#: src/global.c:885
+#: src/global.c:877
 msgid "Next Block"
 msgstr "Nast.Block"
 
-#: src/global.c:888
+#: src/global.c:880
 msgid "Beg of Par"
 msgstr "PoczAkapit"
 
-#: src/global.c:890
+#: src/global.c:882
 msgid "End of Par"
 msgstr "KonAkapit"
 
-#: src/global.c:899
+#: src/global.c:891
 msgid "First Line"
 msgstr "Pierw.lin."
 
-#: src/global.c:901
+#: src/global.c:893
 msgid "Last Line"
 msgstr "Ost.lin."
 
-#: src/global.c:905
+#: src/global.c:897
 msgid "Prev File"
 msgstr "Plik poprz."
 
-#: src/global.c:907
+#: src/global.c:899
 msgid "Next File"
 msgstr "Plik nast."
 
-#: src/global.c:923
+#: src/global.c:915
 msgid "Tab"
 msgstr "Tab"
 
-#: src/global.c:925
+#: src/global.c:917
 msgid "Enter"
 msgstr "Enter"
 
-#: src/global.c:928
+#: src/global.c:920
 msgid "Delete"
 msgstr "Usuń"
 
-#: src/global.c:930
+#: src/global.c:922
 msgid "Backspace"
 msgstr "Backspace"
 
 #. TRANSLATORS: The next two strings refer to cutting words.
-#: src/global.c:941
+#: src/global.c:933
 msgid "Cut Left"
 msgstr "Wytnij w lewo"
 
-#: src/global.c:943
+#: src/global.c:935
 msgid "Cut Right"
 msgstr "Wytnij w prawo"
 
-#: src/global.c:945
+#: src/global.c:937
 msgid "CutTillEnd"
 msgstr "WytnDoKonc"
 
-#: src/global.c:955
+#: src/global.c:947
 msgid "Word Count"
 msgstr "Ilość słów"
 
-#: src/global.c:959
+#: src/global.c:951
 msgid "Verbatim"
 msgstr "Dosłownie"
 
-#: src/global.c:965
+#: src/global.c:957
 msgid "Suspend"
 msgstr "Zawieś"
 
-#: src/global.c:969
+#: src/global.c:961
 msgid "Indent Text"
 msgstr "Wcięcie"
 
-#: src/global.c:971
+#: src/global.c:963
 msgid "Unindent Text"
 msgstr "Usuń Wcięcia"
 
-#: src/global.c:975
-msgid "Complete"
-msgstr ""
-
-#: src/global.c:979
+#: src/global.c:967
 msgid "Comment Lines"
 msgstr "Zakomentuj linii"
 
-#: src/global.c:983
+#: src/global.c:971
+msgid "Complete"
+msgstr ""
+
+#: src/global.c:975
 msgid "Record"
 msgstr ""
 
-#: src/global.c:985
+#: src/global.c:977
 msgid "Run Macro"
 msgstr ""
 
 #. TRANSLATORS: This starts a backward search.
-#: src/global.c:989
+#: src/global.c:981
 #, fuzzy
 msgid "Where Was"
 msgstr "Wyszukaj"
 
-#: src/global.c:992
+#: src/global.c:984
 msgid "Save"
 msgstr "Zapisz"
 
-#: src/global.c:998
+#: src/global.c:988
 msgid "PrevHstory"
 msgstr "Poprz.Hist"
 
-#: src/global.c:1001
+#: src/global.c:990
 msgid "NextHstory"
 msgstr "Nast.Hist"
 
-#: src/global.c:1010
+#: src/global.c:999
 msgid "Go To Text"
 msgstr "Do tekstu"
 
-#: src/global.c:1014
+#: src/global.c:1003
 msgid "DOS Format"
 msgstr "Format DOS"
 
-#: src/global.c:1016
+#: src/global.c:1005
 msgid "Mac Format"
 msgstr "Format Mac"
 
-#: src/global.c:1024
+#: src/global.c:1013
 msgid "Append"
 msgstr "Dopisz"
 
-#: src/global.c:1026
+#: src/global.c:1015
 msgid "Prepend"
 msgstr "Wpisz"
 
-#: src/global.c:1029
+#: src/global.c:1018
 msgid "Backup File"
 msgstr "Kopia zapas."
 
-#: src/global.c:1036
+#: src/global.c:1025
 msgid "Execute Command"
 msgstr "Wywołaj polecenie"
 
-#: src/global.c:1051
+#: src/global.c:1040
 msgid "To Files"
 msgstr "Pliki"
 
-#: src/global.c:1059
+#: src/global.c:1048
 msgid "First File"
 msgstr "Pierw.Plik"
 
-#: src/global.c:1061
+#: src/global.c:1050
 msgid "Last File"
 msgstr "Ost.Plik"
 
-#: src/global.c:1064
+#: src/global.c:1053
 msgid "Left Column"
 msgstr "Lewa Kolumna"
 
-#: src/global.c:1066
+#: src/global.c:1055
 msgid "Right Column"
 msgstr "Prawa Kolumna"
 
-#: src/global.c:1068
+#: src/global.c:1057
 msgid "Top Row"
 msgstr ""
 
-#: src/global.c:1070
+#: src/global.c:1059
 msgid "Bottom Row"
 msgstr ""
 
-#: src/global.c:1075
+#: src/global.c:1064
 msgid "Discard buffer"
 msgstr "Porzuć bufor"
 
 #. TRANSLATORS: Try to keep the next two strings at most 20 characters.
-#: src/global.c:1080
+#: src/global.c:1069
 msgid "Prev Lint Msg"
 msgstr "Lint:Poprz.lin."
 
-#: src/global.c:1082
+#: src/global.c:1071
 msgid "Next Lint Msg"
 msgstr "Lint:Nast.lin."
 
 #. TRANSLATORS: The next eighteen strings are toggle descriptions;
 #. * they are best kept shorter than 40 characters, but may be longer.
-#: src/global.c:1409
+#: src/global.c:1402
 msgid "Help mode"
 msgstr "Tryb pomocy"
 
-#: src/global.c:1411
+#: src/global.c:1404
 msgid "Constant cursor position display"
 msgstr "Stałe położenie kursora"
 
-#: src/global.c:1413
+#: src/global.c:1406
 msgid "Use of one more line for editing"
 msgstr "Użycie dodatkowej linii do redagowania"
 
-#: src/global.c:1415
+#: src/global.c:1408
 msgid "Smooth scrolling"
 msgstr "Płynne przewijanie"
 
-#: src/global.c:1417
+#: src/global.c:1410
 msgid "Soft wrapping of overlong lines"
 msgstr "Miękkie zawijanie długich linii"
 
-#: src/global.c:1419
+#: src/global.c:1412
 msgid "Whitespace display"
 msgstr "Wyświetlanie białych znaków"
 
-#: src/global.c:1421
+#: src/global.c:1414
 msgid "Color syntax highlighting"
 msgstr "Kolorowanie składni"
 
-#: src/global.c:1423
+#: src/global.c:1416
 msgid "Smart home key"
 msgstr "Rozumny klawisz \"w początek\""
 
-#: src/global.c:1425
+#: src/global.c:1418
 msgid "Auto indent"
 msgstr "Auto wcięcia"
 
-#: src/global.c:1427
+#: src/global.c:1420
 msgid "Cut to end"
 msgstr "Wytnij do końca"
 
-#: src/global.c:1429
+#: src/global.c:1422
 msgid "Hard wrapping of overlong lines"
 msgstr "Twarde zawijanie długich linii"
 
-#: src/global.c:1431
+#: src/global.c:1424
 msgid "Conversion of typed tabs to spaces"
 msgstr "Przetworzenie tabulacji na spacji"
 
-#: src/global.c:1433
+#: src/global.c:1426
 msgid "Backup files"
 msgstr "Kopie zapasowe"
 
-#: src/global.c:1435
+#: src/global.c:1428
 msgid "Reading file into separate buffer"
 msgstr "Odczyt pliku do osobnego bufora"
 
-#: src/global.c:1437
+#: src/global.c:1430
 msgid "Mouse support"
 msgstr "Obsługa myszy"
 
-#: src/global.c:1439
+#: src/global.c:1432
 msgid "No conversion from DOS/Mac format"
 msgstr "Bez konwersji z formatu DOS/Mac"
 
-#: src/global.c:1441
+#: src/global.c:1434
 msgid "Suspension"
 msgstr "Zawieś"
 
-#: src/global.c:1443
+#: src/global.c:1436
 msgid "Line numbering"
 msgstr ""
 
@@ -1550,7 +1553,7 @@ msgstr "Ta funkcja nie jest dostępna w trybie ograniczonym"
 msgid "Help is not available"
 msgstr "Pomoc niedostępna"
 
-#: src/nano.c:657
+#: src/nano.c:659
 #, c-format
 msgid ""
 "\n"
@@ -1559,7 +1562,7 @@ msgstr ""
 "\n"
 "Bufor zapisany w %s\n"
 
-#: src/nano.c:659
+#: src/nano.c:661
 #, c-format
 msgid ""
 "\n"
@@ -1568,7 +1571,7 @@ msgstr ""
 "\n"
 "Bufor nie został zapisany w %s: %s\n"
 
-#: src/nano.c:662
+#: src/nano.c:664
 #, c-format
 msgid ""
 "\n"
@@ -1577,7 +1580,7 @@ msgstr ""
 "\n"
 "Bufor nie został zapisany w %s\n"
 
-#: src/nano.c:777
+#: src/nano.c:778
 #, fuzzy, c-format
 msgid ""
 "Usage: nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...\n"
@@ -1586,287 +1589,291 @@ msgstr "Składnia: nano [OPCJE] [[+LINIA,KOLUMNA] PLIK]...\n"
 
 #. TRANSLATORS: The next two strings are part of the --help output.
 #. * It's best to keep its lines within 80 characters.
-#: src/nano.c:780
+#: src/nano.c:781
 #, c-format
 msgid ""
 "To place the cursor on a specific line of a file, put the line number with\n"
 "a '+' before the filename.  The column number can be added after a comma.\n"
 msgstr ""
 
-#: src/nano.c:782
+#: src/nano.c:783
 #, c-format
 msgid ""
 "When a filename is '-', nano reads data from standard input.\n"
 "\n"
 msgstr ""
 
-#: src/nano.c:783
+#: src/nano.c:784
 #, c-format
 msgid "Option\t\tGNU long option\t\tMeaning\n"
 msgstr "Opcja\t\tDługa opcja GNU\t\tZnaczenie\n"
 
 #. TRANSLATORS: The next forty or so strings are option descriptions
 #. * for the --help output.  Try to keep them at most 40 characters.
-#: src/nano.c:788
+#: src/nano.c:789
 msgid "Enable smart home key"
 msgstr "Włącza rozumny przycisk \"w początek\""
 
-#: src/nano.c:790
+#: src/nano.c:791
 msgid "Save backups of existing files"
 msgstr "Tworzenie kopii zapasowych istniejących plików"
 
-#: src/nano.c:791
+#: src/nano.c:792
 msgid "-C <dir>"
 msgstr "-C <katalog>"
 
-#: src/nano.c:791
+#: src/nano.c:792
 msgid "--backupdir=<dir>"
 msgstr "--backupdir=<katalog>"
 
-#: src/nano.c:792
+#: src/nano.c:793
 msgid "Directory for saving unique backup files"
 msgstr "Katalog przechowywania unikatowych kopii zapasowych"
 
-#: src/nano.c:795
+#: src/nano.c:796
 msgid "Use bold instead of reverse video text"
 msgstr "Używa tekstu pogrubionego zamiast negacji obrazu"
 
-#: src/nano.c:797
+#: src/nano.c:798
 msgid "Convert typed tabs to spaces"
 msgstr "Przetwarza tabulacje na spacje"
 
-#: src/nano.c:802
+#: src/nano.c:803
 msgid "Read a file into a new buffer by default"
 msgstr "Domyślny odczyt pliku do nowego bufora"
 
-#: src/nano.c:805
+#: src/nano.c:806
 msgid "Use (vim-style) lock files"
 msgstr "Używaj plików blokowania w stylu vim"
 
-#: src/nano.c:810
+#: src/nano.c:811
 msgid "Log & read search/replace string history"
 msgstr "Rejestrowanie i odczyt historii wyszukiwania/zamiany łańcuchów"
 
-#: src/nano.c:814
+#: src/nano.c:815
 msgid "Don't look at nanorc files"
 msgstr "Bez korzystania z plików nanorc"
 
-#: src/nano.c:817
+#: src/nano.c:818
 msgid "Fix numeric keypad key confusion problem"
 msgstr "Naprawia problem pomylenia klawiszy klawiatury numerycznej"
 
-#: src/nano.c:819
+#: src/nano.c:820
 msgid "Don't add newlines to the ends of files"
 msgstr "Wyłącza dodanie znaku nowej linii na końcu pliku"
 
-#: src/nano.c:822
+#: src/nano.c:823
+msgid "Trim tail spaces when hard-wrapping"
+msgstr ""
+
+#: src/nano.c:827
 msgid "Don't convert files from DOS/Mac format"
 msgstr "Bez konwersji z formatu DOS/Mac"
 
-#: src/nano.c:824
+#: src/nano.c:829
 msgid "Use one more line for editing"
 msgstr "Użycie dodatkowej linii do redagowania"
 
-#: src/nano.c:828
+#: src/nano.c:833
 msgid "Log & read location of cursor position"
 msgstr "Zapisz i odczytaj pozycję kursora"
 
-#: src/nano.c:831
+#: src/nano.c:836
 msgid "-Q <str>"
 msgstr "-Q <łańcuch>"
 
-#: src/nano.c:831
+#: src/nano.c:836
 msgid "--quotestr=<str>"
 msgstr "--quotestr=<łańcuch>"
 
-#: src/nano.c:831
+#: src/nano.c:836
 msgid "Quoting string"
 msgstr "Znacznik cytowania"
 
-#: src/nano.c:834
+#: src/nano.c:839
 msgid "Restricted mode"
 msgstr "Tryb zastrzeżony"
 
-#: src/nano.c:836
+#: src/nano.c:841
 msgid "Scroll by line instead of half-screen"
 msgstr "Przewija po liniach zamiast po pół-ekranu"
 
-#: src/nano.c:838
+#: src/nano.c:843
 msgid "-T <#cols>"
 msgstr "-T <#kol>"
 
-#: src/nano.c:838
+#: src/nano.c:843
 msgid "--tabsize=<#cols>"
 msgstr "--tabsize=<#kol>"
 
-#: src/nano.c:839
+#: src/nano.c:844
 msgid "Set width of a tab to #cols columns"
 msgstr "Ustawienie szerokości tabulacji na podaną ilość kolumn"
 
-#: src/nano.c:840
+#: src/nano.c:845
 msgid "Do quick statusbar blanking"
 msgstr "Szybkie oczyszczenie linii stanu"
 
-#: src/nano.c:841
+#: src/nano.c:846
 msgid "Print version information and exit"
 msgstr "Wypisanie wersji i zakończenie pracy"
 
-#: src/nano.c:844
+#: src/nano.c:849
 msgid "Detect word boundaries more accurately"
 msgstr "Uściśla określenie granic słów"
 
-#: src/nano.c:845
+#: src/nano.c:850
 #, fuzzy
 msgid "-X <str>"
 msgstr "-Q <łańcuch>"
 
-#: src/nano.c:845
+#: src/nano.c:850
 #, fuzzy
 msgid "--wordchars=<str>"
 msgstr "--quotestr=<łańcuch>"
 
-#: src/nano.c:846
+#: src/nano.c:851
 msgid "Which other characters are word parts"
 msgstr "Jakie jeszcze znaki mogą występować w słowach"
 
-#: src/nano.c:850
+#: src/nano.c:855
 msgid "-Y <name>"
 msgstr ""
 
-#: src/nano.c:850
+#: src/nano.c:855
 #, fuzzy
 msgid "--syntax=<name>"
 msgstr "--syntax=<łańc>"
 
-#: src/nano.c:851
+#: src/nano.c:856
 msgid "Syntax definition to use for coloring"
 msgstr "Użycie zadanej definicji składni do podświetlania"
 
-#: src/nano.c:854
+#: src/nano.c:859
 msgid "When soft-wrapping, do it at whitespace"
 msgstr ""
 
-#: src/nano.c:856
+#: src/nano.c:861
 msgid "Constantly show cursor position"
 msgstr "Stałe pokazywanie położenia kursora"
 
-#: src/nano.c:858
+#: src/nano.c:863
 msgid "Fix Backspace/Delete confusion problem"
 msgstr "Naprawia problem pomylenia klawiszy Backspace/Delete"
 
-#: src/nano.c:861
+#: src/nano.c:866
 #, fuzzy
 msgid "Show cursor in file browser"
 msgstr "Pokaż przeglądarkę plików"
 
-#: src/nano.c:863
+#: src/nano.c:868
 msgid "Show this help text and exit"
 msgstr "Wyświetla ten tekst pomocy i wychodzi"
 
-#: src/nano.c:865
+#: src/nano.c:870
 msgid "Automatically indent new lines"
 msgstr "Automatyczne wcięcia nowych linii"
 
-#: src/nano.c:866
+#: src/nano.c:871
 msgid "Cut from cursor to end of line"
 msgstr "Wycina od kursora do końca linii"
 
-#: src/nano.c:869
+#: src/nano.c:874
 msgid "Show line numbers in front of the text"
 msgstr ""
 
-#: src/nano.c:872
+#: src/nano.c:877
 msgid "Enable the use of the mouse"
 msgstr "Włączenie myszy"
 
-#: src/nano.c:874
+#: src/nano.c:879
 msgid "Do not read the file (only write it)"
 msgstr "Bez odczytu pliku (tylko zapis)"
 
-#: src/nano.c:876
+#: src/nano.c:881
 msgid "-o <dir>"
 msgstr "-o <kat>"
 
-#: src/nano.c:876
+#: src/nano.c:881
 msgid "--operatingdir=<dir>"
 msgstr "--operatingdir=<kat>"
 
-#: src/nano.c:877
+#: src/nano.c:882
 msgid "Set operating directory"
 msgstr "Ustawienie katalogu pracy"
 
-#: src/nano.c:879
+#: src/nano.c:884
 msgid "Preserve XON (^Q) and XOFF (^S) keys"
 msgstr "Zachowanie działania klawiszy XON (^Q) i XOFF (^S)"
 
-#: src/nano.c:881
+#: src/nano.c:886
 msgid "-r <#cols>"
 msgstr "-r <#kol>"
 
-#: src/nano.c:881
+#: src/nano.c:886
 msgid "--fill=<#cols>"
 msgstr "--fill=<#kol>"
 
-#: src/nano.c:882
+#: src/nano.c:887
 msgid "Set hard-wrapping point at column #cols"
 msgstr "Ustawia granice przewijania w podanej kolumnie"
 
-#: src/nano.c:886
+#: src/nano.c:891
 msgid "-s <prog>"
 msgstr "-s <prog>"
 
-#: src/nano.c:886
+#: src/nano.c:891
 msgid "--speller=<prog>"
 msgstr "--speller=<prog>"
 
-#: src/nano.c:887
+#: src/nano.c:892
 msgid "Enable alternate speller"
 msgstr "Alternatywny program sprawdzania pisowni"
 
-#: src/nano.c:889
+#: src/nano.c:894
 msgid "Auto save on exit, don't prompt"
 msgstr "Automatyczny zapis przy kończeniu pracy, bez pytania"
 
-#: src/nano.c:891
+#: src/nano.c:896
 msgid "Save a file by default in Unix format"
 msgstr "Zapisz plik w formacie Unix"
 
-#: src/nano.c:893
+#: src/nano.c:898
 msgid "View mode (read-only)"
 msgstr "Tryb przeglądania (tylko odczyt)"
 
-#: src/nano.c:895
+#: src/nano.c:900
 msgid "Don't hard-wrap long lines"
 msgstr "Bez przewijania długich linii"
 
-#: src/nano.c:897
+#: src/nano.c:902
 msgid "Don't show the two help lines"
 msgstr "Bez pokazywania linii pomocy"
 
-#: src/nano.c:899
+#: src/nano.c:904
 msgid "Enable suspension"
 msgstr "Włączenie zawieszania"
 
-#: src/nano.c:901
+#: src/nano.c:906
 msgid "Enable soft line wrapping"
 msgstr "Włącza miękkie przewijanie linii"
 
-#: src/nano.c:913
+#: src/nano.c:918
 #, fuzzy, c-format
 msgid " GNU nano, version %s\n"
 msgstr " nano wersja %s\n"
 
-#: src/nano.c:916
+#: src/nano.c:921
 #, fuzzy, c-format
 msgid " (C) 2014-%s the contributors to nano\n"
 msgstr " (C) 2014..%s współtwórcy nano\n"
 
-#: src/nano.c:917
+#: src/nano.c:922
 #, c-format
 msgid " Email: nano@nano-editor.org\tWeb: https://nano-editor.org/"
 msgstr " E-mail: nano@nano-editor.org\tWeb: https://nano-editor.org/"
 
-#: src/nano.c:918
+#: src/nano.c:923
 #, c-format
 msgid ""
 "\n"
@@ -1875,94 +1882,94 @@ msgstr ""
 "\n"
 " Skompilowane opcje:"
 
-#: src/nano.c:1064
+#: src/nano.c:1069
 msgid "No file name"
 msgstr "Brak nazwy pliku"
 
-#: src/nano.c:1066
+#: src/nano.c:1071
 msgid "Save modified buffer?  (Answering \"No\" will DISCARD changes.) "
 msgstr "Zapisać zmodyfikowany bufor? (Odpowiedź \"Nie\" skasuje zmiany.)"
 
-#: src/nano.c:1123
+#: src/nano.c:1128
 #, c-format
 msgid "Reading from stdin, ^C to abort\n"
 msgstr "Odczyt z wejścia standardowego. Aby przerwać, naciśnij ^C\n"
 
-#: src/nano.c:1150
+#: src/nano.c:1155
 #, c-format
 msgid "Failed to open stdin: %s"
 msgstr ""
 
-#: src/nano.c:1162
+#: src/nano.c:1167
 msgid "Couldn't reopen stdin from keyboard, sorry\n"
 msgstr ""
 "Nie udało się ponownie otworzyć wejście standardowe z klawiatury, "
 "przepraszamy\n"
 
-#: src/nano.c:1231
+#: src/nano.c:1236
 msgid "Received SIGHUP or SIGTERM\n"
 msgstr "Otrzymano SIGHUP lub SIGTERM\n"
 
-#: src/nano.c:1246
+#: src/nano.c:1251
 #, c-format
 msgid "Use \"fg\" to return to nano.\n"
 msgstr "Aby powrócić do nano, użyj \"fg\".\n"
 
-#: src/nano.c:1264
+#: src/nano.c:1269
 msgid "Suspension is not enabled"
 msgstr "Zawieszenie nie jest włączone"
 
-#: src/nano.c:1409
+#: src/nano.c:1414
 msgid "enabled"
 msgstr "włączony(e)"
 
-#: src/nano.c:1409
+#: src/nano.c:1414
 msgid "disabled"
 msgstr "wyłączony(e)"
 
-#: src/nano.c:1546
+#: src/nano.c:1551
 msgid "Unbound key"
 msgstr "Nieprzypisany klawisz"
 
-#: src/nano.c:1549
+#: src/nano.c:1554
 msgid "Unbindable key: M-["
 msgstr "Nie można przypisać: M-["
 
-#: src/nano.c:1551
+#: src/nano.c:1556
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Nieprzypisany klawisz: M-%c"
 
-#: src/nano.c:1553
+#: src/nano.c:1558
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Nieprzypisany klawisz: ^%c"
 
-#: src/nano.c:1555
+#: src/nano.c:1560
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Nieprzypisany klawisz: %c"
 
-#: src/nano.c:2106 src/rcfile.c:1172
+#: src/nano.c:2128 src/rcfile.c:1165
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Żądana wielkość tabulacji \"%s\" nie jest poprawna"
 
-#: src/nano.c:2175 src/rcfile.c:1109
+#: src/nano.c:2197 src/rcfile.c:1102
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Żądana pozycja łamania linii \"%s\" nie jest poprawna"
 
-#: src/nano.c:2231
+#: src/nano.c:2253
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Podaj '%s -h' aby uzyskać listę dostępnych opcji.\n"
 
-#: src/nano.c:2553 src/search.c:834
+#: src/nano.c:2570 src/search.c:829
 msgid "Invalid line or column number"
 msgstr "Niepoprawny numer linii lub kolumny"
 
-#: src/nano.c:2600
+#: src/nano.c:2617
 #, c-format
 msgid "Mistakes in '%s'"
 msgstr ""
@@ -1970,239 +1977,229 @@ msgstr ""
 #. TRANSLATORS: For the next three strings, if possible, specify
 #. * the single-byte letters for both your language and English.
 #. * For example, in French: "OoYy", for both "Oui" and "Yes".
-#: src/prompt.c:678
+#: src/prompt.c:674
 msgid "Yy"
 msgstr "Tt"
 
-#: src/prompt.c:679
+#: src/prompt.c:675
 msgid "Nn"
 msgstr "Nn"
 
-#: src/prompt.c:680
+#: src/prompt.c:676
 msgid "Aa"
 msgstr "Ww"
 
-#: src/prompt.c:702
+#: src/prompt.c:698
 msgid "Yes"
 msgstr "Tak"
 
-#: src/prompt.c:707
+#: src/prompt.c:703
 msgid "All"
 msgstr "Wszystko"
 
-#: src/prompt.c:712
+#: src/prompt.c:708
 msgid "No"
 msgstr "Nie"
 
-#: src/rcfile.c:148
-#, c-format
-msgid "Error in %s on line %lu: "
+#: src/rcfile.c:149
+#, fuzzy, c-format
+msgid "Error in %s on line %zu: "
 msgstr "Błąd w %s w linii %lu: "
 
-#: src/rcfile.c:206
+#: src/rcfile.c:200
 #, c-format
 msgid "Argument '%s' has an unterminated \""
 msgstr "Argument %s ma niedomknięty \""
 
-#: src/rcfile.c:234 src/rcfile.c:668 src/rcfile.c:720 src/rcfile.c:813
+#: src/rcfile.c:225 src/rcfile.c:649 src/rcfile.c:701 src/rcfile.c:808
 msgid "Regex strings must begin and end with a \" character"
 msgstr "Wyrażenia regularne muszą zaczynać się i kończyć znakiem \""
 
-#: src/rcfile.c:260 src/search.c:47
+#: src/rcfile.c:251 src/search.c:47
 #, c-format
 msgid "Bad regex \"%s\": %s"
 msgstr "Błędne wyrażenie regularne \"%s\": %s"
 
-#: src/rcfile.c:282
+#: src/rcfile.c:271
 msgid "Missing syntax name"
 msgstr "Brak nazwy składni"
 
-#: src/rcfile.c:291
+#: src/rcfile.c:280
 msgid "A syntax name must be quoted"
 msgstr "Nazwa składni musi być w cudzysłowie"
 
-#: src/rcfile.c:300
+#: src/rcfile.c:289
 msgid "The \"none\" syntax is reserved"
 msgstr "Składnia \"none\" jest zarezerwowana"
 
-#: src/rcfile.c:332
+#: src/rcfile.c:320
 msgid "The \"default\" syntax does not accept extensions"
 msgstr "Składnia \"default\" nie przyjmuje rozszerzeń"
 
-#: src/rcfile.c:374
+#: src/rcfile.c:360
 msgid "Missing key name"
 msgstr "Brak nazwy klawisza"
 
-#: src/rcfile.c:383 src/rcfile.c:394
+#: src/rcfile.c:369 src/rcfile.c:380
 msgid "Key name is too short"
 msgstr "Za krótka nazwa klawisza"
 
-#: src/rcfile.c:404
+#: src/rcfile.c:390
 msgid "Key name must begin with \"^\", \"M\", or \"F\""
 msgstr "Nazwa klawisza musi zaczynać się z \"^\", \"M\", lub \"F\""
 
-#: src/rcfile.c:407
+#: src/rcfile.c:393
 #, c-format
 msgid "Key name %s is invalid"
 msgstr "Niepoprawna nazwa klucza %s"
 
-#: src/rcfile.c:416
+#: src/rcfile.c:402
 msgid "Must specify a function to bind the key to"
 msgstr "Podaj funkcje do jakiej przypisuje się klawisz"
 
 #. TRANSLATORS: Do not translate the word "all".
-#: src/rcfile.c:426
+#: src/rcfile.c:412
 msgid "Must specify a menu (or \"all\") in which to bind/unbind the key"
 msgstr "Musisz podać menu (lub \"all\") w którym przypisuje się klawisz"
 
-#: src/rcfile.c:433
+#: src/rcfile.c:419
 #, c-format
 msgid "Cannot map name \"%s\" to a function"
 msgstr "Nie można odwzorować nazwy \"%s\" na funkcje"
 
-#: src/rcfile.c:440
+#: src/rcfile.c:426
 #, c-format
 msgid "Cannot map name \"%s\" to a menu"
 msgstr "Nie można odwzorować nazwy \"%s\" na menu"
 
-#: src/rcfile.c:466
+#: src/rcfile.c:452
 #, c-format
 msgid "Function '%s' does not exist in menu '%s'"
 msgstr "Brak funkcji '%s' w menu '%s'"
 
-#: src/rcfile.c:475
+#: src/rcfile.c:461
 #, c-format
 msgid "Sorry, keystroke \"%s\" may not be rebound"
 msgstr "Przepraszam, przyciśnięcie \"%s\" nie może być przypisane ponownie"
 
-#: src/rcfile.c:575
+#: src/rcfile.c:561
 #, c-format
 msgid "Error expanding %s: %s"
 msgstr "Błąd rozszerzenia %s: %s"
 
-#: src/rcfile.c:612
-#, c-format
-msgid ""
-"Color \"%s\" not understood.\n"
-"Valid colors are \"green\", \"red\", \"blue\",\n"
-"\"white\", \"yellow\", \"cyan\", \"magenta\" and\n"
-"\"black\", with the optional prefix \"bright\"\n"
-"for foreground colors."
-msgstr ""
-"Nieznany kolor \"%s\".\n"
-"Dozwolone kolory to \"green\", \"red\", \"blue\", \n"
-"\"white\", \"yellow\", \"cyan\", \"magenta\" i \n"
-"\"black\", z opcjonalnym przedrostkiem \"bright\"\n"
-"dla kolorów pierwszoplanowych."
+#: src/rcfile.c:599
+#, fuzzy, c-format
+msgid "Color \"%s\" not understood"
+msgstr "Niezrozumiałe polecenie \"%s\""
 
-#: src/rcfile.c:631 src/rcfile.c:784 src/rcfile.c:847
+#: src/rcfile.c:613 src/rcfile.c:780 src/rcfile.c:840
 #, c-format
 msgid "A '%s' command requires a preceding 'syntax' command"
 msgstr "Polecenie '%s' wymaga poprzedniego polecenia 'syntax'"
 
-#: src/rcfile.c:637
+#: src/rcfile.c:619
 msgid "Missing color name"
 msgstr "Brak nazwy koloru"
 
-#: src/rcfile.c:647 src/rcfile.c:796
+#: src/rcfile.c:629 src/rcfile.c:792
 #, c-format
 msgid "Missing regex string after '%s' command"
 msgstr "Brak wyrażenia regularnego po poleceniu '%s'"
 
-#: src/rcfile.c:679 src/rcfile.c:730
+#: src/rcfile.c:660 src/rcfile.c:711
 msgid "Empty regex string"
 msgstr ""
 
-#: src/rcfile.c:714
+#: src/rcfile.c:695
 msgid "\"start=\" requires a corresponding \"end=\""
 msgstr "\"start=\" wymaga odpowiadającego mu \"end=\""
 
-#: src/rcfile.c:757
+#: src/rcfile.c:738
 #, fuzzy
 msgid "A background color cannot be bright"
 msgstr "Kolor tła \"%s\" nie może być jaskrawy"
 
-#: src/rcfile.c:791
+#: src/rcfile.c:787
 #, c-format
 msgid "The \"default\" syntax does not accept '%s' regexes"
 msgstr "Składnia \"default\" nie przyjmuje wyrażeń regularnych '%s'"
 
-#: src/rcfile.c:852
+#: src/rcfile.c:845
 #, fuzzy, c-format
 msgid "Missing argument after '%s'"
 msgstr "Brak polecenia po '%s'"
 
-#: src/rcfile.c:864
+#: src/rcfile.c:855
 #, c-format
 msgid "Argument of '%s' lacks closing \""
 msgstr "Argument do '%s' ma niedomknięty \""
 
-#: src/rcfile.c:890
+#: src/rcfile.c:883
 #, c-format
 msgid "Fatal error: no keys mapped for function \"%s\".  Exiting.\n"
 msgstr ""
 "Błąd krytyczny: brak przypisanego klawisza dla funkcji \"%s\".  "
 "Zakończenie.\n"
 
-#: src/rcfile.c:892
+#: src/rcfile.c:885
 #, c-format
 msgid ""
 "If needed, use nano with the -I option to adjust your nanorc settings.\n"
 msgstr "Jeśli trzeba, uruchom nano z opcją -I aby dopasować ustawienia.\n"
 
-#: src/rcfile.c:947
+#: src/rcfile.c:940
 #, c-format
 msgid "Could not find syntax \"%s\" to extend"
 msgstr "Nie znaleziono składni \"%s\" do rozszerzenia"
 
-#: src/rcfile.c:969 src/rcfile.c:1183
+#: src/rcfile.c:962 src/rcfile.c:1175
 #, c-format
 msgid "Syntax \"%s\" has no color commands"
 msgstr "Składnia \"%s\" nie ma ustawień kolorów"
 
-#: src/rcfile.c:1000
+#: src/rcfile.c:993
 #, c-format
 msgid "Command \"%s\" not allowed in included file"
 msgstr "Poliecenie \"%s\" nie jest dozwolone w pliku dołączonym"
 
-#: src/rcfile.c:1015
+#: src/rcfile.c:1008
 #, c-format
 msgid "Command \"%s\" not understood"
 msgstr "Niezrozumiałe polecenie \"%s\""
 
-#: src/rcfile.c:1027
+#: src/rcfile.c:1020
 msgid "Missing option"
 msgstr "Brak opcji"
 
-#: src/rcfile.c:1041
+#: src/rcfile.c:1034
 #, c-format
 msgid "Unknown option \"%s\""
 msgstr "Nieznana opcja \"%s\""
 
-#: src/rcfile.c:1054
+#: src/rcfile.c:1047
 #, c-format
 msgid "Cannot unset option \"%s\""
 msgstr "Nie można zresetować opcji \"%s\""
 
-#: src/rcfile.c:1066
+#: src/rcfile.c:1059
 #, c-format
 msgid "Option \"%s\" requires an argument"
 msgstr "Opcja \"%s\" wymaga argumentu"
 
-#: src/rcfile.c:1082
+#: src/rcfile.c:1075
 #, fuzzy
 msgid "Argument is not a valid multibyte string"
 msgstr "Opcja nie jest poprawnym łańcuchem wielobajtowym"
 
-#: src/rcfile.c:1121 src/rcfile.c:1142 src/rcfile.c:1149
+#: src/rcfile.c:1114 src/rcfile.c:1135 src/rcfile.c:1142
 msgid "Non-blank characters required"
 msgstr "Wymagane są nie-białe znaki"
 
-#: src/rcfile.c:1128
+#: src/rcfile.c:1121
 msgid "Two single-column characters required"
 msgstr "Wymagane są dwa jednobajtowych znaki"
 
-#: src/rcfile.c:1258
+#: src/rcfile.c:1250
 msgid "I can't find my home directory!  Wah!"
 msgstr "Nie mogę znaleźć swojego katalogu domowego!  Aj!"
 
@@ -2240,16 +2237,16 @@ msgid "Searching..."
 msgstr "Szukanie..."
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:618
+#: src/search.c:613
 msgid "Replace this instance?"
 msgstr "Czy zastąpić to wystąpienie?"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:748
+#: src/search.c:743
 msgid "Replace with"
 msgstr "Zastąp przez"
 
-#: src/search.c:780
+#: src/search.c:775
 #, fuzzy, c-format
 msgid "Replaced %zd occurrence"
 msgid_plural "Replaced %zd occurrences"
@@ -2258,15 +2255,15 @@ msgstr[1] "Zastąpiono %lu wystąpienia"
 msgstr[2] "Zastąpiono %lu wystąpień"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:812
+#: src/search.c:807
 msgid "Enter line number, column number"
 msgstr "Wprowadź numer linii, numer kolumny"
 
-#: src/search.c:1002
+#: src/search.c:997
 msgid "Not a bracket"
 msgstr "To nie nawias"
 
-#: src/search.c:1063
+#: src/search.c:1058
 msgid "No matching bracket"
 msgstr "Brak nawiasu do pary"
 
@@ -2283,321 +2280,317 @@ msgstr "Znacznik skasowany"
 msgid "Error invoking \"%s\""
 msgstr "Błąd podczas wywoływania \"%s\""
 
-#: src/text.c:421
-msgid "Can unindent only by a full tab size"
-msgstr ""
-
-#: src/text.c:505
+#: src/text.c:492
 msgid "Commenting is not supported for this file type"
 msgstr "Komentowanie nie jest obsługiwane dla tego typu plików"
 
-#: src/text.c:521
+#: src/text.c:502
 msgid "Cannot comment past end of file"
 msgstr "Nie można komentować poza końcem linii"
 
-#: src/text.c:718
+#: src/text.c:687
 msgid "Nothing in undo buffer!"
 msgstr "Nie ma nic w buforze odwołania"
 
 #. TRANSLATORS: The next twelve strings describe actions
 #. * that are undone or redone.  It are all nouns, not verbs.
-#: src/text.c:736 src/text.c:765 src/text.c:909 src/text.c:950
+#: src/text.c:705 src/text.c:736 src/text.c:880 src/text.c:923
 msgid "text add"
 msgstr "tekst dodany"
 
-#: src/text.c:746 src/text.c:920
+#: src/text.c:717 src/text.c:893
 msgid "text delete"
 msgstr "tekst usunięty"
 
-#: src/text.c:769 src/text.c:958
+#: src/text.c:740 src/text.c:931
 msgid "line join"
 msgstr "połączenie linii"
 
-#: src/text.c:788 src/text.c:974
+#: src/text.c:759 src/text.c:947
 msgid "text cut"
 msgstr "wycięcie tekstu"
 
-#: src/text.c:793 src/text.c:978
+#: src/text.c:764 src/text.c:951
 msgid "text uncut"
 msgstr "wklejanie tekstu"
 
-#: src/text.c:802 src/text.c:929
+#: src/text.c:773 src/text.c:902
 msgid "line break"
 msgstr "łamanie linii"
 
-#: src/text.c:813 src/text.c:997
+#: src/text.c:784 src/text.c:970
 #, fuzzy
 msgid "indent"
 msgstr "Auto wcięcia"
 
-#: src/text.c:817 src/text.c:1001
+#: src/text.c:788 src/text.c:974
 #, fuzzy
 msgid "unindent"
 msgstr "Auto wcięcia"
 
-#: src/text.c:822 src/text.c:1006
+#: src/text.c:793 src/text.c:979
 msgid "comment"
 msgstr "zakomentuj"
 
-#: src/text.c:826 src/text.c:1010
+#: src/text.c:797 src/text.c:983
 msgid "uncomment"
 msgstr "odkomentuj"
 
-#: src/text.c:830 src/text.c:989
+#: src/text.c:801 src/text.c:962
 msgid "text insert"
 msgstr "tekst wprowadzony"
 
-#: src/text.c:846 src/text.c:982
+#: src/text.c:817 src/text.c:955
 msgid "text replace"
 msgstr "tekst zamieniony"
 
-#: src/text.c:858
+#: src/text.c:829
 #, c-format
 msgid "Undid action (%s)"
 msgstr "Odwołano operację (%s)"
 
-#: src/text.c:885
+#: src/text.c:856
 msgid "Nothing to re-do!"
 msgstr "Nic do powtórzenia!"
 
-#: src/text.c:1019
+#: src/text.c:992
 #, c-format
 msgid "Redid action (%s)"
 msgstr "Powtórzono operację (%s)"
 
-#: src/text.c:1118 src/text.c:2697 src/text.c:3083
+#: src/text.c:1097 src/text.c:2671 src/text.c:3059
 msgid "Could not create pipe"
 msgstr "Nie można utworzyć potoku"
 
-#: src/text.c:1144 src/text.c:2784 src/text.c:2911 src/text.c:3131
-#: src/text.c:3438
+#: src/text.c:1123 src/text.c:2758 src/text.c:2885 src/text.c:3107
+#: src/text.c:3412
 msgid "Could not fork"
 msgstr "Nie można rozwidlić procesu"
 
-#: src/text.c:2105
+#: src/text.c:2086
 #, c-format
 msgid "Bad quote string %s: %s"
 msgstr "Nieprawidłowy znacznik cytowania %s: %s"
 
-#: src/text.c:2468
+#: src/text.c:2443
 msgid "Can now UnJustify!"
 msgstr "Można teraz cofnąć justowanie!"
 
-#: src/text.c:2617
+#: src/text.c:2591
 #, fuzzy, c-format
 msgid "Unfindable word: %s"
 msgstr "Nie można przypisać: M-["
 
-#: src/text.c:2636
+#: src/text.c:2610
 msgid "Edit a replacement"
 msgstr "Edytuj zastąpienie"
 
 #. TRANSLATORS: Shown after fixing misspellings in one word.
-#: src/text.c:2645
+#: src/text.c:2619
 msgid "Next word..."
 msgstr "Nast.słowo..."
 
-#: src/text.c:2699
+#: src/text.c:2673
 msgid "Creating misspelled word list, please wait..."
 msgstr "Tworzenie listy błędnie napisanych słów, proszę czekać..."
 
-#: src/text.c:2790 src/text.c:3138
+#: src/text.c:2764 src/text.c:3114
 msgid "Could not get size of pipe buffer"
 msgstr "Nie można uzyskać wielkości bufora potoku"
 
-#: src/text.c:2839
+#: src/text.c:2813
 msgid "Error invoking \"spell\""
 msgstr "Błąd podczas wywoływania \"spell\""
 
-#: src/text.c:2842
+#: src/text.c:2816
 msgid "Error invoking \"sort -f\""
 msgstr "Błąd podczas wywoływania \"sort -f\""
 
-#: src/text.c:2845
+#: src/text.c:2819
 msgid "Error invoking \"uniq\""
 msgstr "Błąd podczas wywoływania \"uniq\""
 
-#: src/text.c:3020
+#: src/text.c:2994
 msgid "Invoking spell checker, please wait"
 msgstr "Wywołanie sprawdzania pisowni, proszę zaczekać"
 
-#: src/text.c:3034
+#: src/text.c:3008
 #, c-format
 msgid "Spell checking failed: %s"
 msgstr "Niepowodzenie sprawdzania pisowni: %s"
 
-#: src/text.c:3036
+#: src/text.c:3010
 #, c-format
 msgid "Spell checking failed: %s: %s"
 msgstr "Niepowodzenie sprawdzania pisowni: %s: %s"
 
-#: src/text.c:3039
+#: src/text.c:3013
 msgid "Finished checking spelling"
 msgstr "Zakończono sprawdzanie pisowni"
 
-#: src/text.c:3063
+#: src/text.c:3037
 msgid "No linter defined for this type of file!"
 msgstr "Brak analizatora składni dla tego typu pliku!"
 
-#: src/text.c:3071
+#: src/text.c:3047
 msgid "Save modified buffer before linting?"
 msgstr "Zapisać bufor przed sprawdzaniem składni?"
 
-#: src/text.c:3088
+#: src/text.c:3064
 msgid "Invoking linter, please wait"
 msgstr "Sprawdzanie składni, proszę zaczekać"
 
-#: src/text.c:3233
+#: src/text.c:3208
 #, c-format
 msgid "Got 0 parsable lines from command: %s"
 msgstr "Otrzymano 0 poprawnych linii od polecenia: %s"
 
-#: src/text.c:3263
+#: src/text.c:3238
 #, c-format
 msgid "This message is for unopened file %s, open it in a new buffer?"
 msgstr ""
 "Ten komunikat dotyczy nie otworzonego pliku %s; otworzyć go w nowym buforze?"
 
-#: src/text.c:3299
+#: src/text.c:3274
 msgid "No more errors in unopened files, cancelling"
 msgstr "W nieotwartych plikach nie ma więcej błędów; anulowanie"
 
-#: src/text.c:3344
+#: src/text.c:3319
 msgid "At last message"
 msgstr "Ostatni komunikat"
 
-#: src/text.c:3349
+#: src/text.c:3324
 msgid "At first message"
 msgstr "Pierwszy komunikat"
 
-#: src/text.c:3387
+#: src/text.c:3361
 msgid "Finished"
 msgstr "Zakończono"
 
-#: src/text.c:3411
+#: src/text.c:3385
 msgid "Invoking formatter, please wait"
 msgstr "Wywołanie formatera, proszę zaczekać"
 
-#: src/text.c:3472
+#: src/text.c:3446
 msgid "Finished formatting"
 msgstr "Zakończono formatowanie"
 
-#: src/text.c:3554
-#, c-format
-msgid "%sWords: %lu  Lines: %ld  Chars: %lu"
+#: src/text.c:3528
+#, fuzzy, c-format
+msgid "%sWords: %zu  Lines: %zd  Chars: %zu"
 msgstr "%sSłowa: %lu  Linii: %ld  Znaki: %lu"
 
-#: src/text.c:3555
+#: src/text.c:3529
 msgid "In Selection:  "
 msgstr "W zaznaczeniu:  "
 
 #. TRANSLATORS: This is displayed when the next keystroke will be
 #. * inserted verbatim.
-#: src/text.c:3569
+#: src/text.c:3542
 msgid "Verbatim Input"
 msgstr "wprowadzanie dosłowne"
 
-#: src/text.c:3764
+#: src/text.c:3734
 msgid "No further matches"
 msgstr ""
 
 #. TRANSLATORS: Shown when there are zero possible completions.
-#: src/text.c:3768
+#: src/text.c:3738
 #, fuzzy
 msgid "No matches"
 msgstr "Brak nawiasu do pary"
 
-#: src/utils.c:358 src/utils.c:370
+#: src/utils.c:357 src/utils.c:369
 msgid "nano is out of memory!"
 msgstr "nano brakło pamięci!"
 
-#: src/winio.c:85
+#: src/winio.c:86
 msgid "Recording a macro..."
 msgstr ""
 
-#: src/winio.c:88
+#: src/winio.c:89
 msgid "Stopped recording"
 msgstr ""
 
-#: src/winio.c:99
+#: src/winio.c:100
 msgid "Cannot run macro while recording"
 msgstr ""
 
-#: src/winio.c:105
+#: src/winio.c:106
 msgid "Macro is empty"
 msgstr ""
 
-#: src/winio.c:211
+#: src/winio.c:207
 msgid "Too many errors from stdin"
 msgstr ""
 
 #. TRANSLATORS: This refers to a sequence of escape codes
-#. * (from the keyboard) that nano does not know about.
-#: src/winio.c:1335
+#. * (from the keyboard) that nano does not recogize.
+#: src/winio.c:1280
 msgid "Unknown sequence"
 msgstr "Nieznana sekwencja"
 
 #. TRANSLATORS: This is shown while a six-digit hexadecimal
 #. * Unicode character code (%s) is being typed in.
-#: src/winio.c:1499
+#: src/winio.c:1416
 #, c-format
 msgid "Unicode Input: %s"
 msgstr "Wejście Unicode: %s"
 
-#: src/winio.c:2100
+#: src/winio.c:2020
 msgid "DIR:"
 msgstr "KAT:"
 
-#: src/winio.c:2119 src/winio.c:2123
+#: src/winio.c:2039 src/winio.c:2043
 msgid "Modified"
 msgstr "Zmieniony "
 
-#: src/winio.c:2121
+#: src/winio.c:2041
 msgid "View"
 msgstr "Przegl."
 
-#: src/winio.c:2249
+#: src/winio.c:2169
 msgid "Further warnings were suppressed"
 msgstr ""
 
-#: src/winio.c:3436
-#, c-format
-msgid "line %ld/%ld (%d%%), col %lu/%lu (%d%%), char %lu/%lu (%d%%)"
+#: src/winio.c:3357
+#, fuzzy, c-format
+msgid "line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"
 msgstr "lin.%ld/%ld (%d%%), kol.%lu/%lu (%d%%), zn.%lu/%lu (%d%%)"
 
-#: src/winio.c:3636
+#: src/winio.c:3555
 msgid "The nano text editor"
 msgstr "Edytor tekstu nano"
 
-#: src/winio.c:3637
+#: src/winio.c:3556
 msgid "version"
 msgstr "wersja"
 
-#: src/winio.c:3638
+#: src/winio.c:3557
 msgid "Brought to you by:"
 msgstr "Stworzony przez:"
 
-#: src/winio.c:3639
+#: src/winio.c:3558
 msgid "Special thanks to:"
 msgstr "Specjalne podziękowania otrzymują:"
 
-#: src/winio.c:3640
+#: src/winio.c:3559
 msgid "The Free Software Foundation"
 msgstr "Free Software Foundation (Fundacja Wolnego Oprogramowania)"
 
-#: src/winio.c:3641
+#: src/winio.c:3560
 msgid "the many translators and the TP"
 msgstr "wielu tłumaczy i TP"
 
-#: src/winio.c:3642
+#: src/winio.c:3561
 msgid "For ncurses:"
 msgstr "Za ncurses:"
 
-#: src/winio.c:3643
+#: src/winio.c:3562
 msgid "and anyone else we forgot..."
 msgstr "oraz wszyscy pozostali, o których zapomnieliśmy..."
 
-#: src/winio.c:3644
+#: src/winio.c:3563
 msgid "Thank you for using nano!"
 msgstr "Dziękujemy za korzystanie z nano!"
 
@@ -2626,6 +2619,9 @@ msgstr "Dziękujemy za korzystanie z nano!"
 #~ "go do preferowanego miejsca (%s)\n"
 #~ "(patrz FAQ nano co do tej zmiany)"
 
+#~ msgid "Unindent the current line"
+#~ msgstr "Usuń wcięcia z bieżącej linii"
+
 #~ msgid "Window size is too small for nano...\n"
 #~ msgstr "Rozmiar okna za mały dla nano...\n"
 
@@ -2649,6 +2645,19 @@ msgstr "Dziękujemy za korzystanie z nano!"
 
 #~ msgid "XOFF ignored, mumble mumble"
 #~ msgstr "Zignorowano XOFF, hmm, hmm."
+
+#~ msgid ""
+#~ "Color \"%s\" not understood.\n"
+#~ "Valid colors are \"green\", \"red\", \"blue\",\n"
+#~ "\"white\", \"yellow\", \"cyan\", \"magenta\" and\n"
+#~ "\"black\", with the optional prefix \"bright\"\n"
+#~ "for foreground colors."
+#~ msgstr ""
+#~ "Nieznany kolor \"%s\".\n"
+#~ "Dozwolone kolory to \"green\", \"red\", \"blue\", \n"
+#~ "\"white\", \"yellow\", \"cyan\", \"magenta\" i \n"
+#~ "\"black\", z opcjonalnym przedrostkiem \"bright\"\n"
+#~ "dla kolorów pierwszoplanowych."
 
 #~ msgid ""
 #~ "\n"

@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 2.9.1" "November 2017"
+.TH NANO 1 "version 2.9.3" "January 2018"
 
 .SH NAME
 nano \- Nano's ANOther editor, an enhanced free Pico clone
@@ -107,6 +107,10 @@ won't work properly with this option enabled.
 .TP
 .BR \-L ", " \-\-nonewlines
 Don't add newlines to the ends of files.
+.TP
+.BR \-M ", " \-\-trimblanks
+Snip trailing whitespace from the wrapped line when automatic
+hard-wrapping occurs or when text is justified.
 .TP
 .BR \-N ", " \-\-noconvert
 Disable automatic conversion of files from DOS/Mac format.
@@ -301,7 +305,7 @@ saving.
 .sp
 The recording and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the latter is a
-deficient terminal.  And it works only with recent versions of ncurses.
+deficient terminal.
 .sp
 Please report any other bugs that you encounter via:
 .br

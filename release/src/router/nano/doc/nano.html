@@ -1,7 +1,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<!-- Created by GNU Texinfo 6.4, http://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>nano</title>
 
 <meta name="description" content="nano">
@@ -9,7 +10,6 @@
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="makeinfo">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="#Top" rel="start" title="Top">
 <link href="#SEC_Contents" rel="contents" title="Table of Contents">
 <link href="dir.html#Top" rel="up" title="(dir)">
@@ -57,7 +57,7 @@ ul.no-bullet {list-style: none}
 <a name="Top"></a>
 <a name="SEC_Top"></a>
 
-<p>This manual documents the GNU <code>nano</code> editor, version 2.9.1.
+<p>This manual documents the GNU <code>nano</code> editor, version 2.9.3.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -205,6 +205,12 @@ won&rsquo;t work properly with this option enabled.
 <dt><samp>-L</samp></dt>
 <dt><samp>--nonewlines</samp></dt>
 <dd><p>Don&rsquo;t add newlines to the ends of files.
+</p>
+</dd>
+<dt><samp>-M</samp></dt>
+<dt><samp>--trimblanks</samp></dt>
+<dd><p>Snip trailing whitespace from the wrapped line when automatic
+hard-wrapping occurs or when text is justified.
 </p>
 </dd>
 <dt><samp>-N</samp></dt>
@@ -625,7 +631,7 @@ saving.
 </p>
 <p>The recording and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the latter is a
-deficient terminal.  And it works only with recent versions of ncurses.
+deficient terminal.
 </p>
 <hr>
 <a name="Built_002din-Help"></a>
@@ -855,10 +861,6 @@ And either <var>fgcolor</var> or ,<var>bgcolor</var> may be left out.
 executed commands, so they can be easily reused in later sessions.
 </p>
 </dd>
-<dt><code>set justifytrim</code></dt>
-<dd><p>When justifying text, trailing whitespace will automatically be removed.
-</p>
-</dd>
 <dt><code>set keycolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the shortcut key combos
 in the two help lines at the bottom of the screen.
@@ -1035,6 +1037,11 @@ greater than 0.  The default value is <tt>8</tt>.
 <dt><code>set titlecolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the title bar.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
+</p>
+</dd>
+<dt><code>set trimblanks</code></dt>
+<dd><p>Remove trailing whitespace from wrapped lines when automatic
+hard-wrapping occurs or when text is justified.
 </p>
 </dd>
 <dt><code>set unix</code></dt>

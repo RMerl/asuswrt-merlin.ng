@@ -1,5 +1,5 @@
-# mbrtowc.m4 serial 29  -*- coding: utf-8 -*-
-dnl Copyright (C) 2001-2002, 2004-2005, 2008-2017 Free Software Foundation,
+# mbrtowc.m4 serial 30  -*- coding: utf-8 -*-
+dnl Copyright (C) 2001-2002, 2004-2005, 2008-2018 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -563,12 +563,11 @@ AC_DEFUN([gl_MBRTOWC_EMPTY_INPUT],
       dnl is present.
 changequote(,)dnl
       case "$host_os" in
-                    # Guess no on AIX and glibc systems.
-        aix* | *-gnu*)
-                    gl_cv_func_mbrtowc_empty_input="guessing no" ;;
-                    # Guess yes on native Windows.
-        mingw*)     gl_cv_func_mbrtowc_empty_input="guessing yes" ;;
-        *)          gl_cv_func_mbrtowc_empty_input="guessing yes" ;;
+                              # Guess no on AIX and glibc systems.
+        aix* | *-gnu* | gnu*) gl_cv_func_mbrtowc_empty_input="guessing no" ;;
+                              # Guess yes on native Windows.
+        mingw*)               gl_cv_func_mbrtowc_empty_input="guessing yes" ;;
+        *)                    gl_cv_func_mbrtowc_empty_input="guessing yes" ;;
       esac
 changequote([,])dnl
       AC_RUN_IFELSE(

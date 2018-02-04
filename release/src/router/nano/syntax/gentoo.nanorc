@@ -24,7 +24,7 @@ color red "\<EBUILD_PHASE(_FUNC)?\>"
 color red "\<QA_((TEXTRELS|EXECSTACK|WX_LOAD)(_[a-zA-Z_0-9]+)?|DT_HASH|PRESTRIPPED)\>"
 color red "\<(PATCHES|(HTML_)?DOCS)\>" "\<WANT_(AUTO(CONF|MAKE)|LIBTOOL)\>" "\<AT_M4DIR\>"
 ## Portage commands:
-color magenta "\<(use(_(with|enable|if_iuse)|x)?|in_iuse)\> [!a-zA-Z0-9_+ -]*" "inherit.*"
+color magenta "\<(use(_(with|enable|if_iuse)|x)?|in_iuse) [!a-zA-Z0-9_+ -]*" "inherit.*"
 color brightblue "\<e(begin|end|conf|install|make|qmake4|ant|(qa)?warn|infon?|error|log|patch(_user)?|new(group|user))\>"
 color brightblue "\<e(pause|beep|mktemp|(cvs|svn)_clean|punt_cxx)\>" "\<e(aclocal|auto(reconf|header|conf|make)|libtoolize)\>"
 color brightblue "\<e(stack|shopts|umask)_(push|pop)\>" "\<version_is_at_least\>"

@@ -1,6 +1,6 @@
-# serial 13
+# serial 14
 
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -43,10 +43,10 @@ AC_DEFUN([gl_FUNC_STAT],
              ]])],
            [gl_cv_func_stat_file_slash=yes], [gl_cv_func_stat_file_slash=no],
            [case "$host_os" in
-                      # Guess yes on glibc systems.
-              *-gnu*) gl_cv_func_stat_file_slash="guessing yes" ;;
-                      # If we don't know, assume the worst.
-              *)      gl_cv_func_stat_file_slash="guessing no" ;;
+                             # Guess yes on glibc systems.
+              *-gnu* | gnu*) gl_cv_func_stat_file_slash="guessing yes" ;;
+                             # If we don't know, assume the worst.
+              *)             gl_cv_func_stat_file_slash="guessing no" ;;
             esac
            ])
          rm -f conftest.tmp conftest.lnk])

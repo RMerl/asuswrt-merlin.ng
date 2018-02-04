@@ -8,18 +8,18 @@ comment "//"
 color brightgreen "(<\?(php)?|\?>)"
 
 # Function names.
-color white "\<[a-z_]*\("
+color white "\<[A-Za-z_][A-Za-z_0-9]*\("
 # Variable names.
-color cyan "\$[a-z_]+"
+color cyan "\$[A-Za-z_][A-Za-z_0-9]*"
 
 # Types.
 color green "\<(array|bool|callable|const|float|global|int|object|string|var)\>"
 
 # Directives and structure.
-color brightyellow "\<(abstract|as|class|clone|(end)?declare|extends|function|implements|include(_once)?|inst(ance|ead)of|interface|namespace|new|private|protected|public|require(_once)?|static|trait|use|yield)\>"
-color brightyellow "\<(case|catch|default|do|echo|else(if)?|end(for(each)?|if|switch|while)|final(ly)?|for(each)?|if|print|switch|throw|try|while)\>"
+color brightcyan "\<(abstract|as|class|clone|(end)?declare|extends|function|implements|include(_once)?|inst(ance|ead)of|interface|namespace|new|private|protected|public|require(_once)?|static|trait|use|yield)\>"
+color brightcyan "\<(case|catch|default|do|echo|else(if)?|end(for(each)?|if|switch|while)|final(ly)?|for(each)?|if|print|switch|throw|try|while)\>"
 # Operators.
-color brightyellow "\<(and|or|xor)\>"
+color brightcyan "\<(and|or|xor)\>"
 
 # Control flow.
 color magenta "\<(break|continue|goto|return)\>"

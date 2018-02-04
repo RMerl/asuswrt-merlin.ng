@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -1334,8 +1334,8 @@ push_fail_stack (struct re_fail_stack_t *fs, Idx str_idx, Idx dest_node,
   if (fs->num == fs->alloc)
     {
       struct re_fail_stack_ent_t *new_array;
-      new_array = realloc (fs->stack, (sizeof (struct re_fail_stack_ent_t)
-				       * fs->alloc * 2));
+      new_array = re_realloc (fs->stack, struct re_fail_stack_ent_t,
+                              fs->alloc * 2);
       if (new_array == NULL)
 	return REG_ESPACE;
       fs->alloc *= 2;
@@ -3319,7 +3319,7 @@ build_trtable (const re_dfa_t *dfa, re_dfastate_t *state)
   if (BE (ndests <= 0, 0))
     {
       if (dests_node_malloced)
-	free (dests_alloc);
+	re_free (dests_alloc);
       /* Return false in case of an error, true otherwise.  */
       if (ndests == 0)
 	{
@@ -3349,18 +3349,17 @@ build_trtable (const re_dfa_t *dfa, re_dfastate_t *state)
       alloca (ndests * 3 * sizeof (re_dfastate_t *));
   else
     {
-      dest_states = (re_dfastate_t **)
-	malloc (ndests * 3 * sizeof (re_dfastate_t *));
+      dest_states = re_malloc (re_dfastate_t *, ndests * 3);
       if (BE (dest_states == NULL, 0))
 	{
 out_free:
 	  if (dest_states_malloced)
-	    free (dest_states);
+	    re_free (dest_states);
 	  re_node_set_free (&follows);
 	  for (i = 0; i < ndests; ++i)
 	    re_node_set_free (dests_node + i);
 	  if (dests_node_malloced)
-	    free (dests_alloc);
+	    re_free (dests_alloc);
 	  return false;
 	}
       dest_states_malloced = true;
@@ -3491,14 +3490,14 @@ out_free:
     }
 
   if (dest_states_malloced)
-    free (dest_states);
+    re_free (dest_states);
 
   re_node_set_free (&follows);
   for (i = 0; i < ndests; ++i)
     re_node_set_free (dests_node + i);
 
   if (dests_node_malloced)
-    free (dests_alloc);
+    re_free (dests_alloc);
 
   return true;
 }
@@ -4166,7 +4165,7 @@ match_ctx_clean (re_match_context_t *mctx)
 	  re_free (top->path->array);
 	  re_free (top->path);
 	}
-      free (top);
+      re_free (top);
     }
 
   mctx->nsub_tops = 0;

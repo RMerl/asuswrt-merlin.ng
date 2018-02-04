@@ -1,6 +1,6 @@
 # Check for fnmatch - serial 9.  -*- coding: utf-8 -*-
 
-# Copyright (C) 2000-2007, 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2000-2007, 2009-2018 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.

@@ -1,6 +1,6 @@
-# serial 30
+# serial 31
 
-# Copyright (C) 1997-2001, 2003-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2001, 2003-2018 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -53,7 +53,7 @@ AC_DEFUN([gl_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK],
        [gl_cv_func_lstat_dereferences_slashed_symlink=yes],
        [gl_cv_func_lstat_dereferences_slashed_symlink=no],
        [case "$host_os" in
-          *-gnu*)
+          *-gnu* | gnu*)
             # Guess yes on glibc systems.
             gl_cv_func_lstat_dereferences_slashed_symlink="guessing yes" ;;
           mingw*)

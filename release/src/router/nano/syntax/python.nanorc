@@ -9,8 +9,10 @@ comment "#"
 # Function definitions.
 icolor brightblue "def [0-9A-Z_]+"
 # Keywords.
-color brightcyan "\<(and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from)\>"
-color brightcyan "\<(global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while|with|yield)\>"
+color brightcyan "\<(and|as|assert|async|await|break|class|continue)\>"
+color brightcyan "\<(def|del|elif|else|except|exec|finally|for|from)\>"
+color brightcyan "\<(global|if|import|in|is|lambda|nonlocal|not|or)\>"
+color brightcyan "\<(pass|print|raise|return|try|while|with|yield)\>"
 
 # Single-quoted strings.
 color brightgreen "'([^'\]|\\.)+'"
@@ -21,8 +23,11 @@ color brightred "(^|[[:blank:]])#.*$"
 color brightgreen    start="'''([^'),]|$)" end="(^|[^(\])'''"
 color brightgreen start="\"\"\"([^"),]|$)" end="(^|[^(\])\"\"\""
 
+# Special values.
+color brightmagenta "\<(False|None|True)\>"
+
 # Reminders.
-color ,yellow "(FIXME|TODO|XXX)"
+color brightwhite,yellow "(FIXME|TODO|XXX)"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

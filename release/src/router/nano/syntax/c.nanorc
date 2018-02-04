@@ -33,7 +33,7 @@ color brightblue "//.*"
 color brightblue start="/\*" end="\*/"
 
 # Reminders.
-color ,yellow "\<(FIXME|TODO|XXX)\>"
+color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

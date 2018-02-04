@@ -1,6 +1,6 @@
 /* A GNU-like <signal.h>.
 
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ _GL_FUNCDECL_RPL (pthread_sigmask, int,
 _GL_CXXALIAS_RPL (pthread_sigmask, int,
                   (int how, const sigset_t *new_mask, sigset_t *old_mask));
 # else
-#  if !@HAVE_PTHREAD_SIGMASK@
+#  if !(@HAVE_PTHREAD_SIGMASK@ || defined pthread_sigmask)
 _GL_FUNCDECL_SYS (pthread_sigmask, int,
                   (int how, const sigset_t *new_mask, sigset_t *old_mask));
 #  endif

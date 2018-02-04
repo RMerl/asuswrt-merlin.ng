@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 2.9.1" "November 2017"
+.TH NANORC 5 "version 2.9.3" "January 2018"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -117,9 +117,6 @@ See \fBset titlecolor\fR for more details.
 .B set historylog
 Save the last hundred search strings and replacement strings and
 executed commands, so they can be easily reused in later sessions.
-.TP
-.B set justifytrim
-When justifying text, trailing whitespace will automatically be removed.
 .TP
 .B set keycolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for the shortcut key combos
@@ -268,6 +265,10 @@ Valid names for the foreground and background colors are:
 .BR white ", " black ", " blue ", " green ", " red ", " cyan ", " yellow ",  and " magenta .
 The name of the foreground color may be prefixed with \fBbright\fR.
 And either "\fIfgcolor\fR" or ",\fIbgcolor\fR" may be left out.
+.TP
+.B set trimblanks
+Remove trailing whitespace from wrapped lines when automatic
+hard-wrapping occurs or when text is justified.
 .TP
 .B set unix
 Save a file by default in Unix format.  This overrides nano's

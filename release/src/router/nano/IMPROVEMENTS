@@ -2,6 +2,8 @@ Improvements in GNU nano
 ========================
 
 Since 2.9.0:
+  - <Tab> and <Shift+Tab> can be used to indent/unindent a marked region.
+  - Can snip trailing whitespace while typing, with 'set trimblanks'.
   - The ability to record and replay a series of keystrokes (a macro).
   - Assigned functions to ^S (save file) and ^Q (start backward search).
   - Indenting and unindenting have been integrated into the undo system.

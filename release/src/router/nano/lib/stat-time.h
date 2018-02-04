@@ -1,6 +1,6 @@
 /* stat-related time functions.
 
-   Copyright (C) 2005, 2007, 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -102,15 +102,13 @@ get_stat_mtime_ns (struct stat const *st)
 
 /* Return the nanosecond component of *ST's birth time.  */
 _GL_STAT_TIME_INLINE long int _GL_ATTRIBUTE_PURE
-get_stat_birthtime_ns (struct stat const *st)
+get_stat_birthtime_ns (struct stat const *st _GL_UNUSED)
 {
 # if defined HAVE_STRUCT_STAT_ST_BIRTHTIMESPEC_TV_NSEC
   return STAT_TIMESPEC (st, st_birthtim).tv_nsec;
 # elif defined HAVE_STRUCT_STAT_ST_BIRTHTIMENSEC
   return STAT_TIMESPEC_NS (st, st_birthtim);
 # else
-  /* Avoid a "parameter unused" warning.  */
-  (void) st;
   return 0;
 # endif
 }
@@ -160,7 +158,7 @@ get_stat_mtime (struct stat const *st)
 /* Return *ST's birth time, if available; otherwise return a value
    with tv_sec and tv_nsec both equal to -1.  */
 _GL_STAT_TIME_INLINE struct timespec _GL_ATTRIBUTE_PURE
-get_stat_birthtime (struct stat const *st)
+get_stat_birthtime (struct stat const *st _GL_UNUSED)
 {
   struct timespec t;
 
@@ -184,8 +182,6 @@ get_stat_birthtime (struct stat const *st)
   /* Birth time is not supported.  */
   t.tv_sec = -1;
   t.tv_nsec = -1;
-  /* Avoid a "parameter unused" warning.  */
-  (void) st;
 #endif
 
 #if (defined HAVE_STRUCT_STAT_ST_BIRTHTIMESPEC_TV_NSEC \
@@ -212,7 +208,7 @@ get_stat_birthtime (struct stat const *st)
    errno to EOVERFLOW if normalization overflowed.  This function
    is intended to be private to this .h file.  */
 _GL_STAT_TIME_INLINE int
-stat_time_normalize (int result, struct stat *st)
+stat_time_normalize (int result, struct stat *st _GL_UNUSED)
 {
 #if defined __sun && defined STAT_TIMESPEC
   if (result == 0)

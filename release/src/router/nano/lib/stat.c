@@ -1,5 +1,5 @@
 /* Work around platform bugs in stat.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -46,6 +46,8 @@ orig_stat (const char *filename, struct stat *buf)
    eliminates this include because of the preliminary #include <sys/stat.h>
    above.  */
 #include "sys/stat.h"
+
+#include "stat-time.h"
 
 #include <errno.h>
 #include <limits.h>

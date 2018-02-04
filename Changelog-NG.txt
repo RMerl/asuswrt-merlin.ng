@@ -18,7 +18,9 @@ Asuswrt-Merlin 384 Changelog
    - NEW: Merged with GPL 384_10007
    - NEW: Added support for RT-AC3200 (merged
           SDK 7.x-main + binary blobs from 382_19466).
+   - NEW: nano can now be configured through /jffs/configs/nanorc
    - CHANGED: Allow up to 5 OpenVPN clients on RT-AC3200.
+   - CHANGED: Updated nano to 2.9.3.
    - FIXED: Some routers coming from 380.xx would incorrectly
             report a new firmware available at boot time.
    - FIXED: Some broken clients (like Samsung TVs) try to use

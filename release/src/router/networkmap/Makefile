@@ -107,6 +107,7 @@ ifeq ($(wildcard $(SRCBASE)/router/networkmap/*.c),)
 all: 
 	-cp -f prebuild$(BCMEX)$(EX7)/networkmap networkmap
 	-cp -f prebuild$(BCMEX)$(EX7)/asusdiscovery asusdiscovery
+	-cp -f prebuild$(BCMEX)$(EX7)/arpstorm arpstorm
 else
 all: $(EXEC) asusdiscovery arpstorm
 endif
@@ -136,10 +137,10 @@ install:
 ifneq ($(AC2900),y)
 	install -D asusdiscovery $(INSTALLDIR)/usr/sbin/asusdiscovery
 	$(STRIP) $(INSTALLDIR)/usr/sbin/asusdiscovery
-ifneq ($(wildcard $(SRCBASE)/router/networkmap/*.c),)
+#ifneq ($(wildcard $(SRCBASE)/router/networkmap/*.c),)
 	install -D arpstorm $(INSTALLDIR)/usr/sbin/arpstorm
 	$(STRIP) $(INSTALLDIR)/usr/sbin/arpstorm
-endif
+#endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
 	cp -f networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js

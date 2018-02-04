@@ -6842,7 +6842,7 @@ endif
 # Start merlin components
 nano/Makefile:
 	cd nano && \
-	autoreconf -i -f && $(CONFIGURE) --prefix=$(INSTALLDIR)/nano/usr \
+	autoreconf -i -f && $(CONFIGURE) --prefix=$(INSTALLDIR)/nano/usr --sysconfdir=/jffs/configs \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/ncurses-6.0/include -ffunction-sections -fdata-sections" \
 		LDFLAGS="$(LDFLAGS) -L$(TOP)/ncurses-6.0/lib -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		PKG_CONFIG_LIBDIR="$(TOP)/ncurses-6.0/misc" PKG_CONFIG_PATH="$(TOP)/ncurses-6.0/misc" \

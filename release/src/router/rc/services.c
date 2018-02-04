@@ -13112,7 +13112,6 @@ _dprintf("nat_rule: the nat rule file was not ready. wait %d seconds...\n", retr
 
 int stop_nat_rules(void)
 {
-	int i;
 	int ret, nat_state;
 
 	nat_state = nvram_get_int("nat_state");

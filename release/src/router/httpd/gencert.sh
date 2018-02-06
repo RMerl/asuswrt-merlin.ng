@@ -146,4 +146,13 @@ mv $CERTNAME.$PID $CERTNAME
 chmod 640 $KEYNAME
 chmod 640 $CERTNAME
 
+if [ "$SERVICE" == "web" ]
+then
+	# cfg_pub.pem for cfg server
+	IS_SUPPORT_CFG_SYNC=`nvram get rc_support|grep -i cfg_sync`
+	if [ "$IS_SUPPORT_CFG_SYNC" != "" ]; then
+	openssl rsa -in key.pem -outform PEM -pubout -out cfg_pub.pem
+	fi
+fi
+
 rm -f /tmp/cert.csr $OPENSSLCNF /var/run/gencert.pid

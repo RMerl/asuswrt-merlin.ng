@@ -3757,15 +3757,15 @@ TRACE_PT("writing Parental Control\n");
 		memset(lanwan_buf, 0, sizeof(lanwan_buf));
 		apply = timematch_conv2(lanwan_timematch, sizeof(lanwan_timematch), "filter_lw_date_x", "filter_lw_time_x", "filter_lw_time2_x");
 
-		if (nvram_match("filter_lw_default_x", "DROP"))
+		if (nvram_match("filter_lw_default_x", "DROP"))	// Whitelist
 		{
 			dtype = logdrop;
 			ftype = "RETURN";
 		}
-		else
+		else	// Blacklist
 		{
-			dtype = logaccept;
-			ftype = "RETURN";
+			dtype = "RETURN";
+			ftype = logdrop;
 		}
 
 		if(apply) {

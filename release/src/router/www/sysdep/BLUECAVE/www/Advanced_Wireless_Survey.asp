@@ -281,7 +281,7 @@ function rescan(){
 				<img id="SearchingIcon" style="display:none;" src="/images/InternetScan.gif">
 			</div>
 
-			<div style="height:660px;overflow-y:auto;margin-top:0px;display:inline-block;" id="wlscan_table_container">
+			<div style="height:660px;overflow-y:auto;margin-top:0px;" id="wlscan_table_container">
 				<div id="wlscan_table" style="height:460px;margin-left:35px;margin-top:0px;vertical-align:top;"></div>
 			</div>
 		</td>

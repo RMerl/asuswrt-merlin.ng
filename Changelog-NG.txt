@@ -37,6 +37,9 @@ Asuswrt-Merlin 384 Changelog
             tx/rx rate and such).
    - FIXED: ipset could cause the router to crash on the HND
             platform (john9527)
+   - FIXED: Network Service Filter wasn't working when in
+            Blacklist mode.
+   - FIXED: Repeater mode (backport from 384_20287)
 
 
 382.2 Beta (17-Jan-2018)

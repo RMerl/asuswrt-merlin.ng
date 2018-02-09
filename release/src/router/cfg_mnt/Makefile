@@ -141,6 +141,8 @@ install: all
 	@install -D cfg_client $(INSTALLDIR)/sbin/cfg_client
 	@install -D cfg_reportstatus $(INSTALLDIR)/sbin/cfg_reportstatus
 	@install -D libcfgmnt.so $(INSTALLDIR)/usr/lib/libcfgmnt.so
+	@install -D gencfgcert.sh $(INSTALLDIR)/usr/sbin/gencfgcert.sh
+
 	@$(STRIP) $(INSTALLDIR)/sbin/cfg_server
 	@$(STRIP) $(INSTALLDIR)/sbin/cfg_client
 	@$(STRIP) $(INSTALLDIR)/sbin/cfg_reportstatus
@@ -148,6 +150,7 @@ install: all
 	@chmod 0500 $(INSTALLDIR)/sbin/cfg_server
 	@chmod 0500 $(INSTALLDIR)/sbin/cfg_client
 	@chmod 0500 $(INSTALLDIR)/sbin/cfg_reportstatus
+	@chmod 0500 $(INSTALLDIR)/usr/sbin/gencfgcert.sh
 
 clean:
 	rm -f cfg_server cfg_client cfg_reportstatus *.so *.o .*.depend

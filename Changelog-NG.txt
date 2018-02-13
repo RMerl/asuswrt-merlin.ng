@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384 Changelog
 ============================
 
-384.3 Beta (xx-xxx-xxxx)
+384.3 (14-Feb-2018)
    - NOTE: To reduce confusion following the version
            bump to 384, the current Github repository
            was renamed from asuswrt-merlin.382 to

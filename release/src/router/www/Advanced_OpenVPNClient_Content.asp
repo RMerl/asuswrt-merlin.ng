@@ -220,13 +220,13 @@ var digestsarray = [
 ];
 
 
-var clientlist_array = '<% nvram_get("vpn_client_clientlist"); %>';
+var clientlist_array = "<% nvram_get("vpn_client_clientlist"); %>";
 if (isSupport("hnd")) {
-	clientlist_array += '<% nvram_get("vpn_client_clientlist1"); %>'+
-			    '<% nvram_get("vpn_client_clientlist2"); %>'+
-			    '<% nvram_get("vpn_client_clientlist3"); %>'+
-			    '<% nvram_get("vpn_client_clientlist4"); %>'+
-			    '<% nvram_get("vpn_client_clientlist5"); %>';
+	clientlist_array += "<% nvram_get("vpn_client_clientlist1"); %>"+
+			    "<% nvram_get("vpn_client_clientlist2"); %>"+
+			    "<% nvram_get("vpn_client_clientlist3"); %>"+
+			    "<% nvram_get("vpn_client_clientlist4"); %>"+
+			    "<% nvram_get("vpn_client_clientlist5"); %>";
 }
 
 function initial()

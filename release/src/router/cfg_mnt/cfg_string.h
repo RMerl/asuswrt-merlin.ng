@@ -44,5 +44,6 @@
 #define CFG_STR_BANDNUM		"cfg_bandnum"
 #define CFG_ACTION_SCRIPT	"action_script"
 #define CFG_STR_CURRENT_CHANNEL	"cur_channel"
+#define CFG_STR_CONFIG		"config"
 
 #endif /* __CFG_STRING_H__ */

@@ -70,7 +70,14 @@ else
 
 function initial(){
 	show_menu();
-
+	if(is_CN){
+		$("#googleplay").hide();
+		$("#wandoujia").show();
+	}
+	else{
+		$("#googleplay").show();
+		$("#wandoujia").hide();
+	}
 	document.getElementById("app_state").style.display = "";
 	
 	if(cloudsync_support){		//aicloud builded in
@@ -813,9 +820,12 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 																</ul>
 															</td>
 															<td>							
-																<a href="https://play.google.com/store/apps/details?id=com.asustek.aicloud" target="_blank">
+																<a id="googleplay" href="https://play.google.com/store/apps/details?id=com.asustek.aicloud" target="_blank">
 																	<div style="width:172px;height:51px;background:url('images/cloudsync/googleplay.png') no-repeat;background-size:75%;"></div>
-																</a>																
+																</a>												
+																<a id="wandoujia" href="http://www.wandoujia.com/apps/com.asus.aihome" target="_blank" style="display:none">
+																	<div style="width:130px;height:51px;text-align: center;line-height:51px;line-height: 51px;font-size: 20px;font-weight: bold;text-decoration: underline;">豌豆荚</div>
+																</a>			
 																<a href="https://itunes.apple.com/us/app/aicloud-lite/id527118674" target="_blank">
 																	<div style="width:172px;height:51px;background:url('images/cloudsync/AppStore.png') no-repeat;background-size:75%;"></div>
 																</a>	

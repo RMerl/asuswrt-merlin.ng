@@ -2420,6 +2420,52 @@ long backup_rx = 0;
 long backup_tx = 0;
 int backup_set = 0;
 
+/* Looking for a ifino_s by interface name.
+ * @ifinotbl:
+ * @ifname:
+ * @return:
+ * 	NULL		not found or invalid parameter;
+ *  otherwise		pointer to struct ifname_ino
+ */
+struct ifino_s *ifname_ino_ptr(struct ifname_ino_tbl *ifinotbl, const char *ifname)
+{
+	int i;
+	struct ifino_s *ret = NULL, *p;
+
+	if (!ifinotbl || !ifname || *ifname == '\0')
+		return NULL;
+
+	for (i = 0, p = &ifinotbl->items[0]; i < ifinotbl->nr_items; ++i, ++p) {
+		if (strcmp(p->ifname, ifname))
+			continue;
+		ret = p;
+		break;
+	}
+
+	return ret;
+}
+
+/* Get inode of a interface.
+ * @ifname:
+ * @return:
+ * 	0	error
+ *  otherwise	inode of @ifname
+ */
+ino_t get_iface_inode(const char *ifname)
+{
+	struct stat s;
+	char path[sizeof(SYS_CLASS_NET) + 1 + IFNAMSIZ + 6];
+
+	if (!ifname || *ifname == '\0')
+		return 0;
+
+	snprintf(path, sizeof(path), "%s/%s", SYS_CLASS_NET, ifname);
+	if (stat(path, &s))
+		return 0;
+
+	return s.st_ino;
+}
+
 unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2, char *nv_lan_ifname, char *nv_lan_ifnames)		
 {
 	char word[100], word1[100], *next, *next1;

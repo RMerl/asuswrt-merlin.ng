@@ -91,10 +91,7 @@
 <script>
 $(function () {
 	if(amesh_support) {
-		$('<script>')
-			.attr('type', 'text/javascript')
-			.attr('src','/require/modules/amesh.js')
-			.appendTo('head');
+		addNewScript('/require/modules/amesh.js');
 	}
 });
 var sw_mode_orig = '<% nvram_get("sw_mode"); %>';

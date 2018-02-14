@@ -144,6 +144,11 @@ void dbg(const char * format, ...)
 	if (nfd != -1) close(nfd);
 }
 
+/* XXX - this should be in a common file */
+#define WLMBSS_DEV_NAME        "wlmbss"
+#define WL_DEV_NAME "wl"
+#define WDS_DEV_NAME   "wds"
+
 /*
  * Reads file and returns contents
  * @param	fd	file descriptor
@@ -936,41 +941,73 @@ get_ifname_unit(const char* ifname, int *unit, int *subunit)
 	if (len == 0)
 		return -1;
 
-	/* point to the beginning of the last integer and convert */
-	p = str + (ifname_len - len);
-	val = strtoul(p, NULL, 10);
+	/* Check for WDS interface */
+	if (strncmp(str, WDS_DEV_NAME, strlen(WDS_DEV_NAME))) {
+		/* point to the beginning of the last integer and convert */
+		p = str + (ifname_len - len);
+		val = strtoul(p, NULL, 10);
 
-	/* if we are at the beginning of the string, or the previous
-	 * character is not a '.', then we have the unit number and
-	 * we are done parsing
-	 */
-	if (p == str || p[-1] != '.') {
+		/* if we are at the beginning of the string, or the previous
+		 * character is not a '.', then we have the unit number and
+		 * we are done parsing
+		 */
+		if (p == str || p[-1] != '.') {
+			if (unit)
+			*unit = val;
+			return 0;
+		} else {
+			if (subunit)
+				*subunit = val;
+		}
+
+		/* chop off the '.NNN' and get the unit number */
+		p--;
+		p[0] = '\0';
+
+		/* find the trailing digit chars */
+		len = sh_strrspn(str, digits);
+
+		/* fail if there were no trailing digits */
+		if (len == 0)
+			return -1;
+
+		/* point to the beginning of the last integer and convert */
+		p = p - len;
+		val = strtoul(p, NULL, 10);
+
+		/* save the unit number */
 		if (unit)
 			*unit = val;
-		return 0;
 	} else {
-		if (subunit)
-			*subunit = val;
+		/* WDS interface */
+		/* point to the beginning of the first integer and convert */
+		p = str + strlen(WDS_DEV_NAME);
+		val = strtoul(p, &p, 10);
+
+		/* if next character after integer is '.' then we have unit number else fail */
+		if (p[0] == '.') {
+			/* Save unit number */
+			if (unit) {
+				*unit = val;
+			}
+		} else {
+			return -1;
+		}
+
+		/* chop off the '.' and get the subunit number */
+		p++;
+		val = strtoul(p, &p, 10);
+
+		/* if next character after interger is '.' then we have subunit number else fail */
+		if (p[0] == '.') {
+			/* Save subunit number */
+			if (subunit) {
+				*subunit = val;
+			}
+		} else {
+			return -1;
+		}
 	}
-
-	/* chop off the '.NNN' and get the unit number */
-	p--;
-	p[0] = '\0';
-
-	/* find the trailing digit chars */
-	len = sh_strrspn(str, digits);
-
-	/* fail if there were no trailing digits */
-	if (len == 0)
-		return -1;
-
-	/* point to the beginning of the last integer and convert */
-	p = p - len;
-	val = strtoul(p, NULL, 10);
-
-	/* save the unit number */
-	if (unit)
-		*unit = val;
 
 	return 0;
 }
@@ -1233,10 +1270,6 @@ ure_any_enabled(void)
 	return nvram_match("ure_disable", "0");
 }
 
-
-#define WLMBSS_DEV_NAME	"wlmbss"
-#define WL_DEV_NAME "wl"
-#define WDS_DEV_NAME	"wds"
 
 /**
  *	 nvifname_to_osifname()

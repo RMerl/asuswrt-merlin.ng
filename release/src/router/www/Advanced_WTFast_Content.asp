@@ -233,26 +233,9 @@ for(var i = 1; i < wtfast_rulelist_row.length; i ++) {
 		wtfast_rulelist_array[i-1] = [wtfast_rulelist_col[0], wtfast_rulelist_col[1].toUpperCase(), wtfast_rulelist_col[2], wtfast_rulelist_col[3], wtfast_rulelist_col[4]];
 }
 
-var saved_game_list = decodeURIComponent('<% nvram_char_to_ascii("", "wtf_game_list"); %>');
-var saved_server_list = decodeURIComponent('<% nvram_char_to_ascii("", "wtf_server_list"); %>');
-
 //	[ToDo] This JSON should be stored in the router or get form wtfd.
 var wtfast_status = [<% wtfast_status();%>][0];
 
-if(saved_game_list != ""){
-	var saved_game_row = saved_game_list.split('<');
-		for(var i = 1; i < saved_game_row.length; i++) {
-			var saved_game_col = saved_game_row[i].split('>');
-			wtfast_status.Game_List.push({"name": saved_game_col[0], "id":saved_game_col[1]});
-		}
-}
-
-if(saved_server_list != ""){
-	var saved_server_row = saved_server_list.split('<');
-		for(var i = 1; i < saved_server_row.length; i++) {
-			wtfast_status.Server_List[i-1] = saved_server_row[i];
-		}
-}
 /*
 	var wtfast_status = [{ 
 		"eMail": "", 
@@ -542,12 +525,13 @@ function delRule(r){
 function show_rulelist(){
 	var wtfast_rulelist_col = "";
 	var code = "";
+	var clientListEventData = [];
 	enable_num = 0;
 
 	code +='<table width="710px" align="center" cellpadding="4" cellspacing="0" style="text-align:center; margin-left:20px;" id="wtfast_rulelist_table">';
 	
 	if(Object.keys(wtfast_rulelist_array).length == 0)
-		code +='<tr><td style="color:#EAE9E9;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:#EAE9E9;"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		rule_enable_array = [];
 		Object.keys(wtfast_rulelist_array).forEach(function(key) {
@@ -567,6 +551,7 @@ function show_rulelist(){
 			var userIconBase64 = "NoIcon";
 			var clientName, deviceType, deviceVender, clientIP;
 			var clientMac = wtfast_rulelist_array[key][1].toUpperCase();
+			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
@@ -580,25 +565,25 @@ function show_rulelist(){
 				clientIP = "";
 			}
 			if(typeof(clientList[clientMac]) == "undefined") {
-				code += '<div class="clientIcon type0" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
+				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
 			else {
 				if(usericon_support) {
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div style="width:80px;text-align:center;" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					code += '<div id="' + clientIconID + '" style="width:80px;text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
 				}
 				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
+					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 				}
 				else if(deviceVender != "" ) {
 					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
 					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
 					}
 					else {
-						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;WTFast&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 					}
 				}
 			}
@@ -632,11 +617,19 @@ function show_rulelist(){
 	
 			code += '<td style="width:15%"><div><img src = "images/New_ui/delete.svg" onMouseOver="this.src=\'images/New_ui/delete_hover.svg\'" onMouseOut="this.src=\'images/New_ui/delete.svg\'"style="width:25px; height:25px; cursor:pointer;" onclick="delRule(this);"></div></td>';
 			code += '</tr>';
-			code += '<tr><td colspan="5"><div style="width:100%;height:1px;background-color:#660000"></div></td></tr>'
+			code += '<tr><td colspan="5"><div style="width:100%;height:1px;background-color:#660000"></div></td></tr>';
+			clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "WTFast"});
 		});
 	}
 	code +='</table>';
 	document.getElementById('wtfast_rulelist_Block').innerHTML = code;
+	for(var i = 0; i < clientListEventData.length; i += 1) {
+		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
+		var clientIconObj = $("#wtfast_rulelist_Block").children("#wtfast_rulelist_table").find("#" + clientIconID + "")[0];
+		var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
+		paramData["obj"] = clientIconObj;
+		$("#wtfast_rulelist_Block").children("#wtfast_rulelist_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
+	}
 
 	if(Object.keys(wtfast_rulelist_array).length > 0){
 		Object.keys(wtfast_rulelist_array).forEach(function(key) {
@@ -863,18 +856,8 @@ function wtf_login(){
 			},
 			success: function( response ) {
 				wtfast_status = response;
-				var game_list = "";
-				var server_list = "";
 
 				if(wtfast_status.Login_status == 1){
-					Object.keys(wtfast_status.Game_List).forEach(function(key) {
-						game_list += "<"+ wtfast_status.Game_List[key].name + ">" + wtfast_status.Game_List[key].id;
-					});
-				
-					Object.keys(wtfast_status.Server_List).forEach(function(key) {
-						server_list += "<"+ wtfast_status.Server_List[key];
-					});
-
 					if(wtfast_status.Account_Type != "Advanced")
 						reset_proxy2();
 				}
@@ -886,13 +869,7 @@ function wtf_login(){
 						action_mode: "wtfast_login",
 						wtf_username: $("#wtf_username").val(),
 						wtf_passwd: $("#wtf_passwd").val(),
-						wtf_login: response.Login_status,
-						wtf_account_type: response.Account_Type,
-						wtf_max_clients: response.Max_Computers,
-						wtf_days_left: wtfast_status.Days_Left,
-						wtf_server_list: server_list,
-						wtf_game_list: game_list,
-						wtf_session_hash: wtfast_status.Session_Hash
+						wtf_status: JSON.stringify(wtfast_status)
 					},
 					success: function( response ) {
 					

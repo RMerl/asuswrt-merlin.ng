@@ -155,7 +155,7 @@ typedef struct ipsec_prof_s{
     char local_public_interface[SZ_MIN];
     char local_pub_ip[SZ_128BUF];      /*local_public_ip*/
     uint8_t auth_method;
-    char auth_method_key[SZ_MIN];           /*auth_menthod_value*/
+    char auth_method_key[SZ_MIN+1];           /*auth_menthod_value*/
     char local_subnet[SZ_128BUF];
     uint16_t local_port; 
     char remote_subnet[SZ_128BUF];
@@ -172,8 +172,8 @@ typedef struct ipsec_prof_s{
     char remote_id[SZ_MIN];
     uint32_t keylife_p1;         /*IKE default:28800 seconds , 8hr*/
     uint8_t xauth;          /*0:disable,1:server,2:client*/
-    char xauth_account[SZ_MIN];
-    char xauth_password[SZ_MIN];
+    char xauth_account[SZ_MIN+1];
+    char xauth_password[SZ_MIN+1];
     char auth2meth[SZ_MIN];  /*auth2 methon -- xauth_server_type*/
     uint16_t traversal;
     uint16_t ike_isakmp_port;

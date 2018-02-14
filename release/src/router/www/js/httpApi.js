@@ -352,16 +352,8 @@ var httpApi ={
 		$.getJSON(hostOrigin + "/chdom.json?hostname=" + token + "&callback=?");
 	},
 
-	"checkCap": function(targetOrigin, targetId){
-		window.chcap = function(){
-			setTimeout(function(){
-				if(isPage("amasconncap_page")) window.location.href = targetOrigin + "/cfg_onboarding.cgi?id=" + targetId;
-			}, 3000);
-
-			// $("#connCapAlert").hide();
-			$("#loginCapAlert").fadeIn(500);
-		}
-
+	"checkCap": function(targetOrigin, callback){
+		window.chcap = callback;
 		$.getJSON(targetOrigin + "/chcap.json?callback=?");
 	},
 
@@ -430,7 +422,7 @@ var httpApi ={
 					//console.log(response);
 					document.getElementById(_Objid).href = temp_URL_global;
 				},
-				success: function(response) {				
+				success: function(response) {	
 					//console.log(response);
 					if(response.search("QAPage") >= 0)
 						document.getElementById(_Objid).href =  temp_URL_lang;

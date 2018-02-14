@@ -64,10 +64,7 @@
 <script>
 $(function () {
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		$('<script>')
-			.attr('type', 'text/javascript')
-			.attr('src','/require/modules/amesh.js')
-			.appendTo('head');
+		addNewScript('/require/modules/amesh.js');
 	}
 });
 
@@ -325,10 +322,10 @@ function cancel_Edit(){
 function showdhcp_staticlist(){
 	var dhcp_staticlist_row = dhcp_staticlist_array.split('&#60');
 	var code = "";
-
-	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dhcp_staticlist_table">';
+	var clientListEventData = [];
+	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dhcp_staticlist_table">';
 	if(dhcp_staticlist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < dhcp_staticlist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -340,6 +337,7 @@ function showdhcp_staticlist(){
 			var clientName, deviceType, deviceVender;
 
 			var clientMac = dhcp_staticlist_col[0].toUpperCase();
+			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			var clientIP = dhcp_staticlist_col[1];
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
@@ -354,25 +352,25 @@ function showdhcp_staticlist(){
 			code += '<td width="32%" align="center" title="' + clientMac +'">';
 			code += '<table style="width:100%;"><tr><td style="width:20%;height:56px;border:0px;">';
 			if(clientList[clientMac] == undefined) {
-				code += '<div class="clientIcon type0" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;DHCP&quot;)"></div>';
+				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
 			else {
 				if(usericon_support) {
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div style="text-align:center;" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;DHCP&quot;)"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
 				}
 				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;DHCP&quot;)"></div>';
+					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 				}
 				else if(deviceVender != "" ) {
 					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
 					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;DHCP&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
 					}
 					else {
-						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;' + clientIP + '&quot;, &quot;DHCP&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 					}
 				}
 			}
@@ -382,16 +380,24 @@ function showdhcp_staticlist(){
 			code += '</td></tr></table>';
 			code += '</td>';
 
-			code +='<td width="24%">'+ clientIP +'</td>';
-			code +='<td width="24%">'+ dhcp_staticlist_col[2] +'</td>';
+			code += '<td width="24%">'+ clientIP +'</td>';
+			code += '<td width="24%">'+ dhcp_staticlist_col[2] +'</td>';
 
-//				if (j !=3) code +='<td width="28%"></td>';
-			code +='<td width="16%"><input class="edit_btn" onclick="edit_Row(this);" value=""/>';
-			code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
+//				if (j !=3) code += '<td width="28%"></td>';
+			code += '<td width="16%"><input class="edit_btn" onclick="edit_Row(this);" value=""/>';
+			code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
+			clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "DHCP"});
 		}
 	}
-	code +='</table>';
+	code += '</table>';
 	document.getElementById("dhcp_staticlist_Block").innerHTML = code;
+	for(var i = 0; i < clientListEventData.length; i += 1) {
+		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
+		var clientIconObj = $("#dhcp_staticlist_Block").children("#dhcp_staticlist_table").find("#" + clientIconID + "")[0];
+		var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
+		paramData["obj"] = clientIconObj;
+		$("#dhcp_staticlist_Block").children("#dhcp_staticlist_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
+	}
 }
 
 function applyRule(){

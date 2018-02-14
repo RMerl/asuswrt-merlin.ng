@@ -515,7 +515,7 @@ PX_PROTO_PPPOE:
 		ipc_entry.ppp_ifp = skb->dev;
 		ipc_entry.tuple.sid = ipc_entry.pppoe_sid;
 		ct->ctf_pppoe_sid = ipc_entry.pppoe_sid;
-		if (dir == IP_CT_DIR_ORIGINAL)
+		if(dir == IP_CT_DIR_ORIGINAL)
 			ct->ctf_flags |= CTF_FLAGS_PPPOE_PORT_FWD;
 	}
 #endif
@@ -870,12 +870,6 @@ ip_conntrack_ipct_resume(struct sk_buff *skb, u_int32_t hooknum,
 	tuple.src_port = tcph->source;
 	tuple.dst_port = tcph->dest;
 	tuple.protocol = protocol;
-
-#ifdef CTF_PPPOE
-	if ((skb->dev->flags & IFF_POINTOPOINT) && (skb->ctf_pppoe_cb[0] == 1)) {
-		tuple.sid = *(uint16 *)&skb->ctf_pppoe_cb[2];
-	}
-#endif
 
 #ifdef CTF_PPPOE
 	if ((skb->dev->flags & IFF_POINTOPOINT) && (skb->ctf_pppoe_cb[0] == 1)) {

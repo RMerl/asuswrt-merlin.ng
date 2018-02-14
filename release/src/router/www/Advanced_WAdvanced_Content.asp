@@ -126,10 +126,7 @@
 <script>
 $(function () {
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		$('<script>')
-			.attr('type', 'text/javascript')
-			.attr('src','/require/modules/amesh.js')
-			.appendTo('head');
+		addNewScript('/require/modules/amesh.js');
 	}
 });
 //Get boot loader version and convert type form string to Integer
@@ -745,6 +742,10 @@ function applyRule(){
 		if(location_list_support){
 			if((orig_region.length > 0 && orig_region != document.form.location_code.value)
 			|| (orig_region == "" && document.form.location_code.value != tcode)){
+				if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+					if(!AiMesh_confirm_msg("Wireless_CountryCode"))
+						return;
+				}
 				if(lantiq_support){
 					document.form.action_script.value = "restart_wireless";
 					document.form.group_id.value = "location"

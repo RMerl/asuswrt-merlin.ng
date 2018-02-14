@@ -236,12 +236,13 @@ static void init_switch_qca(void)
 		"hyfi_qdisc", "hyfi-bridging",
 #endif
 #if defined(RTCONFIG_STRONGSWAN) ||  defined(RTCONFIG_QUICKSEC)
-		"tunnel4",
+/*		"tunnel4",
 		"qca-nss-capwapmgr", "qca-nss-cfi-cryptoapi",
 		"qca-nss-crypto-tool", "qca-nss-crypto",
 		"qca-nss-profile-drv", "qca-nss-tun6rd",
 		"qca-nss-tunipip6", "qca-nss-ipsec",
-		"qca-nss-ipsecmgr", "qca-nss-cfi-ocf", 
+		"qca-nss-ipsecmgr", "qca-nss-cfi-ocf", */
+		"qca-nss-cfi-cryptoapi", 
 #endif
 		NULL
 	}, **qmod;
@@ -258,7 +259,10 @@ static void init_switch_qca(void)
 #endif
 		if (module_loaded(*qmod))
 			continue;
-
+		if (!strcmp(*qmod, "qca-nss-cfi-cryptoapi")) {
+			if (nvram_get_int("ipsec_hw_crypto_enable") == 0)
+			continue;
+		}
 #if defined(RTCONFIG_SOC_IPQ40XX)
 		if (!strcmp(*qmod, "shortcut-fe-cm")) {
 #if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)

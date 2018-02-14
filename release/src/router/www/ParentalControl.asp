@@ -270,8 +270,9 @@ function hideClients_Block(){
 
 function gen_mainTable(){
 	var code = "";
+	var clientListEventData = [];
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
-	code +='<thead><tr><td colspan="4"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;32)</td></tr></thead>';
+	code +='<thead><tr><td colspan="4"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;16)</td></tr></thead>';
 	code +='<tr><th width="10%" height="30px" title="<#select_all#>"><input id="selAll" type=\"checkbox\" onclick=\"selectAll(this, 0);\" value=\"\"/></th>';
 	code +='<th width="50%"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</th>';
 	code +='<th width="20%"><#ParentalCtrl_time#></th>';
@@ -282,14 +283,15 @@ function gen_mainTable(){
 	code +='<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
 	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 52px" class="clientlist_dropdown"></div></td>';
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
-	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(32)" value=""></td></tr>';
+	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
 	if(MULTIFILTER_DEVICENAME == "" && MULTIFILTER_MAC == "")
-		code +='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td>';
+		code += '<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
 		var clientName, deviceType, deviceVender; 
 		for(var i=0; i<MULTIFILTER_DEVICENAME_row.length; i++){
+			var clientIconID = "clientIcon_" + MULTIFILTER_MAC_row[i].replace(/\:/g, "");
 			if(clientList[MULTIFILTER_MAC_row[i]]) {
 				clientName = (clientList[MULTIFILTER_MAC_row[i]].nickName == "") ? clientList[MULTIFILTER_MAC_row[i]].name : clientList[MULTIFILTER_MAC_row[i]].nickName;
 				deviceType = clientList[MULTIFILTER_MAC_row[i]].type;
@@ -300,32 +302,31 @@ function gen_mainTable(){
 				deviceType = 0;
 				deviceVender = "";
 			}
-			code +='<tr id="row'+i+'">';
-			code +='<td title="'+ MULTIFILTER_ENABLE_row[i] +'"><input type=\"checkbox\" onclick=\"genEnableArray_main('+i+',this);\" '+genChecked(MULTIFILTER_ENABLE_row[i])+'/></td>';
-			code +='<td title="'+clientName+'">';
+			code += '<tr id="row'+i+'">';
+			code += '<td title="'+ MULTIFILTER_ENABLE_row[i] +'"><input type=\"checkbox\" onclick=\"genEnableArray_main('+i+',this);\" '+genChecked(MULTIFILTER_ENABLE_row[i])+'/></td>';
+			code += '<td title="'+clientName+'">';
 		
 			code += '<table width="100%"><tr><td style="width:35%;border:0;float:right;padding-right:30px;">';
 			if(clientList[MULTIFILTER_MAC_row[i]] == undefined) {
-				code += '<div class="clientIcon type0" onClick="popClientListEditTable(&quot;' + MULTIFILTER_MAC_row[i] + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;ParentalControl&quot;)"></div>';
+				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
 			else {
 				if(usericon_support) {
 					userIconBase64 = getUploadIcon(MULTIFILTER_MAC_row[i].replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div style="text-align:center;" onClick="popClientListEditTable(&quot;' + MULTIFILTER_MAC_row[i] + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;ParentalControl&quot;)"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
 				}
 				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + MULTIFILTER_MAC_row[i] + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;ParentalControl&quot;)"></div>';
+					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 				}
 				else if(deviceVender != "" ) {
 					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
 					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + MULTIFILTER_MAC_row[i] + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;ParentalControl&quot;)"></div>';
-
+						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
 					}
 					else {
-						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + MULTIFILTER_MAC_row[i] + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;ParentalControl&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 					}
 				}
 			}
@@ -333,16 +334,24 @@ function gen_mainTable(){
 			code += '<div>' + clientName + '</div>';
 			code += '<div>' + MULTIFILTER_MAC_row[i] + '</div>';
 			code += '</td></tr></table>';
-			code +='</td>';
+			code += '</td>';
 
-			code +='<td><input class=\"edit_btn\" type=\"button\" onclick=\"gen_lantowanTable('+i+');" value=\"\"/></td>';
-			code +='<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this, \''+MULTIFILTER_MAC_row[i]+'\');\" value=\"\"/></td>';
+			code += '<td><input class=\"edit_btn\" type=\"button\" onclick=\"gen_lantowanTable('+i+');" value=\"\"/></td>';
+			code += '<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this, \''+MULTIFILTER_MAC_row[i]+'\');\" value=\"\"/></td></tr>';
+			clientListEventData.push({"mac" : MULTIFILTER_MAC_row[i], "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
 		}
 	}
- 	code +='</tr></table>';
+	code += '</table>';
 
 	document.getElementById("mainTable").style.display = "";
 	document.getElementById("mainTable").innerHTML = code;
+	for(var i = 0; i < clientListEventData.length; i += 1) {
+		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
+		var clientIconObj = $("#mainTable").children("#mainTable_table").find("#" + clientIconID + "")[0];
+		var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
+		paramData["obj"] = clientIconObj;
+		$("#mainTable").children("#mainTable_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
+	}
 	$("#mainTable").fadeIn();
 	document.getElementById("ctrlBtn").innerHTML = '<input class="button_gen" type="button" onClick="applyRule(1);" value="<#CTL_apply#>">';
 

@@ -232,7 +232,8 @@ var Get_Component_WirelessInput = function(wlArray){
 }
 
 function handleSysDep(){
-	$("#welcomeTitle").html($("#welcomeTitle").html().replace("BLUE_CAVE", "BLUE CAVE"))
+	var isNoWAN = (httpApi.detwanGetRet().wanType == 'NOWAN');
+
 	var enableAMAS = httpApi.nvramGet(["amas_force"], true);
 	$(".amasSupport").toggle(isSupport("AMAS") && (enableAMAS.amas_force == "1"));
 	$(".noAmasSupport").toggle(!isSupport("AMAS") || (enableAMAS.amas_force != "1"));
@@ -255,8 +256,8 @@ function handleSysDep(){
 		systemVariable.forceChangePwInTheEnd = true;
 	}
 
-	var wanType = httpApi.detwanGetRet().wanType;
-	$(".amasInAdv").toggle(wanType === 'NOWAN');
+	if(!isNoWAN) $(".amasNoWAN").remove();
+	if(!isSupport("AMAS")) $(".amasSupport").remove();
 }
 
 function handleModelIcon() {
@@ -636,6 +637,34 @@ validator.invalidChar = function(str){
 	var testResult = {
 		'isError': false,
 		'errReason': ''
+	}
+
+	var invalid_char = [];
+	for(var i = 0; i < str.length; ++i){
+		if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
+			invalid_char.push(str.charAt(i));
+		}
+	}
+
+	if(invalid_char.length != 0){
+		testResult.isError = true;
+		testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+	}
+
+	return testResult;
+};
+
+validator.KRSkuPwd = function(str){
+	var testResult = {
+		'isError': false,
+		'errReason': ''
+	}
+
+	if( !/[A-Za-z]/.test(str) || !/[0-9]/.test(str) || str.length < 8 
+		|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(str)
+	){
+		testResult.isError = true;
+		testResult.errReason = "<#JS_validPWD#>";
 	}
 
 	var invalid_char = [];

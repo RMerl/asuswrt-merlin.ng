@@ -55,6 +55,8 @@ int getStorageStatus(STORAGE_INFO_T *st)
 
 #ifdef RTCONFIG_AMAS
 	st->ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS);
+	if (nvram_get_int("amas_bdl"))
+		st->ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS_BDL);
 #endif
 #if defined(RTCONFIG_CFGSYNC) && defined(RTCONFIG_MASTER_DET)
 	if (nvram_get_int("cfg_master"))

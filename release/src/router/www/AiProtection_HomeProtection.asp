@@ -123,6 +123,18 @@
 	height:102px;
 	background-size:4px 185px;
 }
+
+.shadow{
+	position: absolute;
+	width: 140px;
+	height: 110px;
+	background-color: #6B7071;
+	opacity: 0.6;
+	z-index: 5;
+	margin-top: -23px;
+	display: none;
+	border-radius: 10px;
+}
 </style>
 <script>
 if(usb_support) addNewScript("/disk_functions.js");
@@ -153,11 +165,12 @@ function initial(){
 	httpApi.faqURL("faq", "1008719", "https://www.asus.com", "/support/FAQ/");
 
 	if(lyra_hide_support){
-		document.getElementById("scenario_tr").style.display = "none";
-		document.getElementById("security_scan_tr").style.display = "none";
-		$(".AiProtection_02").css('display','none');
-		$(".AiProtection_03").css('display','none');
-		$(".line_1").css('display','none');
+		$("#scenario_tr").css({"visibility":"hidden"});
+		$("#scenario_img").attr({"height":"0"});
+		$("#security_scan_tr").hide();
+		$(".AiProtection_02").hide();
+		$(".AiProtection_03").hide();
+		$(".line_1").hide();
 		if(!uiSupport("dpi_vp")){
 			$("#twoWayIPS_padding").hide();
 			$("#twoWayIPS_field").hide();
@@ -918,20 +931,10 @@ function check_smtp_server_type(){
 
 function shadeHandle(flag){
 	if(flag == "0"){
-		$("#mals_shade").css("display", "");
-		$("#mals_count_shade").css("display", "");
-		$("#vp_shade").css("display", "");
-		$("#vp_count_shade").css("display", "");
-		$("#cc_shade").css("display", "");
-		$("#infected_count_shade").css("display", "");
+		$(".shadow").toggle("display", "");
 	}
 	else{
-		$("#mals_shade").css("display", "none");
-		$("#mals_count_shade").css("display", "none");
-		$("#vp_shade").css("display", "none");
-		$("#vp_count_shade").css("display", "none");
-		$("#cc_shade").css("display", "none");
-		$("#infected_count_shade").css("display", "none");
+		$(".shadow").css("display", "none");
 	}
 
 }
@@ -1227,7 +1230,7 @@ function shadeHandle(flag){
 														<tr id="scenario_tr">
 															<td rowspan="2">
 																<div>
-																	<img src="/images/New_ui/Home_Protection_Scenario.png">
+																	<img id="scenario_img" src="/images/New_ui/Home_Protection_Scenario.png">
 																</div>
 															</td>
 														</tr>												
@@ -1318,7 +1321,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative;">
-														<div id="mals_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-26px;display:none"></div>
+														<div id="mals_shade" class="shadow"></div>
 														<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_mals_enable"></div>
 														<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 															<script type="text/javascript">
@@ -1341,7 +1344,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
-														<div id="mals_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
+														<div id="mals_count_shade" class="shadow"></div>
 														<div style="text-align:center;">
 															<div id="mali_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
@@ -1371,7 +1374,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative">
-														<div id="vp_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-26px;display:none"></div>
+														<div id="vp_shade" class="shadow"></div>
 														<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_vp_enable"></div>
 														<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 															<script type="text/javascript">
@@ -1394,7 +1397,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
-														<div id="vp_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
+														<div id="vp_count_shade" class="shadow"></div>
 														<div style="text-align:center;">
 															<div id="vp_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
@@ -1421,7 +1424,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative">
-														<div id="cc_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-26px;display:none"></div>
+														<div id="cc_shade" class="shadow"></div>
 														<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_cc_enable"></div>
 														<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 															<script type="text/javascript">
@@ -1444,7 +1447,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
-														<div id="infected_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
+														<div id="infected_count_shade" class="shadow"></div>
 														<div style="text-align:center;">
 															<div id="infected_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>

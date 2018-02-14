@@ -1168,14 +1168,16 @@ void start_dnsmasq(void)
 				    nvram_safe_get("lan_domain"),
 				    nvram_safe_get("lan_hostname"));
 		}
-		/* productid/samba name */
-		if (is_valid_hostname(value = nvram_safe_get("computer_name")) ||
-			is_valid_hostname(value = get_productid()))
-				fprintf(fp, "%s %s.%s %s\n", lan_ipaddr,
-					    value, nvram_safe_get("lan_domain"), value);
+		/* default names */
 		fprintf(fp, "%s %s\n", lan_ipaddr, DUT_DOMAIN_NAME);
 		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME1);
 		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME2);
+		/* productid/samba name */
+		if (is_valid_hostname(value = nvram_safe_get("computer_name")) ||
+		    is_valid_hostname(value = get_productid())) {
+			fprintf(fp, "%s %s.%s %s\n", lan_ipaddr,
+				    value, nvram_safe_get("lan_domain"), value);
+		}
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()) {
 			/* localhost ipv6 */
@@ -3759,9 +3761,11 @@ start_acsd()
 #ifdef RTCONFIG_PROXYSTA
 	if (psta_exist()
 		|| dpsr_mode()
+//#ifndef RTCONFIG_AMAS
 #ifdef RTCONFIG_DPSTA
 		|| dpsta_mode()
 #endif
+//#endif
 	)
 		return 0;
 #endif
@@ -4447,6 +4451,11 @@ void start_upnp(void)
 					if (!httpx_port || httpx_port > 65535)
 						httpx_port = 8082;
 					fprintf(f, "deny %d 0.0.0.0/0 0-65535\n", httpx_port);
+				}
+#endif
+#ifdef RTCONFIG_TUNNEL
+				if(nvram_get_int("aae_enable")) {
+					fprintf(f, "deny 61689 0.0.0.0/0 0-65535\n");	// MASTIFF_DEF_PORT
 				}
 #endif
 
@@ -5440,7 +5449,7 @@ void change_bt_mac(void)
 void start_bluetooth_service(void)
 {
 	pid_t pid;
-	char *ble_argv[]= { "bluetoothd", "-n", "--plugin=autopair", NULL };
+	char *ble_argv[]= { "bluetoothd", "-n", "-p", "aqis", NULL };
 	const char *str_inf = "hci0";
 	int retry=0;
 
@@ -8081,11 +8090,11 @@ stop_services_mfg(void)
 	stop_amas_bhctrl();		
 	stop_amas_lanctrl();
 	stop_amas_lldpd();
-#else
+#endif
 #ifdef RTCONFIG_WIRELESSREPEATER	
 	stop_wlcconnect();
 #endif
-#endif
+
 #ifdef RTCONFIG_QCA
 	stop_wifi_service();
 #endif
@@ -8461,7 +8470,7 @@ static int no_need_obd(void)
 	if (g_reboot || g_upgrade)
 		return -1;
 
-	if (!is_router_mode() || (nvram_get_int("w_Setting") == 1) || (nvram_get_int("x_Setting") == 1))
+	if (!is_router_mode() || (nvram_get_int("obd_Setting") == 1) || (nvram_get_int("x_Setting") == 1))
 		return -1;
 
 	if (nvram_get_int("wlready") == 0)
@@ -10338,11 +10347,11 @@ _dprintf("multipath(%s): unit_now: (%d, %d, %s), unit_next: (%d, %d, %s).\n", mo
 
 #ifdef RTCONFIG_AMAS
 			stop_amas_wlcconnect();
-#else
+#endif
 #ifdef RTCONFIG_WIRELESSREPEATER
 			stop_wlcconnect();
 #endif
-#endif
+
 			kill_pidfile_s("/var/run/wanduck.pid", SIGUSR1);
 
 #if defined(RTCONFIG_USB) && defined(RTCONFIG_USB_PRINTER)
@@ -10372,11 +10381,11 @@ _dprintf("multipath(%s): unit_now: (%d, %d, %s), unit_next: (%d, %d, %s).\n", mo
 			
 #ifdef RTCONFIG_AMAS
 			start_amas_wlcconnect();
-#else
+#endif
 #ifdef RTCONFIG_WIRELESSREPEATER
 			start_wlcconnect();
 #endif
-#endif
+
 		}
 		setup_leds();
 		nvram_set("restart_wifi", "0");
@@ -11793,9 +11802,9 @@ check_ddr_done:
 #if defined(RTCONFIG_AMAS)
 			start_amas_wlcconnect();
 			start_amas_bhctrl();
-#else				
-			start_wlcconnect();
 #endif
+			start_wlcconnect();
+
 		}
 	}
 	else if (strcmp(script, "wlcmode")==0)
@@ -12883,8 +12892,11 @@ void gen_lldpd_desc(char *bind_desc)
 void start_amas_lldpd(void)
 {
 	char bind_ifnames[128] = {0};
-
+	char *productid = nvram_safe_get("productid");
 	memset(bind_ifnames, 0x00, sizeof(bind_ifnames));
+
+	if (repeater_mode() || mediabridge_mode())
+		return;
 
 	if(nvram_match("stop_amas_lldpd", "1")) {
 		_dprintf("stop_amas_lldpd = 1, don't start amas lldpd.\n");
@@ -12915,6 +12927,10 @@ void start_amas_lldpd(void)
 
 	eval("lldpcli", "configure", "lldp", "tx-interval", "10");
 	eval("lldpcli", "configure", "lldp", "tx-hold", "2");
+	if(strcmp(productid,"") != 0)
+		eval("lldpcli", "configure", "system", "hostname", productid);
+	else
+		eval("lldpcli", "configure", "system", "hostname", "Ai-Mesh");
 
 	if(dpsta_mode()
 #ifdef RTCONFIG_DPSTA
@@ -12932,6 +12948,10 @@ void start_amas_lldpd(void)
 
 void stop_amas_lldpd(void)
 {
+
+	if (repeater_mode() || mediabridge_mode())
+		return;
+
 	if(getpid()!=1) {
 		notify_rc("stop_amas_lldpd");
 		return;
@@ -15378,7 +15398,7 @@ int start_cfgsync(void)
 #ifdef RTCONFIG_MASTER_DET
 	else if (nvram_match("x_Setting", "1") &&
 		strlen(nvram_safe_get("cfg_group")) == 0 &&
-		is_router_mode())
+		(is_router_mode() || access_point_mode()))
 	{
 		stop_cfgsync();
 		nvram_set("cfg_master", "1");
@@ -15390,8 +15410,7 @@ int start_cfgsync(void)
 #ifdef RTCONFIG_MASTER_DET
 		is_router_mode() ||
 #endif
-		((access_point_mode()
-		|| dpsr_mode()
+		((dpsr_mode()
 #ifdef RTCONFIG_DPSTA
 		|| dpsta_mode()
 #endif

@@ -9,6 +9,8 @@ apply.welcome = function(){
 		}
 	}
 
+	systemVariable.advSetting = false;
+
 	if(!systemVariable.forceChangePw){
 		if(!systemVariable.isDefault){
 			if(isOriginSwMode("RP")){
@@ -94,6 +96,14 @@ apply.login = function(){
 		}
 
 		/* check user name */
+		if(isSku("KR")){
+			var isValidKRSkuPwd = validator.KRSkuPwd(httpPassInput.val())
+			if(isValidKRSkuPwd.isError){
+				httpPassInput.showTextHint(isValidKRSkuPwd.errReason);
+				return false;
+			}
+		}
+
 		if(httpPassInput.val() != httpPassConfirmInput.val()){
 			httpPassInput.showTextHint("<#File_Pop_content_alert_desc7#>");
 			return false;
@@ -129,7 +139,7 @@ apply.login = function(){
 		qisPostData.http_passwd = $("#http_passwd").val();
 
 		if(systemVariable.forceChangePwInTheEnd){
-			$(".btn_login_html").html(Get_Component_btnLoading);
+			$(".btn_login_apply").html(Get_Component_btnLoading);
 			apply.submitQIS();
 		}
 		else{
@@ -206,7 +216,7 @@ apply.pppoe = function(){
 			goTo.Modem();
 		}
 		else{
-			if(isWANChanged()){
+			if(isWANChanged() || window.pppAuthFailChecked){
 				httpApi.nvramSet((function(){
 					qisPostData.action_mode = "apply";
 					qisPostData.rc_service = "restart_wan_if 0";
@@ -488,6 +498,7 @@ apply.submitQIS = function(){
 
 	if(pppoeAuthFail){
 		$(".btn_wireless_apply").html("<#CTL_apply#>");
+		$(".btn_login_apply").html("<#CTL_apply#>");
 		$("#wan_pppoe_passwd").showTextHint("<#QKSet_Internet_Setup_fail_reason2#>");
 		goTo.loadPage("pppoe_setting", true);
 	}
@@ -524,7 +535,12 @@ apply.amasNode = function(){
 	else{
 		goTo.Conncap();
 	}
-}
+};
+
+apply.amasbundle = function(){
+	location.href = "/cfg_onboarding.cgi?flag=AMesh&id=donot_search";
+};
+
 
 var abort = {};
 
@@ -919,6 +935,10 @@ abort.connCap = function(){
 	goTo.loadPage("amasnode_page", true);
 };
 
+abort.amasbundle = function(){
+	location.href = "/";
+};
+
 abort.errRouterWifi = function(){
 	goTo.loadPage("amasconncap_page", true);
 }
@@ -932,7 +952,12 @@ abort.amasIntro = function(){
 }
 
 abort.amasNode = function(){
-	if(!qisPostData.hasOwnProperty("sw_mode")){
+	if(!systemVariable.advSetting){
+		$(".dailIP").hide();
+		$(".autoIP").show();
+		goTo.loadPage("wan_setting", true);
+	}
+	else if(!qisPostData.hasOwnProperty("sw_mode")){
 		goTo.loadPage("advanced_setting", true);
 	}
 	else{
@@ -1014,6 +1039,7 @@ goTo.Login = function(){
 };
 
 goTo.changePwInTheEnd = function(){
+	$("#btn_login_apply").html("<#CTL_apply#>");
 	goTo.Login();
 }
 
@@ -1097,7 +1123,7 @@ goTo.mbMode = function(){
 	/*
 		ToDo: Sysdep support
 	*/
-	qisPostData.sw_mode = 2;
+	qisPostData.sw_mode = 3;
 	qisPostData.wlc_psta = 1;		
 	systemVariable.opMode = "MB";
 
@@ -1114,10 +1140,10 @@ goTo.WAN = function(){
 };
 
 goTo.dailIP = function(){
+	handleSysDep();
+
 	$(".dailIP").show();
 	$(".autoIP").hide();
-	handleSysDep();
-	// $("#connTypeDesc").html("<#QIS_SmartConn_TypeDial#>")
 
 	if(!isSupport("VPNCLIENT") && !isSupport("IPTV")){
 		goTo.PPPoE();
@@ -1636,11 +1662,18 @@ goTo.lanDHCP = function(){
 	qisPostData.lan_dnsenable_x = "1";
 
 	if(isSwMode("MB")){
-		httpApi.nvramSet((function(){
-			qisPostData.action_mode = "apply";
-			qisPostData.rc_service = getRestartService();
-			return qisPostData;
-		})(), goTo.Finish);
+		postDataModel.insert(generalObj);
+
+		if(systemVariable.forceChangePwInTheEnd){
+			goTo.changePwInTheEnd();
+		}
+		else{
+			httpApi.nvramSet((function(){
+				qisPostData.action_mode = "apply";
+				qisPostData.rc_service = getRestartService();
+				return qisPostData;
+			})(), goTo.Finish);
+		}
 	}
 	else{
 		goTo.Wireless();
@@ -1870,6 +1903,7 @@ goTo.Wireless = function(){
 			});
 
 		$(".secureInput")
+			.unbind("click")
 			.click(checkPasswd);
 	}
 
@@ -1957,6 +1991,10 @@ goTo.Wireless = function(){
 			postDataModel.insert(wirelessObj.wl1);
 			postDataModel.insert(wirelessObj.wl2);
 		}
+	}
+
+	if(systemVariable.forceChangePwInTheEnd){
+		$("#btn_wireless_apply").html("<#CTL_next#>");
 	}
 
 	goTo.loadPage("wireless_setting", false);
@@ -2163,7 +2201,7 @@ goTo.chooseRole = function(){
 	$("#amasconncap_page").load("/mobile/pages/amasconncap_page.html");
 	$("#amasrestore_page").load("/mobile/pages/amasrestore_page.html");
 	$("#amaserr_connrouter_page").load("/mobile/pages/amaserr_connrouter_page.html");
-	systemVariable.defaultIpAddr = httpApi.nvramDefaultGet(["lan_ipaddr"]).lan_ipaddr
+	systemVariable.defaultIpAddr = httpApi.nvramDefaultGet(["lan_ipaddr"]).lan_ipaddr;
 	systemVariable.macAddr = httpApi.nvramGet(["et0macaddr"]).et0macaddr;
 	systemVariable.skipMesh = false;
 
@@ -2187,11 +2225,17 @@ goTo.asRouter = function(){
 }
 
 goTo.asNode = function(){
+	$("#amasconncap_page").load("/mobile/pages/amasconncap_page.html");
+	$("#amasrestore_page").load("/mobile/pages/amasrestore_page.html");
+	$("#amaserr_connrouter_page").load("/mobile/pages/amaserr_connrouter_page.html");
+	systemVariable.defaultIpAddr = httpApi.nvramDefaultGet(["lan_ipaddr"]).lan_ipaddr;
+	systemVariable.macAddr = httpApi.nvramGet(["et0macaddr"]).et0macaddr;
+	systemVariable.skipMesh = false;	
+
 	goTo.loadPage("amasnode_page", false);
 }
 
 goTo.amasIntro = function(){
-	systemVariable.advSetting = false;
 	goTo.loadPage("amasintro_page", false);
 }
 
@@ -2212,16 +2256,14 @@ goTo.amasRestore = function(){
 	}, systemVariable.rebootTime);
 
 	setTimeout(function(){
-		var iAmAlive = httpApi.isAlive(systemVariable.defaultIpAddr);
-		if(iAmAlive){
+		var iAmAlive = httpApi.isAlive("http://" + systemVariable.defaultIpAddr, systemVariable.defaultIpAddr, function(){
 			width = 1000;
 			$("#amasRestoreLoadingBar")
 				.animate({"width": "100%"})
 				.html("100%");
-		}
-		else{
-			if(isPage("amasrestore_page")) setTimeout(arguments.callee, 2000);
-		}
+			});
+
+		if(isPage("amasrestore_page")) setTimeout(arguments.callee, 2000);
 	}, 40000);
 
 	httpApi.nvramSet({"action_mode": "Restore"});
@@ -2233,7 +2275,13 @@ goTo.Conncap = function(){
 	systemVariable.macAddr = httpApi.nvramGet(["et0macaddr"]).et0macaddr;
 
 	setInterval(function(){
-		httpApi.checkCap("http://router.asus.com", systemVariable.macAddr.split(":").join(""));
+		httpApi.checkCap("http://router.asus.com", function(){
+			setTimeout(function(){
+				if(isPage("amasconncap_page")) window.location.href = "http://router.asus.com/cfg_onboarding.cgi?flag=AMesh&id=" + systemVariable.macAddr.split(":").join("");
+			}, 3000);
+
+			$("#loginCapAlert").fadeIn(500);
+		});
 	}, 5000);
 
 	setInterval(function(){
@@ -2241,12 +2289,6 @@ goTo.Conncap = function(){
 			$("#errConn_howToFind").fadeIn(300);
 		});
 	}, 10000);
-
-/*
-	setTimeout(function(){
-		$(".errConnHandler").fadeIn(300);
-	}, 30000);
-*/
 
 	goTo.loadPage("amasconncap_page", false)
 }
@@ -2360,7 +2402,12 @@ goTo.Waiting = function(){
 };
 
 goTo.leaveQIS = function(){
-	location.href = "/";
+	if(isSupport("amas_bdl") && (isSwMode("RT") || isSwMode("AP"))){
+		goTo.loadPage("amasbundle_page", false);
+	}
+	else{
+		location.href = "/";
+	}
 }
 
 goTo.AsusPP = function(){

@@ -1,6 +1,6 @@
 .\"	$Id$
 .\"
-.\" Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
+.\" Copyright (c) 2016--2017 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: February 1 2017 $
+.Dd $Mdocdate: July 2 2017 $
 .Dt ACME-CLIENT 1
 .Os
 .Sh NAME
@@ -237,31 +237,11 @@ internally implements only the
 .Dq http-01
 challenge type, where a file is created within a directory accessible by
 a locally-run web server configured for the requested domain.
-For example, for the domain
-.Dq foo.com
-and alternate
-.Dq www.foo.com
-and the default challenge directory, an Apache configuration snippet
-might be as follows:
-.Bd -literal
-<VirtualHost *:80>
-  [...]
-  ServerName foo.com
-  ServerAlias www.foo.com
-  Alias /.well-known/acme-challenge /var/www/acme
-  <Directory /var/www/acme>
-    Options None
-    AllowOverride None
-    Order allow,deny
-    Allow from all
-  </Directory>
-</VirtualHost>
-.Ed
-.Pp
-This way, the files placed in
-.Pa /var/www/acme
-will be properly mapped by the web server when the ACME server responds
-to a challenge.
+This is usually
+.Pa /var/www/acme .
+See
+.Sx EXAMPLES
+for example configurations for the default challenge.
 .Pp
 An alternate challenge type, however, may be specified with
 .Fl t ,
@@ -306,17 +286,6 @@ and
 respectively.
 These are all created as the root user with mode 444.
 .Pp
-An nginx configuration using these might be as follows:
-.Bd -literal
-server {
-  listen 443;
-  server_name foo.com www.foo.com;
-  [...]
-  ssl_certificate /etc/ssl/acme/fullchain.pem;
-  ssl_certificate_key /etc/ssl/acme/private/privkey.pem;
-}
-.Ed
-.Pp
 The
 .Pa cert.pem
 file, if found, is checked for its expiration: if more than 30 days from
@@ -338,46 +307,90 @@ returns 1 on failure, 2 if the certificates didn't change (up to date),
 or 0 if certificates were changed (revoked or updated).
 .\" For sections 1, 6, and 8 only.
 .Sh EXAMPLES
-To create and submit a new key for a single domain, assuming that the
-web server has already been configured to map the challenge directory
-as in the
-.Sx Challenges
-section:
+To create and submit a new key for a single domain, begin by setting up
+your web server environment (using foo.com and www.foo.com as examples)
+to use
+.Pa /var/www/acme
+as the challenge directory and
+.Pa /etc/ssl/acme
+to contain the certificates.
+.Pp
+An nginx configuration could be as follows:
 .Bd -literal
-# mkdir /var/www/acme
-# mkdir /etc/ssl/acme
-# mkdir /etc/ssl/acme/private /etc/acme
-# chmod 0700 /etc/ssl/acme/private /etc/acme
-# acme-client -vNn foo.com www.foo.com smtp.foo.com
+server {
+  listen 443;
+  server_name foo.com www.foo.com;
+  ssl_certificate /etc/ssl/acme/fullchain.pem;
+  ssl_certificate_key /etc/ssl/acme/private/privkey.pem;
+}
+server {
+  listen 80;
+  server_name foo.com www.foo.com;
+  location ^~ /.well-known/acme-challenge/ {
+    alias /var/www/acme/;
+  }
+}
 .Ed
 .Pp
-After generating the necessary directories, the above will create all
-keys and submit them to the server.
+The following for Apache:
+.Bd -literal
+<VirtualHost *:443>
+  ServerName foo.com
+  ServerAlias www.foo.com
+  SSLEngine on
+  SSLCertificateFile /etc/ssl/acme/cert.pem
+  SSLCertificateChainFile /etc/ssl/acme/fullchain.pem
+  SSLCertificateKeyFile /etc/ssl/acme/private/privkey.pem
+</VirtualHost>
+<VirtualHost *:80>
+  ServerName foo.com
+  ServerAlias www.foo.com
+  Alias /.well-known/acme-challenge /var/www/acme
+</VirtualHost>
+.Ed
+.Pp
+And lastly, OpenBSD's httpd:
+.Bd -literal
+server "www.foo.com" {
+  alias "foo.com"
+  listen on $ext_addr port 80
+  listen on $ext_addr tls port 443
+  location "/.well-known/acme-challenge/*" {
+    root { "/acme", strip 2 }
+  }
+  tls {
+    certificate "/etc/ssl/acme/fullchain.pem"
+    key "/etc/ssl/acme/private/privkey.pem"
+  }
+}
+.Ed
+.Pp
+Next, request a new certificate for the new domain.
+.Bd -literal
+# mkdir /etc/ssl/acme
+# mkdir /etc/ssl/acme/private
+# chmod 0700 /etc/ssl/acme/private /etc/acme
+# acme-client -vNn foo.com www.foo.com
+.Ed
+.Pp
 You'll then probably want to restart your web server to pick up the new
 certificates.
+You'll need to replace the rcctl statement with the correct script to
+have your web server reload its certificates.
 .Pp
 You can then keep your certificates fresh with a daily
-.Xr cron 8
-invocation running the following:
+.Xr crontab 5
+invocation:
 .Bd -literal
-#! /bin/sh
-
-acme-client foo.com www.foo.com smtp.foo.com
-
-if [ $? -eq 0 ]
-then
-	/etc/rc.d/httpd reload
-fi
+13 1 * * * acme-client foo.com www.foo.com && rcctl reload httpd
 .Ed
-.Pp
-You'll need to replace the httpd-reload statement with the correct
-script to have your web server reload its certificates.
 .\" .Sh DIAGNOSTICS
 .\" For sections 1, 4, 6, 7, 8, and 9 printf/stderr messages only.
 .\" .Sh ERRORS
 .\" For sections 2, 3, 4, and 9 errno settings only.
 .Sh SEE ALSO
-.Xr openssl 1
+.Xr openssl 1 ,
+.Xr crontab 5
 .\" .Sh STANDARDS
 .\" .Sh HISTORY
 .Sh AUTHORS

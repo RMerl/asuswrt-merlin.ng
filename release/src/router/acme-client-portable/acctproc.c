@@ -302,7 +302,7 @@ out:
 }
 
 int
-acctproc(int netsock, const char *acctkey, int newacct)
+acctproc(int netsock, const char *acctkey, const struct config *cfg)
 {
 	FILE		*f = NULL;
 	EVP_PKEY	*pkey = NULL;
@@ -319,7 +319,7 @@ acctproc(int netsock, const char *acctkey, int newacct)
 	 */
 
 	prev = umask((S_IWUSR | S_IXUSR) | S_IRWXG | S_IRWXO);
-	f = fopen(acctkey, newacct ? "wx" : "r");
+	f = fopen(acctkey, cfg->newacct ? "wx" : "r");
 	umask(prev);
 
 	if (NULL == f) {
@@ -361,7 +361,7 @@ acctproc(int netsock, const char *acctkey, int newacct)
 		RAND_seed(rbuf, sizeof(rbuf));
 	}
 
-	if (newacct) {
+	if (cfg->newacct) {
 		dodbg("%s: generating RSA account key", acctkey);
 		if (NULL == (pkey = rsa_key_create(f, acctkey)))
 			goto out;

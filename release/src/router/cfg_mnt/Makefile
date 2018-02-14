@@ -137,19 +137,19 @@ libcfgmnt.so: cfg_lib.o
 
 install: all
 	@echo "[cfg_mnt] Installing..."
-	@install -D cfg_server $(INSTALLDIR)/sbin/cfg_server
-	@install -D cfg_client $(INSTALLDIR)/sbin/cfg_client
-	@install -D cfg_reportstatus $(INSTALLDIR)/sbin/cfg_reportstatus
+	@install -D cfg_server $(INSTALLDIR)/usr/sbin/cfg_server
+	@install -D cfg_client $(INSTALLDIR)/usr/sbin/cfg_client
+	@install -D cfg_reportstatus $(INSTALLDIR)/usr/sbin/cfg_reportstatus
 	@install -D libcfgmnt.so $(INSTALLDIR)/usr/lib/libcfgmnt.so
 	@install -D gencfgcert.sh $(INSTALLDIR)/usr/sbin/gencfgcert.sh
 
-	@$(STRIP) $(INSTALLDIR)/sbin/cfg_server
-	@$(STRIP) $(INSTALLDIR)/sbin/cfg_client
-	@$(STRIP) $(INSTALLDIR)/sbin/cfg_reportstatus
+	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_server
+	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_client
+	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_reportstatus
 	@$(STRIP) $(INSTALLDIR)/usr/lib/libcfgmnt.so
-	@chmod 0500 $(INSTALLDIR)/sbin/cfg_server
-	@chmod 0500 $(INSTALLDIR)/sbin/cfg_client
-	@chmod 0500 $(INSTALLDIR)/sbin/cfg_reportstatus
+	@chmod 0500 $(INSTALLDIR)/usr/sbin/cfg_server
+	@chmod 0500 $(INSTALLDIR)/usr/sbin/cfg_client
+	@chmod 0500 $(INSTALLDIR)/usr/sbin/cfg_reportstatus
 	@chmod 0500 $(INSTALLDIR)/usr/sbin/gencfgcert.sh
 
 clean:

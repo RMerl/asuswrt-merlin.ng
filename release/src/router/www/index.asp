@@ -807,7 +807,7 @@ function clickEvent(obj){
 		setTimeout(function(){
 			var flag = '<% get_parameter("flag"); %>';
 			var id = '<% get_parameter("id"); %>';
-			if(flag != "" && id != "")
+			if(flag != "" && id != "" && id != "donot_search")
 				document.getElementById("statusframe").src = "/device-map/amesh.asp?id=" + id + "";
 			else
 				document.getElementById("statusframe").src = "/device-map/amesh.asp";

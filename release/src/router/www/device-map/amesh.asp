@@ -1885,6 +1885,8 @@ function handle_cloud_icon_model_name(_modelName) {
 	var transformName = _modelName;
 	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U")
 		transformName = "RT-AC66U_V2";
+	else if(transformName == "BLUE_CAVE")
+		transformName = "BLUECAVE";
 	return transformName
 }
 </script>

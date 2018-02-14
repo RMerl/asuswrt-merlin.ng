@@ -28,8 +28,4 @@ OPENSSL_CONF=/etc/cfg_mnt/openssl.cnf RANDFILE=/dev/urandom openssl x509 -in /et
 
 openssl rsa -in key.pem -outform PEM -pubout -out pubkey.pem
 
-# Temporary for 384_10070 binary blobs
-cp key.pem /etc/key.cfg
-cp pubkey.pem /etc/cfg_pub.pem
-
 rm -f /etc/cfg_mnt/cert.csr /etc/cfg_mnt/privkey.pem openssl.config

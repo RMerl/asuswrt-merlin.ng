@@ -1,4 +1,8 @@
-﻿.ui-page-theme-a .ui-panel-wrapper {
+﻿option{
+	background-color: #000;
+	color: #CCC;
+}
+.ui-page-theme-a .ui-panel-wrapper {
 	background-color: #FFF;
 }
 a.ui-btn{
@@ -277,6 +281,16 @@ a{
 	width: 130px;
 	height: 38px;
 	margin-left: -25px;
+}
+.amasIconContainer{
+	text-align: center;
+	margin:auto;
+	margin-top: 100px;
+	margin-bottom: 100px;
+}
+.amasIconContainer > div > img{
+	width: 35%;
+	vertical-align: middle;
 }
 .productIconContainer{
 	text-align: center;

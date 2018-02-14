@@ -66,7 +66,7 @@ serialise(const char *tmp, const char *real,
 }
 
 int
-fileproc(int certsock, int backup, const char *certdir)
+fileproc(int certsock, const char *certdir, const struct config *cfg)
 {
 	char		*csr = NULL, *ch = NULL;
 	char		 file[PATH_MAX];
@@ -110,7 +110,7 @@ fileproc(int certsock, int backup, const char *certdir)
 	 * certificate, leaving the backup as the only one.
 	 */
 
-	if (backup) {
+	if (cfg->backup) {
 		t = time(NULL);
 		snprintf(file, sizeof(file),
 			"cert-%llu.pem", (unsigned long long)t);

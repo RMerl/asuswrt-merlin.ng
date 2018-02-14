@@ -27,10 +27,7 @@
 <% wl_get_parameter(); %>
 $(function () {
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		$('<script>')
-			.attr('type', 'text/javascript')
-			.attr('src','/require/modules/amesh.js')
-			.appendTo('head');
+		addNewScript('/require/modules/amesh.js');
 	}
 });
 

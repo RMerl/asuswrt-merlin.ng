@@ -1159,10 +1159,6 @@ define RouterOptions
 		sed -i "/RTCONFIG_NEW_APP_ARM/d" $(1); \
 		echo "RTCONFIG_NEW_APP_ARM=y" >>$(1); \
 	fi; \
-	if [ "$(NEWSSID_REV2)" = "y" ]; then \
-		sed -i "/RTCONFIG_NEWSSID_REV2/d" $(1); \
-		echo "RTCONFIG_NEWSSID_REV2=y" >>$(1); \
-	fi; \
 	if [ "$(FINDASUS)" = "y" ]; then \
 		sed -i "/RTCONFIG_FINDASUS/d" $(1); \
 		echo "RTCONFIG_FINDASUS=y" >>$(1); \

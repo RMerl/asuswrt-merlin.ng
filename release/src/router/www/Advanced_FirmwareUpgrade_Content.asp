@@ -176,7 +176,7 @@ function initial(){
 		html += "Manual Firmware Update : ";/*untranslated*/
 		html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='open_AiMesh_router_fw_upgrade();'><#CTL_upload#></span>";
 		html += "</div>";
-		html += "<div id='checkNewFW' style='display:none;'><#ADSL_FW_item3#> : <span class='checkFWReuslt'></span></div>";
+		html += "<div id='checkNewFW' class='checkNewFW' style='display:none;'><#ADSL_FW_item3#> : <span class='checkFWReuslt'></span></div>";
 		html += "</td>";
 		html += "</tr>";
 		$("#fw_version_tr").before(html);
@@ -214,16 +214,10 @@ function initial(){
 				html += "</th>";
 				html += "<td id='amas_" + mac_id + "'>";
 				html += "<div id='current_version'>Current Version : " + fwver + "</div>";/*untranslated*/
-				html += "<div>";
-				html += "Manual Firmware Update : ";/*untranslated*/
-				if(online == "0") {
-					html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='show_offline_msg(false);'>Offline</span>";/*untranslated*/
-					amesh_offline_flag = true;
-				}
-				else
-					html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='open_AiMesh_node_fw_upgrade(\"" + ip + "\");'><#CTL_upload#></span>";
+				html += "<div id='manual_firmware_update'>";
+				html += gen_AiMesh_fw_status(check_AiMesh_fw_version(fwver), ip, online);
 				html += "</div>";
-				html += "<div id='checkNewFW' style='display:none;'><#ADSL_FW_item3#> : <span class='checkFWReuslt'></span></div>";
+				html += "<div id='checkNewFW' class='checkNewFW' style='display:none;'><#ADSL_FW_item3#> : <span class='checkFWReuslt'></span></div>";
 				html += "</td>";
 				html += "</tr>";
 				$("#fw_version_tr").before(html);
@@ -253,7 +247,8 @@ function initial(){
 	}
 	
 	if(cfg_sync_support){
-		if(cfg_upgrade != "" && cfg_upgrade != "10"){   //Show firmware is still downloading or fw upgrade loading bar if doing webs_upgrade.sh 
+		if( (cfg_check == "7" && (cfg_upgrade == "1" || cfg_upgrade == "6" || cfg_upgrade == "8")) ||
+			(cfg_check == "0" && cfg_upgrade == "10") ){
 			startDownloading();
 		}
 	}
@@ -368,11 +363,11 @@ function detect_firmware(flag){
 
 		success: function(){
 			if(cfg_sync_support){
-				if(cfg_check == "0" || cfg_check == "1" || cfg_check == "5"){
+				if(cfg_check == "" || cfg_check == "0" || cfg_check == "1" || cfg_check == "5"){
 					setTimeout("detect_firmware();", 1000);
 				}
 				else{	// got fw info
-					if(cfg_check == "2"){	//1:wget fail
+					if(cfg_check == "2" || cfg_check == "3"){
 						document.getElementById('update_scan').style.display="none";
 						if(document.start_update.firmware_path.value==1){	//Beta Firmware not available yet
 							document.getElementById('update_states').innerHTML="No beta firmware available now.";	/* untranslated */
@@ -382,13 +377,7 @@ function detect_firmware(flag){
 						}
 						document.getElementById('update').disabled = false;
 					}
-					else if(cfg_check == "4"){	//3: FW check/RSA check fail
-						document.getElementById('update_scan').style.display="none";
-						document.getElementById('update_states').innerHTML="<#FIRM_fail_desc#><br><#FW_desc1#>";
-						document.getElementById('update').disabled = false;
-
-					}
-					else{
+					else if(cfg_check == "7" || cfg_check == "9"){
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="";
 						document.getElementById('update').disabled = false;
@@ -640,20 +629,22 @@ function isDownloading(){
     		},
     		success: function(){
 				if(cfg_sync_support){
-					if(cfg_upgrade == "1"){
-						document.getElementById("drword").innerHTML = "&nbsp;&nbsp;&nbsp;<#fw_downloading#>...";
-						setTimeout("isDownloading();", 1000);
+					if(cfg_check == "7") {
+						if(cfg_upgrade == "1" || cfg_upgrade == "6" || cfg_upgrade == "8"){
+							document.getElementById("drword").innerHTML = "&nbsp;&nbsp;&nbsp;<#fw_downloading#>...";
+							setTimeout("isDownloading();", 1000);
+						}
 					}
-					else{
-						if(cfg_upgrade == "2"){
+					else if(cfg_check == "0") {
+						if(cfg_upgrade == "2" || cfg_upgrade == "3"){
 							document.getElementById("drword").innerHTML = "<#connect_failed#>";
 							return false;
 						}
-						else if(cfg_upgrade == "3"){
+						else if(cfg_upgrade == "4"){
 							document.getElementById("drword").innerHTML = "<#FIRM_fail_desc#><br><#FW_desc1#>";
 							return false;
 						}
-						else{		// start upgrading
+						else if(cfg_upgrade == "10"){		// start upgrading
 							document.getElementById("hiddenMask").style.visibility = "hidden";
 							showLoadingBar(270);
 							setTimeout("detect_httpd();", 272000);
@@ -936,6 +927,7 @@ function transferTimeFormat(time){
 function show_offline_msg(_checkFlag) {
 	if(!amesh_offline_flag && _checkFlag) {
 		$("#amas_update").css("display", "none");
+		$(".checkNewFW").css("display", "none");
 		$(".checkFWReuslt").empty();
 		$(".checkFWReuslt").removeClass("aimesh_fw_release_note");
 		detect_update(document.start_update.firmware_path.value);
@@ -1111,12 +1103,55 @@ function update_AiMesh_fw() {
 				if(get_cfg_clientlist.hasOwnProperty(idx)) {
 					var mac = get_cfg_clientlist[idx].mac;
 					var fwver = get_cfg_clientlist[idx].fwver;
+					var ip = get_cfg_clientlist[idx].ip;
+					var online = get_cfg_clientlist[idx].online;
 					var mac_id = mac.replace(/:/g, "");
 					$("#amas_" + mac_id + "").children("#current_version").html("Current Version : " + fwver + "");/* untranslated */
+					$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
+					$("#amas_" + mac_id + "").children("#manual_firmware_update").html(gen_AiMesh_fw_status(check_AiMesh_fw_version(fwver), ip, online));
 				}
 			}
 		}
 	});
+}
+function gen_AiMesh_fw_status(_manual_status, _node_ip, _online) {
+	var html = "";
+	if(_manual_status) {
+		html += "Manual Firmware Update : ";/*untranslated*/
+		if(_online == "0") {
+			html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='show_offline_msg(false);'>Offline</span>";/*untranslated*/
+			amesh_offline_flag = true;
+		}
+		else {
+			html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='open_AiMesh_node_fw_upgrade(\"" + _node_ip + "\");'><#CTL_upload#></span>";
+		}
+	}
+	else {
+		html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;text-decoration:none;cursor:none;'>This AiMesh node is not compatible with manual firmware update, please click \"Check\" to do firmware upgrade over the air.</span>";/*untranslated*/
+	}
+	return html;
+}
+function check_AiMesh_fw_version(_fw) {
+	var support_manual_fw_id = 382;
+	var support_manual_fw_num = 18000;
+	var manual_status = false;
+	var fw_array = _fw.split(".");
+	for(var i = 0; i < fw_array.length; i += 1) {
+		if( fw_array[i] != "" && (fw_array[i].indexOf("_") != -1) && (fw_array[i].indexOf("-") != -1) ) {
+			var fw_id_num = fw_array[i].substring(0, fw_array[i].indexOf('-')).split("_");
+			var fw_id = fw_id_num[0];
+			var fw_num = fw_id_num[1];
+			if(parseInt(fw_id) > support_manual_fw_id) {
+				manual_status = true;
+				break;
+			}
+			else if( (parseInt(fw_id) == support_manual_fw_id) && (parseInt(fw_num) >= support_manual_fw_num) ) {
+				manual_status = true;
+				break;
+			}
+		}
+	}
+	return manual_status
 }
 </script>
 </head>

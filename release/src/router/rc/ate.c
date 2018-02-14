@@ -1688,9 +1688,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 			puts("ATE_ERROR_INCORRECT_PARAMETER");
 			return EINVAL;
 		}
-#ifndef CONFIG_BCMWL5
 		getPSK();
-#endif
 		return 0;
 	}
 	else if (!strcmp(command, "Get_PSK")) {
@@ -1747,6 +1745,22 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 			buf[1] = '\0';
 			puts(buf);
 		}
+		return 0;
+	}
+#endif
+#ifdef RTCONFIG_AMAS
+	else if (!strcmp(command, "Set_AB")) {
+		set_amas_bdl();
+		get_amas_bdl();
+		return 0;
+	}
+	else if (!strcmp(command, "Unset_AB")) {
+		unset_amas_bdl();
+		get_amas_bdl();
+		return 0;
+	}
+	else if (!strcmp(command, "Get_AB")) {
+		get_amas_bdl();
 		return 0;
 	}
 #endif
@@ -2122,9 +2136,9 @@ int ate_get_fw_upgrade_state(void) {
 	char buf[64];
 
 #ifdef CONFIG_BCMWL5
-                if (!factory_debug() && !nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
+		if (!factory_debug() && !nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
 #else
-                if (!IS_ATE_FACTORY_MODE() && !nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
+		if (!IS_ATE_FACTORY_MODE() && !nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
 #endif
 		{
 			puts("ATEMODE ONLY");

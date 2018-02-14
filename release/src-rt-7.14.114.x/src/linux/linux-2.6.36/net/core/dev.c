@@ -135,6 +135,7 @@
 
 #include <typedefs.h>
 #include <bcmdefs.h>
+#include <osl.h>
 
 /* Instead of increasing this, you should create a hash table. */
 #define MAX_GRO_SKBS 8
@@ -1946,7 +1947,7 @@ int BCMFASTPATH_HOST dev_hard_start_xmit(struct sk_buff *skb, struct net_device 
 	int rc = NETDEV_TX_OK;
 
 	if (likely(!skb->next)) {
-		if (!list_empty(&ptype_all))
+		if (!list_empty(&ptype_all) && !PKTISCHAINED(skb))
 			dev_queue_xmit_nit(skb, dev);
 
 		/*

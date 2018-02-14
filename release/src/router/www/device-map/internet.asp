@@ -92,7 +92,7 @@ function add_lanport_number(if_name)
 				return "lan" + "6";
 		}
 	}
-	else if(based_modelid == "RT-AC86U" || based_modelid == "AC2900"){
+	else if(based_modelid == "AC2900"){
 		if(if_name == "lan"){
 			if(wans_lanport == "4")
 				return "lan" + "1";

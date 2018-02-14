@@ -2722,7 +2722,6 @@ static int is_passwd_default(){
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	int declen = pw_dec_len(http_passwd);
 	char dec_passwd[declen];
-	memset(dec_passwd, 0, sizeof(dec_passwd));
 	pw_dec(http_passwd, dec_passwd);
 	http_passwd = dec_passwd;
 #endif
@@ -10599,48 +10598,31 @@ wps_finish:
 		nvram_set("wtf_rulelist", wtf_rulelist);
 		nvram_set("wtf_username", "");
 		nvram_set("wtf_passwd", "");
-		nvram_set("wtf_login", wtf_login);
-		nvram_set("wtf_account_type", "");
-		nvram_set("wtf_max_clients", "");
-		nvram_set("wtf_days_left", "");
-		nvram_set("wtf_game_list", "");
-		nvram_set("wtf_server_list", "");
-		nvram_set("wtf_session_hash", "");
 		nvram_commit();
-		/*--*/
-
+		unlink("/tmp/wtf_status");
 		notify_rc("stop_wtfast");
 		_dprintf("httpd: wtfast_logout\n");
 	}
 	else if (!strcmp(action_mode, "wtfast_login")){
 		char *wtf_username, *wtf_passwd, *wtf_login, *wtf_account_type, *wtf_max_clients, *wtf_days_left;
 		char *wtf_game_list, *wtf_server_list, *wtf_session_hash;
+		char *wtf_status;
+		FILE *fp;
 
 		wtf_username = get_cgi_json("wtf_username", root);
 		wtf_passwd = get_cgi_json("wtf_passwd", root);
-		wtf_login = get_cgi_json("wtf_login", root);
-		wtf_account_type = get_cgi_json("wtf_account_type", root);
-		wtf_max_clients = get_cgi_json("wtf_max_clients", root);
-		wtf_days_left = get_cgi_json("wtf_days_left", root);
-		wtf_game_list = get_cgi_json("wtf_game_list", root);
-		wtf_server_list = get_cgi_json("wtf_server_list", root);
-		wtf_session_hash = get_cgi_json("wtf_session_hash", root);
 
 		nvram_set("wtf_username", wtf_username);
 		nvram_set("wtf_passwd", wtf_passwd);
-		nvram_set("wtf_login", wtf_login);
-		nvram_set("wtf_account_type", wtf_account_type);
-		nvram_set("wtf_max_clients", wtf_max_clients);
-		nvram_set("wtf_days_left", wtf_days_left);
-		nvram_set("wtf_game_list", wtf_game_list);
-		nvram_set("wtf_server_list", wtf_server_list);
-		nvram_set("wtf_session_hash", wtf_session_hash);
-		//nvram_set("wtf_release", "stage");//for download new firmware
-		/*--*/
+		wtf_status = get_cgi_json("wtf_status", root);
+		if((fp = fopen("/tmp/wtf_status", "w")) != NULL) {
+			fprintf(fp, "%s", wtf_status);
+			fclose(fp);
+		}
 
 		notify_rc("start_wtfast");
 		_dprintf("httpd: wtfast_login\n");
- 	}
+	}
 #endif
 #ifdef RTCONFIG_DISK_MONITOR
 	else if (!strcmp(action_mode, "change_diskmon_unit"))
@@ -13673,14 +13655,14 @@ void do_get_timezone_cgi(char *url, FILE *stream){
 
 // 2010.09 James. {
 static char no_cache_IE7[] =
-"Cache-Control: no-cache\r\n"
+"Cache-Control: no-cache, no-store, must-revalidate\r\n"
 "Pragma: no-cache\r\n"
 "Expires: 0"
 ;
 // 2010.09 James. }
 
 static char no_cache[] =
-"Cache-Control: no-cache\r\n"
+"Cache-Control: no-cache, no-store, must-revalidate\r\n"
 "Pragma: no-cache\r\n"
 "Expires: 0"
 ;
@@ -14889,19 +14871,20 @@ do_cfg_onboarding_cgi(char *url, FILE *stream)
 	char inviteCode[256]={0};
 	char *re_mac = get_cgi_json("re_mac", cfg);
 	char *new_re_mac = get_cgi_json("new_re_mac", cfg);
-	char *id = get_cgi_json("id", cfg);
+	char *id = safe_get_cgi_json("id", cfg);
 	char *flag = get_cgi_json("flag", cfg);
 
-	if (!re_mac && !new_re_mac)
-		snprintf(event_msg, sizeof(event_msg), HTTPD_OB_AVAILABLE_MSG,
-			EID_HTTPD_ONBOARDING, OB_TYPE_AVAILABLE);
-	else if (re_mac && new_re_mac)
-		snprintf(event_msg, sizeof(event_msg), HTTPD_OB_LOCK_MSG,
-			EID_HTTPD_ONBOARDING, OB_TYPE_LOCKED, re_mac, new_re_mac);
+	if(strcmp(id, "donot_search") != 0){
+		if (!re_mac && !new_re_mac)
+			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_AVAILABLE_MSG,
+				EID_HTTPD_ONBOARDING, OB_TYPE_AVAILABLE);
+		else if (re_mac && new_re_mac)
+			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_LOCK_MSG,
+				EID_HTTPD_ONBOARDING, OB_TYPE_LOCKED, re_mac, new_re_mac);
 
-	if (strlen(event_msg))
-		send_cfgmnt_event(event_msg);
-
+		if (strlen(event_msg))
+			send_cfgmnt_event(event_msg);
+	}
 	snprintf(url_str, sizeof(url_str), "%s?flag=%s&id=%s", INDEXPAGE, (!check_xss_blacklist(flag, 0))?flag:"",(!check_xss_blacklist(id, 0))?id:"");
 
 	if(cfg)	json_object_put(cfg);
@@ -18353,8 +18336,8 @@ static int ej_netdev(int eid, webs_t wp, int argc, char_t **argv)
 {
 	FILE * fp;
 	char buf[256];
-	unsigned long long rx, tx;
-	unsigned long long rx2, tx2;
+	unsigned long long rx = 0, tx = 0, curr_rx = 0, curr_tx = 0;
+	unsigned long long rx2 = 0, tx2 = 0;
 #ifdef RTCONFIG_LACP
 	unsigned long long rx_lacp1=0, tx_lacp1=0;
 	unsigned long long rx_lacp2=0, tx_lacp2=0;
@@ -18368,6 +18351,9 @@ static int ej_netdev(int eid, webs_t wp, int argc, char_t **argv)
 	unsigned long long wl2_all_rx = 0, wl2_all_tx = 0;
 	unsigned long long wl3_all_rx = 0, wl3_all_tx = 0;
 	unsigned long long wired_all_rx = 0, wired_all_tx = 0;
+	ino_t inode;
+	struct ifino_s *ifino;
+	static struct ifname_ino_tbl ifstat_tbl = { 0 };
 	char *p;
 	char *ifname;
 	char ifname_desc[12], ifname_desc2[12];
@@ -18478,7 +18464,42 @@ static int ej_netdev(int eid, webs_t wp, int argc, char_t **argv)
 					}
 				}
 #endif	/* RTCONFIG_BCM5301X_TRAFFIC_MONITOR */
-				if (!netdev_calc(ifname, ifname_desc, (long unsigned int *) &rx, (long unsigned int *) &tx, ifname_desc2, (long unsigned int *) &rx2, (long unsigned int *) &tx2, nv_lan_ifname, nv_lan_ifnames)) continue;
+				if (!netdev_calc(ifname, ifname_desc, (unsigned long *) &rx, (unsigned long *) &tx,
+				                 ifname_desc2, (unsigned long *) &rx2, (unsigned long *) &tx2,
+						 nv_lan_ifname, nv_lan_ifnames))
+					continue;
+
+				/* If inode of a interface changed, it means the interface was closed and reopened.
+				 * In this case, we should calculate difference of old TX/RX bytes and new TX/RX
+				 * bytes and shift from new TX/RX bytes to old TX/RX bytes.
+				 */
+				inode = get_iface_inode(ifname);
+				curr_rx = rx;
+				curr_tx = tx;
+				if ((ifino = ifname_ino_ptr(&ifstat_tbl, ifname)) != NULL) {
+					if (ifino->inode && ifino->inode != inode) {
+						ifino->inode = inode;
+						ifino->shift_rx = curr_rx - ifino->last_rx + ifino->shift_rx;
+						ifino->shift_tx = curr_tx - ifino->last_tx + ifino->shift_tx;
+					}
+				} else {
+					if ((ifstat_tbl.nr_items + 1) <= ARRAY_SIZE(ifstat_tbl.items)) {
+						ifino = &ifstat_tbl.items[ifstat_tbl.nr_items];
+						strlcpy(ifino->ifname, ifname, sizeof(ifino->ifname));
+						ifino->inode = inode;
+						ifino->last_rx = curr_rx;
+						ifino->last_tx = curr_tx;
+						ifino->shift_rx = ifino->shift_tx = 0;
+						ifstat_tbl.nr_items++;
+					}
+				}
+
+				if (ifino != NULL) {
+					rx = curr_rx - ifino->shift_rx;
+					tx = curr_tx - ifino->shift_tx;
+					ifino->last_rx = curr_rx;
+					ifino->last_tx = curr_tx;
+				}
 
 loopagain:
 				if (!strncmp(ifname_desc, "WIRELESS0", 9)) {
@@ -19478,41 +19499,48 @@ ej_findasus(int eid, webs_t wp, int argc, char **argv) {
 #ifdef RTCONFIG_WTFAST
 static int
 ej_wtfast_status(int eid, webs_t wp, int argc, char **argv) {
-	char wtfast_status[4096] = {0};
-	char tmp[1024] = {0};
-	char val[512] = {0};
+	int ret = 0;
+	ret = dump_file(wp, "/tmp/wtf_status");
+	if(!ret){
+		char wtfast_status[4096] = {0};
+		char tmp[1024] = {0};
+		char val[512] = {0};
 
-	strcat(wtfast_status, "{");
+		strcat(wtfast_status, "{");
 
-	sprintf(tmp, "\"eMail\":\"%s\",", nvram_get("wtf_username"));
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"eMail\":\"\",");
+		strcat(wtfast_status, tmp);
 
-	sprintf(tmp, "\"Account_Type\":\"%s\",", nvram_get("wtf_account_type"));
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"Account_Type\":\"\",");
+		strcat(wtfast_status, tmp);
 
-	sprintf(tmp, "\"Max_Computers\": %d,", nvram_get_int("wtf_max_clients"));
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"Max_Computers\": 0,");
+		strcat(wtfast_status, tmp);
 
-	memset(val, 0, 512);
-	sprintf(tmp, "\"Server_List\":[],");
-	strcat(wtfast_status, tmp);
+		memset(val, 0, 512);
+		sprintf(tmp, "\"Server_List\":[],");
+		strcat(wtfast_status, tmp);
 
-	sprintf(tmp, "\"Game_List\":[],");
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"Game_List\":[],");
+		strcat(wtfast_status, tmp);
 
-	sprintf(tmp, "\"Days_Left\": %d,", nvram_get_int("wtf_days_left"));
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"Days_Left\": 0,");
+		strcat(wtfast_status, tmp);
 
-	sprintf(tmp, "\"Login_status\": %d,", nvram_get_int("wtf_login"));
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"Login_status\": 0,");
+		strcat(wtfast_status, tmp);
 
-	sprintf(tmp, "\"Session_Hash\":\"%s\"", nvram_get("wtf_session_hash"));
-	strcat(wtfast_status, tmp);
+		sprintf(tmp, "\"Session_Hash\":\"\"");
+		strcat(wtfast_status, tmp);
 
-	strcat(wtfast_status, "}");
+		strcat(wtfast_status, "}");
 
-	return websWrite(wp, "%s", wtfast_status);
+		return websWrite(wp, "%s", wtfast_status);
+	}
+
+	return ret;
 }
+
 #endif
 
 static int
@@ -20857,8 +20885,6 @@ static int check_wired_client_connected_node(char *nodeMac, char *wiredMac, json
 	json_object *wiredClientEntry = NULL;
 	int count = 100;
 	char selectedNode[18] = {0};
-
-	_dprintf("nodeMac (%s), wiredMac (%s)\n", nodeMac, wiredMac);
 
 	if (!wiredClietListObj && !wiredInfoObj) {
 		fprintf(stderr, "wiredClietListObj/wiredInfoObj is NULL\n");
@@ -22789,6 +22815,7 @@ struct useful_redirect_list useful_redirect_lists[] = {
 	{"QIS_wizard**.htm", NULL},
 	{"QoS_EZQoS.asp", NULL},
 	{"TrafficAnalyzer_Statistic.asp", NULL},
+	{"updateSubnet.htm", NULL},
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 	{"send_IFTTTPincode.cgi", NULL},
 #endif

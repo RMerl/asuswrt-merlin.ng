@@ -2715,6 +2715,7 @@ int init_nvram(void)
 	char word[256], *next;
 	char list[128];
 	int idx;
+	char uif_list[128];	/* for upstream all ifnames */
 #endif
 
 #if defined (CONFIG_BCMWL5) && defined(RTCONFIG_TCODE)
@@ -2852,17 +2853,20 @@ int init_nvram(void)
 
 #ifdef RTCONFIG_DPSTA
 	memset(list, 0, sizeof(list));
+	memset(uif_list, 0, sizeof(uif_list));
 
 	if (dpsta_mode()) {
 		idx = 0;
 		foreach (word, nvram_safe_get("wl_ifnames"), next) {
 			if ((num_of_wl_if() == 2) || !idx || idx == nvram_get_int("dpsta_band"))
-			add_to_list(word, list, sizeof(list));
+				add_to_list(word, list, sizeof(list));
+			add_to_list(word, uif_list, sizeof(uif_list));
 			idx++;
 		}
 	}
 
 	nvram_set("dpsta_ifnames", list);
+	nvram_set("dpsta_all_ifnames", uif_list);
 #endif
 
 	/* initialize this value to check fw upgrade status */
@@ -3599,9 +3603,6 @@ int init_nvram(void)
 		nvram_set("wl1_HT_TxStream", "4");
 		nvram_set("wl1_HT_RxStream", "4");
 		nvram_set("wl_time", "2");
-#if defined(RTCONFIG_AMAS)
-		nvram_set("sta_priority", "2 0 2 1 5 1 1 1");
-#endif		
 		break;
 #endif	/* RP-AC87 */
 
@@ -6654,7 +6655,6 @@ int init_nvram(void)
 		if(nvram_get_int("re_mode") == 1) {
 			nvram_set("lan_ifnames", "vlan1 vlan2 eth1 eth2");
 			nvram_set("eth_ifnames", "vlan2");
-			nvram_set("sta_priority", "2 0 2 1 5 1 1 1");
 			nvram_set("wait_band", "10");
 			nvram_set("wait_wifi", "15");
 		}
@@ -6829,11 +6829,11 @@ int init_nvram(void)
 
 #if defined(GTAC5300)
 	case MODEL_GTAC5300:
+		model_patch();
 		if (is_router_mode()) {
 			nvram_set("lan_ifnames", "eth1 eth2 eth3 eth4 eth5 eth6 eth7 eth8");
 			nvram_set("wan_ifname", "eth0");
 			nvram_set("wan_ifnames", "eth0");
-			nvram_set_int("wanports", 7);
 		} else {
 			nvram_set("lan_ifnames", "eth0 eth1 eth2 eth3 eth4 eth5 eth6 eth7 eth8");
 			nvram_set("wan_ifnames", "");
@@ -6859,12 +6859,11 @@ int init_nvram(void)
 		}
 		if(nvram_get_int("re_mode") == 1) {
 			nvram_set("eth_ifnames", "eth0");
-			nvram_set("sta_priority", "2 0 2 1 5 1 3 0 5 2 1 1");
 			nvram_set("wait_band", "10");
 			nvram_set("wait_wifi", "15");
 		}
 		nvram_set("sta_ifnames", "eth6 eth7 eth8");
-		nvram_set("wired_ifnames", "eth1 eth2 eth3 eth4");
+		nvram_set("wired_ifnames", "eth1 eth2 eth3 eth4 eth5 bond0");
 #endif 
 
 		nvram_set("1:ledbh9", "0x7");
@@ -6894,17 +6893,17 @@ int init_nvram(void)
 #ifdef RTCONFIG_DUALWAN
 		if (is_router_mode()) {
 			if (get_wans_dualwan()&WANSCAP_LAN) {
-				if (nvram_match("wans_lanport", "1"))
-					set_lan_phy("eth2 eth3 eth4 eth5");
-				else if (nvram_match("wans_lanport", "2"))
-					set_lan_phy("eth1 eth3 eth4 eth5");
-				else if (nvram_match("wans_lanport", "3"))
-					set_lan_phy("eth1 eth2 eth4 eth5");
+				if (nvram_match("wans_lanport", "2"))
+					set_lan_phy("eth1 eth4 eth3 eth5");
+				else if (nvram_match("wans_lanport", "1"))
+					set_lan_phy("eth2 eth4 eth3 eth5");
 				else if (nvram_match("wans_lanport", "4"))
-					set_lan_phy("eth1 eth2 eth3 eth5");
+					set_lan_phy("eth2 eth1 eth3 eth5");
+				else if (nvram_match("wans_lanport", "3"))
+					set_lan_phy("eth2 eth1 eth4 eth5");
 			}
 			else
-				set_lan_phy("eth1 eth2 eth3 eth4 eth5");
+				set_lan_phy("eth2 eth1 eth4 eth3 eth5");
 
 			if (!(get_wans_dualwan()&WANSCAP_2G))
 				add_lan_phy("eth6");
@@ -6914,23 +6913,10 @@ int init_nvram(void)
 			}
 			if (nvram_get("wans_dualwan")) {
 				set_wan_phy("");
-				char prefix[8], nvram_ports[16];
 				for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
-					memset(prefix, 0, 8);
-					sprintf(prefix, "%d", unit);
-					memset(nvram_ports, 0, 16);
-					sprintf(nvram_ports, "wan%sports", (unit == WAN_UNIT_FIRST)?"":prefix);
 					if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
 						sprintf(wan_if, "eth%d", nvram_get_int("wans_lanport"));
 						add_wan_phy(wan_if);
-						if (nvram_match("wans_lanport", "1"))
-							nvram_set_int(nvram_ports, 0);
-						else if (nvram_match("wans_lanport", "2"))
-							nvram_set_int(nvram_ports, 1);
-						else if (nvram_match("wans_lanport", "3"))
-							nvram_set_int(nvram_ports, 2);
-						else if (nvram_match("wans_lanport", "4"))
-							nvram_set_int(nvram_ports, 3);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_2G)
 						add_wan_phy("eth6");
@@ -6947,7 +6933,6 @@ int init_nvram(void)
 						}
 						else
 							add_wan_phy(the_wan_phy());
-						nvram_set_int(nvram_ports, 7);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_USB)
 						add_wan_phy("usb");
@@ -6991,7 +6976,6 @@ int init_nvram(void)
 			nvram_set("lan_ifnames", "eth1 eth2 eth3 eth4 eth5 eth6");
 			nvram_set("wan_ifnames", "eth0");
 			nvram_set("wan_ifname", "eth0");
-			nvram_set_int("wanports", 7);
 		} else {
 			nvram_set("lan_ifnames", "eth0 eth1 eth2 eth3 eth4 eth5 eth6");
 			nvram_set("wan_ifnames", "");
@@ -7016,7 +7000,6 @@ int init_nvram(void)
 		}
 		if(nvram_get_int("re_mode") == 1) {
 			nvram_set("eth_ifnames", "eth0");
-			nvram_set("sta_priority", "2 0 2 1 5 1 1 1");
 			nvram_set("wait_band", "10");
 			nvram_set("wait_wifi", "15");
 		}
@@ -7085,29 +7068,16 @@ int init_nvram(void)
 			}
 			if (nvram_get("wans_dualwan")) {
 				set_wan_phy("");
-				char prefix[8], nvram_ports[16];
 				for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
-					memset(prefix, 0, 8);
-					sprintf(prefix, "%d", unit);
-					memset(nvram_ports, 0, 16);
-					sprintf(nvram_ports, "wan%sports", (unit == WAN_UNIT_FIRST)?"":prefix);
 					if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
-						if (nvram_match("wans_lanport", "1")) {
-							nvram_set_int(nvram_ports, 3);
+						if (nvram_match("wans_lanport", "1"))
 							sprintf(wan_if, "eth4");
-						}
-						else if (nvram_match("wans_lanport", "2")) {
-							nvram_set_int(nvram_ports, 2);
+						else if (nvram_match("wans_lanport", "2"))
 							sprintf(wan_if, "eth3");
-						}
-						else if (nvram_match("wans_lanport", "3")) {
-							nvram_set_int(nvram_ports, 1);
+						else if (nvram_match("wans_lanport", "3"))
 							sprintf(wan_if, "eth2");
-						}
-						else if (nvram_match("wans_lanport", "4")) {
-							nvram_set_int(nvram_ports, 0);
+						else if (nvram_match("wans_lanport", "4"))
 							sprintf(wan_if, "eth1");
-						}
 						add_wan_phy(wan_if);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_2G)
@@ -7126,7 +7096,6 @@ int init_nvram(void)
 						}
 						else
 							add_wan_phy(the_wan_phy());
-						nvram_set_int(nvram_ports, 7);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_USB)
 						add_wan_phy("usb");
@@ -7304,7 +7273,6 @@ int init_nvram(void)
 			if(nvram_get_int("re_mode") == 1) {
 				nvram_set("lan_ifnames", "vlan1 vlan2 eth1 eth2 eth3");
 				nvram_set("eth_ifnames", "vlan2");
-				nvram_set("sta_priority", "2 0 2 1 5 1 3 0 5 2 1 1");
 				nvram_set("wait_band", "10");
 				nvram_set("wait_wifi", "15");
 			}
@@ -7327,7 +7295,6 @@ int init_nvram(void)
 			if(nvram_get_int("re_mode") == 1) {
 				nvram_set("lan_ifnames", "vlan1 vlan2 eth1 eth2");
 				nvram_set("eth_ifnames", "vlan2");
-				nvram_set("sta_priority", "2 0 2 1 5 1 1 1");
 				nvram_set("wait_band", "10");
 				nvram_set("wait_wifi", "15");
 			}
@@ -8935,6 +8902,8 @@ int init_nvram(void)
 
 #ifdef RTCONFIG_AMAS
 	add_rc_support("amas");
+	if (nvram_get_int("amas_bdl"))
+	add_rc_support("amas_bdl");
 #endif
 
 #ifdef RTCONFIG_WIFI_PROXY
@@ -9643,10 +9612,10 @@ static void sysinit(void)
 #endif
 
 #ifdef HND_ROUTER
-        _dprintf("\nLaunch boot...\n");
+	_dprintf("\nLaunch boot...\n");
 
-        system("bcm_boot_launcher start");
-        start_hw_wdt();
+	system("bcm_boot_launcher start");
+	start_hw_wdt();
 #endif
 
 #define MKNOD(name,mode,dev)		if (mknod(name,mode,dev))		perror("## mknod " name)
@@ -9728,6 +9697,22 @@ static void sysinit(void)
 
 #ifdef HND_ROUTER
 	system("ethswctl -c wan -o enable -i eth0");
+
+#if defined(GTAC5300)
+	// clean the egress port first to avoid the 2nd WAN's DHCP.
+	system("ethswctl -c regaccess -l 4 -v 0x3102 -d 0x60");
+	system("ethswctl -c regaccess -l 4 -v 0x3100 -d 0x50");
+	system("ethswctl -c regaccess -l 4 -v 0x3106 -d 0x140");
+	system("ethswctl -c regaccess -l 4 -v 0x3104 -d 0x60");
+	system("ethswctl -c regaccess -l 4 -v 0x310e -d 0x140");
+#elif defined(RTAC86U)
+	// clean the egress port first to avoid the 2nd WAN's DHCP.
+	system("ethswctl -c regaccess -l 4 -v 0x3106 -d 0x1c0");
+	system("ethswctl -c regaccess -l 4 -v 0x3104 -d 0xe0");
+	system("ethswctl -c regaccess -l 4 -v 0x3102 -d 0xe0");
+	system("ethswctl -c regaccess -l 4 -v 0x3100 -d 0xd0");
+#endif
+
 	system("tmctl porttminit --devtype 0 --if eth0 --flag 1");
 	system("tmctl porttminit --devtype 0 --if eth1 --flag 1");
 	system("tmctl porttminit --devtype 0 --if eth2 --flag 1");
@@ -10085,7 +10070,7 @@ static void sysinit(void)
 
 #if defined (RTCONFIG_WLMODULE_MT7615E_AP)
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
-		nvram_set("lan_ifnames_guess", nvram_safe_get("lan_ifnames"));
+	nvram_set("lan_ifnames_guess", nvram_safe_get("lan_ifnames"));
 #endif
 #endif
 
@@ -10140,6 +10125,10 @@ static void sysinit(void)
 #if defined(RTCONFIG_TEST_BOARDDATA_FILE)
 	start_jffs2();
 #endif
+#endif
+#if defined(RTCONFIG_BCM_7114)
+	mkdir("/tmp/media", 0777);
+	symlink("/jffs", "/tmp/media/nand");
 #endif
 
 	init_wl(); // for system dependent part
@@ -10337,7 +10326,7 @@ int init_main(int argc, char *argv[])
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
-	init_others_defer();
+		init_others_defer();
 #endif
 
 		config_format_compatibility_handler();
@@ -10356,9 +10345,9 @@ int init_main(int argc, char *argv[])
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 		init_enc_nvram();
 #endif
-	// 1. passwd don't need to write too early.
-	// 2. the PMS table is existed at /jffs.
-	setup_passwd();
+		// 1. passwd don't need to write too early.
+		// 2. the PMS table is existed at /jffs.
+		setup_passwd();
 
 #if defined(RTCONFIG_PSISTLOG)
 		//set soft link for some app such as 3ginfo.sh
@@ -10373,7 +10362,6 @@ int init_main(int argc, char *argv[])
 #endif
 
 #ifdef RTN65U
-		extern void asm1042_upgrade(int);
 		asm1042_upgrade(1);	// check whether upgrade firmware of ASM1042
 #endif
 

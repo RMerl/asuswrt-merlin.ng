@@ -758,13 +758,23 @@ function submitForm(){
 			document.form.x_Setting.value = '<% nvram_get("x_Setting"); %>';
 			document.form.sw_mode.value = 1;
 			document.form.action = "/start_apply.htm";
-			if(parent.flag_manual) document.form.flag.value = "manual";
+			if(parent.flag_manual)
+				document.form.flag.value = "manual";
+
+			if(parent.pppoe_failed_flag)
+				document.form.flag.value = "pppoe_retry";
 
 			document.form.submit();
-			if(original_switch_wantag != document.form.switch_wantag.value)
+
+			if(parent.pppoe_failed_flag)
+				setTimeout(function(){
+					location.href = "/qis/QIS_finish.htm";
+				}, 500);
+			else
 				setTimeout(function(){
 					location.href = "/qis/QIS_wireless.htm";
 				}, 500);
+
 			return true;
 	}
 	else

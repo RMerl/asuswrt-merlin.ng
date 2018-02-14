@@ -32,7 +32,7 @@
 #include "extern.h"
 
 int
-chngproc(int netsock, const char *root, const char *challenge)
+chngproc(int netsock, const char *root, const struct config *cfg)
 {
 	char		 *alt = NULL, *tok = NULL, *th = NULL, *fmt = NULL, 
 			 *fmtbuf = NULL;
@@ -48,9 +48,9 @@ chngproc(int netsock, const char *root, const char *challenge)
 
 	if ( ! sandbox_before())
 		goto out;
-	else if ( ! dropfs(NULL != challenge ? PATH_VAR_EMPTY : root))
+	else if ( ! dropfs(NULL != cfg->challenge ? PATH_VAR_EMPTY : root))
 		goto out;
-	else if ( ! sandbox_after(NULL != challenge))
+	else if ( ! sandbox_after(NULL != cfg->challenge))
 		goto out;
 
 	/*
@@ -107,14 +107,15 @@ chngproc(int netsock, const char *root, const char *challenge)
 		tok = NULL;
 		fsz++;
 
-		if (NULL != challenge) {
+		if (NULL != cfg->challenge) {
 			/*
 			 * If we have a specific challenge request, then
 			 * we write the request and thumbprint to stdout
 			 * and wait for a reply (which must be an echo
 			 * of the output) to indicate that all's well.
 			 */
-			fmt = doasprintf("%s %s %s.%s\n", challenge, alt, fs[fsz - 1], th);
+			fmt = doasprintf("%s %s %s.%s\n", 
+				cfg->challenge, alt, fs[fsz - 1], th);
 			if (NULL == fmt) {
 				warn("asprintf");
 				goto out;
@@ -195,7 +196,7 @@ out:
 	close(netsock);
 	if (-1 != fd)
 		close(fd);
-	if (NULL == challenge) 
+	if (NULL == cfg->challenge) 
 		for (i = 0; i < fsz; i++) {
 			if (-1 == unlink(fs[i]) && ENOENT != errno)
 				warn("%s", fs[i]);

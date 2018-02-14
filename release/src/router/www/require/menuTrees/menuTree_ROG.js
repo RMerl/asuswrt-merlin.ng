@@ -65,7 +65,7 @@ define(function(){
 					{url: "GameBoost_ROG.asp", tabName: "<#Game_Boost#>"},
 					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
 					{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
-					{url: "Main_Spectrum_Content.asp", tabName: "Spectrum"},
+					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
 					{url: "AdaptiveQoS_Adaptive.asp", tabName: "__INHERIT__"},

@@ -1610,6 +1610,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	//if (nvram_match("misc_natlog_x", "1"))
 	// 	fprintf(fp, "-A PREROUTING -i %s -j LOG --log-prefix ALERT --log-level 4\n", wan_if);
 
+#if 0
 #ifdef RTCONFIG_AUTOCOVER_SIP
 	if(nvram_get_int("atcover_sip") == 1 && !strcmp(lan_ip, nvram_default_get("lan_ipaddr")) && strcmp(lan_ip, nvram_safe_get("atcover_sip_ip"))){
 		int dst_port;
@@ -1626,6 +1627,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 				);
 	}
 #endif
+#endif
+
 #ifdef RTCONFIG_IPSEC
 	if(is_nat_enabled() && dmz_enabled()) {
 		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 500 -j REDIRECT --to-port 500\n", wan_if);
@@ -2380,6 +2383,7 @@ void redirect_setting(void)
 				":DNSFILTER - [0:0]\n");
 #endif
 
+#if 0
 #ifdef RTCONFIG_AUTOCOVER_SIP
 		if(nvram_get_int("atcover_sip") == 1 && !strcmp(lan_ipaddr_t, nvram_default_get("lan_ipaddr")) && strcmp(lan_ipaddr_t, nvram_safe_get("atcover_sip_ip"))){
 			int dst_port;
@@ -2395,6 +2399,7 @@ void redirect_setting(void)
 					dst_port
 					);
 		}
+#endif
 #endif
 	}
 

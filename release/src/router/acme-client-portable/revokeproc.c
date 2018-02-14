@@ -99,12 +99,13 @@ X509expires(X509 *x)
 }
 
 int
-revokeproc(int fd, const char *certdir, int force, int revocate,
-	int expand, const char *const *alts, size_t altsz)
+revokeproc(int fd, const char *certdir, 
+	const char *const *alts, size_t altsz, const struct config *cfg)
 {
 	char		*path = NULL, *der = NULL, *dercp, 
 			*der64 = NULL, *san = NULL, *str, *tok;
-	int		 rc = 0, cc, i, extsz, ssz, len;
+	int		 rc = 0, cc, i, extsz, ssz, len, 
+			 force = cfg->force;
 	size_t		*found = NULL;
 	BIO		*bio = NULL;
 	FILE		*f = NULL;
@@ -152,12 +153,12 @@ revokeproc(int fd, const char *certdir, int force, int revocate,
 	 * Ignore if the reader isn't reading in either case.
 	 */
 
-	if (NULL == f && revocate) {
+	if (NULL == f && cfg->revocate) {
 		warnx("%s/%s: no certificate found",
 			certdir, CERT_PEM);
 		(void)writeop(fd, COMM_REVOKE_RESP, REVOKE_OK);
 		goto out;
-	} else if (NULL == f && ! revocate) {
+	} else if (NULL == f && ! cfg->revocate) {
 		if (writeop(fd, COMM_REVOKE_RESP, REVOKE_EXP) >= 0)
 			rc = 1;
 		goto out;
@@ -273,7 +274,7 @@ revokeproc(int fd, const char *certdir, int force, int revocate,
 	for (j = 0; j < altsz; j++) {
 		if (found[j])
 			continue;
-		if (expand) {
+		if (cfg->expand) {
 			dodbg("%s/%s: expanding with domain: %s",
 				certdir, CERT_PEM, alts[j]);
 			force = 1;
@@ -290,7 +291,7 @@ revokeproc(int fd, const char *certdir, int force, int revocate,
 	 * Then exit: we have nothing left to do.
 	 */
 
-	if (revocate) {
+	if (cfg->revocate) {
 		dodbg("%s/%s: revocation", certdir, CERT_PEM);
 
 		/*

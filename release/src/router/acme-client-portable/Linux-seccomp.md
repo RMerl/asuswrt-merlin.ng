@@ -9,6 +9,12 @@ on Linux for the default
 violations; users think software is crap and go back to other
 fly-by-night Ruby or Perlthon client; users are insecure; I am sad.
 
+**Edit**: people seem to be stumbling upon my usage of Alpine or that
+this is a "rant".  As for the second, this is a technical article with
+technical arguments --- not an op-ed.  As for the first, it's irrelevant
+to the technical arguments.  The discussion covers Debian, Ubuntu, Arch,
+and others.  It's Linux/seccomp, not Alpine, not Debian.
+
 # Introduction
 
 After implementing a sandbox for
@@ -35,8 +41,6 @@ on [FreeBSD](https://www.freebsd.org), and
 [libseccomp](https://github.com/seccomp/libseccomp) implementing
 [seccomp-bpf](https://www.kernel.org/doc/Documentation/prctl/seccomp_filter.txt)
 on [Linux](https://www.kernel.org).
-
-![Keep them in the sandbox!](http://1.bp.blogspot.com/-F2qtZSFIrAQ/UYk8KnQqZ7I/AAAAAAAAATg/RKs0uOCPdXU/s1600/sandbox+fight.jpg)
 
 After implementing a filter that worked on a local x86\_64
 [Alpine](https://alpinelinux.org) system (Alpine being the distribution

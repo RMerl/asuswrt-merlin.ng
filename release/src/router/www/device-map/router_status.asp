@@ -128,27 +128,27 @@ function initial(){
 	else
 		document.form.wl_subunit.value = -1;
 
-	if(lyra_hide_support){
+	if(parent.lyra_hide_support){
 		document.getElementById("t0").style.display = "";
 		document.getElementById("span0").innerHTML = "<#tm_wireless#>";
 	}
 	else{
-		if(band5g_support){
+		if(parent.band5g_support){
 			document.getElementById("t0").style.display = "";
 			document.getElementById("t1").style.display = "";
 
-			if(wl_info.band5g_2_support)
+			if(parent.wl_info.band5g_2_support)
 				tab_reset(0);
 
-			if(wl_info.band60g_support)
+			if(parent.wl_info.band60g_support)
 				tab_reset(0);
 
-			if(smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
+			if(parent.smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
 				change_smart_connect('<% nvram_get("smart_connect_x"); %>');
 			
 			// disallow to use the other band as a wireless AP
 			if(parent.sw_mode == 4 && !localAP_support){
-				for(var x=0; x<wl_info.wl_if_total;x++){
+				for(var x=0; x<parent.wl_info.wl_if_total;x++){
 					if(x != '<% nvram_get("wlc_band"); %>')
 						document.getElementById('t'+parseInt(x)).style.display = 'none';
 				}
@@ -273,7 +273,7 @@ function detect_CPU_RAM(){
 function tab_reset(v){
 	var tab_array1 = document.getElementsByClassName("tab_NW");
 	var tab_array2 = document.getElementsByClassName("tabclick_NW");
-	var tab_width = Math.floor(270/(wl_info.wl_if_total+1));
+	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
 	var i = 0;
 	while(i < tab_array1.length){
 		tab_array1[i].style.width=tab_width+'px';
@@ -288,7 +288,7 @@ function tab_reset(v){
 	
 	if(v == 0){
 		document.getElementById("span0").innerHTML = "2.4GHz";
-		if(wl_info.band5g_2_support){
+		if(parent.wl_info.band5g_2_support){
 			document.getElementById("span1").innerHTML = "5GHz-1";
 			document.getElementById("span2").innerHTML = "5GHz-2";
 		}else{
@@ -296,7 +296,7 @@ function tab_reset(v){
 			document.getElementById("t2").style.display = "none";
 		}
 
-		if(!wl_info.band60g_support){
+		if(!parent.wl_info.band60g_support){
 			document.getElementById("t3").style.display = "none";
 		}		
 	}else if(v == 1){	//Smart Connect
@@ -308,7 +308,7 @@ function tab_reset(v){
 		document.getElementById("t1").style.display = "none";
 		document.getElementById("t2").style.display = "none";				
 		document.getElementById("t3").style.display = "none";
-		document.getElementById("t0").style.width = (tab_width*wl_info.wl_if_total+10) +'px';
+		document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
 	}
 	else if(v == 2){ //5GHz Smart Connect
 		document.getElementById("span0").innerHTML = "2.4GHz";
@@ -358,7 +358,7 @@ function generate_cpu_field(){
 		document.getElementById('cpu'+i+'_graph').style.display = "";
 	}
 
-	if(getBrowser_info().ie == "9.0" || getBrowser_info().ie == "8.0")
+	if(parent.getBrowser_info().ie == "9.0" || parent.getBrowser_info().ie == "8.0")
 		document.getElementById('cpu_field').outerHTML = code;
 	else
 		document.getElementById('cpu_field').innerHTML = code;

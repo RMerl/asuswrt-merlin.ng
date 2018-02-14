@@ -354,8 +354,11 @@ void lp55xx_leds_proc(int col_mode, int beh_mode)
 	switch (col_mode)
 	{
 		case LP55XX_LIGHT_CYAN_LEDS:
-			if (nvram_match("lp55xx_lp5523_user_enable", "1")
-				&& !nvram_match("lp55xx_lp5523_sch_enable", "2"))
+		case LP55XX_GREENERY_LEDS:
+			if (beh_mode_tmp == LP55XX_ACT_NONE
+				&& nvram_match("lp55xx_lp5523_user_enable", "1")
+				&& !nvram_match("lp55xx_lp5523_sch_enable", "2")
+			   )
 			{
 				col_mode = nvram_get_int("lp55xx_lp5523_user_col");
 				beh_mode_tmp = nvram_get_int("lp55xx_lp5523_user_beh");

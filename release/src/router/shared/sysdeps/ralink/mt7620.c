@@ -158,6 +158,7 @@ enum {
 	CPU_PORT=6,
 	P7_PORT=7,
 };
+#define MT7621_GSW
 #elif defined(RTN800HP)
 enum {
 	WAN_PORT=4,

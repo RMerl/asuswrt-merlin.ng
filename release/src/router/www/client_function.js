@@ -398,7 +398,12 @@ function card_closeClientListView() {
 var card_firstTimeOpenBlock = false;
 var card_custom_usericon_del = "";
 var userIconBase64 = "NoIcon";
-function popClientListEditTable(mac, obj, name, ip, callBack) {
+function popClientListEditTable(event) {
+	var mac = event.data.mac;
+	var obj = event.data.obj;
+	var name = event.data.name;
+	var ip = event.data.ip;
+	var callBack = event.data.callBack;
 	if(mac != "") {
 		var isMacAddr = mac.split(":");
 		if(isMacAddr.length != 6)

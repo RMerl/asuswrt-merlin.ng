@@ -1414,6 +1414,8 @@ extern int is_wlsta_exist(int unit, int vidx);
 #if defined(RTCONFIG_BCMWL6)
 extern int get_wl_sta_list(void);
 extern int get_maxassoc(char *ifname);
+extern int wl_add_ie(int unit, uint32 pktflag, int ielen, uchar *oui, uchar *data);
+extern void wl_del_ie_with_oui(int unit, uchar *oui);
 #endif
 #if defined(RTCONFIG_LANTIQ)
 extern int get_wl_sta_list(void);
@@ -1682,6 +1684,21 @@ extern int psta_exist_except(int unit);
 extern int psr_exist(void);
 extern int psr_exist_except(int unit);
 #endif
+
+struct ifino_s {
+	char ifname[IFNAMSIZ];
+	ino_t inode;
+	unsigned long long last_rx, last_tx;
+	unsigned long long shift_rx, shift_tx;
+};
+
+struct ifname_ino_tbl {
+	unsigned nr_items;
+	struct ifino_s items[50];
+};
+
+extern struct ifino_s *ifname_ino_ptr(struct ifname_ino_tbl *ifinotbl, const char *ifname);
+extern ino_t get_iface_inode(const char *ifname);
 extern unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2, char *nv_lan_ifname, char *nv_lan_ifnames);
 extern void disable_dpi_engine_setting(void);
 extern int get_iface_hwaddr(char *name, unsigned char *hwaddr);

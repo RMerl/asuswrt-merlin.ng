@@ -2707,8 +2707,8 @@ wan_up(const char *pwan_ifname)
 #endif
 
 	/* start multicast router when not VPN */
-	if (strcmp(wan_proto, "dhcp") == 0
-			|| strcmp(wan_proto, "static") == 0)
+	if (wan_unit == wan_primary_ifunit() &&
+	    (strcmp(wan_proto, "dhcp") == 0 || strcmp(wan_proto, "static") == 0))
 		start_igmpproxy(wan_ifname);
 
 	stop_upnp();

@@ -94,15 +94,17 @@ function initial(){
 
 function show_wl_maclist_x(){
 	var code = "";
-	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table"  id="wl_maclist_x_table">'; 
+	var clientListEventData = [];
+	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table"  id="wl_maclist_x_table">';
 	if(Object.keys(manually_maclist_list_array).length == 0)
-		code +='<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td>';
+		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
 		var clientName, deviceType, deviceVender;
 		Object.keys(manually_maclist_list_array).forEach(function(key) {
-			var clientMac = key;
+			var clientMac = key.toUpperCase();
+			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
@@ -121,21 +123,21 @@ function show_wl_maclist_x(){
 			}
 			else {
 				if(usericon_support) {
-					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
+					code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div style="text-align:center;" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;&quot;, &quot;&quot;, &quot;ACL&quot;)"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
 				}
 				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' +clientMac + '&quot;, this, &quot;&quot;, &quot;&quot;, &quot;ACL&quot;)"></div>';
+					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 				}
 				else if(deviceVender != "" ) {
 					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
 					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;&quot;, &quot;&quot;, &quot;ACL&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
 					}
 					else {
-						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;&quot;, &quot;&quot;, &quot;ACL&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 					}
 				}
 			}
@@ -144,11 +146,19 @@ function show_wl_maclist_x(){
 			code += '<div>' + clientMac + '</div>';
 			code += '</td></tr></table>';
 			code += '</td>';
-			code +='<td width="20%"><input type="button" class=\"remove_btn\" onclick=\"deleteRow(this, &quot;' + clientMac + '&quot;);\" value=\"\"/></td></tr>';		
+			code += '<td width="20%"><input type="button" class=\"remove_btn\" onclick=\"deleteRow(this, \'' + clientMac + '\');\" value=\"\"/></td></tr>';
+			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "ACL"});
 		});
-	}	
-	
-  	code +='</tr></table>';
+	}
+	code += '</table>';
+	document.getElementById("wl_maclist_x_Block").innerHTML = code;
+	for(var i = 0; i < clientListEventData.length; i += 1) {
+		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
+		var clientIconObj = $("#wl_maclist_x_Block").children("#wl_maclist_x_table").find("#" + clientIconID + "")[0];
+		var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
+		paramData["obj"] = clientIconObj;
+		$("#wl_maclist_x_Block").children("#wl_maclist_x_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
+	}
 	document.getElementById("wl_maclist_x_Block").innerHTML = code;
 }
 

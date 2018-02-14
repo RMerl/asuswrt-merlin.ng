@@ -3905,10 +3905,10 @@ lldpd-0.9.8: lldpd-0.9.8/Makefile
 lldpd-0.9.8/Makefile:
 ifeq ($(HND_ROUTER),y)
 	(cd lldpd-0.9.8 ; autoreconf -i -f ; LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
-	$(CONFIGURE) $(if $(RTCONFIG_AMAS),JSONC_CFLAGS='-I$(TOP)/json-c' JSONC_LIBS='-L$(TOP)/josn-c/.libs -ljson-c',) --prefix= --bindir=/usr/sbin --libdir=/usr/lib --with-privsep-user=admin --with-privsep-group=root --with-privsep-path=/var/run/lldpd $(if $(RTCONFIG_AMAS),--with-json=yes,))
+	$(CONFIGURE) $(if $(RTCONFIG_AMAS),JSONC_CFLAGS='-I$(TOP)/json-c' JSONC_LIBS='-L$(TOP)/josn-c/.libs -ljson-c',) --prefix= --bindir=/usr/sbin --libdir=/usr/lib --with-privsep-user=nobody --with-privsep-group=root --with-privsep-path=/var/run/lldpd $(if $(RTCONFIG_AMAS),--with-json=yes,))
 else	
 	(cd lldpd-0.9.8 ; autoreconf -i -f ; LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
-	$(CONFIGURE) $(if $(RTCONFIG_AMAS),JSONC_CFLAGS='-I$(TOP)/json-c' JSONC_LIBS='-L$(TOP)/josn-c/.libs -ljson-c',) --prefix= --enable-oldies --bindir=/usr/sbin --libdir=/usr/lib --with-privsep-user=admin --with-privsep-group=root --with-privsep-path=/var/run/lldpd $(if $(RTCONFIG_AMAS),--with-json=yes,))
+	$(CONFIGURE) $(if $(RTCONFIG_AMAS),JSONC_CFLAGS='-I$(TOP)/json-c' JSONC_LIBS='-L$(TOP)/josn-c/.libs -ljson-c',) --prefix= --enable-oldies --bindir=/usr/sbin --libdir=/usr/lib --with-privsep-user=nobody --with-privsep-group=root --with-privsep-path=/var/run/lldpd $(if $(RTCONFIG_AMAS),--with-json=yes,))
 endif
 
 lldpd-0.9.8-install: lldpd-0.9.8
@@ -6612,14 +6612,21 @@ endif
 lm-sensors-master:
 	cd lm-sensors-master; make clean; make all
 
-bluez-5.41/stamp-h1:
 ifeq ($(wildcard bluez-5.41/prebuild),)
+EXTAQIS=--enable-extaqis
+BLUEDPATH=src
+else
+EXTAQIS=
+BLUEDPATH=prebuild
+endif
+
+bluez-5.41/stamp-h1:
 	cd bluez-5.41 && ./autogen.sh --no-configure
 ifeq ($(RTCONFIG_REALTEK),y)
 	cd bluez-5.41 && $(CONFIGURE) \
 		--enable-library --program-prefix= --program-suffix= --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib --sysconfdir=/etc\
 		--datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info --disable-systemd --with-udevdir=$(STAGEDIR)/usr/lib/udev\
-		--enable-experimental --enable-maintainer-mode\
+		--enable-experimental --enable-maintainer-mode --enable-extaqis ${EXTAQIS} \
 		UDEV_CFLAGS="-I$(STAGEDIR)/usr/include" UDEV_LIBS="$(STAGEDIR)/usr/lib/libudev.so" \
 		CFLAGS="-I$(STAGEDIR)/usr/local/include -I$(STAGEDIR)/usr/include -I$(TOP)/bluez-5.41/src/bleencrypt/include -DENCRYPT -I$(TOP)/shared -I$(SRCBASE)/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include" \
 		LDFLAGS="-L$(STAGEDIR)/lib -L$(STAGEDIR)/usr/lib -ldbus-1 -L$(TOP)/libiconv-1.14/lib/.libs -liconv -ldl -lpthread -L$(STAGEDIR)/usr/local/lib -lglib-2.0 -lglib-2.0 -lical -licalvcal -L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared"
@@ -6628,12 +6635,11 @@ else
 	cd bluez-5.41 && $(CONFIGURE) \
 		--enable-library --program-prefix= --program-suffix= --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib --sysconfdir=/etc\
 		--datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info --disable-systemd --with-udevdir=$(STAGEDIR)/usr/lib/udev\
-		--enable-experimental --enable-maintainer-mode\
+		--enable-experimental --enable-maintainer-mode ${EXTAQIS} \
 		UDEV_CFLAGS="-I$(STAGEDIR)/usr/include" UDEV_LIBS="$(STAGEDIR)/usr/lib/libudev.so" \
 		CFLAGS="$(EXTRA_BLUEZ_CFLAGS) -I$(STAGEDIR)/usr/local/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include -I$(STAGEDIR)/usr/include -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/bluez-5.41/src/bleencrypt/include -DENCRYPT -D$(MODEL)" \
 		LDFLAGS="$(EXTRA_BLUEZ_LDFLAGS) -L$(STAGEDIR)/lib -L$(STAGEDIR)/usr/lib -ldbus-1 -liconv -ldl -lpthread -L$(STAGEDIR)/usr/local/lib -lglib-2.0 -lglib-2.0 -lical -licalvcal -L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared"
 	touch $@
-endif
 endif
 bluez-5.41: libiconv-1.14 glib-2.37.7 udev-173 libical-2.0.0 readline-6.2 bluez-5.41/stamp-h1
 	$(MAKE) -C $@ && $(MAKE) $@-stage
@@ -6673,7 +6679,7 @@ else ifeq ($(RTCONFIG_LANTIQ),y)
 	install -D btconfig/btconfig $(TARGETDIR)/usr/bin/btconfig
 endif
 	install -D bluez-5.41/lib/.libs/libbluetooth.so.$(LIBBLUETOOTH_VER) $(TARGETDIR)/usr/lib/libbluetooth.so.$(LIBBLUETOOTH_VER)
-	install -D bluez-5.41/src/bluetoothd $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothd
+	install -D bluez-5.41/${BLUEDPATH}/bluetoothd $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothd
 	install -D bluez-5.41/attrib/gatttool $(INSTALLDIR)/bluez-5.41/usr/bin/gatttool
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), MAP-AC3000))
 	install -D bluez-5.41/3000000.psr $(TARGETDIR)/rom/etc/3000000.psr
@@ -6700,8 +6706,8 @@ endif
 ifeq ($(RTCONFIG_LANTIQ),y)
 	cp -f bluez-5.41/src/main.conf $(TARGETDIR)/rom/etc/bluetooth
 endif
-	cp -f bluez-5.41/src/bleencrypt/pem2048/public.pem $(TARGETDIR)/rom/etc/bluetooth
-	cp -f bluez-5.41/src/bleencrypt/pem2048/private.pem $(TARGETDIR)/rom/etc/bluetooth
+	cp -f bluez-5.41/profiles/aqis/bleencrypt/pem2048/public.pem $(TARGETDIR)/rom/etc/bluetooth
+	cp -f bluez-5.41/profiles/aqis/bleencrypt/pem2048/private.pem $(TARGETDIR)/rom/etc/bluetooth
 	rm -rf $(TARGETDIR)/usr/obex
 	cd $(TARGETDIR)/usr/lib && \
 		ln -sf libbluetooth.so.$(LIBBLUETOOTH_VER) libbluetooth.so.3 && \

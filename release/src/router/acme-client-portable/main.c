@@ -1,6 +1,6 @@
 /*	$Id$ */
 /*
- * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
+ * Copyright (c) 2016--2017 Kristaps Dzonsons <kristaps@bsd.lv>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,13 +32,15 @@
 
 #include "extern.h"
 
-#define AGREEMENT "https://letsencrypt.org" \
+#define URL_AGREE "https://letsencrypt.org" \
 		  "/documents/LE-SA-v1.2-November-15-2017.pdf"
 #define SSL_DIR "/etc/ssl/acme"
 #define SSL_PRIV_DIR "/etc/ssl/acme/private"
 #define ETC_DIR "/etc/acme"
 #define WWW_DIR "/var/www/acme"
 #define PRIVKEY_FILE "privkey.pem"
+#define URL_REAL_CA "https://acme-v01.api.letsencrypt.org/directory"
+#define URL_STAGE_CA "https://acme-staging.api.letsencrypt.org/directory"
 
 /*
  * XXX: I arbitrarily choose a starting descriptor and hope that we
@@ -137,8 +139,9 @@ xrun(enum comp comp, const char **newargs)
 int
 main(int argc, char *argv[])
 {
-	const char	 *domain, *agreement = AGREEMENT, 
-	      		 *challenge = NULL, *sp = NULL;
+	struct config	  cfg;
+	const char	 *domain, 
+	      		 *sp = NULL;
 	const char	**alts = NULL, **newargs = NULL, *modval = NULL;
 	char		 *certdir = NULL, *acctkey = NULL, 
 			 *chngdir = NULL, *keyfile = NULL,
@@ -146,10 +149,10 @@ main(int argc, char *argv[])
 	int		  key_fds[2], acct_fds[2], chng_fds[2],
 			  cert_fds[2], file_fds[2], dns_fds[2],
 			  rvk_fds[2];
-	int		  c, rc, newacct = 0, revocate = 0, force = 0,
-			  staging = 0, multidir = 0, newkey = 0, 
-			  backup = 0, build_certdir, build_ssldir, 
-			  build_acctdir, expand = 0, ocsp = 0;
+	int		  c, rc, 
+			  multidir = 0, 
+			  build_certdir, build_ssldir, 
+			  build_acctdir;
 	pid_t		  pids[COMP__MAX];
 	extern int	  verbose;
 	extern enum comp  proccomp;
@@ -175,15 +178,19 @@ main(int argc, char *argv[])
 	for (i = 1, j = 5; i < (size_t)argc; i++, j++)
 		newargs[j] = argv[i];
 
-	/* Now parse arguments. */
+	/* Now set defaults and parse arguments. */
+
+	memset(&cfg, 0, sizeof(struct config));
+	cfg.url = URL_REAL_CA;
+	cfg.agree = URL_AGREE;
 
 	while (-1 != (c = getopt(argc, argv, "beFmnNOrsva:f:c:C:k:t:x:X:"))) 
 		switch (c) {
 		case ('a'):
-			agreement = optarg;
+			cfg.agree = optarg;
 			break;
 		case ('b'):
-			backup = 1;
+			cfg.backup = 1;
 			break;
 		case ('c'):
 			free(certdir);
@@ -196,7 +203,7 @@ main(int argc, char *argv[])
 				err(EXIT_FAILURE, "strdup");
 			break;
 		case ('e'):
-			expand = 1;
+			cfg.expand = 1;
 			break;
 		case ('f'):
 			free(acctkey);
@@ -204,7 +211,7 @@ main(int argc, char *argv[])
 				err(EXIT_FAILURE, "strdup");
 			break;
 		case ('F'):
-			force = 1;
+			cfg.force = 1;
 			break;
 		case ('k'):
 			free(keyfile);
@@ -215,22 +222,22 @@ main(int argc, char *argv[])
 			multidir = 1;
 			break;
 		case ('n'):
-			newacct = 1;
+			cfg.newacct = 1;
 			break;
 		case ('N'):
-			newkey = 1;
+			cfg.newkey = 1;
 			break;
 		case ('O'):
-			ocsp = 1;
+			cfg.ocsp = 1;
 			break;
 		case ('r'):
-			revocate = 1;
+			cfg.revocate = 1;
 			break;
 		case ('s'):
-			staging = 1;
+			cfg.url = URL_STAGE_CA;
 			break;
 		case ('t'):
-			challenge = optarg;
+			cfg.challenge = optarg;
 			break;
 		case ('v'):
 			verbose = verbose ? 2 : 1;
@@ -347,17 +354,16 @@ main(int argc, char *argv[])
 	/* Check if we're overriding any given values. */
 
 	if (NULL != modval) {
-		if (newacct && NULL != strchr(modval, 'n'))
-			newacct = 0;
-		if (newkey && NULL != strchr(modval, 'N'))
-			newkey = 0;
+		if (cfg.newacct && NULL != strchr(modval, 'n'))
+			cfg.newacct = 0;
+		if (cfg.newkey && NULL != strchr(modval, 'N'))
+			cfg.newkey = 0;
 	}
 
 	if (0 == strcmp(sp, subps[COMP_REVOKE])) {
 		proccomp = COMP_REVOKE;
 		c = revokeproc(FDS_REVOKE, certdir,
-			force, revocate, expand,
-			(const char *const *)alts, altsz);
+			(const char *const *)alts, altsz, &cfg);
 		free(alts);
 		exit(c ? EXIT_SUCCESS : EXIT_FAILURE);
 	} else if (0 == strcmp(sp, subps[COMP_DNS])) {
@@ -368,7 +374,7 @@ main(int argc, char *argv[])
 	} else if (0 == strcmp(sp, subps[COMP_FILE])) {
 		proccomp = COMP_FILE;
 		free(alts);
-		c = fileproc(FDS_FILE, backup, certdir);
+		c = fileproc(FDS_FILE, certdir, &cfg);
 		/*
 		 * This is different from the other processes in that it
 		 * can return 2 if the certificates were updated.
@@ -383,17 +389,17 @@ main(int argc, char *argv[])
 	} else if (0 == strcmp(sp, subps[COMP_CHALLENGE])) {
 		proccomp = COMP_CHALLENGE;
 		free(alts);
-		c = chngproc(FDS_CHALLENGE, chngdir, challenge);
+		c = chngproc(FDS_CHALLENGE, chngdir, &cfg);
 		exit(c ? EXIT_SUCCESS : EXIT_FAILURE);
 	} else if (0 == strcmp(sp, subps[COMP_ACCOUNT])) {
 		proccomp = COMP_ACCOUNT;
 		free(alts);
-		c = acctproc(FDS_ACCOUNT, acctkey, newacct);
+		c = acctproc(FDS_ACCOUNT, acctkey, &cfg);
 		exit(c ? EXIT_SUCCESS : EXIT_FAILURE);
 	} else if (0 == strcmp(sp, subps[COMP_KEY])) {
 		proccomp = COMP_KEY;
-		c = keyproc(FDS_KEY, ocsp, keyfile,
-			(const char **)alts, altsz, newkey);
+		c = keyproc(FDS_KEY, keyfile,
+			(const char **)alts, altsz, &cfg);
 		free(alts);
 		exit(c ? EXIT_SUCCESS : EXIT_FAILURE);
 	} else if (0 == strcmp(sp, subps[COMP_NET])) {
@@ -401,9 +407,7 @@ main(int argc, char *argv[])
 		c = netproc(FDS_KEY, FDS_ACCOUNT,
 		    FDS_CHALLENGE, FDS_CERT,
 		    FDS_DNS, FDS_REVOKE,
-		    newacct, revocate, staging,
-		    (const char *const *)alts, altsz,
-		    agreement, challenge);
+		    (const char *const *)alts, altsz, &cfg);
 		free(alts);
 		exit(c ? EXIT_SUCCESS : EXIT_FAILURE);
 	} else if (NULL != sp)
@@ -417,15 +421,15 @@ main:
 	 * don't want to perform these operations.
 	 */
 
-	if (newacct && -1 != access(acctkey, R_OK)) {
-		newacct = 0;
+	if (cfg.newacct && -1 != access(acctkey, R_OK)) {
+		cfg.newacct = 0;
 		modval = "n";
 		dodbg("%s: account key exists "
 			"(not creating)", acctkey);
 	}
 
-	if (newkey && -1 != access(keyfile, R_OK)) {
-		newkey = 0;
+	if (cfg.newkey && -1 != access(keyfile, R_OK)) {
+		cfg.newkey = 0;
 		modval = NULL != modval ? "nN" : "N";
 		dodbg("%s: domain key exists "
 			"(not creating)", keyfile);
@@ -479,17 +483,17 @@ main:
 		ne++;
 	}
 
-	if ( ! newkey && -1 == access(keyfile, R_OK)) {
+	if ( ! cfg.newkey && -1 == access(keyfile, R_OK)) {
 		warnx("%s: -k file must exist", keyfile);
 		ne++;
 	} 
 
-	if (NULL == challenge && -1 == access(chngdir, R_OK)) {
+	if (NULL == cfg.challenge && -1 == access(chngdir, R_OK)) {
 		warnx("%s: -C directory must exist", chngdir);
 		ne++;
 	}
 
-	if ( ! newacct && -1 == access(acctkey, R_OK)) {
+	if ( ! cfg.newacct && -1 == access(acctkey, R_OK)) {
 		warnx("%s: -f file must exist", acctkey);
 		ne++;
 	} 

@@ -383,19 +383,22 @@ function check_status(_device){
 		document.getElementById('scan_status_image').src = "/images/New_ui/networkmap/red.png";
 
 		if(stopScan == 1 || scan_done == 1){
-			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
+			if(parent.based_modelid != "GT-AC5300" && parent.based_modelid != "GT-AC9600")
+				parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
 			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '0px -184px';
 		}
 		parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '1px -206px';
 	}
 	else if(got_code_2){
 		if(stopScan == 1){
-			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
+			if(parent.based_modelid != "GT-AC5300" && parent.based_modelid != "GT-AC9600")
+				parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
 			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '0% 0%';
 		}
 	}
 	else if(got_code_3){
-		parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
+		if(parent.based_modelid != "GT-AC5300" && parent.based_modelid != "GT-AC9600")
+			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
 		parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '0% 0%';
 	}
 	else{ // got_code_0
@@ -404,7 +407,8 @@ function check_status(_device){
 		document.getElementById('crash_found').style.display = "none";
 		document.getElementById('scan_status_image').src = "/images/New_ui/networkmap/blue.png";
 		if(stopScan == 1 || scan_done == 1){
-			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
+			if(parent.based_modelid != "GT-AC5300" && parent.based_modelid != "GT-AC9600")
+				parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
 			parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '0px -92px';
 		}
 

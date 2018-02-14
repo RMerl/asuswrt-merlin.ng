@@ -2339,10 +2339,6 @@ void start_lan(void)
 							   ETHER_ADDR_LEN) == 0) {
 							ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
 							memcpy(ifr.ifr_hwaddr.sa_data, hwaddr, ETHER_ADDR_LEN);
-#ifdef RTCONFIG_AMAS
-							if(nvram_get_int("re_mode") == 1)
-								ifr.ifr_hwaddr.sa_data[0] = ifr.ifr_hwaddr.sa_data[0] | 0x02;
-#endif
 							ioctl(s, SIOCSIFHWADDR, &ifr);
 						}
 						close(s);

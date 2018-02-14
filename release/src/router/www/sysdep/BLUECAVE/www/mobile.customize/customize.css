@@ -1,4 +1,8 @@
-﻿.qisBackgroundIndex{
+﻿option{
+	background-color: #FFF;
+	color: #000;
+}
+.qisBackgroundIndex{
 	background:url('qis_background.png') #FFF no-repeat;
 	background-size: cover;
 }

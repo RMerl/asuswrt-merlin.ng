@@ -90,6 +90,9 @@ function AiMesh_confirm_msg(_name, _value) {
 		else
 			return true;
 	};
+	var check_wireless_country_code = function() {
+		return confirm("By changing country code, AiMesh might not work properly.\nAre you sure to process?");/* untranslated */
+	};
 	var feature_value = {
 		"Wireless_WPS" : {
 			"value" : 1,
@@ -126,6 +129,9 @@ function AiMesh_confirm_msg(_name, _value) {
 			break;
 		case "Wireless_SSID_PSK" :
 			confirm_flag = check_wireless_ssid_psk(_value);
+			break;
+		case "Wireless_CountryCode" :
+			confirm_flag = check_wireless_country_code();
 			break;
 	}
 	return confirm_flag;

@@ -719,6 +719,9 @@ void generate_switch_para(void)
 			int wancfg = (!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")&&!nvram_match("switch_wantag", "hinet")) ? SWCFG_DEFAULT : cfg;
 
 			wan_phyid = ports[0];	// record the phy num of the wan port on the case
+			nvram_unset("mvlan_vid0");
+			nvram_unset("mvlan_vid1");
+			nvram_unset("mvlan");
 #ifdef RTCONFIG_DUALWAN
 #ifdef RTCONFIG_AMAS
 			if (nvram_get_int("re_mode")==1) {
@@ -731,6 +734,9 @@ void generate_switch_para(void)
 				switch_gen_config(wan, ports, wancfg, 1, NULL);
 				nvram_set("lanports", lan);
 				nvram_set("wanports", wan);
+				nvram_set("mvlan_vid0", "1");
+				nvram_set("mvlan_vid1", "2");
+				nvram_set("mvlan", "1");
 			}
 			else
 #endif
@@ -825,6 +831,9 @@ void generate_switch_para(void)
 				switch_gen_config(wan, ports, wancfg, 1, NULL);
 				nvram_set("lanports", lan);
 				nvram_set("wanports", wan);
+				nvram_set("mvlan_vid0", "1");
+				nvram_set("mvlan_vid1", "2");
+				nvram_set("mvlan", "1");
 			}
 			else
 #endif
@@ -1654,16 +1663,123 @@ void init_switch()
 
 	switch(model) {
 		case MODEL_GTAC5300:
+		{
 			/* set wanports in init_nvram for dualwan */
-			//nvram_set("wanports", "7");
-			nvram_set("lanports", "0 1 2 3");
+			/* WAN L1 L2 L5 L6 */
+			int ports[6] = { 7, 1, 0, 3, 2 };
+			int eth_devs[6] = { 0, 2, 1, 4, 3 };
+			char *regs[5] = { "0x3102", "0x3100", "0x3106", "0x3104", "0x310e" };
+			char *wan2vals[5][5] = { { "0xef", "0xdf", "0x1cf", "0xef", "0x1cf" },
+			                         { "0xe2", "0xdd", "0x1cd", "0xed", "0x1cd" },
+			                         { "0xee", "0xd1", "0x1ce", "0xee", "0x1ce" },
+			                         { "0xe7", "0xd7", "0x1c8", "0xe7", "0x1c7" },
+			                         { "0xeb", "0xdb", "0x1cb", "0xe4", "0x1cb" }
+			                       };
+			char buf[64], *ptr;
+			int i, len, eth_dev, wancfg = 0;
+			int tmp_type;
+
+			if(get_wans_dualwan() & WANSCAP_LAN){
+				eth_dev = nvram_get_int("wans_lanport");
+
+				memset(buf, 0, sizeof(buf));
+				ptr = buf;
+				for(i = 1; i <= 4; ++i){
+					if(eth_devs[i] == eth_dev){
+						wancfg = i;
+						continue;
+					}
+
+					len = strlen(buf);
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[i]);
+					ptr = buf+strlen(buf);
+				}
+
+				nvram_set("lanports", buf);
+			}
+			else{
+				wancfg = 0;
+
+				nvram_set("lanports", "1 0 3 2");
+			}
+
+			for(i = 0; i < 5; ++i){ // 4 LAN ports
+				snprintf(buf, sizeof(buf), "/bin/ethswctl -c regaccess -v %s -l 4 -d %s", regs[i], wan2vals[wancfg][i]);
+				system(buf);
+			}
+
+			memset(buf, 0, sizeof(buf));
+			for(i = WAN_UNIT_FIRST, ptr = buf; (tmp_type = get_dualwan_by_unit(i)) != WANS_DUALWAN_IF_NONE; ++i){
+				len = strlen(buf);
+				if(tmp_type == WANS_DUALWAN_IF_WAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[0]);
+				else if(tmp_type == WANS_DUALWAN_IF_LAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[wancfg]);
+				ptr = buf+strlen(buf);
+			}
+
+			nvram_set("wanports", buf);
+
 			break;
+		}
 
 		case MODEL_RTAC86U:
+		{
 			/* set wanports in init_nvram for dualwan */
-			//nvram_set("wanports", "7");
-			nvram_set("lanports", "3 2 1 0");
+			/* WAN L1 L2 L3 L4 */
+			int ports[6] = { 7, 3, 2, 1, 0 };
+			char *regs[4] = { "0x3106", "0x3104", "0x3102", "0x3100" };
+			char *wan2vals[5][4] = { { "0x1cf", "0xef", "0xef", "0xdf" },
+			                         { "0x1c8", "0xe7", "0xe7", "0xd7" },
+			                         { "0x1cb", "0xe4", "0xeb", "0xdb" },
+			                         { "0x1cd", "0xed", "0xe2", "0xdd" },
+			                         { "0x1ce", "0xee", "0xee", "0xd1" }
+			                       };
+			char buf[64], *ptr;
+			int i, len, wancfg;
+			int tmp_type;
+
+			if(get_wans_dualwan() & WANSCAP_LAN){
+				wancfg = nvram_get_int("wans_lanport");
+
+				memset(buf, 0, sizeof(buf));
+				ptr = buf;
+				for(i = 1; i <= 4; ++i){
+					if(i == wancfg)
+						continue;
+
+					len = strlen(buf);
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[i]);
+					ptr = buf+strlen(buf);
+				}
+
+				nvram_set("lanports", buf);
+			}
+			else{
+				wancfg = 0;
+
+				nvram_set("lanports", "3 2 1 0");
+			}
+
+			for(i = 0; i < 4; ++i){ // 4 LAN ports
+				snprintf(buf, sizeof(buf), "/bin/ethswctl -c regaccess -v %s -l 4 -d %s", regs[i], wan2vals[wancfg][i]);
+				system(buf);
+			}
+
+			memset(buf, 0, sizeof(buf));
+			for(i = WAN_UNIT_FIRST, ptr = buf; (tmp_type = get_dualwan_by_unit(i)) != WANS_DUALWAN_IF_NONE; ++i){
+				len = strlen(buf);
+				if(tmp_type == WANS_DUALWAN_IF_WAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[0]);
+				else if(tmp_type == WANS_DUALWAN_IF_LAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[wancfg]);
+				ptr = buf+strlen(buf);
+			}
+
+			nvram_set("wanports", buf);
+
 			break;
+		}
 	}
 
 #ifdef RTCONFIG_EMF
@@ -2605,6 +2721,12 @@ void tweak_usb_affinity(int enable)
 void init_others(void)
 {
 	eval("insmod", "hnd");
+
+	//tweak UDP socket buffer
+	f_write_string("/proc/sys/net/core/wmem_default", "524288", 0, 0);
+	f_write_string("/proc/sys/net/core/wmem_max", "524288", 0, 0);
+	f_write_string("/proc/sys/net/core/rmem_default", "524288", 0, 0);
+	f_write_string("/proc/sys/net/core/rmem_max", "524288", 0, 0);
 }
 #else
 
@@ -3765,9 +3887,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		nvram_set_int(strcat_r(prefix, "wmf_ucigmp_query", tmp), 1);
 		nvram_set_int(strcat_r(prefix, "wmf_mdata_sendup", tmp), 1);
 #ifdef RTCONFIG_BCMARM
-#ifndef HND_ROUTER
-		nvram_set_int(strcat_r(prefix, "wmf_ucast_upnp", tmp), 1);
-#endif
+		nvram_set_int(strcat_r(prefix, "wmf_ucast_upnp", tmp), 0);
 		nvram_set_int(strcat_r(prefix, "wmf_igmpq_filter", tmp), 1);
 #endif
 		nvram_set_int(strcat_r(prefix, "acs_fcs_mode", tmp), i ? 1 : 0);

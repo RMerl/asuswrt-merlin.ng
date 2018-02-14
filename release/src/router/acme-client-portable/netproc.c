@@ -29,9 +29,6 @@
 #include "http.h"
 #include "extern.h"
 
-#define URL_REAL_CA "https://acme-v01.api.letsencrypt.org/directory"
-#define URL_STAGE_CA "https://acme-staging.api.letsencrypt.org/directory"
-
 #define	RETRY_DELAY 5
 #define RETRY_MAX 10
 
@@ -592,9 +589,8 @@ dofullchain(struct conn *c, const char *addr)
  */
 int
 netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
-	int newacct, int revocate, int staging, 
-	const char *const *alts, size_t altsz, const char *agreement,
-	const char *challenge)
+	const char *const *alts, size_t altsz, 
+	const struct config *cfg)
 {
 	int		 rc = 0;
 	size_t		 i;
@@ -678,7 +674,7 @@ netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
 
 	c.dfd = dfd;
 	c.fd = afd;
-	c.na = staging ? URL_STAGE_CA : URL_REAL_CA;
+	c.na = cfg->url;
 
 	if (NULL == c.cfg)
 		goto out;
@@ -698,7 +694,7 @@ netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
 	 * certproc, which will in turn notify the fileproc.
 	 */
 
-	if (revocate) {
+	if (cfg->revocate) {
 		if (NULL == (cert = readstr(rfd, COMM_CSR)))
 			goto out;
 		if ( ! dorevoke(&c, paths.revokecert, cert))
@@ -711,14 +707,14 @@ netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
 	/* If new, register with the CA server. */
 	// do reg, if alreay registered, continue to do authorise
 
-	if ( ! donewreg(&c, agreement, &paths) && newacct)
+	if ( ! donewreg(&c, cfg->agree, &paths) && cfg->newacct )
 		goto out;
 
 	/* Pre-authorise all domains with CA server. */
 
 	for (i = 0; i < altsz; i++)
 		if ( ! dochngreq(&c, alts[i], 
-		    &chngs[i], &paths, challenge))
+		    &chngs[i], &paths, cfg->challenge))
 			goto out;
 
 	/*
@@ -763,18 +759,22 @@ netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
 	 */
 
 	for (i = 0; i < altsz; i++) {
-		if (1 == chngs[i].status)
-			continue;
+		while (1) {
+			if (1 == chngs[i].status) {
+				dodbg("%s: valid", chngs[i].uri);
+				break;
+			}
 
-		if (chngs[i].retry++ >= RETRY_MAX) {
-			warnx("%s: too many tries", chngs[i].uri);
-			goto out;
+			if (chngs[i].retry++ >= RETRY_MAX) {
+				warnx("%s: too many tries", chngs[i].uri);
+				goto out;
+			}
+
+			/* Sleep before every attempt. */
+			sleep(RETRY_DELAY);
+			if ( ! dochngcheck(&c, &chngs[i]))
+				goto out;
 		}
-
-		/* Sleep before every attempt. */
-		sleep(RETRY_DELAY);
-		if ( ! dochngcheck(&c, &chngs[i]))
-			goto out;
 	}
 
 	/*

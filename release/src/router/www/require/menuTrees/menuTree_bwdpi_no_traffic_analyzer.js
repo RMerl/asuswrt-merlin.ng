@@ -77,7 +77,7 @@ define(function(){
 					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
 					{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
 					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
-					{url: "Main_Spectrum_Content.asp", tabName: "Spectrum"},
+					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},

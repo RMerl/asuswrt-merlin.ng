@@ -19,7 +19,21 @@
 #ifndef _DPSTA_LINUX_H_
 #define _DPSTA_LINUX_H_
 
+#define DPSTACVAR 1
+
+/* dpsta_ioctl cmd */
 #define DPSTA_CMD_ENABLE	SIOCDEVPRIVATE
+#define DPSTA_CMD_SETGETVAR	(SIOCDEVPRIVATE + DPSTACVAR)
+
+/* dpsta iovar */
+#define DPSTA_IOV_UIF 1
+#define DPSTA_IOV_MSGLEVEL 2
+#define DPSTA_IOV_DPINFO 3
+
+/* dpsta msglevel */
+#define DPSTA_ERROR_VAL 0x00000001
+#define DPSTA_TRACE_VAL 0x00000002
+#define DPSTA_PKT_VAL   0x00000004
 
 #define DPSTA_POLICY_AUTO	0
 #define DPSTA_POLICY_SAMEBAND	1
@@ -40,4 +54,15 @@ typedef struct dpsta_enable_info {
 	uint8	upstream_if[DPSTA_NUM_UPSTREAM_IF][IFNAMSIZ];
 } dpsta_enable_info_t;
 
+/* structure to send a generic var set/get */
+typedef struct dpsta_var_s {
+	uint cmd;
+	uint set;
+	uint len;
+	union {
+		int arg;
+		char uif[IFNAMSIZ];
+		dpsta_enable_info_t dpinfo;
+	};
+} dpsta_var_t;
 #endif /* _DPSTA_LINUX_H_ */

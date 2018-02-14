@@ -24,12 +24,14 @@
 					'content', 'width=' + verge.viewportW() + ', target-densitydpi=device-dpi, initial-scale=' + (0.5*verge.viewportW())/375 + ', maximum-scale=1, user-scalable=no'
 				);
 
+				$("#welcomeTitle").html("<#lyra_welcome_title#>".replace("Lyra", "<#Web_Title2#>").replace("BLUE_CAVE", "BLUE CAVE"));
+				$("#welcome_button").html("<#lyra_welcome_create#>".replace(" Lyra ", ""));
 				$(".secureInput").click(checkPasswd);
 				$("div[data-role='page']").append("<div class='footerPadding'></div>");
-				$(".headerBar").html(Get_Component_Header())
+				$(".headerBar").html(Get_Component_Header());
+				handleModelIcon();
 
 				// setup systemVariables
-				handleModelIcon();
 				setTimeout(function(){
 					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr"]);
 
@@ -115,9 +117,7 @@
 				</table>
 			</div>
 			<div class="tableContainerIndex">
-				<div id="welcomeTitle">
-					Welcome To <#Web_Title2#>
-				</div>
+				<div id="welcomeTitle"></div>
 				<div class="pageDesc" style="display:none"></div>
 
 				<div class="productIconContainer">
@@ -125,7 +125,7 @@
 				</div>
 
 				<div style="text-align:center;margin:50px 0">
-					<div id="welcome_button" onclick="apply.welcome();">Create A New Network</div>
+					<div id="welcome_button" onclick="apply.welcome();"></div>
 				</div>
 
 				<!--div style="text-align:center;margin:50px 0" class="amasSupport">
@@ -133,7 +133,7 @@
 				</div-->
 	
 				<div style="margin:auto;width:600px;text-align:center;">
-					<a href="#"  class="advSetting" onclick="goTo.advSetting()">Manual Setup</a>
+					<a href="#"  class="advSetting" onclick="goTo.advSetting()"><#Manual_Setting_btn#></a>
 				</div>
 		
 				<div class="tos tosSupport">
@@ -157,7 +157,7 @@
 					</div>
 				</div>
 				<div class="table_td">
-					<div class="amasSupport amasInAdv">
+					<div class="amasSupport amasNoWAN">
 						<div class="pageDesc">AiMesh combines more than one ASUS routers to form a AiMesh system, provides whole-home coverage and centralized management.</div>
 						<div>
 							<div class="selectorTopContainer">
@@ -175,7 +175,7 @@
 						</div>
 					</div>
 
-					<div style="height: 50px" class="amasInAdv"></div>
+					<div style="height: 50px" class="amasNoWAN"></div>
 
 					<div class="pageDesc"><#OP_desc1#></div>
 					<div>
@@ -275,7 +275,7 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn btn_login_abort" onclick='abort.login()'><#CTL_prev#></div>
-							<div class="desktop_applyBtn btn_login_apply btn_login_html" onclick="apply.login();"><#CTL_next#></div>
+							<div class="desktop_applyBtn btn_login_apply" onclick="apply.login();"><#CTL_next#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -284,7 +284,7 @@
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 									<td class="mobileApply btn_login_apply" onclick="apply.login();">
-										<div class="mobile_applyBtn btn_login_html"><#CTL_next#></div>
+										<div class="mobile_applyBtn btn_login_apply"><#CTL_next#></div>
 									</td>
 								</tr>
 							</table>
@@ -629,6 +629,16 @@
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.L2TP()">
 										L2TP
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer autoIP amasSupport amasNoWAN">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.asNode()">
+										I want to set this device as AiMesh node
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -1643,6 +1653,47 @@
 
 		<!-- AMAS Restore  -->
 		<div id="amasrestore_page" data-role="page" class="qisBackground aimeshPages"></div>
+
+		<!-- AMAS Bundle  -->
+		<div id="amasbundle_page" data-role="page" class="qisBackground aimeshPages">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#QIS_finish_Summary#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc">	
+						AiMesh combines more than one ASUS routers to form an AiMesh system, provides whole-home coverage and centralized management.
+						<br/>
+						Do you want to add another node?
+
+						<div class="amasIconContainer">
+							<div><img src="images\New_ui\amesh\Amesh_button_light.png"></div>
+						</div>
+					</div>
+						
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.amasbundle();'>I'm done</div>
+						<div class="desktop_applyBtn" onclick="apply.amasbundle();">Add another node</div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="mobileAbort" style="width:50%" onclick='abort.amasbundle();'>
+									<div class="mobile_abortBtn">I'm done</div>
+								</td>
+								<td class="mobileApply" onclick="apply.amasbundle();">
+									<div class="mobile_applyBtn">Add another node</div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>			
+		</div>
 
 		<!-- Err: Redirect Fail  -->
 		<div id="amaserr_connrouter_page" data-role="page" class="qisBackground aimeshPages"></div>

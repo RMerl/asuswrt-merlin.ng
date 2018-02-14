@@ -435,7 +435,7 @@ function showcloud_synclist(){
 	var cloud_synclist_row = cloud_synclist_array.split('&#60');
 	var code = "";
 	rulenum = 0;
-
+	var cloud_synclist_data = [];
 	code +='<table width="99%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="cloud_synclist_table">';
 	if(enable_cloudsync == '0' && cloud_synclist_array != "")
 		code +='<tr height="55px"><td style="color:#FFCC00;" colspan="6"><#nosmart_sync#></td>';
@@ -553,10 +553,10 @@ function showcloud_synclist(){
 				getDropBoxClientName(cloudListTableItem.token, cloudListTableItem.username);
 			}
 
-			code += ' class="cloudListUserName" onclick="editRule='+rulenum+';showAddTable('+cloudListTableItem.provider+','+i+');" title=' + cloudListTableItem.username + '>' + cloudListTableItem.username.shorter(20) + '</span></td>';
+			code += ' class="cloudListUserName" onclick="editRule='+rulenum+';showAddTable('+cloudListTableItem.provider+','+i+');"></span></td>';
 
 			code += '<td width="'+wid[2]+'%"><div id="' + cloudListTableItem.ruleId + '"><div class="status_gif_Img_' + cloudListTableItem.rule + '"></div></div></td>';
-			code += '<td width="'+wid[3]+'%"><span style="word-break:break-all;" title=' + cloudListTableItem.path.substr(8, cloudListTableItem.path.length)+ '>' + cloudListTableItem.path.substr(8, cloudListTableItem.path.length).shorter(20) +'</span></td>';
+			code += '<td width="'+wid[3]+'%"><span class="cloudListPath" style="word-break:break-all;"></span></td>';
 			code += '<td width="'+wid[4]+'%" id="' + cloudListTableItem.syncStatusId + '">' + cloudListTableItem.syncStatusDefaultStr + '</td>';
 			code += '<td width="'+wid[5]+'%"><input class="remove_btn" onclick="delRow('+rulenum+');" value=""/></td>';
 
@@ -564,11 +564,21 @@ function showcloud_synclist(){
 				updateCloudStatus();
 				updateCloudStatus_counter++;
 			}
+			cloud_synclist_data.push({"username" : cloudListTableItem.username, "path" : cloudListTableItem.path});
 		}
 	}
 
 	code +='</table>';
 	document.getElementById("cloud_synclist_Block").innerHTML = code;
+
+	for(var i = 0; i < cloud_synclist_data.length; i += 1) {
+		var cloudListUserNameObj = $("#cloud_synclist_Block").children("#cloud_synclist_table").find("#row" + i + " .cloudListUserName");
+		var cloudListPathObj = $("#cloud_synclist_Block").children("#cloud_synclist_table").find("#row" + i + " .cloudListPath");
+		cloudListUserNameObj.attr("title", cloud_synclist_data[i]["username"]);
+		cloudListUserNameObj.html(cloud_synclist_data[i]["username"].shorter(20));
+		cloudListPathObj.attr("title", cloud_synclist_data[i]["path"].substr(8, cloud_synclist_data[i]["path"].length));
+		cloudListPathObj.html(cloud_synclist_data[i]["path"].substr(8, cloud_synclist_data[i]["path"].length).shorter(20));
+	}
 }
 
 function getDropBoxClientName(token, uid){

@@ -2303,3 +2303,7 @@ endif
 ifeq ($(BCM_SECURE_DMA),1)
 	WLFLAGS += -DBCM_SECURE_DMA
 endif
+
+ifeq ($(CLIENT_CSA),1)
+	WLFLAGS += -DCLIENT_CSA
+endif

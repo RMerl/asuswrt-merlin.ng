@@ -212,6 +212,9 @@ typedef uint16 chanspec_t;
 					((channel) | (ctlsb) | \
 					 WL_CHANSPEC_BW_160 | WL_CHANSPEC_BAND_5G)
 
+#define CHBW_CHSPEC(bw, channel)	(chanspec_t)((chanspec_t)(channel) | (bw) | \
+					(((channel) <= CH_MAX_2G_CHANNEL) ? \
+					WL_CHANSPEC_BAND_2G : WL_CHANSPEC_BAND_5G))
 /* simple MACROs to get different fields of chanspec */
 #define CHSPEC_CHANNEL(chspec)		((uint8)((chspec) & WL_CHANSPEC_CHAN_MASK))
 #define CHSPEC_CHAN1(chspec)		((chspec) & WL_CHANSPEC_CHAN1_MASK)
@@ -272,6 +275,7 @@ typedef uint16 chanspec_t;
 #define CHANSPEC_STR_LEN    20
 
 
+#define CHSPEC_BW_GE(chspec, bw) (CHSPEC_BW(chspec) >= bw)
 /* Legacy Chanspec defines
  * These are the defines for the previous format of the chanspec_t
  */

@@ -148,6 +148,24 @@ typedef struct pktc_data pktc_data_t;
 #endif /* PLC */
 #endif /* PKTC */
 
+#define ET_MULTI_VLAN_IN_LAN //cathy
+
+#ifdef ET_MULTI_VLAN_IN_LAN
+#define MAX_VLAN_DEV_IN_LAN 2
+
+typedef struct et_mvlan_in_lan {
+	bool en;
+	uint16 rxvid[MAX_VLAN_DEV_IN_LAN];
+	struct net_device *vdev[MAX_VLAN_DEV_IN_LAN];
+} et_mvlan_in_lan_t;
+
+#define MVLAN_IN_LAN_GET_ENAB(et) ((et) ? ((et)->mvlan.en) : 0)
+#define MVLAN_IN_LAN_SET_ENAB(et, val) do { if ((et)) (et)->mvlan.en = (val); } while(0);
+#else /* ! ET_MULTI_VLAN_IN_LAN */
+#define MVLAN_IN_LAN_GET_ENAB(et) 0
+#define MVLAN_IN_LAN_SET_ENAB(et, val)
+#endif /* ! ET_MULTI_VLAN_IN_LAN */
+
 static int et_get_settings(struct net_device *dev, struct ethtool_cmd *ecmd);
 static int et_set_settings(struct net_device *dev, struct ethtool_cmd *ecmd);
 static void et_get_driver_info(struct net_device *dev, struct ethtool_drvinfo *info);
@@ -237,6 +255,10 @@ typedef struct et_info {
 #ifdef ETFA
 	spinlock_t	fa_lock;	/* lock for fa cache protection */
 #endif
+
+#ifdef ET_MULTI_VLAN_IN_LAN
+	et_mvlan_in_lan_t mvlan;
+#endif /* ET_MULTI_VLAN_IN_LAN */
 } et_info_t;
 
 static int et_found = 0;
@@ -407,6 +429,118 @@ module_param(txworkq, int, 0);
 #define ET_TXQ_THRESH	0
 static int et_txq_thresh = ET_TXQ_THRESH;
 module_param(et_txq_thresh, int, 0);
+
+#ifdef ET_MULTI_VLAN_IN_LAN
+static int
+et_mvlan_netdev_event(struct notifier_block *this, unsigned long event, void *ptr)
+{
+	struct net_device *real_dev, *vdev;
+	et_info_t *et;
+	uint16 vid;
+	int idx;
+
+	/* we are only interested in plc vifs */
+	vdev = (struct net_device *)ptr;
+	if ((vdev->priv_flags & IFF_802_1Q_VLAN) == 0)
+		return NOTIFY_DONE;
+
+	/* get the pointer to real device */
+	real_dev = vlan_dev_real_dev(vdev);
+	vid = vlan_dev_vlan_id(vdev);
+
+	for (et = et_list; et; et = et->next) {
+		if (et != ET_INFO(real_dev))
+			continue;
+		break;
+	}
+
+	if (!et)
+		return NOTIFY_DONE;
+
+	MVLAN_IN_LAN_SET_ENAB(et, getintvar(NULL, "mvlan"));
+
+	printk("et%d: %s: event %ld for %s mvlan_en %d\n", et->etc->unit, __FUNCTION__,
+	          event, vdev->name, MVLAN_IN_LAN_GET_ENAB(et));
+
+	switch (event) {
+	case NETDEV_REGISTER:
+	case NETDEV_UP:
+	case NETDEV_CHANGE:
+		for (idx = 0; idx < MAX_VLAN_DEV_IN_LAN; idx++) {
+			if (et->mvlan.rxvid[idx] != vid)
+				continue;
+			printk("%s: reg vid %d idx %d\n", __FUNCTION__, vid, idx);
+			et->mvlan.vdev[idx] = vdev;
+			break;
+		}
+		break;
+
+	case NETDEV_UNREGISTER:
+	case NETDEV_DOWN:
+		for (idx = 0; idx < MAX_VLAN_DEV_IN_LAN; idx++) {
+			if (et->mvlan.rxvid[idx] != vid)
+				continue;
+			printk("%s: unreg vid %d idx %d\n", __FUNCTION__, vid, idx);
+			et->mvlan.vdev[idx] = NULL;
+			break;
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return NOTIFY_DONE;
+}
+
+static struct notifier_block et_mvlan_netdev_event_notifier = {
+	.notifier_call = et_mvlan_netdev_event
+};
+
+void
+et_mvlan_upd_rx_stats(struct net_device *vdev, int cnt, int bytes)
+{
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36))
+	struct net_device_stats *stats = NULL;
+
+	if (!vdev)
+		return;
+
+	stats = vlan_dev_get_stats((struct net_device *)vdev);
+	if (!stats)
+		return;
+	stats->rx_packets += cnt;
+	stats->rx_bytes += bytes;
+#else
+	if (!vdev)
+		return;
+
+	vlan_rxstats_upd(vdev, NULL, cnt, bytes); 
+#endif
+}
+
+struct net_device *
+et_find_vdev_by_vid(et_info_t *et, uint16 vid)
+{
+	struct net_device *vdev = NULL;
+	int idx;
+
+	//printk("et_find_vdev_by_vid vid %d\n", vid);
+
+	if (vid == 0)
+		return vdev;
+
+	for (idx = 0; idx < MAX_VLAN_DEV_IN_LAN; idx++) {
+		if (et->mvlan.rxvid[idx] != vid)
+			continue;
+		//printk("et_find_vdev_by_vid vid %d found idx %d\n", vid, idx);
+		vdev = et->mvlan.vdev[idx];
+		break;
+	}
+
+	return vdev;
+}
+#endif /* ET_MULTI_VLAN_IN_LAN */
 
 #ifdef HNDCTF
 static void
@@ -583,6 +717,10 @@ et_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	  * Map core unit to nvram unit for FA, otherwise, core unit is equal to nvram unit
 	  */
 	int unit = coreunit;
+#ifdef ET_MULTI_VLAN_IN_LAN
+	static bool mvlan_registered = FALSE;
+	int idx = 0;
+#endif /* ET_MULTI_VLAN_IN_LAN */
 
 	ET_TRACE(("et core%d: et_probe: bus %d slot %d func %d irq %d\n", coreunit,
 	          pdev->bus->number, PCI_SLOT(pdev->devfn), PCI_FUNC(pdev->devfn), pdev->irq));
@@ -920,6 +1058,20 @@ et_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 #endif /* HNDCTF */
 #endif /* PLC */
 
+#ifdef ET_MULTI_VLAN_IN_LAN
+	if (et->cih && !mvlan_registered) {
+		mvlan_registered = TRUE;
+		for (idx = 0; idx < MAX_VLAN_DEV_IN_LAN; idx++) {
+			sprintf(name, "mvlan_vid%d", idx);
+			et->mvlan.rxvid[idx] = getintvar(NULL, name);
+			printk("%s: mvlan vid[%d]: %u\n",
+				__FUNCTION__, idx, et->mvlan.rxvid[idx]);
+		}
+		MVLAN_IN_LAN_SET_ENAB(et, getintvar(NULL, "mvlan"));
+		printk("\n%s: mvlan en %d\n", __FUNCTION__, MVLAN_IN_LAN_GET_ENAB(et));
+		register_netdevice_notifier(&et_mvlan_netdev_event_notifier);
+	}
+#endif /* ET_MULTI_VLAN_IN_LAN */
 	return (0);
 
 fail:
@@ -2143,6 +2295,10 @@ et_sendup_chain_error_handler(et_info_t *et, struct sk_buff *skb, uint sz, int32
 	struct sk_buff *nskb;
 	uint16 vlan_tag;
 	struct ethervlan_header *n_evh;
+#ifdef ET_MULTI_VLAN_IN_LAN
+	struct net_device *odev, *vdev;
+	int cnt = 0, bytes = 0;
+#endif /* ET_MULTI_VLAN_IN_LAN */
 
 	ASSERT(err != BCME_OK);
 
@@ -2154,6 +2310,13 @@ et_sendup_chain_error_handler(et_info_t *et, struct sk_buff *skb, uint sz, int32
 #endif /* PLC */
 	/* get original vlan tag from the first packet */
 	vlan_tag = ((struct ethervlan_header *)PKTDATA(et->osh, skb))->vlan_tag;
+
+#ifdef ET_MULTI_VLAN_IN_LAN
+	if (MVLAN_IN_LAN_GET_ENAB(et)) {
+		odev = skb->dev;
+		vdev = et_find_vdev_by_vid(et, (NTOH16(vlan_tag) & VLAN_VID_MASK));
+	}
+#endif /* ET_MULTI_VLAN_IN_LAN */
 
 	FOREACH_CHAINED_PKT(skb, nskb) {
 		PKTCLRCHAINED(et->osh, skb);
@@ -2182,9 +2345,31 @@ et_sendup_chain_error_handler(et_info_t *et, struct sk_buff *skb, uint sz, int32
 		PKTCSETCNT(skb, 1);
 		PKTCSETLEN(skb, PKTLEN(et->etc->osh, skb));
 
-		if (et_ctf_forward(et, skb) == BCME_OK) {
-			ET_ERROR(("et%d: shall not happen\n", et->etc->unit));
+#ifdef ET_MULTI_VLAN_IN_LAN
+		if (MVLAN_IN_LAN_GET_ENAB(et) && vdev) {
+			skb->dev = vdev;
+			cnt = 1;
+			bytes = PKTLEN(et->etc->osh, skb);
 		}
+
+		if (et_ctf_forward(et, skb) == BCME_OK) {
+			if (MVLAN_IN_LAN_GET_ENAB(et))
+				et_mvlan_upd_rx_stats(vdev, cnt, bytes);
+
+			/* partial packets of this chain can be forwarded by CTF */
+			ET_ERROR(("et%d: unexpected forwarding\n", et->etc->unit));
+			continue;
+		}
+
+		if (MVLAN_IN_LAN_GET_ENAB(et) && vdev)
+			skb->dev = odev;
+#else /* ! ET_MULTI_VLAN_IN_LAN */
+		if (et_ctf_forward(et, skb) == BCME_OK) {
+			/* partial packets of this chain can be forwarded by CTF */
+			ET_ERROR(("et%d: unexpected forwarding\n", et->etc->unit));
+			continue;
+		}
+#endif /* ! ET_MULTI_VLAN_IN_LAN */
 
 		if (et->etc->qos)
 			pktsetprio(skb, TRUE);
@@ -2206,6 +2391,11 @@ et_sendup_chain(et_info_t *et, void *h)
 	struct sk_buff *skb;
 	uint sz = PKTCCNT(h);
 	int32 err;
+#ifdef ET_MULTI_VLAN_IN_LAN
+	struct net_device *odev = NULL, *vdev = NULL;
+	struct ethervlan_header *evh;
+	int cnt = 0, bytes = 0;
+#endif /* ET_MULTI_VLAN_IN_LAN */
 
 	ASSERT(h != NULL);
 
@@ -2227,10 +2417,36 @@ et_sendup_chain(et_info_t *et, void *h)
 	et->etc->currchainsz = sz;
 	et->etc->maxchainsz = MAX(et->etc->maxchainsz, sz);
 
+#ifdef ET_MULTI_VLAN_IN_LAN
+	if (MVLAN_IN_LAN_GET_ENAB(et)) {
+		evh = (struct ethervlan_header *)PKTDATA(et->osh, skb);
+		if (evh->vlan_type == HTON16(ETHER_TYPE_8021Q)) {
+			odev = skb->dev;
+			vdev = et_find_vdev_by_vid(et, (NTOH16(evh->vlan_tag) & VLAN_VID_MASK));
+		}
+	}
+#endif /* ET_MULTI_VLAN_IN_LAN */
+#ifdef ET_MULTI_VLAN_IN_LAN
+	if(MVLAN_IN_LAN_GET_ENAB(et) && vdev) {
+		skb->dev = vdev;
+		cnt = PKTCCNT(skb);
+		bytes = PKTCLEN(skb);
+	}
+
+	if ((err = ctf_forward(et->cih, h, skb->dev)) == BCME_OK) {
+		if (MVLAN_IN_LAN_GET_ENAB(et))
+			et_mvlan_upd_rx_stats(vdev, cnt, bytes);
+		return;
+	}
+
+	if(MVLAN_IN_LAN_GET_ENAB(et) && vdev)
+		skb->dev = odev;
+#else /* ! ET_MULTI_VLAN_IN_LAN */
 	/* send up the packet chain */
 	if ((err = ctf_forward(et->cih, h, skb->dev)) == BCME_OK)
 		return;
 
+#endif /* ! ET_MULTI_VLAN_IN_LAN */
 	et_sendup_chain_error_handler(et, skb, sz, err);
 }
 #endif /* PKTC */
@@ -2748,6 +2964,11 @@ et_sendup(et_info_t *et, struct sk_buff *skb)
 	etc_info_t *etc;
 	void *rxh;
 	uint16 flags;
+#ifdef ET_MULTI_VLAN_IN_LAN
+	struct net_device *odev = NULL, *vdev = NULL;
+	struct ethervlan_header *evh;
+	int cnt = 0, bytes = 0;
+#endif /* ET_MULTI_VLAN_IN_LAN */
 
 	etc = et->etc;
 
@@ -2797,10 +3018,38 @@ et_sendup(et_info_t *et, struct sk_buff *skb)
 		return;
 #endif /* PLC */
 
+#ifdef ET_MULTI_VLAN_IN_LAN
+	if (MVLAN_IN_LAN_GET_ENAB(et)) {
+		evh = (struct ethervlan_header *)PKTDATA(et->osh, skb);
+		if (evh->vlan_type == HTON16(ETHER_TYPE_8021Q)) {
+			odev = skb->dev;
+			vdev = et_find_vdev_by_vid(et, (NTOH16(evh->vlan_tag) & VLAN_VID_MASK));
+		}
+	}
+#endif /* ET_MULTI_VLAN_IN_LAN */
+
 #ifdef HNDCTF
+#ifdef ET_MULTI_VLAN_IN_LAN
+	if(MVLAN_IN_LAN_GET_ENAB(et) && vdev) {
+		skb->dev = vdev;
+		cnt = 1;
+		bytes = PKTLEN(etc->osh, skb);
+	}
+
+	/* try cut thru' before sending up */
+	if (et_ctf_forward(et, skb) != BCME_ERROR) {
+		if (MVLAN_IN_LAN_GET_ENAB(et))
+			et_mvlan_upd_rx_stats(vdev, cnt, bytes);
+		return;
+	}
+
+	if(MVLAN_IN_LAN_GET_ENAB(et) && vdev)
+		skb->dev = odev;
+#else /* ! ET_MULTI_VLAN_IN_LAN */
 	/* try cut thru' before sending up */
 	if (et_ctf_forward(et, skb) != BCME_ERROR)
 		return;
+#endif /* ! ET_MULTI_VLAN_IN_LAN */
 
 	PKTCLRTOBR(etc->osh, skb);
 	if (PKTISFAFREED(skb)) {

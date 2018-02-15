@@ -1635,7 +1635,7 @@ int get_wl_channel_list_5g_by_bw(string_1024 list_of_channels, int bw)
 		goto ERROR;
 	}
 
-	if(strcmp(cur_ccode, "eu")==0 || strcmp(cur_ccode, "jp")==0){
+	if(strcmp(cur_ccode, "jp")==0){
 		ret = qcsapi_regulatory_get_list_regulatory_channels(cur_ccode, 40 /* bw */, list_of_channels);
 	}else{
 		ret = qcsapi_regulatory_get_list_regulatory_channels(cur_ccode, bw, list_of_channels);

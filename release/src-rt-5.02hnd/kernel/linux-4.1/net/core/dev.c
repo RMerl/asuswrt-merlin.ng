@@ -1918,6 +1918,9 @@ static void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
 	struct sk_buff *skb2 = NULL;
 	struct packet_type *pt_prev = NULL;
 	struct list_head *ptype_list = &ptype_all;
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	Blog_t *blog_p = blog_snull(skb);
+#endif
 
 	rcu_read_lock();
 again:
@@ -1968,6 +1971,9 @@ out_unlock:
 	if (pt_prev)
 		pt_prev->func(skb2, skb->dev, pt_prev, skb->dev);
 	rcu_read_unlock();
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	skb->blog_p = blog_p;
+#endif
 }
 
 /**

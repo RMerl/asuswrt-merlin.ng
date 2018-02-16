@@ -1,6 +1,13 @@
 Asuswrt-Merlin 384 Changelog
 ============================
 
+384.4 (xx-xxx-2018)
+   - NEW: Merged with GPL 384_20379 (with some binary components
+          from 382_50010 and 384_20308 depending on models)
+   - NEW: Added support for the RT-AC5300.
+   - NEW: Added support for the RT-AC87U.
+
+
 384.3 (14-Feb-2018)
    - NOTE: To reduce confusion following the version
            bump to 384, the current Github repository

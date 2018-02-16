@@ -58,6 +58,7 @@ Devices supported on the new generation/current branch (382.xx and newer):
  * RT-AC56U
  * RT-AC68U, RT-AC68P, RT-AC68UF (including HW revision C1 and E1)
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
+ * RT-AC87U
  * RT-AC3200
  * RT-AC88U
  * RT-AC3100

@@ -119,11 +119,11 @@ function show_wl_maclist_x(){
 			code +='<td width="80%" align="center">';
 			code += '<table style="width:100%;"><tr><td style="width:35%;height:56px;border:0px;float:right;">';
 			if(clientList[clientMac] == undefined) {
-				code += '<div class="clientIcon type0" onClick="popClientListEditTable(&quot;' + clientMac + '&quot;, this, &quot;&quot;, &quot;&quot;, &quot;ACL&quot;)"></div>';
+				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
 			else {
 				if(usericon_support) {
-					code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
+					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
 					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
@@ -159,7 +159,6 @@ function show_wl_maclist_x(){
 		paramData["obj"] = clientIconObj;
 		$("#wl_maclist_x_Block").children("#wl_maclist_x_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
 	}
-	document.getElementById("wl_maclist_x_Block").innerHTML = code;
 }
 
 function deleteRow(r, delMac){

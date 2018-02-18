@@ -37,6 +37,21 @@ if (isSupport("hnd")) {
 
 var dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 
+var modes_array = [[ "0", "No Filtering" ],
+		  [ "11", "Router" ],
+		  [ "1",  "OpenDNS Home" ],
+		  [ "7",  "OpenDNS Family" ],
+		  [ "2",  "Norton Safe" ],
+		  [ "3",  "Norton Family" ],
+		  [ "4",  "Norton Children" ],
+		  [ "5",  "Yandex Safe" ],
+		  [ "6",  "Yandex Family" ],
+		  [ "12", "Comodo Secure DNS" ],
+		  [ "8",  "Custom 1" ],
+		  [ "9",  "Custom 2" ],
+		  [ "10", "Custom 3" ]];
+
+
 
 function initial(){
 	show_menu();
@@ -45,12 +60,10 @@ function initial(){
 	show_dnsfilter_list();
 	showDropdownClientList('setclientmac', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 
-	// dnsfilter_enable_x 0: disable, 1: enable, show mainTable & Protection level when enable, otherwise hide it
-	showhide("dnsfilter_mode",document.form.dnsfilter_enable_x.value);
-	showhide("dnsfilter_custom1", document.form.dnsfilter_enable_x.value);
-	showhide("dnsfilter_custom2", document.form.dnsfilter_enable_x.value);
-	showhide("dnsfilter_custom3", document.form.dnsfilter_enable_x.value);
-	showhide("mainTable", document.form.dnsfilter_enable_x.value);
+	showhide_settings(document.form.dnsfilter_enable_x.value);
+
+	gen_modeselect("dnsfilter_mode", "<% nvram_get("dnsfilter_mode"); %>", "");
+	gen_modeselect("client_modesel", "-1", "");
 }
 
 /*------------ Mouse event of fake LAN IP select menu {-----------------*/
@@ -77,108 +90,108 @@ function hideClients_Block(){
 	document.getElementById('ClientList_Block_PC').style.display='none';
 }
 
+
 function gen_modeselect(name, value, onchange){
 	var code = "";
-	code +='<select class="input_option" name="'+name+'" value="'+value+'" onchange="'+onchange+'">';
-	code +='<option value="0"'+(value == 0 ? "selected" : "")+'>No Filtering</option>';
-	code +='<option value="11"'+(value == 11 ? "selected" : "")+'>Router</option>';
-	code +='<option value="1"'+(value == 1 ? "selected" : "")+'>OpenDNS Home</option>';
-	code +='<option value="7"'+(value == 7 ? "selected" : "")+'>OpenDNS Family</option>';
-	code +='<option value="2"'+(value == 2 ? "selected" : "")+'>Norton Safe</option>';
-	code +='<option value="3"'+(value == 3 ? "selected" : "")+'>Norton Family</option>';
-	code +='<option value="4"'+(value == 4 ? "selected" : "")+'>Norton Children</option>';
-	code +='<option value="5"'+(value == 5 ? "selected" : "")+'>Yandex Safe</option>';
-	code +='<option value="6"'+(value == 6 ? "selected" : "")+'>Yandex Family</option>';
-	code +='<option value="12"'+(value == 12? "selected" : "")+'>Comodo Secure DNS</option>';
-	code +='<option value="8"'+(value == 8 ? "selected" : "")+'>Custom 1</option>';
-	code +='<option value="9"'+(value == 9 ? "selected" : "")+'>Custom 2</option>';
-	code +='<option value="10"'+(value == 10 ? "selected" : "")+'>Custom 3</option>';
-	code +='</select>';
+	var i;
+
+	if ((name == "client_modesel") || (name == "dnsfilter_mode")) {
+		for(i = 0; i < modes_array.length; i++){
+			add_option(document.getElementById(name),
+			           modes_array[i][1], modes_array[i][0],
+			           (value == modes_array[i][0]));
+	        }
+	} else {
+		code = '<select class="input_option" name="'+name+'" value="'+value+'" onchange="'+onchange+'">';
+		for(i = 0; i < modes_array.length; i++){
+			var itemval = modes_array[i][0];
+			code +='<option value="' + itemval + '"' + (value == itemval ? "selected" : "") +'>' + modes_array[i][1] + '</option>';
+		}
+		code += '</select>';
+	}
+
 	return code;
 }
 
+
 function show_dnsfilter_list(){
 	var code = "";
+	var clientListEventData = [];
 
-	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
-	code +='<thead><tr><td colspan="3"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>';
-	code +='<tr><th width="65%">Client MAC address</th>';
-	code +='<th width="20%">Filter Mode</th>';
-	code +='<th width="15%"><#list_add_delete#></th></tr>';
-
-	code +='<tr><td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" style="margin-left:10px;width:255px;" class="input_macaddr_table" name="rule_mac" onClick="hideClients_Block();" onKeyPress="return validator.isHWAddr(this,event)">';
-	code +='<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 52px" class="clientlist_dropdown"></div></td>';
-	code +='<td style="border-bottom:2px solid #000;">'+gen_modeselect("rule_mode", "-1", "")+'</td>';
-	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(64)" value=""></td></tr>';
-
-	if(dnsfilter_rule_list_row == "")
-		code +='<tr><td style="color:#FFCC00;" colspan="3"><#IPConnection_VSList_Norule#></td>';
+	code = '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientTable">';
+	if(dnsfilter_rule_list_row.length < 2)
+		code += '<tr><td style="color:#FFCC00;" colspan="3"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
-		var clientName, deviceType, deviceVender; 
+		var clientName, deviceType, deviceVender;
 		for(var i=1; i<dnsfilter_rule_list_row.length; i++){
-
 			var ruleArray = dnsfilter_rule_list_row[i].split('&#62');
-			var mac = ruleArray[1];
+			var clientMac = ruleArray[1].toUpperCase();
 			var rule_mode = ruleArray[2];
 
-			if(clientList[mac]) {
-				clientName = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
-				deviceType = clientList[mac].type;
-				deviceVender = clientList[mac].vendor;
+                        var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
+
+			if(clientList[clientMac]) {
+				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
+				deviceType = clientList[clientMac].type;
+				deviceVender = clientList[clientMac].vendor;
+				dnsfilter_rule_list_row[clientMac] = clientName;
 			}
 			else {
-				clientName = ruleArray[0]; // TODO: Use some kind of default name, or empty string?
+				clientName = clientMac;
 				deviceType = 0;
 				deviceVender = "";
 			}
 			code +='<tr id="row'+i+'">';
-			code +='<td title="'+clientName+'">';
+			code +='<td width="65%" title="'+clientName+'">';
 
-			code += '<table width="100%"><tr><td style="width:35%;border:0;float:right;padding-right:30px;">';
-			if(clientList[mac] == undefined) {
-				code += '<div class="clientIcon type0" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
+			code += '<table style="width:100%;"><tr><td style="width:40%;height:56px;border:0px;float:right;">';
+			if(clientList[clientMac] == undefined) {
+				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
 			else {
 				if(usericon_support) {
-					userIconBase64 = getUploadIcon(mac.replace(/\:/g, ""));
+					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div style="text-align:center;" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
 				}
 				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
+					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 				}
 				else if(deviceVender != "" ) {
 					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "") {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
+					if(venderIconClassName != "" && !downsize_4m_support) {
+						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
 					}
 					else {
-						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
+						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 					}
 				}
 			}
-
-			code += '</td><td id="client_info_'+i+'" style="width:65%;text-align:left;border:0;">';
+			code += '</td><td id="client_info_'+i+'" style="width:60%;border:0px;">';
 			code += '<div>' + clientName + '</div>';
-			code += '<div>' + mac + '</div>';
+			code += '<div style="font-weight:bold;cursor:pointer;text-decoration:underline;font-family:Lucida Console;" onclick="document.form.destIP.value=this.innerHTML;">' + clientMac + '</div>';
 			code += '</td></tr></table>';
-			code +='</td>';
+			code += '</td>';
 
-			code +='<td>'+gen_modeselect("rule_mode"+i, rule_mode, "changeRow_main(this);")+'</td>';
-			code +='<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this);\" value=\"\"/></td>';
+			code +='<td width="20%">'+gen_modeselect("rule_mode"+i, rule_mode, "changeRow_main(this);")+'</td>';
+                        code +='<td width="15%"><input class="remove_btn" onclick="deleteRow_main(this);" value=""/></td></tr>';
+
+			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "DNSFilter"});
 		}
 	}
 
-	code +='</tr></table>';
-
-	document.getElementById("mainTable").style.display = "";
-	document.getElementById("mainTable").innerHTML = code;
-	$("#mainTable").fadeIn();
-	showDropdownClientList('setclientmac', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
+	code += '</table>';
+	document.getElementById("mainTable_Block").innerHTML = code;
+	for(var i = 0; i < clientListEventData.length; i += 1) {
+		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
+		var clientIconObj = $("#mainTable_Block").children("#clientTable").find("#" + clientIconID + "")[0];
+		var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
+		paramData["obj"] = clientIconObj;
+		$("#mainTable_Block").children("#clientTable").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
+	}
 }
 
 function applyRule(){
@@ -226,8 +239,8 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 }
 
 function addRow_main(upper){
-	var rule_num = document.getElementById('mainTable_table').rows.length;
-	var item_num = document.getElementById('mainTable_table').rows[0].cells.length;
+	var rule_num = document.getElementById('clientTable').rows.length;
+	var item_num = document.getElementById('clientTable').rows[0].cells.length;
 
 	if(rule_num >= upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
@@ -253,6 +266,8 @@ function addRow_main(upper){
 
 	dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 
+	document.form.rule_mac.value = "";
+	document.form.rule_mode.value = 0;
 	show_dnsfilter_list();
 }
 
@@ -263,7 +278,7 @@ function deleteRow_main(r){
 	for(var i = 1; i < dnsfilter_rule_list_row.length; i++)
 	{
 		var ruleArray = dnsfilter_rule_list_row[i].split('&#62');
-		if( (delIndex) != i+2)
+		if( (delIndex) != i-1)
 		{
 			dnsfilter_rule_list += "<";
 			dnsfilter_rule_list += "&#62";       // Formerly name field
@@ -288,7 +303,7 @@ function changeRow_main(r){
 		dnsfilter_rule_list += "&#62";       // Formerly name field
 		dnsfilter_rule_list += ruleArray[1] + "&#62";
 
-		if( (index) == i+2)
+		if( (index) == i-1)
 		{
 			dnsfilter_rule_list += r.value;
 		} else {
@@ -299,6 +314,16 @@ function changeRow_main(r){
 	dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 	show_dnsfilter_list();
 }
+
+function showhide_settings(state) {
+	showhide("dnsfilter_mode_tr", state);
+	showhide("dnsfilter_custom1", state);
+	showhide("dnsfilter_custom2", state);
+	showhide("dnsfilter_custom3", state);
+	showhide("mainTable_Table", state);
+	showhide("mainTable_Block", state);
+}
+
 </script>
 </head>
 
@@ -390,19 +415,11 @@ function changeRow_main(r){
 								$('#radio_dnsfilter_enable').iphoneSwitch(document.form.dnsfilter_enable_x.value,
 									function(){
 										document.form.dnsfilter_enable_x.value = 1;
-										showhide("dnsfilter_mode",1);
-										showhide("dnsfilter_custom1",1);
-										showhide("dnsfilter_custom2",1);
-										showhide("dnsfilter_custom3",1);
-										showhide("mainTable",1);
+										showhide_settings(1);
 									},
 									function(){
 										document.form.dnsfilter_enable_x.value = 0;
-										showhide("dnsfilter_mode",0);
-										showhide("dnsfilter_custom1",0);
-										showhide("dnsfilter_custom2",0);
-										showhide("dnsfilter_custom3",0);
-										showhide("mainTable",0);
+										showhide_settings(0);
 									},
 										{
 											switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
@@ -411,23 +428,10 @@ function changeRow_main(r){
 						</div>
 					</td>
 				</tr>
-				<tr id="dnsfilter_mode">
+				<tr id="dnsfilter_mode_tr">
 					<th>Global Filter Mode</th>
 					<td>
-						<select name="dnsfilter_mode" class="input_option">
-							<option value="0" <% nvram_match("dnsfilter_mode", "0", "selected"); %>>No filtering</option>
-							<option value="11" <% nvram_match("dnsfilter_mode", "11", "selected"); %>>Router</option>
-							<option value="1" <% nvram_match("dnsfilter_mode", "1", "selected"); %>>OpenDNS Home</option>
-							<option value="7" <% nvram_match("dnsfilter_mode", "7", "selected"); %>>OpenDNS Family</option>
-							<option value="2" <% nvram_match("dnsfilter_mode", "2", "selected"); %>>Norton Safe</option>
-							<option value="3" <% nvram_match("dnsfilter_mode", "3", "selected"); %>>Norton Family</option>
-							<option value="4" <% nvram_match("dnsfilter_mode", "4", "selected"); %>>Norton Children</option>
-							<option value="5" <% nvram_match("dnsfilter_mode", "5", "selected"); %>>Yandex Safe</option>
-							<option value="6" <% nvram_match("dnsfilter_mode", "6", "selected"); %>>Yandex Family</option>
-							<option value="12" <% nvram_match("dnsfilter_mode", "12", "selected"); %>>Comodo Secure DNS</option>
-							<option value="8" <% nvram_match("dnsfilter_mode", "8", "selected"); %>>Custom 1</option>
-							<option value="9" <% nvram_match("dnsfilter_mode", "9", "selected"); %>>Custom 2</option>
-							<option value="10" <% nvram_match("dnsfilter_mode", "10", "selected"); %>>Custom 3</option>
+						<select name="dnsfilter_mode" id="dnsfilter_mode" class="input_option">
 						</select>
 					</td>
 				</tr>
@@ -450,19 +454,29 @@ function changeRow_main(r){
                                         </td>
                                 </tr>
 			</table>
-			<table id="list_table" width="100%" border="0" align="center" cellpadding="0" cellspacing="0" >
+
+			<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_Table">
+				<thead><tr><td colspan="3"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>
 				<tr>
-					<td valign="top" align="center">
-						<!-- client info -->
-						<div id="VSList_Block"></div>
-						<!-- Content -->
-						<div id="mainTable" style="margin-top:10px;"></div>
-						<!--br/-->
-						<div id="hintBlock" style="width:650px;display:none;"></div>
-						<!-- Content -->
+					<th width="65%">Client MAC address</th>
+					<th width="20%">Filter Mode</th>
+					<th width="15%"><#list_add_delete#></th>
+				</tr>
+				<tr>
+					<td style="border-bottom:2px solid #000;">
+						<input type="text" maxlength="17" style="margin-left:10px;width:255px;" autocorrect="off" autocapitalize="off" class="input_macaddr_table" name="rule_mac" onClick="hideClients_Block();" onKeyPress="return validator.isHWAddr(this,event)" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+						<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">
+						<div id="ClientList_Block_PC" style="margin:0 0 0 52px" class="clientlist_dropdown"></div>
 					</td>
+					<td style="border-bottom:2px solid #000;">
+						<select class="input_option" name="rule_mode" id="client_modesel"></select>
+					</td>
+
+					<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(64)" value=""></td></tr>
 				</tr>
 			</table>
+			<!-- Client list -->
+			<div id="mainTable_Block"></div>
 			<div class="apply_gen">
 				<input name="button" type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
 			</div>
@@ -470,7 +484,7 @@ function changeRow_main(r){
 	</tr>
 	</tbody>
 	</table>
-</td>
+	</td>
         </tr>
       </table>
 		<!--===================================Ending of Main Content===========================================-->

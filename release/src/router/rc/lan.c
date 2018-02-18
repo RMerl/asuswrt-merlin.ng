@@ -237,7 +237,7 @@ start_emf(char *lan_ifname)
 	return;
 #endif /* HND_ROUTER && MCPD_PROXY */
 
-#if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
+#if 0	//defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
 	char path[PATH_MAX], sval[16];
 
 	if (lan_ifname == NULL)

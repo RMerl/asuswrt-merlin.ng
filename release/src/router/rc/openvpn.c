@@ -1807,7 +1807,7 @@ void create_ovpn_passwd()
 #endif
 			p = crypt(passwd, salt);
 			fprintf(fp1, "%s:%s:0:0:99999:7:0:0:\n", username, p);
-			fprintf(fp2, "%s:x:%d:%d:::\n", username, id, id);
+			fprintf(fp2, "%s:x:%d:%d::/dev/null:/dev/null\n", username, id, id);
 			fprintf(fp3, "%s:x:%d:\n", username, id);
 			id++;
 		}
@@ -1816,6 +1816,9 @@ void create_ovpn_passwd()
 	fclose(fp1);
 	fclose(fp2);
 	fclose(fp3);
+	chmod("/etc/shadow.openvpn", 0600);
+	chmod("/etc/group.openvpn", 0644);
+	chmod("/etc/passwd.openvpn", 0644);
 }
 
 

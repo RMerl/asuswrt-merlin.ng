@@ -2809,11 +2809,12 @@ void create_custom_passwd(void)
 				memset(char_user, 0, sizeof(char_user));
 				ascii_to_char_safe(char_user, follow_account->name, sizeof(char_user));
 
-				fprintf(fp, "%s:x:%d:%s:::\n", char_user, uid, PMS_GRP_DGID);
+				fprintf(fp, "%s:x:%d:%s::/dev/null:/dev/null\n", char_user, uid, PMS_GRP_DGID);
 				uid++;
 			}
 		}
 		fclose(fp);
+		chmod("/etc/passwd.custom", 0644);
 	}
 
 	/* write /etc/shadow.custom */
@@ -2835,6 +2836,7 @@ void create_custom_passwd(void)
 			}
 		}
 		fclose(fp);
+		chmod("/etc/shadow.custom", 0600);
 	}
 
 	/* write /etc/group.custom  */
@@ -2875,11 +2877,12 @@ void create_custom_passwd(void)
 			}
 		}
 		fclose(fp);
+	chmod("/etc/group.custom", 0644);
 	}
 
 	/* copy gshadow from group */
 	eval("cp", "/etc/group.custom", "/etc/gshadow.custom", "-f");
-	
+
 	/* free list */
 	PMS_FreeAccInfo(&account_list, &group_list);
 }
@@ -2915,6 +2918,7 @@ void create_custom_passwd(void)
 		fprintf(fp, "%s:x:%d:%d:::\n", account_list[i], n, n);
 	}
 	fclose(fp);
+	chmod("/etc/passwd.custom", 0644);
 
 	/* write /etc/group.custom  */
 	fp = fopen("/etc/group.custom", "w+");
@@ -2929,6 +2933,7 @@ void create_custom_passwd(void)
 		fprintf(fp, "%s:x:%d:\n", account_list[i], n);
 	}
 	fclose(fp);
+	chmod("/etc/group.custom", 0644);
 	free_2_dimension_list(&acc_num, &account_list);
 }
 #endif

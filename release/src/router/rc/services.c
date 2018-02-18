@@ -1112,6 +1112,7 @@ void gen_apmode_dnsmasq(void)
  	fprintf(fp,"no-dhcp-interface=%s\n",nvram_safe_get("lan_ifname"));
 
 	fclose(fp);
+	chmod("/etc/dnsmasq.conf", 0644);
 	stop_dnsmasq();
 	eval("dnsmasq", "--log-async");
 }
@@ -1201,6 +1202,7 @@ void start_dnsmasq(void)
 		fclose(fp);
 		use_custom_config("hosts", "/etc/hosts");
 		run_postconf("hosts","/etc/hosts");
+		chmod("/etc/hosts", 0644);
 	} else
 		perror("/etc/hosts");
 
@@ -1705,11 +1707,12 @@ void start_dnsmasq(void)
 
 	use_custom_config("dnsmasq.conf","/etc/dnsmasq.conf");
 	run_postconf("dnsmasq","/etc/dnsmasq.conf");
+	chmod("/etc/dnsmasq.conf", 0644);
 
 	/* Create resolv.conf with empty nameserver list */
-	f_write(dmresolv, NULL, 0, FW_APPEND, 0666);
+	f_write(dmresolv, NULL, 0, FW_APPEND, 0644);
 	/* Create resolv.dnsmasq with empty server list */
-	f_write(dmservers, NULL, 0, FW_APPEND, 0666);
+	f_write(dmservers, NULL, 0, FW_APPEND, 0644);
 
 #if (defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181))
 	eval("dnsmasq", "--log-async", "-6", "/sbin/dhcpc_lease");

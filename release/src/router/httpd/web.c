@@ -1647,7 +1647,7 @@ ej_dump(int eid, webs_t wp, int argc, char_t **argv)
 #endif /* RTCONFIG_DSL */
 #endif /* RTCONFIG_PUSH_EMAIL */
 #ifdef RTCONFIG_IPSEC
-	if (strcmp(file, "ipsec.log")==0) {
+	else if (strcmp(file, "ipsec.log")==0) {
 		sprintf(filename, FILE_PATH_IPSEC_LOG);
 		ret += dump_file(wp, filename);
 	}

@@ -2877,7 +2877,7 @@ void create_custom_passwd(void)
 			}
 		}
 		fclose(fp);
-	chmod("/etc/group.custom", 0644);
+		chmod("/etc/group.custom", 0644);
 	}
 
 	/* copy gshadow from group */

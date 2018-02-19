@@ -5249,10 +5249,10 @@ strongswan-5.2.1/stamp-h1:
 	--disable-gmp --enable-openssl --enable-agent --enable-eap-peap \
 	--enable-eap-md5 --enable-eap-mschapv2 --enable-eap-identity \
 	--with-strongswan-conf=/etc/strongswan.conf --enable-md4 --enable-acert \
-	--enable-cmd --enable-eap-tls --enable-libipsec --disable-static \
+	--enable-cmd --enable-eap-tls --enable-libipsec \
 	CFLAGS="-O3 -I$(STAGEDIR)/usr/include -I$(TOP)/openssl/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
 	LDFLAGS="$(if $(RTCONFIG_HND_ROUTER), -L$(TOP)/strongswan-5.2.1, -L$(STAGEDIR)/usr/lib -L$(TOP)/openssl)" \
-	LIBS="-lpthread -ldl -lm"
+	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
 	touch $@
 
 strongswan-5.2.1: strongswan-5.2.1/stamp-h1

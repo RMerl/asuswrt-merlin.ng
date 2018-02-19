@@ -7560,9 +7560,9 @@ start_services(void)
 #endif
 
 #if defined(RTCONFIG_IPSEC)
-	rc_ipsec_nvram_convert_check();
-	if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable"))
-		rc_ipsec_config_init();
+        //if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable"))
+        rc_ipsec_nvram_convert_check();
+        rc_ipsec_config_init();
 #if defined(HND_ROUTER)
 	rc_set_ipsec_stack_block_size();
 #endif

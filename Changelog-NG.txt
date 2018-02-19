@@ -6,6 +6,8 @@ Asuswrt-Merlin 384 Changelog
           from 382_50010 and 384_20308 depending on models)
    - NEW: Added support for the RT-AC5300.
    - NEW: Added support for the RT-AC87U.
+   - NEW: Added IPSEC support to the RT-AC86U.
+   - CHANGED: Tightened security around some config files.
 
 
 384.3 (14-Feb-2018)

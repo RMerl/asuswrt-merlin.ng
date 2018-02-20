@@ -124,6 +124,7 @@ void reset_ovpn_setting(ovpn_type_t type, int unit){
 	unlink(tmp);
 #endif
 
+	nvram_commit();
 }
 
 

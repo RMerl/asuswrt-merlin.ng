@@ -653,13 +653,13 @@ function unload_body(){
 }
 
 function applyRule(){
-    if(validForm()){
-				if(document.form.usb_fs_ntfs_sparse.value != "<% nvram_get("usb_fs_ntfs_sparse"); %>")
-        		FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-        
-        showLoading();
-				document.form.submit();
-     }
+	if(validForm()){
+		if ( (ntfs_sparse_support) && (document.form.usb_fs_ntfs_sparse.value != "<% nvram_get("usb_fs_ntfs_sparse"); %>") )
+			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+
+	        showLoading();
+		document.form.submit();
+	}
 }
 
 function validForm(){

@@ -3137,11 +3137,7 @@ struct nvram_tuple router_defaults[] = {
 
 #ifdef RTCONFIG_USB
 	{ "smbd_simpler_naming", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#ifdef HND_ROUTER
-	{ "smbd_enable_smb2", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#else
-	{ "smbd_enable_smb2", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#endif
+	{ "smbd_protocol", "2", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* 0 = SMB1, 1 = SMB2, 2 = SMB1+SMB2 */
 #endif
 
 #ifdef RTCONFIG_NFS

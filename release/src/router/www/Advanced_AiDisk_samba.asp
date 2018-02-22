@@ -860,8 +860,11 @@ function switchUserType(flag){
 				<tr>
 					<th>Samba protocol version</th>
 					<td>
-						<input type="radio" name="smbd_enable_smb2" class="input" value="1" <% nvram_match_x("", "smbd_enable_smb2", "1", "checked"); %>>SMB2
-						<input type="radio" name="smbd_enable_smb2" class="input" value="0" <% nvram_match_x("", "smbd_enable_smb2", "0", "checked"); %>>SMB1
+						<select name="smbd_protocol" class="input_option">
+							<option class="content_input_fd" value="0" <% nvram_match("smbd_protocol", "0","selected"); %>>SMBv1</option>
+							<option class="content_input_fd" value="1" <% nvram_match("smbd_protocol", "1","selected"); %>>SMBv2</option>
+							<option class="content_input_fd" value="2" <% nvram_match("smbd_protocol", "2","selected"); %>>SMBv1 + SMBv2</option>
+						</select>
 					</td>
                                 </tr>
 				<tr>

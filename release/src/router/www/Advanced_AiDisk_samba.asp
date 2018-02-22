@@ -858,10 +858,10 @@ function switchUserType(flag){
 					</td>
 				</tr>
 				<tr>
-					<th>Enable SMB2 protocol (default: No)</th>
+					<th>Samba protocol version</th>
 					<td>
-						<input type="radio" name="smbd_enable_smb2" class="input" value="1" <% nvram_match_x("", "smbd_enable_smb2", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="smbd_enable_smb2" class="input" value="0" <% nvram_match_x("", "smbd_enable_smb2", "0", "checked"); %>><#checkbox_No#>
+						<input type="radio" name="smbd_enable_smb2" class="input" value="1" <% nvram_match_x("", "smbd_enable_smb2", "1", "checked"); %>>SMB2
+						<input type="radio" name="smbd_enable_smb2" class="input" value="0" <% nvram_match_x("", "smbd_enable_smb2", "0", "checked"); %>>SMB1
 					</td>
                                 </tr>
 				<tr>

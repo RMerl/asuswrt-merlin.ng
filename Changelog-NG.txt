@@ -8,6 +8,20 @@ Asuswrt-Merlin 384 Changelog
    - NEW: Added support for the RT-AC87U.
    - NEW: Added IPSEC support to the RT-AC86U.
    - CHANGED: Tightened security around some config files.
+   - CHANGED: Allow guest networks settings for AP isolation
+              and SSID broadcast to be set separately from
+              their parent interface (John Bacho)
+   - CHANGED: Samba protocol support can now be set to
+              SMBv1, SMBv2, or SMBv1 + SMBv2 (the new default).
+              This will result in a performance drop on all
+              models but the RT-AC86U, but will be more secure.
+              Ideally, people should change it to SMBv2 only,
+              and then reboot all their client devices to start
+              using only the new protocol.
+   - FIXED: Resetting an OpenVPN client to default settings
+            might revert back after a reboot.
+   - REMOVED: Telnet server.  Please use SSH for console-based
+              management.
 
 
 384.3 (14-Feb-2018)

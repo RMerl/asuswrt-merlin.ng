@@ -256,7 +256,8 @@ function initial(){
 	}
 
 	/* MODELDEP */
-	if(tmo_support || based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
+//	if(tmo_support || based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
+	if(1){
 		document.getElementById("telnet_tr").style.display = "none";
 		document.form.telnetd_enable[0].disabled = true;
 		document.form.telnetd_enable[1].disabled = true;
@@ -1996,7 +1997,7 @@ function upload_cert_key(){
 					<td width="40%">
 						<input type="checkbox" name="access_webui" class="input access_type" value="1">Web UI<!--untranslated-->
 						<input type="checkbox" name="access_ssh" class="input access_type" value="2">SSH<!--untranslated-->
-						<input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet(LAN only)<!--untranslated-->
+						<!-- input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet(LAN only) --><!--untranslated-->
 					</td>
 					<td width="10%">
 						<div id="add_delete" class="add_enable" style="margin:0 auto" onclick="addRow(document.form.http_client_ip_x_0, 4);"></div>

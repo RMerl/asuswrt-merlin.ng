@@ -311,7 +311,7 @@ var validator = {
 	},
 
 	hostName: function (obj){
-		var re = new RegExp(/^[a-zA-Z0-9][a-zA-Z0-9\-\_]+$/gi);
+		var re = new RegExp(/^[a-zA-Z0-9][a-zA-Z0-9\-\_]*$/gi);
 		if(re.test(obj.value)){
 			return "";
 		}

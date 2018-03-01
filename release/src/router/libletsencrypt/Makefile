@@ -16,7 +16,7 @@ OBJS = letsencrypt_config.o letsencrypt_control.o letsencrypt_utils.o
 
 ifeq ($(wildcard ./*.c),)
 all:
-	cp -f ./prebuild/libletsencrypt.so .
+	cp -f ./prebuild$(BCMEX)$(EXHND)/libletsencrypt.so .
 else
 all: libletsencrypt.so
 endif

@@ -15387,11 +15387,6 @@ int start_cfgsync(void)
 	pid_t pid;
 	int ret = 0;
 
-	if (!f_exists("/etc/cfg_pub.pem"))
-	{
-		eval("/usr/sbin/gencfgcert.sh");
-	}
-
 #ifdef RTCONFIG_MASTER_DET
 	if (nvram_match("cfg_master", "1") && (!repeater_mode() && !mediabridge_mode()))
 #else

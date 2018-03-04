@@ -225,7 +225,11 @@ start_emf(char *lan_ifname)
 	char word[256], *next;
 	char *mgrp, *ifname;
 
-#if (defined(HND_ROUTER) && defined(MCPD_PROXY)) || defined(BLUECAVE)
+#ifdef BLUECAVE
+	return;
+#endif
+
+#if (defined(HND_ROUTER) && defined(MCPD_PROXY))
 	/* Disable EMF.
 	 * Since Runner is involved in Ethernet side when MCPD is enabled
 	 */
@@ -233,6 +237,11 @@ start_emf(char *lan_ifname)
 		nvram_set_int("emf_enable", 0);
 		nvram_commit();
 	}
+
+#ifdef RTCONFIG_PROXYSTA
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", (psta_exist() || psr_exist()) ? "0" : "2");
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", (psta_exist() || psr_exist()) ? "0" : "2");
+#endif
 
 	return;
 #endif /* HND_ROUTER && MCPD_PROXY */

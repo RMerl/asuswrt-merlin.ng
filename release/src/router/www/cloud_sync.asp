@@ -2166,7 +2166,7 @@ function onDropBoxLogin(token, uid){
 <div id="footer"></div>
 </form>
 <form method="post" name="enableform" action="/start_apply.htm" target="hidden_frame">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="current_page" value="cloud_sync.asp">
 <input type="hidden" name="next_page" value="cloud_sync.asp">

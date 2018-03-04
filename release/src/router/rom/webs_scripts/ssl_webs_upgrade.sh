@@ -7,6 +7,13 @@ wget_options="-q -t 2 -T $wget_timeout --no-check-certificate"
 nvram set webs_state_upgrade=0 # INITIALIZING
 nvram set webs_state_error=0
 
+# get specific model
+fw_check=`nvram get fw_check`
+model=`nvram get productid`
+if [ "$model" == "RT-AC68U" ] && [ "$fw_check" == "1" ]; then
+	fw_check
+else
+
 #openssl support rsa check
 rsa_enabled=`nvram show | grep rc_support | grep HTTPS`
 
@@ -119,5 +126,7 @@ else
 fi
 
 rm -f /tmp/rsasign.bin
+
+fi
 
 nvram set webs_state_upgrade=1

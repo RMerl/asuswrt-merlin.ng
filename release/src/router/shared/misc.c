@@ -3833,9 +3833,9 @@ int get_bonding_status()
 	if(fp != NULL)
 	{
 		while(fgets(line, sizeof(line), fp) != NULL){
+			memset(line, 0, sizeof(line));
 			if((lp = strstr(line, STR_PARTNER_MAC)) != NULL) {
 				mp = lp + strlen(STR_PARTNER_MAC);
-				mp[17] = 0;
 				break;
 			}
 		}

@@ -127,103 +127,103 @@ function publish_sharelink(){
 		return;
 		
 	if(g_service=="facebook"){
-					for(var i=0; i<len; i++){
+		for(var i=0; i<len; i++){
 			var share_link = g_sharelink_publish_array[i];
-						var sharetitle = m.getString('msg_sharelink_desc1');
-						var url = 'http://www.facebook.com/sharer.php?u=' + encodeURIComponent(share_link) + 
-								  "&t=" +  encodeURIComponent(sharetitle);	
-						window.open(url);
-					}
-					
-		parent.closeModal(0);
-				}
-	else if(g_service=="googleplus"){
-					for(var i=0; i<len; i++){
-			var share_link = g_sharelink_publish_array[i];
-						var url = 'https://plus.google.com/share?url=' + encodeURIComponent(share_link);
-						window.open(url);
-					}
-					
-		parent.closeModal(0);
-				}
-	else if(g_service=="twitter"){
-					for(var i=0; i<len; i++){
-			var share_link = g_sharelink_publish_array[i];
-			var url = 'http://twitter.com/home/?status=' + encodeURIComponent(share_link);
-					window.open(url);
+			var sharetitle = m.getString("msg_sharelink_desc1");
+			var url = "http://www.facebook.com/sharer.php?u=" + encodeURIComponent(share_link) + 
+					  "&t=" +  encodeURIComponent(sharetitle);	
+			window.open(url);
 		}
 					
 		parent.closeModal(0);
-				}
+	}
+	else if(g_service=="googleplus"){
+		for(var i=0; i<len; i++){
+			var share_link = g_sharelink_publish_array[i];
+			var url = "https://plus.google.com/share?url=" + encodeURIComponent(share_link);
+			window.open(url);
+		}
+					
+		parent.closeModal(0);
+	}
+	else if(g_service=="twitter"){
+		for(var i=0; i<len; i++){
+			var share_link = g_sharelink_publish_array[i];
+			var url = "http://twitter.com/home/?status=" + encodeURIComponent(share_link);
+			window.open(url);
+		}
+					
+		parent.closeModal(0);
+	}
 	else if(g_service=="plurk"){
-					var share_content = "";
-					share_content += m.getString('msg_sharelink_desc1') + "\n\n";
-					for(var i=0; i<len; i++){
+		var share_content = "";
+		share_content += m.getString("msg_sharelink_desc1") + "\n\n";
+		for(var i=0; i<len; i++){
 			var share_link = g_sharelink_publish_array[i];
-						share_content += share_link;
+			share_content += share_link;
 						
-						if(i!=len-1)
-							share_content += "\n\n";
-					}
+			if(i!=len-1)
+				share_content += "\n\n";
+		}
 					
-					var url = 'http://www.plurk.com/?qualifier=shares&status=' + encodeURIComponent(share_content);
-					window.open(url);
+		var url = "http://www.plurk.com/?qualifier=shares&status=" + encodeURIComponent(share_content);
+		window.open(url);
 					
 		parent.closeModal(0);
-				}
+	}
 	else if(g_service=="weibo"){
-					var share_content = "";
-					for(var i=0; i<len; i++){
+		var share_content = "";
+		for(var i=0; i<len; i++){
 			var share_link = g_sharelink_publish_array[i];
-						var sharetitle = m.getString('msg_sharelink_desc1');
-						var url = 'http://service.weibo.com/share/share.php?url=' + encodeURIComponent(share_link) + 
-								  "&title=" +  encodeURIComponent(sharetitle);	
-						window.open(url);
-					}
+			var sharetitle = m.getString("msg_sharelink_desc1");
+			var url = "http://service.weibo.com/share/share.php?url=" + encodeURIComponent(share_link) + 
+					  "&title=" +  encodeURIComponent(sharetitle);	
+			window.open(url);
+		}
 					
 		parent.closeModal(0);
-				}
+	}
 	else if(g_service=="qq"){
-					var share_content = "";
-					for(var i=0; i<len; i++){
+		var share_content = "";
+		for(var i=0; i<len; i++){
 			var share_link = g_sharelink_publish_array[i];
-						var sharetitle = m.getString('msg_sharelink_desc1');
-						var url = 'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + encodeURIComponent(share_link) + 
-								  "&title=" +  encodeURIComponent(sharetitle);		
-						window.open(url);
-					}
+			var sharetitle = m.getString("msg_sharelink_desc1");
+			var url = "http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=" + encodeURIComponent(share_link) + 
+					  "&title=" +  encodeURIComponent(sharetitle);		
+			window.open(url);
+		}
 					
 		parent.closeModal(0);
-				}
-				else{
-					var content = "";
-					content += m.getString('msg_sharelink_desc1');
-					for(var i = 0; i < len; i++){
+	}
+	else{
+		var content = "";
+		content += m.getString("msg_sharelink_desc1");
+		for(var i = 0; i < len; i++){
 			var share_link = g_sharelink_publish_array[i];
-						content += share_link;
-						if(i!=len-1)
-							content += "\n\n";			
-					}	
+			content += share_link;
+			if(i!=len-1)
+				content += "\n\n";			
+		}	
 					
 		if(g_expire_time>0){
-						var share_expire_time = m.getString('msg_sharelink_desc2');
+			var share_expire_time = m.getString("msg_sharelink_desc2");
 			share_expire_time = share_expire_time.replace("%s", g_expire_time_title);					
-						content += share_expire_time;
-					}
+			content += share_expire_time;
+		}
 					
 		if(g_is_private_ip==1){
-						content += m.getString('msg_sharelink_desc3');
-					}
+			content += m.getString("msg_sharelink_desc3");
+		}
 					
-					$("#sharelink").val(content);
+		$("#sharelink").val(content);
 	
-					$("#process_sharelink").hide();
-					$("#show_sharelink").show();
-					$("#publish_sharelink").hide();
+		$("#process_sharelink").hide();
+		$("#show_sharelink").show();
+		$("#publish_sharelink").hide();
 					
-					$('input#cancel').attr("value", m.getString('btn_apply'));
-				}
-			}
+		$('input#cancel').attr("value", m.getString("btn_apply"));
+	}
+}
 
 function webdav_sharelink_callbackfunction(error, content, statusstring){
     if(error==200){
@@ -260,7 +260,7 @@ function webdav_sharelink_callbackfunction(error, content, statusstring){
 	
 	var filepath = g_sharelink_array[0].file_path;
 	var filename = g_sharelink_array[0].file_name;
-	var fileurl = String(filepath).replace(filename, "");
+	var fileurl = String(filepath).replace(filename, "");	
 	g_webdav_client.GSL(fileurl, fileurl, filename, g_expire_time, 1, webdav_sharelink_callbackfunction);
 }
 
@@ -342,12 +342,16 @@ $("document").ready(function() {
 	}
 	
 	for(var i=0; i<the_array.length; i++){
-		var full_file_path = the_array[i];		
+		var full_file_path = the_array[i];
+
+		if(full_file_path.lastIndexOf("/")==-1)
+			continue;
+
 		var file_name = full_file_path.substring( full_file_path.lastIndexOf("/")+1, full_file_path.length );
 		
 		if(full_file_path=="")
 			continue;
-				
+		
 		var obj = new Object;
 		obj.id = i;
 		obj.file_path = full_file_path;
@@ -378,6 +382,7 @@ $("document").ready(function() {
 		var filepath = g_sharelink_array[0].file_path;
 		var filename = g_sharelink_array[0].file_name;
 		var fileurl = String(filepath).replace(filename, "");
+		
 		g_webdav_client.GSL(fileurl, fileurl, filename, g_expire_time, 1, webdav_sharelink_callbackfunction);
 	});
 	

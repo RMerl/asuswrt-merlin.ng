@@ -630,6 +630,7 @@ function validForm(){
 			&& document.form.dst_start_w.value == document.form.dst_end_w.value
 			&& document.form.dst_start_d.value == document.form.dst_end_d.value){
 		alert("<#FirewallConfig_URLActiveTime_itemhint4#>");	//At same day
+		document.form.dst_start_m.focus();
 		return false;
 	}
 
@@ -880,27 +881,32 @@ function parse_dstoffset(){     //Mm.w.d/h,Mm.w.d/h
 	if(dstoffset){
 		var dstoffset_startend = dstoffset.split(",");
     			
-		var dstoffset_start = trim(dstoffset_startend[0]);
-		var dstoff_start = dstoffset_start.split(".");
-		dstoff_start_m = dstoff_start[0];
-		dstoff_start_w = dstoff_start[1];
-		dstoff_start_d = dstoff_start[2].split("/")[0];
-		dstoff_start_h = dstoff_start[2].split("/")[1];
-				
-		var dstoffset_end = trim(dstoffset_startend[1]);
-		var dstoff_end = dstoffset_end.split(".");
-		dstoff_end_m = dstoff_end[0];
-		dstoff_end_w = dstoff_end[1];
-		dstoff_end_d = dstoff_end[2].split("/")[0];
-		dstoff_end_h = dstoff_end[2].split("/")[1];
+    		if(dstoffset_startend[0] != "" && dstoffset_startend[0] != undefined){		
+			var dstoffset_start = trim(dstoffset_startend[0]);		
+			var dstoff_start = dstoffset_start.split(".");
+			dstoff_start_m = dstoff_start[0]!=""?dstoff_start[0]:"M3";
+			dstoff_start_w = validator.isNumber(dstoff_start[1], this)?dstoff_start[1]:"2";
+			dstoff_start_d = validator.isNumber(dstoff_start[2], this)?dstoff_start[2].split("/")[0]:"0";
+			dstoff_start_h = validator.isNumber(dstoff_start[2], this)?dstoff_start[2].split("/")[1]:"2";
+		}
+		
+		if(dstoffset_startend[1] != "" && dstoffset_startend[1] != undefined){
+			var dstoffset_end = trim(dstoffset_startend[1]);
+			var dstoff_end = dstoffset_end.split(".");
+			dstoff_end_m = dstoff_end[0]!=""?dstoff_end[0]:"M10";
+			dstoff_end_w = validator.isNumber(dstoff_end[1], this)?dstoff_end[1]:"2";
+			dstoff_end_d = validator.isNumber(dstoff_end[2], this)?dstoff_end[2].split("/")[0]:"0";
+			dstoff_end_h = validator.isNumber(dstoff_end[2], this)?dstoff_end[2].split("/")[1]:"2";
+		}	
     			
 		//console.log(dstoff_start_m+"."+dstoff_start_w+"."+dstoff_start_d+"/"+dstoff_start_h);
 		//console.log(dstoff_end_m+"."+dstoff_end_w+"."+dstoff_end_d+"/"+dstoff_end_h);
-		load_dst_m_Options();
-		load_dst_w_Options();
-		load_dst_d_Options();
-		load_dst_h_Options();
 	}
+	
+	load_dst_m_Options();
+	load_dst_w_Options();
+	load_dst_d_Options();
+	load_dst_h_Options();
 }
 
 function load_dst_m_Options(){

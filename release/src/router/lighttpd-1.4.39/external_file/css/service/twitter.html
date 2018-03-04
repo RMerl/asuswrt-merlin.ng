@@ -379,6 +379,22 @@ function onCloseDialog(){
 function doCancel(e) {
 	parent.closeJqmWindow();
 }
+
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+eventer(messageEvent, function(e) {
+	
+	if (e.origin !== g_storage.get('request_host_url'))
+    	return;
+
+    var key = e.message ? "message" : "data";
+    var data = e[key];
+
+	onTwitterLogin(data.token, data.uid, data.vars);
+
+	e.source.postMessage("close", e.origin);
+}, false);
 </script>
 <table class="x-table-layout" cellspacing="0" style="width:100%;height:100%;font-size:14px;" id="ext-gen94">
 	<tbody>

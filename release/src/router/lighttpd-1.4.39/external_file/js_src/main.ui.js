@@ -312,7 +312,7 @@ function createLayout(){
 	  	layout_html += "<dl>";
 	  
 	  	//- for test
-	  	//layout_html += "<dd><a id='test_func'>" + m.getString('title_test') + "</a></dt>";
+	  	//layout_html += "<dd class='nav_option'><a id='test_func'>" + m.getString('title_test') + "</a></dt>";
 		//layout_html += "<dd><a id='test_func2'>" + m.getString('title_test') + "</a></dt>";
 	  
 	  	layout_html += "<dd class='nav_option'><a id='web_help' href='https://www.asus.com/us/support/faq/1010005/' target='_blank'>" + m.getString('title_help') + "</a></dd>";

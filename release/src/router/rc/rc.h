@@ -590,8 +590,10 @@ extern int download_clmblob_files();
 extern void check_cfe_ac68u();
 extern void update_cfe();
 extern int firmware_enc_crc_main(int argc, char *argv[]);
-extern void check_jffs2(void);
+extern int fw_check_main(int argc, char *argv[]);
 #endif
+extern void check_asus_jffs(void);
+extern void fw_check_pre(void);
 #ifdef RTAC3200
 extern void update_cfe_ac3200();
 extern void update_cfe_ac3200_128k();
@@ -1646,6 +1648,7 @@ void stop_amas_lldpd(void);
 extern void gen_lldpd_if(char *bind_ifnames);
 void set_pre_sysdep_config(int iftype);
 void set_post_sysdep_config(int iftype);
+int get_radar_status(int bssidx);
 #endif
 #endif	/* RTCONFIG_WIRELESSREPEATER */
 

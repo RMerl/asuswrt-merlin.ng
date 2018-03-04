@@ -63,6 +63,7 @@ int http_response_write_header(server *srv, connection *con) {
 		response_header_overwrite(srv, con, CONST_STR_LEN("Transfer-Encoding"), CONST_STR_LEN("chunked"));
 	}
 
+	response_header_overwrite(srv, con, CONST_STR_LEN("X-Frame-Options"), CONST_STR_LEN("SAMEORIGIN"));
 
 	/* add all headers */
 	for (i = 0; i < con->response.headers->used; i++) {

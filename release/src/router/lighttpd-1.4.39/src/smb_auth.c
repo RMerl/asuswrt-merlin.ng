@@ -2077,22 +2077,49 @@ int string_starts_with( const char *a, const char *b ){
    	return 0;
 }
 
-int generate_sharelink(server* srv,
-			               connection *con,
-			               const char* filename, 
-			               const char* url, 
-			               const char* base64_auth, 
-			               int expire, 
-			               int toShare,
-			               buffer** out){
+int generate_sharelink( server* srv,
+			connection *con,
+			const char* filename, 
+			const char* url, 
+			const char* base64_auth, 
+			int expire, 
+			int toShare,
+			buffer** out ){
 
-	if(filename==NULL||url==NULL||base64_auth==NULL)
+	if( filename==NULL || url==NULL || base64_auth==NULL )
 		return 0;
 
 	if( is_string_encode_as_integer(url) || 
-		is_string_encode_as_integer(filename) || 
-		is_string_encode_as_integer(base64_auth) ){
+	    is_string_encode_as_integer(filename) || 
+	    is_string_encode_as_integer(base64_auth) ){
 		return 0;
+	}
+
+#if EMBEDDED_EANBLE
+	char* a = nvram_get_productid();
+	char usbdisk_path[100]="\0";
+	char usbdisk_rel_path[100]="/tmp/mnt";
+	strcpy(usbdisk_path, "/");
+	strcat(usbdisk_path, a);
+	#ifdef APP_IPKG
+	free(a);
+	#endif
+#else
+	char usbdisk_path[10]="/usbdisk";
+	char usbdisk_rel_path[100]="/mnt";
+#endif
+
+	buffer* buffer_real_url = buffer_init();
+	buffer_copy_buffer(buffer_real_url, con->url.path);
+	if( con->mode != SMB_BASIC && 
+            con->mode != SMB_NTLM && 
+	    prefix_is(buffer_real_url->ptr, usbdisk_path)==1){
+		char buff[2048];
+		char* tmp = replace_str(buffer_real_url->ptr,
+                                        usbdisk_path,
+                                        usbdisk_rel_path,
+                                        (char *)&buff[0]);
+		buffer_copy_string(buffer_real_url, tmp);
 	}
 
 	//- toShare: 0 --> for streaming use, 1 --> for share use
@@ -2103,6 +2130,40 @@ int generate_sharelink(server* srv,
 		*out = buffer_init();
 				
 		while(pch!=NULL){
+			
+			//- check file is exist.
+			buffer* buffer_file_path = buffer_init();
+                        buffer_copy_buffer(buffer_file_path, buffer_real_url);
+                        buffer_append_string(buffer_file_path, "/");
+                        buffer_append_string(buffer_file_path, pch);
+                        buffer_urldecode_path(buffer_file_path);
+
+			if(con->mode == SMB_BASIC || con->mode == SMB_NTLM){
+				struct stat st;
+				if (-1 == smbc_wrapper_stat(con, buffer_file_path->ptr, &st)) {
+					buffer_free(buffer_real_url);
+					buffer_free(buffer_file_path);
+
+					//- Next
+					pch = strtok(NULL,";");
+					
+					continue;
+				}
+			}
+			else{
+				if( !file_exist(buffer_file_path->ptr)){
+					buffer_free(buffer_real_url);
+					buffer_free(buffer_file_path);
+
+					//- Next
+					pch = strtok(NULL,";");
+					
+					continue;
+				}
+			}
+
+			buffer_free(buffer_file_path);
+			/////////////////////////////////////////////////
 					
 			char share_link[1024];
 			struct timeval tv;
@@ -2225,6 +2286,8 @@ int generate_sharelink(server* srv,
 		//Cdbg(DBE, "do HTTP_METHOD_GSL decode_str=%s", decode_str);
 	}
 #endif
+	
+	buffer_free(buffer_real_url);
 
 	return 1;
 

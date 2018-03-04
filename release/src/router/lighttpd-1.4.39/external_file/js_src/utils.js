@@ -146,13 +146,13 @@ function isBrowser(testBrowser){
 
 function getUrlVars(){
 	var vars = [], hash;
-  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-  for(var i = 0; i < hashes.length; i++){
-  	hash = hashes[i].split('=');
-    vars.push(hash[0]);
-    vars[hash[0]] = hash[1];
-  }
-  return vars;
+  	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+  	for(var i = 0; i < hashes.length; i++){
+  		hash = hashes[i].split('=');
+    	vars.push(hash[0]);
+    	vars[hash[0]] = encodeSafeString(hash[1]);
+  	}
+  	return vars;
 }
 
 function parseXml(xml) {
@@ -245,7 +245,9 @@ function myencodeURI(iurl){
 function encodeSafeString(input){
     input = input.replace(/&/g, '&amp;');
     input = input.replace(/<script/g, '<script&lt;');
-    input = input.replace(/script>/g, 'script&gt;');
+	input = input.replace(/script>/g, 'script&gt;');
+	input = input.replace(/%0A/g, '');
+	input = input.replace(/%0D/g, '');
     return input;
 }
 

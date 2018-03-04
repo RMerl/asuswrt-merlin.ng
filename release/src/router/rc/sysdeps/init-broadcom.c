@@ -6864,10 +6864,6 @@ ERROR:
 }
 
 #ifdef RTCONFIG_BCMWL6
-#define WL_5G_BAND_2	1 << (2 - 1)
-#define WL_5G_BAND_3	1 << (3 - 1)
-#define WL_5G_BAND_4	1 << (4 - 1)
-
 void set_acs_ifnames()
 {
 	char acs_ifnames[64];

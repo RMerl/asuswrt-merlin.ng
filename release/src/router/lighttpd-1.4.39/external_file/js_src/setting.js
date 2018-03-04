@@ -105,12 +105,12 @@ $("document").ready(function() {
 	$("button#btn_import_crt").click(function(){
 		
 		$("#import_crt").show();
-		$("#import_crt").css("left", tempX );
+		$("#import_crt").css("left", g_mouse_x );
 				
-		if( tempY + $("#filelink").height() > $("body").height() )
+		if( g_mouse_y + $("#filelink").height() > $("body").height() )
 			$("#import_crt").css("top", $("body").height() - $("#filelink").height() );
 		else
-			$("#import_crt").css("top", tempY );
+			$("#import_crt").css("top", g_mouse_y );
 	});
 	
 	$("button#btn_export_crt").click(function(){
@@ -1066,12 +1066,12 @@ function refreshShareLinkList(){
 			
 			$("a.share_link_url").click(function(){
 				$("#filelink").css("display","block");
-				$("#filelink").css("left", tempX );
+				$("#filelink").css("left", g_mouse_x );
 				
-				if( tempY + $("#filelink").height() > $("body").height() )
+				if( g_mouse_y + $("#filelink").height() > $("body").height() )
 					$("#filelink").css("top", $("body").height() - $("#filelink").height() );
 				else
-					$("#filelink").css("top", tempY );
+					$("#filelink").css("top", g_mouse_y );
 				
 				$("#resourcefile").attr("value",$(this).attr("uhref"));
 				$("#resourcefile").focus();
@@ -1103,7 +1103,7 @@ function refreshShareLinkList(){
 				
 				if(del_count<=0){
 										
-					var newTop = tempY+10;
+					var newTop = g_mouse_y+10;
 					var newLeft = 0;
 					$("div.delcheck_block").animate({
 						top: newTop,
@@ -1118,8 +1118,8 @@ function refreshShareLinkList(){
 					
 					$("div.delcheck_block").css("visibility", "");
 					
-					var newTop = tempY+10;
-					var newLeft = tempX+10;
+					var newTop = g_mouse_y+10;
+					var newLeft = g_mouse_x+10;
 					$("div.delcheck_block").animate({
 						top: newTop,
 						left: newLeft
@@ -1153,8 +1153,8 @@ function refreshShareLinkList(){
 					$('input:checkbox.check_del').prop('checked', true);					
 					$("div.delcheck_block").css("visibility", "");
 					
-					var newTop = tempY+10;
-					var newLeft = tempX+10;
+					var newTop = g_mouse_y+10;
+					var newLeft = g_mouse_x+10;
 					$("div.delcheck_block").animate({
 						top: newTop,
 						left: newLeft
@@ -1163,7 +1163,7 @@ function refreshShareLinkList(){
 				else{
 					$('input:checkbox.check_del').prop('checked', false);
 					
-					var newTop = tempY+10;
+					var newTop = g_mouse_y+10;
 					var newLeft = 0;
 					$("div.delcheck_block").animate({
 						top: newTop,
@@ -1397,32 +1397,27 @@ function onDoImportCrt(){
 	});
 }
 
-// Detect if the browser is IE or not.
-// If it is not IE, we assume that the browser is NS.
-var IE = document.all?true:false
-
-// If NS -- that is, !IE -- then set up for mouse capture
-if (!IE) document.captureEvents(Event.MOUSEMOVE)
+// Temporary variables to hold mouse x-y pos.s
+var g_mouse_x = 0
+var g_mouse_y = 0
 
 // Set-up to use getMouseXY function onMouseMove
 document.onmousemove = getMouseXY;
 
-// Temporary variables to hold mouse x-y pos.s
-var tempX = 0
-var tempY = 0
-
-// Main function to retrieve mouse x-y pos.s
-
+//- function to retrieve mouse x-y pos.s
 function getMouseXY(e) {
-	if (IE) { // grab the x-y pos.s if browser is IE
-    	tempX = event.clientX + document.body.scrollLeft
-    	tempY = event.clientY + document.body.scrollTop
-  	} else {  // grab the x-y pos.s if browser is NS
-    	tempX = e.pageX
-    	tempY = e.pageY
-  	}  
-  	// catch possible negative values in NS4
-  	if (tempX < 0){tempX = 0}
-  	if (tempY < 0){tempY = 0}  
+	if (document.all) { 
+		// grab the x-y pos.s if browser is IE
+    	g_mouse_x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+    	g_mouse_y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+	} 
+	else {  
+		// grab the x-y pos.s if browser is NS
+    	g_mouse_x = e.pageX;
+		g_mouse_y = e.pageY;
+  	}
+	
+  	if (g_mouse_x < 0){g_mouse_x = 0}
+  	if (g_mouse_y < 0){g_mouse_y = 0}
   	return true
 }

@@ -143,7 +143,7 @@ var // currently active contextMenu trigger
         },
         // position the sub-menu
         positionSubmenu: function($menu) {
-            if ($.ui && $.ui.position) {
+            if ($.ui && $.ui.position) {                
                 // .position() is provided as a jQuery UI utility
                 // (...and it won't work on hidden elements)
                 $menu.css('display', 'block').position({
@@ -151,13 +151,13 @@ var // currently active contextMenu trigger
                     at: "right top",
                     of: this,
                     collision: "flipfit fit"
-                }).css('display', '');
-            } else {
+                }).css('display', '').css('top', 0);
+            } else {                
                 // determine contextMenu position
                 var offset = {
                     top: 0,
                     left: this.outerWidth()
-                };
+                };                
                 $menu.css(offset);
             }
         },

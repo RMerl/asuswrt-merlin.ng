@@ -576,8 +576,6 @@ function scenario() {
 	initial_amesh_obj();
 
 	var $scenarioHtml = $('<div>');
-	
-	var $scenarioHtml = $('<div>');
 	$scenarioHtml.attr({"id" : "amesh_scenario"});
 	$scenarioHtml.addClass("amesh_popup_bg amesh_scenario");
 	$scenarioHtml.css("display", "none");
@@ -1883,7 +1881,7 @@ function get_aimesh_node_client_list(_wired_client, _wl_client, _all_client) {
 }
 function handle_cloud_icon_model_name(_modelName) {
 	var transformName = _modelName;
-	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U")
+	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RP-AC1900")
 		transformName = "RT-AC66U_V2";
 	else if(transformName == "BLUE_CAVE")
 		transformName = "BLUECAVE";

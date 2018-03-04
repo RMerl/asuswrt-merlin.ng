@@ -6,31 +6,30 @@ var myStorage = function() {
 				return window.sessionStorage[storageName];
 			else
 				return $.cookie(storageName);
-    },
-    "set": function(storageName, val) {
-    	if(window.sessionStorage)
+    	},
+		"set": function(storageName, val) {
+			if(window.sessionStorage)
 				window.sessionStorage[storageName] = val;
-			else{				
+			else
 				$.cookie(storageName, val);
-			}
-    },
-    "getl": function(storageName) {
+		},
+		"getl": function(storageName) {
 			if(window.localStorage)
 				return window.localStorage[storageName];
 			else
 				return $.cookie(storageName);
-    },
-    "setl": function(storageName, val) {
-    	if(window.localStorage)
-    		window.localStorage[storageName] = val;
+		},
+		"setl": function(storageName, val) {
+			if(window.localStorage)
+				window.localStorage[storageName] = val;
 			else
 				$.cookie(storageName, val);
-    },
-    "gett": function(storageName) {
+		},
+		"gett": function(storageName) {
 			return $.cookie(storageName);
-    },
-    "sett": function(storageName, val) {
-    	$.cookie(storageName, val);
-    }
+		},
+		"sett": function(storageName, val) {
+			$.cookie(storageName, val);
+		}
 	}
 };

@@ -109,12 +109,11 @@ function makeid(){
 
 $("document").ready(function() {
 	//- create access token
-	var asus_token = ( g_storage.get('asus_token') == undefined ) ? '' : g_storage.get('asus_token');
+	var asus_token = ( g_storage.gett('asus_token') == undefined ) ? '' : g_storage.gett('asus_token');
 	if(asus_token==""){
-		asus_token = makeid() + ";";
+		asus_token = makeid();
+		g_storage.sett('asus_token', asus_token);
 	}
-	
-	$.cookie('asus_token', asus_token);
 	
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');

@@ -1761,8 +1761,8 @@ goTo.siteSurvey = function(){
 				this.thekeyauthmode = "";
 			}
 
-			siteSurveyResult.aplist = httpApi.hookGet("get_ap_info", true).get_ap_info;
-			siteSurveyResult.isFinish = (httpApi.nvramGet(["wlc_scan_state"], true).wlc_scan_state == "3");
+			siteSurveyResult.aplist = httpApi.hookGet("get_ap_info", true).get_ap_info.sort(function(a, b){return parseInt(b[5])-parseInt(a[5]);})
+			siteSurveyResult.isFinish = (httpApi.nvramGet(["wlc_scan_state"], true).wlc_scan_state == "5");
 
 			for(var i=0; i<siteSurveyResult.aplist.length; i++){
 				var site = new profile(siteSurveyResult.aplist[i]);

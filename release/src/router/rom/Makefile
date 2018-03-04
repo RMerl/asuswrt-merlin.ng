@@ -165,6 +165,11 @@ ifeq ($(RTCONFIG_CFGSYNC),y)
 	cp -f webs_scripts/ssl_webs_download.sh $(INSTALLDIR)/usr/sbin/webs_download.sh
 	cp -f webs_scripts/ssl_webs_note.sh $(INSTALLDIR)/usr/sbin/webs_note.sh
 endif
+ifeq ($(RTAC68U),y)
+ifneq ("$(wildcard $(SRCBASE)/../../buildtools/tmks.bin)","")
+	cp -f $(SRCBASE)/../../buildtools/tmks.bin $(INSTALLDIR)/usr/sbin/tmks
+endif
+endif
 else
 	cp -f webs_scripts/nozip_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 endif
@@ -178,6 +183,10 @@ ifeq ($(RTAC68A),y)
 endif
 ifeq ($(AC2900),y)
 	cp -f webs_scripts/verizon_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
+endif
+ifeq ($(RTAC68U),y)
+	cp -f webs_scripts/ssl_webs_upgrade_enc.sh $(INSTALLDIR)/usr/sbin/webs_upgrade_enc.sh
+	cp -f webs_scripts/ssl_webs_update_enc.sh $(INSTALLDIR)/usr/sbin/webs_update_enc.sh
 endif
 
 ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
@@ -241,6 +250,11 @@ ifeq ($(and $(LJPG),$(SJPG),$(LPNG),$(SPNG)),)
 else
 	$(foreach f, icon_sm icon_lrg, install -D dlna/$(f).$(LCMODELNAME).jpg $(INSTALLDIR)/rom/dlna/$(f).jpg; \
 		install -D dlna/$(f).$(LCMODELNAME).png $(INSTALLDIR)/rom/dlna/$(f).png;)
+endif
+ifeq ($(RTAC68U),y)
+ifneq ("$(wildcard $(SRCBASE)/../../buildtools/tmks.bin)","")
+	cp -f $(SRCBASE)/../../buildtools/tmks.bin $(INSTALLDIR)/usr/sbin/tmks
+endif
 endif
 endif
 

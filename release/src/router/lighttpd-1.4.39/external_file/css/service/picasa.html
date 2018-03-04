@@ -13,8 +13,10 @@ var g_storage = new myStorage();
 var g_bLoginGoogle = false;
 var g_token = "";
 var g_uid = "";
-var g_app_id = "103584452676-oo7gkbh8dg7nm07lao9a0i3r9jh6jfra.apps.googleusercontent.com";
-var g_server_url = "http://oauth.asus.com/aicloud/";
+//var g_app_id = "103584452676-oo7gkbh8dg7nm07lao9a0i3r9jh6jfra.apps.googleusercontent.com";
+//var g_server_url = "http://oauth.asus.com/aicloud/";
+var g_app_id = "103584452676-gu9o4m7v9ho2asht2hpdnnkpl26jemcv.apps.googleusercontent.com";
+var g_server_url = "https://stage612.synology.me/auth2/";
 var ajax_dataType = "json";
 var g_uploadfile_url_array = new Array();
 var g_uploadfile_title_array = new Array();
@@ -174,12 +176,12 @@ $(document).ready(function(){
 	$("#open_addalbum_dialog").click(function(){
 		
 		$("#newalbum").css("display","block");
-		$("#newalbum").css("left", tempX );
+		$("#newalbum").css("left", g_mouse_x );
 				
-		if( tempY + $("#filelink").height() > $("body").height() )
+		if( g_mouse_y + $("#filelink").height() > $("body").height() )
 			$("#newalbum").css("top", $("body").height() - $("#filelink").height() );
 		else
-			$("#newalbum").css("top", tempY );
+			$("#newalbum").css("top", g_mouse_y );
 	});
 	
 	//- new album
@@ -196,7 +198,7 @@ $(document).ready(function(){
 function google_login(){	
 	var callback_function = "onGoogleLogin";
 	var host_url = g_storage.get('request_host_url');	
-	var auth_url = g_server_url + "google_authorize.html";
+	var auth_url = g_server_url + "google_authorize.php";
 	var redirect_url = host_url + "/smb/css/service/callback.html";
 	var url = "https://accounts.google.com/o/oauth2/auth?" +
 			  "response_type=token" +				  
@@ -417,35 +419,47 @@ function doCancel(e) {
 	parent.closeJqmWindow();
 };
 
-// Detect if the browser is IE or not.
-// If it is not IE, we assume that the browser is NS.
-var IE = document.all?true:false
-
-// If NS -- that is, !IE -- then set up for mouse capture
-if (!IE) document.captureEvents(Event.MOUSEMOVE)
+// Temporary variables to hold mouse x-y pos.s
+var g_mouse_x = 0
+var g_mouse_y = 0
 
 // Set-up to use getMouseXY function onMouseMove
 document.onmousemove = getMouseXY;
 
-// Temporary variables to hold mouse x-y pos.s
-var tempX = 0
-var tempY = 0
-
-// Main function to retrieve mouse x-y pos.s
-
+//- function to retrieve mouse x-y pos.s
 function getMouseXY(e) {
-	if (IE) { // grab the x-y pos.s if browser is IE
-    	tempX = event.clientX + document.body.scrollLeft
-    	tempY = event.clientY + document.body.scrollTop
-  	} else {  // grab the x-y pos.s if browser is NS
-    	tempX = e.pageX
-    	tempY = e.pageY
-  	}  
-  	// catch possible negative values in NS4
-  	if (tempX < 0){tempX = 0}
-  	if (tempY < 0){tempY = 0}  
+	if (document.all) { 
+		// grab the x-y pos.s if browser is IE
+    	g_mouse_x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+    	g_mouse_y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+	} 
+	else {  
+		// grab the x-y pos.s if browser is NS
+    	g_mouse_x = e.pageX;
+		g_mouse_y = e.pageY;
+  	}
+	
+  	if (g_mouse_x < 0){g_mouse_x = 0}
+  	if (g_mouse_y < 0){g_mouse_y = 0}
   	return true
 }
+
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+eventer(messageEvent, function(e) {
+	
+	if (e.origin !== g_storage.get('request_host_url'))
+    	return;
+
+    var key = e.message ? "message" : "data";
+    var data = e[key];
+
+  	onGoogleLogin(data.token, data.uid);
+
+	e.source.postMessage("close", e.origin);
+}, false);
+
 </script>
 <table class="x-table-layout" cellspacing="0" style="width:100%;height:100%;font-size:14px;" id="ext-gen94">
 	<tbody>

@@ -351,8 +351,7 @@ function doLOGOUT(){
 		g_webdav_client.LOGOUT("/", function(error){	
 			if(error[0]==2){
 				g_storage.set('openhostuid', '0');
-				g_storage.set('asus_token', '');
-				$.cookie('asus_token', '');
+				g_storage.sett('asus_token', null);
 				window.location.reload();
 			}
 		});
@@ -1489,21 +1488,17 @@ function getaccountinfo(username){
 	}, null );
 }
 
-// Detect if the browser is IE or not.
-// If it is not IE, we assume that the browser is NS.
-var IE = document.all?true:false
-
-// If NS -- that is, !IE -- then set up for mouse capture
-if (!IE) document.captureEvents(Event.MOUSEMOVE)
-
-// Main function to retrieve mouse x-y pos.s
+//- function to retrieve mouse x-y pos.s
 function getMouseXY(e) {
-	if (IE) { // grab the x-y pos.s if browser is IE
+	if (document.all) { 
+		// grab the x-y pos.s if browser is IE
     	g_mouse_x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
     	g_mouse_y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-  	} else {  // grab the x-y pos.s if browser is NS
+	} 
+	else {  
+		// grab the x-y pos.s if browser is NS
     	g_mouse_x = e.pageX;
-    	g_mouse_y = e.pageY;
+		g_mouse_y = e.pageY;
   	}
 	
   	if (g_mouse_x < 0){g_mouse_x = 0}
@@ -2263,6 +2258,11 @@ $(document).ready(function(){
 		}
 		else if(func=="test_func"){
 			/*
+			g_webdav_client.PROPFIND("/", "", function(error, statusstring, content){		
+				if(error){
+				}
+			});
+			
 			g_webdav_client.GETCPUUSAGE("/", function(error, statusstring, content){				
 				if(error==200){
 					var data = parseXml(content);

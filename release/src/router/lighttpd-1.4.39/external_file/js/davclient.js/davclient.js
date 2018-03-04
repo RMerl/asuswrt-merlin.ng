@@ -435,7 +435,7 @@ global.davlib = new function() {
                   '<D:propfind xmlns:D="DAV:">' +
                   '<D:allprop />' +
                   '</D:propfind>';
-        
+                
         /*
         var xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>' +
 									'<D:propfind xmlns:D="DAV:">' +
@@ -462,7 +462,6 @@ global.davlib = new function() {
 		var request = this._getRequest('OAUTH',path,handler,context);
 		request.setRequestHeader('Authorization', auth);
 		request.setRequestHeader('Cookie', enc);
-		
 		request.send('');
 	};
 		

@@ -7544,7 +7544,6 @@ start_services(void)
 	start_amas_wlcconnect();
 	start_amas_bhctrl();	
 	start_amas_lanctrl();
-	start_amas_lldpd();
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)	
 	start_psta_monitor();
@@ -7709,6 +7708,9 @@ start_services(void)
 
 #ifdef RTCONFIG_ADTBW
 	start_adtbw();
+#endif
+#ifdef RTCONFIG_AMAS
+	start_amas_lldpd();
 #endif
 
 #ifdef RTCONFIG_PUSH_EMAIL
@@ -12807,6 +12809,9 @@ void gen_lldpd_if(char *bind_ifnames)
 {
 	char word[64], *next;
 	int i = 0;
+#ifdef HND_ROUTER
+	char *lacp_ifs = nvram_get_int("lacp_enabled")?nvram_safe_get("lacp_ifnames"):NULL;
+#endif
 
 	/* prepare binding interface list */
 #if defined(RTCONFIG_BCMARM) && defined(RTCONFIG_PROXYSTA)
@@ -12818,6 +12823,11 @@ void gen_lldpd_if(char *bind_ifnames)
 	{		
 		/* for lan_ifnames */
 		foreach (word, nvram_safe_get("lan_ifnames"), next) {
+
+#ifdef HND_ROUTER
+			if(lacp_ifs && strstr(lacp_ifs, word))
+				continue;
+#endif
 
 			if (i == 0)
 				i = 1;
@@ -12842,11 +12852,15 @@ void gen_lldpd_if(char *bind_ifnames)
 	{
 		/* for lan_ifnames */
 		foreach (word, nvram_safe_get("lan_ifnames"), next) {
-		if (i == 0)
-		i = 1;
-		else
-		bind_ifnames += sprintf(bind_ifnames, ",");
-		bind_ifnames += sprintf(bind_ifnames, "%s", word);
+#ifdef HND_ROUTER
+			if(lacp_ifs && strstr(lacp_ifs, word))
+				continue;
+#endif
+			if (i == 0)
+				i = 1;
+			else
+				bind_ifnames += sprintf(bind_ifnames, ",");
+			bind_ifnames += sprintf(bind_ifnames, "%s", word);
 		}
 	}
 
@@ -13361,6 +13375,10 @@ firmware_check_main(int argc, char *argv[])
 	int isTcFwExist = 0;
 	isTcFwExist = separate_tc_fw_from_trx(argv[1]);
 #endif
+#endif
+
+#ifdef CONFIG_BCMWL5
+	fw_check_pre();
 #endif
 
 	if(!check_imagefile(argv[1])) {

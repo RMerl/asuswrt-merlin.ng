@@ -1591,6 +1591,9 @@ misc_defaults(int restore_defaults)
 	nvram_set_int("auto_upgrade", 0);
 	nvram_unset("fw_check_period");
 #endif
+#ifdef RTAC68U
+	nvram_unset("fw_enc_crc");
+#endif
 
 	if (restore_defaults)
 	{

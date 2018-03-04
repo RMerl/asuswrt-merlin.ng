@@ -2,43 +2,56 @@
 
 ORIPARMS=$*
 SCHED=$(nvram get qos_sched)
-QOSDEBUG=$(nvram get qos_debug)
-OVERHEAD=$(nvram get qos_overhead)
-ATM=$(nvram get qos_atm)
+
+if [ "$SCHED" == "0" ]
+then
+	/usr/sbin/realtc $ORIPARMS
+	exit
+fi
+
 TYPE=$(echo $ORIPARMS | cut -f 1 -d " ")
-INT=$(echo $ORIPARMS | cut -f 4 -d " ")
 
-if [ "$SCHED" -gt "0" -a "$TYPE" == "class" -a "$OVERHEAD" -gt "0" ]
+if [ "$TYPE" == "class" ]
 then
-	if [ "$ATM" == "1" ]
+        OVERHEAD=$(nvram get qos_overhead)
+        if [ "$OVERHEAD" -gt "0" ]
 	then
-		LINK="atm"
+		ATM=$(nvram get qos_atm)
+		if [ "$ATM" == "1" ]
+		then
+			NEWPARMS="${ORIPARMS/htb/htb overhead $OVERHEAD linklayer atm}"
+		else
+			NEWPARMS="${ORIPARMS/htb/htb overhead $OVERHEAD linklayer ethernet}"
+		fi
 	else
-		LINK="ethernet"
+		NEWPARMS=$ORIPARMS
 	fi
-	PARMS="${ORIPARMS/htb/htb overhead $OVERHEAD linklayer $LINK}"
+elif [ "$TYPE" == "qdisc" ]
+then
+	INT=$(echo $ORIPARMS | cut -f 4 -d " ")
+
+	if [ "$INT" == "br0" ]
+	then
+		ECN="ecn"
+	else
+		ECN="noecn"
+	fi
+
+	if [ "$SCHED" == "1" ]
+	then
+		NEWPARMS="${ORIPARMS/sfq/codel $ECN}"
+	elif [ "$SCHED" == "2" ]
+	then
+		NEWPARMS="${ORIPARMS/sfq/fq_codel $ECN}"
+	else
+		NEWPARMS=$ORIPARMS
+	fi
 else
-	PARMS=$ORIPARMS
+	NEWPARMS=$ORIPARMS
 fi
 
-if [ "$INT" == "br0" ]
-then
-	ECN="ecn"
-else
-	ECN="noecn"
-fi
 
-if [ "$SCHED" == "1" ]
-then
-	NEWPARMS="${PARMS/sfq/codel $ECN}"
-elif [ "$SCHED" == "2" ]
-then
-	NEWPARMS="${PARMS/sfq/fq_codel $ECN}"
-else
-	NEWPARMS=$PARMS
-fi
-
-if [ "$QOSDEBUG" == "1" ]
+if [ -f "/tmp/qos_debug" ]
 then
 	echo "ori: $ORIPARMS" >> /tmp/qos.log
 	echo "new: $NEWPARMS" >> /tmp/qos.log

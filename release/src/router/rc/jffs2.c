@@ -351,9 +351,13 @@ void start_jffs2(void)
 #endif
 
 	run_userfile("/jffs", ".asusrouter", "/jffs", 3);
-#ifdef CONFIG_BCMWL5
-	check_asus_jffs();
+//#ifdef CONFIG_BCMWL5
+//	check_asus_jffs();
+//#endif
+#ifdef RTAC68U
+       check_jffs2();
 #endif
+
 	if (!check_if_dir_exist("/jffs/scripts/")) mkdir("/jffs/scripts/", 0755);
 	if (!check_if_dir_exist("/jffs/configs/")) mkdir("/jffs/configs/", 0755);
 	if (!check_if_dir_exist(UPLOAD_CERT_FOLDER)) mkdir(UPLOAD_CERT_FOLDER, 0600);

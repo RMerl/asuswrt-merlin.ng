@@ -12282,10 +12282,10 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 	}
 #endif
 #ifdef RTCONFIG_CLOUDCHECK
-        else if(!strcmp(script, "cloudcheck")){
-                if(action & RC_SERVICE_STOP) stop_cloudcheck();
-                if(action & RC_SERVICE_START) start_cloudcheck();
-        }
+	else if(!strcmp(script, "cloudcheck")){
+		if(action & RC_SERVICE_STOP) stop_cloudcheck();
+		if(action & RC_SERVICE_START) start_cloudcheck();
+	}
 #endif
 #ifdef RTCONFIG_GETREALIP
 	else if(!strcmp(script, "getrealip")){

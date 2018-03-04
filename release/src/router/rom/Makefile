@@ -184,10 +184,10 @@ endif
 ifeq ($(AC2900),y)
 	cp -f webs_scripts/verizon_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
 endif
-ifeq ($(RTAC68U),y)
-	cp -f webs_scripts/ssl_webs_upgrade_enc.sh $(INSTALLDIR)/usr/sbin/webs_upgrade_enc.sh
-	cp -f webs_scripts/ssl_webs_update_enc.sh $(INSTALLDIR)/usr/sbin/webs_update_enc.sh
-endif
+#ifeq ($(RTAC68U),y)
+#	cp -f webs_scripts/ssl_webs_upgrade_enc.sh $(INSTALLDIR)/usr/sbin/webs_upgrade_enc.sh
+#	cp -f webs_scripts/ssl_webs_update_enc.sh $(INSTALLDIR)/usr/sbin/webs_update_enc.sh
+#endif
 
 ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh

@@ -37,6 +37,9 @@ General changes in the 384/NG branch vs 380.xx:
    - REMOVED: Telnet server.  Please use SSH for console-based
               management.
    - REMOVED: Disabled SNMP support on the RT-AC86U (incompatible)
+   - REMOVED: Merlin NAT loopback mode (was increasingly
+     problematic as the firmware firewall handling became more
+     complex)
 
 
 384.3 (14-Feb-2018)

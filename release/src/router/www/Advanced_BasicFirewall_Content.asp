@@ -497,16 +497,6 @@ function ipv6_valid(obj, cidr){
 												<input type="text" name="webdav_https_port" class="input_6_table" maxlength="5" value="<% nvram_get("webdav_https_port"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
 											</td>
 										</tr>		  
-										<tr>
-											<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,9);">NAT Loopback</a></th>
-											<td>
-												<select name="fw_nat_loopback" class="input_option">
-													<option value="0" <% nvram_match("fw_nat_loopback", "0","selected"); %>><#btn_disable#></option>
-													<option value="1" <% nvram_match("fw_nat_loopback", "1","selected"); %>>Asus</option>
-													<option value="2" <% nvram_match("fw_nat_loopback", "2","selected"); %>>Merlin</option>
-												</select>
-											</td>
-										</tr>
 									</table>
 
 									<!--IPv6 firewall-->

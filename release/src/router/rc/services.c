@@ -8726,10 +8726,6 @@ static void QOS_CONTROL()
 #if defined(RTCONFIG_BWDPI)
 	start_dpi_engine_service();
 #endif
-	// force to rebuild firewall to avoid some loopback issue
-	if (nvram_match("fw_nat_loopback", "2"))
-		start_firewall(wan_primary_ifunit(), 0);
-
 	start_iQos();
 
 #ifdef RTCONFIG_LANTIQ
@@ -11532,23 +11528,12 @@ check_ddr_done:
 			QOS_CONTROL();
 		}
 		nvram_set("restart_qo", "0");
-
-#if defined(RTCONFIG_BWDPI)
-		// force to rebuild firewall to avoid some loopback issue
-		if (nvram_match("fw_nat_loopback", "2"))
-			start_firewall(wan_primary_ifunit(), 0);
-#endif
 	}
 #if defined(RTCONFIG_BWDPI)
 	else if (strcmp(script, "wrs") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_dpi_engine_service(0);
-		if(action & RC_SERVICE_START) {
-			start_dpi_engine_service();
-			// force to rebuild firewall to avoid some loopback issue
-			if (nvram_match("fw_nat_loopback", "2"))
-				start_firewall(wan_primary_ifunit(), 0);
-		}
+		if(action & RC_SERVICE_START) start_dpi_engine_service();
 	}
 	else if (strcmp(script, "wrs_force") == 0)
 	{

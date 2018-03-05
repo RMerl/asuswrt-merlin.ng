@@ -124,7 +124,7 @@ main (
 
     daemon ( 0, 0 );
 
-    printf("initialized");
+    _log ( LOG_INFO, "initialized" );
 
     _manage ( );
 
@@ -249,7 +249,7 @@ _set_disks (
 
     if ( 0 == _managing )
     {
-        printf("No disks specified to be managed; exiting" );
+        _log ( LOG_ERR, "No disks specified to be managed; exiting" );
         exit ( 1 );
     }
 }
@@ -379,12 +379,12 @@ _disk_stop (
 
     if ( 0 > ioctl ( fd, SG_IO, &sg_io_hdr ) )
     {
-        printf("Failure to spin down %s: %s", device, strerror ( errno ) );
-        printf("Sense data: %s", sense_data );
+        _log ( LOG_WARNING, "Failure to spin down %s: %s", device, strerror ( errno ) );
+        _log ( LOG_WARNING, "Sense data: %s", sense_data );
     }
 
     if ( 0 != sg_io_hdr.status )
-        printf("Non-zero status spinning down %s: %d", device, sg_io_hdr.status );
+        _log ( LOG_WARNING, "Non-zero status spinning down %s: %d", device, sg_io_hdr.status );
 
     close ( fd );
 }
@@ -439,7 +439,7 @@ _disk_idle (
     if ( _is_bit_clear ( _spinning, disk ) || ( _idletime > _idletimes [ disk ] ) )
         return;
 
-    printf("%s", _transition_message ( disk, "down", msg_buf ) );
+    _log ( LOG_INFO, "%s", _transition_message ( disk, "up", msg_buf ) );
 
     _disk_stop ( disk );
 

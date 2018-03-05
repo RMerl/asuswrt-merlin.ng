@@ -35,7 +35,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "rt-ac56U" ] || [ "$MODEL" == "rt-ac68U" ] || [ "$MODEL" == "rt-ac87U" ]
+elif [ "$MODEL" == "rt-ac56u" ] || [ "$MODEL" == "rt-ac68u" ] || [ "$MODEL" == "rt-ac87u" ]
 then
 	SDK=""
 	ARCH="_arm"
@@ -47,7 +47,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "rt-ac86U" ]
+elif [ "$MODEL" == "rt-ac86u" ]
 then
 	SDK="_94908hnd"
 	ARCH="_arm"
@@ -168,7 +168,7 @@ then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
 
-if [ "$MODEL" == "rt-ac3200" ] || [ "$MODEL" == "rt-ac88u" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "rt-ac5300" ] || [ "$MODEL" == "rt-ac86U" ]
+if [ "$MODEL" == "rt-ac3200" ] || [ "$MODEL" == "rt-ac88u" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "rt-ac5300" ] || [ "$MODEL" == "rt-ac86u" ]
 then
 	cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt$ARCH$SDK/
 fi

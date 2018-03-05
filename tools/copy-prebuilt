@@ -10,7 +10,7 @@
 MODEL=$1
 REPO=/home/merlin/amng
 
-if [ "$MODEL" == "RT-AC88U" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "RT-AC5300" ]
+if [ "$MODEL" == "rt-ac88u" ] || [ "$MODEL" == "rt-ac3100" ] || [ "$MODEL" == "rt-ac5300" ]
 then
 	SDK="_7114"
 	ARCH="_arm"
@@ -23,7 +23,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "RT-AC3200" ]
+elif [ "$MODEL" == "rt-ac3200" ]
 then
 	SDK="_7"
 	ARCH="_arm"
@@ -35,7 +35,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "RT-AC56U" ] || [ "$MODEL" == "RT-AC68U" ] || [ "$MODEL" == "RT-AC87U" ]
+elif [ "$MODEL" == "rt-ac56U" ] || [ "$MODEL" == "rt-ac68U" ] || [ "$MODEL" == "rt-ac87U" ]
 then
 	SDK=""
 	ARCH="_arm"
@@ -47,7 +47,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "RT-AC86U" ]
+elif [ "$MODEL" == "rt-ac86U" ]
 then
 	SDK="_94908hnd"
 	ARCH="_arm"
@@ -118,10 +118,11 @@ then
 	cp release/src/router/et$ARCH$SDK/prebuilt/* $REPO/release/src/router/et$ARCH$SDK/prebuilt/
 	cp release/src/router/emf$ARCH$SDK/*.o $REPO/release/src/router/emf$ARCH$SDK/
 	cp release/src/router/emf$ARCH$SDK/emfconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/emfconf/prebuilt/
-	cp release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/
+	cp release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/prebuilt/
 fi
 
-cp release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK
+cp release/src/router/bwdpi_source/asus/prebuild/libbwdpi.so $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK/$MODEL/
+cp release/src/router/bwdpi_source/asus/prebuild/hwinfo $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK/
 cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild$ARCH$SDK
 cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild$ARCH$SDK
 cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
@@ -162,12 +163,12 @@ cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asusweb
 
 
 # Model-specific
-if [ "$MODEL" == "RT-AC88U" ]
+if [ "$MODEL" == "rt-ac88u" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
 
-if [ "$MODEL" == "RT-AC3200" ] || [ "$MODEL" == "RT-AC88U" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "RT-AC5300" ] || [ "$MODEL" == "RT-AC86U" ]
+if [ "$MODEL" == "rt-ac3200" ] || [ "$MODEL" == "rt-ac88u" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "rt-ac5300" ] || [ "$MODEL" == "rt-ac86U" ]
 then
 	cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt$ARCH$SDK/
 fi

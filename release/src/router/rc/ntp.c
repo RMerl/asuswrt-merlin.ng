@@ -56,8 +56,10 @@ static void ntp_service()
 
 		setup_timezone();
 
+#if 0
 		if (is_routing_enabled())
 			notify_rc_and_period_wait("restart_upnp", 25);
+#endif
 #ifdef RTCONFIG_DISK_MONITOR
 		notify_rc("restart_diskmon");
 #endif

@@ -13377,9 +13377,9 @@ firmware_check_main(int argc, char *argv[])
 #endif
 #endif
 
-#ifdef CONFIG_BCMWL5
-	fw_check_pre();
-#endif
+//#ifdef CONFIG_BCMWL5
+//	fw_check_pre();
+//#endif
 
 	if(!check_imagefile(argv[1])) {
 		_dprintf("FW OK\n");

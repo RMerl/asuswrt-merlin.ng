@@ -30,16 +30,22 @@ General changes in the 384/NG branch vs 380.xx:
               Ideally, people should change it to SMBv2 only,
               and then reboot all their client devices to start
               using only the new protocol.
+   - CHANGED: Re-added some of the logging sd-idle used to do
+              in 380.xx.
    - FIXED: Resetting an OpenVPN client to default settings
             might revert back after a reboot.
    - FIXED: log flood from lldpd about "unable to send packet
             on real device" (moved to debug level)
+   - FIXED: Potential racing condition that could lead to two
+            instances of miniupnpd running at boot time.
+   - FIXED: Single-char hostnames were rejected by DHCP static 
+            leasees page.
    - REMOVED: Telnet server.  Please use SSH for console-based
               management.
    - REMOVED: Disabled SNMP support on the RT-AC86U (incompatible)
    - REMOVED: Merlin NAT loopback mode (was increasingly
-     problematic as the firmware firewall handling became more
-     complex)
+              problematic as the firmware firewall handling became 
+              more complex)
 
 
 384.3 (14-Feb-2018)

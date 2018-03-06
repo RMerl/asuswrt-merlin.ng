@@ -68,6 +68,7 @@ var http_enable = '<% nvram_get("http_enable"); %>';
 var httpd_cert_info = [<% httpd_cert_info(); %>][0];
 var orig_le_enable = '<% nvram_get("le_enable"); %>';
 var le_state = '<% nvram_get("le_state"); %>';
+var httpd_restart = 0;
 
 function init(){
 	show_menu();
@@ -150,7 +151,7 @@ function submitForm(){
 			document.form.action_wait.value = "10";
 			document.form.action_script.value = "restart_ddns_le";
 		}
-		else if(http_enable != "0" && (document.form.le_enable.value != orig_le_enable || document.form.https_crt_gen.value == "1")){
+		else if(http_enable != "0" && (document.form.le_enable.value != orig_le_enable || document.form.https_crt_gen.value == "1" || httpd_restart == 1 )){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
 				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
@@ -585,6 +586,7 @@ function upload_cert_key(){
 		document.upload_form.submit();
 		hide_upload_window();
 		show_cert_details();
+		httpd_restart = 1;
 	}
 }
 

@@ -109,7 +109,7 @@ function update_site_info(){
 				setTimeout("update_site_info();", 1000);
 		},
 		success: function(response){
-			if(wlc_scan_state != 3) {
+			if(wlc_scan_state != 5) {
 				setTimeout("update_site_info();", 2000);
 			}
 			if(isrescan == 0){ // rescan onLoading
@@ -143,7 +143,7 @@ function showSiteTable(){
 
 	htmlCode +='<table style="width:670px;" border="0" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="aplist_table">';
 
-	if(wlc_scan_state != 3){ // on scanning
+	if(wlc_scan_state != 5){ // on scanning
 		htmlCode +='<tr><th style="text-align:center;font-size:12px;" colspan="4"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>';
 	}
 	else{ // show ap list

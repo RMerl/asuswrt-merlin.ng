@@ -4118,6 +4118,8 @@ stop_telnetd(void)
 void
 start_httpd(void)
 {
+	char tmp[100];
+
 	char *httpd_argv[] = { "httpd",
 		NULL, NULL,	/* -i ifname */
 		NULL, NULL,	/* -p port */
@@ -4160,11 +4162,13 @@ start_httpd(void)
 	}
 
 #ifdef RTCONFIG_HTTPS
+	snprintf(tmp, sizeof(tmp), "cat %s %s > %s", HTTPD_CERT, HTTPD_KEY, LIGHTTPD_CERTKEY);
 #ifdef RTCONFIG_LETSENCRYPT
 	if(nvram_match("le_enable", "1")) {
 		if(!is_le_cert(HTTPD_CERT) || !cert_key_match(HTTPD_CERT, HTTPD_KEY)) {
 			cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
 			cp_le_cert(LE_KEY, HTTPD_KEY);
+			system(tmp);
 		}
 	}
 	else if(nvram_match("le_enable", "2")) {
@@ -4173,12 +4177,14 @@ start_httpd(void)
                 if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
                         eval("cp", UPLOAD_CERT, HTTPD_CERT);
                         eval("cp", UPLOAD_KEY, HTTPD_KEY);
+			system(tmp);
 		}
 	}
 #else
 	if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
 		eval("cp", UPLOAD_CERT, HTTPD_CERT);
 		eval("cp", UPLOAD_KEY, HTTPD_KEY);
+		system(tmp);
 	}
 #endif
 

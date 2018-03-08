@@ -7691,8 +7691,6 @@ start_services(void)
 
 	start_ecoguard();
 
-	run_custom_script("services-start", NULL);
-
 //	start_upnp();
 
 	sanity_logs();
@@ -7724,6 +7722,9 @@ start_services(void)
 	start_dblog(0);
 #endif /* RTCONFIG_DBLOG */
 #endif /* RTCONFIG_PUSH_EMAIL */
+
+	run_custom_script("services-start", NULL);
+
 	return 0;
 }
 

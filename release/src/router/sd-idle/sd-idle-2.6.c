@@ -439,7 +439,7 @@ _disk_idle (
     if ( _is_bit_clear ( _spinning, disk ) || ( _idletime > _idletimes [ disk ] ) )
         return;
 
-    _log ( LOG_INFO, "%s", _transition_message ( disk, "up", msg_buf ) );
+    _log ( LOG_INFO, "%s", _transition_message ( disk, "down", msg_buf ) );
 
     _disk_stop ( disk );
 
@@ -457,7 +457,7 @@ _disk_active (
     // if was not spinning, inform spinning up
     if ( _is_bit_clear ( _spinning, disk ) )
     {
-        printf("%s", _transition_message ( disk, "up", msg_buf ) );
+	_log ( LOG_INFO, "%s", _transition_message ( disk, "up", msg_buf ) );
         _bit_set ( _spinning, disk );
     }
 

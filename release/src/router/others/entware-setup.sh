@@ -21,7 +21,7 @@ echo
 case $(uname -m) in
   armv7l)
     PART_TYPES='ext2|ext3|ext4'
-    INST_URL='http://pkg.entware.net/binaries/armv7/installer/entware_install.sh'
+    INST_URL='http://bin.entware.net/armv7sf-k2.6/installer/generic.sh'
     ;;
   mips)
     PART_TYPES='ext2|ext3'
@@ -29,7 +29,7 @@ case $(uname -m) in
     ;;
   aarch64)
     PART_TYPES='ext2|ext3|ext4'
-    INST_URL='http://pkg.entware.net/binaries/armv7/installer/entware_install.sh'
+    INST_URL='http://bin.entware.net/armv7sf-k2.6/installer/generic.sh'
     ;;
   *)
     echo "This is unsupported platform, sorry."

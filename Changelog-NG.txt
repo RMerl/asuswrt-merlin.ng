@@ -19,6 +19,11 @@ General changes in the 384/NG branch vs 380.xx:
    - NEW: Added support for the RT-AC5300.
    - NEW: Added support for the RT-AC87U.
    - NEW: Added IPSEC support to the RT-AC86U.
+   - NEW: Support the new Entware 64-bit repo on the RT-AC86U.
+          To switch to the new repository, re-run the
+          entware-setup.sh script.  You will need to reinstall
+          your apps (your old config files are backed up on
+          your USB disk).
    - CHANGED: Tightened security around some config files.
    - CHANGED: Allow guest networks settings for AP isolation
               and SSID broadcast to be set separately from
@@ -32,14 +37,23 @@ General changes in the 384/NG branch vs 380.xx:
               using only the new protocol.
    - CHANGED: Re-added some of the logging sd-idle used to do
               in 380.xx.
+   - CHANGED: Switched to the new Entware repo for armv7 models.
+              To upgrade, run the following commands TWICE:
+
+              opkg update; opkg upgrade
+
    - FIXED: Resetting an OpenVPN client to default settings
             might revert back after a reboot.
    - FIXED: log flood from lldpd about "unable to send packet
             on real device" (moved to debug level)
    - FIXED: Potential racing condition that could lead to two
             instances of miniupnpd running at boot time.
-   - FIXED: Single-char hostnames were rejected by DHCP static 
+   - FIXED: Single-char hostnames were rejected by DHCP static
             leasees page.
+   - FIXED: AiCloud could sometime generate a new SSL certificate
+            that would overwrite the one stored in jffs.  Now,
+            AiCloud can also use the same one uploaded by the
+            user for the main webui, or the Let's Encrypt one.
    - REMOVED: Telnet server.  Please use SSH for console-based
               management.
    - REMOVED: Disabled SNMP support on the RT-AC86U (incompatible)

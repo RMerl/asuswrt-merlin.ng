@@ -1053,6 +1053,7 @@ function hide_https_crt(){
 		showhide("https_crt_san", (protos != "0" ? 1 : 0));
 		showhide("https_crt_gen", (protos != "0" ? 1 : 0));
 		showhide("https_cert", (protos != "0" ? 1 : 0));
+		showhide("cert_manage_link", 0);
 	}
 }
 
@@ -1944,6 +1945,7 @@ function upload_cert_key(){
 							<div style="display:table-cell;white-space: nowrap">Expires on :</div>
 							<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 						</div>
+						<div id="cert_manage_link" style="padding-top:10px;"><span>Click <a style="color:#FC0;text-decoration: underline;" href="Advanced_ASUSDDNS_Content.asp">here</a> to manage.</span></div>
 					</td>
 				</tr>
 

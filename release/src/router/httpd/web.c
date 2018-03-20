@@ -14520,8 +14520,8 @@ do_qis_default(char *url, FILE *stream)
 	char redirect_url[128];
 	flag = websGetVar(wp, "flag","");
 	
-	if(flag != NULL || strcmp(flag, "") != 0){
-		sprintf(redirect_url, "QIS_wizard.htm?flag=%s", flag);
+	if(flag != NULL && strcmp(flag, "") != 0){
+		snprintf(redirect_url, sizeof(redirect_url), "QIS_wizard.htm?flag=%s", flag);
 		websRedirect(stream, redirect_url);
 	}
 	else

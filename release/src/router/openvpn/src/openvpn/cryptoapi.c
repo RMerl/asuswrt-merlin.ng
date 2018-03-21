@@ -42,11 +42,13 @@
 #include <openssl/err.h>
 #include <windows.h>
 #include <wincrypt.h>
+#include <ncrypt.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <assert.h>
 
 #include "buffer.h"
+#include "openssl_compat.h"
 
 /* MinGW w32api 3.17 is still incomplete when it comes to CryptoAPI while
  * MinGW32-w64 defines all macros used. This is a hack around that problem.
@@ -82,6 +84,7 @@
 #define CRYPTOAPI_F_CRYPT_SIGN_HASH                         106
 #define CRYPTOAPI_F_LOAD_LIBRARY                            107
 #define CRYPTOAPI_F_GET_PROC_ADDRESS                        108
+#define CRYPTOAPI_F_NCRYPT_SIGN_HASH                        109
 
 static ERR_STRING_DATA CRYPTOAPI_str_functs[] = {
     { ERR_PACK(ERR_LIB_CRYPTOAPI, 0, 0),                                    "microsoft cryptoapi"},
@@ -94,12 +97,13 @@ static ERR_STRING_DATA CRYPTOAPI_str_functs[] = {
     { ERR_PACK(0, CRYPTOAPI_F_CRYPT_SIGN_HASH, 0),                          "CryptSignHash" },
     { ERR_PACK(0, CRYPTOAPI_F_LOAD_LIBRARY, 0),                             "LoadLibrary" },
     { ERR_PACK(0, CRYPTOAPI_F_GET_PROC_ADDRESS, 0),                         "GetProcAddress" },
+    { ERR_PACK(0, CRYPTOAPI_F_NCRYPT_SIGN_HASH, 0),                         "NCryptSignHash" },
     { 0, NULL }
 };
 
 typedef struct _CAPI_DATA {
     const CERT_CONTEXT *cert_context;
-    HCRYPTPROV crypt_prov;
+    HCRYPTPROV_OR_NCRYPT_KEY_HANDLE crypt_prov;
     DWORD key_spec;
     BOOL free_crypt_prov;
 } CAPI_DATA;
@@ -209,26 +213,66 @@ rsa_pub_dec(int flen, const unsigned char *from, unsigned char *to, RSA *rsa, in
     return 0;
 }
 
+/**
+ * Sign the hash in 'from' using NCryptSignHash(). This requires an NCRYPT
+ * key handle in cd->crypt_prov. On return the signature is in 'to'. Returns
+ * the length of the signature or 0 on error.
+ * For now we support only RSA and the padding is assumed to be PKCS1 v1.5
+ */
+static int
+priv_enc_CNG(const CAPI_DATA *cd, const unsigned char *from, int flen,
+              unsigned char *to, int tlen, int padding)
+{
+    NCRYPT_KEY_HANDLE hkey = cd->crypt_prov;
+    DWORD len;
+    ASSERT(cd->key_spec == CERT_NCRYPT_KEY_SPEC);
+
+    msg(D_LOW, "Signing hash using CNG: data size = %d", flen);
+
+    /* The hash OID is already in 'from'.  So set the hash algorithm
+     * in the padding info struct to NULL.
+     */
+    BCRYPT_PKCS1_PADDING_INFO padinfo = {NULL};
+    DWORD status;
+
+    status = NCryptSignHash(hkey, padding? &padinfo : NULL, (BYTE*) from, flen,
+                            to, tlen, &len, padding? BCRYPT_PAD_PKCS1 : 0);
+    if (status != ERROR_SUCCESS)
+    {
+        SetLastError(status);
+        CRYPTOAPIerr(CRYPTOAPI_F_NCRYPT_SIGN_HASH);
+        len = 0;
+    }
+
+    /* Unlike CAPI, CNG signature is in big endian order. No reversing needed. */
+    return len;
+}
+
 /* sign arbitrary data */
 static int
 rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rsa, int padding)
 {
-    CAPI_DATA *cd = (CAPI_DATA *) rsa->meth->app_data;
+    CAPI_DATA *cd = (CAPI_DATA *) RSA_meth_get0_app_data(RSA_get_method(rsa));
     HCRYPTHASH hash;
     DWORD hash_size, len, i;
     unsigned char *buf;
 
     if (cd == NULL)
     {
-        RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, ERR_R_PASSED_NULL_PARAMETER);
+        RSAerr(RSA_F_RSA_OSSL_PRIVATE_ENCRYPT, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
     }
     if (padding != RSA_PKCS1_PADDING)
     {
         /* AFAICS, CryptSignHash() *always* uses PKCS1 padding. */
-        RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, RSA_R_UNKNOWN_PADDING_TYPE);
+        RSAerr(RSA_F_RSA_OSSL_PRIVATE_ENCRYPT, RSA_R_UNKNOWN_PADDING_TYPE);
         return 0;
     }
+    if (cd->key_spec == CERT_NCRYPT_KEY_SPEC)
+    {
+        return priv_enc_CNG(cd, from, flen, to, RSA_size(rsa), padding);
+    }
+
     /* Unfortunately, there is no "CryptSign()" function in CryptoAPI, that would
      * be way to straightforward for M$, I guess... So we have to do it this
      * tricky way instead, by creating a "Hash", and load the already-made hash
@@ -236,7 +280,7 @@ rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rsa, i
     /* For now, we only support NID_md5_sha1 */
     if (flen != SSL_SIG_LENGTH)
     {
-        RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, RSA_R_INVALID_MESSAGE_LENGTH);
+        RSAerr(RSA_F_RSA_OSSL_PRIVATE_ENCRYPT, RSA_R_INVALID_MESSAGE_LENGTH);
         return 0;
     }
     if (!CryptCreateHash(cd->crypt_prov, CALG_SSL3_SHAMD5, 0, 0, &hash))
@@ -253,7 +297,7 @@ rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rsa, i
     }
     if ((int) hash_size != flen)
     {
-        RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, RSA_R_INVALID_MESSAGE_LENGTH);
+        RSAerr(RSA_F_RSA_OSSL_PRIVATE_ENCRYPT, RSA_R_INVALID_MESSAGE_LENGTH);
         CryptDestroyHash(hash);
         return 0;
     }
@@ -268,7 +312,7 @@ rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rsa, i
     buf = malloc(len);
     if (buf == NULL)
     {
-        RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, ERR_R_MALLOC_FAILURE);
+        RSAerr(RSA_F_RSA_OSSL_PRIVATE_ENCRYPT, ERR_R_MALLOC_FAILURE);
         CryptDestroyHash(hash);
         return 0;
     }
@@ -312,7 +356,8 @@ init(RSA *rsa)
 static int
 finish(RSA *rsa)
 {
-    CAPI_DATA *cd = (CAPI_DATA *) rsa->meth->app_data;
+    const RSA_METHOD *rsa_meth = RSA_get_method(rsa);
+    CAPI_DATA *cd = (CAPI_DATA *) RSA_meth_get0_app_data(rsa_meth);
 
     if (cd == NULL)
     {
@@ -320,15 +365,21 @@ finish(RSA *rsa)
     }
     if (cd->crypt_prov && cd->free_crypt_prov)
     {
-        CryptReleaseContext(cd->crypt_prov, 0);
+        if (cd->key_spec == CERT_NCRYPT_KEY_SPEC)
+        {
+            NCryptFreeObject(cd->crypt_prov);
+        }
+        else
+        {
+            CryptReleaseContext(cd->crypt_prov, 0);
+        }
     }
     if (cd->cert_context)
     {
         CertFreeCertificateContext(cd->cert_context);
     }
-    free(rsa->meth->app_data);
-    free((char *) rsa->meth);
-    rsa->meth = NULL;
+    free(cd);
+    RSA_meth_free((RSA_METHOD*) rsa_meth);
     return 1;
 }
 
@@ -412,9 +463,9 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
     X509 *cert = NULL;
     RSA *rsa = NULL, *pub_rsa;
     CAPI_DATA *cd = calloc(1, sizeof(*cd));
-    RSA_METHOD *my_rsa_method = calloc(1, sizeof(*my_rsa_method));
+    RSA_METHOD *my_rsa_method = NULL;
 
-    if (cd == NULL || my_rsa_method == NULL)
+    if (cd == NULL)
     {
         SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_MALLOC_FAILURE);
         goto err;
@@ -457,8 +508,11 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
     }
 
     /* set up stuff to use the private key */
-    if (!CryptAcquireCertificatePrivateKey(cd->cert_context, CRYPT_ACQUIRE_COMPARE_KEY_FLAG,
-                                           NULL, &cd->crypt_prov, &cd->key_spec, &cd->free_crypt_prov))
+    /* We prefer to get an NCRYPT key handle so that TLS1.2 can be supported */
+    DWORD flags = CRYPT_ACQUIRE_COMPARE_KEY_FLAG
+                  | CRYPT_ACQUIRE_PREFER_NCRYPT_KEY_FLAG;
+    if (!CryptAcquireCertificatePrivateKey(cd->cert_context, flags, NULL,
+                    &cd->crypt_prov, &cd->key_spec, &cd->free_crypt_prov))
     {
         /* if we don't have a smart card reader here, and we try to access a
          * smart card certificate, we get:
@@ -469,15 +523,37 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
     /* here we don't need to do CryptGetUserKey() or anything; all necessary key
      * info is in cd->cert_context, and then, in cd->crypt_prov.  */
 
-    my_rsa_method->name = "Microsoft CryptoAPI RSA Method";
-    my_rsa_method->rsa_pub_enc = rsa_pub_enc;
-    my_rsa_method->rsa_pub_dec = rsa_pub_dec;
-    my_rsa_method->rsa_priv_enc = rsa_priv_enc;
-    my_rsa_method->rsa_priv_dec = rsa_priv_dec;
-    /* my_rsa_method->init = init; */
-    my_rsa_method->finish = finish;
-    my_rsa_method->flags = RSA_METHOD_FLAG_NO_CHECK;
-    my_rsa_method->app_data = (char *) cd;
+    /* if we do not have an NCRYPT key handle restrict TLS to v1.1 or lower */
+    int max_version = SSL_CTX_get_max_proto_version(ssl_ctx);
+    if ((!max_version || max_version > TLS1_1_VERSION)
+        && cd->key_spec != CERT_NCRYPT_KEY_SPEC)
+    {
+        msg(M_WARN, "WARNING: cryptoapicert: private key is in a legacy store."
+            " Restricting TLS version to 1.1");
+        if (SSL_CTX_get_min_proto_version(ssl_ctx) > TLS1_1_VERSION)
+        {
+            msg(M_NONFATAL,
+                "ERROR: cryptoapicert: min TLS version larger than 1.1."
+                " Try config option --tls-version-min 1.1");
+            goto err;
+        }
+        if (!SSL_CTX_set_max_proto_version(ssl_ctx, TLS1_1_VERSION))
+        {
+            msg(M_NONFATAL, "ERROR: cryptoapicert: set max TLS version failed");
+            goto err;
+        }
+    }
+
+    my_rsa_method = RSA_meth_new("Microsoft Cryptography API RSA Method",
+                                  RSA_METHOD_FLAG_NO_CHECK);
+    check_malloc_return(my_rsa_method);
+    RSA_meth_set_pub_enc(my_rsa_method, rsa_pub_enc);
+    RSA_meth_set_pub_dec(my_rsa_method, rsa_pub_dec);
+    RSA_meth_set_priv_enc(my_rsa_method, rsa_priv_enc);
+    RSA_meth_set_priv_dec(my_rsa_method, rsa_priv_dec);
+    RSA_meth_set_init(my_rsa_method, NULL);
+    RSA_meth_set_finish(my_rsa_method, finish);
+    RSA_meth_set0_app_data(my_rsa_method, cd);
 
     rsa = RSA_new();
     if (rsa == NULL)
@@ -486,23 +562,35 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
         goto err;
     }
 
-    /* cert->cert_info->key->pkey is NULL until we call SSL_CTX_use_certificate(),
+    /* Public key in cert is NULL until we call SSL_CTX_use_certificate(),
      * so we do it here then...  */
     if (!SSL_CTX_use_certificate(ssl_ctx, cert))
     {
         goto err;
     }
     /* the public key */
-    pub_rsa = cert->cert_info->key->pkey->pkey.rsa;
+    EVP_PKEY *pkey = X509_get0_pubkey(cert);
+
     /* SSL_CTX_use_certificate() increased the reference count in 'cert', so
      * we decrease it here with X509_free(), or it will never be cleaned up. */
     X509_free(cert);
     cert = NULL;
 
-    /* I'm not sure about what we have to fill in in the RSA, trying out stuff... */
-    /* rsa->n indicates the key size */
-    rsa->n = BN_dup(pub_rsa->n);
-    rsa->flags |= RSA_FLAG_EXT_PKEY;
+    if (!(pub_rsa = EVP_PKEY_get0_RSA(pkey)))
+    {
+        msg(M_WARN, "cryptoapicert requires an RSA certificate");
+        goto err;
+    }
+
+    /* Our private key is external, so we fill in only n and e from the public key */
+    const BIGNUM *n = NULL;
+    const BIGNUM *e = NULL;
+    RSA_get0_key(pub_rsa, &n, &e, NULL);
+    if (!RSA_set0_key(rsa, BN_dup(n), BN_dup(e), NULL))
+    {
+        goto err;
+    }
+    RSA_set_flags(rsa, RSA_flags(rsa) | RSA_FLAG_EXT_PKEY);
     if (!RSA_set_method(rsa, my_rsa_method))
     {
         goto err;
@@ -536,7 +624,14 @@ err:
         {
             if (cd->free_crypt_prov && cd->crypt_prov)
             {
-                CryptReleaseContext(cd->crypt_prov, 0);
+                if (cd->key_spec == CERT_NCRYPT_KEY_SPEC)
+                {
+                    NCryptFreeObject(cd->crypt_prov);
+                }
+                else
+                {
+                    CryptReleaseContext(cd->crypt_prov, 0);
+                }
             }
             if (cd->cert_context)
             {

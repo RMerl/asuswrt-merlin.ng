@@ -1,3 +1,13 @@
+/* This file has been backported by dev-tools/lz4-rebaser.sh
+ * from upstream lz4 commit 7bb64ff2b69a9f8367de (v1.7.5)
+ */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#elif defined(_MSC_VER)
+#include "config-msvc.h"
+#endif
+
+#ifdef NEED_COMPAT_LZ4
 /*
    LZ4 - Fast LZ compression algorithm
    Copyright (C) 2011-2016, Yann Collet.
@@ -32,13 +42,6 @@
     - LZ4 source repository : https://github.com/lz4/lz4
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
-#endif
-
-#ifdef NEED_COMPAT_LZ4
 
 /*-************************************
 *  Tuning parameters
@@ -1468,6 +1471,4 @@ int LZ4_decompress_fast_withPrefix64k(const char* source, char* dest, int origin
 }
 
 #endif   /* LZ4_COMMONDEFS_ONLY */
-
 #endif /* NEED_COMPAT_LZ4 */
-

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2017 OpenVPN Technologies, Inc. <sales@openvpn.net>
+ *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -1090,9 +1090,9 @@ bool buffer_list_defined(const struct buffer_list *ol);
 
 void buffer_list_reset(struct buffer_list *ol);
 
-void buffer_list_push(struct buffer_list *ol, const unsigned char *str);
+void buffer_list_push(struct buffer_list *ol, const char *str);
 
-struct buffer_entry *buffer_list_push_data(struct buffer_list *ol, const uint8_t *data, size_t size);
+struct buffer_entry *buffer_list_push_data(struct buffer_list *ol, const void *data, size_t size);
 
 struct buffer *buffer_list_peek(struct buffer_list *ol);
 
@@ -1102,7 +1102,8 @@ void buffer_list_pop(struct buffer_list *ol);
 
 void buffer_list_aggregate(struct buffer_list *bl, const size_t max);
 
-void buffer_list_aggregate_separator(struct buffer_list *bl, const size_t max, const char *sep);
+void buffer_list_aggregate_separator(struct buffer_list *bl,
+                                     const size_t max_len, const char *sep);
 
 struct buffer_list *buffer_list_file(const char *fn, int max_line_len);
 

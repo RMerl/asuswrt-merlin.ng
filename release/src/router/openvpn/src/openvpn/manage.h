@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2017 OpenVPN Technologies, Inc. <sales@openvpn.net>
+ *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -70,7 +70,7 @@ void command_line_free(struct command_line *cl);
 
 void command_line_add(struct command_line *cl, const unsigned char *buf, const int len);
 
-const unsigned char *command_line_get(struct command_line *cl);
+const char *command_line_get(struct command_line *cl);
 
 void command_line_reset(struct command_line *cl);
 

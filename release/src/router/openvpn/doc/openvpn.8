@@ -4,7 +4,7 @@
 .\"             packet encryption, packet authentication, and
 .\"             packet compression.
 .\"
-.\"  Copyright (C) 2002-2017 OpenVPN Technologies, Inc. <sales@openvpn.net>
+.\"  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License version 2
@@ -33,7 +33,15 @@
 .\" .ft -- normal face
 .\" .in +|-{n} -- indent
 .\"
-.TH openvpn 8 "25 August 2016"
+.\" Support macros - this is not present on all platforms
+.\" Continuation line for .TP header.
+.de TQ
+.  br
+.  ns
+.  TP \\$1\" no doublequotes around argument!
+..
+.\" End of TQ macro
+.TH openvpn 8 "28 February 2018"
 .\"*********************************************************
 .SH NAME
 openvpn \- secure IP tunnel daemon.
@@ -1621,7 +1629,7 @@ and
 .B \-\-ping\-restart.
 
 This option can be used on both client and server side, but it is
-in enough to add this on the server side as it will push appropriate
+enough to add this on the server side as it will push appropriate
 .B \-\-ping
 and
 .B \-\-ping\-restart
@@ -2547,54 +2555,52 @@ the compression efficiency will be very low, triggering openvpn to disable
 compression for a period of time until the next re\-sample test.
 .\"*********************************************************
 .TP
+.B \-\-management socket\-name unix [pw\-file] \ \ \ \ \ (recommended)
+.TQ
 .B \-\-management IP port [pw\-file]
-Enable a TCP server on
-.B IP:port
-to handle daemon management functions.
-.B pw\-file,
-if specified,
-is a password file (password on first line)
-or "stdin" to prompt from standard input.  The password
-provided will set the password which TCP clients will need
-to provide in order to access management functions.
+Enable a management server on a
+.B socket\-name
+Unix socket on those platforms supporting it, or on
+a designated TCP port.
 
-The management interface can also listen on a unix domain socket,
-for those platforms that support it.  To use a unix domain socket, specify
-the unix socket pathname in place of
-.B IP
-and set
-.B port
-to 'unix'.  While the default behavior is to create a unix domain socket
-that may be connected to by any process, the
+.B pw\-file
+, if specified, is a password file where the password must be on first line.
+Instead of a filename it can use the keyword stdin which will prompt the user
+for a password to use when OpenVPN is starting.
+
+For unix sockets, the  default  behaviour  is to create a unix domain socket
+that may be connected to by any process.  Use the
 .B \-\-management\-client\-user
 and
 .B \-\-management\-client\-group
-directives can be used to restrict access.
+directives to restrict access.
 
-The management interface provides a special mode where the TCP
-management link can operate over the tunnel itself.  To enable this mode,
-set
-.B IP
-= "tunnel".  Tunnel mode will cause the management interface
-to listen for a TCP connection on the local VPN address of the
-TUN/TAP interface.
+The management interface provides a special mode where the TCP management link
+can operate over the tunnel itself.  To enable this mode, set IP to
+.B tunnel.
+Tunnel mode will cause the  management interface to listen for a
+TCP connection on the local VPN address of the TUN/TAP interface.
 
-While the management port is designed for programmatic control
-of OpenVPN by other applications, it is possible to telnet
-to the port, using a telnet client in "raw" mode.  Once connected,
-type "help" for a list of commands.
+.B BEWARE
+of enabling the management interface over TCP.  In  these cases you should
+.I ALWAYS
+make use of
+.B pw\-file
+to password protect the management interface.  Any user who can connect to this
+TCP
+.B IP:port
+will be able to manage and control (and interfere with) the OpenVPN process.
+It is also strongly recommended to set IP to 127.0.0.1 (localhost) to restrict
+accessibility of the management server to local clients.
 
-For detailed documentation on the management interface, see
-the management\-notes.txt file in the
-.B management
-folder of
-the OpenVPN source distribution.
+While the management port is designed for  programmatic control of OpenVPN by
+other applications, it is possible to telnet to the port, using a telnet client
+in "raw" mode.  Once  connected, type "help" for a list of commands.
 
-It is strongly recommended that
-.B IP
-be set to 127.0.0.1
-(localhost) to restrict accessibility of the management
-server to local clients. 
+For detailed documentation on the management interface, see the
+.I management\-notes.txt
+file in the management folder of the OpenVPN source distribution.
+
 .TP
 .B \-\-management\-client
 Management interface will connect as a TCP/unix domain client to
@@ -4918,6 +4924,37 @@ when using mbed TLS or
 OpenSSL.
 .\"*********************************************************
 .TP
+.B \-\-tls\-cert\-profile profile
+Set the allowed cryptographic algorithms for certificates according to
+.B profile\fN.
+
+The following profiles are supported:
+
+.B legacy
+(default): SHA1 and newer, RSA 2048-bit+, any elliptic curve.
+
+.B preferred
+: SHA2 and newer, RSA 2048-bit+, any elliptic curve.
+
+.B suiteb
+: SHA256/SHA384, ECDSA with P-256 or P-384.
+
+This option is only fully supported for mbed TLS builds.  OpenSSL builds use
+the following approximation:
+
+.B legacy
+(default): sets "security level 1"
+
+.B preferred
+: sets "security level 2"
+
+.B suiteb
+: sets "security level 3" and \-\-tls\-cipher "SUITEB128".
+
+OpenVPN will migrate to 'preferred' as default in the future.  Please ensure
+that your keys already comply.
+.\"*********************************************************
+.TP
 .B \-\-tls\-timeout n
 Packet retransmit timeout on TLS control channel
 if no acknowledgment from remote within
@@ -5806,17 +5843,13 @@ across the VPN.
 Set Connection\-specific DNS Suffix.
 
 .B DNS addr \-\-
-Set primary domain name server IPv4 address.  Repeat
+Set primary domain name server IPv4 or IPv6 address.  Repeat
 this option to set secondary DNS server addresses.
 
-.B DNS6 addr \-\-
-Set primary domain name server IPv6 address.  Repeat
-this option to set secondary DNS server IPv6 addresses.
-
-Note: currently this is handled using netsh (the
-existing DHCP code can only do IPv4 DHCP, and that protocol only
-permits IPv4 addresses anywhere).  The option will be put into the
-environment, so an
+Note: DNS IPv6 servers are currently set using netsh (the existing
+DHCP code can only do IPv4 DHCP, and that protocol only permits IPv4
+addresses anywhere).  The option will be put into the environment, so
+an
 .B \-\-up
 script could act upon it if needed.
 
@@ -7238,7 +7271,7 @@ For more information on the LZO real\-time compression library see
 .I http://www.oberhumer.com/opensource/lzo/
 .\"*********************************************************
 .SH COPYRIGHT
-Copyright (C) 2002\-2017 OpenVPN Technologies, Inc. This program is free software;
+Copyright (C) 2002\-2018 OpenVPN Inc This program is free software;
 you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 2
 as published by the Free Software Foundation.

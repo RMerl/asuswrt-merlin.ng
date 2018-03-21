@@ -133,10 +133,6 @@ keying-material-exporter
     Keying Material Exporter [RFC-5705] allow additional keying material to be
     derived from existing TLS channel.
 
-Mac OS X Keychain management client
-    Added contrib/keychain-mcd which allows to use Mac OS X keychain
-    certificates with OpenVPN.
-
 Android platform support
     Support for running on Android using Android's VPNService API has been added.
     See doc/android.txt for more details. This support is primarily used in
@@ -323,6 +319,68 @@ Maintainer-visible changes
   header combinations.  In most of these situations it is recommended to
   use -std=gnu99 in CFLAGS.  This is known to be needed when doing
   i386/i686 builds on RHEL5.
+
+
+Version 2.4.5
+=============
+This is primarily a maintenance release, with further improved OpenSSL 1.1
+integration, several minor bug fixes and other minor improvements.
+
+
+New features
+------------
+- The new option ``--tls-cert-profile`` can be used to restrict the set of
+  allowed crypto algorithms in TLS certificates in mbed TLS builds.  The
+  default profile is 'legacy' for now, which allows SHA1+, RSA-1024+ and any
+  elliptic curve certificates.  The default will be changed to the 'preferred'
+  profile in the future, which requires SHA2+, RSA-2048+ and any curve.
+
+- make CryptoAPI support (Windows) compatible with OpenSSL 1.1 builds
+
+- TLS v1.2 support for cryptoapicert (on Windows) -- RSA only
+
+- openvpnserv: Add support for multi-instances (to support multiple
+  parallel OpenVPN installations, like EduVPN and regular OpenVPN)
+
+- Use P_DATA_V2 for server->client packets too (better packet alignment)
+
+- improve management interface documentation
+
+- rework registry key handling for OpenVPN service, notably making most
+  registry values optional, falling back to reasonable defaults
+
+- accept IPv6 address for pushed "dhcp-option DNS ..."
+  (make OpenVPN 2 option compatible with OpenVPN 3 iOS and Android clients)
+
+
+Bug fixes
+---------
+- Fix --tls-version-min and --tls-version-max for OpenSSL 1.1+
+
+- Fix lots of compiler warnings (format string, type casts, ...)
+
+- Fix --redirect-gateway route installation on Windows systems that have
+  multiple interfaces into the same network (e.g. Wifi and wired LAN).
+
+- Fix IPv6 interface route cleanup on Windows
+
+- reload HTTP proxy credentials when moving to the next connection profile
+
+- Fix build with LibreSSL (multiple times)
+
+- Remove non-useful warning on pushed tun-ipv6 option.
+
+- fix building with MSVC due to incompatible C constructs
+
+- autoconf: Fix engine checks for openssl 1.1
+
+- lz4: Rebase compat-lz4 against upstream v1.7.5
+
+- lz4: Fix broken builds when pkg-config is not present but system library is
+
+- Fix '--bind ipv6only'
+
+- Allow learning iroutes with network made up of all 0s
 
 
 Version 2.4.4

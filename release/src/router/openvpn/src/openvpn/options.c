@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2017 OpenVPN Technologies, Inc. <sales@openvpn.net>
+ *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2008-2013 David Sommerseth <dazo@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -600,6 +600,8 @@ static const char usage_message[] =
 #endif
     "--tls-cipher l  : A list l of allowable TLS ciphers separated by : (optional).\n"
     "                : Use --show-tls to see a list of supported TLS ciphers.\n"
+    "--tls-cert-profile p : Set the allowed certificate crypto algorithm profile\n"
+    "                  (default=legacy).\n"
     "--tls-timeout n : Packet retransmit timeout on TLS control channel\n"
     "                  if no ACK from remote within n seconds (default=%d).\n"
     "--reneg-bytes n : Renegotiate data chan. key after n bytes sent and recvd.\n"
@@ -705,8 +707,7 @@ static const char usage_message[] =
     "                    which allow multiple addresses,\n"
     "                    --dhcp-option must be repeated.\n"
     "                    DOMAIN name : Set DNS suffix\n"
-    "                    DNS addr    : Set domain name server address(es) (IPv4)\n"
-    "                    DNS6 addr   : Set domain name server address(es) (IPv6)\n"
+    "                    DNS addr    : Set domain name server address(es) (IPv4 and IPv6)\n"
     "                    NTP         : Set NTP server address(es)\n"
     "                    NBDD        : Set NBDD server address(es)\n"
     "                    WINS addr   : Set WINS server address(es)\n"
@@ -874,6 +875,7 @@ init_options(struct options *o, const bool init_gc)
     o->renegotiate_seconds = 3600;
     o->handshake_window = 60;
     o->transition_window = 3600;
+    o->tls_cert_profile = NULL;
     o->ecdh_curve = NULL;
 #ifdef ENABLE_X509ALTUSERNAME
     o->x509_username_field = X509_USERNAME_FIELD_DEFAULT;
@@ -1231,6 +1233,20 @@ show_tuntap_options(const struct tuntap_options *o)
 #endif /* ifdef _WIN32 */
 
 #if defined(_WIN32) || defined(TARGET_ANDROID)
+static void
+dhcp_option_dns6_parse(const char *parm, struct in6_addr *dns6_list, int *len, int msglevel)
+{
+    struct in6_addr addr;
+    if (*len >= N_DHCP_ADDR)
+    {
+        msg(msglevel, "--dhcp-option DNS: maximum of %d IPv6 dns servers can be specified",
+            N_DHCP_ADDR);
+    }
+    else if (get_ipv6_addr(parm, &addr, NULL, msglevel))
+    {
+        dns6_list[(*len)++] = addr;
+    }
+}
 static void
 dhcp_option_address_parse(const char *name, const char *parm, in_addr_t *array, int *len, int msglevel)
 {
@@ -1700,7 +1716,7 @@ show_settings(const struct options *o)
 
 #ifdef ENABLE_CRYPTO
     SHOW_STR(shared_secret_file);
-    SHOW_INT(key_direction);
+    SHOW_PARM(key_direction, keydirection2ascii(o->key_direction, false, true), "%s");
     SHOW_STR(ciphername);
     SHOW_BOOL(ncp_enabled);
     SHOW_STR(ncp_ciphers);
@@ -1753,6 +1769,7 @@ show_settings(const struct options *o)
     SHOW_STR(cryptoapi_cert);
 #endif
     SHOW_STR(cipher_list);
+    SHOW_STR(tls_cert_profile);
     SHOW_STR(tls_verify);
     SHOW_STR(tls_export_cert);
     SHOW_INT(verify_x509_type);
@@ -2539,6 +2556,18 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
             "in the configuration file, which is the recommended approach.");
     }
 
+    const int tls_version_max =
+        (options->ssl_flags >> SSLF_TLS_VERSION_MAX_SHIFT)
+        & SSLF_TLS_VERSION_MAX_MASK;
+    const int tls_version_min =
+        (options->ssl_flags >> SSLF_TLS_VERSION_MIN_SHIFT)
+        & SSLF_TLS_VERSION_MIN_MASK;
+
+    if (tls_version_max > 0 && tls_version_max < tls_version_min)
+    {
+        msg(M_USAGE, "--tls-version-min bigger than --tls-version-max");
+    }
+
     if (options->tls_server || options->tls_client)
     {
 #ifdef ENABLE_PKCS11
@@ -2745,6 +2774,7 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
         MUST_BE_UNDEF(pkcs12_file);
 #endif
         MUST_BE_UNDEF(cipher_list);
+        MUST_BE_UNDEF(tls_cert_profile);
         MUST_BE_UNDEF(tls_verify);
         MUST_BE_UNDEF(tls_export_cert);
         MUST_BE_UNDEF(verify_x509_name);
@@ -3051,24 +3081,6 @@ options_postprocess_mutate(struct options *o)
         options_postprocess_http_proxy_override(o);
     }
 #endif
-
-#ifdef ENABLE_CRYPTOAPI
-    if (o->cryptoapi_cert)
-    {
-        const int tls_version_max =
-            (o->ssl_flags >> SSLF_TLS_VERSION_MAX_SHIFT)
-            &SSLF_TLS_VERSION_MAX_MASK;
-
-        if (tls_version_max == TLS_VER_UNSPEC || tls_version_max > TLS_VER_1_1)
-        {
-            msg(M_WARN, "Warning: cryptapicert used, setting maximum TLS "
-                "version to 1.1.");
-            o->ssl_flags &= ~(SSLF_TLS_VERSION_MAX_MASK
-                              <<SSLF_TLS_VERSION_MAX_SHIFT);
-            o->ssl_flags |= (TLS_VER_1_1 << SSLF_TLS_VERSION_MAX_SHIFT);
-        }
-    }
-#endif /* ENABLE_CRYPTOAPI */
 
 #if P2MP
     /*
@@ -3624,7 +3636,7 @@ options_string(const struct options *o,
      * Key direction
      */
     {
-        const char *kd = keydirection2ascii(o->key_direction, remote);
+        const char *kd = keydirection2ascii(o->key_direction, remote, false);
         if (kd)
         {
             buf_printf(&out, ",keydir %s", kd);
@@ -4171,7 +4183,7 @@ usage_version(void)
     show_windows_version( M_INFO|M_NOPREFIX );
 #endif
     msg(M_INFO|M_NOPREFIX, "Originally developed by James Yonan");
-    msg(M_INFO|M_NOPREFIX, "Copyright (C) 2002-2017 OpenVPN Technologies, Inc. <sales@openvpn.net>");
+    msg(M_INFO|M_NOPREFIX, "Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>");
 #ifndef ENABLE_SMALL
 #ifdef CONFIGURE_DEFINES
     msg(M_INFO|M_NOPREFIX, "Compile time defines: %s", CONFIGURE_DEFINES);
@@ -4586,7 +4598,7 @@ read_config_file(struct options *options,
                 ++line_num;
                 if (strlen(line) == OPTION_LINE_SIZE)
                 {
-                    msg(msglevel, "In %s:%d: Maximum optione line length (%d) exceeded, line starts with %s",
+                    msg(msglevel, "In %s:%d: Maximum option line length (%d) exceeded, line starts with %s",
                         file, line_num, OPTION_LINE_SIZE, line);
                 }
 
@@ -4845,11 +4857,13 @@ verify_permission(const char *name,
 #ifndef ENABLE_SMALL
     /* Check if this options is allowed in connection block,
      * but we are currently not in a connection block
+     * unless this is a pushed option.
      * Parsing a connection block uses a temporary options struct without
      * connection_list
      */
 
-    if ((type & OPT_P_CONNECTION) && options->connection_list)
+    if ((type & OPT_P_CONNECTION) && options->connection_list
+        && !(allowed & OPT_P_PULL_MODE))
     {
         if (file)
         {
@@ -5252,8 +5266,10 @@ add_option(struct options *options,
     }
     else if (streq(p[0], "tun-ipv6") && !p[1])
     {
-        VERIFY_PERMISSION(OPT_P_UP);
-        msg(M_WARN, "Note: option tun-ipv6 is ignored because modern operating systems do not need special IPv6 tun handling anymore.");
+        if (!pull_mode)
+        {
+            msg(M_WARN, "Note: option tun-ipv6 is ignored because modern operating systems do not need special IPv6 tun handling anymore.");
+        }
     }
 #ifdef ENABLE_IPROUTE
     else if (streq(p[0], "iproute") && p[1] && !p[2])
@@ -5902,7 +5918,7 @@ add_option(struct options *options,
         VERIFY_PERMISSION(OPT_P_GENERAL|OPT_P_CONNECTION);
         options->ce.remote_port = p[1];
     }
-    else if (streq(p[0], "bind") && !p[1])
+    else if (streq(p[0], "bind") && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL|OPT_P_CONNECTION);
         options->ce.bind_defined = true;
@@ -7138,6 +7154,7 @@ add_option(struct options *options,
     {
         struct tuntap_options *o = &options->tuntap_options;
         VERIFY_PERMISSION(OPT_P_IPWIN32);
+        bool ipv6dns = false;
 
         if (streq(p[1], "DOMAIN") && p[2])
         {
@@ -7158,22 +7175,17 @@ add_option(struct options *options,
             }
             o->netbios_node_type = t;
         }
-        else if (streq(p[1], "DNS") && p[2])
+        else if ((streq(p[1], "DNS") || streq(p[1], "DNS6")) && p[2] && (!strstr(p[2], ":") || ipv6_addr_safe(p[2])))
         {
-            dhcp_option_address_parse("DNS", p[2], o->dns, &o->dns_len, msglevel);
-        }
-        else if (streq(p[1], "DNS6") && p[2] && ipv6_addr_safe(p[2]))
-        {
-            struct in6_addr addr;
-            foreign_option(options, p, 3, es);
-            if (o->dns6_len >= N_DHCP_ADDR)
+            if (strstr(p[2], ":"))
             {
-                msg(msglevel, "--dhcp-option DNS6: maximum of %d dns servers can be specified",
-                    N_DHCP_ADDR);
+                ipv6dns=true;
+                foreign_option(options, p, 3, es);
+                dhcp_option_dns6_parse(p[2], o->dns6, &o->dns6_len, msglevel);
             }
-            else if (get_ipv6_addr(p[2], &addr, NULL, msglevel))
+            else
             {
-                o->dns6[o->dns6_len++] = addr;
+                dhcp_option_address_parse("DNS", p[2], o->dns, &o->dns_len, msglevel);
             }
         }
         else if (streq(p[1], "WINS") && p[2])
@@ -7201,7 +7213,7 @@ add_option(struct options *options,
         /* flag that we have options to give to the TAP driver's DHCPv4 server
          *  - skipped for "DNS6", as that's not a DHCPv4 option
          */
-        if (!streq(p[1], "DNS6"))
+        if (!ipv6dns)
         {
             o->dhcp_options = true;
         }
@@ -7847,6 +7859,11 @@ add_option(struct options *options,
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
         options->cipher_list = p[1];
+    }
+    else if (streq(p[0], "tls-cert-profile") && p[1] && !p[2])
+    {
+        VERIFY_PERMISSION(OPT_P_GENERAL);
+        options->tls_cert_profile = p[1];
     }
     else if (streq(p[0], "crl-verify") && p[1] && ((p[2] && streq(p[2], "dir"))
                                                    || (p[2] && streq(p[1], INLINE_FILE_TAG) ) || !p[2]) && !p[3])

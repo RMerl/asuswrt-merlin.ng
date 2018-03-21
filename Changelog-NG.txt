@@ -13,6 +13,11 @@ General changes in the 384/NG branch vs 380.xx:
      lists of settings might no longer be possible on 384.xx.
 
 
+384.5 (xx-xxx-2018)
+   - CHANGED: Updated OpenVPN to 2.4.5.
+   - CHANGED: Updated Dropbear to 2018.76.
+
+
 384.4 (16-Mar-2018)
    - NEW: Merged with GPL 384_20379 (with some binary components
           from 382_50010 and 384_20308 depending on models)

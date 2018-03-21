@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 #define DESC_DEF_ONLY
@@ -18,7 +16,7 @@
 #include <gmp.h>
 
 static int init(void **a)
-{ 
+{
    LTC_ARGCHK(a != NULL);
 
    *a = XCALLOC(1, sizeof(__mpz_struct));
@@ -61,7 +59,7 @@ static int init_copy(void **a, void *b)
 }
 
 /* ---- trivial ---- */
-static int set_int(void *a, unsigned long b)
+static int set_int(void *a, ltc_mp_digit b)
 {
    LTC_ARGCHK(a != NULL);
    mpz_set_ui(((__mpz_struct *)a), b);
@@ -74,7 +72,7 @@ static unsigned long get_int(void *a)
    return mpz_get_ui(a);
 }
 
-static unsigned long get_digit(void *a, int n)
+static ltc_mp_digit get_digit(void *a, int n)
 {
    LTC_ARGCHK(a != NULL);
    return mpz_getlimbn(a, n);
@@ -85,7 +83,7 @@ static int get_digit_count(void *a)
    LTC_ARGCHK(a != NULL);
    return mpz_size(a);
 }
-   
+
 static int compare(void *a, void *b)
 {
    int ret;
@@ -101,7 +99,7 @@ static int compare(void *a, void *b)
    }
 }
 
-static int compare_d(void *a, unsigned long b)
+static int compare_d(void *a, ltc_mp_digit b)
 {
    int ret;
    LTC_ARGCHK(a != NULL);
@@ -138,13 +136,49 @@ static int twoexpt(void *a, int n)
 
 /* ---- conversions ---- */
 
+static const char rmap[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/";
+
 /* read ascii string */
 static int read_radix(void *a, const char *b, int radix)
 {
+   int ret;
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(b != NULL);
-   mpz_set_str(a, b, radix);
-   return CRYPT_OK;
+   if (radix == 64) {
+      /* Sadly, GMP only supports radixes up to 62, but we need 64.
+       * So, although this is not the most elegant or efficient way,
+       * let's just convert the base 64 string (6 bits per digit) to
+       * an octal string (3 bits per digit) that's twice as long. */
+      char c, *tmp, *q;
+      const char *p;
+      int i;
+      tmp = XMALLOC (1 + 2 * strlen (b));
+      if (tmp == NULL) {
+         return CRYPT_MEM;
+      }
+      p = b;
+      q = tmp;
+      while ((c = *p++) != 0) {
+         for (i = 0; i < 64; i++) {
+            if (c == rmap[i])
+               break;
+         }
+         if (i == 64) {
+            XFREE (tmp);
+            /* printf ("c = '%c'\n", c); */
+            return CRYPT_ERROR;
+         }
+         *q++ = '0' + (i / 8);
+         *q++ = '0' + (i % 8);
+      }
+      *q = 0;
+      ret = mpz_set_str(a, tmp, 8);
+      /* printf ("ret = %d for '%s'\n", ret, tmp); */
+      XFREE (tmp);
+   } else {
+      ret = mpz_set_str(a, b, radix);
+   }
+   return (ret == 0 ? CRYPT_OK : CRYPT_ERROR);
 }
 
 /* write one */
@@ -152,6 +186,11 @@ static int write_radix(void *a, char *b, int radix)
 {
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(b != NULL);
+   if (radix >= 11 && radix <= 36)
+      /* If radix is positive, GMP uses lowercase, and if negative, uppercase.
+       * We want it to use uppercase, to match the test vectors (presumably
+       * generated with LibTomMath). */
+      radix = -radix;
    mpz_get_str(b, radix, a);
    return CRYPT_OK;
 }
@@ -193,8 +232,8 @@ static int add(void *a, void *b, void *c)
    mpz_add(c, a, b);
    return CRYPT_OK;
 }
-  
-static int addi(void *a, unsigned long b, void *c)
+
+static int addi(void *a, ltc_mp_digit b, void *c)
 {
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(c != NULL);
@@ -212,7 +251,7 @@ static int sub(void *a, void *b, void *c)
    return CRYPT_OK;
 }
 
-static int subi(void *a, unsigned long b, void *c)
+static int subi(void *a, ltc_mp_digit b, void *c)
 {
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(c != NULL);
@@ -230,7 +269,7 @@ static int mul(void *a, void *b, void *c)
    return CRYPT_OK;
 }
 
-static int muli(void *a, unsigned long b, void *c)
+static int muli(void *a, ltc_mp_digit b, void *c)
 {
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(c != NULL);
@@ -276,14 +315,14 @@ static int div_2(void *a, void *b)
 }
 
 /* modi */
-static int modi(void *a, unsigned long b, unsigned long *c)
+static int modi(void *a, ltc_mp_digit b, ltc_mp_digit *c)
 {
    LTC_ARGCHK(a != NULL);
    LTC_ARGCHK(c != NULL);
-   
+
    *c = mpz_fdiv_ui(a, b);
    return CRYPT_OK;
-}  
+}
 
 /* gcd */
 static int gcd(void *a, void *b, void *c)
@@ -302,6 +341,28 @@ static int lcm(void *a, void *b, void *c)
    LTC_ARGCHK(b != NULL);
    LTC_ARGCHK(c != NULL);
    mpz_lcm(c, a, b);
+   return CRYPT_OK;
+}
+
+static int addmod(void *a, void *b, void *c, void *d)
+{
+   LTC_ARGCHK(a != NULL);
+   LTC_ARGCHK(b != NULL);
+   LTC_ARGCHK(c != NULL);
+   LTC_ARGCHK(d != NULL);
+   mpz_add(d, a, b);
+   mpz_mod(d, d, c);
+   return CRYPT_OK;
+}
+
+static int submod(void *a, void *b, void *c, void *d)
+{
+   LTC_ARGCHK(a != NULL);
+   LTC_ARGCHK(b != NULL);
+   LTC_ARGCHK(c != NULL);
+   LTC_ARGCHK(d != NULL);
+   mpz_sub(d, a, b);
+   mpz_mod(d, d, c);
    return CRYPT_OK;
 }
 
@@ -367,6 +428,7 @@ static int montgomery_reduce(void *a, void *b, void *c)
 /* clean up */
 static void montgomery_deinit(void *a)
 {
+  LTC_UNUSED_PARAM(a);
 }
 
 static int exptmod(void *a, void *b, void *c, void *d)
@@ -377,13 +439,23 @@ static int exptmod(void *a, void *b, void *c, void *d)
    LTC_ARGCHK(d != NULL);
    mpz_powm(d, a, b, c);
    return CRYPT_OK;
-}   
+}
 
-static int isprime(void *a, int *b)
+static int isprime(void *a, int b, int *c)
 {
    LTC_ARGCHK(a != NULL);
-   LTC_ARGCHK(b != NULL);
-   *b = mpz_probab_prime_p(a, 8) > 0 ? LTC_MP_YES : LTC_MP_NO;
+   LTC_ARGCHK(c != NULL);
+   if (b == 0) {
+       b = LTC_MILLER_RABIN_REPS;
+   } /* if */
+   *c = mpz_probab_prime_p(a, b) > 0 ? LTC_MP_YES : LTC_MP_NO;
+   return CRYPT_OK;
+}
+
+static int set_rand(void *a, int size)
+{
+   LTC_ARGCHK(a != NULL);
+   mpz_random(a, size);
    return CRYPT_OK;
 }
 
@@ -439,40 +511,44 @@ const ltc_math_descriptor gmp_desc = {
    &exptmod,
    &isprime,
 
-#ifdef MECC
-#ifdef MECC_FP
+#ifdef LTC_MECC
+#ifdef LTC_MECC_FP
    &ltc_ecc_fp_mulmod,
 #else
    &ltc_ecc_mulmod,
-#endif /* MECC_FP */
+#endif /* LTC_MECC_FP */
    &ltc_ecc_projective_add_point,
    &ltc_ecc_projective_dbl_point,
    &ltc_ecc_map,
 #ifdef LTC_ECC_SHAMIR
-#ifdef MECC_FP
+#ifdef LTC_MECC_FP
    &ltc_ecc_fp_mul2add,
 #else
    &ltc_ecc_mul2add,
-#endif /* MECC_FP */
+#endif /* LTC_MECC_FP */
 #else
    NULL,
 #endif /* LTC_ECC_SHAMIR */
 #else
-   NULL, NULL, NULL, NULL, NULL
-#endif /* MECC */
+   NULL, NULL, NULL, NULL, NULL,
+#endif /* LTC_MECC */
 
-#ifdef MRSA
+#ifdef LTC_MRSA
    &rsa_make_key,
    &rsa_exptmod,
 #else
-   NULL, NULL
+   NULL, NULL,
 #endif
-   
+   &addmod,
+   &submod,
+
+   &set_rand,
+
 };
 
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/math/gmp_desc.c,v $ */
-/* $Revision: 1.14 $ */
-/* $Date: 2006/12/03 00:39:56 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

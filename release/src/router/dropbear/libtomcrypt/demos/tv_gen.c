@@ -1,116 +1,12 @@
+/* LibTomCrypt, modular cryptographic library -- Tom St Denis
+ *
+ * LibTomCrypt is a library that provides various cryptographic
+ * algorithms in a highly modular and flexible manner.
+ *
+ * The library is free for all purposes without any express
+ * guarantee it works.
+ */
 #include <tomcrypt.h>
-
-void reg_algs(void)
-{
-  int err;
-
-#ifdef RIJNDAEL
-  register_cipher (&aes_desc);
-#endif
-#ifdef BLOWFISH
-  register_cipher (&blowfish_desc);
-#endif
-#ifdef XTEA
-  register_cipher (&xtea_desc);
-#endif
-#ifdef RC5
-  register_cipher (&rc5_desc);
-#endif
-#ifdef RC6
-  register_cipher (&rc6_desc);
-#endif
-#ifdef SAFERP
-  register_cipher (&saferp_desc);
-#endif
-#ifdef TWOFISH
-  register_cipher (&twofish_desc);
-#endif
-#ifdef SAFER
-  register_cipher (&safer_k64_desc);
-  register_cipher (&safer_sk64_desc);
-  register_cipher (&safer_k128_desc);
-  register_cipher (&safer_sk128_desc);
-#endif
-#ifdef RC2
-  register_cipher (&rc2_desc);
-#endif
-#ifdef DES
-  register_cipher (&des_desc);
-  register_cipher (&des3_desc);
-#endif
-#ifdef CAST5
-  register_cipher (&cast5_desc);
-#endif
-#ifdef NOEKEON
-  register_cipher (&noekeon_desc);
-#endif
-#ifdef SKIPJACK
-  register_cipher (&skipjack_desc);
-#endif
-#ifdef ANUBIS
-  register_cipher (&anubis_desc);
-#endif
-#ifdef KHAZAD
-  register_cipher (&khazad_desc);
-#endif
-
-#ifdef TIGER
-  register_hash (&tiger_desc);
-#endif
-#ifdef MD2
-  register_hash (&md2_desc);
-#endif
-#ifdef MD4
-  register_hash (&md4_desc);
-#endif
-#ifdef MD5
-  register_hash (&md5_desc);
-#endif
-#ifdef SHA1
-  register_hash (&sha1_desc);
-#endif
-#ifdef SHA224
-  register_hash (&sha224_desc);
-#endif
-#ifdef SHA256
-  register_hash (&sha256_desc);
-#endif
-#ifdef SHA384
-  register_hash (&sha384_desc);
-#endif
-#ifdef SHA512
-  register_hash (&sha512_desc);
-#endif
-#ifdef RIPEMD128
-  register_hash (&rmd128_desc);
-#endif
-#ifdef RIPEMD160
-  register_hash (&rmd160_desc);
-#endif
-#ifdef WHIRLPOOL
-  register_hash (&whirlpool_desc);
-#endif
-#ifdef CHC_HASH
-  register_hash(&chc_desc);
-  if ((err = chc_register(register_cipher(&aes_desc))) != CRYPT_OK) {
-     printf("chc_register error: %s\n", error_to_string(err));
-     exit(EXIT_FAILURE);
-  }
-#endif
-
-#ifdef USE_LTM
-   ltc_mp = ltm_desc;
-#elif defined(USE_TFM)
-   ltc_mp = tfm_desc;
-#elif defined(USE_GMP)
-   ltc_mp = gmp_desc;
-#else
-   extern ltc_math_descriptor EXT_MATH_LIB;
-   ltc_mp = EXT_MATH_LIB;
-#endif
-
-
-}
 
 void hash_gen(void)
 {
@@ -118,12 +14,12 @@ void hash_gen(void)
    unsigned long outlen, x, y, z;
    FILE *out;
    int   err;
-   
+
    out = fopen("hash_tv.txt", "w");
    if (out == NULL) {
       perror("can't open hash_tv");
    }
-   
+
    fprintf(out, "Hash Test Vectors:\n\nThese are the hashes of nn bytes '00 01 02 03 .. (nn-1)'\n\n");
    for (x = 0; hash_descriptor[x].name != NULL; x++) {
       buf = XMALLOC(2 * hash_descriptor[x].blocksize + 1);
@@ -160,16 +56,16 @@ void cipher_gen(void)
    int err, kl, lastkl;
    FILE *out;
    symmetric_key skey;
-   
+
    out = fopen("cipher_tv.txt", "w");
-   
-   fprintf(out, 
+
+   fprintf(out,
 "Cipher Test Vectors\n\nThese are test encryptions with key of nn bytes '00 01 02 03 .. (nn-1)' and original PT of the same style.\n"
 "The output of step N is used as the key and plaintext for step N+1 (key bytes repeated as required to fill the key)\n\n");
-                   
+
    for (x = 0; cipher_descriptor[x].name != NULL; x++) {
       fprintf(out, "Cipher: %s\n", cipher_descriptor[x].name);
-      
+
       /* three modes, smallest, medium, large keys */
       lastkl = 10000;
       for (y = 0; y < 3; y++) {
@@ -199,7 +95,7 @@ void cipher_gen(void)
             printf("setup error: %s\n", error_to_string(err));
             exit(EXIT_FAILURE);
          }
-         
+
          for (z = 0; (int)z < cipher_descriptor[x].block_length; z++) {
             pt[z] = (unsigned char)z;
          }
@@ -226,7 +122,7 @@ void cipher_gen(void)
      fprintf(out, "\n");
   }
   fclose(out);
-}  
+}
 
 void hmac_gen(void)
 {
@@ -234,17 +130,17 @@ void hmac_gen(void)
    int x, y, z, err;
    FILE *out;
    unsigned long len;
-  
+
    out = fopen("hmac_tv.txt", "w");
 
-   fprintf(out, 
+   fprintf(out,
 "HMAC Tests.  In these tests messages of N bytes long (00,01,02,...,NN-1) are HMACed.  The initial key is\n"
 "of the same format (the same length as the HASH output size).  The HMAC key in step N+1 is the HMAC output of\n"
 "step N.\n\n");
 
    for (x = 0; hash_descriptor[x].name != NULL; x++) {
       fprintf(out, "HMAC-%s\n", hash_descriptor[x].name);
-      
+
       /* initial key */
       for (y = 0; y < (int)hash_descriptor[x].hashsize; y++) {
           key[y] = (y&255);
@@ -255,7 +151,7 @@ void hmac_gen(void)
          perror("Can't malloc memory");
          exit(EXIT_FAILURE);
       }
-      
+
       for (y = 0; y <= (int)(hash_descriptor[x].blocksize * 2); y++) {
          for (z = 0; z < y; z++) {
             input[z] = (unsigned char)(z & 255);
@@ -279,17 +175,18 @@ void hmac_gen(void)
    }
    fclose(out);
 }
-   
+
 void omac_gen(void)
 {
+#ifdef LTC_OMAC
    unsigned char key[MAXBLOCKSIZE], output[MAXBLOCKSIZE], input[MAXBLOCKSIZE*2+2];
    int err, x, y, z, kl;
    FILE *out;
    unsigned long len;
-  
+
    out = fopen("omac_tv.txt", "w");
 
-   fprintf(out, 
+   fprintf(out,
 "OMAC Tests.  In these tests messages of N bytes long (00,01,02,...,NN-1) are OMAC'ed.  The initial key is\n"
 "of the same format (length specified per cipher).  The OMAC key in step N+1 is the OMAC output of\n"
 "step N (repeated as required to fill the array).\n\n");
@@ -304,12 +201,12 @@ void omac_gen(void)
          kl = cipher_descriptor[x].max_key_length;
       }
       fprintf(out, "OMAC-%s (%d byte key)\n", cipher_descriptor[x].name, kl);
-      
+
       /* initial key/block */
       for (y = 0; y < kl; y++) {
           key[y] = (y & 255);
       }
-      
+
       for (y = 0; y <= (int)(cipher_descriptor[x].block_length*2); y++) {
          for (z = 0; z < y; z++) {
             input[z] = (unsigned char)(z & 255);
@@ -333,20 +230,22 @@ void omac_gen(void)
       fprintf(out, "\n");
    }
    fclose(out);
+#endif
 }
 
 void pmac_gen(void)
 {
+#ifdef LTC_PMAC
    unsigned char key[MAXBLOCKSIZE], output[MAXBLOCKSIZE], input[MAXBLOCKSIZE*2+2];
    int err, x, y, z, kl;
    FILE *out;
    unsigned long len;
-  
+
    out = fopen("pmac_tv.txt", "w");
 
-   fprintf(out, 
-"PMAC Tests.  In these tests messages of N bytes long (00,01,02,...,NN-1) are OMAC'ed.  The initial key is\n"
-"of the same format (length specified per cipher).  The OMAC key in step N+1 is the OMAC output of\n"
+   fprintf(out,
+"PMAC Tests.  In these tests messages of N bytes long (00,01,02,...,NN-1) are PMAC'ed.  The initial key is\n"
+"of the same format (length specified per cipher).  The PMAC key in step N+1 is the PMAC output of\n"
 "step N (repeated as required to fill the array).\n\n");
 
    for (x = 0; cipher_descriptor[x].name != NULL; x++) {
@@ -359,12 +258,12 @@ void pmac_gen(void)
          kl = cipher_descriptor[x].max_key_length;
       }
       fprintf(out, "PMAC-%s (%d byte key)\n", cipher_descriptor[x].name, kl);
-      
+
       /* initial key/block */
       for (y = 0; y < kl; y++) {
           key[y] = (y & 255);
       }
-      
+
       for (y = 0; y <= (int)(cipher_descriptor[x].block_length*2); y++) {
          for (z = 0; z < y; z++) {
             input[z] = (unsigned char)(z & 255);
@@ -388,13 +287,15 @@ void pmac_gen(void)
       fprintf(out, "\n");
    }
    fclose(out);
+#endif
 }
 
 void eax_gen(void)
 {
+#ifdef LTC_EAX_MODE
    int err, kl, x, y1, z;
    FILE *out;
-   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2], header[MAXBLOCKSIZE*2], 
+   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2], header[MAXBLOCKSIZE*2],
                  plaintext[MAXBLOCKSIZE*2], tag[MAXBLOCKSIZE];
    unsigned long len;
 
@@ -418,7 +319,7 @@ void eax_gen(void)
       for (z = 0; z < kl; z++) {
           key[z] = (z & 255);
       }
-      
+
       for (y1 = 0; y1 <= (int)(cipher_descriptor[x].block_length*2); y1++){
          for (z = 0; z < y1; z++) {
             plaintext[z] = (unsigned char)(z & 255);
@@ -448,13 +349,15 @@ void eax_gen(void)
       fprintf(out, "\n");
    }
    fclose(out);
+#endif
 }
 
 void ocb_gen(void)
 {
+#ifdef LTC_OCB_MODE
    int err, kl, x, y1, z;
    FILE *out;
-   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2], 
+   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2],
                  plaintext[MAXBLOCKSIZE*2], tag[MAXBLOCKSIZE];
    unsigned long len;
 
@@ -483,7 +386,7 @@ void ocb_gen(void)
       for (z = 0; z < cipher_descriptor[x].block_length; z++) {
           nonce[z] = z;
       }
-      
+
       for (y1 = 0; y1 <= (int)(cipher_descriptor[x].block_length*2); y1++){
          for (z = 0; z < y1; z++) {
             plaintext[z] = (unsigned char)(z & 255);
@@ -511,14 +414,81 @@ void ocb_gen(void)
       fprintf(out, "\n");
    }
    fclose(out);
+#endif
 }
 
+void ocb3_gen(void)
+{
+#ifdef LTC_OCB3_MODE
+   int err, kl, x, y1, z, noncelen;
+   FILE *out;
+   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2],
+                 plaintext[MAXBLOCKSIZE*2], tag[MAXBLOCKSIZE];
+   unsigned long len;
+
+   out = fopen("ocb3_tv.txt", "w");
+   fprintf(out, "OCB3 Test Vectors.  Uses the 00010203...NN-1 pattern for nonce/plaintext/key.  The outputs\n"
+                "are of the form ciphertext,tag for a given NN.  The key for step N>1 is the tag of the previous\n"
+                "step repeated sufficiently.  The nonce is fixed throughout. AAD is fixed to 3 bytes (ASCII) 'AAD'.\n\n");
+
+   for (x = 0; cipher_descriptor[x].name != NULL; x++) {
+      kl = cipher_descriptor[x].block_length;
+
+      /* skip ciphers which do not have 64 or 128 bit block sizes */
+      if (kl != 16) continue;
+
+      if (cipher_descriptor[x].keysize(&kl) != CRYPT_OK) {
+         kl = cipher_descriptor[x].max_key_length;
+      }
+      fprintf(out, "OCB3-%s (%d byte key)\n", cipher_descriptor[x].name, kl);
+
+      /* the key */
+      for (z = 0; z < kl; z++) {
+          key[z] = (z & 255);
+      }
+
+      /* fixed nonce */
+      noncelen = MIN(15, cipher_descriptor[x].block_length);
+      for (z = 0; z < noncelen; z++) {
+          nonce[z] = z;
+      }
+
+      for (y1 = 0; y1 <= (int)(cipher_descriptor[x].block_length*2); y1++){
+         for (z = 0; z < y1; z++) {
+            plaintext[z] = (unsigned char)(z & 255);
+         }
+         len = 16;
+         if ((err = ocb3_encrypt_authenticate_memory(x, key, kl, nonce, noncelen, (unsigned char*)"AAD", 3, plaintext, y1, plaintext, tag, &len)) != CRYPT_OK) {
+            printf("Error OCB3'ing: %s\n", error_to_string(err));
+            exit(EXIT_FAILURE);
+         }
+         fprintf(out, "%3d: ", y1);
+         for (z = 0; z < y1; z++) {
+            fprintf(out, "%02X", plaintext[z]);
+         }
+         fprintf(out, ", ");
+         for (z = 0; z <(int)len; z++) {
+            fprintf(out, "%02X", tag[z]);
+         }
+         fprintf(out, "\n");
+
+         /* forward the key */
+         for (z = 0; z < kl; z++) {
+             key[z] = tag[z % len];
+         }
+      }
+      fprintf(out, "\n");
+   }
+   fclose(out);
+#endif
+}
 
 void ccm_gen(void)
 {
+#ifdef LTC_CCM_MODE
    int err, kl, x, y1, z;
    FILE *out;
-   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2], 
+   unsigned char key[MAXBLOCKSIZE], nonce[MAXBLOCKSIZE*2],
                  plaintext[MAXBLOCKSIZE*2], tag[MAXBLOCKSIZE];
    unsigned long len;
 
@@ -547,7 +517,7 @@ void ccm_gen(void)
       for (z = 0; z < cipher_descriptor[x].block_length; z++) {
           nonce[z] = z;
       }
-      
+
       for (y1 = 0; y1 <= (int)(cipher_descriptor[x].block_length*2); y1++){
          for (z = 0; z < y1; z++) {
             plaintext[z] = (unsigned char)(z & 255);
@@ -555,6 +525,10 @@ void ccm_gen(void)
          len = sizeof(tag);
          if ((err = ccm_memory(x, key, kl, NULL, nonce, 13, plaintext, y1, plaintext, y1, plaintext, tag, &len, CCM_ENCRYPT)) != CRYPT_OK) {
             printf("Error CCM'ing: %s\n", error_to_string(err));
+            exit(EXIT_FAILURE);
+         }
+         if (len == 0) {
+            printf("Error CCM'ing: zero length\n");
             exit(EXIT_FAILURE);
          }
          fprintf(out, "%3d: ", y1);
@@ -575,10 +549,12 @@ void ccm_gen(void)
       fprintf(out, "\n");
    }
    fclose(out);
+#endif
 }
 
 void gcm_gen(void)
 {
+#ifdef LTC_GCM_MODE
    int err, kl, x, y1, z;
    FILE *out;
    unsigned char key[MAXBLOCKSIZE], plaintext[MAXBLOCKSIZE*2], tag[MAXBLOCKSIZE];
@@ -604,14 +580,18 @@ void gcm_gen(void)
       for (z = 0; z < kl; z++) {
           key[z] = (z & 255);
       }
-     
-      for (y1 = 0; y1 <= (int)(cipher_descriptor[x].block_length*2); y1++){
+
+      for (y1 = 1; y1 <= (int)(cipher_descriptor[x].block_length*2); y1++){
          for (z = 0; z < y1; z++) {
             plaintext[z] = (unsigned char)(z & 255);
          }
          len = sizeof(tag);
          if ((err = gcm_memory(x, key, kl, plaintext, y1, plaintext, y1, plaintext, y1, plaintext, tag, &len, GCM_ENCRYPT)) != CRYPT_OK) {
             printf("Error GCM'ing: %s\n", error_to_string(err));
+            exit(EXIT_FAILURE);
+         }
+         if (len == 0) {
+            printf("Error GCM'ing: zero length\n");
             exit(EXIT_FAILURE);
          }
          fprintf(out, "%3d: ", y1);
@@ -632,19 +612,20 @@ void gcm_gen(void)
       fprintf(out, "\n");
    }
    fclose(out);
+#endif
 }
 
 void base64_gen(void)
 {
    FILE *out;
-   unsigned char dst[256], src[32];
-   unsigned long x, y, len;
-   
+   unsigned char dst[256], src[32], ch;
+   unsigned long x, len;
+
    out = fopen("base64_tv.txt", "w");
    fprintf(out, "Base64 vectors.  These are the base64 encodings of the strings 00,01,02...NN-1\n\n");
    for (x = 0; x <= 32; x++) {
-       for (y = 0; y < x; y++) {
-           src[y] = y;
+       for (ch = 0; ch < x; ch++) {
+           src[ch] = ch;
        }
        len = sizeof(dst);
        base64_encode(src, x, dst, &len);
@@ -681,7 +662,7 @@ void ecc_gen(void)
         mp_read_radix(modulus, (char *)ltc_ecc_sets[x].prime, 16);
         mp_read_radix(G->x,    (char *)ltc_ecc_sets[x].Gx,    16);
         mp_read_radix(G->y,    (char *)ltc_ecc_sets[x].Gy,    16);
-        mp_set(G->z, 1);  
+        mp_set(G->z, 1);
 
         while (mp_cmp(k, order) == LTC_MP_LT) {
             ltc_mp.ecc_ptmul(k, G, R, modulus, 1);
@@ -699,11 +680,12 @@ void ecc_gen(void)
 
 void lrw_gen(void)
 {
+#ifdef LTC_LRW_MODE
    FILE *out;
    unsigned char tweak[16], key[16], iv[16], buf[1024];
    int x, y, err;
    symmetric_LRW lrw;
-   
+
    /* initialize default key and tweak */
    for (x = 0; x < 16; x++) {
       tweak[x] = key[x] = iv[x] = x;
@@ -760,27 +742,61 @@ void lrw_gen(void)
        lrw_done(&lrw);
    }
    fclose(out);
-}      
+#endif
+}
 
 int main(void)
 {
-   reg_algs();
+   register_all_ciphers();
+   register_all_hashes();
+   register_all_prngs();
+#ifdef USE_LTM
+   ltc_mp = ltm_desc;
+#elif defined(USE_TFM)
+   ltc_mp = tfm_desc;
+#elif defined(USE_GMP)
+   ltc_mp = gmp_desc;
+#elif defined(EXT_MATH_LIB)
+   extern ltc_math_descriptor EXT_MATH_LIB;
+   ltc_mp = EXT_MATH_LIB;
+#else
+   fprintf(stderr, "No MPI provider available\n");
+   exit(EXIT_FAILURE);
+#endif
+
    printf("Generating hash   vectors..."); fflush(stdout); hash_gen();   printf("done\n");
    printf("Generating cipher vectors..."); fflush(stdout); cipher_gen(); printf("done\n");
    printf("Generating HMAC   vectors..."); fflush(stdout); hmac_gen();   printf("done\n");
+#ifdef LTC_OMAC
    printf("Generating OMAC   vectors..."); fflush(stdout); omac_gen();   printf("done\n");
+#endif
+#ifdef LTC_PMAC
    printf("Generating PMAC   vectors..."); fflush(stdout); pmac_gen();   printf("done\n");
+#endif
+#ifdef LTC_EAX_MODE
    printf("Generating EAX    vectors..."); fflush(stdout); eax_gen();    printf("done\n");
+#endif
+#ifdef LTC_OCB_MODE
    printf("Generating OCB    vectors..."); fflush(stdout); ocb_gen();    printf("done\n");
+#endif
+#ifdef LTC_OCB3_MODE
+   printf("Generating OCB3   vectors..."); fflush(stdout); ocb3_gen();   printf("done\n");
+#endif
+#ifdef LTC_CCM_MODE
    printf("Generating CCM    vectors..."); fflush(stdout); ccm_gen();    printf("done\n");
+#endif
+#ifdef LTC_GCM_MODE
    printf("Generating GCM    vectors..."); fflush(stdout); gcm_gen();    printf("done\n");
+#endif
    printf("Generating BASE64 vectors..."); fflush(stdout); base64_gen(); printf("done\n");
    printf("Generating MATH   vectors..."); fflush(stdout); math_gen();   printf("done\n");
    printf("Generating ECC    vectors..."); fflush(stdout); ecc_gen();    printf("done\n");
+#ifdef LTC_LRW_MODE
    printf("Generating LRW    vectors..."); fflush(stdout); lrw_gen();    printf("done\n");
+#endif
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/demos/tv_gen.c,v $ */
-/* $Revision: 1.15 $ */
-/* $Date: 2006/06/09 22:10:27 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

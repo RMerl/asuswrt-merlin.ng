@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_PRIME_IS_PRIME_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* performs a variable number of rounds of Miller-Rabin
@@ -31,7 +31,7 @@ int mp_prime_is_prime (mp_int * a, int t, int *result)
   *result = MP_NO;
 
   /* valid value of t? */
-  if (t <= 0 || t > PRIME_SIZE) {
+  if ((t <= 0) || (t > PRIME_SIZE)) {
     return MP_VAL;
   }
 
@@ -78,6 +78,6 @@ LBL_B:mp_clear (&b);
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_prime_is_prime.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

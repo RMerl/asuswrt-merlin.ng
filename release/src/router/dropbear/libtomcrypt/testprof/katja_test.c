@@ -13,7 +13,7 @@ int katja_test(void)
    hash_idx = find_hash("sha1");
    prng_idx = find_prng("yarrow");
    if (hash_idx == -1 || prng_idx == -1) {
-      fprintf(stderr, "katja_test requires SHA1 and yarrow");
+      fprintf(stderr, "katja_test requires LTC_SHA1 and yarrow");
       return 1;
    }
 

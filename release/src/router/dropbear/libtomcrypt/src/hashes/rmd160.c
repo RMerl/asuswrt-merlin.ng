@@ -5,23 +5,21 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
    @file rmd160.c
    RMD160 hash function
-*/   
+*/
 
-/* Implementation of RIPEMD-160 based on the source by Antoon Bosselaers, ESAT-COSIC
+/* Implementation of LTC_RIPEMD-160 based on the source by Antoon Bosselaers, ESAT-COSIC
  *
  * This source has been radically overhauled to be portable and work within
  * the LibTomCrypt API by Tom St Denis
  */
 
-#ifdef RIPEMD160
+#ifdef LTC_RIPEMD160
 
 const struct ltc_hash_descriptor rmd160_desc =
 {
@@ -42,12 +40,12 @@ const struct ltc_hash_descriptor rmd160_desc =
 };
 
 /* the five basic functions F(), G() and H() */
-#define F(x, y, z)        ((x) ^ (y) ^ (z)) 
-#define G(x, y, z)        (((x) & (y)) | (~(x) & (z))) 
+#define F(x, y, z)        ((x) ^ (y) ^ (z))
+#define G(x, y, z)        (((x) & (y)) | (~(x) & (z)))
 #define H(x, y, z)        (((x) | ~(y)) ^ (z))
-#define I(x, y, z)        (((x) & (z)) | ((y) & ~(z))) 
+#define I(x, y, z)        (((x) & (z)) | ((y) & ~(z)))
 #define J(x, y, z)        ((x) ^ ((y) | ~(z)))
-  
+
 /* the ten basic operations FF() through III() */
 #define FF(a, b, c, d, e, x, s)        \
       (a) += F((b), (c), (d)) + (x);\
@@ -138,7 +136,7 @@ static int  rmd160_compress(hash_state *md, unsigned char *buf)
    FF(cc, dd, ee, aa, bb, X[13],  7);
    FF(bb, cc, dd, ee, aa, X[14],  9);
    FF(aa, bb, cc, dd, ee, X[15],  8);
-                             
+
    /* round 2 */
    GG(ee, aa, bb, cc, dd, X[ 7],  7);
    GG(dd, ee, aa, bb, cc, X[ 4],  6);
@@ -230,7 +228,7 @@ static int  rmd160_compress(hash_state *md, unsigned char *buf)
    JJJ(aaa, bbb, ccc, ddd, eee, X[12],  6);
 
    /* parallel round 2 */
-   III(eee, aaa, bbb, ccc, ddd, X[ 6],  9); 
+   III(eee, aaa, bbb, ccc, ddd, X[ 6],  9);
    III(ddd, eee, aaa, bbb, ccc, X[11], 13);
    III(ccc, ddd, eee, aaa, bbb, X[ 3], 15);
    III(bbb, ccc, ddd, eee, aaa, X[ 7],  7);
@@ -265,7 +263,7 @@ static int  rmd160_compress(hash_state *md, unsigned char *buf)
    HHH(eee, aaa, bbb, ccc, ddd, X[ 4],  7);
    HHH(ddd, eee, aaa, bbb, ccc, X[13],  5);
 
-   /* parallel round 4 */   
+   /* parallel round 4 */
    GGG(ccc, ddd, eee, aaa, bbb, X[ 8], 15);
    GGG(bbb, ccc, ddd, eee, aaa, X[ 6],  5);
    GGG(aaa, bbb, ccc, ddd, eee, X[ 4],  8);
@@ -407,15 +405,15 @@ int rmd160_done(hash_state * md, unsigned char *out)
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int rmd160_test(void)
 {
 #ifndef LTC_TEST
    return CRYPT_NOP;
 #else
    static const struct {
-        char *msg;
-        unsigned char md[20];
+        const char *msg;
+        unsigned char hash[20];
    } tests[] = {
    { "",
      { 0x9c, 0x11, 0x85, 0xa5, 0xc5, 0xe9, 0xfc, 0x54, 0x61, 0x28,
@@ -442,18 +440,16 @@ int rmd160_test(void)
        0xa0, 0x6c, 0x27, 0xdc, 0xf4, 0x9a, 0xda, 0x62, 0xeb, 0x2b }
    }
    };
-   int x;
-   unsigned char buf[20];
+
+   int i;
+   unsigned char tmp[20];
    hash_state md;
 
-   for (x = 0; x < (int)(sizeof(tests)/sizeof(tests[0])); x++) {
+   for (i = 0; i < (int)(sizeof(tests)/sizeof(tests[0])); i++) {
        rmd160_init(&md);
-       rmd160_process(&md, (unsigned char *)tests[x].msg, strlen(tests[x].msg));
-       rmd160_done(&md, buf);
-       if (XMEMCMP(buf, tests[x].md, 20) != 0) {
-#if 0
-          printf("Failed test %d\n", x);
-#endif
+       rmd160_process(&md, (unsigned char *)tests[i].msg, strlen(tests[i].msg));
+       rmd160_done(&md, tmp);
+       if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "RIPEMD160", i)) {
           return CRYPT_FAIL_TESTVECTOR;
        }
    }
@@ -464,6 +460,6 @@ int rmd160_test(void)
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/rmd160.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

@@ -1,3 +1,99 @@
+2018.76 - 27 February 2018
+
+> > > Configuration/compatibility changes
+  IMPORTANT
+  Custom configuration is now specified in local_options.h rather than options.h
+  Available options and defaults can be seen in default_options.h
+
+  To migrate your configuration, compare your customised options.h against the
+  upstream options.h from your relevant version. Any customised options should
+  be put in localoptions.h
+
+- "configure --enable-static" should now be used instead of "make STATIC=1"
+  This will avoid 'hardened build' flags that conflict with static binaries
+
+- Set 'hardened build' flags by default if supported by the compiler.
+  These can be disabled with configure --disable-harden if needed.
+  -Wl,-pie
+  -Wl,-z,now -Wl,-z,relro
+  -fstack-protector-strong
+  -D_FORTIFY_SOURCE=2
+  # spectre v2 mitigation
+  -mfunction-return=thunk
+  -mindirect-branch=thunk
+
+  Spectre patch from Loganaden Velvindron
+
+- "dropbear -r" option for hostkeys no longer attempts to load the default
+  hostkey paths as well. If desired these can be specified manually. 
+  Patch from CamVan Nguyen
+
+- group1-sha1 key exchange is disabled in the server by default since
+  the fixed 1024-bit group may be susceptible to attacks
+
+- twofish ciphers are now disabled in the default configuration
+
+- Default generated ECDSA key size is now 256 (rather than 521) 
+  for better interoperability
+
+- Minimum RSA key length has been increased to 1024 bits
+
+> > > Other features and fixes
+
+- Add runtime -T max_auth_tries option from Kevin Darbyshire-Bryant
+
+- Add 'dbclient -J &fd' to allow dbclient to connect over an existing socket.
+  See dbclient manpage for a socat example. Patch from Harald Becker
+
+- Add "-c forced_command" option. Patch from Jeremy Kerr
+
+- Restricted group -G option added with patch from stellarpower
+
+- Support server-chosen TCP forwarding ports, patch from houseofkodai
+
+- Allow choosing outgoing address for dbclient with -b [bind_address][:bind_port]
+  Patch from houseofkodai
+
+- Makefile will now rebuild object files when header files are modified
+
+- Add group14-256 and group16 key exchange options
+
+- curve25519-sha256 also supported without @libssh.org suffix
+
+- Update bundled libtomcrypt to 1.18.1, libtommath to 1.0.1
+  This fixes building with some recent versions of clang
+
+- Set PAM_RHOST which is needed by modules such as pam_abl
+
+- Improvements to DSS and RSA public key validation, found by OSS-Fuzz. 
+
+- Don't exit when an authorized_keys file has malformed entries. Found by OSS-Fuzz
+
+- Fix null-pointer crash with malformed ECDSA or DSS keys. Found by OSS-Fuzz
+
+- Numerous code cleanups and small issues fixed by Francois Perrad
+
+- Test for pkt_sched.h rather than SO_PRIORITY which was problematic with some musl
+  platforms. Reported by Oliver Schneider and Andrew Bainbridge
+
+- Fix some platform portability problems, from Ben Gardner
+
+- Add EXEEXT filename suffix for building dropbearmulti, from William Foster
+
+- Support --enable-<option> properly for configure, from Stefan Hauser
+
+- configure have_openpty result can be cached, from Eric Bénard
+
+- handle platforms that return close() < -1 on failure, from Marco Wenzel
+
+- Build and configuration cleanups from Michael Witten
+
+- Fix libtomcrypt/libtommath linking order, from Andre McCurdy
+
+- Fix old Linux platforms that have SYS_clock_gettime but not CLOCK_MONOTONIC
+
+- Update curve25519-donna implementation to current version
+
 2017.75 - 18 May 2017
 
 - Security: Fix double-free in server TCP listener cleanup
@@ -5,6 +101,7 @@
   dropbear is running with -a (Allow connections to forwarded ports from any host)
   This could potentially allow arbitrary code execution as root by an authenticated user.
   Affects versions 2013.56 to 2016.74. Thanks to Mark Shepard for reporting the crash.
+  CVE-2017-9078 https://secure.ucc.asn.au/hg/dropbear/rev/c8114a48837c
 
 - Security: Fix information disclosure with ~/.ssh/authorized_keys symlink.
   Dropbear parsed authorized_keys as root, even if it were a symlink. The fix
@@ -16,6 +113,7 @@
   contents of that file.
   This information disclosure is to an already authenticated user.
   Thanks to Jann Horn of Google Project Zero for reporting this.
+  CVE-2017-9079 https://secure.ucc.asn.au/hg/dropbear/rev/0d889b068123
 
 - Generate hostkeys with dropbearkey atomically and flush to disk with fsync
   Thanks to Andrei Gherzan for a patch
@@ -330,6 +428,8 @@ kernels, from Steve Dover
 - Update config.guess and config.sub again
 
 2013.61test - Thursday 14 November 2013
+
+- Default generated RSA key size changed from 1024 to 2048 bits
 
 - ECC (elliptic curve) support. Supports ECDSA hostkeys (requires new keys to
   be generated) and ECDH for setting up encryption keys (no intervention

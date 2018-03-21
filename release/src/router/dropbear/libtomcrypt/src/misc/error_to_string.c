@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 #include "tomcrypt.h"
@@ -16,13 +14,13 @@
   Convert error codes to ASCII strings, Tom St Denis
 */
 
-static const char *err_2_str[] =
+static const char * const err_2_str[] =
 {
    "CRYPT_OK",
    "CRYPT_ERROR",
    "Non-fatal 'no-operation' requested.",
 
-   "Invalid keysize for block cipher.",
+   "Invalid key size.",
    "Invalid number of rounds for block cipher.",
    "Algorithm failed test vectors.",
 
@@ -45,13 +43,20 @@ static const char *err_2_str[] =
    "File Not Found",
 
    "Invalid PK type.",
-   "Invalid PK system.",
-   "Duplicate PK key found on keyring.",
-   "Key not found in keyring.",
+
+   "An overflow of a value was detected/prevented.",
+
+   "UNUSED1.",
+
+   "The input was longer than expected.",
+
    "Invalid sized parameter.",
 
    "Invalid size for prime.",
 
+   "Invalid padding.",
+
+   "Hash applied to too many bits.",
 };
 
 /**
@@ -65,10 +70,10 @@ const char *error_to_string(int err)
       return "Invalid error code.";
    } else {
       return err_2_str[err];
-   }   
+   }
 }
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/misc/error_to_string.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

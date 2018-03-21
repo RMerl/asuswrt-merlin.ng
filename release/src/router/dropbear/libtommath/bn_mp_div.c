@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_DIV_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 #ifdef BN_MP_DIV_SMALL
@@ -24,7 +24,7 @@ int mp_div(mp_int * a, mp_int * b, mp_int * c, mp_int * d)
    int    res, n, n2;
 
   /* is divisor zero ? */
-  if (mp_iszero (b) == 1) {
+  if (mp_iszero (b) == MP_YES) {
     return MP_VAL;
   }
 
@@ -40,9 +40,9 @@ int mp_div(mp_int * a, mp_int * b, mp_int * c, mp_int * d)
     }
     return res;
   }
-	
+
   /* init our temps */
-  if ((res = mp_init_multi(&ta, &tb, &tq, &q, NULL) != MP_OKAY)) {
+  if ((res = mp_init_multi(&ta, &tb, &tq, &q, NULL)) != MP_OKAY) {
      return res;
   }
 
@@ -50,7 +50,7 @@ int mp_div(mp_int * a, mp_int * b, mp_int * c, mp_int * d)
   mp_set(&tq, 1);
   n = mp_count_bits(a) - mp_count_bits(b);
   if (((res = mp_abs(a, &ta)) != MP_OKAY) ||
-      ((res = mp_abs(b, &tb)) != MP_OKAY) || 
+      ((res = mp_abs(b, &tb)) != MP_OKAY) ||
       ((res = mp_mul_2d(&tb, n, &tb)) != MP_OKAY) ||
       ((res = mp_mul_2d(&tq, n, &tq)) != MP_OKAY)) {
       goto LBL_ERR;
@@ -71,7 +71,7 @@ int mp_div(mp_int * a, mp_int * b, mp_int * c, mp_int * d)
 
   /* now q == quotient and ta == remainder */
   n  = a->sign;
-  n2 = (a->sign == b->sign ? MP_ZPOS : MP_NEG);
+  n2 = (a->sign == b->sign) ? MP_ZPOS : MP_NEG;
   if (c != NULL) {
      mp_exch(c, &q);
      c->sign  = (mp_iszero(c) == MP_YES) ? MP_ZPOS : n2;
@@ -87,17 +87,17 @@ LBL_ERR:
 
 #else
 
-/* integer signed division. 
+/* integer signed division.
  * c*b + d == a [e.g. a/b, c=quotient, d=remainder]
  * HAC pp.598 Algorithm 14.20
  *
- * Note that the description in HAC is horribly 
- * incomplete.  For example, it doesn't consider 
- * the case where digits are removed from 'x' in 
- * the inner loop.  It also doesn't consider the 
+ * Note that the description in HAC is horribly
+ * incomplete.  For example, it doesn't consider
+ * the case where digits are removed from 'x' in
+ * the inner loop.  It also doesn't consider the
  * case that y has fewer than three digits, etc..
  *
- * The overall algorithm is as described as 
+ * The overall algorithm is as described as
  * 14.20 from HAC but fixed to treat these cases.
 */
 int mp_div (mp_int * a, mp_int * b, mp_int * c, mp_int * d)
@@ -106,7 +106,7 @@ int mp_div (mp_int * a, mp_int * b, mp_int * c, mp_int * d)
   int     res, n, t, i, norm, neg;
 
   /* is divisor zero ? */
-  if (mp_iszero (b) == 1) {
+  if (mp_iszero (b) == MP_YES) {
     return MP_VAL;
   }
 
@@ -187,51 +187,52 @@ int mp_div (mp_int * a, mp_int * b, mp_int * c, mp_int * d)
       continue;
     }
 
-    /* step 3.1 if xi == yt then set q{i-t-1} to b-1, 
+    /* step 3.1 if xi == yt then set q{i-t-1} to b-1,
      * otherwise set q{i-t-1} to (xi*b + x{i-1})/yt */
     if (x.dp[i] == y.dp[t]) {
-      q.dp[i - t - 1] = ((((mp_digit)1) << DIGIT_BIT) - 1);
+      q.dp[(i - t) - 1] = ((((mp_digit)1) << DIGIT_BIT) - 1);
     } else {
       mp_word tmp;
       tmp = ((mp_word) x.dp[i]) << ((mp_word) DIGIT_BIT);
       tmp |= ((mp_word) x.dp[i - 1]);
       tmp /= ((mp_word) y.dp[t]);
-      if (tmp > (mp_word) MP_MASK)
+      if (tmp > (mp_word) MP_MASK) {
         tmp = MP_MASK;
-      q.dp[i - t - 1] = (mp_digit) (tmp & (mp_word) (MP_MASK));
+      }
+      q.dp[(i - t) - 1] = (mp_digit) (tmp & (mp_word) (MP_MASK));
     }
 
-    /* while (q{i-t-1} * (yt * b + y{t-1})) > 
-             xi * b**2 + xi-1 * b + xi-2 
-     
-       do q{i-t-1} -= 1; 
+    /* while (q{i-t-1} * (yt * b + y{t-1})) >
+             xi * b**2 + xi-1 * b + xi-2
+
+       do q{i-t-1} -= 1;
     */
-    q.dp[i - t - 1] = (q.dp[i - t - 1] + 1) & MP_MASK;
+    q.dp[(i - t) - 1] = (q.dp[(i - t) - 1] + 1) & MP_MASK;
     do {
-      q.dp[i - t - 1] = (q.dp[i - t - 1] - 1) & MP_MASK;
+      q.dp[(i - t) - 1] = (q.dp[(i - t) - 1] - 1) & MP_MASK;
 
       /* find left hand */
       mp_zero (&t1);
-      t1.dp[0] = (t - 1 < 0) ? 0 : y.dp[t - 1];
+      t1.dp[0] = ((t - 1) < 0) ? 0 : y.dp[t - 1];
       t1.dp[1] = y.dp[t];
       t1.used = 2;
-      if ((res = mp_mul_d (&t1, q.dp[i - t - 1], &t1)) != MP_OKAY) {
+      if ((res = mp_mul_d (&t1, q.dp[(i - t) - 1], &t1)) != MP_OKAY) {
         goto LBL_Y;
       }
 
       /* find right hand */
-      t2.dp[0] = (i - 2 < 0) ? 0 : x.dp[i - 2];
-      t2.dp[1] = (i - 1 < 0) ? 0 : x.dp[i - 1];
+      t2.dp[0] = ((i - 2) < 0) ? 0 : x.dp[i - 2];
+      t2.dp[1] = ((i - 1) < 0) ? 0 : x.dp[i - 1];
       t2.dp[2] = x.dp[i];
       t2.used = 3;
     } while (mp_cmp_mag(&t1, &t2) == MP_GT);
 
     /* step 3.3 x = x - q{i-t-1} * y * b**{i-t-1} */
-    if ((res = mp_mul_d (&y, q.dp[i - t - 1], &t1)) != MP_OKAY) {
+    if ((res = mp_mul_d (&y, q.dp[(i - t) - 1], &t1)) != MP_OKAY) {
       goto LBL_Y;
     }
 
-    if ((res = mp_lshd (&t1, i - t - 1)) != MP_OKAY) {
+    if ((res = mp_lshd (&t1, (i - t) - 1)) != MP_OKAY) {
       goto LBL_Y;
     }
 
@@ -244,23 +245,23 @@ int mp_div (mp_int * a, mp_int * b, mp_int * c, mp_int * d)
       if ((res = mp_copy (&y, &t1)) != MP_OKAY) {
         goto LBL_Y;
       }
-      if ((res = mp_lshd (&t1, i - t - 1)) != MP_OKAY) {
+      if ((res = mp_lshd (&t1, (i - t) - 1)) != MP_OKAY) {
         goto LBL_Y;
       }
       if ((res = mp_add (&x, &t1, &x)) != MP_OKAY) {
         goto LBL_Y;
       }
 
-      q.dp[i - t - 1] = (q.dp[i - t - 1] - 1UL) & MP_MASK;
+      q.dp[(i - t) - 1] = (q.dp[(i - t) - 1] - 1UL) & MP_MASK;
     }
   }
 
-  /* now q is the quotient and x is the remainder 
-   * [which we have to normalize] 
+  /* now q is the quotient and x is the remainder
+   * [which we have to normalize]
    */
-  
+
   /* get sign before writing to c */
-  x.sign = x.used == 0 ? MP_ZPOS : a->sign;
+  x.sign = (x.used == 0) ? MP_ZPOS : a->sign;
 
   if (c != NULL) {
     mp_clamp (&q);
@@ -270,8 +271,8 @@ int mp_div (mp_int * a, mp_int * b, mp_int * c, mp_int * d)
 
   if (d != NULL) {
     if ((res = mp_div_2d (&x, norm, &x, NULL)) != MP_OKAY) {
-		goto LBL_Y;
-	}
+      goto LBL_Y;
+    }
     mp_exch (&x, d);
   }
 
@@ -289,6 +290,6 @@ LBL_Q:mp_clear (&q);
 
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_div.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

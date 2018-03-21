@@ -14,6 +14,6 @@ int main(void)
 }
 
 
-/* $Source: /cvs/libtom/libtomcrypt/notes/etc/whirltest.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2005/05/05 14:35:58 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

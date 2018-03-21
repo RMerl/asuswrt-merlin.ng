@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -19,25 +17,25 @@
 /**
   @file ecc_encrypt_key.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
-#if defined(MECC) && defined(LTC_DER)
+#if defined(LTC_MECC) && defined(LTC_DER)
 
 /**
-  Encrypt a symmetric key with ECC 
+  Encrypt a symmetric key with ECC
   @param in         The symmetric key you want to encrypt
   @param inlen      The length of the key to encrypt (octets)
   @param out        [out] The destination for the ciphertext
   @param outlen     [in/out] The max size and resulting size of the ciphertext
   @param prng       An active PRNG state
-  @param wprng      The index of the PRNG you wish to use 
-  @param hash       The index of the hash you want to use 
+  @param wprng      The index of the PRNG you wish to use
+  @param hash       The index of the hash you want to use
   @param key        The ECC key you want to encrypt to
   @return CRYPT_OK if successful
 */
 int ecc_encrypt_key(const unsigned char *in,   unsigned long inlen,
-                          unsigned char *out,  unsigned long *outlen, 
-                          prng_state *prng, int wprng, int hash, 
+                          unsigned char *out,  unsigned long *outlen,
+                          prng_state *prng, int wprng, int hash,
                           ecc_key *key)
 {
     unsigned char *pub_expt, *ecc_shared, *skey;
@@ -90,7 +88,7 @@ int ecc_encrypt_key(const unsigned char *in,   unsigned long inlen,
        ecc_free(&pubkey);
        goto LBL_ERR;
     }
-    
+
     /* make random key */
     x        = ECC_BUF_SIZE;
     if ((err = ecc_shared_secret(&pubkey, key, ecc_shared, &x)) != CRYPT_OK) {
@@ -102,7 +100,7 @@ int ecc_encrypt_key(const unsigned char *in,   unsigned long inlen,
     if ((err = hash_memory(hash, ecc_shared, x, skey, &y)) != CRYPT_OK) {
        goto LBL_ERR;
     }
-    
+
     /* Encrypt key */
     for (x = 0; x < inlen; x++) {
       skey[x] ^= in[x];
@@ -130,7 +128,7 @@ LBL_ERR:
 }
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_encrypt_key.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

@@ -35,8 +35,8 @@ struct Listener {
 
 	int index; /* index in the array of listeners */
 
-	void (*acceptor)(struct Listener*, int sock);
-	void (*cleanup)(struct Listener*);
+	void (*acceptor)(const struct Listener*, int sock);
+	void (*cleanup)(const struct Listener*);
 
 	int type; /* CHANNEL_ID_X11, CHANNEL_ID_AGENT, 
 				 CHANNEL_ID_TCPDIRECT (for clients),
@@ -47,16 +47,16 @@ struct Listener {
 };
 
 void listeners_initialise(void);
-void handle_listeners(fd_set * readfds);
+void handle_listeners(const fd_set * readfds);
 void set_listener_fds(fd_set * readfds);
 
-struct Listener* new_listener(int socks[], unsigned int nsocks, 
+struct Listener* new_listener(const int socks[], unsigned int nsocks,
 		int type, void* typedata, 
-		void (*acceptor)(struct Listener* listener, int sock), 
-		void (*cleanup)(struct Listener*));
+		void (*acceptor)(const struct Listener* listener, int sock),
+		void (*cleanup)(const struct Listener*));
 
-struct Listener * get_listener(int type, void* typedata,
-		int (*match)(void*, void*));
+struct Listener * get_listener(int type, const void* typedata,
+		int (*match)(const void*, const void*));
 
 void remove_listener(struct Listener* listener);
 

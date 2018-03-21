@@ -31,7 +31,7 @@
 #include "auth.h"
 #include "runopts.h"
 
-#ifdef ENABLE_SVR_PASSWORD_AUTH
+#if DROPBEAR_SVR_PASSWORD_AUTH
 
 /* not constant time when strings are differing lengths. 
  string content isn't leaked, and crypt hashes are predictable length. */

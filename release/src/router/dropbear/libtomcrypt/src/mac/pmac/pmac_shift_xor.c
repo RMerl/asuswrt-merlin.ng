@@ -5,14 +5,12 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
-/** 
+/**
    @file pmac_shift_xor.c
-   PMAC implementation, internal function, by Tom St Denis 
+   PMAC implementation, internal function, by Tom St Denis
 */
 
 #ifdef LTC_PMAC
@@ -27,8 +25,8 @@ void pmac_shift_xor(pmac_state *pmac)
    y = pmac_ntz(pmac->block_index++);
 #ifdef LTC_FAST
    for (x = 0; x < pmac->block_len; x += sizeof(LTC_FAST_TYPE)) {
-       *((LTC_FAST_TYPE*)((unsigned char *)pmac->Li + x)) ^=
-       *((LTC_FAST_TYPE*)((unsigned char *)pmac->Ls[y] + x));
+       *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pmac->Li + x)) ^=
+       *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pmac->Ls[y] + x));
    }
 #else
    for (x = 0; x < pmac->block_len; x++) {
@@ -39,6 +37,6 @@ void pmac_shift_xor(pmac_state *pmac)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/pmac/pmac_shift_xor.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/11/03 00:39:49 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

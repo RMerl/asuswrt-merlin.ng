@@ -5,18 +5,16 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file sha1.c
-  SHA1 code by Tom St Denis 
+  LTC_SHA1 code by Tom St Denis
 */
 
 
-#ifdef SHA1
+#ifdef LTC_SHA1
 
 const struct ltc_hash_descriptor sha1_desc =
 {
@@ -66,7 +64,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
     /* expand it */
     for (i = 16; i < 80; i++) {
-        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1); 
+        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
 
     /* compress */
@@ -75,9 +73,9 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     #define FF1(a,b,c,d,e,i) e = (ROLc(a, 5) + F1(b,c,d) + e + W[i] + 0x6ed9eba1UL); b = ROLc(b, 30);
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30);
     #define FF3(a,b,c,d,e,i) e = (ROLc(a, 5) + F3(b,c,d) + e + W[i] + 0xca62c1d6UL); b = ROLc(b, 30);
- 
+
 #ifdef LTC_SMALL_CODE
- 
+
     for (i = 0; i < 20; ) {
        FF0(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
@@ -105,7 +103,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     }
 
     /* round two */
-    for (; i < 40; )  { 
+    for (; i < 40; )  {
        FF1(a,b,c,d,e,i++);
        FF1(e,a,b,c,d,i++);
        FF1(d,e,a,b,c,i++);
@@ -114,7 +112,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     }
 
     /* round three */
-    for (; i < 60; )  { 
+    for (; i < 60; )  {
        FF2(a,b,c,d,e,i++);
        FF2(e,a,b,c,d,i++);
        FF2(d,e,a,b,c,i++);
@@ -123,7 +121,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     }
 
     /* round four */
-    for (; i < 80; )  { 
+    for (; i < 80; )  {
        FF3(a,b,c,d,e,i++);
        FF3(e,a,b,c,d,i++);
        FF3(d,e,a,b,c,i++);
@@ -241,14 +239,14 @@ int sha1_done(hash_state * md, unsigned char *out)
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int  sha1_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
+ #else
   static const struct {
-      char *msg;
+      const char *msg;
       unsigned char hash[20];
   } tests[] = {
     { "abc",
@@ -271,7 +269,7 @@ int  sha1_test(void)
       sha1_init(&md);
       sha1_process(&md, (unsigned char*)tests[i].msg, (unsigned long)strlen(tests[i].msg));
       sha1_done(&md, tmp);
-      if (XMEMCMP(tmp, tests[i].hash, 20) != 0) {
+      if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "SHA1", i)) {
          return CRYPT_FAIL_TESTVECTOR;
       }
   }
@@ -283,6 +281,6 @@ int  sha1_test(void)
 
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/sha1.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

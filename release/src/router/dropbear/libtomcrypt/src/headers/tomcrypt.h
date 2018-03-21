@@ -1,9 +1,19 @@
+/* LibTomCrypt, modular cryptographic library -- Tom St Denis
+ *
+ * LibTomCrypt is a library that provides various cryptographic
+ * algorithms in a highly modular and flexible manner.
+ *
+ * The library is free for all purposes without any express
+ * guarantee it works.
+ */
+
 #ifndef TOMCRYPT_H_
 #define TOMCRYPT_H_
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
@@ -16,8 +26,8 @@ extern "C" {
 #endif
 
 /* version */
-#define CRYPT   0x0116
-#define SCRYPT  "1.16"
+#define CRYPT   0x0118
+#define SCRYPT  "1.18.1"
 
 /* max size of either a cipher/hash block or symmetric key [largest of the two] */
 #define MAXBLOCKSIZE  128
@@ -55,13 +65,19 @@ enum {
    CRYPT_FILE_NOTFOUND,    /* File Not Found */
 
    CRYPT_PK_INVALID_TYPE,  /* Invalid type of PK key */
-   CRYPT_PK_INVALID_SYSTEM,/* Invalid PK system specified */
-   CRYPT_PK_DUP,           /* Duplicate key already in key ring */
-   CRYPT_PK_NOT_FOUND,     /* Key not found in keyring */
+
+   CRYPT_OVERFLOW,         /* An overflow of a value was detected/prevented */
+
+   CRYPT_UNUSED1,          /* UNUSED1 */
+
+   CRYPT_INPUT_TOO_LONG,   /* The input was longer than expected. */
+
    CRYPT_PK_INVALID_SIZE,  /* Invalid size input for PK parameters */
 
    CRYPT_INVALID_PRIME_SIZE,/* Invalid size of prime requested */
-   CRYPT_PK_INVALID_PADDING /* Invalid padding on input */
+   CRYPT_PK_INVALID_PADDING, /* Invalid padding on input */
+
+   CRYPT_HASH_OVERFLOW      /* Hash applied to too many bits */
 };
 
 #include <tomcrypt_cfg.h>
@@ -83,6 +99,6 @@ enum {
 #endif /* TOMCRYPT_H_ */
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/headers/tomcrypt.h,v $ */
-/* $Revision: 1.20 $ */
-/* $Date: 2006/11/26 01:45:14 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

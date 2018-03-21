@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   @file pkcs_1_i2osp.c
-  Integer to Octet I2OSP, Tom St Denis 
+  Integer to Octet I2OSP, Tom St Denis
 */
 
-#ifdef PKCS_1
+#ifdef LTC_PKCS_1
 
 /* always stores the same # of bytes, pads with leading zero bytes
    as required
@@ -43,9 +41,9 @@ int pkcs_1_i2osp(void *n, unsigned long modulus_len, unsigned char *out)
    return mp_to_unsigned_bin(n, out+(modulus_len-size));
 }
 
-#endif /* PKCS_1 */
+#endif /* LTC_PKCS_1 */
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/pkcs1/pkcs_1_i2osp.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

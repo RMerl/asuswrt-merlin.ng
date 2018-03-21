@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /**
@@ -15,7 +13,7 @@
 */
 #include "tomcrypt.h"
 
-#ifdef GCM_MODE
+#ifdef LTC_GCM_MODE
 
 /**
   Initialize a GCM state
@@ -25,12 +23,12 @@
   @param keylen  The length of the secret key
   @return CRYPT_OK on success
  */
-int gcm_init(gcm_state *gcm, int cipher, 
+int gcm_init(gcm_state *gcm, int cipher,
              const unsigned char *key,  int keylen)
 {
    int           err;
    unsigned char B[16];
-#ifdef GCM_TABLES
+#ifdef LTC_GCM_TABLES
    int           x, y, z, t;
 #endif
 
@@ -66,13 +64,13 @@ int gcm_init(gcm_state *gcm, int cipher,
    zeromem(gcm->buf, sizeof(gcm->buf));
    zeromem(gcm->X,   sizeof(gcm->X));
    gcm->cipher   = cipher;
-   gcm->mode     = GCM_MODE_IV;
+   gcm->mode     = LTC_GCM_MODE_IV;
    gcm->ivmode   = 0;
    gcm->buflen   = 0;
    gcm->totlen   = 0;
    gcm->pttotlen = 0;
 
-#ifdef GCM_TABLES
+#ifdef LTC_GCM_TABLES
    /* setup tables */
 
    /* generate the first table as it has no shifting (from which we make the other tables) */
@@ -92,8 +90,8 @@ int gcm_init(gcm_state *gcm, int cipher,
          }
          gcm->PC[x][y][0] = gcm_shift_table[t<<1];
          gcm->PC[x][y][1] ^= gcm_shift_table[(t<<1)+1];
-     }
-  }
+      }
+   }
 
 #endif
 
@@ -102,6 +100,6 @@ int gcm_init(gcm_state *gcm, int cipher,
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/gcm/gcm_init.c,v $ */
-/* $Revision: 1.18 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

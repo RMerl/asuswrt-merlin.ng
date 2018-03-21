@@ -26,58 +26,58 @@ void register_algs(void)
 {
    int x;
    
-#ifdef RIJNDAEL
+#ifdef LTC_RIJNDAEL
   register_cipher (&aes_desc);
 #endif
-#ifdef BLOWFISH
+#ifdef LTC_BLOWFISH
   register_cipher (&blowfish_desc);
 #endif
-#ifdef XTEA
+#ifdef LTC_XTEA
   register_cipher (&xtea_desc);
 #endif
-#ifdef RC5
+#ifdef LTC_RC5
   register_cipher (&rc5_desc);
 #endif
-#ifdef RC6
+#ifdef LTC_RC6
   register_cipher (&rc6_desc);
 #endif
-#ifdef SAFERP
+#ifdef LTC_SAFERP
   register_cipher (&saferp_desc);
 #endif
-#ifdef TWOFISH
+#ifdef LTC_TWOFISH
   register_cipher (&twofish_desc);
 #endif
-#ifdef SAFER
+#ifdef LTC_SAFER
   register_cipher (&safer_k64_desc);
   register_cipher (&safer_sk64_desc);
   register_cipher (&safer_k128_desc);
   register_cipher (&safer_sk128_desc);
 #endif
-#ifdef RC2
+#ifdef LTC_RC2
   register_cipher (&rc2_desc);
 #endif
-#ifdef DES
+#ifdef LTC_DES
   register_cipher (&des_desc);
   register_cipher (&des3_desc);
 #endif
-#ifdef CAST5
+#ifdef LTC_CAST5
   register_cipher (&cast5_desc);
 #endif
-#ifdef NOEKEON
+#ifdef LTC_NOEKEON
   register_cipher (&noekeon_desc);
 #endif
-#ifdef SKIPJACK
+#ifdef LTC_SKIPJACK
   register_cipher (&skipjack_desc);
 #endif
-#ifdef KHAZAD
+#ifdef LTC_KHAZAD
   register_cipher (&khazad_desc);
 #endif
-#ifdef ANUBIS
+#ifdef LTC_ANUBIS
   register_cipher (&anubis_desc);
 #endif
 
    if (register_hash(&sha256_desc) == -1) {
-      printf("Error registering SHA256\n");
+      printf("Error registering LTC_SHA256\n");
       exit(-1);
    } 
 
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
    hash_idx = find_hash("sha256");
    if (hash_idx == -1) {
-      printf("SHA256 not found...?\n");
+      printf("LTC_SHA256 not found...?\n");
       exit(-1);
    }
 
@@ -236,6 +236,6 @@ int main(int argc, char *argv[])
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/demos/encrypt.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2005/08/04 20:43:50 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

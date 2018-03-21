@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file dsa_decrypt_key.c
   DSA Crypto, Tom St Denis
-*/  
+*/
 
-#ifdef MDSA
+#ifdef LTC_MDSA
 
 /**
   Decrypt an DSA encrypted key
@@ -27,12 +25,13 @@
   @return CRYPT_OK if successful
 */
 int dsa_decrypt_key(const unsigned char *in,  unsigned long  inlen,
-                          unsigned char *out, unsigned long *outlen, 
+                          unsigned char *out, unsigned long *outlen,
                           dsa_key *key)
 {
    unsigned char  *skey, *expt;
    void           *g_pub;
-   unsigned long  x, y, hashOID[32];
+   unsigned long  x, y;
+   unsigned long  hashOID[32] = { 0 };
    int            hash, err;
    ltc_asn1_list  decode[3];
 
@@ -45,21 +44,21 @@ int dsa_decrypt_key(const unsigned char *in,  unsigned long  inlen,
    if (key->type != PK_PRIVATE) {
       return CRYPT_PK_NOT_PRIVATE;
    }
-   
+
    /* decode to find out hash */
    LTC_SET_ASN1(decode, 0, LTC_ASN1_OBJECT_IDENTIFIER, hashOID, sizeof(hashOID)/sizeof(hashOID[0]));
- 
-   if ((err = der_decode_sequence(in, inlen, decode, 1)) != CRYPT_OK) {
+   err = der_decode_sequence(in, inlen, decode, 1);
+   if (err != CRYPT_OK && err != CRYPT_INPUT_TOO_LONG) {
       return err;
    }
 
-   hash = find_hash_oid(hashOID, decode[0].size);                   
+   hash = find_hash_oid(hashOID, decode[0].size);
    if (hash_is_valid(hash) != CRYPT_OK) {
       return CRYPT_INVALID_PACKET;
    }
 
    /* we now have the hash! */
-   
+
    if ((err = mp_init(&g_pub)) != CRYPT_OK) {
       return err;
    }
@@ -77,7 +76,7 @@ int dsa_decrypt_key(const unsigned char *in,  unsigned long  inlen,
       mp_clear(g_pub);
       return CRYPT_MEM;
    }
-   
+
    LTC_SET_ASN1(decode, 1, LTC_ASN1_INTEGER,          g_pub,      1UL);
    LTC_SET_ASN1(decode, 2, LTC_ASN1_OCTET_STRING,      skey,      MAXBLOCKSIZE);
 
@@ -92,7 +91,8 @@ int dsa_decrypt_key(const unsigned char *in,  unsigned long  inlen,
       goto LBL_ERR;
    }
 
-   y = MIN(mp_unsigned_bin_size(key->p) + 1, MAXBLOCKSIZE);
+   y = mp_unsigned_bin_size(key->p) + 1;
+   y = MIN(y, MAXBLOCKSIZE);
    if ((err = hash_memory(hash, expt, x, expt, &y)) != CRYPT_OK) {
       goto LBL_ERR;
    }
@@ -125,7 +125,7 @@ LBL_ERR:
 
    XFREE(expt);
    XFREE(skey);
-  
+
    mp_clear(g_pub);
 
    return err;
@@ -133,7 +133,7 @@ LBL_ERR:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/dsa/dsa_decrypt_key.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/12/04 03:18:43 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

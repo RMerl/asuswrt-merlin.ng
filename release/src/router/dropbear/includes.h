@@ -26,7 +26,6 @@
 #define DROPBEAR_INCLUDES_H_
 
 
-#include "config.h"
 #include "options.h"
 #include "debug.h"
 
@@ -160,7 +159,7 @@ typedef unsigned int u_int32_t;
 typedef u_int32_t uint32_t;
 #endif /* HAVE_UINT32_T */
 
-#ifdef SO_PRIORITY
+#ifdef HAVE_LINUX_PKT_SCHED_H
 #include <linux/types.h>
 #include <linux/pkt_sched.h>
 #endif

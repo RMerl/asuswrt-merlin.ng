@@ -19,6 +19,6 @@ int base64_test(void)
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/testprof/base64_test.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2005/05/21 12:51:25 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

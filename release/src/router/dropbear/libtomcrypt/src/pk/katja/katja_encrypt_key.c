@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file katja_encrypt_key.c
   Katja PKCS-style OAEP encryption, Tom St Denis
-*/  
+*/
 
-#ifdef MKAT
+#ifdef LTC_MKAT
 
 /**
     (PKCS #1 v2.0) OAEP pad then encrypt
@@ -30,7 +28,7 @@
     @param hash_idx    The index of the desired hash
     @param key         The Katja key to encrypt to
     @return CRYPT_OK if successful
-*/    
+*/
 int katja_encrypt_key(const unsigned char *in,     unsigned long inlen,
                           unsigned char *out,    unsigned long *outlen,
                     const unsigned char *lparam, unsigned long lparamlen,
@@ -38,12 +36,12 @@ int katja_encrypt_key(const unsigned char *in,     unsigned long inlen,
 {
   unsigned long modulus_bitlen, modulus_bytelen, x;
   int           err;
-  
+
   LTC_ARGCHK(in     != NULL);
   LTC_ARGCHK(out    != NULL);
   LTC_ARGCHK(outlen != NULL);
   LTC_ARGCHK(key    != NULL);
-  
+
   /* valid prng and hash ? */
   if ((err = prng_is_valid(prng_idx)) != CRYPT_OK) {
      return err;
@@ -51,7 +49,7 @@ int katja_encrypt_key(const unsigned char *in,     unsigned long inlen,
   if ((err = hash_is_valid(hash_idx)) != CRYPT_OK) {
      return err;
   }
-  
+
   /* get modulus len in bits */
   modulus_bitlen = mp_count_bits((key->N));
 
@@ -70,18 +68,18 @@ int katja_encrypt_key(const unsigned char *in,     unsigned long inlen,
 
   /* OAEP pad the key */
   x = *outlen;
-  if ((err = pkcs_1_oaep_encode(in, inlen, lparam, 
-                                lparamlen, modulus_bitlen, prng, prng_idx, hash_idx, 
+  if ((err = pkcs_1_oaep_encode(in, inlen, lparam,
+                                lparamlen, modulus_bitlen, prng, prng_idx, hash_idx,
                                 out, &x)) != CRYPT_OK) {
      return err;
-  }                          
+  }
 
   /* Katja exptmod the OAEP pad */
   return katja_exptmod(out, x, out, outlen, PK_PUBLIC, key);
 }
 
-#endif /* MRSA */
+#endif /* LTC_MRSA */
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/katja/katja_encrypt_key.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/06/16 21:53:41 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

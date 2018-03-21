@@ -27,7 +27,7 @@
 
 #include "includes.h"
 
-#ifdef ENABLE_SVR_AGENTFWD
+#if DROPBEAR_SVR_AGENTFWD
 
 #include "agentfwd.h"
 #include "session.h"
@@ -45,7 +45,7 @@
 
 static int send_msg_channel_open_agent(int fd);
 static int bindagent(int fd, struct ChanSess * chansess);
-static void agentaccept(struct Listener * listener, int sock);
+static void agentaccept(const struct Listener * listener, int sock);
 
 /* Handles client requests to start agent forwarding, sets up listening socket.
  * Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
@@ -100,7 +100,7 @@ fail:
 /* accepts a connection on the forwarded socket and opens a new channel for it
  * back to the client */
 /* returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
-static void agentaccept(struct Listener *UNUSED(listener), int sock) {
+static void agentaccept(const struct Listener *UNUSED(listener), int sock) {
 
 	int fd;
 
@@ -118,7 +118,7 @@ static void agentaccept(struct Listener *UNUSED(listener), int sock) {
 
 /* set up the environment variable pointing to the socket. This is called
  * just before command/shell execution, after dropping privileges */
-void svr_agentset(struct ChanSess * chansess) {
+void svr_agentset(const struct ChanSess * chansess) {
 
 	char *path = NULL;
 	int len;

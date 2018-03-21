@@ -51,7 +51,7 @@ void cli_auth_getmethods() {
 
 	encrypt_packet();
 
-#ifdef DROPBEAR_CLI_IMMEDIATE_AUTH
+#if DROPBEAR_CLI_IMMEDIATE_AUTH
 	/* We can't haven't two auth requests in-flight with delayed zlib mode
 	since if the first one succeeds then the remote side will 
 	expect the second one to be compressed. 
@@ -60,9 +60,11 @@ void cli_auth_getmethods() {
 	*/
 	if (ses.keys->trans.algo_comp != DROPBEAR_COMP_ZLIB_DELAY) {
 		ses.authstate.authtypes = AUTH_TYPE_PUBKEY;
+#if DROPBEAR_USE_PASSWORD_ENV
 		if (getenv(DROPBEAR_PASSWORD_ENV)) {
 			ses.authstate.authtypes |= AUTH_TYPE_PASSWORD | AUTH_TYPE_INTERACT;
 		}
+#endif
 		if (cli_auth_try() == DROPBEAR_SUCCESS) {
 			TRACE(("skipped initial none auth query"))
 			/* Note that there will be two auth responses in-flight */
@@ -78,6 +80,7 @@ void recv_msg_userauth_banner() {
 	char* banner = NULL;
 	unsigned int bannerlen;
 	unsigned int i, linecount;
+	int truncated = 0;
 
 	TRACE(("enter recv_msg_userauth_banner"))
 	if (ses.authstate.authdone) {
@@ -90,26 +93,29 @@ void recv_msg_userauth_banner() {
 
 	if (bannerlen > MAX_BANNER_SIZE) {
 		TRACE(("recv_msg_userauth_banner: bannerlen too long: %d", bannerlen))
-		goto out;
-	}
+		truncated = 1;
+	} else {
+		cleantext(banner);
 
-	cleantext(banner);
-
-	/* Limit to 25 lines */
-	linecount = 1;
-	for (i = 0; i < bannerlen; i++) {
-		if (banner[i] == '\n') {
-			if (linecount >= MAX_BANNER_LINES) {
-				banner[i] = '\0';
-				break;
+		/* Limit to 24 lines */
+		linecount = 1;
+		for (i = 0; i < bannerlen; i++) {
+			if (banner[i] == '\n') {
+				if (linecount >= MAX_BANNER_LINES) {
+					banner[i] = '\0';
+					truncated = 1;
+					break;
+				}
+				linecount++;
 			}
-			linecount++;
 		}
+		fprintf(stderr, "%s\n", banner);
 	}
 
-	fprintf(stderr, "%s\n", banner);
+	if (truncated) {
+		fprintf(stderr, "[Banner from the server is too long]\n");
+	}
 
-out:
 	m_free(banner);
 	TRACE(("leave recv_msg_userauth_banner"))
 }
@@ -121,21 +127,21 @@ out:
  * SSH_MSG_USERAUTH_INFO_REQUEST. */
 void recv_msg_userauth_specific_60() {
 
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	if (cli_ses.lastauthtype == AUTH_TYPE_PUBKEY) {
 		recv_msg_userauth_pk_ok();
 		return;
 	}
 #endif
 
-#ifdef ENABLE_CLI_INTERACT_AUTH
+#if DROPBEAR_CLI_INTERACT_AUTH
 	if (cli_ses.lastauthtype == AUTH_TYPE_INTERACT) {
 		recv_msg_userauth_info_request();
 		return;
 	}
 #endif
 
-#ifdef ENABLE_CLI_PASSWORD_AUTH
+#if DROPBEAR_CLI_PASSWORD_AUTH
 	if (cli_ses.lastauthtype == AUTH_TYPE_PASSWORD) {
 		/* Eventually there could be proper password-changing
 		 * support. However currently few servers seem to
@@ -179,7 +185,7 @@ void recv_msg_userauth_failure() {
 		TRACE(("leave recv_msg_userauth_failure, ignored response, state set to USERAUTH_REQ_SENT"));
 		return;
 	} else  {
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 		/* If it was a pubkey auth request, we should cross that key 
 		 * off the list. */
 		if (cli_ses.lastauthtype == AUTH_TYPE_PUBKEY) {
@@ -187,7 +193,7 @@ void recv_msg_userauth_failure() {
 		}
 #endif
 
-#ifdef ENABLE_CLI_INTERACT_AUTH
+#if DROPBEAR_CLI_INTERACT_AUTH
 		/* If we get a failure message for keyboard interactive without
 		 * receiving any request info packet, then we don't bother trying
 		 * keyboard interactive again */
@@ -227,19 +233,19 @@ void recv_msg_userauth_failure() {
 	for (i = 0; i <= methlen; i++) {
 		if (methods[i] == '\0') {
 			TRACE(("auth method '%s'", tok))
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 			if (strncmp(AUTH_METHOD_PUBKEY, tok,
 				AUTH_METHOD_PUBKEY_LEN) == 0) {
 				ses.authstate.authtypes |= AUTH_TYPE_PUBKEY;
 			}
 #endif
-#ifdef ENABLE_CLI_INTERACT_AUTH
+#if DROPBEAR_CLI_INTERACT_AUTH
 			if (strncmp(AUTH_METHOD_INTERACT, tok,
 				AUTH_METHOD_INTERACT_LEN) == 0) {
 				ses.authstate.authtypes |= AUTH_TYPE_INTERACT;
 			}
 #endif
-#ifdef ENABLE_CLI_PASSWORD_AUTH
+#if DROPBEAR_CLI_PASSWORD_AUTH
 			if (strncmp(AUTH_METHOD_PASSWORD, tok,
 				AUTH_METHOD_PASSWORD_LEN) == 0) {
 				ses.authstate.authtypes |= AUTH_TYPE_PASSWORD;
@@ -267,7 +273,7 @@ void recv_msg_userauth_success() {
 	cli_ses.state = USERAUTH_SUCCESS_RCVD;
 	cli_ses.lastauthtype = AUTH_TYPE_NONE;
 
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	cli_auth_pubkey_cleanup();
 #endif
 }
@@ -281,14 +287,14 @@ int cli_auth_try() {
 	
 	/* Order to try is pubkey, interactive, password.
 	 * As soon as "finished" is set for one, we don't do any more. */
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	if (ses.authstate.authtypes & AUTH_TYPE_PUBKEY) {
 		finished = cli_auth_pubkey();
 		cli_ses.lastauthtype = AUTH_TYPE_PUBKEY;
 	}
 #endif
 
-#ifdef ENABLE_CLI_PASSWORD_AUTH
+#if DROPBEAR_CLI_PASSWORD_AUTH
 	if (!finished && (ses.authstate.authtypes & AUTH_TYPE_PASSWORD)) {
 		if (ses.keys->trans.algo_crypt->cipherdesc == NULL) {
 			fprintf(stderr, "Sorry, I won't let you use password auth unencrypted.\n");
@@ -300,7 +306,7 @@ int cli_auth_try() {
 	}
 #endif
 
-#ifdef ENABLE_CLI_INTERACT_AUTH
+#if DROPBEAR_CLI_INTERACT_AUTH
 	if (!finished && (ses.authstate.authtypes & AUTH_TYPE_INTERACT)) {
 		if (ses.keys->trans.algo_crypt->cipherdesc == NULL) {
 			fprintf(stderr, "Sorry, I won't let you use interactive auth unencrypted.\n");
@@ -324,14 +330,14 @@ int cli_auth_try() {
 	return DROPBEAR_FAILURE;
 }
 
-#if defined(ENABLE_CLI_PASSWORD_AUTH) || defined(ENABLE_CLI_INTERACT_AUTH)
+#if DROPBEAR_CLI_PASSWORD_AUTH || DROPBEAR_CLI_INTERACT_AUTH
 /* A helper for getpass() that exits if the user cancels. The returned
  * password is statically allocated by getpass() */
-char* getpass_or_cancel(char* prompt)
+char* getpass_or_cancel(const char* prompt)
 {
 	char* password = NULL;
 	
-#ifdef DROPBEAR_PASSWORD_ENV
+#if DROPBEAR_USE_PASSWORD_ENV
 	/* Password provided in an environment var */
 	password = getenv(DROPBEAR_PASSWORD_ENV);
 	if (password)

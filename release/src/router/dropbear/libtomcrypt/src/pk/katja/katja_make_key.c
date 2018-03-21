@@ -5,19 +5,17 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file katja_make_key.c
   Katja key generation, Tom St Denis
-*/  
+*/
 
-#ifdef MKAT
+#ifdef LTC_MKAT
 
-/** 
+/**
    Create a Katja key
    @param prng     An active PRNG state
    @param wprng    The index of the PRNG desired
@@ -29,7 +27,7 @@ int katja_make_key(prng_state *prng, int wprng, int size, katja_key *key)
 {
    void *p, *q, *tmp1, *tmp2;
    int    err;
-  
+
    LTC_ARGCHK(key != NULL);
    LTC_ARGCHK(ltc_mp.name != NULL);
 
@@ -68,7 +66,7 @@ int katja_make_key(prng_state *prng, int wprng, int size, katja_key *key)
    if ((err = mp_copy( p,  key->p)) != CRYPT_OK)                       { goto error2; }
    if ((err = mp_copy( q,  key->q)) != CRYPT_OK)                       { goto error2; }
    if ((err = mp_mul(key->p, key->q, key->pq)) != CRYPT_OK)            { goto error2; } /* tmp1 = pq  */
-   if ((err = mp_mul(key->pq, key->p, key->N)) != CRYPT_OK)            { goto error2; } /* N = p^2q   */  
+   if ((err = mp_mul(key->pq, key->p, key->N)) != CRYPT_OK)            { goto error2; } /* N = p^2q   */
    if ((err = mp_sub_d( p, 1,  tmp1)) != CRYPT_OK)                     { goto error2; } /* tmp1 = q-1 */
    if ((err = mp_sub_d( q, 1,  tmp2)) != CRYPT_OK)                     { goto error2; } /* tmp2 = p-1 */
    if ((err = mp_lcm(tmp1, tmp2, key->d)) != CRYPT_OK)                 { goto error2; } /* tmp1 = lcd(p-1,q-1) */
@@ -96,6 +94,6 @@ done:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/katja/katja_make_key.c,v $ */
-/* $Revision: 1.10 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

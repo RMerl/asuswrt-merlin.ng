@@ -5,21 +5,19 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/** 
+/**
    @file ocb_shift_xor.c
    OCB implementation, internal function, by Tom St Denis
 */
 #include "tomcrypt.h"
 
-#ifdef OCB_MODE
+#ifdef LTC_OCB_MODE
 
 /**
    Compute the shift/xor for OCB (internal function)
-   @param ocb  The OCB state 
+   @param ocb  The OCB state
    @param Z    The destination of the shift
 */
 void ocb_shift_xor(ocb_state *ocb, unsigned char *Z)
@@ -34,6 +32,6 @@ void ocb_shift_xor(ocb_state *ocb, unsigned char *Z)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/ocb/ocb_shift_xor.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

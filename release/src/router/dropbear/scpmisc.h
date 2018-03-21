@@ -12,9 +12,6 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* actually from atomicio, but is only used in scp code */
-#define vwrite (ssize_t (*)(int, void *, size_t))write
-
 char	*chop(char *);
 char	*strdelim(char **);
 void	 set_nonblock(int);

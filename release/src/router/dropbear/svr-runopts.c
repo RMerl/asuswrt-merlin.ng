@@ -30,6 +30,8 @@
 #include "algo.h"
 #include "ecdsa.h"
 
+#include <grp.h>
+
 svr_runopts svr_opts; /* GLOBAL */
 
 static void printhelp(const char * progname);
@@ -46,16 +48,16 @@ static void printhelp(const char * progname) {
 					"		(default: none)\n"
 					"-r keyfile  Specify hostkeys (repeatable)\n"
 					"		defaults: \n"
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 					"		dss %s\n"
 #endif
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 					"		rsa %s\n"
 #endif
-#ifdef DROPBEAR_ECDSA
+#if DROPBEAR_ECDSA
 					"		ecdsa %s\n"
 #endif
-#ifdef DROPBEAR_DELAY_HOSTKEY
+#if DROPBEAR_DELAY_HOSTKEY
 					"-R		Create hostkeys as required\n" 
 #endif
 					"-F		Don't fork into background\n"
@@ -64,21 +66,26 @@ static void printhelp(const char * progname) {
 #else
 					"-E		Log to stderr rather than syslog\n"
 #endif
-#ifdef DO_MOTD
+#if DO_MOTD
 					"-m		Don't display the motd on login\n"
 #endif
 					"-w		Disallow root logins\n"
-#if defined(ENABLE_SVR_PASSWORD_AUTH) || defined(ENABLE_SVR_PAM_AUTH)
+#ifdef HAVE_GETGROUPLIST
+					"-G		Restrict logins to members of specified group\n"
+#endif
+#if DROPBEAR_SVR_PASSWORD_AUTH || DROPBEAR_SVR_PAM_AUTH
 					"-s		Disable password logins\n"
 					"-g		Disable password logins for root\n"
 					"-B		Allow blank password logins\n"
 #endif
-#ifdef ENABLE_SVR_LOCALTCPFWD
+					"-T		Maximum authentication tries (default %d)\n"
+#if DROPBEAR_SVR_LOCALTCPFWD
 					"-j		Disable local port forwarding\n"
 #endif
-#ifdef ENABLE_SVR_REMOTETCPFWD
+#if DROPBEAR_SVR_REMOTETCPFWD
 					"-k		Disable remote port forwarding\n"
 					"-a		Allow connections to forwarded ports from any host\n"
+					"-c command	Force executed command\n"
 #endif
 					"-p [address:]port\n"
 					"		Listen on specified tcp port (and optionally address),\n"
@@ -86,26 +93,27 @@ static void printhelp(const char * progname) {
 					"		(default port is %s if none specified)\n"
 					"-P PidFile	Create pid file PidFile\n"
 					"		(default %s)\n"
-#ifdef INETD_MODE
+#if INETD_MODE
 					"-i		Start for inetd\n"
 #endif
 					"-W <receive_window_buffer> (default %d, larger may be faster, max 1MB)\n"
 					"-K <keepalive>  (0 is never, default %d, in seconds)\n"
 					"-I <idle_timeout>  (0 is never, default %d, in seconds)\n"
 					"-V    Version\n"
-#ifdef DEBUG_TRACE
+#if DEBUG_TRACE
 					"-v		verbose (compiled with DEBUG_TRACE)\n"
 #endif
 					,DROPBEAR_VERSION, progname,
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 					DSS_PRIV_FILENAME,
 #endif
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 					RSA_PRIV_FILENAME,
 #endif
-#ifdef DROPBEAR_ECDSA
+#if DROPBEAR_ECDSA
 					ECDSA_PRIV_FILENAME,
 #endif
+					MAX_AUTH_TRIES,
 					DROPBEAR_MAX_PORTS, DROPBEAR_DEFPORT, DROPBEAR_PIDFILE,
 					DEFAULT_RECV_WINDOW, DEFAULT_KEEPALIVE, DEFAULT_IDLE_TIMEOUT);
 }
@@ -113,11 +121,12 @@ static void printhelp(const char * progname) {
 void svr_getopts(int argc, char ** argv) {
 
 	unsigned int i, j;
-	char ** next = 0;
+	char ** next = NULL;
 	int nextisport = 0;
 	char* recv_window_arg = NULL;
 	char* keepalive_arg = NULL;
 	char* idle_timeout_arg = NULL;
+	char* maxauthtries_arg = NULL;
 	char* keyfile = NULL;
 	char c;
 
@@ -125,36 +134,38 @@ void svr_getopts(int argc, char ** argv) {
 	/* see printhelp() for options */
 	svr_opts.bannerfile = NULL;
 	svr_opts.banner = NULL;
+	svr_opts.forced_command = NULL;
 	svr_opts.forkbg = 1;
 	svr_opts.norootlogin = 0;
+#ifdef HAVE_GETGROUPLIST
+	svr_opts.restrict_group = NULL;
+	svr_opts.restrict_group_gid = 0;
+#endif
 	svr_opts.noauthpass = 0;
 	svr_opts.norootpass = 0;
 	svr_opts.allowblankpass = 0;
+	svr_opts.maxauthtries = MAX_AUTH_TRIES;
 	svr_opts.inetdmode = 0;
 	svr_opts.portcount = 0;
 	svr_opts.hostkey = NULL;
 	svr_opts.delay_hostkey = 0;
 	svr_opts.pidfile = DROPBEAR_PIDFILE;
-#ifdef ENABLE_SVR_LOCALTCPFWD
+#if DROPBEAR_SVR_LOCALTCPFWD
 	svr_opts.nolocaltcp = 0;
 #endif
-#ifdef ENABLE_SVR_REMOTETCPFWD
+#if DROPBEAR_SVR_REMOTETCPFWD
 	svr_opts.noremotetcp = 0;
 #endif
 
 #ifndef DISABLE_ZLIB
-#if DROPBEAR_SERVER_DELAY_ZLIB
 	opts.compress_mode = DROPBEAR_COMPRESS_DELAYED;
-#else
-	opts.compress_mode = DROPBEAR_COMPRESS_ON;
-#endif
 #endif 
 
 	/* not yet
 	opts.ipv4 = 1;
 	opts.ipv6 = 1;
 	*/
-#ifdef DO_MOTD
+#if DO_MOTD
 	svr_opts.domotd = 1;
 #endif
 #ifndef DISABLE_SYSLOG
@@ -164,7 +175,7 @@ void svr_getopts(int argc, char ** argv) {
 	opts.keepalive_secs = DEFAULT_KEEPALIVE;
 	opts.idle_timeout_secs = DEFAULT_IDLE_TIMEOUT;
 	
-#ifdef ENABLE_SVR_REMOTETCPFWD
+#if DROPBEAR_SVR_REMOTETCPFWD
 	opts.listen_fwd_all = 0;
 #endif
 
@@ -176,6 +187,9 @@ void svr_getopts(int argc, char ** argv) {
 			switch (c) {
 				case 'b':
 					next = &svr_opts.bannerfile;
+					break;
+				case 'c':
+					next = &svr_opts.forced_command;
 					break;
 				case 'd':
 				case 'r':
@@ -192,12 +206,12 @@ void svr_getopts(int argc, char ** argv) {
 					opts.usingsyslog = 0;
 					break;
 #endif
-#ifdef ENABLE_SVR_LOCALTCPFWD
+#if DROPBEAR_SVR_LOCALTCPFWD
 				case 'j':
 					svr_opts.nolocaltcp = 1;
 					break;
 #endif
-#ifdef ENABLE_SVR_REMOTETCPFWD
+#if DROPBEAR_SVR_REMOTETCPFWD
 				case 'k':
 					svr_opts.noremotetcp = 1;
 					break;
@@ -205,7 +219,7 @@ void svr_getopts(int argc, char ** argv) {
 					opts.listen_fwd_all = 1;
 					break;
 #endif
-#ifdef INETD_MODE
+#if INETD_MODE
 				case 'i':
 					svr_opts.inetdmode = 1;
 					break;
@@ -216,7 +230,7 @@ void svr_getopts(int argc, char ** argv) {
 				case 'P':
 					next = &svr_opts.pidfile;
 					break;
-#ifdef DO_MOTD
+#if DO_MOTD
 				/* motd is displayed by default, -m turns it off */
 				case 'm':
 					svr_opts.domotd = 0;
@@ -225,6 +239,11 @@ void svr_getopts(int argc, char ** argv) {
 				case 'w':
 					svr_opts.norootlogin = 1;
 					break;
+#ifdef HAVE_GETGROUPLIST
+				case 'G':
+					next = &svr_opts.restrict_group;
+					break;
+#endif
 				case 'W':
 					next = &recv_window_arg;
 					break;
@@ -234,7 +253,10 @@ void svr_getopts(int argc, char ** argv) {
 				case 'I':
 					next = &idle_timeout_arg;
 					break;
-#if defined(ENABLE_SVR_PASSWORD_AUTH) || defined(ENABLE_SVR_PAM_AUTH)
+				case 'T':
+					next = &maxauthtries_arg;
+					break;
+#if DROPBEAR_SVR_PASSWORD_AUTH || DROPBEAR_SVR_PAM_AUTH
 				case 's':
 					svr_opts.noauthpass = 1;
 					break;
@@ -252,7 +274,7 @@ void svr_getopts(int argc, char ** argv) {
 				case 'u':
 					/* backwards compatibility with old urandom option */
 					break;
-#ifdef DEBUG_TRACE
+#if DEBUG_TRACE
 				case 'v':
 					debug_trace = 1;
 					break;
@@ -288,7 +310,7 @@ void svr_getopts(int argc, char ** argv) {
 			if (*next == NULL) {
 				dropbear_exit("Invalid null argument");
 			}
-			next = 0x00;
+			next = NULL;
 
 			if (keyfile) {
 				addhostkey(keyfile);
@@ -323,6 +345,18 @@ void svr_getopts(int argc, char ** argv) {
 		}
 		buf_setpos(svr_opts.banner, 0);
 	}
+
+#ifdef HAVE_GETGROUPLIST
+	if (svr_opts.restrict_group) {
+		struct group *restrictedgroup = getgrnam(svr_opts.restrict_group);
+
+		if (restrictedgroup){
+			svr_opts.restrict_group_gid = restrictedgroup->gr_gid;
+		} else {
+			dropbear_exit("Cannot restrict logins to group '%s' as the group does not exist", svr_opts.restrict_group);
+		}
+	}
+#endif
 	
 	if (recv_window_arg) {
 		opts.recv_window = atol(recv_window_arg);
@@ -330,6 +364,16 @@ void svr_getopts(int argc, char ** argv) {
 			dropbear_exit("Bad recv window '%s'", recv_window_arg);
 		}
 	}
+
+	if (maxauthtries_arg) {
+		unsigned int val = 0;
+		if (m_str_to_uint(maxauthtries_arg, &val) == DROPBEAR_FAILURE 
+			|| val == 0) {
+			dropbear_exit("Bad maxauthtries '%s'", maxauthtries_arg);
+		}
+		svr_opts.maxauthtries = val;
+	}
+
 	
 	if (keepalive_arg) {
 		unsigned int val;
@@ -345,6 +389,10 @@ void svr_getopts(int argc, char ** argv) {
 			dropbear_exit("Bad idle_timeout '%s'", idle_timeout_arg);
 		}
 		opts.idle_timeout_secs = val;
+	}
+
+	if (svr_opts.forced_command) {
+		dropbear_log(LOG_INFO, "Forced command set to '%s'", svr_opts.forced_command);
 	}
 }
 
@@ -434,30 +482,30 @@ static void loadhostkey(const char *keyfile, int fatal_duplicate) {
 		}
 	}
 
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 	if (type == DROPBEAR_SIGNKEY_RSA) {
 		loadhostkey_helper("RSA", (void**)&read_key->rsakey, (void**)&svr_opts.hostkey->rsakey, fatal_duplicate);
 	}
 #endif
 
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 	if (type == DROPBEAR_SIGNKEY_DSS) {
 		loadhostkey_helper("DSS", (void**)&read_key->dsskey, (void**)&svr_opts.hostkey->dsskey, fatal_duplicate);
 	}
 #endif
 
-#ifdef DROPBEAR_ECDSA
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECDSA
+#if DROPBEAR_ECC_256
 	if (type == DROPBEAR_SIGNKEY_ECDSA_NISTP256) {
 		loadhostkey_helper("ECDSA256", (void**)&read_key->ecckey256, (void**)&svr_opts.hostkey->ecckey256, fatal_duplicate);
 	}
 #endif
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 	if (type == DROPBEAR_SIGNKEY_ECDSA_NISTP384) {
 		loadhostkey_helper("ECDSA384", (void**)&read_key->ecckey384, (void**)&svr_opts.hostkey->ecckey384, fatal_duplicate);
 	}
 #endif
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECC_521
 	if (type == DROPBEAR_SIGNKEY_ECDSA_NISTP521) {
 		loadhostkey_helper("ECDSA521", (void**)&read_key->ecckey521, (void**)&svr_opts.hostkey->ecckey521, fatal_duplicate);
 	}
@@ -488,25 +536,28 @@ void load_all_hostkeys() {
 		m_free(hostkey_file);
 	}
 
-#ifdef DROPBEAR_RSA
-	loadhostkey(RSA_PRIV_FILENAME, 0);
+	/* Only load default host keys if a host key is not specified by the user */
+	if (svr_opts.num_hostkey_files == 0) {
+#if DROPBEAR_RSA
+		loadhostkey(RSA_PRIV_FILENAME, 0);
 #endif
 
-#ifdef DROPBEAR_DSS
-	loadhostkey(DSS_PRIV_FILENAME, 0);
+#if DROPBEAR_DSS
+		loadhostkey(DSS_PRIV_FILENAME, 0);
 #endif
 
-#ifdef DROPBEAR_ECDSA
-	loadhostkey(ECDSA_PRIV_FILENAME, 0);
+#if DROPBEAR_ECDSA
+		loadhostkey(ECDSA_PRIV_FILENAME, 0);
 #endif
+	}
 
-#ifdef DROPBEAR_DELAY_HOSTKEY
+#if DROPBEAR_DELAY_HOSTKEY
 	if (svr_opts.delay_hostkey) {
 		disable_unset_keys = 0;
 	}
 #endif
 
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 	if (disable_unset_keys && !svr_opts.hostkey->rsakey) {
 		disablekey(DROPBEAR_SIGNKEY_RSA);
 	} else {
@@ -514,7 +565,7 @@ void load_all_hostkeys() {
 	}
 #endif
 
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 	if (disable_unset_keys && !svr_opts.hostkey->dsskey) {
 		disablekey(DROPBEAR_SIGNKEY_DSS);
 	} else {
@@ -523,8 +574,8 @@ void load_all_hostkeys() {
 #endif
 
 
-#ifdef DROPBEAR_ECDSA
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECDSA
+#if DROPBEAR_ECC_256
 	if ((disable_unset_keys || ECDSA_DEFAULT_SIZE != 256)
 		&& !svr_opts.hostkey->ecckey256) {
 		disablekey(DROPBEAR_SIGNKEY_ECDSA_NISTP256);
@@ -533,7 +584,7 @@ void load_all_hostkeys() {
 	}
 #endif
 
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 	if ((disable_unset_keys || ECDSA_DEFAULT_SIZE != 384)
 		&& !svr_opts.hostkey->ecckey384) {
 		disablekey(DROPBEAR_SIGNKEY_ECDSA_NISTP384);
@@ -542,7 +593,7 @@ void load_all_hostkeys() {
 	}
 #endif
 
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECC_521
 	if ((disable_unset_keys || ECDSA_DEFAULT_SIZE != 521)
 		&& !svr_opts.hostkey->ecckey521) {
 		disablekey(DROPBEAR_SIGNKEY_ECDSA_NISTP521);

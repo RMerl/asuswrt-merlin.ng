@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /**
@@ -15,7 +13,7 @@
 */
 #include "tomcrypt.h"
 
-#ifdef SKIPJACK
+#ifdef LTC_SKIPJACK
 
 const struct ltc_cipher_descriptor skipjack_desc =
 {
@@ -28,7 +26,7 @@ const struct ltc_cipher_descriptor skipjack_desc =
     &skipjack_test,
     &skipjack_done,
     &skipjack_keysize,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
 static const unsigned char sbox[256] = {
@@ -75,7 +73,7 @@ int skipjack_setup(const unsigned char *key, int keylen, int num_rounds, symmetr
       return CRYPT_INVALID_KEYSIZE;
    }
 
-   if (num_rounds != 32 && num_rounds != 0) { 
+   if (num_rounds != 32 && num_rounds != 0) {
       return CRYPT_INVALID_ROUNDS;
    }
 
@@ -201,7 +199,7 @@ int skipjack_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_k
   Decrypts a block of text with Skipjack
   @param ct The input ciphertext (8 bytes)
   @param pt The output plaintext (8 bytes)
-  @param skey The key as scheduled 
+  @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
 #ifdef LTC_CLEAN_STACK
@@ -223,7 +221,7 @@ int skipjack_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_k
    w3 = ((unsigned)ct[4]<<8)|ct[5];
    w4 = ((unsigned)ct[6]<<8)|ct[7];
 
-   /* 8 rounds of RULE B^-1 
+   /* 8 rounds of RULE B^-1
 
       Note the value "kp = 8" comes from "kp = (32 * 4) mod 10" where 32*4 is 128 which mod 10 is 8
     */
@@ -273,7 +271,7 @@ int skipjack_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
+ #else
    static const struct {
        unsigned char key[10], pt[8], ct[8];
    } tests[] = {
@@ -298,7 +296,8 @@ int skipjack_test(void)
       skipjack_ecb_decrypt(buf[0], buf[1], &key);
 
       /* compare */
-      if (XMEMCMP(buf[0], tests[x].ct, 8) != 0 || XMEMCMP(buf[1], tests[x].pt, 8) != 0) {
+      if (compare_testvector(buf[0], 8, tests[x].ct, 8, "Skipjack Encrypt", x) != 0 ||
+            compare_testvector(buf[1], 8, tests[x].pt, 8, "Skipjack Decrypt", x) != 0) {
          return CRYPT_FAIL_TESTVECTOR;
       }
 
@@ -313,11 +312,12 @@ int skipjack_test(void)
   #endif
 }
 
-/** Terminate the context 
+/** Terminate the context
    @param skey    The scheduled key
 */
 void skipjack_done(symmetric_key *skey)
 {
+  LTC_UNUSED_PARAM(skey);
 }
 
 /**
@@ -338,6 +338,6 @@ int skipjack_keysize(int *keysize)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/ciphers/skipjack.c,v $ */
-/* $Revision: 1.12 $ */
-/* $Date: 2006/11/08 23:01:06 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

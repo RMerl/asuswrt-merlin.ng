@@ -49,7 +49,7 @@ static int checkmac(void);
 #define ZLIB_COMPRESS_EXPANSION (((RECV_MAX_PAYLOAD_LEN/16384)+1)*5 + 6)
 #define ZLIB_DECOMPRESS_INCR 1024
 #ifndef DISABLE_ZLIB
-static buffer* buf_decompress(buffer* buf, unsigned int len);
+static buffer* buf_decompress(const buffer* buf, unsigned int len);
 static void buf_compress(buffer * dest, buffer * src, unsigned int len);
 #endif
 
@@ -331,10 +331,6 @@ void decrypt_packet() {
 		ses.payload = ses.readbuf;
 		ses.payload_beginning = ses.payload->pos;
 		buf_setlen(ses.payload, ses.payload->pos + len);
-		/* copy payload */
-		//ses.payload = buf_new(len);
-		//memcpy(ses.payload->data, buf_getptr(ses.readbuf, len), len);
-		//buf_incrlen(ses.payload, len);
 	}
 	ses.readbuf = NULL;
 
@@ -367,7 +363,7 @@ static int checkmac() {
 
 #ifndef DISABLE_ZLIB
 /* returns a pointer to a newly created buffer */
-static buffer* buf_decompress(buffer* buf, unsigned int len) {
+static buffer* buf_decompress(const buffer* buf, unsigned int len) {
 
 	int result;
 	buffer * ret;

@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -21,14 +19,14 @@
 /**
    Initialize a OFB context
    @param cipher      The index of the cipher desired
-   @param IV          The initial vector
-   @param key         The secret key 
+   @param IV          The initialization vector
+   @param key         The secret key
    @param keylen      The length of the secret key (octets)
    @param num_rounds  Number of rounds in the cipher desired (0 for default)
    @param ofb         The OFB state to initialize
    @return CRYPT_OK if successful
 */
-int ofb_start(int cipher, const unsigned char *IV, const unsigned char *key, 
+int ofb_start(int cipher, const unsigned char *IV, const unsigned char *key,
               int keylen, int num_rounds, symmetric_OFB *ofb)
 {
    int x, err;
@@ -55,6 +53,6 @@ int ofb_start(int cipher, const unsigned char *IV, const unsigned char *key,
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/ofb/ofb_start.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/06/29 01:51:34 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

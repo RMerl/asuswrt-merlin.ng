@@ -1,23 +1,29 @@
 /* Tune the Karatsuba parameters
  *
- * Tom St Denis, tomstdenis@gmail.com
+ * Tom St Denis, tstdenis82@gmail.com
  */
 #include <tommath.h>
 #include <time.h>
+#include <stdint.h>
 
 /* how many times todo each size mult.  Depends on your computer.  For slow computers
- * this can be low like 5 or 10.  For fast [re: Athlon] should be 25 - 50 or so 
+ * this can be low like 5 or 10.  For fast [re: Athlon] should be 25 - 50 or so
  */
 #define TIMES (1UL<<14UL)
 
+#ifndef X86_TIMER
+
 /* RDTSC from Scott Duplichan */
-static ulong64 TIMFUNC (void)
+static uint64_t TIMFUNC (void)
    {
    #if defined __GNUC__
       #if defined(__i386__) || defined(__x86_64__)
-         unsigned long long a;
-         __asm__ __volatile__ ("rdtsc\nmovl %%eax,%0\nmovl %%edx,4+%0\n"::"m"(a):"%eax","%edx");
-         return a;
+        /* version from http://www.mcs.anl.gov/~kazutomo/rdtsc.html
+         * the old code always got a warning issued by gcc, clang did not complain...
+         */
+        unsigned hi, lo;
+        __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+        return ((uint64_t)lo)|( ((uint64_t)hi)<<32);
       #else /* gcc-IA64 version */
          unsigned long result;
          __asm__ __volatile__("mov %0=ar.itc" : "=r"(result) :: "memory");
@@ -42,23 +48,21 @@ static ulong64 TIMFUNC (void)
    }
 
 
-#ifndef X86_TIMER
-
 /* generic ISO C timer */
-ulong64 LBL_T;
+uint64_t LBL_T;
 void t_start(void) { LBL_T = TIMFUNC(); }
-ulong64 t_read(void) { return TIMFUNC() - LBL_T; }
+uint64_t t_read(void) { return TIMFUNC() - LBL_T; }
 
 #else
 extern void t_start(void);
-extern ulong64 t_read(void);
+extern uint64_t t_read(void);
 #endif
 
-ulong64 time_mult(int size, int s)
+uint64_t time_mult(int size, int s)
 {
   unsigned long     x;
   mp_int  a, b, c;
-  ulong64 t1;
+  uint64_t t1;
 
   mp_init (&a);
   mp_init (&b);
@@ -67,7 +71,7 @@ ulong64 time_mult(int size, int s)
   mp_rand (&a, size);
   mp_rand (&b, size);
 
-  if (s == 1) { 
+  if (s == 1) {
       KARATSUBA_MUL_CUTOFF = size;
   } else {
       KARATSUBA_MUL_CUTOFF = 100000;
@@ -84,18 +88,18 @@ ulong64 time_mult(int size, int s)
   return t1;
 }
 
-ulong64 time_sqr(int size, int s)
+uint64_t time_sqr(int size, int s)
 {
   unsigned long     x;
   mp_int  a, b;
-  ulong64 t1;
+  uint64_t t1;
 
   mp_init (&a);
   mp_init (&b);
 
   mp_rand (&a, size);
 
-  if (s == 1) { 
+  if (s == 1) {
       KARATSUBA_SQR_CUTOFF = size;
   } else {
       KARATSUBA_SQR_CUTOFF = 100000;
@@ -114,10 +118,10 @@ ulong64 time_sqr(int size, int s)
 int
 main (void)
 {
-  ulong64 t1, t2;
+  uint64_t t1, t2;
   int x, y;
 
-  for (x = 8; ; x += 2) { 
+  for (x = 8; ; x += 2) {
      t1 = time_mult(x, 0);
      t2 = time_mult(x, 1);
      printf("%d: %9llu %9llu, %9llu\n", x, t1, t2, t2 - t1);
@@ -125,7 +129,7 @@ main (void)
   }
   y = x;
 
-  for (x = 8; ; x += 2) { 
+  for (x = 8; ; x += 2) {
      t1 = time_sqr(x, 0);
      t2 = time_sqr(x, 1);
      printf("%d: %9llu %9llu, %9llu\n", x, t1, t2, t2 - t1);
@@ -137,6 +141,6 @@ main (void)
   return 0;
 }
 
-/* $Source: /cvs/libtom/libtommath/etc/tune.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:47 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

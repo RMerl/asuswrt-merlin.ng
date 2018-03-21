@@ -4,7 +4,7 @@
 #include "ltc_prng.h"
 #include "ecc.h"
 
-#ifdef DROPBEAR_LTC_PRNG
+#if DROPBEAR_LTC_PRNG
 	int dropbear_ltc_prng = -1;
 #endif
 
@@ -14,16 +14,16 @@
 void crypto_init() {
 
 	const struct ltc_cipher_descriptor *regciphers[] = {
-#ifdef DROPBEAR_AES
+#if DROPBEAR_AES
 		&aes_desc,
 #endif
-#ifdef DROPBEAR_BLOWFISH
+#if DROPBEAR_BLOWFISH
 		&blowfish_desc,
 #endif
-#ifdef DROPBEAR_TWOFISH
+#if DROPBEAR_TWOFISH
 		&twofish_desc,
 #endif
-#ifdef DROPBEAR_3DES
+#if DROPBEAR_3DES
 		&des3_desc,
 #endif
 		NULL
@@ -32,16 +32,16 @@ void crypto_init() {
 	const struct ltc_hash_descriptor *reghashes[] = {
 		/* we need sha1 for hostkey stuff regardless */
 		&sha1_desc,
-#ifdef DROPBEAR_MD5_HMAC
+#if DROPBEAR_MD5_HMAC
 		&md5_desc,
 #endif
-#ifdef DROPBEAR_SHA256
+#if DROPBEAR_SHA256
 		&sha256_desc,
 #endif
-#ifdef DROPBEAR_SHA384
+#if DROPBEAR_SHA384
 		&sha384_desc,
 #endif
-#ifdef DROPBEAR_SHA512
+#if DROPBEAR_SHA512
 		&sha512_desc,
 #endif
 		NULL
@@ -60,14 +60,14 @@ void crypto_init() {
 		}
 	}
 
-#ifdef DROPBEAR_LTC_PRNG
+#if DROPBEAR_LTC_PRNG
 	dropbear_ltc_prng = register_prng(&dropbear_prng_desc);
 	if (dropbear_ltc_prng == -1) {
 		dropbear_exit("Error registering crypto");
 	}
 #endif
 
-#ifdef DROPBEAR_ECC
+#if DROPBEAR_ECC
 	ltc_mp = ltm_desc;
 	dropbear_ecc_fill_dp();
 #endif

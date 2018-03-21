@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/** 
+/**
     @file eax_test.c
     EAX implementation, self-test, by Tom St Denis
 */
 #include "tomcrypt.h"
 
-#ifdef EAX_MODE
+#ifdef LTC_EAX_MODE
 
 /**
    Test the EAX implementation
@@ -27,16 +25,16 @@ int eax_test(void)
    return CRYPT_NOP;
 #else
    static const struct {
-       int               keylen, 
-                       noncelen, 
-                      headerlen, 
+       int               keylen,
+                       noncelen,
+                      headerlen,
                          msglen;
 
-       unsigned char        key[MAXBLOCKSIZE], 
-                          nonce[MAXBLOCKSIZE], 
-                         header[MAXBLOCKSIZE], 
+       unsigned char        key[MAXBLOCKSIZE],
+                          nonce[MAXBLOCKSIZE],
+                         header[MAXBLOCKSIZE],
                       plaintext[MAXBLOCKSIZE],
-                     ciphertext[MAXBLOCKSIZE], 
+                     ciphertext[MAXBLOCKSIZE],
                             tag[MAXBLOCKSIZE];
    } tests[] = {
 
@@ -107,7 +105,7 @@ int eax_test(void)
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
    /* nonce */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },  
+     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
    /* header */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
@@ -134,7 +132,7 @@ int eax_test(void)
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
    /* nonce */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e },  
+     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e },
    /* header */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d },
@@ -176,7 +174,7 @@ int eax_test(void)
 
 {
    16, 16, 8, 2,
-   /* key */ 
+   /* key */
    { 0x91, 0x94, 0x5d, 0x3f, 0x4d, 0xcb, 0xee, 0x0b,
      0xf4, 0x5e, 0xf5, 0x22, 0x55, 0xf0, 0x95, 0xa4 },
    /* nonce */
@@ -210,14 +208,14 @@ int eax_test(void)
    /* Tag */
    { 0x3a, 0x59, 0xf2, 0x38, 0xa2, 0x3e, 0x39, 0x19,
      0x9d, 0xc9, 0x26, 0x66, 0x26, 0xc4, 0x0f, 0x80 }
-}   
+}
 
 };
    int err, x, idx, res;
    unsigned long len;
    unsigned char outct[MAXBLOCKSIZE], outtag[MAXBLOCKSIZE];
 
-    /* AES can be under rijndael or aes... try to find it */ 
+    /* AES can be under rijndael or aes... try to find it */
     if ((idx = find_cipher("aes")) == -1) {
        if ((idx = find_cipher("rijndael")) == -1) {
           return CRYPT_NOP;
@@ -231,22 +229,8 @@ int eax_test(void)
             tests[x].plaintext, tests[x].msglen, outct, outtag, &len)) != CRYPT_OK) {
            return err;
         }
-        if (XMEMCMP(outct, tests[x].ciphertext, tests[x].msglen) || XMEMCMP(outtag, tests[x].tag, len)) {
-#if 0
-           unsigned long y;
-           printf("\n\nFailure: \nCT:\n");
-           for (y = 0; y < (unsigned long)tests[x].msglen; ) {
-               printf("0x%02x", outct[y]);
-               if (y < (unsigned long)(tests[x].msglen-1)) printf(", ");
-               if (!(++y % 8)) printf("\n");
-           }
-           printf("\nTAG:\n");
-           for (y = 0; y < len; ) {
-               printf("0x%02x", outtag[y]);
-               if (y < len-1) printf(", ");
-               if (!(++y % 8)) printf("\n");
-           }
-#endif
+        if (compare_testvector(outtag, len, tests[x].tag, len, "EAX Tag", x) ||
+              compare_testvector(outct, tests[x].msglen, tests[x].ciphertext, tests[x].msglen, "EAX CT", x)) {
            return CRYPT_FAIL_TESTVECTOR;
         }
 
@@ -256,27 +240,20 @@ int eax_test(void)
              outct, tests[x].msglen, outct, outtag, len, &res)) != CRYPT_OK) {
             return err;
         }
-        if ((res != 1) || XMEMCMP(outct, tests[x].plaintext, tests[x].msglen)) {
-#if 0
-           unsigned long y;
-           printf("\n\nFailure (res == %d): \nPT:\n", res);
-           for (y = 0; y < (unsigned long)tests[x].msglen; ) {
-               printf("0x%02x", outct[y]);
-               if (y < (unsigned long)(tests[x].msglen-1)) printf(", ");
-               if (!(++y % 8)) printf("\n");
-           }
-           printf("\n\n");
+        if ((res != 1) || compare_testvector(outct, tests[x].msglen, tests[x].plaintext, tests[x].msglen, "EAX", x)) {
+#ifdef LTC_TEST_DBG
+           printf("\n\nEAX: Failure-decrypt - res = %d\n", res);
 #endif
            return CRYPT_FAIL_TESTVECTOR;
         }
 
-     }
-     return CRYPT_OK;
+    }
+    return CRYPT_OK;
 #endif /* LTC_TEST */
 }
 
-#endif /* EAX_MODE */
+#endif /* LTC_EAX_MODE */
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/eax/eax_test.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

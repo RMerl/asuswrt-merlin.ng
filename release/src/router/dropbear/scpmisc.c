@@ -235,7 +235,7 @@ sanitise_stdfd(void)
 {
 	int nullfd, dupfd;
 
-	if ((nullfd = dupfd = open(_PATH_DEVNULL, O_RDWR)) == -1) {
+	if ((nullfd = dupfd = open(DROPBEAR_PATH_DEVNULL, O_RDWR)) == -1) {
 		fprintf(stderr, "Couldn't open /dev/null: %s", strerror(errno));
 		exit(1);
 	}

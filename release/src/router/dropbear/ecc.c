@@ -1,13 +1,12 @@
 #include "includes.h"
-#include "options.h"
 #include "ecc.h"
 #include "dbutil.h"
 #include "bignum.h"
 
-#ifdef DROPBEAR_ECC
+#if DROPBEAR_ECC
 
 /* .dp members are filled out by dropbear_ecc_fill_dp() at startup */
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECC_256
 struct dropbear_ecc_curve ecc_curve_nistp256 = {
 	32,		/* .ltc_size	*/
 	NULL,		/* .dp		*/
@@ -15,7 +14,7 @@ struct dropbear_ecc_curve ecc_curve_nistp256 = {
 	"nistp256"	/* .name	*/
 };
 #endif
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 struct dropbear_ecc_curve ecc_curve_nistp384 = {
 	48,		/* .ltc_size	*/
 	NULL,		/* .dp		*/
@@ -23,7 +22,7 @@ struct dropbear_ecc_curve ecc_curve_nistp384 = {
 	"nistp384"	/* .name	*/
 };
 #endif
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECC_521
 struct dropbear_ecc_curve ecc_curve_nistp521 = {
 	66,		/* .ltc_size	*/
 	NULL,		/* .dp		*/
@@ -33,13 +32,13 @@ struct dropbear_ecc_curve ecc_curve_nistp521 = {
 #endif
 
 struct dropbear_ecc_curve *dropbear_ecc_curves[] = {
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECC_256
 	&ecc_curve_nistp256,
 #endif
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 	&ecc_curve_nistp384,
 #endif
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECC_521
 	&ecc_curve_nistp521,
 #endif
 	NULL
@@ -82,7 +81,7 @@ ecc_key * new_ecc_key(void) {
 
 /* Copied from libtomcrypt ecc_import.c (version there is static), modified
    for different mp_int pointer without LTC_SOURCE */
-static int ecc_is_point(ecc_key *key)
+static int ecc_is_point(const ecc_key *key)
 {
 	mp_int *prime, *b, *t1, *t2;
 	int err;
@@ -213,7 +212,7 @@ ecc_key * buf_get_ecc_raw_pubkey(buffer *buf, const struct dropbear_ecc_curve *c
 
 /* a modified version of libtomcrypt's "ecc_shared_secret" to output
    a mp_int instead. */
-mp_int * dropbear_ecc_shared_secret(ecc_key *public_key, ecc_key *private_key)
+mp_int * dropbear_ecc_shared_secret(ecc_key *public_key, const ecc_key *private_key)
 {
 	ecc_point *result = NULL;
 	mp_int *prime = NULL, *shared_secret = NULL;
@@ -221,46 +220,41 @@ mp_int * dropbear_ecc_shared_secret(ecc_key *public_key, ecc_key *private_key)
 
    /* type valid? */
 	if (private_key->type != PK_PRIVATE) {
-		goto done;
+		goto out;
 	}
 
 	if (private_key->dp != public_key->dp) {
-		goto done;
+		goto out;
 	}
 
    /* make new point */
 	result = ltc_ecc_new_point();
 	if (result == NULL) {
-		goto done;
+		goto out;
 	}
 
 	prime = m_malloc(sizeof(*prime));
 	m_mp_init(prime);
 
 	if (mp_read_radix(prime, (char *)private_key->dp->prime, 16) != CRYPT_OK) { 
-		goto done; 
+		goto out;
 	}
 	if (ltc_mp.ecc_ptmul(private_key->k, &public_key->pubkey, result, prime, 1) != CRYPT_OK) { 
-		goto done; 
+		goto out;
 	}
+
+	shared_secret = m_malloc(sizeof(*shared_secret));
+	m_mp_init(shared_secret);
+	if (mp_copy(result->x, shared_secret) != CRYPT_OK) {
+		goto out;
+	}
+
+	mp_clear(prime);
+	m_free(prime);
+	ltc_ecc_del_point(result);
 
 	err = DROPBEAR_SUCCESS;
-	done:
-	if (err == DROPBEAR_SUCCESS) {
-		shared_secret = m_malloc(sizeof(*shared_secret));
-		m_mp_init(shared_secret);
-		mp_copy(result->x, shared_secret);
-	}
-
-	if (prime) {
-		mp_clear(prime);
-		m_free(prime);
-	}
-	if (result)
-	{
-		ltc_ecc_del_point(result);
-	}
-
+	out:
 	if (err == DROPBEAR_FAILURE) {
 		dropbear_exit("ECC error");
 	}

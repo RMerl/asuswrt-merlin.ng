@@ -78,6 +78,6 @@ void time_encmacs(void);
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/testprof/tomcrypt_test.h,v $ */
-/* $Revision: 1.14 $ */
-/* $Date: 2006/10/18 03:36:34 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

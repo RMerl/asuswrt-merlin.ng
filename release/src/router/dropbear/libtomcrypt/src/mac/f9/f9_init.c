@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -45,12 +43,12 @@ int f9_init(f9_state *f9, int cipher, const unsigned char *key, unsigned long ke
    if ((err = cipher_descriptor[cipher].setup(key, keylen, 0, &f9->key)) != CRYPT_OK) {
       goto done;
    }
-   
+
    /* make the second key */
    for (x = 0; (unsigned)x < keylen; x++) {
       f9->akey[x] = key[x] ^ 0xAA;
    }
- 
+
    /* setup struct */
    zeromem(f9->IV,  cipher_descriptor[cipher].block_length);
    zeromem(f9->ACC, cipher_descriptor[cipher].block_length);
@@ -64,7 +62,7 @@ done:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/f9/f9_init.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/11/08 22:54:18 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

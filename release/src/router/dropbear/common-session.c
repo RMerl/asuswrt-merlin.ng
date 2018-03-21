@@ -43,18 +43,11 @@ static void read_session_identification(void);
 
 struct sshsession ses; /* GLOBAL */
 
-/* need to know if the session struct has been initialised, this way isn't the
- * cleanest, but works OK */
-int sessinitdone = 0; /* GLOBAL */
-
-/* this is set when we get SIGINT or SIGTERM, the handler is in main.c */
-int exitflag = 0; /* GLOBAL */
-
 /* called only at the start of a session, set up initial state */
 void common_session_init(int sock_in, int sock_out) {
 	time_t now;
 
-#ifdef DEBUG_TRACE
+#if DEBUG_TRACE
 	debug_start_net();
 #endif
 
@@ -143,7 +136,7 @@ void common_session_init(int sock_in, int sock_out) {
 	TRACE(("leave session_init"))
 }
 
-void session_loop(void(*loophandler)()) {
+void session_loop(void(*loophandler)(void)) {
 
 	fd_set readfd, writefd;
 	struct timeval timeout;
@@ -162,7 +155,6 @@ void session_loop(void(*loophandler)()) {
 		/* We get woken up when signal handlers write to this pipe.
 		   SIGCHLD in svr-chansession is the only one currently. */
 		FD_SET(ses.signal_pipe[0], &readfd);
-		ses.channel_signal_pending = 0;
 
 		/* set up for channels which can be read/written */
 		setchannelfds(&readfd, &writefd, writequeue_has_space);
@@ -190,7 +182,7 @@ void session_loop(void(*loophandler)()) {
 
 		val = select(ses.maxfd+1, &readfd, &writefd, NULL, &timeout);
 
-		if (exitflag) {
+		if (ses.exitflag) {
 			dropbear_exit("Terminated by signal");
 		}
 		
@@ -210,6 +202,7 @@ void session_loop(void(*loophandler)()) {
 		/* We'll just empty out the pipe if required. We don't do
 		any thing with the data, since the pipe's purpose is purely to
 		wake up the select() above. */
+		ses.channel_signal_pending = 0;
 		if (FD_ISSET(ses.signal_pipe[0], &readfd)) {
 			char x;
 			TRACE(("signal pipe set"))
@@ -244,6 +237,10 @@ void session_loop(void(*loophandler)()) {
 
 		handle_connect_fds(&writefd);
 
+		/* loop handler prior to channelio, in case the server loophandler closes
+		channels on process exit */
+		loophandler();
+
 		/* process pipes etc for the channels, ses.dataallowed == 0
 		 * during rekeying ) */
 		channelio(&readfd, &writefd);
@@ -253,11 +250,6 @@ void session_loop(void(*loophandler)()) {
 			if (!isempty(&ses.writequeue)) {
 				write_packet();
 			}
-		}
-
-
-		if (loophandler) {
-			loophandler();
 		}
 
 	} /* for(;;) */
@@ -280,8 +272,8 @@ void session_cleanup() {
 	TRACE(("enter session_cleanup"))
 	
 	/* we can't cleanup if we don't know the session state */
-	if (!sessinitdone) {
-		TRACE(("leave session_cleanup: !sessinitdone"))
+	if (!ses.init_done) {
+		TRACE(("leave session_cleanup: !ses.init_done"))
 		return;
 	}
 
@@ -295,7 +287,7 @@ void session_cleanup() {
 	}
 
 	/* After these are freed most functions will fail */
-#ifdef DROPBEAR_CLEANUP
+#if DROPBEAR_CLEANUP
 	/* listeners call cleanup functions, this should occur before
 	other session state is freed. */
 	remove_all_listeners();

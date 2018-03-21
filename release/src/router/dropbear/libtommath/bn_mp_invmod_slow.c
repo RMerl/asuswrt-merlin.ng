@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_INVMOD_SLOW_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* hac 14.61, pp608 */
@@ -22,7 +22,7 @@ int mp_invmod_slow (mp_int * a, mp_int * b, mp_int * c)
   int     res;
 
   /* b cannot be negative */
-  if (b->sign == MP_NEG || mp_iszero(b) == 1) {
+  if ((b->sign == MP_NEG) || (mp_iszero(b) == MP_YES)) {
     return MP_VAL;
   }
 
@@ -41,7 +41,7 @@ int mp_invmod_slow (mp_int * a, mp_int * b, mp_int * c)
   }
 
   /* 2. [modified] if x,y are both even then return an error! */
-  if (mp_iseven (&x) == 1 && mp_iseven (&y) == 1) {
+  if ((mp_iseven (&x) == MP_YES) && (mp_iseven (&y) == MP_YES)) {
     res = MP_VAL;
     goto LBL_ERR;
   }
@@ -58,13 +58,13 @@ int mp_invmod_slow (mp_int * a, mp_int * b, mp_int * c)
 
 top:
   /* 4.  while u is even do */
-  while (mp_iseven (&u) == 1) {
+  while (mp_iseven (&u) == MP_YES) {
     /* 4.1 u = u/2 */
     if ((res = mp_div_2 (&u, &u)) != MP_OKAY) {
       goto LBL_ERR;
     }
     /* 4.2 if A or B is odd then */
-    if (mp_isodd (&A) == 1 || mp_isodd (&B) == 1) {
+    if ((mp_isodd (&A) == MP_YES) || (mp_isodd (&B) == MP_YES)) {
       /* A = (A+y)/2, B = (B-x)/2 */
       if ((res = mp_add (&A, &y, &A)) != MP_OKAY) {
          goto LBL_ERR;
@@ -83,13 +83,13 @@ top:
   }
 
   /* 5.  while v is even do */
-  while (mp_iseven (&v) == 1) {
+  while (mp_iseven (&v) == MP_YES) {
     /* 5.1 v = v/2 */
     if ((res = mp_div_2 (&v, &v)) != MP_OKAY) {
       goto LBL_ERR;
     }
     /* 5.2 if C or D is odd then */
-    if (mp_isodd (&C) == 1 || mp_isodd (&D) == 1) {
+    if ((mp_isodd (&C) == MP_YES) || (mp_isodd (&D) == MP_YES)) {
       /* C = (C+y)/2, D = (D-x)/2 */
       if ((res = mp_add (&C, &y, &C)) != MP_OKAY) {
          goto LBL_ERR;
@@ -137,7 +137,7 @@ top:
   }
 
   /* if not zero goto step 4 */
-  if (mp_iszero (&u) == 0)
+  if (mp_iszero (&u) == MP_NO)
     goto top;
 
   /* now a = C, b = D, gcd == g*v */
@@ -170,6 +170,6 @@ LBL_ERR:mp_clear_multi (&x, &y, &u, &v, &A, &B, &C, &D, NULL);
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_invmod_slow.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

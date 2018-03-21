@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_ADD_D_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* single digit addition */
@@ -23,14 +23,14 @@ mp_add_d (mp_int * a, mp_digit b, mp_int * c)
   mp_digit *tmpa, *tmpc, mu;
 
   /* grow c as required */
-  if (c->alloc < a->used + 1) {
+  if (c->alloc < (a->used + 1)) {
      if ((res = mp_grow(c, a->used + 1)) != MP_OKAY) {
         return res;
      }
   }
 
   /* if a is negative and |a| >= b, call c = |a| - b */
-  if (a->sign == MP_NEG && (a->used > 1 || a->dp[0] >= b)) {
+  if ((a->sign == MP_NEG) && ((a->used > 1) || (a->dp[0] >= b))) {
      /* temporarily fix sign of a */
      a->sign = MP_ZPOS;
 
@@ -48,9 +48,6 @@ mp_add_d (mp_int * a, mp_digit b, mp_int * c)
 
   /* old number of used digits in c */
   oldused = c->used;
-
-  /* sign always positive */
-  c->sign = MP_ZPOS;
 
   /* source alias */
   tmpa    = a->dp;
@@ -96,6 +93,9 @@ mp_add_d (mp_int * a, mp_digit b, mp_int * c)
      ix       = 1;
   }
 
+  /* sign always positive */
+  c->sign = MP_ZPOS;
+
   /* now zero to oldused */
   while (ix++ < oldused) {
      *tmpc++ = 0;
@@ -107,6 +107,6 @@ mp_add_d (mp_int * a, mp_digit b, mp_int * c)
 
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_add_d.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

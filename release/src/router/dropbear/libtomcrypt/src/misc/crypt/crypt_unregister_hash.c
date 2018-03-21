@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -39,6 +37,6 @@ int unregister_hash(const struct ltc_hash_descriptor *hash)
    return CRYPT_ERROR;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/src/misc/crypt/crypt_unregister_hash.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

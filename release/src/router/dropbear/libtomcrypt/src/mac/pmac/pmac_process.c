@@ -5,14 +5,12 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
-/** 
+/**
    @file pmac_process.c
-   PMAC implementation, process data, by Tom St Denis 
+   PMAC implementation, process data, by Tom St Denis
 */
 
 
@@ -48,13 +46,13 @@ int pmac_process(pmac_state *pmac, const unsigned char *in, unsigned long inlen)
       for (x = 0; x < (inlen - 16); x += 16) {
           pmac_shift_xor(pmac);
           for (y = 0; y < 16; y += sizeof(LTC_FAST_TYPE)) {
-              *((LTC_FAST_TYPE*)(&Z[y])) = *((LTC_FAST_TYPE*)(&in[y])) ^ *((LTC_FAST_TYPE*)(&pmac->Li[y]));
+              *(LTC_FAST_TYPE_PTR_CAST(&Z[y])) = *(LTC_FAST_TYPE_PTR_CAST(&in[y])) ^ *(LTC_FAST_TYPE_PTR_CAST(&pmac->Li[y]));
           }
           if ((err = cipher_descriptor[pmac->cipher_idx].ecb_encrypt(Z, Z, &pmac->key)) != CRYPT_OK) {
              return err;
           }
           for (y = 0; y < 16; y += sizeof(LTC_FAST_TYPE)) {
-              *((LTC_FAST_TYPE*)(&pmac->checksum[y])) ^= *((LTC_FAST_TYPE*)(&Z[y]));
+              *(LTC_FAST_TYPE_PTR_CAST(&pmac->checksum[y])) ^= *(LTC_FAST_TYPE_PTR_CAST(&Z[y]));
           }
           in += 16;
       }
@@ -62,7 +60,7 @@ int pmac_process(pmac_state *pmac, const unsigned char *in, unsigned long inlen)
    }
 #endif
 
-   while (inlen != 0) { 
+   while (inlen != 0) {
        /* ok if the block is full we xor in prev, encrypt and replace prev */
        if (pmac->buflen == pmac->block_len) {
           pmac_shift_xor(pmac);
@@ -95,6 +93,6 @@ int pmac_process(pmac_state *pmac, const unsigned char *in, unsigned long inlen)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/pmac/pmac_process.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/03 00:39:49 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/** 
+/**
   @file ocb_decrypt_verify_memory.c
-  OCB implementation, helper to decrypt block of memory, by Tom St Denis 
+  OCB implementation, helper to decrypt block of memory, by Tom St Denis
 */
 #include "tomcrypt.h"
 
-#ifdef OCB_MODE
+#ifdef LTC_OCB_MODE
 
 /**
    Decrypt and compare the tag with OCB.
@@ -33,7 +31,7 @@
 */
 int ocb_decrypt_verify_memory(int cipher,
     const unsigned char *key,    unsigned long keylen,
-    const unsigned char *nonce,  
+    const unsigned char *nonce,
     const unsigned char *ct,     unsigned long ctlen,
           unsigned char *pt,
     const unsigned char *tag,    unsigned long taglen,
@@ -56,12 +54,12 @@ int ocb_decrypt_verify_memory(int cipher,
    }
 
    if ((err = ocb_init(ocb, cipher, key, keylen, nonce)) != CRYPT_OK) {
-      goto LBL_ERR; 
+      goto LBL_ERR;
    }
 
    while (ctlen > (unsigned long)ocb->block_len) {
         if ((err = ocb_decrypt(ocb, ct, pt)) != CRYPT_OK) {
-            goto LBL_ERR; 
+            goto LBL_ERR;
         }
         ctlen   -= ocb->block_len;
         pt      += ocb->block_len;
@@ -73,7 +71,7 @@ LBL_ERR:
 #ifdef LTC_CLEAN_STACK
    zeromem(ocb, sizeof(ocb_state));
 #endif
- 
+
    XFREE(ocb);
 
    return err;
@@ -81,6 +79,6 @@ LBL_ERR:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/ocb/ocb_decrypt_verify_memory.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

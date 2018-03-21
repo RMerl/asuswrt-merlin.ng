@@ -71,6 +71,6 @@
 
 #endif
 
-/* $Source: /cvs/libtom/libtommath/tommath_superclass.h,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2005/05/14 13:29:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

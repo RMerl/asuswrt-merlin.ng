@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_PRIME_NEXT_PRIME_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* finds the next prime after the number "a" using "t" trials
@@ -22,12 +22,12 @@
  */
 int mp_prime_next_prime(mp_int *a, int t, int bbs_style)
 {
-   int      err, res, x, y;
+   int      err, res = MP_NO, x, y;
    mp_digit res_tab[PRIME_SIZE], step, kstep;
    mp_int   b;
 
    /* ensure t is valid */
-   if (t <= 0 || t > PRIME_SIZE) {
+   if ((t <= 0) || (t > PRIME_SIZE)) {
       return MP_VAL;
    }
 
@@ -84,7 +84,7 @@ int mp_prime_next_prime(mp_int *a, int t, int bbs_style)
          if ((err = mp_sub_d(a, (a->dp[0] & 3) + 1, a)) != MP_OKAY) { return err; };
       }
    } else {
-      if (mp_iseven(a) == 1) {
+      if (mp_iseven(a) == MP_YES) {
          /* force odd */
          if ((err = mp_sub_d(a, 1, a)) != MP_OKAY) {
             return err;
@@ -129,7 +129,7 @@ int mp_prime_next_prime(mp_int *a, int t, int bbs_style)
                 y = 1;
              }
          }
-      } while (y == 1 && step < ((((mp_digit)1)<<DIGIT_BIT) - kstep));
+      } while ((y == 1) && (step < ((((mp_digit)1) << DIGIT_BIT) - kstep)));
 
       /* add the step */
       if ((err = mp_add_d(a, step, a)) != MP_OKAY) {
@@ -137,7 +137,7 @@ int mp_prime_next_prime(mp_int *a, int t, int bbs_style)
       }
 
       /* if didn't pass sieve and step == MAX then skip test */
-      if (y == 1 && step >= ((((mp_digit)1)<<DIGIT_BIT) - kstep)) {
+      if ((y == 1) && (step >= ((((mp_digit)1) << DIGIT_BIT) - kstep))) {
          continue;
       }
 
@@ -165,6 +165,6 @@ LBL_ERR:
 
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_prime_next_prime.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

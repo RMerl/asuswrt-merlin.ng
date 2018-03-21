@@ -11,7 +11,6 @@
  *
  * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
-#include "options.h"
 #include "includes.h"
 #include "dbrandom.h"
 #include "ltc_prng.h"
@@ -26,7 +25,7 @@
  * in the various other functions.
  */
 
-#ifdef DROPBEAR_LTC_PRNG
+#if DROPBEAR_LTC_PRNG
 
 /**
   Start the PRNG

@@ -1,6 +1,8 @@
+/* $OpenBSD: atomicio.c,v 1.17 2006/04/01 05:51:34 djm Exp $ */
 /*
- * Copied from OpenSSH 3.6.1p2.
+ * Copied from OpenSSH/OpenBSD.
  * 
+ * Copyright (c) 2005 Anil Madhavapeddy. All rights reserved.
  * Copyright (c) 1995,1999 Theo de Raadt.  All rights reserved.
  * All rights reserved.
  *
@@ -25,39 +27,32 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* RCSID("OpenBSD: atomicio.c,v 1.10 2001/05/08 22:48:07 markus Exp "); */
+#include "includes.h"
 
 #include "atomicio.h"
 
 /*
- * ensure all of data on socket comes through. f==read || f==write
+ * ensure all of data on socket comes through. f==read || f==vwrite
  */
-ssize_t
-atomicio(f, fd, _s, n)
-	ssize_t (*f) ();
-	int fd;
-	void *_s;
-	size_t n;
+size_t
+atomicio(ssize_t (*f) (int, void *, size_t), int fd, void *_s, size_t n)
 {
 	char *s = _s;
-	ssize_t res;
 	size_t pos = 0;
+	ssize_t res;
 
 	while (n > pos) {
 		res = (f) (fd, s + pos, n - pos);
 		switch (res) {
 		case -1:
-#ifdef EWOULDBLOCK
-			if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
-#else
 			if (errno == EINTR || errno == EAGAIN)
-#endif
 				continue;
-			/* FALLTHROUGH */
+			return 0;
 		case 0:
-			return (res);
+			errno = EPIPE;
+			return pos;
 		default:
-			pos += res;
+			pos += (size_t)res;
 		}
 	}
 	return (pos);

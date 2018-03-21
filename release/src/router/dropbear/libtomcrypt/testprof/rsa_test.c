@@ -1,6 +1,6 @@
 #include <tomcrypt_test.h>
 
-#ifdef MRSA 
+#ifdef LTC_MRSA 
 
 #define RSA_MSGSIZE 78
 
@@ -137,7 +137,7 @@ int rsa_test(void)
    hash_idx = find_hash("sha1");
    prng_idx = find_prng("yarrow");
    if (hash_idx == -1 || prng_idx == -1) {
-      fprintf(stderr, "rsa_test requires SHA1 and yarrow");
+      fprintf(stderr, "rsa_test requires LTC_SHA1 and yarrow");
       return 1;
    }
    
@@ -257,14 +257,14 @@ for (cnt = 0; cnt < len; ) {
       }
    }
 
-   /* encrypt the key PKCS #1 v1.5 (payload from 1 to 117 bytes) */
+   /* encrypt the key LTC_PKCS #1 v1.5 (payload from 1 to 117 bytes) */
    for (rsa_msgsize = 1; rsa_msgsize <= 117; rsa_msgsize++) {
       len  = sizeof(out);
       len2 = rsa_msgsize;
-      DO(rsa_encrypt_key_ex(in, rsa_msgsize, out, &len, NULL, 0, &yarrow_prng, prng_idx, 0, LTC_PKCS_1_V1_5, &key));
+      DO(rsa_encrypt_key_ex(in, rsa_msgsize, out, &len, NULL, 0, &yarrow_prng, prng_idx, 0, LTC_LTC_PKCS_1_V1_5, &key));
 
       len2 = rsa_msgsize;
-      DO(rsa_decrypt_key_ex(out, len, tmp, &len2, NULL, 0, 0, LTC_PKCS_1_V1_5, &stat, &key));
+      DO(rsa_decrypt_key_ex(out, len, tmp, &len2, NULL, 0, 0, LTC_LTC_PKCS_1_V1_5, &stat, &key));
       if (!(stat == 1 && stat2 == 0)) {
          fprintf(stderr, "rsa_decrypt_key_ex failed, %d, %d", stat, stat2);
          return 1;
@@ -349,13 +349,13 @@ for (cnt = 0; cnt < len; ) {
       return 1;
    }
    
-   /* sign a message with PKCS #1 v1.5 */
+   /* sign a message with LTC_PKCS #1 v1.5 */
    len = sizeof(out);
-   DO(rsa_sign_hash_ex(in, 20, out, &len, LTC_PKCS_1_V1_5, &yarrow_prng, prng_idx, hash_idx, 8, &privKey));
-   DO(rsa_verify_hash_ex(out, len, in, 20, LTC_PKCS_1_V1_5, hash_idx, 8, &stat, &pubKey));
+   DO(rsa_sign_hash_ex(in, 20, out, &len, LTC_LTC_PKCS_1_V1_5, &yarrow_prng, prng_idx, hash_idx, 8, &privKey));
+   DO(rsa_verify_hash_ex(out, len, in, 20, LTC_LTC_PKCS_1_V1_5, hash_idx, 8, &stat, &pubKey));
    /* change a byte */
    in[0] ^= 1;
-   DO(rsa_verify_hash_ex(out, len, in, 20, LTC_PKCS_1_V1_5, hash_idx, 8, &stat2, &pubKey));
+   DO(rsa_verify_hash_ex(out, len, in, 20, LTC_LTC_PKCS_1_V1_5, hash_idx, 8, &stat2, &pubKey));
    
    if (!(stat == 1 && stat2 == 0)) {
       fprintf(stderr, "rsa_verify_hash_ex failed, %d, %d", stat, stat2);
@@ -382,6 +382,6 @@ int rsa_test(void)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/testprof/rsa_test.c,v $ */
-/* $Revision: 1.18 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

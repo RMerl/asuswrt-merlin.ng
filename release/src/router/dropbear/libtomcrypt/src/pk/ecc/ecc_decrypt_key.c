@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -19,9 +17,9 @@
 /**
   @file ecc_decrypt_key.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
-#if defined(MECC) && defined(LTC_DER)
+#if defined(LTC_MECC) && defined(LTC_DER)
 
 /**
   Decrypt an ECC encrypted key
@@ -33,11 +31,12 @@
   @return CRYPT_OK if successful
 */
 int ecc_decrypt_key(const unsigned char *in,  unsigned long  inlen,
-                          unsigned char *out, unsigned long *outlen, 
+                          unsigned char *out, unsigned long *outlen,
                           ecc_key *key)
 {
    unsigned char *ecc_shared, *skey, *pub_expt;
-   unsigned long  x, y, hashOID[32];
+   unsigned long  x, y;
+   unsigned long  hashOID[32] = { 0 };
    int            hash, err;
    ecc_key        pubkey;
    ltc_asn1_list  decode[3];
@@ -51,15 +50,15 @@ int ecc_decrypt_key(const unsigned char *in,  unsigned long  inlen,
    if (key->type != PK_PRIVATE) {
       return CRYPT_PK_NOT_PRIVATE;
    }
-   
+
    /* decode to find out hash */
    LTC_SET_ASN1(decode, 0, LTC_ASN1_OBJECT_IDENTIFIER, hashOID, sizeof(hashOID)/sizeof(hashOID[0]));
- 
-   if ((err = der_decode_sequence(in, inlen, decode, 1)) != CRYPT_OK) {
+   err = der_decode_sequence(in, inlen, decode, 1);
+   if (err != CRYPT_OK && err != CRYPT_INPUT_TOO_LONG) {
       return err;
    }
 
-   hash = find_hash_oid(hashOID, decode[0].size);                   
+   hash = find_hash_oid(hashOID, decode[0].size);
    if (hash_is_valid(hash) != CRYPT_OK) {
       return CRYPT_INVALID_PACKET;
    }
@@ -144,7 +143,7 @@ LBL_ERR:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_decrypt_key.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/06/16 21:53:41 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

@@ -5,23 +5,21 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
    @param rmd256.c
-   RMD256 Hash function
+   RLTC_MD256 Hash function
 */
 
-#ifdef RIPEMD256
+#ifdef LTC_RIPEMD256
 
 const struct ltc_hash_descriptor rmd256_desc =
 {
     "rmd256",
-    8,
-    16,
+    13,
+    32,
     64,
 
     /* OID */
@@ -368,8 +366,8 @@ int rmd256_test(void)
    return CRYPT_NOP;
 #else
    static const struct {
-        char *msg;
-        unsigned char md[32];
+        const char *msg;
+        unsigned char hash[32];
    } tests[] = {
    { "",
      { 0x02, 0xba, 0x4c, 0x4e, 0x5f, 0x8e, 0xcd, 0x18,
@@ -408,18 +406,16 @@ int rmd256_test(void)
        0xa8, 0x9f, 0x7e, 0xa6, 0xde, 0x77, 0xa0, 0xb8 }
    }
    };
-   int x;
-   unsigned char buf[32];
+
+   int i;
+   unsigned char tmp[32];
    hash_state md;
 
-   for (x = 0; x < (int)(sizeof(tests)/sizeof(tests[0])); x++) {
+   for (i = 0; i < (int)(sizeof(tests)/sizeof(tests[0])); i++) {
        rmd256_init(&md);
-       rmd256_process(&md, (unsigned char *)tests[x].msg, strlen(tests[x].msg));
-       rmd256_done(&md, buf);
-       if (XMEMCMP(buf, tests[x].md, 32) != 0) {
-       #if 0
-          printf("Failed test %d\n", x);
-       #endif
+       rmd256_process(&md, (unsigned char *)tests[i].msg, strlen(tests[i].msg));
+       rmd256_done(&md, tmp);
+       if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "RIPEMD256", i)) {
           return CRYPT_FAIL_TESTVECTOR;
        }
    }
@@ -429,3 +425,6 @@ int rmd256_test(void)
 
 #endif
 
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

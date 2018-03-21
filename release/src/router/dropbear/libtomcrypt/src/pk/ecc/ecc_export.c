@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -19,9 +17,9 @@
 /**
   @file ecc_export.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
-#if defined(MECC) && defined(LTC_DER)
+#if defined(LTC_MECC) && defined(LTC_DER)
 
 /**
   Export an ECC key as a binary packet
@@ -40,7 +38,7 @@ int ecc_export(unsigned char *out, unsigned long *outlen, int type, ecc_key *key
    LTC_ARGCHK(out    != NULL);
    LTC_ARGCHK(outlen != NULL);
    LTC_ARGCHK(key    != NULL);
-   
+
    /* type valid? */
    if (key->type != PK_PRIVATE && type == PK_PRIVATE) {
       return CRYPT_PK_TYPE_MISMATCH;
@@ -76,7 +74,7 @@ int ecc_export(unsigned char *out, unsigned long *outlen, int type, ecc_key *key
 }
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_export.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

@@ -5,22 +5,20 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file dsa_shared_secret.c
   DSA Crypto, Tom St Denis
-*/  
+*/
 
-#ifdef MDSA
+#ifdef LTC_MDSA
 
 /**
   Create a DSA shared secret between two keys
   @param private_key      The private DSA key (the exponent)
-  @param base             The base of the exponentiation (allows this to be used for both encrypt and decrypt) 
+  @param base             The base of the exponentiation (allows this to be used for both encrypt and decrypt)
   @param public_key       The public key
   @param out              [out] Destination of the shared secret
   @param outlen           [in/out] The max size and resulting size of the shared secret
@@ -48,7 +46,7 @@ int dsa_shared_secret(void          *private_key, void *base,
       mp_clear(res);
       return err;
    }
-   
+
    x = (unsigned long)mp_unsigned_bin_size(res);
    if (*outlen < x) {
       *outlen = x;
@@ -66,7 +64,7 @@ done:
 }
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/dsa/dsa_shared_secret.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/12/04 03:18:43 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

@@ -1,0 +1,135 @@
+dist: trusty
+sudo: required
+
+language: c
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.8
+    packages:
+    - clang-3.8
+
+install:
+    - sudo apt-get update -qq
+    - sudo apt-get install libtommath-dev
+
+before_script:
+  - gem install coveralls-lcov
+  - curl http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz | tar xz
+  - export PATH=$PATH:`pwd`/lcov-1.11/bin
+  - curl -s https://packagecloud.io/install/repositories/libtom/packages/script.deb.sh | sudo bash
+  - sudo apt-get install libtfm-dev=0.13-5
+
+matrix:
+  fast_finish: true
+branches:
+  only:
+    - master
+    - develop
+    - /^release\/.*$/
+
+compiler:
+  - gcc
+  - clang
+script:
+  - bash "${BUILDSCRIPT}" "${BUILDNAME}" "${BUILDOPTIONS}" "makefile V=1"        "-DUSE_LTM -DLTM_DESC" "-ltommath"
+  - bash "${BUILDSCRIPT}" "${BUILDNAME}" "${BUILDOPTIONS}" "makefile.shared V=1" "-DUSE_TFM -DTFM_DESC" "-ltfm"
+env:
+  - |
+    BUILDSCRIPT="check_source.sh"
+    BUILDNAME="CHECK_SOURCES"
+    BUILDOPTIONS=" "
+  - |
+    BUILDSCRIPT="scan_build.sh"
+    BUILDNAME="SCAN_BUILD"
+    BUILDOPTIONS=" "
+  - |
+    BUILDSCRIPT="coverage.sh"
+    BUILDNAME="COVERAGE"
+    BUILDOPTIONS=" "
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="STOCK"
+    BUILDOPTIONS=" "
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="EASY"
+    BUILDOPTIONS="-DLTC_EASY"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="SMALL"
+    BUILDOPTIONS="-DLTC_SMALL_CODE"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="NOTABLES"
+    BUILDOPTIONS="-DLTC_NO_TABLES"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="SMALL+NOTABLES"
+    BUILDOPTIONS="-DLTC_SMALL_CODE -DLTC_NO_TABLES"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="CLEANSTACK"
+    BUILDOPTIONS="-DLTC_CLEAN_STACK"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="CLEANSTACK+SMALL"
+    BUILDOPTIONS="-DLTC_SMALL_CODE -DLTC_CLEAN_STACK"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="CLEANSTACK+NOTABLES"
+    BUILDOPTIONS="-DLTC_NO_TABLES -DLTC_CLEAN_STACK"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="CLEANSTACK+NOTABLES+SMALL"
+    BUILDOPTIONS="-DLTC_NO_TABLES -DLTC_CLEAN_STACK -DLTC_SMALL_CODE"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="NO_FAST"
+    BUILDOPTIONS="-DLTC_NO_FAST"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="NO_FAST+NOTABLES"
+    BUILDOPTIONS="-DLTC_NO_FAST -DLTC_NO_TABLES"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="NO_ASM"
+    BUILDOPTIONS="-DLTC_NO_ASM"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="NO_TIMING_RESISTANCE"
+    BUILDOPTIONS="-DLTC_NO_ECC_TIMING_RESISTANT -DLTC_NO_RSA_BLINDING"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="CLEANSTACK+NOTABLES+SMALL+NO_ASM+NO_TIMING_RESISTANCE"
+    BUILDOPTIONS="-DLTC_CLEAN_STACK -DLTC_NO_TABLES -DLTC_SMALL_CODE -DLTC_NO_ECC_TIMING_RESISTANT -DLTC_NO_RSA_BLINDING"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="PTHREAD"
+    BUILDOPTIONS="-DLTC_PTHREAD"
+  - |
+    BUILDSCRIPT="run.sh"
+    BUILDNAME="CLEANSTACK+NOTABLES+SMALL+NO_ASM+NO_TIMING_RESISTANCE+PTHREAD"
+    BUILDOPTIONS="-DLTC_CLEAN_STACK -DLTC_NO_TABLES -DLTC_SMALL_CODE -DLTC_NO_ECC_TIMING_RESISTANT -DLTC_NO_RSA_BLINDING -DLTC_PTHREAD"
+  - |
+    BUILDSCRIPT="testbuild.sh"
+    BUILDNAME="NOTEST"
+    BUILDOPTIONS="-DLTC_NO_TEST"
+  - |
+    BUILDSCRIPT="testbuild.sh"
+    BUILDNAME="NOFILE"
+    BUILDOPTIONS="-DLTC_NO_FILE"
+
+after_failure:
+  - cat test_std.txt
+  - cat test_err.txt
+  - cat tv.txt
+
+after_script:
+  - cat gcc_1.txt
+  - cat gcc_2.txt
+
+notifications:
+  irc: "chat.freenode.net#libtom-notifications"

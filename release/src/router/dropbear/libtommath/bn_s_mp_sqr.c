@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_S_MP_SQR_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* low level squaring, b = a*a, HAC pp.596-597, Algorithm 14.16 */
@@ -24,18 +24,18 @@ int s_mp_sqr (mp_int * a, mp_int * b)
   mp_digit u, tmpx, *tmpt;
 
   pa = a->used;
-  if ((res = mp_init_size (&t, 2*pa + 1)) != MP_OKAY) {
+  if ((res = mp_init_size (&t, (2 * pa) + 1)) != MP_OKAY) {
     return res;
   }
 
   /* default used is maximum possible size */
-  t.used = 2*pa + 1;
+  t.used = (2 * pa) + 1;
 
   for (ix = 0; ix < pa; ix++) {
     /* first calculate the digit at 2*ix */
     /* calculate double precision result */
-    r = ((mp_word) t.dp[2*ix]) +
-        ((mp_word)a->dp[ix])*((mp_word)a->dp[ix]);
+    r = (mp_word)t.dp[2*ix] +
+        ((mp_word)a->dp[ix] * (mp_word)a->dp[ix]);
 
     /* store lower part in result */
     t.dp[ix+ix] = (mp_digit) (r & ((mp_word) MP_MASK));
@@ -47,7 +47,7 @@ int s_mp_sqr (mp_int * a, mp_int * b)
     tmpx        = a->dp[ix];
 
     /* alias for where to store the results */
-    tmpt        = t.dp + (2*ix + 1);
+    tmpt        = t.dp + ((2 * ix) + 1);
     
     for (iy = ix + 1; iy < pa; iy++) {
       /* first calculate the product */
@@ -79,6 +79,6 @@ int s_mp_sqr (mp_int * a, mp_int * b)
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_s_mp_sqr.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

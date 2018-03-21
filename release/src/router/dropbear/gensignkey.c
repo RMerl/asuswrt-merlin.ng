@@ -7,9 +7,6 @@
 #include "signkey.h"
 #include "dbrandom.h"
 
-#define RSA_DEFAULT_SIZE 2048
-#define DSS_DEFAULT_SIZE 1024
-
 /* Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
 static int buf_writefile(buffer * buf, const char * filename) {
 	int ret = DROPBEAR_FAILURE;
@@ -53,15 +50,16 @@ out:
 static int get_default_bits(enum signkey_type keytype)
 {
 	switch (keytype) {
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 		case DROPBEAR_SIGNKEY_RSA:
-			return RSA_DEFAULT_SIZE;
+			return DROPBEAR_DEFAULT_RSA_SIZE;
 #endif
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 		case DROPBEAR_SIGNKEY_DSS:
-			return DSS_DEFAULT_SIZE;
+			/* DSS for SSH only defines 1024 bits */
+			return 1024;
 #endif
-#ifdef DROPBEAR_ECDSA
+#if DROPBEAR_ECDSA
 		case DROPBEAR_SIGNKEY_ECDSA_KEYGEN:
 			return ECDSA_DEFAULT_SIZE;
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP521:
@@ -76,6 +74,14 @@ static int get_default_bits(enum signkey_type keytype)
 	}
 }
 
+int signkey_generate_get_bits(enum signkey_type keytype, int bits) {
+	if (bits == 0)
+	{
+		bits = get_default_bits(keytype);
+	}
+	return bits;
+}
+
 /* if skip_exist is set it will silently return if the key file exists */
 int signkey_generate(enum signkey_type keytype, int bits, const char* filename, int skip_exist)
 {
@@ -83,10 +89,7 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 	buffer *buf = NULL;
 	char *fn_temp = NULL;
 	int ret = DROPBEAR_FAILURE;
-	if (bits == 0)
-	{
-		bits = get_default_bits(keytype);
-	}
+	bits = signkey_generate_get_bits(keytype, bits);
 
 	/* now we can generate the key */
 	key = new_sign_key();
@@ -94,17 +97,17 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 	seedrandom();
 
 	switch(keytype) {
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 		case DROPBEAR_SIGNKEY_RSA:
 			key->rsakey = gen_rsa_priv_key(bits);
 			break;
 #endif
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 		case DROPBEAR_SIGNKEY_DSS:
 			key->dsskey = gen_dss_priv_key(bits);
 			break;
 #endif
-#ifdef DROPBEAR_ECDSA
+#if DROPBEAR_ECDSA
 		case DROPBEAR_SIGNKEY_ECDSA_KEYGEN:
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP521:
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP384:

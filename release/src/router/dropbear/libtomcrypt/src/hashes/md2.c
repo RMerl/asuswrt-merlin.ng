@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
    @param md2.c
-   MD2 (RFC 1319) hash function implementation by Tom St Denis 
+   LTC_MD2 (RFC 1319) hash function implementation by Tom St Denis
 */
 
-#ifdef MD2
+#ifdef LTC_MD2
 
 const struct ltc_hash_descriptor md2_desc =
 {
@@ -64,7 +62,7 @@ static void md2_update_chksum(hash_state *md)
    L = md->md2.chksum[15];
    for (j = 0; j < 16; j++) {
 
-/* caution, the RFC says its "C[j] = S[M[i*16+j] xor L]" but the reference source code [and test vectors] say 
+/* caution, the RFC says its "C[j] = S[M[i*16+j] xor L]" but the reference source code [and test vectors] say
    otherwise.
 */
        L = (md->md2.chksum[j] ^= PI_SUBST[(int)(md->md2.buf[j] ^ L)] & 255);
@@ -75,7 +73,7 @@ static void md2_compress(hash_state *md)
 {
    int j, k;
    unsigned char t;
-   
+
    /* copy block */
    for (j = 0; j < 16; j++) {
        md->md2.X[16+j] = md->md2.buf[j];
@@ -102,7 +100,7 @@ int md2_init(hash_state *md)
 {
    LTC_ARGCHK(md != NULL);
 
-   /* MD2 uses a zero'ed state... */
+   /* LTC_MD2 uses a zero'ed state... */
    zeromem(md->md2.X, sizeof(md->md2.X));
    zeromem(md->md2.chksum, sizeof(md->md2.chksum));
    zeromem(md->md2.buf, sizeof(md->md2.buf));
@@ -122,9 +120,9 @@ int md2_process(hash_state *md, const unsigned char *in, unsigned long inlen)
     unsigned long n;
     LTC_ARGCHK(md != NULL);
     LTC_ARGCHK(in != NULL);
-    if (md-> md2 .curlen > sizeof(md-> md2 .buf)) {                            
-       return CRYPT_INVALID_ARG;                                                           
-    }                                                                                       
+    if (md-> md2 .curlen > sizeof(md-> md2 .buf)) {
+       return CRYPT_INVALID_ARG;
+    }
     while (inlen > 0) {
         n = MIN(inlen, (16 - md->md2.curlen));
         XMEMCPY(md->md2.buf + md->md2.curlen, in, (size_t)n);
@@ -186,15 +184,15 @@ int md2_done(hash_state * md, unsigned char *out)
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int md2_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
+ #else
    static const struct {
-        char *msg;
-        unsigned char md[16];
+        const char *msg;
+        unsigned char hash[16];
    } tests[] = {
       { "",
         {0x83,0x50,0xe5,0xa3,0xe2,0x4c,0x15,0x3d,
@@ -227,25 +225,26 @@ int md2_test(void)
         }
       }
    };
+
    int i;
+   unsigned char tmp[16];
    hash_state md;
-   unsigned char buf[16];
 
    for (i = 0; i < (int)(sizeof(tests) / sizeof(tests[0])); i++) {
        md2_init(&md);
        md2_process(&md, (unsigned char*)tests[i].msg, (unsigned long)strlen(tests[i].msg));
-       md2_done(&md, buf);
-       if (XMEMCMP(buf, tests[i].md, 16) != 0) {
+       md2_done(&md, tmp);
+       if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "MD2", i)) {
           return CRYPT_FAIL_TESTVECTOR;
        }
    }
-   return CRYPT_OK;        
+   return CRYPT_OK;
   #endif
 }
 
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/md2.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

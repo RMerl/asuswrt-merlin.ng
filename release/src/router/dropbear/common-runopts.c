@@ -62,7 +62,7 @@ out:
 	return ret;
 }
 
-#ifdef ENABLE_USER_ALGO_LIST
+#if DROPBEAR_USER_ALGO_LIST
 void
 parse_ciphers_macs()
 {

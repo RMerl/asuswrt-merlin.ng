@@ -5,13 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 /**
    @param sha224.c
-   SHA-224 new NIST standard based off of SHA-256 truncated to 224 bits (Tom St Denis)
+   LTC_SHA-224 new NIST standard based off of LTC_SHA-256 truncated to 224 bits (Tom St Denis)
 */
+
+#include "tomcrypt.h"
+
+#if defined(LTC_SHA224) && defined(LTC_SHA256)
 
 const struct ltc_hash_descriptor sha224_desc =
 {
@@ -72,21 +74,21 @@ int sha224_done(hash_state * md, unsigned char *out)
     XMEMCPY(out, buf, 28);
 #ifdef LTC_CLEAN_STACK
     zeromem(buf, sizeof(buf));
-#endif 
+#endif
     return err;
 }
 
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int  sha224_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
+ #else
   static const struct {
-      char *msg;
+      const char *msg;
       unsigned char hash[28];
   } tests[] = {
     { "abc",
@@ -111,7 +113,7 @@ int  sha224_test(void)
       sha224_init(&md);
       sha224_process(&md, (unsigned char*)tests[i].msg, (unsigned long)strlen(tests[i].msg));
       sha224_done(&md, tmp);
-      if (XMEMCMP(tmp, tests[i].hash, 28) != 0) {
+      if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "SHA224", i)) {
          return CRYPT_FAIL_TESTVECTOR;
       }
   }
@@ -119,7 +121,9 @@ int  sha224_test(void)
  #endif
 }
 
+#endif /* defined(LTC_SHA224) && defined(LTC_SHA256) */
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/sha2/sha224.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

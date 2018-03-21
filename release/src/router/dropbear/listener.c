@@ -53,7 +53,7 @@ void set_listener_fds(fd_set * readfds) {
 }
 
 
-void handle_listeners(fd_set * readfds) {
+void handle_listeners(const fd_set * readfds) {
 
 	unsigned int i, j;
 	struct Listener *listener;
@@ -76,10 +76,10 @@ void handle_listeners(fd_set * readfds) {
 
 /* acceptor(int fd, void* typedata) is a function to accept connections, 
  * cleanup(void* typedata) happens when cleaning up */
-struct Listener* new_listener(int socks[], unsigned int nsocks,
+struct Listener* new_listener(const int socks[], unsigned int nsocks,
 		int type, void* typedata, 
-		void (*acceptor)(struct Listener* listener, int sock), 
-		void (*cleanup)(struct Listener*)) {
+		void (*acceptor)(const struct Listener* listener, int sock),
+		void (*cleanup)(const struct Listener*)) {
 
 	unsigned int i, j;
 	struct Listener *newlisten = NULL;
@@ -132,8 +132,8 @@ struct Listener* new_listener(int socks[], unsigned int nsocks,
 
 /* Return the first listener which matches the type-specific comparison
  * function. Particularly needed for global requests, like tcp */
-struct Listener * get_listener(int type, void* typedata,
-		int (*match)(void*, void*)) {
+struct Listener * get_listener(int type, const void* typedata,
+		int (*match)(const void*, const void*)) {
 
 	unsigned int i;
 	struct Listener* listener;

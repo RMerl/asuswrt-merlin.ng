@@ -10,6 +10,6 @@ void run_cmd(int res, int line, char *file, char *cmd)
    }
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/testprof/test_driver.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2006/11/13 23:14:33 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

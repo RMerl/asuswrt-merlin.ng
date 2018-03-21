@@ -1,7 +1,16 @@
+/* LibTomCrypt, modular cryptographic library -- Tom St Denis
+ *
+ * LibTomCrypt is a library that provides various cryptographic
+ * algorithms in a highly modular and flexible manner.
+ *
+ * The library is free for all purposes without any express
+ * guarantee it works.
+ */
+
 /* PKCS Header Info */
 
 /* ===> PKCS #1 -- RSA Cryptography <=== */
-#ifdef PKCS_1
+#ifdef LTC_PKCS_1
 
 enum ltc_pkcs_1_v1_5_blocks
 {
@@ -11,9 +20,10 @@ enum ltc_pkcs_1_v1_5_blocks
 
 enum ltc_pkcs_1_paddings
 {
-  LTC_PKCS_1_V1_5   = 1,        /* PKCS #1 v1.5 padding (\sa ltc_pkcs_1_v1_5_blocks) */
-  LTC_PKCS_1_OAEP   = 2,        /* PKCS #1 v2.0 encryption padding */
-  LTC_PKCS_1_PSS    = 3         /* PKCS #1 v2.1 signature padding */
+  LTC_PKCS_1_V1_5     = 1,        /* PKCS #1 v1.5 padding (\sa ltc_pkcs_1_v1_5_blocks) */
+  LTC_PKCS_1_OAEP     = 2,        /* PKCS #1 v2.0 encryption padding */
+  LTC_PKCS_1_PSS      = 3,        /* PKCS #1 v2.1 signature padding */
+  LTC_PKCS_1_V1_5_NA1 = 4         /* PKCS #1 v1.5 padding - No ASN.1 (\sa ltc_pkcs_1_v1_5_blocks) */
 };
 
 int pkcs_1_mgf1(      int            hash_idx,
@@ -24,20 +34,20 @@ int pkcs_1_i2osp(void *n, unsigned long modulus_len, unsigned char *out);
 int pkcs_1_os2ip(void *n, unsigned char *in, unsigned long inlen);
 
 /* *** v1.5 padding */
-int pkcs_1_v1_5_encode(const unsigned char *msg, 
+int pkcs_1_v1_5_encode(const unsigned char *msg,
                              unsigned long  msglen,
                              int            block_type,
                              unsigned long  modulus_bitlen,
-                                prng_state *prng, 
+                                prng_state *prng,
                                        int  prng_idx,
-                             unsigned char *out, 
+                             unsigned char *out,
                              unsigned long *outlen);
 
-int pkcs_1_v1_5_decode(const unsigned char *msg, 
+int pkcs_1_v1_5_decode(const unsigned char *msg,
                              unsigned long  msglen,
                                        int  block_type,
                              unsigned long  modulus_bitlen,
-                             unsigned char *out, 
+                             unsigned char *out,
                              unsigned long *outlen,
                                        int *is_valid);
 
@@ -55,7 +65,7 @@ int pkcs_1_oaep_decode(const unsigned char *msg,    unsigned long msglen,
                              int           *res);
 
 int pkcs_1_pss_encode(const unsigned char *msghash, unsigned long msghashlen,
-                            unsigned long saltlen,  prng_state   *prng,     
+                            unsigned long saltlen,  prng_state   *prng,
                             int           prng_idx, int           hash_idx,
                             unsigned long modulus_bitlen,
                             unsigned char *out,     unsigned long *outlen);
@@ -65,25 +75,34 @@ int pkcs_1_pss_decode(const unsigned char *msghash, unsigned long msghashlen,
                             unsigned long saltlen,  int           hash_idx,
                             unsigned long modulus_bitlen, int    *res);
 
-#endif /* PKCS_1 */
+#endif /* LTC_PKCS_1 */
 
 /* ===> PKCS #5 -- Password Based Cryptography <=== */
-#ifdef PKCS_5
+#ifdef LTC_PKCS_5
 
-/* Algorithm #1 (old) */
-int pkcs_5_alg1(const unsigned char *password, unsigned long password_len, 
-                const unsigned char *salt, 
+/* Algorithm #1 (PBKDF1) */
+int pkcs_5_alg1(const unsigned char *password, unsigned long password_len,
+                const unsigned char *salt,
                 int iteration_count,  int hash_idx,
                 unsigned char *out,   unsigned long *outlen);
 
-/* Algorithm #2 (new) */
-int pkcs_5_alg2(const unsigned char *password, unsigned long password_len, 
+/* Algorithm #1 (PBKDF1) - OpenSSL-compatible variant for arbitrarily-long keys.
+   Compatible with EVP_BytesToKey() */
+int pkcs_5_alg1_openssl(const unsigned char *password,
+                        unsigned long password_len,
+                        const unsigned char *salt,
+                        int iteration_count,  int hash_idx,
+                        unsigned char *out,   unsigned long *outlen);
+
+/* Algorithm #2 (PBKDF2) */
+int pkcs_5_alg2(const unsigned char *password, unsigned long password_len,
                 const unsigned char *salt,     unsigned long salt_len,
                 int iteration_count,           int hash_idx,
                 unsigned char *out,            unsigned long *outlen);
 
-#endif  /* PKCS_5 */
+int pkcs_5_test (void);
+#endif  /* LTC_PKCS_5 */
 
-/* $Source: /cvs/libtom/libtomcrypt/src/headers/tomcrypt_pkcs.h,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/11/15 12:44:59 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

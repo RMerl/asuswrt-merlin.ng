@@ -114,8 +114,8 @@ size_t strlcpy(char *dst, const char *src, size_t size) {
 #endif /* HAVE_STRLCPY */
 
 #ifndef HAVE_STRLCAT
-/* taken from openbsd-compat for OpenSSH 3.6.1p1 */
-/* "$OpenBSD: strlcat.c,v 1.8 2001/05/13 15:40:15 deraadt Exp $"
+/* taken from openbsd-compat for OpenSSH 7.2p2 */
+/* "$OpenBSD: strlcat.c,v 1.13 2005/08/08 08:05:37 espie Exp $"
  *
  * Appends src to string dst of size siz (unlike strncat, siz is the
  * full size of dst, not space left).  At most siz-1 characters
@@ -123,15 +123,12 @@ size_t strlcpy(char *dst, const char *src, size_t size) {
  * Returns strlen(src) + MIN(siz, strlen(initial dst)).
  * If retval >= siz, truncation occurred.
  */
-	size_t
-strlcat(dst, src, siz)
-	char *dst;
-	const char *src;
-	size_t siz;
+size_t
+strlcat(char *dst, const char *src, size_t siz)
 {
-	register char *d = dst;
-	register const char *s = src;
-	register size_t n = siz;
+	char *d = dst;
+	const char *s = src;
+	size_t n = siz;
 	size_t dlen;
 
 	/* Find the end of dst and adjust bytes left but don't go past end */
@@ -177,7 +174,7 @@ int daemon(int nochdir, int noclose) {
 	if (!nochdir)
 		(void)chdir("/");
 
-	if (!noclose && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
+	if (!noclose && (fd = open(DROPBEAR_PATH_DEVNULL, O_RDWR, 0)) != -1) {
 		(void)dup2(fd, STDIN_FILENO);
 		(void)dup2(fd, STDOUT_FILENO);
 		(void)dup2(fd, STDERR_FILENO);

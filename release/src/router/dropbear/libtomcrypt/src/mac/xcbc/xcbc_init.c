@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -28,6 +26,7 @@ int xcbc_init(xcbc_state *xcbc, int cipher, const unsigned char *key, unsigned l
 {
    int            x, y, err;
    symmetric_key *skey;
+   unsigned long  k1;
 
    LTC_ARGCHK(xcbc != NULL);
    LTC_ARGCHK(key  != NULL);
@@ -43,27 +42,46 @@ int xcbc_init(xcbc_state *xcbc, int cipher, const unsigned char *key, unsigned l
    }
 #endif
 
-   /* schedule the user key */
-   skey = XCALLOC(1, sizeof(*skey));
-   if (skey == NULL) {
-      return CRYPT_MEM;
-   }
+   skey = NULL;
 
-   if ((err = cipher_descriptor[cipher].setup(key, keylen, 0, skey)) != CRYPT_OK) {
-      goto done;
-   }
-   
-   /* make the three keys */
-   for (y = 0; y < 3; y++) {
-     for (x = 0; x < cipher_descriptor[cipher].block_length; x++) {
-        xcbc->K[y][x] = y + 1;
-     }
-     cipher_descriptor[cipher].ecb_encrypt(xcbc->K[y], xcbc->K[y], skey);
+   /* are we in pure XCBC mode with three keys? */
+   if (keylen & LTC_XCBC_PURE) {
+      keylen &= ~LTC_XCBC_PURE;
+
+      if (keylen < 2UL*cipher_descriptor[cipher].block_length) {
+         return CRYPT_INVALID_ARG;
+      }
+
+      k1      = keylen - 2*cipher_descriptor[cipher].block_length;
+      XMEMCPY(xcbc->K[0], key, k1);
+      XMEMCPY(xcbc->K[1], key+k1, cipher_descriptor[cipher].block_length);
+      XMEMCPY(xcbc->K[2], key+k1 + cipher_descriptor[cipher].block_length, cipher_descriptor[cipher].block_length);
+   } else {
+      /* use the key expansion */
+      k1      = cipher_descriptor[cipher].block_length;
+
+      /* schedule the user key */
+      skey = XCALLOC(1, sizeof(*skey));
+      if (skey == NULL) {
+         return CRYPT_MEM;
+      }
+
+      if ((err = cipher_descriptor[cipher].setup(key, keylen, 0, skey)) != CRYPT_OK) {
+         goto done;
+      }
+
+      /* make the three keys */
+      for (y = 0; y < 3; y++) {
+        for (x = 0; x < cipher_descriptor[cipher].block_length; x++) {
+           xcbc->K[y][x] = y + 1;
+        }
+        cipher_descriptor[cipher].ecb_encrypt(xcbc->K[y], xcbc->K[y], skey);
+      }
    }
 
    /* setup K1 */
-   err = cipher_descriptor[cipher].setup(xcbc->K[0], cipher_descriptor[cipher].block_length, 0, &xcbc->key);
- 
+   err = cipher_descriptor[cipher].setup(xcbc->K[0], k1, 0, &xcbc->key);
+
    /* setup struct */
    zeromem(xcbc->IV, cipher_descriptor[cipher].block_length);
    xcbc->blocksize = cipher_descriptor[cipher].block_length;
@@ -71,16 +89,18 @@ int xcbc_init(xcbc_state *xcbc, int cipher, const unsigned char *key, unsigned l
    xcbc->buflen    = 0;
 done:
    cipher_descriptor[cipher].done(skey);
+   if (skey != NULL) {
 #ifdef LTC_CLEAN_STACK
-   zeromem(skey, sizeof(*skey));
+      zeromem(skey, sizeof(*skey));
 #endif
-   XFREE(skey);
+      XFREE(skey);
+   }
    return err;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/xcbc/xcbc_init.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/11/07 03:23:46 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

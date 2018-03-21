@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_MUL_D_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* multiply by a digit */
@@ -24,7 +24,7 @@ mp_mul_d (mp_int * a, mp_digit b, mp_int * c)
   int      ix, res, olduse;
 
   /* make sure c is big enough to hold a*b */
-  if (c->alloc < a->used + 1) {
+  if (c->alloc < (a->used + 1)) {
     if ((res = mp_grow (c, a->used + 1)) != MP_OKAY) {
       return res;
     }
@@ -48,7 +48,7 @@ mp_mul_d (mp_int * a, mp_digit b, mp_int * c)
   /* compute columns */
   for (ix = 0; ix < a->used; ix++) {
     /* compute product and carry sum for this term */
-    r       = ((mp_word) u) + ((mp_word)*tmpa++) * ((mp_word)b);
+    r       = (mp_word)u + ((mp_word)*tmpa++ * (mp_word)b);
 
     /* mask off higher bits to get a single digit */
     *tmpc++ = (mp_digit) (r & ((mp_word) MP_MASK));
@@ -74,6 +74,6 @@ mp_mul_d (mp_int * a, mp_digit b, mp_int * c)
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_mul_d.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

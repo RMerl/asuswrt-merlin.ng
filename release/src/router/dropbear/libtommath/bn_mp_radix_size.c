@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_RADIX_SIZE_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* returns size of ASCII reprensentation */
@@ -24,19 +24,19 @@ int mp_radix_size (mp_int * a, int radix, int *size)
 
   *size = 0;
 
-  /* special case for binary */
-  if (radix == 2) {
-    *size = mp_count_bits (a) + (a->sign == MP_NEG ? 1 : 0) + 1;
-    return MP_OKAY;
-  }
-
   /* make sure the radix is in range */
-  if (radix < 2 || radix > 64) {
+  if ((radix < 2) || (radix > 64)) {
     return MP_VAL;
   }
 
   if (mp_iszero(a) == MP_YES) {
     *size = 2;
+    return MP_OKAY;
+  }
+
+  /* special case for binary */
+  if (radix == 2) {
+    *size = mp_count_bits (a) + ((a->sign == MP_NEG) ? 1 : 0) + 1;
     return MP_OKAY;
   }
 
@@ -73,6 +73,6 @@ int mp_radix_size (mp_int * a, int radix, int *size)
 
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_radix_size.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

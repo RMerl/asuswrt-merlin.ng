@@ -23,7 +23,6 @@
  * SOFTWARE. */
 
 #include "includes.h"
-#include "options.h"
 #include "dbutil.h"
 #include "tcpfwd.h"
 #include "channel.h"
@@ -32,7 +31,7 @@
 #include "ssh.h"
 #include "netio.h"
 
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 static int newtcpforwarded(struct Channel * channel);
 
 const struct ChanType cli_chan_tcpremote = {
@@ -45,7 +44,7 @@ const struct ChanType cli_chan_tcpremote = {
 };
 #endif
 
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 static int cli_localtcp(const char* listenaddr, 
 		unsigned int listenport, 
 		const char* remoteaddr,
@@ -60,7 +59,7 @@ static const struct ChanType cli_chan_tcplocal = {
 };
 #endif
 
-#ifdef ENABLE_CLI_ANYTCPFWD
+#if DROPBEAR_CLI_ANYTCPFWD
 static void fwd_failed(const char* format, ...) ATTRIB_PRINTF(1,2);
 static void fwd_failed(const char* format, ...)
 {
@@ -77,7 +76,7 @@ static void fwd_failed(const char* format, ...)
 }
 #endif
 
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 void setup_localtcp() {
 	m_list_elem *iter;
 	int ret;
@@ -144,9 +143,9 @@ static int cli_localtcp(const char* listenaddr,
 	TRACE(("leave cli_localtcp: %d", ret))
 	return ret;
 }
-#endif /* ENABLE_CLI_LOCALTCPFWD */
+#endif /* DROPBEAR_CLI_LOCALTCPFWD */
 
-#ifdef  ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 static void send_msg_global_request_remotetcp(const char *addr, int port) {
 
 	TRACE(("enter send_msg_global_request_remotetcp"))
@@ -274,7 +273,7 @@ static int newtcpforwarded(struct Channel * channel) {
 	}
 	
 	snprintf(portstring, sizeof(portstring), "%u", fwd->connectport);
-	channel->conn_pending = connect_remote(fwd->connectaddr, portstring, channel_connect_done, channel);
+	channel->conn_pending = connect_remote(fwd->connectaddr, portstring, channel_connect_done, channel, NULL, NULL);
 
 	channel->prio = DROPBEAR_CHANNEL_PRIO_UNKNOWABLE;
 	
@@ -285,4 +284,4 @@ out:
 	TRACE(("leave newtcpdirect: err %d", err))
 	return err;
 }
-#endif /* ENABLE_CLI_REMOTETCPFWD */
+#endif /* DROPBEAR_CLI_REMOTETCPFWD */

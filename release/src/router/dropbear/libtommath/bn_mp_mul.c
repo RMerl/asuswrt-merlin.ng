@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_MUL_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* high level multiplication (handles sign) */
@@ -44,23 +44,24 @@ int mp_mul (mp_int * a, mp_int * b, mp_int * c)
 
 #ifdef BN_FAST_S_MP_MUL_DIGS_C
     if ((digs < MP_WARRAY) &&
-        MIN(a->used, b->used) <= 
-        (1 << ((CHAR_BIT * sizeof (mp_word)) - (2 * DIGIT_BIT)))) {
+        (MIN(a->used, b->used) <= 
+         (1 << ((CHAR_BIT * sizeof(mp_word)) - (2 * DIGIT_BIT))))) {
       res = fast_s_mp_mul_digs (a, b, c, digs);
     } else 
 #endif
+    {
 #ifdef BN_S_MP_MUL_DIGS_C
       res = s_mp_mul (a, b, c); /* uses s_mp_mul_digs */
 #else
       res = MP_VAL;
 #endif
-
+    }
   }
   c->sign = (c->used > 0) ? neg : MP_ZPOS;
   return res;
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_mul.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

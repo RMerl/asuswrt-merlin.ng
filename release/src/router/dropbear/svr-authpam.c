@@ -31,7 +31,7 @@
 #include "dbutil.h"
 #include "auth.h"
 
-#ifdef ENABLE_SVR_PAM_AUTH
+#if DROPBEAR_SVR_PAM_AUTH
 
 #if defined(HAVE_SECURITY_PAM_APPL_H)
 #include <security/pam_appl.h>
@@ -224,6 +224,12 @@ void svr_auth_pam() {
 		goto cleanup;
 	}
 
+	if ((rc = pam_set_item(pamHandlep, PAM_RHOST, svr_ses.remotehost)) != PAM_SUCCESS) {
+		dropbear_log(LOG_WARNING, "pam_set_item() failed, rc=%d, %s",
+				rc, pam_strerror(pamHandlep, rc));
+		goto cleanup;
+	}
+
 #ifdef HAVE_PAM_FAIL_DELAY
 	/* We have our own random delay code already, disable PAM's */
 	(void) pam_fail_delay(pamHandlep, 0 /* musec_delay */);
@@ -270,4 +276,4 @@ cleanup:
 	}
 }
 
-#endif /* ENABLE_SVR_PAM_AUTH */
+#endif /* DROPBEAR_SVR_PAM_AUTH */

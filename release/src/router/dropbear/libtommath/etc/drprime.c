@@ -59,6 +59,6 @@ int main(void)
 }
 
 
-/* $Source: /cvs/libtom/libtommath/etc/drprime.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2005/05/05 14:38:47 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

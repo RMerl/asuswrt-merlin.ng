@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -19,12 +17,12 @@
 /**
   @file ecc_make_key.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 /**
-  Make a new ECC key 
+  Make a new ECC key
   @param prng         An active PRNG state
   @param wprng        The index of the PRNG you wish to use
   @param keysize      The keysize for the new key (in octets from 20 to 65 bytes)
@@ -51,7 +49,7 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
 {
    int            err;
    ecc_point     *base;
-   void          *prime;
+   void          *prime, *order;
    unsigned char *buf;
    int            keysize;
 
@@ -82,7 +80,7 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    }
 
    /* setup the key variables */
-   if ((err = mp_init_multi(&key->pubkey.x, &key->pubkey.y, &key->pubkey.z, &key->k, &prime, NULL)) != CRYPT_OK) {
+   if ((err = mp_init_multi(&key->pubkey.x, &key->pubkey.y, &key->pubkey.z, &key->k, &prime, &order, NULL)) != CRYPT_OK) {
       goto ERR_BUF;
    }
    base = ltc_ecc_new_point();
@@ -93,11 +91,16 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
 
    /* read in the specs for this key */
    if ((err = mp_read_radix(prime,   (char *)key->dp->prime, 16)) != CRYPT_OK)                  { goto errkey; }
+   if ((err = mp_read_radix(order,   (char *)key->dp->order, 16)) != CRYPT_OK)                  { goto errkey; }
    if ((err = mp_read_radix(base->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                     { goto errkey; }
    if ((err = mp_read_radix(base->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                     { goto errkey; }
    if ((err = mp_set(base->z, 1)) != CRYPT_OK)                                                  { goto errkey; }
    if ((err = mp_read_unsigned_bin(key->k, (unsigned char *)buf, keysize)) != CRYPT_OK)         { goto errkey; }
 
+   /* the key should be smaller than the order of base point */
+   if (mp_cmp(key->k, order) != LTC_MP_LT) {
+       if((err = mp_mod(key->k, order, key->k)) != CRYPT_OK)                                    { goto errkey; }
+   }
    /* make the public key */
    if ((err = ltc_mp.ecc_ptmul(key->k, base, &key->pubkey, prime, 1)) != CRYPT_OK)              { goto errkey; }
    key->type = PK_PRIVATE;
@@ -109,7 +112,7 @@ errkey:
    mp_clear_multi(key->pubkey.x, key->pubkey.y, key->pubkey.z, key->k, NULL);
 cleanup:
    ltc_ecc_del_point(base);
-   mp_clear(prime);
+   mp_clear_multi(prime, order, NULL);
 ERR_BUF:
 #ifdef LTC_CLEAN_STACK
    zeromem(buf, ECC_MAXSIZE);
@@ -119,7 +122,7 @@ ERR_BUF:
 }
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_make_key.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/12/04 02:50:11 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

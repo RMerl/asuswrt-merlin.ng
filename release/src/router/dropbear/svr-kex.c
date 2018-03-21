@@ -54,18 +54,24 @@ void recv_msg_kexdh_init() {
 	}
 
 	switch (ses.newkeys->algo_kex->mode) {
+#if DROPBEAR_NORMAL_DH
 		case DROPBEAR_KEX_NORMAL_DH:
 			m_mp_init(&dh_e);
 			if (buf_getmpint(ses.payload, &dh_e) != DROPBEAR_SUCCESS) {
 				dropbear_exit("Bad kex value");
 			}
 			break;
-		case DROPBEAR_KEX_ECDH:
-		case DROPBEAR_KEX_CURVE25519:
-#if defined(DROPBEAR_ECDH) || defined(DROPBEAR_CURVE25519)
-			ecdh_qs = buf_getstringbuf(ses.payload);
 #endif
+#if DROPBEAR_ECDH
+		case DROPBEAR_KEX_ECDH:
+#endif
+#if DROPBEAR_CURVE25519
+		case DROPBEAR_KEX_CURVE25519:
+#endif
+#if DROPBEAR_ECDH || DROPBEAR_CURVE25519
+			ecdh_qs = buf_getstringbuf(ses.payload);
 			break;
+#endif
 	}
 	if (ses.payload->pos != ses.payload->len) {
 		dropbear_exit("Bad kex value");
@@ -85,7 +91,7 @@ void recv_msg_kexdh_init() {
 }
 
 
-#ifdef DROPBEAR_DELAY_HOSTKEY
+#if DROPBEAR_DELAY_HOSTKEY
 
 static void svr_ensure_hostkey() {
 
@@ -100,17 +106,17 @@ static void svr_ensure_hostkey() {
 
 	switch (type)
 	{
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 		case DROPBEAR_SIGNKEY_RSA:
 			fn = RSA_PRIV_FILENAME;
 			break;
 #endif
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 		case DROPBEAR_SIGNKEY_DSS:
 			fn = DSS_PRIV_FILENAME;
 			break;
 #endif
-#ifdef DROPBEAR_ECDSA
+#if DROPBEAR_ECDSA
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP256:
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP384:
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP521:
@@ -166,7 +172,7 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 	/* we can start creating the kexdh_reply packet */
 	CHECKCLEARTOWRITE();
 
-#ifdef DROPBEAR_DELAY_HOSTKEY
+#if DROPBEAR_DELAY_HOSTKEY
 	if (svr_opts.delay_hostkey)
 	{
 		svr_ensure_hostkey();
@@ -178,6 +184,7 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 			ses.newkeys->algo_hostkey);
 
 	switch (ses.newkeys->algo_kex->mode) {
+#if DROPBEAR_NORMAL_DH
 		case DROPBEAR_KEX_NORMAL_DH:
 			{
 			struct kex_dh_param * dh_param = gen_kexdh_param();
@@ -188,8 +195,9 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 			free_kexdh_param(dh_param);
 			}
 			break;
+#endif
+#if DROPBEAR_ECDH
 		case DROPBEAR_KEX_ECDH:
-#ifdef DROPBEAR_ECDH
 			{
 			struct kex_ecdh_param *ecdh_param = gen_kexecdh_param();
 			kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts.hostkey);
@@ -197,18 +205,18 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 			buf_put_ecc_raw_pubkey_string(ses.writepayload, &ecdh_param->key);
 			free_kexecdh_param(ecdh_param);
 			}
-#endif
 			break;
+#endif
+#if DROPBEAR_CURVE25519
 		case DROPBEAR_KEX_CURVE25519:
-#ifdef DROPBEAR_CURVE25519
 			{
 			struct kex_curve25519_param *param = gen_kexcurve25519_param();
 			kexcurve25519_comb_key(param, ecdh_qs, svr_opts.hostkey);
 			buf_putstring(ses.writepayload, (const char*)param->pub, CURVE25519_LEN);
 			free_kexcurve25519_param(param);
 			}
-#endif
 			break;
+#endif
 	}
 
 	/* calc the signature */

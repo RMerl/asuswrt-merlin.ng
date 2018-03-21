@@ -395,6 +395,6 @@ main (void)
   return 0;
 }
 
-/* $Source: /cvs/libtom/libtommath/etc/pprime.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:47 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

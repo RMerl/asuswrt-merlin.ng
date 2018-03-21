@@ -45,7 +45,7 @@ void dropbear_log(int priority, const char* format, ...) ATTRIB_PRINTF(2,3) ;
 
 void fail_assert(const char* expr, const char* file, int line) ATTRIB_NORETURN;
 
-#ifdef DEBUG_TRACE
+#if DEBUG_TRACE
 void dropbear_trace(const char* format, ...) ATTRIB_PRINTF(1,2);
 void dropbear_trace2(const char* format, ...) ATTRIB_PRINTF(1,2);
 void printhex(const char * label, const unsigned char * buf, int len);
@@ -56,10 +56,10 @@ extern int debug_trace;
 
 char * stripcontrol(const char * text);
 
-int spawn_command(void(*exec_fn)(void *user_data), void *exec_data,
+int spawn_command(void(*exec_fn)(const void *user_data), const void *exec_data,
 		int *writefd, int *readfd, int *errfd, pid_t *pid);
 void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell);
-#ifdef ENABLE_CONNECT_UNIX
+#if ENABLE_CONNECT_UNIX
 int connect_unix(const char* addr);
 #endif
 int buf_readfile(buffer* buf, const char* filename);

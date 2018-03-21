@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -18,9 +16,9 @@
 #ifdef LTC_CFB_MODE
 
 /**
-   Get the current initial vector
-   @param IV   [out] The destination of the initial vector
-   @param len  [in/out]  The max size and resulting size of the initial vector
+   Get the current initialization vector
+   @param IV   [out] The destination of the initialization vector
+   @param len  [in/out]  The max size and resulting size of the initialization vector
    @param cfb  The CFB state
    @return CRYPT_OK if successful
 */
@@ -41,6 +39,6 @@ int cfb_getiv(unsigned char *IV, unsigned long *len, symmetric_CFB *cfb)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/cfb/cfb_getiv.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/06/29 01:51:34 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

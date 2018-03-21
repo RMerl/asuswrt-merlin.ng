@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_PRIME_MILLER_RABIN_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* Miller-Rabin test of "a" to the base of "b" as described in 
@@ -67,10 +67,10 @@ int mp_prime_miller_rabin (mp_int * a, mp_int * b, int *result)
   }
 
   /* if y != 1 and y != n1 do */
-  if (mp_cmp_d (&y, 1) != MP_EQ && mp_cmp (&y, &n1) != MP_EQ) {
+  if ((mp_cmp_d (&y, 1) != MP_EQ) && (mp_cmp (&y, &n1) != MP_EQ)) {
     j = 1;
     /* while j <= s-1 and y != n1 */
-    while ((j <= (s - 1)) && mp_cmp (&y, &n1) != MP_EQ) {
+    while ((j <= (s - 1)) && (mp_cmp (&y, &n1) != MP_EQ)) {
       if ((err = mp_sqrmod (&y, a, &y)) != MP_OKAY) {
          goto LBL_Y;
       }
@@ -98,6 +98,6 @@ LBL_N1:mp_clear (&n1);
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_prime_miller_rabin.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

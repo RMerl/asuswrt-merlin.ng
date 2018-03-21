@@ -39,39 +39,71 @@ mulmod
 #include <time.h>
 #include "mpi.c"
 
+#ifdef LTM_MTEST_REAL_RAND
+#define getRandChar() fgetc(rng)
 FILE *rng;
+#else
+#define getRandChar() (rand()&0xFF)
+#endif
 
 void rand_num(mp_int *a)
 {
-   int n, size;
+   int size;
    unsigned char buf[2048];
+   size_t sz;
 
-   size = 1 + ((fgetc(rng)<<8) + fgetc(rng)) % 101;
-   buf[0] = (fgetc(rng)&1)?1:0;
-   fread(buf+1, 1, size, rng);
-   while (buf[1] == 0) buf[1] = fgetc(rng);
+   size = 1 + ((getRandChar()<<8) + getRandChar()) % 101;
+   buf[0] = (getRandChar()&1)?1:0;
+#ifdef LTM_MTEST_REAL_RAND
+   sz = fread(buf+1, 1, size, rng);
+#else
+   sz = 1;
+   while (sz < (unsigned)size) {
+       buf[sz] = getRandChar();
+       ++sz;
+   }
+#endif
+   if (sz != (unsigned)size) {
+       fprintf(stderr, "\nWarning: fread failed\n\n");
+   }
+   while (buf[1] == 0) buf[1] = getRandChar();
    mp_read_raw(a, buf, 1+size);
 }
 
 void rand_num2(mp_int *a)
 {
-   int n, size;
+   int size;
    unsigned char buf[2048];
+   size_t sz;
 
-   size = 10 + ((fgetc(rng)<<8) + fgetc(rng)) % 101;
-   buf[0] = (fgetc(rng)&1)?1:0;
-   fread(buf+1, 1, size, rng);
-   while (buf[1] == 0) buf[1] = fgetc(rng);
+   size = 10 + ((getRandChar()<<8) + getRandChar()) % 101;
+   buf[0] = (getRandChar()&1)?1:0;
+#ifdef LTM_MTEST_REAL_RAND
+   sz = fread(buf+1, 1, size, rng);
+#else
+   sz = 1;
+   while (sz < (unsigned)size) {
+       buf[sz] = getRandChar();
+       ++sz;
+   }
+#endif
+   if (sz != (unsigned)size) {
+       fprintf(stderr, "\nWarning: fread failed\n\n");
+   }
+   while (buf[1] == 0) buf[1] = getRandChar();
    mp_read_raw(a, buf, 1+size);
 }
 
 #define mp_to64(a, b) mp_toradix(a, b, 64)
 
-int main(void)
+int main(int argc, char *argv[])
 {
    int n, tmp;
+   long long max;
    mp_int a, b, c, d, e;
+#ifdef MTEST_NO_FULLSPEED
    clock_t t1;
+#endif
    char buf[4096];
 
    mp_init(&a);
@@ -79,6 +111,22 @@ int main(void)
    mp_init(&c);
    mp_init(&d);
    mp_init(&e);
+
+   if (argc > 1) {
+       max = strtol(argv[1], NULL, 0);
+       if (max < 0) {
+           if (max > -64) {
+               max = (1 << -(max)) + 1;
+           } else {
+               max = 1;
+           }
+       } else if (max == 0) {
+           max = 1;
+       }
+   }
+   else {
+       max = 0;
+   }
 
 
    /* initial (2^n - 1)^2 testing, makes sure the comba multiplier works [it has the new carry code] */
@@ -98,6 +146,7 @@ int main(void)
    }
 */
 
+#ifdef LTM_MTEST_REAL_RAND
    rng = fopen("/dev/urandom", "rb");
    if (rng == NULL) {
       rng = fopen("/dev/random", "rb");
@@ -106,16 +155,27 @@ int main(void)
          rng = stdin;
       }
    }
+#else
+   srand(23);
+#endif
 
+#ifdef MTEST_NO_FULLSPEED
    t1 = clock();
+#endif
    for (;;) {
-#if 0
+#ifdef MTEST_NO_FULLSPEED
       if (clock() - t1 > CLOCKS_PER_SEC) {
          sleep(2);
          t1 = clock();
       }
 #endif
-       n = fgetc(rng) % 15;
+       n = getRandChar() % 15;
+
+       if (max != 0) {
+           --max;
+           if (max == 0)
+             n = 255;
+       }
 
    if (n == 0) {
        /* add tests */
@@ -180,7 +240,7 @@ int main(void)
       /* mul_2d test */
       rand_num(&a);
       mp_copy(&a, &b);
-      n = fgetc(rng) & 63;
+      n = getRandChar() & 63;
       mp_mul_2d(&b, n, &b);
       mp_to64(&a, buf);
       printf("mul2d\n");
@@ -192,7 +252,7 @@ int main(void)
       /* div_2d test */
       rand_num(&a);
       mp_copy(&a, &b);
-      n = fgetc(rng) & 63;
+      n = getRandChar() & 63;
       mp_div_2d(&b, n, &b, NULL);
       mp_to64(&a, buf);
       printf("div2d\n");
@@ -247,13 +307,13 @@ int main(void)
       printf("%s\n", buf);
    } else if (n == 10) {
       /* invmod test */
+      do {
       rand_num2(&a);
       rand_num2(&b);
       b.sign = MP_ZPOS;
       a.sign = MP_ZPOS;
       mp_gcd(&a, &b, &c);
-      if (mp_cmp_d(&c, 1) != 0) continue;
-      if (mp_cmp_d(&b, 1) == 0) continue;
+      } while (mp_cmp_d(&c, 1) != 0 || mp_cmp_d(&b, 1) == 0);
       mp_invmod(&a, &b, &c);
       printf("invmod\n");
       mp_to64(&a, buf);
@@ -297,12 +357,18 @@ int main(void)
       printf("%s\n%d\n", buf, tmp);
       mp_to64(&b, buf);
       printf("%s\n", buf);
+   } else if (n == 255) {
+      printf("exit\n");
+      break;
    }
+
    }
+#ifdef LTM_MTEST_REAL_RAND
    fclose(rng);
+#endif
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtommath/mtest/mtest.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2005/05/05 14:38:47 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

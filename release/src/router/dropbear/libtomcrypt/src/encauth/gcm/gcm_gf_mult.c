@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /**
@@ -15,9 +13,9 @@
 */
 #include "tomcrypt.h"
 
-#if defined(GCM_TABLES) || defined(LRW_TABLES) || ((defined(GCM_MODE) || defined(GCM_MODE)) && defined(LTC_FAST))
+#if defined(LTC_GCM_TABLES) || defined(LTC_LRW_TABLES) || ((defined(LTC_GCM_MODE) || defined(LTC_GCM_MODE)) && defined(LTC_FAST))
 
-/* this is x*2^128 mod p(x) ... the results are 16 bytes each stored in a packed format.  Since only the 
+/* this is x*2^128 mod p(x) ... the results are 16 bytes each stored in a packed format.  Since only the
  * lower 16 bits are not zero'ed I removed the upper 14 bytes */
 const unsigned char gcm_shift_table[256*2] = {
 0x00, 0x00, 0x01, 0xc2, 0x03, 0x84, 0x02, 0x46, 0x07, 0x08, 0x06, 0xca, 0x04, 0x8c, 0x05, 0x4e,
@@ -56,11 +54,11 @@ const unsigned char gcm_shift_table[256*2] = {
 #endif
 
 
-#if defined(GCM_MODE) || defined(LRW_MODE)
+#if defined(LTC_GCM_MODE) || defined(LRW_MODE)
 
 #ifndef LTC_FAST
 /* right shift */
-static void gcm_rightshift(unsigned char *a)
+static void _gcm_rightshift(unsigned char *a)
 {
    int x;
    for (x = 15; x > 0; x--) {
@@ -73,28 +71,28 @@ static void gcm_rightshift(unsigned char *a)
 static const unsigned char mask[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 static const unsigned char poly[] = { 0x00, 0xE1 };
 
-     
+
 /**
   GCM GF multiplier (internal use only)  bitserial
   @param a   First value
   @param b   Second value
   @param c   Destination for a * b
- */  
+ */
 void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *c)
 {
    unsigned char Z[16], V[16];
-   unsigned x, y, z;
+   unsigned char x, y, z;
 
    zeromem(Z, 16);
    XMEMCPY(V, a, 16);
    for (x = 0; x < 128; x++) {
        if (b[x>>3] & mask[x&7]) {
           for (y = 0; y < 16; y++) {
-              Z[y] ^= V[y]; 
+              Z[y] ^= V[y];
           }
        }
        z     = V[15] & 0x01;
-       gcm_rightshift(V);
+       _gcm_rightshift(V);
        V[0] ^= poly[z];
    }
    XMEMCPY(c, Z, 16);
@@ -113,7 +111,7 @@ void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *
   @param a   First value
   @param b   Second value
   @param c   Destination for a * b
- */  
+ */
 void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *c)
 {
    int i, j, k, u;
@@ -129,7 +127,7 @@ void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *
        LOAD32H(B[M(1)][i], a + (i<<2));
        LOAD32L(pB[i],      b + (i<<2));
    }
-#else 
+#else
    for (i = 0; i < 2; i++) {
        LOAD64H(B[M(1)][i], a + (i<<3));
        LOAD64L(pB[i],      b + (i<<3));
@@ -154,7 +152,7 @@ void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *
       B[M(9)][i]  = B[M(1)][i] ^ B[M(8)][i];
       B[M(10)][i] = B[M(2)][i] ^ B[M(8)][i];
       B[M(12)][i] = B[M(8)][i] ^ B[M(4)][i];
-   
+
    /*  now all 3 bit values and the only 4 bit value: 7, 11, 13, 14, 15 */
       B[M(7)][i]  = B[M(3)][i] ^ B[M(4)][i];
       B[M(11)][i] = B[M(3)][i] ^ B[M(8)][i];
@@ -193,7 +191,7 @@ void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *
    for (i = 0; i < 8; i++) {
        STORE32H(tmp[i], pTmp + (i<<2));
    }
-#else 
+#else
    for (i = 0; i < 4; i++) {
        STORE64H(tmp[i], pTmp + (i<<3));
    }
@@ -215,7 +213,7 @@ void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/gcm/gcm_gf_mult.c,v $ */
-/* $Revision: 1.23 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
- 
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
+

@@ -35,13 +35,13 @@
 
 /* This is just a test */
 
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 
-static void getq(dropbear_dss_key *key);
-static void getp(dropbear_dss_key *key, unsigned int size);
-static void getg(dropbear_dss_key *key);
-static void getx(dropbear_dss_key *key);
-static void gety(dropbear_dss_key *key);
+static void getq(const dropbear_dss_key *key);
+static void getp(const dropbear_dss_key *key, unsigned int size);
+static void getg(const dropbear_dss_key *key);
+static void getx(const dropbear_dss_key *key);
+static void gety(const dropbear_dss_key *key);
 
 dropbear_dss_key * gen_dss_priv_key(unsigned int size) {
 
@@ -65,7 +65,7 @@ dropbear_dss_key * gen_dss_priv_key(unsigned int size) {
 	
 }
 
-static void getq(dropbear_dss_key *key) {
+static void getq(const dropbear_dss_key *key) {
 
 	unsigned char buf[QSIZE];
 
@@ -83,7 +83,7 @@ static void getq(dropbear_dss_key *key) {
 	}
 }
 
-static void getp(dropbear_dss_key *key, unsigned int size) {
+static void getp(const dropbear_dss_key *key, unsigned int size) {
 
 	DEF_MP_INT(tempX);
 	DEF_MP_INT(tempC);
@@ -142,7 +142,7 @@ static void getp(dropbear_dss_key *key, unsigned int size) {
 	m_free(buf);
 }
 
-static void getg(dropbear_dss_key * key) {
+static void getg(const dropbear_dss_key * key) {
 
 	DEF_MP_INT(div);
 	DEF_MP_INT(h);
@@ -179,12 +179,12 @@ static void getg(dropbear_dss_key * key) {
 	mp_clear_multi(&div, &h, &val, NULL);
 }
 
-static void getx(dropbear_dss_key *key) {
+static void getx(const dropbear_dss_key *key) {
 
 	gen_random_mpint(key->q, key->x);
 }
 
-static void gety(dropbear_dss_key *key) {
+static void gety(const dropbear_dss_key *key) {
 
 	if (mp_exptmod(key->g, key->x, key->p, key->y) != MP_OKAY) {
 		fprintf(stderr, "DSS key generation failed\n");

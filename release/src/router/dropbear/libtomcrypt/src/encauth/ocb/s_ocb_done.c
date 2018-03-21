@@ -5,24 +5,22 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/** 
+/**
    @file s_ocb_done.c
    OCB implementation, internal helper, by Tom St Denis
 */
 #include "tomcrypt.h"
 
-#ifdef OCB_MODE
+#ifdef LTC_OCB_MODE
 
 /* Since the last block is encrypted in CTR mode the same code can
  * be used to finish a decrypt or encrypt stream.  The only difference
  * is we XOR the final ciphertext into the checksum so we have to xor it
  * before we CTR [decrypt] or after [encrypt]
  *
- * the names pt/ptlen/ct really just mean in/inlen/out but this is the way I wrote it... 
+ * the names pt/ptlen/ct really just mean in/inlen/out but this is the way I wrote it...
  */
 
 /**
@@ -74,13 +72,13 @@ int s_ocb_done(ocb_state *ocb, const unsigned char *pt, unsigned long ptlen,
    }
 
    /* compute X[m] = len(pt[m]) XOR Lr XOR Z[m] */
-   ocb_shift_xor(ocb, X); 
+   ocb_shift_xor(ocb, X);
    XMEMCPY(Z, X, ocb->block_len);
 
    X[ocb->block_len-1] ^= (ptlen*8)&255;
    X[ocb->block_len-2] ^= ((ptlen*8)>>8)&255;
    for (x = 0; x < ocb->block_len; x++) {
-       X[x] ^= ocb->Lr[x]; 
+       X[x] ^= ocb->Lr[x];
    }
 
    /* Y[m] = E(X[m])) */
@@ -93,7 +91,7 @@ int s_ocb_done(ocb_state *ocb, const unsigned char *pt, unsigned long ptlen,
       /* xor C[m] into checksum */
       for (x = 0; x < (int)ptlen; x++) {
          ocb->checksum[x] ^= ct[x];
-      }  
+      }
    }
 
    /* C[m] = P[m] xor Y[m] */
@@ -102,7 +100,7 @@ int s_ocb_done(ocb_state *ocb, const unsigned char *pt, unsigned long ptlen,
    }
 
    if (mode == 0) {
-      /* encrypt mode */    
+      /* encrypt mode */
       /* xor C[m] into checksum */
       for (x = 0; x < (int)ptlen; x++) {
           ocb->checksum[x] ^= ct[x];
@@ -113,7 +111,7 @@ int s_ocb_done(ocb_state *ocb, const unsigned char *pt, unsigned long ptlen,
    for (x = 0; x < ocb->block_len; x++) {
        ocb->checksum[x] ^= Y[x] ^ Z[x];
    }
-   
+
    /* encrypt checksum, er... tag!! */
    if ((err = cipher_descriptor[ocb->cipher].ecb_encrypt(ocb->checksum, X, &ocb->key)) != CRYPT_OK) {
       goto error;
@@ -132,7 +130,7 @@ int s_ocb_done(ocb_state *ocb, const unsigned char *pt, unsigned long ptlen,
    zeromem(Z, MAXBLOCKSIZE);
    zeromem(ocb, sizeof(*ocb));
 #endif
-error:   
+error:
    XFREE(X);
    XFREE(Y);
    XFREE(Z);
@@ -143,6 +141,6 @@ error:
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/ocb/s_ocb_done.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

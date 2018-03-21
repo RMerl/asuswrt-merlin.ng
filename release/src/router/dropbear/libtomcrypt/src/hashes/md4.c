@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
    @param md4.c
-   Submitted by Dobes Vandermeer  (dobes@smartt.com) 
+   Submitted by Dobes Vandermeer  (dobes@smartt.com)
 */
 
-#ifdef MD4
+#ifdef LTC_MD4
 
 const struct ltc_hash_descriptor md4_desc =
 {
@@ -23,7 +21,7 @@ const struct ltc_hash_descriptor md4_desc =
     6,
     16,
     64,
- 
+
     /* OID */
    { 1, 2, 840, 113549, 2, 4,  },
    6,
@@ -48,7 +46,7 @@ const struct ltc_hash_descriptor md4_desc =
 #define S33 11
 #define S34 15
 
-/* F, G and H are basic MD4 functions. */
+/* F, G and H are basic LTC_MD4 functions. */
 #define F(x, y, z) (z ^ (x & (y ^ z)))
 #define G(x, y, z) ((x & y) | (z & (x | y)))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
@@ -56,8 +54,8 @@ const struct ltc_hash_descriptor md4_desc =
 /* ROTATE_LEFT rotates x left n bits. */
 #define ROTATE_LEFT(x, n) ROLc(x, n)
 
-/* FF, GG and HH are transformations for rounds 1, 2 and 3 */ 
-/* Rotation is separate from addition to prevent recomputation */ 
+/* FF, GG and HH are transformations for rounds 1, 2 and 3 */
+/* Rotation is separate from addition to prevent recomputation */
 
 #define FF(a, b, c, d, x, s) { \
     (a) += F ((b), (c), (d)) + (x); \
@@ -91,61 +89,61 @@ static int  md4_compress(hash_state *md, unsigned char *buf)
     for (i = 0; i < 16; i++) {
         LOAD32L(x[i], buf + (4*i));
     }
- 
-    /* Round 1 */ 
-    FF (a, b, c, d, x[ 0], S11); /* 1 */ 
-    FF (d, a, b, c, x[ 1], S12); /* 2 */ 
-    FF (c, d, a, b, x[ 2], S13); /* 3 */ 
-    FF (b, c, d, a, x[ 3], S14); /* 4 */ 
-    FF (a, b, c, d, x[ 4], S11); /* 5 */ 
-    FF (d, a, b, c, x[ 5], S12); /* 6 */ 
-    FF (c, d, a, b, x[ 6], S13); /* 7 */ 
-    FF (b, c, d, a, x[ 7], S14); /* 8 */ 
-    FF (a, b, c, d, x[ 8], S11); /* 9 */ 
+
+    /* Round 1 */
+    FF (a, b, c, d, x[ 0], S11); /* 1 */
+    FF (d, a, b, c, x[ 1], S12); /* 2 */
+    FF (c, d, a, b, x[ 2], S13); /* 3 */
+    FF (b, c, d, a, x[ 3], S14); /* 4 */
+    FF (a, b, c, d, x[ 4], S11); /* 5 */
+    FF (d, a, b, c, x[ 5], S12); /* 6 */
+    FF (c, d, a, b, x[ 6], S13); /* 7 */
+    FF (b, c, d, a, x[ 7], S14); /* 8 */
+    FF (a, b, c, d, x[ 8], S11); /* 9 */
     FF (d, a, b, c, x[ 9], S12); /* 10 */
-    FF (c, d, a, b, x[10], S13); /* 11 */ 
+    FF (c, d, a, b, x[10], S13); /* 11 */
     FF (b, c, d, a, x[11], S14); /* 12 */
     FF (a, b, c, d, x[12], S11); /* 13 */
-    FF (d, a, b, c, x[13], S12); /* 14 */ 
-    FF (c, d, a, b, x[14], S13); /* 15 */ 
-    FF (b, c, d, a, x[15], S14); /* 16 */ 
-    
-    /* Round 2 */ 
-    GG (a, b, c, d, x[ 0], S21); /* 17 */ 
-    GG (d, a, b, c, x[ 4], S22); /* 18 */ 
-    GG (c, d, a, b, x[ 8], S23); /* 19 */ 
-    GG (b, c, d, a, x[12], S24); /* 20 */ 
-    GG (a, b, c, d, x[ 1], S21); /* 21 */ 
-    GG (d, a, b, c, x[ 5], S22); /* 22 */ 
-    GG (c, d, a, b, x[ 9], S23); /* 23 */ 
-    GG (b, c, d, a, x[13], S24); /* 24 */ 
-    GG (a, b, c, d, x[ 2], S21); /* 25 */ 
-    GG (d, a, b, c, x[ 6], S22); /* 26 */ 
-    GG (c, d, a, b, x[10], S23); /* 27 */ 
-    GG (b, c, d, a, x[14], S24); /* 28 */ 
-    GG (a, b, c, d, x[ 3], S21); /* 29 */ 
-    GG (d, a, b, c, x[ 7], S22); /* 30 */ 
-    GG (c, d, a, b, x[11], S23); /* 31 */ 
-    GG (b, c, d, a, x[15], S24); /* 32 */ 
-    
+    FF (d, a, b, c, x[13], S12); /* 14 */
+    FF (c, d, a, b, x[14], S13); /* 15 */
+    FF (b, c, d, a, x[15], S14); /* 16 */
+
+    /* Round 2 */
+    GG (a, b, c, d, x[ 0], S21); /* 17 */
+    GG (d, a, b, c, x[ 4], S22); /* 18 */
+    GG (c, d, a, b, x[ 8], S23); /* 19 */
+    GG (b, c, d, a, x[12], S24); /* 20 */
+    GG (a, b, c, d, x[ 1], S21); /* 21 */
+    GG (d, a, b, c, x[ 5], S22); /* 22 */
+    GG (c, d, a, b, x[ 9], S23); /* 23 */
+    GG (b, c, d, a, x[13], S24); /* 24 */
+    GG (a, b, c, d, x[ 2], S21); /* 25 */
+    GG (d, a, b, c, x[ 6], S22); /* 26 */
+    GG (c, d, a, b, x[10], S23); /* 27 */
+    GG (b, c, d, a, x[14], S24); /* 28 */
+    GG (a, b, c, d, x[ 3], S21); /* 29 */
+    GG (d, a, b, c, x[ 7], S22); /* 30 */
+    GG (c, d, a, b, x[11], S23); /* 31 */
+    GG (b, c, d, a, x[15], S24); /* 32 */
+
     /* Round 3 */
-    HH (a, b, c, d, x[ 0], S31); /* 33 */ 
-    HH (d, a, b, c, x[ 8], S32); /* 34 */ 
-    HH (c, d, a, b, x[ 4], S33); /* 35 */ 
-    HH (b, c, d, a, x[12], S34); /* 36 */ 
-    HH (a, b, c, d, x[ 2], S31); /* 37 */ 
-    HH (d, a, b, c, x[10], S32); /* 38 */ 
-    HH (c, d, a, b, x[ 6], S33); /* 39 */ 
-    HH (b, c, d, a, x[14], S34); /* 40 */ 
-    HH (a, b, c, d, x[ 1], S31); /* 41 */ 
-    HH (d, a, b, c, x[ 9], S32); /* 42 */ 
-    HH (c, d, a, b, x[ 5], S33); /* 43 */ 
-    HH (b, c, d, a, x[13], S34); /* 44 */ 
-    HH (a, b, c, d, x[ 3], S31); /* 45 */ 
-    HH (d, a, b, c, x[11], S32); /* 46 */ 
-    HH (c, d, a, b, x[ 7], S33); /* 47 */ 
-    HH (b, c, d, a, x[15], S34); /* 48 */ 
-    
+    HH (a, b, c, d, x[ 0], S31); /* 33 */
+    HH (d, a, b, c, x[ 8], S32); /* 34 */
+    HH (c, d, a, b, x[ 4], S33); /* 35 */
+    HH (b, c, d, a, x[12], S34); /* 36 */
+    HH (a, b, c, d, x[ 2], S31); /* 37 */
+    HH (d, a, b, c, x[10], S32); /* 38 */
+    HH (c, d, a, b, x[ 6], S33); /* 39 */
+    HH (b, c, d, a, x[14], S34); /* 40 */
+    HH (a, b, c, d, x[ 1], S31); /* 41 */
+    HH (d, a, b, c, x[ 9], S32); /* 42 */
+    HH (c, d, a, b, x[ 5], S33); /* 43 */
+    HH (b, c, d, a, x[13], S34); /* 44 */
+    HH (a, b, c, d, x[ 3], S31); /* 45 */
+    HH (d, a, b, c, x[11], S32); /* 46 */
+    HH (c, d, a, b, x[ 7], S33); /* 47 */
+    HH (b, c, d, a, x[15], S34); /* 48 */
+
 
     /* Update our state */
     md->md4.state[0] = md->md4.state[0] + a;
@@ -242,54 +240,55 @@ int md4_done(hash_state * md, unsigned char *out)
     }
 #ifdef LTC_CLEAN_STACK
     zeromem(md, sizeof(hash_state));
-#endif 
+#endif
     return CRYPT_OK;
 }
 
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int md4_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
+ #else
     static const struct md4_test_case {
-        char *input;
-        unsigned char digest[16];
-    } cases[] = {
-        { "", 
+        const char *input;
+        unsigned char hash[16];
+    } tests[] = {
+        { "",
           {0x31, 0xd6, 0xcf, 0xe0, 0xd1, 0x6a, 0xe9, 0x31,
            0xb7, 0x3c, 0x59, 0xd7, 0xe0, 0xc0, 0x89, 0xc0} },
         { "a",
           {0xbd, 0xe5, 0x2c, 0xb3, 0x1d, 0xe3, 0x3e, 0x46,
            0x24, 0x5e, 0x05, 0xfb, 0xdb, 0xd6, 0xfb, 0x24} },
         { "abc",
-          {0xa4, 0x48, 0x01, 0x7a, 0xaf, 0x21, 0xd8, 0x52, 
+          {0xa4, 0x48, 0x01, 0x7a, 0xaf, 0x21, 0xd8, 0x52,
            0x5f, 0xc1, 0x0a, 0xe8, 0x7a, 0xa6, 0x72, 0x9d} },
-        { "message digest", 
-          {0xd9, 0x13, 0x0a, 0x81, 0x64, 0x54, 0x9f, 0xe8, 
+        { "message digest",
+          {0xd9, 0x13, 0x0a, 0x81, 0x64, 0x54, 0x9f, 0xe8,
            0x18, 0x87, 0x48, 0x06, 0xe1, 0xc7, 0x01, 0x4b} },
-        { "abcdefghijklmnopqrstuvwxyz", 
-          {0xd7, 0x9e, 0x1c, 0x30, 0x8a, 0xa5, 0xbb, 0xcd, 
+        { "abcdefghijklmnopqrstuvwxyz",
+          {0xd7, 0x9e, 0x1c, 0x30, 0x8a, 0xa5, 0xbb, 0xcd,
            0xee, 0xa8, 0xed, 0x63, 0xdf, 0x41, 0x2d, 0xa9} },
-        { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 
-          {0x04, 0x3f, 0x85, 0x82, 0xf2, 0x41, 0xdb, 0x35, 
+        { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+          {0x04, 0x3f, 0x85, 0x82, 0xf2, 0x41, 0xdb, 0x35,
            0x1c, 0xe6, 0x27, 0xe1, 0x53, 0xe7, 0xf0, 0xe4} },
-        { "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 
-          {0xe3, 0x3b, 0x4d, 0xdc, 0x9c, 0x38, 0xf2, 0x19, 
+        { "12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+          {0xe3, 0x3b, 0x4d, 0xdc, 0x9c, 0x38, 0xf2, 0x19,
            0x9c, 0x3e, 0x7b, 0x16, 0x4f, 0xcc, 0x05, 0x36} },
     };
-    int i;
-    hash_state md;
-    unsigned char digest[16];
 
-    for(i = 0; i < (int)(sizeof(cases) / sizeof(cases[0])); i++) {
+    int i;
+    unsigned char tmp[16];
+    hash_state md;
+
+    for(i = 0; i < (int)(sizeof(tests) / sizeof(tests[0])); i++) {
         md4_init(&md);
-        md4_process(&md, (unsigned char *)cases[i].input, (unsigned long)strlen(cases[i].input));
-        md4_done(&md, digest);
-        if (XMEMCMP(digest, cases[i].digest, 16) != 0) {
+        md4_process(&md, (unsigned char *)tests[i].input, (unsigned long)strlen(tests[i].input));
+        md4_done(&md, tmp);
+        if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "MD4", i)) {
            return CRYPT_FAIL_TESTVECTOR;
         }
 
@@ -302,6 +301,6 @@ int md4_test(void)
 
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/md4.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

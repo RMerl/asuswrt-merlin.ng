@@ -1,3 +1,82 @@
+January 22nd, 2018
+v1.18.1
+      -- Fix wrong SHA3 blocksizes, thanks to Claus Fischer for reporting this via Mail (PR #329)
+      -- Fix NULL-pointer dereference in `ccm_memory()` with LTC_CLEAN_STACK enabled (PR #327)
+      -- Fix `ccm_process()` being unable to process input buffers longer than 256 bytes (PR #326)
+      -- Fix the `register_all_{ciphers,hashes,prngs}()` return values (PR #316)
+      -- Fix some typos, warnings and duplicate prototypes in code & doc (PR's #310 #320 #321 #335)
+      -- Fix possible undefined behavior with LTC_PTHREAD (PR #337)
+      -- Fix some DER bugs (PR #339)
+      -- Fix CTR-mode when accelerator is used (OP-TEE/optee_os #2086)
+      -- Fix installation procedure (Issue #340)
+
+October 10th, 2017
+v1.18.0
+      -- Bugfix multi2
+      -- Bugfix Noekeon
+      -- Bugfix XTEA
+      -- Bugfix rng_get_bytes() on windows where we could read from c:\dev\random
+      -- Fixed the Bleichbacher Signature attack in PKCS#1 v1.5 EMSA, thanks to Alex Dent
+      -- Fixed a potential cache-based timing attack in CCM, thanks to Sebastian Verschoor
+      -- Fix GCM counter reuse and potential timing attacks in EAX, OCB and OCBv3,
+         thanks to Raphaël Jamet
+      -- Implement hardened RSA operations when CRT is used
+      -- Enabled timing resistant calculations of ECC and RSA operations per default
+      -- Applied some patches from the OLPC project regarding PKCS#1 and preventing
+         the hash algorithms from overflowing
+      -- Larry Bugbee contributed the necessary stuff to more easily call libtomcrypt
+         from a dynamic language like Python, as shown in his pyTomCrypt
+      -- Nikos Mavrogiannopoulos contributed RSA blinding and export of RSA and DSA keys
+         in OpenSSL/GnuTLS compatible format
+      -- Patrick Pelletier contributed a smart volley of patches
+      -- Christopher Brown contributed some patches and additions to ASN.1/DER
+      -- Pascal Brand of STMicroelectronics contributed patches regarding CCM, the
+         XTS mode and RSA private key operations with keys without CRT parameters
+      -- RC2 now also works with smaller key-sizes
+      -- Improved/extended several tests & demos
+      -- Hardened DSA and RSA by testing (through Karel's perl-CryptX)
+         against Google's "Wycheproof" and Kudelski Security's "CDF"
+      -- Fixed all compiler warnings
+      -- Fixed several build issues on FreeBSD, NetBSD, Linux x32 ABI, HP-UX/IA64,
+         Mac OS X, Windows (32&64bit, Cygwin, MingW & MSVC) ...
+      -- Re-worked all makefiles
+      -- Re-worked most PRNG's
+      -- The code is now verified by a linter, thanks to Francois Perrad
+      -- Documentation (crypt.pdf) is now built deterministically, thanks to Michael Stapelberg
+      -- Add Adler32 and CRC32 checksum algorithms
+      -- Add Base64-URL de-/encoding and some strict variants
+      -- Add Blake2b & Blake2s (hash & mac), thanks to Kelvin Sherlock
+      -- Add Camellia block cipher
+      -- Add ChaCha (stream cipher), Poly1305 (mac), ChaCha20Poly1305 (encauth)
+      -- Add constant-time mem-compare mem_neq()
+      -- Add DER GeneralizedTime de-/encoding
+      -- Add DSA and ECC key generation FIPS-186-4 compliance
+      -- Add HKDF, thanks to RyanC (especially for also providing documentation :-) )
+      -- Add OCBv3
+      -- Add PKCS#1 v1.5 mode of SSL3.0
+      -- Add PKCS#1 testvectors from RSA
+      -- Add PKCS#8 & X.509 import for RSA keys
+      -- Add stream cipher API
+      -- Add SHA3 & SHAKE
+      -- Add SHA512/256 and SHA512/224
+      -- Add Triple-DES 2-key mode, thanks to Paul Howarth
+      -- Brought back Diffie-Hellman
+
+May 12th, 2007
+v1.17 -- Cryptography Research Inc. contributed another small volley of patches, one to fix __WCHAR_DEFINED__ for BSD platforms, 
+         another to silence MSVC warnings.
+      -- Added LTC_XCBC_PURE to XCBC mode which lets you use it in three-key mode. 
+      -- [CRI] Added libtomcrypt.dsp for Visual C++ users.
+      -- [CRI] Added more functions for manipulating the ECC fixed point cache (including saving and loading)
+      -- [CRI] Modified ecc_make_key() to always produce keys smaller than base point order, for standards-compliance
+      -- Elliptic Semiconductor contributed XTS chaining mode to the cipher suite (subsequently optimized it)
+      -- Fixed xcbc_init() keylen when using single key mode.
+      -- Bruce Fortune pointed out a typo in the hmac_process() description in the manual.  Fixed.
+      -- Added variable width counter support to CTR mode
+      -- Fixed CMAC (aka OMAC) when using 64-bit block ciphers and LTC_FAST ... my bad.
+      -- Fixed bug in ecc_is_valid() that would basically always return true
+      -- renamed a lot of macros to add the LTC_ prefix [e.g. RIJNDAEL => LTC_RIJNDAEL]
+
 December 16th, 2006
 v1.16 -- Brian Gladman pointed out that a recent change to GCM broke how the IV was handled.  Currently the code complies against his test vectors
          so the code should be considered frozen now.
@@ -1551,6 +1630,6 @@ v0.02  -- Changed RC5 to only allow 12 to 24 rounds
 v0.01  -- We will call this the first version.
 
 /* $Source: /cvs/libtom/libtomcrypt/changes,v $ */
-/* $Revision: 1.274 $ */
-/* $Date: 2006/12/16 19:08:17 $ */
+/* $Revision: 1.288 $ */
+/* $Date: 2007/05/12 14:37:41 $ */
 

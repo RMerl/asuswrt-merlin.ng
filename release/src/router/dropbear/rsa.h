@@ -28,7 +28,7 @@
 #include "includes.h"
 #include "buffer.h"
 
-#ifdef DROPBEAR_RSA 
+#if DROPBEAR_RSA 
 
 #define RSA_SIGNATURE_SIZE (4+7+4+40)
 
@@ -43,14 +43,14 @@ typedef struct {
 
 } dropbear_rsa_key;
 
-void buf_put_rsa_sign(buffer* buf, dropbear_rsa_key *key, buffer *data_buf);
-#ifdef DROPBEAR_SIGNKEY_VERIFY
-int buf_rsa_verify(buffer * buf, dropbear_rsa_key *key, buffer *data_buf);
+void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key, const buffer *data_buf);
+#if DROPBEAR_SIGNKEY_VERIFY
+int buf_rsa_verify(buffer * buf, const dropbear_rsa_key *key, const buffer *data_buf);
 #endif
 int buf_get_rsa_pub_key(buffer* buf, dropbear_rsa_key *key);
 int buf_get_rsa_priv_key(buffer* buf, dropbear_rsa_key *key);
-void buf_put_rsa_pub_key(buffer* buf, dropbear_rsa_key *key);
-void buf_put_rsa_priv_key(buffer* buf, dropbear_rsa_key *key);
+void buf_put_rsa_pub_key(buffer* buf, const dropbear_rsa_key *key);
+void buf_put_rsa_priv_key(buffer* buf, const dropbear_rsa_key *key);
 void rsa_key_free(dropbear_rsa_key *key);
 
 #endif /* DROPBEAR_RSA */

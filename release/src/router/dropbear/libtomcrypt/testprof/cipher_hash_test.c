@@ -40,6 +40,6 @@ int cipher_hash_test(void)
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/testprof/cipher_hash_test.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2005/05/05 14:35:59 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

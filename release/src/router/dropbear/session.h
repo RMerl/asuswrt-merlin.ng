@@ -26,7 +26,6 @@
 #define DROPBEAR_SESSION_H_
 
 #include "includes.h"
-#include "options.h"
 #include "buffer.h"
 #include "signkey.h"
 #include "kex.h"
@@ -40,11 +39,8 @@
 #include "dbutil.h"
 #include "netio.h"
 
-extern int sessinitdone; /* Is set to 0 somewhere */
-extern int exitflag;
-
 void common_session_init(int sock_in, int sock_out);
-void session_loop(void(*loophandler)()) ATTRIB_NORETURN;
+void session_loop(void(*loophandler)(void)) ATTRIB_NORETURN;
 void session_cleanup(void);
 void send_session_identification(void);
 void send_msg_ignore(void);
@@ -79,7 +75,7 @@ struct key_context_directional {
 	/* actual keys */
 	union {
 		symmetric_CBC cbc;
-#ifdef DROPBEAR_ENABLE_CTR_MODE
+#if DROPBEAR_ENABLE_CTR_MODE
 		symmetric_CTR ctr;
 #endif
 	} cipher_state;
@@ -157,6 +153,7 @@ struct sshsession {
 	
 	int signal_pipe[2]; /* stores endpoints of a self-pipe used for
 						   race-free signal handling */
+	int channel_signal_pending; /* Flag set when the signal pipe is triggered */
 
 	m_list conn_pending;
 						
@@ -203,7 +200,6 @@ struct sshsession {
 	unsigned int chansize; /* the number of Channel*s allocated for channels */
 	unsigned int chancount; /* the number of Channel*s in use */
 	const struct ChanType **chantypes; /* The valid channel types */
-	int channel_signal_pending; /* Flag set by sigchld handler */
 
 	/* TCP priority level for the main "port 22" tcp socket */
 	enum dropbear_prio socket_prio;
@@ -216,6 +212,10 @@ struct sshsession {
 	 * really belong here, but nowhere else fits nicely */
 	int allowprivport;
 
+	/* this is set when we get SIGINT or SIGTERM, the handler is in main.c */
+	volatile int exitflag;
+	/* set once the ses structure (and cli_ses/svr_ses) have been populated to their initial state */
+	int init_done;
 };
 
 struct serversession {
@@ -237,7 +237,7 @@ struct serversession {
 	/* The resolved remote address, used for lastlog etc */
 	char *remotehost;
 
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 	pid_t server_pid;
 #endif
 
@@ -283,20 +283,18 @@ struct clientsession {
 	/* for escape char handling */
 	int last_char;
 
-	int winchange; /* Set to 1 when a windowchange signal happens */
+	volatile int winchange; /* Set to 1 when a windowchange signal happens */
 
 	int lastauthtype; /* either AUTH_TYPE_PUBKEY or AUTH_TYPE_PASSWORD,
 						 for the last type of auth we tried */
 	int ignore_next_auth_response;
-#ifdef ENABLE_CLI_INTERACT_AUTH
+#if DROPBEAR_CLI_INTERACT_AUTH
 	int auth_interact_failed; /* flag whether interactive auth can still
 								 be used */
 	int interact_request_received; /* flag whether we've received an 
 									  info request from the server for
 									  interactive auth.*/
 #endif
-	int cipher_none_after_auth; /* Set to 1 if the user requested "none"
-								   auth */
 	sign_key *lastprivkey;
 
 	int retval; /* What the command exit status was - we emulate it */
@@ -311,11 +309,11 @@ struct clientsession {
 /* Global structs storing the state */
 extern struct sshsession ses;
 
-#ifdef DROPBEAR_SERVER
+#if DROPBEAR_SERVER
 extern struct serversession svr_ses;
 #endif /* DROPBEAR_SERVER */
 
-#ifdef DROPBEAR_CLIENT
+#if DROPBEAR_CLIENT
 extern struct clientsession cli_ses;
 #endif /* DROPBEAR_CLIENT */
 

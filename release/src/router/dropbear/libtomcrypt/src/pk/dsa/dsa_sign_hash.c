@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -15,7 +13,7 @@
    DSA implementation, sign a hash, Tom St Denis
 */
 
-#ifdef MDSA
+#ifdef LTC_MDSA
 
 /**
   Sign a hash with DSA
@@ -34,7 +32,7 @@ int dsa_sign_hash_raw(const unsigned char *in,  unsigned long inlen,
 {
    void         *k, *kinv, *tmp;
    unsigned char *buf;
-   int            err;
+   int            err, qbits;
 
    LTC_ARGCHK(in  != NULL);
    LTC_ARGCHK(r   != NULL);
@@ -49,11 +47,11 @@ int dsa_sign_hash_raw(const unsigned char *in,  unsigned long inlen,
    }
 
    /* check group order size  */
-   if (key->qord >= MDSA_MAX_GROUP) {
+   if (key->qord >= LTC_MDSA_MAX_GROUP) {
       return CRYPT_INVALID_ARG;
    }
 
-   buf = XMALLOC(MDSA_MAX_GROUP);
+   buf = XMALLOC(LTC_MDSA_MAX_GROUP);
    if (buf == NULL) {
       return CRYPT_MEM;
    }
@@ -61,20 +59,15 @@ int dsa_sign_hash_raw(const unsigned char *in,  unsigned long inlen,
    /* Init our temps */
    if ((err = mp_init_multi(&k, &kinv, &tmp, NULL)) != CRYPT_OK)                       { goto ERRBUF; }
 
+   qbits = mp_count_bits(key->q);
 retry:
 
    do {
       /* gen random k */
-      if (prng_descriptor[wprng].read(buf, key->qord, prng) != (unsigned long)key->qord) {
-         err = CRYPT_ERROR_READPRNG;
-         goto error;
-      }
+      if ((err = rand_bn_bits(k, qbits, prng, wprng)) != CRYPT_OK)                     { goto error; }
 
-      /* read k */
-      if ((err = mp_read_unsigned_bin(k, buf, key->qord)) != CRYPT_OK)                 { goto error; }
-
-      /* k > 1 ? */
-      if (mp_cmp_d(k, 1) != LTC_MP_GT)                                                 { goto retry; }
+      /* k should be from range: 1 <= k <= q-1 (see FIPS 186-4 B.2.2) */
+      if (mp_cmp_d(k, 0) != LTC_MP_GT || mp_cmp(k, key->q) != LTC_MP_LT)               { goto retry; }
 
       /* test gcd */
       if ((err = mp_gcd(k, key->q, tmp)) != CRYPT_OK)                                  { goto error; }
@@ -89,6 +82,9 @@ retry:
 
    if (mp_iszero(r) == LTC_MP_YES)                                                     { goto retry; }
 
+   /* FIPS 186-4 4.6: use leftmost min(bitlen(q), bitlen(hash)) bits of 'hash'*/
+   inlen = MIN(inlen, (unsigned long)(key->qord));
+
    /* now find s = (in + xr)/k mod q */
    if ((err = mp_read_unsigned_bin(tmp, (unsigned char *)in, inlen)) != CRYPT_OK)      { goto error; }
    if ((err = mp_mul(key->x, r, s)) != CRYPT_OK)                                       { goto error; }
@@ -98,11 +94,11 @@ retry:
    if (mp_iszero(s) == LTC_MP_YES)                                                     { goto retry; }
 
    err = CRYPT_OK;
-error: 
+error:
    mp_clear_multi(k, kinv, tmp, NULL);
 ERRBUF:
 #ifdef LTC_CLEAN_STACK
-   zeromem(buf, MDSA_MAX_GROUP);
+   zeromem(buf, LTC_MDSA_MAX_GROUP);
 #endif
    XFREE(buf);
    return err;
@@ -139,9 +135,9 @@ int dsa_sign_hash(const unsigned char *in,  unsigned long inlen,
       goto error;
    }
 
-   err = der_encode_sequence_multi(out, outlen, 
-                             LTC_ASN1_INTEGER, 1UL, r, 
-                             LTC_ASN1_INTEGER, 1UL, s, 
+   err = der_encode_sequence_multi(out, outlen,
+                             LTC_ASN1_INTEGER, 1UL, r,
+                             LTC_ASN1_INTEGER, 1UL, s,
                              LTC_ASN1_EOL,     0UL, NULL);
 
 error:
@@ -151,6 +147,6 @@ error:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/dsa/dsa_sign_hash.c,v $ */
-/* $Revision: 1.12 $ */
-/* $Date: 2006/12/04 22:27:56 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

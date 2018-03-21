@@ -4,14 +4,17 @@
 # add the whole source without any makefile troubles
 #
 use strict;
+use warnings;
 
-open( OUT, ">mpi.c" ) or die "Couldn't open mpi.c for writing: $!";
-foreach my $filename (glob "bn*.c") {
-   open( SRC, "<$filename" ) or die "Couldn't open $filename for reading: $!";
-   print OUT "/* Start: $filename */\n";
-   print OUT while <SRC>;
-   print OUT "\n/* End: $filename */\n\n";
-   close SRC or die "Error closing $filename after reading: $!";
+open(my $out, '>', 'mpi.c') or die "Couldn't open mpi.c for writing: $!";
+foreach my $filename (glob 'bn*.c') {
+   open(my $src, '<', $filename) or die "Couldn't open $filename for reading: $!";
+   print {$out} "/* Start: $filename */\n";
+   print {$out} $_ while <$src>;
+   print {$out} "\n/* End: $filename */\n\n";
+   close $src or die "Error closing $filename after reading: $!";
 }
-print OUT "\n/* EOF */\n";
-close OUT or die "Error closing mpi.c after writing: $!";
+print {$out} "\n/* EOF */\n";
+close $out or die "Error closing mpi.c after writing: $!";
+
+system('perl -pli -e "s/\s*$//" mpi.c');

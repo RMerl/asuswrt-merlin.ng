@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -37,17 +35,17 @@ int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
    if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
        return err;
    }
-   
+
    /* is blocklen valid? */
    if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV)) {
       return CRYPT_INVALID_ARG;
-   }    
+   }
 
    if (len % cbc->blocklen) {
       return CRYPT_INVALID_ARG;
    }
 #ifdef LTC_FAST
-   if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {   
+   if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
       return CRYPT_INVALID_ARG;
    }
 #endif
@@ -58,13 +56,13 @@ int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
       while (len) {
          /* xor IV against plaintext */
          #if defined(LTC_FAST)
-        for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
-            *((LTC_FAST_TYPE*)((unsigned char *)cbc->IV + x)) ^= *((LTC_FAST_TYPE*)((unsigned char *)pt + x));
-        }
-    #else 
-            for (x = 0; x < cbc->blocklen; x++) {
-               cbc->IV[x] ^= pt[x];
-            }
+         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) ^= *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pt + x));
+         }
+    #else
+         for (x = 0; x < cbc->blocklen; x++) {
+            cbc->IV[x] ^= pt[x];
+         }
     #endif
 
          /* encrypt */
@@ -72,27 +70,27 @@ int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
             return err;
          }
 
-        /* store IV [ciphertext] for a future block */
+         /* store IV [ciphertext] for a future block */
          #if defined(LTC_FAST)
-        for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
-            *((LTC_FAST_TYPE*)((unsigned char *)cbc->IV + x)) = *((LTC_FAST_TYPE*)((unsigned char *)ct + x));
-        }
-    #else 
-             for (x = 0; x < cbc->blocklen; x++) {
-                cbc->IV[x] = ct[x];
-             }
+         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
+         }
+    #else
+         for (x = 0; x < cbc->blocklen; x++) {
+            cbc->IV[x] = ct[x];
+         }
     #endif
-        
-        ct  += cbc->blocklen;
-        pt  += cbc->blocklen;
-        len -= cbc->blocklen;
-     }
+
+         ct  += cbc->blocklen;
+         pt  += cbc->blocklen;
+         len -= cbc->blocklen;
+      }
    }
    return CRYPT_OK;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/cbc/cbc_encrypt.c,v $ */
-/* $Revision: 1.13 $ */
-/* $Date: 2006/11/21 00:18:23 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

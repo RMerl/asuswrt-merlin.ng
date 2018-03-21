@@ -5,23 +5,21 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
    @param rmd128.c
    RMD128 Hash function
-*/   
+*/
 
-/* Implementation of RIPEMD-128 based on the source by Antoon Bosselaers, ESAT-COSIC
+/* Implementation of LTC_RIPEMD-128 based on the source by Antoon Bosselaers, ESAT-COSIC
  *
  * This source has been radically overhauled to be portable and work within
  * the LibTomCrypt API by Tom St Denis
  */
 
-#ifdef RIPEMD128
+#ifdef LTC_RIPEMD128
 
 const struct ltc_hash_descriptor rmd128_desc =
 {
@@ -42,11 +40,11 @@ const struct ltc_hash_descriptor rmd128_desc =
 };
 
 /* the four basic functions F(), G() and H() */
-#define F(x, y, z)        ((x) ^ (y) ^ (z)) 
-#define G(x, y, z)        (((x) & (y)) | (~(x) & (z))) 
+#define F(x, y, z)        ((x) ^ (y) ^ (z))
+#define G(x, y, z)        (((x) & (y)) | (~(x) & (z)))
 #define H(x, y, z)        (((x) | ~(y)) ^ (z))
-#define I(x, y, z)        (((x) & (z)) | ((y) & ~(z))) 
-  
+#define I(x, y, z)        (((x) & (z)) | ((y) & ~(z)))
+
 /* the eight basic operations FF() through III() */
 #define FF(a, b, c, d, x, s)        \
       (a) += F((b), (c), (d)) + (x);\
@@ -88,7 +86,7 @@ static int  rmd128_compress(hash_state *md, unsigned char *buf)
 {
    ulong32 aa,bb,cc,dd,aaa,bbb,ccc,ddd,X[16];
    int i;
-   
+
    /* load words X */
    for (i = 0; i < 16; i++){
       LOAD32L(X[i], buf + (4 * i));
@@ -117,7 +115,7 @@ static int  rmd128_compress(hash_state *md, unsigned char *buf)
    FF(dd, aa, bb, cc, X[13],  7);
    FF(cc, dd, aa, bb, X[14],  9);
    FF(bb, cc, dd, aa, X[15],  8);
-                             
+
    /* round 2 */
    GG(aa, bb, cc, dd, X[ 7],  7);
    GG(dd, aa, bb, cc, X[ 4],  6);
@@ -173,7 +171,7 @@ static int  rmd128_compress(hash_state *md, unsigned char *buf)
    II(bb, cc, dd, aa, X[ 2], 12);
 
    /* parallel round 1 */
-   III(aaa, bbb, ccc, ddd, X[ 5],  8); 
+   III(aaa, bbb, ccc, ddd, X[ 5],  8);
    III(ddd, aaa, bbb, ccc, X[14],  9);
    III(ccc, ddd, aaa, bbb, X[ 7],  9);
    III(bbb, ccc, ddd, aaa, X[ 0], 11);
@@ -208,7 +206,7 @@ static int  rmd128_compress(hash_state *md, unsigned char *buf)
    HHH(ccc, ddd, aaa, bbb, X[ 1], 13);
    HHH(bbb, ccc, ddd, aaa, X[ 2], 11);
 
-   /* parallel round 3 */   
+   /* parallel round 3 */
    GGG(aaa, bbb, ccc, ddd, X[15],  9);
    GGG(ddd, aaa, bbb, ccc, X[ 5],  7);
    GGG(ccc, ddd, aaa, bbb, X[ 1], 15);
@@ -342,21 +340,21 @@ int rmd128_done(hash_state * md, unsigned char *out)
 #ifdef LTC_CLEAN_STACK
     zeromem(md, sizeof(hash_state));
 #endif
-   return CRYPT_OK;  
+   return CRYPT_OK;
 }
 
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int rmd128_test(void)
 {
 #ifndef LTC_TEST
    return CRYPT_NOP;
 #else
    static const struct {
-        char *msg;
-        unsigned char md[16];
+        const char *msg;
+        unsigned char hash[16];
    } tests[] = {
    { "",
      { 0xcd, 0xf2, 0x62, 0x13, 0xa1, 0x50, 0xdc, 0x3e,
@@ -383,18 +381,16 @@ int rmd128_test(void)
        0xae, 0xa4, 0x62, 0x4c, 0x60, 0xc5, 0xc7, 0x02 }
    }
    };
-   int x;
-   unsigned char buf[16];
+
+   int i;
+   unsigned char tmp[16];
    hash_state md;
 
-   for (x = 0; x < (int)(sizeof(tests)/sizeof(tests[0])); x++) {
+   for (i = 0; i < (int)(sizeof(tests)/sizeof(tests[0])); i++) {
        rmd128_init(&md);
-       rmd128_process(&md, (unsigned char *)tests[x].msg, strlen(tests[x].msg));
-       rmd128_done(&md, buf);
-       if (XMEMCMP(buf, tests[x].md, 16) != 0) {
-       #if 0
-          printf("Failed test %d\n", x);
-       #endif
+       rmd128_process(&md, (unsigned char *)tests[i].msg, strlen(tests[i].msg));
+       rmd128_done(&md, tmp);
+       if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "RIPEMD128", i)) {
           return CRYPT_FAIL_TESTVECTOR;
        }
    }
@@ -405,6 +401,6 @@ int rmd128_test(void)
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/rmd128.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

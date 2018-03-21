@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 #include "dbhelpers.h"
@@ -21,11 +19,11 @@
    @param out    The destination of the area to zero
    @param outlen The length of the area to zero (octets)
 */
-void zeromem(void *out, size_t outlen)
+void zeromem(volatile void *out, size_t outlen)
 {
-   m_burn(out, outlen);
+   m_burn((void*)out, outlen);
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/src/misc/zeromem.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/06/09 01:38:13 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

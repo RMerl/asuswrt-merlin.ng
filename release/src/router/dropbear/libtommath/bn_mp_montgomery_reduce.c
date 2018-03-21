@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_MONTGOMERY_REDUCE_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* computes xR**-1 == x (mod N) via Montgomery Reduction */
@@ -28,10 +28,10 @@ mp_montgomery_reduce (mp_int * x, mp_int * n, mp_digit rho)
    * than the available columns [255 per default] since carries
    * are fixed up in the inner loop.
    */
-  digs = n->used * 2 + 1;
+  digs = (n->used * 2) + 1;
   if ((digs < MP_WARRAY) &&
-      n->used <
-      (1 << ((CHAR_BIT * sizeof (mp_word)) - (2 * DIGIT_BIT)))) {
+      (n->used <
+      (1 << ((CHAR_BIT * sizeof(mp_word)) - (2 * DIGIT_BIT))))) {
     return fast_mp_montgomery_reduce (x, n, rho);
   }
 
@@ -52,13 +52,13 @@ mp_montgomery_reduce (mp_int * x, mp_int * n, mp_digit rho)
      * following inner loop to reduce the
      * input one digit at a time
      */
-    mu = (mp_digit) (((mp_word)x->dp[ix]) * ((mp_word)rho) & MP_MASK);
+    mu = (mp_digit) (((mp_word)x->dp[ix] * (mp_word)rho) & MP_MASK);
 
     /* a = a + mu * m * b**i */
     {
-      register int iy;
-      register mp_digit *tmpn, *tmpx, u;
-      register mp_word r;
+      int iy;
+      mp_digit *tmpn, *tmpx, u;
+      mp_word r;
 
       /* alias for digits of the modulus */
       tmpn = n->dp;
@@ -72,8 +72,8 @@ mp_montgomery_reduce (mp_int * x, mp_int * n, mp_digit rho)
       /* Multiply and add in place */
       for (iy = 0; iy < n->used; iy++) {
         /* compute product and sum */
-        r       = ((mp_word)mu) * ((mp_word)*tmpn++) +
-                  ((mp_word) u) + ((mp_word) * tmpx);
+        r       = ((mp_word)mu * (mp_word)*tmpn++) +
+                   (mp_word) u + (mp_word) *tmpx;
 
         /* get carry */
         u       = (mp_digit)(r >> ((mp_word) DIGIT_BIT));
@@ -85,7 +85,7 @@ mp_montgomery_reduce (mp_int * x, mp_int * n, mp_digit rho)
 
 
       /* propagate carries upwards as required*/
-      while (u) {
+      while (u != 0) {
         *tmpx   += u;
         u        = *tmpx >> DIGIT_BIT;
         *tmpx++ &= MP_MASK;
@@ -113,6 +113,6 @@ mp_montgomery_reduce (mp_int * x, mp_int * n, mp_digit rho)
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_montgomery_reduce.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

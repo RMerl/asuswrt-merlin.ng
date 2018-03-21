@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -18,8 +16,8 @@
 
 #ifdef LTC_DER
 /**
-  Gets length of DER encoding of num 
-  @param num    The integer to get the size of 
+  Gets length of DER encoding of num
+  @param num    The integer to get the size of
   @param outlen [out] The length of the DER encoding for the given integer
   @return CRYPT_OK if successful
 */
@@ -39,7 +37,7 @@ int der_length_short_integer(unsigned long num, unsigned long *outlen)
      ++z;
      y >>= 8;
    }
-   
+
    /* handle zero */
    if (z == 0) {
       z = 1;
@@ -58,13 +56,13 @@ int der_length_short_integer(unsigned long num, unsigned long *outlen)
    len += (num&(1UL<<((z<<3) - 1))) ? 1 : 0;
 
    /* return length */
-   *outlen = len; 
-   
+   *outlen = len;
+
    return CRYPT_OK;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/asn1/der/short_integer/der_length_short_integer.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

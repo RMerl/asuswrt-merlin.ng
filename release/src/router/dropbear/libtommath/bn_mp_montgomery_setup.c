@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_MONTGOMERY_SETUP_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* setups the montgomery reduction stuff */
@@ -36,24 +36,24 @@ mp_montgomery_setup (mp_int * n, mp_digit * rho)
   }
 
   x = (((b + 2) & 4) << 1) + b; /* here x*a==1 mod 2**4 */
-  x *= 2 - b * x;               /* here x*a==1 mod 2**8 */
+  x *= 2 - (b * x);             /* here x*a==1 mod 2**8 */
 #if !defined(MP_8BIT)
-  x *= 2 - b * x;               /* here x*a==1 mod 2**16 */
+  x *= 2 - (b * x);             /* here x*a==1 mod 2**16 */
 #endif
 #if defined(MP_64BIT) || !(defined(MP_8BIT) || defined(MP_16BIT))
-  x *= 2 - b * x;               /* here x*a==1 mod 2**32 */
+  x *= 2 - (b * x);             /* here x*a==1 mod 2**32 */
 #endif
 #ifdef MP_64BIT
-  x *= 2 - b * x;               /* here x*a==1 mod 2**64 */
+  x *= 2 - (b * x);             /* here x*a==1 mod 2**64 */
 #endif
 
   /* rho = -1/m mod b */
-  *rho = (unsigned long)(((mp_word)1 << ((mp_word) DIGIT_BIT)) - x) & MP_MASK;
+  *rho = (mp_digit)(((mp_word)1 << ((mp_word) DIGIT_BIT)) - x) & MP_MASK;
 
   return MP_OKAY;
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_montgomery_setup.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/12/04 21:34:03 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

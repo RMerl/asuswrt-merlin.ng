@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -44,35 +42,35 @@ int f9_process(f9_state *f9, const unsigned char *in, unsigned long inlen)
    if (f9->buflen == 0) {
        while (inlen >= (unsigned long)f9->blocksize) {
            for (x = 0; x < f9->blocksize; x += sizeof(LTC_FAST_TYPE)) {
-              *((LTC_FAST_TYPE*)&(f9->IV[x])) ^= *((LTC_FAST_TYPE*)&(in[x]));
+              *(LTC_FAST_TYPE_PTR_CAST(&(f9->IV[x]))) ^= *(LTC_FAST_TYPE_PTR_CAST(&(in[x])));
            }
            cipher_descriptor[f9->cipher].ecb_encrypt(f9->IV, f9->IV, &f9->key);
            for (x = 0; x < f9->blocksize; x += sizeof(LTC_FAST_TYPE)) {
-              *((LTC_FAST_TYPE*)&(f9->ACC[x])) ^= *((LTC_FAST_TYPE*)&(f9->IV[x]));
+              *(LTC_FAST_TYPE_PTR_CAST(&(f9->ACC[x]))) ^= *(LTC_FAST_TYPE_PTR_CAST(&(f9->IV[x])));
            }
            in    += f9->blocksize;
            inlen -= f9->blocksize;
        }
-  }
+   }
 #endif
 
    while (inlen) {
-     if (f9->buflen == f9->blocksize) {
+      if (f9->buflen == f9->blocksize) {
          cipher_descriptor[f9->cipher].ecb_encrypt(f9->IV, f9->IV, &f9->key);
          for (x = 0; x < f9->blocksize; x++) {
             f9->ACC[x] ^= f9->IV[x];
          }
          f9->buflen = 0;
-     }
-     f9->IV[f9->buflen++] ^= *in++;
-     --inlen;
-  }
-  return CRYPT_OK;       
+      }
+      f9->IV[f9->buflen++] ^= *in++;
+      --inlen;
+   }
+   return CRYPT_OK;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/f9/f9_process.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/12/16 17:41:21 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

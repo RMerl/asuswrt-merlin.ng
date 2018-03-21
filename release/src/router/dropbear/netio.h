@@ -14,6 +14,7 @@ enum dropbear_prio {
 void set_sock_nodelay(int sock);
 void set_sock_priority(int sock, enum dropbear_prio prio);
 
+int get_sock_port(int sock);
 void get_socket_address(int fd, char **local_host, char **local_port,
 		char **remote_host, char **remote_port, int host_lookup);
 void getaddrstring(struct sockaddr_storage* addr, 
@@ -29,12 +30,12 @@ typedef void(*connect_callback)(int result, int sock, void* data, const char* er
 
 /* Always returns a progress connection, if it fails it will call the callback at a later point */
 struct dropbear_progress_connection * connect_remote (const char* remotehost, const char* remoteport,
-	connect_callback cb, void *cb_data);
+	connect_callback cb, void *cb_data, const char* bind_address, const char* bind_port);
 
 /* Sets up for select() */
 void set_connect_fds(fd_set *writefd);
 /* Handles ready sockets after select() */
-void handle_connect_fds(fd_set *writefd);
+void handle_connect_fds(const fd_set *writefd);
 /* Cleanup */
 void remove_connect_pending(void);
 
@@ -45,10 +46,10 @@ void connect_set_writequeue(struct dropbear_progress_connection *c, struct Queue
 
 /* TODO: writev #ifdef guard */
 /* Fills out iov which contains iov_count slots, returning the number filled in iov_count */
-void packet_queue_to_iovec(struct Queue *queue, struct iovec *iov, unsigned int *iov_count);
+void packet_queue_to_iovec(const struct Queue *queue, struct iovec *iov, unsigned int *iov_count);
 void packet_queue_consume(struct Queue *queue, ssize_t written);
 
-#ifdef DROPBEAR_SERVER_TCP_FAST_OPEN
+#if DROPBEAR_SERVER_TCP_FAST_OPEN
 /* Try for any Linux builds, will fall back if the kernel doesn't support it */
 void set_listen_fast_open(int sock);
 /* Define values which may be supported by the kernel even if the libc is too old */

@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -21,17 +19,17 @@
 /**
    Initialize a CTR context
    @param cipher      The index of the cipher desired
-   @param IV          The initial vector
-   @param key         The secret key 
+   @param IV          The initialization vector
+   @param key         The secret key
    @param keylen      The length of the secret key (octets)
    @param num_rounds  Number of rounds in the cipher desired (0 for default)
    @param ctr_mode    The counter mode (CTR_COUNTER_LITTLE_ENDIAN or CTR_COUNTER_BIG_ENDIAN)
    @param ctr         The CTR state to initialize
    @return CRYPT_OK if successful
 */
-int ctr_start(               int   cipher, 
-              const unsigned char *IV, 
-              const unsigned char *key,       int keylen, 
+int ctr_start(               int   cipher,
+              const unsigned char *IV,
+              const unsigned char *key,       int keylen,
                              int  num_rounds, int ctr_mode,
                    symmetric_CTR *ctr)
 {
@@ -46,6 +44,16 @@ int ctr_start(               int   cipher,
       return err;
    }
 
+   /* ctrlen == counter width */
+   ctr->ctrlen   = (ctr_mode & 255) ? (ctr_mode & 255) : cipher_descriptor[cipher].block_length;
+   if (ctr->ctrlen > cipher_descriptor[cipher].block_length) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   if ((ctr_mode & 0x1000) == CTR_COUNTER_BIG_ENDIAN) {
+      ctr->ctrlen = cipher_descriptor[cipher].block_length - ctr->ctrlen;
+   }
+
    /* setup cipher */
    if ((err = cipher_descriptor[cipher].setup(key, keylen, num_rounds, &ctr->key)) != CRYPT_OK) {
       return err;
@@ -55,7 +63,7 @@ int ctr_start(               int   cipher,
    ctr->blocklen = cipher_descriptor[cipher].block_length;
    ctr->cipher   = cipher;
    ctr->padlen   = 0;
-   ctr->mode     = ctr_mode & 1;
+   ctr->mode     = ctr_mode & 0x1000;
    for (x = 0; x < ctr->blocklen; x++) {
        ctr->ctr[x] = IV[x];
    }
@@ -64,7 +72,7 @@ int ctr_start(               int   cipher,
       /* increment the IV as per RFC 3686 */
       if (ctr->mode == CTR_COUNTER_LITTLE_ENDIAN) {
          /* little-endian */
-         for (x = 0; x < ctr->blocklen; x++) {
+         for (x = 0; x < ctr->ctrlen; x++) {
              ctr->ctr[x] = (ctr->ctr[x] + (unsigned char)1) & (unsigned char)255;
              if (ctr->ctr[x] != (unsigned char)0) {
                 break;
@@ -72,7 +80,7 @@ int ctr_start(               int   cipher,
          }
       } else {
          /* big-endian */
-         for (x = ctr->blocklen-1; x >= 0; x--) {
+         for (x = ctr->blocklen-1; x >= ctr->ctrlen; x--) {
              ctr->ctr[x] = (ctr->ctr[x] + (unsigned char)1) & (unsigned char)255;
              if (ctr->ctr[x] != (unsigned char)0) {
                 break;
@@ -81,11 +89,11 @@ int ctr_start(               int   cipher,
       }
    }
 
-   return cipher_descriptor[ctr->cipher].ecb_encrypt(ctr->ctr, ctr->pad, &ctr->key); 
+   return cipher_descriptor[ctr->cipher].ecb_encrypt(ctr->ctr, ctr->pad, &ctr->key);
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/ctr/ctr_start.c,v $ */
-/* $Revision: 1.11 $ */
-/* $Date: 2006/11/05 01:46:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

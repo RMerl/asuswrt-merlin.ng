@@ -23,14 +23,14 @@
  * SOFTWARE. */
 #ifndef DROPBEAR__X11FWD_H_
 #define DROPBEAR__X11FWD_H_
-#ifndef DISABLE_X11FWD
+#if DROPBEAR_X11FWD
 
 #include "includes.h"
 #include "chansession.h"
 #include "channel.h"
 
 int x11req(struct ChanSess * chansess);
-void x11setauth(struct ChanSess *chansess);
+void x11setauth(const struct ChanSess *chansess);
 void x11cleanup(struct ChanSess *chansess);
 
 #endif /* DROPBEAR_X11FWD */

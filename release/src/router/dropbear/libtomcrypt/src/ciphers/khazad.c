@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -16,7 +14,7 @@
   Authors: Paulo S.L.M. Barreto and Vincent Rijmen.
 */
 
-#ifdef KHAZAD
+#ifdef LTC_KHAZAD
 
 const struct ltc_cipher_descriptor khazad_desc = {
    "khazad",
@@ -28,14 +26,14 @@ const struct ltc_cipher_descriptor khazad_desc = {
    &khazad_test,
    &khazad_done,
    &khazad_keysize,
-   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
-#define R      8 
-#define KEYSIZE      128 
-#define KEYSIZEB   (KEYSIZE/8) 
-#define BLOCKSIZE   64 
-#define BLOCKSIZEB   (BLOCKSIZE/8) 
+#define R      8
+#define KEYSIZE      128
+#define KEYSIZEB   (KEYSIZE/8)
+#define BLOCKSIZE   64
+#define BLOCKSIZEB   (BLOCKSIZE/8)
 
 static const ulong64 T0[256] = {
     CONST64(0xbad3d268bbb96a01), CONST64(0x54fc4d19e59a66b1), CONST64(0x2f71bc93e26514cd), CONST64(0x749ccdb925871b51),
@@ -756,7 +754,7 @@ int khazad_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key
   Decrypts a block of text with Khazad
   @param ct The input ciphertext (8 bytes)
   @param pt The output plaintext (8 bytes)
-  @param skey The key as scheduled 
+  @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
 int khazad_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
@@ -783,22 +781,22 @@ int khazad_test(void)
 {
    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
    { 0x49, 0xA4, 0xCE, 0x32, 0xAC, 0x19, 0x0E, 0x3F },
-   { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+   { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 }, {
    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
    { 0x64, 0x5D, 0x77, 0x3E, 0x40, 0xAB, 0xDD, 0x53 },
-   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
 }, {
    { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
    { 0x9E, 0x39, 0x98, 0x64, 0xF7, 0x8E, 0xCA, 0x02 },
-   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 }, {
    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 },
    { 0xA9, 0xDF, 0x3D, 0x2C, 0x64, 0xD3, 0xEA, 0x28 },
-   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 }
 };
@@ -810,13 +808,14 @@ int khazad_test(void)
        khazad_setup(tests[x].key, 16, 0, &skey);
        khazad_ecb_encrypt(tests[x].pt, buf[0], &skey);
        khazad_ecb_decrypt(buf[0], buf[1], &skey);
-       if (XMEMCMP(buf[0], tests[x].ct, 8) || XMEMCMP(buf[1], tests[x].pt, 8)) {
+       if (compare_testvector(buf[0], 8, tests[x].ct, 8, "Khazad Encrypt", x) ||
+             compare_testvector(buf[1], 8, tests[x].pt, 8, "Khazad Decrypt", x)) {
           return CRYPT_FAIL_TESTVECTOR;
        }
 
        for (y = 0; y < 1000; y++) khazad_ecb_encrypt(buf[0], buf[0], &skey);
        for (y = 0; y < 1000; y++) khazad_ecb_decrypt(buf[0], buf[0], &skey);
-       if (XMEMCMP(buf[0], tests[x].ct, 8)) {
+       if (compare_testvector(buf[0], 8, tests[x].ct, 8, "Khazad 1000", 1000)) {
           return CRYPT_FAIL_TESTVECTOR;
        }
 
@@ -825,11 +824,12 @@ int khazad_test(void)
 #endif
 }
 
-/** Terminate the context 
+/** Terminate the context
    @param skey    The scheduled key
 */
 void khazad_done(symmetric_key *skey)
 {
+  LTC_UNUSED_PARAM(skey);
 }
 
 /**
@@ -850,6 +850,6 @@ int khazad_keysize(int *keysize)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/ciphers/khazad.c,v $ */
-/* $Revision: 1.12 $ */
-/* $Date: 2006/11/08 23:01:06 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

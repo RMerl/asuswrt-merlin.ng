@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -88,7 +86,7 @@ int lrw_test(void)
      }
 
      /* check pad against expected tweak */
-     if (XMEMCMP(tests[x].expected_tweak, lrw.pad, 16)) {
+     if (compare_testvector(tests[x].expected_tweak, 16, lrw.pad, 16, "LRW Tweak", x)) {
         lrw_done(&lrw);
         return CRYPT_FAIL_TESTVECTOR;
      }
@@ -99,13 +97,13 @@ int lrw_test(void)
         return err;
      }
 
-     if (XMEMCMP(buf[0], tests[x].C, 16)) {
+     if (compare_testvector(buf[0], 16, tests[x].C, 16, "LRW Encrypt", x)) {
         lrw_done(&lrw);
         return CRYPT_FAIL_TESTVECTOR;
      }
 
      /* process block */
-     if ((err = lrw_setiv(tests[x].IV, 16, &lrw)) != CRYPT_OK) { 
+     if ((err = lrw_setiv(tests[x].IV, 16, &lrw)) != CRYPT_OK) {
         lrw_done(&lrw);
         return err;
      }
@@ -115,15 +113,15 @@ int lrw_test(void)
         return err;
      }
 
-     if (XMEMCMP(buf[1], tests[x].P, 16)) {
+     if (compare_testvector(buf[1], 16, tests[x].P, 16, "LRW Decrypt", x)) {
         lrw_done(&lrw);
         return CRYPT_FAIL_TESTVECTOR;
      }
      if ((err = lrw_done(&lrw)) != CRYPT_OK) {
         return err;
      }
-   }
-   return CRYPT_OK;
+  }
+  return CRYPT_OK;
 #endif
 }
 
@@ -131,6 +129,6 @@ int lrw_test(void)
 
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/lrw/lrw_test.c,v $ */
-/* $Revision: 1.11 $ */
-/* $Date: 2006/06/29 01:53:13 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

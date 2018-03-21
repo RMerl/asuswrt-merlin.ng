@@ -5,18 +5,16 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/** 
+/**
    @file whirl.c
-   WHIRLPOOL (using their new sbox) hash function by Tom St Denis 
+   LTC_WHIRLPOOL (using their new sbox) hash function by Tom St Denis
 */
 
 #include "tomcrypt.h"
 
-#ifdef WHIRLPOOL
+#ifdef LTC_WHIRLPOOL
 
 const struct ltc_hash_descriptor whirlpool_desc =
 {
@@ -37,6 +35,7 @@ const struct ltc_hash_descriptor whirlpool_desc =
 };
 
 /* the sboxes */
+#define __LTC_WHIRLTAB_C__
 #include "whirltab.c"
 
 /* get a_{i,j} */
@@ -44,14 +43,14 @@ const struct ltc_hash_descriptor whirlpool_desc =
 
 /* shortcut macro to perform three functions at once */
 #define theta_pi_gamma(a, i)             \
-    SB0(GB(a, i-0, 7)) ^                 \
+   (SB0(GB(a, i-0, 7)) ^                 \
     SB1(GB(a, i-1, 6)) ^                 \
     SB2(GB(a, i-2, 5)) ^                 \
     SB3(GB(a, i-3, 4)) ^                 \
     SB4(GB(a, i-4, 3)) ^                 \
     SB5(GB(a, i-5, 2)) ^                 \
     SB6(GB(a, i-6, 1)) ^                 \
-    SB7(GB(a, i-7, 0))
+    SB7(GB(a, i-7, 0)))
 
 #ifdef LTC_CLEAN_STACK
 static int _whirlpool_compress(hash_state *md, unsigned char *buf)
@@ -61,7 +60,7 @@ static int whirlpool_compress(hash_state *md, unsigned char *buf)
 {
    ulong64 K[2][8], T[3][8];
    int x, y;
-   
+
    /* load the block/state */
    for (x = 0; x < 8; x++) {
       K[0][x] = md->whirlpool.state[x];
@@ -70,7 +69,7 @@ static int whirlpool_compress(hash_state *md, unsigned char *buf)
       T[2][x]  = T[0][x];
       T[0][x] ^= K[0][x];
    }
-  
+
    /* do rounds 1..10 */
    for (x = 0; x < 10; x += 2) {
        /* odd round */
@@ -80,7 +79,7 @@ static int whirlpool_compress(hash_state *md, unsigned char *buf)
        }
        /* xor the constant */
        K[1][0] ^= cont[x];
-       
+
        /* apply main transform to T[0] into T[1] */
        for (y = 0; y < 8; y++) {
            T[1][y] = theta_pi_gamma(T[0], y) ^ K[1][y];
@@ -93,13 +92,13 @@ static int whirlpool_compress(hash_state *md, unsigned char *buf)
        }
        /* xor the constant */
        K[0][0] ^= cont[x+1];
-       
+
        /* apply main transform to T[1] into T[0] */
        for (y = 0; y < 8; y++) {
            T[0][y] = theta_pi_gamma(T[1], y) ^ K[0][y];
        }
    }
-   
+
    /* store state */
    for (x = 0; x < 8; x++) {
       md->whirlpool.state[x] ^= T[0][x] ^ T[2][x];
@@ -198,20 +197,20 @@ int whirlpool_done(hash_state * md, unsigned char *out)
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int  whirlpool_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
+ #else
   static const struct {
       int len;
       unsigned char msg[128], hash[64];
   } tests[] = {
-  
+
   /* NULL Message */
 {
-  0, 
+  0,
   { 0x00 },
   { 0x19, 0xFA, 0x61, 0xD7, 0x55, 0x22, 0xA4, 0x66, 0x9B, 0x44, 0xE3, 0x9C, 0x1D, 0x2E, 0x17, 0x26,
     0xC5, 0x30, 0x23, 0x21, 0x30, 0xD4, 0x07, 0xF8, 0x9A, 0xFE, 0xE0, 0x96, 0x49, 0x97, 0xF7, 0xA7,
@@ -279,7 +278,7 @@ int  whirlpool_test(void)
     0x06, 0xDB, 0x4F, 0xF7, 0x08, 0xA3, 0xA2, 0x8B, 0xC3, 0x7A, 0x92, 0x1E, 0xEE, 0x11, 0xED, 0x7B,
     0x6A, 0x53, 0x79, 0x32, 0xCC, 0x5E, 0x94, 0xEE, 0x1E, 0xA6, 0x57, 0x60, 0x7E, 0x36, 0xC9, 0xF7 }
 },
-   
+
 };
 
   int i;
@@ -290,14 +289,7 @@ int  whirlpool_test(void)
       whirlpool_init(&md);
       whirlpool_process(&md, (unsigned char *)tests[i].msg, tests[i].len);
       whirlpool_done(&md, tmp);
-      if (XMEMCMP(tmp, tests[i].hash, 64) != 0) {
-#if 0      
-         printf("\nFailed test %d\n", i);
-         for (i = 0; i < 64; ) {
-            printf("%02x ", tmp[i]);
-            if (!(++i & 15)) printf("\n");
-         }
-#endif         
+      if (compare_testvector(tmp, sizeof(tmp), tests[i].hash, sizeof(tests[i].hash), "WHIRLPOOL", i)) {
          return CRYPT_FAIL_TESTVECTOR;
       }
   }
@@ -309,6 +301,6 @@ int  whirlpool_test(void)
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/hashes/whirl/whirl.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

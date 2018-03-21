@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -19,9 +17,9 @@
 /**
   @file ltc_ecc_mul2add.c
   ECC Crypto, Shamir's Trick, Tom St Denis
-*/  
+*/
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 #ifdef LTC_ECC_SHAMIR
 
@@ -31,9 +29,9 @@
   @param B        Second point to multiply
   @param kB       What to multiple B by
   @param C        [out] Destination point (can overlap with A or B
-  @param modulus  Modulus for curve 
+  @param modulus  Modulus for curve
   @return CRYPT_OK on success
-*/ 
+*/
 int ltc_ecc_mul2add(ecc_point *A, void *kA,
                     ecc_point *B, void *kB,
                     ecc_point *C,
@@ -44,7 +42,7 @@ int ltc_ecc_mul2add(ecc_point *A, void *kA,
   unsigned char *tA, *tB;
   int            err, first;
   void          *mp, *mu;
- 
+
   /* argchks */
   LTC_ARGCHK(A       != NULL);
   LTC_ARGCHK(B       != NULL);
@@ -93,16 +91,16 @@ int ltc_ecc_mul2add(ecc_point *A, void *kA,
      }
   }
 
-   /* init montgomery reduction */
-   if ((err = mp_montgomery_setup(modulus, &mp)) != CRYPT_OK) {
+  /* init montgomery reduction */
+  if ((err = mp_montgomery_setup(modulus, &mp)) != CRYPT_OK) {
       goto ERR_P;
-   }
-   if ((err = mp_init(&mu)) != CRYPT_OK) {
+  }
+  if ((err = mp_init(&mu)) != CRYPT_OK) {
       goto ERR_MP;
-   }
-   if ((err = mp_montgomery_normalization(mu, modulus)) != CRYPT_OK) {
+  }
+  if ((err = mp_montgomery_normalization(mu, modulus)) != CRYPT_OK) {
       goto ERR_MU;
-   }
+  }
 
   /* copy ones ... */
   if ((err = mp_mulmod(A->x, mu, modulus, precomp[1]->x)) != CRYPT_OK)                                         { goto ERR_MU; }
@@ -126,7 +124,7 @@ int ltc_ecc_mul2add(ecc_point *A, void *kA,
      for (y = 1; y < 4; y++) {
         if ((err = ltc_mp.ecc_ptadd(precomp[x], precomp[(y<<2)], precomp[x+(y<<2)], modulus, mp)) != CRYPT_OK) { goto ERR_MU; }
      }
-  }   
+  }
 
   nibble  = 3;
   first   = 1;
@@ -134,20 +132,21 @@ int ltc_ecc_mul2add(ecc_point *A, void *kA,
   bitbufB = tB[0];
 
   /* for every byte of the multiplicands */
-  for (x = -1;; ) {
+  for (x = 0;; ) {
      /* grab a nibble */
      if (++nibble == 4) {
-        ++x; if (x == len) break;
+        if (x == len) break;
         bitbufA = tA[x];
         bitbufB = tB[x];
         nibble  = 0;
+        ++x;
      }
 
      /* extract two bits from both, shift/update */
      nA = (bitbufA >> 6) & 0x03;
      nB = (bitbufB >> 6) & 0x03;
-     bitbufA = (bitbufA << 2) & 0xFF;   
-     bitbufB = (bitbufB << 2) & 0xFF;   
+     bitbufA = (bitbufA << 2) & 0xFF;
+     bitbufB = (bitbufB << 2) & 0xFF;
 
      /* if both zero, if first, continue */
      if ((nA == 0) && (nB == 0) && (first == 1)) {
@@ -202,6 +201,6 @@ ERR_T:
 #endif
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_mul2add.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/12/04 05:07:59 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

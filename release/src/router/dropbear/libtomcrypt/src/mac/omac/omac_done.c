@@ -5,12 +5,10 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
-/** 
+/**
   @file omac_done.c
   OMAC1 support, terminate a stream, Tom St Denis
 */
@@ -65,7 +63,7 @@ int omac_done(omac_state *omac, unsigned char *out, unsigned long *outlen)
       return err;
    }
    cipher_descriptor[omac->cipher_idx].done(&omac->key);
- 
+
    /* output it */
    for (x = 0; x < (unsigned)omac->blklen && x < *outlen; x++) {
        out[x] = omac->block[x];
@@ -81,6 +79,6 @@ int omac_done(omac_state *omac, unsigned char *out, unsigned long *outlen)
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/omac/omac_done.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/11/03 00:39:49 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

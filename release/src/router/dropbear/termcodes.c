@@ -34,7 +34,11 @@ const struct TermCode termcodes[MAX_TERMCODE+1] = {
 		{VKILL, TERMCODE_CONTROLCHAR},
 		{VEOF, TERMCODE_CONTROLCHAR},
 		{VEOL, TERMCODE_CONTROLCHAR},
+#ifdef VEOL2
 		{VEOL2, TERMCODE_CONTROLCHAR},
+#else
+		{0, 0},
+#endif
 		{VSTART, TERMCODE_CONTROLCHAR},
 		{VSTOP, TERMCODE_CONTROLCHAR},
 		{VSUSP, TERMCODE_CONTROLCHAR},
@@ -51,17 +55,25 @@ const struct TermCode termcodes[MAX_TERMCODE+1] = {
 #ifdef AIX
 		{CERASE, TERMCODE_CONTROLCHAR},
 #else
+#ifdef VWERASE
 		{VWERASE, TERMCODE_CONTROLCHAR},
+#else
+		{0, 0},
 #endif
+#endif
+#ifdef VLNEXT
 		{VLNEXT, TERMCODE_CONTROLCHAR},
+#else
+		{0, 0},
+#endif
 #ifdef VFLUSH
 		{VFLUSH, TERMCODE_CONTROLCHAR},
-#else	
+#else
 		{0, 0},
 #endif
 #ifdef VSWTCH
 		{VSWTCH, TERMCODE_CONTROLCHAR},
-#else	
+#else
 		{0, 0},
 #endif
 #ifdef VSTATUS
@@ -135,8 +147,16 @@ const struct TermCode termcodes[MAX_TERMCODE+1] = {
 		{NOFLSH, TERMCODE_LOCAL},
 		{TOSTOP, TERMCODE_LOCAL},
 		{IEXTEN, TERMCODE_LOCAL},
+#ifdef ECHOCTL
 		{ECHOCTL, TERMCODE_LOCAL},
+#else
+		{0, 0},
+#endif
+#ifdef ECHOKE
 		{ECHOKE, TERMCODE_LOCAL},
+#else
+		{0, 0},
+#endif
 #ifdef PENDIN
 		{PENDIN, TERMCODE_LOCAL},
 #else

@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -19,8 +17,8 @@
 
 /**
    HMAC a block of memory to produce the authentication tag
-   @param hash      The index of the hash to use 
-   @param key       The secret key 
+   @param hash      The index of the hash to use
+   @param key       The secret key
    @param keylen    The length of the secret key (octets)
    @param in        The data to HMAC
    @param inlen     The length of the data to HMAC (octets)
@@ -28,9 +26,9 @@
    @param outlen    [in/out] Max size and resulting size of authentication tag
    @return CRYPT_OK if successful
 */
-int hmac_memory(int hash, 
+int hmac_memory(int hash,
                 const unsigned char *key,  unsigned long keylen,
-                const unsigned char *in,   unsigned long inlen, 
+                const unsigned char *in,   unsigned long inlen,
                       unsigned char *out,  unsigned long *outlen)
 {
     hmac_state *hmac;
@@ -38,7 +36,7 @@ int hmac_memory(int hash,
 
     LTC_ARGCHK(key    != NULL);
     LTC_ARGCHK(in     != NULL);
-    LTC_ARGCHK(out    != NULL); 
+    LTC_ARGCHK(out    != NULL);
     LTC_ARGCHK(outlen != NULL);
 
     /* make sure hash descriptor is valid */
@@ -77,12 +75,12 @@ LBL_ERR:
 #endif
 
    XFREE(hmac);
-   return err;   
+   return err;
 }
 
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/hmac/hmac_memory.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/11/03 00:39:49 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

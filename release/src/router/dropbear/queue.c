@@ -33,7 +33,7 @@ void initqueue(struct Queue* queue) {
 	queue->count = 0;
 }
 
-int isempty(struct Queue* queue) {
+int isempty(const struct Queue* queue) {
 
 	return (queue->head == NULL);
 }
@@ -60,7 +60,7 @@ void* dequeue(struct Queue* queue) {
 	return ret;
 }
 
-void *examine(struct Queue* queue) {
+void *examine(const struct Queue* queue) {
 
 	dropbear_assert(!isempty(queue));
 	return queue->head->item;

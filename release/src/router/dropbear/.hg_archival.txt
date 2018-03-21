@@ -1,6 +1,6 @@
 repo: d7da3b1e15401eb234ec866d5eac992fc4cd5878
-node: c31276613181c5cff7854e7ef586ace03424e55e
+node: 1c66ca4f3791c82501c88e7637312182c7294978
 branch: default
-latesttag: DROPBEAR_2016.74
-latesttagdistance: 12
-changessincelatesttag: 12
+latesttag: github/master
+latesttagdistance: 14
+changessincelatesttag: 14

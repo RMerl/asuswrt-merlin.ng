@@ -37,13 +37,13 @@ static void printhelp(void);
 static void parse_hostname(const char* orighostarg);
 static void parse_multihop_hostname(const char* orighostarg, const char* argv0);
 static void fill_own_user(void);
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 static void loadidentityfile(const char* filename, int warnfail);
 #endif
-#ifdef ENABLE_CLI_ANYTCPFWD
+#if DROPBEAR_CLI_ANYTCPFWD
 static void addforward(const char* str, m_list *fwdlist);
 #endif
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 static void add_netcat(const char *str);
 #endif
 static void add_extendedopt(const char *str);
@@ -51,7 +51,7 @@ static void add_extendedopt(const char *str);
 static void printhelp() {
 
 	fprintf(stderr, "Dropbear SSH client v%s https://matt.ucc.asn.au/dropbear/dropbear.html\n"
-#ifdef ENABLE_CLI_MULTIHOP
+#if DROPBEAR_CLI_MULTIHOP
 					"Usage: %s [options] [user@]host[/port][,[user@]host/port],...] [command]\n"
 #else
 					"Usage: %s [options] [user@]host[/port] [command]\n"
@@ -66,38 +66,39 @@ static void printhelp() {
 					"-y -y Don't perform any remote host key checking (caution)\n"
 					"-s    Request a subsystem (use by external sftp)\n"
 					"-o option     Set option in OpenSSH-like format ('-o help' to list options)\n"
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 					"-i <identityfile>   (multiple allowed, default %s)\n"
 #endif
-#ifdef ENABLE_CLI_AGENTFWD
+#if DROPBEAR_CLI_AGENTFWD
 					"-A    Enable agent auth forwarding\n"
 #endif
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 					"-L <[listenaddress:]listenport:remotehost:remoteport> Local port forwarding\n"
 					"-g    Allow remote hosts to connect to forwarded ports\n"
 #endif
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 					"-R <[listenaddress:]listenport:remotehost:remoteport> Remote port forwarding\n"
 #endif
 					"-W <receive_window_buffer> (default %d, larger may be faster, max 1MB)\n"
 					"-K <keepalive>  (0 is never, default %d)\n"
 					"-I <idle_timeout>  (0 is never, default %d)\n"
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 					"-B <endhost:endport> Netcat-alike forwarding\n"
 #endif				
-#ifdef ENABLE_CLI_PROXYCMD
+#if DROPBEAR_CLI_PROXYCMD
 					"-J <proxy_program> Use program pipe rather than TCP connection\n"
 #endif
-#ifdef ENABLE_USER_ALGO_LIST
+#if DROPBEAR_USER_ALGO_LIST
 					"-c <cipher list> Specify preferred ciphers ('-c help' to list options)\n"
 					"-m <MAC list> Specify preferred MACs for packet verification (or '-m help')\n"
 #endif
+					"-b    [bind_address][:bind_port]\n"
 					"-V    Version\n"
-#ifdef DEBUG_TRACE
+#if DEBUG_TRACE
 					"-v    verbose (compiled with DEBUG_TRACE)\n"
 #endif
 					,DROPBEAR_VERSION, cli_opts.progname,
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 					DROPBEAR_DEFAULT_CLI_AUTHKEY,
 #endif
 					DEFAULT_RECV_WINDOW, DEFAULT_KEEPALIVE, DEFAULT_IDLE_TIMEOUT);
@@ -106,31 +107,31 @@ static void printhelp() {
 
 void cli_getopts(int argc, char ** argv) {
 	unsigned int i, j;
-	char ** next = 0;
+	char ** next = NULL;
 	enum {
 		OPT_EXTENDED_OPTIONS,
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 		OPT_AUTHKEY,
 #endif
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 		OPT_LOCALTCPFWD,
 #endif
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 		OPT_REMOTETCPFWD,
 #endif
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 		OPT_NETCAT,
 #endif
 		/* a flag (no arg) if 'next' is NULL, a string-valued option otherwise */
 		OPT_OTHER
 	} opt;
 	unsigned int cmdlen;
-	char* dummy = NULL; /* Not used for anything real */
 
 	char* recv_window_arg = NULL;
 	char* keepalive_arg = NULL;
 	char* idle_timeout_arg = NULL;
 	char *host_arg = NULL;
+	char *bind_arg = NULL;
 	char c;
 
 	/* see printhelp() for options */
@@ -145,31 +146,33 @@ void cli_getopts(int argc, char ** argv) {
 	cli_opts.always_accept_key = 0;
 	cli_opts.no_hostkey_check = 0;
 	cli_opts.is_subsystem = 0;
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	cli_opts.privkeys = list_new();
 #endif
-#ifdef ENABLE_CLI_ANYTCPFWD
+#if DROPBEAR_CLI_ANYTCPFWD
 	cli_opts.exit_on_fwd_failure = 0;
 #endif
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 	cli_opts.localfwds = list_new();
 	opts.listen_fwd_all = 0;
 #endif
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 	cli_opts.remotefwds = list_new();
 #endif
-#ifdef ENABLE_CLI_AGENTFWD
+#if DROPBEAR_CLI_AGENTFWD
 	cli_opts.agent_fwd = 0;
 	cli_opts.agent_fd = -1;
 	cli_opts.agent_keys_loaded = 0;
 #endif
-#ifdef ENABLE_CLI_PROXYCMD
+#if DROPBEAR_CLI_PROXYCMD
 	cli_opts.proxycmd = NULL;
 #endif
+	cli_opts.bind_address = NULL;
+	cli_opts.bind_port = NULL;
 #ifndef DISABLE_ZLIB
 	opts.compress_mode = DROPBEAR_COMPRESS_ON;
 #endif
-#ifdef ENABLE_USER_ALGO_LIST
+#if DROPBEAR_USER_ALGO_LIST
 	opts.cipher_list = NULL;
 	opts.mac_list = NULL;
 #endif
@@ -213,7 +216,7 @@ void cli_getopts(int argc, char ** argv) {
 				case 'p': /* remoteport */
 					next = &cli_opts.remoteport;
 					break;
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 				case 'i': /* an identityfile */
 					opt = OPT_AUTHKEY;
 					break;
@@ -236,7 +239,7 @@ void cli_getopts(int argc, char ** argv) {
 				case 'o':
 					opt = OPT_EXTENDED_OPTIONS;
 					break;
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 				case 'L':
 					opt = OPT_LOCALTCPFWD;
 					break;
@@ -244,17 +247,17 @@ void cli_getopts(int argc, char ** argv) {
 					opts.listen_fwd_all = 1;
 					break;
 #endif
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 				case 'R':
 					opt = OPT_REMOTETCPFWD;
 					break;
 #endif
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 				case 'B':
 					opt = OPT_NETCAT;
 					break;
 #endif
-#ifdef ENABLE_CLI_PROXYCMD
+#if DROPBEAR_CLI_PROXYCMD
 				case 'J':
 					next = &cli_opts.proxycmd;
 					break;
@@ -278,12 +281,12 @@ void cli_getopts(int argc, char ** argv) {
 				case 'I':
 					next = &idle_timeout_arg;
 					break;
-#ifdef ENABLE_CLI_AGENTFWD
+#if DROPBEAR_CLI_AGENTFWD
 				case 'A':
 					cli_opts.agent_fwd = 1;
 					break;
 #endif
-#ifdef ENABLE_USER_ALGO_LIST
+#if DROPBEAR_USER_ALGO_LIST
 				case 'c':
 					next = &opts.cipher_list;
 					break;
@@ -291,22 +294,22 @@ void cli_getopts(int argc, char ** argv) {
 					next = &opts.mac_list;
 					break;
 #endif
-#ifdef DEBUG_TRACE
+#if DEBUG_TRACE
 				case 'v':
 					debug_trace = 1;
 					break;
 #endif
 				case 'F':
 				case 'e':
-#ifndef ENABLE_USER_ALGO_LIST
+#if !DROPBEAR_USER_ALGO_LIST
 				case 'c':
 				case 'm':
 #endif
 				case 'D':
-#ifndef ENABLE_CLI_REMOTETCPFWD
+#if !DROPBEAR_CLI_REMOTETCPFWD
 				case 'R':
 #endif
-#ifndef ENABLE_CLI_LOCALTCPFWD
+#if !DROPBEAR_CLI_LOCALTCPFWD
 				case 'L':
 #endif
 				case 'V':
@@ -314,8 +317,8 @@ void cli_getopts(int argc, char ** argv) {
 					exit(EXIT_SUCCESS);
 					break;
 				case 'b':
-					next = &dummy;
-					/* FALLTHROUGH */
+					next = &bind_arg;
+					break;
 				default:
 					fprintf(stderr,
 						"WARNING: Ignoring unknown option -%c\n", c);
@@ -338,28 +341,28 @@ void cli_getopts(int argc, char ** argv) {
 			add_extendedopt(&argv[i][j]);
 		}
 		else
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 		if (opt == OPT_AUTHKEY) {
 			TRACE(("opt authkey"))
 			loadidentityfile(&argv[i][j], 1);
 		}
 		else
 #endif
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 		if (opt == OPT_REMOTETCPFWD) {
 			TRACE(("opt remotetcpfwd"))
 			addforward(&argv[i][j], cli_opts.remotefwds);
 		}
 		else
 #endif
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 		if (opt == OPT_LOCALTCPFWD) {
 			TRACE(("opt localtcpfwd"))
 			addforward(&argv[i][j], cli_opts.localfwds);
 		}
 		else
 #endif
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 		if (opt == OPT_NETCAT) {
 			TRACE(("opt netcat"))
 			add_netcat(&argv[i][j]);
@@ -405,11 +408,11 @@ void cli_getopts(int argc, char ** argv) {
 
 	/* And now a few sanity checks and setup */
 
-#ifdef ENABLE_USER_ALGO_LIST
+#if DROPBEAR_USER_ALGO_LIST
 	parse_ciphers_macs();
 #endif
 
-#ifdef ENABLE_CLI_PROXYCMD                                                                                                                                   
+#if DROPBEAR_CLI_PROXYCMD                                                                                                                                   
 	if (cli_opts.proxycmd) {
 		/* To match the common path of m_freeing it */
 		cli_opts.proxycmd = m_strdup(cli_opts.proxycmd);
@@ -418,6 +421,18 @@ void cli_getopts(int argc, char ** argv) {
 
 	if (cli_opts.remoteport == NULL) {
 		cli_opts.remoteport = "22";
+	}
+
+	if (bind_arg) {
+		/* split [host][:port] */
+		char *port = strrchr(bind_arg, ':');
+		if (port) {
+			cli_opts.bind_port = m_strdup(port+1);
+			*port = '\0';
+		}
+		if (strlen(bind_arg) > 0) {
+			cli_opts.bind_address = m_strdup(bind_arg);
+		}
 	}
 
 	/* If not explicitly specified with -t or -T, we don't want a pty if
@@ -457,13 +472,13 @@ void cli_getopts(int argc, char ** argv) {
 		opts.idle_timeout_secs = val;
 	}
 
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 	if (cli_opts.cmd && cli_opts.netcat_host) {
 		dropbear_log(LOG_INFO, "Ignoring command '%s' in netcat mode", cli_opts.cmd);
 	}
 #endif
 
-#if defined(DROPBEAR_DEFAULT_CLI_AUTHKEY) && defined(ENABLE_CLI_PUBKEY_AUTH)
+#if (DROPBEAR_CLI_PUBKEY_AUTH)
 	{
 		char *expand_path = expand_homedir_path(DROPBEAR_DEFAULT_CLI_AUTHKEY);
 		loadidentityfile(expand_path, 0);
@@ -474,14 +489,14 @@ void cli_getopts(int argc, char ** argv) {
 	/* The hostname gets set up last, since
 	 * in multi-hop mode it will require knowledge
 	 * of other flags such as -i */
-#ifdef ENABLE_CLI_MULTIHOP
+#if DROPBEAR_CLI_MULTIHOP
 	parse_multihop_hostname(host_arg, argv[0]);
 #else
 	parse_hostname(host_arg);
 #endif
 }
 
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 static void loadidentityfile(const char* filename, int warnfail) {
 	sign_key *key;
 	enum signkey_type keytype;
@@ -504,7 +519,7 @@ static void loadidentityfile(const char* filename, int warnfail) {
 }
 #endif
 
-#ifdef ENABLE_CLI_MULTIHOP
+#if DROPBEAR_CLI_MULTIHOP
 
 static char*
 multihop_passthrough_args() {
@@ -514,13 +529,13 @@ multihop_passthrough_args() {
 	m_list_elem *iter;
 	/* Fill out -i, -y, -W options that make sense for all
 	 * the intermediate processes */
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	for (iter = cli_opts.privkeys->first; iter; iter = iter->next)
 	{
 		sign_key * key = (sign_key*)iter->item;
 		len += 3 + strlen(key->filename);
 	}
-#endif /* ENABLE_CLI_PUBKEY_AUTH */
+#endif /* DROPBEAR_CLI_PUBKEY_AUTH */
 
 	len += 30; /* space for -W <size>, terminator. */
 	ret = m_malloc(len);
@@ -543,7 +558,7 @@ multihop_passthrough_args() {
 		total += written;
 	}
 
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	for (iter = cli_opts.privkeys->first; iter; iter = iter->next)
 	{
 		sign_key * key = (sign_key*)iter->item;
@@ -552,7 +567,7 @@ multihop_passthrough_args() {
 		dropbear_assert((unsigned int)written < size);
 		total += written;
 	}
-#endif /* ENABLE_CLI_PUBKEY_AUTH */
+#endif /* DROPBEAR_CLI_PUBKEY_AUTH */
 
 	/* if args were passed, total will be not zero, and it will have a space at the end, so remove that */
 	if (total > 0) 
@@ -636,7 +651,7 @@ static void parse_multihop_hostname(const char* orighostarg, const char* argv0) 
 	}
 	m_free(hostbuf);
 }
-#endif /* !ENABLE_CLI_MULTIHOP */
+#endif /* !DROPBEAR_CLI_MULTIHOP */
 
 /* Parses a [user@]hostname[/port] argument. */
 static void parse_hostname(const char* orighostarg) {
@@ -675,7 +690,7 @@ static void parse_hostname(const char* orighostarg) {
 	}
 }
 
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 static void add_netcat(const char* origstr) {
 	char *portstr = NULL;
 	
@@ -728,7 +743,7 @@ static void fill_own_user() {
 
 }
 
-#ifdef ENABLE_CLI_ANYTCPFWD
+#if DROPBEAR_CLI_ANYTCPFWD
 /* Turn a "[listenaddr:]listenport:remoteaddr:remoteport" string into into a forwarding
  * set, and add it to the forwarding list */
 static void addforward(const char* origstr, m_list *fwdlist) {
@@ -870,7 +885,7 @@ static void add_extendedopt(const char* origstr) {
 
 	if (strcmp(origstr, "help") == 0) {
 		dropbear_log(LOG_INFO, "Available options:\n"
-#ifdef ENABLE_CLI_ANYTCPFWD
+#if DROPBEAR_CLI_ANYTCPFWD
 			"\tExitOnForwardFailure\n"
 #endif
 #ifndef DISABLE_SYSLOG
@@ -880,7 +895,7 @@ static void add_extendedopt(const char* origstr) {
 		exit(EXIT_SUCCESS);
 	}
 
-#ifdef ENABLE_CLI_ANYTCPFWD
+#if DROPBEAR_CLI_ANYTCPFWD
 	if (match_extendedopt(&optstr, "ExitOnForwardFailure") == DROPBEAR_SUCCESS) {
 		cli_opts.exit_on_fwd_failure = parse_flag_value(optstr);
 		return;

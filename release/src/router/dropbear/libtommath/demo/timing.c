@@ -1,13 +1,21 @@
 #include <tommath.h>
 #include <time.h>
+#include <unistd.h>
+#include <stdint.h>
 
-ulong64 _tt;
+uint64_t _tt;
 
 #ifdef IOWNANATHLON
 #include <unistd.h>
 #define SLEEP sleep(4)
 #else
 #define SLEEP
+#endif
+
+#ifdef LTM_TIMING_REAL_RAND
+#define LTM_TIMING_RAND_SEED  time(NULL)
+#else
+#define LTM_TIMING_RAND_SEED  23
 #endif
 
 
@@ -40,14 +48,16 @@ int lbit(void)
 }
 
 /* RDTSC from Scott Duplichan */
-static ulong64 TIMFUNC(void)
+static uint64_t TIMFUNC(void)
 {
 #if defined __GNUC__
 #if defined(__i386__) || defined(__x86_64__)
-   unsigned long long a;
-   __asm__ __volatile__("rdtsc\nmovl %%eax,%0\nmovl %%edx,4+%0\n"::
-			"m"(a):"%eax", "%edx");
-   return a;
+  /* version from http://www.mcs.anl.gov/~kazutomo/rdtsc.html
+   * the old code always got a warning issued by gcc, clang did not complain...
+   */
+  unsigned hi, lo;
+  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+  return ((uint64_t)lo)|( ((uint64_t)hi)<<32);
 #else /* gcc-IA64 version */
    unsigned long result;
    __asm__ __volatile__("mov %0=ar.itc":"=r"(result)::"memory");
@@ -78,12 +88,24 @@ static ulong64 TIMFUNC(void)
 //#define DO8(x) DO4(x); DO4(x);
 //#define DO(x)  DO8(x); DO8(x);
 
+#ifdef TIMING_NO_LOGS
+#define FOPEN(a, b)     NULL
+#define FPRINTF(a,b,c,d)
+#define FFLUSH(a)
+#define FCLOSE(a)       (void)(a)
+#else
+#define FOPEN(a,b)       fopen(a,b)
+#define FPRINTF(a,b,c,d) fprintf(a,b,c,d)
+#define FFLUSH(a)        fflush(a)
+#define FCLOSE(a)        fclose(a)
+#endif
+
 int main(void)
 {
-   ulong64 tt, gg, CLK_PER_SEC;
+   uint64_t tt, gg, CLK_PER_SEC;
    FILE *log, *logb, *logc, *logd;
    mp_int a, b, c, d, e, f;
-   int n, cnt, ix, old_kara_m, old_kara_s;
+   int n, cnt, ix, old_kara_m, old_kara_s, old_toom_m, old_toom_s;
    unsigned rr;
 
    mp_init(&a);
@@ -93,19 +115,15 @@ int main(void)
    mp_init(&e);
    mp_init(&f);
 
-   srand(time(NULL));
+   srand(LTM_TIMING_RAND_SEED);
 
-
-   /* temp. turn off TOOM */
-   TOOM_MUL_CUTOFF = TOOM_SQR_CUTOFF = 100000;
 
    CLK_PER_SEC = TIMFUNC();
    sleep(1);
    CLK_PER_SEC = TIMFUNC() - CLK_PER_SEC;
 
    printf("CLK_PER_SEC == %llu\n", CLK_PER_SEC);
-   goto exptmod;
-   log = fopen("logs/add.log", "w");
+   log = FOPEN("logs/add.log", "w");
    for (cnt = 8; cnt <= 128; cnt += 8) {
       SLEEP;
       mp_rand(&a, cnt);
@@ -121,12 +139,12 @@ int main(void)
       } while (++rr < 100000);
       printf("Adding\t\t%4d-bit => %9llu/sec, %9llu cycles\n",
 	     mp_count_bits(&a), CLK_PER_SEC / tt, tt);
-      fprintf(log, "%d %9llu\n", cnt * DIGIT_BIT, tt);
-      fflush(log);
+      FPRINTF(log, "%d %9llu\n", cnt * DIGIT_BIT, tt);
+      FFLUSH(log);
    }
-   fclose(log);
+   FCLOSE(log);
 
-   log = fopen("logs/sub.log", "w");
+   log = FOPEN("logs/sub.log", "w");
    for (cnt = 8; cnt <= 128; cnt += 8) {
       SLEEP;
       mp_rand(&a, cnt);
@@ -143,22 +161,26 @@ int main(void)
 
       printf("Subtracting\t\t%4d-bit => %9llu/sec, %9llu cycles\n",
 	     mp_count_bits(&a), CLK_PER_SEC / tt, tt);
-      fprintf(log, "%d %9llu\n", cnt * DIGIT_BIT, tt);
-      fflush(log);
+      FPRINTF(log, "%d %9llu\n", cnt * DIGIT_BIT, tt);
+      FFLUSH(log);
    }
-   fclose(log);
+   FCLOSE(log);
 
    /* do mult/square twice, first without karatsuba and second with */
- multtest:
    old_kara_m = KARATSUBA_MUL_CUTOFF;
    old_kara_s = KARATSUBA_SQR_CUTOFF;
-   for (ix = 0; ix < 2; ix++) {
-      printf("With%s Karatsuba\n", (ix == 0) ? "out" : "");
+   /* currently toom-cook cut-off is too high to kick in, so we just use the karatsuba values */
+   old_toom_m = old_kara_m;
+   old_toom_s = old_kara_m;
+   for (ix = 0; ix < 3; ix++) {
+      printf("With%s Karatsuba, With%s Toom\n", (ix == 0) ? "out" : "", (ix == 1) ? "out" : "");
 
-      KARATSUBA_MUL_CUTOFF = (ix == 0) ? 9999 : old_kara_m;
-      KARATSUBA_SQR_CUTOFF = (ix == 0) ? 9999 : old_kara_s;
+      KARATSUBA_MUL_CUTOFF = (ix == 1) ? old_kara_m : 9999;
+      KARATSUBA_SQR_CUTOFF = (ix == 1) ? old_kara_s : 9999;
+      TOOM_MUL_CUTOFF = (ix == 2) ? old_toom_m : 9999;
+      TOOM_SQR_CUTOFF = (ix == 2) ? old_toom_s : 9999;
 
-      log = fopen((ix == 0) ? "logs/mult.log" : "logs/mult_kara.log", "w");
+      log = FOPEN((ix == 0) ? "logs/mult.log" : (ix == 1) ? "logs/mult_kara.log" : "logs/mult_toom.log", "w");
       for (cnt = 4; cnt <= 10240 / DIGIT_BIT; cnt += 2) {
 	 SLEEP;
 	 mp_rand(&a, cnt);
@@ -174,12 +196,12 @@ int main(void)
 	 } while (++rr < 100);
 	 printf("Multiplying\t%4d-bit => %9llu/sec, %9llu cycles\n",
 		mp_count_bits(&a), CLK_PER_SEC / tt, tt);
-	 fprintf(log, "%d %9llu\n", mp_count_bits(&a), tt);
-	 fflush(log);
+	 FPRINTF(log, "%d %9llu\n", mp_count_bits(&a), tt);
+	 FFLUSH(log);
       }
-      fclose(log);
+      FCLOSE(log);
 
-      log = fopen((ix == 0) ? "logs/sqr.log" : "logs/sqr_kara.log", "w");
+      log = FOPEN((ix == 0) ? "logs/sqr.log" : (ix == 1) ? "logs/sqr_kara.log" : "logs/sqr_toom.log", "w");
       for (cnt = 4; cnt <= 10240 / DIGIT_BIT; cnt += 2) {
 	 SLEEP;
 	 mp_rand(&a, cnt);
@@ -194,13 +216,12 @@ int main(void)
 	 } while (++rr < 100);
 	 printf("Squaring\t%4d-bit => %9llu/sec, %9llu cycles\n",
 		mp_count_bits(&a), CLK_PER_SEC / tt, tt);
-	 fprintf(log, "%d %9llu\n", mp_count_bits(&a), tt);
-	 fflush(log);
+	 FPRINTF(log, "%d %9llu\n", mp_count_bits(&a), tt);
+	 FFLUSH(log);
       }
-      fclose(log);
+      FCLOSE(log);
 
    }
- exptmod:
 
    {
       char *primes[] = {
@@ -235,10 +256,10 @@ int main(void)
 	 "1214855636816562637502584060163403830270705000634713483015101384881871978446801224798536155406895823305035467591632531067547890948695117172076954220727075688048751022421198712032848890056357845974246560748347918630050853933697792254955890439720297560693579400297062396904306270145886830719309296352765295712183040773146419022875165382778007040109957609739589875590885701126197906063620133954893216612678838507540777138437797705602453719559017633986486649523611975865005712371194067612263330335590526176087004421363598470302731349138773205901447704682181517904064735636518462452242791676541725292378925568296858010151852326316777511935037531017413910506921922450666933202278489024521263798482237150056835746454842662048692127173834433089016107854491097456725016327709663199738238442164843147132789153725513257167915555162094970853584447993125488607696008169807374736711297007473812256272245489405898470297178738029484459690836250560495461579533254473316340608217876781986188705928270735695752830825527963838355419762516246028680280988020401914551825487349990306976304093109384451438813251211051597392127491464898797406789175453067960072008590614886532333015881171367104445044718144312416815712216611576221546455968770801413440778423979",
 	 NULL
       };
-      log = fopen("logs/expt.log", "w");
-      logb = fopen("logs/expt_dr.log", "w");
-      logc = fopen("logs/expt_2k.log", "w");
-      logd = fopen("logs/expt_2kl.log", "w");
+      log = FOPEN("logs/expt.log", "w");
+      logb = FOPEN("logs/expt_dr.log", "w");
+      logc = FOPEN("logs/expt_2k.log", "w");
+      logd = FOPEN("logs/expt_2kl.log", "w");
       for (n = 0; primes[n]; n++) {
 	 SLEEP;
 	 mp_read_radix(&a, primes[n], 10);
@@ -271,17 +292,17 @@ int main(void)
 	 }
 	 printf("Exponentiating\t%4d-bit => %9llu/sec, %9llu cycles\n",
 		mp_count_bits(&a), CLK_PER_SEC / tt, tt);
-	 fprintf(n < 4 ? logd : (n < 9) ? logc : (n < 16) ? logb : log,
+	 FPRINTF(n < 4 ? logd : (n < 9) ? logc : (n < 16) ? logb : log,
 		 "%d %9llu\n", mp_count_bits(&a), tt);
       }
    }
-   fclose(log);
-   fclose(logb);
-   fclose(logc);
-   fclose(logd);
+   FCLOSE(log);
+   FCLOSE(logb);
+   FCLOSE(logc);
+   FCLOSE(logd);
 
-   log = fopen("logs/invmod.log", "w");
-   for (cnt = 4; cnt <= 128; cnt += 4) {
+   log = FOPEN("logs/invmod.log", "w");
+   for (cnt = 4; cnt <= 32; cnt += 4) {
       SLEEP;
       mp_rand(&a, cnt);
       mp_rand(&b, cnt);
@@ -307,13 +328,13 @@ int main(void)
       }
       printf("Inverting mod\t%4d-bit => %9llu/sec, %9llu cycles\n",
 	     mp_count_bits(&a), CLK_PER_SEC / tt, tt);
-      fprintf(log, "%d %9llu\n", cnt * DIGIT_BIT, tt);
+      FPRINTF(log, "%d %9llu\n", cnt * DIGIT_BIT, tt);
    }
-   fclose(log);
+   FCLOSE(log);
 
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtommath/demo/timing.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2005/05/05 14:38:47 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

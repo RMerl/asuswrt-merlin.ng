@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_IS_SQUARE_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* Check if remainders are possible squares - fast exclude non-squares */
@@ -82,13 +82,13 @@ int mp_is_square(mp_int *arg,int *ret)
    * free "t" so the easiest way is to goto ERR.  We know that res
    * is already equal to MP_OKAY from the mp_mod call 
    */ 
-  if ( (1L<<(r%11)) & 0x5C4L )             goto ERR;
-  if ( (1L<<(r%13)) & 0x9E4L )             goto ERR;
-  if ( (1L<<(r%17)) & 0x5CE8L )            goto ERR;
-  if ( (1L<<(r%19)) & 0x4F50CL )           goto ERR;
-  if ( (1L<<(r%23)) & 0x7ACCA0L )          goto ERR;
-  if ( (1L<<(r%29)) & 0xC2EDD0CL )         goto ERR;
-  if ( (1L<<(r%31)) & 0x6DE2B848L )        goto ERR;
+  if (((1L<<(r%11)) & 0x5C4L) != 0L)       goto ERR;
+  if (((1L<<(r%13)) & 0x9E4L) != 0L)       goto ERR;
+  if (((1L<<(r%17)) & 0x5CE8L) != 0L)      goto ERR;
+  if (((1L<<(r%19)) & 0x4F50CL) != 0L)     goto ERR;
+  if (((1L<<(r%23)) & 0x7ACCA0L) != 0L)    goto ERR;
+  if (((1L<<(r%29)) & 0xC2EDD0CL) != 0L)   goto ERR;
+  if (((1L<<(r%31)) & 0x6DE2B848L) != 0L)  goto ERR;
 
   /* Final check - is sqr(sqrt(arg)) == arg ? */
   if ((res = mp_sqrt(arg,&t)) != MP_OKAY) {
@@ -104,6 +104,6 @@ ERR:mp_clear(&t);
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_is_square.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

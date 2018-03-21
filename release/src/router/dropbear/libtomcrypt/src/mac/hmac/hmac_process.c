@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -17,7 +15,7 @@
 
 #ifdef LTC_HMAC
 
-/** 
+/**
   Process data through HMAC
   @param hmac    The hmac state
   @param in      The data to send through HMAC
@@ -38,6 +36,6 @@ int hmac_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen)
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/hmac/hmac_process.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/11/03 00:39:49 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

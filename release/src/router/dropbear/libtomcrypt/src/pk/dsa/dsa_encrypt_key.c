@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file dsa_encrypt_key.c
   DSA Crypto, Tom St Denis
-*/  
+*/
 
-#ifdef MDSA
+#ifdef LTC_MDSA
 
 /**
   Encrypt a symmetric key with DSA
@@ -24,14 +22,14 @@
   @param out        [out] The destination for the ciphertext
   @param outlen     [in/out] The max size and resulting size of the ciphertext
   @param prng       An active PRNG state
-  @param wprng      The index of the PRNG you wish to use 
-  @param hash       The index of the hash you want to use 
+  @param wprng      The index of the PRNG you wish to use
+  @param hash       The index of the hash you want to use
   @param key        The DSA key you want to encrypt to
   @return CRYPT_OK if successful
 */
 int dsa_encrypt_key(const unsigned char *in,   unsigned long inlen,
-                          unsigned char *out,  unsigned long *outlen, 
-                          prng_state *prng, int wprng, int hash, 
+                          unsigned char *out,  unsigned long *outlen,
+                          prng_state *prng, int wprng, int hash,
                           dsa_key *key)
 {
     unsigned char *expt, *skey;
@@ -61,7 +59,7 @@ int dsa_encrypt_key(const unsigned char *in,   unsigned long inlen,
     if ((err = mp_init_multi(&g_pub, &g_priv, NULL)) != CRYPT_OK) {
        return err;
     }
-   
+
     expt       = XMALLOC(mp_unsigned_bin_size(key->p) + 1);
     skey       = XMALLOC(MAXBLOCKSIZE);
     if (expt == NULL  || skey == NULL) {
@@ -74,24 +72,19 @@ int dsa_encrypt_key(const unsigned char *in,   unsigned long inlen,
        mp_clear_multi(g_pub, g_priv, NULL);
        return CRYPT_MEM;
     }
-    
-    /* make a random x, g^x pair */
-    x = mp_unsigned_bin_size(key->q);
-    if (prng_descriptor[wprng].read(expt, x, prng) != x) {
-       err = CRYPT_ERROR_READPRNG;
-       goto LBL_ERR;
+
+    /* make a random g_priv, g_pub = g^x pair
+       private key x should be in range: 1 <= x <= q-1 (see FIPS 186-4 B.1.2)
+     */
+    if ((err = rand_bn_upto(g_priv, key->q, prng, wprng)) != CRYPT_OK) {
+      goto LBL_ERR;
     }
-    
-    /* load x */
-    if ((err = mp_read_unsigned_bin(g_priv, expt, x)) != CRYPT_OK) {
-       goto LBL_ERR;
-    }
-    
+
     /* compute y */
     if ((err = mp_exptmod(key->g, g_priv, key->p, g_pub)) != CRYPT_OK) {
        goto LBL_ERR;
     }
-    
+
     /* make random key */
     x        = mp_unsigned_bin_size(key->p) + 1;
     if ((err = dsa_shared_secret(g_priv, key->y, key, expt, &x)) != CRYPT_OK) {
@@ -102,7 +95,7 @@ int dsa_encrypt_key(const unsigned char *in,   unsigned long inlen,
     if ((err = hash_memory(hash, expt, x, skey, &y)) != CRYPT_OK) {
        goto LBL_ERR;
     }
-    
+
     /* Encrypt key */
     for (x = 0; x < inlen; x++) {
       skey[x] ^= in[x];
@@ -123,13 +116,13 @@ LBL_ERR:
 
     XFREE(skey);
     XFREE(expt);
-    
+
     mp_clear_multi(g_pub, g_priv, NULL);
     return err;
 }
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/dsa/dsa_encrypt_key.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/12/04 03:18:43 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

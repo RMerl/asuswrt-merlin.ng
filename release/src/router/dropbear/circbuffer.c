@@ -56,19 +56,19 @@ void cbuf_free(circbuffer * cbuf) {
 	m_free(cbuf);
 }
 
-unsigned int cbuf_getused(circbuffer * cbuf) {
+unsigned int cbuf_getused(const circbuffer * cbuf) {
 
 	return cbuf->used;
 
 }
 
-unsigned int cbuf_getavail(circbuffer * cbuf) {
+unsigned int cbuf_getavail(const circbuffer * cbuf) {
 
 	return cbuf->size - cbuf->used;
 
 }
 
-unsigned int cbuf_writelen(circbuffer *cbuf) {
+unsigned int cbuf_writelen(const circbuffer *cbuf) {
 
 	dropbear_assert(cbuf->used <= cbuf->size);
 	dropbear_assert(((2*cbuf->size)+cbuf->writepos-cbuf->readpos)%cbuf->size == cbuf->used%cbuf->size);
@@ -86,7 +86,7 @@ unsigned int cbuf_writelen(circbuffer *cbuf) {
 	return cbuf->size - cbuf->writepos;
 }
 
-void cbuf_readptrs(circbuffer *cbuf, 
+void cbuf_readptrs(const circbuffer *cbuf,
 	unsigned char **p1, unsigned int *len1, 
 	unsigned char **p2, unsigned int *len2) {
 	*p1 = &cbuf->data[cbuf->readpos];

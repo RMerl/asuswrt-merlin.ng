@@ -5,42 +5,26 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
- *
- * All curves taken from NIST recommendation paper of July 1999
- * Available at http://csrc.nist.gov/cryptval/dss.htm
- */
 #include "tomcrypt.h"
+
+#if defined(LTC_MECC) && defined(LTC_DER)
 
 /**
   @file ecc_sign_hash.c
   ECC Crypto, Tom St Denis
 */  
 
-#if defined(MECC) && defined(LTC_DER)
-
-/**
-  Sign a message digest
-  @param in        The message digest to sign
-  @param inlen     The length of the digest
-  @param out       [out] The destination for the signature
-  @param outlen    [in/out] The max size and resulting size of the signature
-  @param prng      An active PRNG state
-  @param wprng     The index of the PRNG you wish to use
-  @param key       A private ECC key
-  @return CRYPT_OK if successful
-*/
-int ecc_sign_hash(const unsigned char *in,  unsigned long inlen, 
+static int _ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
                         unsigned char *out, unsigned long *outlen, 
-                        prng_state *prng, int wprng, ecc_key *key)
+                                prng_state *prng, int wprng, ecc_key *key, int sigformat)
 {
    ecc_key       pubkey;
    void          *r, *s, *e, *p;
-   int           err;
+   int           err, max_iterations = LTC_PK_MAX_RETRIES;
+   unsigned long pbits, pbytes, i, shift_right;
+   unsigned char ch, buf[MAXBLOCKSIZE];
 
    LTC_ARGCHK(in     != NULL);
    LTC_ARGCHK(out    != NULL);
@@ -61,16 +45,33 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
       return err;
    }
 
-   /* get the hash and load it as a bignum into 'e' */
    /* init the bignums */
    if ((err = mp_init_multi(&r, &s, &p, &e, NULL)) != CRYPT_OK) { 
       return err;
    }
    if ((err = mp_read_radix(p, (char *)key->dp->order, 16)) != CRYPT_OK)                      { goto errnokey; }
-   if ((err = mp_read_unsigned_bin(e, (unsigned char *)in, (int)inlen)) != CRYPT_OK)          { goto errnokey; }
+
+   /* get the hash and load it as a bignum into 'e' */
+   pbits = mp_count_bits(p);
+   pbytes = (pbits+7) >> 3;
+   if (pbits > inlen*8) {
+      if ((err = mp_read_unsigned_bin(e, (unsigned char *)in, inlen)) != CRYPT_OK)    { goto errnokey; }
+   }
+   else if (pbits % 8 == 0) {
+      if ((err = mp_read_unsigned_bin(e, (unsigned char *)in, pbytes)) != CRYPT_OK)   { goto errnokey; }
+   }
+   else {
+      shift_right = 8 - pbits % 8;
+      for (i=0, ch=0; i<pbytes; i++) {
+        buf[i] = ch;
+        ch = (in[i] << (8-shift_right));
+        buf[i] = buf[i] ^ (in[i] >> shift_right);
+      }
+      if ((err = mp_read_unsigned_bin(e, (unsigned char *)buf, pbytes)) != CRYPT_OK)  { goto errnokey; }
+   }
 
    /* make up a key and export the public copy */
-   for (;;) {
+   do {
       if ((err = ecc_make_key_ex(prng, wprng, &pubkey, key->dp)) != CRYPT_OK) {
          goto errnokey;
       }
@@ -92,13 +93,30 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
            break;
         }
       }
+   } while (--max_iterations > 0);
+
+   if (max_iterations == 0) {
+      goto errnokey;
    }
 
-   /* store as SEQUENCE { r, s -- integer } */
+   if (sigformat == 1) {
+      /* RFC7518 format */
+      if (*outlen < 2*pbytes) { err = CRYPT_MEM; goto errnokey; }
+      zeromem(out, 2*pbytes);
+      i = mp_unsigned_bin_size(r);
+      if ((err = mp_to_unsigned_bin(r, out + (pbytes - i)))   != CRYPT_OK) { goto errnokey; }
+      i = mp_unsigned_bin_size(s);
+      if ((err = mp_to_unsigned_bin(s, out + (2*pbytes - i))) != CRYPT_OK) { goto errnokey; }
+      *outlen = 2*pbytes;
+      err = CRYPT_OK;
+   }
+   else {
+      /* store as ASN.1 SEQUENCE { r, s -- integer } */
    err = der_encode_sequence_multi(out, outlen,
                              LTC_ASN1_INTEGER, 1UL, r,
                              LTC_ASN1_INTEGER, 1UL, s,
                              LTC_ASN1_EOL, 0UL, NULL);
+   }
    goto errnokey;
 error:
    ecc_free(&pubkey);
@@ -107,8 +125,44 @@ errnokey:
    return err;   
 }
 
-#endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_sign_hash.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/12/04 02:50:11 $ */
+/**
+  Sign a message digest
+  @param in        The message digest to sign
+  @param inlen     The length of the digest
+  @param out       [out] The destination for the signature
+  @param outlen    [in/out] The max size and resulting size of the signature
+  @param prng      An active PRNG state
+  @param wprng     The index of the PRNG you wish to use
+  @param key       A private ECC key
+  @return CRYPT_OK if successful
+*/
+int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
+                        unsigned char *out, unsigned long *outlen,
+                        prng_state *prng, int wprng, ecc_key *key)
+{
+   return _ecc_sign_hash(in, inlen, out, outlen, prng, wprng, key, 0);
+}
 
+/**
+  Sign a message digest in RFC7518 format
+  @param in        The message digest to sign
+  @param inlen     The length of the digest
+  @param out       [out] The destination for the signature
+  @param outlen    [in/out] The max size and resulting size of the signature
+  @param prng      An active PRNG state
+  @param wprng     The index of the PRNG you wish to use
+  @param key       A private ECC key
+  @return CRYPT_OK if successful
+*/
+int ecc_sign_hash_rfc7518(const unsigned char *in,  unsigned long inlen,
+                                unsigned char *out, unsigned long *outlen,
+                                prng_state *prng, int wprng, ecc_key *key)
+{
+   return _ecc_sign_hash(in, inlen, out, outlen, prng, wprng, key, 1);
+}
+
+#endif
+
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

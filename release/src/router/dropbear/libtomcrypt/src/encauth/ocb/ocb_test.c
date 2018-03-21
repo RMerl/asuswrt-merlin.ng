@@ -5,19 +5,17 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/** 
+/**
    @file ocb_test.c
    OCB implementation, self-test by Tom St Denis
 */
 #include "tomcrypt.h"
 
-#ifdef OCB_MODE
+#ifdef LTC_OCB_MODE
 
-/** 
+/**
   Test the OCB protocol
   @return   CRYPT_OK if successful
 */
@@ -52,7 +50,7 @@ int ocb_test(void)
 
    /* OCB-AES-128-3B */
 {
-   3, 
+   3,
    /* key */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
@@ -70,7 +68,7 @@ int ocb_test(void)
 
    /* OCB-AES-128-16B */
 {
-   16, 
+   16,
    /* key */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
@@ -90,7 +88,7 @@ int ocb_test(void)
 
    /* OCB-AES-128-20B  */
 {
-   20, 
+   20,
    /* key */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
@@ -99,7 +97,7 @@ int ocb_test(void)
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 },
    /* pt */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 
+     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
      0x10, 0x11, 0x12, 0x13 },
    /* ct */
    { 0x01, 0xa0, 0x75, 0xf0, 0xd8, 0x15, 0xb1, 0xa4,
@@ -112,7 +110,7 @@ int ocb_test(void)
 
    /* OCB-AES-128-32B  */
 {
-   32, 
+   32,
    /* key */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
@@ -121,7 +119,7 @@ int ocb_test(void)
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 },
    /* pt */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 
+     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
      0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f },
    /* ct */
@@ -137,7 +135,7 @@ int ocb_test(void)
 
    /* OCB-AES-128-34B  */
 {
-   34, 
+   34,
    /* key */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
@@ -146,7 +144,7 @@ int ocb_test(void)
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 },
    /* pt */
    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 
+     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
      0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
      0x20, 0x21 },
@@ -168,7 +166,7 @@ int ocb_test(void)
    unsigned long len;
    unsigned char outct[MAXBLOCKSIZE], outtag[MAXBLOCKSIZE];
 
-    /* AES can be under rijndael or aes... try to find it */ 
+    /* AES can be under rijndael or aes... try to find it */
     if ((idx = find_cipher("aes")) == -1) {
        if ((idx = find_cipher("rijndael")) == -1) {
           return CRYPT_NOP;
@@ -181,48 +179,28 @@ int ocb_test(void)
              tests[x].nonce, tests[x].pt, tests[x].ptlen, outct, outtag, &len)) != CRYPT_OK) {
            return err;
         }
-        
-        if (XMEMCMP(outtag, tests[x].tag, len) || XMEMCMP(outct, tests[x].ct, tests[x].ptlen)) {
-#if 0
-           unsigned long y;
-           printf("\n\nFailure: \nCT:\n");
-           for (y = 0; y < (unsigned long)tests[x].ptlen; ) {
-               printf("0x%02x", outct[y]);
-               if (y < (unsigned long)(tests[x].ptlen-1)) printf(", ");
-               if (!(++y % 8)) printf("\n");
-           }
-           printf("\nTAG:\n");
-           for (y = 0; y < len; ) {
-               printf("0x%02x", outtag[y]);
-               if (y < len-1) printf(", ");
-               if (!(++y % 8)) printf("\n");
-           }
-#endif
+
+        if (compare_testvector(outtag, len, tests[x].tag, sizeof(tests[x].tag), "OCB Tag", x) ||
+              compare_testvector(outct, tests[x].ptlen, tests[x].ct, tests[x].ptlen, "OCB CT", x)) {
            return CRYPT_FAIL_TESTVECTOR;
         }
-        
+
         if ((err = ocb_decrypt_verify_memory(idx, tests[x].key, 16, tests[x].nonce, outct, tests[x].ptlen,
              outct, tests[x].tag, len, &res)) != CRYPT_OK) {
            return err;
         }
-        if ((res != 1) || XMEMCMP(tests[x].pt, outct, tests[x].ptlen)) {
-#if 0
-           unsigned long y;
-           printf("\n\nFailure-decrypt: \nPT:\n");
-           for (y = 0; y < (unsigned long)tests[x].ptlen; ) {
-               printf("0x%02x", outct[y]);
-               if (y < (unsigned long)(tests[x].ptlen-1)) printf(", ");
-               if (!(++y % 8)) printf("\n");
-           }
-           printf("\nres = %d\n\n", res);
+        if ((res != 1) || compare_testvector(outct, tests[x].ptlen, tests[x].pt, tests[x].ptlen, "OCB", x)) {
+#ifdef LTC_TEST_DBG
+           printf("\n\nOCB: Failure-decrypt - res = %d\n", res);
 #endif
+           return CRYPT_FAIL_TESTVECTOR;
         }
     }
     return CRYPT_OK;
 #endif /* LTC_TEST */
 }
 
-#endif /* OCB_MODE */
+#endif /* LTC_OCB_MODE */
 
 
 /* some comments
@@ -232,6 +210,6 @@ int ocb_test(void)
    -- The setup is somewhat complicated...
 */
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/ocb/ocb_test.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

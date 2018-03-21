@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -16,7 +14,7 @@
 */
 
 #ifdef LTC_LRW_MODE
- 
+
 /**
   LRW encrypt blocks
   @param pt     The plaintext
@@ -45,6 +43,6 @@ int lrw_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
 
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/lrw/lrw_encrypt.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/06/29 01:53:13 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

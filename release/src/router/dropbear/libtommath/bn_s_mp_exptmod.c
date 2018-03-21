@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_S_MP_EXPTMOD_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 #ifdef MP_LOW_MEM
    #define TAB_SIZE 32
@@ -164,12 +164,12 @@ int s_mp_exptmod (mp_int * G, mp_int * X, mp_int * P, mp_int * Y, int redmode)
      * in the exponent.  Technically this opt is not required but it
      * does lower the # of trivial squaring/reductions used
      */
-    if (mode == 0 && y == 0) {
+    if ((mode == 0) && (y == 0)) {
       continue;
     }
 
     /* if the bit is zero and mode == 1 then we square */
-    if (mode == 1 && y == 0) {
+    if ((mode == 1) && (y == 0)) {
       if ((err = mp_sqr (&res, &res)) != MP_OKAY) {
         goto LBL_RES;
       }
@@ -211,7 +211,7 @@ int s_mp_exptmod (mp_int * G, mp_int * X, mp_int * P, mp_int * Y, int redmode)
   }
 
   /* if bits remain then square/multiply */
-  if (mode == 2 && bitcpy > 0) {
+  if ((mode == 2) && (bitcpy > 0)) {
     /* square then multiply if the bit is set */
     for (x = 0; x < bitcpy; x++) {
       if ((err = mp_sqr (&res, &res)) != MP_OKAY) {
@@ -247,6 +247,6 @@ LBL_M:
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_s_mp_exptmod.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

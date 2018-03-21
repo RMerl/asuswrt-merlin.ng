@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -40,6 +38,6 @@ int lrw_getiv(unsigned char *IV, unsigned long *len, symmetric_LRW *lrw)
 }
 
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/lrw/lrw_getiv.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/06/29 01:53:13 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

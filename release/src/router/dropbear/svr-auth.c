@@ -25,6 +25,8 @@
 /* This file (auth.c) handles authentication requests, passing it to the
  * particular type (auth-passwd, auth-pubkey). */
 
+#include <limits.h>
+
 #include "includes.h"
 #include "dbutil.h"
 #include "session.h"
@@ -35,53 +37,24 @@
 #include "runopts.h"
 #include "dbrandom.h"
 
-static void authclear(void);
-static int checkusername(char *username, unsigned int userlen);
+static int checkusername(const char *username, unsigned int userlen);
 
 /* initialise the first time for a session, resetting all parameters */
 void svr_authinitialise() {
-
-	ses.authstate.failcount = 0;
-	ses.authstate.pw_name = NULL;
-	ses.authstate.pw_dir = NULL;
-	ses.authstate.pw_shell = NULL;
-	ses.authstate.pw_passwd = NULL;
-	authclear();
-	
-}
-
-/* Reset the auth state, but don't reset the failcount. This is for if the
- * user decides to try with a different username etc, and is also invoked
- * on initialisation */
-static void authclear() {
-	
 	memset(&ses.authstate, 0, sizeof(ses.authstate));
-#ifdef ENABLE_SVR_PUBKEY_AUTH
+#if DROPBEAR_SVR_PUBKEY_AUTH
 	ses.authstate.authtypes |= AUTH_TYPE_PUBKEY;
 #endif
-#if defined(ENABLE_SVR_PASSWORD_AUTH) || defined(ENABLE_SVR_PAM_AUTH)
+#if DROPBEAR_SVR_PASSWORD_AUTH || DROPBEAR_SVR_PAM_AUTH
 	if (!svr_opts.noauthpass) {
 		ses.authstate.authtypes |= AUTH_TYPE_PASSWORD;
 	}
 #endif
-	if (ses.authstate.pw_name) {
-		m_free(ses.authstate.pw_name);
-	}
-	if (ses.authstate.pw_shell) {
-		m_free(ses.authstate.pw_shell);
-	}
-	if (ses.authstate.pw_dir) {
-		m_free(ses.authstate.pw_dir);
-	}
-	if (ses.authstate.pw_passwd) {
-		m_free(ses.authstate.pw_passwd);
-	}
-	
 }
 
 /* Send a banner message if specified to the client. The client might
  * ignore this, but possibly serves as a legal "no trespassing" sign */
-void send_msg_userauth_banner(buffer *banner) {
+void send_msg_userauth_banner(const buffer *banner) {
 
 	TRACE(("enter send_msg_userauth_banner"))
 
@@ -169,7 +142,7 @@ void recv_msg_userauth_request() {
 		}
 	}
 	
-#ifdef ENABLE_SVR_PASSWORD_AUTH
+#if DROPBEAR_SVR_PASSWORD_AUTH
 	if (!svr_opts.noauthpass &&
 			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
 		/* user wants to try password auth */
@@ -184,7 +157,7 @@ void recv_msg_userauth_request() {
 	}
 #endif
 
-#ifdef ENABLE_SVR_PAM_AUTH
+#if DROPBEAR_SVR_PAM_AUTH
 	if (!svr_opts.noauthpass &&
 			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
 		/* user wants to try password auth */
@@ -199,7 +172,7 @@ void recv_msg_userauth_request() {
 	}
 #endif
 
-#ifdef ENABLE_SVR_PUBKEY_AUTH
+#if DROPBEAR_SVR_PUBKEY_AUTH
 	/* user wants to try pubkey auth */
 	if (methodlen == AUTH_METHOD_PUBKEY_LEN &&
 			strncmp(methodname, AUTH_METHOD_PUBKEY,
@@ -232,31 +205,77 @@ out:
 	m_free(methodname);
 }
 
+#ifdef HAVE_GETGROUPLIST
+/* returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
+static int check_group_membership(gid_t check_gid, const char* username, gid_t user_gid) {
+	int ngroups, i, ret;
+	gid_t *grouplist = NULL;
+	int match = DROPBEAR_FAILURE;
+
+	for (ngroups = 32; ngroups <= DROPBEAR_NGROUP_MAX; ngroups *= 2) {
+		grouplist = m_malloc(sizeof(gid_t) * ngroups);
+
+		/* BSD returns ret==0 on success. Linux returns ret==ngroups on success */
+		ret = getgrouplist(username, user_gid, grouplist, &ngroups);
+		if (ret >= 0) {
+			break;
+		}
+		m_free(grouplist);
+		grouplist = NULL;
+	}
+
+	if (!grouplist) {
+		dropbear_log(LOG_ERR, "Too many groups for user '%s'", username);
+		return DROPBEAR_FAILURE;
+	}
+
+	for (i = 0; i < ngroups; i++) {
+		if (grouplist[i] == check_gid) {
+			match = DROPBEAR_SUCCESS;
+			break;
+		}
+	}
+	m_free(grouplist);
+
+	return match;
+}
+#endif
 
 /* Check that the username exists and isn't disallowed (root), and has a valid shell.
  * returns DROPBEAR_SUCCESS on valid username, DROPBEAR_FAILURE on failure */
-static int checkusername(char *username, unsigned int userlen) {
+static int checkusername(const char *username, unsigned int userlen) {
 
 	char* listshell = NULL;
 	char* usershell = NULL;
 	uid_t uid;
+
 	TRACE(("enter checkusername"))
 	if (userlen > MAX_USERNAME_LEN) {
 		return DROPBEAR_FAILURE;
 	}
 
-	/* new user or username has changed */
-	if (ses.authstate.username == NULL ||
-		strcmp(username, ses.authstate.username) != 0) {
-			/* the username needs resetting */
-			if (ses.authstate.username != NULL) {
-				dropbear_log(LOG_WARNING, "Client trying multiple usernames from %s",
-							svr_ses.addrstring);
-				m_free(ses.authstate.username);
-			}
-			authclear();
-			fill_passwd(username);
-			ses.authstate.username = m_strdup(username);
+	if (strlen(username) != userlen) {
+		dropbear_exit("Attempted username with a null byte from %s",
+			svr_ses.addrstring);
+	}
+
+	if (ses.authstate.username == NULL) {
+		/* first request */
+		fill_passwd(username);
+		ses.authstate.username = m_strdup(username);
+	} else {
+		/* check username hasn't changed */
+		if (strcmp(username, ses.authstate.username) != 0) {
+			dropbear_exit("Client trying multiple usernames from %s",
+				svr_ses.addrstring);
+		}
+	}
+
+	/* avoids cluttering logs with repeated failure messages from
+	consecutive authentication requests in a sesssion */
+	if (ses.authstate.checkusername_failed) {
+		TRACE(("checkusername: returning cached failure"))
+		return DROPBEAR_FAILURE;
 	}
 
 	/* check that user exists */
@@ -265,6 +284,7 @@ static int checkusername(char *username, unsigned int userlen) {
 		dropbear_log(LOG_WARNING,
 				"Login attempt for nonexistent user from %s",
 				svr_ses.addrstring);
+		ses.authstate.checkusername_failed = 1;
 		return DROPBEAR_FAILURE;
 	}
 
@@ -276,6 +296,7 @@ static int checkusername(char *username, unsigned int userlen) {
 				"Login attempt with wrong user %s from %s",
 				ses.authstate.pw_name,
 				svr_ses.addrstring);
+		ses.authstate.checkusername_failed = 1;
 		return DROPBEAR_FAILURE;
 	}
 
@@ -283,8 +304,23 @@ static int checkusername(char *username, unsigned int userlen) {
 	if (svr_opts.norootlogin && ses.authstate.pw_uid == 0) {
 		TRACE(("leave checkusername: root login disabled"))
 		dropbear_log(LOG_WARNING, "root login rejected");
+		ses.authstate.checkusername_failed = 1;
 		return DROPBEAR_FAILURE;
 	}
+
+	/* check for login restricted to certain group if desired */
+#ifdef HAVE_GETGROUPLIST
+	if (svr_opts.restrict_group) {
+		if (check_group_membership(svr_opts.restrict_group_gid,
+				ses.authstate.pw_name, ses.authstate.pw_gid) == DROPBEAR_FAILURE) {
+			dropbear_log(LOG_WARNING,
+				"Logins are restricted to the group %s but user '%s' is not a member",
+				svr_opts.restrict_group, ses.authstate.pw_name);
+			ses.authstate.checkusername_failed = 1;
+			return DROPBEAR_FAILURE;
+		}
+	}
+#endif HAVE_GETGROUPLIST
 
 	TRACE(("shell is %s", ses.authstate.pw_shell))
 
@@ -309,6 +345,7 @@ static int checkusername(char *username, unsigned int userlen) {
 	/* no matching shell */
 	endusershell();
 	TRACE(("no matching shell"))
+	ses.authstate.checkusername_failed = 1;
 	dropbear_log(LOG_WARNING, "User '%s' has invalid shell, rejected",
 				ses.authstate.pw_name);
 	return DROPBEAR_FAILURE;
@@ -370,7 +407,7 @@ void send_msg_userauth_failure(int partial, int incrfail) {
 		ses.authstate.failcount++;
 	}
 
-	if (ses.authstate.failcount >= MAX_AUTH_TRIES) {
+	if (ses.authstate.failcount >= svr_opts.maxauthtries) {
 		char * userstr;
 		/* XXX - send disconnect ? */
 		TRACE(("Max auth tries reached, exiting"))

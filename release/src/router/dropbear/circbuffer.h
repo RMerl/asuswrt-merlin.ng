@@ -38,12 +38,12 @@ typedef struct circbuf circbuffer;
 circbuffer * cbuf_new(unsigned int size);
 void cbuf_free(circbuffer * cbuf);
 
-unsigned int cbuf_getused(circbuffer * cbuf); /* how much data stored */
-unsigned int cbuf_getavail(circbuffer * cbuf); /* how much we can write */
-unsigned int cbuf_writelen(circbuffer *cbuf); /* max linear write len */
+unsigned int cbuf_getused(const circbuffer * cbuf); /* how much data stored */
+unsigned int cbuf_getavail(const circbuffer * cbuf); /* how much we can write */
+unsigned int cbuf_writelen(const circbuffer *cbuf); /* max linear write len */
 
 /* returns pointers to the two portions of the circular buffer that can be read */
-void cbuf_readptrs(circbuffer *cbuf, 
+void cbuf_readptrs(const circbuffer *cbuf,
 	unsigned char **p1, unsigned int *len1, 
 	unsigned char **p2, unsigned int *len2);
 unsigned char* cbuf_writeptr(circbuffer *cbuf, unsigned int len);

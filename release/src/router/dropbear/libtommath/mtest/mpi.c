@@ -6,7 +6,7 @@
 
     Arbitrary precision integer arithmetic library
 
-    $Id: mpi.c,v 1.2 2005/05/05 14:38:47 tom Exp $
+    $Id$
  */
 
 #include "mpi.h"
@@ -22,7 +22,7 @@
 #define DIAG(T,V)
 #endif
 
-/* 
+/*
    If MP_LOGTAB is not defined, use the math library to compute the
    logarithms on the fly.  Otherwise, use the static table below.
    Pick which works best for your system.
@@ -33,7 +33,7 @@
 
 /*
   A table of the logs of 2 for various bases (the 0 and 1 entries of
-  this table are meaningless and should not be referenced).  
+  this table are meaningless and should not be referenced).
 
   This table is used to compute output lengths for the mp_toradix()
   function.  Since a number n in radix r takes up about log_r(n)
@@ -43,7 +43,7 @@
   log_r(n) = log_2(n) * log_r(2)
 
   This table, therefore, is a table of log_r(2) for 2 <= r <= 36,
-  which are the output bases supported.  
+  which are the output bases supported.
  */
 
 #include "logtab.h"
@@ -104,7 +104,7 @@ static const char *mp_err_string[] = {
 /* Value to digit maps for radix conversion   */
 
 /* s_dmap_1 - standard digits and letters */
-static const char *s_dmap_1 = 
+static const char *s_dmap_1 =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/";
 
 #if 0
@@ -117,7 +117,7 @@ static const char *s_dmap_2 =
 
 /* {{{ Static function declarations */
 
-/* 
+/*
    If MP_MACRO is false, these will be defined as actual functions;
    otherwise, suitable macro definitions will be used.  This works
    around the fact that ANSI C89 doesn't support an 'inline' keyword
@@ -258,7 +258,7 @@ mp_err mp_init_array(mp_int mp[], int count)
   return MP_OKAY;
 
  CLEANUP:
-  while(--pos >= 0) 
+  while(--pos >= 0)
     mp_clear(&mp[pos]);
 
   return res;
@@ -355,7 +355,7 @@ mp_err mp_copy(mp_int *from, mp_int *to)
     if(ALLOC(to) >= USED(from)) {
       s_mp_setz(DIGITS(to) + USED(from), ALLOC(to) - USED(from));
       s_mp_copy(DIGITS(from), DIGITS(to), USED(from));
-      
+
     } else {
       if((tmp = s_mp_alloc(USED(from), sizeof(mp_digit))) == NULL)
 	return MP_MEM;
@@ -445,7 +445,7 @@ void   mp_clear_array(mp_int mp[], int count)
 {
   ARGCHK(mp != NULL && count > 0, MP_BADARG);
 
-  while(--count >= 0) 
+  while(--count >= 0)
     mp_clear(&mp[count]);
 
 } /* end mp_clear_array() */
@@ -455,7 +455,7 @@ void   mp_clear_array(mp_int mp[], int count)
 /* {{{ mp_zero(mp) */
 
 /*
-  mp_zero(mp) 
+  mp_zero(mp)
 
   Set mp to zero.  Does not change the allocated size of the structure,
   and therefore cannot fail (except on a bad argument, which we ignore)
@@ -506,7 +506,7 @@ mp_err mp_set_int(mp_int *mp, long z)
     if((res = s_mp_mul_2d(mp, CHAR_BIT)) != MP_OKAY)
       return res;
 
-    res = s_mp_add_d(mp, 
+    res = s_mp_add_d(mp,
 		     (mp_digit)((v >> (ix * CHAR_BIT)) & UCHAR_MAX));
     if(res != MP_OKAY)
       return res;
@@ -841,9 +841,9 @@ mp_err mp_neg(mp_int *a, mp_int *b)
   if((res = mp_copy(a, b)) != MP_OKAY)
     return res;
 
-  if(s_mp_cmp_d(b, 0) == MP_EQ) 
+  if(s_mp_cmp_d(b, 0) == MP_EQ)
     SIGN(b) = MP_ZPOS;
-  else 
+  else
     SIGN(b) = (SIGN(b) == MP_NEG) ? MP_ZPOS : MP_NEG;
 
   return MP_OKAY;
@@ -870,7 +870,7 @@ mp_err mp_add(mp_int *a, mp_int *b, mp_int *c)
   if(SIGN(a) == SIGN(b)) { /* same sign:  add values, keep sign */
 
     /* Commutativity of addition lets us do this in either order,
-       so we avoid having to use a temporary even if the result 
+       so we avoid having to use a temporary even if the result
        is supposed to replace the output
      */
     if(c == b) {
@@ -880,14 +880,14 @@ mp_err mp_add(mp_int *a, mp_int *b, mp_int *c)
       if(c != a && (res = mp_copy(a, c)) != MP_OKAY)
 	return res;
 
-      if((res = s_mp_add(c, b)) != MP_OKAY) 
+      if((res = s_mp_add(c, b)) != MP_OKAY)
 	return res;
     }
 
   } else if((cmp = s_mp_cmp(a, b)) > 0) {  /* different sign: a > b   */
 
     /* If the output is going to be clobbered, we will use a temporary
-       variable; otherwise, we'll do it without touching the memory 
+       variable; otherwise, we'll do it without touching the memory
        allocator at all, if possible
      */
     if(c == b) {
@@ -1019,7 +1019,7 @@ mp_err mp_sub(mp_int *a, mp_int *b, mp_int *c)
       mp_clear(&tmp);
 
     } else {
-      if(c != b && ((res = mp_copy(b, c)) != MP_OKAY)) 
+      if(c != b && ((res = mp_copy(b, c)) != MP_OKAY))
 	return res;
 
       if((res = s_mp_sub(c, a)) != MP_OKAY)
@@ -1066,12 +1066,12 @@ mp_err mp_mul(mp_int *a, mp_int *b, mp_int *c)
     if((res = s_mp_mul(c, b)) != MP_OKAY)
       return res;
   }
-  
+
   if(sgn == MP_ZPOS || s_mp_cmp_d(c, 0) == MP_EQ)
     SIGN(c) = MP_ZPOS;
   else
     SIGN(c) = sgn;
-  
+
   return MP_OKAY;
 
 } /* end mp_mul() */
@@ -1160,7 +1160,7 @@ mp_err mp_div(mp_int *a, mp_int *b, mp_int *q, mp_int *r)
 	return res;
     }
 
-    if(q) 
+    if(q)
       mp_zero(q);
 
     return MP_OKAY;
@@ -1206,10 +1206,10 @@ mp_err mp_div(mp_int *a, mp_int *b, mp_int *q, mp_int *r)
     SIGN(&rtmp) = MP_ZPOS;
 
   /* Copy output, if it is needed      */
-  if(q) 
+  if(q)
     s_mp_exch(&qtmp, q);
 
-  if(r) 
+  if(r)
     s_mp_exch(&rtmp, r);
 
 CLEANUP:
@@ -1264,7 +1264,7 @@ mp_err mp_expt(mp_int *a, mp_int *b, mp_int *c)
   mp_int   s, x;
   mp_err   res;
   mp_digit d;
-  int      dig, bit;
+  unsigned int bit, dig;
 
   ARGCHK(a != NULL && b != NULL && c != NULL, MP_BADARG);
 
@@ -1286,12 +1286,12 @@ mp_err mp_expt(mp_int *a, mp_int *b, mp_int *c)
     /* Loop over bits of each non-maximal digit */
     for(bit = 0; bit < DIGIT_BIT; bit++) {
       if(d & 1) {
-	if((res = s_mp_mul(&s, &x)) != MP_OKAY) 
+	if((res = s_mp_mul(&s, &x)) != MP_OKAY)
 	  goto CLEANUP;
       }
 
       d >>= 1;
-      
+
       if((res = s_mp_sqr(&x)) != MP_OKAY)
 	goto CLEANUP;
     }
@@ -1311,7 +1311,7 @@ mp_err mp_expt(mp_int *a, mp_int *b, mp_int *c)
     if((res = s_mp_sqr(&x)) != MP_OKAY)
       goto CLEANUP;
   }
-  
+
   if(mp_iseven(b))
     SIGN(&s) = SIGN(a);
 
@@ -1362,7 +1362,7 @@ mp_err mp_mod(mp_int *a, mp_int *m, mp_int *c)
 
   /*
      If |a| > m, we need to divide to get the remainder and take the
-     absolute value.  
+     absolute value.
 
      If |a| < m, we don't need to do any division, just copy and adjust
      the sign (if a is negative).
@@ -1376,7 +1376,7 @@ mp_err mp_mod(mp_int *a, mp_int *m, mp_int *c)
   if((mag = s_mp_cmp(a, m)) > 0) {
     if((res = mp_div(a, m, NULL, c)) != MP_OKAY)
       return res;
-    
+
     if(SIGN(c) == MP_NEG) {
       if((res = mp_add(c, m, c)) != MP_OKAY)
 	return res;
@@ -1391,7 +1391,7 @@ mp_err mp_mod(mp_int *a, mp_int *m, mp_int *c)
 	return res;
 
     }
-    
+
   } else {
     mp_zero(c);
 
@@ -1464,9 +1464,9 @@ mp_err mp_sqrt(mp_int *a, mp_int *b)
     return MP_RANGE;
 
   /* Special cases for zero and one, trivial     */
-  if(mp_cmp_d(a, 0) == MP_EQ || mp_cmp_d(a, 1) == MP_EQ) 
+  if(mp_cmp_d(a, 0) == MP_EQ || mp_cmp_d(a, 1) == MP_EQ)
     return mp_copy(a, b);
-    
+
   /* Initialize the temporaries we'll use below  */
   if((res = mp_init_size(&t, USED(a))) != MP_OKAY)
     return res;
@@ -1508,7 +1508,7 @@ mp_add_d(&x, 1, &x);
  CLEANUP:
   mp_clear(&x);
  X:
-  mp_clear(&t); 
+  mp_clear(&t);
 
   return res;
 
@@ -1626,7 +1626,7 @@ mp_err mp_sqrmod(mp_int *a, mp_int *m, mp_int *c)
   Compute c = (a ** b) mod m.  Uses a standard square-and-multiply
   method with modular reductions at each step. (This is basically the
   same code as mp_expt(), except for the addition of the reductions)
-  
+
   The modular reductions are done using Barrett's algorithm (see
   s_mp_reduce() below for details)
  */
@@ -1637,7 +1637,7 @@ mp_err mp_exptmod(mp_int *a, mp_int *b, mp_int *m, mp_int *c)
   mp_err   res;
   mp_digit d, *db = DIGITS(b);
   mp_size  ub = USED(b);
-  int      dig, bit;
+  unsigned int bit, dig;
 
   ARGCHK(a != NULL && b != NULL && c != NULL, MP_BADARG);
 
@@ -1655,7 +1655,7 @@ mp_err mp_exptmod(mp_int *a, mp_int *b, mp_int *m, mp_int *c)
   mp_set(&s, 1);
 
   /* mu = b^2k / m */
-  s_mp_add_d(&mu, 1); 
+  s_mp_add_d(&mu, 1);
   s_mp_lshd(&mu, 2 * USED(m));
   if((res = mp_div(&mu, m, &mu, NULL)) != MP_OKAY)
     goto CLEANUP;
@@ -1866,7 +1866,7 @@ int    mp_cmp_int(mp_int *a, long z)
   int     out;
 
   ARGCHK(a != NULL, MP_EQ);
-  
+
   mp_init(&tmp); mp_set_int(&tmp, z);
   out = mp_cmp(a, &tmp);
   mp_clear(&tmp);
@@ -1953,13 +1953,13 @@ mp_err mp_gcd(mp_int *a, mp_int *b, mp_int *c)
   if(mp_isodd(&u)) {
     if((res = mp_copy(&v, &t)) != MP_OKAY)
       goto CLEANUP;
-    
+
     /* t = -v */
     if(SIGN(&v) == MP_ZPOS)
       SIGN(&t) = MP_NEG;
     else
       SIGN(&t) = MP_ZPOS;
-    
+
   } else {
     if((res = mp_copy(&u, &t)) != MP_OKAY)
       goto CLEANUP;
@@ -2152,7 +2152,7 @@ mp_err mp_xgcd(mp_int *a, mp_int *b, mp_int *g, mp_int *x, mp_int *y)
 
       if(y)
 	if((res = mp_copy(&D, y)) != MP_OKAY) goto CLEANUP;
-      
+
       if(g)
 	if((res = mp_mul(&gx, &v, g)) != MP_OKAY) goto CLEANUP;
 
@@ -2255,7 +2255,7 @@ void   mp_print(mp_int *mp, FILE *ofp)
 
 /* {{{ mp_read_signed_bin(mp, str, len) */
 
-/* 
+/*
    mp_read_signed_bin(mp, str, len)
 
    Read in a raw value (base 256) into the given mp_int
@@ -2332,16 +2332,16 @@ mp_err  mp_read_unsigned_bin(mp_int *mp, unsigned char *str, int len)
     if((res = mp_add_d(mp, str[ix], mp)) != MP_OKAY)
       return res;
   }
-  
+
   return MP_OKAY;
-  
+
 } /* end mp_read_unsigned_bin() */
 
 /* }}} */
 
 /* {{{ mp_unsigned_bin_size(mp) */
 
-int     mp_unsigned_bin_size(mp_int *mp) 
+int     mp_unsigned_bin_size(mp_int *mp)
 {
   mp_digit   topdig;
   int        count;
@@ -2387,7 +2387,7 @@ mp_err mp_to_unsigned_bin(mp_int *mp, unsigned char *str)
 
   /* Generate digits in reverse order */
   while(dp < end) {
-    int      ix;
+    unsigned int ix;
 
     d = *dp;
     for(ix = 0; ix < sizeof(mp_digit); ++ix) {
@@ -2440,7 +2440,7 @@ int    mp_count_bits(mp_int *mp)
   }
 
   return len;
-  
+
 } /* end mp_count_bits() */
 
 /* }}} */
@@ -2462,14 +2462,14 @@ mp_err  mp_read_radix(mp_int *mp, unsigned char *str, int radix)
   mp_err  res;
   mp_sign sig = MP_ZPOS;
 
-  ARGCHK(mp != NULL && str != NULL && radix >= 2 && radix <= MAX_RADIX, 
+  ARGCHK(mp != NULL && str != NULL && radix >= 2 && radix <= MAX_RADIX,
 	 MP_BADARG);
 
   mp_zero(mp);
 
   /* Skip leading non-digit characters until a digit or '-' or '+' */
-  while(str[ix] && 
-	(s_mp_tovalue(str[ix], radix) < 0) && 
+  while(str[ix] &&
+	(s_mp_tovalue(str[ix], radix) < 0) &&
 	str[ix] != '-' &&
 	str[ix] != '+') {
     ++ix;
@@ -2525,7 +2525,7 @@ int    mp_radix_size(mp_int *mp, int radix)
 /* num = number of digits
    qty = number of bits per digit
    radix = target base
-   
+
    Return the number of digits in the specified radix that would be
    needed to express 'num' digits of 'qty' bits each.
  */
@@ -2541,7 +2541,7 @@ int    mp_value_radix_size(int num, int qty, int radix)
 
 /* {{{ mp_toradix(mp, str, radix) */
 
-mp_err mp_toradix(mp_int *mp, unsigned char *str, int radix)
+mp_err mp_toradix(mp_int *mp, char *str, int radix)
 {
   int  ix, pos = 0;
 
@@ -2587,14 +2587,14 @@ mp_err mp_toradix(mp_int *mp, unsigned char *str, int radix)
     /* Reverse the digits and sign indicator     */
     ix = 0;
     while(ix < pos) {
-      char tmp = str[ix];
+      char _tmp = str[ix];
 
       str[ix] = str[pos];
-      str[pos] = tmp;
+      str[pos] = _tmp;
       ++ix;
       --pos;
     }
-    
+
     mp_clear(&tmp);
   }
 
@@ -2806,18 +2806,18 @@ void     s_mp_exch(mp_int *a, mp_int *b)
 
 /* {{{ s_mp_lshd(mp, p) */
 
-/* 
+/*
    Shift mp leftward by p digits, growing if needed, and zero-filling
    the in-shifted digits at the right end.  This is a convenient
    alternative to multiplication by powers of the radix
- */   
+ */
 
 mp_err   s_mp_lshd(mp_int *mp, mp_size p)
 {
   mp_err   res;
   mp_size  pos;
   mp_digit *dp;
-  int     ix;
+  int ix;
 
   if(p == 0)
     return MP_OKAY;
@@ -2829,11 +2829,11 @@ mp_err   s_mp_lshd(mp_int *mp, mp_size p)
   dp = DIGITS(mp);
 
   /* Shift all the significant figures over as needed */
-  for(ix = pos - p; ix >= 0; ix--) 
+  for(ix = pos - p; ix >= 0; ix--)
     dp[ix + p] = dp[ix];
 
   /* Fill the bottom digits with zeroes */
-  for(ix = 0; ix < p; ix++)
+  for(ix = 0; (unsigned)ix < p; ix++)
     dp[ix] = 0;
 
   return MP_OKAY;
@@ -2844,7 +2844,7 @@ mp_err   s_mp_lshd(mp_int *mp, mp_size p)
 
 /* {{{ s_mp_rshd(mp, p) */
 
-/* 
+/*
    Shift mp rightward by p digits.  Maintains the invariant that
    digits above the precision are all zero.  Digits shifted off the
    end are lost.  Cannot fail.
@@ -2898,7 +2898,7 @@ void     s_mp_div_2(mp_int *mp)
 
 mp_err s_mp_mul_2(mp_int *mp)
 {
-  int      ix;
+  unsigned int ix;
   mp_digit kin = 0, kout, *dp = DIGITS(mp);
   mp_err   res;
 
@@ -2970,7 +2970,7 @@ mp_err    s_mp_mul_2d(mp_int *mp, mp_digit d)
   mp_err   res;
   mp_digit save, next, mask, *dp;
   mp_size  used;
-  int      ix;
+  unsigned int ix;
 
   if((res = s_mp_lshd(mp, d / DIGIT_BIT)) != MP_OKAY)
     return res;
@@ -3054,7 +3054,7 @@ void     s_mp_div_2d(mp_int *mp, mp_digit d)
   end of the division process).
 
   We multiply by the smallest power of 2 that gives us a leading digit
-  at least half the radix.  By choosing a power of 2, we simplify the 
+  at least half the radix.  By choosing a power of 2, we simplify the
   multiplication and division steps to simple shifts.
  */
 mp_digit s_mp_norm(mp_int *a, mp_int *b)
@@ -3066,7 +3066,7 @@ mp_digit s_mp_norm(mp_int *a, mp_int *b)
     t <<= 1;
     ++d;
   }
-    
+
   if(d != 0) {
     s_mp_mul_2d(a, d);
     s_mp_mul_2d(b, d);
@@ -3188,14 +3188,14 @@ mp_err   s_mp_mul_d(mp_int *a, mp_digit d)
      test guarantees we have enough storage to do this safely.
    */
   if(k) {
-    dp[max] = k; 
+    dp[max] = k;
     USED(a) = max + 1;
   }
 
   s_mp_clamp(a);
 
   return MP_OKAY;
-  
+
 } /* end s_mp_mul_d() */
 
 /* }}} */
@@ -3289,7 +3289,7 @@ mp_err   s_mp_add(mp_int *a, mp_int *b)        /* magnitude addition      */
   }
 
   /* If we run out of 'b' digits before we're actually done, make
-     sure the carries get propagated upward...  
+     sure the carries get propagated upward...
    */
   used = USED(a);
   while(w && ix < used) {
@@ -3351,7 +3351,7 @@ mp_err   s_mp_sub(mp_int *a, mp_int *b)        /* magnitude subtract      */
   /* Clobber any leading zeroes we created    */
   s_mp_clamp(a);
 
-  /* 
+  /*
      If there was a borrow out, then |b| > |a| in violation
      of our input invariant.  We've already done the work,
      but we'll at least complain about it...
@@ -3387,7 +3387,7 @@ mp_err   s_mp_reduce(mp_int *x, mp_int *m, mp_int *mu)
   s_mp_mod_2d(&q, (mp_digit)(DIGIT_BIT * (um + 1)));
 #else
   s_mp_mul_dig(&q, m, um + 1);
-#endif  
+#endif
 
   /* x = x - q */
   if((res = mp_sub(x, &q, x)) != MP_OKAY)
@@ -3441,7 +3441,7 @@ mp_err   s_mp_mul(mp_int *a, mp_int *b)
 
   pb = DIGITS(b);
   for(ix = 0; ix < ub; ++ix, ++pb) {
-    if(*pb == 0) 
+    if(*pb == 0)
       continue;
 
     /* Inner product:  Digits of a */
@@ -3480,7 +3480,7 @@ void   s_mp_kmul(mp_digit *a, mp_digit *b, mp_digit *out, mp_size len)
   for(ix = 0; ix < len; ++ix, ++b) {
     if(*b == 0)
       continue;
-    
+
     pa = a;
     for(jx = 0; jx < len; ++jx, ++pa) {
       pt = out + ix + jx;
@@ -3547,7 +3547,7 @@ mp_err   s_mp_sqr(mp_int *a)
      */
     for(jx = ix + 1, pa2 = DIGITS(a) + jx; jx < used; ++jx, ++pa2) {
       mp_word  u = 0, v;
-      
+
       /* Store this in a temporary to avoid indirections later */
       pt = pbt + ix + jx;
 
@@ -3568,7 +3568,7 @@ mp_err   s_mp_sqr(mp_int *a)
       v = *pt + k;
 
       /* If we do not already have an overflow carry, check to see
-	 if the addition will cause one, and set the carry out if so 
+	 if the addition will cause one, and set the carry out if so
        */
       u |= ((MP_WORD_MAX - v) < w);
 
@@ -3592,7 +3592,7 @@ mp_err   s_mp_sqr(mp_int *a)
     /* If we are carrying out, propagate the carry to the next digit
        in the output.  This may cascade, so we have to be somewhat
        circumspect -- but we will have enough precision in the output
-       that we won't overflow 
+       that we won't overflow
      */
     kx = 1;
     while(k) {
@@ -3664,7 +3664,7 @@ mp_err   s_mp_div(mp_int *a, mp_int *b)
   while(ix >= 0) {
     /* Find a partial substring of a which is at least b */
     while(s_mp_cmp(&rem, b) < 0 && ix >= 0) {
-      if((res = s_mp_lshd(&rem, 1)) != MP_OKAY) 
+      if((res = s_mp_lshd(&rem, 1)) != MP_OKAY)
 	goto CLEANUP;
 
       if((res = s_mp_lshd(&quot, 1)) != MP_OKAY)
@@ -3676,8 +3676,8 @@ mp_err   s_mp_div(mp_int *a, mp_int *b)
     }
 
     /* If we didn't find one, we're finished dividing    */
-    if(s_mp_cmp(&rem, b) < 0) 
-      break;    
+    if(s_mp_cmp(&rem, b) < 0)
+      break;
 
     /* Compute a guess for the next quotient digit       */
     q = DIGIT(&rem, USED(&rem) - 1);
@@ -3695,7 +3695,7 @@ mp_err   s_mp_div(mp_int *a, mp_int *b)
     if((res = s_mp_mul_d(&t, q)) != MP_OKAY)
       goto CLEANUP;
 
-    /* 
+    /*
        If it's too big, back it off.  We should not have to do this
        more than once, or, in rare cases, twice.  Knuth describes a
        method by which this could be reduced to a maximum of once, but
@@ -3719,7 +3719,7 @@ mp_err   s_mp_div(mp_int *a, mp_int *b)
   }
 
   /* Denormalize remainder                */
-  if(d != 0) 
+  if(d != 0)
     s_mp_div_2d(&rem, d);
 
   s_mp_clamp(&quot);
@@ -3727,7 +3727,7 @@ mp_err   s_mp_div(mp_int *a, mp_int *b)
 
   /* Copy quotient back to output         */
   s_mp_exch(&quot, a);
-  
+
   /* Copy remainder back to output        */
   s_mp_exch(&rem, b);
 
@@ -3757,7 +3757,7 @@ mp_err   s_mp_2expt(mp_int *a, mp_digit k)
   mp_zero(a);
   if((res = s_mp_pad(a, dig + 1)) != MP_OKAY)
     return res;
-  
+
   DIGIT(a, dig) |= (1 << bit);
 
   return MP_OKAY;
@@ -3815,7 +3815,7 @@ int      s_mp_cmp_d(mp_int *a, mp_digit d)
   if(ua > 1)
     return MP_GT;
 
-  if(*ap < d) 
+  if(*ap < d)
     return MP_LT;
   else if(*ap > d)
     return MP_GT;
@@ -3857,7 +3857,7 @@ int      s_mp_ispow2(mp_int *v)
     }
 
     return ((uv - 1) * DIGIT_BIT) + extra;
-  } 
+  }
 
   return -1;
 
@@ -3901,7 +3901,7 @@ int      s_mp_ispow2d(mp_digit d)
 int      s_mp_tovalue(char ch, int r)
 {
   int    val, xch;
-  
+
   if(r > 36)
     xch = ch;
   else
@@ -3917,7 +3917,7 @@ int      s_mp_tovalue(char ch, int r)
     val = 62;
   else if(xch == '/')
     val = 63;
-  else 
+  else
     return -1;
 
   if(val < 0 || val >= r)
@@ -3939,7 +3939,7 @@ int      s_mp_tovalue(char ch, int r)
   The results may be odd if you use a radix < 2 or > 64, you are
   expected to know what you're doing.
  */
-  
+
 char     s_mp_todigit(int val, int r, int low)
 {
   char   ch;
@@ -3960,7 +3960,7 @@ char     s_mp_todigit(int val, int r, int low)
 
 /* {{{ s_mp_outlen(bits, radix) */
 
-/* 
+/*
    Return an estimate for how long a string is needed to hold a radix
    r representation of a number with 'bits' significant bits.
 
@@ -3980,6 +3980,6 @@ int      s_mp_outlen(int bits, int r)
 /* HERE THERE BE DRAGONS                                                  */
 /* crc==4242132123, version==2, Sat Feb 02 06:43:52 2002 */
 
-/* $Source: /cvs/libtom/libtommath/mtest/mpi.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2005/05/05 14:38:47 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

@@ -5,17 +5,15 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
 /**
   @file pkcs_1_oaep_encode.c
-  OAEP Padding for PKCS #1, Tom St Denis 
+  OAEP Padding for PKCS #1, Tom St Denis
 */
 
-#ifdef PKCS_1
+#ifdef LTC_PKCS_1
 
 /**
   PKCS #1 v2.00 OAEP encode
@@ -46,7 +44,7 @@ int pkcs_1_oaep_encode(const unsigned char *msg,    unsigned long msglen,
    LTC_ARGCHK(outlen != NULL);
 
    /* test valid hash */
-   if ((err = hash_is_valid(hash_idx)) != CRYPT_OK) { 
+   if ((err = hash_is_valid(hash_idx)) != CRYPT_OK) {
       return err;
    }
 
@@ -120,10 +118,10 @@ int pkcs_1_oaep_encode(const unsigned char *msg,    unsigned long msglen,
 
    /* xor against DB */
    for (y = 0; y < (modulus_len - hLen - 1); y++) {
-       DB[y] ^= mask[y]; 
+       DB[y] ^= mask[y];
    }
 
-   /* compute MGF1 of maskedDB (hLen) */ 
+   /* compute MGF1 of maskedDB (hLen) */
    if ((err = pkcs_1_mgf1(hash_idx, DB, modulus_len - hLen - 1, mask, hLen)) != CRYPT_OK) {
       goto LBL_ERR;
    }
@@ -149,7 +147,7 @@ int pkcs_1_oaep_encode(const unsigned char *msg,    unsigned long msglen,
    x += modulus_len - hLen - 1;
 
    *outlen = x;
-    
+
    err = CRYPT_OK;
 LBL_ERR:
 #ifdef LTC_CLEAN_STACK
@@ -165,9 +163,9 @@ LBL_ERR:
    return err;
 }
 
-#endif /* PKCS_1 */
+#endif /* LTC_PKCS_1 */
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/pkcs1/pkcs_1_oaep_encode.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/06/16 21:53:41 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

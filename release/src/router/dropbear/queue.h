@@ -41,9 +41,9 @@ struct Queue {
 };
 
 void initqueue(struct Queue* queue);
-int isempty(struct Queue* queue);
+int isempty(const struct Queue* queue);
 void* dequeue(struct Queue* queue);
-void *examine(struct Queue* queue);
+void *examine(const struct Queue* queue);
 void enqueue(struct Queue* queue, void* item);
 
 #endif

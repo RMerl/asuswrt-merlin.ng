@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_LSHD_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* shift left a certain amount of digits */
@@ -26,14 +26,14 @@ int mp_lshd (mp_int * a, int b)
   }
 
   /* grow to fit the new digits */
-  if (a->alloc < a->used + b) {
+  if (a->alloc < (a->used + b)) {
      if ((res = mp_grow (a, a->used + b)) != MP_OKAY) {
        return res;
      }
   }
 
   {
-    register mp_digit *top, *bottom;
+    mp_digit *top, *bottom;
 
     /* increment the used by the shift amount then copy upwards */
     a->used += b;
@@ -42,7 +42,7 @@ int mp_lshd (mp_int * a, int b)
     top = a->dp + a->used - 1;
 
     /* base */
-    bottom = a->dp + a->used - 1 - b;
+    bottom = (a->dp + a->used - 1) - b;
 
     /* much like mp_rshd this is implemented using a sliding window
      * except the window goes the otherway around.  Copying from
@@ -62,6 +62,6 @@ int mp_lshd (mp_int * a, int b)
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_lshd.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

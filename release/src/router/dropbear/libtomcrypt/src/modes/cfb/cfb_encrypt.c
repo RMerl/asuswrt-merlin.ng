@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -51,7 +49,7 @@ int cfb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
           cfb->padlen = 0;
        }
        cfb->pad[cfb->padlen] = (*ct = *pt ^ cfb->IV[cfb->padlen]);
-       ++pt; 
+       ++pt;
        ++ct;
        ++(cfb->padlen);
    }
@@ -60,6 +58,6 @@ int cfb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/cfb/cfb_encrypt.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/11/26 01:45:14 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

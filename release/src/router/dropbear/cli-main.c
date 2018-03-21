@@ -35,13 +35,13 @@
 static void cli_dropbear_exit(int exitcode, const char* format, va_list param) ATTRIB_NORETURN;
 static void cli_dropbear_log(int priority, const char* format, va_list param);
 
-#ifdef ENABLE_CLI_PROXYCMD
+#if DROPBEAR_CLI_PROXYCMD
 static void cli_proxy_cmd(int *sock_in, int *sock_out, pid_t *pid_out);
 static void kill_proxy_sighandler(int signo);
 #endif
 
-#if defined(DBMULTI_dbclient) || !defined(DROPBEAR_MULTI)
-#if defined(DBMULTI_dbclient) && defined(DROPBEAR_MULTI)
+#if defined(DBMULTI_dbclient) || !DROPBEAR_MULTI
+#if defined(DBMULTI_dbclient) && DROPBEAR_MULTI
 int cli_main(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
@@ -66,15 +66,15 @@ int main(int argc, char ** argv) {
 	}
 #endif
 
-	TRACE(("user='%s' host='%s' port='%s'", cli_opts.username,
-				cli_opts.remotehost, cli_opts.remoteport))
+	TRACE(("user='%s' host='%s' port='%s' bind_address='%s' bind_port='%s'", cli_opts.username,
+				cli_opts.remotehost, cli_opts.remoteport, cli_opts.bind_address, cli_opts.bind_port))
 
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		dropbear_exit("signal() error");
 	}
 
 	pid_t proxy_cmd_pid = 0;
-#ifdef ENABLE_CLI_PROXYCMD
+#if DROPBEAR_CLI_PROXYCMD
 	if (cli_opts.proxycmd) {
 		cli_proxy_cmd(&sock_in, &sock_out, &proxy_cmd_pid);
 		m_free(cli_opts.proxycmd);
@@ -86,7 +86,8 @@ int main(int argc, char ** argv) {
 	} else
 #endif
 	{
-		progress = connect_remote(cli_opts.remotehost, cli_opts.remoteport, cli_connected, &ses);
+		progress = connect_remote(cli_opts.remotehost, cli_opts.remoteport, 
+			cli_connected, &ses, cli_opts.bind_address, cli_opts.bind_port);
 		sock_in = sock_out = -1;
 	}
 
@@ -107,7 +108,7 @@ static void cli_dropbear_exit(int exitcode, const char* format, va_list param) {
 	vsnprintf(exitmsg, sizeof(exitmsg), format, param);
 
 	/* Add the prefix depending on session/auth state */
-	if (!sessinitdone) {
+	if (!ses.init_done) {
 		snprintf(fullmsg, sizeof(fullmsg), "Exited: %s", exitmsg);
 	} else {
 		snprintf(fullmsg, sizeof(fullmsg), 
@@ -142,7 +143,7 @@ static void cli_dropbear_log(int priority,
 	fflush(stderr);
 }
 
-static void exec_proxy_cmd(void *user_data_cmd) {
+static void exec_proxy_cmd(const void *user_data_cmd) {
 	const char *cmd = user_data_cmd;
 	char *usershell;
 
@@ -151,12 +152,27 @@ static void exec_proxy_cmd(void *user_data_cmd) {
 	dropbear_exit("Failed to run '%s'\n", cmd);
 }
 
-#ifdef ENABLE_CLI_PROXYCMD
+#if DROPBEAR_CLI_PROXYCMD
 static void cli_proxy_cmd(int *sock_in, int *sock_out, pid_t *pid_out) {
 	char * ex_cmd = NULL;
 	size_t ex_cmdlen;
 	int ret;
 
+	/* File descriptor "-j &3" */
+	if (*cli_opts.proxycmd == '&') {
+		char *p = cli_opts.proxycmd + 1;
+		int sock = strtoul(p, &p, 10);
+		/* must be a single number, and not stdin/stdout/stderr */
+		if (sock > 2 && sock < 1024 && *p == '\0') {
+			*sock_in = sock;
+			*sock_out = sock;
+			return;
+		}
+	}
+
+	/* Normal proxycommand */
+
+	/* So that spawn_command knows which shell to run */
 	fill_passwd(cli_opts.own_user);
 
 	ex_cmdlen = strlen(cli_opts.proxycmd) + 6; /* "exec " + command + '\0' */
@@ -176,4 +192,4 @@ static void kill_proxy_sighandler(int UNUSED(signo)) {
 	kill_proxy_command();
 	_exit(1);
 }
-#endif /* ENABLE_CLI_PROXYCMD */
+#endif /* DROPBEAR_CLI_PROXYCMD */

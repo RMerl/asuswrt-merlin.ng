@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_S_MP_ADD_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* low level addition, based on HAC pp.594, Algorithm 14.7 */
@@ -36,7 +36,7 @@ s_mp_add (mp_int * a, mp_int * b, mp_int * c)
   }
 
   /* init result */
-  if (c->alloc < max + 1) {
+  if (c->alloc < (max + 1)) {
     if ((res = mp_grow (c, max + 1)) != MP_OKAY) {
       return res;
     }
@@ -47,8 +47,8 @@ s_mp_add (mp_int * a, mp_int * b, mp_int * c)
   c->used = max + 1;
 
   {
-    register mp_digit u, *tmpa, *tmpb, *tmpc;
-    register int i;
+    mp_digit u, *tmpa, *tmpb, *tmpc;
+    int i;
 
     /* alias for digit pointers */
 
@@ -104,6 +104,6 @@ s_mp_add (mp_int * a, mp_int * b, mp_int * c)
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_s_mp_add.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

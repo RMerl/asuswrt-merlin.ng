@@ -639,8 +639,8 @@ build_os
 build_vendor
 build_cpu
 build
+STATIC
 LD
-SET_MAKE
 OBJEXT
 EXEEXT
 ac_ct_CC
@@ -689,6 +689,8 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_static
+enable_harden
 enable_largefile
 with_zlib
 enable_zlib
@@ -1328,9 +1330,11 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-static         Build static binaries
+  --disable-harden        Don't set hardened build flags
   --disable-largefile     omit support for large files
   --disable-zlib          Don't include zlib support
-  --enable-pam          Try to include PAM support
+  --enable-pam            Try to include PAM support
   --disable-openpty       Don't use openpty, use alternative method
   --disable-syslog        Don't include syslog support
   --disable-shadow        Don't use shadow passwords (if available)
@@ -2301,7 +2305,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-OLDCFLAGS=$CFLAGS
 # Checks for programs.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3092,51 +3095,340 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} sets \$(MAKE)" >&5
-$as_echo_n "checking whether ${MAKE-make} sets \$(MAKE)... " >&6; }
-set x ${MAKE-make}
-ac_make=`$as_echo "$2" | sed 's/+/p/g; s/[^a-zA-Z0-9_]/_/g'`
-if eval \${ac_cv_prog_make_${ac_make}_set+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat >conftest.make <<\_ACEOF
-SHELL = /bin/sh
-all:
-	@echo '@@@%%%=$(MAKE)=@@@%%%'
-_ACEOF
-# GNU make sometimes prints "make[1]: Entering ...", which would confuse us.
-case `${MAKE-make} -f conftest.make 2>/dev/null` in
-  *@@@%%%=?*=@@@%%%*)
-    eval ac_cv_prog_make_${ac_make}_set=yes;;
-  *)
-    eval ac_cv_prog_make_${ac_make}_set=no;;
-esac
-rm -f conftest.make
-fi
-if eval test \$ac_cv_prog_make_${ac_make}_set = yes; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-  SET_MAKE=
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-  SET_MAKE="MAKE=${MAKE-make}"
-fi
-
 
 if test -z "$LD" ; then
 	LD=$CC
 fi
 
 
+
+
+# set compile flags prior to other tests
 if test -z "$OLDCFLAGS" && test "$GCC" = "yes"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: No \$CFLAGS set... using \"-Os -W -Wall\" for GCC" >&5
 $as_echo "$as_me: No \$CFLAGS set... using \"-Os -W -Wall\" for GCC" >&6;}
-	CFLAGS="-Os -W -Wall -Wno-pointer-sign"
+	CFLAGS="-Os -W -Wall"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Checking if compiler '$CC' supports -Wno-pointer-sign" >&5
+$as_echo "$as_me: Checking if compiler '$CC' supports -Wno-pointer-sign" >&6;}
+
+{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="-Wno-pointer-sign"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Checking if compiler '$CC' supports -fno-strict-overflow" >&5
+$as_echo "$as_me: Checking if compiler '$CC' supports -fno-strict-overflow" >&6;}
+{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="-fno-strict-overflow"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+
+STATIC=0
+# Check whether --enable-static was given.
+if test "${enable_static+set}" = set; then :
+  enableval=$enable_static;
+		if test "x$enableval" = "xyes"; then
+			STATIC=1
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: Static Build" >&5
+$as_echo "$as_me: Static Build" >&6;}
+		fi
+
+fi
+
+
+
+hardenbuild=1
+# Check whether --enable-harden was given.
+if test "${enable_harden+set}" = set; then :
+  enableval=$enable_harden;
+		if test "x$enableval" = "xno"; then
+			hardenbuild=0
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: Disabling hardened build flags" >&5
+$as_echo "$as_me: Disabling hardened build flags" >&6;}
+		fi
+
+fi
+
+
+if test "$hardenbuild" -eq 1; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: Checking for available hardened build flags:" >&5
+$as_echo "$as_me: Checking for available hardened build flags:" >&6;}
+	# relocation flags don't make sense for static builds
+	if test "$STATIC" -ne 1; then
+		# pie
+		{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="-fPIE"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+
+		OLDLDFLAGS="$LDFLAGS"
+		TESTFLAGS="-Wl,-pie"
+		LDFLAGS="$LDFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+
+				LDFLAGS="$OLDLDFLAGS"
+				TESTFLAGS="-pie"
+				LDFLAGS="$LDFLAGS $TESTFLAGS"
+				cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; LDFLAGS="$OLDLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+		# readonly elf relocation sections (relro)
+		OLDLDFLAGS="$LDFLAGS"
+		TESTFLAGS="-Wl,-z,now -Wl,-z,relro"
+		LDFLAGS="$LDFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; LDFLAGS="$OLDLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	fi # non-static
+	# stack protector. -strong is good but only in gcc 4.9 or later
+	OLDCFLAGS="$CFLAGS"
+	TESTFLAGS="-fstack-protector-strong"
+	CFLAGS="$CFLAGS $TESTFLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+
+			CFLAGS="$OLDCFLAGS"
+			TESTFLAGS="-fstack-protector --param=ssp-buffer-size=4"
+			CFLAGS="$CFLAGS $TESTFLAGS"
+			cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDCFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	# FORTIFY_SOURCE
+	{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="-D_FORTIFY_SOURCE=2"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+
+	# Spectre v2 mitigations
+	{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="-mfunction-return=thunk"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+	{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="-mindirect-branch=thunk"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Setting $TESTFLAGS" >&5
+$as_echo "$as_me: Setting $TESTFLAGS" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Not setting $TESTFLAGS" >&5
+$as_echo "$as_me: Not setting $TESTFLAGS" >&6;}; CFLAGS="$OLDFLAGS"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+
 fi
 
 # large file support is useful for scp
-
 # Check whether --enable-largefile was given.
 if test "${enable_largefile+set}" = set; then :
   enableval=$enable_largefile;
@@ -3458,10 +3750,10 @@ $as_echo_n "checking for obsolete utmp and wtmp in solaris2.x... " >&6; }
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-$as_echo "#define DISABLE_UTMP /**/" >>confdefs.h
+$as_echo "#define DISABLE_UTMP 1" >>confdefs.h
 
 
-$as_echo "#define DISABLE_WTMP /**/" >>confdefs.h
+$as_echo "#define DISABLE_WTMP 1" >>confdefs.h
 
 	else
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -3551,11 +3843,11 @@ fi
 
 *-*-aix*)
 
-$as_echo "#define AIX /**/" >>confdefs.h
+$as_echo "#define AIX 1" >>confdefs.h
 
 	# OpenSSH thinks it's broken. If it isn't, let me know.
 
-$as_echo "#define BROKEN_GETADDRINFO /**/" >>confdefs.h
+$as_echo "#define BROKEN_GETADDRINFO 1" >>confdefs.h
 
 	;;
 
@@ -3563,12 +3855,12 @@ $as_echo "#define BROKEN_GETADDRINFO /**/" >>confdefs.h
 	LIBS="$LIBS -lsec"
 	# It's probably broken.
 
-$as_echo "#define BROKEN_GETADDRINFO /**/" >>confdefs.h
+$as_echo "#define BROKEN_GETADDRINFO 1" >>confdefs.h
 
 	;;
 *-dec-osf*)
 
-$as_echo "#define BROKEN_GETADDRINFO /**/" >>confdefs.h
+$as_echo "#define BROKEN_GETADDRINFO 1" >>confdefs.h
 
 	;;
 esac
@@ -4430,7 +4722,7 @@ if test "${enable_zlib+set}" = set; then :
   enableval=$enable_zlib;
 		if test "x$enableval" = "xno"; then
 
-$as_echo "#define DISABLE_ZLIB /**/" >>confdefs.h
+$as_echo "#define DISABLE_ZLIB 1" >>confdefs.h
 
 			{ $as_echo "$as_me:${as_lineno-$LINENO}: Disabling zlib" >&5
 $as_echo "$as_me: Disabling zlib" >&6;}
@@ -4631,7 +4923,7 @@ done
 
 		else
 
-$as_echo "#define DISABLE_PAM /**/" >>confdefs.h
+$as_echo "#define DISABLE_PAM 1" >>confdefs.h
 
 			{ $as_echo "$as_me:${as_lineno-$LINENO}: Disabling PAM" >&5
 $as_echo "$as_me: Disabling PAM" >&6;}
@@ -4641,7 +4933,7 @@ else
 
 		# disable it by default
 
-$as_echo "#define DISABLE_PAM /**/" >>confdefs.h
+$as_echo "#define DISABLE_PAM 1" >>confdefs.h
 
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: Disabling PAM" >&5
 $as_echo "$as_me: Disabling PAM" >&6;}
@@ -4712,9 +5004,7 @@ $as_echo "$ac_cv_search_openpty" >&6; }
 ac_res=$ac_cv_search_openpty
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-$as_echo "#define HAVE_OPENPTY /**/" >>confdefs.h
-
+  dropbear_cv_func_have_openpty=yes
 fi
 
 		fi
@@ -4776,8 +5066,7 @@ $as_echo "$ac_cv_search_openpty" >&6; }
 ac_res=$ac_cv_search_openpty
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-  $as_echo "#define HAVE_OPENPTY 1" >>confdefs.h
-
+  dropbear_cv_func_have_openpty=yes
 fi
 
 
@@ -4785,13 +5074,20 @@ fi
 fi
 
 
+if test "x$dropbear_cv_func_have_openpty" = "xyes"; then
+
+$as_echo "#define HAVE_OPENPTY /**/" >>confdefs.h
+
+	no_ptc_check=yes
+	no_ptmx_check=yes
+fi
 
 # Check whether --enable-syslog was given.
 if test "${enable_syslog+set}" = set; then :
   enableval=$enable_syslog;
 		if test "x$enableval" = "xno"; then
 
-$as_echo "#define DISABLE_SYSLOG /**/" >>confdefs.h
+$as_echo "#define DISABLE_SYSLOG 1" >>confdefs.h
 
 			{ $as_echo "$as_me:${as_lineno-$LINENO}: Disabling syslog" >&5
 $as_echo "$as_me: Disabling syslog" >&6;}
@@ -5008,7 +5304,11 @@ $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 
 fi
 
-for ac_header in fcntl.h limits.h netinet/in.h netinet/tcp.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h crypt.h pty.h ioctl.h libutil.h libgen.h inttypes.h stropts.h utmp.h utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h pam/pam_appl.h netinet/in_systm.h sys/uio.h
+for ac_header in netinet/in.h netinet/tcp.h \
+	crypt.h \
+	pty.h libutil.h libgen.h inttypes.h stropts.h utmp.h \
+	utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h \
+	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5402,7 +5702,7 @@ fi
 $as_echo "$ac_cv_have_struct_sockaddr_in6" >&6; }
 if test "x$ac_cv_have_struct_sockaddr_in6" = "xyes" ; then
 
-$as_echo "#define HAVE_STRUCT_SOCKADDR_IN6 /**/" >>confdefs.h
+$as_echo "#define HAVE_STRUCT_SOCKADDR_IN6 1" >>confdefs.h
 
 fi
 
@@ -5439,7 +5739,7 @@ fi
 $as_echo "$ac_cv_have_struct_in6_addr" >&6; }
 if test "x$ac_cv_have_struct_in6_addr" = "xyes" ; then
 
-$as_echo "#define HAVE_STRUCT_IN6_ADDR /**/" >>confdefs.h
+$as_echo "#define HAVE_STRUCT_IN6_ADDR 1" >>confdefs.h
 
 fi
 
@@ -5477,7 +5777,7 @@ fi
 $as_echo "$ac_cv_have_struct_addrinfo" >&6; }
 if test "x$ac_cv_have_struct_addrinfo" = "xyes" ; then
 
-$as_echo "#define HAVE_STRUCT_ADDRINFO /**/" >>confdefs.h
+$as_echo "#define HAVE_STRUCT_ADDRINFO 1" >>confdefs.h
 
 fi
 
@@ -5905,7 +6205,6 @@ fi
 done
 
 
-
 # Check whether --enable-bundled-libtom was given.
 if test "${enable_bundled_libtom+set}" = set; then :
   enableval=$enable_bundled_libtom;
@@ -5952,7 +6251,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tommath_mp_exptmod" >&5
 $as_echo "$ac_cv_lib_tommath_mp_exptmod" >&6; }
 if test "x$ac_cv_lib_tommath_mp_exptmod" = xyes; then :
-  LIBTOM_LIBS="$LIBTOM_LIBS -ltommath"
+  LIBTOM_LIBS="-ltommath $LIBTOM_LIBS"
 else
   as_fn_error $? "Missing system libtommath and --disable-bundled-libtom was specified" "$LINENO" 5
 fi
@@ -5994,7 +6293,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tomcrypt_register_cipher" >&5
 $as_echo "$ac_cv_lib_tomcrypt_register_cipher" >&6; }
 if test "x$ac_cv_lib_tomcrypt_register_cipher" = xyes; then :
-  LIBTOM_LIBS="$LIBTOM_LIBS -ltomcrypt"
+  LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS"
 else
   as_fn_error $? "Missing system libtomcrypt and --disable-bundled-libtom was specified" "$LINENO" 5
 fi
@@ -6041,7 +6340,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tommath_mp_exptmod" >&5
 $as_echo "$ac_cv_lib_tommath_mp_exptmod" >&6; }
 if test "x$ac_cv_lib_tommath_mp_exptmod" = xyes; then :
-  LIBTOM_LIBS="$LIBTOM_LIBS -ltommath"
+  LIBTOM_LIBS="-ltommath $LIBTOM_LIBS"
 else
   BUNDLED_LIBTOM=1
 fi
@@ -6083,7 +6382,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tomcrypt_register_cipher" >&5
 $as_echo "$ac_cv_lib_tomcrypt_register_cipher" >&6; }
 if test "x$ac_cv_lib_tomcrypt_register_cipher" = xyes; then :
-  LIBTOM_LIBS="$LIBTOM_LIBS -ltomcrypt"
+  LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS"
 else
   BUNDLED_LIBTOM=1
 fi
@@ -6095,7 +6394,7 @@ fi
 
 if test $BUNDLED_LIBTOM = 1 ; then
 
-$as_echo "#define BUNDLED_LIBTOM /**/" >>confdefs.h
+$as_echo "#define BUNDLED_LIBTOM 1" >>confdefs.h
 
 fi
 
@@ -6106,7 +6405,11 @@ fi
 # Check whether --enable-lastlog was given.
 if test "${enable_lastlog+set}" = set; then :
   enableval=$enable_lastlog;
-$as_echo "#define DISABLE_LASTLOG /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_LASTLOG 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6114,7 +6417,11 @@ fi
 # Check whether --enable-utmp was given.
 if test "${enable_utmp+set}" = set; then :
   enableval=$enable_utmp;
-$as_echo "#define DISABLE_UTMP /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_UTMP 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6122,7 +6429,11 @@ fi
 # Check whether --enable-utmpx was given.
 if test "${enable_utmpx+set}" = set; then :
   enableval=$enable_utmpx;
-$as_echo "#define DISABLE_UTMPX /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_UTMPX 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6130,7 +6441,11 @@ fi
 # Check whether --enable-wtmp was given.
 if test "${enable_wtmp+set}" = set; then :
   enableval=$enable_wtmp;
-$as_echo "#define DISABLE_WTMP /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_WTMP 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6138,7 +6453,11 @@ fi
 # Check whether --enable-wtmpx was given.
 if test "${enable_wtmpx+set}" = set; then :
   enableval=$enable_wtmpx;
-$as_echo "#define DISABLE_WTMPX /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_WTMPX 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6154,7 +6473,11 @@ fi
 # Check whether --enable-pututline was given.
 if test "${enable_pututline+set}" = set; then :
   enableval=$enable_pututline;
-$as_echo "#define DISABLE_PUTUTLINE /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_PUTUTLINE 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6162,7 +6485,11 @@ fi
 # Check whether --enable-pututxline was given.
 if test "${enable_pututxline+set}" = set; then :
   enableval=$enable_pututxline;
-$as_echo "#define DISABLE_PUTUTXLINE /**/" >>confdefs.h
+		if test "x$enableval" = "xno" ; then
+
+$as_echo "#define DISABLE_PUTUTXLINE 1" >>confdefs.h
+
+		fi
 
 
 fi
@@ -6237,7 +6564,7 @@ ac_res=$ac_cv_search_login
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
-$as_echo "#define HAVE_LOGIN /**/" >>confdefs.h
+$as_echo "#define HAVE_LOGIN 1" >>confdefs.h
 
 fi
 
@@ -6723,7 +7050,31 @@ _ACEOF
 
 rm -f conftest*
 
-for ac_func in dup2 getpass getspnam getusershell memset putenv select socket strdup clearenv strlcpy strlcat daemon basename _getpty getaddrinfo freeaddrinfo getnameinfo fork writev
+for ac_func in getpass getspnam getusershell putenv
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+for ac_func in clearenv strlcpy strlcat daemon basename _getpty getaddrinfo
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+for ac_func in freeaddrinfo getnameinfo fork writev getgrouplist
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -6799,7 +7150,7 @@ if test -z "$no_ptmx_check" ; then
 	if test x"$cross_compiling" = x"no" ; then
 		if test -e /dev/ptmx ; then
 
-$as_echo "#define USE_DEV_PTMX /**/" >>confdefs.h
+$as_echo "#define USE_DEV_PTMX 1" >>confdefs.h
 
 		fi
 	else
@@ -6812,7 +7163,7 @@ if test -z "$no_ptc_check" ; then
 	if test x"$cross_compiling" = x"no" ; then
 		if test -e /dev/ptc ; then
 
-$as_echo "#define HAVE_DEV_PTS_AND_PTC /**/" >>confdefs.h
+$as_echo "#define HAVE_DEV_PTS_AND_PTC 1" >>confdefs.h
 
 		fi
 	else
@@ -6823,60 +7174,11 @@ fi
 
 
 
-# XXX there must be a nicer way to do this
 if test $BUNDLED_LIBTOM = 1 ; then
-as_dir=libtomcrypt/src/ciphers/aes; as_fn_mkdir_p
-as_dir=libtomcrypt/src/ciphers/safer; as_fn_mkdir_p
-as_dir=libtomcrypt/src/ciphers/twofish; as_fn_mkdir_p
-as_dir=libtomcrypt/src/encauth/ccm; as_fn_mkdir_p
-as_dir=libtomcrypt/src/encauth/eax; as_fn_mkdir_p
-as_dir=libtomcrypt/src/encauth/gcm; as_fn_mkdir_p
-as_dir=libtomcrypt/src/encauth/ocb; as_fn_mkdir_p
-as_dir=libtomcrypt/src/hashes; as_fn_mkdir_p
-as_dir=libtomcrypt/src/hashes/chc; as_fn_mkdir_p
-as_dir=libtomcrypt/src/hashes/helper; as_fn_mkdir_p
-as_dir=libtomcrypt/src/hashes/sha2; as_fn_mkdir_p
-as_dir=libtomcrypt/src/hashes/whirl; as_fn_mkdir_p
-as_dir=libtomcrypt/src/mac/hmac; as_fn_mkdir_p
-as_dir=libtomcrypt/src/mac/omac; as_fn_mkdir_p
-as_dir=libtomcrypt/src/mac/pelican; as_fn_mkdir_p
-as_dir=libtomcrypt/src/mac/pmac; as_fn_mkdir_p
-as_dir=libtomcrypt/src/mac/f9; as_fn_mkdir_p
-as_dir=libtomcrypt/src/mac/xcbc; as_fn_mkdir_p
-as_dir=libtomcrypt/src/math/fp; as_fn_mkdir_p
-as_dir=libtomcrypt/src/misc/base64; as_fn_mkdir_p
-as_dir=libtomcrypt/src/misc/crypt; as_fn_mkdir_p
-as_dir=libtomcrypt/src/misc/mpi; as_fn_mkdir_p
-as_dir=libtomcrypt/src/misc/pkcs5; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/cbc; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/cfb; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/ctr; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/ecb; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/ofb; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/f8; as_fn_mkdir_p
-as_dir=libtomcrypt/src/modes/lrw; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/bit; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/boolean; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/choice; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/ia5; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/integer; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/object_identifier; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/octet; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/printable_string; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/sequence; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/set; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/short_integer; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/utctime; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/asn1/der/utf8; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/dh; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/dsa; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/ecc; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/katja; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/pkcs1; as_fn_mkdir_p
-as_dir=libtomcrypt/src/pk/rsa; as_fn_mkdir_p
-as_dir=libtomcrypt/src/prngs; as_fn_mkdir_p
+(cd $srcdir; find libtomcrypt -type d) | xargs mkdir -pv
 LIBTOM_FILES="libtomcrypt/Makefile libtommath/Makefile"
 fi
+
 ac_config_headers="$ac_config_headers config.h"
 
 ac_config_files="$ac_config_files Makefile $LIBTOM_FILES"

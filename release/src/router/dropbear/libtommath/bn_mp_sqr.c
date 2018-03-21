@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_SQR_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* computes b = a*a */
@@ -29,30 +29,32 @@ mp_sqr (mp_int * a, mp_int * b)
   } else 
 #endif
 #ifdef BN_MP_KARATSUBA_SQR_C
-if (a->used >= KARATSUBA_SQR_CUTOFF) {
+  if (a->used >= KARATSUBA_SQR_CUTOFF) {
     res = mp_karatsuba_sqr (a, b);
   } else 
 #endif
   {
 #ifdef BN_FAST_S_MP_SQR_C
     /* can we use the fast comba multiplier? */
-    if ((a->used * 2 + 1) < MP_WARRAY && 
-         a->used < 
-         (1 << (sizeof(mp_word) * CHAR_BIT - 2*DIGIT_BIT - 1))) {
+    if ((((a->used * 2) + 1) < MP_WARRAY) &&
+         (a->used <
+         (1 << (((sizeof(mp_word) * CHAR_BIT) - (2 * DIGIT_BIT)) - 1)))) {
       res = fast_s_mp_sqr (a, b);
     } else
 #endif
+    {
 #ifdef BN_S_MP_SQR_C
       res = s_mp_sqr (a, b);
 #else
       res = MP_VAL;
 #endif
+    }
   }
   b->sign = MP_ZPOS;
   return res;
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_sqr.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

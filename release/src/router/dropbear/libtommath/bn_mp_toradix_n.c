@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_TORADIX_N_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* stores a bignum as a ASCII string in a given radix (2..64) 
@@ -27,7 +27,7 @@ int mp_toradix_n(mp_int * a, char *str, int radix, int maxlen)
   char   *_s = str;
 
   /* check range of the maxlen, radix */
-  if (maxlen < 2 || radix < 2 || radix > 64) {
+  if ((maxlen < 2) || (radix < 2) || (radix > 64)) {
     return MP_VAL;
   }
 
@@ -56,7 +56,7 @@ int mp_toradix_n(mp_int * a, char *str, int radix, int maxlen)
   }
 
   digs = 0;
-  while (mp_iszero (&t) == 0) {
+  while (mp_iszero (&t) == MP_NO) {
     if (--maxlen < 1) {
        /* no more room */
        break;
@@ -83,6 +83,6 @@ int mp_toradix_n(mp_int * a, char *str, int radix, int maxlen)
 
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_toradix_n.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

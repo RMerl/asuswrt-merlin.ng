@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -47,29 +45,29 @@ int xcbc_process(xcbc_state *xcbc, const unsigned char *in, unsigned long inlen)
    if (xcbc->buflen == 0) {
        while (inlen > (unsigned long)xcbc->blocksize) {
            for (x = 0; x < xcbc->blocksize; x += sizeof(LTC_FAST_TYPE)) {
-              *((LTC_FAST_TYPE*)&(xcbc->IV[x])) ^= *((LTC_FAST_TYPE*)&(in[x]));
+              *(LTC_FAST_TYPE_PTR_CAST(&(xcbc->IV[x]))) ^= *(LTC_FAST_TYPE_PTR_CAST(&(in[x])));
            }
            cipher_descriptor[xcbc->cipher].ecb_encrypt(xcbc->IV, xcbc->IV, &xcbc->key);
            in    += xcbc->blocksize;
            inlen -= xcbc->blocksize;
        }
-  }
+   }
 #endif
 
    while (inlen) {
-     if (xcbc->buflen == xcbc->blocksize) {
+      if (xcbc->buflen == xcbc->blocksize) {
          cipher_descriptor[xcbc->cipher].ecb_encrypt(xcbc->IV, xcbc->IV, &xcbc->key);
          xcbc->buflen = 0;
-     }
-     xcbc->IV[xcbc->buflen++] ^= *in++;
-     --inlen;
-  }
-  return CRYPT_OK;       
+      }
+      xcbc->IV[xcbc->buflen++] ^= *in++;
+      --inlen;
+   }
+   return CRYPT_OK;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/xcbc/xcbc_process.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/11/09 22:43:52 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

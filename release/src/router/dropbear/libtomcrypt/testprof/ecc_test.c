@@ -1,6 +1,6 @@
 #include <tomcrypt_test.h>
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 static int sizes[] = {
 #ifdef ECC112
@@ -247,6 +247,6 @@ int ecc_tests(void)
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/testprof/ecc_test.c,v $ */
-/* $Revision: 1.21 $ */
-/* $Date: 2006/12/04 03:21:03 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

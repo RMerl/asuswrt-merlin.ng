@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -19,9 +17,9 @@
 /**
   @file ltc_ecc_map.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 /**
   Map a projective jacbobian point back to affine space
@@ -40,7 +38,7 @@ int ltc_ecc_map(ecc_point *P, void *modulus, void *mp)
    LTC_ARGCHK(mp      != NULL);
 
    if ((err = mp_init_multi(&t1, &t2, NULL)) != CRYPT_OK) {
-      return CRYPT_MEM;
+      return err;
    }
 
    /* first map z back to normal */
@@ -48,7 +46,7 @@ int ltc_ecc_map(ecc_point *P, void *modulus, void *mp)
 
    /* get 1/z */
    if ((err = mp_invmod(P->z, modulus, t1)) != CRYPT_OK)                      { goto done; }
- 
+
    /* get 1/z^2 and 1/z^3 */
    if ((err = mp_sqr(t1, t2)) != CRYPT_OK)                                    { goto done; }
    if ((err = mp_mod(t2, modulus, t2)) != CRYPT_OK)                           { goto done; }
@@ -70,7 +68,7 @@ done:
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_map.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/12/04 02:50:11 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */
 

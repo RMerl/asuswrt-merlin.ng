@@ -1,4 +1,4 @@
-#include <tommath.h>
+#include <tommath_private.h>
 #ifdef BN_MP_DR_REDUCE_C
 /* LibTomMath, multiple-precision integer library -- Tom St Denis
  *
@@ -12,7 +12,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://math.libtomcrypt.com
+ * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
  */
 
 /* reduce "x" in place modulo "n" using the Diminished Radix algorithm.
@@ -40,7 +40,7 @@ mp_dr_reduce (mp_int * x, mp_int * n, mp_digit k)
   m = n->used;
 
   /* ensure that "x" has at least 2m digits */
-  if (x->alloc < m + m) {
+  if (x->alloc < (m + m)) {
     if ((err = mp_grow (x, m + m)) != MP_OKAY) {
       return err;
     }
@@ -62,7 +62,7 @@ top:
 
   /* compute (x mod B**m) + k * [x/B**m] inline and inplace */
   for (i = 0; i < m; i++) {
-      r         = ((mp_word)*tmpx2++) * ((mp_word)k) + *tmpx1 + mu;
+      r         = (((mp_word)*tmpx2++) * (mp_word)k) + *tmpx1 + mu;
       *tmpx1++  = (mp_digit)(r & MP_MASK);
       mu        = (mp_digit)(r >> ((mp_word)DIGIT_BIT));
   }
@@ -82,13 +82,15 @@ top:
    * Each successive "recursion" makes the input smaller and smaller.
    */
   if (mp_cmp_mag (x, n) != MP_LT) {
-    s_mp_sub(x, n, x);
+    if ((err = s_mp_sub(x, n, x)) != MP_OKAY) {
+      return err;
+    }
     goto top;
   }
   return MP_OKAY;
 }
 #endif
 
-/* $Source: /cvs/libtom/libtommath/bn_mp_dr_reduce.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/03/31 14:18:44 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

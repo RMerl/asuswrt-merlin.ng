@@ -59,7 +59,7 @@ process_file(hash_state *hs, const char *filename,
 	unsigned int readcount;
 	int ret = DROPBEAR_FAILURE;
 
-#ifdef DROPBEAR_PRNGD_SOCKET
+#if DROPBEAR_USE_PRNGD
 	if (prngd)
 	{
 		readfd = connect_unix(filename);
@@ -107,7 +107,7 @@ process_file(hash_state *hs, const char *filename,
 			wantread = MIN(sizeof(readbuf), len-readcount);
 		}
 
-#ifdef DROPBEAR_PRNGD_SOCKET
+#if DROPBEAR_USE_PRNGD
 		if (prngd)
 		{
 			char egdcmd[2];
@@ -141,7 +141,7 @@ out:
 	return ret;
 }
 
-void addrandom(unsigned char * buf, unsigned int len)
+void addrandom(const unsigned char * buf, unsigned int len)
 {
 	hash_state hs;
 
@@ -157,7 +157,7 @@ void addrandom(unsigned char * buf, unsigned int len)
 
 static void write_urandom()
 {
-#ifndef DROPBEAR_PRNGD_SOCKET
+#if !DROPBEAR_USE_PRNGD
 	/* This is opportunistic, don't worry about failure */
 	unsigned char buf[INIT_SEED_SIZE];
 	FILE *f = fopen(DROPBEAR_URANDOM_DEV, "w");
@@ -185,7 +185,7 @@ void seedrandom() {
 	/* existing state */
 	sha1_process(&hs, (void*)hashpool, sizeof(hashpool));
 
-#ifdef DROPBEAR_PRNGD_SOCKET
+#if DROPBEAR_USE_PRNGD
 	if (process_file(&hs, DROPBEAR_PRNGD_SOCKET, INIT_SEED_SIZE, 1) 
 			!= DROPBEAR_SUCCESS) {
 		dropbear_exit("Failure reading random device %s", 

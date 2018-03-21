@@ -29,7 +29,7 @@
 #include "ssh.h"
 #include "runopts.h"
 
-#ifdef ENABLE_CLI_INTERACT_AUTH
+#if DROPBEAR_CLI_INTERACT_AUTH
 
 static char* get_response(char* prompt)
 {
@@ -172,4 +172,4 @@ void cli_auth_interactive() {
 	TRACE(("leave cli_auth_interactive"))
 
 }
-#endif	/* ENABLE_CLI_INTERACT_AUTH */
+#endif	/* DROPBEAR_CLI_INTERACT_AUTH */

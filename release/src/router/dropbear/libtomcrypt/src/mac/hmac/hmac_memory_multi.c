@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 #include <stdarg.h>
@@ -20,8 +18,8 @@
 
 /**
    HMAC multiple blocks of memory to produce the authentication tag
-   @param hash      The index of the hash to use 
-   @param key       The secret key 
+   @param hash      The index of the hash to use
+   @param key       The secret key
    @param keylen    The length of the secret key (octets)
    @param out       [out] Destination of the authentication tag
    @param outlen    [in/out] Max size and resulting size of authentication tag
@@ -30,7 +28,7 @@
    @param ...       tuples of (data,len) pairs to HMAC, terminated with a (NULL,x) (x=don't care)
    @return CRYPT_OK if successful
 */
-int hmac_memory_multi(int hash, 
+int hmac_memory_multi(int hash,
                 const unsigned char *key,  unsigned long keylen,
                       unsigned char *out,  unsigned long *outlen,
                 const unsigned char *in,   unsigned long inlen, ...)
@@ -44,7 +42,7 @@ int hmac_memory_multi(int hash,
 
     LTC_ARGCHK(key    != NULL);
     LTC_ARGCHK(in     != NULL);
-    LTC_ARGCHK(out    != NULL); 
+    LTC_ARGCHK(out    != NULL);
     LTC_ARGCHK(outlen != NULL);
 
     /* allocate ram for hmac state */
@@ -58,7 +56,7 @@ int hmac_memory_multi(int hash,
     }
 
     va_start(args, inlen);
-    curptr = in; 
+    curptr = in;
     curlen = inlen;
     for (;;) {
        /* process buf */
@@ -81,12 +79,12 @@ LBL_ERR:
 #endif
    XFREE(hmac);
    va_end(args);
-   return err;   
+   return err;
 }
 
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/hmac/hmac_memory_multi.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/11/03 00:39:49 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

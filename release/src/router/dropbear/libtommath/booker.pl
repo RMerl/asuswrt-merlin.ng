@@ -15,7 +15,7 @@ if (shift =~ /PDF/) {
    $graph = "";
 } else {
    $graph = ".ps";
-}   
+}
 
 open(IN,"<tommath.src") or die "Can't open source file";
 open(OUT,">tommath.tex") or die "Can't open destination file";
@@ -26,18 +26,18 @@ $x = 0;
 while (<IN>) {
    print ".";
    if (!(++$x % 80)) { print "\n"; }
-   #update the headings 
+   #update the headings
    if (~($_ =~ /\*/)) {
-      if ($_ =~ /\\chapter{.+}/) {
+      if ($_ =~ /\\chapter\{.+}/) {
           ++$chapter;
           $section = $subsection = 0;
-      } elsif ($_ =~ /\\section{.+}/) {
+      } elsif ($_ =~ /\\section\{.+}/) {
           ++$section;
           $subsection = 0;
-      } elsif ($_ =~ /\\subsection{.+}/) {
+      } elsif ($_ =~ /\\subsection\{.+}/) {
           ++$subsection;
       }
-   }      
+   }
 
    if ($_ =~ m/MARK/) {
       @m = split(",",$_);
@@ -56,7 +56,7 @@ $srcline = 0;
 while (<IN>) {
    ++$readline;
    ++$srcline;
-   
+
    if ($_ =~ m/MARK/) {
    } elsif ($_ =~ m/EXAM/ || $_ =~ m/LIST/) {
       if ($_ =~ m/EXAM/) {
@@ -64,29 +64,29 @@ while (<IN>) {
       } else {
          $skipheader = 0;
       }
-      
+
       # EXAM,file
       chomp($_);
       @m = split(",",$_);
       open(SRC,"<$m[1]") or die "Error:$srcline:Can't open source file $m[1]";
-      
+
       print "$srcline:Inserting $m[1]:";
-      
+
       $line = 0;
       $tmp = $m[1];
       $tmp =~ s/_/"\\_"/ge;
       print OUT "\\vspace{+3mm}\\begin{small}\n\\hspace{-5.1mm}{\\bf File}: $tmp\n\\vspace{-3mm}\n\\begin{alltt}\n";
       $wroteline += 5;
-      
+
       if ($skipheader == 1) {
-         # scan till next end of comment, e.g. skip license 
+         # scan till next end of comment, e.g. skip license
          while (<SRC>) {
             $text[$line++] = $_;
-            last if ($_ =~ /math\.libtomcrypt\.com/);
+            last if ($_ =~ /libtom\.org/);
          }
-         <SRC>;   
+         <SRC>;
       }
-      
+
       $inline = 0;
       while (<SRC>) {
       next if ($_ =~ /\$Source/);
@@ -100,11 +100,11 @@ while (<IN>) {
          $_ =~ s/}/"^}"/ge;
          $_ =~ s/\\/'\symbol{92}'/ge;
          $_ =~ s/\^/"\\"/ge;
-           
+
          printf OUT ("%03d   ", $line);
          for ($x = 0; $x < length($_); $x++) {
              print OUT chr(vec($_, $x, 8));
-             if ($x == 75) { 
+             if ($x == 75) {
                  print OUT "\n      ";
                  ++$wroteline;
              }
@@ -123,9 +123,9 @@ while (<IN>) {
      $txt = $_;
      while ($txt =~ m/@\d+,.+@/) {
         @m = split("@",$txt);      # splits into text, one, two
-        @parms = split(",",$m[1]);  # splits one,two into two elements 
-                
-        # now search from $parms[0] down for $parms[1] 
+        @parms = split(",",$m[1]);  # splits one,two into two elements
+
+        # now search from $parms[0] down for $parms[1]
         $found1 = 0;
         $found2 = 0;
         for ($i = $parms[0]; $i < $totlines && $found1 == 0; $i++) {
@@ -134,7 +134,7 @@ while (<IN>) {
               $found1 = 1;
            }
         }
-        
+
         # now search backwards
         for ($i = $parms[0] - 1; $i >= 0 && $found2 == 0; $i--) {
            if ($text[$i] =~ m/\Q$parms[1]\E/) {
@@ -142,7 +142,7 @@ while (<IN>) {
               $found2 = 1;
            }
         }
-        
+
         # now use the closest match or the first if tied
         if ($found1 == 1 && $found2 == 0) {
            $found = 1;
@@ -160,8 +160,8 @@ while (<IN>) {
         } else {
            $found = 0;
         }
-                      
-        # if found replace 
+
+        # if found replace
         if ($found == 1) {
            $delta = $parms[0] - $foundline;
            print "Found replacement tag for \"$parms[1]\" on line $srcline which refers to line $foundline (delta $delta)\n";
@@ -169,8 +169,8 @@ while (<IN>) {
         } else {
            print "ERROR:  The tag \"$parms[1]\" on line $srcline was not found in the most recently parsed source!\n";
         }
-        
-        # remake the rest of the line 
+
+        # remake the rest of the line
         $cnt = @m;
         $txt = "";
         for ($i = 2; $i < $cnt; $i++) {
@@ -184,13 +184,13 @@ while (<IN>) {
       $txt = $_;
       while ($txt =~ /~.+~/) {
          @m = split("~", $txt);
-         
+
          # word is the second position
          $word = @m[1];
          $a = $index1{$word};
          $b = $index2{$word};
          $c = $index3{$word};
-         
+
          # if chapter (a) is zero it wasn't found
          if ($a == 0) {
             print "ERROR: the tag \"$word\" on line $srcline was not found previously marked.\n";
@@ -199,7 +199,7 @@ while (<IN>) {
             $str = $a;
             $str = $str . ".$b" if ($b != 0);
             $str = $str . ".$c" if ($c != 0);
-            
+
             if ($b == 0 && $c == 0) {
                # its a chapter
                if ($a <= 10) {
@@ -228,16 +228,16 @@ while (<IN>) {
                   $str = "chapter " . $str;
                }
             } else {
-               $str = "section " . $str     if ($b != 0 && $c == 0);            
+               $str = "section " . $str     if ($b != 0 && $c == 0);
                $str = "sub-section " . $str if ($b != 0 && $c != 0);
             }
-            
+
             #substitute
             $_ =~ s/~\Q$word\E~/$str/;
-            
+
             print "Found replacement tag for marker \"$word\" on line $srcline which refers to $str\n";
          }
-         
+
          # remake rest of the line
          $cnt = @m;
          $txt = "";
@@ -263,3 +263,5 @@ print "Read $readline lines, wrote $wroteline lines\n";
 
 close (OUT);
 close (IN);
+
+system('perl -pli -e "s/\s*$//" tommath.tex');

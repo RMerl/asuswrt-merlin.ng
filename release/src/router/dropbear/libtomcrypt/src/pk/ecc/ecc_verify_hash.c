@@ -5,52 +5,27 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
-/* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
- *
- * All curves taken from NIST recommendation paper of July 1999
- * Available at http://csrc.nist.gov/cryptval/dss.htm
- */
 #include "tomcrypt.h"
+
+#if defined(LTC_MECC) && defined(LTC_DER)
 
 /**
   @file ecc_verify_hash.c
   ECC Crypto, Tom St Denis
 */  
 
-#if defined(MECC) && defined(LTC_DER)
-
-/* verify 
- *
- * w  = s^-1 mod n
- * u1 = xw 
- * u2 = rw
- * X = u1*G + u2*Q
- * v = X_x1 mod n
- * accept if v == r
- */
-
-/**
-   Verify an ECC signature
-   @param sig         The signature to verify
-   @param siglen      The length of the signature (octets)
-   @param hash        The hash (message digest) that was signed
-   @param hashlen     The length of the hash (octets)
-   @param stat        Result of signature, 1==valid, 0==invalid
-   @param key         The corresponding public ECC key
-   @return CRYPT_OK if successful (even if the signature is not valid)
-*/
-int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
+static int _ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
                     const unsigned char *hash, unsigned long hashlen, 
-                    int *stat, ecc_key *key)
+                            int *stat, ecc_key *key, int sigformat)
 {
    ecc_point    *mG, *mQ;
    void          *r, *s, *v, *w, *u1, *u2, *e, *p, *m;
    void          *mp;
    int           err;
+   unsigned long pbits, pbytes, i, shift_right;
+   unsigned char ch, buf[MAXBLOCKSIZE];
 
    LTC_ARGCHK(sig  != NULL);
    LTC_ARGCHK(hash != NULL);
@@ -79,12 +54,22 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
       goto error;
    }
 
-   /* parse header */
+   if (sigformat == 1) {
+      /* RFC7518 format */
+      if ((siglen % 2) == 1) {
+         err = CRYPT_INVALID_PACKET;
+         goto error;
+      }
+      i = siglen / 2;
+      if ((err = mp_read_unsigned_bin(r, (unsigned char *)sig,   i)) != CRYPT_OK)                       { goto error; }
+      if ((err = mp_read_unsigned_bin(s, (unsigned char *)sig+i, i)) != CRYPT_OK)                       { goto error; }
+   }
+   else {
+      /* ASN.1 format */
    if ((err = der_decode_sequence_multi(sig, siglen,
                                   LTC_ASN1_INTEGER, 1UL, r,
                                   LTC_ASN1_INTEGER, 1UL, s,
-                                  LTC_ASN1_EOL, 0UL, NULL)) != CRYPT_OK) {
-      goto error;
+                                     LTC_ASN1_EOL, 0UL, NULL)) != CRYPT_OK)                             { goto error; }
    }
 
    /* get the order */
@@ -99,8 +84,24 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
       goto error;
    }
 
-   /* read hash */
-   if ((err = mp_read_unsigned_bin(e, (unsigned char *)hash, (int)hashlen)) != CRYPT_OK)                { goto error; }
+   /* read hash - truncate if needed */
+   pbits = mp_count_bits(p);
+   pbytes = (pbits+7) >> 3;
+   if (pbits > hashlen*8) {
+      if ((err = mp_read_unsigned_bin(e, (unsigned char *)hash, hashlen)) != CRYPT_OK)                  { goto error; }
+   }
+   else if (pbits % 8 == 0) {
+      if ((err = mp_read_unsigned_bin(e, (unsigned char *)hash, pbytes)) != CRYPT_OK)                   { goto error; }
+   }
+   else {
+      shift_right = 8 - pbits % 8;
+      for (i=0, ch=0; i<pbytes; i++) {
+        buf[i] = ch;
+        ch = (hash[i] << (8-shift_right));
+        buf[i] = buf[i] ^ (hash[i] >> shift_right);
+      }
+      if ((err = mp_read_unsigned_bin(e, (unsigned char *)buf, pbytes)) != CRYPT_OK)                    { goto error; }
+   }
 
    /*  w  = s^-1 mod n */
    if ((err = mp_invmod(s, p, w)) != CRYPT_OK)                                                          { goto error; }
@@ -158,8 +159,42 @@ error:
    return err;
 }
 
-#endif
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_verify_hash.c,v $ */
-/* $Revision: 1.12 $ */
-/* $Date: 2006/12/04 05:07:59 $ */
+/**
+   Verify an ECC signature
+   @param sig         The signature to verify
+   @param siglen      The length of the signature (octets)
+   @param hash        The hash (message digest) that was signed
+   @param hashlen     The length of the hash (octets)
+   @param stat        Result of signature, 1==valid, 0==invalid
+   @param key         The corresponding public ECC key
+   @return CRYPT_OK if successful (even if the signature is not valid)
+*/
+int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
+                    const unsigned char *hash, unsigned long hashlen,
+                    int *stat, ecc_key *key)
+{
+   return _ecc_verify_hash(sig, siglen, hash, hashlen, stat, key, 0);
+}
 
+/**
+   Verify an ECC signature in RFC7518 format
+   @param sig         The signature to verify
+   @param siglen      The length of the signature (octets)
+   @param hash        The hash (message digest) that was signed
+   @param hashlen     The length of the hash (octets)
+   @param stat        Result of signature, 1==valid, 0==invalid
+   @param key         The corresponding public ECC key
+   @return CRYPT_OK if successful (even if the signature is not valid)
+*/
+int ecc_verify_hash_rfc7518(const unsigned char *sig,  unsigned long siglen,
+                            const unsigned char *hash, unsigned long hashlen,
+                            int *stat, ecc_key *key)
+{
+   return _ecc_verify_hash(sig, siglen, hash, hashlen, stat, key, 1);
+}
+
+#endif
+
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

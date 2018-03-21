@@ -24,7 +24,7 @@
 
 #include "includes.h"
 
-#ifndef DISABLE_X11FWD
+#if DROPBEAR_X11FWD
 #include "x11fwd.h"
 #include "session.h"
 #include "ssh.h"
@@ -38,9 +38,9 @@
 #define X11BASEPORT 6000
 #define X11BINDBASE 6010
 
-static void x11accept(struct Listener* listener, int sock);
+static void x11accept(const struct Listener* listener, int sock);
 static int bindport(int fd);
-static int send_msg_channel_open_x11(int fd, struct sockaddr_in* addr);
+static int send_msg_channel_open_x11(int fd, const struct sockaddr_in* addr);
 
 /* Check untrusted xauth strings for metacharacters */
 /* Returns DROPBEAR_SUCCESS/DROPBEAR_FAILURE */
@@ -126,7 +126,7 @@ fail:
 
 /* accepts a new X11 socket */
 /* returns DROPBEAR_FAILURE or DROPBEAR_SUCCESS */
-static void x11accept(struct Listener* listener, int sock) {
+static void x11accept(const struct Listener* listener, int sock) {
 
 	int fd;
 	struct sockaddr_in addr;
@@ -154,7 +154,7 @@ static void x11accept(struct Listener* listener, int sock) {
 
 /* This is called after switching to the user, and sets up the xauth
  * and environment variables.  */
-void x11setauth(struct ChanSess *chansess) {
+void x11setauth(const struct ChanSess *chansess) {
 
 	char display[20]; /* space for "localhost:12345.123" */
 	FILE * authprog = NULL;
@@ -220,7 +220,7 @@ static const struct ChanType chan_x11 = {
 };
 
 
-static int send_msg_channel_open_x11(int fd, struct sockaddr_in* addr) {
+static int send_msg_channel_open_x11(int fd, const struct sockaddr_in* addr) {
 
 	char* ipstring = NULL;
 

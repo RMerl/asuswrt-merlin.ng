@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -15,7 +13,7 @@
  *  PKCS #1 v1.5 Padding (Andreas Lange)
  */
 
-#ifdef PKCS_1
+#ifdef LTC_PKCS_1
 
 /*! \brief PKCS #1 v1.5 encode.
  *
@@ -30,13 +28,13 @@
  *
  *  \return CRYPT_OK if successful
  */
-int pkcs_1_v1_5_encode(const unsigned char *msg, 
+int pkcs_1_v1_5_encode(const unsigned char *msg,
                              unsigned long  msglen,
                                        int  block_type,
                              unsigned long  modulus_bitlen,
-                                prng_state *prng, 
+                                prng_state *prng,
                                        int  prng_idx,
-                             unsigned char *out, 
+                             unsigned char *out,
                              unsigned long *outlen)
 {
   unsigned long modulus_len, ps_len, i;
@@ -104,8 +102,8 @@ bail:
   return result;
 } /* pkcs_1_v1_5_encode */
 
-#endif /* #ifdef PKCS_1 */
+#endif /* #ifdef LTC_PKCS_1 */
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/pkcs1/pkcs_1_v1_5_encode.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2006/11/01 09:12:06 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

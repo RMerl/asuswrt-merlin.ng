@@ -29,9 +29,9 @@
 #include "ssh.h"
 #include "runopts.h"
 
-#ifdef ENABLE_CLI_PASSWORD_AUTH
+#if DROPBEAR_CLI_PASSWORD_AUTH
 
-#ifdef ENABLE_CLI_ASKPASS_HELPER
+#if DROPBEAR_CLI_ASKPASS_HELPER
 /* Returns 1 if we want to use the askpass program, 0 otherwise */
 static int want_askpass()
 {
@@ -113,7 +113,7 @@ static char *gui_getpass(const char *prompt) {
 	TRACE(("leave gui_getpass"))
 	return(buf);
 }
-#endif /* ENABLE_CLI_ASKPASS_HELPER */
+#endif /* DROPBEAR_CLI_ASKPASS_HELPER */
 
 void cli_auth_password() {
 
@@ -125,7 +125,7 @@ void cli_auth_password() {
 
 	snprintf(prompt, sizeof(prompt), "%s@%s's password: ", 
 				cli_opts.username, cli_opts.remotehost);
-#ifdef ENABLE_CLI_ASKPASS_HELPER
+#if DROPBEAR_CLI_ASKPASS_HELPER
 	if (want_askpass())
 	{
 		password = gui_getpass(prompt);
@@ -158,4 +158,4 @@ void cli_auth_password() {
 
 	TRACE(("leave cli_auth_password"))
 }
-#endif	/* ENABLE_CLI_PASSWORD_AUTH */
+#endif	/* DROPBEAR_CLI_PASSWORD_AUTH */

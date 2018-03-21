@@ -9,19 +9,112 @@ AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR(buffer.c)
 
-OLDCFLAGS=$CFLAGS
 # Checks for programs.
 AC_PROG_CC
-AC_PROG_MAKE_SET
 
 if test -z "$LD" ; then
 	LD=$CC
 fi
 AC_SUBST(LD)	
 
+AC_DEFUN(DB_TRYADDCFLAGS, 
+[{
+		OLDFLAGS="$CFLAGS"
+		TESTFLAGS="$1"
+		CFLAGS="$CFLAGS $TESTFLAGS"
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], 
+			[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+			[AC_MSG_NOTICE([Not setting $TESTFLAGS]); CFLAGS="$OLDFLAGS" ]
+			)
+}])
+
+# set compile flags prior to other tests
 if test -z "$OLDCFLAGS" && test "$GCC" = "yes"; then
 	AC_MSG_NOTICE(No \$CFLAGS set... using "-Os -W -Wall" for GCC)
-	CFLAGS="-Os -W -Wall -Wno-pointer-sign"
+	CFLAGS="-Os -W -Wall"
+fi
+
+AC_MSG_NOTICE([Checking if compiler '$CC' supports -Wno-pointer-sign])
+DB_TRYADDCFLAGS([-Wno-pointer-sign])
+
+AC_MSG_NOTICE([Checking if compiler '$CC' supports -fno-strict-overflow])
+DB_TRYADDCFLAGS([-fno-strict-overflow])
+
+STATIC=0
+AC_ARG_ENABLE(static,
+	[  --enable-static         Build static binaries],
+	[
+		if test "x$enableval" = "xyes"; then
+			STATIC=1
+			AC_MSG_NOTICE(Static Build)
+		fi
+	], [])
+AC_SUBST(STATIC)
+
+hardenbuild=1
+AC_ARG_ENABLE(harden,
+	[  --disable-harden        Don't set hardened build flags],
+	[
+		if test "x$enableval" = "xno"; then
+			hardenbuild=0
+			AC_MSG_NOTICE(Disabling hardened build flags)
+		fi
+	], [])
+
+if test "$hardenbuild" -eq 1; then
+	AC_MSG_NOTICE(Checking for available hardened build flags:)
+	# relocation flags don't make sense for static builds
+	if test "$STATIC" -ne 1; then
+		# pie
+		DB_TRYADDCFLAGS([-fPIE])
+
+		OLDLDFLAGS="$LDFLAGS"
+		TESTFLAGS="-Wl,-pie"
+		LDFLAGS="$LDFLAGS $TESTFLAGS"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([])], 
+			[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+			[
+				LDFLAGS="$OLDLDFLAGS"
+				TESTFLAGS="-pie"
+				LDFLAGS="$LDFLAGS $TESTFLAGS"
+				AC_LINK_IFELSE([AC_LANG_PROGRAM([])], 
+					[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+					[AC_MSG_NOTICE([Not setting $TESTFLAGS]); LDFLAGS="$OLDLDFLAGS" ]
+					)
+			]
+			)
+		# readonly elf relocation sections (relro)
+		OLDLDFLAGS="$LDFLAGS"
+		TESTFLAGS="-Wl,-z,now -Wl,-z,relro"
+		LDFLAGS="$LDFLAGS $TESTFLAGS"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([])], 
+			[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+			[AC_MSG_NOTICE([Not setting $TESTFLAGS]); LDFLAGS="$OLDLDFLAGS" ]
+			)
+	fi # non-static
+	# stack protector. -strong is good but only in gcc 4.9 or later
+	OLDCFLAGS="$CFLAGS"
+	TESTFLAGS="-fstack-protector-strong"
+	CFLAGS="$CFLAGS $TESTFLAGS"
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], 
+	    [AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+	    [
+			CFLAGS="$OLDCFLAGS"
+			TESTFLAGS="-fstack-protector --param=ssp-buffer-size=4"
+			CFLAGS="$CFLAGS $TESTFLAGS"
+			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], 
+			    [AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+			    [AC_MSG_NOTICE([Not setting $TESTFLAGS]); CFLAGS="$OLDCFLAGS" ]
+			    )
+	    ]
+	    )
+	# FORTIFY_SOURCE
+	DB_TRYADDCFLAGS([-D_FORTIFY_SOURCE=2])
+
+	# Spectre v2 mitigations
+	DB_TRYADDCFLAGS([-mfunction-return=thunk])
+	DB_TRYADDCFLAGS([-mindirect-branch=thunk])
+
 fi
 
 # large file support is useful for scp
@@ -45,8 +138,8 @@ case "$host" in
 	sol2ver=`echo "$host"| sed -e 's/.*[[0-9]]\.//'`
 	if test "$sol2ver" -ge 8; then
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(DISABLE_UTMP,,Disable utmp)
-		AC_DEFINE(DISABLE_WTMP,,Disable wtmp)
+		AC_DEFINE(DISABLE_UTMP,1,Disable utmp)
+		AC_DEFINE(DISABLE_WTMP,1,Disable wtmp)
 	else
 		AC_MSG_RESULT(no)
 	fi
@@ -55,18 +148,18 @@ case "$host" in
 	;;
 
 *-*-aix*)
-	AC_DEFINE(AIX,,Using AIX)
+	AC_DEFINE(AIX,1,Using AIX)
 	# OpenSSH thinks it's broken. If it isn't, let me know.
-	AC_DEFINE(BROKEN_GETADDRINFO,,Broken getaddrinfo)
+	AC_DEFINE(BROKEN_GETADDRINFO,1,Broken getaddrinfo)
 	;;
 	
 *-*-hpux*)
 	LIBS="$LIBS -lsec"
 	# It's probably broken.
-	AC_DEFINE(BROKEN_GETADDRINFO,,Broken getaddrinfo)
+	AC_DEFINE(BROKEN_GETADDRINFO,1,Broken getaddrinfo)
 	;;
 *-dec-osf*)
-	AC_DEFINE(BROKEN_GETADDRINFO,,Broken getaddrinfo)
+	AC_DEFINE(BROKEN_GETADDRINFO,1,Broken getaddrinfo)
 	;;
 esac
 
@@ -80,7 +173,7 @@ AC_CHECK_DECL(__UCLIBC__,
 	[
 	no_loginfunc_check=1
 	AC_MSG_NOTICE([Using uClibc - login() and logout() probably don't work, so we won't use them.])
-	],,,)
+	],,)
 
 dnl We test for crypt() specially. On Linux (and others?) it resides in libcrypt
 dnl but we don't want link all binaries to -lcrypt, just dropbear server.
@@ -118,7 +211,7 @@ AC_ARG_ENABLE(zlib,
 	[  --disable-zlib          Don't include zlib support],
 	[
 		if test "x$enableval" = "xno"; then
-			AC_DEFINE(DISABLE_ZLIB,, Use zlib)
+			AC_DEFINE(DISABLE_ZLIB,1,Use zlib)
 			AC_MSG_NOTICE(Disabling zlib)
 		else
 			AC_CHECK_LIB(z, deflate, , AC_MSG_ERROR([*** zlib missing - install first or check config.log ***]))
@@ -152,20 +245,20 @@ AC_ARG_WITH(pam,
 
 
 AC_ARG_ENABLE(pam,
-	[  --enable-pam          Try to include PAM support],
+	[  --enable-pam            Try to include PAM support],
 	[
 		if test "x$enableval" = "xyes"; then
 			AC_CHECK_LIB(pam, pam_authenticate, , AC_MSG_ERROR([*** PAM missing - install first or check config.log ***]))
 			AC_MSG_NOTICE(Enabling PAM)
 			AC_CHECK_FUNCS(pam_fail_delay)
 		else
-			AC_DEFINE(DISABLE_PAM,, Use PAM)
+			AC_DEFINE(DISABLE_PAM,1,Use PAM)
 			AC_MSG_NOTICE(Disabling PAM)
 		fi
 	],
 	[
 		# disable it by default
-		AC_DEFINE(DISABLE_PAM,, Use PAM)
+		AC_DEFINE(DISABLE_PAM,1,Use PAM)
 		AC_MSG_NOTICE(Disabling PAM)
 	]
 )
@@ -177,21 +270,26 @@ AC_ARG_ENABLE(openpty,
 			AC_MSG_NOTICE(Not using openpty)
 		else
 			AC_MSG_NOTICE(Using openpty if available)
-			AC_SEARCH_LIBS(openpty, util, [AC_DEFINE(HAVE_OPENPTY,,Have openpty() function)])
+			AC_SEARCH_LIBS(openpty, util, [dropbear_cv_func_have_openpty=yes])
 		fi
 	],
 	[
 		AC_MSG_NOTICE(Using openpty if available)
-		AC_SEARCH_LIBS(openpty, util, [AC_DEFINE(HAVE_OPENPTY)])
+		AC_SEARCH_LIBS(openpty, util, [dropbear_cv_func_have_openpty=yes])
 	]
 )
-		
+
+if test "x$dropbear_cv_func_have_openpty" = "xyes"; then
+	AC_DEFINE(HAVE_OPENPTY,,Have openpty() function)
+	no_ptc_check=yes
+	no_ptmx_check=yes
+fi
 
 AC_ARG_ENABLE(syslog,
 	[  --disable-syslog        Don't include syslog support],
 	[
 		if test "x$enableval" = "xno"; then
-			AC_DEFINE(DISABLE_SYSLOG,, Using syslog)
+			AC_DEFINE(DISABLE_SYSLOG,1,Using syslog)
 			AC_MSG_NOTICE(Disabling syslog)
 		else
 			AC_MSG_NOTICE(Enabling syslog)
@@ -222,7 +320,11 @@ AC_ARG_ENABLE(shadow,
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([fcntl.h limits.h netinet/in.h netinet/tcp.h stdlib.h string.h sys/socket.h sys/time.h termios.h unistd.h crypt.h pty.h ioctl.h libutil.h libgen.h inttypes.h stropts.h utmp.h utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h pam/pam_appl.h netinet/in_systm.h sys/uio.h])
+AC_CHECK_HEADERS([netinet/in.h netinet/tcp.h \
+	crypt.h \
+	pty.h libutil.h libgen.h inttypes.h stropts.h utmp.h \
+	utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h \
+	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -295,7 +397,7 @@ AC_CACHE_CHECK([for struct sockaddr_in6], ac_cv_have_struct_sockaddr_in6, [
 	)
 ])
 if test "x$ac_cv_have_struct_sockaddr_in6" = "xyes" ; then
-	AC_DEFINE(HAVE_STRUCT_SOCKADDR_IN6,,Have struct sockaddr_in6)
+	AC_DEFINE(HAVE_STRUCT_SOCKADDR_IN6,1,Have struct sockaddr_in6)
 fi
 
 AC_CACHE_CHECK([for struct in6_addr], ac_cv_have_struct_in6_addr, [
@@ -309,7 +411,7 @@ AC_CACHE_CHECK([for struct in6_addr], ac_cv_have_struct_in6_addr, [
 	)
 ])
 if test "x$ac_cv_have_struct_in6_addr" = "xyes" ; then
-	AC_DEFINE(HAVE_STRUCT_IN6_ADDR,,Have struct in6_addr)
+	AC_DEFINE(HAVE_STRUCT_IN6_ADDR,1,Have struct in6_addr)
 fi
 
 AC_CACHE_CHECK([for struct addrinfo], ac_cv_have_struct_addrinfo, [
@@ -324,7 +426,7 @@ AC_CACHE_CHECK([for struct addrinfo], ac_cv_have_struct_addrinfo, [
 	)
 ])
 if test "x$ac_cv_have_struct_addrinfo" = "xyes" ; then
-	AC_DEFINE(HAVE_STRUCT_ADDRINFO,,Have struct addrinfo)
+	AC_DEFINE(HAVE_STRUCT_ADDRINFO,1,Have struct addrinfo)
 fi
 
 
@@ -377,7 +479,6 @@ AC_CHECK_FUNCS(mach_absolute_time)
 
 AC_CHECK_FUNCS(explicit_bzero memset_s)
 
-
 AC_ARG_ENABLE(bundled-libtom,
 [  --enable-bundled-libtom       Force using bundled libtomcrypt/libtommath even if a system version exists.
   --disable-bundled-libtom      Force using system libtomcrypt/libtommath, fail if it does not exist.
@@ -388,21 +489,21 @@ AC_ARG_ENABLE(bundled-libtom,
 			AC_MSG_NOTICE(Forcing bundled libtom*)
 		else
 			BUNDLED_LIBTOM=0
-			AC_CHECK_LIB(tommath, mp_exptmod, LIBTOM_LIBS="$LIBTOM_LIBS -ltommath", 
+			AC_CHECK_LIB(tommath, mp_exptmod, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS",
 				[AC_MSG_ERROR([Missing system libtommath and --disable-bundled-libtom was specified])] )
-			AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="$LIBTOM_LIBS -ltomcrypt", 
+			AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS",
 				[AC_MSG_ERROR([Missing system libtomcrypt and --disable-bundled-libtom was specified])] )
 		fi
 	],
 	[
 		BUNDLED_LIBTOM=0
-		AC_CHECK_LIB(tommath, mp_exptmod, LIBTOM_LIBS="$LIBTOM_LIBS -ltommath", BUNDLED_LIBTOM=1)
-		AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="$LIBTOM_LIBS -ltomcrypt", BUNDLED_LIBTOM=1)
+		AC_CHECK_LIB(tommath, mp_exptmod, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
+		AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
 	]
 )
 
 if test $BUNDLED_LIBTOM = 1 ; then
-	AC_DEFINE(BUNDLED_LIBTOM,,Use bundled libtom) 
+	AC_DEFINE(BUNDLED_LIBTOM,1,Use bundled libtom) 
 fi
 
 AC_SUBST(LIBTOM_LIBS)
@@ -413,36 +514,64 @@ dnl Added from OpenSSH 3.6.1p2's configure.ac
 dnl allow user to disable some login recording features
 AC_ARG_ENABLE(lastlog,
 	[  --disable-lastlog       Disable use of lastlog even if detected [no]],
-	[ AC_DEFINE(DISABLE_LASTLOG,,Disable use of lastlog()) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_LASTLOG,1,Disable use of lastlog())
+		fi
+	]
 )
 AC_ARG_ENABLE(utmp,
 	[  --disable-utmp          Disable use of utmp even if detected [no]],
-	[ AC_DEFINE(DISABLE_UTMP,,Disable use of utmp) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_UTMP,1,Disable use of utmp)
+		fi
+	]
 )
 AC_ARG_ENABLE(utmpx,
 	[  --disable-utmpx         Disable use of utmpx even if detected [no]],
-	[ AC_DEFINE(DISABLE_UTMPX,,Disable use of utmpx) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_UTMPX,1,Disable use of utmpx)
+		fi
+	]
 )
 AC_ARG_ENABLE(wtmp,
 	[  --disable-wtmp          Disable use of wtmp even if detected [no]],
-	[ AC_DEFINE(DISABLE_WTMP,,Disable use of wtmp) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_WTMP,1,Disable use of wtmp)
+		fi
+	]
 )
 AC_ARG_ENABLE(wtmpx,
 	[  --disable-wtmpx         Disable use of wtmpx even if detected [no]],
-	[ AC_DEFINE(DISABLE_WTMPX,,Disable use of wtmpx) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_WTMPX,1,Disable use of wtmpx)
+		fi
+	]
 )
 AC_ARG_ENABLE(loginfunc,
 	[  --disable-loginfunc     Disable use of login() etc. [no]],
 	[ no_loginfunc_check=1
-	AC_MSG_NOTICE(Not using login() etc) ]
+	AC_MSG_NOTICE([Not using login() etc]) ]
 )
 AC_ARG_ENABLE(pututline,
 	[  --disable-pututline     Disable use of pututline() etc. ([uw]tmp) [no]],
-	[ AC_DEFINE(DISABLE_PUTUTLINE,,Disable use of pututline()) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_PUTUTLINE,1,Disable use of pututline())
+		fi
+	]
 )
 AC_ARG_ENABLE(pututxline,
 	[  --disable-pututxline    Disable use of pututxline() etc. ([uw]tmpx) [no]],
-	[ AC_DEFINE(DISABLE_PUTUTXLINE,,Disable use of pututxline()) ]
+	[
+		if test "x$enableval" = "xno" ; then
+			AC_DEFINE(DISABLE_PUTUTXLINE,1,Disable use of pututxline())
+		fi
+	]
 )
 AC_ARG_WITH(lastlog,
   [  --with-lastlog=FILE|DIR specify lastlog location [common locations]],
@@ -457,7 +586,7 @@ AC_ARG_WITH(lastlog,
 
 if test -z "$no_loginfunc_check"; then
 	dnl    Checks for libutil functions (login(), logout() etc, not openpty() )
-	AC_SEARCH_LIBS(login, util bsd, [AC_DEFINE(HAVE_LOGIN,,Have login() function)])
+	AC_SEARCH_LIBS(login, util bsd, [AC_DEFINE(HAVE_LOGIN,1,[Have login() function])])
 	AC_CHECK_FUNCS(logout updwtmp logwtmp)
 fi
 
@@ -645,7 +774,9 @@ fi
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
-AC_CHECK_FUNCS([dup2 getpass getspnam getusershell memset putenv select socket strdup clearenv strlcpy strlcat daemon basename _getpty getaddrinfo freeaddrinfo getnameinfo fork writev])
+AC_CHECK_FUNCS([getpass getspnam getusershell putenv])
+AC_CHECK_FUNCS([clearenv strlcpy strlcat daemon basename _getpty getaddrinfo ])
+AC_CHECK_FUNCS([freeaddrinfo getnameinfo fork writev getgrouplist])
 
 AC_SEARCH_LIBS(basename, gen, AC_DEFINE(HAVE_BASENAME))
 
@@ -653,7 +784,7 @@ AC_SEARCH_LIBS(basename, gen, AC_DEFINE(HAVE_BASENAME))
 if test -z "$no_ptmx_check" ; then
 	if test x"$cross_compiling" = x"no" ; then
 		if test -e /dev/ptmx ; then
-			AC_DEFINE(USE_DEV_PTMX,,Use /dev/ptmx)
+			AC_DEFINE(USE_DEV_PTMX,1,Use /dev/ptmx)
 		fi
 	else
 		AC_MSG_NOTICE([Not checking for /dev/ptmx, we're cross-compiling])
@@ -663,7 +794,7 @@ fi
 if test -z "$no_ptc_check" ; then
 	if test x"$cross_compiling" = x"no" ; then
 		if test -e /dev/ptc ; then
-			AC_DEFINE(HAVE_DEV_PTS_AND_PTC,,Use /dev/ptc & /dev/pts)
+			AC_DEFINE(HAVE_DEV_PTS_AND_PTC,1,Use /dev/ptc & /dev/pts)
 		fi
 	else
 		AC_MSG_NOTICE([Not checking for /dev/ptc & /dev/pts since we're cross-compiling])
@@ -672,60 +803,11 @@ fi
 
 AC_EXEEXT
 
-# XXX there must be a nicer way to do this
 if test $BUNDLED_LIBTOM = 1 ; then
-AS_MKDIR_P(libtomcrypt/src/ciphers/aes)
-AS_MKDIR_P(libtomcrypt/src/ciphers/safer)
-AS_MKDIR_P(libtomcrypt/src/ciphers/twofish)
-AS_MKDIR_P(libtomcrypt/src/encauth/ccm)
-AS_MKDIR_P(libtomcrypt/src/encauth/eax)
-AS_MKDIR_P(libtomcrypt/src/encauth/gcm)
-AS_MKDIR_P(libtomcrypt/src/encauth/ocb)
-AS_MKDIR_P(libtomcrypt/src/hashes)
-AS_MKDIR_P(libtomcrypt/src/hashes/chc)
-AS_MKDIR_P(libtomcrypt/src/hashes/helper)
-AS_MKDIR_P(libtomcrypt/src/hashes/sha2)
-AS_MKDIR_P(libtomcrypt/src/hashes/whirl)
-AS_MKDIR_P(libtomcrypt/src/mac/hmac)
-AS_MKDIR_P(libtomcrypt/src/mac/omac)
-AS_MKDIR_P(libtomcrypt/src/mac/pelican)
-AS_MKDIR_P(libtomcrypt/src/mac/pmac)
-AS_MKDIR_P(libtomcrypt/src/mac/f9)
-AS_MKDIR_P(libtomcrypt/src/mac/xcbc)
-AS_MKDIR_P(libtomcrypt/src/math/fp)
-AS_MKDIR_P(libtomcrypt/src/misc/base64)
-AS_MKDIR_P(libtomcrypt/src/misc/crypt)
-AS_MKDIR_P(libtomcrypt/src/misc/mpi)
-AS_MKDIR_P(libtomcrypt/src/misc/pkcs5)
-AS_MKDIR_P(libtomcrypt/src/modes/cbc)
-AS_MKDIR_P(libtomcrypt/src/modes/cfb)
-AS_MKDIR_P(libtomcrypt/src/modes/ctr)
-AS_MKDIR_P(libtomcrypt/src/modes/ecb)
-AS_MKDIR_P(libtomcrypt/src/modes/ofb)
-AS_MKDIR_P(libtomcrypt/src/modes/f8)
-AS_MKDIR_P(libtomcrypt/src/modes/lrw)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/bit)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/boolean)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/choice)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/ia5)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/integer)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/object_identifier)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/octet)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/printable_string)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/sequence)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/set)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/short_integer)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/utctime)
-AS_MKDIR_P(libtomcrypt/src/pk/asn1/der/utf8)
-AS_MKDIR_P(libtomcrypt/src/pk/dh)
-AS_MKDIR_P(libtomcrypt/src/pk/dsa)
-AS_MKDIR_P(libtomcrypt/src/pk/ecc)
-AS_MKDIR_P(libtomcrypt/src/pk/katja)
-AS_MKDIR_P(libtomcrypt/src/pk/pkcs1)
-AS_MKDIR_P(libtomcrypt/src/pk/rsa)
-AS_MKDIR_P(libtomcrypt/src/prngs)
+(cd $srcdir; find libtomcrypt -type d) | xargs mkdir -pv 
 LIBTOM_FILES="libtomcrypt/Makefile libtommath/Makefile"
 fi
+
 AC_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES(Makefile $LIBTOM_FILES)
 AC_OUTPUT

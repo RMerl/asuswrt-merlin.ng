@@ -133,7 +133,7 @@ do_local_cmd(arglist *a)
 			fprintf(stderr, " %s", a->list[i]);
 		fprintf(stderr, "\n");
 	}
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 	pid = vfork();
 #else
 	pid = fork();
@@ -144,7 +144,7 @@ do_local_cmd(arglist *a)
 	if (pid == 0) {
 		execvp(a->list[0], a->list);
 		perror(a->list[0]);
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 		_exit(1);
 #else
 		exit(1);
@@ -213,12 +213,12 @@ do_cmd(char *host, char *remuser, char *cmd, int *fdin, int *fdout, int argc)
 
 	/* uClinux needs to build the args here before vforking,
 	   otherwise we do it later on. */
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 	arg_setup(host, remuser, cmd);
 #endif
 
 	/* Fork a child to execute the command on the remote host using ssh. */
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 	do_cmd_pid = vfork();
 #else
 	do_cmd_pid = fork();
@@ -233,13 +233,13 @@ do_cmd(char *host, char *remuser, char *cmd, int *fdin, int *fdout, int argc)
 		close(pin[0]);
 		close(pout[1]);
 
-#ifndef USE_VFORK
+#if !DROPBEAR_VFORK
 		arg_setup(host, remuser, cmd);
 #endif
 
 		execvp(ssh_program, args.list);
 		perror(ssh_program);
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 		_exit(1);
 #else
 		exit(1);
@@ -248,7 +248,7 @@ do_cmd(char *host, char *remuser, char *cmd, int *fdin, int *fdout, int argc)
 		fatal("fork: %s", strerror(errno));
 	}
 
-#ifdef USE_VFORK
+#if DROPBEAR_VFORK
 	/* clean up command */
 	/* pop cmd */
 	xfree(args.list[args.num-1]);
@@ -304,8 +304,8 @@ void tolocal(int, char *[]);
 void toremote(char *, int, char *[]);
 void usage(void);
 
-#if defined(DBMULTI_scp) || !defined(DROPBEAR_MULTI)
-#if defined(DBMULTI_scp) && defined(DROPBEAR_MULTI)
+#if defined(DBMULTI_scp) || !DROPBEAR_MULTI
+#if defined(DBMULTI_scp) && DROPBEAR_MULTI
 int scp_main(int argc, char **argv)
 #else
 int

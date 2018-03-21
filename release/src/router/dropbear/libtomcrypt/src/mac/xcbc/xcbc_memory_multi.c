@@ -5,13 +5,11 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 #include <stdarg.h>
 
-/** 
+/**
   @file xcbc_memory_multi.c
   XCBC support, process multiple blocks of memory, Tom St Denis
 */
@@ -19,7 +17,7 @@
 #ifdef LTC_XCBC
 
 /**
-   XCBC multiple blocks of memory 
+   XCBC multiple blocks of memory
    @param cipher    The index of the desired cipher
    @param key       The secret key
    @param keylen    The length of the secret key (octets)
@@ -30,7 +28,7 @@
    @param ...       tuples of (data,len) pairs to XCBC, terminated with a (NULL,x) (x=don't care)
    @return CRYPT_OK if successful
 */
-int xcbc_memory_multi(int cipher, 
+int xcbc_memory_multi(int cipher,
                 const unsigned char *key, unsigned long keylen,
                       unsigned char *out, unsigned long *outlen,
                 const unsigned char *in,  unsigned long inlen, ...)
@@ -57,7 +55,7 @@ int xcbc_memory_multi(int cipher,
       goto LBL_ERR;
    }
    va_start(args, inlen);
-   curptr = in; 
+   curptr = in;
    curlen = inlen;
    for (;;) {
       /* process buf */
@@ -80,11 +78,11 @@ LBL_ERR:
 #endif
    XFREE(xcbc);
    va_end(args);
-   return err;   
+   return err;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/mac/xcbc/xcbc_memory_multi.c,v $ */
-/* $Revision: 1.1 $ */
-/* $Date: 2006/11/03 01:53:25 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

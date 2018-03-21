@@ -34,9 +34,9 @@ enum {
 	KEYFILE_SSHCOM
 };
 
-int import_write(const char *filename, sign_key *key, char *passphrase,
+int import_write(const char *filename, sign_key *key, const char *passphrase,
 		int filetype);
-sign_key *import_read(const char *filename, char *passphrase, int filetype);
+sign_key *import_read(const char *filename, const char *passphrase, int filetype);
 int import_encrypted(const char* filename, int filetype);
 
 #endif /* DROPBEAR_KEYIMPORT_H_ */

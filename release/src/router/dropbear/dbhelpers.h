@@ -3,7 +3,7 @@
 
 /* This header defines some things that are also used by libtomcrypt/math. 
    We avoid including normal include.h since that can result in conflicting 
-   definitinos - only include config.h */
+   definitions - only include config.h */
 #include "config.h"
 
 #ifdef __GNUC__

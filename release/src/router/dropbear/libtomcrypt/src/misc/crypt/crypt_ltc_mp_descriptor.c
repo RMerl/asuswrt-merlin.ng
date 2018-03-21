@@ -5,9 +5,12 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
-ltc_math_descriptor ltc_mp = {0};
+/* Initialize ltc_mp to nulls, to force allocation on all platforms, including macOS. */
+ltc_math_descriptor ltc_mp = { 0 };
+
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

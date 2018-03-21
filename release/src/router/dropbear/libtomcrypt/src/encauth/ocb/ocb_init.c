@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 
 /**
@@ -15,11 +13,11 @@
 */
 #include "tomcrypt.h"
 
-#ifdef OCB_MODE
+#ifdef LTC_OCB_MODE
 
 static const struct {
     int           len;
-    unsigned char poly_div[MAXBLOCKSIZE], 
+    unsigned char poly_div[MAXBLOCKSIZE],
                   poly_mul[MAXBLOCKSIZE];
 } polys[] = {
 {
@@ -27,7 +25,7 @@ static const struct {
     { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D },
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1B }
 }, {
-    16, 
+    16,
     { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x43 },
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -44,7 +42,7 @@ static const struct {
   @param nonce   The session nonce (length of the block size of the cipher)
   @return CRYPT_OK if successful
 */
-int ocb_init(ocb_state *ocb, int cipher, 
+int ocb_init(ocb_state *ocb, int cipher,
              const unsigned char *key, unsigned long keylen, const unsigned char *nonce)
 {
    int poly, x, y, m, err;
@@ -60,20 +58,24 @@ int ocb_init(ocb_state *ocb, int cipher,
 
    /* determine which polys to use */
    ocb->block_len = cipher_descriptor[cipher].block_length;
-   for (poly = 0; poly < (int)(sizeof(polys)/sizeof(polys[0])); poly++) {
-       if (polys[poly].len == ocb->block_len) { 
+   x = (int)(sizeof(polys)/sizeof(polys[0]));
+   for (poly = 0; poly < x; poly++) {
+       if (polys[poly].len == ocb->block_len) {
           break;
        }
    }
+   if (poly == x) {
+      return CRYPT_INVALID_ARG; /* block_len not found in polys */
+   }
    if (polys[poly].len != ocb->block_len) {
       return CRYPT_INVALID_ARG;
-   }   
+   }
 
    /* schedule the key */
    if ((err = cipher_descriptor[cipher].setup(key, keylen, 0, &ocb->key)) != CRYPT_OK) {
       return err;
    }
- 
+
    /* find L = E[0] */
    zeromem(ocb->L, ocb->block_len);
    if ((err = cipher_descriptor[cipher].ecb_encrypt(ocb->L, ocb->L, &ocb->key)) != CRYPT_OK) {
@@ -102,36 +104,36 @@ int ocb_init(ocb_state *ocb, int cipher,
               ocb->Ls[x][y] ^= polys[poly].poly_mul[y];
           }
        }
-    }
+   }
 
-    /* find Lr = L / x */
-    m = ocb->L[ocb->block_len-1] & 1;
+   /* find Lr = L / x */
+   m = ocb->L[ocb->block_len-1] & 1;
 
-    /* shift right */
-    for (x = ocb->block_len - 1; x > 0; x--) {
-        ocb->Lr[x] = ((ocb->L[x] >> 1) | (ocb->L[x-1] << 7)) & 255;
-    }
-    ocb->Lr[0] = ocb->L[0] >> 1;
+   /* shift right */
+   for (x = ocb->block_len - 1; x > 0; x--) {
+      ocb->Lr[x] = ((ocb->L[x] >> 1) | (ocb->L[x-1] << 7)) & 255;
+   }
+   ocb->Lr[0] = ocb->L[0] >> 1;
 
-    if (m == 1) {
-       for (x = 0; x < ocb->block_len; x++) {
-           ocb->Lr[x] ^= polys[poly].poly_div[x];
-       }
-    }
+   if (m == 1) {
+      for (x = 0; x < ocb->block_len; x++) {
+         ocb->Lr[x] ^= polys[poly].poly_div[x];
+      }
+   }
 
-    /* set Li, checksum */
-    zeromem(ocb->Li,       ocb->block_len);
-    zeromem(ocb->checksum, ocb->block_len);
+   /* set Li, checksum */
+   zeromem(ocb->Li,       ocb->block_len);
+   zeromem(ocb->checksum, ocb->block_len);
 
-    /* set other params */
-    ocb->block_index = 1;
-    ocb->cipher      = cipher;
+   /* set other params */
+   ocb->block_index = 1;
+   ocb->cipher      = cipher;
 
-    return CRYPT_OK;
+   return CRYPT_OK;
 }
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/encauth/ocb/ocb_init.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

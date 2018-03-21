@@ -32,7 +32,7 @@
 #include "auth.h"
 #include "agentfwd.h"
 
-#ifdef ENABLE_CLI_PUBKEY_AUTH
+#if DROPBEAR_CLI_PUBKEY_AUTH
 static void send_msg_userauth_pubkey(sign_key *key, int type, int realsign);
 
 /* Called when we receive a SSH_MSG_USERAUTH_FAILURE for a pubkey request.
@@ -121,8 +121,8 @@ void recv_msg_userauth_pk_ok() {
 }
 
 void cli_buf_put_sign(buffer* buf, sign_key *key, int type, 
-			buffer *data_buf) {
-#ifdef ENABLE_CLI_AGENTFWD
+			const buffer *data_buf) {
+#if DROPBEAR_CLI_AGENTFWD
 	if (key->source == SIGNKEY_SOURCE_AGENT) {
 		/* Format the agent signature ourselves, as buf_put_sign would. */
 		buffer *sigblob;
@@ -131,7 +131,7 @@ void cli_buf_put_sign(buffer* buf, sign_key *key, int type,
 		buf_putbufstring(buf, sigblob);
 		buf_free(sigblob);
 	} else 
-#endif /* ENABLE_CLI_AGENTFWD */
+#endif /* DROPBEAR_CLI_AGENTFWD */
 	{
 		buf_put_sign(buf, key, type, data_buf);
 	}
@@ -185,7 +185,7 @@ int cli_auth_pubkey() {
 
 	TRACE(("enter cli_auth_pubkey"))
 
-#ifdef ENABLE_CLI_AGENTFWD
+#if DROPBEAR_CLI_AGENTFWD
 	if (!cli_opts.agent_keys_loaded) {
 		/* get the list of available keys from the agent */
 		cli_load_agent_keys(cli_opts.privkeys);
@@ -209,7 +209,7 @@ int cli_auth_pubkey() {
 
 void cli_auth_pubkey_cleanup() {
 
-#ifdef ENABLE_CLI_AGENTFWD
+#if DROPBEAR_CLI_AGENTFWD
 	m_close(cli_opts.agent_fd);
 	cli_opts.agent_fd = -1;
 #endif

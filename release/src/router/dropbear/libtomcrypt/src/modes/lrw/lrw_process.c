@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -30,7 +28,7 @@ int lrw_process(const unsigned char *pt, unsigned char *ct, unsigned long len, i
 {
    unsigned char prod[16];
    int           x, err;
-#ifdef LRW_TABLES
+#ifdef LTC_LRW_TABLES
    int           y;
 #endif
 
@@ -49,18 +47,18 @@ int lrw_process(const unsigned char *pt, unsigned char *ct, unsigned long len, i
       /* increment IV */
       for (x = 15; x >= 0; x--) {
           lrw->IV[x] = (lrw->IV[x] + 1) & 255;
-          if (lrw->IV[x]) { 
+          if (lrw->IV[x]) {
               break;
           }
       }
 
       /* update pad */
-#ifdef LRW_TABLES
+#ifdef LTC_LRW_TABLES
       /* for each byte changed we undo it's affect on the pad then add the new product */
       for (; x < 16; x++) {
 #ifdef LTC_FAST
           for (y = 0; y < 16; y += sizeof(LTC_FAST_TYPE)) {
-              *((LTC_FAST_TYPE *)(lrw->pad + y)) ^= *((LTC_FAST_TYPE *)(&lrw->PC[x][lrw->IV[x]][y])) ^ *((LTC_FAST_TYPE *)(&lrw->PC[x][(lrw->IV[x]-1)&255][y]));
+              *(LTC_FAST_TYPE_PTR_CAST(lrw->pad + y)) ^= *(LTC_FAST_TYPE_PTR_CAST(&lrw->PC[x][lrw->IV[x]][y])) ^ *(LTC_FAST_TYPE_PTR_CAST(&lrw->PC[x][(lrw->IV[x]-1)&255][y]));
           }
 #else
           for (y = 0; y < 16; y++) {
@@ -75,7 +73,7 @@ int lrw_process(const unsigned char *pt, unsigned char *ct, unsigned long len, i
       /* xor prod */
 #ifdef LTC_FAST
       for (x = 0; x < 16; x += sizeof(LTC_FAST_TYPE)) {
-           *((LTC_FAST_TYPE *)(ct + x)) = *((LTC_FAST_TYPE *)(pt + x)) ^ *((LTC_FAST_TYPE *)(prod + x));
+           *(LTC_FAST_TYPE_PTR_CAST(ct + x)) = *(LTC_FAST_TYPE_PTR_CAST(pt + x)) ^ *(LTC_FAST_TYPE_PTR_CAST(prod + x));
       }
 #else
       for (x = 0; x < 16; x++) {
@@ -92,19 +90,19 @@ int lrw_process(const unsigned char *pt, unsigned char *ct, unsigned long len, i
          if ((err = cipher_descriptor[lrw->cipher].ecb_decrypt(ct, ct, &lrw->key)) != CRYPT_OK) {
             return err;
          }
-      }               
+      }
 
       /* xor prod */
 #ifdef LTC_FAST
       for (x = 0; x < 16; x += sizeof(LTC_FAST_TYPE)) {
-           *((LTC_FAST_TYPE *)(ct + x)) = *((LTC_FAST_TYPE *)(ct + x)) ^ *((LTC_FAST_TYPE *)(prod + x));
+           *(LTC_FAST_TYPE_PTR_CAST(ct + x)) = *(LTC_FAST_TYPE_PTR_CAST(ct + x)) ^ *(LTC_FAST_TYPE_PTR_CAST(prod + x));
       }
 #else
       for (x = 0; x < 16; x++) {
          ct[x] = ct[x] ^ prod[x];
       }
 #endif
-   
+
       /* move to next */
       pt  += 16;
       ct  += 16;
@@ -113,8 +111,8 @@ int lrw_process(const unsigned char *pt, unsigned char *ct, unsigned long len, i
 
    return CRYPT_OK;
 }
-      
+
 #endif
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/lrw/lrw_process.c,v $ */
-/* $Revision: 1.10 $ */
-/* $Date: 2006/06/29 01:53:13 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

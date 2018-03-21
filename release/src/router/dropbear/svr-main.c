@@ -35,16 +35,16 @@ static size_t listensockets(int *sock, size_t sockcount, int *maxfd);
 static void sigchld_handler(int dummy);
 static void sigsegv_handler(int);
 static void sigintterm_handler(int fish);
-#ifdef INETD_MODE
+#if INETD_MODE
 static void main_inetd(void);
 #endif
-#ifdef NON_INETD_MODE
+#if NON_INETD_MODE
 static void main_noinetd(void);
 #endif
 static void commonsetup(void);
 
-#if defined(DBMULTI_dropbear) || !defined(DROPBEAR_MULTI)
-#if defined(DBMULTI_dropbear) && defined(DROPBEAR_MULTI)
+#if defined(DBMULTI_dropbear) || !DROPBEAR_MULTI
+#if defined(DBMULTI_dropbear) && DROPBEAR_MULTI
 int dropbear_main(int argc, char ** argv)
 #else
 int main(int argc, char ** argv)
@@ -58,7 +58,7 @@ int main(int argc, char ** argv)
 	/* get commandline options */
 	svr_getopts(argc, argv);
 
-#ifdef INETD_MODE
+#if INETD_MODE
 	/* service program mode */
 	if (svr_opts.inetdmode) {
 		main_inetd();
@@ -66,7 +66,7 @@ int main(int argc, char ** argv)
 	}
 #endif
 
-#ifdef NON_INETD_MODE
+#if NON_INETD_MODE
 	main_noinetd();
 	/* notreached */
 #endif
@@ -76,12 +76,19 @@ int main(int argc, char ** argv)
 }
 #endif
 
-#ifdef INETD_MODE
+#if INETD_MODE
 static void main_inetd() {
 	char *host, *port = NULL;
 
 	/* Set up handlers, syslog, seed random */
 	commonsetup();
+
+#if DEBUG_TRACE
+	if (debug_trace) {
+		/* -v output goes to stderr which would get sent over the inetd network socket */
+		dropbear_exit("Dropbear inetd mode is incompatible with debug -v");
+	}
+#endif
 
 	/* In case our inetd was lax in logging source addresses */
 	get_socket_address(0, NULL, NULL, &host, &port, 0);
@@ -103,7 +110,7 @@ static void main_inetd() {
 }
 #endif /* INETD_MODE */
 
-#ifdef NON_INETD_MODE
+#if NON_INETD_MODE
 static void main_noinetd() {
 	fd_set fds;
 	unsigned int i, j;
@@ -144,7 +151,7 @@ static void main_noinetd() {
 	/* fork */
 	if (svr_opts.forkbg) {
 		int closefds = 0;
-#ifndef DEBUG_TRACE
+#if !DEBUG_TRACE
 		if (!opts.usingsyslog) {
 			closefds = 1;
 		}
@@ -188,7 +195,7 @@ static void main_noinetd() {
 
 		val = select(maxsock+1, &fds, NULL, NULL, NULL);
 
-		if (exitflag) {
+		if (ses.exitflag) {
 			unlink(svr_opts.pidfile);
 			dropbear_exit("Terminated by signal");
 		}
@@ -359,7 +366,7 @@ static void sigsegv_handler(int UNUSED(unused)) {
 /* catch ctrl-c or sigterm */
 static void sigintterm_handler(int UNUSED(unused)) {
 
-	exitflag = 1;
+	ses.exitflag = 1;
 }
 
 /* Things used by inetd and non-inetd modes */
@@ -429,7 +436,7 @@ static size_t listensockets(int *socks, size_t sockcount, int *maxfd) {
 		for (n = 0; n < (unsigned int)nsock; n++) {
 			int sock = socks[sockpos + n];
 			set_sock_priority(sock, DROPBEAR_PRIO_LOWDELAY);
-#ifdef DROPBEAR_SERVER_TCP_FAST_OPEN
+#if DROPBEAR_SERVER_TCP_FAST_OPEN
 			set_listen_fast_open(sock);
 #endif
 		}

@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -35,13 +33,13 @@ int f8_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, sy
    if ((err = cipher_is_valid(f8->cipher)) != CRYPT_OK) {
        return err;
    }
-   
+
    /* is blocklen/padlen valid? */
    if (f8->blocklen < 0 || f8->blocklen > (int)sizeof(f8->IV) ||
        f8->padlen   < 0 || f8->padlen   > (int)sizeof(f8->IV)) {
       return CRYPT_INVALID_ARG;
    }
-   
+
    zeromem(buf, sizeof(buf));
 
    /* make sure the pad is empty */
@@ -64,8 +62,8 @@ int f8_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, sy
          STORE32H(f8->blockcnt, (buf+(f8->blocklen-4)));
          ++(f8->blockcnt);
          for (x = 0; x < f8->blocklen; x += sizeof(LTC_FAST_TYPE)) {
-             *((LTC_FAST_TYPE*)(&ct[x])) = *((LTC_FAST_TYPE*)(&pt[x])) ^ *((LTC_FAST_TYPE*)(&f8->IV[x]));
-             *((LTC_FAST_TYPE*)(&f8->IV[x])) ^= *((LTC_FAST_TYPE*)(&f8->MIV[x])) ^ *((LTC_FAST_TYPE*)(&buf[x]));
+             *(LTC_FAST_TYPE_PTR_CAST(&ct[x])) = *(LTC_FAST_TYPE_PTR_CAST(&pt[x])) ^ *(LTC_FAST_TYPE_PTR_CAST(&f8->IV[x]));
+             *(LTC_FAST_TYPE_PTR_CAST(&f8->IV[x])) ^= *(LTC_FAST_TYPE_PTR_CAST(&f8->MIV[x])) ^ *(LTC_FAST_TYPE_PTR_CAST(&buf[x]));
          }
          if ((err = cipher_descriptor[f8->cipher].ecb_encrypt(f8->IV, f8->IV, &f8->key)) != CRYPT_OK) {
             return err;
@@ -75,7 +73,7 @@ int f8_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, sy
          ct  += x;
       }
    }
-#endif             
+#endif
 
    while (len > 0) {
        if (f8->padlen == f8->blocklen) {
@@ -98,6 +96,6 @@ int f8_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, sy
 
 #endif
 
-/* $Source: /cvs/libtom/libtomcrypt/src/modes/f8/f8_encrypt.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/11/05 04:16:32 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

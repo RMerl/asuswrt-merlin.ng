@@ -31,6 +31,6 @@ int main(void)
    return EXIT_SUCCESS;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/demos/test.c,v $ */
-/* $Revision: 1.28 $ */
-/* $Date: 2006/05/25 10:50:08 $ */
+/* $Source$ */
+/* $Revision$ */
+/* $Date$ */

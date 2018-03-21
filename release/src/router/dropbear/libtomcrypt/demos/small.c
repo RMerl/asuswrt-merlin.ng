@@ -1,3 +1,11 @@
+/* LibTomCrypt, modular cryptographic library -- Tom St Denis
+ *
+ * LibTomCrypt is a library that provides various cryptographic
+ * algorithms in a highly modular and flexible manner.
+ *
+ * The library is free for all purposes without any express
+ * guarantee it works.
+ */
 /* small demo app that just includes a cipher/hash/prng */
 #include <tomcrypt.h>
 
@@ -9,6 +17,6 @@ int main(void)
    return 0;
 }
 
-/* $Source: /cvs/libtom/libtomcrypt/demos/small.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/06/07 22:25:09 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

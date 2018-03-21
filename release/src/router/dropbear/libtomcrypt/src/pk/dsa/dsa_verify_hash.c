@@ -5,8 +5,6 @@
  *
  * The library is free for all purposes without any express
  * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
  */
 #include "tomcrypt.h"
 
@@ -16,7 +14,7 @@
 */
 
 
-#ifdef MDSA
+#ifdef LTC_MDSA
 
 /**
   Verify a DSA signature
@@ -25,11 +23,11 @@
   @param hash     The hash that was signed
   @param hashlen  The length of the hash that was signed
   @param stat     [out] The result of the signature verification, 1==valid, 0==invalid
-  @param key      The corresponding public DH key
+  @param key      The corresponding public DSA key
   @return CRYPT_OK if successful (even if the signature is invalid)
 */
 int dsa_verify_hash_raw(         void   *r,          void   *s,
-                    const unsigned char *hash, unsigned long hashlen, 
+                    const unsigned char *hash, unsigned long hashlen,
                                     int *stat,      dsa_key *key)
 {
    void          *w, *v, *u1, *u2;
@@ -49,11 +47,14 @@ int dsa_verify_hash_raw(         void   *r,          void   *s,
    }
 
    /* neither r or s can be null or >q*/
-   if (mp_iszero(r) == LTC_MP_YES || mp_iszero(s) == LTC_MP_YES || mp_cmp(r, key->q) != LTC_MP_LT || mp_cmp(s, key->q) != LTC_MP_LT) {
+   if (mp_cmp_d(r, 0) != LTC_MP_GT || mp_cmp_d(s, 0) != LTC_MP_GT || mp_cmp(r, key->q) != LTC_MP_LT || mp_cmp(s, key->q) != LTC_MP_LT) {
       err = CRYPT_INVALID_PACKET;
       goto error;
    }
-   
+
+   /* FIPS 186-4 4.7: use leftmost min(bitlen(q), bitlen(hash)) bits of 'hash' */
+   hashlen = MIN(hashlen, (unsigned long)(key->qord));
+
    /* w = 1/s mod q */
    if ((err = mp_invmod(s, key->q, w)) != CRYPT_OK)                                       { goto error; }
 
@@ -62,7 +63,7 @@ int dsa_verify_hash_raw(         void   *r,          void   *s,
    if ((err = mp_mulmod(u1, w, key->q, u1)) != CRYPT_OK)                                  { goto error; }
 
    /* u2 = r*w mod q */
-   if ((err = mp_mulmod(r, w, key->q, u2)) != CRYPT_OK)                                   { goto error; } 
+   if ((err = mp_mulmod(r, w, key->q, u2)) != CRYPT_OK)                                   { goto error; }
 
    /* v = g^u1 * y^u2 mod p mod q */
    if ((err = mp_exptmod(key->g, u1, key->p, u1)) != CRYPT_OK)                            { goto error; }
@@ -88,25 +89,35 @@ error:
   @param hash     The hash that was signed
   @param hashlen  The length of the hash that was signed
   @param stat     [out] The result of the signature verification, 1==valid, 0==invalid
-  @param key      The corresponding public DH key
+  @param key      The corresponding public DSA key
   @return CRYPT_OK if successful (even if the signature is invalid)
 */
 int dsa_verify_hash(const unsigned char *sig, unsigned long siglen,
-                    const unsigned char *hash, unsigned long hashlen, 
+                    const unsigned char *hash, unsigned long hashlen,
                     int *stat, dsa_key *key)
 {
    int    err;
    void   *r, *s;
+   ltc_asn1_list sig_seq[2];
+   unsigned long reallen = 0;
+
+   LTC_ARGCHK(stat != NULL);
+   *stat = 0; /* must be set before the first return */
 
    if ((err = mp_init_multi(&r, &s, NULL)) != CRYPT_OK) {
-      return CRYPT_MEM;
+      return err;
    }
 
-   /* decode the sequence */
-   if ((err = der_decode_sequence_multi(sig, siglen,
-                                  LTC_ASN1_INTEGER, 1UL, r, 
-                                  LTC_ASN1_INTEGER, 1UL, s, 
-                                  LTC_ASN1_EOL,     0UL, NULL)) != CRYPT_OK) {
+   LTC_SET_ASN1(sig_seq, 0, LTC_ASN1_INTEGER, r, 1UL);
+   LTC_SET_ASN1(sig_seq, 1, LTC_ASN1_INTEGER, s, 1UL);
+
+   err = der_decode_sequence(sig, siglen, sig_seq, 2);
+   if (err != CRYPT_OK) {
+      goto LBL_ERR;
+   }
+
+   err = der_length_sequence(sig_seq, 2, &reallen);
+   if (err != CRYPT_OK || reallen != siglen) {
       goto LBL_ERR;
    }
 
@@ -121,6 +132,6 @@ LBL_ERR:
 #endif
 
 
-/* $Source: /cvs/libtom/libtomcrypt/src/pk/dsa/dsa_verify_hash.c,v $ */
-/* $Revision: 1.13 $ */
-/* $Date: 2006/12/04 03:18:43 $ */
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

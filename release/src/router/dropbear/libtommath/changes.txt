@@ -1,3 +1,48 @@
+XXX, 2017
+v1.0.1
+       -- Dmitry Kovalenko provided fixes to mp_add_d() and mp_init_copy()
+       -- Matt Johnston contributed some improvements to mp_div_2d(),
+          mp_exptmod_fast(), mp_mod() and mp_mulmod()
+       -- Julien Nabet provided a fix to the error handling in mp_init_multi()
+       -- Ben Gardner provided a fix regarding usage of reserved keywords
+       -- Fixed mp_rand() to fill the correct number of bits
+       -- Fixed mp_invmod()
+       -- Use the same 64-bit detection code as in libtomcrypt
+       -- Correct usage of DESTDIR, PREFIX, etc. when installing the library
+       -- Francois Perrad updated all the perl scripts to an actual perl version
+
+
+Feb 5th, 2016
+v1.0
+       -- Bump to 1.0
+       -- Dirkjan Bussink provided a faster version of mp_expt_d()
+       -- Moritz Lenz contributed a fix to mp_mod()
+          and provided mp_get_long() and mp_set_long()
+       -- Fixed bugs in mp_read_radix(), mp_radix_size
+          Thanks to shameister, Gerhard R,
+       -- Christopher Brown provided mp_export() and mp_import()
+       -- Improvements in the code of mp_init_copy()
+          Thanks to ramkumarkoppu,
+       -- lomereiter provided mp_balance_mul()
+       -- Alexander Boström from the heimdal project contributed patches to
+          mp_prime_next_prime() and mp_invmod() and added a mp_isneg() macro
+       -- Fix build issues for Linux x32 ABI
+       -- Added mp_get_long_long() and mp_set_long_long()
+       -- Carlin provided a patch to use arc4random() instead of rand()
+          on platforms where it is supported
+       -- Karel Miko provided mp_sqrtmod_prime()
+
+
+July 23rd, 2010
+v0.42.0
+       -- Fix for mp_prime_next_prime() bug when checking generated prime
+       -- allow mp_shrink to shrink initialized, but empty MPI's
+       -- Added project and solution files for Visual Studio 2005 and Visual Studio 2008.
+
+March 10th, 2007
+v0.41  -- Wolfgang Ehrhardt suggested a quick fix to mp_div_d() which makes the detection of powers of two quicker.
+       -- [CRI] Added libtommath.dsp for Visual C++ users.
+
 December 24th, 2006
 v0.40  -- Updated makefile to properly support LIBNAME
        -- Fixed bug in fast_s_mp_mul_high_digs() which overflowed (line 83), thanks Valgrind!
@@ -12,11 +57,11 @@ v0.39  -- Jim Wigginton pointed out my Montgomery examples in figures 6.4 and 6.
 Jan 26th, 2006
 v0.38  -- broken makefile.shared fixed
        -- removed some carry stores that were not required [updated text]
-       
+
 November 18th, 2005
 v0.37  -- [Don Porter] reported on a TCL list [HEY SEND ME BUGREPORTS ALREADY!!!] that mp_add_d() would compute -0 with some inputs.  Fixed.
        -- [rinick@gmail.com] reported the makefile.bcc was messed up.  Fixed.
-       -- [Kevin Kenny] reported some issues with mp_toradix_n().  Now it doesn't require a min of 3 chars of output.  
+       -- [Kevin Kenny] reported some issues with mp_toradix_n().  Now it doesn't require a min of 3 chars of output.
        -- Made the make command renamable.  Wee
 
 August 1st, 2005
@@ -26,8 +71,8 @@ v0.36  -- LTM_PRIME_2MSB_ON was fixed and the "OFF" flag was removed.
        -- Ported LTC patch to fix the prime_random_ex() function to get the bitsize correct [and the maskOR flags]
        -- Kevin Kenny pointed out a stray //
        -- David Hulton pointed out a typo in the textbook [mp_montgomery_setup() pseudo-code]
-       -- Neal Hamilton (Elliptic Semiconductor) pointed out that my Karatsuba notation was backwards and that I could use 
-          unsigned operations in the routine.  
+       -- Neal Hamilton (Elliptic Semiconductor) pointed out that my Karatsuba notation was backwards and that I could use
+          unsigned operations in the routine.
        -- Paul Schmidt pointed out a linking error in mp_exptmod() when BN_S_MP_EXPTMOD_C is undefined (and another for read_radix)
        -- Updated makefiles to be way more flexible
 
@@ -38,7 +83,7 @@ v0.35  -- Stupid XOR function missing line again... oops.
        -- [Wolfgang Ehrhardt] Suggested a fix for mp_reduce() which avoided underruns.  ;-)
        -- mp_rand() would emit one too many digits and it was possible to get a 0 out of it ... oops
        -- Added montgomery to the testing to make sure it handles 1..10 digit moduli correctly
-       -- Fixed bug in comba that would lead to possible erroneous outputs when "pa < digs" 
+       -- Fixed bug in comba that would lead to possible erroneous outputs when "pa < digs"
        -- Fixed bug in mp_toradix_size for "0" [Kevin Kenny]
        -- Updated chapters 1-5 of the textbook ;-) It now talks about the new comba code!
 
@@ -49,7 +94,7 @@ v0.34  -- Fixed two more small errors in mp_prime_random_ex()
        -- Added "large" diminished radix support.  Speeds up things like DSA where the moduli is of the form 2^k - P for some P < 2^(k/2) or so
           Actually is faster than Montgomery on my AMD64 (and probably much faster on a P4)
        -- Updated the manual a bit
-       -- Ok so I haven't done the textbook work yet... My current freelance gig has landed me in France till the 
+       -- Ok so I haven't done the textbook work yet... My current freelance gig has landed me in France till the
           end of Feb/05.  Once I get back I'll have tons of free time and I plan to go to town on the book.
           As of this release the API will freeze.  At least until the book catches up with all the changes.  I welcome
           bug reports but new algorithms will have to wait.
@@ -66,7 +111,7 @@ v0.33  -- Fixed "small" variant for mp_div() which would munge with negative div
 October 29th, 2004
 v0.32  -- Added "makefile.shared" for shared object support
        -- Added more to the build options/configs in the manual
-       -- Started the Depends framework, wrote dep.pl to scan deps and 
+       -- Started the Depends framework, wrote dep.pl to scan deps and
           produce "callgraph.txt" ;-)
        -- Wrote SC_RSA_1 which will enable close to the minimum required to perform
           RSA on 32-bit [or 64-bit] platforms with LibTomCrypt
@@ -74,7 +119,7 @@ v0.32  -- Added "makefile.shared" for shared object support
           you want to use as your mp_div() at build time.  Saves roughly 8KB or so.
        -- Renamed a few files and changed some comments to make depends system work better.
           (No changes to function names)
-       -- Merged in new Combas that perform 2 reads per inner loop instead of the older 
+       -- Merged in new Combas that perform 2 reads per inner loop instead of the older
           3reads/2writes per inner loop of the old code.  Really though if you want speed
           learn to use TomsFastMath ;-)
 
@@ -103,8 +148,8 @@ v0.30  -- Added "mp_toradix_n" which stores upto "n-1" least significant digits 
           call.
        -- Removed /etclib directory [um LibTomPoly deprecates this].
        -- Fixed mp_mod() so the sign of the result agrees with the sign of the modulus.
-       ++ N.B.  My semester is almost up so expect updates to the textbook to be posted to the libtomcrypt.org 
-          website.  
+       ++ N.B.  My semester is almost up so expect updates to the textbook to be posted to the libtomcrypt.org
+          website.
 
 Jan 25th, 2004
 v0.29  ++ Note: "Henrik" from the v0.28 changelog refers to Henrik Goldman ;-)

@@ -68,6 +68,22 @@ void m_mp_alloc_init_multi(mp_int **mp, ...)
 	va_end(args);
 }
 
+void m_mp_free_multi(mp_int **mp, ...) 
+{
+	mp_int** cur_arg = mp;
+	va_list args;
+
+	va_start(args, mp);        /* init args to next argument from caller */
+	while (cur_arg != NULL) {
+		if (*cur_arg) {
+			mp_clear(*cur_arg);
+		}
+		m_free(*cur_arg);
+		cur_arg = va_arg(args, mp_int**);
+	}
+	va_end(args);
+}
+
 void bytes_to_mp(mp_int *mp, const unsigned char* bytes, unsigned int len) {
 
 	if (mp_read_unsigned_bin(mp, (unsigned char*)bytes, len) != MP_OKAY) {

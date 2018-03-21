@@ -73,7 +73,7 @@ static const packettype cli_packettypes[] = {
 	{SSH_MSG_GLOBAL_REQUEST, recv_msg_global_request_cli},
 	{SSH_MSG_CHANNEL_SUCCESS, ignore_recv_response},
 	{SSH_MSG_CHANNEL_FAILURE, ignore_recv_response},
-#ifdef  ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 	{SSH_MSG_REQUEST_SUCCESS, cli_recv_msg_request_success}, /* client */
 	{SSH_MSG_REQUEST_FAILURE, cli_recv_msg_request_failure}, /* client */
 #else
@@ -81,14 +81,14 @@ static const packettype cli_packettypes[] = {
 	{SSH_MSG_REQUEST_SUCCESS, ignore_recv_response},
 	{SSH_MSG_REQUEST_FAILURE, ignore_recv_response},
 #endif
-	{0, 0} /* End */
+	{0, NULL} /* End */
 };
 
 static const struct ChanType *cli_chantypes[] = {
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 	&cli_chan_tcpremote,
 #endif
-#ifdef ENABLE_CLI_AGENTFWD
+#if DROPBEAR_CLI_AGENTFWD
 	&cli_chan_agent,
 #endif
 	NULL /* Null termination */
@@ -118,7 +118,7 @@ void cli_session(int sock_in, int sock_out, struct dropbear_progress_connection 
 	cli_session_init(proxy_cmd_pid);
 
 	/* Ready to go */
-	sessinitdone = 1;
+	ses.init_done = 1;
 
 	/* Exchange identification */
 	send_session_identification();
@@ -133,7 +133,7 @@ void cli_session(int sock_in, int sock_out, struct dropbear_progress_connection 
 
 }
 
-#ifdef USE_KEX_FIRST_FOLLOWS
+#if DROPBEAR_KEX_FIRST_FOLLOWS
 static void cli_send_kex_first_guess() {
 	send_msg_kexdh_init();
 }
@@ -165,13 +165,6 @@ static void cli_session_init(pid_t proxy_cmd_pid) {
 	cli_ses.lastprivkey = NULL;
 	cli_ses.lastauthtype = 0;
 
-#ifdef DROPBEAR_NONE_CIPHER
-	cli_ses.cipher_none_after_auth = get_algo_usable(sshciphers, "none");
-	set_algo_usable(sshciphers, "none", 0);
-#else
-	cli_ses.cipher_none_after_auth = 0;
-#endif
-
 	/* For printing "remote host closed" for the user */
 	ses.remoteclosed = cli_remoteclosed;
 
@@ -182,13 +175,13 @@ static void cli_session_init(pid_t proxy_cmd_pid) {
 
 	ses.isserver = 0;
 
-#ifdef USE_KEX_FIRST_FOLLOWS
+#if DROPBEAR_KEX_FIRST_FOLLOWS
 	ses.send_kex_first_guess = cli_send_kex_first_guess;
 #endif
 
 }
 
-static void send_msg_service_request(char* servicename) {
+static void send_msg_service_request(const char* servicename) {
 
 	TRACE(("enter send_msg_service_request: servicename='%s'", servicename))
 
@@ -275,19 +268,11 @@ static void cli_sessionloop() {
 			}
 #endif
 
-#ifdef DROPBEAR_NONE_CIPHER
-			if (cli_ses.cipher_none_after_auth)
-			{
-				set_algo_usable(sshciphers, "none", 1);
-				send_msg_kexinit();
-			}
-#endif
-
 			if (cli_opts.backgrounded) {
 				int devnull;
 				/* keeping stdin open steals input from the terminal and
 				   is confusing, though stdout/stderr could be useful. */
-				devnull = open(_PATH_DEVNULL, O_RDONLY);
+				devnull = open(DROPBEAR_PATH_DEVNULL, O_RDONLY);
 				if (devnull < 0) {
 					dropbear_exit("Opening /dev/null: %d %s",
 							errno, strerror(errno));
@@ -299,7 +284,7 @@ static void cli_sessionloop() {
 				}
 			}
 			
-#ifdef ENABLE_CLI_NETCAT
+#if DROPBEAR_CLI_NETCAT
 			if (cli_opts.netcat_host) {
 				cli_send_netcat_request();
 			} else 
@@ -308,10 +293,10 @@ static void cli_sessionloop() {
 				cli_send_chansess_request();
 			}
 
-#ifdef ENABLE_CLI_LOCALTCPFWD
+#if DROPBEAR_CLI_LOCALTCPFWD
 			setup_localtcp();
 #endif
-#ifdef ENABLE_CLI_REMOTETCPFWD
+#if DROPBEAR_CLI_REMOTETCPFWD
 			setup_remotetcp();
 #endif
 
@@ -353,7 +338,7 @@ void kill_proxy_command(void) {
 
 static void cli_session_cleanup(void) {
 
-	if (!sessinitdone) {
+	if (!ses.init_done) {
 		return;
 	}
 

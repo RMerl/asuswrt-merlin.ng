@@ -53,27 +53,27 @@ static int void_start(int UNUSED(cipher), const unsigned char* UNUSED(IV),
 
 /* Remember to add new ciphers/hashes to regciphers/reghashes too */
 
-#ifdef DROPBEAR_AES256
+#if DROPBEAR_AES256
 static const struct dropbear_cipher dropbear_aes256 = 
 	{&aes_desc, 32, 16};
 #endif
-#ifdef DROPBEAR_AES128
+#if DROPBEAR_AES128
 static const struct dropbear_cipher dropbear_aes128 = 
 	{&aes_desc, 16, 16};
 #endif
-#ifdef DROPBEAR_BLOWFISH
+#if DROPBEAR_BLOWFISH
 static const struct dropbear_cipher dropbear_blowfish = 
 	{&blowfish_desc, 16, 8};
 #endif
-#ifdef DROPBEAR_TWOFISH256
+#if DROPBEAR_TWOFISH256
 static const struct dropbear_cipher dropbear_twofish256 = 
 	{&twofish_desc, 32, 16};
 #endif
-#ifdef DROPBEAR_TWOFISH128
+#if DROPBEAR_TWOFISH128
 static const struct dropbear_cipher dropbear_twofish128 = 
 	{&twofish_desc, 16, 16};
 #endif
-#ifdef DROPBEAR_3DES
+#if DROPBEAR_3DES
 static const struct dropbear_cipher dropbear_3des = 
 	{&des3_desc, 24, 8};
 #endif
@@ -84,7 +84,7 @@ const struct dropbear_cipher dropbear_nocipher =
 
 /* A few void* s are required to silence warnings
  * about the symmetric_CBC vs symmetric_CTR cipher_state pointer */
-#ifdef DROPBEAR_ENABLE_CBC_MODE
+#if DROPBEAR_ENABLE_CBC_MODE
 const struct dropbear_cipher_mode dropbear_mode_cbc =
 	{(void*)cbc_start, (void*)cbc_encrypt, (void*)cbc_decrypt};
 #endif /* DROPBEAR_ENABLE_CBC_MODE */
@@ -92,7 +92,7 @@ const struct dropbear_cipher_mode dropbear_mode_cbc =
 const struct dropbear_cipher_mode dropbear_mode_none =
 	{void_start, void_cipher, void_cipher};
 
-#ifdef DROPBEAR_ENABLE_CTR_MODE
+#if DROPBEAR_ENABLE_CTR_MODE
 /* a wrapper to make ctr_start and cbc_start look the same */
 static int dropbear_big_endian_ctr_start(int cipher, 
 		const unsigned char *IV, 
@@ -107,23 +107,23 @@ const struct dropbear_cipher_mode dropbear_mode_ctr =
 /* Mapping of ssh hashes to libtomcrypt hashes, including keysize etc.
    {&hash_desc, keysize, hashsize} */
 
-#ifdef DROPBEAR_SHA1_HMAC
+#if DROPBEAR_SHA1_HMAC
 static const struct dropbear_hash dropbear_sha1 = 
 	{&sha1_desc, 20, 20};
 #endif
-#ifdef DROPBEAR_SHA1_96_HMAC
+#if DROPBEAR_SHA1_96_HMAC
 static const struct dropbear_hash dropbear_sha1_96 = 
 	{&sha1_desc, 20, 12};
 #endif
-#ifdef DROPBEAR_SHA2_256_HMAC
+#if DROPBEAR_SHA2_256_HMAC
 static const struct dropbear_hash dropbear_sha2_256 = 
 	{&sha256_desc, 32, 32};
 #endif
-#ifdef DROPBEAR_SHA2_512_HMAC
+#if DROPBEAR_SHA2_512_HMAC
 static const struct dropbear_hash dropbear_sha2_512 =
 	{&sha512_desc, 64, 64};
 #endif
-#ifdef DROPBEAR_MD5_HMAC
+#if DROPBEAR_MD5_HMAC
 static const struct dropbear_hash dropbear_md5 = 
 	{&md5_desc, 16, 16};
 #endif
@@ -137,72 +137,66 @@ const struct dropbear_hash dropbear_nohash =
  * that is also supported by the server will get used. */
 
 algo_type sshciphers[] = {
-#ifdef DROPBEAR_ENABLE_CTR_MODE
-#ifdef DROPBEAR_AES128
+#if DROPBEAR_ENABLE_CTR_MODE
+#if DROPBEAR_AES128
 	{"aes128-ctr", 0, &dropbear_aes128, 1, &dropbear_mode_ctr},
 #endif
-#ifdef DROPBEAR_AES256
+#if DROPBEAR_AES256
 	{"aes256-ctr", 0, &dropbear_aes256, 1, &dropbear_mode_ctr},
 #endif
-#ifdef DROPBEAR_TWOFISH_CTR
+#if DROPBEAR_TWOFISH_CTR
 /* twofish ctr is conditional as it hasn't been tested for interoperability, see options.h */
-#ifdef DROPBEAR_TWOFISH256
+#if DROPBEAR_TWOFISH256
 	{"twofish256-ctr", 0, &dropbear_twofish256, 1, &dropbear_mode_ctr},
 #endif
-#ifdef DROPBEAR_TWOFISH128
+#if DROPBEAR_TWOFISH128
 	{"twofish128-ctr", 0, &dropbear_twofish128, 1, &dropbear_mode_ctr},
 #endif
 #endif /* DROPBEAR_TWOFISH_CTR */
 #endif /* DROPBEAR_ENABLE_CTR_MODE */
 
-#ifdef DROPBEAR_ENABLE_CBC_MODE
-#ifdef DROPBEAR_AES128
+#if DROPBEAR_ENABLE_CBC_MODE
+#if DROPBEAR_AES128
 	{"aes128-cbc", 0, &dropbear_aes128, 1, &dropbear_mode_cbc},
 #endif
-#ifdef DROPBEAR_AES256
+#if DROPBEAR_AES256
 	{"aes256-cbc", 0, &dropbear_aes256, 1, &dropbear_mode_cbc},
 #endif
-#ifdef DROPBEAR_TWOFISH256
+#if DROPBEAR_TWOFISH256
 	{"twofish256-cbc", 0, &dropbear_twofish256, 1, &dropbear_mode_cbc},
 	{"twofish-cbc", 0, &dropbear_twofish256, 1, &dropbear_mode_cbc},
 #endif
-#ifdef DROPBEAR_TWOFISH128
+#if DROPBEAR_TWOFISH128
 	{"twofish128-cbc", 0, &dropbear_twofish128, 1, &dropbear_mode_cbc},
 #endif
-#ifdef DROPBEAR_3DES
+#if DROPBEAR_3DES
 	{"3des-ctr", 0, &dropbear_3des, 1, &dropbear_mode_ctr},
 #endif
-#ifdef DROPBEAR_3DES
+#if DROPBEAR_3DES
 	{"3des-cbc", 0, &dropbear_3des, 1, &dropbear_mode_cbc},
 #endif
-#ifdef DROPBEAR_BLOWFISH
+#if DROPBEAR_BLOWFISH
 	{"blowfish-cbc", 0, &dropbear_blowfish, 1, &dropbear_mode_cbc},
 #endif
 #endif /* DROPBEAR_ENABLE_CBC_MODE */
-#ifdef DROPBEAR_NONE_CIPHER
-	{"none", 0, (void*)&dropbear_nocipher, 1, &dropbear_mode_none},
-#endif
 	{NULL, 0, NULL, 0, NULL}
 };
 
 algo_type sshhashes[] = {
-#ifdef DROPBEAR_SHA1_96_HMAC
+#if DROPBEAR_SHA1_96_HMAC
 	{"hmac-sha1-96", 0, &dropbear_sha1_96, 1, NULL},
 #endif
-#ifdef DROPBEAR_SHA1_HMAC
+#if DROPBEAR_SHA1_HMAC
 	{"hmac-sha1", 0, &dropbear_sha1, 1, NULL},
 #endif
-#ifdef DROPBEAR_SHA2_256_HMAC
+#if DROPBEAR_SHA2_256_HMAC
 	{"hmac-sha2-256", 0, &dropbear_sha2_256, 1, NULL},
 #endif
-#ifdef DROPBEAR_SHA2_512_HMAC
+#if DROPBEAR_SHA2_512_HMAC
 	{"hmac-sha2-512", 0, &dropbear_sha2_512, 1, NULL},
 #endif
-#ifdef DROPBEAR_MD5_HMAC
+#if DROPBEAR_MD5_HMAC
 	{"hmac-md5", 0, (void*)&dropbear_md5, 1, NULL},
-#endif
-#ifdef DROPBEAR_NONE_INTEGRITY
-	{"none", 0, (void*)&dropbear_nohash, 1, NULL},
 #endif
 	{NULL, 0, NULL, 0, NULL}
 };
@@ -228,21 +222,21 @@ algo_type ssh_nocompress[] = {
 };
 
 algo_type sshhostkey[] = {
-#ifdef DROPBEAR_ECDSA
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECDSA
+#if DROPBEAR_ECC_256
 	{"ecdsa-sha2-nistp256", DROPBEAR_SIGNKEY_ECDSA_NISTP256, NULL, 1, NULL},
 #endif
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 	{"ecdsa-sha2-nistp384", DROPBEAR_SIGNKEY_ECDSA_NISTP384, NULL, 1, NULL},
 #endif
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECC_521
 	{"ecdsa-sha2-nistp521", DROPBEAR_SIGNKEY_ECDSA_NISTP521, NULL, 1, NULL},
 #endif
 #endif
-#ifdef DROPBEAR_RSA
+#if DROPBEAR_RSA
 	{"ssh-rsa", DROPBEAR_SIGNKEY_RSA, NULL, 1, NULL},
 #endif
-#ifdef DROPBEAR_DSS
+#if DROPBEAR_DSS
 	{"ssh-dss", DROPBEAR_SIGNKEY_DSS, NULL, 1, NULL},
 #endif
 	{NULL, 0, NULL, 0, NULL}
@@ -251,11 +245,11 @@ algo_type sshhostkey[] = {
 #if DROPBEAR_DH_GROUP1
 static const struct dropbear_kex kex_dh_group1 = {DROPBEAR_KEX_NORMAL_DH, dh_p_1, DH_P_1_LEN, NULL, &sha1_desc };
 #endif
-#if DROPBEAR_DH_GROUP14
+#if DROPBEAR_DH_GROUP14_SHA1
 static const struct dropbear_kex kex_dh_group14_sha1 = {DROPBEAR_KEX_NORMAL_DH, dh_p_14, DH_P_14_LEN, NULL, &sha1_desc };
-#if DROPBEAR_DH_GROUP14_256
-static const struct dropbear_kex kex_dh_group14_sha256 = {DROPBEAR_KEX_NORMAL_DH, dh_p_14, DH_P_14_LEN, NULL, &sha256_desc };
 #endif
+#if DROPBEAR_DH_GROUP14_SHA256
+static const struct dropbear_kex kex_dh_group14_sha256 = {DROPBEAR_KEX_NORMAL_DH, dh_p_14, DH_P_14_LEN, NULL, &sha256_desc };
 #endif
 #if DROPBEAR_DH_GROUP16
 static const struct dropbear_kex kex_dh_group16_sha512 = {DROPBEAR_KEX_NORMAL_DH, dh_p_16, DH_P_16_LEN, NULL, &sha512_desc };
@@ -263,42 +257,43 @@ static const struct dropbear_kex kex_dh_group16_sha512 = {DROPBEAR_KEX_NORMAL_DH
 
 /* These can't be const since dropbear_ecc_fill_dp() fills out
  ecc_curve at runtime */
-#ifdef DROPBEAR_ECDH
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECDH
+#if DROPBEAR_ECC_256
 static const struct dropbear_kex kex_ecdh_nistp256 = {DROPBEAR_KEX_ECDH, NULL, 0, &ecc_curve_nistp256, &sha256_desc };
 #endif
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 static const struct dropbear_kex kex_ecdh_nistp384 = {DROPBEAR_KEX_ECDH, NULL, 0, &ecc_curve_nistp384, &sha384_desc };
 #endif
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECC_521
 static const struct dropbear_kex kex_ecdh_nistp521 = {DROPBEAR_KEX_ECDH, NULL, 0, &ecc_curve_nistp521, &sha512_desc };
 #endif
 #endif /* DROPBEAR_ECDH */
 
-#ifdef DROPBEAR_CURVE25519
+#if DROPBEAR_CURVE25519
 /* Referred to directly */
 static const struct dropbear_kex kex_curve25519 = {DROPBEAR_KEX_CURVE25519, NULL, 0, NULL, &sha256_desc };
 #endif
 
 algo_type sshkex[] = {
-#ifdef DROPBEAR_CURVE25519
+#if DROPBEAR_CURVE25519
+	{"curve25519-sha256", 0, &kex_curve25519, 1, NULL},
 	{"curve25519-sha256@libssh.org", 0, &kex_curve25519, 1, NULL},
 #endif
-#ifdef DROPBEAR_ECDH
-#ifdef DROPBEAR_ECC_521
+#if DROPBEAR_ECDH
+#if DROPBEAR_ECC_521
 	{"ecdh-sha2-nistp521", 0, &kex_ecdh_nistp521, 1, NULL},
 #endif
-#ifdef DROPBEAR_ECC_384
+#if DROPBEAR_ECC_384
 	{"ecdh-sha2-nistp384", 0, &kex_ecdh_nistp384, 1, NULL},
 #endif
-#ifdef DROPBEAR_ECC_256
+#if DROPBEAR_ECC_256
 	{"ecdh-sha2-nistp256", 0, &kex_ecdh_nistp256, 1, NULL},
 #endif
 #endif
-#if DROPBEAR_DH_GROUP14
-#if DROPBEAR_DH_GROUP14_256
+#if DROPBEAR_DH_GROUP14_SHA256
 	{"diffie-hellman-group14-sha256", 0, &kex_dh_group14_sha256, 1, NULL},
 #endif
+#if DROPBEAR_DH_GROUP14_SHA1
 	{"diffie-hellman-group14-sha1", 0, &kex_dh_group14_sha1, 1, NULL},
 #endif
 #if DROPBEAR_DH_GROUP1
@@ -307,7 +302,7 @@ algo_type sshkex[] = {
 #if DROPBEAR_DH_GROUP16
 	{"diffie-hellman-group16-sha512", 0, &kex_dh_group16_sha512, 1, NULL},
 #endif
-#ifdef USE_KEXGUESS2
+#if DROPBEAR_KEXGUESS2
 	{KEXGUESS2_ALGO_NAME, KEXGUESS2_ALGO_ID, NULL, 1, NULL},
 #endif
 	{NULL, 0, NULL, 0, NULL}
@@ -317,7 +312,7 @@ algo_type sshkex[] = {
  * against.
  * Returns DROPBEAR_SUCCESS if we have a match for algo, DROPBEAR_FAILURE
  * otherwise */
-int have_algo(char* algo, size_t algolen, algo_type algos[]) {
+int have_algo(const char* algo, size_t algolen, const algo_type algos[]) {
 
 	int i;
 
@@ -332,7 +327,7 @@ int have_algo(char* algo, size_t algolen, algo_type algos[]) {
 }
 
 /* Output a comma separated list of algorithms to a buffer */
-void buf_put_algolist(buffer * buf, algo_type localalgos[]) {
+void buf_put_algolist(buffer * buf, const algo_type localalgos[]) {
 
 	unsigned int i, len;
 	unsigned int donefirst = 0;
@@ -349,6 +344,7 @@ void buf_put_algolist(buffer * buf, algo_type localalgos[]) {
 		}
 	}
 	buf_putstring(buf, (const char*)algolist->data, algolist->len);
+	TRACE(("algolist add '%*s'", algolist->len, algolist->data))
 	buf_free(algolist);
 }
 
@@ -468,42 +464,10 @@ out:
 	return ret;
 }
 
-#ifdef DROPBEAR_NONE_CIPHER
-
-void
-set_algo_usable(algo_type algos[], const char * algo_name, int usable)
-{
-	algo_type *a;
-	for (a = algos; a->name != NULL; a++)
-	{
-		if (strcmp(a->name, algo_name) == 0)
-		{
-			a->usable = usable;
-			return;
-		}
-	}
-}
-
-int
-get_algo_usable(algo_type algos[], const char * algo_name)
-{
-	algo_type *a;
-	for (a = algos; a->name != NULL; a++)
-	{
-		if (strcmp(a->name, algo_name) == 0)
-		{
-			return a->usable;
-		}
-	}
-	return 0;
-}
-
-#endif /* DROPBEAR_NONE_CIPHER */
-
-#ifdef ENABLE_USER_ALGO_LIST
+#if DROPBEAR_USER_ALGO_LIST
 
 char *
-algolist_string(algo_type algos[])
+algolist_string(const algo_type algos[])
 {
 	char *ret_list;
 	buffer *b = buf_new(200);
@@ -577,4 +541,4 @@ check_user_algos(const char* user_algo_list, algo_type * algos,
 	memcpy(algos, new_algos, sizeof(*new_algos) * (n+1));
 	return n;
 }
-#endif /* ENABLE_USER_ALGO_LIST */
+#endif /* DROPBEAR_USER_ALGO_LIST */

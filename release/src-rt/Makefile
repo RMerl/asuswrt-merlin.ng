@@ -51,8 +51,8 @@ export BCM_CHIP := 4908
 export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd\).*/\1/')
 export SRCBASE := $(shell pwd | sed 's/\(.*src-rt-.*hnd\).*/\1\/bcmdrivers\/broadcom\/net\/wl\/bcm9$(BCM_CHIP)\/main\/src/')
 export SRC_ROOT := $(HND_SRC)/../src
-export BUSYBOX := busybox-1.24.1
-export BUSYBOX_DIR := $(SRCBASE)/router/busybox-1.24.1/busybox-1.24.1
+export BUSYBOX := busybox
+export BUSYBOX_DIR := $(SRCBASE)/router/busybox
 else
 export SRCBASE := $(shell pwd)
 ifeq ($(or $(BCM7),$(BCM_7114),$(BCM9)),y)

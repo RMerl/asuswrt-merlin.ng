@@ -416,8 +416,8 @@ SEP=echo -e "\033[41;1m   $@   \033[0m"
 # standard packages
 #
 ifeq ($(HND_ROUTER),y)
-export BUSYBOX ?= busybox-1.24.1
-export BUSYBOX_DIR := busybox-1.24.1/busybox-1.24.1
+export BUSYBOX ?= busybox
+export BUSYBOX_DIR := $(BUSYBOX)
 else
 export BUSYBOX ?= busybox
 export BUSYBOX_DIR := $(BUSYBOX)

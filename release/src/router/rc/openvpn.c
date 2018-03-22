@@ -1657,19 +1657,17 @@ void write_ovpn_dnsmasq_config(FILE* f)
 	char nv[16];
 	char buf[24];
 	char *pos, ch;
-	int cur, ch2;	DIR *dir;
+	int unit, ch2;	DIR *dir;
 	struct dirent *file;
 	FILE *dnsf;
 
-	strlcpy(buf, nvram_safe_get("vpn_serverx_dns"), sizeof(buf));
-	for ( pos = strtok(buf,","); pos != NULL; pos=strtok(NULL, ",") )
+	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
 	{
-		cur = atoi(pos);
-		if ( cur )
-		{
-			vpnlog(VPN_LOG_EXTRA, "Adding server %d interface to dns config", cur);
-			snprintf(nv, sizeof(nv), "vpn_server%d_if", cur);
-			fprintf(f, "interface=%s%d\n", nvram_safe_get(nv), SERVER_IF_START + cur);
+		sprintf(buf, "vpn_server%d_pdns", unit);
+		if (nvram_get_int(buf) )
+			vpnlog(VPN_LOG_EXTRA, "Adding server %d interface to dns config", unit);
+			snprintf(nv, sizeof(nv), "vpn_server%d_if", unit);
+			fprintf(f, "interface=%s%d\n", nvram_safe_get(nv), SERVER_IF_START + unit);
 		}
 	}
 
@@ -1680,19 +1678,19 @@ void write_ovpn_dnsmasq_config(FILE* f)
 			if ( file->d_name[0] == '.' )
 				continue;
 
-			if ( sscanf(file->d_name, "client%d.resol%c", &cur, &ch) == 2 )
+			if ( sscanf(file->d_name, "client%d.resol%c", &unit, &ch) == 2 )
 			{
-				vpnlog(VPN_LOG_EXTRA, "Checking ADNS settings for client %d", cur);
-				snprintf(buf, sizeof(buf), "vpn_client%d_adns", cur);
+				vpnlog(VPN_LOG_EXTRA, "Checking ADNS settings for client %d", unit);
+				snprintf(buf, sizeof(buf), "vpn_client%d_adns", unit);
 				if ( nvram_get_int(buf) == 2 )
 				{
-					vpnlog(VPN_LOG_INFO, "Adding strict-order to dnsmasq config for client %d", cur);
+					vpnlog(VPN_LOG_INFO, "Adding strict-order to dnsmasq config for client %d", unit);
 					fprintf(f, "strict-order\n");
 					break;
 				}
 			}
 
-			if ( sscanf(file->d_name, "client%d.con%c", &cur, &ch) == 2 )
+			if ( sscanf(file->d_name, "client%d.con%c", &unit, &ch) == 2 )
 			{
 				if ( (dnsf = fopen(file->d_name, "r")) != NULL )
 				{

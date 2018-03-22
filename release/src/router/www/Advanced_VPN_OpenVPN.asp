@@ -154,8 +154,6 @@ function initial(){
 
 	// We don't use the global switch, so set it to current instance state instead
 	document.form.VPNServer_enable.value = vpn_server_enable;
-	// Set this based on a compound field
-	setRadioValue(document.form.vpn_server_x_dns, ((document.form.vpn_serverx_dns.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
 
 	updateCRTValue();
 	enable_server_igncrt(current_server_igncrt);
@@ -562,22 +560,10 @@ function applyRule(){
 					tmp_value = "";
 
 				document.form.vpn_server_ccd_val.value = tmp_value;
-				
-				tmp_value = "";
-				for (var i = 1; i < 3; i += 1) {
-					if (i == openvpn_unit) {
-						if (getRadioValue(document.form.vpn_server_x_dns) == 1)
-							tmp_value += ""+i+",";
-					} else {
-						if (document.form.vpn_serverx_dns.value.indexOf(''+(i)) >= 0)
-							tmp_value += ""+i+","
-					}
-				}	
 
-				if (tmp_value != document.form.vpn_serverx_dns.value) {
+				if (document.form.vpn_server_pdns.value != "<% nvram_get("vpn_server_pdns"); %>")
 					document.form.action_script.value += ";restart_dnsmasq";
-					document.form.vpn_serverx_dns.value = tmp_value;
-				}
+
 			}();
 			/* Advanced setting end */	
 		}
@@ -884,7 +870,6 @@ function update_visibility(){
 	var hmac = document.form.vpn_server_hmac.value;
 	userpass = getRadioValue(document.form.vpn_server_userpass_auth);
 	var dhcp = getRadioValue(document.form.vpn_server_dhcp);
-	var dns = getRadioValue(document.form.vpn_server_x_dns);
 	if(auth != "tls")
 		ccd = 0;
 	else
@@ -900,7 +885,7 @@ function update_visibility(){
 	showhide("server_ccd_excl", ccd);
 	showhide("openvpn_client_table", ccd);
 	showhide("openvpn_clientlist_Block", ccd);	
-	showhide("server_pdns", ((auth == "tls") && (dns == 1)));
+	showhide("server_pdns", (auth == "tls") );
 	showhide("server_dhcp",((auth == "tls") && (iface == "tap")));
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
 	showhide("server_tls_crypto_tr", ((auth == "tls") || (auth == "secret")));		//add by Viz
@@ -1292,7 +1277,6 @@ function update_digest() {
 <input type="hidden" name="VPNServer_mode" value="<% nvram_get("VPNServer_mode"); %>">
 <input type="hidden" name="vpn_serverx_clientlist" value="">
 <input type="hidden" name="vpn_serverx_start" value="<% nvram_get("vpn_serverx_start"); %>">
-<input type="hidden" name="vpn_serverx_dns" value="<% nvram_get("vpn_serverx_dns"); %>">
 <input type="hidden" name="vpn_server_ccd_val" value="">
 <input type="hidden" name="vpn_server_tls_keysize" value="<% nvram_get("vpn_server_tls_keysize"); %>">
 <input type="hidden" name="vpn_server_custom2" value="<% nvram_get("vpn_server_custom2"); %>">
@@ -1596,13 +1580,6 @@ function update_digest() {
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_local" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_local"); %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_remote"); %>" autocorrect="off" autocapitalize="off">
-												</td>
-											</tr>
-											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,15);"><#vpn_openvpn_ResponseDNS#></a></th>
-												<td>
-													<input type="radio" name="vpn_server_x_dns" class="input" value="1" onclick="update_visibility();"><#checkbox_Yes#>
-													<input type="radio" name="vpn_server_x_dns" class="input" value="0" onclick="update_visibility();"><#checkbox_No#>
 												</td>
 											</tr>
 											<tr id="server_pdns">

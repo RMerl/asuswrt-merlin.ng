@@ -17,7 +17,8 @@ void adjust_merlin_config(void)
 {
 #ifdef RTCONFIG_OPENVPN
 	int unit;
-	char varname_ori[32];
+	char varname_ori[32], varname_ori2[32], varname_new[32];
+	int rgw, plan;
 #endif
 
 #ifdef RTCONFIG_OPENVPN
@@ -42,6 +43,31 @@ void adjust_merlin_config(void)
 			nvram_unset(varname_ori);
 		}
 	}
+
+/* Migrate "remote gateway" and "push lan" to "client_access" */
+	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+		sprintf(varname_ori, "vpn_server%d_rgw", unit);
+
+		if(!nvram_is_empty(varname_ori)) {
+			sprintf(varname_new, "vpn_server%d_client_access", unit);
+			sprintf(varname_ori2, "vpn_server%d_plan", unit);
+
+			rgw = nvram_get_int(varname_ori);
+			plan = nvram_get_int(varname_ori2);
+
+			if (rgw && plan)
+				nvram_set(varname_new, "2");
+			else if (rgw && !plan)
+				nvram_set(varname_new, "1");
+			else
+				nvram_set(varname_new, "0");
+
+			nvram_unset(varname_ori);
+			nvram_unset(varname_ori2);
+		}
+	}
+
+
 #endif
 
 /* migrade httpd key/cert from Asus */

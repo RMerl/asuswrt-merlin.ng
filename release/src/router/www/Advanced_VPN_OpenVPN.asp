@@ -198,8 +198,6 @@ function initial(){
 		           document.form.vpn_server_custom22.value;
 	}
 	document.getElementById("vpn_server_custom_x").value = Base64.decode(custom2);
-
-	updateVpnServerClientAccess();
 }
 
 var MAX_RETRY_NUM = 5;
@@ -276,7 +274,6 @@ function formShowAndHide(server_enable, server_type) {
 		openvpnd_connected_status();
 		check_vpn_server_state();
 		document.getElementById("divApply").style.display = "";
-		updateVpnServerClientAccess();
 	}
 	else{
 		document.getElementById("trVPNServerMode").style.display = "none";
@@ -316,9 +313,7 @@ function openvpnd_connected_status(){
 function applyRule(){
 	var validForm = function() {
 		if (!validator.numberRange(document.form.vpn_server_port, 1, 65535) ||
-		    !validator.numberRange(document.form.vpn_server_poll, 0, 60) ||
-		    !validator.numberRange(document.form.vpn_server_verb, 0, 6) ||
-		    !validator.numberRange(document.form.vpn_server_reneg, -1, 2147483647))
+		    !validator.numberRange(document.form.vpn_server_verb, 0, 6))
 		{
 			return false;
 		}
@@ -543,11 +538,8 @@ function applyRule(){
 			document.form.VPNServer_mode.value = 'openvpn';
 			document.form.action_script.value = "restart_chpass;restart_vpnserver" + openvpn_unit;
 			document.form.vpn_serverx_clientlist.value = get_group_value();
-			/* Advanced setting start */
-			//Viz add 2014.06
-			if(document.getElementById("server_reneg").style.display == "none")
-				document.form.vpn_server_reneg.disabled = true;
 
+			/* Advanced setting start */
 			var getAdvancedValue = function () {
 				var client_num = document.getElementById("openvpn_clientlist_table").rows.length;
 				var item_num = document.getElementById("openvpn_clientlist_table").rows[0].cells.length;
@@ -854,7 +846,6 @@ function switchMode(mode){
 		else
 			document.getElementById('openvpn_export').style.display = "";
 		document.getElementById("divAdvanced").style.display = "none";
-		updateVpnServerClientAccess();
 	}	
 	else{
 		document.getElementById("trRSAEncryptionBasic").style.display = "none";
@@ -903,9 +894,7 @@ function update_visibility(){
 
 	showhide("server_authhmac", (auth != "secret"));
 	showhide("server_snnm", ((auth == "tls") && (iface == "tun")));
-	showhide("server_plan", ((auth == "tls") && (iface == "tun")));
 	showhide("server_local", ((auth == "secret") && (iface == "tun")));
-	showhide("server_reneg", (auth != "secret"));		//add by Viz 2014.06
 	showhide("server_ccd", (auth == "tls"));
 	showhide("server_c2c", ccd);
 	showhide("server_ccd_excl", ccd);
@@ -1181,45 +1170,7 @@ function update_digest() {
 	if(digest == "MD5" || digest == "RSA-MD4")
 		$("#digest_hint").css("display", "");
 }
-function vpnServerClientAccess() {
-	var vpn_server_client_access = getRadioValue(document.form.vpn_server_client_access);
-	switch(parseInt(vpn_server_client_access)) {
-		case 0 :
-			setRadioValue(document.form.vpn_server_plan, 1);
-			setRadioValue(document.form.vpn_server_rgw, 0);
-			setRadioValue(document.form.vpn_server_x_dns, 0);
-			setRadioValue(document.form.vpn_server_pdns, 0);
-			$(".client_access_custom").css("display", "none");
-			break;
-		case 1 :
-			setRadioValue(document.form.vpn_server_plan, 1);
-			setRadioValue(document.form.vpn_server_rgw, 1);
-			setRadioValue(document.form.vpn_server_x_dns, 1);
-			setRadioValue(document.form.vpn_server_pdns, 1);
-			$(".client_access_custom").css("display", "none");
-			break;
-	}
-	update_visibility();
-}
 
-function updateVpnServerClientAccess() {
-	var vpn_server_plan = getRadioValue(document.form.vpn_server_plan);
-	var vpn_server_rgw = getRadioValue(document.form.vpn_server_rgw);
-	var vpn_server_x_dns = getRadioValue(document.form.vpn_server_x_dns);
-	var vpn_server_pdns = getRadioValue(document.form.vpn_server_pdns);
-	if(vpn_server_plan == "1" && vpn_server_rgw == "0" && vpn_server_x_dns == "0" && vpn_server_pdns == "0") {
-		setRadioValue(document.form.vpn_server_client_access, 0);
-		$(".client_access_custom").css("display", "none");
-	}
-	else if(vpn_server_plan == "1" && vpn_server_rgw == "1" && vpn_server_x_dns == "1" && vpn_server_pdns == "1") {
-		setRadioValue(document.form.vpn_server_client_access, 1);
-		$(".client_access_custom").css("display", "none");
-	}
-	else {
-		setRadioValue(document.form.vpn_server_client_access, 2);
-		$(".client_access_custom").css("display", "");
-	}
-}
 
 </script>
 </head>
@@ -1425,12 +1376,12 @@ function updateVpnServerClientAccess() {
 										<tr id="trClientWillUseVPNToAccess">
 											<th><#vpn_access#></th>
 											<td>
-												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_local" class="input" value="0" onchange="vpnServerClientAccess();">
-												<label for="vpn_server_client_access_local"><#vpn_access_LAN#></label>
-												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_both" class="input" value="1" onchange="vpnServerClientAccess();">
-												<label for="vpn_server_client_access_both"><#vpn_access_WANLAN#></label>
-												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_custom" class="input client_access_custom" value="2" onchange="vpnServerClientAccess();">
-												<label for="vpn_server_client_access_custom" class="client_access_custom"><#Custom#></label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access" class="input" value="0" <% nvram_match_x("", "vpn_server_client_access", "0", "checked"); %>>
+												<label for="vpn_server_client_access_local">LAN only</label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access" class="input" value="1" <% nvram_match_x("", "vpn_server_client_access", "1", "checked"); %>>
+												<label for="vpn_server_client_access_local">Internet only</label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access" class="input" value="2" <% nvram_match_x("", "vpn_server_client_access", "2", "checked"); %>>
+												<label for="vpn_server_client_access_both">Both</label>
 											</td>
 										</tr>
 										<tr id="openvpn_export" style="display:none;">
@@ -1569,16 +1520,6 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th><#menu5_5#></th>
-												<td>
-													<select name="vpn_server_firewall" class="input_option">
-														<option value="auto" <% nvram_match("vpn_server_firewall","auto","selected"); %> ><#Auto#></option>
-														<option value="external" <% nvram_match("vpn_server_firewall","external","selected"); %> ><#External#></option>
-														<option value="custom" <% nvram_match("vpn_server_firewall","custom","selected"); %> ><#Custom#></option>
-													</select>
-												</td>
-											</tr>
-											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 												<td>
 													<select name="vpn_server_crypt" class="input_option" onChange="update_visibility();">
@@ -1658,27 +1599,6 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,21);"><#vpn_openvpn_PollInterval#></a></th>
-												<td>
-													<input type="text" maxlength="4" class="input_6_table" name="vpn_server_poll" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_poll"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
-													<span style="color:#FC0">(<#zero_disable#>)</span>
-												</td>
-											</tr>
-											<tr id="server_plan">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,2);"><#vpn_openvpn_PushLAN#></a></th>
-												<td>
-													<input type="radio" name="vpn_server_plan" class="input" value="1" <% nvram_match_x("", "vpn_server_plan", "1", "checked"); %>><#checkbox_Yes#>
-													<input type="radio" name="vpn_server_plan" class="input" value="0" <% nvram_match_x("", "vpn_server_plan", "0", "checked"); %>><#checkbox_No#>
-												</td>
-											</tr>
-											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,3);"><#vpn_openvpn_RedirectInternet#></a></th>
-												<td>
-													<input type="radio" name="vpn_server_rgw" class="input" value="1" <% nvram_match_x("", "vpn_server_rgw", "1", "checked"); %>><#checkbox_Yes#>
-													<input type="radio" name="vpn_server_rgw" class="input" value="0" <% nvram_match_x("", "vpn_server_rgw", "0", "checked"); %>><#checkbox_No#>
-												</td>
-											</tr>
-											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,15);"><#vpn_openvpn_ResponseDNS#></a></th>
 												<td>
 													<input type="radio" name="vpn_server_x_dns" class="input" value="1" onclick="update_visibility();"><#checkbox_Yes#>
@@ -1727,13 +1647,6 @@ function updateVpnServerClientAccess() {
 														<option value="lz4" <% nvram_match("vpn_server_comp","lz4","selected"); %> >LZ4</option>
 													</select>
 													<span id="comp_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
-												</td>
-											</tr>
-											<tr id="server_reneg">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);"><#vpn_openvpn_TLSTime#></a></th>
-												<td>
-													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_reneg" value="<% nvram_get("vpn_server_reneg"); %>" autocorrect="off" autocapitalize="off"> <#Second#>
-													<span style="color:#FC0">(<#Setting_factorydefault_value#> : -1)</span>
 												</td>
 											</tr>
 											<tr>

@@ -1254,6 +1254,7 @@ function enable_wan_access(flag){
 				autoChange = true;
 				hide_https_lanport(document.form.http_enable.value);
 			}
+			alert("Note that enabling WAN access to the web interface is strongly discouraged as it's a security risk.  Please consider using a VPN instead.");
 		}
 		else{
 			var effectApps = [];

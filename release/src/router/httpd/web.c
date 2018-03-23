@@ -425,6 +425,15 @@ static int get_custom_clientlist_info(struct json_object *json_object_ptr);
 
 void not_ej_initial_folder_var_file();
 
+int _check_xss_blacklist(char* para, int check_www)
+{
+	char temp[128];
+
+	strlcpy(temp, para, sizeof(temp));
+	return check_xss_blacklist(temp, check_www);
+}
+
+
 static void insert_hook_func(webs_t wp, char *fname, char *param)
 {
 	if (!wp || !fname) {
@@ -488,7 +497,7 @@ void websRedirect(webs_t wp, char_t *url)
 {
 	char url_str[128];
 
-	if(check_xss_blacklist(url, 1)){
+	if(_check_xss_blacklist(url, 1)){
 		memset(url_str, 0, sizeof(url_str));
 		strlcpy(url_str, INDEXPAGE, sizeof(url_str));
 	}else
@@ -524,7 +533,7 @@ void websRedirect_iframe(webs_t wp, char_t *url)
 {
 	char url_str[32];
 
-	if(check_xss_blacklist(url, 1)){
+	if(_check_xss_blacklist(url, 1)){
 		memset(url_str, 0, sizeof(url_str));
 		strlcpy(url_str, "index.asp", sizeof(url_str));
 	}else
@@ -5418,7 +5427,7 @@ static int ej_get_parameter(int eid, webs_t wp, int argc, char_t **argv){
 
 	char *value = websGetVar(wp, argv[0], "");
 	if(value != NULL){
-		if(check_xss_blacklist(value, 0)){
+		if(_check_xss_blacklist(value, 0)){
 			return ret;
 		}
 	}
@@ -10012,7 +10021,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		char *system_cmd;
 		system_cmd = get_cgi_json("SystemCmd",root);
 
-		if(check_xss_blacklist(system_cmd, 0)){
+		if(_check_xss_blacklist(system_cmd, 0)){
 			websRedirect_iframe(wp, current_url);
 			goto APPLY_FINISH;
 		}
@@ -14336,7 +14345,7 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 					websWrite(wp, T("<meta http-equiv=\"refresh\" content=\"0; url=cfg_onboarding.cgi?flag=AMesh&id=%s\">\r\n"), cloud_file);
 				}
 				else{
-					if(check_xss_blacklist(next_page, 1) || !useful_redirect_page(next_page))
+					if(_check_xss_blacklist(next_page, 1) || !useful_redirect_page(next_page))
 						websWrite(wp, T("<meta http-equiv=\"refresh\" content=\"0; url=%s\">\r\n"), INDEXPAGE);
 					else
 						websWrite(wp, T("<meta http-equiv=\"refresh\" content=\"0; url=%s\">\r\n"), next_page);
@@ -14889,7 +14898,7 @@ do_cfg_onboarding_cgi(char *url, FILE *stream)
 		if (strlen(event_msg))
 			send_cfgmnt_event(event_msg);
 	}
-	snprintf(url_str, sizeof(url_str), "%s?flag=%s&id=%s", INDEXPAGE, (!check_xss_blacklist(flag, 0))?flag:"",(!check_xss_blacklist(id, 0))?id:"");
+	snprintf(url_str, sizeof(url_str), "%s?flag=%s&id=%s", INDEXPAGE, (!_check_xss_blacklist(flag, 0))?flag:"",(!_check_xss_blacklist(id, 0))?id:"");
 
 	if(cfg)	json_object_put(cfg);
 	memset(cloud_file, 0, sizeof(cloud_file));
@@ -19486,7 +19495,7 @@ ej_findasus(int eid, webs_t wp, int argc, char **argv) {
 			strcat(retList, "{");
 			sprintf(strTmp, "modelName:\"%s\",", name);
 			strcat(retList, strTmp);
-			if(check_xss_blacklist(ssid, 0))
+			if(_check_xss_blacklist(ssid, 0))
 				sprintf(strTmp, "ssid:\"\",");
 			else
 				sprintf(strTmp, "ssid:\"%s\",", ssid);
@@ -21766,7 +21775,7 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 		snprintf(host_name_temp, sizeof(host_name), "%s", host_name);
 	}
 
-	if(check_xss_blacklist(current_page_name, 1)) {
+	if(_check_xss_blacklist(current_page_name, 1)) {
 		strcpy(current_page_name_temp, INDEXPAGE);
 	}
 	else {
@@ -21795,7 +21804,7 @@ ej_login_error_info(int eid, webs_t wp, int argc, char **argv)
 	json_object_object_add(item,"error_status", json_object_new_int(login_error_status));
 
 	/* url */
-	if(check_xss_blacklist(login_url, 1)){
+	if(_check_xss_blacklist(login_url, 1)){
 		json_object_object_add(item,"page", json_object_new_string(INDEXPAGE));
 	}else{
 		json_object_object_add(item,"page", json_object_new_string(login_url));

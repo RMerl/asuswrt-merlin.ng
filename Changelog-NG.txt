@@ -16,6 +16,25 @@ General changes in the 384/NG branch vs 380.xx:
 384.5 (xx-xxx-2018)
    - CHANGED: Updated OpenVPN to 2.4.5.
    - CHANGED: Updated Dropbear to 2018.76.
+   - CHANGED: Moved RT-AC86U to the same Busybox version (1.25.1)
+              as other models.
+   - CHANGED: revised OpenVPN server options:
+              o Removed "TLS Reneg time" (rarely used, can manually
+                be set as a custom option)
+              o Removed "Server Poll" (which didn't work
+                properly)
+              o Removed "Push LAN" and "Redirect Gateway",
+                replaced with new Client Access setting
+              o Removed Firewall setting (firewall rules are now
+                always created, and the broken External mode
+                was fixed and integrated into the new Client
+                Access setting)
+              o Removed option to respond to DNS queries - enabling
+                the option to Push DNS will also handle it
+              o Added new Client Access setting to select between
+                three types of access: LAN only, WAN only (will
+                block access to the LAN, including the router
+                itself) and LAN + WAN.
 
 
 384.4 (16-Mar-2018)

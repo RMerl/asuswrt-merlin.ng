@@ -1393,21 +1393,6 @@ void start_ovpn_server(int serverNum)
 	}
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
 
-	// Set up cron job
-	if ( (nvi = nvram_pf_get_int(prefix, "poll")) > 0 )
-	{
-		vpnlog(VPN_LOG_EXTRA,"Adding cron job");
-		argv[0] = "cru";
-		argv[1] = "a";
-		sprintf(buffer, "CheckVPNServer%d", serverNum);
-		argv[2] = buffer;
-		sprintf(&buffer[strlen(buffer)+1], "*/%d * * * * service start_vpnserver%d", nvi, serverNum);
-		argv[3] = &buffer[strlen(buffer)+1];
-		argv[4] = NULL;
-		_eval(argv, NULL, 0, NULL);
-		vpnlog(VPN_LOG_EXTRA,"Done adding cron job");
-	}
-
 	if ( cryptMode == SECRET )
 	{
 		nvram_pf_set(prefix, "state", "2");	//running
@@ -1430,16 +1415,6 @@ void stop_ovpn_server(int serverNum)
 	}
 
 	vpnlog(VPN_LOG_INFO,"Stopping VPN GUI server backend.");
-
-	// Remove cron job
-	vpnlog(VPN_LOG_EXTRA,"Removing cron job");
-	argv[0] = "cru";
-	argv[1] = "d";
-	sprintf(buffer, "CheckVPNServer%d", serverNum);
-	argv[2] = buffer;
-	argv[3] = NULL;
-	_eval(argv, NULL, 0, NULL);
-	vpnlog(VPN_LOG_EXTRA,"Done removing cron job");
 
 	// Stop the VPN server
 	vpnlog(VPN_LOG_EXTRA,"Stopping OpenVPN server.");

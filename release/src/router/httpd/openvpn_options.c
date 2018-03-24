@@ -422,12 +422,9 @@ add_option (char *p[], int line, int unit)
 	{
 		nvram_pf_set(prefix, "port", p[1]);
 	}
-	else if (streq (p[0], "resolv-retry") && p[1])
+	else if (streq (p[0], "connect-retry-max") && p[1])
 	{
-		if (streq (p[1], "infinite"))
-			nvram_pf_set(prefix, "retry", "-1");
-		else
-			nvram_pf_set(prefix, "retry", p[1]);
+		nvram_pf_set(prefix, "connretry", p[1]);
 	}
 	else if (streq (p[0], "comp-lzo"))
 	{

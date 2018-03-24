@@ -354,7 +354,6 @@ function setTLSTable(unit) {
 
 
 function update_visibility(){
-	fw = document.form.vpn_client_firewall.value;
 	auth = document.form.vpn_client_crypt.value;
 	iface = document.form.vpn_client_if_x.value;
 	bridge = getRadioValue(document.form.vpn_client_bridge);
@@ -377,8 +376,8 @@ function update_visibility(){
 	showhide("client_bridge", (iface == "tap"));
 
 	showhide("client_bridge_warn_text", (bridge == 0));
-	showhide("client_nat", ((fw != "custom") && (iface == "tun" || bridge == 0)));
-	showhide("client_nat_warn_text", ((fw != "custom") && ((nat == 0) || (auth == "secret" && iface == "tun"))));
+	showhide("client_nat", ((iface == "tun") || (bridge == 0)));
+	showhide("client_nat_warn_text", (((nat == 0) || (auth == "secret" && iface == "tun"))));
 
 	showhide("client_local_1", (iface == "tun" && auth == "secret"));
 	showhide("client_local_2", (iface == "tap" && (bridge == 0 && auth == "secret")));
@@ -546,9 +545,8 @@ function validForm(){
 
 	if (!validator.safeName(document.form.vpn_client_desc) ||
 	    !validator.numberRange(document.form.vpn_client_verb, 0, 6) ||
-	    !validator.numberRange(document.form.vpn_client_poll, 0, 60) ||
 	    !validator.numberRange(document.form.vpn_client_reneg, -1, 2147483647) ||
-	    !validator.numberRange(document.form.vpn_client_retry, -1, 32767) ||
+	    !validator.numberRange(document.form.vpn_client_connretry, -1, 999) ||
 	    !validator.numberRange(document.form.vpn_client_port, 1, 65535))
 		return false;
 
@@ -1256,16 +1254,6 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th><#menu5_5#></th>
-						<td>
-							<select name="vpn_client_firewall" class="input_option" onclick="update_visibility();" >
-								<option value="auto" <% nvram_match("vpn_client_firewall","auto","selected"); %> >Automatic</option>
-								<option value="custom" <% nvram_match("vpn_client_firewall","custom","selected"); %> >Custom</option>
-							</select>
-						</td>
-					</tr>
-
-					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 						<td>
 							<select name="vpn_client_crypt" class="input_option" onclick="update_visibility();">
@@ -1382,13 +1370,6 @@ function defaultSettings() {
 						</td>
 					</tr>
 
-					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,21);"><#vpn_openvpn_PollInterval#></a></th>
-						<td>
-							<input type="text" maxlength="4" class="input_6_table" name="vpn_client_poll" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_poll"); %>">
-						</td>
-					</tr>
-
 					<tr id="client_adns">
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,24);">Accept DNS Configuration</a></th>
 						<td>
@@ -1449,9 +1430,9 @@ function defaultSettings() {
 					</tr>
 
 					<tr>
-						<th>Connection Retry<br><i>(in seconds, -1 for infinite)</th>
+						<th>Connection Retry attempts<br><i>(-1 for infinite)</th>
 						<td>
-							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_retry" value="<% nvram_get("vpn_client_retry"); %>">
+							<input type="text" maxlength="3" class="input_6_table" name="vpn_client_connretry" value="<% nvram_get("vpn_client_connretry"); %>">
 						</td>
 					</tr>
 

@@ -13,6 +13,16 @@ General changes in the 384/NG branch vs 380.xx:
      lists of settings might no longer be possible on 384.xx.
 
 
+384.4_2 (24-Mar-2018)
+   - CHANGED: Added visual warning when manually enabling WAN
+              access on WAN.  Doing so carries serious potential
+              security risks, as Asuswrt's web server code should
+              not be considered hardened enough for this.
+   - FIXED: Security issue in httpd (CVE-2018-8879).
+   - FIXED: Potential security issue in httpd related to QiS.
+   - FIXED: Minor webui issue in the QoS overhead menu.
+
+
 384.4 (16-Mar-2018)
    - NEW: Merged with GPL 384_20379 (with some binary components
           from 382_50010 and 384_20308 depending on models)

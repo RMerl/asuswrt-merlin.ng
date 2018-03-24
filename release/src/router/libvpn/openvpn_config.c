@@ -52,16 +52,38 @@ void reset_ovpn_setting(ovpn_type_t type, int unit){
         struct nvram_tuple *t;
         char prefix[]="vpn_serverX_", tmp[100];
 	char service[7];
+	char start[12], remove[2];
+	char *cur;
 
-	if (type == OVPN_TYPE_SERVER)
+	if (type == OVPN_TYPE_SERVER) {
 		strcpy(service, "server");
-	else if (type == OVPN_TYPE_CLIENT)
+		strlcpy(start, nvram_safe_get("vpn_serverx_start"), sizeof(start));
+	}
+	else if (type == OVPN_TYPE_CLIENT) {
 		strcpy(service, "client");
+		strlcpy(start, nvram_safe_get("vpn_clientx_eas"), sizeof(start));
+	}
 	else
 		return;
 
 	logmessage("openvpn","Resetting %s (unit %d) to default settings", service, unit);
 
+	snprintf(remove, sizeof(remove), "%d", unit);
+	tmp[0] = '\0';
+
+	// Remove auto-start
+	for (cur = strtok(start, ","); cur != NULL; cur = strtok(NULL, ",")) {
+		if (strcmp(cur,remove)) {
+			strlcat(tmp, cur, sizeof(tmp));
+			strlcat(tmp, ",", sizeof(tmp));
+		}
+	}
+	if (type == OVPN_TYPE_SERVER)
+		nvram_set("vpn_serverx_start", tmp);
+	else	// Client
+		nvram_set("vpn_clientx_eas", tmp);
+
+	// Reset vars
 	snprintf(prefix, sizeof(prefix), "vpn_%s%d_", service, unit);
 
 	for (t = router_defaults; t->name; t++) {

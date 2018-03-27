@@ -1460,13 +1460,6 @@ void check_servers(void)
   for (sfd = daemon->sfds; sfd; sfd = sfd->next)
     sfd->used = 0;
 
-#ifdef HAVE_DNSSEC
- /* Disable DNSSEC validation when using server=/domain/.... servers
-    unless there's a configured trust anchor. */
-  for (serv = daemon->servers; serv; serv = serv->next)
-    serv->flags |= SERV_DO_DNSSEC;
-#endif
-
   for (count = 0, serv = daemon->servers; serv; serv = serv->next)
     {
       if (!(serv->flags & (SERV_LITERAL_ADDRESS | SERV_NO_ADDR | SERV_USE_RESOLV | SERV_NO_REBIND)))
@@ -1478,6 +1471,11 @@ void check_servers(void)
 #ifdef HAVE_DNSSEC
 	  if (option_bool(OPT_DNSSEC_VALID))
 	    { 
+	      if (!(serv->flags & SERV_FOR_NODOTS))
+		serv->flags |= SERV_DO_DNSSEC;
+	      
+	      /* Disable DNSSEC validation when using server=/domain/.... servers
+		 unless there's a configured trust anchor. */
 	      if (serv->flags & SERV_HAS_DOMAIN)
 		{
 		  struct ds_config *ds;
@@ -1494,8 +1492,6 @@ void check_servers(void)
 		  if (!ds)
 		    serv->flags &= ~SERV_DO_DNSSEC;
 		}
-	      else if (serv->flags & SERV_FOR_NODOTS) 
-		serv->flags &= ~SERV_DO_DNSSEC;
 	    }
 #endif
 

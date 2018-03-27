@@ -1921,7 +1921,7 @@ static int prove_non_existence(struct dns_header *header, size_t plen, char *key
 		       int type_covered;
 		       unsigned char *psav = p1;
 		       
-		       if (rdlen < 18)
+		       if (rdlen1 < 18)
 			 return 0; /* bad packet */
 
 		       GETSHORT(type_covered, p1);

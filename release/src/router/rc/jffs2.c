@@ -351,11 +351,11 @@ void start_jffs2(void)
 #endif
 
 	run_userfile("/jffs", ".asusrouter", "/jffs", 3);
-//#ifdef CONFIG_BCMWL5
-//	check_asus_jffs();
-//#endif
-#ifdef RTAC68U
-       check_jffs2();
+
+#ifdef CONFIG_BCMWL5
+#if defined(RTAC68U) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U)	// kludge
+	check_asus_jffs();
+#endif
 #endif
 
 	if (!check_if_dir_exist("/jffs/scripts/")) mkdir("/jffs/scripts/", 0755);

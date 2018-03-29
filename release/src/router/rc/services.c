@@ -13431,9 +13431,11 @@ firmware_check_main(int argc, char *argv[])
 #endif
 #endif
 
-//#ifdef CONFIG_BCMWL5
-//	fw_check_pre();
-//#endif
+#ifdef CONFIG_BCMWL5
+#if defined(RTAC68U) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U) // kludge
+	fw_check_pre();
+#endif
+#endif
 
 	if(!check_imagefile(argv[1])) {
 		_dprintf("FW OK\n");

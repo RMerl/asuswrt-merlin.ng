@@ -983,10 +983,10 @@ ifeq ($(RTCONFIG_ADTBW),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc adtbw
 endif
 
-#ifeq ($(RTAC68U),y)
-#	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_enc_crc
-#	@cd $(INSTALLDIR)/sbin && ln -sf rc fw_check
-#endif
+ifeq ($(RTAC68U),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_enc_crc
+	@cd $(INSTALLDIR)/sbin && ln -sf rc fw_check
+endif
 
 clean:
 	rm -f rc *.o .*.depend *.prep

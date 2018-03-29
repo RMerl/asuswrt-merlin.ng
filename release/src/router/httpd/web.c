@@ -11566,40 +11566,11 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 	}
 #endif
 
-//#ifdef CONFIG_BCMWL5
-//	if (fw_check() != 0)
-//		goto err;
-//#endif
-#ifdef RTAC68U
-	if (!nvram_match("cpurev", "c0") &&
-		(nvram_match("bl_version", "2.1.2.2") || nvram_match("bl_version", "2.1.2.6"))) {
-		unlink("/tmp/linux.trx");
-		eval("/usr/sbin/webs_update.sh");
-
-		if (nvram_get_int("webs_state_update") &&
-			!nvram_get_int("webs_state_error") &&
-			strlen(nvram_safe_get("webs_state_info"))) {
-			_dprintf("retrieve firmware information\n");
-
-			if (!nvram_get_int("webs_state_flag"))
-			{
-				_dprintf("no need to upgrade firmware\n");
-				goto err;
-			}
-
-			eval("/usr/sbin/webs_upgrade.sh");
-
-			if (nvram_get_int("webs_state_error"))
-			{
-				_dprintf("error execute upgrade script\n");
-				goto err;
-			}
-
-			nvram_set("restore_defaults", "1");
-			system("nvram erase");
-
-		} else _dprintf("could not retrieve firmware information!\n");
-	}
+#ifdef CONFIG_BCMWL5
+#if defined(RTAC68U) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U)	// kludge
+	if (fw_check() != 0)
+		goto err;
+#endif
 #endif
 
 	upgrade_err = check_imagefile(upload_fifo);

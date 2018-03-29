@@ -246,17 +246,6 @@ start_emf(char *lan_ifname)
 	return;
 #endif /* HND_ROUTER && MCPD_PROXY */
 
-#if 0	//defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
-	char path[PATH_MAX], sval[16];
-
-	if (lan_ifname == NULL)
-		return;
-
-	snprintf(path, sizeof(path), "/sys/class/net/%s/bridge/multicast_snooping", lan_ifname);
-	snprintf(sval, sizeof(sval), "%d", !nvram_get_int("emf_enable"));
-	f_write_string(path, sval, 0, 0);
-#endif
-
 	if (!nvram_get_int("emf_enable"))
 		return;
 
@@ -5682,30 +5671,6 @@ void restart_wireless(void)
 	}
 #endif
 
-#ifdef RTAC88U
-	if (ipv6_enabled() && is_routing_enabled()) {
-		int service = get_ipv6_service();
-		switch (service) {
-		case IPV6_NATIVE_DHCP:
-			eval("rc", "rc_service", "restart_net");
-			break;
-		case IPV6_PASSTHROUGH:
-			stop_wan6();
-			stop_ipv6();
-			start_ipv6();
-			if (update_6rd_info()==0)
-			{
-				stop_wan_if(wan_primary_ifunit_ipv6());
-				start_wan_if(wan_primary_ifunit_ipv6());
-			}
-			else
-			{
-				start_wan6();
-			}
-			break;
-		}
-	}
-#endif
 	file_unlock(lock);
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 	nvram_set_int("led_status", LED_RESTART_WL_DONE);

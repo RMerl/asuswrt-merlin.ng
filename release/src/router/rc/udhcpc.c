@@ -1106,8 +1106,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 
 #if defined(RTCONFIG_AMAS)
 	ipaddr = getifaddr(lan_ifname, AF_INET, 0);
-	if (nvram_get_int("re_mode") == 1 && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
-		_dprintf("%s: lan ip is not change, don't call lan_up().\n", __FUNCTION__);
+	if ((nvram_get_int("re_mode") == 1 || sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
 		return 0;
 	}
 #endif	

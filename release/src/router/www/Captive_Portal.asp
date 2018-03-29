@@ -1926,7 +1926,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 <form method="post" name="splash_page_form" action="splash_page.cgi" target="hidden_frame_save" enctype="multipart/form-data">
 <input type="hidden" name="current_page" value="Captive_Portal.asp">
 <input type="hidden" name="next_page" value="Captive_Portal.asp">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="splash_page_id" value="">
 <input type="hidden" name="splash_page_attribute" value="">

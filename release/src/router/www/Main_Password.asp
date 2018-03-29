@@ -264,7 +264,7 @@ function submitForm(){
 
 		var nextPage = decodeURIComponent('<% get_ascii_parameter("nextPage"); %>');
 		setTimeout(function(){
-			location.href = (nextPage != "") ? nextPage : "<% rel_index_page(); %>";
+			location.href = (nextPage != "") ? nextPage : "/";
 		}, 3000);
 	}
 	else
@@ -387,7 +387,7 @@ function showError(str){
 <input type="hidden" name="action_script" value="saveNvram;restart_chpass">
 <input type="hidden" name="action_wait" value="0">
 <input type="hidden" name="current_page" value="Main_Login.asp">
-<input type="hidden" name="next_page" value="<% rel_index_page(); %>">
+<input type="hidden" name="next_page" value="">
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="login_authorization" value="">
 <input name="foilautofill" style="display: none;" type="password">

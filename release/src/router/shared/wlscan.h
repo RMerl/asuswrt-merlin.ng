@@ -145,6 +145,9 @@ struct apinfo
 	struct wpa_ie_data wid;
 	int status;
 	int NetworkType;
+#ifdef RTCONFIG_AMAS
+	int amas;
+#endif
 };
 extern struct apinfo apinfos[MAX_NUMBER_OF_APINFO];
 

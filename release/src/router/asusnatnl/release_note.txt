@@ -1,4 +1,16 @@
-﻿2017-11-15: 2.1.0.123
+﻿2018:01-08: 2.1.0.126
+==> SDK : 1. [bug fix] ANT : deadlock issue when 477 error received at make_call.
+          2. [bug fix] ANT : crash issue when make_call/hangup frequently.
+
+2018:01-05: 2.1.0.125
+==> SDK : 1. [bug fix] ANT : Fix crash issue when natnl_read_tnl_info called.
+          2. [bug fix] ANT : Fix deadlock issue.
+          3. [bug fix] ANT : Try to fix crash issue when make call.
+
+2018:01-04: 2.1.0.124
+==> SDK : 1 [bug fix] ANT : Fix numerous crash issues.
+
+2017-11-15: 2.1.0.123
 ==> SDK : 1. [update] ANT : Fill the status of tnl_info by pjsua_call_make_call if call->last_code is 0.
           2. [bug fix] ANT : The issue that making call is always failed on windows platform.
 

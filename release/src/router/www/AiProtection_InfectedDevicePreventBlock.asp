@@ -517,10 +517,10 @@ function deleteHover(flag){
 											<div id="detail_info_table" style="padding: 10px 15px;">
 												<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">
 													<div style="display:table-cell;width:110px;padding-right:5px;"><#diskUtility_time#></div>
-													<div style="display:table-cell;width:50px;padding-right:5px;">Level</div>
-													<div style="display:table-cell;width:150px;padding-right:5px;">Source</div>
-													<div style="display:table-cell;width:150px;padding-right:5px;">Destination</div>
-													<div style="display:table-cell;width:220px;padding-right:5px;">Security Alert</div>
+													<div style="display:table-cell;width:50px;padding-right:5px;"><#AiProtection_level_th#></div>
+													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Source#></div>
+													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Destination#></div>
+													<div style="display:table-cell;width:220px;padding-right:5px;"><#AiProtection_alert#></div>
 												</div>												
 											</div>
 										</div>

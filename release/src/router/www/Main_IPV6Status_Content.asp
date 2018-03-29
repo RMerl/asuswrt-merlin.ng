@@ -181,7 +181,7 @@ function show_pinholes() {
 											<div id="ipv6configblock"></div>
 										</div>
 										<br>
-                                                                        	<div style="margin-top:8px">
+										<div style="margin-top:8px">
 											<div id="ipv6clientsblock"></div>
 										</div>
 										<br>

@@ -5,7 +5,7 @@
 #***********************************************************************
 
 CC = mipsel-linux-gcc
-CFLAGS =  -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/curl/include  -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/libxml2/include/libxml2  -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/openssl-0.9.8m/include
+CFLAGS += -g -O2 -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/curl/include  -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/libxml2/include/libxml2  -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/openssl-0.9.8m/include
 CFLAGS += -DIPKG -D_FILE_OFFSET_BITS=64
 #CFLAGS = -I/home/gauss/oleg/optware/staging/opt/include -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/curl/include  -I/home/gauss/oleg/optware/staging/opt/include/libxml2  
 LDFLAGS =  -L/home/gauss/optware_bulid/APP/DownloadMaster2/build/curl/lib  -L/home/gauss/optware_bulid/APP/DownloadMaster2/build/libxml2/lib  -L/home/gauss/optware_bulid/APP/DownloadMaster2/build/openssl-0.9.8m/lib -L/home/gauss/optware_bulid/APP/DownloadMaster2/build/zlib/lib

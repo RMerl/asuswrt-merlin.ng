@@ -376,23 +376,42 @@ apply.lanStatic = function(){
 };
 
 apply.wlcKey = function(){
-	if(hasBlank([$("#wlc_wifiKey")])) return false;
+	if($("#wlc_ssid_manual").is(":visible")){
+		if(hasBlank([$("#wlc_ssid_manual")])) return false;
+		if(!validator.stringSSID(document.getElementById("wlc_ssid_manual"))) return false;
 
-	if(systemVariable.selectedAP.encryption == "WEP"){
-		var wepKey = $("#wlc_wifiKey").val();
+		qisPostData.wlc_band = $("#wlc_band_manual").val()
+		qisPostData.wlc_ssid = $("#wlc_ssid_manual").val()
 
-		if(wepKey.length !== 5 && wepKey.length !== 10 && wepKey.length !== 13 && wepKey.length !== 26){
-			$("#wlc_wifiKey").showTextHint("<#JS_wepkey#>");
-			return false;
+		if($("#wlc_auth_mode_manual").val() == "open"){
+			qisPostData.wlc_auth_mode = "open";
+			qisPostData.wlc_crypto = "";
 		}
-
-		qisPostData.wlc_key	= 1;
-		qisPostData.wlc_wep_key = wepKey;
-		qisPostData.wlc_wep = (wepKey.length < 11) ? "1" : "2";
+		else{
+			qisPostData.wlc_auth_mode = "psk2";
+			qisPostData.wlc_crypto = "aes";
+		}
 	}
-	else{
-		if(!validator.psk(document.getElementById("wlc_wifiKey"))) return false;
-		qisPostData.wlc_wpa_psk = $("#wlc_wifiKey").val();
+
+	if($("#wlc_wifiKey").is(":visible")){
+		if(hasBlank([$("#wlc_wifiKey")])) return false;
+
+		if(systemVariable.selectedAP.encryption == "WEP"){
+			var wepKey = $("#wlc_wifiKey").val();
+
+			if(wepKey.length !== 5 && wepKey.length !== 10 && wepKey.length !== 13 && wepKey.length !== 26){
+				$("#wlc_wifiKey").showTextHint("<#JS_wepkey#>");
+				return false;
+			}
+
+			qisPostData.wlc_key	= 1;
+			qisPostData.wlc_wep_key = wepKey;
+			qisPostData.wlc_wep = (wepKey.length < 11) ? "1" : "2";
+		}
+		else{
+			if(!validator.psk(document.getElementById("wlc_wifiKey"))) return false;
+			qisPostData.wlc_wpa_psk = $("#wlc_wifiKey").val();
+		}
 	}
 
 	goTo.GetLanIp();
@@ -857,6 +876,9 @@ abort.lanStatic = function(){
 };
 
 abort.wlcKey = function(){
+	postDataModel.remove(wlcObj);
+	systemVariable.selectedAP = [];
+
 	goTo.loadPage("siteSurvey_page", true);
 }
 
@@ -867,14 +889,15 @@ abort.siteSurvey = function(){
 	if(location.search == "?flag=sitesurvey_mb" || location.search == "?flag=sitesurvey_rep"){
 		window.history.back();
 	}
-	else if(isOriginSwMode("RP") || isOriginSwMode("MB")){
+	else if(systemVariable.advSetting){
+		postDataModel.remove(opModeObj);
+		goTo.loadPage("opMode_page", true);
+	}
+	else{
 		if(!systemVariable.forceChangePw)
 			goTo.loadPage("welcome", true);
 		else
 			goTo.loadPage("login_name", true);	
-	}
-	else{
-		goTo.loadPage("opMode_page", true);
 	}
 }
 
@@ -1438,7 +1461,7 @@ goTo.IPTV = function(){
 					qisPostData.switch_wan0prio = "0";
 					qisPostData.switch_wan1tagid = "600";
 					qisPostData.switch_wan1prio = "0";
-					qisPostData.switch_wan2tagid = "0";
+					qisPostData.switch_wan2tagid = "";
 					qisPostData.switch_wan2prio = "0";
 
 					$("#iptv_stb").show();
@@ -1451,9 +1474,9 @@ goTo.IPTV = function(){
 					qisPostData.switch_stb_x = "0";
 					qisPostData.switch_wan0tagid = "500";
 					qisPostData.switch_wan0prio = "0";
-					qisPostData.switch_wan1tagid = "0";
+					qisPostData.switch_wan1tagid = "";
 					qisPostData.switch_wan1prio = "0";
-					qisPostData.switch_wan2tagid = "0";
+					qisPostData.switch_wan2tagid = "";
 					qisPostData.switch_wan2prio = "0";
 
 					$("#iptv_stb").hide();
@@ -1483,7 +1506,7 @@ goTo.IPTV = function(){
 					qisPostData.switch_wan0prio = "0";
 					qisPostData.switch_wan1tagid = "20";
 					qisPostData.switch_wan1prio = "4";
-					qisPostData.switch_wan2tagid = "0";
+					qisPostData.switch_wan2tagid = "";
 					qisPostData.switch_wan2prio = "0";
 
 					$("#iptv_stb").show();
@@ -1496,7 +1519,7 @@ goTo.IPTV = function(){
 					qisPostData.switch_stb_x = "3";
 					qisPostData.switch_wan0tagid = "1103";
 					qisPostData.switch_wan0prio = "1";
-					qisPostData.switch_wan1tagid = "0";
+					qisPostData.switch_wan1tagid = "";
 					qisPostData.switch_wan1prio = "0";
 					qisPostData.switch_wan2tagid = "1107";
 					qisPostData.switch_wan2prio = "1";
@@ -1511,7 +1534,7 @@ goTo.IPTV = function(){
 					qisPostData.switch_stb_x = "3";
 					qisPostData.switch_wan0tagid = "621";
 					qisPostData.switch_wan0prio = "0";
-					qisPostData.switch_wan1tagid = "0";
+					qisPostData.switch_wan1tagid = "";
 					qisPostData.switch_wan1prio = "0";
 					qisPostData.switch_wan2tagid = "821";
 					qisPostData.switch_wan2prio = "0";
@@ -1526,7 +1549,7 @@ goTo.IPTV = function(){
 					qisPostData.switch_stb_x = "3";
 					qisPostData.switch_wan0tagid = "11";
 					qisPostData.switch_wan0prio = "0";
-					qisPostData.switch_wan1tagid = "0";
+					qisPostData.switch_wan1tagid = "";
 					qisPostData.switch_wan1prio = "0";
 					qisPostData.switch_wan2tagid = "14";
 					qisPostData.switch_wan2prio = "0";
@@ -1603,9 +1626,9 @@ goTo.IPTV = function(){
 					qisPostData.switch_stb_x = "0";
 					qisPostData.switch_wan0tagid = "10";
 					qisPostData.switch_wan0prio = "0";
-					qisPostData.switch_wan1tagid = "0";
+					qisPostData.switch_wan1tagid = "";
 					qisPostData.switch_wan1prio = "0";
-					qisPostData.switch_wan2tagid = "0";
+					qisPostData.switch_wan2tagid = "";
 					qisPostData.switch_wan2prio = "0";
 
 					$("#iptv_stb").hide();
@@ -1798,6 +1821,12 @@ goTo.siteSurvey = function(){
 					return tmpHtml;
 				})
 
+				$(".apListDiv").hover(function(){
+					$(this).find(".ap_ssid").addClass("ap_ssid_hover")
+				}, function(){
+					$(this).find(".ap_ssid").removeClass("ap_ssid_hover")
+				})
+
 				$(".apProfile").click(function(){
 					systemVariable.selectedAP = systemVariable.papList[this.id];
 					postDataModel.insert(wlcObj);
@@ -1868,6 +1897,22 @@ goTo.siteSurvey = function(){
 };
 
 goTo.wlcKey = function(){
+	$(".manual_pap_setup")
+		.toggle(!qisPostData.hasOwnProperty("wlc_ssid"));
+
+	$("#wlc_auth_mode_manual")
+		.change(function(){
+			var curAuthMode = $(this).val();
+			$("#manual_pap_setup-key").toggle(curAuthMode !== "open");
+		})
+
+	if($("#wlc_band_manual").has("option").length == 0){
+		var wlArray = getAllWlArray();
+		wlArray.forEach(function(band){
+			$("#wlc_band_manual").append($("<option>").val(band.ifname).html(band.title))
+		})
+	}
+
 	goTo.loadPage("wlcKey_setting", false);
 };
 
@@ -1905,20 +1950,6 @@ goTo.Wireless = function(){
 		$(".secureInput")
 			.unbind("click")
 			.click(checkPasswd);
-	}
-
-	function getAllWlArray(){
-		var wlArrayRet = [{"title":"2.4GHz", "ifname":"0", "suffix": ""}];
-		
-		if(isSupport("TRIBAND")){
-			wlArrayRet.push({"title":"5GHz-1", "ifname":"1", "suffix": "_5G-1"})
-			wlArrayRet.push({"title":"5GHz-2", "ifname":"2", "suffix": "_5G-2"})
-		}
-		else if(isSupport("DUALBAND")){
-			wlArrayRet.push({"title":"5GHz", "ifname":"1", "suffix": "_5G"})
-		}
-
-		return wlArrayRet;
 	}
 
 	postDataModel.insert(generalObj);

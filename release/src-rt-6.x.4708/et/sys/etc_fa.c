@@ -291,6 +291,8 @@ typedef struct fa_info {
 	faregs_t		*regs;		/* FA/CTF register space address(virtual address) */
 
 	void			*faimp_dev;	/* Specific for AUX device */
+	uint32			vlan1map;
+	uint32			vlan2map;
 } fa_info_t;
 
 static fa_info_t *aux_dev = NULL;
@@ -887,6 +889,85 @@ done:
 	return ret;
 }
 
+static void
+get_vlan_portmap(fa_info_t *fai, uint16 vid, uint32 *portmap)
+{
+	char vlanports[] = "vlanXXXXports";
+	char port[] = "XXXX", *next;
+	const char *ports, *cur;
+	int len, pid;
+	uint32 map = 0;
+
+	sprintf(vlanports, "vlan%dports", vid);
+	ports = getvar(fai->vars, vlanports);
+	if (!ports)
+		return;
+
+	for (cur = ports; cur; cur = next) {
+		/* tokenize the port list */
+		while (*cur == ' ')
+			cur ++;
+		next = bcmstrstr(cur, " ");
+		len = next ? next - cur : strlen(cur);
+		if (!len)
+			break;
+		if (len > sizeof(port) - 1)
+			len = sizeof(port) - 1;
+		strncpy(port, cur, len);
+		port[len] = 0;
+
+		/* make sure port # is within the range */
+		pid = bcm_atoi(port);
+		if (pid >= 5)
+			continue;
+		map |= (1 << pid);
+	}
+
+	if (map)
+		*portmap = map;
+}
+
+void
+fa_bhdr_switch(fa_t *fa, bool fa_on, bool bhdr_on)
+{
+	fa_info_t *fai = (fa_info_t *)fa;
+	uint32 val;
+	osl_t *osh;
+	faregs_t *regs;
+
+	if (!fa || !FA_IS_FA_DEV(fa))
+		return;
+
+	if (FA_IS_AUX_DEV(fa))
+		return;
+
+	if (fai->acc_mode != CTF_FA_NORMAL)
+		return;
+
+	if (fa_on && !bhdr_on && HW_HASH()) {
+		ET_ERROR(("HW hash mode must enable bhdr.\n"));
+		return;
+	}
+
+	osh = si_osh(fai->sih);
+	regs = fai->regs;
+
+	if (bhdr_on) {
+		/* Init BRCM hdr control */
+		val = (CTF_BRCM_HDR_PARSE_IGN_EN | CTF_BRCM_HDR_HW_EN |
+			CTF_BRCM_HDR_SW_RX_EN | CTF_BRCM_HDR_SW_TX_EN);
+		W_REG(osh, &regs->bcm_hdr_ctl, val);
+
+		fai->pub.flags |= (FA_BCM_HDR_RX | FA_BCM_HDR_TX);
+	}
+	else {
+		W_REG(osh, &regs->bcm_hdr_ctl, 0);
+		fai->pub.flags &= ~(FA_BCM_HDR_RX | FA_BCM_HDR_TX);
+	}
+
+	robo_fa_enable(fai->robo, fa_on, bhdr_on);
+}
+
 static int32
 fa_down(fa_info_t *fai)
 {
@@ -904,12 +985,6 @@ fa_down(fa_info_t *fai)
 	/* Set to BYPASS mode */
 	if ((ret = fa_setmode(fai, CTF_FA_BYPASS)) != BCME_OK)
 		goto done;
-
-	/* In BYPASS mode disable BCM HDR in FA, but make sure on
-	 * ROBO switch BRCM_HDR_CTL(page:0x2, Off:0x3) clear
-	 * related bit for IMP port.
-	 */
-	W_REG(osh, &regs->bcm_hdr_ctl, 0);
 
 	/* clear L2 skip control */
 	W_REG(osh, &regs->l2_skip_ctl, 0);
@@ -938,9 +1013,7 @@ fa_down(fa_info_t *fai)
 		ETC_FA_UNLOCK(fai);
 	}
 
-	fai->pub.flags &= ~(FA_BCM_HDR_RX | FA_BCM_HDR_TX);
-
-	robo_fa_enable(fai->robo, FALSE, FALSE);
+	fa_bhdr_switch((fa_t *)fai, FALSE, FALSE);
 
 done:
 	return ret;
@@ -953,6 +1026,8 @@ fa_up(fa_info_t *fai, uint8 mode)
 	int32 ret = BCME_OK;
 	osl_t *osh = si_osh(fai->sih);
 	faregs_t *regs = fai->regs;
+	bool bhdr_enable;
+	uint32 portmap;
 
 	if (fai->acc_mode == mode) {
 		ET_TRACE(("%s: Already in same mode !\n", __FUNCTION__));
@@ -977,20 +1052,22 @@ fa_up(fa_info_t *fai, uint8 mode)
 
 	fa_clr_all_int(fai);
 
-	if (HW_HASH()) {
-		/* Init BRCM hdr control */
-		val = (CTF_BRCM_HDR_PARSE_IGN_EN | CTF_BRCM_HDR_HW_EN |
-			CTF_BRCM_HDR_SW_RX_EN | CTF_BRCM_HDR_SW_TX_EN);
-		W_REG(osh, &regs->bcm_hdr_ctl, val);
-
-		fai->pub.flags |= (FA_BCM_HDR_RX | FA_BCM_HDR_TX);
-	}
-	else {
+	if (!HW_HASH()) {
 		/* Init CRC CCITT table for SW hash */
 		init_crcccitt_tab();
 	}
 
-	robo_fa_enable(fai->robo, TRUE, HW_HASH());
+	bhdr_enable = getintvar(NULL, "bhdr_enable");
+	ET_ERROR(("bhdr_enable %d\n", bhdr_enable));
+	fa_bhdr_switch((fa_t *)fai, TRUE, bhdr_enable);
+
+	portmap = 0;
+	get_vlan_portmap(fai, 1, &portmap);
+	fai->vlan1map = portmap;
+
+	portmap = 0;
+	get_vlan_portmap(fai, 2, &portmap);
+	fai->vlan2map = portmap;
 
 	/* Init L2 skip control */
 	val = CTF_L2SKIP_ET_TO_SNAP_CONV;
@@ -1456,20 +1533,79 @@ fa_enable_device(fa_t *fa)
 	return 0;
 }
 
+static const struct ether_addr mcast_rsvd_mac[] =
+{
+	{{0x01, 0x80, 0xc2, 0x00, 0x00, 0x0e}}
+};
+
+static bool
+mcast_is_reserved(void *mac)
+{
+	int i;
+
+	for (i = 0; i < sizeof(mcast_rsvd_mac)/sizeof(struct ether_addr); i++) {
+		if (!eacmp(&mcast_rsvd_mac[i], mac))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+static bool
+need_indicate_dst_map(void *p)
+{
+	if (ETHER_ISMULTI(PKTDATA(osh, p)) && mcast_is_reserved(PKTDATA(osh, p)))
+		return TRUE;
+
+	return FALSE;
+}
+
 void *
 fa_process_tx(fa_t *fa, void *p)
 {
 	fa_info_t *fai = (fa_info_t *)fa;
 	osl_t *osh = si_osh(fai->sih);
+	bcm_hdr_t bhdr;
+	uint32 dst_map = 0;
+
+	/* Validate the packet pointer */
+	if (p == NULL)
+		return NULL;
+
+	if (need_indicate_dst_map(p)) {
+		struct ethervlan_header *evh;
+
+		evh = (struct ethervlan_header *)PKTDATA(et->osh, p);
+		if (evh->vlan_type == HTON16(ETHER_TYPE_8021Q)) {
+			if ((NTOH16(evh->vlan_tag) & VLAN_VID_MASK) == 1)
+				dst_map = fai->vlan1map;
+			else if ((NTOH16(evh->vlan_tag) & VLAN_VID_MASK) == 2)
+				dst_map = fai->vlan2map;
+		}
+	}
 
 	BCM_REFERENCE(osh);
 
-	if (PKTHEADROOM(osh, p) < 4)
+	if (PKTHEADROOM(osh, p) < 4) {
+		void *tmp_p = p;
 		p = PKTEXPHEADROOM(osh, p, 4);
+		/* To free original one and check the new one */
+		PKTFREE(osh, tmp_p, TRUE);
+		if (p == NULL) {
+			ET_ERROR(("%s: Out of memory while adjusting headroom\n", __FUNCTION__));
+			return NULL;
+		}
+	}
 
 	/* For now always opcode 0x0 */
 	PKTPUSH(osh, p, 4);
 	memset(PKTDATA(osh, p), 0, 4);
+
+	if (dst_map) {
+		bhdr.oc01.op_code = 0x1;
+		bhdr.oc01.dst_map = dst_map & 0x7fffff;
+		hton32_ua_store(bhdr.word, PKTDATA(osh, p));
+	}
+
 	if (PKTLEN(osh, p) < 68)
 		PKTSETLEN(osh, p, 68);
 

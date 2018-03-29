@@ -1144,7 +1144,7 @@ function genMain_table(){
 	code += '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
 	code += '<thead><tr>';
 	if(pm_support)
-		code += '<td colspan="5">Rule List&nbsp;(<#List_limit#>&nbsp;32)</td>';
+		code += '<td colspan="5"><#PM_Rule_List#>&nbsp;(<#List_limit#>&nbsp;32)</td>';
 	else
 		code += '<td colspan="5"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;32)</td>';
 	code += '</tr></thead>';	
@@ -1435,7 +1435,7 @@ function change_scheduler(value){
 					<input type="hidden" name="action_mode" value="apply">
 					<input type="hidden" name="action_script" value="saveNvram">
 					<input type="hidden" name="action_wait" value="1">
-					<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+					<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 					<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 					<input type="hidden" name="bwdpi_app_rulelist_edit" id="bwdpi_app_rulelist_edit" value="<% nvram_get("bwdpi_app_rulelist"); %>">
 					<tr>

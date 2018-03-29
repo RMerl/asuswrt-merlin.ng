@@ -5,7 +5,7 @@
 #***********************************************************************
 CC = gcc
 
-CFLAGS = -g -rdynamic
+CFLAGS = -g -O2 -rdynamic
 LIBS = -lcurl -lxml2 -lssl -lcrypto
 
 all: asuswebstorage

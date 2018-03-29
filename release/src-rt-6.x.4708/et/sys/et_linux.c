@@ -1599,6 +1599,30 @@ et_sendnext(et_info_t *et)
 		skb = et_skb_dequeue(et, priq);
 
 		ET_TXQ_UNLOCK(et);
+
+#if defined(ETFA)
+		/*
+		 * When BHDR is enabled for TX, BHDR will be inserted in the packet header.
+		 * So we need to reallocate private buffers for shared packets and
+		 * convert non-linear small packets to linear for trimming later.
+		 */
+		if (FA_TX_BCM_HDR((fa_t *)et->etc->fa) && !PKTISCHAINED(skb) &&
+			(PKTSHARED(skb) || (skb_shinfo(skb)->nr_frags > 1))) {
+			struct sk_buff *nskb = NULL;
+
+			nskb = skb_copy_expand(skb, PKTHEADROOM(et->osh, skb) + 4,
+				PKTTAILROOM(et->osh, skb), GFP_ATOMIC);
+			PKTFRMNATIVE(et->osh, skb);
+			PKTFREE(et->osh, skb, TRUE);
+			if (!nskb) {
+				etc->txnobuf++;
+				continue;
+			}
+			skb = nskb;
+			PKTCCLRFLAGS(skb);
+		}
+#endif /* ETFA */
+
 		ET_PRHDR("tx", (struct ether_header *)skb->data, skb->len, etc->unit);
 		ET_PRPKT("txpkt", skb->data, skb->len, etc->unit);
 

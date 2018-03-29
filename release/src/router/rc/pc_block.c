@@ -156,7 +156,7 @@ void handle_req(int sockfd, char *buf, char *mac)
 	time_t now;
 	int port;
 
-	if (strncmp(buf, "GET /", 5) == 0 || strncmp(buf, "POST /", 6) == 0) {
+	if (strncmp(buf, "GET /", 5) == 0) {
 		now = time(NULL);
 		strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
 #ifdef RTCONFIG_HTTPS

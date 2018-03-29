@@ -661,7 +661,6 @@ define(function(){
 				}
 
 				if(lyra_hide_support){
-					retArray.push("Advanced_IPTV_Content.asp");
 					retArray.push("AiProtection_HomeSecurity.asp");
 					retArray.push("AiProtection_WebProtector.asp");
 					retArray.push("ParentalControl.asp");

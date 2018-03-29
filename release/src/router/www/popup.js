@@ -67,7 +67,7 @@ function LoadingProgress(seconds){
 			}
 			else if(location.pathname.indexOf("QIS_wizard.htm") < 0 && location.pathname.indexOf("Advanced_FirmwareUpgrade_Content") < 0 && location.pathname.indexOf("Advanced_SettingBackup_Content") < 0){
 				setTimeout("hideLoadingBar();",1000);
-				location.href = "<% abs_index_page(); %>";
+				location.href = "/";
 			}
 		}
 	}

@@ -501,7 +501,7 @@ function gotoIndex(){
 		location.href = '/QIS_wizard_m.htm?flag=wireless';
 	}
 	else
-		location.href = "<% abs_index_page(); %>";
+		location.href = "/";
 }
 
 function check_DUT(){
@@ -540,7 +540,7 @@ function detect_httpd(){
     	},
     	success: function(){
     		setTimeout("hideLoadingBar();",1000);
-      		location.href = "<% abs_index_page(); %>";
+		location.href = "/";
   		}
   	});
 }

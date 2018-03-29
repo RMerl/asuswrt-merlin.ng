@@ -620,10 +620,10 @@ OBJS += amas_wlcconnect.o
 OBJS += amas_bhctrl.o
 endif
 OBJS += amas_lanctrl.o
+endif
 ifeq ($(RTCONFIG_LIBASUSLOG),y)
 LDFLAGS += -L$(TOP)/libasuslog -lasuslog
 CFLAGS += -I$(TOP)/libasuslog
-endif
 endif
 
 all: rc init.prep

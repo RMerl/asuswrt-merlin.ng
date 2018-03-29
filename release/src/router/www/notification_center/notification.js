@@ -53,14 +53,14 @@ var notification = {
 	},
 
 	get_nc_setting_conf: function(xhr){
-		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 		aaa = xhr;
 		var response = JSON.parse(xhr.responseText);
 		notification.nc_setting_conf = decodeURIComponent(response.nc_setting_conf).replace(/&#62/g, ">").replace(/&#60/g, "<").split('<');
 	},
 
 	get_nt_content: function(xhr){
-		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 		var response = JSON.parse(xhr.responseText);
 		NTDB_content = response;
@@ -73,7 +73,7 @@ var notification = {
 	},
 
 	refresh_ntinfo: function(xhr){
-		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 		var response = JSON.parse(xhr.responseText);
 		NTDB_info = response;
@@ -108,7 +108,7 @@ var notification = {
 	},
 
 	update_nt_action_check: function(xhr){
-		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+		if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 		
 		var response = JSON.parse(xhr.responseText);
 		notification.nc_web_app_enable = response.nc_web_app_enable;

@@ -287,7 +287,9 @@ var isSwMode = function(mode){
 	return (ui_sw_mode.search(mode) !== -1);
 }
 
-var current_url = location.pathname.substring(location.pathname.lastIndexOf('/') + 1) || "<% rel_index_page(); %>";
+var INDEXPAGE = "<% rel_index_page(); %>";
+var ABS_INDEXPAGE = "<% abs_index_page(); %>";
+var current_url = location.pathname.substring(location.pathname.lastIndexOf('/') + 1) || INDEXPAGE;
 var productid = '<#Web_Title2#>';
 var based_modelid = '<% nvram_get("productid"); %>';
 var odmpid = '<% nvram_get("odmpid"); %>';
@@ -629,13 +631,12 @@ var cp_freewifi_support = isSupport("cp_freewifi");
 var cp_advanced_support = isSupport("cp_advanced");
 var fbwifi_support = isSupport("fbwifi");
 var noiptv_support = isSupport("noiptv");
-var nz_isp_support = isSupport("nz_isp");
 var app_support = isSupport("app");
 var letsencrypt_support = isSupport("letsencrypt");
 var pm_support = isSupport("permission_management");
-var hive_hide_support = isSupport("hive_hide");
 var wifiproxy_support = isSupport("wifiproxy");
 var lyra_hide_support = isSupport("lyra_hide");
+var port2_device = isSupport("port2_device");
 var hdspindown_support = isSupport("hdspindown");
 if ("<% nvram_get("amas_force"); %>" == "1") {
 	var amesh_support = uiSupport("amas");
@@ -651,6 +652,7 @@ var tagged_based_vlan = isSupport("tagged_based_vlan");
 var vpn_fusion_support = isSupport("vpn_fusion");
 var meoVoda_support = isSupport("meoVoda");
 var movistarTriple_support = isSupport("movistarTriple");
+var utf8_ssid_support = isSupport("utf8_ssid");
 
 var QISWIZARD = "QIS_wizard.htm";
 
@@ -828,8 +830,8 @@ function show_banner(L3){// L3 = The third Level of Menu
 	banner_code +='</form>\n'; 
 
 	banner_code +='<form method="post" name="internetForm_title" action="/start_apply2.htm" target="hidden_frame">\n';
-	banner_code +='<input type="hidden" name="current_page" value="<% abs_index_page(); %>">\n';
-	banner_code +='<input type="hidden" name="next_page" value="<% abs_index_page(); %>">\n';
+	banner_code +='<input type="hidden" name="current_page" value="/">\n';
+	banner_code +='<input type="hidden" name="next_page" value="/">\n';
 	banner_code +='<input type="hidden" name="action_mode" value="apply">\n';
 	banner_code +='<input type="hidden" name="action_script" value="restart_wan_if">\n';
 	banner_code +='<input type="hidden" name="action_wait" value="5">\n';
@@ -861,8 +863,8 @@ function show_banner(L3){// L3 = The third Level of Menu
 	}
 
 	//banner_code +='<form method="post" name="wan_form" action="/start_apply.htm" target="hidden_frame">\n';
-	//banner_code +='<input type="hidden" name="next_page" value="<% abs_index_page(); %>">\n';
-	//banner_code +='<input type="hidden" name="current_page" value="<% abs_index_page(); %>">\n';
+	//banner_code +='<input type="hidden" name="next_page" value="/">\n';
+	//banner_code +='<input type="hidden" name="current_page" value="/">\n';
 	//banner_code +='<input type="hidden" name="action_mode" value="apply">\n';
 	//banner_code +='<input type="hidden" name="action_script" value="restart_wan_if">\n';
 	//banner_code +='<input type="hidden" name="action_wait" value="5">\n';    
@@ -2043,7 +2045,7 @@ function submit_language(obj){
 			action = "/start_apply.htm";
 			
 			if(location.pathname == "/")
-				current_page.value = "<% abs_index_page(); %>";
+				current_page.value = ABS_INDEXPAGE;
 			else
 				current_page.value = location.pathname;
 				
@@ -2294,7 +2296,7 @@ function gotoprev(formObj){
 	var prev_page = formObj.prev_page.value;
 	
 	if(prev_page == "/")
-		prev_page = "<% abs_index_page(); %>";
+		prev_page = ABS_INDEXPAGE;
 	
 	if(prev_page.indexOf('QIS') < 0){
 		formObj.action = prev_page;
@@ -2511,7 +2513,7 @@ if((sw_mode == "2" && wlc_express == "0")|| sw_mode == "4"){
 }
 
 function refreshStatus(xhr){
-	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 	setTimeout(function(){updateStatus();}, 3000);	/* restart ajax */
 	var devicemapXML = xhr.responseXML.getElementsByTagName("devicemap");
@@ -2878,7 +2880,7 @@ function refreshStatus(xhr){
 		if(_wlc_state == "wlc_state=2"){
 			document.getElementById("connect_status").className = "connectstatuson";
 			document.getElementById("connect_status").onclick = function(){openHint(24,3);}
-			if(location.pathname == "/" || location.pathname == "<% abs_index_page(); %>"){
+			if(location.pathname == "/" || location.pathname == ABS_INDEXPAGE){
 				document.getElementById("NM_connect_status").innerHTML = "<#Connected#>";
 				document.getElementById('single_wan').className = "single_wan_connected";
 			}	
@@ -2886,7 +2888,7 @@ function refreshStatus(xhr){
 		}
 		else{
 			document.getElementById("connect_status").className = "connectstatusoff";
-			if(location.pathname == "/" || location.pathname == "<% abs_index_page(); %>"){
+			if(location.pathname == "/" || location.pathname == ABS_INDEXPAGE){
 				document.getElementById("NM_connect_status").innerHTML = "<#Disconnected#>";		 
 				document.getElementById('single_wan').className = "single_wan_disconnected";				
 			}	
@@ -2895,7 +2897,7 @@ function refreshStatus(xhr){
 		document.getElementById("connect_status").onmouseover = function(){overHint(3);}
 		document.getElementById("connect_status").onmouseout = function(){nd();}
 		
-		if(location.pathname == "/" || location.pathname == "<% abs_index_page(); %>" ||
+		if(location.pathname == "/" || location.pathname == ABS_INDEXPAGE ||
 		   location.pathname == "<% abs_networkmap_page(); %>"){
 			if(wlc_band == 0) {	// show repeater and media bridge date rate
 				var speed_info = data_rate_info_2g;
@@ -2937,7 +2939,7 @@ function refreshStatus(xhr){
 		}	
 	}
 	else if(sw_mode == 3){
-		if(dhcp_override_support && (location.pathname == "/" || location.pathname == "<% abs_index_page(); %>")){
+		if(dhcp_override_support && (location.pathname == "/" || location.pathname == ABS_INDEXPAGE)){
 			if(dnsqmode == "1")
 				document.getElementById('single_wan').className = "single_wan_connected";
 			else
@@ -3017,8 +3019,8 @@ function refreshStatus(xhr){
 	// usb.storage
 	if(usb_support){
 		if(allUsbStatus != allUsbStatusTmp && allUsbStatusTmp != ""){
-			if(current_url=="<% abs_index_page(); %>"||current_url=="")
-				location.href = "<% abs_index_page(); %>";
+			if(current_url==ABS_INDEXPAGE||current_url=="")
+				location.href = ABS_INDEXPAGE;
 		}
 
 	 	require(['/require/modules/diskList.js'], function(diskList){

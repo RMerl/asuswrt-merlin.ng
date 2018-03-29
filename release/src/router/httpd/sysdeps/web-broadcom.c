@@ -134,18 +134,34 @@ ej_wl_sta_status(int eid, webs_t wp, char *name)
 	return 0;
 }
 
+#if defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_BCM_7114) && !defined(RTCONFIG_BCM9) && !defined(HND_ROUTER)
+#include <wlu_common.h>
+#endif
 #include <bcmendian.h>
 #include <bcmparams.h>		/* for DEV_NUMIFS */
 
+/* The below macros handle endian mis-matches between wl utility and wl driver. */
+#ifndef RTCONFIG_BCMWL6
+static bool g_swap = FALSE;
+#ifndef htod16
+#define htod16(i) (g_swap?bcmswap16(i):(uint16)(i))
+#endif
+#ifndef htod32
+#define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
+#endif
+#ifndef dtoh16
+#define dtoh16(i) (g_swap?bcmswap16(i):(uint16)(i))
+#endif
+#ifndef dtoh32
+#define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
+#endif
+#ifndef dtohchanspec
+#define dtohchanspec(i) (g_swap?dtoh16(i):i)
+#endif
+#endif
+
 #define SSID_FMT_BUF_LEN 4*32+1	/* Length for SSID format string */
 #define	MAX_STA_COUNT	128
-
-/* The below macros handle endian mis-matches between wl utility and wl driver. */
-static bool g_swap = FALSE;
-#define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
-#define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
-#define dtoh16(i) (g_swap?bcmswap16(i):(uint16)(i))
-#define dtohchanspec(i) (g_swap?dtoh16(i):i)
 
 /* 802.11i/WPA RSN IE parsing utilities */
 typedef struct {
@@ -1379,6 +1395,15 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char rate_buf[8];
 	int hr, min, sec;
 	sta_info_t *sta;
+#ifdef RTCONFIG_BCMWL6
+	wl_dfs_status_t *dfs_status;
+	char chanspec_str[CHANSPEC_STR_LEN];
+	uint bitmap;
+	uint channel;
+	uint32 chanspec_arg;
+	int first = 0, last = MAXCHANNEL, minutes;
+	bool all = TRUE;
+#endif
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 #ifdef RTCONFIG_PROXYSTA
@@ -1499,6 +1524,100 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	if (!strlen(name))
 		goto exit;
 
+#ifdef RTCONFIG_BCMWL6
+	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "off"))
+		goto sta_list;
+
+	memset(buf, 0, sizeof(buf));
+	strcpy(buf, "dfs_status");
+
+	if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0)
+		goto sta_list;
+
+	dfs_status = (wl_dfs_status_t *) buf;
+	dfs_status->state = dtoh32(dfs_status->state);
+	dfs_status->duration = dtoh32(dfs_status->duration);
+	dfs_status->chanspec_cleared = wl_chspec_from_driver(dfs_status->chanspec_cleared);
+
+	if (dfs_status->state >= WL_DFS_CACSTATES) {
+		ret += websWrite(wp, "\nDFS status: Unknown DFS state %d\n", dfs_status->state);
+	} else {
+		const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
+			"IDLE",
+			"PRE-ISM Channel Availability Check(CAC)",
+			"In-Service Monitoring(ISM)",
+			"Channel Switching Announcement(CSA)",
+			"POST-ISM Channel Availability Check",
+			"PRE-ISM Ouf Of Channels(OOC)",
+			"POST-ISM Out Of Channels(OOC)"
+		};
+
+		ret += websWrite(wp, "\nDFS status: state %s time elapsed %dms radar channel cleared by DFS ",
+			dfs_cacstate_str[dfs_status->state], dfs_status->duration);
+
+		if (dfs_status->chanspec_cleared) {
+			ret += websWrite(wp, "channel %s (0x%04X)\n",
+				wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str),
+				dfs_status->chanspec_cleared);
+		}
+		else {
+			ret += websWrite(wp, "none\n");
+		}
+	}
+
+	ret += websWrite(wp, "\n");
+	ret += websWrite(wp, "Channel Information                     \n");
+	ret += websWrite(wp, "----------------------------------------\n");
+
+	for (; first <= last; first++) {
+		channel = first;
+		chanspec_arg = CH20MHZ_CHSPEC(channel);
+
+		strcpy(buf, "per_chan_info");
+		memcpy((char *)(buf + strlen(buf) + 1), (char*)&chanspec_arg, sizeof(chanspec_arg));
+
+		if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0)
+			break;
+
+		bitmap = dtoh32(*(uint *)buf);
+		minutes = (bitmap >> 24) & 0xff;
+
+		if (!(bitmap & WL_CHAN_VALID_HW)) {
+			if (!all)
+				ret += websWrite(wp, "Invalid Channel\n");
+			continue;
+		}
+
+		if (!(bitmap & WL_CHAN_VALID_SW)) {
+			if (!all)
+				ret += websWrite(wp, "Not supported in current locale\n");
+			continue;
+		}
+
+		ret += websWrite(wp, "Channel %d\t", channel);
+
+		if (bitmap & WL_CHAN_BAND_5G)
+			ret += websWrite(wp, "A Band");
+		else
+			ret += websWrite(wp, "B Band");
+
+		if (bitmap & WL_CHAN_RADAR) {
+			ret += websWrite(wp, ", RADAR Sensitive");
+		}
+		if (bitmap & WL_CHAN_RESTRICTED) {
+			ret += websWrite(wp, ", Restricted");
+		}
+		if (bitmap & WL_CHAN_PASSIVE) {
+			ret += websWrite(wp, ", Passive");
+		}
+		if (bitmap & WL_CHAN_INACTIVE) {
+			ret += websWrite(wp, ", Temporarily Out of Service for %d minutes", minutes);
+		}
+		ret += websWrite(wp, "\n");
+	}
+
+sta_list:
+#endif
 	/* buffers and length */
 	mac_list_size = sizeof(auth->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
 	auth = malloc(mac_list_size);
@@ -1652,6 +1771,7 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			}
 		}
 	}
+
 	/* error/exit */
 exit:
 	if (auth) free(auth);
@@ -2157,7 +2277,7 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	int rate = 0;
 	char rate_buf[32];
 	struct ether_addr bssid;
-	unsigned char bssid_null[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
+	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	int sta_rate;
 	int from_app = 0;
 
@@ -3072,9 +3192,9 @@ ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int ret, i, k, left, ht_extcha;
 	int retval = 0, ap_count = 0, idx_same = -1, count = 0;
-	unsigned char *bssidp;
 	unsigned char rate;
 	unsigned char bssid[6];
+	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	char macstr[18];
 	char ure_mac[18];
 	char ssid_str[256];
@@ -3179,13 +3299,7 @@ ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv)
 				if (!SSID_valid)
 					goto next_info;
 #endif
-				bssidp = (unsigned char *)&info->BSSID;
-				sprintf(macstr, "%02X:%02X:%02X:%02X:%02X:%02X", (unsigned char)bssidp[0],
-										 (unsigned char)bssidp[1],
-										 (unsigned char)bssidp[2],
-										 (unsigned char)bssidp[3],
-										 (unsigned char)bssidp[4],
-										 (unsigned char)bssidp[5]);
+				ether_etoa((const unsigned char *) &info->BSSID, macstr);
 
 				idx_same = -1;
 				for (k = 0; k < ap_count; k++)	// deal with old version of Broadcom Multiple SSID (share the same BSSID)
@@ -3377,18 +3491,8 @@ next_info:
 
 	ret = wl_ioctl(WIF, WLC_GET_BSSID, bssid, sizeof(bssid));
 	memset(ure_mac, 0x0, 18);
-	if (!ret)
-	{
-		if ( !(!bssid[0] && !bssid[1] && !bssid[2] && !bssid[3] && !bssid[4] && !bssid[5]) )
-		{
-			sprintf(ure_mac, "%02X:%02X:%02X:%02X:%02X:%02X", (unsigned char)bssid[0],
-									    (unsigned char)bssid[1],
-									    (unsigned char)bssid[2],
-									    (unsigned char)bssid[3],
-									    (unsigned char)bssid[4],
-									    (unsigned char)bssid[5]);
-		}
-	}
+	if (!ret && memcmp(bssid, bssid_null, ETHER_ADDR_LEN))
+		ether_etoa((const unsigned char *) &bssid, ure_mac);
 
 	if (strstr(nvram_safe_get("wl0_akm"), "psk"))
 	{
@@ -4296,8 +4400,6 @@ exit:
 	return errno;
 }
 
-static bool escan_swap = FALSE;
-#define htod16(i) (escan_swap?bcmswap16(i):(uint16)(i))
 #define WL_EVENT_TIMEOUT 10
 
 struct escan_bss {
@@ -4613,7 +4715,6 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	wl_bss_info_t *bi;
 	wl_bss_info_107_t *old_bi;
 	uint i, ap_count = 0;
-	unsigned char *bssidp;
 	char ssid_str[128];
 	char macstr[18];
 	int retval = 0, ctl_ch;
@@ -4622,11 +4723,11 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
 	ctl_ch = wl_control_channel(unit);
-        if (!nvram_match(strcat_r(prefix, "reg_mode", tmp), "off")
+	if (!nvram_match(strcat_r(prefix, "reg_mode", tmp), "off")
 		&& ((ctl_ch > 48) && (ctl_ch < 149))) {
-                dbg("scan rejected under DFS mode\n");
-                return 0;
-        }
+		dbg("scan rejected under DFS mode\n");
+		return 0;
+	}
 
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
@@ -4706,14 +4807,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			memset(ssid_str, 0, sizeof(ssid_str));
 			char_to_ascii(ssid_str, trim_r((char *)ap_list[i].ssid));
 
-			bssidp = (unsigned char *)&ap_list[i].BSSID;
-			sprintf(macstr, "%02X:%02X:%02X:%02X:%02X:%02X",
-				(unsigned char)bssidp[0],
-				(unsigned char)bssidp[1],
-				(unsigned char)bssidp[2],
-				(unsigned char)bssidp[3],
-				(unsigned char)bssidp[4],
-				(unsigned char)bssidp[5]);
+			ether_etoa((const unsigned char *) &ap_list[i].BSSID, macstr);
 
 			dbg("%-4d%-33s%-18s\n",
 				ap_list[i].channel,
@@ -4795,7 +4889,7 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	int mac_list_size, i, unit;
 	int retval = 0, psta = 0;
 	struct ether_addr bssid;
-	unsigned char bssid_null[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
+	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	int psta_debug = 0;
 
 	if (nvram_match("psta_debug", "1"))

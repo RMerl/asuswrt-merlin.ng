@@ -290,12 +290,12 @@ function generateDetailTable(data_array){
 	var code = '';
 	code += '<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">';
 	code += '<div style="display:table-cell;width:70px;padding-right:5px;"><#diskUtility_time#></div>';
-	code += '<div style="display:table-cell;width:50px;padding-right:5px;">Level</div>';
+	code += '<div style="display:table-cell;width:50px;padding-right:5px;"><#AiProtection_level_th#></div>';
 	code += '<div style="display:table-cell;width:140px;padding-right:5px;">Type</div>';
 	
-	code += '<div style="display:table-cell;width:130px;padding-right:5px;">Source</div>';
-	code += '<div style="display:table-cell;width:130px;padding-right:5px;">Destination</div>';
-	code += '<div style="display:table-cell;width:180px;padding-right:5px;">Security Alert</div>';
+	code += '<div style="display:table-cell;width:130px;padding-right:5px;"><#AiProtection_event_Source#></div>';
+	code += '<div style="display:table-cell;width:130px;padding-right:5px;"><#AiProtection_event_Destination#></div>';
+	code += '<div style="display:table-cell;width:180px;padding-right:5px;"><#AiProtection_alert#></div>';
 	code += '</div>';
 
 	if(data_array == ""){
@@ -559,10 +559,10 @@ function deleteHover(flag){
 											<div id="detail_info_table" style="padding: 10px 15px;">
 												<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">
 													<div style="display:table-cell;width:110px;padding-right:5px;"><#diskUtility_time#></div>
-													<div style="display:table-cell;width:50px;padding-right:5px;">Level</div>
-													<div style="display:table-cell;width:150px;padding-right:5px;">Source</div>
-													<div style="display:table-cell;width:150px;padding-right:5px;">Destination</div>
-													<div style="display:table-cell;width:220px;padding-right:5px;">Security Alert</div>
+													<div style="display:table-cell;width:50px;padding-right:5px;"><#AiProtection_level_th#></div>
+													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Source#></div>
+													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Destination#></div>
+													<div style="display:table-cell;width:220px;padding-right:5px;"><#AiProtection_alert#></div>
 												</div>
 												<!--div style="word-break:break-all;border-bottom: 1px solid #797979">
 													<div style="display:table-cell;width:110px;height:30px;vertical-align:middle;padding-right:5px;">2016/08/15 11:25</div>

@@ -1064,7 +1064,7 @@ function clean_macerr(){
 		<table style="margin-top:10px;  width:760px;">
 			<tr><td colspan="2" style="color:#EBE8E8; font-size:20px; font-weight:bold; text-align:center;"><div id="Game_Boost_login_div"></div></td></tr>
 			<tr>
-				<th style="width:200px; height:35px; color:#949393; font-size:14px; text-align:right; padding-right:15px;">E-Mail</th><!--untranslated-->
+				<th style="width:200px; height:35px; color:#949393; font-size:14px; text-align:right; padding-right:15px;"><#AiProtection_WebProtector_EMail#></th>
 				<td style="color:#949393; font-size:14px; text-align:left;">
 				<input type="text" maxlength="32" class="login_input" id="wtf_username" name="wtf_username" value="" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 				<span ><a href="javascript:open_link('newAccount')" style="margin-left:5px;text-decoration:underline;color:#949393;"><#create_free_acc#></a></span>

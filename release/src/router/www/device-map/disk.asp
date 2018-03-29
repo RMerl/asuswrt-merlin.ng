@@ -203,8 +203,8 @@ function remove_disk_call(){
 		<td height="50" style="padding:10px 15px 0px 15px;">
 			<p class="formfonttitle_nwm" style="float:left;width:138px; " onmouseover="parent.overHint(24);" onmouseout="parent.nd();"><#WLANConfig11b_x_ReduceUSB3#></p>
 			<form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
-				<input type="hidden" name="current_page" value="<% abs_index_page(); %>">
-				<input type="hidden" name="next_page" value="<% abs_index_page(); %>">
+				<input type="hidden" name="current_page" value="/">
+				<input type="hidden" name="next_page" value="/">
 				<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
 				<input type="hidden" name="action_mode" value="apply">
 				<input type="hidden" name="action_script" value="reboot">

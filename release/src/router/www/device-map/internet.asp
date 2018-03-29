@@ -678,8 +678,8 @@ function manualSetup(){
 <body class="statusbody" onload="initial();">
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="internetForm" id="form" action="/start_apply2.htm" target="hidden_frame">
-<input type="hidden" name="current_page" value="<% abs_index_page(); %>">
-<input type="hidden" name="next_page" value="<% abs_index_page(); %>">
+<input type="hidden" name="current_page" value="/">
+<input type="hidden" name="next_page" value="/">
 <input type="hidden" name="flag" value="background">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="restart_wan_if">
@@ -819,11 +819,11 @@ function manualSetup(){
 </tr>
 
 <tr id=dualwan_row_main style="display:none">
-    <td style="padding:5px 10px 5px 15px;">
-    		<p class="formfonttitle_nwm">WAN Port</p>
-    		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="dualwan_current"></p>
-      	<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
-    </td>
+	<td style="padding:5px 10px 5px 15px;">
+		<p class="formfonttitle_nwm"><#wan_port#></p>
+		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="dualwan_current"></p>
+		<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+	</td>
 </tr>
 
 <tr id=dualwan_row_primary style="display:none">

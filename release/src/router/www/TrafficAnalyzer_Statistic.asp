@@ -154,16 +154,35 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 	var total_apps_traffic_temp = 0;
 	var traffic_unit = "";
 	var code = "";
+	var period = $("#duration_option").val();
+	var description = "";
 
 	if(type == "router"){
-		document.getElementById('info_block_title').innerHTML = "<#traffic_analysis_top5client_monthly#>";
 		document.getElementById('top_client_title').innerHTML = "<#Client_Name#>:";
+		if(period == "monthly"){
+			description = "<#traffic_analysis_top5client_monthly#>";
+		}
+		else if(period == "weekly"){
+			description = "<#traffic_analysis_top5client_weekly#>";
+		}
+		else if(period == "daily"){
+			description = "<#traffic_analysis_top5client_daily#>";
+		}	
 	}
 	else{
-		document.getElementById('info_block_title').innerHTML = "<#traffic_analysis_top5app_monthly#>";
 		document.getElementById('top_client_title').innerHTML = "App:";
+		if(period == "monthly"){
+			description = "<#traffic_analysis_top5app_monthly#>";
+		}
+		else if(period == "weekly"){
+			description = "<#traffic_analysis_top5app_weekly#>";
+		}
+		else if(period == "daily"){
+			description = "<#traffic_analysis_top5app_daily#>";
+		}
 	}
 	
+	document.getElementById('info_block_title').innerHTML = description;
 	if(top5_info == ""){
 		if(type == "router")
 			document.getElementById('top_client_name').innerHTML = "<#traffic_analysis_noclients#>";
@@ -200,15 +219,15 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 			}			
 		}
 		else{
-			document.getElementById('top_client_name').innerHTML = top5_info[client_index].name;
+			document.getElementById('top_client_name').innerHTML = total_clients_array[client_index].name;
 			if(document.getElementById('traffic_option').value == "both"){
-				total_traffic = top5_info[client_index].rx + top5_info[client_index].tx;
+				total_traffic = total_clients_array[client_index].rx + total_clients_array[client_index].tx;
 			}
 			else if(document.getElementById('traffic_option').value == "down"){
-				total_traffic = top5_info[client_index].rx;
+				total_traffic = total_clients_array[client_index].rx;
 			}
 			else{
-				total_traffic = top5_info[client_index].tx;
+				total_traffic = total_clients_array[client_index].tx;
 			}
 		}
 
@@ -851,10 +870,12 @@ function switch_content(obj){
 	obj.className = "block_filter_pressed";
 
 	var duration = 0;
-	if(document.getElementById('duration_option').value == "monthly"){
+	var period = document.getElementById('duration_option').value;
+	var description = "";
+	if(period == "monthly"){
 		duration = 31;
 	}
-	else if(document.getElementById('duration_option').value == "weekly"){
+	else if(period == "weekly"){
 		duration = 7;
 	}
 	else{
@@ -863,12 +884,31 @@ function switch_content(obj){
 	
 	if(obj.id == "router"){
 		get_every_client_data("all", "detail", duration, date_second, date_string);
+		if(period == "monthly"){
+			description = "<#traffic_analysis_top5client_monthly#>";
+		}
+		else if(period == "weekly"){
+			description = "<#traffic_analysis_top5client_weekly#>";
+		}
+		else if(period == "daily"){
+			description = "<#traffic_analysis_top5client_daily#>";
+		}
 	}
 	else{
 		get_every_app_data("all", "detail", duration, date_second, date_string);
+
+		if(period == "monthly"){
+			description = "<#traffic_analysis_top5app_monthly#>";
+		}
+		else if(period == "weekly"){
+			description = "<#traffic_analysis_top5app_weekly#>";
+		}
+		else if(period == "daily"){
+			description = "<#traffic_analysis_top5app_daily#>";
+		}
 	}
 	
-	
+	document.getElementById('info_block_title').innerHTML = description;
 	document.getElementById('graphical_info_block').style.display = "";
 	document.getElementById('detail_info_block').style.display = "none";
 	document.getElementById('top5_info_block').style.backgroundColor = color[0];
@@ -879,6 +919,7 @@ function switch_date_type(obj){
 	var mode = "";
 	var info_date = "";
 	var info_type = "";
+
 	if(obj.value == "monthly"){
 		mode = "day";
 		duration = "31";
@@ -896,13 +937,12 @@ function switch_date_type(obj){
 	}
 	
 	if(document.getElementById('router').className == "block_filter_pressed"){
-		info_type = "<#Traffic_Analyzer_TopClients#>";		
+		info_type = "Clients";		
 	}
 	else{
-		info_type = "<#Traffic_Analyzer_TopApps#>";
+		info_type = "Apps";
 	}
 
-	document.getElementById('info_block_title').innerHTML = info_date + " : " + info_type ;
 	if(info_type == "Clients")
 		get_every_client_data("all", "detail", duration, date_second, date_string);
 	else

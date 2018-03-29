@@ -375,7 +375,7 @@ function showclient_list(list){
 	document.getElementById("client_list_Block").style.display = "none";
 
 	if(direct_dut == 1)
-  		location.href = '<% abs_index_page(); %>';
+		location.href = '/';
 
 	if(document.getElementById('client_list_table').innerHTML == "<tbody></tbody>"){
 		code ='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>'

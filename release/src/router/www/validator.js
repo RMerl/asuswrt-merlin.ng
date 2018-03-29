@@ -1765,6 +1765,12 @@ var validator = {
         return true;
 	},
 
+	lengthInUtf8: function(str) {
+		var asciiLength = str.match(/[\u0000-\u007f]/g) ? str.match(/[\u0000-\u007f]/g).length : 0;
+		var multiByteLength = encodeURI(str.replace(/[\u0000-\u007f]/g)).match(/%/g) ? encodeURI(str.replace(/[\u0000-\u007f]/g, '')).match(/%/g).length : 0;
+		return asciiLength + multiByteLength;
+	},
+
 	ssidChar: function(ch){
 		if(ch >= 32 && ch <= 126)
 			return false;
@@ -1859,31 +1865,45 @@ var validator = {
 	},
 
 	stringSSID: function(o){
+		var rc_support = '<% nvram_get("rc_support"); %>';
+		var utf8_ssid_support = (rc_support.split(" ").indexOf("utf8_ssid") == -1) ? false : true;
 		var c;	// character code
 		var flag=0; // notify valid characters of SSID except space
 		
-		if(o.value==""){      // to limit null SSID
+		if(o.value==""){	// to limit null SSID
 			alert('<#JS_fieldblank#>');
 			o.focus();
 			return false;
 		}	
-		
-		for(var i = 0; i < o.value.length; ++i){
+
+		len = this.lengthInUtf8(o.value);
+
+		if(len > 32){
+			alert("SSID length is over 32 characters");
+			o.value = "";
+			o.focus();
+			o.select();
+			return false;
+		}
+
+		for(var i = 0; i < len; ++i){
+
 			c = o.value.charCodeAt(i);
-			
-			if(this.ssidChar(c)){
-				alert('<#JS_validSSID1#> '+o.value.charAt(i)+' <#JS_validSSID2#>');
-				o.value = "";
-				o.focus();
-				o.select();
-				return false;
+			if(!utf8_ssid_support){
+				if(this.ssidChar(c)){
+					alert('<#JS_validSSID1#> '+o.value.charAt(i)+' <#JS_validSSID2#>');
+					o.value = "";
+					o.focus();
+					o.select();
+					return false;
+				}
 			}
 			
 			if(c != 32)
 				flag ++;
 		}
-		
-		if(flag ==0){     // to limit SSID only include space
+
+		if(flag ==0){	// to limit SSID only include space
 			alert('<#JS_fieldblank#>');
 			return false;
 		}

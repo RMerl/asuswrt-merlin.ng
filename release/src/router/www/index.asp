@@ -95,27 +95,16 @@
 	background-color:#2b373b;
 	margin-left: 140px;
 	width: 600px;
-	height: 330px;
+	height: auto;
 	box-shadow: 3px 3px 10px #000;
 	display:block;
 	overflow: auto;
 	line-height: 180%;
 	font-size: 14px;
 }
-.AiMesh_promoteHint_close {
-	height: 35px;
-	background-repeat: no-repeat;
-	background-size: 35px 35px;
-	width: 35px;
-	cursor: pointer;
-	background-image: url(/images/button-close.gif);
-	position: absolute;
-	right: 0;
-	z-index: 100;
-}
 .AiMesh_promoteHint_content_bg {
 	width: 570px;
-	height: 240px;
+	height: 200px;
 	position: relative;
 	overflow: hidden;
 	margin: auto;
@@ -123,6 +112,7 @@
 }
 .AiMesh_promoteHint_content_bg.redirect {
 	height: auto;
+	text-align: center;
 }
 .AiMesh_promoteHint_content_left_bg {
 	float: left;
@@ -130,30 +120,24 @@
 	height: 100%;
 	margin: 0 1%;
 }
-.AiMesh_promoteHint_icon {
-	background: url(/images/New_ui/amesh/Amesh_button_light.png);
-	width: 100%;
-	height: 100px;
-	background-size: 80px;
-	background-repeat: no-repeat;
-	background-position: 50%;
+.AiMesh_promoteHint_title {
+	font-weight: bolder;
+	text-align: center;
+	font-size: 16px;
+	height: 50px;
+	line-height: 50px;
 }
 .AiMesh_promoteHint_img {
 	background-size: 100%;
 	background-repeat: no-repeat;
-	background-position: 50%;
+	background-position-y: 50%;
 	background-image: url(/images/New_ui/amesh/house_final_dea.png);
 }
 .AiMesh_promoteHint_redirect_text {
 	font-weight: bolder;
 	text-decoration: underline;
 	cursor: pointer;
-}
-.AiMesh_promoteHint_redirect_text.faq {
-	text-decoration: underline;
-	color: #FC0;
-	position: absolute;
-	right: 0;
+	margin: 10px;
 }
 </style>
 <script type="text/javascript" src="/md5.js"></script>
@@ -284,7 +268,7 @@ function initial(){
 		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
 		html += '<div id="iconAMesh" class="iconAMesh_dis" style="margin-top:20px;" onclick="clickEvent(this);"></div>';
 		html += '</a>';
-		html += '<div class="clients" id="ameshNumber" style="cursor:pointer;">AiMesh Node: <span>0</span></div>';/* untranslated */
+		html += '<div class="clients" id="ameshNumber" style="cursor:pointer;"><#AiMesh_Node#>: <span>0</span></div>';
 		$("#ameshContainer").html(html);
 		require(['/require/modules/amesh.js'], function(){
 			updateAMeshCount();
@@ -805,7 +789,7 @@ function clickEvent(obj){
 							stitle = "<#menu5_4_4#> Status";
 					}
 					else	
-						stitle = "Primary WAN status";
+						stitle = "<#statusTitle_Primary_WAN#>";
 				}
 				else{
 					if(dualwan_second_if == "wan")
@@ -819,14 +803,14 @@ function clickEvent(obj){
 							stitle = "<#menu5_4_4#> Status";
 					}
 					else
-						stitle = "Secondary WAN status";
+						stitle = "<#statusTitle_Secondary_WAN#>";
 				}
 			}
 			else {
 				if(obj.id.indexOf("primary") != -1)
-					stitle = "Primary WAN status"; /*untranslated*/
+					stitle = "<#statusTitle_Primary_WAN#>";
 				else
-					stitle = "Secondary WAN status"; /*untranslated*/
+					stitle = "<#statusTitle_Secondary_WAN#>";
 			}
 		}
 
@@ -1586,11 +1570,11 @@ function popupEditBlock(clientObj){
 		}
 		if(clientObj.isLogin) {
 			document.getElementById('client_login').style.display = "";
-			document.getElementById('client_login').innerHTML = "logged-in-user";
+			document.getElementById('client_login').innerHTML = "<#Clientlist_Logged_In_User#>";
 		}
 		if(clientObj.isPrinter) {
 			document.getElementById('client_printer').style.display = "";
-			document.getElementById('client_printer').innerHTML = "Printer";
+			document.getElementById('client_printer').innerHTML = "<#Clientlist_Printer#>";
 		}
 		if(clientObj.isITunes) {
 			document.getElementById('client_iTunes').style.display = "";
@@ -2071,16 +2055,10 @@ function updateClientsCount() {
 		success: function(response){
 			var re_tune_client_count = function() {
 				var count = 0;
-				var fromNetworkmapd_array = [];
+				count = fromNetworkmapd_maclist[0].length;
 				for(var i in fromNetworkmapd_maclist[0]){
 					if (fromNetworkmapd_maclist[0].hasOwnProperty(i)) {
-						fromNetworkmapd_array[fromNetworkmapd_maclist[0][i]] = 1;
-					}
-				}
-				count = fromNetworkmapd_maclist[0].length;
-				for(var i in get_cfg_clientlist[0]){
-					if (get_cfg_clientlist[0].hasOwnProperty(i)) {
-						if(fromNetworkmapd_array[get_cfg_clientlist[0][i].mac] != undefined)
+						if(clientList[fromNetworkmapd_maclist[0][i]].amesh_isRe)
 							count--;
 					}
 				}
@@ -2127,20 +2105,6 @@ function AiMesh_promoteHint() {
 		$AiMesh_promoteHint.attr({"onselectstart" : "return false"});
 		$AiMesh_promoteHint.appendTo($('body'));
 
-		var $closeHtml = $('<div>');
-		$closeHtml.addClass("AiMesh_promoteHint_close");
-		$closeHtml.click(
-			function() {
-				if($('.AiMesh_promoteHint_bg').length > 0)
-					$('.AiMesh_promoteHint_bg').remove();
-			}
-		);
-		$AiMesh_promoteHint.append($closeHtml);
-
-		var $clearHtml = $('<div>');
-		$clearHtml.css("clear", "both");
-		$AiMesh_promoteHint.append($clearHtml);
-
 		var $AiMesh_promoteHint_content_bg = $('<div>');
 		$AiMesh_promoteHint_content_bg.addClass("AiMesh_promoteHint_content_bg");
 		$AiMesh_promoteHint.append($AiMesh_promoteHint_content_bg);
@@ -2149,12 +2113,14 @@ function AiMesh_promoteHint() {
 		$AiMesh_promoteHint_content_left_bg.addClass("AiMesh_promoteHint_content_left_bg");
 		$AiMesh_promoteHint_content_bg.append($AiMesh_promoteHint_content_left_bg);
 
-		var $AiMesh_promoteHint_icon = $('<div>');
-		$AiMesh_promoteHint_icon.addClass("AiMesh_promoteHint_icon");
-		$AiMesh_promoteHint_content_left_bg.append($AiMesh_promoteHint_icon);
+		var $AiMesh_promoteHint_title = $('<div>');
+		$AiMesh_promoteHint_title.addClass("AiMesh_promoteHint_title");
+		var title = "New feature available";/* untranslated */
+		$AiMesh_promoteHint_title.html(title);
+		$AiMesh_promoteHint_content_left_bg.append($AiMesh_promoteHint_title);
 
 		var $AiMesh_promoteHint_description = $('<div>');
-		var description = "AiMesh combines more than one ASUS routers to form a AiMesh system, provides whole-home coverage and centralized management.";/* untranslated */
+		var description = "Advanced ASUS AiMesh is an innovative new router feature that connects multiple ASUS routers together, creating a whole-home Wi-Fi network.";/* untranslated */
 		$AiMesh_promoteHint_description.html(description);
 		$AiMesh_promoteHint_content_left_bg.append($AiMesh_promoteHint_description);
 
@@ -2165,27 +2131,25 @@ function AiMesh_promoteHint() {
 		var $AiMesh_promoteHint_content_link_bg = $('<div>');
 		$AiMesh_promoteHint_content_link_bg.addClass("AiMesh_promoteHint_content_bg redirect");
 		$AiMesh_promoteHint.append($AiMesh_promoteHint_content_link_bg);
-		var redirect_text = "";
-		redirect_text += "<span id='AiMesh_promoteHint_router' class='AiMesh_promoteHint_redirect_text'>I want to set this device as AiMesh Router</span>";/* untranslated */
-		redirect_text += "<br>";
-		redirect_text += "<span id='AiMesh_promoteHint_node' class='AiMesh_promoteHint_redirect_text'>I want to set this device as AiMesh Node</span>";/* untranslated */
-		redirect_text += "<a id='AiMesh_promoteHint_faq' href='https://www.asus.com/us/support/FAQ/1035087/' class='AiMesh_promoteHint_redirect_text faq' target='_blank'>Show me how</a>";/* untranslated */
-		$AiMesh_promoteHint_content_link_bg.html(redirect_text);
-		$("#AiMesh_promoteHint").find("#AiMesh_promoteHint_router").click(
+
+		var $AiMesh_promoteHint_confirm = $("<input/>");
+		$AiMesh_promoteHint_confirm.addClass("button_gen");
+		$AiMesh_promoteHint_confirm.attr({"type" : "button"});
+		$AiMesh_promoteHint_confirm.val("<#CTL_ok#>");
+
+		$AiMesh_promoteHint_confirm.click(
 			function() {
-				$(".AiMesh_promoteHint_bg").fadeOut(200);
-				clickEvent(document.getElementById("iconAMesh"));
-				setTimeout(function() {
-					if($('.AiMesh_promoteHint_bg').length > 0)
-						$('.AiMesh_promoteHint_bg').remove();
-				}, 1000);
+				if($('.AiMesh_promoteHint_bg').length > 0)
+					$('.AiMesh_promoteHint_bg').remove();
 			}
 		);
-		$("#AiMesh_promoteHint").find("#AiMesh_promoteHint_node").click(
-			function() {
-				location.href = "/QIS_wizard.htm?flag=amasnode_page";
-			}
-		);
+		$AiMesh_promoteHint_content_link_bg.append($AiMesh_promoteHint_confirm);
+
+		var $AiMesh_promoteHint_link = $('<div>');
+		$AiMesh_promoteHint_link.addClass("AiMesh_promoteHint_redirect_text");
+		var redirect_text = "<a id='AiMesh_promoteHint_faq' href='https://www.asus.com/AiMesh/' target='_blank'>Know more about ASUS AiMesh</a>";/* untranslated */
+		$AiMesh_promoteHint_link.html(redirect_text);
+		$AiMesh_promoteHint_content_link_bg.append($AiMesh_promoteHint_link);
 
 		$("#AiMesh_promoteHint").fadeIn(300);
 		cal_panel_block("AiMesh_promoteHint", 0.2);
@@ -2232,7 +2196,7 @@ function AiMesh_promoteHint() {
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 
 <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
-<input type="hidden" name="current_page" value="<% rel_index_page(); %>">
+<input type="hidden" name="current_page" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="wl_auth_mode_x" value="<% nvram_get("wl0_auth_mode_x"); %>">
@@ -2249,8 +2213,8 @@ function AiMesh_promoteHint() {
 </form>
 <!-- Start for Editing client list-->
 <form method="post" name="list_form" id="list_form" action="/start_apply2.htm" target="hidden_frame">
-	<input type="hidden" name="current_page" value="<% rel_index_page(); %>">
-	<input type="hidden" name="next_page" value="<% rel_index_page(); %>">
+	<input type="hidden" name="current_page" value="">
+	<input type="hidden" name="next_page" value="">
 	<input type="hidden" name="modified" value="0">
 	<input type="hidden" name="flag" value="background">
 	<input type="hidden" name="action_mode" value="apply">
@@ -2269,8 +2233,8 @@ function AiMesh_promoteHint() {
 </form>
 
 <form method="post" name="maclist_form" id="maclist_form" action="/start_apply2.htm" target="hidden_frame">
-	<input type="hidden" name="current_page" value="<% rel_index_page(); %>">
-	<input type="hidden" name="next_page" value="<% rel_index_page(); %>">
+	<input type="hidden" name="current_page" value="">
+	<input type="hidden" name="next_page" value="">
 	<input type="hidden" name="modified" value="0">
 	<input type="hidden" name="flag" value="">
 	<input type="hidden" name="action_mode" value="apply_new">
@@ -2296,8 +2260,8 @@ function AiMesh_promoteHint() {
 	<input type="hidden" name="action_mode" value="apply">
 	<input type="hidden" name="action_script" value="restart_networkmap">
 	<input type="hidden" name="action_wait" value="2">
-	<input type="hidden" name="current_page" value="<% rel_index_page(); %>">
-	<input type="hidden" name="next_page" value="<% rel_index_page(); %>">
+	<input type="hidden" name="current_page" value="">
+	<input type="hidden" name="next_page" value="">
 	<input type="hidden" name="networkmap_enable" value="<% nvram_get("networkmap_enable"); %>">
 </form>
 
@@ -2429,7 +2393,7 @@ function AiMesh_promoteHint() {
 								<div class="type15" onclick="select_image(this.className);" title="ROG"></div><!--untranslated-->
 							</td>
 							<td>
-								<div class="type18" onclick="select_image(this.className);" title="Printer"></div><!--untranslated-->
+								<div class="type18" onclick="select_image(this.className);" title="<#Clientlist_Printer#>"></div>
 							</td>
 							<td>
 								<div class="type19" onclick="select_image(this.className);" title="Windows Phone"></div><!--untranslated-->

@@ -1958,7 +1958,7 @@ function save_ipsec_profile_panel() {
 
 		if(!validator.isEmpty(document.ipsec_form.ipsec_preshared_key))
 			return false;
-		if(!Block_chars(document.ipsec_form.ipsec_preshared_key, [">", "<", "#", "null"]))
+		if(!Block_chars(document.ipsec_form.ipsec_preshared_key, [">", "<", "&", "\"", "null"]))
 			return false;
 		if(is_KR_sku){
 			if(!validator.psk_KR(document.ipsec_form.ipsec_preshared_key))
@@ -2815,7 +2815,7 @@ function del_exception_list_confirm(_parArray) {
 	<input type="hidden" name="action_mode" value="apply">
 	<input type="hidden" name="action_script" value="ipsec_set_cli">
 	<input type="hidden" name="action_wait" value="3">
-	<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+	<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 	<input type="hidden" name="ipsec_profile_item" value="">
 	<input type="hidden" name="ipsec_profile_client_1" id="ipsec_profile_client_1" value="">
 	<input type="hidden" name="ipsec_profile_client_2" id="ipsec_profile_client_2" value="">
@@ -3032,13 +3032,13 @@ function del_exception_list_confirm(_parArray) {
 							</td>
 						</tr>
 						<tr id="tr_adv_ike_isakmp" style="display:none;">
-							<th>IKE / ISAKMP Port<!--untranslated--></th>
+							<th><#vpn_ipsec_IKE_ISAKMP_Port#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_ike_isakmp" maxlength="3" value="500">
 							</td>
 						</tr>
 						<tr id="tr_adv_ike_isakmp_nat" style="display:none;"s>
-							<th>IKE / ISAKMP NAT-T Port<!--untranslated--></th>
+							<th><#vpn_ipsec_IKE_ISAKMP_NAT_Port#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_ike_isakmp_nat" maxlength="4" value="4500">
 							</td>
@@ -3126,7 +3126,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
 <input type="hidden" name="action_wait" value="1">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpnc_clientlist" value='<% nvram_get("vpnc_clientlist"); %>'>
 <input type="hidden" name="vpn_upload_type" value="ovpn">
@@ -3197,7 +3197,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
 <input type="hidden" name="action_wait" value="1">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpn_upload_type" value="ca">
 <input type="hidden" name="vpn_upload_unit" value="1">
@@ -3220,7 +3220,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
 <input type="hidden" name="action_wait" value="1">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpn_upload_type" value="cert">
 <input type="hidden" name="vpn_upload_unit" value="1">
@@ -3242,7 +3242,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
 <input type="hidden" name="action_wait" value="1">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpn_upload_type" value="key">
 <input type="hidden" name="vpn_upload_unit" value="1">
@@ -3264,7 +3264,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
 <input type="hidden" name="action_wait" value="1">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpn_upload_type" value="static">
 <input type="hidden" name="vpn_upload_unit" value="1">
@@ -3295,7 +3295,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
 <input type="hidden" name="action_wait" value="1">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpn_upload_unit" value="1">
 <input type="hidden" name="vpn_crt_client1_ca" value="" disabled>
@@ -3409,7 +3409,7 @@ function del_exception_list_confirm(_parArray) {
 	<input type="hidden" name="action_mode" value="apply">
 	<input type="hidden" name="action_script" value="restart_default_wan">
 	<input type="hidden" name="action_wait" value="3">
-	<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+	<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 	<input type="hidden" name="vpnc_default_wan_tmp" value="">
 </form>
 <iframe name="vpnc_dev_policy_hidden_frame" id="vpnc_dev_policy_hidden_frame" width="0" height="0" frameborder="0"></iframe>
@@ -3423,7 +3423,7 @@ function del_exception_list_confirm(_parArray) {
 	<input type="hidden" name="action_mode" value="apply">
 	<input type="hidden" name="action_script" value="saveNvram">
 	<input type="hidden" name="action_wait" value="3">
-	<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+	<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 	<input type="hidden" name="vpnc_dev_policy_list" value="">
 	<input type="hidden" name="vpnc_dev_policy_list_tmp" value="">
 	<input type="hidden" name="vpnc_policy_unit" value="">

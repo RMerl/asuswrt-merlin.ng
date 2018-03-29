@@ -103,6 +103,11 @@ start_lpd()
 		return;
 	}
 
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
+
 	if (!pids("lpd"))
 	{
 		unlink("/var/run/lpdparent.pid");
@@ -139,6 +144,11 @@ start_u2ec()
 		notify_rc("start_u2ec");
 		return;
 	}
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
 
 	if (!pids("u2ec"))
 	{
@@ -229,7 +239,6 @@ void add_usb_host_module(void)
 #if defined(HND_ROUTER)
 	tweak_usb_affinity(1);
 #endif
-
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U)
 	char *u3_param = "u3intf=0";
@@ -237,6 +246,11 @@ void add_usb_host_module(void)
 #endif
 	char param[32];
 	int i;
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
 
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,2,0)
 	modprobe(USBCOMMON_MOD);
@@ -331,6 +345,10 @@ void add_usb_host_module(void)
 
 #ifdef RTCONFIG_USB_MODEM
 void add_usb_modem_modules(void){
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
 	modprobe("mii"); // for usbnet.
 #endif
@@ -612,6 +630,11 @@ void start_usb(int orig)
 	int i;
 
 	_dprintf("%s\n", __func__);
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
 
 #if defined(RTCONFIG_SOC_IPQ40XX)
 	_dprintf("insmod dakota usb module....\n");
@@ -2616,13 +2639,18 @@ start_ftpd(void)
 	pid_t pid;
 	char *vsftpd_argv[] = { "vsftpd", "/etc/vsftpd.conf", NULL };
 
-	if (!nvram_get_int("enable_ftp"))
-		return;
-
 	if (getpid() != 1) {
 		notify_rc_after_wait("start_ftpd");
 		return;
 	}
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
+
+	if (!nvram_get_int("enable_ftp"))
+		return;
 
 	if (!sd_partition_num() && !nvram_match("usb_debug", "1"))
 		return;
@@ -3044,6 +3072,11 @@ start_samba(void)
 		return;
 	}
 
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
+
 	if ((nvram_match("enable_samba", "0")) &&
 	    (nvram_match("smbd_master", "0")) &&
 	    (nvram_match("smbd_wins", "0"))) {
@@ -3347,6 +3380,11 @@ void start_dms(void)
 		return;
 	}
 
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
+
 #if !(defined(HND_ROUTER) && defined(RTCONFIG_HNDMFG))
 	if (!sd_partition_num() && !nvram_match("usb_debug", "1"))
 #endif
@@ -3435,7 +3473,7 @@ void start_dms(void)
 				fprintf(f, "%s://%s:%d/\n", "http", nvram_safe_get("lan_ipaddr"), nvram_get_int("http_lanport") ? : 80);
 			}
 
-                        if (!nvram_get_int("dms_dir_manual"))
+			if (!nvram_get_int("dms_dir_manual"))
 				fprintf(f, "media_dir=%s\n", nvram_default_get("dms_dir"));
 			else
 			while ((b = strsep(&nvp, "<")) != NULL && (c = strsep(&nvp2, "<")) != NULL) {
@@ -3621,6 +3659,11 @@ start_mt_daapd()
 		notify_rc("start_mt_daapd");
 		return;
 	}
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
 
 	if (nvram_invmatch("daapd_enable", "1"))
 		return;
@@ -4250,6 +4293,11 @@ void start_nas_services(int force)
 		return;
 	}
 
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
+
 #ifdef RTCONFIG_MODEM_BRIDGE
 	if(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge"))
 		return;
@@ -4308,7 +4356,6 @@ if (nvram_match("asus_mfg", "0")) {
 	}
 }
 
-
 void stop_nas_services(int force)
 {
 	if(!force && getpid() != 1){
@@ -4357,6 +4404,12 @@ void restart_nas_services(int stop, int start)
 void restart_sambaftp(int stop, int start)
 {
 	int fd = file_lock("sambaftp");
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
+
 	/* restart all NAS applications */
 	if (stop) {
 #ifdef RTCONFIG_SAMBASRV
@@ -4925,6 +4978,11 @@ void start_diskmon(void)
 		notify_rc("start_diskmon");
 		return;
 	}
+
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return;
+#endif
 
 	_eval(diskmon_argv, NULL, 0, &pid);
 }

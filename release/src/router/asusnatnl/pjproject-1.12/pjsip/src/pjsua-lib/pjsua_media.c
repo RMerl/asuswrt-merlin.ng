@@ -925,8 +925,8 @@ static void on_sctp_connection_complete(pjmedia_transport *tp,
 
 	for (id=0; id<pjsua_var[tp->inst_id].ua_cfg.max_calls; ++id) {
 		if (pjsua_var[tp->inst_id].calls[id].med_tp == tp ||
-			pjsua_var[tp->inst_id].calls[id].med_orig == tp || 
-			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp) // Must check deeper to find transport_ice.
+			pjsua_var[tp->inst_id].calls[id].med_orig == tp /*|| 
+			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp*/) // No need to checker deeper. To avoid crash.
 		{
 			found = PJ_TRUE;
 			break;
@@ -948,8 +948,8 @@ static void on_dtls_handshake_complete(pjmedia_transport *tp,
 
 	for (id=0; id<pjsua_var[tp->inst_id].ua_cfg.max_calls; ++id) {
 		if (pjsua_var[tp->inst_id].calls[id].med_tp == tp ||
-			pjsua_var[tp->inst_id].calls[id].med_orig == tp || 
-			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp) // Must check deeper to find transport_ice.
+			pjsua_var[tp->inst_id].calls[id].med_orig == tp /*|| 
+			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp*/) // No need to checker deeper. To avoid crash.
 		{
 			found = PJ_TRUE;
 			break;
@@ -985,8 +985,8 @@ static void on_ice_complete(pjmedia_transport *tp,
 
     for (id=0; id<pjsua_var[tp->inst_id].ua_cfg.max_calls; ++id) {
 		if (pjsua_var[tp->inst_id].calls[id].med_tp == tp ||
-			pjsua_var[tp->inst_id].calls[id].med_orig == tp ||
-			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp) // Must check deeper to find transport_ice.
+			pjsua_var[tp->inst_id].calls[id].med_orig == tp /*||
+			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp*/) // No need to checker deeper. To avoid crash.
 	{
 	    found = PJ_TRUE;
 	    break;
@@ -1568,13 +1568,15 @@ static pj_status_t create_ice_media_transports2(pjsua_inst_id inst_id,
 			goto on_error;
 		}
 
-		pjmedia_transport_simulate_lost(pjsua_var[inst_id].calls[idx].med_tp,
-			PJMEDIA_DIR_ENCODING,
-			pjsua_var[inst_id].media_cfg.tx_drop_pct);
+		if (pjsua_var[inst_id].calls[idx].med_tp != NULL) {
+			pjmedia_transport_simulate_lost(pjsua_var[inst_id].calls[idx].med_tp,
+				PJMEDIA_DIR_ENCODING,
+				pjsua_var[inst_id].media_cfg.tx_drop_pct);
 
-		pjmedia_transport_simulate_lost(pjsua_var[inst_id].calls[idx].med_tp,
-			PJMEDIA_DIR_DECODING,
-			pjsua_var[inst_id].media_cfg.rx_drop_pct);
+			pjmedia_transport_simulate_lost(pjsua_var[inst_id].calls[idx].med_tp,
+				PJMEDIA_DIR_DECODING,
+				pjsua_var[inst_id].media_cfg.rx_drop_pct);
+		}
 	}
 
 	return PJ_SUCCESS;

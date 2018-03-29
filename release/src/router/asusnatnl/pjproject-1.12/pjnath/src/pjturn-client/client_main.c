@@ -33,6 +33,8 @@
 //#define OPTIONS		PJ_STUN_NO_AUTHENTICATE
 #define OPTIONS		0
 
+char relay_addr_temp[80];
+char peer0_addr_temp[80];
 
 struct peer
 {
@@ -103,6 +105,14 @@ static void my_perror(const char *title, pj_status_t status)
 			    return status; \
 			}
 
+/* Log callback */
+static void log_writer(int inst_id, int level, const char *buffer, int len, int flush)
+{
+    /* Write to file, stdout or application callback. */
+	if (level < 5)
+		pj_log_write(inst_id, level, buffer, len, flush);
+}
+
 static int init()
 {
     int i;
@@ -112,10 +122,12 @@ static int init()
     CHECK( pjlib_util_init() );
     CHECK( pjnath_init() );
 
+	//pj_log_set_log_func( &log_writer );
+
     /* Check that server is specified */
     if (!o.srv_addr) {
-	printf("Error: server must be specified\n");
-	return PJ_EINVAL;
+		printf("Error: server must be specified\n");
+		return PJ_EINVAL;
     }
 
     pj_caching_pool_init(0, &g.cp, &pj_pool_factory_default_policy, 0);
@@ -180,6 +192,7 @@ static int init()
     /* Start the worker thread */
     CHECK( pj_thread_create(g.pool, "stun", &worker_thread, NULL, 0, 0, &g.thread) );
 
+    //printf("PJ_SUCCESS : %d\n", PJ_SUCCESS);
 
     return PJ_SUCCESS;
 }
@@ -250,27 +263,28 @@ static pj_status_t create_relay(void)
     pj_status_t status;
 
     if (g.relay) {
-	PJ_LOG(1,(THIS_FILE, "Relay already created"));
-	return -1;
+    	printf("Relay already created\n");
+		PJ_LOG(1,(THIS_FILE, "Relay already created"));
+		return -1;
     }
 
     /* Create DNS resolver if configured */
     if (o.nameserver) {
-	pj_str_t ns = pj_str(o.nameserver);
+		pj_str_t ns = pj_str(o.nameserver);
 
-	status = pj_dns_resolver_create(&g.cp.factory, "resolver", 0, 
-					g.stun_config.timer_heap, 
-					g.stun_config.ioqueue, &g.resolver);
-	if (status != PJ_SUCCESS) {
-	    PJ_LOG(1,(THIS_FILE, "Error creating resolver (err=%d)", status));
-	    return status;
-	}
+		status = pj_dns_resolver_create(&g.cp.factory, "resolver", 0, 
+						g.stun_config.timer_heap, 
+						g.stun_config.ioqueue, &g.resolver);
+		if (status != PJ_SUCCESS) {
+		    PJ_LOG(1,(THIS_FILE, "Error creating resolver (err=%d)", status));
+		    return status;
+		}
 
-	status = pj_dns_resolver_set_ns(g.resolver, 1, &ns, NULL);
-	if (status != PJ_SUCCESS) {
-	    PJ_LOG(1,(THIS_FILE, "Error configuring nameserver (err=%d)", status));
-	    return status;
-	}
+		status = pj_dns_resolver_set_ns(g.resolver, 1, &ns, NULL);
+		if (status != PJ_SUCCESS) {
+		    PJ_LOG(1,(THIS_FILE, "Error configuring nameserver (err=%d)", status));
+		    return status;
+		}
     }
 
     pj_bzero(&rel_cb, sizeof(rel_cb));
@@ -282,15 +296,15 @@ static pj_status_t create_relay(void)
 			       NULL, &g.relay) );
 
     if (o.user_name) {
-	pj_bzero(&cred, sizeof(cred));
-	cred.type = PJ_STUN_AUTH_CRED_STATIC;
-	cred.data.static_cred.realm = pj_str(o.realm);
-	cred.data.static_cred.username = pj_str(o.user_name);
-	cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
-	cred.data.static_cred.data = pj_str(o.password);
-	//cred.data.static_cred.nonce = pj_str(o.nonce);
+		pj_bzero(&cred, sizeof(cred));
+		cred.type = PJ_STUN_AUTH_CRED_STATIC;
+		cred.data.static_cred.realm = pj_str(o.realm);
+		cred.data.static_cred.username = pj_str(o.user_name);
+		cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
+		cred.data.static_cred.data = pj_str(o.password);
+		//cred.data.static_cred.nonce = pj_str(o.nonce);
     } else {
-	PJ_LOG(2,(THIS_FILE, "Warning: no credential is set"));
+		PJ_LOG(2,(THIS_FILE, "Warning: no credential is set"));
     }
 
     srv = pj_str(o.srv_addr);
@@ -301,6 +315,10 @@ static pj_status_t create_relay(void)
 			    (o.user_name?&cred:NULL),		 /* credential */
 			    NULL)				 /* alloc param */
 			    );
+
+
+    // printf("g.relay = %p\n", g.relay);
+    // printf("PJ_SUCCESS = %d\n", PJ_SUCCESS);
 
     return PJ_SUCCESS;
 }
@@ -405,133 +423,225 @@ static void menu(void)
     pj_turn_session_info info;
     char client_state[20], relay_addr[80], peer0_addr[80], peer1_addr[80];
 
+    memset(relay_addr_temp,0, sizeof(relay_addr_temp));
+    memset(peer0_addr_temp,0, sizeof(peer0_addr_temp));
+
     if (g.relay) {
-	pj_turn_sock_get_info(g.relay, &info);
-	strcpy(client_state, pj_turn_state_name(info.state));
-	if (info.state >= PJ_TURN_STATE_READY)
-	    pj_sockaddr_print(&info.relay_addr, relay_addr, sizeof(relay_addr), 3);
-	else
-	    strcpy(relay_addr, "0.0.0.0:0");
+
+		pj_turn_sock_get_info(g.relay, &info);
+		strcpy(client_state, pj_turn_state_name(info.state));
+
+		if (info.state >= PJ_TURN_STATE_READY) {
+		    pj_sockaddr_print(&info.relay_addr, relay_addr, sizeof(relay_addr), 3);
+			
+			strcpy(relay_addr_temp, relay_addr);
+		} else {
+		    strcpy(relay_addr, "0.0.0.0:0");
+		    strcpy(relay_addr_temp, "0.0.0.0:0");
+		}
+
     } else {
-	strcpy(client_state, "NULL");
-	strcpy(relay_addr, "0.0.0.0:0");
+
+		strcpy(client_state, "NULL");
+		strcpy(relay_addr, "0.0.0.0:0");
+		strcpy(relay_addr_temp, "0.0.0.0:0");
     }
+
 
     pj_sockaddr_print(&g.peer[0].mapped_addr, peer0_addr, sizeof(peer0_addr), 3);
     pj_sockaddr_print(&g.peer[1].mapped_addr, peer1_addr, sizeof(peer1_addr), 3);
 
+    strcpy(peer0_addr_temp, peer0_addr);
+    
 
-    puts("\n");
-    puts("+=====================================================================+");
-    puts("|             CLIENT                 |             PEER-0             |");
-    puts("|                                    |                                |");
-    printf("| State     : %-12s           | Address: %-21s |\n",
-	   client_state, peer0_addr);
-    printf("| Relay addr: %-21s  |                                |\n",
-	   relay_addr);
-    puts("|                                    | 0  Send data to relay address  |");
-    puts("| a      Allocate relay              |                                |");
-    puts("| p,pp   Set permission for peer 0/1 +--------------------------------+");
-    puts("| s,ss   Send data to peer 0/1       |             PEER-1             |");
-    puts("| b,bb   BindChannel to peer 0/1     |                                |");
-    printf("| x      Delete allocation           | Address: %-21s |\n",
-	  peer1_addr);
-    puts("+------------------------------------+                                |");
-    puts("| q  Quit                  d  Dump   | 1  Send data to relay adderss  |");
-    puts("+------------------------------------+--------------------------------+");
-    printf(">>> ");
+	printf("client_state : %s\n", client_state);
+	printf("relay_addr : %s\n", relay_addr);
+	printf("PEER-0 Address : %s\n", peer0_addr);
+	printf("PEER-1 Address : %s\n\n", peer1_addr);
+
+
+
+
+   //  puts("\n");
+   //  puts("+=====================================================================+");
+   //  puts("|             CLIENT                 |             PEER-0             |");
+   //  puts("|                                    |                                |");
+   //  printf("| State     : %-12s           | Address: %-21s |\n",
+	  //  client_state, peer0_addr);
+   //  printf("| Relay addr: %-21s  |                                |\n",
+	  //  relay_addr);
+   //  puts("|                                    | 0  Send data to relay address  |");
+   //  puts("| a      Allocate relay              |                                |");
+   //  puts("| p,pp   Set permission for peer 0/1 +--------------------------------+");
+   //  puts("| s,ss   Send data to peer 0/1       |             PEER-1             |");
+   //  puts("| b,bb   BindChannel to peer 0/1     |                                |");
+   //  printf("| x      Delete allocation           | Address: %-21s |\n",
+	  // peer1_addr);
+   //  puts("+------------------------------------+                                |");
+   //  puts("| q  Quit                  d  Dump   | 1  Send data to relay adderss  |");
+   //  puts("+------------------------------------+--------------------------------+");
+   //  printf(">>> ");
     fflush(stdout);
 }
 
 
 static void console_main(void)
 {
+	int count = 0;
+
     while (!g.quit) {
-	char input[32];
-	struct peer *peer;
-	pj_status_t status;
 
-	menu();
+    	count++;
 
-	if (fgets(input, sizeof(input), stdin) == NULL)
-	    break;
-	
-	switch (input[0]) {
-	case 'a':
-	    create_relay();
-	    break;
-	case 'd':
-	    pj_pool_factory_dump(&g.cp.factory, PJ_TRUE);
-	    break;
-	case 's':
-	    if (g.relay == NULL) {
-		puts("Error: no relay");
-		continue;
-	    }
-	    if (input[1]!='s')
-		peer = &g.peer[0];
-	    else
-		peer = &g.peer[1];
+		char input[32];
+		struct peer *peer;
+		pj_status_t status;
 
-	    strcpy(input, "Hello from client");
-	    status = pj_turn_sock_sendto(g.relay, (const pj_uint8_t*)input, 
-					strlen(input)+1, 
-					&peer->mapped_addr, 
-					pj_sockaddr_get_len(&peer->mapped_addr));
-	    if (status != PJ_SUCCESS)
-		my_perror("turn_udp_sendto() failed", status);
-	    break;
-	case 'b':
-	    if (g.relay == NULL) {
-		puts("Error: no relay");
-		continue;
-	    }
-	    if (input[1]!='b')
-		peer = &g.peer[0];
-	    else
-		peer = &g.peer[1];
+		menu();
 
-	    status = pj_turn_sock_bind_channel(g.relay, &peer->mapped_addr,
-					      pj_sockaddr_get_len(&peer->mapped_addr));
-	    if (status != PJ_SUCCESS)
-		my_perror("turn_udp_bind_channel() failed", status);
-	    break;
-	case 'p':
-	    if (g.relay == NULL) {
-		puts("Error: no relay");
-		continue;
-	    }
-	    if (input[1]!='p')
-		peer = &g.peer[0];
-	    else
-		peer = &g.peer[1];
 
-	    status = pj_turn_sock_set_perm(g.relay, 1, &peer->mapped_addr, 1);
-	    if (status != PJ_SUCCESS)
-		my_perror("pj_turn_sock_set_perm() failed", status);
-	    break;
-	case 'x':
-	    if (g.relay == NULL) {
-		puts("Error: no relay");
-		continue;
-	    }
-	    destroy_relay();
-	    break;
-	case '0':
-	case '1':
-	    if (g.relay == NULL) {
-		puts("No relay");
-		break;
-	    }
-	    peer = &g.peer[input[0]-'0'];
-	    sprintf(input, "Hello from peer%d", input[0]-'0');
-	    pj_stun_sock_sendto(peer->stun_sock, NULL, input, strlen(input)+1, 0,
-				&g.relay_addr, pj_sockaddr_get_len(&g.relay_addr));
-	    break;
-	case 'q':
-	    g.quit = PJ_TRUE;
-	    break;
-	}
+
+		//if (g.relay == NULL) {
+		if (strstr(relay_addr_temp, "0.0.0.0:0") && 
+			strstr(peer0_addr_temp, "0.0.0.0:0")) { 
+
+			create_relay();
+			sleep(5);
+
+			if(count < 5) {
+
+				continue;
+
+			} else {
+
+				printf("create relay failed , server not exist, relay_addr : %s\n", relay_addr_temp);
+				exit(0);
+			}
+			
+
+		} else {
+
+			if(strstr(relay_addr_temp, "0.0.0.0:0") && 
+			   strstr(peer0_addr_temp, "0.0.0.0:0")) {
+
+		        printf("create relay failed , server not exist, relay_addr : %s\n", relay_addr_temp);
+
+			} else if(strstr(relay_addr_temp, "0.0.0.0:0") && 
+			          !strstr(peer0_addr_temp, "0.0.0.0:0")) {
+
+				if(count < 5) {
+					sleep(3);
+					continue;
+
+				} else {
+					printf("create relay failed , server exist, can't allocate,  relay_addr : %s\n", relay_addr_temp);	
+				}
+
+			} else if(!strstr(relay_addr_temp, "0.0.0.0:0") && 
+			          !strstr(peer0_addr_temp, "0.0.0.0:0")) {
+
+				printf("Relay already created , allocate OK, relay_addr : %s\n", relay_addr_temp);
+
+			} else {
+
+				if(count < 5) {
+					printf("connecting other error\n");
+					sleep(3);
+					continue;
+				}
+
+				
+			}
+			exit(0);
+		}
+
+
+
+		if (fgets(input, sizeof(input), stdin) == NULL)
+		    break;
+		
+		switch (input[0]) {
+		case 'a':
+
+		    create_relay();
+
+		    if (g.relay) { 
+		    	printf("Relay already created\n");
+		    }
+
+		    break;
+		case 'd':
+		    pj_pool_factory_dump(&g.cp.factory, PJ_TRUE);
+		    break;
+		case 's':
+		    if (g.relay == NULL) {
+			puts("Error: no relay");
+			continue;
+		    }
+		    if (input[1]!='s')
+			peer = &g.peer[0];
+		    else
+			peer = &g.peer[1];
+
+		    strcpy(input, "Hello from client");
+		    status = pj_turn_sock_sendto(g.relay, (const pj_uint8_t*)input, 
+						strlen(input)+1, 
+						&peer->mapped_addr, 
+						pj_sockaddr_get_len(&peer->mapped_addr));
+		    if (status != PJ_SUCCESS)
+			my_perror("turn_udp_sendto() failed", status);
+		    break;
+		case 'b':
+		    if (g.relay == NULL) {
+			puts("Error: no relay");
+			continue;
+		    }
+		    if (input[1]!='b')
+			peer = &g.peer[0];
+		    else
+			peer = &g.peer[1];
+
+		    status = pj_turn_sock_bind_channel(g.relay, &peer->mapped_addr,
+						      pj_sockaddr_get_len(&peer->mapped_addr));
+		    if (status != PJ_SUCCESS)
+			my_perror("turn_udp_bind_channel() failed", status);
+		    break;
+		case 'p':
+		    if (g.relay == NULL) {
+			puts("Error: no relay");
+			continue;
+		    }
+		    if (input[1]!='p')
+			peer = &g.peer[0];
+		    else
+			peer = &g.peer[1];
+
+		    status = pj_turn_sock_set_perm(g.relay, 1, &peer->mapped_addr, 1);
+		    if (status != PJ_SUCCESS)
+			my_perror("pj_turn_sock_set_perm() failed", status);
+		    break;
+		case 'x':
+		    if (g.relay == NULL) {
+			puts("Error: no relay");
+			continue;
+		    }
+		    destroy_relay();
+		    break;
+		case '0':
+		case '1':
+		    if (g.relay == NULL) {
+			puts("No relay");
+			break;
+		    }
+		    peer = &g.peer[input[0]-'0'];
+		    sprintf(input, "Hello from peer%d", input[0]-'0');
+		    pj_stun_sock_sendto(peer->stun_sock, NULL, input, strlen(input)+1, 0,
+					&g.relay_addr, pj_sockaddr_get_len(&g.relay_addr));
+		    break;
+		case 'q':
+		    g.quit = PJ_TRUE;
+		    break;
+		}
     }
 }
 
@@ -570,58 +680,59 @@ int main(int argc, char *argv[])
     pj_status_t status;
 
     while((c=pj_getopt_long(argc,argv, "r:u:p:S:N:hFT", long_options, &opt_id))!=-1) {
-	switch (c) {
-	case 'r':
-	    o.realm = pj_optarg;
-	    break;
-	case 'u':
-	    o.user_name = pj_optarg;
-	    break;
-	case 'p':
-	    o.password = pj_optarg;
-	    break;
-	case 'h':
-	    usage();
-	    return 0;
-	case 'F':
-	    o.use_fingerprint = PJ_TRUE;
-	    break;
-	case 'T':
-	    o.use_tcp = PJ_TRUE;
-	    break;
-	case 'S':
-	    o.stun_server = pj_optarg;
-	    break;
-	case 'N':
-	    o.nameserver = pj_optarg;
-	    break;
-	default:
-	    printf("Argument \"%s\" is not valid. Use -h to see help",
-		   argv[pj_optind]);
-	    return 1;
-	}
+		switch (c) {
+			case 'r':
+			    o.realm = pj_optarg;
+			    break;
+			case 'u':
+			    o.user_name = pj_optarg;
+			    break;
+			case 'p':
+			    o.password = pj_optarg;
+			    break;
+			case 'h':
+			    usage();
+			    return 0;
+			case 'F':
+			    o.use_fingerprint = PJ_TRUE;
+			    break;
+			case 'T':
+			    o.use_tcp = PJ_TRUE;
+			    break;
+			case 'S':
+			    o.stun_server = pj_optarg;
+			    break;
+			case 'N':
+			    o.nameserver = pj_optarg;
+			    break;
+			default:
+			    printf("Argument \"%s\" is not valid. Use -h to see help",
+				   argv[pj_optind]);
+			    return 1;
+		}
     }
 
+
     if (pj_optind == argc) {
-	puts("Error: TARGET is needed");
-	usage();
-	return 1;
+		puts("Error: TARGET is needed");
+		usage();
+		return 1;
     }
 
     if ((pos=pj_ansi_strchr(argv[pj_optind], ':')) != NULL) {
-	o.srv_addr = argv[pj_optind];
-	*pos = '\0';
-	o.srv_port = pos+1;
+		o.srv_addr = argv[pj_optind];
+		*pos = '\0';
+		o.srv_port = pos+1;
     } else {
-	o.srv_addr = argv[pj_optind];
+		o.srv_addr = argv[pj_optind];
     }
 
     if ((status=init()) != 0)
-	goto on_return;
+		goto on_return;
     
     //if ((status=create_relay()) != 0)
     //	goto on_return;
-    
+
     console_main();
 
 on_return:

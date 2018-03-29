@@ -269,7 +269,7 @@ function doLiveUpdate(_do){
 		document.start_update.submit();
 	}
 	else{
-		setTimeout("parent.location.href='<% abs_index_page(); %>'", 3000);
+		setTimeout("parent.location.href='/'", 3000);
 	}
 }
 
@@ -472,7 +472,7 @@ function checkIsNewFirmware(){
 		else
 		{
 			setTimeout(function(){
-				parent.location.href = '<% abs_index_page(); %>';
+				parent.location.href = '/';
 			}, delayTimeout);
 		}
 	}
@@ -1670,7 +1670,7 @@ var startQuery = function(){
 	<br />
 	
 	<fieldset>
-		<div class="row_end"><a class="iuiA" onclick="parent.location.href='<% abs_index_page(); %>';"><#menu5#></a></div>
+		<div class="row_end"><a class="iuiA" onclick="parent.location.href='/';"><#menu5#></a></div>
 	</fieldset>
 	<br />
 	<fieldset>
@@ -1850,8 +1850,8 @@ var startQuery = function(){
 <form method="post" name="restartForm" action="/start_apply2.htm" target="hidden_frame">
 	<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
 	<input type="hidden" name="flag" value="finishQIS">
-	<input type="hidden" name="current_page" value="<% abs_index_page(); %>">
-	<input type="hidden" name="next_page" value="<% abs_index_page(); %>">
+	<input type="hidden" name="current_page" value="/">
+	<input type="hidden" name="next_page" value="/">
 	<input type="hidden" name="action_mode" value="apply">
 	<input type="hidden" name="action_script" value="">
 	<input type="hidden" name="action_wait" value="0">

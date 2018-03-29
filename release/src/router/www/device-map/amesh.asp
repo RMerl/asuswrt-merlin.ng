@@ -432,7 +432,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 									code += "</div>";
 								}
 								else {
-									code += "<div class='amesh_title offline' onclick='show_offline_msg(event);'>Offline</div>";/*untranslated*/
+									code += "<div class='amesh_title offline' onclick='show_offline_msg(event);'><#Clientlist_OffLine#></div>";
 								}
 							code += "</div>";
 						code += "</div>";
@@ -628,17 +628,17 @@ function scenario() {
 	};
 
 	var description = "";
-	description = "AiMesh combines more than one ASUS routers to form a AiMesh system, provides whole-home coverage and centralized management.";/* untranslated */
+	description = "<#AiMesh_Desc#>";
 	gen_each_step_content(description, 1);
-	description = "You can click \"Search\" button on network map to find AiMesh node.<br>If there are AiMesh node nearby and available to be add to your AiMesh system, you will see the available AiMesh node list.";/* untranslated */
+	description = "<#AiMesh_Desc2#>";
 	gen_each_step_content(description, 2);
-	description = "If you cannot find available AiMesh node nearby:";/* untranslated */
+	description = "<#AiMesh_Desc3#>";
 	description += "<br>";
-	description += "1. Please reset the AiMesh node and try again.";/* untranslated */
+	description += "<#AiMesh_Desc31#>";
 	description += "<br>";
-	description += "2. Make sure your AiMesh node is up to date. (Firmware version need to support AiMesh)";/* untranslated */
+	description += "<#AiMesh_Desc32#>";
 	description += "<br>";
-	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='http://www.asus.com/support/' target='_blank'>Find supported firmware</a>";/* untranslated */
+	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='http://www.asus.com/support/' target='_blank'><#AiMesh_Desc3_note#></a>";
 	gen_each_step_content(description, 3);
 
 	interval = setInterval(set_slider, 15000);
@@ -734,7 +734,7 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi) {
 
 				var $amesh_hint_text = $('<div>');
 				$amesh_hint_text.addClass("amesh_hint_text");
-				$amesh_hint_text.html("Do you want to add this AiMesh node into your AiMesh system?");/* untranslated */
+				$amesh_hint_text.html("<#AiMesh_Node_AddConfirm#>");
 				$connectHtml.append($amesh_hint_text);
 
 				var $amesh_device_info = $('<div>');
@@ -835,11 +835,13 @@ function show_connect_result(_status, _newReMac, _model_name) {
 		$successResult1.attr({"id" : "amesh_successResult_1"});
 		$connectResultHtml.append($successResult1);
 		result_text = "";
-		result_text += "Successfully add <span style='color:#569AC7;'>" + _model_name + " (" + _newReMac + ")</span> to your AiMesh system. Place your AiMesh node";/* untranslated */
+		result_text += "<#AiMesh_Node_AddDescA#>";
 		result_text += "<br>";
-		result_text += "1. Between your AiMesh router and your existing dead zone";/* untranslated */
+		result_text += "<#AiMesh_Node_AddDescB#>";
 		result_text += "<br>";
-		result_text += "2. Aim high and in open space";/* untranslated */
+		result_text += "1. <#AiMesh_Node_AddDesc1#>";
+		result_text += "<br>";
+		result_text += "2. <#AiMesh_Node_AddDesc2#>";
 		$successResult1.addClass("amesh_hint_text");
 		$successResult1.html(result_text);
 
@@ -850,7 +852,7 @@ function show_connect_result(_status, _newReMac, _model_name) {
 
 		var $successResult2_text = $('<div>');
 		result_text = "";
-		result_text = "If you want to hardwire your AiMesh router and AiMesh node together, please connect the RJ-45 cable to the LAN port of AiMesh router and the WAN port of AiMesh node. The AiMesh system will automatically switch to Ethernet backhaul .";/* untranslated */
+		result_text = "<#AiMesh_Node_AddDiagram#>";
 		$successResult2_text.addClass("amesh_hint_text");
 		$successResult2_text.html(result_text);
 		$successResult2.append($successResult2_text);
@@ -881,8 +883,8 @@ function show_connect_result(_status, _newReMac, _model_name) {
 		$aimesh_illustration_bg.append(gen_icon("ethernet_wan"));
 		$aimesh_illustration_bg.append(gen_text("LAN - WAN", "lan_to_wan"));
 		$aimesh_illustration_bg.append(gen_text("Modem", "modem"));
-		$aimesh_illustration_bg.append(gen_text("AiMesh router", "backhaul_router"));
-		$aimesh_illustration_bg.append(gen_text("AiMesh node", "backhaul_node"));
+		$aimesh_illustration_bg.append(gen_text("<#AiMesh_Router#>", "backhaul_router"));
+		$aimesh_illustration_bg.append(gen_text("<#AiMesh_Node#>", "backhaul_node"));
 
 		var $amesh_clear_bg = $('<div>');
 		$amesh_clear_bg.css("clear", "both");
@@ -940,17 +942,17 @@ function show_search_fail_result() {
 	$searchFailHtml.appendTo(parent.$('body'));
 
 	var result_text = "";
-	result_text = "Can not find any AiMesh node nearby.";/* untranslated */
+	result_text = "<#AiMesh_FindNode_Not#>";
 	result_text += "<br>";
-	result_text += "a. If this device is assigned as a <span style='color:#569AC7;'>AiMesh router</span>, please check and try again.";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>1. Your AiMesh node is powered on</div>";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>2. Your AiMesh node with latest firmware</div>";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>3. Your AiMesh node is reset to default</div>";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>4. Move your AiMesh node closed to AiMesh router</div>";/* untranslated */
-	result_text += "b. If this device is assigned as a <span style='color:#569AC7;'>AiMesh node</span>,";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>1. push reset button on this device and then stand by.</div>";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>2. login your AiMesh router GUI and click on AiMesh icon.</div>";/* untranslated */
-	result_text += "<div style='margin-left: 20px;'>3. upgrade your AiMesh router’s firmware if you cannot find AiMesh icon on AiMesh router.</div>";/* untranslated */
+	result_text += "a. <#AiMesh_FindNode_Not_advA#>";
+	result_text += "<div style='margin-left: 20px;'>1. <#AiMesh_FindNode_Not_advA1#></div>";
+	result_text += "<div style='margin-left: 20px;'>2. <#AiMesh_FindNode_Not_advA2#></div>";
+	result_text += "<div style='margin-left: 20px;'>3. <#AiMesh_FindNode_Not_advA3#></div>";
+	result_text += "<div style='margin-left: 20px;'>4. <#AiMesh_FindNode_Not_advA4#></div>";
+	result_text += "b. <#AiMesh_FindNode_Not_advB#>";
+	result_text += "<div style='margin-left: 20px;'>1. <#AiMesh_FindNode_Not_advB1#></div>";
+	result_text += "<div style='margin-left: 20px;'>2. <#AiMesh_FindNode_Not_advB2#></div>";
+	result_text += "<div style='margin-left: 20px;'>3. <#AiMesh_FindNode_Not_advB3#></div>";
 
 	var $amesh_hint_text = $('<div>');
 	$amesh_hint_text.addClass("amesh_hint_text");
@@ -981,8 +983,8 @@ function show_search_fail_result() {
 	$aimesh_illustration_bg.append(gen_icon("router_right"));
 	$aimesh_illustration_bg.append(gen_icon("wifi"));
 	$aimesh_illustration_bg.append(gen_text("Modem", "modem"));
-	$aimesh_illustration_bg.append(gen_text("AiMesh router", "router"));
-	$aimesh_illustration_bg.append(gen_text("AiMesh node", "node"));
+	$aimesh_illustration_bg.append(gen_text("<#AiMesh_Router#>", "router"));
+	$aimesh_illustration_bg.append(gen_text("<#AiMesh_Node#>", "node"));
 
 	var $amesh_clear_bg = $('<div>');
 	$amesh_clear_bg.css("clear", "both");
@@ -1112,7 +1114,7 @@ function reset_re_device(_reMac, _reModelName, _evt) {
 
 	var $amesh_hint_text = $('<div>');
 	$amesh_hint_text.addClass("amesh_hint_text");
-	$amesh_hint_text.html("Do you want to remove this AiMesh node from your AiMesh system?");/* untranslated */
+	$amesh_hint_text.html("<#AiMesh_Node_RemoveConfirm#>");
 	$resetHtml.append($amesh_hint_text);
 
 	var $amesh_device_info = $('<div>');
@@ -1123,7 +1125,7 @@ function reset_re_device(_reMac, _reModelName, _evt) {
 
 	var $amesh_hint_text = $('<div>');
 	$amesh_hint_text.addClass("amesh_hint_text");
-	$amesh_hint_text.html("By clicking \'<#CTL_apply#>\' the AiMesh node will be removed from AiMesh system and factory reset.");/* untranslated */
+	$amesh_hint_text.html("<#AiMesh_Node_RemoveDesc#>");
 	$resetHtml.append($amesh_hint_text);
 
 	var $amesh_action_bg = $('<div>');
@@ -1258,7 +1260,7 @@ function popAMeshClientListEditTable(event) {
 	code += "</div>";
 
 	code += "<div style='margin-top:10px;'>";
-	code += "<div class='aimesh_node_setting_info_title'>Connection Priority</div>";/*untranslated*/
+	code += "<div class='aimesh_node_setting_info_title'><#AiMesh_Node_ConnPrio#></div>";
 	code += "<select id='aimesh_node_connection_priority' class='aimesh_node_input_select'>";
 	code += "<option value='3' class='aimesh_node_input_select_option'><#Auto#></option>";
 	code += "<option value='2' class='aimesh_node_input_select_option'><#wan_ethernet#></option>";
@@ -1331,6 +1333,7 @@ function popAMeshClientListEditTable(event) {
 	$popupBgHtml.find("#aimesh_node_macaddr").html(node_info.mac);
 
 	var location_array = ["Living Room", "Dining Room", "Bedroom", "Office", "Aisle", "Stairwell", "Hall", "Kitchen", "Attic", "Basement", "Yard", "Garage"];
+
 	for(var i = 0; i < location_array.length; i += 1) {
 		$popupBgHtml.find("#aimesh_node_location_select").append($('<option>', {
 			value: location_array[i],
@@ -1530,7 +1533,7 @@ function show_offline_msg(_evt) {
 
 	var $amesh_hint_text = $('<div>');
 	$amesh_hint_text.addClass("amesh_hint_text");
-	$amesh_hint_text.html("Offline tips :");/*untranslated*/
+	$amesh_hint_text.html("<#AiMesh_OfflineTips#> :");
 	$offlineHtml.append($amesh_hint_text);
 
 	var $amesh_hint_content = $('<div>');
@@ -1539,11 +1542,11 @@ function show_offline_msg(_evt) {
 	$offlineHtml.append($amesh_hint_content);
 
 	var $msg_item =  $('<ol>');
-	var msg_text = "<li>Make sure your AiMesh node is power on.</li>";/*untranslated*/
-	msg_text += "<li>Reboot this AiMesh node and try again.</li>";/*untranslated*/
-	msg_text += "<li>If you are using Wi-Fi connection, please try to find a place closer to other AiMesh node.</li>";/*untranslated*/
-	msg_text += "<li>If you are using wired connection, please make sure cable are installed properly.</li>";/*untranslated*/
-	msg_text += "<li>If still no help, please try to reset this AiMesh node by \"Reset button\" and try to add again.</li>";/*untranslated*/
+	var msg_text = "<li><#AiMesh_OfflineTips1#></li>";
+	msg_text += "<li><#AiMesh_OfflineTips2#></li>";
+	msg_text += "<li><#AiMesh_OfflineTips3#></li>";
+	msg_text += "<li><#AiMesh_OfflineTips4#></li>";
+	msg_text += "<li><#AiMesh_OfflineTips5#></li>";
 	$msg_item.html(msg_text);
 	$amesh_hint_content.append($msg_item);
 
@@ -1635,8 +1638,8 @@ function show_change_type_hint() {
 	$aimesh_illustration_bg.append(gen_icon("ethernet_wan"));
 	$aimesh_illustration_bg.append(gen_text("LAN - WAN", "lan_to_wan"));
 	$aimesh_illustration_bg.append(gen_text("Modem", "modem"));
-	$aimesh_illustration_bg.append(gen_text("AiMesh router", "backhaul_router"));
-	$aimesh_illustration_bg.append(gen_text("AiMesh node", "backhaul_node"));
+	$aimesh_illustration_bg.append(gen_text("<#AiMesh_Router#>", "backhaul_router"));
+	$aimesh_illustration_bg.append(gen_text("<#AiMesh_Node#>", "backhaul_node"));
 
 	var $amesh_clear_bg = $('<div>');
 	$amesh_clear_bg.css("clear", "both");
@@ -1881,7 +1884,7 @@ function get_aimesh_node_client_list(_wired_client, _wl_client, _all_client) {
 }
 function handle_cloud_icon_model_name(_modelName) {
 	var transformName = _modelName;
-	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RP-AC1900")
+	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RP-AC1900" || transformName == "RT-AC67U")
 		transformName = "RT-AC66U_V2";
 	else if(transformName == "BLUE_CAVE")
 		transformName = "BLUECAVE";
@@ -1935,9 +1938,7 @@ function handle_cloud_icon_model_name(_modelName) {
 			<div class="description_icon"></div>
 		</td>
 		<td>
-			<div>
-				AiMesh combines more than one ASUS routers to form a AiMesh system, provides whole-home coverage and centralized management.<!--untranslated-->
-			</div>
+			<div><#AiMesh_Desc#></div>
 		</td>
 	</tr>
 	<tr>
@@ -1945,8 +1946,8 @@ function handle_cloud_icon_model_name(_modelName) {
 <table  width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="table1px" style="margin-bottom:5px;display:;">
 	<tr>
 		<td colspan="2">
-			<div class="amesh_title">Find AiMesh node<!--untranslated--></div>
-			<div class="amesh_title amesh_content">Search for available AiMesh node nearby to join your AiMesh system.<!--untranslated--></div>
+			<div class="amesh_title"><#AiMesh_FindNode#></div>
+			<div class="amesh_title amesh_content"><#AiMesh_FindNode_Desc#></div>
 		</td>
 	</tr>
 	<tr id="ready_onBoarding_table" style="display:none;">
@@ -1956,17 +1957,17 @@ function handle_cloud_icon_model_name(_modelName) {
 	</tr>
 	<tr>
 		<td width="50%">
-			<div class="amesh_title amesh_help" onclick="scenario();">Cannot find my AiMesh node?<!--untranslated--></div>
+			<div class="amesh_title amesh_help" onclick="scenario();"><#AiMesh_FindNode_confirm#></div>
 		</td>
 		<td width="50%" height="32px;" style="text-align:center;">
-			<input id="searchReadyOnBoarding" type="button" class="button_gen" value="Search" onClick="searchReadyOnBoarding();"><!--untranslated-->
+			<input id="searchReadyOnBoarding" type="button" class="button_gen" value="<#CTL_search#>" onClick="searchReadyOnBoarding();">
 			<div id="amesh_loadingIcon" class="amesh_loadingIcon" style="display:none;"></div>
 		</td>
 	</tr>
 	<tr>
 </table>
 <div class="amesh_node_title">
-	AiMesh node list in AiMesh system<!--untranslated-->
+	<#AiMesh_NodeList#>
 </div>
 <table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="table1px">
 	<tr>

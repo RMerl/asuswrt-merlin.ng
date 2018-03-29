@@ -796,8 +796,8 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x14fe);
 			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
-			fprintf(fp, "TargetProduct=0x%04x\n",	0x1506);
-			fprintf(fp, "MessageContent=%s\n",	"55534243123456780000000000000011062000000100000000000000000000");
+			fprintf(fp, "TargetProductList=\"%s\"\n",	"1506,150f,151d,1c1e");
+			fprintf(fp, "HuaweiNewMode=1\n");
 			break;
 		case SN_Huawei_E3276S150:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
@@ -1238,13 +1238,12 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "TargetProduct=0x%04x\n",	0x6802);
 			fprintf(fp, "MessageContent=%s\n",	"5553424312345678c000000080000671010000000000000000000000000000");
 			break;
-		case SN_Huawei_E353:
+		case SN_Huawei_E353: // some E3372.
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1f01);
 			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
-			fprintf(fp, "TargetProduct=0x%04x\n",	0x14db);
-			fprintf(fp, "MessageContent=%s\n",	"55534243123456780000000000000a11062000000000000100000000000000");
-			fprintf(fp, "NoDriverLoading=1\n");
+			fprintf(fp, "TargetProductList=\"%s\"\n",	"14db,14dc");
+			fprintf(fp, "HuaweiNewMode=1\n");
 			break;
 		case SN_Haier_CE682:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x201e);
@@ -1493,7 +1492,7 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1f16);
 #if 1
 			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
-			fprintf(fp, "TargetProductList=\"%s\"\n", "14f8,1575");
+			fprintf(fp, "TargetProductList=\"%s\"\n",	"14f8,1575");
 			fprintf(fp, "MessageContent=%s\n",	"55534243123456780000000000000011062000000101000100000000000000");
 #else
 			fprintf(fp, "Configuration=2\n");
@@ -1707,7 +1706,7 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1f1e);
 			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
-			fprintf(fp, "TargetProductList=\"%s\"\n", "157f,1592");
+			fprintf(fp, "TargetProductList=\"%s\"\n",	"157f,1592");
 			fprintf(fp, "HuaweiNewMode=1\n");
 			break;
 		case SN_Vodafone_R226:

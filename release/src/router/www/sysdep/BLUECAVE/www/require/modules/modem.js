@@ -2014,16 +2014,24 @@ define([], function(){
 					},
 					{
 						"proto": "1",
-						"isp": "Vodafone",
-						"apn": "PPBUNDLE.INTERNET",
+						"isp": "Orange",
+						"apn": "internetvpn",
 						"dialnum": "*99#",
-						"user": "web",
-						"pass": "web"
+						"user": "",
+						"pass": ""
 					},
 					{
 						"proto": "1",
-						"isp": "Orange",
-						"apn": "internetvpn",
+						"isp": "Vodafone Monthly",
+						"apn": "wap.vodafone.co.uk",
+						"dialnum": "*99#",
+						"user": "",
+						"pass": ""
+					},
+					{
+						"proto": "1",
+						"isp": "Vodafone PAYG",
+						"apn": "pp.vodafone.co.uk",
 						"dialnum": "*99#",
 						"user": "",
 						"pass": ""

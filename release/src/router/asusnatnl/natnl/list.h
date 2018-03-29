@@ -49,9 +49,10 @@ typedef struct list {
     int (*obj_cmp)(const void *, const void *, size_t);
     void* (*obj_copy)(void *, const void *, size_t);
     void (*obj_free)(void **);
-	
+#ifdef USE_DISCONNECT_LOCK
 	// +Roger - UDT disconnect mutex
 	pj_mutex_t *disconn_lock;
+#endif
 
 } list_t;
 

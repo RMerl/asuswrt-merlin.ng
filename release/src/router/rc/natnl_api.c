@@ -24,7 +24,8 @@ void start_aae()
 	}
 
 	if ( !pids("aaews" )){
-		nvram_set("aae_enable", "1");
+		// add enable
+		//nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | 1));
 		system("aaews &");
 		logmessage("AAE", "AAE Service is started");
 	}
@@ -37,7 +38,8 @@ void stop_aae()
 		return;
 	}
 	
-	nvram_set("aae_enable","0");	
+	// remove enable
+	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") & ~1));
 	killall_tk("aaews");
 	logmessage("NAT Tunnel", "AAE Service is stopped");
 }

@@ -479,6 +479,11 @@ int start_timemachine()
 	char usb1_vid[8], usb1_pid[8], usb1_serial[64];
 	char usb2_vid[8], usb2_pid[8], usb2_serial[64];
 
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		return 0;
+#endif
+
 	snprintf(prefix, sizeof(prefix), "usb_path%s", "1");
 	strlcpy(usb1_vid, nvram_safe_get(strcat_r(prefix, "_vid", tmp)), sizeof(usb1_vid));
 	strlcpy(usb1_pid, nvram_safe_get(strcat_r(prefix, "_pid", tmp)), sizeof(usb1_pid));

@@ -235,7 +235,16 @@ function addRow_main(obj, length){
 	var blank_category = 0;
 	var apps_filter_row =  apps_filter.split("<");
 	var apps_filter_col = "";
-		
+	var upper = 16;
+
+	//check max limit of rule list
+	if(apps_filter.split("<").length >= upper){
+		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
+		document.form.PC_devicename.focus();
+		document.form.PC_devicename.select();
+		return false;
+	}
+
 	if(document.form.PC_devicename.value == ""){
 		alert("<#JS_fieldblank#>");
 		document.form.PC_devicename.focus();
@@ -267,7 +276,7 @@ function addRow_main(obj, length){
 	}
 	
 	if(blank_category == 0){
-		alert("The Content Category can not be empty");
+		alert("<#AiProtection_Category_Alert#>");
 		return false;
 	}
 
@@ -368,7 +377,31 @@ function genMain_table(){
 	else{
 		for(var k=0;k< apps_filter_row.length;k++){
 			var apps_filter_col = apps_filter_row[k].split('>');
-			
+
+			/* for exception */
+			if(apps_filter_col.length < 6){
+				if(apps_filter_col.length == 5){
+					apps_filter_col.push("0,0,0");
+				}
+				else if(apps_filter_col.length == 4){
+					apps_filter_col.push("0,0");
+					apps_filter_col.push("0,0,0");
+				}
+				else if(apps_filter_col.length == 3){
+					if(apps_filter_col[1].length != 17){	// check MAC address integrity
+						continue;
+					}
+					else{
+						apps_filter_col.push("0,0,0,0,0");
+						apps_filter_col.push("0,0");
+						apps_filter_col.push("0,0,0");
+					}
+				}
+
+				apps_filter_col[0] = "0";
+			}
+
+			/*End exception*/
 			//user icon
 			var userIconBase64 = "NoIcon";
 			var clientName, clientMac, clientIP, deviceType, deviceVender;
@@ -523,7 +556,7 @@ function edit_table(){
 		}		
 		
 		if(blank_category == 0){
-				alert("The Content Category can not be empty");
+				alert("<#AiProtection_Category_Alert#>");
 				return false;
 		}
 	}

@@ -418,7 +418,9 @@ int issyspara(char *p)
 	extern struct nvram_tuple router_defaults[];
 	
 	// skip checking for wl[]_, wan[], lan[]_
-	if (strstr(p, "wl") || strstr(p, "wan") || strstr(p, "lan"))
+	if (strstr(p, "wl") || strstr(p, "wan") || strstr(p, "lan")
+		|| strstr(p, "vpn_server") || strstr(p, "vpn_client")
+	)
 		return 1;
 
 	for (t = router_defaults; t->name; t++)

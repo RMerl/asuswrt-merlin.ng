@@ -1815,7 +1815,7 @@ function save_ipsec_profile_panel() {
 
 		if(!validator.isEmpty(document.ipsec_form.ipsec_preshared_key))
 			return false;
-		if(!Block_chars(document.ipsec_form.ipsec_preshared_key, [">", "<", "#", "null"]))
+		if(!Block_chars(document.ipsec_form.ipsec_preshared_key, [">", "<", "&", "\"", "null"]))
 			return false;
 		if(is_KR_sku){
 			if(!validator.psk_KR(document.ipsec_form.ipsec_preshared_key))
@@ -2630,13 +2630,13 @@ function changeRemoteGatewayMethod() {
 							</td>
 						</tr>
 						<tr id="tr_adv_ike_isakmp" style="display:none;">
-							<th>IKE / ISAKMP Port<!--untranslated--></th>
+							<th><#vpn_ipsec_IKE_ISAKMP_Port#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_ike_isakmp" maxlength="3" value="500">
 							</td>
 						</tr>
 						<tr id="tr_adv_ike_isakmp_nat" style="display:none;"s>
-							<th>IKE / ISAKMP NAT-T Port<!--untranslated--></th>
+							<th><#vpn_ipsec_IKE_ISAKMP_NAT_Port#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_ike_isakmp_nat" maxlength="4" value="4500">
 							</td>

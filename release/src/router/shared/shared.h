@@ -303,7 +303,7 @@ enum {
 #define GIF_PREFIXLEN  0x0002  /* return prefix length */
 #define GIF_PREFIX     0x0004  /* return prefix, not addr */
 
-#define EXTEND_AIHOME_API_LEVEL		13
+#define EXTEND_AIHOME_API_LEVEL		15
 #define EXTEND_HTTPD_AIHOME_VER		0
 
 #define EXTEND_ASSIA_API_LEVEL		1
@@ -1577,6 +1577,14 @@ extern void set_wlan_service_status(int bssidx, int vifidx, int enabled);
 #ifdef RTCONFIG_LACP
 extern uint32_t traffic_trunk(int port_num, uint32_t *rx, uint32_t *tx);
 #endif
+#ifdef RTCONFIG_JFFS_NVRAM
+extern char * jffs_nvram_get(const char *name);
+extern int jffs_nvram_set(const char *name, const char *value);
+extern int jffs_nvram_unset(const char *name);
+extern int large_nvram(const char *name);
+extern void jffs_nvram_init();
+extern int jffs_nvram_getall(int len_nvram, char *buf, int count);
+#endif
 
 // base64.c
 extern int base64_encode(const unsigned char *in, char *out, int inlen);		// returns amount of out buffer used
@@ -1600,6 +1608,10 @@ extern int discover_all(int wan_unit);
 // strings.c
 extern int char_to_ascii_safe(const char *output, const char *input, int outsize);
 extern void char_to_ascii(const char *output, const char *input);
+#if defined(RTCONFIG_UTF8_SSID)
+extern int char_to_ascii_safe_with_utf8(const char *output, const char *input, int outsize);
+extern void char_to_ascii_with_utf8(const char *output, const char *input);
+#endif
 extern int ascii_to_char_safe(const char *output, const char *input, int outsize);
 extern void ascii_to_char(const char *output, const char *input);
 extern const char *find_word(const char *buffer, const char *word);
@@ -2178,6 +2190,7 @@ extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
 #ifdef RTAC68U
 extern int is_ac66u_v2_series();
 extern int is_n66u_v2();
+extern int hw_usb_cap();
 extern int is_ssid_rev3_series();
 extern void ac68u_cofs();
 #endif
@@ -2284,5 +2297,50 @@ extern int IPTV_ports_cnt(void);
 #define WL_5G_BAND_3	1 << (3 - 1)
 #define WL_5G_BAND_4	1 << (4 - 1)
 #endif
+
+enum {
+	UI_SW_MODE_NONE=0,
+	UI_SW_MODE_ROUTER,
+	UI_SW_MODE_REPEATER,
+	UI_SW_MODE_AP,
+	UI_SW_MODE_MB,
+	UI_SW_MODE_HOTSPOT,
+	UI_SW_MODE_EXPRESS_2G,
+	UI_SW_MODE_EXPRESS_5G
+};
+
+static inline int get_sw_mode(void)
+{
+	int wlc_psta = nvram_get_int("wlc_psta");
+	int wlc_express = nvram_get_int("wlc_express");
+
+	switch(sw_mode()){
+		case 1:
+			return UI_SW_MODE_ROUTER;
+		case 2:
+			if(wlc_psta==0){
+				if(wlc_express==0)	/* BCM/RALINK/QCA/LANTIQ/REALTEK */
+					return UI_SW_MODE_REPEATER;
+				else if(wlc_express==1)	/* REALTEK RP-series */
+					return UI_SW_MODE_EXPRESS_2G;
+				else if(wlc_express==2)	/* REALTEK RP-series */
+					return UI_SW_MODE_EXPRESS_5G;
+			}else if(wlc_psta==1)	/* RALINK / QCA / LANTIQ */
+				return UI_SW_MODE_MB;
+			break;
+		case 3:
+			if(wlc_psta==0)	/* BCM/RALINK/QCA/LANTIQ/REALTEK */
+				return UI_SW_MODE_AP;
+			else if(wlc_psta==1)	/* BCM/REALTEK */
+				return UI_SW_MODE_MB;
+			else if(wlc_psta==2 || wlc_psta==3)	/* BCM */
+				return UI_SW_MODE_REPEATER;
+			break;
+		case 4:
+			return UI_SW_MODE_HOTSPOT;
+	}
+
+	return UI_SW_MODE_NONE;
+}
 
 #endif	/* !__SHARED_H__ */

@@ -110,10 +110,6 @@ function QKaccount_load_body(){
 		document.getElementById('movistarOption').outerHTML = "";
 	}
 
-	if(!parent.nz_isp_support){
-		document.getElementById('sfOption').outerHTML = "";
-	}
-
 	if(parent.based_modelid == "GT-AC5300" || parent.based_modelid == "GT-AC9600"){ //MODELDEP: GT-AC5300 : TRUNK ports
 		document.getElementById("voip_lan").innerHTML = "LAN4";
 		document.getElementById("iptv_lan").innerHTML = "LAN8";
@@ -575,16 +571,16 @@ function set_ISP_profile(){
         document.form.switch_wan0prio.value = "0";
         document.form.switch_wan1tagid.value = "600";
         document.form.switch_wan1prio.value = "0";
-        document.form.switch_wan2tagid.value = "0";
+        document.form.switch_wan2tagid.value = "";
         document.form.switch_wan2prio.value = "0";
     }
     else if(document.form.switch_wantag.value == "unifi_biz") {
 	document.form.switch_stb_x.value = "0";
         document.form.switch_wan0tagid.value = "500";
         document.form.switch_wan0prio.value = "0";
-        document.form.switch_wan1tagid.value = "0";
+        document.form.switch_wan1tagid.value = "";
         document.form.switch_wan1prio.value = "0";
-        document.form.switch_wan2tagid.value = "0";
+        document.form.switch_wan2tagid.value = "";
         document.form.switch_wan2prio.value = "0";
     }
     else if(document.form.switch_wantag.value == "singtel_mio") {
@@ -602,14 +598,14 @@ function set_ISP_profile(){
 	document.form.switch_wan0prio.value = "0";
 	document.form.switch_wan1tagid.value = "20";
 	document.form.switch_wan1prio.value = "4";
-	document.form.switch_wan2tagid.value = "0";
+	document.form.switch_wan2tagid.value = "";
 	document.form.switch_wan2prio.value = "0";
     }
     else if(document.form.switch_wantag.value == "m1_fiber") {
         document.form.switch_stb_x.value = "3";
         document.form.switch_wan0tagid.value = "1103";
         document.form.switch_wan0prio.value = "1";
-        document.form.switch_wan1tagid.value = "0";
+        document.form.switch_wan1tagid.value = "";
         document.form.switch_wan1prio.value = "0";
         document.form.switch_wan2tagid.value = "1107";
         document.form.switch_wan2prio.value = "1";
@@ -618,7 +614,7 @@ function set_ISP_profile(){
         document.form.switch_stb_x.value = "3";
         document.form.switch_wan0tagid.value = "621";
         document.form.switch_wan0prio.value = "0";
-        document.form.switch_wan1tagid.value = "0";
+        document.form.switch_wan1tagid.value = "";
         document.form.switch_wan1prio.value = "0";
         document.form.switch_wan2tagid.value = "821";
         document.form.switch_wan2prio.value = "0";
@@ -627,7 +623,7 @@ function set_ISP_profile(){
         document.form.switch_stb_x.value = "3";
         document.form.switch_wan0tagid.value = "11";
         document.form.switch_wan0prio.value = "0";
-        document.form.switch_wan1tagid.value = "0";
+        document.form.switch_wan1tagid.value = "";
         document.form.switch_wan1prio.value = "0";
         document.form.switch_wan2tagid.value = "14";
         document.form.switch_wan2prio.value = "0";
@@ -665,9 +661,9 @@ function set_ISP_profile(){
 	document.form.switch_stb_x.value = "0";
 	document.form.switch_wan0tagid.value = "10";
 	document.form.switch_wan0prio.value = "0";
-	document.form.switch_wan1tagid.value = "0";
+	document.form.switch_wan1tagid.value = "";
 	document.form.switch_wan1prio.value = "0";
-	document.form.switch_wan2tagid.value = "0";
+	document.form.switch_wan2tagid.value = "";
 	document.form.switch_wan2prio.value = "0";
     }
     else if(document.form.switch_wantag.value == "hinet") {

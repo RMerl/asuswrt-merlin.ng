@@ -688,8 +688,8 @@ function submitForm(){
 		return false;
 	
 	stopFlag = 1;
-	document.form.current_page.value = '<% abs_index_page(); %>';
-	document.form.next_page.value = '<% abs_index_page(); %>';
+	document.form.current_page.value = '/';
+	document.form.next_page.value = '/';
 	
 	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){
 		if(is_KR_sku){

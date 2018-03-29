@@ -158,14 +158,12 @@
 				</div>
 				<div class="table_td">
 					<div class="amasSupport amasNoWAN">
-						<div class="pageDesc">AiMesh combines more than one ASUS routers to form a AiMesh system, provides whole-home coverage and centralized management.</div>
+						<div class="pageDesc"><#AiMesh_Desc#></div>
 						<div>
 							<div class="selectorTopContainer">
 								<div class="selectorContainer">
 									<div class="selectorContainerDiv">
-										<div class="selectBar" onclick="goTo.asNode()">
-											I want to set this device as AiMesh node
-										</div>
+										<div class="selectBar" onclick="goTo.asNode()"><#AiMesh_setup_node#></div>
 										<div class="narrowContainer">
 											<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
 										</div>
@@ -240,7 +238,7 @@
 				<div class="desktop_left_field">
 					<div>
 						<div class="titleMain"><#CTL_login#></div>
-						<div class="titleSub"><#HSDPAConfig_Username_itemname#>/<#PPPConnection_Password_itemname#></div>
+						<div class="titleSub"><#HSDPAConfig_Username_itemname#> / <#PPPConnection_Password_itemname#></div>
 						<div class="titleSub"><#Settings#></div>
 					</div>
 				</div>
@@ -637,9 +635,7 @@
 							</div>
 							<div class="selectorContainer autoIP amasSupport amasNoWAN">
 								<div class="selectorContainerDiv">
-									<div class="selectBar" onclick="goTo.asNode()">
-										I want to set this device as AiMesh node
-									</div>
+									<div class="selectBar" onclick="goTo.asNode()"><#AiMesh_setup_node#></div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
 									</div>
@@ -919,10 +915,10 @@
 								</div>
 								<div class="inputContainer">
 									<div class="ui-grid-a">
-										<div class="ui-block-a">
+										<div class="ui-block ui-block-a">
 											VID: <input class="textInput textInputIptv" id="internet_vid" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 										</div>
-										<div class="ui-block-b">
+										<div class="ui-block ui-block-b">
 											PRIO: <input class="textInput textInputIptv" id="internet_prio" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 										</div>
 									</div>
@@ -934,10 +930,10 @@
 								</div>
 								<div class="inputContainer">
 									<div class="ui-grid-a">
-										<div class="ui-block-a">
+										<div class="ui-block ui-block-a">
 											VID: <input class="textInput textInputIptv" id="stb_vid" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 										</div>
-										<div class="ui-block-b">
+										<div class="ui-block ui-block-b">
 											PRIO: <input class="textInput textInputIptv" id="stb_prio" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 										</div>
 									</div>
@@ -949,10 +945,10 @@
 								</div>
 								<div class="inputContainer">
 									<div class="ui-grid-a">
-										<div class="ui-block-a">
+										<div class="ui-block ui-block-a">
 											VID: <input class="textInput textInputIptv" id="voip_vid" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 										</div>
-										<div class="ui-block-b">
+										<div class="ui-block ui-block-b">
 											PRIO: <input class="textInput textInputIptv" id="voip_prio" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 										</div>
 									</div>
@@ -1368,12 +1364,16 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick='abort.siteSurvey()'><#CTL_prev#></div>
+							<div class="desktop_applyBtn" onclick="goTo.wlcKey();"><#Manual_Setting_btn#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
-									<td class="mobileAbort" style="width:100%;" onclick='abort.siteSurvey()'>
+									<td class="mobileAbort" style="width:50%;" onclick='abort.siteSurvey()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" onclick="goTo.wlcKey();">
+										<div class="mobile_applyBtn"><#Manual_Setting_btn#></div>
 									</td>
 								</tr>
 							</table>
@@ -1395,7 +1395,37 @@
 					<div class="pageDesc"><#wireless_psk_fillin#></div>
 
 					<div id="wlc_field">
-						<div>
+						<div class="manual_pap_setup" id="manual_pap_setup-band">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#Interface#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_band_manual" class="optionInput"></select>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-ssid">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#QIS_finish_wireless_item1#></div>
+							</div>
+							<div class="inputContainer">
+								<input id="wlc_ssid_manual" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true" />
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-authmode">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_AuthenticationMethod_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_auth_mode_manual" class="optionInput">
+									<option value="open">Open System</option>
+									<option value="psk2" selected>WPA2-Personal</option>
+								</select>
+							</div>
+						</div>
+
+						<div id="manual_pap_setup-key">
 							<div class="inputTitleContainer">
 								<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
 								<div class="secureInput icon_eye_close" for="wlc_wifiKey"></div>
@@ -1440,7 +1470,7 @@
 
 					<div id="wlInputField"></div>
 					<div class="labelContainer dualbandSupport bandStreeringSupport">
-						<label for="wireless_checkbox" class="labelInput">Separate 2.4GHz and 5GHz</label>
+						<label for="wireless_checkbox" class="labelInput"><#qis_wireless_setting_separate#></label>
 		  				<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 					</div>
 
@@ -1606,7 +1636,7 @@
 					</div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc"><#Congratulations#>&nbsp;<#QKSet_finish_desc#></div>
+					<div class="pageDesc"><#QKSet_finish_desc#></div> <!-- #Congratulations# &nbsp; -->
 					<div class="pageDesc">
 						<div class="descSteps">Step 1</div>
 						<div><#DrSurf_sweet_advise1#></div>
@@ -1665,7 +1695,7 @@
 				</div>
 				<div class="table_td">
 					<div class="pageDesc">	
-						AiMesh combines more than one ASUS routers to form an AiMesh system, provides whole-home coverage and centralized management.
+						<#AiMesh_Desc#>
 						<br/>
 						Do you want to add another node?
 

@@ -115,7 +115,6 @@ if(isMobile() && (based_modelid == "RT-AC88U" || based_modelid == "RT-AC3100" ||
 }
 	
 var parent_macaddr = '<% nvram_get("lan_hwaddr"); %>';
-var nz_isp_support = isSupport("nz_isp");
 var isRepeater = true;
 var reduced_internet_type = "disable";
 var targeturl = "/index.htm";
@@ -631,7 +630,7 @@ function gotoIndex(){
 		location.href = '/QIS_wizard.htm?flag=wireless';
 	}
 	else
-		location.href = "<% abs_index_page(); %>";
+		location.href = "/";
 }
 
 function check_DUT(){
@@ -670,7 +669,7 @@ function detect_httpd(){
     	},
     	success: function(){
     		setTimeout("hideLoadingBar();",1000);
-      		location.href = "<% abs_index_page(); %>";
+		location.href = "/";
   		}
   	});
 }

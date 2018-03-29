@@ -67,6 +67,21 @@ if(dsl_support){
     	}	
 }
 
+var aimesh_system_new_fw_flag = false;
+if(amesh_support) {
+	var get_cfg_clientlist = [<% get_cfg_clientlist(); %>][0];
+	for (var idx in get_cfg_clientlist) {
+		if(get_cfg_clientlist.hasOwnProperty(idx)) {
+			if(get_cfg_clientlist[idx].online == "1") {
+				if(get_cfg_clientlist[idx].newfwver != "") {
+					aimesh_system_new_fw_flag = true;
+					break;
+				}
+			}
+		}
+	}
+}
+
 var notification = {
 	stat: "off",
 	flash: "off",
@@ -205,25 +220,38 @@ var notification = {
 		}else
 			notification.acpw = 0;
 
-		if(current_firmware_path==1)
-			var latest_state_info = webs_state_info_beta;
-		else
-			var latest_state_info = webs_state_info;
-			
-		if(isNewFW(latest_state_info,current_firmware_path,current_firmware_path)){	//case2
-			notification.array[1] = 'noti_upgrade';
-			notification.upgrade = 1;
-			notification.desc[1] = '<#ASUSGATE_note2#>';
-			if(!live_update_support || !HTTPS_support){
-				notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><#ASUSGATE_act_update#></a>';
-				notification.clickCallBack[1] = "";
-			}
-			else{
+		if(amesh_support) {
+			if(aimesh_system_new_fw_flag) {
+				notification.array[1] = 'noti_upgrade';
+				notification.upgrade = 1;
+				notification.desc[1] = '<#ASUSGATE_note2#>';
 				notification.action_desc[1] = '<#ASUSGATE_act_update#>';
-				notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show="+current_firmware_path+"';"
+				notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show=0';"
 			}
-		}else
-			notification.upgrade = 0;
+			else
+				notification.upgrade = 0;
+		}
+		else {
+			if(current_firmware_path==1)
+				var latest_state_info = webs_state_info_beta;
+			else
+				var latest_state_info = webs_state_info;
+
+			if(isNewFW(latest_state_info,current_firmware_path,current_firmware_path)){	//case2
+				notification.array[1] = 'noti_upgrade';
+				notification.upgrade = 1;
+				notification.desc[1] = '<#ASUSGATE_note2#>';
+				if(!live_update_support || !HTTPS_support){
+					notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><#ASUSGATE_act_update#></a>';
+					notification.clickCallBack[1] = "";
+				}
+				else{
+					notification.action_desc[1] = '<#ASUSGATE_act_update#>';
+					notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show="+current_firmware_path+"';"
+				}
+			}else
+				notification.upgrade = 0;
+		}
 		
 		if(band2g_support && sw_mode != 4 && noti_auth_mode_2g == 'open'){ //case3-1
 				notification.array[2] = 'noti_wifi_2g';

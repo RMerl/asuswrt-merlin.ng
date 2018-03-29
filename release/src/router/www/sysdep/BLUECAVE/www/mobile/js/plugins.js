@@ -82,6 +82,20 @@ var htmlEnDeCode = (function() {
 	};
 })();
 
+function getAllWlArray(){
+	var wlArrayRet = [{"title":"2.4GHz", "ifname":"0", "suffix": ""}];
+	
+	if(isSupport("TRIBAND")){
+		wlArrayRet.push({"title":"5GHz-1", "ifname":"1", "suffix": "_5G-1"})
+		wlArrayRet.push({"title":"5GHz-2", "ifname":"2", "suffix": "_5G-2"})
+	}
+	else if(isSupport("DUALBAND")){
+		wlArrayRet.push({"title":"5GHz", "ifname":"1", "suffix": "_5G"})
+	}
+
+	return wlArrayRet;
+}
+
 function checkPasswd($obj){
 	var targetObj = $(this);
 	targetObj.toggleClass("icon_eye_close").toggleClass("icon_eye_open");
@@ -152,7 +166,7 @@ var Get_Component_WirelessInput = function(wlArray){
 	var container = $("<div>");
 
 	wlArray.forEach(function(wl, idx){
-		var wirelessAP = httpApi.nvramGet(["wl" + wl.ifname + "_ssid", "wl" + wl.ifname + "_wpa_psk"]);
+		var wirelessAP = httpApi.nvramCharToAscii(["wl" + wl.ifname + "_ssid", "wl" + wl.ifname + "_wpa_psk"]);
 		// Do not use default value.
 		if(systemVariable.isDefault){
 			wirelessAP["wl" + wl.ifname + "_ssid"] = "";
@@ -186,7 +200,7 @@ var Get_Component_WirelessInput = function(wlArray){
 						$(".wlInput")[idx*2+1].focus();
 					}
 				})
-				.val(wirelessAP["wl" + wl.ifname + "_ssid"])
+				.val(decodeURIComponent(wirelessAP["wl" + wl.ifname + "_ssid"]))
 			)
 			.appendTo(__container)
 
@@ -221,7 +235,7 @@ var Get_Component_WirelessInput = function(wlArray){
 						}
 					}
 				})
-				.val(wirelessAP["wl" + wl.ifname + "_wpa_psk"])
+				.val(decodeURIComponent(wirelessAP["wl" + wl.ifname + "_wpa_psk"]))
 			)
 			.appendTo(__container);
 
@@ -305,7 +319,7 @@ function handleModelIcon() {
 					return default_png_path;
 			}
 			else if(odmpid.length > 0 && odmpid != based_modelid) {
-				if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U") {
+				if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U") {
 					MP_png_path = "/images/RT-AC66U_V2/Model_product.png";
 					if(LinkCheck(MP_png_path))
 						return MP_png_path;

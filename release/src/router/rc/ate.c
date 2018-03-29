@@ -1751,12 +1751,10 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #ifdef RTCONFIG_AMAS
 	else if (!strcmp(command, "Set_AB")) {
 		set_amas_bdl();
-		get_amas_bdl();
 		return 0;
 	}
 	else if (!strcmp(command, "Unset_AB")) {
 		unset_amas_bdl();
-		get_amas_bdl();
 		return 0;
 	}
 	else if (!strcmp(command, "Get_AB")) {

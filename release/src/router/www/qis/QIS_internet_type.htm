@@ -79,11 +79,6 @@ function QKinternettype_load_body(){
 		if(parent.noiptv_support)
 			document.getElementById("specialISP_tr").style.display = "none";
 		else{
-
-			//Fine tune ISP option start
-			if(!parent.nz_isp_support){
-				document.getElementById('sfOption').outerHTML = "";
-			}
 			ISP_Profile_Selection(original_switch_wantag);
 			hide_specialISP();
 		}
@@ -236,7 +231,7 @@ function submitForm(){
 }
 
 function gotoprev_type(){
-	parent.location.href = "<% abs_index_page(); %>";
+	parent.location.href = "/";
 }
 
 function ISP_Profile_Selection(isp){
@@ -469,7 +464,7 @@ function set_ISP_profile(){
                 document.applyForm.switch_wan0prio.value = "0";
                 document.applyForm.switch_wan1tagid.value = "";
                 document.applyForm.switch_wan1prio.value = "0";
-                document.applyForm.switch_wan2tagid.value = "0";
+                document.applyForm.switch_wan2tagid.value = "";
                 document.applyForm.switch_wan2prio.value = "0";
         }
 		if(document.applyForm.switch_wantag.value == "maxis_fiber_sp_iptv" || 

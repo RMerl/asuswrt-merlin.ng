@@ -532,7 +532,8 @@ int PJ_THREAD_FUNC CSndQueue::worker(void *param)
    }
 #endif
 
-   pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
+   if (call->tnl_stream)
+	pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
 
 #ifdef WIN32
    printf("CSndQueue::worker ThreadId=[%08X]\n", GetCurrentThreadId());
@@ -578,7 +579,8 @@ int PJ_THREAD_FUNC CSndQueue::worker(void *param)
       }
    }
    PJ_LOG(4, ("queue.cpp", "CSndQueue::worker end!!"));
-   pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
+   if (call->tnl_stream)
+	pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 
    #ifndef WIN32
       return 0;
@@ -1033,7 +1035,8 @@ int PJ_THREAD_FUNC CRcvQueue::worker(void *param)
    CUDT* u = NULL;
    int32_t id;
 
-   pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
+   if (call->tnl_stream)
+	pj_grp_lock_add_ref(call->tnl_stream->grp_lock);
 
 #ifdef WIN32
    printf("CRcvQueue::worker ThreadId=[%08X]\n", GetCurrentThreadId());
@@ -1160,7 +1163,8 @@ TIMER_CHECK:
       self->m_pRendezvousQueue->updateConnStatus();
    }
    PJ_LOG(4, ("queue.cpp", "CRcvQueue::worker end!!"));
-   pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
+   if (call->tnl_stream)
+	pj_grp_lock_dec_ref(call->tnl_stream->grp_lock);
 
    if (AF_INET == self->m_UnitQueue.m_iIPversion)
       delete (sockaddr_in*)addr;

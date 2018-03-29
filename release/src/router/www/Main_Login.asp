@@ -413,14 +413,14 @@ function login(){
 			|| redirect_page.indexOf("http") != -1
 			|| (redirect_page.indexOf(".asp") == -1 && redirect_page.indexOf(".htm") == -1 && redirect_page != "send_IFTTTPincode.cgi" && redirect_page != "cfg_onboarding.cgi")
 		){
-			document.form.next_page.value = "<% rel_index_page(); %>";
+			document.form.next_page.value = "";
 		}
 		else{
 			document.form.next_page.value = redirect_page;
 		}
 	}
 	catch(e){
-		document.form.next_page.value = "<% rel_index_page(); %>";
+		document.form.next_page.value = "";
 	}
 
 	document.form.submit();

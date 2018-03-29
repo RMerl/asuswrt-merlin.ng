@@ -193,8 +193,8 @@ var systemVariable = {
 	"uiLanguage": "",
 	"territoryCode": "",
 	"default_http_passwd": "admin",
-	"forceChangePw": "",
-	"forceChangePwInTheEnd": "",
+	"forceChangePw": false,
+	"forceChangePwInTheEnd": false,
 	"rebootTime": ""
 }
 

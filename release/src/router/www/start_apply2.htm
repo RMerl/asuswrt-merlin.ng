@@ -365,7 +365,7 @@ function showdr_advise(setting){
 		}
 
 		makeRequest.start('/httpd_check.xml', function(xhr){
-			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 			var httpds = xhr.responseXML.getElementsByTagName("httpd");
 			if (httpds !== null && httpds[0] !== null) {
@@ -502,7 +502,7 @@ function initial(){
 				showWlHint();
 				return;
 			}
-			if(current_page.indexOf("<% abs_index_page(); %>") >= 0){
+			if(current_page.indexOf(parent.ABS_INDEXPAGE) >= 0){
 				parent.showLoading(restart_time, "waiting");
 			}
 		}

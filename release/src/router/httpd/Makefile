@@ -2,7 +2,28 @@ include ../common.mak
 
 CFLAGS += -Os -Wall $(EXTRACFLAGS)
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
-CFLAGS += -I$(SRCBASE) -I. -I$(SRCBASE)/include -I$(TOP)/shared -I$(TOP)/zlib -I$(TOP)/networkmap
+CFLAGS += -I$(SRCBASE) -I.
+ifeq ($(RTCONFIG_BCM7),y)
+CFLAGS += -I$(SRCBASE)/../../dhd/src/wl/exe/
+endif
+ifeq ($(RTCONFIG_BCM_7114),y)
+CFLAGS += -I$(SRCBASE)/../dhd/src/include
+CFLAGS += -I$(SRCBASE)/../dhd/src/shared/bcmwifi/include
+endif
+ifeq ($(RTCONFIG_BCM9),y)
+CFLAGS += -I$(SRCBASE)/../sys/src/include/
+endif
+ifeq ($(HND_ROUTER),y)
+CFLAGS += -I$(SRCBASE)/../../dhd/src/include/
+CFLAGS += -I$(SRCBASE)/../../dhd/src/shared/bcmwifi/include/
+CFLAGS += -I$(SRCBASE)/../../dhd/components/shared/devctrl_if/
+endif
+CFLAGS += -I$(SRCBASE)/include -I$(TOP)/shared -I$(TOP)/zlib -I$(TOP)/networkmap
+ifneq ($(or $(RTCONFIG_BCM7),$(RTCONFIG_BCM_7114),$(RTCONFIG_BCM9),$(HND_ROUTER)),y)
+ifeq ($(RTCONFIG_BCMWL6),y)
+CFLAGS += -I$(SRCBASE)/wl/exe/
+endif
+endif
 CFLAGS += -I$(TOP)/push_log
 CFLAGS += -DASUS_DDNS -DTRANSLATE_ON_FLY -DFLASH_EMULATOR -DLinux -DWSC 
 

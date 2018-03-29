@@ -623,6 +623,7 @@ extern int set_amas_bdl(void);
 extern int unset_amas_bdl(void);
 extern int get_amas_bdl(void);
 #endif
+extern int ATE_BRCM_FACTORY_MODE(void);
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
@@ -752,7 +753,11 @@ extern void wan6_down(const char *wan_ifname);
 extern void start_wan6(void);
 extern void stop_wan6(void);
 #endif
+extern int do_ping_detect(int wan_unit, const char *target);
 extern int do_dns_detect(int wan_unit);
+#ifdef DSL_AC68U
+extern int check_wan_if(int unit);
+#endif
 
 // lan.c
 extern void update_lan_state(int state, int reason);
@@ -1533,6 +1538,7 @@ extern char *pwdec_dsl(char *input);
 #endif
 extern int service_main(int argc, char *argv[]);
 #ifdef RTCONFIG_DSL
+extern void stop_spectrum(void);
 extern int check_tc_upgrade(void);
 extern int start_tc_upgrade(void);
 #ifdef RTCONFIG_DSL_TCLINUX
@@ -1713,6 +1719,11 @@ extern int clearGroup_ID(void);
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 extern int start_wlc_nt(void);
 extern void stop_wlc_nt(void);
+extern int stop_notification_center(void);
+#endif
+#ifdef RTCONFIG_PROTECTION_SERVER
+extern int start_ptcsrv(void);
+extern void stop_ptcsrv(void);
 #endif
 #ifdef LANTIQ_BSD
 extern int start_bsd(void);

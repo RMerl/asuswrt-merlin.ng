@@ -117,7 +117,7 @@ a{
 	 width:100%;
 }
 .textInput{
-	width: 95%;
+	width: 98%;
 	max-width: 100%;
 	padding-left: 18px;
 	margin-bottom: 35px;
@@ -151,6 +151,14 @@ a{
 }
 .ui-btn{
 	background-color: transparent !important;
+}
+.ui-select .ui-btn > span:not(.ui-li-count){
+	background-color: transparent !important;
+}
+.ui-block{
+	text-align: center;
+	font-size: 20px;
+	color: #999;
 }
 .inputContainer{
 	margin: 0px 55px 30px 30px;
@@ -461,7 +469,7 @@ a{
 .apListDiv{
 	display: table-row;
 	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;
-	font-size: 2.25em;
+	font-size: 2em;
 	color: #DBDBDB
 }
 .ap_icon_container{
@@ -475,8 +483,12 @@ a{
 .ap_ssid{
 	display: table-cell;
 	width: 100%;
-	padding-left: 12px;
+	padding-left: 20px;
 	color: #DBDBDB;
+	cursor: pointer;
+}
+.ap_ssid_hover{
+	color: #007AFF !important;
 }
 .ap_band{
 	display: table-cell;
@@ -505,7 +517,7 @@ a{
 .selectorContainerDiv{
 	display: table-row;
 	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;
-	font-size:2.25em;
+	font-size:2em;
 }
 .narrowContainer{
 	display: table-cell;
@@ -736,7 +748,7 @@ a{
 	}
 	.tableContainer{
 		width: 90%;
-		max-width: 1200px;
+		max-width: 1500px;
 	}
 	.desktop_left_field{
 		display:table-cell;
@@ -781,10 +793,10 @@ a{
 		width: 80%;
 	}
 	.textInput{
-		max-width: 900px;
+		max-width: 1000px;
 	}
 	.loadingBarContainer{
-		max-width: 900px;
+		max-width: 1000px;
 	}
 	.optionInput{
 		max-width: 900px;
@@ -826,6 +838,12 @@ a{
 	}
 	.footerPadding{
 		display: none;
+	}
+	.ap_narrow_container{
+		padding-right: 0px;
+	}
+	.narrowContainer{
+		padding-right: 0px;
 	}
 	@media screen and (max-height: 1000px){
 		.tableContainerIndex{ 
@@ -885,7 +903,7 @@ a{
 }
 .aimesh_illustration_second_bg {
 	width: 95%;
-	height: 260px;
+	height: 230px;
 	margin: auto;
 }
 .aimesh_illustration_bg.text {
@@ -933,30 +951,42 @@ a{
 	width: 43%;
 	background-image: none;
 }
-.aimesh_illustration_icon.connect_left {
-	width: 14%;
-	background-size: 600%;
-	animation: connect_left_change 9s steps(1) infinite;
-}
-.aimesh_illustration_icon.connect_right {
-	width: 14%;
-	background-size: 600%;
-	animation: connect_right_change 9s steps(1) infinite;
-}
-.aimesh_illustration_icon.computer {
-	width: 25%;
-	background-size: 445%;
-	background-position: 1% 103%;
+.aimesh_illustration_icon.dynamic_icon_bg {
+	width: 57%;
+	background-image: none;
 	position: relative;
 }
-.aimesh_illustration_icon.computer_content {
-	width: 76%;
-	background-size: 635%;
-	height: 52%;
-	bottom: 23%;
+.aimesh_illustration_icon.connect_left {
+	width: 25%;
+	background-size: 700%;
+	animation: connect_left_change 9s steps(1) infinite;
 	position: absolute;
-	right: 4%;
+	float: none;
+	left: 0%;
+}
+.aimesh_illustration_icon.connect_right {
+	width: 25%;
+	background-size: 700%;
+	animation: connect_right_change 9s steps(1) infinite;
+	position: absolute;
+	float: none;
+	left: 70%;
+}
+.aimesh_illustration_icon.computer {
+	width: 45%;
+	background-size: 480%;
+	background-position: 2% 100%;
+	position: absolute;
+	float: none;
+	left: 25%;
+}
+.aimesh_illustration_icon.computer_content {
+	width: 45%;
+	background-size: 480%;
 	animation: computer_content_change 9s steps(1) infinite;
+	position: absolute;
+	float: none;
+	left: 25%;
 }
 @keyframes breath {
 	0% {
@@ -980,7 +1010,7 @@ a{
 }
 @keyframes connect_left_change {
 	0% {
-		background-position: 0% 70%;
+		background-position: 2% 70%;
 	}
 	60% {
 		background-position: 60% 70%;
@@ -988,21 +1018,21 @@ a{
 }
 @keyframes connect_right_change {
 	0% {
-		background-position: 93% 70%;
+		background-position: 91% 70%;
 	}
 	30% {
-		background-position: 38% 70%;
+		background-position: 37% 70%;
 	}
 }
 @keyframes computer_content_change {
 	0% {
-		background-position: 35.6% 94.3%;
+		background-position: 32.5% 98.5%
 	}
 	30% {
-		background-position: 66.6% 94.3%;
+		background-position: 65.5% 98.5%;
 	}
 	60% {
-		background-position: 98% 94.3%;
+		background-position: 99% 98.5%;
 	}
 }
 .aimesh_illustration_text {

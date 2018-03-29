@@ -728,7 +728,7 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 	</div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="app_form" action="/cloud_main.asp">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>" disabled>
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>" disabled>
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>" disabled>
 <input type="hidden" name="apps_action" value="">
 <input type="hidden" name="apps_path" value="">

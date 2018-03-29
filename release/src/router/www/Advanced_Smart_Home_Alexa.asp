@@ -241,7 +241,7 @@ function detcet_aae_state(){
 		setTimeout("detcet_aae_state()", 1000);
 		},
 		success: function(response){
-			if(response.aae_enable == '1')
+			if(response.aae_enable != '0')
 				send_gen_pincode();
 			else{
 				AAE_MAX_RETRY_NUM--;

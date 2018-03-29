@@ -22,7 +22,7 @@
 	}
 }
 function show_AMesh_status(num, flag) {
-	document.getElementById("ameshNumber").innerHTML = "AiMesh Node: <span>" + num + "</span>";/* untranslated */
+	document.getElementById("ameshNumber").innerHTML = "<#AiMesh_Node#>: <span>" + num + "</span>";
 }
 function initial_amesh_obj() {
 	//initial amesh obj

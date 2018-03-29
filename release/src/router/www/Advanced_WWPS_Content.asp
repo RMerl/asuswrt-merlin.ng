@@ -349,7 +349,7 @@ function loadXML(){
 }
 
 function refresh_wpsinfo(xhr){
-	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = '<% abs_index_page(); %>';
+	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 	var wpss = xhr.responseXML.getElementsByTagName("wps");
 	if(wpss == null || wpss[0] == null){

@@ -779,6 +779,45 @@ static enum if_id desc_to_id(char *desc)
 
 }
 
+#ifdef RTCONFIG_BCMARM
+FILE* renew_devfile(FILE *f)
+{
+	FILE *f2;
+	char buf[256], wan0buf[256], wan1buf[256];
+	char *wan0_if = nvram_safe_get("wan0_ifname");
+	char *wan1_if = nvram_safe_get("wan1_ifname");
+
+	unlink("/tmp/dev");
+	f2 = fopen("/tmp/dev", "w+");
+
+	memset(buf, 0, sizeof(buf));
+	memset(wan0buf, 0, sizeof(wan0buf));
+	memset(wan1buf, 0, sizeof(wan1buf));
+
+	while (fgets(buf, sizeof(buf), f)) {
+		if(*wan0_if && strstr(buf, wan0_if)) {
+			strlcpy(wan0buf, buf, sizeof(wan0buf));
+			continue;
+		} else if(*wan1_if && strstr(buf, wan1_if)) {
+			strlcpy(wan1buf, buf, sizeof(wan1buf));
+			continue;
+		}
+		fwrite(buf, 1, strlen(buf), f2);
+	}
+	fclose(f);
+
+	if(*wan0_if)
+		fwrite(wan0buf, 1, strlen(wan0buf), f2);
+	if(*wan1_if)
+		fwrite(wan1buf, 1, strlen(wan1buf), f2);
+
+	rewind(f2);
+
+	return f2;
+}
+
+#endif
+
 #ifdef RTCONFIG_LANTIQ
 #define RS_PPACMD_WAN_PATH "/tmp/rs_ppacmd_getwan"
 #define RS_PPACMD_LAN_PATH "/tmp/rs_ppacmd_getlan"
@@ -824,6 +863,9 @@ static void calc(void)
 #ifdef RTCONFIG_LANTIQ
 	char ifname_buf[10];
 #endif
+#ifdef RTCONFIG_BCMARM
+	unsigned long long vlan_rx = 0, vlan_tx = 0;
+#endif
 
 	rx2 = 0;
 	tx2 = 0;
@@ -854,6 +896,10 @@ static void calc(void)
 		fgets(buf, sizeof(buf), f);	// header
 		fgets(buf, sizeof(buf), f);	// "
 	}
+#ifdef RTCONFIG_BCMARM
+	f = renew_devfile(f);
+	if (!f) return;
+#endif
 	memset(tmp_speed, 0, sizeof(tmp_speed));
 	while (fgets(buf, sizeof(buf), f)) {
 #ifdef RTCONFIG_LANTIQ
@@ -877,11 +923,33 @@ static void calc(void)
 			if ((p = strchr(buf, ':')) == NULL) continue;
 			sscanf(p + 1, "%llu", &counter[1]);
 			ifname = &ifname_buf;
-			//_dprintf("%s, rx: %llu, tx: %llu\n", ifname, counter[0], counter[1]);
 		}
 #endif
 //TODO: like httpd/web.c ej_netdev()
-#ifdef RTCONFIG_BCM5301X_TRAFFIC_MONITOR
+
+#ifdef RTCONFIG_BCMARM
+/* calc INTERNET tag values by proc results */
+		if(strstr(nvram_safe_get("wan_ifnames"), "eth0")) {
+			if(strstr(nvram_safe_get("lan_ifnames"),ifname) && strncmp(ifname, "vlan1", 5)==0){
+				vlan_rx += counter[0];
+				vlan_tx += counter[1];
+			}
+			if(strncmp(ifname, "eth0", 4)==0){
+				if(counter[0]>vlan_rx) {
+					counter[0] -= vlan_rx;
+				} else {
+					counter[0] = counter[0] + 0xffffffff - vlan_rx;
+				}
+				if(counter[1]>vlan_tx) {
+					counter[1] -= vlan_tx;
+				} else {
+					counter[1] = counter[1] + 0xffffffff - vlan_tx;
+				}
+			}
+		}
+#endif
+/* retrieve vlan-if counters again for bcm5301x case */
+#if defined(RTCONFIG_BCM5301X_TRAFFIC_MONITOR)
 		if(strncmp(ifname, "vlan", 4)==0){
 			traffic_wanlan(ifname, &counter[0], &counter[1]);
 		}
@@ -889,7 +957,6 @@ static void calc(void)
 
 		if (!netdev_calc(ifname, ifname_desc, (unsigned long*) &counter[0], (unsigned long*) &counter[1], ifname_desc2, (unsigned long*) &rx2, (unsigned long*) &tx2, nv_lan_ifname, nv_lan_ifnames))
 			continue;
-		//_dprintf(">>> %s, %s, %llu, %llu, %s, %llu, %llu <<<\n",ifname, ifname_desc, counter[0], counter[1], ifname_desc2, rx2, tx2);
 #ifdef RTCONFIG_QTN		
 		if (!strcmp(ifname, nvram_safe_get("wl_ifname")))
 			strcpy(ifname_desc2, "WIRELESS1");
@@ -961,6 +1028,7 @@ loopagain:
 
 #endif
 	}
+
 #ifdef RTCONFIG_LANTIQ
 	if ((nvram_get_int("switch_stb_x") == 0 || nvram_get_int("switch_stb_x") > 6) && ppa_support(WAN_UNIT_FIRST)) {
 		unlink(RS_PPACMD_WAN_PATH);
@@ -984,8 +1052,6 @@ loopagain:
 		if (i == 0) {
 			if (speed_count >= MAX_SPEED_IF) continue;
 
-			//_dprintf("%s: add %s as #%d\n", __FUNCTION__, ifname_desc, speed_count);
-
 			i = speed_count++;
 			sp = &speed[i];
 			memset(sp, 0, sizeof(*sp));
@@ -994,7 +1060,6 @@ loopagain:
 			sp->utime = current_uptime;
 		}
 		if (sp->sync) {
-			//_dprintf("%s: sync %s\n", __FUNCTION__, ifname_desc);
 			sp->sync = -1;
 
 			memcpy(sp->last, tmp->counter, sizeof(sp->last));
@@ -1008,7 +1073,6 @@ loopagain:
 			n = tick / INTERVAL;
 	
 			sp->utime += (n * INTERVAL);
-			//_dprintf("%s: %s n=%d tick=%d\n", __FUNCTION__, ifname, n, tick);
 
 			for (i = 0; i < MAX_COUNTER; ++i) {
 				c = tmp->counter[i];

@@ -3000,8 +3000,8 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	char *setting = NULL;
 	char macaccept[32], chain[32];
 	char prefix[32], tmp[100], *wan_proto, *wan_ipaddr;
-	int i;
 #ifdef RTCONFIG_IPV6
+	int i;
 	FILE *fp_ipv6 = NULL;
 	int n;
 	char *ip, *protono;
@@ -5284,9 +5284,10 @@ write_porttrigger(FILE *fp, char *wan_if, int is_nat)
 void
 mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 {
+#ifdef RTCONFIG_IPV6
 	int unit;
 	char chain[sizeof("QOSOxXXX")];
-
+#endif
 #ifdef CONFIG_BCMWL5 /* the only use so far */
 	char lan_class[32];
 

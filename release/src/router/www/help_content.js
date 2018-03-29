@@ -170,7 +170,7 @@ helpcontent[11] = new Array("",
 							"<#LANHostConfig_x_TimeZone_DSTStart_desc#>",
 							"<#LANHostConfig_x_TimeZone_DSTEnd_desc#>",
 							"For destination IP address, you can:<br/>(a) enter a specific IP address, such as \"192.168.1.2\"<br/>(b) enter IP addresses within one subnet or within the same IP pool, such as \"192.168.1.0/24\"",	/* untranslated */
-							"This feature allows you to restrict only specified IP address could access the wireless router via \"Web UI\" / \"SSH\" / \"Telnet\" from WAN(if Enabled) or LAN side(Telnet LAN only).",		/* untranslated */
+							"<#System_Allow_Specified_IP#>",
 							"<#usb_HDD_Hibernation_Desc#>");
 //Log
 helpcontent[12] = new Array("",

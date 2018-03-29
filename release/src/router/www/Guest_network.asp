@@ -869,8 +869,11 @@ function change_guest_unit(_unit, _subunit){
 	}
 	else {
 		$(".captive_portal_control_class").css("display", "");
-			if(isSwMode("ap"))
-				inputCtrl(document.form.wl_lanaccess, 0);
+		if(isSwMode("ap")){
+			inputCtrl(document.form.wl_lanaccess, 0);
+			document.getElementById('bw_limiter_field').style.display = "none";
+			document.getElementById('bw_limiter_settings').style.display = "none";
+		}
 	}
 
 	if(lyra_hide_support){
@@ -1481,7 +1484,7 @@ function show_bandwidth(flag){
 								</td>
 							</tr>
 							
-							<tr class="captive_portal_control_class">
+							<tr id="bw_limiter_field" class="captive_portal_control_class">
 								<th><#Bandwidth_Limiter#></th>
 								<td>
 										<input type="radio" value="1" name="bw_enabled_x" class="content_input_fd" onClick="show_bandwidth(1);"><#checkbox_Yes#>
@@ -1489,7 +1492,7 @@ function show_bandwidth(flag){
 										<span id="QoS_hint" style="color:#FC0;display:none;"></span>
 								</td>
 							</tr>
-							<tr>
+							<tr id="bw_limiter_settings">
 								<th><#Bandwidth_Setting#></th>
 								<td>
 										<#download_bandwidth#> <input type="text" id="wl_bw_dl_x" name="wl_bw_dl_x" maxlength="12" onkeypress="return validator.bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>

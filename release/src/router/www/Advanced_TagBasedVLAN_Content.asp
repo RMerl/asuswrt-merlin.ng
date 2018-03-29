@@ -59,9 +59,9 @@
 <% wanlink(); %>
 var PortType_Value = {"None": "00", "Untagged": "01", "Tagged": "10", "Override": "11"};
 var PortType_Text_Value = [ {"type_text": "None", "value": "00"},
-							{"type_text": "Untagged", "value": "01"},
-							{"type_text": "Tagged", "value": "10"},
-							{"type_text": "Override", "value": "11"}];
+							{"type_text": "<#VLAN_Untagged#>", "value": "01"},
+							{"type_text": "<#VLAN_Tagged#>", "value": "10"},
+							{"type_text": "<#VLAN_Override#>", "value": "11"}];
 var Interface_Text_Value = [{"if_text": "WAN", "value": "wan0", "type": "00"},
 							{"if_text": "WAN2", "value": "wan1", "type": "00"},
 					  		{"if_text": "LAN 1", "value": "lan1", "type": "00"},
@@ -278,14 +278,14 @@ function change_interface_type(obj){
 		if(inf == Interface_Text_Value[i].value){
 			var inf_3 = inf.substr(0,3);
 			if( inf_3 == "wan" || inf_3 == "usb"){
-				select.options[select.length] = new Option("Tagged", PortType_Value.Tagged);
+				select.options[select.length] = new Option("<#VLAN_Tagged#>", PortType_Value.Tagged);
 			}
 			else if(inf_3 == "lan"){
-				select.options[select.length] = new Option("Untagged", PortType_Value.Untagged);
-				select.options[select.length] = new Option("Tagged", PortType_Value.Tagged);
+				select.options[select.length] = new Option("<#VLAN_Untagged#>", PortType_Value.Untagged);
+				select.options[select.length] = new Option("<#VLAN_Tagged#>", PortType_Value.Tagged);
 			}
 			else if(inf_3.slice(0,2) == "wl"){
-				select.options[select.length] = new Option("Untagged", PortType_Value.Untagged);
+				select.options[select.length] = new Option("<#VLAN_Untagged#>", PortType_Value.Untagged);
 			}
 		}
 	}
@@ -419,7 +419,7 @@ function show_binding_list(){
 	code +='<table width="97%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="binding_inf_table">';
 	
 	if(bind_interface_array.length == 0)
-		code +='<tr><td style="color:#FFCC00;" colspan="3"><#TBVLAN_NoBindingInf#></td>';
+		code +="<tr><td style='color:#FFCC00;' colspan='3'><#TBVLAN_NoBindingInf#></td>";
 	else{
 		Object.keys(bind_interface_array).forEach(function(key){
 			code +='<tr id="row'+key+'">';
@@ -1020,7 +1020,7 @@ function generate_sunbet_options(select){
 	if(select.length < 7){
 		var option = document.createElement("option");
 		option.value = "new";
-		option.text = "New Subnet";
+		option.text = "<#VLAN_New_Subnet#>";
 		select.add(option);
 	}	
 }

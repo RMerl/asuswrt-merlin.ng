@@ -117,7 +117,7 @@ function wl_chanspec_list_change(){
 					document.getElementById('wl_nctrlsb_field').style.display = "";
 		loop_auto: for(i=0; i<wl_channel_list_5g.length; i++){
 						var _cur_channel = parseInt(wl_channel_list_5g[i]);
-						if(band5g_11ac_support){
+						if(band5g_11ac_support && document.form.wl_nmode_x.value != 1){
 							for(j=0;j<wl1.channel_80m.length;j++){
 								if(wl1.channel_80m[j].indexOf(_cur_channel) != -1){
 									wl_channel_list_5g[i] = _cur_channel + "/80";
@@ -286,9 +286,10 @@ function wl_chanspec_list_change(){
 
 			if(bw_cap == "0"){	// 20/40/80 MHz (auto)
 				document.getElementById('wl_nctrlsb_field').style.display = "";
+
 	 loop_auto: for(i=0; i<wl_channel_list_5g_2.length; i++){
 					var _cur_channel = parseInt(wl_channel_list_5g_2[i]);
-					if(band5g_11ac_support){
+					if(band5g_11ac_support && document.form.wl_nmode_x.value != 1){
 						for(j=0;j<wl2.channel_80m.length;j++){
 							if(wl2.channel_80m[j].indexOf(_cur_channel) != -1){
 								wl_channel_list_5g_2[i] = _cur_channel + "/80";

@@ -151,10 +151,6 @@ function QKinternettype_load_body(){
 			document.getElementById("specialISP_tr").style.display = "none";
 		}
 		else{
-			//Fine tune ISP option start
-			if(!parent.nz_isp_support){
-				document.getElementById('sfOption').outerHTML = "";
-			}
 			ISP_Profile_Selection(original_switch_wantag);
 		}
 	
@@ -227,7 +223,7 @@ function submitForm(){
 }
 
 function gotoprev_type(){
-	parent.location.href = "<% abs_index_page(); %>";
+	parent.location.href = "/";
 }
 
 function ISP_Profile_Selection(isp){
@@ -375,16 +371,16 @@ function set_ISP_profile(){
         document.applyForm.switch_wan0prio.value = "0";
         document.applyForm.switch_wan1tagid.value = "600";
         document.applyForm.switch_wan1prio.value = "0";
-        document.applyForm.switch_wan2tagid.value = "0";
+        document.applyForm.switch_wan2tagid.value = "";
         document.applyForm.switch_wan2prio.value = "0";
     }
     else if(document.applyForm.switch_wantag.value == "unifi_biz") {
 	document.applyForm.switch_stb_x.value = "0";
         document.applyForm.switch_wan0tagid.value = "500";
         document.applyForm.switch_wan0prio.value = "0";
-        document.applyForm.switch_wan1tagid.value = "0";
+        document.applyForm.switch_wan1tagid.value = "";
         document.applyForm.switch_wan1prio.value = "0";
-        document.applyForm.switch_wan2tagid.value = "0";
+        document.applyForm.switch_wan2tagid.value = "";
         document.applyForm.switch_wan2prio.value = "0";
     }
     else if(document.applyForm.switch_wantag.value == "singtel_mio") {
@@ -402,14 +398,14 @@ function set_ISP_profile(){
         document.applyForm.switch_wan0prio.value = "0";
         document.applyForm.switch_wan1tagid.value = "20";
         document.applyForm.switch_wan1prio.value = "4";
-        document.applyForm.switch_wan2tagid.value = "0";
+        document.applyForm.switch_wan2tagid.value = "";
         document.applyForm.switch_wan2prio.value = "0";
     }
     else if(document.applyForm.switch_wantag.value == "m1_fiber") {
         document.applyForm.switch_stb_x.value = "3";
         document.applyForm.switch_wan0tagid.value = "1103";
         document.applyForm.switch_wan0prio.value = "1";
-        document.applyForm.switch_wan1tagid.value = "0";
+        document.applyForm.switch_wan1tagid.value = "";
         document.applyForm.switch_wan1prio.value = "0";
         document.applyForm.switch_wan2tagid.value = "1107";
         document.applyForm.switch_wan2prio.value = "1";
@@ -418,7 +414,7 @@ function set_ISP_profile(){
         document.applyForm.switch_stb_x.value = "3";
         document.applyForm.switch_wan0tagid.value = "621";
         document.applyForm.switch_wan0prio.value = "0";
-        document.applyForm.switch_wan1tagid.value = "0";
+        document.applyForm.switch_wan1tagid.value = "";
         document.applyForm.switch_wan1prio.value = "0";
         document.applyForm.switch_wan2tagid.value = "821";
         document.applyForm.switch_wan2prio.value = "0";
@@ -427,7 +423,7 @@ function set_ISP_profile(){
         document.applyForm.switch_stb_x.value = "3";
         document.applyForm.switch_wan0tagid.value = "11";
         document.applyForm.switch_wan0prio.value = "0";
-        document.applyForm.switch_wan1tagid.value = "0";
+        document.applyForm.switch_wan1tagid.value = "";
         document.applyForm.switch_wan1prio.value = "0";
         document.applyForm.switch_wan2tagid.value = "14";
         document.applyForm.switch_wan2prio.value = "0";
@@ -465,9 +461,9 @@ function set_ISP_profile(){
 	document.applyForm.switch_stb_x.value = "0";
 	document.applyForm.switch_wan0tagid.value = "10";
 	document.applyForm.switch_wan0prio.value = "0";
-	document.applyForm.switch_wan1tagid.value = "0";
+	document.applyForm.switch_wan1tagid.value = "";
 	document.applyForm.switch_wan1prio.value = "0";
-	document.applyForm.switch_wan2tagid.value = "0";
+	document.applyForm.switch_wan2tagid.value = "";
 	document.applyForm.switch_wan2prio.value = "0";
     }
     else if(document.applyForm.switch_wantag.value == "hinet") {
@@ -1160,11 +1156,11 @@ function enable_ISP_special(){
 		<fieldset class="theFieldset" id="unify_input_1">
 			<div class="row">
 				<label>VID</label>
-				<input type="number" id="" name="_switch_wan0tagid" value="">
+				<input type="number" name="_switch_wan0tagid" value="">
 			</div>
 			<div class="row_end">
 				<label>PRIO</label>
-				<input type="number" id="" name="_switch_wan0prio" value="">
+				<input type="number" name="_switch_wan0prio" value="">
 			</div>
 		</fieldset>
 		
@@ -1172,11 +1168,11 @@ function enable_ISP_special(){
 		<fieldset class="theFieldset" id="unify_input_2">
 			<div class="row">
 				<label>VID</label>
-				<input type="number" id="" name="_switch_wan1tagid" value="">
+				<input type="number" name="_switch_wan1tagid" value="">
 			</div>
 			<div class="row_end">
 				<label>PRIO</label>
-				<input type="number" id="" name="_switch_wan1prio" value="">
+				<input type="number" name="_switch_wan1prio" value="">
 			</div>
 		</fieldset>
 		
@@ -1184,11 +1180,11 @@ function enable_ISP_special(){
 		<fieldset class="theFieldset" id="unify_input_3">
 			<div class="row">
 				<label>VID</label>
-				<input type="number" id="" name="_switch_wan2tagid" value="">
+				<input type="number" name="_switch_wan2tagid" value="">
 			</div>
 			<div class="row_end">
 				<label>PRIO</label>
-				<input type="number" id="" name="_switch_wan2prio" value="">
+				<input type="number" name="_switch_wan2prio" value="">
 			</div>
 		</fieldset>
 	</div>

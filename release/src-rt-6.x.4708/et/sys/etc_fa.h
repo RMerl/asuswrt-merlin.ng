@@ -48,6 +48,13 @@ typedef struct {
 			uint32_t	tc		:3; /* 7:5   */
 			uint32_t	src_pid		:5; /* 4:0   */
 		} oc10;
+		struct {
+			uint32_t	op_code		:3; /* 31:29 */
+			uint32_t	tc		:3; /* 28:26 */
+			uint32_t	te		:2; /* 25:24 */
+			uint32_t	ts		:1; /* 23 */
+			uint32_t	dst_map		:23; /* 22:0 */
+		} oc01;
 #else
 		struct {
 			uint32_t	src_pid		:5; /* 4:0   */
@@ -67,6 +74,13 @@ typedef struct {
 			uint32_t	reserved	:2; /* 28:27 */
 			uint32_t	op_code		:3; /* 31:29 */
 		} oc10;
+		struct {
+			uint32_t	dst_map		:23; /* 22:0 */
+			uint32_t	ts		:1; /* 23 */
+			uint32_t	te		:2; /* 25:24 */
+			uint32_t	tc		:3; /* 28:26 */
+			uint32_t	op_code		:3; /* 31:29 */
+		} oc01;
 #endif /* BIG_ENDIAN */
 		uint32_t word;
 	};
@@ -109,5 +123,5 @@ extern void fa_dump(fa_t *fai, struct bcmstrbuf *b, bool all);
 extern uint fa_chiprev(fa_t *fai);
 extern void fa_regs_show(fa_t *fai, struct bcmstrbuf *b);
 extern uint fa_core2unit(si_t *sih, uint coreunit);
-
+extern void fa_bhdr_switch(fa_t *fa, bool fa_on, bool bhdr_on);
 #endif /* _ETC_FA_H_ */

@@ -100,16 +100,12 @@ var isAMeshRE = ('<% nvram_get("re_mode"); %>' == '1') ? true : false;
 			window.location.href = "/error_page.htm?flag=9";
 	}
 })();
-var AiMesh_router_exist = false;
-var chdom = function(){AiMesh_router_exist = true;};
+var chdom = function(){window.location.href = "http://" + cfg_master_ipaddr;};
 function initial(){
 	if(isAMeshRE) {	
 		setTimeout(function(){
-			if(AiMesh_router_exist)
-				window.location.href = "http://" + cfg_master_ipaddr;
-			else
-				window.location.href = "/error_page.htm?flag=9";
-		}, 2000);
+			window.location.href = "/error_page.htm?flag=9";
+		}, 5000);
 	}
 }
 

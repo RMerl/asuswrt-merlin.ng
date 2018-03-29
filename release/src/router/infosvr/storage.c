@@ -88,14 +88,12 @@ int getStorageStatus(STORAGE_INFO_T *st)
 
 
 #ifdef RTCONFIG_TUNNEL
-	if(nvram_get_int("aae_enable"))
-	{
-		st->EnableAAE = 1;
-		const char* tnl_devid = nvram_get("aae_deviceid");
-		if(tnl_devid) {
-			strcpy(st->AAEDeviceID, tnl_devid);
-			printf("AAE DeviceID =%s <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", st->AAEDeviceID);
-		}
+	st->EnableAAE = (BYTE)nvram_get_int("aae_enable");
+	printf("AAE EnableAAE =%d <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", st->EnableAAE);
+	const char* tnl_devid = nvram_get("aae_deviceid");
+	if(tnl_devid) {
+		strcpy(st->AAEDeviceID, tnl_devid);
+		printf("AAE DeviceID =%s <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", st->AAEDeviceID);
 	}
 #endif
 

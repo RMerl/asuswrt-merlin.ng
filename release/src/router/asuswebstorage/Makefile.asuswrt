@@ -5,7 +5,7 @@
 #***********************************************************************
 
 CC = mipsel-linux-gcc
-CFLAGS =  -I/home/gauss/asuswrt/release/src/router/curl-7.21.7/include  -I/home/gauss/asuswrt/release/src/router/libxml2/include  -I/home/gauss/asuswrt/release/src/router/openssl/include
+CFLAGS += -g -O2 -I/home/gauss/asuswrt/release/src/router/curl-7.21.7/include  -I/home/gauss/asuswrt/release/src/router/libxml2/include  -I/home/gauss/asuswrt/release/src/router/openssl/include
 CFLAGS += -I/home/gauss/asuswrt/release/src-rt -I/home/gauss/asuswrt/release/src-rt/include -I. -I/home/gauss/asuswrt/release/src/router/shared
 #CFLAGS = -I/home/gauss/oleg/optware/staging/opt/include -I/home/gauss/optware_bulid/APP/DownloadMaster2/build/curl/include  -I/home/gauss/oleg/optware/staging/opt/include/libxml2  
 #LDFLAGS =  -L/home/gauss/asuswrt/release/src/router/mipsel-uclibc/install/curl/usr/lib  -L/home/gauss/asuswrt/release/src/router/mipsel-uclibc/install/libxml2/usr/lib  -L/home/gauss/asuswrt/release/src/router/mipsel-uclibc/install/openssl/usr/lib

@@ -99,7 +99,7 @@ function redirect(){
 }
 
 function redirect_qis(){
-	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'<% abs_index_page(); %>';
+	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/';
 }
 
 function hideLoading(){
@@ -414,7 +414,7 @@ function initial(){
 		}
 
 		makeRequest.start('/httpd_check.xml', function(xhr){
-			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 			var httpds = xhr.responseXML.getElementsByTagName("httpd");
 			if (httpds !== null && httpds[0] !== null) {

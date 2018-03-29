@@ -133,8 +133,6 @@ function initial(){
 	if( !movistarTriple_support ){
 		document.getElementById('movistarOption').outerHTML = "";
 	}
-	if(!nz_isp_support)
-		document.getElementById('sfOption').outerHTML = "";
 }
 
 function load_ISP_profile(){
@@ -1338,7 +1336,7 @@ function change_mr_enable(switch_stb){
 			<div id="IPTV_desc" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc#></div>
 			<div id="IPTV_desc_DualWAN" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc2#></div>
 			<div id="IPTV_desc_DualWAN_BRTAC828" class="formfontdesc" style="display:none;">
-				You must select "Ethernet LAN" as the primary WAN to use IPTV function. Please go to <a href="/Advanced_WANPort_Content.asp" style="text-decoration: underline;">WAN - Dual WAN</a> to confirm that Ethernet LAN port is assigned to primary WAN.<!--untranslated-->
+				<#LANHostConfig_displayIPTV_sectiondescBRTAC828#>
 			</div>
 	  
 	  <!-- IPTV & VoIP Setting -->
@@ -1521,7 +1519,7 @@ function change_mr_enable(switch_stb){
 					</select>
 					<div id="mr_disable" style="display:none;">
 						<span style="color:#FFF;"><#WLANConfig11b_WirelessCtrl_buttonname#></span>
-						<span style="margin-left: 5px;">(Due to hardware limitation, IGMP proxy can’t co-exist with IPTV function.)</span><!--untranslated-->
+						<span style="margin-left: 5px;">(Due to hardware limitation, IGMP proxy cannot co-exist with IPTV function.)</span><!--untranslated-->
 					</div>
 				</td>
 			</tr>

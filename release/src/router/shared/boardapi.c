@@ -522,6 +522,8 @@ int set_pwr_usb(int boolOn) {
 #ifdef RTAC68U
 	switch(get_model()) {
 		case MODEL_RTAC68U:
+			if (!hw_usb_cap())
+				return 0;
 			if ((nvram_get_int("HW_ver") != 170) &&
 			    (nvram_get_double("HW_ver") != 1.10) &&
 			    (nvram_get_double("HW_ver") != 1.85) &&
@@ -884,12 +886,42 @@ int wanport_status(int wan_unit)
 	return rtkswitch_wanPort_phyStatus(wan_unit);
 #elif defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 	return get_phy_status(wan_unit);
-#else
+#else // Broadcom
 	char word[100], *next;
 	int mask;
 	char wan_ports[16];
+#ifdef HND_ROUTER
+	int i, ret = 0, extra_p0 = 0;
+	unsigned int regv=0, pmdv=0;
+	char word2[100], *next2;
+#endif
 
 	memset(wan_ports, 0, 16);
+	mask = 0;
+
+#ifdef HND_ROUTER
+	if(sw_mode() == SW_MODE_AP && nvram_get_int("re_mode") == 0){
+		strcpy(wan_ports, "lanports");
+
+		foreach(word, nvram_safe_get(wan_ports), next) {
+			mask |= (0x0001<<atoi(word));
+			if(sw_mode() == SW_MODE_AP)
+				break;
+		}
+	}
+	else{
+		strcpy(wan_ports, "wanports");
+		i = 0;
+		foreach(word2, nvram_safe_get(wan_ports), next2){
+			if(i == wan_unit)
+				break;
+
+			++i;
+		}
+
+		mask |= (0x0001<<atoi(word2));
+	}
+#else
 #ifndef RTN53
 	if(sw_mode() == SW_MODE_AP && nvram_get_int("re_mode") == 0)
 		strcpy(wan_ports, "lanports");
@@ -900,22 +932,20 @@ int wanport_status(int wan_unit)
 	else
 		strcpy(wan_ports, "wanports");
 
-	mask = 0;
-
 	foreach(word, nvram_safe_get(wan_ports), next) {
 		mask |= (0x0001<<atoi(word));
 		if(sw_mode() == SW_MODE_AP)
 			break;
 	}
+#endif
+
 #ifdef RTCONFIG_WIRELESSWAN
 	// to do for report wireless connection status
 	if(is_wirelesswan_enabled())
 		return 1;
 #endif
-#ifdef HND_ROUTER
-	int i, ret = 0, extra_p0 = 0;
-	unsigned int regv=0, pmdv=0;
 
+#ifdef HND_ROUTER
 #ifdef RTCONFIG_EXT_BCM53134
 	regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
 	pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
@@ -939,7 +969,7 @@ int wanport_status(int wan_unit)
 	return ret;
 #else
 	return get_phy_status(mask);
-#endif
+#endif // HND_ROUTER
 #endif
 }
 

@@ -108,6 +108,12 @@ confmtd_backup()
 	confmtd_hdr_t mtd_hdr;
 	DIR *dir;
 	int fd = -1;
+#ifdef BCA_HNDROUTER
+	FILE *fp;
+	char dev[PATH_MAX];
+	char size_str[32];
+	unsigned long int size = 0;
+#endif
 
 	/* backup confmtd directiries to raw partition */
 	unlink(CONFMTD_TGZ_TMP_FILE);
@@ -115,6 +121,36 @@ confmtd_backup()
 	if ((dir = opendir(NAND_DIR))) {
 		closedir(dir);
 		system(cmd);
+#ifdef BCA_HNDROUTER
+		if ((fd = open(CONFMTD_TGZ_TMP_FILE, O_RDONLY)) < 0) {
+			fprintf(stderr, "Open %s fail\n", CONFMTD_TGZ_TMP_FILE);
+			goto fail;
+		}
+
+		if (fstat(fd, &tmp_stat) || tmp_stat.st_size == 0) {
+			perror("tgz");
+			goto fail;
+		}
+
+		if ((fp = fopen("/proc/mtd", "r"))) {
+			while (fgets(dev, sizeof(dev), fp)) {
+				if (sscanf(dev, "%*s %s %*s", size_str) && strstr(dev, "data")) {
+					size = strtoul(size_str, NULL, 16);
+					break;
+				}
+			}
+
+			fclose(fp);
+
+			if (size == 0 || size < (tmp_stat.st_size + (128 + 8) * 1024)) {
+				perror("size");
+				goto fail;
+			}
+		} else {
+			perror("mtd");
+			goto fail;
+		}
+#endif
 		system(cp_file);
 
 		unlink(CONFMTD_TGZ_TMP_FILE);

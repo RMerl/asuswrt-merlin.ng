@@ -17,6 +17,181 @@
 #include "shutils.h"
 #include "shared.h"
 
+#if defined(RTCONFIG_UTF8_SSID)
+int is_utf8(const char * string)
+{
+	if(!string)
+		return 0;
+
+	const unsigned char * bytes = (const unsigned char *)string;
+	while(*bytes)
+		{
+		if( (// ASCII
+			 (0x20 <= bytes[0] && bytes[0] <= 0x7F)
+			// use bytes[0] <= 0x7F to allow ASCII control characters
+			//bytes[0] == 0x09 ||
+			//bytes[0] == 0x0A ||
+			//bytes[0] == 0x0D ||
+			//(0x20 <= bytes[0] && bytes[0] <= 0x7E)
+		)
+		) {
+			bytes += 1;
+			continue;
+		}
+
+		if( (// non-overlong 2-byte
+			(0xC2 <= bytes[0] && bytes[0] <= 0xDF) &&
+			(0x80 <= bytes[1] && bytes[1] <= 0xBF)
+		)
+		) {
+			bytes += 2;
+			continue;
+		}
+
+		if( (// excluding overlongs
+			bytes[0] == 0xE0 &&
+			(0xA0 <= bytes[1] && bytes[1] <= 0xBF) &&
+			(0x80 <= bytes[2] && bytes[2] <= 0xBF)
+			) ||
+			(// straight 3-byte
+			((0xE1 <= bytes[0] && bytes[0] <= 0xEC) ||
+			bytes[0] == 0xEE ||
+			bytes[0] == 0xEF) &&
+			(0x80 <= bytes[1] && bytes[1] <= 0xBF) &&
+			(0x80 <= bytes[2] && bytes[2] <= 0xBF)
+			) ||
+			(// excluding surrogates
+			bytes[0] == 0xED &&
+			(0x80 <= bytes[1] && bytes[1] <= 0x9F) &&
+			(0x80 <= bytes[2] && bytes[2] <= 0xBF)
+		)
+		) {
+			bytes += 3;
+			continue;
+		}
+
+		if( (// planes 1-3
+			bytes[0] == 0xF0 &&
+			(0x90 <= bytes[1] && bytes[1] <= 0xBF) &&
+			(0x80 <= bytes[2] && bytes[2] <= 0xBF) &&
+			(0x80 <= bytes[3] && bytes[3] <= 0xBF)
+			) ||
+			(// planes 4-15
+			(0xF1 <= bytes[0] && bytes[0] <= 0xF3) &&
+			(0x80 <= bytes[1] && bytes[1] <= 0xBF) &&
+			(0x80 <= bytes[2] && bytes[2] <= 0xBF) &&
+			(0x80 <= bytes[3] && bytes[3] <= 0xBF)
+			) ||
+			(// plane 16
+			bytes[0] == 0xF4 &&
+			(0x80 <= bytes[1] && bytes[1] <= 0x8F) &&
+			(0x80 <= bytes[2] && bytes[2] <= 0xBF) &&
+			(0x80 <= bytes[3] && bytes[3] <= 0xBF)
+		)
+		) {
+			bytes += 4;
+			continue;
+		}
+		return 0;
+	}
+	return 1;
+}
+
+/* Transfer Char to UTF-8 */
+int char_to_ascii_safe_with_utf8(const char *output, const char *input, int outsize)
+{
+	char *src = (char *)input;
+	char *dst = (char *)output;
+	char *end = (char *)output + outsize - 1;
+	char *escape = "[]"; // shouldn't be more?
+
+	if (src == NULL || dst == NULL || outsize <= 0)
+		return 0;
+
+	for ( ; *src && dst < end; src++) {
+		if ((*src >='0' && *src <='9') ||
+		    (*src >='A' && *src <='Z') ||
+		    (*src >='a' && *src <='z')) {
+			*dst++ = *src;
+		} else if (strchr(escape, *src)) {
+			if (dst + 2 > end)
+				break;
+			*dst++ = '\\';
+			*dst++ = *src;
+		} else {
+			if (dst + 3 > end)
+				break;
+			if( (unsigned char)*src >= 32 && (unsigned char)*src <= 127 )
+			{
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*src);
+			}else if(// non-overlong 2-byte
+				(0xC2 <= (unsigned char)*src && (unsigned char)*src <= 0xDF) &&
+				(0x80 <= (unsigned char)*(src+1) && (unsigned char)*(src+1) <= 0xBF)
+			){
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*src);
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*(src+1));
+				src += 1;
+			}else if( (// excluding overlongs
+					(unsigned char)*src == 0xE0 &&
+					(0xA0 <= (unsigned char)*(src+1)&& (unsigned char)*(src+1) <= 0xBF) &&
+					(0x80 <= (unsigned char)*(src+2) && (unsigned char)*(src+2) <= 0xBF)
+					) ||
+					(// straight 3-byte
+					((0xE1 <= (unsigned char)*src && (unsigned char)*src <= 0xEC) ||
+					(unsigned char)*src == 0xEE ||
+					(unsigned char)*src == 0xEF) &&
+					(0x80 <= (unsigned char)*(src+1) && (unsigned char)*(src+1) <= 0xBF) &&
+					(0x80 <= (unsigned char)*(src+2) && (unsigned char)*(src+2) <= 0xBF)
+					) ||
+					(// excluding surrogates
+					(unsigned char)*src == 0xED &&
+					(0x80 <= (unsigned char)*(src+1) && (unsigned char)*(src+1) <= 0x9F) &&
+					(0x80 <= (unsigned char)*(src+2) && (unsigned char)*(src+2) <= 0xBF)
+				)
+			) {
+					dst += sprintf(dst, "%%%.02X", (unsigned char)*src);
+					dst += sprintf(dst, "%%%.02X", (unsigned char)*(src+1));
+					dst += sprintf(dst, "%%%.02X", (unsigned char)*(src+2));
+					src += 2;
+			}else if( (// planes 1-3
+				(unsigned char)*src == 0xF0 &&
+				(0x90 <= (unsigned char)*(src+1) && (unsigned char)*(src+1) <= 0xBF) &&
+				(0x80 <= (unsigned char)*(src+2) && (unsigned char)*(src+2) <= 0xBF) &&
+				(0x80 <= (unsigned char)*(src+3) && (unsigned char)*(src+3) <= 0xBF)
+				) ||
+				(// planes 4-15
+				(0xF1 <= (unsigned char)*src && (unsigned char)*src <= 0xF3) &&
+				(0x80 <= (unsigned char)*(src+1) && (unsigned char)*(src+1) <= 0xBF) &&
+				(0x80 <= (unsigned char)*(src+2) && (unsigned char)*(src+2) <= 0xBF) &&
+				(0x80 <= (unsigned char)*(src+3) && (unsigned char)*(src+3) <= 0xBF)
+				) ||
+				(// plane 16
+				(unsigned char)*src == 0xF4 &&
+				(0x80 <= (unsigned char)*(src+1) && (unsigned char)*(src+1) <= 0x8F) &&
+				(0x80 <= (unsigned char)*(src+2) && (unsigned char)*(src+2) <= 0xBF) &&
+				(0x80 <= (unsigned char)*(src+3) && (unsigned char)*(src+3) <= 0xBF)
+			)
+			) {
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*src);
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*(src+1));
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*(src+2));
+				dst += sprintf(dst, "%%%.02X", (unsigned char)*(src+3));
+				src += 3;
+			}
+		}
+	}
+	if (dst <= end)
+		*dst = '\0';
+
+	return dst - output;
+}
+
+void char_to_ascii_with_utf8(const char *output, const char *input)
+{
+	int outlen = strlen(input)*3 + 1;
+	char_to_ascii_safe_with_utf8(output, input, outlen);
+}
+#endif
 
 /* Transfer Char to ASCII */
 int char_to_ascii_safe(const char *output, const char *input, int outsize)

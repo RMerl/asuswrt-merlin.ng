@@ -49,7 +49,7 @@ function update_nt_action(){
 }
 
 function update_nt_action_check(xhr){
-	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = '<% abs_index_page(); %>';
+	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 	
 	var response = JSON.parse(xhr.responseText);
 	document.form.nc_web_app_enable.value = response.nc_web_app_enable;

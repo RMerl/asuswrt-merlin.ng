@@ -2250,6 +2250,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_AIHOME_TUNNEL/d" $(1); \
 		echo "RTCONFIG_AIHOME_TUNNEL=y" >>$(1); \
 	fi; \
+	if [ "$(UTF8_SSID)" = "y" ]; then \
+		sed -i "/RTCONFIG_UTF8_SSID/d" $(1); \
+		echo "RTCONFIG_UTF8_SSID=y" >>$(1); \
+	fi; \
 	if [ "$(REBOOT_SCHEDULE)" = "y" ]; then \
 		sed -i "/RTCONFIG_REBOOT_SCHEDULE/d" $(1); \
 		echo "RTCONFIG_REBOOT_SCHEDULE=y" >>$(1); \
@@ -2593,6 +2597,10 @@ define RouterOptions
 	if [ "$(LIBASUSLOG)" = "y" ]; then \
 		sed -i "/RTCONFIG_LIBASUSLOG\>/d" $(1); \
 		echo "RTCONFIG_LIBASUSLOG=y" >>$(1); \
+	fi; \
+	if [ "$(PORT2_DEVICE)" = "y" ]; then \
+		sed -i "/RTCONFIG_PORT2_DEVICE/d" $(1); \
+		echo "RTCONFIG_PORT2_DEVICE=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))

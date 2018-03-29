@@ -121,6 +121,62 @@ var httpApi ={
 		return retData;
 	},
 
+	"nvramCharToAscii": function(objItems, forceUpdate){
+		var queryArray = [];
+		var retData = {};
+
+		var __nvramget = function(_nvrams){
+			return _nvrams.map(function(elem){return "nvram_char_to_ascii(" + elem + "," + elem + ")";}).join("%3B");
+		};
+
+		if(forceUpdate) cachedData.clear(objItems);
+
+		objItems.forEach(function(key){
+			if(cachedData.get.hasOwnProperty(key)){
+				retData[key] = cachedData.get[key];
+			}
+			else if(asyncData.get.hasOwnProperty(key)){
+				retData[key] = cachedData.get[key] = asyncData.get[key];
+				if(forceUpdate) delete asyncData.get[key];
+			}
+			else{
+				queryArray.push(key);
+			}
+		});
+
+		if(queryArray.length != 0){
+			$.ajax({
+				url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+				dataType: 'json',
+				async: false,
+				error: function(){
+					for(var i=0; i<queryArray.length; i++){retData[queryArray[i]] = "";}
+					retData.isError = true;
+
+					$.ajax({
+						url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+						dataType: 'json',
+						error: function(){
+							for(var i=0; i<queryArray.length; i++){asyncData.get[queryArray[i]] = "";}
+						},
+						success: function(response){
+							Object.keys(response).forEach(function(key){asyncData.get[key] = response[key];})
+						}
+					});
+				},
+				success: function(response){
+					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key] = response[key];})
+					retData.isError = false;
+				}
+			});
+		}
+		else{
+			retData.isError = false;
+		}
+
+		return retData;
+	},
+
 	"nvramSet": function(postData, handler){
 		delete postData.isError;
 

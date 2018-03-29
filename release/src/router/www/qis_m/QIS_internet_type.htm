@@ -88,7 +88,7 @@ function QKinternettype_load_body(){
 		if(!parent.manualstb_support) 
 			document.applyForm.switch_wantag.remove(8);
 
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900")
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
 			document.getElementById("image_field").className = "image_field_RT-AC66U_V2";
 
 		detect_if_wan_plug();			
@@ -184,7 +184,7 @@ function submitForm(){
 }
 
 function gotoprev_type(){
-	parent.location.href = "<% abs_index_page(); %>";
+	parent.location.href = "/";
 }
 
 function ISP_Profile_Selection(isp){
@@ -269,16 +269,16 @@ function set_ISP_profile(){
                 document.applyForm.switch_wan0prio.value = "0";
                 document.applyForm.switch_wan1tagid.value = "600";
                 document.applyForm.switch_wan1prio.value = "0";
-                document.applyForm.switch_wan2tagid.value = "0";
+                document.applyForm.switch_wan2tagid.value = "";
                 document.applyForm.switch_wan2prio.value = "0";
         }
         else if(document.applyForm.switch_wantag.value == "unifi_biz") {
 		document.applyForm.switch_stb_x.value = "0";
                 document.applyForm.switch_wan0tagid.value = "500";
                 document.applyForm.switch_wan0prio.value = "0";
-                document.applyForm.switch_wan1tagid.value = "0";
+                document.applyForm.switch_wan1tagid.value = "";
                 document.applyForm.switch_wan1prio.value = "0";
-                document.applyForm.switch_wan2tagid.value = "0";
+                document.applyForm.switch_wan2tagid.value = "";
                 document.applyForm.switch_wan2prio.value = "0";
         }
         else if(document.applyForm.switch_wantag.value == "singtel_mio") {
@@ -296,14 +296,14 @@ function set_ISP_profile(){
                 document.applyForm.switch_wan0prio.value = "0";
                 document.applyForm.switch_wan1tagid.value = "20";
                 document.applyForm.switch_wan1prio.value = "4";
-                document.applyForm.switch_wan2tagid.value = "0";
+                document.applyForm.switch_wan2tagid.value = "";
                 document.applyForm.switch_wan2prio.value = "0";
         }
         else if(document.applyForm.switch_wantag.value == "m1_fiber") {
                 document.applyForm.switch_stb_x.value = "3";
                 document.applyForm.switch_wan0tagid.value = "1103";
                 document.applyForm.switch_wan0prio.value = "1";
-                document.applyForm.switch_wan1tagid.value = "0";
+                document.applyForm.switch_wan1tagid.value = "";
                 document.applyForm.switch_wan1prio.value = "0";
                 document.applyForm.switch_wan2tagid.value = "1107";
                 document.applyForm.switch_wan2prio.value = "1";
@@ -312,7 +312,7 @@ function set_ISP_profile(){
                 document.applyForm.switch_stb_x.value = "3";
                 document.applyForm.switch_wan0tagid.value = "621";
                 document.applyForm.switch_wan0prio.value = "0";
-                document.applyForm.switch_wan1tagid.value = "0";
+                document.applyForm.switch_wan1tagid.value = "";
                 document.applyForm.switch_wan1prio.value = "0";
                 document.applyForm.switch_wan2tagid.value = "821";
                 document.applyForm.switch_wan2prio.value = "0";
@@ -321,7 +321,7 @@ function set_ISP_profile(){
                 document.applyForm.switch_stb_x.value = "3";
                 document.applyForm.switch_wan0tagid.value = "11";
                 document.applyForm.switch_wan0prio.value = "0";
-                document.applyForm.switch_wan1tagid.value = "0";
+                document.applyForm.switch_wan1tagid.value = "";
                 document.applyForm.switch_wan1prio.value = "0";
                 document.applyForm.switch_wan2tagid.value = "14";
                 document.applyForm.switch_wan2prio.value = "0";
@@ -402,7 +402,7 @@ function switch_dialUp_type(obj){
 		document.getElementById("dhcp_scenario_2").style.display = "none";
 	}
 	else if(obj.id == "non_dialUp"){
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900")
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
 			document.getElementById("image_field").className = "non_dialUp_RT-AC66U_V2";
 		else
 			document.getElementById("image_field").className = "non_dialUp";
@@ -510,7 +510,7 @@ function switch_dhcp_type(obj){
 		document.getElementById("static_ip_desc").style.display = "";
 	}
 	else{
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900")
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
 			document.getElementById("image_field").className = "non_dialUp_RT-AC66U_V2";
 		else
 			document.getElementById("image_field").className = "non_dialUp";
@@ -535,7 +535,7 @@ function previous_step(flag){
 		document.getElementById('previous_button').style.display = "none";
 		document.getElementById('title_desc').innerHTML = "<#QIS_SmartConn_title1#>";
 		if(document.getElementById("image_field").className == "static_image"){
-			if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900")
+			if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
 				document.getElementById("image_field").className = "non_dialUp_RT-AC66U_V2";
 			else
 				document.getElementById("image_field").className = "non_dialUp";

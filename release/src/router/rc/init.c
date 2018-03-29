@@ -152,6 +152,7 @@ static char *defenv[] = {
 };
 
 extern int set_tcode_misc();
+extern int g_upgrade;
 
 #ifdef RTCONFIG_WPS
 static void
@@ -1680,6 +1681,14 @@ misc_defaults(int restore_defaults)
 
 #ifdef RTCONFIG_TUNNEL
 	nvram_set("aae_support", "1");
+#define AAE_ENABLE_AIHOME 2
+#define AAE_EANBLE_AICLOUD 4
+#ifdef RTCONFIG_AIHOME_TUNNEL
+	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | AAE_ENABLE_AIHOME));
+#endif
+#ifdef RTCONFIG_AICLOUD_TUNNEL
+	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | AAE_EANBLE_AICLOUD));
+#endif
 #endif
 
 	nvram_unset("wps_reset");
@@ -1745,19 +1754,24 @@ restore_defaults(void)
 	}
 #endif
 
-	if (restore_defaults) {
+	if (restore_defaults)
 		fprintf(stderr, "\n## Restoring defaults... ##\n");
-//		logmessage(LOGNAME, "Restoring defaults...");	// no use
-	}
 
 	restore_defaults_g = restore_defaults;
 
 	if (restore_defaults) {
+#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+		unlink(NAND_FILE);
+#endif
 #ifdef RTCONFIG_WPS
 		wps_restore_defaults();
 #endif
 		virtual_radio_restore_defaults();
 	}
+#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+	else
+		confmtd_restore();
+#endif
 
 #ifdef RTCONFIG_USB
 #ifndef RTCONFIG_PERMISSION_MANAGEMENT
@@ -3964,6 +3978,7 @@ int init_nvram(void)
 		add_rc_support("noaidisk");
 		add_rc_support("noitunes");
 		add_rc_support("nodm");
+		add_rc_support("manual_stb");
 
 		if (nvram_get("wl_mssid") && nvram_match("wl_mssid", "1"))
 			add_rc_support("mssid");
@@ -4085,6 +4100,7 @@ int init_nvram(void)
 		add_rc_support("noaidisk");
 		add_rc_support("noitunes");
 		add_rc_support("nodm");
+		add_rc_support("manual_stb");
 
 		if (nvram_get("wl_mssid") && nvram_match("wl_mssid", "1"))
 			add_rc_support("mssid");
@@ -4263,6 +4279,7 @@ int init_nvram(void)
 		add_rc_support("2.4G 5G update");
 		add_rc_support("qcawifi");
 		add_rc_support("11AC");
+		add_rc_support("manual_stb");
 		// the following values is model dep. so move it from default.c to here
 		nvram_set("wl0_HT_TxStream", "3");
 		nvram_set("wl0_HT_RxStream", "3");
@@ -6768,6 +6785,7 @@ int init_nvram(void)
 #ifdef RT4GAC68U
 		add_rc_support("usbX1");
 #else
+		if (hw_usb_cap())
 		add_rc_support("usbX2");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
@@ -6778,6 +6796,7 @@ int init_nvram(void)
 		add_rc_support("meoVoda");
 		add_rc_support("movistarTriple");
 #ifndef RT4GAC68U
+		if (hw_usb_cap())
 		add_rc_support("app");
 #endif
 		if (!hw_vht_cap())
@@ -8406,6 +8425,9 @@ int init_nvram(void)
 	add_wanscap_support("wan2");
 #endif
 #ifdef RTCONFIG_USB_MODEM
+#ifdef RTAC68U
+	if (hw_usb_cap())
+#endif
 	add_wanscap_support("usb");
 #endif
 	add_wanscap_support("lan");
@@ -8427,7 +8449,15 @@ int init_nvram(void)
 	//nvram_set("vpnc_proto", "disable");
 #endif
 
+#ifdef RTCONFIG_UTF8_SSID
+	add_rc_support("utf8_ssid");
+#endif
+
 #ifdef RTCONFIG_USB
+#ifdef RTAC68U
+	if (!hw_usb_cap())
+		goto NO_USB_CAP;
+#endif
 #ifdef RTCONFIG_USB_PRINTER
 	add_rc_support("printer");
 #endif
@@ -8454,14 +8484,6 @@ int init_nvram(void)
 #ifdef RTCONFIG_MODEM_BRIDGE
 	add_rc_support("modembridge");
 #endif
-#endif
-
-#ifdef RTCONFIG_PUSH_EMAIL
-//	add_rc_support("feedback");
-	add_rc_support("email");
-#ifdef RTCONFIG_DBLOG
-	add_rc_support("dblog");
-#endif /* RTCONFIG_DBLOG */
 #endif
 
 #ifdef RTCONFIG_WEBDAV
@@ -8505,10 +8527,6 @@ int init_nvram(void)
 	nvram_set("ss_support", ss_support_value);
 #endif
 
-#ifdef RTCONFIG_ISP_METER
-	add_rc_support("ispmeter");
-#endif
-
 #ifdef RTCONFIG_MEDIA_SERVER
 	add_rc_support("media");
 #endif
@@ -8533,66 +8551,12 @@ int init_nvram(void)
 	add_rc_support("timemachine");
 #endif
 
-#ifdef RTCONFIG_FINDASUS
-	add_rc_support("findasus");
-#endif
-
-#ifdef RTCONFIG_AIR_TIME_FAIRNESS
-	add_rc_support("atf");
-#endif
-
-#ifdef RTCONFIG_POWER_SAVE
-	add_rc_support("pwrsave");
-#endif
-
-#ifdef RTCONFIG_HAS_5G_2
-	add_rc_support("5G-2");
-#else
-	if (nvram_get("wl2_nband") != NULL)
-		add_rc_support("5G-2");
-#endif
-
 #ifdef RTCONFIG_WIGIG
 	add_rc_support("wigig");
 #endif
 
-#if defined(RTCONFIG_BWDPI)
-#ifdef RTAC68U
-	if (!is_n66u_v2())
-#endif
-	add_rc_support("bwdpi");
-
-	/* modify logic for AiProtection switch */
-	// DON'T USE the logic of nvram_match, it's the wrong logic in this case!!
-	// 1. when wrs_protect_enable == "", set to 1
-	// 2. when wrs_protect_enable == 0, not to change this value
-	if (!strcmp(nvram_safe_get("wrs_protect_enable"), ""))
-	{
-		if (nvram_get_int("wrs_mals_enable") || nvram_get_int("wrs_cc_enable") ||  nvram_get_int("wrs_vp_enable"))
-			nvram_set("wrs_protect_enable", "1");
-		else
-			nvram_set("wrs_protect_enable", "0");
-	}
-#endif
-
 #ifdef RTCONFIG_HD_SPINDOWN
 	add_rc_support("hdspindown");
-#endif
-
-#ifdef RTCONFIG_TRAFFIC_LIMITER
-	add_rc_support("traffic_limiter");
-#endif
-
-#ifdef RTCONFIG_ADBLOCK
-	add_rc_support("adBlock");
-#endif
-
-#ifdef RTCONFIG_SNMPD
-	add_rc_support("snmp");
-#endif
-
-#ifdef RTCONFIG_TOR
-	add_rc_support("tor");
 #endif
 
 #ifdef RTCONFIG_DISK_MONITOR
@@ -8688,7 +8652,76 @@ int init_nvram(void)
 		nvram_set("enable_samba_tuxera", "0");
 #endif
 	}
+#ifdef RTAC68U
+NO_USB_CAP:
+#endif
 #endif // RTCONFIG_USB
+
+#ifdef RTCONFIG_PUSH_EMAIL
+	add_rc_support("feedback");
+	add_rc_support("email");
+#ifdef RTCONFIG_DBLOG
+	add_rc_support("dblog");
+#endif /* RTCONFIG_DBLOG */
+#endif
+
+#ifdef RTCONFIG_ISP_METER
+	add_rc_support("ispmeter");
+#endif
+
+#ifdef RTCONFIG_FINDASUS
+	add_rc_support("findasus");
+#endif
+
+#ifdef RTCONFIG_AIR_TIME_FAIRNESS
+	add_rc_support("atf");
+#endif
+
+#ifdef RTCONFIG_POWER_SAVE
+	add_rc_support("pwrsave");
+#endif
+
+#ifdef RTCONFIG_HAS_5G_2
+	add_rc_support("5G-2");
+#else
+	if (nvram_get("wl2_nband") != NULL)
+		add_rc_support("5G-2");
+#endif
+
+#if defined(RTCONFIG_BWDPI)
+#ifdef RTAC68U
+	if (!is_n66u_v2())
+#endif
+	add_rc_support("bwdpi");
+
+	/* modify logic for AiProtection switch */
+	// DON'T USE the logic of nvram_match, it's the wrong logic in this case!!
+	// 1. when wrs_protect_enable == "", set to 1
+	// 2. when wrs_protect_enable == 0, not to change this value
+	if (!strcmp(nvram_safe_get("wrs_protect_enable"), ""))
+	{
+		if (nvram_get_int("wrs_mals_enable") || nvram_get_int("wrs_cc_enable") ||  nvram_get_int("wrs_vp_enable"))
+			nvram_set("wrs_protect_enable", "1");
+		else
+			nvram_set("wrs_protect_enable", "0");
+	}
+#endif
+
+#ifdef RTCONFIG_TRAFFIC_LIMITER
+	add_rc_support("traffic_limiter");
+#endif
+
+#ifdef RTCONFIG_ADBLOCK
+	add_rc_support("adBlock");
+#endif
+
+#ifdef RTCONFIG_SNMPD
+	add_rc_support("snmp");
+#endif
+
+#ifdef RTCONFIG_TOR
+	add_rc_support("tor");
+#endif
 
 #ifdef RTCONFIG_HTTPS
 	add_rc_support("HTTPS");
@@ -8917,13 +8950,16 @@ int init_nvram(void)
 	add_rc_support("bcmwifi");
 #endif
 
+#ifdef RTCONFIG_DFS_US
+	add_rc_support("dfs");
+#endif
+
 #ifdef RTCONFIG_LYRA_HIDE
 	add_rc_support("lyra_hide");
 #endif
 
-#ifdef RTCONFIG_DFS_US
-	add_rc_support("dfs");
-
+#ifdef RTCONFIG_PORT2_DEVICE
+	add_rc_support("port2_device");
 #endif
 
 	return 0;
@@ -9341,6 +9377,7 @@ fa_mode_adjust()
 	char *wan_proto;
 	char buf[16];
 	int sw_mode = sw_mode();
+	int bhdr = 0;
 
 	if (sw_mode == SW_MODE_ROUTER
 #ifdef RTCONFIG_RGMII_BCM_FA
@@ -9356,6 +9393,7 @@ fa_mode_adjust()
 			&& !nvram_get_int("qos_enable")
 			&& nvram_match("x_Setting", "1")
 		) {
+			bhdr = 1;
 			nvram_set_int("ctf_fa_mode", CTF_FA_NORMAL);
 		} else {
 			nvram_set_int("ctf_fa_mode", CTF_FA_DISABLED);
@@ -9388,19 +9426,11 @@ fa_mode_adjust()
 
 #ifdef RTCONFIG_DSL	//TODO
 	nvram_set_int("ctf_fa_mode", CTF_FA_DISABLED);
-#endif
-
-#ifdef RTCONFIG_PORT_BASED_VLAN
+#elif defined(RTCONFIG_PORT_BASED_VLAN) || defined(RTCONFIG_TAGGED_BASED_VLAN)
 	if (vlan_enable())
 		nvram_set_int("ctf_fa_mode", CTF_FA_DISABLED);
 #endif
-#ifdef RTCONFIG_TAGGED_BASED_VLAN
-	if (vlan_enable())
-		nvram_set_int("ctf_fa_mode", CTF_FA_DISABLED);
-#endif
-#ifdef RTCONFIG_AMAS
-		nvram_set_int("ctf_fa_mode", CTF_FA_DISABLED);	 //disable fa, if enable AMAS. (It will cause lldpd can't be send.)
-#endif
+	nvram_set_int("bhdr_enable", bhdr ? 1 : 0);
 }
 
 void
@@ -9694,8 +9724,6 @@ static void sysinit(void)
 	if (mkdir(RAMFS_CONFMTD_DIR"/crash_logs", 0777) < 0 && errno != EEXIST) {
 		perror("/tmp/confmtd/crash_logs not created.");
 	}
-
-	 confmtd_restore();
 #endif
 
 #ifdef HND_ROUTER
@@ -10025,27 +10053,25 @@ static void sysinit(void)
 #endif
 
 #ifdef RTCONFIG_GMAC3
+	int gmac3 = 0;
 #ifdef RTCONFIG_BCM_7114
-#ifdef RTCONFIG_AMAS
-	nvram_set("stop_gmac3", "1"); //disable gmac3, if enable AMAS. (It will cause lldpd can't be send.)
-#endif	
-	if (nvram_match("stop_gmac3", "1")
-#ifdef RTCONFIG_DPSTA
-		|| dpsta_mode()
+	if (!nvram_match("stop_gmac3_new", "1")
+#if 0
+		&& !(nvram_get("switch_wantag") && !nvram_match("switch_wantag", "") && !nvram_match("switch_wantag", "none"))
 #endif
-//		|| (nvram_get("switch_wantag") && !nvram_match("switch_wantag", "") && !nvram_match("switch_wantag", "none"))
 	)
-		nvram_set("gmac3_enable", "0");
-	else
-		nvram_set("gmac3_enable", "1");
+	gmac3 = 1;
 #else
 	nvram_set("gmac3_enable", "0");
 #endif
+	nvram_set_int("gmac3_enable", gmac3 ? 1 : 0);
+	nvram_set_int("bhdr_enable", gmac3 ? 1 : 0);
 #endif
 
 #ifdef RTCONFIG_BCMFA
 	fa_mode_init();
 #endif
+
 #ifdef RTCONFIG_DETWAN
 	if ((sw_mode() == SW_MODE_ROUTER)) {
 		if (nvram_safe_get("detwan_ifname")[0] != '\0') {
@@ -10952,7 +10978,7 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			break;
 		}
 
-		if (!nvram_get_int("asus_mfg")) {
+		if (!(g_reboot || g_upgrade) && !nvram_get_int("asus_mfg")) {
 			chld_reap(0);	/* Periodically reap zombies. */
 			check_services();
 		}

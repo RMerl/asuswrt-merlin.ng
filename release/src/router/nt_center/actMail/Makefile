@@ -17,6 +17,7 @@ endif
 LDFLAGS = -L$(TOP)/nt_center/lib/ -lnt
 LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -lm
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+#LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram
 LIBS = -lpthread -lgcc_s
 
 ifeq ($(wildcard $(SRCBASE)/router/nt_center/actMail/*.c),)

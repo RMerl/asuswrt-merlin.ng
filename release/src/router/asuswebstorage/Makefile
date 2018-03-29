@@ -7,7 +7,7 @@ include ../common.mak
 
 #C = $(CC)
 #TOP = $(TOP)
-CFLAGS = -I$(TOP)/curl-7.21.7/include  -I$(TOP)/libxml2/include  -I$(TOP)/openssl/include
+CFLAGS += -g -O2 -I$(TOP)/curl-7.21.7/include  -I$(TOP)/libxml2/include  -I$(TOP)/openssl/include
 CFLAGS += -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/shared
 #CFLAGS = -g -rdynamic
 CFLAGS += -D_FILE_OFFSET_BITS=64

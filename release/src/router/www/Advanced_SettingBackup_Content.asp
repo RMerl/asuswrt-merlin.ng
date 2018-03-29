@@ -157,7 +157,7 @@ function detect_httpd(){
 
     		success: function(){
     				setTimeout("hideLoadingBar();",1000);
-      			location.href = '<% abs_index_page(); %>';
+    				location.href = "/";
   			}
   		});
 }

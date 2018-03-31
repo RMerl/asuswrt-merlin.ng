@@ -112,7 +112,12 @@ all: $(UTILS)
 
 ifeq ($(wildcard $(SRCBASE)/wl/exe/*.c),)
 wl:
+
+ifneq ($(wildcard $(SRCBASE)/wl/exe/prebuilt/$(BUILD_NAME)/wl),)
+	-cp -f $(SRCBASE)/wl/exe/prebuilt/$(BUILD_NAME)/wl wl
+else
 	-cp -f $(SRCBASE)/wl/exe/prebuilt/wl wl
+endif
 else
 wl: $(WLU_OBJS)
 	$(CC) $^ -o $@ $(LDFLAGS)

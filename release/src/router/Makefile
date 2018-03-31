@@ -4679,7 +4679,11 @@ endif
 
 else
 	[ -d wlexe ] || install -d wlexe
+ifneq ($(wildcard $(SRC_PRE_WLEXE)/prebuilt/$(BUILD_NAME)/wl),)
+	install $(SRC_PRE_WLEXE)/prebuilt/$(BUILD_NAME)/wl wlexe
+else
 	install $(SRC_PRE_WLEXE)/prebuilt/wl wlexe
+endif
 
 endif
 endif

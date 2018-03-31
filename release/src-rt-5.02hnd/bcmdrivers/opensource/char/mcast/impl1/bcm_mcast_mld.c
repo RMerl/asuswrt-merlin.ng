@@ -338,7 +338,7 @@ void bcm_mcast_mld_init( bcm_mcast_ifdata *pif )
       INIT_HLIST_HEAD(&pif->mc_ipv6_hash[i]);
    }
    setup_timer(&pif->mld_timer, bcm_mcast_mld_timer, (unsigned long)pif->ifindex);  
-   pif->mld_snooping = BCM_MCAST_SNOOPING_DISABLED_FLOOD;
+   pif->mld_snooping = BCM_MCAST_SNOOPING_BLOCKING_MODE;
    pif->mld_lan2lan_mc_enable = 0;
 }
 

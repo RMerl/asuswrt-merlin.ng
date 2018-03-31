@@ -593,14 +593,17 @@ struct net_device *bcmfc_br_fdbdev_get(void *br,
 {
 	struct net_bridge_fdb_entry *fdb;
 
+    rcu_read_lock();
 	hlist_for_each_entry_rcu(fdb,
 		&((struct net_bridge *)br)->hash[br_mac_hash(addr, vid)], hlist) {
 		if (ether_addr_equal(fdb->addr.addr, addr) &&
 		    fdb->vlan_id == vid) {
+			rcu_read_unlock();
 			return fdb->dst->dev;
 		}
 	}
 
+	rcu_read_unlock();
 	return NULL;
 }
 

@@ -101,6 +101,19 @@ extern int br_fwdcb_register(br_fwdcb_t fwdcb);
     (((struct sk_buff*)(skb))->pktc_flags &= (~DEVQXMIT)); \
     })
 
+#define FC_PKTDONE  (1 << 23)
+#define PKTISFCDONE(skb) \
+    ({ \
+        (((struct sk_buff*)(skb))->pktc_flags & FC_PKTDONE); \
+    })
+#define PKTSETFCDONE(skb)  \
+   ({ \
+    (((struct sk_buff*)(skb))->pktc_flags |= FC_PKTDONE); \
+    })
+#define PKTCLRFCDONE(skb)  \
+   ({ \
+    (((struct sk_buff*)(skb))->pktc_flags &= (~FC_PKTDONE)); \
+    })
 
 
 

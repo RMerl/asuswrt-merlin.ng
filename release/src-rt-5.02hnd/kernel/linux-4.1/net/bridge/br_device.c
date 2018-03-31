@@ -132,6 +132,8 @@ bcm_br_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
 	/*allocate skb & initialize it using fkb */
 
 	skb = skb_xlate_dp(pFkb, NULL);
+	if (!skb)
+		return (NULL);
 	skb->fkb_mark = pFkb->mark;
 	skb->priority = pFkb->priority;
 	skb->dev = dev;
@@ -139,7 +141,6 @@ bcm_br_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
 
 	PKTSETDEVQXMIT(skb);
 	 
-	skb->blog_p = pFkb->blog_p;
 	skb->protocol = eth_type_trans(skb, dev);
 	skb_push(skb, ETH_HLEN);
 	return skb;
@@ -163,15 +164,16 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 	if (IS_FKBUFF_PTR(skb)){
 		skb = bcm_br_iqoshdl_wrapper(dev, skb);
 		if (skb == NULL) {
-			return PKT_DROP;
+			return NETDEV_TX_OK;
 		}
+		blog_unlock();
 		/* For broadstream iqos cb function */
 		if (br_fwdcb && (br_fwdcb(skb, dev) == PKT_DROP)) {
-			return PKT_DROP;
+				nbuff_free(SKBUFF_2_PNBUFF(skb));
+				goto lock_return;
 		}
-		skb->blog_p = BLOG_NULL;
-		blog_unlock();
 		dev_queue_xmit(skb);
+		lock_return:
 		blog_lock();
 		return NETDEV_TX_OK;
 	}
@@ -277,7 +279,7 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 	 * fcache based execution stack.
 	 */
 		if (BROADSTREAM_IQOS_ENABLE()) {
-			if (blog_ptr(skb) && (((struct net_device *)(blog_ptr(skb)->rx.dev_p))->priv_flags & IFF_WANDEV)) {
+			if (blog_ptr(skb) && DEV_ISWAN(((struct net_device *)(blog_ptr(skb)->rx.dev_p)))) {
 	       		blog_emit( skb, dev, TYPE_ETH, 0, BLOG_ENETPHY); /* CONFIG_BLOG */
 			}
 		}

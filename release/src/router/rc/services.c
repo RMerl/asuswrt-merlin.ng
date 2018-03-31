@@ -8540,8 +8540,8 @@ static int no_need_obd(void)
 	if (g_reboot || g_upgrade)
 		return -1;
 
-	if (ATE_BRCM_FACTORY_MODE())
-		return -1;
+//	if (ATE_BRCM_FACTORY_MODE())
+//		return -1;
 
 	if (!is_router_mode() || (nvram_get_int("obd_Setting") == 1) || (nvram_get_int("x_Setting") == 1))
 		return -1;

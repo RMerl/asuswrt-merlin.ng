@@ -4559,7 +4559,7 @@ get_scan_escan(char *scan_buf, uint buf_len)
 
 exit:
 	close(fd);
-	d_info->event_fd == -1;
+	d_info->event_fd = -1;
 
 	/* free scan results */
 	result = escan_bss_head;

@@ -580,7 +580,6 @@ void start_ovpn_server(int serverNum)
 	enum { TAP, TUN } ifType = TUN;
 	enum { TLS, SECRET } cryptMode = TLS;
 	int nvi, ip[4], nm[4];
-	long int nvl;
 	int pid;
 	int taskset_ret;
 	char fpath[128];
@@ -1600,7 +1599,7 @@ void write_ovpn_dnsmasq_config(FILE* f)
 {
 	char nv[16];
 	char buf[24];
-	char *pos, ch;
+	char ch;
 	int unit, ch2;	DIR *dir;
 	struct dirent *file;
 	FILE *dnsf;

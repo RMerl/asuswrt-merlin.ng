@@ -14,6 +14,8 @@ General changes in the 384/NG branch vs 380.xx:
 
 
 384.5 (xx-xxx-2018)
+   - NEW: Merged withh GPL 384_20624 (with RT-AC68U binary blobs)
+   - NEW: Merged RT-AC86U binary blobs and SDK from 384_20467
    - CHANGED: Updated OpenVPN to 2.4.5.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
@@ -50,6 +52,8 @@ General changes in the 384/NG branch vs 380.xx:
 
    - FIXED: Restoring an OpenVPN instance to default values
             would fail to disable its Start with WAN setting.
+   - FIXED: Hardware authentication failure for the RT-AC3100
+            and RT-AC5300.
 
 
 384.4_2 (24-Mar-2018)

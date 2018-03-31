@@ -134,14 +134,14 @@ ej_wl_sta_status(int eid, webs_t wp, char *name)
 	return 0;
 }
 
-#if defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_BCM_7114) && !defined(RTCONFIG_BCM9) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_BCM_7114) && !defined(RTCONFIG_BCM7) && !defined(RTCONFIG_BCM9) && !defined(HND_ROUTER)
 #include <wlu_common.h>
 #endif
 #include <bcmendian.h>
 #include <bcmparams.h>		/* for DEV_NUMIFS */
 
 /* The below macros handle endian mis-matches between wl utility and wl driver. */
-#ifndef RTCONFIG_BCMWL6
+#if !defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM7)
 static bool g_swap = FALSE;
 #ifndef htod16
 #define htod16(i) (g_swap?bcmswap16(i):(uint16)(i))

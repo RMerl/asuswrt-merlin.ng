@@ -736,10 +736,14 @@ section on
 DNSSEC signatures are only valid for specified time windows, and should be rejected outside those windows. This generates an
 interesting chicken-and-egg problem for machines which don't have a hardware real time clock. For these machines to determine the correct 
 time typically requires use of NTP and therefore DNS, but validating DNS requires that the correct time is already known. Setting this flag
-removes the time-window checks (but not other DNSSEC validation.) only until the dnsmasq process receives SIGHUP. The intention is
+removes the time-window checks (but not other DNSSEC validation.) only until the dnsmasq process receives SIGINT. The intention is
 that dnsmasq should be started with this flag when the platform determines that reliable time is not currently available. As soon as 
-reliable time is established, a SIGHUP should be sent to dnsmasq, which enables time checking, and purges the cache of DNS records
+reliable time is established, a SIGINT should be sent to dnsmasq, which enables time checking, and purges the cache of DNS records
 which have not been throughly checked.
+
+Earlier versions of dnsmasq overloaded SIGHUP (which re-reads much configuration) to also enable time validation.
+
+If dnsmasq is run in debug mode (-d flag) then SIGINT retains its usual meaning of terminating the dnsmasq process.
 .TP
 .B --dnssec-timestamp=<path>
 Enables an alternative way of checking the validity of the system time for DNSSEC (see --dnssec-no-timecheck). In this case, the 

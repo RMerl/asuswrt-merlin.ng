@@ -77,7 +77,8 @@ int main (int argc, char **argv)
   sigaction(SIGTERM, &sigact, NULL);
   sigaction(SIGALRM, &sigact, NULL);
   sigaction(SIGCHLD, &sigact, NULL);
-
+  sigaction(SIGINT, &sigact, NULL);
+  
   /* ignore SIGPIPE */
   sigact.sa_handler = SIG_IGN;
   sigaction(SIGPIPE, &sigact, NULL);
@@ -755,7 +756,7 @@ int main (int argc, char **argv)
       
       daemon->dnssec_no_time_check = option_bool(OPT_DNSSEC_TIME);
       if (option_bool(OPT_DNSSEC_TIME) && !daemon->back_to_the_future)
-	my_syslog(LOG_INFO, _("DNSSEC signature timestamps not checked until first cache reload"));
+	my_syslog(LOG_INFO, _("DNSSEC signature timestamps not checked until receipt of SIGINT"));
       
       if (rc == 1)
 	my_syslog(LOG_INFO, _("DNSSEC signature timestamps not checked until system time valid"));
@@ -1079,7 +1080,7 @@ static void sig_handler(int sig)
     {
       /* ignore anything other than TERM during startup
 	 and in helper proc. (helper ignore TERM too) */
-      if (sig == SIGTERM)
+      if (sig == SIGTERM || sig == SIGINT)
 	exit(EC_MISC);
     }
   else if (pid != getpid())
@@ -1105,6 +1106,15 @@ static void sig_handler(int sig)
 	event = EVENT_DUMP;
       else if (sig == SIGUSR2)
 	event = EVENT_REOPEN;
+      else if (sig == SIGINT)
+	{
+	  /* Handle SIGINT normally in debug mode, so
+	     ctrl-c continues to operate. */
+	  if (option_bool(OPT_DEBUG))
+	    exit(EC_MISC);
+	  else
+	    event = EVENT_TIME;
+	}
       else
 	return;
 
@@ -1232,14 +1242,7 @@ static void async_event(int pipe, time_t now)
       {
       case EVENT_RELOAD:
 	daemon->soa_sn++; /* Bump zone serial, as it may have changed. */
-
-#ifdef HAVE_DNSSEC
-	if (daemon->dnssec_no_time_check && option_bool(OPT_DNSSEC_VALID) && option_bool(OPT_DNSSEC_TIME))
-	  {
-	    my_syslog(LOG_INFO, _("now checking DNSSEC signature timestamps"));
-	    daemon->dnssec_no_time_check = 0;
-	  } 
-#endif
+	
 	/* fall through */
 	
       case EVENT_INIT:
@@ -1352,6 +1355,17 @@ static void async_event(int pipe, time_t now)
 	poll_resolv(0, 1, now);
 	break;
 
+      case EVENT_TIME:
+#ifdef HAVE_DNSSEC
+	if (daemon->dnssec_no_time_check && option_bool(OPT_DNSSEC_VALID) && option_bool(OPT_DNSSEC_TIME))
+	  {
+	    my_syslog(LOG_INFO, _("now checking DNSSEC signature timestamps"));
+	    daemon->dnssec_no_time_check = 0;
+	    clear_cache_and_reload(now);
+	  }
+#endif
+	break;
+	
       case EVENT_TERM:
 	/* Knock all our children on the head. */
 	for (i = 0; i < MAX_PROCS; i++)

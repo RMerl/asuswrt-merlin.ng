@@ -175,6 +175,7 @@ struct event_desc {
 #define EVENT_NEWROUTE   23
 #define EVENT_TIME_ERR   24
 #define EVENT_SCRIPT_LOG 25
+#define EVENT_TIME       26
 
 /* Exit codes. */
 #define EC_GOOD        0

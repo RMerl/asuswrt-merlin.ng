@@ -47,16 +47,16 @@ function init(){
 
 function updateOptions(){
 	if(document.form.cmdMethod.value == "netstat-nat" && document.form.NetOption.value == "-s"){
-		document.form.SystemCmd.value = "netstat-nat " + document.form.NetOption.value + " "
-																		+ document.form.targetip.value + " " + document.form.ExtOption.value +" -n";
+		document.form.SystemCmd.value = "netstat-nat " + document.form.NetOption.value + " " + document.form.targetip.value + " ";
 	}else if(document.form.cmdMethod.value == "netstat-nat"){
-		document.form.SystemCmd.value = "netstat-nat " + document.form.NetOption.value + " "
-																		+document.form.ExtOption.value +" -n";
+		document.form.SystemCmd.value = "netstat-nat " + document.form.NetOption.value + " ";
 	}else{
 		document.form.SystemCmd.value = "netstat " + document.form.NetOption.value;
-		if (document.form.ResolveName.value != "1")
-			document.form.SystemCmd.value += " -n";
 	}		
+
+	if (document.form.ResolveName.value != "1")
+		document.form.SystemCmd.value += " -n";
+
 	document.form.submit();
 	document.getElementById("cmdBtn").disabled = true;
 	document.getElementById("cmdBtn").style.color = "#666";
@@ -125,7 +125,7 @@ function hideCNT(obj){
 		addNetOption(document.form.NetOption, option_netstat_nat, optval_netstat_nat);
 		append_value(document.form.NetOption);
 		document.getElementById('ExtOption_tr').style.display = "";
-		document.getElementById('resolvename').style.display = "none";
+		document.getElementById('resolvename').style.display = "";
 	}
 	else{
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Info#>";	

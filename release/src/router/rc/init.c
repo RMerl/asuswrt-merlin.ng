@@ -8658,7 +8658,7 @@ NO_USB_CAP:
 #endif // RTCONFIG_USB
 
 #ifdef RTCONFIG_PUSH_EMAIL
-	add_rc_support("feedback");
+//	add_rc_support("feedback");
 	add_rc_support("email");
 #ifdef RTCONFIG_DBLOG
 	add_rc_support("dblog");

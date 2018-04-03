@@ -777,13 +777,6 @@ function done_validating(action){
 					</thead>
 
 					<tr>
-						<th>Resolve IPs on active connections list:<br><i>Can considerably slow down the display</i></th>
-						<td>
-							<input type="radio" name="webui_resolve_conn" class="input" value="1" <% nvram_match_x("", "webui_resolve_conn", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="webui_resolve_conn" class="input" value="0" <% nvram_match_x("", "webui_resolve_conn", "0", "checked"); %>><#checkbox_No#>
-						</td>
-	                                </tr>
-					<tr>
 						<th>Stealth Mode (disable all LEDs)</th>
 						<td>
 							<input type="radio" name="led_disable" class="input" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>

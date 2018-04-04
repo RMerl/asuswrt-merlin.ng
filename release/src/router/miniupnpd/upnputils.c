@@ -1,7 +1,7 @@
-/* $Id: upnputils.c,v 1.10 2014/11/07 11:53:39 nanard Exp $ */
+/* $Id: upnputils.c,v 1.12 2018/03/13 10:25:20 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2014 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -12,6 +12,7 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -184,3 +185,38 @@ get_lan_for_peer(const struct sockaddr * peer)
 	return lan_addr;
 }
 
+time_t upnp_time(void)
+{
+#if defined(CLOCK_MONOTONIC_FAST) || defined(CLOCK_MONOTONIC)
+#if defined(CLOCK_MONOTONIC_FAST)
+#define UPNP_CLOCKID CLOCK_MONOTONIC_FAST
+#else
+#define UPNP_CLOCKID CLOCK_MONOTONIC
+#endif
+	struct timespec ts;
+	if (clock_gettime(UPNP_CLOCKID, &ts) < 0)
+		return time(NULL);
+	else
+		return ts.tv_sec;
+#else
+	return time(NULL);
+#endif
+}
+
+time_t upnp_get_uptime(void)
+{
+#if defined(CLOCK_UPTIME_FAST) || defined(CLOCK_UPTIME)
+#if defined(CLOCK_UPTIME_FAST)
+#define UPNP_CLOCKID_UPTIME CLOCK_UPTIME_FAST
+#else
+#define UPNP_CLOCKID_UPTIME CLOCK_UPTIME
+#endif
+	if(GETFLAG(SYSUPTIMEMASK))
+	{
+		struct timespec ts;
+		if (clock_gettime(UPNP_CLOCKID_UPTIME, &ts) >= 0)
+			return ts.tv_sec;
+	}
+#endif
+	return upnp_time() - startup_time;
+}

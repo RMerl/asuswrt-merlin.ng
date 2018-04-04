@@ -40,7 +40,7 @@ getifstats(const char *ifname, struct ifdata *data)
 		return -1;
 
 #ifdef ENABLE_GETIFSTATS_CACHING
-	current_time = time(NULL);
+	current_time = upnp_time();
 	if (ifap != NULL &&
 	    current_time < cache_timestamp + GETIFSTATS_CACHING_DURATION)
 		goto copy;

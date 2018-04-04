@@ -1,8 +1,8 @@
-/* $Id: $ */
+/* $Id: testminissdp.c,v 1.3 2018/01/15 16:46:48 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2017 Thomas Bernard
+ * (c) 2017-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -11,11 +11,12 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include <sys/queue.h>
+#include <sys/socket.h>
 #include "config.h"
 #include "minissdp.h"
 #include "upnpglobalvars.h"
 
-void test(const char * buffer, int n)
+void test(const char * buffer, size_t n)
 {
 	int s = 0;
 	struct sockaddr_in dummy_sender;
@@ -38,7 +39,7 @@ int main(int argc, char * * argv)
 {
 	FILE * f = NULL;
 	char buffer[1500];
-	int n = 0;
+	size_t n = 0;
 	struct lan_addr_s * lan_addr;
 
 	if((argc > 1) && ((strcmp(argv[1], "--help") == 0) || (strcmp(argv[1], "-h") == 0))) {
@@ -60,7 +61,7 @@ int main(int argc, char * * argv)
 			return 1;
 		}
 	}
-	n = (int)fread(buffer, 1, sizeof(buffer), f ? f : stdin);
+	n = fread(buffer, 1, sizeof(buffer), f ? f : stdin);
 	if(n <= 0) {
 		syslog(LOG_ERR, "error reading");
 		return 1;

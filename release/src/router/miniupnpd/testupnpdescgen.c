@@ -1,7 +1,7 @@
 /* $Id: testupnpdescgen.c,v 1.34 2017/05/27 07:47:57 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -15,6 +15,7 @@
 
 #include "macros.h"
 #include "config.h"
+#include "upnpglobalvars.h"
 #include "upnpdescgen.h"
 #include "upnpdescstrings.h"
 #include "getifaddr.h"
@@ -39,7 +40,7 @@ char random_url[] = "RANDOM";
 #endif /* RANDOMIZE_URLS */
 unsigned int upnp_configid = 666;
 
-char * use_ext_ip_addr = NULL;
+const char * use_ext_ip_addr = NULL;
 const char * ext_if_name = "eth0";
 
 int runtime_flags = 0;
@@ -139,8 +140,25 @@ main(int argc, char * * argv)
 	char * s;
 	int l;
 	FILE * f;
-	UNUSED(argc);
-	UNUSED(argv);
+
+	for(l = 1; l < argc; l++) {
+		if(0 == strcmp(argv[l], "--help") || 0 == strcmp(argv[l], "-h")) {
+			printf("Usage:\t%s [options]\n", argv[0]);
+			printf("options:\n");
+#ifdef IGD_V2
+			printf("\t--forceigdv1    Force versions of devices to be 1\n");
+#else
+			printf("\tNone\n");
+#endif
+			return 0;
+#ifdef IGD_V2
+		} else if(0 == strcmp(argv[l], "--forceigdv1")) {
+			SETFLAG(FORCEIGDDESCV1MASK);
+#endif
+		} else {
+			fprintf(stderr, "unknown option %s\n", argv[l]);
+		}
+	}
 
 	if(mkdir("testdescs", 0777) < 0) {
 		if(errno != EEXIST) {

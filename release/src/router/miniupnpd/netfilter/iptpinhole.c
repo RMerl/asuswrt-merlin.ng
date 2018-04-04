@@ -1,7 +1,7 @@
-/* $Id: iptpinhole.c,v 1.14 2015/02/10 15:01:03 nanard Exp $ */
+/* $Id: iptpinhole.c,v 1.18 2018/03/13 23:05:21 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2012-2017 Thomas Bernard
+ * (c) 2012-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -458,7 +458,7 @@ clean_pinhole_list(unsigned int * next_timestamp)
 	time_t current_time;
 	int n = 0;
 
-	current_time = time(NULL);
+	current_time = upnp_time();
 	p = pinhole_list.lh_first;
 	while(p != NULL) {
 		if(p->timestamp <= (unsigned int)current_time) {

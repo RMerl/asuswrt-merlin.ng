@@ -2,7 +2,7 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -921,6 +921,19 @@ genXML(char * str, int * len, int * tmplen,
 				}
 #endif /* RANDOMIZE_URLS */
 				str = strcat_str(str, len, tmplen, p[i].data);
+#ifdef IGD_V2
+				/* checking a single 'u' saves us 4 strcmp() calls most of the time */
+				if (GETFLAG(FORCEIGDDESCV1MASK) && (p[i].data[0] == 'u'))
+				{
+					if ((strcmp(p[i].data, DEVICE_TYPE_IGD) == 0) ||
+						(strcmp(p[i].data, DEVICE_TYPE_WAN) == 0)  ||
+						(strcmp(p[i].data, DEVICE_TYPE_WANC) == 0) ||
+						(strcmp(p[i].data, SERVICE_TYPE_WANIPC) == 0) )
+					{
+						str[*len - 1] = '1';	/* Change the version number to 1 */
+					}
+				}
+#endif
 				str = strcat_char(str, len, tmplen, '<');
 				str = strcat_str(str, len, tmplen, eltname);
 				str = strcat_char(str, len, tmplen, '>');

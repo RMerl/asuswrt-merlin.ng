@@ -1,4 +1,4 @@
-/* $Id: pcpserver.c,v 1.39 2015/06/22 07:28:21 nanard Exp $ */
+/* $Id: pcpserver.c,v 1.47 2018/03/13 10:21:19 nanard Exp $ */
 /* MiniUPnP project
  * Website : http://miniupnp.free.fr/
  * Author : Peter Tatrai
@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
    - IPv6 is always firewalled (this may need some work, NAT6* do exist)
 
    - we make the judgement based on (in order, picking first one available):
-     - third party adress
+     - third party address
      - internal client address
 
    TODO : handle NAT46, NAT64, NPT66. In addition, beyond FW/NAT
@@ -684,7 +684,7 @@ static int CreatePCPPeer_NAT(pcp_info_t *pcp_msg_info)
 	uint16_t eport = pcp_msg_info->ext_port;  /* public port */
 
 	char peerip_s[INET6_ADDRSTRLEN], extip_s[INET6_ADDRSTRLEN];
-	time_t timestamp = time(NULL) + pcp_msg_info->lifetime;
+	time_t timestamp = upnp_time() + pcp_msg_info->lifetime;
 	int r;
 
 	FillSA((struct sockaddr*)&intip, pcp_msg_info->mapped_ip,
@@ -890,7 +890,7 @@ static int CreatePCPMap_NAT(pcp_info_t *pcp_msg_info)
 	char iaddr_old[INET6_ADDRSTRLEN];
 	uint16_t iport_old, eport_first = 0;
 	int any_eport_allowed = 0;
-	unsigned int timestamp = time(NULL) + pcp_msg_info->lifetime;
+	unsigned int timestamp = upnp_time() + pcp_msg_info->lifetime;
 
 	if (pcp_msg_info->ext_port == 0) {
 		pcp_msg_info->ext_port = pcp_msg_info->int_port;
@@ -1450,7 +1450,7 @@ static void createPCPResponse(unsigned char *response, pcp_info_t *pcp_msg_info)
 	if(epoch_origin == 0) {
 		epoch_origin = startup_time;
 	}
-	WRITENU32(response + 8, time(NULL) - epoch_origin); /* epochtime */
+	WRITENU32(response + 8, upnp_time() - epoch_origin); /* epochtime */
 	switch (pcp_msg_info->result_code) {
 	/*long lifetime errors*/
 	case PCP_ERR_UNSUPP_VERSION:
@@ -1690,7 +1690,7 @@ void PCPPublicAddressChanged(int * sockets, int n_sockets)
 	/* according to RFC 6887  8.5 :
 	 *   if the external IP address(es) of the NAT (controlled by
 	 *   the PCP server) changes, the Epoch time MUST be reset. */
-	epoch_origin = time(NULL);
+	epoch_origin = upnp_time();
 #ifdef ENABLE_IPV6
 	PCPSendUnsolicitedAnnounce(sockets, n_sockets, socket6);
 #else /* IPv4 Only */

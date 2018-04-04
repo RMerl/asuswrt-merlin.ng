@@ -1,8 +1,8 @@
-/* $Id: minissdp.c,v 1.88 2017/05/27 07:47:55 nanard Exp $ */
+/* $Id: minissdp.c,v 1.92 2018/03/13 10:52:39 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -190,7 +190,7 @@ OpenAndConfSSDPReceiveSocket(int ipv6)
 		struct sockaddr_in * saddr = (struct sockaddr_in *)&sockname;
 		saddr->sin_family = AF_INET;
 		saddr->sin_port = htons(SSDP_PORT);
-		/* NOTE : it seems it doesnt work when binding on the specific address */
+		/* NOTE : it seems it doesn't work when binding on the specific address */
 		/*saddr->sin_addr.s_addr = inet_addr(UPNP_MCAST_ADDR);*/
 		saddr->sin_addr.s_addr = htonl(INADDR_ANY);
 		/*saddr->sin_addr.s_addr = inet_addr(ifaddr);*/
@@ -265,7 +265,7 @@ OpenAndConfSSDPReceiveSocket(int ipv6)
 			{
 				syslog(LOG_WARNING,
 				       "Failed to add IPv6 multicast membership for interface %s",
-				       lan_addr->str ? lan_addr->str : "NULL");
+				       strlen(lan_addr->str) ? lan_addr->str : "NULL");
 			}
 		}
 	}
@@ -1496,20 +1496,23 @@ SubmitServicesToMiniSSDPD(const char * host, unsigned short port) {
 	}
 	for(i = 0; known_service_types[i].s; i++) {
 		buffer[0] = 4;	/* request type 4 : submit service */
-		/* 4 strings following : ST (service type), USN, Server, Location */
-		p = buffer + 1;
-		l = (int)strlen(known_service_types[i].s);
-		if(i > 0)
-			l++;
-		CODELENGTH(l, p);
-		memcpy(p, known_service_types[i].s, l);
-		if(i > 0)
-			p[l-1] = '1';
-		p += l;
 		if(i==0)
 			ver_str[0] = '\0';
 		else
 			snprintf(ver_str, sizeof(ver_str), "%d", known_service_types[i].version);
+		/* 4 strings following : ST (service type), USN, Server, Location */
+		p = buffer + 1;
+		l = snprintf(strbuf, sizeof(strbuf), "%s%s",
+		             known_service_types[i].s, ver_str);
+		if(l<0) {
+			syslog(LOG_WARNING, "SubmitServicesToMiniSSDPD: snprintf %m");
+			continue;
+		} else if((unsigned)l>=sizeof(strbuf)) {
+			l = sizeof(strbuf) - 1;
+		}
+		CODELENGTH(l, p);
+		memcpy(p, strbuf, l);
+		p += l;
 		l = snprintf(strbuf, sizeof(strbuf), "%s::%s%s",
 		             known_service_types[i].uuid, known_service_types[i].s, ver_str);
 		if(l<0) {
@@ -1557,6 +1560,7 @@ SubmitServicesToMiniSSDPD(const char * host, unsigned short port) {
 		}
 	}
  	close(s);
+	syslog(LOG_DEBUG, "%d service submitted to MiniSSDPd", i);
 	return 0;
 }
 

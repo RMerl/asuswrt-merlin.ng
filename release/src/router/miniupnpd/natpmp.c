@@ -1,4 +1,4 @@
-/* $Id: natpmp.c,v 1.52 2015/05/27 12:43:14 nanard Exp $ */
+/* $Id: natpmp.c,v 1.55 2018/03/12 22:41:54 nanard Exp $ */
 /* MiniUPnP project
  * (c) 2007-2017 Thomas Bernard
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -247,7 +247,7 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 	if(epoch_origin == 0) {
 		epoch_origin = startup_time;
 	}
-	WRITENU32(resp+4, time(NULL) - epoch_origin);
+	WRITENU32(resp+4, upnp_time() - epoch_origin);
 	if(req[0] > 0) {
 		/* invalid version */
 		syslog(LOG_WARNING, "unsupported NAT-PMP version : %u",
@@ -382,15 +382,9 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 						}
 					}
 					/* do the redirection */
-#if 0
-					timestamp = (unsigned)(time(NULL) - startup_time)
-					                      + lifetime;
-					snprintf(desc, sizeof(desc), "NAT-PMP %u", timestamp);
-#else
-					timestamp = time(NULL) + lifetime;
+					timestamp = upnp_time() + lifetime;
 					snprintf(desc, sizeof(desc), "NAT-PMP %hu %s",
 					         eport, (proto==IPPROTO_TCP)?"tcp":"udp");
-#endif
 					/* TODO : check return code */
 					if(upnp_redirect_internal(NULL, eport, senderaddrstr,
 					                          iport, proto, desc,
@@ -439,7 +433,7 @@ void SendNATPMPPublicAddressChangeNotification(int * sockets, int n_sockets)
 	if(epoch_origin == 0) {
 		epoch_origin = startup_time;
 	}
-	WRITENU32(notif+4, time(NULL) - epoch_origin);
+	WRITENU32(notif+4, upnp_time() - epoch_origin);
 #ifndef MULTIPLE_EXTERNAL_IP
 	FillPublicAddressResponse(notif, 0);
 	if(notif[3])

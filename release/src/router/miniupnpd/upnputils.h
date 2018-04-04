@@ -1,7 +1,7 @@
-/* $Id: upnputils.h,v 1.6 2014/03/31 12:32:57 nanard Exp $ */
+/* $Id: upnputils.h,v 1.9 2018/03/13 10:25:20 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2011-2013 Thomas Bernard
+ * (c) 2011-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -29,6 +29,16 @@ set_non_blocking(int fd);
 struct lan_addr_s *
 get_lan_for_peer(const struct sockaddr * peer);
 
+/**
+ * get the time for upnp (release expiration, etc.)
+ * Similar to a monotonic time(NULL)
+ */
+time_t upnp_time(void);
+
+/**
+ * return either the machine or the daemon uptime
+ */
+time_t upnp_get_uptime(void);
 
 /**
  * define portability macros

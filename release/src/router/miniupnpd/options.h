@@ -66,6 +66,9 @@ enum upnpconfigoptions {
 	UPNPLEASEFILE,			/* lease_file */
 #endif
 	UPNPMINISSDPDSOCKET,	/* minissdpdsocket */
+#ifdef IGD_V2
+	UPNPFORCEIGDDESCV1,
+#endif
 	UPNPENABLE				/* enable_upnp */
 };
 

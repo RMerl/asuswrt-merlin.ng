@@ -25,7 +25,7 @@ To Build and Install :
   lines to /etc/pf.conf :
    pass out on $int_if from any to 239.0.0.0/8 keep state
    pass in on $int_if from any to 239.0.0.0/8 keep state
-- dont forget to " pfctl -f /etc/pf.conf "
+- don't forget to " pfctl -f /etc/pf.conf "
 - you can check your modifications are taken into account with
   "pfctl -s nat" and "pfctl -s rule". Look for the "rdr-anchor miniupnpd"
   (if applicable) and/or "anchor miniupnpd" lines.
@@ -75,7 +75,7 @@ To Build and install :
   from http://netfilter.org
 - edit and run netfilter/iptables_init.sh shell script.
   This script must allways be run before the daemon
-  to set up intial rules and chains.
+  to set up initial rules and chains.
 - Build and edit the config.h file
   > make -f Makefile.linux config.h
   > vi config.h
@@ -90,8 +90,8 @@ To Build and install :
 - anytime, you can use the netfilter/iptables_flush.sh
   script to flush all rules added by the daemon.
 - after killing the daemon, you can get back to
-  iptables initial state by runing the netfilter/iptables_removeall.sh
-  script. Don't forget to edit the script to your convinience.
+  iptables initial state by running the netfilter/iptables_removeall.sh
+  script. Don't forget to edit the script to your convenience.
 
 NOTE: a /etc/init.d/miniupnpd script will be installed.
   If it suits you, you can use is with start, stop or restart argument.

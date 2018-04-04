@@ -83,6 +83,9 @@ static const struct {
 #ifdef ENABLE_LEASEFILE
 	{ UPNPLEASEFILE, "lease_file"},
 #endif
+#ifdef IGD_V2
+	{ UPNPFORCEIGDDESCV1, "force_igd_desc_v1"},
+#endif
 	{ UPNPMINISSDPDSOCKET, "minissdpdsocket"},
 	{ UPNPSECUREMODE, "secure_mode"}
 };

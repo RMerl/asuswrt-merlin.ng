@@ -1,7 +1,8 @@
-/* $Id: testasyncsendto.c,v 1.2 2014/02/25 11:00:14 nanard Exp $ */
-/* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2014 Thomas Bernard
+/* $Id: testasyncsendto.c,v 1.5 2018/03/13 10:25:52 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -20,6 +21,8 @@
 #include "asyncsendto.h"
 
 struct lan_addr_list lan_addrs;
+int runtime_flags = 0;
+time_t startup_time = 0;
 
 #define DEST_IP "239.255.255.250"
 #define DEST_PORT 1900
@@ -80,7 +83,7 @@ int test(void)
 		if(now.tv_sec > next_send.tv_sec ||
 		   (now.tv_sec == next_send.tv_sec && now.tv_usec >= next_send.tv_usec)) {
 			if(i > 0) {
-				/* dont wait */
+				/* don't wait */
 				timeout.tv_sec = 0;
 			} else {
 				/* wait 10sec :) */

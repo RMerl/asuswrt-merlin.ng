@@ -1,8 +1,8 @@
-/* $Id: upnpevents.c,v 1.38 2017/11/02 15:50:35 nanard Exp $ */
+/* $Id: upnpevents.c,v 1.39 2018/03/12 22:41:54 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2008-2017 Thomas Bernard
+ * (c) 2008-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -182,7 +182,7 @@ upnpevents_addSubscriber(const char * eventurl,
 	if(!tmp)
 		return NULL;
 	if(timeout)
-		tmp->timeout = time(NULL) + timeout;
+		tmp->timeout = upnp_time() + timeout;
 	LIST_INSERT_HEAD(&subscriberlist, tmp, entries);
 	upnp_event_create_notify(tmp);
 	return tmp->uuid;
@@ -197,10 +197,10 @@ upnpevents_renewSubscription(const char * sid, int sidlen, int timeout)
 		if((sidlen == 41) && (memcmp(sid, sub->uuid, 41) == 0)) {
 #ifdef UPNP_STRICT
 			/* check if the subscription already timeouted */
-			if(sub->timeout && time(NULL) > sub->timeout)
+			if(sub->timeout && upnp_time() > sub->timeout)
 				continue;
 #endif
-			sub->timeout = (timeout ? time(NULL) + timeout : 0);
+			sub->timeout = (timeout ? upnp_time() + timeout : 0);
 			return sub->uuid;
 		}
 	}
@@ -624,7 +624,7 @@ void upnpevents_processfds(fd_set *readset, fd_set *writeset)
 		obj = next;
 	}
 	/* remove timeouted subscribers */
-	curtime = time(NULL);
+	curtime = upnp_time();
 	for(sub = subscriberlist.lh_first; sub != NULL; ) {
 		subnext = sub->entries.le_next;
 		if(sub->timeout && curtime > sub->timeout && sub->notify == NULL) {

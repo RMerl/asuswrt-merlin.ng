@@ -1,7 +1,8 @@
-/* $Id: upnpsoap.c,v 1.144 2016/02/12 12:35:03 nanard Exp $ */
-/* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+/* $Id: upnpsoap.c,v 1.151 2018/03/13 10:32:53 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -31,6 +32,7 @@
 #include "getifstats.h"
 #include "getconnstatus.h"
 #include "upnpurns.h"
+#include "upnputils.h"
 
 /* utility function */
 static int is_numeric(const char * s)
@@ -273,7 +275,7 @@ GetStatusInfo(struct upnphttp * h, const char * action, const char * ns)
 	 * Disconnecting, Disconnected */
 
 	status = get_wan_connection_status_str(ext_if_name);
-	uptime = (time(NULL) - startup_time);
+	uptime = upnp_get_uptime();
 	bodylen = snprintf(body, sizeof(body), resp,
 		action, ns, /*SERVICE_TYPE_WANIPC,*/
 		status, (long)uptime, action);
@@ -1370,7 +1372,7 @@ QueryStateVariable(struct upnphttp * h, const char * action, const char * ns)
 		BuildSendAndCloseSoapResp(h, body, bodylen);
 	}
 #if 0
-	/* not usefull */
+	/* not useful */
 	else if(strcmp(var_name, "ConnectionType") == 0)
 	{
 		bodylen = snprintf(body, sizeof(body), resp, "IP_Routed");

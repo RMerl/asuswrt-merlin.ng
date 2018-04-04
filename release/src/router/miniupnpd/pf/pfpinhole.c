@@ -1,8 +1,8 @@
-/* $Id: pfpinhole.c,v 1.24 2014/12/05 09:54:55 nanard Exp $ */
+/* $Id: pfpinhole.c,v 1.27 2018/03/13 23:05:21 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2012-2017 Thomas Bernard
+ * (c) 2012-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -379,7 +379,7 @@ int clean_pinhole_list(unsigned int * next_timestamp)
 		syslog(LOG_ERR, "pf device is not open");
 		return -1;
 	}
-	current_time = time(NULL);
+	current_time = upnp_time();
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE

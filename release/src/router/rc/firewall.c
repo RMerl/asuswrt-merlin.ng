@@ -120,7 +120,7 @@ char *g_buf_alloc(char *g_buf_now)
  */
 static inline int dmz_enabled(void)
 {
-	int dmz_enabled = !nvram_match("dmz_ip", ""), dmz1_enabled = 0;
+	int dmz_enabled = !illegal_ipv4_address(nvram_safe_get("dmz_ip")), dmz1_enabled = 0;
 
 #if defined(RTCONFIG_MULTIWAN_CFG)
 	dmz1_enabled = (get_nr_wan_unit() == 2) && nvram_match("wans_mode", "lb") && !nvram_match("dmz1_ip", "");
@@ -1735,7 +1735,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 
 	/* Exposed station */
 #if !defined(RTCONFIG_MULTIWAN_CFG)
-	if (is_nat_enabled() && !nvram_match("dmz_ip", ""))
+	if (is_nat_enabled() && !illegal_ipv4_address(nvram_safe_get("dmz_ip")))
 	{
 		fprintf(fp, "-A VSERVER -j LOCALSRV\n");
 		if (nvram_match("webdav_aidisk", "1")) {
@@ -1771,12 +1771,12 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 
 		if (get_nr_wan_unit() == 2 && nvram_match("wans_mode", "lb")) {
 			/* dualwan + load-balance */
-			if (!nvram_match("dmz_ip", "")) {
+			if (!illegal_ipv4_address(nvram_safe_get("dmz_ip"))) {
 				fprintf(fp, "-A VSERVER -i %s -j DNAT --to %s\n", wan_if, nvram_safe_get("dmz_ip"));
 				if (wanx_rules)
 					fprintf(fp, "-A VSERVER -i %s -j DNAT --to %s\n", wanx_if, nvram_safe_get("dmz_ip"));
 			}
-			if (!nvram_match("dmz1_ip", "")) {
+			if (!illegal_ipv4_address(nvram_safe_get("dmz_ip"))) {
 				fprintf(fp, "-A VSERVER -i %s -j DNAT --to %s\n", wan_if, nvram_safe_get("dmz1_ip"));
 				if (wanx_rules)
 					fprintf(fp, "-A VSERVER -i %s -j DNAT --to %s\n", wanx_if, nvram_safe_get("dmz1_ip"));
@@ -2125,7 +2125,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 
 	/* Exposed station */
 #if !defined(RTCONFIG_MULTIWAN_CFG)
-	if (is_nat_enabled() && !nvram_match("dmz_ip", ""))
+	if (is_nat_enabled() && !illegal_ipv4_address(nvram_safe_get("dmz_ip")))
 	{
 		fprintf(fp, "-A VSERVER -j LOCALSRV\n");
 		if (nvram_match("webdav_aidisk", "1")) {

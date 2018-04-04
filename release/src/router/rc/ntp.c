@@ -62,8 +62,8 @@ static void ntp_service()
 
 #ifdef RTCONFIG_DNSSEC
 		if (nvram_get_int("dnssec_enable")) {
-			reload_dnsmasq();
-		}
+			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
+	}
 #endif
 
                 if (is_routing_enabled()) {

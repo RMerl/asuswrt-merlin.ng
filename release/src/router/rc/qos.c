@@ -420,12 +420,14 @@ static int add_qos_rules(char *pcWANIF)
 	char *p;
 	char *desc, *addr, *port, *prio, *transferred, *proto;
 	int class_num;
-	int down_class_num=6; 	// for download class_num = 0x6 / 0x106
+	int class_mask=7;
+	int lan_class_num=6; 	// for LAN-to-LAN class_num = 0x6 / 0x16
+	int class_gum = 16; 	// 0x10
+	const char *lan_ifname = nvram_safe_get("lan_ifname");
 	int i, inuse;
 	char q_inuse[32]; 	// for inuse
 	char dport[256], saddr_1[192], proto_1[8], proto_2[8],conn[256], end[256], end2[256];
 	//int method;
-	int gum;
 	int sticky_enable;
 	const char *chain;
 	int v4v6_ok;
@@ -484,8 +486,10 @@ static int add_qos_rules(char *pcWANIF)
 		":PREROUTING ACCEPT [0:0]\n"
 		":OUTPUT ACCEPT [0:0]\n"
 		":QOSO - [0:0]\n"
-		"-A QOSO -j CONNMARK --restore-mark --mask 0x7\n"
-		"-A QOSO -m connmark ! --mark 0/0xff00 -j RETURN\n"
+		"-A QOSO -j CONNMARK --restore-mark --mask 0x%x\n"
+		"-A QOSO -m connmark ! --mark 0/0x%x -j RETURN\n",
+			class_mask,
+			class_gum
 		);
 #ifdef RTCONFIG_IPV6
 	if (fn_ipv6 && ipv6_enabled())
@@ -494,10 +498,74 @@ static int add_qos_rules(char *pcWANIF)
 		":PREROUTING ACCEPT [0:0]\n"
 		":OUTPUT ACCEPT [0:0]\n"
 		":QOSO - [0:0]\n"
-		"-A QOSO -j CONNMARK --restore-mark --mask 0x7\n"
-		"-A QOSO -m connmark ! --mark 0/0xff00 -j RETURN\n"
+		"-A QOSO -j CONNMARK --restore-mark --mask 0x%x\n"
+		"-A QOSO -m connmark ! --mark 0/0x%x -j RETURN\n",
+			class_mask,
+			class_gum
 		);
 #endif
+
+	const char *lan_ipaddr = nvram_safe_get("lan_ipaddr");
+	const char *lan_netmask = nvram_safe_get("lan_netmask");
+#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
+	if(strncmp(pcWANIF, "ppp", 3)==0){
+		// ppp related interface doesn't need physdev
+		// do nothing
+	}
+	else{
+		// for LAN-to-LAN
+		// note : iptables will happily apply the given netmask and store the base network address; no need to do that ourself
+		fprintf(fn,
+			"-A QOSO -s %s/%s -d %s/%s -j CONNMARK %s 0x%x/0x%x\n",
+				lan_ipaddr, lan_netmask, lan_ipaddr, lan_netmask, action, lan_class_num|class_gum, class_mask|class_gum
+			);
+		if(manual_return)
+			fprintf(fn,
+				"-A QOSO -s %s/%s -d %s/%s -j RETURN\n",
+					lan_ipaddr, lan_netmask, lan_ipaddr, lan_netmask
+				);
+		// for multicast
+		fprintf(fn,
+			"-A QOSO -d 224.0.0.0/4 -j CONNMARK %s 0x%x/0x%x\n",
+				action, lan_class_num|class_gum, class_mask|class_gum
+			);
+		if(manual_return)
+			fprintf(fn, "-A QOSO -d 224.0.0.0/4 -j RETURN\n");
+	}
+#endif
+
+#ifdef RTCONFIG_IPV6
+	const char *ipv6_prefix = nvram_safe_get("ipv6_prefix");
+	const char *ipv6_prefix_length = nvram_safe_get("ipv6_prefix_length");
+	if (fn_ipv6 && ipv6_enabled() && *wan6face) {
+#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
+		if(strncmp(wan6face, "ppp", 3)==0){
+			// ppp related interface doesn't need physdev
+			// do nothing
+		}
+		else{
+			// for LAN-to-LAN
+			fprintf(fn_ipv6,
+				"-A QOSO -s %s/%s -d %s/%s -j CONNMARK %s 0x%x/0x%x\n",
+					ipv6_prefix, ipv6_prefix_length, ipv6_prefix, ipv6_prefix_length, action, lan_class_num|class_gum, class_mask|class_gum
+				);
+			if(manual_return)
+				fprintf(fn_ipv6,
+					"-A QOSO -s %s/%s -d %s/%s -j RETURN\n",
+						ipv6_prefix, ipv6_prefix_length, ipv6_prefix, ipv6_prefix_length
+					);
+			// for multicast
+			fprintf(fn_ipv6,
+				"-A QOSO -d ff00::/8 -j CONNMARK %s 0x%x/0x%x\n",
+					action, lan_class_num|class_gum, class_mask|class_gum
+				);
+			if(manual_return)
+				fprintf(fn_ipv6, "-A QOSO -d ff00::/8 -j RETURN\n");
+		}
+#endif
+	}
+#endif
+
 	g = buf = strdup(nvram_safe_get("qos_rulelist"));
 	while (g) {
 
@@ -533,16 +601,14 @@ static int add_qos_rules(char *pcWANIF)
 
 		/* Beginning of the Rule */
 		/*
- 			if transferred != NULL, class_num must bt 0x1~0x6, not 0x101~0x106
+			if transferred != NULL, class_num must bt 0x1~0x6, not 0x11~0x16
 			0x1~0x6		: keep tracing this connection.
-			0x101~0x106 	: connection will be considered as marked connection, won't detect again.
+			0x11~0x16 	: connection will be considered as marked connection, won't detect again.
 		*/
-		gum = 0;
-		class_num |= gum;
-		down_class_num |= gum;	// for download
+		int rule_gum = (strcmp(transferred,"") == 0) ? class_gum : 0;
 
 		chain = "QOSO";		// chain name
-		snprintf(end , sizeof(end), " -j CONNMARK %s 0x%x/0x7\n", action, class_num);	// CONNMARK string
+		snprintf(end , sizeof(end), " -j CONNMARK %s 0x%x/0x%x\n", action, class_num|rule_gum, class_mask|rule_gum);	// CONNMARK string
 		snprintf(end2, sizeof(end2), " -j RETURN\n");
 
 		/*************************************************/
@@ -553,6 +619,8 @@ static int add_qos_rules(char *pcWANIF)
 		int addr_type;
 		memset(addr_new, 0, sizeof(addr_new));
 
+		/* note : if transferred bytes accounting is used (see below),
+		          only the source-matched packets will be accounted for */
 		if(strcmp(addr, "")) {
 			/* if addr != "", it needs to check the addr_type */
 			address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
@@ -583,9 +651,14 @@ static int add_qos_rules(char *pcWANIF)
 		if(strcmp(port, "") == 0 ) {
 			strncpy(dport, "", sizeof(dport));
 		}
-		else{
+		else if (strcmp(transferred,"") == 0){
 			/* note : max number of multiple port in iptables is 15 */
 			snprintf(dport, sizeof(dport), "-m multiport --dport %s", port);
+		}
+		else{
+			/* note : for transferred bytes accounting (see below), we must
+			          catch both request (dport) and response (sport) packets */
+			snprintf(dport, sizeof(dport), "-m multiport --port %s", port);
 		}
 		QOSLOG("[qos] port=%s, dport=%s", port, dport);
 
@@ -734,19 +807,6 @@ static int add_qos_rules(char *pcWANIF)
 	}
 	free(buf);
 
-	/* lan_addr for iptables use (LAN download) */
-	char *a, *b, *c, *d;
-	char lan_addr[20];
-	g = buf = strdup(nvram_safe_get("lan_ipaddr"));
-	if((vstrsep(g, ".", &a, &b, &c, &d)) != 4){
-		QOSDBG("[qos] lan_ipaddr doesn't exist!!\n");
-	}
-	else{
-		snprintf(lan_addr, sizeof(lan_addr), "%s.%s.%s.0/24", a, b, c);
-		QOSDBG("[qos] lan_addr=%s\n", lan_addr);
-	}
-	free(buf);
-
 	/* The default class */
 	i = nvram_get_int("qos_default");
 	if ((i < 0) || (i > 4)) i = 3;  // "lowest"
@@ -762,27 +822,18 @@ static int add_qos_rules(char *pcWANIF)
 		// ebtables : identify bridge packet
 		add_EbtablesRules();
 
-		// for multicast
-		fprintf(fn, "-A QOSO -d 224.0.0.0/4 -j CONNMARK %s 0x%x/0x7\n", action, down_class_num);
-		if(manual_return)
-			fprintf(fn , "-A QOSO -d 224.0.0.0/4 -j RETURN\n");
-		// for download (LAN or wireless)
-		fprintf(fn, "-A QOSO -d %s -j CONNMARK %s 0x%x/0x7\n", lan_addr, action, down_class_num);
-		if(manual_return)
-			fprintf(fn , "-A QOSO -d %s -j RETURN\n", lan_addr);
-/* Requires bridge netfilter, but slows down and breaks EMF/IGS IGMP IPTV Snooping
-		// for WLAN to LAN bridge issue
-		fprintf(fn, "-A POSTROUTING -d %s -m physdev --physdev-is-in -j CONNMARK --set-return 0x6/0x7\n", lan_addr);
-*/
-		// for download, interface br0
-		fprintf(fn, "-A POSTROUTING -o br0 -j QOSO\n");
+		// for download
+		fprintf(fn, "-A POSTROUTING -o %s -j QOSO\n", lan_ifname);
 	}
 #endif
 		fprintf(fn,
-			"-A QOSO -j CONNMARK %s 0x%x/0x7\n"
-			"-A FORWARD -o %s -j QOSO\n"
-			"-A OUTPUT -o %s -j QOSO\n",
-				action, class_num, pcWANIF, pcWANIF);
+			"-A QOSO -m connmark ! --mark 0x0/0x%x -j RETURN\n"
+			"-A QOSO -j CONNMARK %s 0x%x/0x%x\n"
+			"-A POSTROUTING -o %s -j QOSO\n",
+				class_mask,
+				action, class_num|class_gum, class_mask|class_gum,
+				pcWANIF
+			);
 		if(manual_return)
 			fprintf(fn , "-A QOSO -j RETURN\n");
 
@@ -798,27 +849,18 @@ static int add_qos_rules(char *pcWANIF)
 			// ebtables : identify bridge packet
 			add_EbtablesRules();
 
-			// for multicast
-			fprintf(fn_ipv6, "-A QOSO -d 224.0.0.0/4 -j CONNMARK %s 0x%x/0x7\n", action, down_class_num);
-			if(manual_return)
-				fprintf(fn_ipv6, "-A QOSO -d 224.0.0.0/4 -j RETURN\n");
-			// for download (LAN or wireless)
-			fprintf(fn_ipv6, "-A QOSO -d %s -j CONNMARK %s 0x%x/0x7\n", lan_addr, action, down_class_num);
-			if(manual_return)
-				fprintf(fn_ipv6, "-A QOSO -d %s -j RETURN\n", lan_addr);
-/* Requires bridge netfilter, but slows down and breaks EMF/IGS IGMP IPTV Snooping
-			// for WLAN to LAN bridge issue
-			fprintf(fn_ipv6, "-A POSTROUTING -d %s -m physdev --physdev-is-in -j CONNMARK --set-return 0x6/0x7\n", lan_addr);
-*/
-			// for download, interface br0
-			fprintf(fn_ipv6, "-A POSTROUTING -o br0 -j QOSO\n");
+			// for download
+			fprintf(fn_ipv6, "-A POSTROUTING -o %s -j QOSO\n", lan_ifname);
 		}
 #endif
 		fprintf(fn_ipv6,
-			"-A QOSO -j CONNMARK %s 0x%x/0x7\n"
-			"-A FORWARD -o %s -j QOSO\n"
-			"-A OUTPUT -o %s -j QOSO\n",
-				action, class_num, wan6face, wan6face);
+			"-A QOSO -m connmark ! --mark 0x0/0x%x -j RETURN\n"
+			"-A QOSO -j CONNMARK %s 0x%x/0x%x\n"
+			"-A POSTROUTING -o %s -j QOSO\n",
+				class_mask,
+				action, class_num|class_gum, class_mask|class_gum,
+				wan6face
+			);
 		if(manual_return)
 			fprintf(fn_ipv6, "-A QOSO -j RETURN\n");
 	}
@@ -835,13 +877,11 @@ static int add_qos_rules(char *pcWANIF)
 		if ((!g) || ((p = strsep(&g, ",")) == NULL)) continue;
 		if ((inuse & (1 << i)) == 0) continue;
 		if (safe_atoi(p) > 0) {
-			fprintf(fn, "-A PREROUTING -i %s -j CONNMARK --restore-mark --mask 0x7\n", pcWANIF);
 #ifdef CLS_ACT
 			fprintf(fn, "-A PREROUTING -i %s -j IMQ --todev 0\n", pcWANIF);
 #endif
 #ifdef RTCONFIG_IPV6
 			if (fn_ipv6 && ipv6_enabled() && *wan6face) {
-				fprintf(fn_ipv6, "-A PREROUTING -i %s -j CONNMARK --restore-mark --mask 0x7\n", wan6face);
 #ifdef CLS_ACT
 				fprintf(fn_ipv6, "-A PREROUTING -i %s -j IMQ --todev 0\n", wan6face);
 #endif
@@ -876,14 +916,19 @@ static int add_qos_rules(char *pcWANIF)
 /*******************************************************************/
 // The definations of all partations
 // eth0 : WAN
-// 1:1  : upload
-// 1:2  : download   (1000000Kbits)
+// 1:1  : upload (WAN egress)
+// 1:2  : LAN-to-LAN (1000000Kbits)
 // 1:10 : highest
 // 1:20 : high
 // 1:30 : middle
 // 1:40 : low        (default)
 // 1:50 : lowest
-// 1:60 : ALL Download (WAN to LAN and LAN to LAN) (1000000kbits)
+// 1:60 : LAN-to-LAN (1000000kbits)
+// br0  : LAN
+// 2:1  : download (WAN ingress -> LAN egress)
+// etc.
+// WARNING: ingress qdisc (packets) can NOT use (yet unset) iptables marks!
+//
 /*******************************************************************/
 
 /* Tc */
@@ -902,9 +947,6 @@ static int start_tqos(void)
 	int first;
 	char burst_root[32];
 	char burst_leaf[32];
-#ifdef CONFIG_BCMWL5
-	char *protocol="802.1q";
-#endif
 	char *qsched;
 	int overhead = 0;
 	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
@@ -965,49 +1007,56 @@ static int start_tqos(void)
 		else
 			strcpy(overheadstr, "");
 
-	/* WAN */
+	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+	const char *lan_ifname = nvram_safe_get("lan_ifname");
+
+	/* Upload (WAN egress) */
 	fprintf(f,
 		"#!/bin/sh\n"
 		"#LAN/WAN\n"
-		"I=%s\n"
-		"SFQ=\"sfq perturb 10\"\n"
-		"TQA=\"tc qdisc add dev $I\"\n"
-		"TCA=\"tc class add dev $I\"\n"
-		"TFA=\"tc filter add dev $I\"\n"
+		"SCH='%s'\n"
+		"ULIF='%s'\n"
+		"TQAUL=\"tc qdisc add dev $ULIF\"\n"
+		"TCAUL=\"tc class add dev $ULIF\"\n"
+		"TFAUL=\"tc filter add dev $ULIF\"\n"
 #ifdef CLS_ACT
-		"DLIF=imq0\n"
+		"DLIF='imq0'\n"
+#else
+		"DLIF='%s'\n"
+#endif
 		"TQADL=\"tc qdisc add dev $DLIF\"\n"
 		"TCADL=\"tc class add dev $DLIF\"\n"
 		"TFADL=\"tc filter add dev $DLIF\"\n"
-#endif
 		"case \"$1\" in\n"
 		"start)\n"
-		"#LAN/WAN\n"
-		"\ttc qdisc del dev $I root 2>/dev/null\n"
-		"\t$TQA root handle 1: htb default %u\n"
-#ifdef CLS_ACT
+		"# reset\n"
+		"\ttc qdisc del dev $ULIF root 2>/dev/null\n"
 		"\ttc qdisc del dev $DLIF root 2>/dev/null\n"
-		"\t$TQADL root handle 2: htb default %u\n"
-#endif
+		"\n"
+		"# upload (root/default)\n"
+		"\t$TQAUL root handle 1: htb default %u\n"
 		"# upload 1:1\n"
-		"\t$TCA parent 1: classid 1:1 htb rate %ukbit ceil %ukbit %s %s\n" ,
-			get_wan_ifname(wan_primary_ifunit()), // judge WAN interface
-			(nvram_get_int("qos_default") + 1) * 10,
-#ifdef CLS_ACT
-			(nvram_get_int("qos_default") + 1) * 10,
+		"\t$TCAUL parent 1: classid 1:1 htb rate %ukbit ceil %ukbit %s %s\n" ,
+			qsched,
+			wan_ifname,
+#ifndef CLS_ACT
+			lan_ifname,
 #endif
-			bw, bw, burst_root, overheadstr);
+			(nvram_get_int("qos_default") + 1) * 10,
+			bw, bw, burst_root, overheadstr
+		);
 
 	/* LAN protocol: 802.1q */
 #ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
-	protocol = "802.1q";
 	fprintf(f,
-		"# download 1:2\n"
-		"\t$TCA parent 1: classid 1:2 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000\n"
-		"# 1:60 ALL Download for BCM\n"
-		"\t$TCA parent 1:2 classid 1:60 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000 prio 6\n"
-		"\t$TQA parent 1:60 handle 60: pfifo\n"
-		"\t$TFA parent 1: prio 6 protocol %s handle 6 fw flowid 1:60\n", protocol
+		"# upload 1:2: LAN-to-LAN (vlan@%s)\n"
+		"\t$TCAUL parent 1: classid 1:2 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000\n"
+		"# upload 1:60: LAN-to-LAN (vlan@%s)\n"
+		"\t$TCAUL parent 1:2 classid 1:60 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000 prio 6\n"
+		"\t$TQAUL parent 1:60 handle 60: pfifo\n"
+		"\t$TFAUL parent 1: prio 6 protocol 802.1q u32 match u32 0 0 flowid 1:60\n",
+			wan_ifname,
+			wan_ifname
 		);
 #endif
 
@@ -1033,13 +1082,13 @@ static int start_tqos(void)
 		x = (i + 1) * 10;
 
 		fprintf(f,
-			"# egress %d: %u-%u%%\n"
-			"\t$TCA parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u %s\n"
-			"\t$TQA parent 1:%d handle %d: %s\n"
-			"\t$TFA parent 1: prio %d protocol ip handle %d fw flowid 1:%d\n",
+			"# upload 1:%d: %u-%u%%\n"
+			"\t$TCAUL parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u %s\n"
+			"\t$TQAUL parent 1:%d handle %d: $SCH\n"
+			"\t$TFAUL parent 1: prio %d protocol ip handle %d fw flowid 1:%d\n",
 				i, rate, ceil,
 				x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
-				x, x, qsched,
+				x, x,
 				x, i + 1, x);
 	}
 	free(buf);
@@ -1053,8 +1102,8 @@ static int start_tqos(void)
 
 	if (nvram_match("qos_ack", "on")) {
 		fprintf(f,
-			"\n"
-			"\t$TFA parent 1: prio 14 protocol ip u32 "
+			"# upload: TCP ACK\n"
+			"\t$TFAUL parent 1: prio 14 protocol ip u32 "
 			"match ip protocol 6 0xff "			// TCP
 			"match u8 0x05 0x0f at 0 "			// IP header length
 			"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
@@ -1063,8 +1112,8 @@ static int start_tqos(void)
 	}
 	if (nvram_match("qos_syn", "on")) {
 		fprintf(f,
-			"\n"
-			"\t$TFA parent 1: prio 15 protocol ip u32 "
+			"# upload: TCP SYN\n"
+			"\t$TFAUL parent 1: prio 15 protocol ip u32 "
 			"match ip protocol 6 0xff "			// TCP
 			"match u8 0x05 0x0f at 0 "			// IP header length
 			"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
@@ -1073,8 +1122,8 @@ static int start_tqos(void)
 	}
 	if (nvram_match("qos_fin", "on")) {
 		fprintf(f,
-			"\n"
-			"\t$TFA parent 1: prio 17 protocol ip u32 "
+			"# upload: TCP FIN\n"
+			"\t$TFAUL parent 1: prio 17 protocol ip u32 "
 			"match ip protocol 6 0xff "			// TCP
 			"match u8 0x05 0x0f at 0 "			// IP header length
 			"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
@@ -1083,8 +1132,8 @@ static int start_tqos(void)
 	}
 	if (nvram_match("qos_rst", "on")) {
 		fprintf(f,
-			"\n"
-			"\t$TFA parent 1: prio 19 protocol ip u32 "
+			"# upload: TCP RST\n"
+			"\t$TFAUL parent 1: prio 19 protocol ip u32 "
 			"match ip protocol 6 0xff "			// TCP
 			"match u8 0x05 0x0f at 0 "			// IP header length
 			"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
@@ -1092,10 +1141,10 @@ static int start_tqos(void)
 			"flowid 1:10\n");
 	}
 	if (nvram_match("qos_icmp", "on")) {
-		fputs("\n\t$TFA parent 1: prio 13 protocol ip u32 match ip protocol 1 0xff flowid 1:10\n", f);
+		fputs("# upload: ICMP\n\t$TFAUL parent 1: prio 13 protocol ip u32 match ip protocol 1 0xff flowid 1:10\n", f);
 	}
 
-	// ingress
+	// Download (WAN ingress)
 	first = 1;
 	bw = ibw;
 
@@ -1110,10 +1159,18 @@ static int start_tqos(void)
 				first = 0;
 				fprintf(f,
 					"\n"
-#if !defined(CLS_ACT)
-					"\ttc qdisc del dev $I ingress 2>/dev/null\n"
-					"\t$TQA handle ffff: ingress\n"
-#endif
+					"# download (root/default)\n"
+					"\t$TQADL root handle 2: htb default %u\n"
+					"# download 2:1\n"
+					"\t$TCADL parent 2: classid 2:1 htb rate %ukbit ceil %ukbit %s %s\n"
+					"# download 2:2: LAN-to-LAN\n"
+					"\t$TCADL parent 2: classid 2:2 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000\n"
+					"# download 2:60: LAN-to-LAN\n"
+					"\t$TCADL parent 2:2 classid 2:60 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000 prio 6\n"
+					"\t$TQADL parent 2:60 handle 60: pfifo\n"
+					"\t$TFADL parent 2: prio 6 protocol ip handle 6 fw flowid 2:60\n",
+						(nvram_get_int("qos_default") + 1) * 10,
+						bw, bw, burst_root, overheadstr
 					);
 			}
 
@@ -1124,50 +1181,81 @@ static int start_tqos(void)
 			unsigned int v = u / 2;
 			if (v < 50) v = 50;
 
-#ifdef CLS_ACT
 			x = (i + 1) * 10;
 			fprintf(f,
-				"# ingress %d: %u%%\n"
+				"# download 2:%d: %u%%\n"
 				"\t$TCADL parent 2:1 classid 2:%d htb rate %ukbit %s prio %d quantum %u %s\n"
-				"\t$TQADL parent 2:%d handle %d: %s\n"
+				"\t$TQADL parent 2:%d handle %d: $SCH\n"
 				"\t$TFADL parent 2: prio %d protocol ip handle %d fw flowid 2:%d\n",
 					i, rate,
 					x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
-					x, x, qsched,
+					x, x,
 					x, i + 1, x);
-#else
-			x = i + 1;
-			fprintf(f,
-				"# ingress %d: %u%%\n"
-				"\t$TFA parent ffff: prio %d protocol ip handle %d"
-					" fw police rate %ukbit burst %ukbit drop flowid ffff:%d\n",
-					i, rate, x, x, u, v, x);
-#endif
 		}
 		free(buf);
+
+		if (nvram_match("qos_ack", "on")) {
+			fprintf(f,
+				"# download: TCP ACK\n"
+				"\t$TFADL parent 2: prio 14 protocol ip u32 "
+				"match ip protocol 6 0xff "			// TCP
+				"match u8 0x05 0x0f at 0 "			// IP header length
+				"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
+				"match u8 0x10 0xff at 33 "			// ACK only
+				"flowid 2:10\n");
+		}
+		if (nvram_match("qos_syn", "on")) {
+			fprintf(f,
+				"# download: TCP SYN\n"
+				"\t$TFADL parent 2: prio 15 protocol ip u32 "
+				"match ip protocol 6 0xff "			// TCP
+				"match u8 0x05 0x0f at 0 "			// IP header length
+				"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
+				"match u8 0x02 0x02 at 33 "			// SYN,*
+				"flowid 2:10\n");
+		}
+		if (nvram_match("qos_fin", "on")) {
+			fprintf(f,
+				"# download: TCP FIN\n"
+				"\t$TFADL parent 2: prio 17 protocol ip u32 "
+				"match ip protocol 6 0xff "			// TCP
+				"match u8 0x05 0x0f at 0 "			// IP header length
+				"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
+				"match u8 0x01 0x01 at 33 "			// FIN,*
+				"flowid 2:10\n");
+		}
+		if (nvram_match("qos_rst", "on")) {
+			fprintf(f,
+				"# download: TCP RST\n"
+				"\t$TFADL parent 2: prio 19 protocol ip u32 "
+				"match ip protocol 6 0xff "			// TCP
+				"match u8 0x05 0x0f at 0 "			// IP header length
+				"match u16 0x0000 0xffc0 at 2 "			// total length (0-63)
+				"match u8 0x04 0x04 at 33 "			// RST,*
+				"flowid 2:10\n");
+		}
+		if (nvram_match("qos_icmp", "on")) {
+			fputs("# download: ICMP\n\t$TFADL parent 2: prio 13 protocol ip u32 match ip protocol 1 0xff flowid 2:10\n", f);
+		}
 	}
 
 	fputs(
 		"\t;;\n"
 		"stop)\n"
-		"\ttc qdisc del dev $I root 2>/dev/null\n"
-#ifdef CLS_ACT
+		"\ttc qdisc del dev $ULIF root 2>/dev/null\n"
 		"\ttc qdisc del dev $DLIF root 2>/dev/null\n"
-#else
-		"\ttc qdisc del dev $I ingress 2>/dev/null\n"
-#endif
 		"\t;;\n"
 		"*)\n"
 		"\t#---------- Upload ----------\n"
-		"\ttc -s -d class ls dev $I\n"
-		"\ttc -s -d qdisc ls dev $I\n"
+		"\ttc -s -d qdisc ls dev $ULIF\n"
+		"\ttc -s -d class ls dev $ULIF\n"
+		"\ttc -s -d filter ls dev $ULIF\n"
 		"\techo\n"
-#ifdef CLS_ACT
 		"\t#--------- Download ---------\n"
-		"\ttc -s -d class ls dev $DLIF\n"
 		"\ttc -s -d qdisc ls dev $DLIF\n"
+		"\ttc -s -d class ls dev $DLIF\n"
+		"\ttc -s -d filter ls dev $DLIF\n"
 		"\techo\n"
-#endif
 		"esac\n",
 		f);
 

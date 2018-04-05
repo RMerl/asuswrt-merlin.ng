@@ -720,7 +720,6 @@ SendResp_readynas_admin(struct upnphttp * h)
 }
 #endif
 
-#if 0
 static void
 SendResp_presentation(struct upnphttp * h)
 {
@@ -774,7 +773,6 @@ SendResp_presentation(struct upnphttp * h)
 	SendResp_upnphttp(h);
 	CloseSocket_upnphttp(h);
 }
-#endif
 
 /* ProcessHTTPPOST_upnphttp()
  * executes the SOAP query if it is possible */
@@ -1123,7 +1121,6 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 		{
 			SendResp_caption(h, HttpUrl+10);
 		}
-#if 0
 		else if(strncmp(HttpUrl, "/status", 7) == 0)
 		{
 			if (web_status)
@@ -1138,7 +1135,6 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 			SendResp_presentation(h);
 			#endif
 		}
-#endif
 		else
 		{
 			DPRINTF(E_WARN, L_HTTP, "%s not found, responding ERROR 404\n", HttpUrl);

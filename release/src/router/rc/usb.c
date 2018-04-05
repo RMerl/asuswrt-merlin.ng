@@ -3537,10 +3537,8 @@ void start_dms(void)
 		if (nvram_get_int("dms_dbg"))
 			argv[index++] = "-v";
 
-#if 0
 		if (nvram_get_int("dms_web"))
 			argv[index++] = "-W";
-#endif
 
 		use_custom_config(MEDIA_SERVER_APP".conf","/etc/"MEDIA_SERVER_APP".conf");
 		run_postconf(MEDIA_SERVER_APP, "/etc/"MEDIA_SERVER_APP".conf");

@@ -235,8 +235,6 @@ extern struct album_art_name_s *album_art_names;
 extern volatile short int quitting;
 extern volatile uint32_t updateID;
 extern const char *force_sort_criteria;
-#if 0
 extern int web_status;
-#endif
 
 #endif

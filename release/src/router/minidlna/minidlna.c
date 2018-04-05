@@ -925,11 +925,9 @@ init(int argc, char **argv)
 		case 'h':
 			runtime_vars.port = -1; // triggers help display
 			break;
-#if 0
 		case 'W':
 			web_status = 1;
 			break;
-#endif
 		case 'r':
 			SETFLAG(RESCAN_MASK);
 			break;

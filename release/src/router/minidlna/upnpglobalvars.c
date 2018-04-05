@@ -90,6 +90,4 @@ struct album_art_name_s * album_art_names = NULL;
 volatile short int quitting = 0;
 volatile uint32_t updateID = 0;
 const char *force_sort_criteria = NULL;
-#if 0
 int web_status = 0;
-#endif

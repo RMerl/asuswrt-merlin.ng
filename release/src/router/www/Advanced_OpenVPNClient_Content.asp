@@ -242,6 +242,14 @@ function initial()
 	showclientlist();
 	showLANIPList();
 
+	// Client list
+	free_options(document.form.vpn_client_unit);
+	add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
+	add_option(document.form.vpn_client_unit, "2: <% nvram_get("vpn_client2_desc"); %>", "2", (openvpn_unit == 2));
+	add_option(document.form.vpn_client_unit, "3: <% nvram_get("vpn_client3_desc"); %>", "3", (openvpn_unit == 3));
+	add_option(document.form.vpn_client_unit, "4: <% nvram_get("vpn_client4_desc"); %>", "4", (openvpn_unit == 4));
+	add_option(document.form.vpn_client_unit, "5: <% nvram_get("vpn_client5_desc"); %>", "5", (openvpn_unit == 5));
+
 	// Cipher list
 	free_options(document.form.vpn_client_cipher);
 	currentcipher = "<% nvram_get("vpn_client_cipher"); %>";
@@ -1157,11 +1165,6 @@ function defaultSettings() {
 						<th>Select client instance</th>
 						<td>
 							<select name="vpn_client_unit" class="input_option" onChange="change_vpn_unit(this.value);">
-								<option value="1" <% nvram_match("vpn_client_unit","1","selected"); %> >Client 1</option>
-								<option value="2" <% nvram_match("vpn_client_unit","2","selected"); %> >Client 2</option>
-								<option value="3" <% nvram_match("vpn_client_unit","3","selected"); %> >Client 3</option>
-								<option value="4" <% nvram_match("vpn_client_unit","4","selected"); %> >Client 4</option>
-								<option value="5" <% nvram_match("vpn_client_unit","5","selected"); %> >Client 5</option>
 							</select>
 						</td>
 					</tr>
@@ -1195,6 +1198,19 @@ function defaultSettings() {
 					    </td>
 					</tr>
 					<tr>
+						<th>Automatic start at boot time</th>
+						<td>
+							<input type="radio" name="vpn_client_x_eas" class="input" value="1"><#checkbox_Yes#>
+							<input type="radio" name="vpn_client_x_eas" class="input" value="0"><#checkbox_No#>
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<input type="text" maxlength="25" class="input_25_table" name="vpn_client_desc" value="<% nvram_get("vpn_client_desc"); %>">
+						</td>
+					</tr>
+					<tr>
 							<th><#vpn_openvpnc_importovpn#></th>
 						<td>
 							<input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
@@ -1203,30 +1219,14 @@ function defaultSettings() {
 								<span id="importOvpnFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
 						</td>
 					</tr>
-
 				</table>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Basic Settings</td>
+							<td colspan="2">Network Settings</td>
 						</tr>
 					</thead>
-
-					<tr>
-						<th>Description</th>
-						<td>
-							<input type="text" maxlength="25" class="input_25_table" name="vpn_client_desc" value="<% nvram_get("vpn_client_desc"); %>">
-						</td>
-					</tr>
-					<tr>
-						<th>Start with WAN</th>
-						<td>
-							<input type="radio" name="vpn_client_x_eas" class="input" value="1"><#checkbox_Yes#>
-							<input type="radio" name="vpn_client_x_eas" class="input" value="0"><#checkbox_No#>
-						</td>
-					</tr>
-
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 						<td>
@@ -1234,7 +1234,6 @@ function defaultSettings() {
 							</select>
 						</td>
 					</tr>
-
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><#IPConnection_VServerProto_itemname#></a></th>
 						<td>
@@ -1244,7 +1243,6 @@ function defaultSettings() {
 							</select>
 						</td>
 					</tr>
-
 					<tr>
 						<th>Server Address and Port</th>
 						<td>
@@ -1252,7 +1250,55 @@ function defaultSettings() {
 							<label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_port"); %>" >
 						</td>
 					</tr>
+					<tr id="client_adns">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,24);">Accept DNS Configuration</a></th>
+						<td>
+							<select name="vpn_client_adns" class="input_option">
+								<option value="0" <% nvram_match("vpn_client_adns","0","selected"); %> >Disabled</option>
+								<option value="1" <% nvram_match("vpn_client_adns","1","selected"); %> >Relaxed</option>
+								<option value="2" <% nvram_match("vpn_client_adns","2","selected"); %> >Strict</option>
+								<option value="3" <% nvram_match("vpn_client_adns","3","selected"); %> >Exclusive</option>
+							</select>
+						</td>
+					</tr>
+					<tr id="client_bridge">
+						<th>Server is on the same subnet</th>
+						<td>
+							<input type="radio" name="vpn_client_bridge" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "1", "checked"); %>><#checkbox_Yes#>
+							<input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "0", "checked"); %>><#checkbox_No#>
+							<span id="client_bridge_warn_text">Warning: Cannot bridge distinct subnets. Will default to routed mode.</span>
+						</td>
+					</tr>
+					<tr id="client_nat">
+						<th>Create NAT on tunnel</th>
+						<td>
+							<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>><#checkbox_Yes#>
+							<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>><#checkbox_No#>
+							<span id="client_nat_warn_text">Routes must be configured manually.</span>
+						</td>
+					</tr>
+					<tr id="client_local_1">
+						<th>Local/remote endpoint addresses</th>
+						<td>
+							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_1" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
+							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_remote"); %>">
+						</td>
+					</tr>
+					<tr id="client_local_2">
+						<th>Tunnel address/netmask</th>
+						<td>
+							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_2" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
+							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_nm"); %>">
+						</td>
+					</tr>
+				</table>
 
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td colspan="2">Authentication Settings</td>
+						</tr>
+					</thead>
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 						<td>
@@ -1262,12 +1308,6 @@ function defaultSettings() {
 							</select>
 						</td>
 					</tr>
-					<tr>
-						<th>Keys and Certificates</th>
-						<td>
-							<input type="button" onclick="edit_Keys();" value="Edit..."></td>
-						</td>
-					</tr>
 					<tr id="client_userauth">
 						<th>Username/Password Authentication</th>
 						<td>
@@ -1275,7 +1315,6 @@ function defaultSettings() {
 							<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
-
 					<tr id="client_username">
 						<th>Username</th>
 						<td>
@@ -1297,7 +1336,44 @@ function defaultSettings() {
 							<span id="client_ca_warn_text">Warning: You must define a Certificate Authority.</span>
 						</td>
 					</tr>
+				</table>
 
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td colspan="2">Crypto Settings</td>
+						</tr>
+					</thead>
+					<tr>
+						<th>Keys and Certificates</th>
+						<td>
+							<input type="button" onclick="edit_Keys();" value="Edit..."></td>
+						</td>
+					</tr>
+					<tr id="ncp_enable">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
+						<td>
+							<select name="vpn_client_ncp_enable" onclick="update_visibility();" class="input_option">
+								<option value="0" <% nvram_match("vpn_client_ncp_enable","0","selected"); %> >Disabled</option>
+								<option value="1" <% nvram_match("vpn_client_ncp_enable","1","selected"); %> >Enable (with fallback)</option>
+								<option value="2" <% nvram_match("vpn_client_ncp_enable","2","selected"); %> >Enable</option>
+							</select>
+						</td>
+					</tr>
+					<tr id="ncp_ciphers">
+						<th>Negotiable ciphers</th>
+						<td>
+							<input type="text" maxlength="255" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" >
+						</td>
+					</tr>
+					<tr id="client_cipher">
+						<th>Legacy/fallback cipher</th>
+						<td>
+							<select name="vpn_client_cipher" class="input_option">
+								<option value="<% nvram_get("vpn_client_cipher"); %>" selected><% nvram_get("vpn_client_cipher"); %></option>
+							</select>
+						</td>
+					</tr>
 					<tr id="client_hmac">
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,10);">TLS control channel security<br><i>(tls-auth / tls-crypt)</i></a></th>
 						<td>
@@ -1310,48 +1386,12 @@ function defaultSettings() {
 							</select>
 						</td>
 					</tr>
-
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,26);">Auth digest</a></th>
 						<td>
 							<select name="vpn_client_digest" class="input_option">
 								<option value="<% nvram_get("vpn_client_digest"); %>" selected><% nvram_get("vpn_client_digest"); %></option>
 							</select>
-						</td>
-					</tr>
-
-					<tr id="client_bridge">
-						<th>Server is on the same subnet</th>
-						<td>
-							<input type="radio" name="vpn_client_bridge" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "0", "checked"); %>><#checkbox_No#>
-							<span id="client_bridge_warn_text">Warning: Cannot bridge distinct subnets. Will default to routed mode.</span>
-						</td>
-					</tr>
-
-					<tr id="client_nat">
-						<th>Create NAT on tunnel</th>
-						<td>
-							<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>><#checkbox_No#>
-							<span id="client_nat_warn_text">Routes must be configured manually.</span>
-
-						</td>
-					</tr>
-
-					<tr id="client_local_1">
-						<th>Local/remote endpoint addresses</th>
-						<td>
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_1" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_remote"); %>">
-						</td>
-					</tr>
-
-					<tr id="client_local_2">
-						<th>Tunnel address/netmask</th>
-						<td>
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_2" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_nm"); %>">
 						</td>
 					</tr>
 				</table>
@@ -1362,53 +1402,12 @@ function defaultSettings() {
 							<td colspan="2">Advanced Settings</td>
 						</tr>
 					</thead>
-
 					<tr>
 						<th>Log verbosity<br><i>(0-6, default=3)</i></th>
 						<td>
 							<input type="text" maxlength="2" class="input_6_table" name="vpn_client_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_verb"); %>">
 						</td>
 					</tr>
-
-					<tr id="client_adns">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,24);">Accept DNS Configuration</a></th>
-						<td>
-							<select name="vpn_client_adns" class="input_option">
-								<option value="0" <% nvram_match("vpn_client_adns","0","selected"); %> >Disabled</option>
-								<option value="1" <% nvram_match("vpn_client_adns","1","selected"); %> >Relaxed</option>
-								<option value="2" <% nvram_match("vpn_client_adns","2","selected"); %> >Strict</option>
-								<option value="3" <% nvram_match("vpn_client_adns","3","selected"); %> >Exclusive</option>
-							</select>
-						</td>
-					</tr>
-
-					<tr id="ncp_enable">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
-						<td>
-							<select name="vpn_client_ncp_enable" onclick="update_visibility();" class="input_option">
-								<option value="0" <% nvram_match("vpn_client_ncp_enable","0","selected"); %> >Disabled</option>
-								<option value="1" <% nvram_match("vpn_client_ncp_enable","1","selected"); %> >Enable (with fallback)</option>
-								<option value="2" <% nvram_match("vpn_client_ncp_enable","2","selected"); %> >Enable</option>
-							</select>
-						</td>
-					</tr>
-
-					<tr id="ncp_ciphers">
-						<th>Negotiable ciphers</th>
-						<td>
-							<input type="text" maxlength="255" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" >
-						</td>
-					</tr>
-
-					<tr id="client_cipher">
-						<th>Legacy/fallback cipher</th>
-						<td>
-							<select name="vpn_client_cipher" class="input_option">
-								<option value="<% nvram_get("vpn_client_cipher"); %>" selected><% nvram_get("vpn_client_cipher"); %></option>
-							</select>
-						</td>
-					</tr>
-
 					<tr>
 						<th><#vpn_openvpn_Compression#></th>
 						<td>
@@ -1421,21 +1420,18 @@ function defaultSettings() {
 							</select>
 						</td>
 					</tr>
-
 					<tr id="client_reneg">
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time<br><i>(in seconds, -1 for default)</a></th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" value="<% nvram_get("vpn_client_reneg"); %>">
 						</td>
 					</tr>
-
 					<tr>
 						<th>Connection Retry attempts<br><i>(-1 for infinite)</th>
 						<td>
 							<input type="text" maxlength="3" class="input_6_table" name="vpn_client_connretry" value="<% nvram_get("vpn_client_connretry"); %>">
 						</td>
 					</tr>
-
 					<tr id="client_tlsremote">
 						<th>Verify Server Certificate</th>
 						<td>

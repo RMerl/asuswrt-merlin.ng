@@ -1464,6 +1464,14 @@ function upload_cert_key(){
 	}
 }
 
+function warn_jffs_format(){
+	var msg = "WARNING: Erasing the JFFS partition will also wipe out some configuration elements such as OpenVPN certificates";
+	if (hnd_support)
+		msg += ", and various router settings"
+	msg += ".\n\nMake sure you are certain you wish to proceed with this operation.";
+	alert(msg);
+}
+
 </script>
 </head>
 
@@ -1568,7 +1576,7 @@ function upload_cert_key(){
 				<tr>
 					<th>Format JFFS partition at next boot</th>
 					<td>
-						<input type="radio" name="jffs2_format" value="1" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="jffs2_format" value="1" onclick="warn_jffs_format();" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="jffs2_format" value="0" <% nvram_match("jffs2_format", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>

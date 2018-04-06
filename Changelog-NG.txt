@@ -19,13 +19,16 @@ General changes in the 384/NG branch vs 380.xx:
    - CHANGED: Updated OpenVPN to 2.4.5.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
+   - CHANGED: Updated miniupnpd to 20180314 Git snapshot.
+   - CHANGED: Updated nano to 2.9.5.
    - CHANGED: Moved RT-AC86U to the same Busybox version (1.25.1)
               as other models.
    - CHANGED: Revised OpenVPN server options:
               o Removed "TLS Reneg time" (rarely used, can manually
                 be set as a custom option)
               o Removed "Server Poll" (which didn't work
-                properly)
+                properly), and replaced with a watchdog
+                script, hardcoded to 60 secs frequency.
               o Removed "Push LAN" and "Redirect Gateway",
                 replaced with new Client Access setting
               o Removed Firewall setting (firewall rules are now
@@ -40,20 +43,37 @@ General changes in the 384/NG branch vs 380.xx:
                 itself) and LAN + WAN.
 
    - CHANGED: Revised OpenVPN client options:
-              o Removed "Poll Interval" (which didn't work properly)
+              o Reorganized settings into groups
+              o Removed "Poll Interval" (which didn't work
+                properly), and replaced with a watchdog
+                script, with a hardcoded frequency of 60 secs.
               o Removed Firewall setting (firewall rules are now
                 always created)
               o Modified behaviour of Connection Retry.  Instead
                 of taking a value in seconds that only affected
-                resolution failure, it now takes a number of attempts,
-                and affects connection failures.  Resolution failures
-                will now retry for an infinite period of time (the
-                default OpenVPN value).
+                resolution failure, it now takes a number of
+                attempts, and affects connection failures.
+                Resolution failures will now retry for an infinite
+                period of time (the default OpenVPN value).
 
+   - CHANGED: Removed option to resolve names on the
+              Log -> Connections page (making that page work
+              now like on stock Asus firmware).
+              That functionality is now provided by the
+              Network Tools -> Netstat page.
+   - CHANGED: From now on, setting the router to act as a master
+              browser or a WINS server will also require you to
+              enable sharing.  This will ensure that disks won't
+              be accidentally shared when sharing is disabled
+              but you had one of these two options enabled.
+   - FIXED: Some dnsmasq issues related to DNSSEC were fixed,
+            including CVE-2017-15107. (backported from
+            dnsmasq 2.79 by John Bacho)
    - FIXED: Restoring an OpenVPN instance to default values
             would fail to disable its Start with WAN setting.
    - FIXED: Hardware authentication failure for the RT-AC3100
             and RT-AC5300.
+   - FIXED: Minidlna web status page could no longer be enabled.
 
 
 384.4_2 (24-Mar-2018)

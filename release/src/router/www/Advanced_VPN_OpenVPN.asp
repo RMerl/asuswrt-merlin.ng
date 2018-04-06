@@ -1360,11 +1360,11 @@ function update_digest() {
 										<tr id="trClientWillUseVPNToAccess">
 											<th><#vpn_access#></th>
 											<td>
-												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access" class="input" value="0" <% nvram_match_x("", "vpn_server_client_access", "0", "checked"); %>>
+												<input type="radio" name="vpn_server_client_access" class="input" value="0" <% nvram_match_x("", "vpn_server_client_access", "0", "checked"); %>>
 												<label for="vpn_server_client_access_local">LAN only</label>
-												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access" class="input" value="1" <% nvram_match_x("", "vpn_server_client_access", "1", "checked"); %>>
+												<input type="radio" name="vpn_server_client_access" class="input" value="1" <% nvram_match_x("", "vpn_server_client_access", "1", "checked"); %>>
 												<label for="vpn_server_client_access_local">Internet only</label>
-												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access" class="input" value="2" <% nvram_match_x("", "vpn_server_client_access", "2", "checked"); %>>
+												<input type="radio" name="vpn_server_client_access" class="input" value="2" <% nvram_match_x("", "vpn_server_client_access", "2", "checked"); %>>
 												<label for="vpn_server_client_access_both">Both</label>
 											</td>
 										</tr>
